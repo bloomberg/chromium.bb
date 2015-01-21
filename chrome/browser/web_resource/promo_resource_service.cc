@@ -87,13 +87,13 @@ void PromoResourceService::MigrateUserPrefs(PrefService* user_prefs) {
 }
 
 PromoResourceService::PromoResourceService()
-    : ChromeWebResourceService(g_browser_process->local_state(),
-                               GetPromoResourceURL(),
-                               true,  // append locale to URL
-                               prefs::kNtpPromoResourceCacheUpdate,
-                               kStartResourceFetchDelay,
-                               GetCacheUpdateDelay()),
-      weak_ptr_factory_(this) {
+    : WebResourceService(g_browser_process->local_state(),
+                         GetPromoResourceURL(),
+                         true,  // append locale to URL
+                         prefs::kNtpPromoResourceCacheUpdate,
+                         kStartResourceFetchDelay,
+                         GetCacheUpdateDelay()),
+                         weak_ptr_factory_(this) {
   ScheduleNotificationOnInit();
 }
 

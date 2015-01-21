@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/safe_json_parser.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/google/core/browser/google_util.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -26,24 +29,22 @@ const char kInvalidDataTypeError[] =
 const char kUnexpectedJSONFormatError[] =
     "Data from web resource server does not have expected format.";
 
-WebResourceService::WebResourceService(
-    PrefService* prefs,
-    const GURL& web_resource_server,
-    const std::string& application_locale,
-    const char* last_update_time_pref_name,
-    int start_fetch_delay_ms,
-    int cache_update_delay_ms,
-    net::URLRequestContextGetter* request_context,
-    const char* disable_network_switch)
+WebResourceService::WebResourceService(PrefService* prefs,
+                                       const GURL& web_resource_server,
+                                       bool apply_locale_to_url,
+                                       const char* last_update_time_pref_name,
+                                       int start_fetch_delay_ms,
+                                       int cache_update_delay_ms)
     : prefs_(prefs),
-      resource_request_allowed_notifier_(prefs, disable_network_switch),
+      resource_request_allowed_notifier_(
+          prefs,
+          switches::kDisableBackgroundNetworking),
       in_fetch_(false),
       web_resource_server_(web_resource_server),
-      application_locale_(application_locale),
+      apply_locale_to_url_(apply_locale_to_url),
       last_update_time_pref_name_(last_update_time_pref_name),
       start_fetch_delay_ms_(start_fetch_delay_ms),
       cache_update_delay_ms_(cache_update_delay_ms),
-      request_context_(request_context),
       weak_ptr_factory_(this) {
   resource_request_allowed_notifier_.Init(this);
   DCHECK(prefs);
@@ -65,15 +66,19 @@ void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
   if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
     std::string data;
     source->GetResponseAsString(&data);
-    // Calls EndFetch() on completion.
-    ParseJSON(data, base::Bind(&WebResourceService::OnUnpackFinished,
-                               weak_ptr_factory_.GetWeakPtr()),
-              base::Bind(&WebResourceService::OnUnpackError,
-                         weak_ptr_factory_.GetWeakPtr()));
+
+    // SafeJsonParser calls EndFetch and releases itself on completion.
+    scoped_refptr<SafeJsonParser> json_parser(new SafeJsonParser(
+        data,
+        base::Bind(&WebResourceService::OnUnpackFinished,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&WebResourceService::OnUnpackError,
+                   weak_ptr_factory_.GetWeakPtr())));
+    json_parser->Start();
   } else {
     // Don't parse data if attempt to download was unsuccessful.
     // Stop loading new web resource data, and silently exit.
-    // We do not call ParseJSON(), so we need to call EndFetch() ourselves.
+    // We do not call SafeJsonParser, so we need to call EndFetch ourselves.
     EndFetch();
   }
 
@@ -109,9 +114,9 @@ void WebResourceService::StartFetch() {
   AddRef();
 
   GURL web_resource_server =
-      application_locale_.empty()
-          ? google_util::AppendGoogleLocaleParam(web_resource_server_,
-                                                 application_locale_)
+      apply_locale_to_url_
+          ? google_util::AppendGoogleLocaleParam(
+                web_resource_server_, g_browser_process->GetApplicationLocale())
           : web_resource_server_;
 
   DVLOG(1) << "WebResourceService StartFetch " << web_resource_server;
@@ -122,7 +127,9 @@ void WebResourceService::StartFetch() {
   url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
                              net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->SetRequestContext(request_context_.get());
+  net::URLRequestContextGetter* url_request_context_getter =
+      g_browser_process->system_request_context();
+  url_fetcher_->SetRequestContext(url_request_context_getter);
   url_fetcher_->Start();
 }
 

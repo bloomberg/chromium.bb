@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,12 +41,12 @@ GURL GetPluginsServerURL() {
 }  // namespace
 
 PluginsResourceService::PluginsResourceService(PrefService* local_state)
-    : ChromeWebResourceService(local_state,
-                               GetPluginsServerURL(),
-                               false,
-                               prefs::kPluginsResourceCacheUpdate,
-                               kStartResourceFetchDelayMs,
-                               kCacheUpdateDelayMs) {
+    : WebResourceService(local_state,
+                         GetPluginsServerURL(),
+                         false,
+                         prefs::kPluginsResourceCacheUpdate,
+                         kStartResourceFetchDelayMs,
+                         kCacheUpdateDelayMs) {
 }
 
 void PluginsResourceService::Init() {
