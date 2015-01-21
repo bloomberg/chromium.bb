@@ -352,6 +352,11 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
 }
 
 bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 MessagePumpForUI::ProcessMessageHelper1"));
+
   TRACE_EVENT1("base", "MessagePumpForUI::ProcessMessageHelper",
                "message", msg.message);
   if (WM_QUIT == msg.message) {
@@ -380,12 +385,29 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
           "440919 MessagePumpForUI::ProcessMessageHelper3"));
 
   uint32_t action = MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT;
-  if (state_->dispatcher)
+  if (state_->dispatcher) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 MessagePumpForUI::ProcessMessageHelper4"));
+
     action = state_->dispatcher->Dispatch(msg);
+  }
   if (action & MessagePumpDispatcher::POST_DISPATCH_QUIT_LOOP)
     state_->should_quit = true;
   if (action & MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile5(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 MessagePumpForUI::ProcessMessageHelper5"));
+
     TranslateMessage(&msg);
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile6(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 MessagePumpForUI::ProcessMessageHelper6"));
+
     DispatchMessage(&msg);
   }
 

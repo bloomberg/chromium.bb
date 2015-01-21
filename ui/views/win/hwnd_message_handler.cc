@@ -931,14 +931,20 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnWndProc"));
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 HWNDMessageHandler::OnWndProc1"));
 
   HWND window = hwnd();
   LRESULT result = 0;
 
   if (delegate_ && delegate_->PreHandleMSG(message, w_param, l_param, &result))
     return result;
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 HWNDMessageHandler::OnWndProc2"));
 
   // Otherwise we handle everything else.
   // NOTE: We inline ProcessWindowMessage() as 'this' may be destroyed during
@@ -952,6 +958,11 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   msg_handled_ = old_msg_handled;
 
   if (!processed) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::OnWndProc3"));
+
     result = DefWindowProc(window, message, w_param, l_param);
     // DefWindowProc() may have destroyed the window and/or us in a nested
     // message loop.
@@ -960,13 +971,24 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   }
 
   if (delegate_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::OnWndProc4"));
+
     delegate_->PostHandleMSG(message, w_param, l_param);
     if (message == WM_NCDESTROY)
       delegate_->HandleDestroyed();
   }
 
-  if (message == WM_ACTIVATE && IsTopLevelWindow(window))
+  if (message == WM_ACTIVATE && IsTopLevelWindow(window)) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile5(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::OnWndProc5"));
+
     PostProcessActivateMessage(LOWORD(w_param), !!HIWORD(w_param));
+  }
   return result;
 }
 
@@ -1365,12 +1387,17 @@ void HWNDMessageHandler::OnCommand(UINT notification_code,
 
 LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnCreate"));
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnCreate1"));
 
   use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
 
   if (window_ex_style() &  WS_EX_COMPOSITED) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::OnCreate2"));
+
     if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
       // This is part of the magic to emulate layered windows with Aura
       // see the explanation elsewere when we set WS_EX_COMPOSITED style.
@@ -1381,6 +1408,10 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
 
   fullscreen_handler_->set_hwnd(hwnd());
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnCreate3"));
+
   // This message initializes the window so that focus border are shown for
   // windows.
   SendMessage(hwnd(),
@@ -1389,10 +1420,19 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
               0);
 
   if (remove_standard_frame_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::OnCreate4"));
+
     SetWindowLong(hwnd(), GWL_STYLE,
                   GetWindowLong(hwnd(), GWL_STYLE) & ~WS_CAPTION);
     SendFrameChanged();
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnCreate5"));
 
   // Get access to a modifiable copy of the system menu.
   GetSystemMenu(hwnd(), false);
@@ -1400,6 +1440,10 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
       ui::AreTouchEventsEnabled())
     RegisterTouchWindow(hwnd(), TWF_WANTPALM);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile6(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnCreate6"));
 
   // We need to allow the delegate to size its contents since the window may not
   // receive a size notification when its initial bounds are specified at window
@@ -2597,12 +2641,23 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
                                                      bool track_mouse) {
   if (!touch_ids_.empty())
     return 0;
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 HWNDMessageHandler::HandleMouseEventInternal1"));
+
   // We handle touch events on Windows Aura. Windows generates synthesized
   // mouse messages in response to touch which we should ignore. However touch
   // messages are only received for the client area. We need to ignore the
   // synthesized mouse messages for all points in the client area and places
   // which return HTNOWHERE.
   if (ui::IsMouseEventFromTouch(message)) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::HandleMouseEventInternal2"));
+
     LPARAM l_param_ht = l_param;
     // For mouse events (except wheel events), location is in window coordinates
     // and should be converted to screen coordinates for WM_NCHITTEST.
@@ -2629,6 +2684,11 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   }
 
   if (message == WM_RBUTTONUP && is_right_mouse_pressed_on_caption_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::HandleMouseEventInternal3"));
+
     is_right_mouse_pressed_on_caption_ = false;
     ReleaseCapture();
     // |point| is in window coordinates, but WM_NCHITTEST and TrackPopupMenu()
@@ -2671,6 +2731,12 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     // be WM_RBUTTONUP instead of WM_NCRBUTTONUP.
     SetCapture();
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 HWNDMessageHandler::HandleMouseEventInternal4"));
+
   long message_time = GetMessageTime();
   MSG msg = { hwnd(), message, w_param, l_param, message_time,
               { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
@@ -2679,6 +2745,11 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
 
   if (event.type() == ui::ET_MOUSE_MOVED && !HasCapture() && track_mouse) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile5(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::HandleMouseEventInternal5"));
+
     // Windows only fires WM_MOUSELEAVE events if the application begins
     // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
     // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.
@@ -2690,10 +2761,20 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     // OnMouseEvent.
     active_mouse_tracking_flags_ = 0;
   } else if (event.type() == ui::ET_MOUSEWHEEL) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile6(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::HandleMouseEventInternal6"));
+
     // Reroute the mouse wheel to the window under the pointer if applicable.
     return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
             delegate_->HandleMouseEvent(ui::MouseWheelEvent(msg))) ? 0 : 1;
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile7(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 HWNDMessageHandler::HandleMouseEventInternal7"));
 
   // There are cases where the code handling the message destroys the window,
   // so use the weak ptr to check if destruction occured or not.
