@@ -481,6 +481,9 @@ bool InputMethodEngine::DeleteSurroundingText(int context_id,
     return false;
   }
 
+  if (offset < 0 && static_cast<size_t>(-1 * offset) != size_t(number_of_chars))
+    return false;  // Currently we can only support preceding text.
+
   // TODO(nona): Return false if there is ongoing composition.
 
   IMEInputContextHandlerInterface* input_context =
