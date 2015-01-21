@@ -32,6 +32,10 @@ class CONTENT_EXPORT RendererScheduler {
   // time if no idle time is available.
   virtual scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() = 0;
 
+  // Returns the loading task runner.  This queue is intended for tasks related
+  // to resource dispatch, foreground HTML parsing, etc...
+  virtual scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() = 0;
+
   // Called to notify about the start of a new frame.  Must be called from the
   // main thread.
   virtual void WillBeginFrame(const cc::BeginFrameArgs& args) = 0;

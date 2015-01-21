@@ -17,6 +17,7 @@ class FakeRendererScheduler : public RendererScheduler {
   // RendererScheduler implementation.
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void DidCommitFrameToCompositor() override;

@@ -35,6 +35,7 @@ class RendererSchedulerImplTest : public testing::Test {
         scheduler_(new RendererSchedulerImplForTest(mock_task_runner_, clock_)),
         default_task_runner_(scheduler_->DefaultTaskRunner()),
         compositor_task_runner_(scheduler_->CompositorTaskRunner()),
+        loading_task_runner_(scheduler_->LoadingTaskRunner()),
         idle_task_runner_(scheduler_->IdleTaskRunner()) {}
   ~RendererSchedulerImplTest() override {}
 
@@ -54,6 +55,7 @@ class RendererSchedulerImplTest : public testing::Test {
   scoped_ptr<RendererSchedulerImpl> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImplTest);
@@ -257,6 +259,9 @@ TEST_F(RendererSchedulerImplTest, TestIdleTaskExceedsDeadline) {
 TEST_F(RendererSchedulerImplTest, TestDefaultPolicy) {
   std::vector<std::string> order;
 
+  loading_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("L1")));
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
       base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
@@ -275,14 +280,17 @@ TEST_F(RendererSchedulerImplTest, TestDefaultPolicy) {
 
   EnableIdleTasks();
   RunUntilIdle();
-  EXPECT_THAT(order, testing::ElementsAre(std::string("D1"), std::string("C1"),
-                                          std::string("D2"), std::string("C2"),
-                                          std::string("I1")));
+  EXPECT_THAT(order, testing::ElementsAre(
+      std::string("L1"), std::string("D1"), std::string("C1"),
+      std::string("D2"), std::string("C2"), std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestCompositorPolicy) {
   std::vector<std::string> order;
 
+  loading_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorTestTask, &order, std::string("L1")));
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
       base::Bind(&AppendToVectorIdleTestTask, &order, std::string("I1")));
@@ -303,9 +311,9 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy) {
       blink::WebInputEvent::GestureFlingStart);
   EnableIdleTasks();
   RunUntilIdle();
-  EXPECT_THAT(order, testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                          std::string("D1"), std::string("D2"),
-                                          std::string("I1")));
+  EXPECT_THAT(order, testing::ElementsAre(
+      std::string("C1"), std::string("C2"), std::string("D1"),
+      std::string("D2"), std::string("L1"), std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {

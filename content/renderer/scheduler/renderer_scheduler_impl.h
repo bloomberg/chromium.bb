@@ -32,6 +32,7 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void DidCommitFrameToCompositor() override;
   void DidReceiveInputEventOnCompositorThread(
@@ -47,11 +48,13 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
  private:
   friend class RendererSchedulerImplTest;
 
+  // Keep RendererSchedulerImpl::TaskQueueIdToString in sync with this enum.
   enum QueueId {
     DEFAULT_TASK_QUEUE,
     COMPOSITOR_TASK_QUEUE,
     IDLE_TASK_QUEUE,
     CONTROL_TASK_QUEUE,
+    LOADING_TASK_QUEUE,
     // Must be the last entry.
     TASK_QUEUE_COUNT,
   };
@@ -118,6 +121,7 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 
   base::Closure update_policy_closure_;

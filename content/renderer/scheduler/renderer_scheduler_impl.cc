@@ -27,6 +27,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           task_queue_manager_->TaskRunnerForQueue(DEFAULT_TASK_QUEUE)),
       compositor_task_runner_(
           task_queue_manager_->TaskRunnerForQueue(COMPOSITOR_TASK_QUEUE)),
+      loading_task_runner_(
+          task_queue_manager_->TaskRunnerForQueue(LOADING_TASK_QUEUE)),
       current_policy_(NORMAL_PRIORITY_POLICY),
       policy_may_need_update_(&incoming_signals_lock_),
       weak_factory_(this) {
@@ -80,6 +82,12 @@ scoped_refptr<SingleThreadIdleTaskRunner>
 RendererSchedulerImpl::IdleTaskRunner() {
   main_thread_checker_.CalledOnValidThread();
   return idle_task_runner_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererSchedulerImpl::LoadingTaskRunner() {
+  main_thread_checker_.CalledOnValidThread();
+  return loading_task_runner_;
 }
 
 void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
@@ -208,10 +216,16 @@ void RendererSchedulerImpl::UpdatePolicy() {
     case COMPOSITOR_PRIORITY_POLICY:
       renderer_task_queue_selector_->SetQueuePriority(
           COMPOSITOR_TASK_QUEUE, RendererTaskQueueSelector::HIGH_PRIORITY);
+      // TODO(scheduler-dev): Add a task priority between HIGH and BEST_EFFORT
+      // that still has some guarantee of running.
+      renderer_task_queue_selector_->SetQueuePriority(
+          LOADING_TASK_QUEUE, RendererTaskQueueSelector::BEST_EFFORT_PRIORITY);
       break;
     case NORMAL_PRIORITY_POLICY:
       renderer_task_queue_selector_->SetQueuePriority(
           COMPOSITOR_TASK_QUEUE, RendererTaskQueueSelector::NORMAL_PRIORITY);
+      renderer_task_queue_selector_->SetQueuePriority(
+          LOADING_TASK_QUEUE, RendererTaskQueueSelector::NORMAL_PRIORITY);
       break;
   }
   current_policy_ = new_policy;
@@ -272,6 +286,8 @@ const char* RendererSchedulerImpl::TaskQueueIdToString(QueueId queue_id) {
       return "idle_tq";
     case CONTROL_TASK_QUEUE:
       return "control_tq";
+    case LOADING_TASK_QUEUE:
+      return "loading_tq";
     default:
       NOTREACHED();
       return nullptr;

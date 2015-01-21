@@ -55,6 +55,11 @@ NullRendererScheduler::CompositorTaskRunner() {
   return task_runner_;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+NullRendererScheduler::LoadingTaskRunner() {
+  return task_runner_;
+}
+
 scoped_refptr<SingleThreadIdleTaskRunner>
 NullRendererScheduler::IdleTaskRunner() {
   return idle_task_runner_;
