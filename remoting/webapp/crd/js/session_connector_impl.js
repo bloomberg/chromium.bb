@@ -432,8 +432,9 @@ remoting.SessionConnectorImpl.prototype.connectSignaling_ = function() {
         remoting.settings.XMPP_SERVER_FOR_CLIENT, email, token);
   }
 
-  this.signalStrategy_ =
-      remoting.SignalStrategy.create(this.onSignalingState_.bind(this));
+  this.signalStrategy_ = remoting.SignalStrategy.create();
+  this.signalStrategy_.setStateChangedCallback(
+      this.onSignalingState_.bind(this));
 
   remoting.identity.callWithToken(connectSignalingWithToken, this.onError_);
 };

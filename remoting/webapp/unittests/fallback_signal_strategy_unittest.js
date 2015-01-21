@@ -6,14 +6,20 @@
 
 'use strict';
 
-var ControllableSignalStrategy = function(jid, stateChangeCallback) {
+var ControllableSignalStrategy = function(jid) {
   this.jid = jid;
-  this.stateChangeCallback_ = stateChangeCallback;
-  this.state_ = null;
+  this.onStateChangedCallback = function() {};
+  this.state = null;
   this.onIncomingStanzaCallback = function() {};
   this.dispose = sinon.spy();
   this.connect = sinon.spy();
   this.sendMessage = sinon.spy();
+};
+
+ControllableSignalStrategy.prototype.setStateChangedCallback = function(
+    onStateChangedCallback) {
+  this.onStateChangedCallback =
+      onStateChangedCallback ? onStateChangedCallback : function() {};
 };
 
 ControllableSignalStrategy.prototype.setIncomingStanzaCallback =
@@ -21,10 +27,10 @@ ControllableSignalStrategy.prototype.setIncomingStanzaCallback =
   this.onIncomingStanzaCallback =
       onIncomingStanzaCallback ? onIncomingStanzaCallback
                                : function() {};
-}
+};
 
 ControllableSignalStrategy.prototype.getState = function(message) {
-  return this.state_;
+  return this.state;
 };
 
 ControllableSignalStrategy.prototype.getError = function(message) {
@@ -42,9 +48,9 @@ ControllableSignalStrategy.prototype.setExternalCallbackForTesting =
 
 ControllableSignalStrategy.prototype.setStateForTesting =
     function(state, expectExternalCallback) {
-  this.state_ = state;
+  this.state = state;
   this.externalCallback_.reset();
-  this.stateChangeCallback_(state);
+  this.onStateChangedCallback(state);
   if (expectExternalCallback) {
     equal(this.externalCallback_.callCount, 1);
     ok(this.externalCallback_.calledWith(state));
@@ -52,10 +58,6 @@ ControllableSignalStrategy.prototype.setStateForTesting =
   } else {
     ok(!this.externalCallback_.called);
   }
-};
-
-var createControllableSignalStrategy = function(jid, callback) {
-  return new ControllableSignalStrategy(jid, callback);
 };
 
 var onStateChange = null;
@@ -71,10 +73,10 @@ module('fallback_signal_strategy', {
     onProgressCallback = sinon.spy();
     onIncomingStanzaCallback = sinon.spy();
     strategy = new remoting.FallbackSignalStrategy(
-        createControllableSignalStrategy.bind(null, 'primary-jid'),
-        createControllableSignalStrategy.bind(null, 'secondary-jid'),
-        onStateChange,
+        new ControllableSignalStrategy('primary-jid'),
+        new ControllableSignalStrategy('secondary-jid'),
         onProgressCallback);
+    strategy.setStateChangedCallback(onStateChange);
     strategy.setIncomingStanzaCallback(onIncomingStanzaCallback);
     primary = strategy.primary_;
     secondary = strategy.secondary_;

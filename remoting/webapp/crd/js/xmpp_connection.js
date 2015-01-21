@@ -15,18 +15,16 @@ var remoting = remoting || {};
  * because TLS support in chrome.sockets.tcp is currently broken, see
  * crbug.com/403076 .
  *
- * @param {function(remoting.SignalStrategy.State):void} onStateChangedCallback
- *   Callback to call on state change.
  * @constructor
  * @implements {remoting.SignalStrategy}
  */
-remoting.XmppConnection = function(onStateChangedCallback) {
+remoting.XmppConnection = function() {
   /** @private */
   this.server_ = '';
   /** @private */
   this.port_ = 0;
-  /** @private */
-  this.onStateChangedCallback_ = onStateChangedCallback;
+  /** @type {?function(remoting.SignalStrategy.State):void} @private */
+  this.onStateChangedCallback_ = null;
   /** @type {?function(Element):void} @private */
   this.onIncomingStanzaCallback_ = null;
   /** @private */
@@ -97,6 +95,14 @@ remoting.XmppConnection.FAKE_SSL_RESPONSE_ = [
 ];
 
 /**
+ * @param {function(remoting.SignalStrategy.State):void} onStateChangedCallback
+ */
+remoting.XmppConnection.prototype.setStateChangedCallback = function(
+    onStateChangedCallback) {
+  this.onStateChangedCallback_ = onStateChangedCallback;
+};
+
+/**
  * @param {?function(Element):void} onIncomingStanzaCallback Callback to call on
  *     incoming messages.
  */
@@ -113,6 +119,7 @@ remoting.XmppConnection.prototype.setIncomingStanzaCallback =
 remoting.XmppConnection.prototype.connect =
     function(server, username, authToken) {
   base.debug.assert(this.state_ == remoting.SignalStrategy.State.NOT_CONNECTED);
+  base.debug.assert(this.onStateChangedCallback_ != null);
 
   this.error_ = remoting.Error.NONE;
   var hostnameAndPort = server.split(':', 2);

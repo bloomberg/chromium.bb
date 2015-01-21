@@ -11,15 +11,12 @@ var remoting = remoting || {};
  * WCS-based SignalStrategy implementation. Used instead of XMPPConnection
  * when XMPP cannot be used (e.g. in V1 app).
  *
- * @param {function(remoting.SignalStrategy.State):void} onStateChangedCallback
- *   Callback to call on state change.
  * @constructor
  * @implements {remoting.SignalStrategy}
  */
-remoting.WcsAdapter =
-    function(onStateChangedCallback) {
-  /** @private */
-  this.onStateChangedCallback_ = onStateChangedCallback;
+remoting.WcsAdapter = function() {
+  /** @type {?function(remoting.SignalStrategy.State):void} @private */
+  this.onStateChangedCallback_ = null;
   /** @type {?function(Element):void} @private */
   this.onIncomingStanzaCallback_ = null;
   /** @private */
@@ -31,6 +28,14 @@ remoting.WcsAdapter =
 }
 
 /**
+ * @param {function(remoting.SignalStrategy.State):void} onStateChangedCallback
+ */
+remoting.WcsAdapter.prototype.setStateChangedCallback = function(
+    onStateChangedCallback) {
+  this.onStateChangedCallback_ = onStateChangedCallback;
+};
+
+/**
  * @param {?function(Element):void} onIncomingStanzaCallback Callback to call on
  *     incoming messages.
  */
@@ -39,9 +44,15 @@ remoting.WcsAdapter.prototype.setIncomingStanzaCallback =
   this.onIncomingStanzaCallback_ = onIncomingStanzaCallback;
 }
 
-remoting.WcsAdapter.prototype.connect = function(server, authToken) {
-  remoting.wcsSandbox.setOnIq(this.onIncomingStanza_.bind(this));
+/**
+ * @param {string} server
+ * @param {string} username
+ * @param {string} authToken
+ */
+remoting.WcsAdapter.prototype.connect = function(server, username, authToken) {
+  base.debug.assert(this.onStateChangedCallback_ != null);
 
+  remoting.wcsSandbox.setOnIq(this.onIncomingStanza_.bind(this));
   remoting.wcsSandbox.connect(this.onWcsConnected_.bind(this),
                               this.onError_.bind(this));
 }

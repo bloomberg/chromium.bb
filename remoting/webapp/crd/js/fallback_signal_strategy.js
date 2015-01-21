@@ -12,39 +12,37 @@ var remoting = remoting || {};
  * primary fails or times out, then the secondary is used. Information about
  * which strategy was used, and why, is returned via |onProgressCallback|.
  *
- * @param {function(
- *             function(remoting.SignalStrategy.State)
- *         ):remoting.SignalStrategy} primaryFactory
- * @param {function(
- *             function(remoting.SignalStrategy.State)
- *         ):remoting.SignalStrategy} secondaryFactory
- * @param {function(remoting.SignalStrategy.State):void} onStateChangedCallback
+ * @param {remoting.SignalStrategy} primary
+ * @param {remoting.SignalStrategy} secondary
  * @param {function(remoting.FallbackSignalStrategy.Progress)}
  *     onProgressCallback
  *
  * @implements {remoting.SignalStrategy}
  * @constructor
  */
-remoting.FallbackSignalStrategy = function(
-    primaryFactory, secondaryFactory,
-    onStateChangedCallback, onProgressCallback) {
+remoting.FallbackSignalStrategy = function(primary,
+                                           secondary,
+                                           onProgressCallback) {
   /**
    * @type {remoting.SignalStrategy}
    * @private
    */
-  this.primary_ = primaryFactory(this.onPrimaryStateChanged_.bind(this));
+  this.primary_ = primary;
+  this.primary_.setStateChangedCallback(this.onPrimaryStateChanged_.bind(this));
 
   /**
    * @type {remoting.SignalStrategy}
    * @private
    */
-  this.secondary_ = secondaryFactory(this.onSecondaryStateChanged_.bind(this));
+  this.secondary_ = secondary;
+  this.secondary_.setStateChangedCallback(
+      this.onSecondaryStateChanged_.bind(this));
 
   /**
-   * @type {function(remoting.SignalStrategy.State)}
+   * @type {?function(remoting.SignalStrategy.State)}
    * @private
    */
-  this.onStateChangedCallback_ = onStateChangedCallback;
+  this.onStateChangedCallback_ = null;
 
   /**
    * @type {function(remoting.FallbackSignalStrategy.Progress)}
@@ -135,6 +133,15 @@ remoting.FallbackSignalStrategy.prototype.dispose = function() {
 };
 
 /**
+ * @param {function(remoting.SignalStrategy.State):void} onStateChangedCallback
+ *   Callback to call on state change.
+ */
+remoting.FallbackSignalStrategy.prototype.setStateChangedCallback = function(
+    onStateChangedCallback) {
+  this.onStateChangedCallback_ = onStateChangedCallback;
+};
+
+/**
  * @param {?function(Element):void} onIncomingStanzaCallback Callback to call on
  *     incoming messages.
  */
@@ -158,6 +165,7 @@ remoting.FallbackSignalStrategy.prototype.setIncomingStanzaCallback =
 remoting.FallbackSignalStrategy.prototype.connect =
     function(server, username, authToken) {
   base.debug.assert(this.state_ == this.State.NOT_CONNECTED);
+  base.debug.assert(this.onStateChangedCallback_ != null);
   this.server_ = server;
   this.username_ = username;
   this.authToken_ = authToken;

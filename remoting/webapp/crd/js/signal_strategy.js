@@ -38,6 +38,13 @@ remoting.SignalStrategy.State = {
 remoting.SignalStrategy.prototype.dispose = function() {};
 
 /**
+ * @param {function(remoting.SignalStrategy.State):void} onStateChangedCallback
+ *   Callback to call on state change.
+ */
+remoting.SignalStrategy.prototype.setStateChangedCallback =
+    function(onStateChangedCallback) {};
+
+/**
  * @param {?function(Element):void} onIncomingStanzaCallback Callback to call on
  *     incoming messages.
  */
@@ -70,28 +77,13 @@ remoting.SignalStrategy.prototype.getJid = function() {};
 
 /**
  * Creates the appropriate signal strategy for the current environment.
- * @param {function(remoting.SignalStrategy.State): void} onStateChangedCallback
  * @return {remoting.SignalStrategy} New signal strategy object.
  */
-remoting.SignalStrategy.create = function(onStateChangedCallback) {
+remoting.SignalStrategy.create = function() {
   // Only use XMPP when TCP API is available and TLS support is enabled. That's
   // not the case for V1 app (socket API is available only to platform apps)
   // and for Chrome releases before 38.
   if (chrome.socket && chrome.socket.secure) {
-    /**
-     * @param {function(remoting.SignalStrategy.State): void} onStateChanged
-     */
-    var xmppFactory = function(onStateChanged) {
-      return new remoting.XmppConnection(onStateChanged);
-    };
-
-    /**
-     * @param {function(remoting.SignalStrategy.State): void} onStateChanged
-     */
-    var wcsFactory = function(onStateChanged) {
-      return new remoting.WcsAdapter(onStateChanged);
-    };
-
     /**
      * @param {remoting.FallbackSignalStrategy.Progress} progress
      */
@@ -99,10 +91,11 @@ remoting.SignalStrategy.create = function(onStateChangedCallback) {
       console.log('FallbackSignalStrategy progress: ' + progress);
     };
 
-    return new remoting.FallbackSignalStrategy(
-        xmppFactory, wcsFactory, onStateChangedCallback, progressCallback);
+    return new remoting.FallbackSignalStrategy(new remoting.XmppConnection(),
+                                               new remoting.WcsAdapter(),
+                                               progressCallback);
 
   } else {
-    return new remoting.WcsAdapter(onStateChangedCallback);
+    return new remoting.WcsAdapter();
   }
 };

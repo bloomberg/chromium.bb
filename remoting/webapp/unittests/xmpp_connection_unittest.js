@@ -29,7 +29,8 @@ module('XmppConnection', {
     sinon.stub(chrome.socket, 'destroy');
     sinon.stub(chrome.socket, 'secure');
 
-    connection = new remoting.XmppConnection(onStateChange);
+    connection = new remoting.XmppConnection();
+    connection.setStateChangedCallback(onStateChange);
     connection.setIncomingStanzaCallback(onStanza);
   },
 

@@ -554,7 +554,8 @@ remoting.HostController.prototype.getClientBaseJid_ = function(
     }
   };
 
-  signalStrategy = remoting.SignalStrategy.create(onState);
+  signalStrategy = remoting.SignalStrategy.create();
+  signalStrategy.setStateChangedCallback(onState);
 
   /** @param {string} token */
   function connectSignalingWithToken(token) {
