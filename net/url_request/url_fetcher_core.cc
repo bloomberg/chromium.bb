@@ -137,10 +137,8 @@ void URLFetcherCore::Stop() {
 
 void URLFetcherCore::SetUploadData(const std::string& upload_content_type,
                                    const std::string& upload_content) {
+  AssertHasNoUploadData();
   DCHECK(!is_chunked_upload_);
-  DCHECK(!upload_content_set_);
-  DCHECK(upload_content_.empty());
-  DCHECK(upload_file_path_.empty());
   DCHECK(upload_content_type_.empty());
 
   // Empty |upload_content_type| is allowed iff the |upload_content| is empty.
@@ -157,10 +155,8 @@ void URLFetcherCore::SetUploadFilePath(
     uint64 range_offset,
     uint64 range_length,
     scoped_refptr<base::TaskRunner> file_task_runner) {
+  AssertHasNoUploadData();
   DCHECK(!is_chunked_upload_);
-  DCHECK(!upload_content_set_);
-  DCHECK(upload_content_.empty());
-  DCHECK(upload_file_path_.empty());
   DCHECK_EQ(upload_range_offset_, 0ULL);
   DCHECK_EQ(upload_range_length_, 0ULL);
   DCHECK(upload_content_type_.empty());
@@ -174,10 +170,23 @@ void URLFetcherCore::SetUploadFilePath(
   upload_content_set_ = true;
 }
 
+void URLFetcherCore::SetUploadStreamFactory(
+    const std::string& upload_content_type,
+    const URLFetcher::CreateUploadStreamCallback& factory) {
+  AssertHasNoUploadData();
+  DCHECK(!is_chunked_upload_);
+  DCHECK(upload_content_type_.empty());
+
+  upload_content_type_ = upload_content_type;
+  upload_stream_factory_ = factory;
+  upload_content_set_ = true;
+}
+
 void URLFetcherCore::SetChunkedUpload(const std::string& content_type) {
-  DCHECK(is_chunked_upload_ ||
-         (upload_content_type_.empty() &&
-          upload_content_.empty()));
+  if (!is_chunked_upload_) {
+    AssertHasNoUploadData();
+    DCHECK(upload_content_type_.empty());
+  }
 
   // Empty |content_type| is not allowed here, because it is impossible
   // to ensure non-empty upload content as it is not yet supplied.
@@ -605,6 +614,10 @@ void URLFetcherCore::StartURLRequest() {
                                         base::Time()));
         request_->set_upload(
             ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+      } else if (!upload_stream_factory_.is_null()) {
+        scoped_ptr<UploadDataStream> stream = upload_stream_factory_.Run();
+        DCHECK(stream);
+        request_->set_upload(stream.Pass());
       }
 
       current_upload_bytes_ = -1;
@@ -955,6 +968,13 @@ void URLFetcherCore::InformDelegateDownloadProgressInDelegateThread(
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnURLFetchDownloadProgress(fetcher_, current, total);
+}
+
+void URLFetcherCore::AssertHasNoUploadData() const {
+  DCHECK(!upload_content_set_);
+  DCHECK(upload_content_.empty());
+  DCHECK(upload_file_path_.empty());
+  DCHECK(upload_stream_factory_.is_null());
 }
 
 }  // namespace net

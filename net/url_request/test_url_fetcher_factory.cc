@@ -15,6 +15,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_fetcher_impl.h"
@@ -71,6 +72,11 @@ void TestURLFetcher::SetUploadFilePath(
     uint64 range_length,
     scoped_refptr<base::TaskRunner> file_task_runner) {
   upload_file_path_ = file_path;
+}
+
+void TestURLFetcher::SetUploadStreamFactory(
+    const std::string& upload_content_type,
+    const CreateUploadStreamCallback& factory) {
 }
 
 void TestURLFetcher::SetChunkedUpload(const std::string& upload_content_type) {

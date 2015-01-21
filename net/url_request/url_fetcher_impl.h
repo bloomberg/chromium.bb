@@ -45,6 +45,9 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
       uint64 range_offset,
       uint64 range_length,
       scoped_refptr<base::TaskRunner> file_task_runner) override;
+  void SetUploadStreamFactory(
+      const std::string& upload_content_type,
+      const CreateUploadStreamCallback& callback) override;
   void SetChunkedUpload(const std::string& upload_content_type) override;
   void AppendChunkToUpload(const std::string& data,
                            bool is_last_chunk) override;

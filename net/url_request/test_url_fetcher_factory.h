@@ -95,6 +95,9 @@ class TestURLFetcher : public URLFetcher {
       uint64 range_offset,
       uint64 range_length,
       scoped_refptr<base::TaskRunner> file_task_runner) override;
+  void SetUploadStreamFactory(
+      const std::string& upload_content_type,
+      const CreateUploadStreamCallback& callback) override;
   void SetChunkedUpload(const std::string& upload_content_type) override;
   // Overriden to cache the chunks uploaded. Caller can read back the uploaded
   // chunks with the upload_chunks() accessor.

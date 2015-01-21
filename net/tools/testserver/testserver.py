@@ -674,7 +674,12 @@ class TestPageHandler(testserver_base.BasePageHandler):
     if not self._ShouldHandleRequest("/echo"):
       return False
 
-    self.send_response(200)
+    _, _, _, _, query, _ = urlparse.urlparse(self.path)
+    query_params = cgi.parse_qs(query, True)
+    if 'status' in query_params:
+      self.send_response(int(query_params['status'][0]))
+    else:
+      self.send_response(200)
     self.send_header('Content-Type', 'text/html')
     self.end_headers()
     self.wfile.write(self.ReadRequestBody())

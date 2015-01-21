@@ -17,7 +17,11 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_element_reader.h"
+#include "net/base/upload_file_element_reader.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -81,7 +85,7 @@ class ThrottlingTestURLRequestContextGetter
 class URLFetcherTest : public testing::Test,
                        public URLFetcherDelegate {
  public:
-  URLFetcherTest() : fetcher_(NULL) {}
+  URLFetcherTest() : fetcher_(NULL), expected_status_code_(200) {}
 
   static int GetNumFetcherCores() {
     return URLFetcherImpl::GetNumFetcherCores();
@@ -135,6 +139,7 @@ class URLFetcherTest : public testing::Test,
 
   URLFetcherImpl* fetcher_;
   scoped_ptr<TestURLRequestContext> context_;
+  int expected_status_code_;
 };
 
 // A test fixture that uses a MockHostResolver, so that name resolutions can
@@ -166,7 +171,7 @@ void URLFetcherTest::CreateFetcher(const GURL& url) {
 
 void URLFetcherTest::OnURLFetchComplete(const URLFetcher* source) {
   EXPECT_TRUE(source->GetStatus().is_success());
-  EXPECT_EQ(200, source->GetResponseCode());  // HTTP OK
+  EXPECT_EQ(expected_status_code_, source->GetResponseCode());  // HTTP OK
 
   std::string data;
   EXPECT_TRUE(source->GetResponseAsString(&data));
@@ -257,6 +262,34 @@ class URLFetcherPostFileTest : public URLFetcherTest {
   base::FilePath path_;
   uint64 range_offset_;
   uint64 range_length_;
+};
+
+class URLFetcherSetUploadFactoryTest : public URLFetcherTest {
+ public:
+  URLFetcherSetUploadFactoryTest() : create_stream_count_(0) {}
+
+  // URLFetcherTest:
+  void CreateFetcher(const GURL& url) override;
+
+  // URLFetcherDelegate:
+  void OnURLFetchComplete(const URLFetcher* source) override;
+
+  // Callback passed to URLFetcher to create upload stream.
+  scoped_ptr<UploadDataStream> CreateUploadStream() {
+    ++create_stream_count_;
+    const std::string str("bobsyeruncle\n");
+    std::vector<char> buffer(str.begin(), str.end());
+    return ElementsUploadDataStream::CreateWithReader(
+        scoped_ptr<UploadElementReader>(
+            new UploadOwnedBytesElementReader(&buffer)),
+        0);
+  }
+
+  size_t create_stream_count() const { return create_stream_count_; }
+
+ private:
+  // Count of calling CreateStream.
+  size_t create_stream_count_;
 };
 
 // Version of URLFetcherTest that does a POST instead with empty upload body
@@ -568,6 +601,27 @@ void URLFetcherPostFileTest::OnURLFetchComplete(const URLFetcher* source) {
   std::string data;
   EXPECT_TRUE(source->GetResponseAsString(&data));
   EXPECT_EQ(expected.substr(range_offset_, expected_size), data);
+  URLFetcherTest::OnURLFetchComplete(source);
+}
+
+void URLFetcherSetUploadFactoryTest::CreateFetcher(const GURL& url) {
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy().get(), request_context()));
+  fetcher_->SetUploadStreamFactory(
+      "text/plain",
+      base::Bind(&URLFetcherSetUploadFactoryTest::CreateUploadStream,
+                 base::Unretained(this)));
+  fetcher_->SetAutomaticallyRetryOn5xx(true);
+  fetcher_->SetMaxRetriesOn5xx(1);
+  fetcher_->Start();
+}
+
+void URLFetcherSetUploadFactoryTest::OnURLFetchComplete(
+    const URLFetcher* source) {
+  std::string data;
+  EXPECT_TRUE(source->GetResponseAsString(&data));
+  EXPECT_EQ("bobsyeruncle\n", data);
   URLFetcherTest::OnURLFetchComplete(source);
 }
 
@@ -1083,6 +1137,28 @@ TEST_F(URLFetcherPostFileTest, Range) {
 
   CreateFetcher(test_server.GetURL("echo"));
   base::MessageLoop::current()->Run();
+}
+
+TEST_F(URLFetcherSetUploadFactoryTest, Basic) {
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTP,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  CreateFetcher(test_server.GetURL("echo"));
+  base::MessageLoop::current()->Run();
+  ASSERT_EQ(1u, create_stream_count());
+}
+
+TEST_F(URLFetcherSetUploadFactoryTest, Retry) {
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTP,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+  expected_status_code_ = 500;
+  CreateFetcher(test_server.GetURL("echo?status=500"));
+  base::MessageLoop::current()->Run();
+  ASSERT_EQ(2u, create_stream_count());
 }
 
 TEST_F(URLFetcherEmptyPostTest, Basic) {

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
+#include "net/base/upload_data_stream.h"
 #include "net/url_request/url_fetcher_core.h"
 #include "net/url_request/url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_response_writer.h"
@@ -41,6 +42,12 @@ void URLFetcherImpl::SetUploadFilePath(
                            range_offset,
                            range_length,
                            file_task_runner);
+}
+
+void URLFetcherImpl::SetUploadStreamFactory(
+    const std::string& upload_content_type,
+    const CreateUploadStreamCallback& callback) {
+  core_->SetUploadStreamFactory(upload_content_type, callback);
 }
 
 void URLFetcherImpl::SetChunkedUpload(const std::string& content_type) {

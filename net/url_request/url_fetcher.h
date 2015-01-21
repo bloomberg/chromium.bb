@@ -92,6 +92,11 @@ class NET_EXPORT URLFetcher {
   // base::SupportsUserData::Data object every time it's called.
   typedef base::Callback<base::SupportsUserData::Data*()> CreateDataCallback;
 
+  // Used by SetUploadStreamFactory. The callback should assign a fresh upload
+  // data stream every time it's called.
+  typedef base::Callback<scoped_ptr<UploadDataStream>()>
+      CreateUploadStreamCallback;
+
   virtual ~URLFetcher();
 
   // |url| is the URL to send the request to.
@@ -148,6 +153,16 @@ class NET_EXPORT URLFetcher {
       uint64 range_offset,
       uint64 range_length,
       scoped_refptr<base::TaskRunner> file_task_runner) = 0;
+
+  // Sets data only needed by POSTs.  All callers making POST requests should
+  // call one of the SetUpload* methods before the request is started.
+  // |upload_content_type| is the MIME type of the content, while |callback| is
+  // the callback to create the upload data stream (the Content-Length header
+  // value will be set to the length of this data). |callback| may be called
+  // mutliple times if the request is retried.
+  virtual void SetUploadStreamFactory(
+      const std::string& upload_content_type,
+      const CreateUploadStreamCallback& callback) = 0;
 
   // Indicates that the POST data is sent via chunked transfer encoding.
   // This may only be called before calling Start().
