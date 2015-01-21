@@ -128,7 +128,7 @@ var appWindowPromise = null;
  * application window.
  * @type {Promise}
  */
-var reopenEntriesPromsie = null;
+var reopenEntriesPromise = null;
 
 /**
  * Launches the application with entries.
@@ -141,13 +141,13 @@ var reopenEntriesPromsie = null;
 function launch(selectedEntriesPromise) {
   // If there is the previous window, close the window.
   if (appWindowPromise) {
-    reopenEntriesPromsie = selectedEntriesPromise;
+    reopenEntriesPromise = selectedEntriesPromise;
     appWindowPromise.then(function(appWindow) {
       appWindow.close();
     });
     return Promise.reject('The window has already opened.');
   }
-  reopenEntriesPromsie = null;
+  reopenEntriesPromise = null;
 
   // Create a new window.
   appWindowPromise = new Promise(function(fulfill) {
@@ -166,12 +166,12 @@ function launch(selectedEntriesPromise) {
               'load', fulfill.bind(null, appWindow));
           appWindow.onClosed.addListener(function() {
             appWindowPromise = null;
-            if (reopenEntriesPromsie) {
+            if (reopenEntriesPromise) {
               // TODO(hirono): This is workaround for crbug.com/442217. Remove
               // this after fixing it.
               setTimeout(function() {
-                if (reopenEntriesPromsie)
-                  launch(reopenEntriesPromsie);
+                if (reopenEntriesPromise)
+                  launch(reopenEntriesPromise);
               }, 500);
             }
           });

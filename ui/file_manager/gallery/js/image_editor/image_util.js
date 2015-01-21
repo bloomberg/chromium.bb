@@ -146,20 +146,6 @@ ImageRect.createFromWidthAndHeight = function(width, height) {
   return new ImageRect(0, 0, width, height);
 };
 
-/**
- * Creates an image rect with left, top, width and height.
- * @param {number} left Left.
- * @param {number} top Top.
- * @param {number} width Width.
- * @param {number} height Height.
- * @return {!ImageRect}
- *
- * TODO(yawano): Remove createWith calls and call constructor directly.
- */
-ImageRect.createWith = function(left, top, width, height) {
-  return new ImageRect(left, top, width, height);
-};
-
 ImageRect.prototype = /** @struct */ ({
   // TODO(yawano): Change getters to methods (e.g. getRight()).
 

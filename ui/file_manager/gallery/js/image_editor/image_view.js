@@ -254,7 +254,7 @@ ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
   var deviceBounds = this.viewport_.getDeviceBounds();
   var scaleX = deviceBounds.width / canvas.width;
   var scaleY = deviceBounds.height / canvas.height;
-  var deviceRect = ImageRect.createWith(
+  var deviceRect = new ImageRect(
       imageRect.left * scaleX,
       imageRect.top * scaleY,
       imageRect.width * scaleX,

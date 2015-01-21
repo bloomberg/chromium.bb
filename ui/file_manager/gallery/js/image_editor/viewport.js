@@ -323,7 +323,7 @@ Viewport.prototype.screenToImageY = function(y) {
  * @return {!ImageRect} Rectangle in image coordinates.
  */
 Viewport.prototype.screenToImageRect = function(rect) {
-  return ImageRect.createWith(
+  return new ImageRect(
       this.screenToImageX(rect.left),
       this.screenToImageY(rect.top),
       this.screenToImageSize(rect.width),
@@ -363,7 +363,7 @@ Viewport.prototype.imageToScreenY = function(y) {
  * @return {!ImageRect} Rectangle in screen coordinates.
  */
 Viewport.prototype.imageToScreenRect = function(rect) {
-  return ImageRect.createWith(
+  return new ImageRect(
       this.imageToScreenX(rect.left),
       this.imageToScreenY(rect.top),
       Math.round(this.imageToScreenSize(rect.width)),
@@ -381,7 +381,7 @@ Viewport.prototype.imageToScreenRect = function(rect) {
  */
 Viewport.prototype.getCenteredRect_ = function(
     width, height, offsetX, offsetY) {
-  return ImageRect.createWith(
+  return new ImageRect(
       ~~((this.screenBounds_.width - width) / 2) + offsetX,
       ~~((this.screenBounds_.height - height) / 2) + offsetY,
       width,
@@ -449,7 +449,7 @@ Viewport.prototype.update_ = function() {
       this.imageBoundsOnScreen_.right, this.screenBounds_.width);
   var bottom = Math.min(
       this.imageBoundsOnScreen_.bottom, this.screenBounds_.height);
-  this.imageBoundsOnScreenClipped_ = ImageRect.createWith(
+  this.imageBoundsOnScreenClipped_ = new ImageRect(
       left, top, right - left, bottom - top);
 };
 
