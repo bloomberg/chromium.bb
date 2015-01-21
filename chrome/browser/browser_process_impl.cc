@@ -1115,11 +1115,6 @@ void BrowserProcessImpl::CreateGCMDriver() {
       local_state(),
       store_path,
       system_request_context());
-  // Sign-in is not required for device-level GCM usage. So we just call
-  // OnSignedIn to assume always signed-in. Note that GCM will not be started
-  // at this point since no one has asked for it yet.
-  // TODO(jianli): To be removed when sign-in enforcement is dropped.
-  gcm_driver_->OnSignedIn();
 #endif  // defined(OS_ANDROID)
 }
 
