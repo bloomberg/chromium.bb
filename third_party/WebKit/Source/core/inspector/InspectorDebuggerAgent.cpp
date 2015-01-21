@@ -131,13 +131,13 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_skipAllPauses(false)
     , m_skipContentScripts(false)
     , m_cachedSkipStackGeneration(0)
-    , m_promiseTracker(PromiseTracker::create())
     , m_lastAsyncOperationId(0)
     , m_maxAsyncCallStackDepth(0)
     , m_currentAsyncCallChain(nullptr)
     , m_nestedAsyncCallCount(0)
     , m_performingAsyncStepIn(false)
 {
+    m_promiseTracker = PromiseTracker::create(this);
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
 }
 
@@ -1057,6 +1057,12 @@ void InspectorDebuggerAgent::getPromiseById(ErrorString* errorString, int promis
     }
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(value.scriptState());
     promise = injectedScript.wrapObject(value, objectGroup ? *objectGroup : "");
+}
+
+void InspectorDebuggerAgent::didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum eventType, PassRefPtr<TypeBuilder::Debugger::PromiseDetails> promise)
+{
+    if (m_frontend)
+        m_frontend->promiseUpdated(eventType, promise);
 }
 
 const AsyncCallChain* InspectorDebuggerAgent::currentAsyncCallChain() const

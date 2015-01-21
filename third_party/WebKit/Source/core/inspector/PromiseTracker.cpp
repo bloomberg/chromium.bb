@@ -44,9 +44,44 @@ public:
     }
 #endif
 
+    PassRefPtr<PromiseDetails> toPromiseDetails() const
+    {
+        PromiseDetails::Status::Enum status;
+        if (!m_status)
+            status = PromiseDetails::Status::Pending;
+        else if (m_status == 1)
+            status = PromiseDetails::Status::Resolved;
+        else
+            status = PromiseDetails::Status::Rejected;
+        RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create()
+            .setId(m_promiseId)
+            .setStatus(status);
+        if (m_parentPromiseId)
+            promiseDetails->setParentId(m_parentPromiseId);
+        if (m_creationStack)
+            promiseDetails->setCallFrame(m_creationStack->at(0).buildInspectorObject());
+        if (m_creationTime)
+            promiseDetails->setCreationTime(m_creationTime);
+        if (m_settlementTime)
+            promiseDetails->setSettlementTime(m_settlementTime);
+        if (m_creationStack && m_fullCreationStack) {
+            promiseDetails->setCreationStack(m_creationStack->buildInspectorArray());
+            RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = m_creationStack->asyncCallStack();
+            if (asyncCallStack)
+                promiseDetails->setAsyncCreationStack(asyncCallStack->buildInspectorObject());
+        }
+        if (m_settlementStack) {
+            promiseDetails->setSettlementStack(m_settlementStack->buildInspectorArray());
+            RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = m_settlementStack->asyncCallStack();
+            if (asyncCallStack)
+                promiseDetails->setAsyncSettlementStack(asyncCallStack->buildInspectorObject());
+        }
+        return promiseDetails.release();
+    }
+
     void trace(Visitor* visitor)
     {
-        visitor->trace(m_callStack);
+        visitor->trace(m_creationStack);
         visitor->trace(m_settlementStack);
     }
 
@@ -60,6 +95,7 @@ private:
         , m_promise(scriptState->isolate(), promise)
         , m_parentPromiseId(0)
         , m_status(0)
+        , m_fullCreationStack(false)
         , m_creationTime(0)
         , m_settlementTime(0)
 #if !ENABLE(OILPAN)
@@ -74,8 +110,9 @@ private:
     ScopedPersistent<v8::Object> m_promise;
     int m_parentPromiseId;
     int m_status;
-    RefPtrWillBeMember<ScriptCallStack> m_callStack;
+    RefPtrWillBeMember<ScriptCallStack> m_creationStack;
     RefPtrWillBeMember<ScriptCallStack> m_settlementStack;
+    bool m_fullCreationStack;
     ScopedPersistent<v8::Object> m_parentPromise;
     double m_creationTime;
     double m_settlementTime;
@@ -121,6 +158,10 @@ public:
         WeakPtrWillBeRawPtr<PromiseTracker::PromiseData> promiseData = wrapper->m_data;
         if (!promiseData || !wrapper->m_tracker)
             return;
+
+        PromiseTracker::Listener* listener = wrapper->m_tracker->listener();
+        if (listener)
+            listener->didUpdatePromise(InspectorFrontend::Debugger::EventType::Gc, promiseData->toPromiseDetails());
 
         wrapper->m_tracker->promiseIdToDataMap().remove(promiseData->promiseId());
 
@@ -168,10 +209,11 @@ private:
 
 }
 
-PromiseTracker::PromiseTracker()
+PromiseTracker::PromiseTracker(Listener* listener)
     : m_circularSequentialId(0)
     , m_isEnabled(false)
     , m_captureStacks(false)
+    , m_listener(listener)
 {
 }
 
@@ -182,6 +224,7 @@ void PromiseTracker::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_promiseDataMap);
     visitor->trace(m_promiseIdToDataMap);
+    visitor->trace(m_listener);
 #endif
 }
 
@@ -246,6 +289,7 @@ void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Loca
     ASSERT(scriptState->contextIsValid());
 
     ScriptState::Scope scope(scriptState);
+    InspectorFrontend::Debugger::EventType::Enum eventType = InspectorFrontend::Debugger::EventType::Update;
 
     RefPtrWillBeRawPtr<PromiseData> data = createPromiseDataIfNeeded(scriptState, promise);
     if (!parentPromise.IsEmpty() && parentPromise->IsObject()) {
@@ -257,12 +301,16 @@ void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Loca
         ASSERT(!data->m_status);
         data->m_status = status;
         if (!status) {
-            if (!data->m_creationTime)
+            if (!data->m_creationTime) {
                 data->m_creationTime = currentTimeMS();
-            if (!data->m_callStack) {
+                eventType = InspectorFrontend::Debugger::EventType::New;
+            }
+            if (!data->m_creationStack) {
                 RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(m_captureStacks ? ScriptCallStack::maxCallStackSizeToCapture : 1, true);
-                if (stack && stack->size())
-                    data->m_callStack = stack;
+                if (stack && stack->size()) {
+                    data->m_creationStack = stack;
+                    data->m_fullCreationStack = m_captureStacks;
+                }
             }
         } else if (!data->m_settlementTime) {
             data->m_settlementTime = currentTimeMS();
@@ -273,53 +321,20 @@ void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Loca
             }
         }
     }
+
+    if (m_listener)
+        m_listener->didUpdatePromise(eventType, data->toPromiseDetails());
 }
 
 PassRefPtr<Array<PromiseDetails> > PromiseTracker::promises()
 {
     ASSERT(isEnabled());
-
     RefPtr<Array<PromiseDetails> > result = Array<PromiseDetails>::create();
     for (auto& data : m_promiseDataMap) {
         PromiseDataVector* vector = &data.value;
-        for (size_t index = 0; index < vector->size(); ++index) {
-            RefPtrWillBeRawPtr<PromiseData> data = vector->at(index);
-            PromiseDetails::Status::Enum status;
-            if (!data->m_status)
-                status = PromiseDetails::Status::Pending;
-            else if (data->m_status == 1)
-                status = PromiseDetails::Status::Resolved;
-            else
-                status = PromiseDetails::Status::Rejected;
-            RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create()
-                .setId(data->m_promiseId)
-                .setStatus(status);
-            if (data->m_parentPromiseId)
-                promiseDetails->setParentId(data->m_parentPromiseId);
-            if (data->m_callStack)
-                promiseDetails->setCallFrame(data->m_callStack->at(0).buildInspectorObject());
-            if (data->m_creationTime)
-                promiseDetails->setCreationTime(data->m_creationTime);
-            if (data->m_settlementTime)
-                promiseDetails->setSettlementTime(data->m_settlementTime);
-            if (m_captureStacks) {
-                if (data->m_callStack) {
-                    promiseDetails->setCreationStack(data->m_callStack->buildInspectorArray());
-                    RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = data->m_callStack->asyncCallStack();
-                    if (asyncCallStack)
-                        promiseDetails->setAsyncCreationStack(asyncCallStack->buildInspectorObject());
-                }
-                if (data->m_settlementStack) {
-                    promiseDetails->setSettlementStack(data->m_settlementStack->buildInspectorArray());
-                    RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = data->m_settlementStack->asyncCallStack();
-                    if (asyncCallStack)
-                        promiseDetails->setAsyncSettlementStack(asyncCallStack->buildInspectorObject());
-                }
-            }
-            result->addItem(promiseDetails);
-        }
+        for (size_t index = 0; index < vector->size(); ++index)
+            result->addItem(vector->at(index)->toPromiseDetails());
     }
-
     return result.release();
 }
 

@@ -66,7 +66,8 @@ typedef String ErrorString;
 class InspectorDebuggerAgent
     : public InspectorBaseAgent<InspectorDebuggerAgent>
     , public ScriptDebugListener
-    , public InspectorBackendDispatcher::DebuggerCommandHandler {
+    , public InspectorBackendDispatcher::DebuggerCommandHandler
+    , public PromiseTracker::Listener {
     WTF_MAKE_NONCOPYABLE(InspectorDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -190,6 +191,9 @@ public:
     };
     void addAsyncCallTrackingListener(AsyncCallTrackingListener*);
     void removeAsyncCallTrackingListener(AsyncCallTrackingListener*);
+
+    // PromiseTracker::Listener
+    void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>) final;
 
 protected:
     explicit InspectorDebuggerAgent(InjectedScriptManager*);

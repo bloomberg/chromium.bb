@@ -5,6 +5,7 @@
 #ifndef PromiseTracker_h
 #define PromiseTracker_h
 
+#include "core/InspectorFrontend.h"
 #include "core/InspectorTypeBuilder.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
@@ -22,9 +23,16 @@ class PromiseTracker final : public NoBaseWillBeGarbageCollected<PromiseTracker>
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PromiseTracker);
 public:
-    static PassOwnPtrWillBeRawPtr<PromiseTracker> create()
+    class Listener : public WillBeGarbageCollectedMixin {
+    public:
+        virtual ~Listener() { }
+        virtual void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>) = 0;
+    };
+    Listener* listener() const { return m_listener; }
+
+    static PassOwnPtrWillBeRawPtr<PromiseTracker> create(Listener* listener)
     {
-        return adoptPtrWillBeNoop(new PromiseTracker());
+        return adoptPtrWillBeNoop(new PromiseTracker(listener));
     }
 
     bool isEnabled() const { return m_isEnabled; }
@@ -49,7 +57,7 @@ public:
     PromiseIdToDataMap& promiseIdToDataMap() { return m_promiseIdToDataMap; }
 
 private:
-    PromiseTracker();
+    explicit PromiseTracker(Listener*);
 
     int circularSequentialId();
     PassRefPtrWillBeRawPtr<PromiseData> createPromiseDataIfNeeded(ScriptState*, v8::Local<v8::Object> promise);
@@ -59,6 +67,7 @@ private:
     bool m_isEnabled;
     bool m_captureStacks;
     PromiseIdToDataMap m_promiseIdToDataMap;
+    RawPtrWillBeMember<Listener> m_listener;
 };
 
 } // namespace blink
