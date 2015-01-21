@@ -40,7 +40,7 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
         '../third_party/libjingle/libjingle.gyp:libpeerconnection',
-        '../third_party/webrtc/base/base.gyp:webrtc_base',
+        '../third_party/webrtc/base/base.gyp:rtc_base',
         'devtools_bridge_jni_headers',
       ],
     },
