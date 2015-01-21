@@ -12,6 +12,20 @@ async_test(function(t) {
       .catch(unreached_rejection(t));
   }, 'Fetch invalid URL');
 
+// https://fetch.spec.whatwg.org/#fetching
+// Step 4:
+// request's url's scheme is not one of "http" and "https"
+//   A network error.
+async_test(function(t) {
+    fetch('ftp://localhost/')
+      .then(
+        t.unreached_func('fetch of non-HTTP(S) CORS must fail'),
+        function(e) {
+          t.done();
+        })
+      .catch(unreached_rejection(t));
+  }, 'fetch non-HTTP(S) CORS');
+
 async_test(function(t) {
     fetch('/serviceworker/resources/fetch-status.php?status=200')
       .then(function(response) {
