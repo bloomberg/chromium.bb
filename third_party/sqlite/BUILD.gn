@@ -45,6 +45,15 @@ source_set("sqlite") {
       "SQLITE_NO_SYNC",
     ]
   }
+  if (is_posix) {
+    defines += [
+      # Allow xSleep() call on Unix to use usleep() rather than sleep(), so it
+      # will have microsecond precision.  Should only affect contended databases
+      # via the busy callback.  Browser profile databases are mostly exclusive,
+      # but renderer databases may allow for contention.
+      "HAVE_USLEEP=1",
+    ]
+  }
 
   include_dirs = [
     "amalgamation",
@@ -69,7 +78,6 @@ source_set("sqlite") {
     libs = [ "CoreFoundation.framework" ]
   } else if (is_android) {
     defines += [
-      "HAVE_USLEEP=1",
       "SQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576",
       "SQLITE_DEFAULT_AUTOVACUUM=1",
       "SQLITE_TEMP_STORE=3",

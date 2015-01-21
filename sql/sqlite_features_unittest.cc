@@ -112,4 +112,21 @@ TEST_F(SQLiteFeaturesTest, FTS3_Prefix) {
 }
 #endif
 
+#if !defined(USE_SYSTEM_SQLITE)
+// Verify that Chromium's SQLite is compiled with HAVE_USLEEP defined.  With
+// HAVE_USLEEP, SQLite uses usleep() with millisecond granularity.  Otherwise it
+// uses sleep() with second granularity.
+TEST_F(SQLiteFeaturesTest, UsesUsleep) {
+  base::TimeTicks before = base::TimeTicks::Now();
+  sqlite3_sleep(1);
+  base::TimeDelta delta = base::TimeTicks::Now() - before;
+
+  // It is not impossible for this to be over 1000 if things are compiled the
+  // right way.  But it is very unlikely, most platforms seem to be around
+  // <TBD>.
+  LOG(ERROR) << "Milliseconds: " << delta.InMilliseconds();
+  EXPECT_LT(delta.InMilliseconds(), 1000);
+}
+#endif
+
 }  // namespace

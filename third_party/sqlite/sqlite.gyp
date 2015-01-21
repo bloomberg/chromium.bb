@@ -33,6 +33,16 @@
                 ],
           },
         ],
+        ['os_posix == 1', {
+          'defines': [
+            # Allow xSleep() call on Unix to use usleep() rather than sleep().
+            # Microsecond precision is better than second precision.  Should
+            # only affect contended databases via the busy callback.  Browser
+            # profile databases are mostly exclusive, but renderer databases may
+            # allow for contention.
+            'HAVE_USLEEP=1',
+          ],
+        }],
         ['use_system_sqlite', {
           'type': 'none',
           'direct_dependent_settings': {
@@ -132,7 +142,6 @@
             }],
             ['OS == "android"', {
               'defines': [
-                'HAVE_USLEEP=1',
                 'SQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576',
                 'SQLITE_DEFAULT_AUTOVACUUM=1',
                 'SQLITE_TEMP_STORE=3',
