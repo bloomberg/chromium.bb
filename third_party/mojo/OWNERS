@@ -1,0 +1,7 @@
+# The code underneath src/ is being canonically developed in the mojo
+# repository; please land changes there or they will be blown away by the next
+# sync.
+# See https://groups.google.com/a/chromium.org/d/msg/chromium-dev/nAwEbgCrUio/73AA2fnfcpEJ
+# for more details.
+ben@chromium.org
+jamesr@chromium.org
