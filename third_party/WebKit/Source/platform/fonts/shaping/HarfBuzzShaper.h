@@ -79,6 +79,7 @@ private:
         void applyShapeResult(hb_buffer_t*);
         void setGlyphAndPositions(unsigned index, uint16_t glyphId, float advance, float offsetX, float offsetY);
         void setWidth(float width) { m_width = width; }
+        void addAdvance(unsigned index, float advance);
 
         int characterIndexForXPosition(float targetX);
         float xPositionForOffset(unsigned offset);
@@ -116,10 +117,10 @@ private:
         float m_width;
     };
 
-    float determineWordBreakSpacing();
+    float nextExpansionPerOpportunity();
     // setPadding sets a number of pixels to be distributed across the TextRun.
     // WebKit uses this to justify text.
-    void setPadding(int);
+    void setExpansion(float);
 
     void setFontFeatures();
 
@@ -128,7 +129,8 @@ private:
     bool fillGlyphBuffer(GlyphBuffer*);
     float fillGlyphBufferFromHarfBuzzRun(GlyphBuffer*, HarfBuzzRun*, float initialAdvance);
     float fillGlyphBufferForTextEmphasis(GlyphBuffer*, HarfBuzzRun*, float initialAdvance);
-    void setGlyphPositionsForHarfBuzzRun(HarfBuzzRun*, hb_buffer_t*);
+    void setGlyphPositionsForHarfBuzzRun(HarfBuzzRun*, hb_buffer_t*, HarfBuzzRun* previousRun);
+    float adjustSpacing(HarfBuzzRun*, size_t glyphIndex, unsigned currentCharacterIndex, HarfBuzzRun* previousRun, float& offsetX, float& totalAdvance);
     void addHarfBuzzRun(unsigned startCharacter, unsigned endCharacter, const SimpleFontData*, UScriptCode);
 
     const Font* m_font;
@@ -137,10 +139,11 @@ private:
     const TextRun& m_run;
 
     float m_wordSpacingAdjustment; // Delta adjustment (pixels) for each word break.
-    float m_padding; // Pixels to be distributed over the line at word breaks.
-    float m_padPerWordBreak; // Pixels to be added to each word break.
-    float m_padError; // m_padPerWordBreak might have a fractional component. Since we only add a whole number of padding pixels at each word break we accumulate error. This is the number of pixels that we are behind so far.
+    float m_expansion; // Pixels to be distributed over the line at word breaks.
     float m_letterSpacing; // Pixels to be added after each glyph.
+    float m_expansionPerOpportunity; // Pixels to be added to each expansion opportunity.
+    unsigned m_expansionOpportunityCount;
+    bool m_isAfterExpansion;
 
     Vector<hb_feature_t, 4> m_features;
     Vector<OwnPtr<HarfBuzzRun>, 16> m_harfBuzzRuns;

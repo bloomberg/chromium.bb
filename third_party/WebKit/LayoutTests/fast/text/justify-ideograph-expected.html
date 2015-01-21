@@ -4,28 +4,47 @@
     font-family:cssot;
     src:url(../../third_party/adobe-fonts/CSSFWOrientationTest.otf);
 }
+.container {
+    display: inline-block;
+}
+#complex {
+    text-rendering: optimizelegibility
+}
 dd {
+    border:black solid thin;
     font-family:Ahem, cssot;
     white-space:pre;
 }
 </style>
+<div id="simple" class="container">
+<h2>Simple</h2>
 <dl>
 <dt>Ideographic, Kana, CJK symbols</dt>
-<dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>&#x56FD;&#xFEFF;WWWWW</dd>
-<dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>WWWWWW</dd>
-<dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>WWWWWW</dd>
-<dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; W<br>WWWWWW</dd>
+<dd style="width:9em;">&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>&#x56FD;&#xFEFF;WWWWWWWW</dd>
+<dd style="width:9em;">&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>WWWWWWWWW</dd>
+<dd style="width:9em;">&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>WWWWWWWWW</dd>
+<dd style="width:9em;">&#x56FD; &#x56FD; &#x3042; &#xFF01; W<br>WWWWWWWWW</dd>
+<dd style="width:9em;">&#x20B9F; &#x20B9F; &#x20B9F; &#x20B9F; &#x20B9F;<br>&#x20B9F;&#xFEFF;WWWWWWWW</dd>
 <dt>Ideographic, Kana, CJK symbols with spans</dt>
-<dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>&#x56FD;&#xFEFF;WWWWW</dd>
+<dd style="width:9em;">&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>&#x56FD;&#xFEFF;WWWWWWWW</dd>
 <dt>Ideographic, Latin, and spaces</dt>
-<dd>WW &#x56FD;   W  &#x56FD;<br>&#x56FD;&#xFEFF;WWWWW</dd>
-<dd>WW &#x56FD;   W  &#x56FD;<br>WWWWWW</dd>
-<dd>WW &#x56FD;   W  &#x56FD;<br>WWWWWW</dd>
+<dd style="width:8em;">WW &#x56FD; W &#x56FD;<br>&#x56FD;&#xFEFF;WWWWWWW</dd>
+<dd style="width:11em;">WW &#x56FD;   W  &#x56FD;<br>&#x56FD;&#xFEFF;WWWWWWWWWW</dd>
+<dd style="width:11em;">WW &#x56FD;   W  &#x56FD;<br>WWWWWWWWWWW</dd>
+<dd style="width:11em;">WW &#x56FD;   W  &#x56FD;<br>WWWWWWWWWWW</dd>
+<dd style="width:8em;">WW &#x56FD;   W<br>&#x56FD;&#xFEFF;WWWWWWW</dd>
+<dd style="width:11em;">W.  W.  W &#x56FD;<br>WWWWWWWWWWW</dd>
 </dl>
+</div>
+<div id="complex" class="container">
+<h2>Complex</h2>
+</div>
 <script>
 document.body.offsetLeft; // Kick off loading @font-face
 if (window.testRunner) {
     testRunner.waitUntilDone();
     document.body.onload = function () { testRunner.notifyDone(); };
 }
+var tests = document.getElementsByTagName('dl')[0];
+document.getElementById('complex').appendChild(tests.cloneNode(true));
 </script>
