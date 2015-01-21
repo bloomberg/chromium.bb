@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 
 # Collection of all components. You wouldn't link to this, but this is rather
 # to reference the files so they can be compiled by the build system.
@@ -242,6 +243,7 @@ test("components_unittests") {
     "//components/domain_reliability:unit_tests",
     "//components/favicon_base:unit_tests",
     "//components/google/core/browser:unit_tests",
+    "//components/invalidation:unittests",
     "//components/login:unit_tests",
     "//components/metrics:unit_tests",
     "//components/omnibox:unit_tests",

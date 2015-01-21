@@ -4,6 +4,7 @@
 
 import("//build/config/allocator.gni")
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds must not depend on //chromeos")

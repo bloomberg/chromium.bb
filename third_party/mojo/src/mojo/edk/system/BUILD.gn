@@ -2,12 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
 import("../mojo_edk.gni")
-
-if (is_android) {
-  import("//build/config/android/config.gni")
-  import("//build/config/android/rules.gni")
-}
 
 config("system_config") {
   defines = [
@@ -173,10 +169,6 @@ test("mojo_system_unittests") {
     "//testing/gtest",
   ]
 
-  if (is_android) {
-    deps += [ "//testing/android:native_test_native_code" ]
-  }
-
   allow_circular_includes_from = [ "../embedder:embedder_unittests" ]
 }
 
@@ -197,13 +189,4 @@ test("mojo_message_pipe_perftests") {
     "//base/test:test_support_perf",
     "//testing/gtest",
   ]
-}
-
-if (is_android) {
-  unittest_apk("mojo_system_unittests_apk") {
-    deps = [
-      ":mojo_system_unittests",
-    ]
-    unittests_dep = ":mojo_system_unittests"
-  }
 }

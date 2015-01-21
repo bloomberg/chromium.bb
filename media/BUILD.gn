@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
+import("//testing/test.gni")
 
 # Common configuration for targets in the media directory.
 # NOT for exporting.

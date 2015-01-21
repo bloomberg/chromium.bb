@@ -7,6 +7,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/module_args/v8.gni")
 import("//url/config.gni")
+import("//testing/test.gni")
 
 # TODO(cjhopman): //build/config/android/rules.gni also imports grit_rule.gni.
 # Currently, that file can't be imported multiple times.  Make this always

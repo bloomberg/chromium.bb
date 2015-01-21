@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//testing/test.gni")
 
 component("sync") {
   public_deps = [
@@ -645,13 +646,6 @@ test("sync_unit_tests") {
     ":test_support_sync_internal_api",
   ]
 
-  # TODO(GYP)
-  #   ['OS == "android"', {
-  #     'dependencies': [
-  #       '../testing/android/native_test.gyp:native_test_native_code',
-  #     ],
-  #   }],
-
   if (is_chromeos) {
     # Required by get_session_name_unittest.cc on Chrome OS.
     deps += [ "//chromeos" ]
@@ -810,14 +804,6 @@ if (is_android) {
       ":fake_server_jni",
       ":test_support_sync_fake_server",
       "//base",
-    ]
-  }
-
-  # GYP: //sync/sync_tests.gypi:sync_unit_tests_apk
-  unittest_apk("sync_unit_tests_apk") {
-    unittests_dep = ":sync_unit_tests"
-    deps = [
-      ":sync_unit_tests",
     ]
   }
 }

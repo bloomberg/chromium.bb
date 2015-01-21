@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/json_schema_api.gni")
+import("//testing/test.gni")
 
 component("accessibility") {
   sources = [

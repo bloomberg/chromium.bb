@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("config.gni")
+import("//testing/test.gni")
 
 assert(relocation_packing_supported)
 

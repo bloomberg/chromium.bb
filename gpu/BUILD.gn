@@ -33,6 +33,8 @@
 #
 # gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings => //gpu/skia_bindings
 
+import("//testing/test.gni")
+
 component("gpu") {
   public_deps = [
     "//gpu/command_buffer/client",

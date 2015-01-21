@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("views.gyp") ],

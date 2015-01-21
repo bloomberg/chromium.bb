@@ -6,6 +6,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/module_args/v8.gni")
+import("//testing/test.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 content_tests_gypi_values =
@@ -363,6 +364,8 @@ if (!is_mac) {
         "//content/shell:content_shell_lib",
         "//testing/android:native_test_util",
       ]
+
+      use_launcher = false
     }
 
     if (is_mac) {

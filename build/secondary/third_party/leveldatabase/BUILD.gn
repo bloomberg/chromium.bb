@@ -4,6 +4,9 @@
 
 # Snappy is a compression library we use.
 # TODO(brettw) It's not clear why this needs to be parameterized.
+
+import("//testing/test.gni")
+
 use_snappy = true
 
 defines = [ "LEVELDB_PLATFORM_CHROMIUM=1" ]

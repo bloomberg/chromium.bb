@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/module_args/v8.gni")
+import("//testing/test.gni")
 
 # This target exists to reference other test executables to bring these files
 # into the build.

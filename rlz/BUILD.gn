@@ -5,6 +5,8 @@
 # Note that this build file assumes rlz_use_chrome_net which is a condition in
 # the GYP file, but is always true for Chrome builds.
 
+import("//testing/test.gni")
+
 config("rlz_config") {
   defines = [ "RLZ_NETWORK_IMPLEMENTATION_CHROME_NET" ]
 }

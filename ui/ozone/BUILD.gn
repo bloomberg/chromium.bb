@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//ui/ozone/ozone.gni")
+import("//testing/test.gni")
 
 # The list of platforms that will be built.
 ozone_platforms = []

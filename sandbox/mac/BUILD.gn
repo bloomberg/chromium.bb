@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/mac/mac_sdk.gni")
+import("//testing/test.gni")
 
 component("sandbox") {
   sources = [

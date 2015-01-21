@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 
 component("message_center") {
   deps = [
