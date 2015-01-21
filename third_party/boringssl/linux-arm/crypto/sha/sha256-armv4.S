@@ -1,4 +1,3 @@
-#if defined(__arm__)
 #include "arm_arch.h"
 
 .text
@@ -25,20 +24,23 @@ K256:
 .word	0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
 .size	K256,.-K256
 .word	0				@ terminator
+#if __ARM_MAX_ARCH__>=7
 .LOPENSSL_armcap:
 .word	OPENSSL_armcap_P-sha256_block_data_order
+#endif
 .align	5
 
 .global	sha256_block_data_order
-.hidden	sha256_block_data_order
 .type	sha256_block_data_order,%function
 sha256_block_data_order:
 	sub	r3,pc,#8		@ sha256_block_data_order
 	add	r2,r1,r2,lsl#6	@ len to point at the end of inp
-#if __ARM_ARCH__>=7
+#if __ARM_MAX_ARCH__>=7
 	ldr	r12,.LOPENSSL_armcap
 	ldr	r12,[r3,r12]		@ OPENSSL_armcap_P
-	tst	r12,#1
+	tst	r12,#ARMV8_SHA256
+	bne	.LARMv8
+	tst	r12,#ARMV7_NEON
 	bne	.LNEON
 #endif
 	stmdb	sp!,{r0,r1,r2,r4-r11,lr}
@@ -1770,9 +1772,14 @@ sha256_block_data_order:
 	moveq	pc,lr			@ be binary compatible with V4, yet
 	.word	0xe12fff1e			@ interoperable with Thumb ISA:-)
 #endif
-#if __ARM_ARCH__>=7
+.size	sha256_block_data_order,.-sha256_block_data_order
+#if __ARM_MAX_ARCH__>=7
+.arch	armv7-a
 .fpu	neon
+
+.type	sha256_block_data_order_neon,%function
 .align	4
+sha256_block_data_order_neon:
 .LNEON:
 	stmdb	sp!,{r4-r12,lr}
 
@@ -2543,10 +2550,146 @@ sha256_block_data_order:
 	bne	.L_00_48
 
 	ldmia	sp!,{r4-r12,pc}
+.size	sha256_block_data_order_neon,.-sha256_block_data_order_neon
 #endif
-.size   sha256_block_data_order,.-sha256_block_data_order
-.asciz  "SHA256 block transform for ARMv4/NEON, CRYPTOGAMS by <appro@openssl.org>"
-.align	2
-.comm   OPENSSL_armcap_P,4,4
+#if __ARM_MAX_ARCH__>=7
+.type	sha256_block_data_order_armv8,%function
+.align	5
+sha256_block_data_order_armv8:
+.LARMv8:
+	vld1.32	{q0,q1},[r0]
+	sub	r3,r3,#sha256_block_data_order-K256
 
+.Loop_v8:
+	vld1.8		{q8-q9},[r1]!
+	vld1.8		{q10-q11},[r1]!
+	vld1.32		{q12},[r3]!
+	vrev32.8	q8,q8
+	vrev32.8	q9,q9
+	vrev32.8	q10,q10
+	vrev32.8	q11,q11
+	vmov		q14,q0	@ offload
+	vmov		q15,q1
+	teq		r1,r2
+	vld1.32		{q13},[r3]!
+	vadd.i32	q12,q12,q8
+	.byte	0xe2,0x03,0xfa,0xf3	@ sha256su0 q8,q9
+	vmov		q2,q0
+	.byte	0x68,0x0c,0x02,0xf3	@ sha256h q0,q1,q12
+	.byte	0x68,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q12
+	.byte	0xe6,0x0c,0x64,0xf3	@ sha256su1 q8,q10,q11
+	vld1.32		{q12},[r3]!
+	vadd.i32	q13,q13,q9
+	.byte	0xe4,0x23,0xfa,0xf3	@ sha256su0 q9,q10
+	vmov		q2,q0
+	.byte	0x6a,0x0c,0x02,0xf3	@ sha256h q0,q1,q13
+	.byte	0x6a,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q13
+	.byte	0xe0,0x2c,0x66,0xf3	@ sha256su1 q9,q11,q8
+	vld1.32		{q13},[r3]!
+	vadd.i32	q12,q12,q10
+	.byte	0xe6,0x43,0xfa,0xf3	@ sha256su0 q10,q11
+	vmov		q2,q0
+	.byte	0x68,0x0c,0x02,0xf3	@ sha256h q0,q1,q12
+	.byte	0x68,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q12
+	.byte	0xe2,0x4c,0x60,0xf3	@ sha256su1 q10,q8,q9
+	vld1.32		{q12},[r3]!
+	vadd.i32	q13,q13,q11
+	.byte	0xe0,0x63,0xfa,0xf3	@ sha256su0 q11,q8
+	vmov		q2,q0
+	.byte	0x6a,0x0c,0x02,0xf3	@ sha256h q0,q1,q13
+	.byte	0x6a,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q13
+	.byte	0xe4,0x6c,0x62,0xf3	@ sha256su1 q11,q9,q10
+	vld1.32		{q13},[r3]!
+	vadd.i32	q12,q12,q8
+	.byte	0xe2,0x03,0xfa,0xf3	@ sha256su0 q8,q9
+	vmov		q2,q0
+	.byte	0x68,0x0c,0x02,0xf3	@ sha256h q0,q1,q12
+	.byte	0x68,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q12
+	.byte	0xe6,0x0c,0x64,0xf3	@ sha256su1 q8,q10,q11
+	vld1.32		{q12},[r3]!
+	vadd.i32	q13,q13,q9
+	.byte	0xe4,0x23,0xfa,0xf3	@ sha256su0 q9,q10
+	vmov		q2,q0
+	.byte	0x6a,0x0c,0x02,0xf3	@ sha256h q0,q1,q13
+	.byte	0x6a,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q13
+	.byte	0xe0,0x2c,0x66,0xf3	@ sha256su1 q9,q11,q8
+	vld1.32		{q13},[r3]!
+	vadd.i32	q12,q12,q10
+	.byte	0xe6,0x43,0xfa,0xf3	@ sha256su0 q10,q11
+	vmov		q2,q0
+	.byte	0x68,0x0c,0x02,0xf3	@ sha256h q0,q1,q12
+	.byte	0x68,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q12
+	.byte	0xe2,0x4c,0x60,0xf3	@ sha256su1 q10,q8,q9
+	vld1.32		{q12},[r3]!
+	vadd.i32	q13,q13,q11
+	.byte	0xe0,0x63,0xfa,0xf3	@ sha256su0 q11,q8
+	vmov		q2,q0
+	.byte	0x6a,0x0c,0x02,0xf3	@ sha256h q0,q1,q13
+	.byte	0x6a,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q13
+	.byte	0xe4,0x6c,0x62,0xf3	@ sha256su1 q11,q9,q10
+	vld1.32		{q13},[r3]!
+	vadd.i32	q12,q12,q8
+	.byte	0xe2,0x03,0xfa,0xf3	@ sha256su0 q8,q9
+	vmov		q2,q0
+	.byte	0x68,0x0c,0x02,0xf3	@ sha256h q0,q1,q12
+	.byte	0x68,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q12
+	.byte	0xe6,0x0c,0x64,0xf3	@ sha256su1 q8,q10,q11
+	vld1.32		{q12},[r3]!
+	vadd.i32	q13,q13,q9
+	.byte	0xe4,0x23,0xfa,0xf3	@ sha256su0 q9,q10
+	vmov		q2,q0
+	.byte	0x6a,0x0c,0x02,0xf3	@ sha256h q0,q1,q13
+	.byte	0x6a,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q13
+	.byte	0xe0,0x2c,0x66,0xf3	@ sha256su1 q9,q11,q8
+	vld1.32		{q13},[r3]!
+	vadd.i32	q12,q12,q10
+	.byte	0xe6,0x43,0xfa,0xf3	@ sha256su0 q10,q11
+	vmov		q2,q0
+	.byte	0x68,0x0c,0x02,0xf3	@ sha256h q0,q1,q12
+	.byte	0x68,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q12
+	.byte	0xe2,0x4c,0x60,0xf3	@ sha256su1 q10,q8,q9
+	vld1.32		{q12},[r3]!
+	vadd.i32	q13,q13,q11
+	.byte	0xe0,0x63,0xfa,0xf3	@ sha256su0 q11,q8
+	vmov		q2,q0
+	.byte	0x6a,0x0c,0x02,0xf3	@ sha256h q0,q1,q13
+	.byte	0x6a,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q13
+	.byte	0xe4,0x6c,0x62,0xf3	@ sha256su1 q11,q9,q10
+	vld1.32		{q13},[r3]!
+	vadd.i32	q12,q12,q8
+	vmov		q2,q0
+	.byte	0x68,0x0c,0x02,0xf3	@ sha256h q0,q1,q12
+	.byte	0x68,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q12
+
+	vld1.32		{q12},[r3]!
+	vadd.i32	q13,q13,q9
+	vmov		q2,q0
+	.byte	0x6a,0x0c,0x02,0xf3	@ sha256h q0,q1,q13
+	.byte	0x6a,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q13
+
+	vld1.32		{q13},[r3]
+	vadd.i32	q12,q12,q10
+	sub		r3,r3,#256-16	@ rewind
+	vmov		q2,q0
+	.byte	0x68,0x0c,0x02,0xf3	@ sha256h q0,q1,q12
+	.byte	0x68,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q12
+
+	vadd.i32	q13,q13,q11
+	vmov		q2,q0
+	.byte	0x6a,0x0c,0x02,0xf3	@ sha256h q0,q1,q13
+	.byte	0x6a,0x2c,0x14,0xf3	@ sha256h2 q1,q2,q13
+
+	vadd.i32	q0,q0,q14
+	vadd.i32	q1,q1,q15
+	bne		.Loop_v8
+
+	vst1.32		{q0,q1},[r0]
+
+	bx	lr		@ bx lr
+.size	sha256_block_data_order_armv8,.-sha256_block_data_order_armv8
+#endif
+.asciz  "SHA256 block transform for ARMv4/NEON/ARMv8, CRYPTOGAMS by <appro@openssl.org>"
+.align	2
+#if __ARM_MARCH_ARCH__>=7
+.comm   OPENSSL_armcap_P,4,4
 #endif

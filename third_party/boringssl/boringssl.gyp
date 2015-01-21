@@ -29,6 +29,9 @@
         ['target_arch == "arm"', {
           'sources': [ '<@(boringssl_linux_arm_sources)' ],
         }],
+        ['target_arch == "arm64"', {
+          'sources': [ '<@(boringssl_linux_aarch64_sources)' ],
+        }],
         ['target_arch == "ia32"', {
           'conditions': [
             ['OS == "mac"', {
@@ -77,7 +80,7 @@
             }],
           ]
         }],
-        ['target_arch != "arm" and target_arch != "ia32" and target_arch != "x64"', {
+        ['target_arch != "arm" and target_arch != "ia32" and target_arch != "x64" and target_arch != "arm64"', {
           'defines': [ 'OPENSSL_NO_ASM' ],
         }],
       ],

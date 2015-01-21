@@ -14,6 +14,7 @@ import sys
 # that platform and the extension used by asm files.
 OS_ARCH_COMBOS = [
     ('linux', 'arm', 'elf', [''], 'S'),
+    ('linux', 'aarch64', 'linux64', [''], 'S'),
     ('linux', 'x86', 'elf', ['-fPIC'], 'S'),
     ('linux', 'x86_64', 'elf', [''], 'S'),
     ('mac', 'x86', 'macosx', ['-fPIC'], 'S'),
@@ -134,15 +135,19 @@ def PerlAsm(output_filename, input_filename, perlasm_style, extra_args):
 
 
 def ArchForAsmFilename(filename):
-  """Returns the architecture that a given asm file should be compiled for
+  """Returns the architectures that a given asm file should be compiled for
   based on substrings in the filename."""
 
   if 'x86_64' in filename or 'avx2' in filename:
-    return 'x86_64'
+    return ['x86_64']
   elif ('x86' in filename and 'x86_64' not in filename) or '586' in filename:
-    return 'x86'
+    return ['x86']
+  elif 'armx' in filename:
+    return ['arm', 'aarch64']
+  elif 'armv8' in filename:
+    return ['aarch64']
   elif 'arm' in filename:
-    return 'arm'
+    return ['arm']
   else:
     raise ValueError('Unknown arch for asm filename: ' + filename)
 
@@ -165,7 +170,7 @@ def WriteAsmFiles(perlasms):
       output = os.path.join(outDir, output[4:])
       output = output.replace('${ASM_EXT}', asm_ext)
 
-      if arch == ArchForAsmFilename(filename):
+      if arch in ArchForAsmFilename(filename):
         PerlAsm(output, perlasm['input'], perlasm_style,
                 perlasm['extra_args'] + extra_args)
         asmfiles.setdefault(key, []).append(output)

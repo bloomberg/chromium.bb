@@ -92,6 +92,8 @@ component("boringssl") {
     }
   } else if (cpu_arch == "arm") {
     sources += gypi_values.boringssl_linux_arm_sources
+  } else if (cpu_arch == "arm64") {
+    sources += gypi_values.boringssl_linux_aarch64_sources
   } else {
     defines += [ "OPENSSL_NO_ASM" ]
   }
