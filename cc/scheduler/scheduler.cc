@@ -561,9 +561,9 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
     state_machine_.SetSkipNextBeginMainFrameToReduceLatency();
   }
 
-  client_->WillBeginImplFrame(begin_impl_frame_args_);
   state_machine_.OnBeginImplFrame(begin_impl_frame_args_);
   devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
+  client_->WillBeginImplFrame(begin_impl_frame_args_);
 
   ProcessScheduledActions();
 
