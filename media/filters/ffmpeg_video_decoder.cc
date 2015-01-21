@@ -86,10 +86,16 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
   // updated width/height/pix_fmt, which can change for adaptive
   // content.
   VideoFrame::Format format = PixelFormatToVideoFormat(codec_context->pix_fmt);
+  if (format == VideoFrame::YV12 &&
+      codec_context->colorspace == AVCOL_SPC_BT709) {
+    format = VideoFrame::YV12HD;
+  }
+
   if (format == VideoFrame::UNKNOWN)
     return AVERROR(EINVAL);
   DCHECK(format == VideoFrame::YV12 || format == VideoFrame::YV16 ||
-         format == VideoFrame::YV12J || format == VideoFrame::YV24);
+         format == VideoFrame::YV12J || format == VideoFrame::YV24 ||
+         format == VideoFrame::YV12HD);
 
   gfx::Size size(codec_context->width, codec_context->height);
   const int ret = av_image_check_size(size.width(), size.height(), 0, NULL);

@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "media/base/media_export.h"
-#include "media/base/simd/yuv_to_rgb_table.h"
 
 // Visual Studio 2010 does not support MMX intrinsics on x64.
 // Some win64 yuv_convert code paths use SSE+MMX yasm, so without rewriting
@@ -24,16 +23,17 @@ namespace media {
 
 // Type of YUV surface.
 enum YUVType {
-  YV16  = 0,  // YV16 is half width and full height chroma channels.
-  YV12  = 1,  // YV12 is half width and half height chroma channels.
-  YV12J = 2,  // YV12J is the same as YV12, but in JPEG color range.
+  YV16 = 0,    // YV16 is half width and full height chroma channels.
+  YV12 = 1,    // YV12 is half width and half height chroma channels.
+  YV12J = 2,   // YV12J is the same as YV12, but in JPEG color range.
+  YV12HD = 3,  // YV12HD is the same as YV12, but in 'HD' Rec709 color space.
 };
 
 // Get the appropriate value to bitshift by for vertical indices.
 MEDIA_EXPORT int GetVerticalShift(YUVType type);
 
 // Get the appropriate lookup table for a given YUV format.
-MEDIA_EXPORT const int16 (&GetLookupTable(YUVType type))[1024][4];
+MEDIA_EXPORT const int16* GetLookupTable(YUVType type);
 
 // Mirror means flip the image horizontally, as in looking in a mirror.
 // Rotate happens after mirroring.

@@ -57,6 +57,7 @@ static gfx::Size SampleSize(VideoFrame::Format format, size_t plane) {
 
         case VideoFrame::YV12:
         case VideoFrame::YV12J:
+        case VideoFrame::YV12HD:
         case VideoFrame::I420:
         case VideoFrame::YV12A:
         case VideoFrame::NV12:
@@ -123,6 +124,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
     case VideoFrame::YV12A:
     case VideoFrame::YV12J:
     case VideoFrame::YV24:
+    case VideoFrame::YV12HD:
       break;
 
     case VideoFrame::UNKNOWN:
@@ -181,6 +183,8 @@ std::string VideoFrame::FormatToString(VideoFrame::Format format) {
       return "YV24";
     case VideoFrame::ARGB:
       return "ARGB";
+    case VideoFrame::YV12HD:
+      return "YV12HD";
   }
   NOTREACHED() << "Invalid videoframe format provided: " << format;
   return "";
@@ -223,6 +227,7 @@ bool VideoFrame::IsValidConfig(VideoFrame::Format format,
     case VideoFrame::I420:
     case VideoFrame::YV12A:
     case VideoFrame::NV12:
+    case VideoFrame::YV12HD:
     case VideoFrame::YV16:
     case VideoFrame::ARGB:
       // Check that software-allocated buffer formats are aligned correctly and
@@ -555,6 +560,7 @@ size_t VideoFrame::NumPlanes(Format format) {
     case VideoFrame::YV16:
     case VideoFrame::I420:
     case VideoFrame::YV12J:
+    case VideoFrame::YV12HD:
     case VideoFrame::YV24:
       return 3;
     case VideoFrame::YV12A:
@@ -628,7 +634,8 @@ static void ReleaseData(uint8* data) {
 
 void VideoFrame::AllocateYUV() {
   DCHECK(format_ == YV12 || format_ == YV16 || format_ == YV12A ||
-         format_ == I420 || format_ == YV12J || format_ == YV24);
+         format_ == I420 || format_ == YV12J || format_ == YV24 ||
+         format_ == YV12HD);
   static_assert(0 == kYPlane, "y plane data must be index 0");
 
   size_t data_size = 0;

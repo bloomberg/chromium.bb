@@ -18,14 +18,16 @@
 #include "media/base/yuv_convert.h"
 
 #include "base/cpu.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
+#include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "build/build_config.h"
 #include "media/base/simd/convert_rgb_to_yuv.h"
 #include "media/base/simd/convert_yuv_to_rgb.h"
 #include "media/base/simd/filter_yuv.h"
-#include "media/base/simd/yuv_to_rgb_table.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(COMPILER_MSVC)
@@ -85,7 +87,7 @@ typedef void (*ConvertYUVToRGB32RowProc)(const uint8*,
                                          const uint8*,
                                          uint8*,
                                          ptrdiff_t,
-                                         const int16[1024][4]);
+                                         const int16*);
 
 typedef void (*ConvertYUVAToARGBRowProc)(const uint8*,
                                          const uint8*,
@@ -93,7 +95,7 @@ typedef void (*ConvertYUVAToARGBRowProc)(const uint8*,
                                          const uint8*,
                                          uint8*,
                                          ptrdiff_t,
-                                         const int16[1024][4]);
+                                         const int16*);
 
 typedef void (*ScaleYUVToRGB32RowProc)(const uint8*,
                                        const uint8*,
@@ -101,7 +103,7 @@ typedef void (*ScaleYUVToRGB32RowProc)(const uint8*,
                                        uint8*,
                                        ptrdiff_t,
                                        ptrdiff_t,
-                                       const int16[1024][4]);
+                                       const int16*);
 
 static FilterYUVRowsProc g_filter_yuv_rows_proc_ = NULL;
 static ConvertYUVToRGB32RowProc g_convert_yuv_to_rgb32_row_proc_ = NULL;
@@ -111,6 +113,23 @@ static ConvertRGBToYUVProc g_convert_rgb32_to_yuv_proc_ = NULL;
 static ConvertRGBToYUVProc g_convert_rgb24_to_yuv_proc_ = NULL;
 static ConvertYUVToRGB32Proc g_convert_yuv_to_rgb32_proc_ = NULL;
 static ConvertYUVAToARGBProc g_convert_yuva_to_argb_proc_ = NULL;
+
+static const int kYUVToRGBTableSize = 256 * 4 * 4 * sizeof(int16);
+
+// base::AlignedMemory has a private operator new(), so wrap it in a struct so
+// that we can put it in a LazyInstance::Leaky.
+struct YUVToRGBTableWrapper {
+  base::AlignedMemory<kYUVToRGBTableSize, 16> table;
+};
+
+typedef base::LazyInstance<YUVToRGBTableWrapper>::Leaky
+    YUVToRGBTable;
+static YUVToRGBTable g_table_rec601 = LAZY_INSTANCE_INITIALIZER;
+static YUVToRGBTable g_table_jpeg = LAZY_INSTANCE_INITIALIZER;
+static YUVToRGBTable g_table_rec709 = LAZY_INSTANCE_INITIALIZER;
+static const int16* g_table_rec601_ptr = NULL;
+static const int16* g_table_jpeg_ptr = NULL;
+static const int16* g_table_rec709_ptr = NULL;
 
 // Empty SIMD registers state after using them.
 void EmptyRegisterStateStub() {}
@@ -127,22 +146,81 @@ int GetVerticalShift(YUVType type) {
       return 0;
     case YV12:
     case YV12J:
+    case YV12HD:
       return 1;
   }
   NOTREACHED();
   return 0;
 }
 
-const int16 (&GetLookupTable(YUVType type))[1024][4] {
+const int16* GetLookupTable(YUVType type) {
   switch (type) {
     case YV12:
     case YV16:
-      return kCoefficientsRgbY;
+      return g_table_rec601_ptr;
     case YV12J:
-      return kCoefficientsRgbY_JPEG;
+      return g_table_jpeg_ptr;
+    case YV12HD:
+      return g_table_rec709_ptr;
   }
   NOTREACHED();
-  return kCoefficientsRgbY;
+  return NULL;
+}
+
+// Populates a pre-allocated lookup table from a YUV->RGB matrix.
+const int16* PopulateYUVToRGBTable(const double matrix[3][3],
+                                   bool full_range,
+                                   int16* table) {
+  // We'll have 4 sub-tables that lie contiguous in memory, one for each of Y,
+  // U, V and A.
+  const int kNumTables = 4;
+  // Each table has 256 rows (for all possible 8-bit values).
+  const int kNumRows = 256;
+  // Each row has 4 columns, for contributions to each of R, G, B and A.
+  const int kNumColumns = 4;
+  // Each element is a fixed-point (10.6) 16-bit signed value.
+  const int kElementSize = sizeof(int16);
+
+  // Sanity check that our constants here match the size of the statically
+  // allocated tables.
+  COMPILE_ASSERT(
+      kNumTables * kNumRows * kNumColumns * kElementSize == kYUVToRGBTableSize,
+      "YUV lookup table size doesn't match expectation.");
+
+  // Y needs an offset of -16 for color ranges that ignore the lower 16 values,
+  // U and V get -128 to put them in [-128, 127] from [0, 255].
+  int offsets[3] = {(full_range ? 0 : -16), -128, -128};
+
+  for (int i = 0; i < kNumRows; ++i) {
+    // Y, U, and V contributions to each of R, G, B and A.
+    for (int j = 0; j < 3; ++j) {
+#if defined(OS_ANDROID)
+      // Android is RGBA.
+      table[(j * kNumRows + i) * kNumColumns + 0] =
+          matrix[j][0] * 64 * (i + offsets[j]) + 0.5;
+      table[(j * kNumRows + i) * kNumColumns + 1] =
+          matrix[j][1] * 64 * (i + offsets[j]) + 0.5;
+      table[(j * kNumRows + i) * kNumColumns + 2] =
+          matrix[j][2] * 64 * (i + offsets[j]) + 0.5;
+#else
+      // Other platforms are BGRA.
+      table[(j * kNumRows + i) * kNumColumns + 0] =
+          matrix[j][2] * 64 * (i + offsets[j]) + 0.5;
+      table[(j * kNumRows + i) * kNumColumns + 1] =
+          matrix[j][1] * 64 * (i + offsets[j]) + 0.5;
+      table[(j * kNumRows + i) * kNumColumns + 2] =
+          matrix[j][0] * 64 * (i + offsets[j]) + 0.5;
+#endif
+      // Alpha contributions from Y and V are always 0. U is set such that
+      // all values result in a full '255' alpha value.
+      table[(j * kNumRows + i) * kNumColumns + 3] = (j == 1) ? 256 * 64 - 1 : 0;
+    }
+    // And YUVA alpha is passed through as-is.
+    for (int k = 0; k < kNumTables; ++k)
+      table[((kNumTables - 1) * kNumRows + i) * kNumColumns + k] = i;
+  }
+
+  return table;
 }
 
 void InitializeCPUSpecificYUVConversions() {
@@ -203,6 +281,34 @@ void InitializeCPUSpecificYUVConversions() {
     // See: crbug.com/100462
   }
 #endif
+
+  // Initialize YUV conversion lookup tables.
+
+  // SD Rec601 YUV->RGB matrix, see http://www.fourcc.org/fccyvrgb.php
+  const double kRec601ConvertMatrix[3][3] = {
+      {1.164, 1.164, 1.164}, {0.0, -0.391, 2.018}, {1.596, -0.813, 0.0},
+  };
+
+  // JPEG table, values from above link.
+  const double kJPEGConvertMatrix[3][3] = {
+      {1.0, 1.0, 1.0}, {0.0, -0.34414, 1.772}, {1.402, -0.71414, 0.0},
+  };
+
+  // Rec709 "HD" color space, values from:
+  // http://www.equasys.de/colorconversion.html
+  const double kRec709ConvertMatrix[3][3] = {
+      {1.164, 1.164, 1.164}, {0.0, -0.213, 2.112}, {1.793, -0.533, 0.0},
+  };
+
+  PopulateYUVToRGBTable(kRec601ConvertMatrix, false,
+                        g_table_rec601.Get().table.data_as<int16>());
+  PopulateYUVToRGBTable(kJPEGConvertMatrix, true,
+                        g_table_jpeg.Get().table.data_as<int16>());
+  PopulateYUVToRGBTable(kRec709ConvertMatrix, false,
+                        g_table_rec709.Get().table.data_as<int16>());
+  g_table_rec601_ptr = g_table_rec601.Get().table.data_as<int16>();
+  g_table_rec709_ptr = g_table_rec709.Get().table.data_as<int16>();
+  g_table_jpeg_ptr = g_table_jpeg.Get().table.data_as<int16>();
 }
 
 // Empty SIMD registers state after using them.
@@ -233,6 +339,8 @@ void ScaleYUVToRGB32(const uint8* y_buf,
       (yuv_type == YV16 && (source_width < 2 || source_height < 1)) ||
       width == 0 || height == 0)
     return;
+
+  const int16* lookup_table = GetLookupTable(yuv_type);
 
   // 4096 allows 3 buffers to fit in 12k.
   // Helps performance on CPU with 16K L1 cache.
@@ -377,25 +485,16 @@ void ScaleYUVToRGB32(const uint8* y_buf,
       v_ptr = v_buf + (source_y >> y_shift) * uv_pitch;
     }
     if (source_dx == kFractionMax) {  // Not scaled
-      g_convert_yuv_to_rgb32_row_proc_(
-          y_ptr, u_ptr, v_ptr, dest_pixel, width, kCoefficientsRgbY);
+      g_convert_yuv_to_rgb32_row_proc_(y_ptr, u_ptr, v_ptr, dest_pixel, width,
+                                       lookup_table);
     } else {
       if (filter & FILTER_BILINEAR_H) {
-        g_linear_scale_yuv_to_rgb32_row_proc_(y_ptr,
-                                              u_ptr,
-                                              v_ptr,
-                                              dest_pixel,
-                                              width,
-                                              source_dx,
-                                              kCoefficientsRgbY);
+        g_linear_scale_yuv_to_rgb32_row_proc_(y_ptr, u_ptr, v_ptr, dest_pixel,
+                                              width, source_dx,
+                                              lookup_table);
       } else {
-        g_scale_yuv_to_rgb32_row_proc_(y_ptr,
-                                       u_ptr,
-                                       v_ptr,
-                                       dest_pixel,
-                                       width,
-                                       source_dx,
-                                       kCoefficientsRgbY);
+        g_scale_yuv_to_rgb32_row_proc_(y_ptr, u_ptr, v_ptr, dest_pixel, width,
+                                       source_dx, lookup_table);
       }
     }
   }
@@ -428,6 +527,8 @@ void ScaleYUVToRGB32WithRect(const uint8* y_buf,
   DCHECK(dest_rect_top >= 0 && dest_rect_bottom <= dest_height);
   DCHECK(dest_rect_right > dest_rect_left);
   DCHECK(dest_rect_bottom > dest_rect_top);
+
+  const int16* lookup_table = GetLookupTable(YV12);
 
   // Fixed-point value of vertical and horizontal scale down factor.
   // Values are in the format 16.16.
@@ -533,24 +634,14 @@ void ScaleYUVToRGB32WithRect(const uint8* y_buf,
 
       // Perform horizontal interpolation and color space conversion.
       // TODO(hclam): Use the MMX version after more testing.
-      LinearScaleYUVToRGB32RowWithRange_C(y_temp,
-                                          u_temp,
-                                          v_temp,
-                                          rgb_buf,
-                                          dest_rect_width,
-                                          source_left,
-                                          x_step,
-                                          kCoefficientsRgbY);
+      LinearScaleYUVToRGB32RowWithRange_C(y_temp, u_temp, v_temp, rgb_buf,
+                                          dest_rect_width, source_left, x_step,
+                                          lookup_table);
     } else {
       // If the frame is too large then we linear scale a single row.
-      LinearScaleYUVToRGB32RowWithRange_C(y0_ptr,
-                                          u0_ptr,
-                                          v0_ptr,
-                                          rgb_buf,
-                                          dest_rect_width,
-                                          source_left,
-                                          x_step,
-                                          kCoefficientsRgbY);
+      LinearScaleYUVToRGB32RowWithRange_C(y0_ptr, u0_ptr, v0_ptr, rgb_buf,
+                                          dest_rect_width, source_left, x_step,
+                                          lookup_table);
     }
 
     // Advance vertically in the source and destination image.

@@ -64,8 +64,6 @@
             'base/simd/convert_yuv_to_rgb_c.cc',
             'base/simd/filter_yuv.h',
             'base/simd/filter_yuv_c.cc',
-            'base/simd/yuv_to_rgb_table.cc',
-            'base/simd/yuv_to_rgb_table.h',
             'base/yuv_convert.cc',
             'base/yuv_convert.h',
           ],

@@ -23,7 +23,6 @@
 
 mangle(SYMBOL):
   %assign   stack_offset 0
-  extern    mangle(kCoefficientsRgbY)
 
 ; Parameters are in the following order:
 ; 1. Y plane

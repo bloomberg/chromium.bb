@@ -11,7 +11,6 @@
 #include "media/base/simd/convert_rgb_to_yuv.h"
 #include "media/base/simd/convert_yuv_to_rgb.h"
 #include "media/base/simd/filter_yuv.h"
-#include "media/base/simd/yuv_to_rgb_table.h"
 #include "media/base/yuv_convert.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -175,6 +174,7 @@ class YUVScaleTest : public ::testing::TestWithParam<YUVScaleTestData> {
     switch (GetParam().yuv_type) {
       case media::YV12:
       case media::YV12J:
+      case media::YV12HD:
         ReadYV12Data(&yuv_bytes_);
         break;
       case media::YV16:
@@ -192,6 +192,7 @@ class YUVScaleTest : public ::testing::TestWithParam<YUVScaleTestData> {
     switch (GetParam().yuv_type) {
       case media::YV12:
       case media::YV12J:
+      case media::YV12HD:
         return yuv_bytes_.get() + kSourceVOffset;
       case media::YV16:
         return yuv_bytes_.get() + kSourceYSize * 3 / 2;

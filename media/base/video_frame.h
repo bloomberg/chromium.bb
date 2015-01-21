@@ -53,20 +53,21 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Logged to UMA, so never reuse values.
   enum Format {
     UNKNOWN = 0,  // Unknown format value.
-    YV12 = 1,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples
-    YV16 = 2,  // 16bpp YVU planar 1x1 Y, 2x1 VU samples
-    I420 = 3,  // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
-    YV12A = 4,  // 20bpp YUVA planar 1x1 Y, 2x2 VU, 1x1 A samples.
+    YV12 = 1,     // 12bpp YVU planar 1x1 Y, 2x2 VU samples
+    YV16 = 2,     // 16bpp YVU planar 1x1 Y, 2x1 VU samples
+    I420 = 3,     // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
+    YV12A = 4,    // 20bpp YUVA planar 1x1 Y, 2x2 VU, 1x1 A samples.
 #if defined(VIDEO_HOLE)
-    HOLE = 5,  // Hole frame.
+    HOLE = 5,            // Hole frame.
 #endif  // defined(VIDEO_HOLE)
     NATIVE_TEXTURE = 6,  // Native texture.  Pixel-format agnostic.
     YV12J = 7,  // JPEG color range version of YV12
     NV12 = 8,  // 12bpp 1x1 Y plane followed by an interleaved 2x2 UV plane.
     YV24 = 9,  // 24bpp YUV planar, no subsampling.
     ARGB = 10,  // 32bpp ARGB, 1 plane.
+    YV12HD = 11,  // Rec709 "HD" color space version of YV12
     // Please update UMA histogram enumeration when adding new formats here.
-    FORMAT_MAX = ARGB,  // Must always be equal to largest entry logged.
+    FORMAT_MAX = YV12HD,  // Must always be equal to largest entry logged.
   };
 
   // Returns the name of a Format as a string.

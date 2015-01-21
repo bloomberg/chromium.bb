@@ -256,6 +256,10 @@ IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pH264) {
   RunColorFormatTest("yuv420p.mp4", kEnded);
 }
 
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pRec709H264) {
+  RunColorFormatTest("yuv420p_rec709.mp4", kEnded);
+}
+
 IN_PROC_BROWSER_TEST_F(MediaTest, Yuvj420pH264) {
   RunColorFormatTest("yuvj420p.mp4", kEnded);
 }

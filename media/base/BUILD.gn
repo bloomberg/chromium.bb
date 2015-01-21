@@ -141,8 +141,6 @@ source_set("base") {
     "simd/convert_yuv_to_rgb_c.cc",
     "simd/filter_yuv.h",
     "simd/filter_yuv_c.cc",
-    "simd/yuv_to_rgb_table.cc",
-    "simd/yuv_to_rgb_table.h",
     "sinc_resampler.cc",
     "sinc_resampler.h",
     "stream_parser.cc",

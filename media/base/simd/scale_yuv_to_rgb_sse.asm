@@ -19,6 +19,6 @@
 ;                             uint8* rgb_buf,
 ;                             ptrdiff_t width,
 ;                             ptrdiff_t source_dx);
-;                             const int16 convert_table[1024][4]);
+;                             const int16* convert_table);
 %define SYMBOL ScaleYUVToRGB32Row_SSE
 %include "scale_yuv_to_rgb_mmx.inc"

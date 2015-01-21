@@ -4,13 +4,18 @@
 
 #include "build/build_config.h"
 #include "media/base/simd/convert_rgb_to_yuv.h"
-#include "media/base/simd/yuv_to_rgb_table.h"
 
 #if defined(COMPILER_MSVC)
 #include <intrin.h>
 #else
 #include <mmintrin.h>
 #include <emmintrin.h>
+#endif
+
+#if defined(COMPILER_MSVC)
+#define SIMD_ALIGNED(var) __declspec(align(16)) var
+#else
+#define SIMD_ALIGNED(var) var __attribute__((aligned(16)))
 #endif
 
 namespace media {

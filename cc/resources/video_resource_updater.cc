@@ -144,6 +144,7 @@ bool VideoResourceUpdater::VerifyFrame(
     case media::VideoFrame::YV12A:
     case media::VideoFrame::YV16:
     case media::VideoFrame::YV12J:
+    case media::VideoFrame::YV12HD:
     case media::VideoFrame::YV24:
     case media::VideoFrame::NATIVE_TEXTURE:
 #if defined(VIDEO_HOLE)
@@ -191,6 +192,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       input_frame_format != media::VideoFrame::I420 &&
       input_frame_format != media::VideoFrame::YV12A &&
       input_frame_format != media::VideoFrame::YV12J &&
+      input_frame_format != media::VideoFrame::YV12HD &&
       input_frame_format != media::VideoFrame::YV16 &&
       input_frame_format != media::VideoFrame::YV24) {
     NOTREACHED() << input_frame_format;

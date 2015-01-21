@@ -9,7 +9,6 @@
 #endif
 
 #include "media/base/simd/convert_yuv_to_rgb.h"
-#include "media/base/simd/yuv_to_rgb_table.h"
 #include "media/base/yuv_convert.h"
 
 namespace media {

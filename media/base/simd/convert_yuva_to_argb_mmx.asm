@@ -19,6 +19,6 @@
 ;                                          const uint8* a_buf,
 ;                                          uint8* rgb_buf,
 ;                                          ptrdiff_t width);
-;                                          const int16 convert_table[1024][4]);
+;                                          const int16* convert_table);
 %define SYMBOL ConvertYUVAToARGBRow_MMX
 %include "convert_yuva_to_argb_mmx.inc"
