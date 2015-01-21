@@ -1043,16 +1043,21 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void DidCommit() override {
-    Animation* animation =
-        scroll_layer_->layer_animation_controller()->GetAnimation(
-            Animation::ScrollOffset);
-    if (animation) {
-      scroll_layer_->layer_animation_controller()->RemoveAnimation(
-          animation->id());
-      scroll_layer_->SetScrollOffset(final_postion_);
-    } else {
-      EXPECT_EQ(final_postion_, scroll_layer_->scroll_offset());
+  void BeginMainFrame(const BeginFrameArgs& args) override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 0:
+        break;
+      case 1: {
+        Animation* animation =
+            scroll_layer_->layer_animation_controller()->GetAnimation(
+                Animation::ScrollOffset);
+        scroll_layer_->layer_animation_controller()->RemoveAnimation(
+            animation->id());
+        scroll_layer_->SetScrollOffset(final_postion_);
+        break;
+      }
+      default:
+        EXPECT_EQ(final_postion_, scroll_layer_->scroll_offset());
     }
   }
 

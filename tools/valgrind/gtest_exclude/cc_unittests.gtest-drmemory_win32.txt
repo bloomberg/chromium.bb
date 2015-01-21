@@ -26,6 +26,3 @@ PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfReplica/5
 PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfReplica/6
 PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfReplicaOfClippedLayer/5
 PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfReplicaOfClippedLayer/6
-
-# http://crbug.com/450216
-LayerTreeHostAnimationTestScrollOffsetAnimationRemoval.*_ImplSidePaint
