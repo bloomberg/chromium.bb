@@ -473,8 +473,14 @@ void ManageProfileHandler::RequestCreateProfileUpdate(
       base::UTF8ToUTF16(manager->GetAuthenticatedUsername());
   ProfileSyncService* service =
      ProfileSyncServiceFactory::GetForProfile(profile);
-  GoogleServiceAuthError::State state = service->GetAuthError().state();
-  bool has_error = (state == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
+  GoogleServiceAuthError::State state = GoogleServiceAuthError::NONE;
+
+  // |service| might be null if Sync is disabled from the command line.
+  if (service)
+    state = service->GetAuthError().state();
+
+  bool has_error = (!service ||
+                    state == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
                     state == GoogleServiceAuthError::USER_NOT_SIGNED_UP ||
                     state == GoogleServiceAuthError::ACCOUNT_DELETED ||
                     state == GoogleServiceAuthError::ACCOUNT_DISABLED);
