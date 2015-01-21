@@ -39,9 +39,38 @@
 
 import os
 import os.path
+import re
 import subprocess
 import sys
 
+
+def SystemIncludeDirectoryFlags():
+  """Determines compile flags to include the system include directories.
+
+  Use as a workaround for https://github.com/Valloric/YouCompleteMe/issues/303
+
+  Returns:
+    (List of Strings) Compile flags to append.
+  """
+  try:
+    with open(os.devnull, 'rb') as DEVNULL:
+      output = subprocess.check_output(['clang', '-v', '-E', '-x', 'c++', '-'],
+                                       stdin=DEVNULL, stderr=subprocess.STDOUT)
+  except (FileNotFoundError, subprocess.CalledProcessError):
+    return []
+  includes_regex = r'#include <\.\.\.> search starts here:\s*' \
+                   r'(.*?)End of search list\.'
+  includes = re.search(includes_regex, output.decode(), re.DOTALL).group(1)
+  flags = []
+  for path in includes.splitlines():
+    path = path.strip()
+    if os.path.isdir(path):
+      flags.append('-isystem')
+      flags.append(path)
+  return flags
+
+
+_system_include_flags = SystemIncludeDirectoryFlags()
 
 # Flags from YCM's default config.
 flags = [
@@ -195,7 +224,7 @@ def FlagsForFile(filename):
   chrome_root = FindChromeSrcFromFilename(filename)
   chrome_flags = GetClangCommandFromNinjaForFilename(chrome_root,
                                                      filename)
-  final_flags = flags + chrome_flags
+  final_flags = flags + chrome_flags + _system_include_flags
 
   return {
     'flags': final_flags,
