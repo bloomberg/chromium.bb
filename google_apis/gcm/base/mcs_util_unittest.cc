@@ -42,7 +42,7 @@ TEST(MCSUtilTest, ProtobufToTag) {
 
 // Test getting and setting persistent ids.
 TEST(MCSUtilTest, PersistentIds) {
-  COMPILE_ASSERT(kNumProtoTypes == 16U, UpdatePersistentIds);
+  static_assert(kNumProtoTypes == 16U, "Update Persistent Ids");
   const int kTagsWithPersistentIds[] = {
     kIqStanzaTag,
     kDataMessageStanzaTag
@@ -61,7 +61,7 @@ TEST(MCSUtilTest, PersistentIds) {
 
 // Test getting and setting stream ids.
 TEST(MCSUtilTest, StreamIds) {
-  COMPILE_ASSERT(kNumProtoTypes == 16U, UpdateStreamIds);
+  static_assert(kNumProtoTypes == 16U, "Update Stream Ids");
   const int kTagsWithStreamIds[] = {
     kIqStanzaTag,
     kDataMessageStanzaTag,

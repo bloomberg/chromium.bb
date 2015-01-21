@@ -36,8 +36,8 @@ const char* kProtoNames[] = {
   "mcs_proto.BindAccountResponse",
   "mcs_proto.TalkMetadata"
 };
-COMPILE_ASSERT(arraysize(kProtoNames) == kNumProtoTypes,
-               ProtoNamesMustIncludeAllTags);
+static_assert(arraysize(kProtoNames) == kNumProtoTypes,
+              "Proto Names Must Include All Tags");
 
 const char kLoginId[] = "chrome-";
 const char kLoginDomain[] = "mcs.android.com";
