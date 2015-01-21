@@ -4805,6 +4805,9 @@ Battery full
   <message name="IDS_IME_NAME_KEYBOARD_ROMANIAN" desc="The input method name shows in system tray menu, this shows [Romanian keyboard].">
     Romanian keyboard
   </message>
+  <message name="IDS_IME_NAME_KEYBOARD_ROMANIAN_STANDARD" desc="The input method name shows in system tray menu, this shows [Romanian standard keyboard].">
+    Romanian standard keyboard
+  </message>
   <message name="IDS_IME_NAME_KEYBOARD_RUSSIAN" desc="The input method name shows in system tray menu, this shows [Russian keyboard].">
     Russian keyboard
   </message>

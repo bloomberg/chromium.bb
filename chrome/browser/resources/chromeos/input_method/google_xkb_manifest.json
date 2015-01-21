@@ -536,6 +536,16 @@
       "options_page": "hmm_options.html?code=xkb:ro::rum"
     },
     {
+      "name": "__MSG_keyboard_romanian_standard__",
+      "type": "ime",
+      "id": "xkb:ro:std:rum",
+      "description": "",
+      "language": ["ro"],
+      "layouts": ["ro(std)"],
+      "input_view": "inputview.html#id=ro-std&language=ro&passwordLayout=ro-std&name=keyboard_romanian_standard",
+      "options_page": "hmm_options.html?code=xkb:ro:std:rum"
+    },
+    {
       "name": "__MSG_keyboard_swedish__",
       "type": "ime",
       "id": "xkb:se::swe",

@@ -110,6 +110,7 @@ xkb:no::nob           no             nb,nn,no  NO login
 xkb:pl::pol           pl             pl        PL login
 xkb:pt::por           pt             pt-PT,pt  PT login
 xkb:ro::rum           ro             ro        RO login
+xkb:ro:std:rum        ro(std)        ro        RO login
 xkb:se::swe           se             sv        SE login
 xkb:sk::slo           sk             sk        SK
 xkb:si::slv           si             sl        SI login

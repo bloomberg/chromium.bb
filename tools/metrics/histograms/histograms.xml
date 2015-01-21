@@ -49177,9 +49177,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="111200" label="xkb:pl::pol">Polish keyboard</int>
   <int value="111201" label="xkb:pt::por">Portuguese keyboard</int>
   <int value="111400" label="xkb:ro::rum">Romanian keyboard</int>
-  <int value="111401" label="xkb:rs::srp">Serbian keyboard</int>
-  <int value="111402" label="xkb:ru::rus">Russian keyboard</int>
-  <int value="111403" label="xkb:ru:phonetic:rus">
+  <int value="111401" label="xkb:ro:std:rum">Romanian Standard keyboard</int>
+  <int value="111402" label="xkb:rs::srp">Serbian keyboard</int>
+  <int value="111403" label="xkb:ru::rus">Russian keyboard</int>
+  <int value="111404" label="xkb:ru:phonetic:rus">
     Russian Phonetic keyboard
   </int>
   <int value="111500" label="xkb:se::swe">Swedish keyboard</int>
