@@ -31,12 +31,7 @@
       },
       "cacheinvalidation_unittests",
       "cast_unittests",
-      {
-        "test": "cc_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "cc_unittests",
       "chromedriver_unittests",
       {
         "test": "components_unittests",
@@ -204,12 +199,7 @@
       },
       "cacheinvalidation_unittests",
       "cast_unittests",
-      {
-        "test": "cc_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "cc_unittests",
       "chromedriver_unittests",
       {
         "test": "components_unittests",
@@ -357,12 +347,7 @@
       },
       "cacheinvalidation_unittests",
       "cast_unittests",
-      {
-        "test": "cc_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "cc_unittests",
       "chromedriver_unittests",
       {
         "test": "components_unittests",
