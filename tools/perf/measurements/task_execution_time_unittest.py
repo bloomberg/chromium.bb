@@ -74,7 +74,6 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
     for use_counts in required_keywords.values():
       self.assertGreater(use_counts, 0)
 
-  @decorators.Enabled('android')
   def testMockedResults(self):
     task_execution_time_metric = task_execution_time.TaskExecutionTime()
     ps = self.CreateEmptyPageSet()
@@ -96,7 +95,7 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
     # Run the code we are testing.
     task_execution_time_metric.ValidateAndMeasurePage(None, None, data.results)
 
-    # Confirm we get back 3 results that are correctly sorted and named
+    # Confirm we get back 3 results that are correctly sorted and named.
     self.assertEqual(len(data.results.all_page_specific_values), 3)
     self.assertEqual(
         data.results.all_page_specific_values[0].name,
@@ -111,12 +110,66 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
     self.assertEqual(data.results.all_page_specific_values[1].value, 500)
     self.assertEqual(data.results.all_page_specific_values[2].value, 1)
 
+  def testIdleTasksAreReported(self):
+    task_execution_time_metric = task_execution_time.TaskExecutionTime()
+    ps = self.CreateEmptyPageSet()
+    page = TestTaskExecutionTimePage(ps, ps.base_dir)
+    ps.AddUserStory(page)
+
+    # Get the name of a thread used by task_execution_time metric and set up
+    # some dummy execution data pretending to be from that thread & process.
+    first_thread_name = task_execution_time_metric._RENDERER_THREADS[0]
+    data = TaskExecutionTestData(first_thread_name)
+    task_execution_time_metric._renderer_process = data._renderer_process
+
+    # Pretend we're about to run the tests to silence lower level asserts.
+    data.results.WillRunPage(page)
+
+    # Make a slice that looks like an idle task parent.
+    slice_start_time = 0
+    slice_duration = 1000
+    parent_slice = data.AddSlice(
+        task_execution_time_metric.IDLE_SECTION_TRIGGER,
+        slice_start_time,
+        slice_duration)
+    # Add a sub-slice, this should be reported back as occuring in idle time.
+    sub_slice = slice_data.Slice(
+        None,
+        'category',
+        'slow_sub_slice',
+        slice_start_time,
+        slice_duration)
+    parent_slice.sub_slices.append(sub_slice)
+
+    # Add a non-idle task.
+    data.AddSlice('not_idle', slice_start_time, slice_duration)
+
+    # Run the code we are testing.
+    task_execution_time_metric.ValidateAndMeasurePage(None, None, data.results)
+
+    # The 'slow_sub_slice' should be inside the Idle section and therefore
+    # removed from the results.
+    for result in data.results.all_page_specific_values:
+      if 'slow_sub_slice' in result.name:
+        self.fail('Tasks within idle section should not be reported')
+
+    # The 'not_idle' slice should not have the IDLE_SECTION added to its name
+    # and should exist.
+    for result in data.results.all_page_specific_values:
+      if 'not_idle' in result.name:
+        self.assertTrue(
+            task_execution_time_metric.IDLE_SECTION
+            not in result.name)
+        break
+    else:
+      self.fail('Task was incorrectly marked as Idle')
+
 
 def _CheckSliceForKeywords(slice_info, required_keywords):
   for argument in slice_info.args:
     if argument in required_keywords:
       required_keywords[argument] += 1
-  # recurse into our sub-slices
+  # recurse into our sub-slices.
   for sub_slice in slice_info.sub_slices:
     _CheckSliceForKeywords(sub_slice, required_keywords)
 
@@ -141,13 +194,14 @@ class TaskExecutionTestData(object):
     return self._metric
 
   def AddSlice(self, name, timestamp, duration):
-    self._renderer_thread.all_slices.append(
-        slice_data.Slice(
-            None,
-            'category',
-            name,
-            timestamp,
-            duration,
-            timestamp,
-            duration,
-            []))
+    new_slice = slice_data.Slice(
+        None,
+        'category',
+        name,
+        timestamp,
+        duration,
+        timestamp,
+        duration,
+        [])
+    self._renderer_thread.all_slices.append(new_slice)
+    return new_slice
