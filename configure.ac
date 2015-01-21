@@ -95,8 +95,8 @@ AC_ARG_ENABLE(exynos-experimental-api,
 
 AC_ARG_ENABLE(freedreno,
 	      AS_HELP_STRING([--disable-freedreno],
-	      [Enable support for freedreno's KMS API (default: enabled)]),
-	      [FREEDRENO=$enableval], [FREEDRENO=yes])
+	      [Enable support for freedreno's KMS API (default: enabled on arm)]),
+	      [FREEDRENO=$enableval], [FREEDRENO=auto])
 
 AC_ARG_ENABLE(freedreno-kgsl,
 	      AS_HELP_STRING([--enable-freedreno-kgsl],
@@ -274,6 +274,13 @@ if test "x$LIBKMS" = xauto ; then
 				LIBKMS="yes" ;;
 		dragonfly*)	LIBKMS="yes" ;;
 		*)		LIBKMS="no" ;;
+	esac
+fi
+
+if test "x$FREEDRENO" = xauto ; then
+	case $host_cpu in
+		arm*|aarch64)	FREEDRENO="yes" ;;
+		*)		FREEDRENO="no" ;;
 	esac
 fi
 
