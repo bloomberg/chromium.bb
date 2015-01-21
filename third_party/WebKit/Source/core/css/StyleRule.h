@@ -38,18 +38,16 @@ class StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRule
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     enum Type {
-        Unknown, // Not used.
         Style,
-        Charset, // Not used. These are internally strings owned by the style sheet.
         Import,
         Media,
         FontFace,
         Page,
         Keyframes,
         Keyframe,
-        Supports = 12,
-        Viewport = 15,
-        Filter = 17
+        Supports,
+        Viewport,
+        Filter,
     };
 
     Type type() const { return static_cast<Type>(m_type); }

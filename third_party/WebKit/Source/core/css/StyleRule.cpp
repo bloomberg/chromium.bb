@@ -86,10 +86,6 @@ void StyleRuleBase::trace(Visitor* visitor)
     case Filter:
         toStyleRuleFilter(this)->traceAfterDispatch(visitor);
         return;
-    case Unknown:
-    case Charset:
-        ASSERT_NOT_REACHED();
-        return;
     }
     ASSERT_NOT_REACHED();
 }
@@ -126,10 +122,6 @@ void StyleRuleBase::finalizeGarbageCollectedObject()
         return;
     case Filter:
         toStyleRuleFilter(this)->~StyleRuleFilter();
-        return;
-    case Unknown:
-    case Charset:
-        ASSERT_NOT_REACHED();
         return;
     }
     ASSERT_NOT_REACHED();
@@ -168,10 +160,6 @@ void StyleRuleBase::destroy()
     case Filter:
         delete toStyleRuleFilter(this);
         return;
-    case Unknown:
-    case Charset:
-        ASSERT_NOT_REACHED();
-        return;
     }
     ASSERT_NOT_REACHED();
 }
@@ -199,8 +187,6 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> StyleRuleBase::copy() const
         return toStyleRuleViewport(this)->copy();
     case Filter:
         return toStyleRuleFilter(this)->copy();
-    case Unknown:
-    case Charset:
     case Keyframe:
         ASSERT_NOT_REACHED();
         return nullptr;
@@ -241,8 +227,6 @@ PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet*
     case Filter:
         rule = CSSFilterRule::create(toStyleRuleFilter(self), parentSheet);
         break;
-    case Unknown:
-    case Charset:
     case Keyframe:
         ASSERT_NOT_REACHED();
         return nullptr;

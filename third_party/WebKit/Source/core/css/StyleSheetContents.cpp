@@ -455,8 +455,6 @@ static bool childRulesHaveFailedOrCanceledSubresources(const WillBeHeapVector<Re
             ASSERT_NOT_REACHED();
         case StyleRuleBase::Page:
         case StyleRuleBase::Keyframes:
-        case StyleRuleBase::Unknown:
-        case StyleRuleBase::Charset:
         case StyleRuleBase::Keyframe:
         case StyleRuleBase::Supports:
         case StyleRuleBase::Viewport:

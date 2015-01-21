@@ -37,8 +37,6 @@ struct SameSizeAsCSSRule : public RefCountedWillBeGarbageCollectedFinalized<Same
 
 static_assert(sizeof(CSSRule) == sizeof(SameSizeAsCSSRule), "CSSRule should stay small");
 
-static_assert(StyleRuleBase::Viewport == static_cast<StyleRuleBase::Type>(CSSRule::VIEWPORT_RULE), "enums should match");
-
 void CSSRule::setCSSText(const String&)
 {
     notImplemented();
