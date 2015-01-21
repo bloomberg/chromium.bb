@@ -6,6 +6,7 @@
 
 """Renders one or more template files using the Jinja template engine."""
 
+import codecs
 import optparse
 import os
 import sys
@@ -18,13 +19,13 @@ import jinja2  # pylint: disable=F0401
 
 
 def ProcessFile(input_filename, output_filename, variables):
-  with open(input_filename, 'r') as input_file:
+  with codecs.open(input_filename, 'r', 'utf-8') as input_file:
     input_ = input_file.read()
   env = jinja2.Environment(undefined=jinja2.StrictUndefined)
   template = env.from_string(input_)
   template.filename = os.path.abspath(input_filename)
   output = template.render(variables)
-  with open(output_filename, 'w') as output_file:
+  with codecs.open(output_filename, 'w', 'utf-8') as output_file:
     output_file.write(output)
 
 
