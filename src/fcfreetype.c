@@ -1986,16 +1986,12 @@ bail:
 #warning "No FT_Get_Next_Char: Please install freetype version 2.1.0 or newer"
 #endif
 
-typedef struct _FcFontDecode {
-    FT_Encoding	    encoding;
-} FcFontDecode;
-
-static const FcFontDecode fcFontDecoders[] = {
-    { ft_encoding_unicode },
-    { ft_encoding_symbol },
+static const FT_Encoding fcFontEncodings[] = {
+    FT_ENCODING_UNICODE,
+    FT_ENCODING_MS_SYMBOL
 };
 
-#define NUM_DECODE  (int) (sizeof (fcFontDecoders) / sizeof (fcFontDecoders[0]))
+#define NUM_DECODE  (int) (sizeof (fcFontEncodings) / sizeof (fcFontEncodings[0]))
 
 static const FcChar32	prefer_unicode[] = {
     0x20ac,	/* EURO SIGN */
@@ -2140,7 +2136,7 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
     if (face->charmap)
     {
 	for (; initial < NUM_DECODE; initial++)
-	    if (fcFontDecoders[initial].encoding == face->charmap->encoding)
+	    if (fcFontEncodings[initial] == face->charmap->encoding)
 		break;
 	if (initial == NUM_DECODE)
 	    initial = 0;
@@ -2151,8 +2147,8 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
     for (offset = 0; offset < NUM_DECODE; offset++)
     {
 	decode = (initial + offset) % NUM_DECODE;
-	if (!face->charmap || face->charmap->encoding != fcFontDecoders[decode].encoding)
-	    if (FT_Select_Charmap (face, fcFontDecoders[decode].encoding) != 0)
+	if (!face->charmap || face->charmap->encoding != fcFontEncodings[decode])
+	    if (FT_Select_Charmap (face, fcFontEncodings[decode]) != 0)
 		continue;
 	glyphindex = FT_Get_Char_Index (face, (FT_ULong) ucs4);
 	if (glyphindex)
@@ -2270,7 +2266,7 @@ FcFreeTypeCharSetAndSpacingForSize (FT_Face face, FcBlanks *blanks, int *spacing
 #endif
     for (o = 0; o < NUM_DECODE; o++)
     {
-	if (FT_Select_Charmap (face, fcFontDecoders[o].encoding) != 0)
+	if (FT_Select_Charmap (face, fcFontEncodings[o]) != 0)
 	    continue;
 
 	{
