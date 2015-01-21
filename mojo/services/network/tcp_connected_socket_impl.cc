@@ -40,10 +40,18 @@ void TCPConnectedSocketImpl::ReceiveMore() {
         base::Bind(&TCPConnectedSocketImpl::OnReceiveStreamReady,
                    weak_ptr_factory_.GetWeakPtr()));
     return;
-  } else if (result != MOJO_RESULT_OK) {
+  }
+
+  if (result == MOJO_RESULT_FAILED_PRECONDITION) {
+    // It's valid that the user of this class consumed the data they care about
+    // and closed their data pipe handles after writing data. This class should
+    // still write out all the data.
+    return;
+  }
+
+  if (result != MOJO_RESULT_OK) {
     // The receive stream is in a bad state.
     // TODO(darin): How should this be communicated to our client?
-    socket_->Close();
     return;
   }
 
@@ -63,7 +71,6 @@ void TCPConnectedSocketImpl::ReceiveMore() {
   } else {
     // Some kind of error.
     // TODO(brettw) notify caller of error.
-    socket_->Close();
   }
 }
 
@@ -78,7 +85,6 @@ void TCPConnectedSocketImpl::DidReceive(bool completed_synchronously,
     // Error.
     pending_receive_ = NULL;  // Closes the pipe (owned by the pending write).
     // TODO(brettw) notify the caller of an error?
-    socket_->Close();
     return;
   }
 
@@ -111,7 +117,6 @@ void TCPConnectedSocketImpl::SendMore() {
     return;
   } else if (result != MOJO_RESULT_OK) {
     // TODO(brettw) notify caller of error.
-    socket_->Close();
     return;
   }
 
@@ -140,7 +145,6 @@ void TCPConnectedSocketImpl::DidSend(bool completed_synchronously,
   if (result < 0) {
     // TODO(brettw) report error.
     pending_send_ = NULL;
-    socket_->Close();
     return;
   }
 

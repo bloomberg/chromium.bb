@@ -1,5 +1,7 @@
 include_rules = [
+  "+base",
   "+mojo/application",
+  "+mojo/common",
   "+mojo/services",
   "+net",
 ]

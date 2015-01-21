@@ -5,13 +5,29 @@
 #include "mojo/services/network/network_context.h"
 
 #include "base/base_paths.h"
+#include "base/path_service.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
 namespace mojo {
 
-NetworkContext::NetworkContext(const base::FilePath& base_path) {
+NetworkContext::NetworkContext(
+    scoped_ptr<net::URLRequestContext> url_request_context)
+    : url_request_context_(url_request_context.Pass()) {
+}
+
+NetworkContext::NetworkContext(const base::FilePath& base_path)
+    : NetworkContext(MakeURLRequestContext(base_path)) {
+}
+
+NetworkContext::~NetworkContext() {
+  // TODO(darin): Be careful about destruction order of member variables?
+}
+
+// static
+scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
+    const base::FilePath& base_path) {
   net::URLRequestContextBuilder builder;
   builder.set_accept_language("en-us,en");
   // TODO(darin): This is surely the wrong UA string.
@@ -29,11 +45,7 @@ NetworkContext::NetworkContext(const base::FilePath& base_path) {
 
   builder.set_file_enabled(true);
 
-  url_request_context_.reset(builder.Build());
-}
-
-NetworkContext::~NetworkContext() {
-  // TODO(darin): Be careful about destruction order of member variables?
+  return make_scoped_ptr(builder.Build());
 }
 
 }  // namespace mojo

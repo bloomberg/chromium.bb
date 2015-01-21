@@ -8,6 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/common/handle_watcher.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "net/base/net_errors.h"
@@ -18,11 +20,12 @@ namespace mojo {
 class NetworkContext;
 class NetToMojoPendingBuffer;
 
-class URLLoaderImpl : public InterfaceImpl<URLLoader>,
+class URLLoaderImpl : public URLLoader,
+                      public ErrorHandler,
                       public net::URLRequest::Delegate {
  public:
-  explicit URLLoaderImpl(NetworkContext* context);
-  ~URLLoaderImpl() override;
+  URLLoaderImpl(NetworkContext* context, InterfaceRequest<URLLoader> request);
+  ~URLLoaderImpl();
 
  private:
   // URLLoader methods:
@@ -30,6 +33,9 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
              const Callback<void(URLResponsePtr)>& callback) override;
   void FollowRedirect(const Callback<void(URLResponsePtr)>& callback) override;
   void QueryStatus(const Callback<void(URLLoaderStatusPtr)>& callback) override;
+
+  // ErrorHandler methods:
+  void OnConnectionError() override;
 
   // net::URLRequest::Delegate methods:
   void OnReceivedRedirect(net::URLRequest* url_request,
@@ -43,8 +49,11 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
       const Callback<void(URLResponsePtr)>& callback);
   void SendResponse(URLResponsePtr response);
   void OnResponseBodyStreamReady(MojoResult result);
+  void OnResponseBodyStreamClosed(MojoResult result);
   void ReadMore();
   void DidRead(uint32_t num_bytes, bool completed_synchronously);
+  void ListenForPeerClosed();
+  void DeleteIfNeeded();
 
   NetworkContext* context_;
   scoped_ptr<net::URLRequest> url_request_;
@@ -54,6 +63,8 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
   common::HandleWatcher handle_watcher_;
   uint32 response_body_buffer_size_;
   bool auto_follow_redirects_;
+  bool connected_;
+  Binding<URLLoader> binding_;
 
   base::WeakPtrFactory<URLLoaderImpl> weak_ptr_factory_;
 };

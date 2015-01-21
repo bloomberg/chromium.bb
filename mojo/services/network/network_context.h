@@ -20,6 +20,8 @@ namespace mojo {
 
 class NetworkContext {
  public:
+  explicit NetworkContext(
+      scoped_ptr<net::URLRequestContext> url_request_context);
   explicit NetworkContext(const base::FilePath& base_path);
   ~NetworkContext();
 
@@ -28,6 +30,9 @@ class NetworkContext {
   }
 
  private:
+  static scoped_ptr<net::URLRequestContext> MakeURLRequestContext(
+      const base::FilePath& base_path);
+
   scoped_ptr<net::URLRequestContext> url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
