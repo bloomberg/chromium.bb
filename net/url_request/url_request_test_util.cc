@@ -117,10 +117,9 @@ void TestURLRequestContext::Init() {
     context_storage_.set_cookie_store(new CookieMonster(NULL, NULL));
   // In-memory Channel ID service.
   if (!channel_id_service()) {
-    context_storage_.set_channel_id_service(
-        new ChannelIDService(
-            new DefaultChannelIDStore(NULL),
-            base::WorkerPool::GetTaskRunner(true)));
+    context_storage_.set_channel_id_service(make_scoped_ptr(
+        new ChannelIDService(new DefaultChannelIDStore(NULL),
+                             base::WorkerPool::GetTaskRunner(true))));
   }
   if (!http_user_agent_settings()) {
     context_storage_.set_http_user_agent_settings(

@@ -209,8 +209,7 @@ URLRequestContextBuilder::URLRequestContextBuilder()
       ftp_enabled_(false),
 #endif
       http_cache_enabled_(true),
-      throttling_enabled_(false),
-      channel_id_enabled_(true) {
+      throttling_enabled_(false) {
 }
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
@@ -230,6 +229,14 @@ void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
   http_network_session_params_.next_protos =
       NextProtosWithSpdyAndQuic(spdy_enabled, quic_enabled);
   http_network_session_params_.enable_quic = quic_enabled;
+}
+
+void URLRequestContextBuilder::SetCookieAndChannelIdStores(
+      const scoped_refptr<CookieStore>& cookie_store,
+      scoped_ptr<ChannelIDService> channel_id_service) {
+  DCHECK(cookie_store);
+  cookie_store_ = cookie_store;
+  channel_id_service_ = channel_id_service.Pass();
 }
 
 URLRequestContext* URLRequestContextBuilder::Build() {
@@ -290,15 +297,17 @@ URLRequestContext* URLRequestContextBuilder::Build() {
         extra_http_auth_handlers_[i].factory);
   }
   storage->set_http_auth_handler_factory(http_auth_handler_registry_factory);
-  storage->set_cookie_store(new CookieMonster(NULL, NULL));
 
-  if (channel_id_enabled_) {
+  if (cookie_store_) {
+    storage->set_cookie_store(cookie_store_.get());
+    storage->set_channel_id_service(channel_id_service_.Pass());
+  } else {
+    storage->set_cookie_store(new CookieMonster(NULL, NULL));
     // TODO(mmenke):  This always creates a file thread, even when it ends up
     // not being used.  Consider lazily creating the thread.
-    storage->set_channel_id_service(
-        new ChannelIDService(
-            new DefaultChannelIDStore(NULL),
-            context->GetFileThread()->message_loop_proxy()));
+    storage->set_channel_id_service(make_scoped_ptr(
+        new ChannelIDService(new DefaultChannelIDStore(NULL),
+                             context->GetFileThread()->message_loop_proxy())));
   }
 
   storage->set_transport_security_state(new net::TransportSecurityState());

@@ -48,8 +48,7 @@ class NET_EXPORT URLRequestContextStorage {
   void set_net_log(NetLog* net_log);
   void set_host_resolver(scoped_ptr<HostResolver> host_resolver);
   void set_cert_verifier(CertVerifier* cert_verifier);
-  void set_channel_id_service(
-      ChannelIDService* channel_id_service);
+  void set_channel_id_service(scoped_ptr<ChannelIDService> channel_id_service);
   void set_fraudulent_certificate_reporter(
       FraudulentCertificateReporter* fraudulent_certificate_reporter);
   void set_http_auth_handler_factory(

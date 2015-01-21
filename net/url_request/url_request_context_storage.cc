@@ -49,9 +49,9 @@ void URLRequestContextStorage::set_cert_verifier(CertVerifier* cert_verifier) {
 }
 
 void URLRequestContextStorage::set_channel_id_service(
-    ChannelIDService* channel_id_service) {
-  context_->set_channel_id_service(channel_id_service);
-  channel_id_service_.reset(channel_id_service);
+    scoped_ptr<ChannelIDService> channel_id_service) {
+  context_->set_channel_id_service(channel_id_service.get());
+  channel_id_service_ = channel_id_service.Pass();
 }
 
 void URLRequestContextStorage::set_fraudulent_certificate_reporter(

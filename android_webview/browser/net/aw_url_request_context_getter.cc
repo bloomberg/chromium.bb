@@ -37,7 +37,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
-#include "net/ssl/default_channel_id_store.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -242,7 +242,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.set_accept_language(net::HttpUtil::GenerateAcceptLanguageHeader(
       AwContentBrowserClient::GetAcceptLangsImpl()));
   builder.set_net_log(net_log_.get());
-  builder.set_channel_id_enabled(false);
+  builder.SetCookieAndChannelIdStores(cookie_store_, NULL);
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
 
   url_request_context_.reset(builder.Build());
@@ -263,7 +263,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);
-  url_request_context_->set_cookie_store(cookie_store_.get());
 
   job_factory_ = CreateJobFactory(&protocol_handlers_,
                                   request_interceptors_.Pass());
