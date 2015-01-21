@@ -632,13 +632,16 @@ bool BoxPainter::isDocumentElementWithOpaqueBackground(RenderObject& obj)
     return isOpaque;
 }
 
-static inline int getSpace(int areaSize, int tileSize)
+// Return the amount of space to leave between image tiles for the background-repeat: space property.
+static inline int getSpaceBetweenImageTiles(int areaSize, int tileSize)
 {
     int numberOfTiles = areaSize / tileSize;
     int space = -1;
 
-    if (numberOfTiles > 1)
-        space = lroundf((float)(areaSize - numberOfTiles * tileSize) / (numberOfTiles - 1));
+    if (numberOfTiles > 1) {
+        // Spec doesn't specify rounding, so use the same method as for background-repeat: round.
+        space = lroundf((areaSize - numberOfTiles * tileSize) / (float)(numberOfTiles - 1));
+    }
 
     return space;
 }
@@ -725,11 +728,14 @@ void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, con
     if (backgroundRepeatX == RoundFill && positioningAreaSize.width() > 0 && fillTileSize.width() > 0) {
         long nrTiles = std::max(1l, lroundf((float)positioningAreaSize.width() / fillTileSize.width()));
 
+        // Round tile size per css3-background spec.
+        fillTileSize.setWidth(lroundf(positioningAreaSize.width() / (float)nrTiles));
+
+        // Maintain aspect ratio if background-size: auto is set
         if (fillLayer.size().size.height().isAuto() && backgroundRepeatY != RoundFill) {
             fillTileSize.setHeight(fillTileSize.height() * positioningAreaSize.width() / (nrTiles * fillTileSize.width()));
         }
 
-        fillTileSize.setWidth(positioningAreaSize.width() / nrTiles);
         geometry.setTileSize(fillTileSize);
         geometry.setPhaseX(geometry.tileSize().width() ? geometry.tileSize().width() - roundToInt(computedXPosition + left) % geometry.tileSize().width() : 0);
         geometry.setSpaceSize(IntSize());
@@ -739,11 +745,14 @@ void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, con
     if (backgroundRepeatY == RoundFill && positioningAreaSize.height() > 0 && fillTileSize.height() > 0) {
         long nrTiles = std::max(1l, lroundf((float)positioningAreaSize.height() / fillTileSize.height()));
 
+        // Round tile size per css3-background spec.
+        fillTileSize.setHeight(lroundf(positioningAreaSize.height() / (float)nrTiles));
+
+        // Maintain aspect ratio if background-size: auto is set
         if (fillLayer.size().size.width().isAuto() && backgroundRepeatX != RoundFill) {
             fillTileSize.setWidth(fillTileSize.width() * positioningAreaSize.height() / (nrTiles * fillTileSize.height()));
         }
 
-        fillTileSize.setHeight(positioningAreaSize.height() / nrTiles);
         geometry.setTileSize(fillTileSize);
         geometry.setPhaseY(geometry.tileSize().height() ? geometry.tileSize().height() - roundToInt(computedYPosition + top) % geometry.tileSize().height() : 0);
         geometry.setSpaceSize(IntSize());
@@ -753,7 +762,7 @@ void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, con
         geometry.setPhaseX(geometry.tileSize().width() ? geometry.tileSize().width() - roundToInt(computedXPosition + left) % geometry.tileSize().width() : 0);
         geometry.setSpaceSize(IntSize());
     } else if (backgroundRepeatX == SpaceFill && fillTileSize.width() > 0) {
-        int space = getSpace(positioningAreaSize.width(), geometry.tileSize().width());
+        int space = getSpaceBetweenImageTiles(positioningAreaSize.width(), geometry.tileSize().width());
         int actualWidth = geometry.tileSize().width() + space;
 
         if (space >= 0) {
@@ -774,7 +783,7 @@ void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, con
         geometry.setPhaseY(geometry.tileSize().height() ? geometry.tileSize().height() - roundToInt(computedYPosition + top) % geometry.tileSize().height() : 0);
         geometry.setSpaceSize(IntSize(geometry.spaceSize().width(), 0));
     } else if (backgroundRepeatY == SpaceFill && fillTileSize.height() > 0) {
-        int space = getSpace(positioningAreaSize.height(), geometry.tileSize().height());
+        int space = getSpaceBetweenImageTiles(positioningAreaSize.height(), geometry.tileSize().height());
         int actualHeight = geometry.tileSize().height() + space;
 
         if (space >= 0) {
