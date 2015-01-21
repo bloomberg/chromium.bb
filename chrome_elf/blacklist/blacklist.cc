@@ -38,6 +38,8 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"bitguard.dll",                      // Unknown (suspected malware).
   L"chrmxtn.dll",                       // Unknown (keystroke logger).
   L"cplushook.dll",                     // Unknown (suspected malware).
+  L"crdli.dll",                         // Linkury Inc.
+  L"crdli64.dll",                       // Linkury Inc.
   L"datamngr.dll",                      // Unknown (suspected adware).
   L"hk.dll",                            // Unknown (keystroke logger).
   L"libapi2hook.dll",                   // V-Bates.
