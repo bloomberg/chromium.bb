@@ -296,7 +296,7 @@ bool IsForceGpuRasterizationEnabled() {
 
 bool UseSurfacesEnabled() {
 #if defined(OS_ANDROID)
-  return false;
+  return true;
 #else
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
