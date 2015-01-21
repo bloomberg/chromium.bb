@@ -24,8 +24,8 @@ namespace content {
 
 class BrowserContext;
 class DevToolsProtocolHandler;
-class RenderViewHost;
-class RenderViewHostImpl;
+class RenderFrameHost;
+class RenderFrameHostImpl;
 
 #if defined(OS_ANDROID)
 class PowerSaveBlockerImpl;
@@ -49,8 +49,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   static void OnCancelPendingNavigation(RenderFrameHost* pending,
                                         RenderFrameHost* current);
 
-  explicit RenderViewDevToolsAgentHost(RenderViewHost*);
-
   void SynchronousSwapCompositorFrame(
       const cc::CompositorFrameMetadata& frame_metadata);
 
@@ -67,6 +65,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
  private:
   friend class DevToolsAgentHost;
+  explicit RenderViewDevToolsAgentHost(RenderFrameHost*);
   ~RenderViewDevToolsAgentHost() override;
 
   // IPCDevToolsAgentHost overrides.
@@ -77,9 +76,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   // WebContentsObserver overrides.
   void AboutToNavigateRenderFrame(RenderFrameHost* render_frame_host) override;
-  void RenderViewHostChanged(RenderViewHost* old_host,
-                             RenderViewHost* new_host) override;
-  void RenderViewDeleted(RenderViewHost* rvh) override;
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override;
+  void RenderFrameDeleted(RenderFrameHost* rvh) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
@@ -95,14 +94,14 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
                const NotificationSource& source,
                const NotificationDetails& details) override;
 
-  void DisconnectRenderViewHost();
-  void ConnectRenderViewHost(RenderViewHost* rvh);
-  void ReattachToRenderViewHost(RenderViewHost* rvh);
+  void DisconnectRenderFrameHost();
+  void ConnectRenderFrameHost(RenderFrameHost* rvh);
+  void ReattachToRenderFrameHost(RenderFrameHost* rvh);
 
-  void SetRenderViewHost(RenderViewHost* rvh);
-  void ClearRenderViewHost();
+  void SetRenderFrameHost(RenderFrameHost* rvh);
+  void ClearRenderFrameHost();
 
-  void RenderViewCrashed();
+  void RenderFrameCrashed();
   void OnSwapCompositorFrame(const IPC::Message& message);
   bool OnSetTouchEventEmulationEnabled(const IPC::Message& message);
 
@@ -116,7 +115,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void InnerOnClientAttached();
   void InnerClientDetachedFromRenderer();
 
-  RenderViewHostImpl* render_view_host_;
+  RenderFrameHostImpl* render_frame_host_;
   scoped_ptr<devtools::dom::DOMHandler> dom_handler_;
   scoped_ptr<devtools::input::InputHandler> input_handler_;
   scoped_ptr<devtools::inspector::InspectorHandler> inspector_handler_;

@@ -18,6 +18,7 @@
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/power_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -44,8 +45,8 @@ typedef std::vector<RenderViewDevToolsAgentHost*> Instances;
 namespace {
 base::LazyInstance<Instances>::Leaky g_instances = LAZY_INSTANCE_INITIALIZER;
 
-//Returns RenderViewDevToolsAgentHost attached to any of RenderViewHost
-//instances associated with |web_contents|
+// Returns RenderViewDevToolsAgentHost attached to any of RenderFrameHost
+// instances associated with |web_contents|
 static RenderViewDevToolsAgentHost* FindAgentHost(WebContents* web_contents) {
   if (g_instances == NULL)
     return NULL;
@@ -63,7 +64,7 @@ scoped_refptr<DevToolsAgentHost>
 DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
   RenderViewDevToolsAgentHost* result = FindAgentHost(web_contents);
   if (!result)
-    result = new RenderViewDevToolsAgentHost(web_contents->GetRenderViewHost());
+    result = new RenderViewDevToolsAgentHost(web_contents->GetMainFrame());
   return result;
 }
 
@@ -107,16 +108,16 @@ void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
   if (current->GetParent())
     return;
   WebContents* web_contents =
-      WebContents::FromRenderViewHost(pending->GetRenderViewHost());
+      WebContents::FromRenderFrameHost(pending);
   RenderViewDevToolsAgentHost* agent_host = FindAgentHost(web_contents);
   if (!agent_host)
     return;
-  agent_host->DisconnectRenderViewHost();
-  agent_host->ConnectRenderViewHost(current->GetRenderViewHost());
+  agent_host->DisconnectRenderFrameHost();
+  agent_host->ConnectRenderFrameHost(current);
 }
 
-RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
-    : render_view_host_(NULL),
+RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderFrameHost* rfh)
+    : render_frame_host_(NULL),
       dom_handler_(new devtools::dom::DOMHandler()),
       input_handler_(new devtools::input::InputHandler()),
       inspector_handler_(new devtools::inspector::InspectorHandler()),
@@ -137,9 +138,9 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
   dispatcher->SetPageHandler(page_handler_.get());
   dispatcher->SetPowerHandler(power_handler_.get());
   dispatcher->SetTracingHandler(tracing_handler_.get());
-  SetRenderViewHost(rvh);
+  SetRenderFrameHost(rfh);
   g_instances.Get().push_back(this);
-  AddRef();  // Balanced in RenderViewHostDestroyed.
+  AddRef();  // Balanced in RenderFrameHostDestroyed.
   DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
@@ -179,15 +180,14 @@ void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
 }
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
-  if (!render_view_host_)
+  if (!render_frame_host_)
     return;
-  RenderFrameHost* main_frame_host = render_view_host_->GetMainFrame();
-  msg->set_routing_id(main_frame_host->GetRoutingID());
-  main_frame_host->Send(msg);
+  msg->set_routing_id(render_frame_host_->GetRoutingID());
+  render_frame_host_->Send(msg);
 }
 
 void RenderViewDevToolsAgentHost::OnClientAttached() {
-  if (!render_view_host_)
+  if (!render_frame_host_)
     return;
 
   InnerOnClientAttached();
@@ -200,7 +200,7 @@ void RenderViewDevToolsAgentHost::OnClientAttached() {
 
 void RenderViewDevToolsAgentHost::InnerOnClientAttached() {
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
-      render_view_host_->GetProcess()->GetID());
+      render_frame_host_->GetProcess()->GetID());
 
 #if defined(OS_ANDROID)
   power_save_blocker_.reset(
@@ -208,9 +208,11 @@ void RenderViewDevToolsAgentHost::InnerOnClientAttached() {
           PowerSaveBlocker::Create(
               PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
               "DevTools").release()));
-  if (render_view_host_->GetView()) {
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      render_frame_host_->GetRenderViewHost());
+  if (rvh->GetView()) {
     power_save_blocker_.get()->
-        InitDisplaySleepBlocker(render_view_host_->GetView()->GetNativeView());
+        InitDisplaySleepBlocker(rvh->GetView()->GetNativeView());
   }
 #endif
 }
@@ -231,7 +233,7 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
 }
 
 void RenderViewDevToolsAgentHost::ClientDetachedFromRenderer() {
-  if (!render_view_host_)
+  if (!render_frame_host_)
     return;
 
   InnerClientDetachedFromRenderer();
@@ -239,13 +241,13 @@ void RenderViewDevToolsAgentHost::ClientDetachedFromRenderer() {
 
 void RenderViewDevToolsAgentHost::InnerClientDetachedFromRenderer() {
   bool process_has_agents = false;
-  RenderProcessHost* render_process_host = render_view_host_->GetProcess();
+  RenderProcessHost* render_process_host = render_frame_host_->GetProcess();
   for (Instances::iterator it = g_instances.Get().begin();
        it != g_instances.Get().end(); ++it) {
     if (*it == this || !(*it)->IsAttached())
       continue;
-    RenderViewHost* rvh = (*it)->render_view_host_;
-    if (rvh && rvh->GetProcess() == render_process_host)
+    RenderFrameHost* rfh = (*it)->render_frame_host_;
+    if (rfh && rfh->GetProcess() == render_process_host)
       process_has_agents = true;
   }
 
@@ -267,50 +269,52 @@ RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
 // TODO(creis): Consider removing this in favor of RenderFrameHostChanged.
 void RenderViewDevToolsAgentHost::AboutToNavigateRenderFrame(
     RenderFrameHost* render_frame_host) {
-  if (!render_view_host_)
+  if (!render_frame_host_)
     return;
   if (render_frame_host->GetParent())
     return;
 
   // TODO(creis): This will need to be updated for --site-per-process, since
   // RenderViewHost is going away and navigations could happen in any frame.
-  if (render_view_host_ == render_frame_host->GetRenderViewHost() &&
-          render_view_host_->render_view_termination_status() ==
-              base::TERMINATION_STATUS_STILL_RUNNING)
-    return;
-  ReattachToRenderViewHost(render_frame_host->GetRenderViewHost());
+  if (render_frame_host_ == render_frame_host) {
+    RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+        render_frame_host_->GetRenderViewHost());
+    if (rvh->render_view_termination_status() ==
+            base::TERMINATION_STATUS_STILL_RUNNING)
+      return;
+  }
+  ReattachToRenderFrameHost(render_frame_host);
 }
 
-// TODO(creis): Move to RenderFrameHostChanged.
-void RenderViewDevToolsAgentHost::RenderViewHostChanged(
-    RenderViewHost* old_host,
-    RenderViewHost* new_host) {
-  if (new_host->GetMainFrame()->GetParent())
+void RenderViewDevToolsAgentHost::RenderFrameHostChanged(
+    RenderFrameHost* old_host,
+    RenderFrameHost* new_host) {
+  if (new_host->GetParent())
     return;
-  if (new_host != render_view_host_) {
+  if (new_host != render_frame_host_) {
     // AboutToNavigateRenderFrame was not called for renderer-initiated
     // navigation.
-    ReattachToRenderViewHost(new_host);
+    ReattachToRenderFrameHost(new_host);
   }
 }
 
 void
-RenderViewDevToolsAgentHost::ReattachToRenderViewHost(RenderViewHost* rvh) {
+RenderViewDevToolsAgentHost::ReattachToRenderFrameHost(RenderFrameHost* rfh) {
   DCHECK(!reattaching_);
   reattaching_ = true;
-  DisconnectRenderViewHost();
-  ConnectRenderViewHost(rvh);
+  DisconnectRenderFrameHost();
+  ConnectRenderFrameHost(rfh);
   reattaching_ = false;
 }
 
-void RenderViewDevToolsAgentHost::RenderViewDeleted(RenderViewHost* rvh) {
-  if (rvh != render_view_host_)
+void RenderViewDevToolsAgentHost::RenderFrameDeleted(RenderFrameHost* rfh) {
+  if (rfh != render_frame_host_)
     return;
 
-  DCHECK(render_view_host_);
+  DCHECK(render_frame_host_);
   scoped_refptr<RenderViewDevToolsAgentHost> protect(this);
   HostClosed();
-  ClearRenderViewHost();
+  ClearRenderFrameHost();
   DevToolsManager::GetInstance()->AgentHostChanged(this);
   Release();
 }
@@ -324,7 +328,7 @@ void RenderViewDevToolsAgentHost::RenderProcessGone(
 #if defined(OS_ANDROID)
     case base::TERMINATION_STATUS_OOM_PROTECTED:
 #endif
-      RenderViewCrashed();
+      RenderFrameCrashed();
       break;
     default:
       break;
@@ -333,7 +337,7 @@ void RenderViewDevToolsAgentHost::RenderProcessGone(
 
 bool RenderViewDevToolsAgentHost::OnMessageReceived(
     const IPC::Message& message) {
-  if (!render_view_host_)
+  if (!render_frame_host_)
     return false;
   if (message.type() == ViewHostMsg_SwapCompositorFrame::ID)
     OnSwapCompositorFrame(message);
@@ -343,9 +347,7 @@ bool RenderViewDevToolsAgentHost::OnMessageReceived(
 bool RenderViewDevToolsAgentHost::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
-  if (!render_view_host_)
-    return false;
-  if (render_frame_host != render_view_host_->GetMainFrame())
+  if (!render_frame_host_ || render_frame_host != render_frame_host_)
     return false;
 
   bool handled = true;
@@ -362,16 +364,16 @@ bool RenderViewDevToolsAgentHost::OnMessageReceived(
 void RenderViewDevToolsAgentHost::DidAttachInterstitialPage() {
   page_handler_->DidAttachInterstitialPage();
 
-  if (!render_view_host_)
+  if (!render_frame_host_)
     return;
   // The rvh set in AboutToNavigateRenderFrame turned out to be interstitial.
   // Connect back to the real one.
   WebContents* web_contents =
-    WebContents::FromRenderViewHost(render_view_host_);
+    WebContents::FromRenderFrameHost(render_frame_host_);
   if (!web_contents)
     return;
-  DisconnectRenderViewHost();
-  ConnectRenderViewHost(web_contents->GetRenderViewHost());
+  DisconnectRenderFrameHost();
+  ConnectRenderFrameHost(web_contents->GetMainFrame());
 }
 
 void RenderViewDevToolsAgentHost::DidDetachInterstitialPage() {
@@ -397,29 +399,34 @@ void RenderViewDevToolsAgentHost::Observe(int type,
   }
 }
 
-void RenderViewDevToolsAgentHost::SetRenderViewHost(RenderViewHost* rvh) {
-  DCHECK(!render_view_host_);
-  render_view_host_ = static_cast<RenderViewHostImpl*>(rvh);
+void RenderViewDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
+  DCHECK(!render_frame_host_);
+  DCHECK(!rfh->GetParent());
+  render_frame_host_ = static_cast<RenderFrameHostImpl*>(rfh);
 
-  WebContentsObserver::Observe(WebContents::FromRenderViewHost(rvh));
-  dom_handler_->SetRenderViewHost(render_view_host_);
-  input_handler_->SetRenderViewHost(render_view_host_);
-  network_handler_->SetRenderViewHost(render_view_host_);
-  page_handler_->SetRenderViewHost(render_view_host_);
+  WebContentsObserver::Observe(WebContents::FromRenderFrameHost(rfh));
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      rfh->GetRenderViewHost());
+  dom_handler_->SetRenderViewHost(rvh);
+  input_handler_->SetRenderViewHost(rvh);
+  network_handler_->SetRenderViewHost(rvh);
+  page_handler_->SetRenderViewHost(rvh);
 
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHost>(render_view_host_));
+      content::Source<RenderWidgetHost>(rvh));
 }
 
-void RenderViewDevToolsAgentHost::ClearRenderViewHost() {
-  DCHECK(render_view_host_);
+void RenderViewDevToolsAgentHost::ClearRenderFrameHost() {
+  DCHECK(render_frame_host_);
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      render_frame_host_->GetRenderViewHost());
   registrar_.Remove(
       this,
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHost>(render_view_host_));
-  render_view_host_ = nullptr;
+      content::Source<RenderWidgetHost>(rvh));
+  render_frame_host_ = nullptr;
   dom_handler_->SetRenderViewHost(nullptr);
   input_handler_->SetRenderViewHost(nullptr);
   network_handler_->SetRenderViewHost(nullptr);
@@ -427,11 +434,11 @@ void RenderViewDevToolsAgentHost::ClearRenderViewHost() {
 }
 
 void RenderViewDevToolsAgentHost::DisconnectWebContents() {
-  DisconnectRenderViewHost();
+  DisconnectRenderFrameHost();
 }
 
 void RenderViewDevToolsAgentHost::ConnectWebContents(WebContents* wc) {
-  ConnectRenderViewHost(wc->GetRenderViewHost());
+  ConnectRenderFrameHost(wc->GetMainFrame());
 }
 
 DevToolsAgentHost::Type RenderViewDevToolsAgentHost::GetType() {
@@ -447,38 +454,38 @@ std::string RenderViewDevToolsAgentHost::GetTitle() {
 GURL RenderViewDevToolsAgentHost::GetURL() {
   if (WebContents* web_contents = GetWebContents())
     return web_contents->GetVisibleURL();
-  return render_view_host_ ?
-      render_view_host_->GetMainFrame()->GetLastCommittedURL() : GURL();
+  return render_frame_host_ ?
+      render_frame_host_->GetLastCommittedURL() : GURL();
 }
 
 bool RenderViewDevToolsAgentHost::Activate() {
-  if (render_view_host_) {
-    render_view_host_->GetDelegate()->Activate();
+  if (render_frame_host_) {
+    render_frame_host_->GetRenderViewHost()->GetDelegate()->Activate();
     return true;
   }
   return false;
 }
 
 bool RenderViewDevToolsAgentHost::Close() {
-  if (render_view_host_) {
-    render_view_host_->ClosePage();
+  if (render_frame_host_) {
+    render_frame_host_->GetRenderViewHost()->ClosePage();
     return true;
   }
   return false;
 }
 
-void RenderViewDevToolsAgentHost::ConnectRenderViewHost(RenderViewHost* rvh) {
-  SetRenderViewHost(rvh);
+void RenderViewDevToolsAgentHost::ConnectRenderFrameHost(RenderFrameHost* rfh) {
+  SetRenderFrameHost(rfh);
   if (IsAttached())
     Reattach(state_);
 }
 
-void RenderViewDevToolsAgentHost::DisconnectRenderViewHost() {
+void RenderViewDevToolsAgentHost::DisconnectRenderFrameHost() {
   ClientDetachedFromRenderer();
-  ClearRenderViewHost();
+  ClearRenderFrameHost();
 }
 
-void RenderViewDevToolsAgentHost::RenderViewCrashed() {
+void RenderViewDevToolsAgentHost::RenderFrameCrashed() {
   inspector_handler_->TargetCrashed();
 }
 
@@ -492,14 +499,14 @@ void RenderViewDevToolsAgentHost::OnSwapCompositorFrame(
 
 void RenderViewDevToolsAgentHost::SynchronousSwapCompositorFrame(
     const cc::CompositorFrameMetadata& frame_metadata) {
-  if (!render_view_host_)
+  if (!render_frame_host_)
     return;
   page_handler_->OnSwapCompositorFrame(frame_metadata);
 }
 
 void RenderViewDevToolsAgentHost::OnSaveAgentRuntimeState(
     const std::string& state) {
-  if (!render_view_host_)
+  if (!render_frame_host_)
     return;
   state_ = state;
 }
@@ -507,14 +514,14 @@ void RenderViewDevToolsAgentHost::OnSaveAgentRuntimeState(
 void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     const std::string& message,
     uint32 total_size) {
-  if (!IsAttached() || !render_view_host_)
+  if (!IsAttached() || !render_frame_host_)
     return;
   ProcessChunkedMessageFromAgent(message, total_size);
 }
 
 void RenderViewDevToolsAgentHost::DispatchOnInspectorFrontend(
     const std::string& message) {
-  if (!IsAttached() || !render_view_host_)
+  if (!IsAttached() || !render_frame_host_)
     return;
   SendMessageToClient(message);
 }
