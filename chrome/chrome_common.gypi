@@ -252,23 +252,16 @@
       'common/service_process_util_win.cc',
     ],
     'chrome_common_win_mac_sources': [
+      'common/extensions/api/networking_private/networking_private_crypto_nss.cc',
+      'common/extensions/api/networking_private/networking_private_crypto_openssl.cc',
+      'common/extensions/api/networking_private/networking_private_crypto.cc',
+      'common/extensions/api/networking_private/networking_private_crypto.h',
       'common/media_galleries/itunes_library.cc',
       'common/media_galleries/itunes_library.h',
       'common/media_galleries/picasa_types.cc',
       'common/media_galleries/picasa_types.h',
       'common/media_galleries/pmp_constants.h',
     ],
-    'chrome_common_networking_private_sources_openssl' : [
-      'common/extensions/api/networking_private/networking_private_crypto_openssl.cc',
-      'common/extensions/api/networking_private/networking_private_crypto.cc',
-      'common/extensions/api/networking_private/networking_private_crypto.h',
-    ],
-    'chrome_common_networking_private_sources_nss' : [
-      'common/extensions/api/networking_private/networking_private_crypto_nss.cc',
-      'common/extensions/api/networking_private/networking_private_crypto.cc',
-      'common/extensions/api/networking_private/networking_private_crypto.h',
-    ],
-
     'chrome_common_mac_sources': [
       'common/media_galleries/iphoto_library.cc',
       'common/media_galleries/iphoto_library.h',
@@ -351,14 +344,11 @@
         ['OS=="win" or OS=="mac"', {
           'sources': [ '<@(chrome_common_win_mac_sources)' ],
         }],
-        ['(OS=="win" or OS=="mac" or chromeos==1) and use_openssl==1', {
-          'sources': [ '<@(chrome_common_networking_private_sources_openssl)' ],
+        ['(OS=="win" or OS=="mac") and use_openssl==1', {
+          # networking_private_crypto_openssl.cc depends on boringssl.
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ],
-        }],
-        ['(OS=="win" or OS=="mac" or chromeos==1) and use_openssl!=1', {
-          'sources': [ '<@(chrome_common_networking_private_sources_nss)' ],
         }],
         ['OS=="mac"', {
           'sources': [ '<@(chrome_common_mac_sources)' ],
@@ -503,6 +493,17 @@
         ['safe_browsing==2', {
           'defines': [ 'MOBILE_SAFE_BROWSING' ],
         }],
+        ['use_openssl==1', {
+           'sources!': [
+             'common/extensions/api/networking_private/networking_private_crypto_nss.cc',
+           ],
+         },
+         {  # else !use_openssl
+           'sources!': [
+             'common/extensions/api/networking_private/networking_private_crypto_openssl.cc',
+           ],
+         },
+        ],
       ],
       'target_conditions': [
         ['OS == "ios"', {

@@ -29,7 +29,6 @@ class CryptoVerifyImpl : public NetworkingPrivateDelegate::VerifyDelegate {
     ~Credentials();
 
     std::string certificate;
-    std::vector<std::string> intermediate_certificates;
     std::string signed_data;
     std::string unsigned_data;
     std::string device_bssid;

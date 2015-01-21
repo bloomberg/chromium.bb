@@ -9,9 +9,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_chromeos.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -64,43 +61,12 @@ using chromeos::ShillManagerClient;
 using chromeos::ShillProfileClient;
 using chromeos::ShillServiceClient;
 
-using extensions::NetworkingPrivateDelegate;
-using extensions::NetworkingPrivateDelegateFactory;
-using extensions::NetworkingPrivateChromeOS;
-
 namespace {
 
 const char kUser1ProfilePath[] = "/profile/user1/shill";
 const char kWifiDevicePath[] = "/device/stub_wifi_device1";
 const char kCellularDevicePath[] = "/device/stub_cellular_device1";
 const char kIPConfigPath[] = "/ipconfig/ipconfig1";
-
-// Stub Verify* methods implementation to satisfy expectations of
-// networking_private_apitest.
-class CryptoVerifyStub : public NetworkingPrivateDelegate::VerifyDelegate {
-  void VerifyDestination(
-      const VerificationProperties& verification_properties,
-      const BoolCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    success_callback.Run(true);
-  }
-
-  void VerifyAndEncryptCredentials(
-      const std::string& guid,
-      const VerificationProperties& verification_properties,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    success_callback.Run("encrypted_credentials");
-  }
-
-  void VerifyAndEncryptData(
-      const VerificationProperties& verification_properties,
-      const std::string& data,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    success_callback.Run("encrypted_data");
-  }
-};
 
 class TestListener : public content::NotificationObserver {
  public:
@@ -230,21 +196,12 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
                               true /* add_to_visible */);
   }
 
-  static KeyedService* CreateNetworkingPrivateServiceClient(
-      content::BrowserContext* profile) {
-    scoped_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
-    return new NetworkingPrivateChromeOS(profile, crypto_verify.Pass());
-  }
-
   void SetUpOnMainThread() override {
     detector_ = new NetworkPortalDetectorTestImpl();
     NetworkPortalDetector::InitializeForTesting(detector_);
 
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
-
-    NetworkingPrivateDelegateFactory::GetInstance()->SetTestingFactory(
-        profile(), &CreateNetworkingPrivateServiceClient);
 
     InitializeSanitizedUsername();
 
