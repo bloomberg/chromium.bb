@@ -105,6 +105,17 @@ const String MediaValues::calculateMediaType(LocalFrame* frame) const
     return frame->view()->mediaType();
 }
 
+DisplayMode MediaValues::calculateDisplayMode(LocalFrame* frame) const
+{
+    ASSERT(frame);
+    DisplayMode mode = frame->host()->settings().displayModeOverride();
+
+    if (mode != DisplayModeUndefined)
+        return mode;
+
+    return DisplayModeBrowser;
+}
+
 bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) const
 {
     ASSERT(frame && frame->contentRenderer() && frame->contentRenderer()->compositor());

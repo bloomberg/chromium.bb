@@ -868,6 +868,12 @@ at
 
 alphabetic
 
+// (display-mode:) media feature
+fullscreen
+standalone
+minimal-ui
+browser
+
 // (pointer:) media feature
 // none
 coarse

@@ -54,6 +54,17 @@ TestCase screenTestCases[] = {
     {"(hover: hover)", 1},
     {"(hover: on-demand)", 0},
     {"(hover: none)", 0},
+    {"(display-mode)", 0},
+    {"(display-mode: fullscreen)", 0},
+    {"(display-mode: standalone)", 0},
+    {"(display-mode: minimal-ui)", 0},
+    {"(display-mode: browser)", 1},
+    {"(display-mode: min-browser)", 0},
+    {"(display-mode: url(browser))", 0},
+    {"(display-mode: #browser)", 0},
+    {"(display-mode: @browser)", 0},
+    {"(display-mode: 'browser')", 0},
+    {"(display-mode: @junk browser)", 0},
     {0, 0} // Do not remove the terminator line.
 };
 
@@ -114,6 +125,7 @@ TEST(MediaQueryEvaluatorTest, Cached)
     data.threeDEnabled = true;
     data.mediaType = MediaTypeNames::screen;
     data.strictMode = true;
+    data.displayMode = DisplayModeBrowser;
     RefPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
 
     MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);

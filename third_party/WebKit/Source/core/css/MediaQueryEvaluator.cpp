@@ -37,6 +37,7 @@
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSToLengthConversionData.h"
+#include "core/css/DisplayModeProperties.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaValuesDynamic.h"
@@ -218,6 +219,27 @@ static bool monochromeMediaFeatureEval(const MediaQueryExpValue& value, MediaFea
     }
 
     return colorMediaFeatureEval(value, op, mediaValues);
+}
+
+static bool displayModeMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix, const MediaValues& mediaValues)
+{
+    if (!value.isID)
+        return false;
+
+    DisplayMode mode = mediaValues.displayMode();
+    switch (value.id) {
+    case CSSValueFullscreen:
+        return mode == DisplayModeFullscreen;
+    case CSSValueStandalone:
+        return mode == DisplayModeStandalone;
+    case CSSValueMinimalUi:
+        return mode == DisplayModeMinimalUi;
+    case CSSValueBrowser:
+        return mode == DisplayModeBrowser;
+    default:
+        ASSERT_NOT_REACHED();
+        return false;
+    }
 }
 
 static bool orientationMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix, const MediaValues& mediaValues)

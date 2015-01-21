@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ScriptStreamingMode.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/SettingsMacros.h"
+#include "core/css/DisplayModeProperties.h"
 #include "core/css/PointerProperties.h"
 #include "core/editing/EditingBehaviorTypes.h"
 #include "core/frame/SettingsDelegate.h"

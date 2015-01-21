@@ -89,6 +89,7 @@ TEST(SizesAttributeParserTest, Basic)
     data.threeDEnabled = true;
     data.mediaType = MediaTypeNames::screen;
     data.strictMode = true;
+    data.displayMode = DisplayModeBrowser;
     RefPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
 
     for (unsigned i = 0; testCases[i].input; ++i) {

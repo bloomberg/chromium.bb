@@ -66,6 +66,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalTextAutosizingWindowSizeOverride(settings->textAutosizingWindowSizeOverride())
     , m_originalAccessibilityFontScaleFactor(settings->accessibilityFontScaleFactor())
     , m_originalMediaTypeOverride(settings->mediaTypeOverride())
+    , m_originalDisplayModeOverride(settings->displayModeOverride())
     , m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled())
     , m_originalMockGestureTapHighlightsEnabled(settings->mockGestureTapHighlightsEnabled())
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
@@ -88,6 +89,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setTextAutosizingWindowSizeOverride(m_originalTextAutosizingWindowSizeOverride);
     settings->setAccessibilityFontScaleFactor(m_originalAccessibilityFontScaleFactor);
     settings->setMediaTypeOverride(m_originalMediaTypeOverride);
+    settings->setDisplayModeOverride(m_originalDisplayModeOverride);
     settings->setMockScrollbarsEnabled(m_originalMockScrollbarsEnabled);
     settings->setMockGestureTapHighlightsEnabled(m_originalMockGestureTapHighlightsEnabled);
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
@@ -369,6 +371,26 @@ void InternalSettings::setAvailablePointerTypes(const String& pointers, Exceptio
     }
 
     settings()->setAvailablePointerTypes(pointerTypes);
+}
+
+void InternalSettings::setDisplayModeOverride(const String& displayMode, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    String token = displayMode.stripWhiteSpace();
+
+    DisplayMode mode = DisplayModeBrowser;
+    if (token == "browser")
+        mode = DisplayModeBrowser;
+    else if (token == "minimal-ui")
+        mode = DisplayModeMinimalUi;
+    else if (token == "standalone")
+        mode = DisplayModeStandalone;
+    else if (token == "fullscreen")
+        mode = DisplayModeFullscreen;
+    else
+        exceptionState.throwDOMException(SyntaxError, "The display-mode token ('" + token + ")' is invalid.");
+
+    settings()->setDisplayModeOverride(mode);
 }
 
 void InternalSettings::setPrimaryPointerType(const String& pointer, ExceptionState& exceptionState)

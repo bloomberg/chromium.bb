@@ -28,6 +28,7 @@
 #define InternalSettings_h
 
 #include "core/InternalSettingsGenerated.h"
+#include "core/css/DisplayModeProperties.h"
 #include "core/editing/EditingBehaviorTypes.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
@@ -65,6 +66,7 @@ public:
         IntSize m_originalTextAutosizingWindowSizeOverride;
         float m_originalAccessibilityFontScaleFactor;
         String m_originalMediaTypeOverride;
+        DisplayMode m_originalDisplayModeOverride;
         bool m_originalMockScrollbarsEnabled;
         bool m_originalMockGestureTapHighlightsEnabled;
         bool m_langAttributeAwareFormControlUIEnabled;
@@ -101,6 +103,7 @@ public:
     void setEditingBehavior(const String&, ExceptionState&);
     void setImagesEnabled(bool, ExceptionState&);
     void setMediaTypeOverride(const String& mediaType, ExceptionState&);
+    void setDisplayModeOverride(const String& displayMode, ExceptionState&);
     void setMockScrollbarsEnabled(bool, ExceptionState&);
     void setMockGestureTapHighlightsEnabled(bool, ExceptionState&);
     void setTextAutosizingEnabled(bool, ExceptionState&);

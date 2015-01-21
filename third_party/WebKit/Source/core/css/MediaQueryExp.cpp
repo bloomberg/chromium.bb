@@ -47,7 +47,8 @@ static inline bool featureWithCSSValueID(const String& mediaFeature, const CSSPa
     if (!value->id)
         return false;
 
-    return mediaFeature == orientationMediaFeature
+    return mediaFeature == displayModeMediaFeature
+        || mediaFeature == orientationMediaFeature
         || mediaFeature == pointerMediaFeature
         || mediaFeature == anyPointerMediaFeature
         || mediaFeature == hoverMediaFeature
@@ -57,6 +58,9 @@ static inline bool featureWithCSSValueID(const String& mediaFeature, const CSSPa
 
 static inline bool featureWithValidIdent(const String& mediaFeature, CSSValueID ident)
 {
+    if (mediaFeature == displayModeMediaFeature)
+        return ident == CSSValueFullscreen || ident == CSSValueStandalone || ident == CSSValueMinimalUi || ident == CSSValueBrowser;
+
     if (mediaFeature == orientationMediaFeature)
         return ident == CSSValuePortrait || ident == CSSValueLandscape;
 

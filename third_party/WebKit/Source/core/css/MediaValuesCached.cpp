@@ -61,6 +61,7 @@ MediaValuesCached::MediaValuesCached(LocalFrame* frame)
     m_data.defaultFontSize = calculateDefaultFontSize(frame);
     m_data.threeDEnabled = calculateThreeDEnabled(frame);
     m_data.strictMode = calculateStrictMode(frame);
+    m_data.displayMode = calculateDisplayMode(frame);
     const String mediaType = calculateMediaType(frame);
     if (!mediaType.isEmpty())
         m_data.mediaType = mediaType.isolatedCopy();
@@ -155,9 +156,15 @@ bool MediaValuesCached::strictMode() const
 {
     return m_data.strictMode;
 }
+
 const String MediaValuesCached::mediaType() const
 {
     return m_data.mediaType;
+}
+
+DisplayMode MediaValuesCached::displayMode() const
+{
+    return m_data.displayMode;
 }
 
 Document* MediaValuesCached::document() const

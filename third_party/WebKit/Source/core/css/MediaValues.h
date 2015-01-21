@@ -6,6 +6,7 @@
 #define MediaValues_h
 
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/DisplayModeProperties.h"
 #include "core/css/PointerProperties.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -56,6 +57,7 @@ public:
     virtual int availableHoverTypes() const = 0;
     virtual bool threeDEnabled() const = 0;
     virtual const String mediaType() const = 0;
+    virtual DisplayMode displayMode() const = 0;
     virtual bool strictMode() const = 0;
     virtual Document* document() const = 0;
     virtual bool hasValues() const = 0;
@@ -71,6 +73,7 @@ protected:
     int calculateMonochromeBitsPerComponent(LocalFrame*) const;
     int calculateDefaultFontSize(LocalFrame*) const;
     const String calculateMediaType(LocalFrame*) const;
+    DisplayMode calculateDisplayMode(LocalFrame*) const;
     bool calculateThreeDEnabled(LocalFrame*) const;
     PointerType calculatePrimaryPointerType(LocalFrame*) const;
     int calculateAvailablePointerTypes(LocalFrame*) const;

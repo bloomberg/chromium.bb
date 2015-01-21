@@ -16,6 +16,7 @@ device-aspect-ratio
 -webkit-device-pixel-ratio
 device-height
 device-width
+display-mode
 max-color
 max-color-index
 max-aspect-ratio

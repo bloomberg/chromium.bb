@@ -41,6 +41,7 @@
     [RaisesException] void setTextAutosizingWindowSizeOverride(long width, long height);
     [RaisesException] void setAccessibilityFontScaleFactor(float fontScaleFactor);
     [RaisesException] void setMediaTypeOverride(DOMString mediaTypeOverride);
+    [RaisesException] void setDisplayModeOverride(DOMString displayModeOverride);
     [RaisesException] void setEditingBehavior(DOMString behavior);
     [RaisesException] void setImagesEnabled(boolean enabled);
     [RaisesException] void setDefaultVideoPosterURL(DOMString poster);
