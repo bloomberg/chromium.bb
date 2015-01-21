@@ -56,8 +56,6 @@
 
 namespace blink {
 
-static const float undefinedSize = -1;
-
 static const CSSValueID displayWritingModeMap[] = {
     CSSValueHorizontalTb, CSSValueVerticalRl, CSSValueVerticalLr
 };
@@ -231,7 +229,7 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
     , m_vttNodeTree(nullptr)
     , m_cueBackgroundBox(HTMLDivElement::create(document))
     , m_displayDirection(CSSValueLtr)
-    , m_displaySize(undefinedSize)
+    , m_displaySize(std::numeric_limits<float>::quiet_NaN())
     , m_snapToLines(true)
     , m_displayTreeShouldChange(true)
     , m_notifyRegion(true)
@@ -1105,7 +1103,7 @@ CSSValueID VTTCue::getCSSWritingMode() const
 
 float VTTCue::getCSSSize() const
 {
-    ASSERT(m_displaySize != undefinedSize);
+    ASSERT(std::isfinite(m_displaySize));
     return m_displaySize;
 }
 
