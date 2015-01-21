@@ -31,7 +31,6 @@ REPLACEMENTS = {
   'use_system_libxml': 'third_party/libxml/libxml.gyp',
   'use_system_libxnvctrl' : 'third_party/libXNVCtrl/libXNVCtrl.gyp',
   'use_system_libxslt': 'third_party/libxslt/libxslt.gyp',
-  'use_system_openssl': 'third_party/boringssl/boringssl.gyp',
   'use_system_opus': 'third_party/opus/opus.gyp',
   'use_system_protobuf': 'third_party/protobuf/protobuf.gyp',
   'use_system_re2': 'third_party/re2/re2.gyp',
