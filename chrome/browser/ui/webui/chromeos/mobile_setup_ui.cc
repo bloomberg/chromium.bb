@@ -143,21 +143,19 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
   MobileSetupUIHTMLSource();
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const override;
-  virtual void StartDataRequest(
+  std::string GetSource() const override;
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
-  virtual std::string GetMimeType(const std::string&) const override {
+  std::string GetMimeType(const std::string&) const override {
     return "text/html";
   }
-  virtual bool ShouldAddContentSecurityPolicy() const override {
-    return false;
-  }
+  bool ShouldAddContentSecurityPolicy() const override { return false; }
 
  private:
-  virtual ~MobileSetupUIHTMLSource() {}
+  ~MobileSetupUIHTMLSource() override {}
 
   void GetPropertiesAndStartDataRequest(
       const content::URLDataSource::GotDataCallback& callback,
@@ -182,10 +180,10 @@ class MobileSetupHandler
     public base::SupportsWeakPtr<MobileSetupHandler> {
  public:
   MobileSetupHandler();
-  virtual ~MobileSetupHandler();
+  ~MobileSetupHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   enum Type {
@@ -201,10 +199,9 @@ class MobileSetupHandler
   };
 
   // MobileActivator::Observer.
-  virtual void OnActivationStateChanged(
-      const NetworkState* network,
-      MobileActivator::PlanActivationState new_state,
-      const std::string& error_description) override;
+  void OnActivationStateChanged(const NetworkState* network,
+                                MobileActivator::PlanActivationState new_state,
+                                const std::string& error_description) override;
 
   // Callbacks for NetworkConfigurationHandler::GetProperties.
   void GetPropertiesAndCallStatusChanged(
@@ -228,10 +225,8 @@ class MobileSetupHandler
   void HandleGetDeviceInfo(const base::ListValue* args);
 
   // NetworkStateHandlerObserver implementation.
-  virtual void NetworkConnectionStateChanged(
-      const NetworkState* network) override;
-  virtual void DefaultNetworkChanged(
-      const NetworkState* default_network) override;
+  void NetworkConnectionStateChanged(const NetworkState* network) override;
+  void DefaultNetworkChanged(const NetworkState* default_network) override;
 
   // Updates |lte_portal_reachable_| for lte network |network| and notifies
   // webui of the new state if the reachability changed or |force_notification|

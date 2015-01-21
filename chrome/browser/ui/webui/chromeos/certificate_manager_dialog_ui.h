@@ -23,11 +23,11 @@ class CertificateManagerDialogUI : public ui::WebDialogUI,
                                    public ::options::OptionsPageUIHandlerHost {
  public:
   explicit CertificateManagerDialogUI(content::WebUI* web_ui);
-  virtual ~CertificateManagerDialogUI();
+  ~CertificateManagerDialogUI() override;
 
  private:
   // Overridden from OptionsPageUIHandlerHost:
-  virtual void InitializeHandlers() override;
+  void InitializeHandlers() override;
 
   bool initialized_handlers_;
 

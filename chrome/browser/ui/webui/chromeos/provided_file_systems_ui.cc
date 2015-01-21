@@ -134,27 +134,24 @@ class ProvidedFileSystemsWebUIHandler
  public:
   ProvidedFileSystemsWebUIHandler() : weak_ptr_factory_(this) {}
 
-  virtual ~ProvidedFileSystemsWebUIHandler();
+  ~ProvidedFileSystemsWebUIHandler() override;
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestCreated(
-      int request_id,
-      file_system_provider::RequestType type) override;
-  virtual void OnRequestDestroyed(int request_id) override;
-  virtual void OnRequestExecuted(int request_id) override;
-  virtual void OnRequestFulfilled(
-      int request_id,
-      const file_system_provider::RequestValue& result,
-      bool has_more) override;
-  virtual void OnRequestRejected(
-      int request_id,
-      const file_system_provider::RequestValue& result,
-      base::File::Error error) override;
-  virtual void OnRequestTimeouted(int request_id) override;
+  void OnRequestCreated(int request_id,
+                        file_system_provider::RequestType type) override;
+  void OnRequestDestroyed(int request_id) override;
+  void OnRequestExecuted(int request_id) override;
+  void OnRequestFulfilled(int request_id,
+                          const file_system_provider::RequestValue& result,
+                          bool has_more) override;
+  void OnRequestRejected(int request_id,
+                         const file_system_provider::RequestValue& result,
+                         base::File::Error error) override;
+  void OnRequestTimeouted(int request_id) override;
 
  private:
   // content::WebUIMessageHandler overrides.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Gets a file system provider service for the current profile. If not found,
   // then NULL.

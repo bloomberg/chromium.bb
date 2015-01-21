@@ -12,7 +12,7 @@ namespace chromeos {
 class NfcDebugUI : public content::WebUIController {
  public:
   explicit NfcDebugUI(content::WebUI* web_ui);
-  virtual ~NfcDebugUI();
+  ~NfcDebugUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NfcDebugUI);

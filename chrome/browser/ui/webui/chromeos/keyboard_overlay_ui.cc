@@ -278,10 +278,10 @@ class KeyboardOverlayHandler
       public base::SupportsWeakPtr<KeyboardOverlayHandler> {
  public:
   explicit KeyboardOverlayHandler(Profile* profile);
-  virtual ~KeyboardOverlayHandler();
+  ~KeyboardOverlayHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // Called when the page requires the input method ID corresponding to the

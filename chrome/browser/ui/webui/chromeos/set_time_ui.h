@@ -14,7 +14,7 @@ namespace chromeos {
 class SetTimeUI : public ui::WebDialogUI {
  public:
   explicit SetTimeUI(content::WebUI* web_ui);
-  virtual ~SetTimeUI();
+  ~SetTimeUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SetTimeUI);

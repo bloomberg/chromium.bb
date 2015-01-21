@@ -40,10 +40,10 @@ const char kOnRequestCpuFreqDataFunction[] =
 class PowerMessageHandler : public content::WebUIMessageHandler {
  public:
   PowerMessageHandler();
-  virtual ~PowerMessageHandler();
+  ~PowerMessageHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   void OnGetBatteryChargeData(const base::ListValue* value);

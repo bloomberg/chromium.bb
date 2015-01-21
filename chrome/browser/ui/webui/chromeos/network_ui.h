@@ -12,7 +12,7 @@ namespace chromeos {
 class NetworkUI : public content::WebUIController {
  public:
   explicit NetworkUI(content::WebUI* web_ui);
-  virtual ~NetworkUI();
+  ~NetworkUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkUI);

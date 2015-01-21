@@ -13,7 +13,7 @@ namespace chromeos {
 class PowerUI : public content::WebUIController {
  public:
   explicit PowerUI(content::WebUI* web_ui);
-  virtual ~PowerUI();
+  ~PowerUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerUI);

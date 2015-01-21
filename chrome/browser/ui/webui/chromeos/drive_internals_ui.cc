@@ -210,12 +210,11 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
         weak_ptr_factory_(this) {
   }
 
-  virtual ~DriveInternalsWebUIHandler() {
-  }
+  ~DriveInternalsWebUIHandler() override {}
 
  private:
   // WebUIMessageHandler override.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Returns a DriveIntegrationService.
   drive::DriveIntegrationService* GetIntegrationService();

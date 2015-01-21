@@ -79,21 +79,19 @@ class SimUnlockUIHTMLSource : public content::URLDataSource {
   SimUnlockUIHTMLSource();
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const override;
-  virtual void StartDataRequest(
+  std::string GetSource() const override;
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
-  virtual std::string GetMimeType(const std::string&) const override {
+  std::string GetMimeType(const std::string&) const override {
     return "text/html";
   }
-  virtual bool ShouldAddContentSecurityPolicy() const override {
-    return false;
-  }
+  bool ShouldAddContentSecurityPolicy() const override { return false; }
 
  private:
-  virtual ~SimUnlockUIHTMLSource() {}
+  ~SimUnlockUIHTMLSource() override {}
 
   std::string service_path_;
   DISALLOW_COPY_AND_ASSIGN(SimUnlockUIHTMLSource);
@@ -105,13 +103,13 @@ class SimUnlockHandler : public WebUIMessageHandler,
                          public NetworkStateHandlerObserver {
  public:
   SimUnlockHandler();
-  virtual ~SimUnlockHandler();
+  ~SimUnlockHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // NetworkStateHandlerObserver implementation.
-  virtual void DeviceListChanged() override;
+  void DeviceListChanged() override;
 
  private:
   // Should keep this state enum in sync with similar one in JS code.

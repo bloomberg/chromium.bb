@@ -36,21 +36,19 @@ class CertificateManagerDialogHTMLSource : public content::URLDataSource {
       base::DictionaryValue* localized_strings);
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const override;
-  virtual void StartDataRequest(
+  std::string GetSource() const override;
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
-  virtual std::string GetMimeType(const std::string&) const override {
+  std::string GetMimeType(const std::string&) const override {
     return "text/html";
   }
-  virtual bool ShouldAddContentSecurityPolicy() const override {
-    return false;
-  }
+  bool ShouldAddContentSecurityPolicy() const override { return false; }
 
  protected:
-  virtual ~CertificateManagerDialogHTMLSource() {}
+  ~CertificateManagerDialogHTMLSource() override {}
 
  private:
   scoped_ptr<base::DictionaryValue> localized_strings_;

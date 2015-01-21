@@ -36,14 +36,14 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
         this);
   }
 
-  virtual ~SetTimeMessageHandler() {
+  ~SetTimeMessageHandler() override {
     system::TimezoneSettings::GetInstance()->RemoveObserver(this);
     chromeos::DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(
         this);
   }
 
   // WebUIMessageHandler:
-  virtual void RegisterMessages() override {
+  void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         "setTimeInSeconds",
         base::Bind(&SetTimeMessageHandler::OnSetTime, base::Unretained(this)));
@@ -55,12 +55,12 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
 
  private:
   // system::SystemClockClient::Observer:
-  virtual void SystemClockUpdated() override {
+  void SystemClockUpdated() override {
     web_ui()->CallJavascriptFunction("settime.TimeSetter.updateTime");
   }
 
   // system::TimezoneSettings::Observer:
-  virtual void TimezoneChanged(const icu::TimeZone& timezone) override {
+  void TimezoneChanged(const icu::TimeZone& timezone) override {
     base::StringValue timezone_id(
         system::TimezoneSettings::GetTimezoneID(timezone));
     web_ui()->CallJavascriptFunction("settime.TimeSetter.setTimezone",

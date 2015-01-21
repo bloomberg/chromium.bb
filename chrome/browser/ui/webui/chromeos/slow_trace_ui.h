@@ -28,16 +28,16 @@ class SlowTraceSource : public content::URLDataSource {
   SlowTraceSource();
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const override;
-  virtual void StartDataRequest(
+  std::string GetSource() const override;
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
-  virtual std::string GetMimeType(const std::string& path) const override;
+  std::string GetMimeType(const std::string& path) const override;
 
  private:
-  virtual ~SlowTraceSource();
+  ~SlowTraceSource() override;
 
   void OnGetTraceData(const content::URLDataSource::GotDataCallback& callback,
                       scoped_refptr<base::RefCountedString> trace_data);

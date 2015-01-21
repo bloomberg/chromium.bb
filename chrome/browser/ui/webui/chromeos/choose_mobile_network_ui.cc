@@ -93,13 +93,13 @@ class ChooseMobileNetworkHandler
       public NetworkStateHandlerObserver {
  public:
   ChooseMobileNetworkHandler();
-  virtual ~ChooseMobileNetworkHandler();
+  ~ChooseMobileNetworkHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // NetworkStateHandlerObserver implementation.
-  virtual void DeviceListChanged() override;
+  void DeviceListChanged() override;
 
  private:
   // Handlers for JS WebUI messages.

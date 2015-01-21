@@ -182,38 +182,28 @@ class NfcDebugMessageHandler : public content::WebUIMessageHandler,
                                public NfcTag::Observer {
  public:
   NfcDebugMessageHandler();
-  virtual ~NfcDebugMessageHandler();
+  ~NfcDebugMessageHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // NfcAdapter::Observer overrides.
-  virtual void AdapterPresentChanged(
-      NfcAdapter* adapter,
-      bool present) override;
-  virtual void AdapterPoweredChanged(
-      NfcAdapter* adapter,
-      bool powered) override;
-  virtual void AdapterPollingChanged(
-      NfcAdapter* adapter,
-      bool polling) override;
-  virtual void TagFound(NfcAdapter* adapter, NfcTag* tag) override;
-  virtual void TagLost(NfcAdapter*adapter, NfcTag* tag) override;
-  virtual void PeerFound(NfcAdapter* adaper, NfcPeer* peer) override;
-  virtual void PeerLost(NfcAdapter* adapter, NfcPeer* peer) override;
+  void AdapterPresentChanged(NfcAdapter* adapter, bool present) override;
+  void AdapterPoweredChanged(NfcAdapter* adapter, bool powered) override;
+  void AdapterPollingChanged(NfcAdapter* adapter, bool polling) override;
+  void TagFound(NfcAdapter* adapter, NfcTag* tag) override;
+  void TagLost(NfcAdapter* adapter, NfcTag* tag) override;
+  void PeerFound(NfcAdapter* adaper, NfcPeer* peer) override;
+  void PeerLost(NfcAdapter* adapter, NfcPeer* peer) override;
 
   // NfcNdefTagTechnology::Observer override.
-  virtual void RecordReceived(
-      NfcTag* tag,
-      const NfcNdefRecord* record) override;
+  void RecordReceived(NfcTag* tag, const NfcNdefRecord* record) override;
 
   // NfcPeer::Observer override.
-  virtual void RecordReceived(
-      NfcPeer* peer,
-      const NfcNdefRecord* record) override;
+  void RecordReceived(NfcPeer* peer, const NfcNdefRecord* record) override;
 
   // NfcTag::Observer override.
-  virtual void TagReady(NfcTag* tag) override;
+  void TagReady(NfcTag* tag) override;
 
  private:
   // Called by the UI when the page loads. This method requests information

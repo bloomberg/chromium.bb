@@ -57,10 +57,10 @@ content::WebUIDataSource* CreateSlowUIHTMLSource() {
 class SlowHandler : public WebUIMessageHandler {
  public:
   explicit SlowHandler(Profile* profile);
-  virtual ~SlowHandler();
+  ~SlowHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   void UpdatePage();

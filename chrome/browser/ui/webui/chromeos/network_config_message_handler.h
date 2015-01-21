@@ -25,10 +25,10 @@ namespace chromeos {
 class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
  public:
   NetworkConfigMessageHandler();
-  virtual ~NetworkConfigMessageHandler();
+  ~NetworkConfigMessageHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // WebUI::RegisterMessageCallback callbacks. These callbacks collect the

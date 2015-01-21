@@ -25,10 +25,10 @@ class CryptohomeWebUIHandler : public content::WebUIMessageHandler {
  public:
   CryptohomeWebUIHandler();
 
-  virtual ~CryptohomeWebUIHandler();
+  ~CryptohomeWebUIHandler() override;
 
   // WebUIMessageHandler override.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // This method is called from JavaScript.

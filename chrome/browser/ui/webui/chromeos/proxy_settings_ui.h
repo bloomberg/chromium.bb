@@ -21,11 +21,11 @@ class ProxySettingsUI : public ui::WebDialogUI,
                         public ::options::OptionsPageUIHandlerHost {
  public:
   explicit ProxySettingsUI(content::WebUI* web_ui);
-  virtual ~ProxySettingsUI();
+  ~ProxySettingsUI() override;
 
  private:
   // Overridden from OptionsPageUIHandlerHost:
-  virtual void InitializeHandlers() override;
+  void InitializeHandlers() override;
 
   bool initialized_handlers_;
 

@@ -24,7 +24,7 @@ class SalsaUI : public content::WebUIController {
  public:
   // Constructs a new GestureConfig for the specified |web_ui|.
   explicit SalsaUI(content::WebUI* web_ui);
-  virtual ~SalsaUI();
+  ~SalsaUI() override;
 
  private:
   // Set a preference setting's value.

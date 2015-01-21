@@ -14,7 +14,7 @@ namespace chromeos {
 class CryptohomeUI : public content::WebUIController {
  public:
   explicit CryptohomeUI(content::WebUI* web_ui);
-  virtual ~CryptohomeUI() {}
+  ~CryptohomeUI() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CryptohomeUI);
