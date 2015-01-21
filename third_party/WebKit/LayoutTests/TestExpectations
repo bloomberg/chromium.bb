@@ -227,6 +227,7 @@ crbug.com/259443 dom/svg/level3/xpath/XPathExpression_evaluate_NOT_SUPPORTED_ERR
 crbug.com/259443 dom/xhtml/level1/core/hc_attrgetvalue2.xhtml [ NeedsManualRebaseline ]
 crbug.com/259443 dom/xhtml/level1/core/hc_nodevalue03.xhtml [ NeedsManualRebaseline ]
 crbug.com/259443 fast/dom/NodeList/nodelist-item-call-as-function.html [ NeedsManualRebaseline ]
+crbug.com/259443 plugins/npp-set-window-called-during-destruction.html [ NeedsManualRebaseline ]
 
 # Requires subpixel precision for offset/client/scroll properties
 crbug.com/360889 fast/sub-pixel/cssom-subpixel-precision.html [ ImageOnlyFailure ]
