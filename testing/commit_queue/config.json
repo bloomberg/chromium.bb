@@ -8,7 +8,6 @@
                         "linux_chromium_asan_rel_ng": ["defaulttests"]
                     },
                     "tryserver.chromium.mac": {
-                        "ios_dbg_simulator_ng": ["defaulttests"],
                         "mac_chromium_gn_rel": ["defaulttests"]
                     },
                     "tryserver.chromium.win": {
