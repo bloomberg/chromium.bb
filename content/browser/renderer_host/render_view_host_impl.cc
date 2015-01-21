@@ -500,6 +500,14 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
     prefs.v8_cache_options = V8_CACHE_OPTIONS_HEURISTICS;
   } else if (v8_cache_options == "heuristics-mobile") {
     prefs.v8_cache_options = V8_CACHE_OPTIONS_HEURISTICS_MOBILE;
+  } else if (v8_cache_options == "heuristics-default") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_HEURISTICS_DEFAULT;
+  } else if (v8_cache_options == "heuristics-default-mobile") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_HEURISTICS_DEFAULT_MOBILE;
+  } else if (v8_cache_options == "recent") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_RECENT;
+  } else if (v8_cache_options == "recent-small") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_RECENT_SMALL;
   } else {
     prefs.v8_cache_options = V8_CACHE_OPTIONS_DEFAULT;
   }

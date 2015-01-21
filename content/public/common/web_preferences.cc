@@ -47,8 +47,17 @@ STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS,
                              WebSettings::V8CacheOptionsHeuristics);
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS_MOBILE,
                              WebSettings::V8CacheOptionsHeuristicsMobile);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS_DEFAULT,
+                             WebSettings::V8CacheOptionsHeuristicsDefault);
+STATIC_ASSERT_MATCHING_ENUMS(
+    V8_CACHE_OPTIONS_HEURISTICS_DEFAULT_MOBILE,
+    WebSettings::V8CacheOptionsHeuristicsDefaultMobile);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_RECENT,
+                             WebSettings::V8CacheOptionsRecent);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_RECENT_SMALL,
+                             WebSettings::V8CacheOptionsRecentSmall);
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
-                             WebSettings::V8CacheOptionsHeuristicsMobile);
+                             WebSettings::V8CacheOptionsRecentSmall);
 
 STATIC_ASSERT_MATCHING_ENUMS(V8_SCRIPT_STREAMING_MODE_ALL,
                              WebSettings::V8ScriptStreamingModeAll);
