@@ -17,3 +17,19 @@ function unreached_rejection(test, prefix) {
       assert_unreached(error_prefix + ': ' + reason);
     });
 }
+
+var FORBIDDEN_HEADERS =
+  ['Accept-Charset', 'Accept-Encoding', 'Access-Control-Request-Headers',
+   'Access-Control-Request-Method', 'Connection', 'Content-Length',
+   'Cookie', 'Cookie2', 'Date', 'DNT', 'Expect', 'Host', 'Keep-Alive',
+   'Origin', 'Referer', 'TE', 'Trailer', 'Transfer-Encoding', 'Upgrade',
+   'User-Agent', 'Via', 'Proxy-', 'Sec-', 'Proxy-FooBar', 'Sec-FooBar'];
+var SIMPLE_HEADERS =
+  [['Accept', '*'], ['Accept-Language', 'ru'], ['Content-Language', 'ru'],
+   ['Content-Type', 'application/x-www-form-urlencoded'],
+   ['Content-Type', 'multipart/form-data'],
+   ['Content-Type', 'text/plain']];
+var NON_SIMPLE_HEADERS =
+  [['X-Fetch-Test', 'test'],
+   ['X-Fetch-Test2', 'test2'],
+   ['Content-Type', 'foo/bar']];

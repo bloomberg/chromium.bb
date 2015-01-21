@@ -218,33 +218,31 @@ test(function() {
   }, 'Request method name test');
 
 test(function() {
-    var FORBIDDEN_HEADERS =
-      ['Accept-Charset', 'Accept-Encoding', 'Access-Control-Request-Headers',
-       'Access-Control-Request-Method', 'Connection', 'Content-Length',
-       'Cookie', 'Cookie2', 'Date', 'DNT', 'Expect', 'Host', 'Keep-Alive',
-       'Origin', 'Referer', 'TE', 'Trailer', 'Transfer-Encoding', 'Upgrade',
-       'User-Agent', 'Via', 'Proxy-', 'Sec-', 'Proxy-FooBar', 'Sec-FooBar'];
-    var SIMPLE_HEADERS =
-      [['Accept', '*'], ['Accept-Language', 'ru'], ['Content-Language', 'ru'],
-       ['Content-Type', 'application/x-www-form-urlencoded'],
-       ['Content-Type', 'multipart/form-data'],
-       ['Content-Type', 'text/plain']];
-    var NON_SIMPLE_HEADERS =
-      [['X-Fetch-Test', 'test'],
-       ['X-Fetch-Test2', 'test2'],
-       ['Content-Type', 'foo/bar']];
-
     ['same-origin', 'cors'].forEach(function(mode) {
         var request = new Request(URL, {mode: mode});
         FORBIDDEN_HEADERS.forEach(function(header) {
+            // append, Step 3:
+            // Otherwise, if guard is request and name is a forbidden header
+            // name, return.
             request.headers.append(header, 'test');
             assert_equals(size(request.headers), 0,
                           'Request.headers.append should ignore the ' +
                           'forbidden headers');
+
+            // set, Step 3:
+            // Otherwise, if guard is request and name is a forbidden header
+            // name, return.
             request.headers.set(header, 'test');
             assert_equals(size(request.headers), 0,
                           'Request.headers.set should ignore the forbidden ' +
                           'headers');
+
+            // delete, Step 3:
+            // Otherwise, if guard is request and name is a forbidden header
+            // name, return.
+            request.headers.delete(header);
+            // Test that calling delete() for a forbidden header name
+            // does not crash nor throw exception.
           });
         var request = new Request(URL, {mode: mode});
         assert_equals(size(request.headers), 0);
@@ -266,6 +264,9 @@ test(function() {
           });
       });
     request = new Request(URL, {mode: 'no-cors'});
+    // set/append, Step 4:
+    // Otherwise, if guard is request-no-CORS and name/value is not a simple
+    // header, return.
     FORBIDDEN_HEADERS.forEach(function(header) {
         request.headers.set(header, 'test');
         request.headers.append(header, 'test');
@@ -276,6 +277,15 @@ test(function() {
       });
     assert_equals(size(request.headers), 0,
                   'no-cors request should only accept simple headers');
+    // delete, Step 4:
+    // Otherwise, if guard is request-no-CORS and name/`invalid` is not
+    // a simple header, return.
+    NON_SIMPLE_HEADERS.forEach(function(header) {
+        request.headers.delete(header[0]);
+      });
+    assert_equals(size(request.headers), 0,
+                  'delete() should silently fail for no-cors request and ' +
+                  'non-simple headers');
 
     SIMPLE_HEADERS.forEach(function(header) {
         request = new Request(URL, {mode: 'no-cors'});
@@ -286,6 +296,10 @@ test(function() {
         request.headers.set(header[0], header[1]);
         assert_equals(size(request.headers), 1,
                       'no-cors request should accept simple headers');
+
+        // delete, Step 4:
+        // Otherwise, if guard is request-no-CORS and name/`invalid` is not
+        // a simple header, return.
         request.headers.delete(header[0]);
         if (header[0] == 'Content-Type') {
           assert_equals(

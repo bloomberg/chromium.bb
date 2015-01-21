@@ -34,6 +34,9 @@ test(function() {
     headers.set('Content-Language', 'ja');
     headers.set('Content-Type', 'text/html; charset=UTF-8');
     headers.set('X-Fetch-Test', 'response test field');
+    // Accept-Encoding is a forbidden header name but not a forbidden
+    // response header name, and therefore included in the header.
+    headers.set('Accept-Encoding', 'forbidden header name test');
     headers.set('Set-Cookie', 'response test set-cookie');
     headers.set('Set-Cookie2', 'response test set-cookie2');
 
@@ -47,6 +50,7 @@ test(function() {
                        headers: {'Content-Language': 'ja',
                          'Content-Type': 'text/html; charset=UTF-8',
                          'X-Fetch-Test': 'response test field',
+                         'Accept-Encoding': 'forbidden header name test',
                          'Set-Cookie': 'response test set-cookie',
                          'Set-Cookie2': 'response test set-cookie2'}
                      }),
@@ -58,6 +62,8 @@ test(function() {
                                  ['Content-Type', 'text/html; charset=UTF-8'],
                                  ['X-Fetch-Test',
                                   'response test field'],
+                                 ['Accept-Encoding',
+                                  'forbidden header name test'],
                                  ['Set-Cookie', 'response test set-cookie'],
                                  ['Set-Cookie2', 'response test set-cookie2']]
                      })];
@@ -67,7 +73,7 @@ test(function() {
                       'Response.statusText should match');
         assert_true(response.headers instanceof Headers,
                     'Response.headers should be Headers');
-        assert_equals(size(response.headers), 3,
+        assert_equals(size(response.headers), 4,
                       'Response.headers size should match');
         assert_equals(response.headers.get('Content-Language'), 'ja',
                       'Content-Language of Response.headers should match');
@@ -77,12 +83,19 @@ test(function() {
         assert_equals(response.headers.get('X-Fetch-Test'),
                       'response test field',
                       'X-Fetch-Test of Response.headers should match');
+        assert_equals(response.headers.get('Accept-Encoding'),
+                      'forbidden header name test',
+                      'Accept-Encoding of Response.headers should match');
         response.headers.set('X-Fetch-Test2', 'response test field2');
-        assert_equals(size(response.headers), 4,
+        assert_equals(size(response.headers), 5,
                       'Response.headers size should increase by 1.');
         assert_equals(response.headers.get('X-Fetch-Test2'),
                       'response test field2',
                       'Response.headers should be added');
+
+        // set/append, Step 4:
+        // Otherwise, if guard is response and name is a forbidden response
+        // header name, return.
         response.headers.set('set-cookie', 'dummy');
         response.headers.set('sEt-cookie', 'dummy');
         response.headers.set('set-cookie2', 'dummy');
@@ -91,12 +104,43 @@ test(function() {
         response.headers.append('sEt-cookie', 'dummy');
         response.headers.append('set-cookie2', 'dummy');
         response.headers.append('set-cOokie2', 'dummy');
-        assert_equals(size(response.headers), 4,
+        assert_equals(size(response.headers), 5,
                       'Response.headers should not accept Set-Cookie nor ' +
                       'Set-Cookie2');
+        // delete, Step 4:
+        // Otherwise, if guard is response and name is a forbidden response
+        // header name, return.
+        response.headers.delete('set-cookie');
+        response.headers.delete('set-cookie2');
+        assert_equals(size(response.headers), 5,
+                      'headers.delete should do nothing' +
+                      'for forbidden response headers');
+
+        response.headers.delete('Accept-Encoding');
+        assert_equals(size(response.headers), 4,
+                      'Response.headers size should decrease by 1.');
         response.headers.delete('X-Fetch-Test');
         assert_equals(size(response.headers), 3,
                       'Response.headers size should decrease by 1.');
+
+        // Test set/append/delete for forbidden header names
+        FORBIDDEN_HEADERS.forEach(function(header) {
+          response.headers.append(header, 'test');
+          assert_equals(size(response.headers), 4,
+                        'Response.headers.append should accept ' +
+                        'header name: ' + header);
+          assert_equals(response.headers.get(header),
+                        'test',
+                        header + ' of Response.headers should match');
+          response.headers.set(header, 'test2');
+          assert_equals(response.headers.get(header),
+                        'test2',
+                        header + ' of Response.headers should match');
+          response.headers.delete(header);
+          assert_equals(size(response.headers), 3,
+                        'Response.headers.delete should accept ' +
+                        'header name: ' + header);
+        });
       });
     // Note: detailed behavioral tests for Headers are in another test,
     // http/tests/fetch/*/headers.html.
