@@ -51,7 +51,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
     OnWillChangeFocus(NULL, focus_manager_->GetFocusedView());
   }
 
-  virtual ~ViewFocusChangeWaiter() {
+  ~ViewFocusChangeWaiter() override {
     focus_manager_->RemoveFocusChangeListener(this);
   }
 
@@ -61,12 +61,11 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
 
  private:
   // Inherited from FocusChangeListener
-  virtual void OnWillChangeFocus(views::View* focused_before,
-                                 views::View* focused_now) override {
-  }
+  void OnWillChangeFocus(views::View* focused_before,
+                         views::View* focused_now) override {}
 
-  virtual void OnDidChangeFocus(views::View* focused_before,
-                                views::View* focused_now) override {
+  void OnDidChangeFocus(views::View* focused_before,
+                        views::View* focused_now) override {
     if (focused_now && focused_now->id() != previous_view_id_) {
       base::MessageLoop::current()->PostTask(FROM_HERE,
                                              base::MessageLoop::QuitClosure());
@@ -90,7 +89,7 @@ class SendKeysMenuListener : public views::MenuListener {
     toolbar_view_->AddMenuListener(this);
   }
 
-  virtual ~SendKeysMenuListener() {
+  ~SendKeysMenuListener() override {
     if (test_dismiss_menu_)
       toolbar_view_->RemoveMenuListener(this);
   }
@@ -101,7 +100,7 @@ class SendKeysMenuListener : public views::MenuListener {
 
  private:
   // Overridden from views::MenuListener:
-  virtual void OnMenuOpened() override {
+  void OnMenuOpened() override {
     menu_open_count_++;
     if (!test_dismiss_menu_) {
       toolbar_view_->RemoveMenuListener(this);

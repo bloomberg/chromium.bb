@@ -43,12 +43,12 @@ class SelectFileDialogExtension
       ui::SelectFilePolicy* policy);
 
   // BaseShellDialog implementation.
-  virtual bool IsRunning(gfx::NativeWindow owner_window) const override;
-  virtual void ListenerDestroyed() override;
+  bool IsRunning(gfx::NativeWindow owner_window) const override;
+  void ListenerDestroyed() override;
 
   // ExtensionDialog::Observer implementation.
-  virtual void ExtensionDialogClosing(ExtensionDialog* dialog) override;
-  virtual void ExtensionTerminated(ExtensionDialog* dialog) override;
+  void ExtensionDialogClosing(ExtensionDialog* dialog) override;
+  void ExtensionTerminated(ExtensionDialog* dialog) override;
 
   // Routes callback to appropriate SelectFileDialog::Listener based on the
   // owning |web_contents|.
@@ -65,15 +65,14 @@ class SelectFileDialogExtension
 
  protected:
   // SelectFileDialog implementation.
-  virtual void SelectFileImpl(
-      Type type,
-      const base::string16& title,
-      const base::FilePath& default_path,
-      const FileTypeInfo* file_types,
-      int file_type_index,
-      const base::FilePath::StringType& default_extension,
-      gfx::NativeWindow owning_window,
-      void* params) override;
+  void SelectFileImpl(Type type,
+                      const base::string16& title,
+                      const base::FilePath& default_path,
+                      const FileTypeInfo* file_types,
+                      int file_type_index,
+                      const base::FilePath::StringType& default_extension,
+                      gfx::NativeWindow owning_window,
+                      void* params) override;
 
  private:
   friend class SelectFileDialogExtensionBrowserTest;
@@ -82,7 +81,7 @@ class SelectFileDialogExtension
   // Object is ref-counted, use Create().
   explicit SelectFileDialogExtension(SelectFileDialog::Listener* listener,
                                      ui::SelectFilePolicy* policy);
-  virtual ~SelectFileDialogExtension();
+  ~SelectFileDialogExtension() override;
 
   // Invokes the appropriate file selection callback on our listener.
   void NotifyListener();
@@ -94,7 +93,7 @@ class SelectFileDialogExtension
   static bool PendingExists(RoutingID routing_id);
 
   // Returns true if the dialog has multiple file type choices.
-  virtual bool HasMultipleFileTypeChoicesImpl() override;
+  bool HasMultipleFileTypeChoicesImpl() override;
 
   bool has_multiple_file_type_choices_;
 

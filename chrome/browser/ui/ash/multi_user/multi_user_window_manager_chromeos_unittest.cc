@@ -40,8 +40,8 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
       : multi_user_window_manager_(NULL),
         session_state_delegate_(NULL) {}
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   // Set up the test environment for this many windows.
@@ -1043,11 +1043,11 @@ TEST_F(MultiUserWindowManagerChromeOSTest, ShowForUserSwitchesDesktop) {
 class TestWindowObserver : public aura::WindowObserver {
  public:
   TestWindowObserver(): resize_calls_(0) {}
-  virtual ~TestWindowObserver() {};
+  ~TestWindowObserver() override{};
 
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override {
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override {
     resize_calls_++;
   }
 

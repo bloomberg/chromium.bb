@@ -15,16 +15,16 @@
 class ImeControllerTest : public testing::Test {
  public:
   ImeControllerTest() : mock_input_method_manager_(NULL) {}
-  virtual ~ImeControllerTest() {}
+  ~ImeControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     mock_input_method_manager_ =
         new chromeos::input_method::MockInputMethodManager;
     chromeos::input_method::InitializeForTesting(
         mock_input_method_manager_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     chromeos::input_method::Shutdown();
     mock_input_method_manager_ = NULL;
   }

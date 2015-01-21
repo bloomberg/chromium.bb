@@ -19,7 +19,7 @@ const SelectFileDialogExtension::RoutingID kDefaultRoutingID =
 class SelectFileDialogExtensionTest : public testing::Test {
  public:
   SelectFileDialogExtensionTest() {}
-  virtual ~SelectFileDialogExtensionTest() {}
+  ~SelectFileDialogExtensionTest() override {}
 
   static SelectFileDialogExtension* CreateDialog(
       ui::SelectFileDialog::Listener* listener) {
@@ -40,15 +40,15 @@ class SelectFileDialogExtensionTest : public testing::Test {
 class TestListener : public ui::SelectFileDialog::Listener {
  public:
   TestListener() : selected_(false), file_index_(-1) {}
-  virtual ~TestListener() {}
+  ~TestListener() override {}
 
   bool selected() const { return selected_; }
   int file_index() const { return file_index_; }
 
   // ui::SelectFileDialog::Listener implementation
-  virtual void FileSelected(const base::FilePath& path,
-                            int index,
-                            void* params) override {
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override {
     selected_ = true;
     file_index_ = index;
   }
@@ -68,7 +68,7 @@ class SelfDeletingClient : public ui::SelectFileDialog::Listener {
     dialog_ = SelectFileDialogExtensionTest::CreateDialog(this);
   }
 
-  virtual ~SelfDeletingClient() {
+  ~SelfDeletingClient() override {
     if (dialog_.get())
       dialog_->ListenerDestroyed();
   }
@@ -76,9 +76,9 @@ class SelfDeletingClient : public ui::SelectFileDialog::Listener {
   SelectFileDialogExtension* dialog() const { return dialog_.get(); }
 
   // ui::SelectFileDialog::Listener implementation
-  virtual void FileSelected(const base::FilePath& path,
-                            int index,
-                            void* params) override {
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override {
     delete this;
   }
 

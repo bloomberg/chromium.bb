@@ -27,20 +27,19 @@ class SoundsManagerTestImpl : public media::SoundsManager {
       num_play_requests_(chromeos::SOUND_COUNT) {
   }
 
-  virtual ~SoundsManagerTestImpl() {}
+  ~SoundsManagerTestImpl() override {}
 
-  virtual bool Initialize(SoundKey key,
-                          const base::StringPiece& /* data */) override {
+  bool Initialize(SoundKey key, const base::StringPiece& /* data */) override {
     is_sound_initialized_[key] = true;
     return true;
   }
 
-  virtual bool Play(SoundKey key) override {
+  bool Play(SoundKey key) override {
     ++num_play_requests_[key];
     return true;
   }
 
-  virtual base::TimeDelta GetDuration(SoundKey /* key */) override {
+  base::TimeDelta GetDuration(SoundKey /* key */) override {
     return base::TimeDelta();
   }
 
@@ -62,9 +61,9 @@ class SoundsManagerTestImpl : public media::SoundsManager {
 class VolumeControllerTest : public InProcessBrowserTest {
  public:
   VolumeControllerTest() {}
-  virtual ~VolumeControllerTest() {}
+  ~VolumeControllerTest() override {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     volume_controller_.reset(new VolumeController());
     audio_handler_ = chromeos::CrasAudioHandler::Get();
   }
@@ -161,9 +160,9 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerTest, Mutes) {
 class VolumeControllerSoundsTest : public VolumeControllerTest {
  public:
   VolumeControllerSoundsTest() : sounds_manager_(NULL) {}
-  virtual ~VolumeControllerSoundsTest() {}
+  ~VolumeControllerSoundsTest() override {}
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     sounds_manager_ = new SoundsManagerTestImpl();
     media::SoundsManager::InitializeForTesting(sounds_manager_);
   }
@@ -237,9 +236,9 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsTest, EdgeCases) {
 class VolumeControllerSoundsDisabledTest : public VolumeControllerSoundsTest {
  public:
   VolumeControllerSoundsDisabledTest() {}
-  virtual ~VolumeControllerSoundsDisabledTest() {}
+  ~VolumeControllerSoundsDisabledTest() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     VolumeControllerSoundsTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kDisableVolumeAdjustSound);
   }

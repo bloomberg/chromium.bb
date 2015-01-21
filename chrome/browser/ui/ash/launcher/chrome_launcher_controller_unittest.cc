@@ -619,9 +619,9 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   explicit TestBrowserWindowAura(aura::Window* native_window)
       : native_window_(native_window) {
   }
-  virtual ~TestBrowserWindowAura() {}
+  ~TestBrowserWindowAura() override {}
 
-  virtual gfx::NativeWindow GetNativeWindow() const override {
+  gfx::NativeWindow GetNativeWindow() const override {
     return native_window_.get();
   }
 
@@ -665,7 +665,7 @@ class WebContentsDestroyedWatcher : public content::WebContentsObserver {
         message_loop_runner_(new content::MessageLoopRunner) {
     EXPECT_TRUE(web_contents != NULL);
   }
-  virtual ~WebContentsDestroyedWatcher() {}
+  ~WebContentsDestroyedWatcher() override {}
 
   // Waits until the WebContents is destroyed.
   void Wait() {
@@ -674,9 +674,7 @@ class WebContentsDestroyedWatcher : public content::WebContentsObserver {
 
  private:
   // Overridden WebContentsObserver methods.
-  virtual void WebContentsDestroyed() override {
-    message_loop_runner_->Quit();
-  }
+  void WebContentsDestroyed() override { message_loop_runner_->Quit(); }
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
@@ -707,7 +705,7 @@ class V1App : public TestBrowserWindow {
     chrome::AddTabAt(browser_.get(), GURL(), 0, true);
   }
 
-  virtual ~V1App() {
+  ~V1App() override {
     // close all tabs. Note that we do not need to destroy the browser itself.
     browser_->tab_strip_model()->CloseAllTabs();
   }
@@ -715,7 +713,7 @@ class V1App : public TestBrowserWindow {
   Browser* browser() { return browser_.get(); }
 
   // TestBrowserWindow override:
-  virtual gfx::NativeWindow GetNativeWindow() const override {
+  gfx::NativeWindow GetNativeWindow() const override {
     return native_window_.get();
   }
 
@@ -768,11 +766,10 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest() {
   }
 
-  virtual ~MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest() {
-  }
+  ~MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest() override {}
 
   // Overwrite the Setup function to enable multi profile and needed objects.
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
 
@@ -795,7 +792,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     shell_delegate_->set_multi_profiles_enabled(true);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     ChromeLauncherControllerTest::TearDown();
     user_manager_enabler_.reset();
     for (ProfileToNameMap::iterator it = created_profiles_.begin();
@@ -894,10 +891,10 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   ash::test::TestShellDelegate* shell_delegate() { return shell_delegate_; }
 
   // Override BrowserWithTestWindowTest:
-  virtual TestingProfile* CreateProfile() override {
+  TestingProfile* CreateProfile() override {
     return CreateMultiUserProfile("user1");
   }
-  virtual void DestroyProfile(TestingProfile* profile) override {
+  void DestroyProfile(TestingProfile* profile) override {
     // Delete the profile through our profile manager.
     ProfileToNameMap::iterator it = created_profiles_.find(profile);
     DCHECK(it != created_profiles_.end());

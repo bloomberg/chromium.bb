@@ -165,9 +165,9 @@ class OmniboxViewViews
 
   // chromeos::input_method::InputMethodManager::CandidateWindowObserver:
 #if defined(OS_CHROMEOS)
-  virtual void CandidateWindowOpened(
+  void CandidateWindowOpened(
       chromeos::input_method::InputMethodManager* manager) override;
-  virtual void CandidateWindowClosed(
+  void CandidateWindowClosed(
       chromeos::input_method::InputMethodManager* manager) override;
 #endif
 

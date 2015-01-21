@@ -286,16 +286,15 @@ class ChromeLauncherControllerUserSwitchObserverChromeOS
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                    content::NotificationService::AllSources());
   }
-  virtual ~ChromeLauncherControllerUserSwitchObserverChromeOS() {
+  ~ChromeLauncherControllerUserSwitchObserverChromeOS() override {
     user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   }
 
   // user_manager::UserManager::UserSessionStateObserver overrides:
-  virtual void UserAddedToSession(
-      const user_manager::User* added_user) override;
+  void UserAddedToSession(const user_manager::User* added_user) override;
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
+  void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 

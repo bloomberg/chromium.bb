@@ -38,10 +38,10 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
                             host_desktop_type,
                             hosted_app) {
   }
-  virtual ~ImmersiveModeControllerAshTest() {}
+  ~ImmersiveModeControllerAshTest() override {}
 
   // TestWithBrowserView override:
-  virtual void SetUp() override {
+  void SetUp() override {
     TestWithBrowserView::SetUp();
 
     browser()->window()->Show();
@@ -276,7 +276,7 @@ class ImmersiveModeControllerAshTestHostedApp
                                        chrome::HOST_DESKTOP_TYPE_ASH,
                                        true) {
   }
-  virtual ~ImmersiveModeControllerAshTestHostedApp() {}
+  ~ImmersiveModeControllerAshTestHostedApp() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshTestHostedApp);

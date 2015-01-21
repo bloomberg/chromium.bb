@@ -18,19 +18,18 @@ class UserAccountsDelegateChromeOS : public ash::tray::UserAccountsDelegate,
                                      public OAuth2TokenService::Observer {
  public:
   explicit UserAccountsDelegateChromeOS(Profile* user_profile);
-  virtual ~UserAccountsDelegateChromeOS();
+  ~UserAccountsDelegateChromeOS() override;
 
   // Overridden from ash::tray::UserAccountsDelegate:
-  virtual std::string GetPrimaryAccountId() override;
-  virtual std::vector<std::string> GetSecondaryAccountIds() override;
-  virtual std::string GetAccountDisplayName(
-      const std::string& account_id) override;
-  virtual void DeleteAccount(const std::string& account_id) override;
-  virtual void LaunchAddAccountDialog() override;
+  std::string GetPrimaryAccountId() override;
+  std::vector<std::string> GetSecondaryAccountIds() override;
+  std::string GetAccountDisplayName(const std::string& account_id) override;
+  void DeleteAccount(const std::string& account_id) override;
+  void LaunchAddAccountDialog() override;
 
   // Overridden from OAuth2TokenServiceObserver:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenRevoked(const std::string& account_id) override;
 
  private:
   Profile* user_profile_;

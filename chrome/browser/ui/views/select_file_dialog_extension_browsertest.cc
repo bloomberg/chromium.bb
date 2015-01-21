@@ -48,22 +48,21 @@ class MockSelectFileDialogListener : public ui::SelectFileDialog::Listener {
   void* params() const { return params_; }
 
   // ui::SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const base::FilePath& path,
-                            int index,
-                            void* params) override {
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override {
     file_selected_ = true;
     path_ = path;
     params_ = params;
   }
-  virtual void FileSelectedWithExtraInfo(
-      const ui::SelectedFileInfo& selected_file_info,
-      int index,
-      void* params) override {
+  void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& selected_file_info,
+                                 int index,
+                                 void* params) override {
     FileSelected(selected_file_info.local_path, index, params);
   }
-  virtual void MultiFilesSelected(
-      const std::vector<base::FilePath>& files, void* params) override {}
-  virtual void FileSelectionCanceled(void* params) override {
+  void MultiFilesSelected(const std::vector<base::FilePath>& files,
+                          void* params) override {}
+  void FileSelectionCanceled(void* params) override {
     canceled_ = true;
     params_ = params;
   }
@@ -84,7 +83,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     DIALOG_BTN_CANCEL
   };
 
-  virtual void SetUp() override {
+  void SetUp() override {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
 
     // Create the dialog wrapper object, but don't show it yet.
@@ -103,7 +102,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     ExtensionBrowserTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ExtensionBrowserTest::TearDown();
 
     // Delete the dialog first, as it holds a pointer to the listener.

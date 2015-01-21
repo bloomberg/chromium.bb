@@ -33,12 +33,9 @@ class MaximizableWidgetDelegate : public views::WidgetDelegateView {
  public:
   MaximizableWidgetDelegate() {
   }
-  virtual ~MaximizableWidgetDelegate() {
-  }
+  ~MaximizableWidgetDelegate() override {}
 
-  virtual bool CanMaximize() const override {
-    return true;
-  }
+  bool CanMaximize() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MaximizableWidgetDelegate);

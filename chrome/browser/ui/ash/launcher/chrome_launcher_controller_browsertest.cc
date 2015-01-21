@@ -79,8 +79,7 @@ class TestEvent : public ui::Event {
   explicit TestEvent(ui::EventType type)
       : ui::Event(type, base::TimeDelta(), 0) {
   }
-  virtual ~TestEvent() {
-  }
+  ~TestEvent() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestEvent);
@@ -94,12 +93,12 @@ class TestAppWindowRegistryObserver
     extensions::AppWindowRegistry::Get(profile_)->AddObserver(this);
   }
 
-  virtual ~TestAppWindowRegistryObserver() {
+  ~TestAppWindowRegistryObserver() override {
     extensions::AppWindowRegistry::Get(profile_)->RemoveObserver(this);
   }
 
   // Overridden from AppWindowRegistry::Observer:
-  virtual void OnAppWindowIconChanged(AppWindow* app_window) override {
+  void OnAppWindowIconChanged(AppWindow* app_window) override {
     ++icon_updates_;
   }
 
@@ -147,9 +146,9 @@ class LauncherPlatformAppBrowserTest
   LauncherPlatformAppBrowserTest() : shelf_(NULL), controller_(NULL) {
   }
 
-  virtual ~LauncherPlatformAppBrowserTest() {}
+  ~LauncherPlatformAppBrowserTest() override {}
 
-  virtual void RunTestOnMainThreadLoop() override {
+  void RunTestOnMainThreadLoop() override {
     shelf_ = ash::Shelf::ForPrimaryDisplay();
     controller_ = ChromeLauncherController::instance();
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
@@ -222,9 +221,9 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
   ShelfAppBrowserTest() : shelf_(NULL), model_(NULL), controller_(NULL) {
   }
 
-  virtual ~ShelfAppBrowserTest() {}
+  ~ShelfAppBrowserTest() override {}
 
-  virtual void RunTestOnMainThreadLoop() override {
+  void RunTestOnMainThreadLoop() override {
     shelf_ = ash::Shelf::ForPrimaryDisplay();
     model_ = ash::test::ShellTestApi(ash::Shell::GetInstance()).shelf_model();
     controller_ = ChromeLauncherController::instance();
@@ -340,9 +339,9 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
 class ShelfAppBrowserTestNoDefaultBrowser : public ShelfAppBrowserTest {
  protected:
   ShelfAppBrowserTestNoDefaultBrowser() {}
-  virtual ~ShelfAppBrowserTestNoDefaultBrowser() {}
+  ~ShelfAppBrowserTestNoDefaultBrowser() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ShelfAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kNoStartupWindow);
   }
@@ -357,9 +356,9 @@ class ShelfAppBrowserTestNoDefaultBrowser : public ShelfAppBrowserTest {
 class ShelfAppBrowserNoMinimizeOnClick : public LauncherPlatformAppBrowserTest {
  protected:
   ShelfAppBrowserNoMinimizeOnClick() {}
-  virtual ~ShelfAppBrowserNoMinimizeOnClick() {}
+  ~ShelfAppBrowserNoMinimizeOnClick() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     LauncherPlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(
         switches::kDisableMinimizeOnSecondLauncherItemClick);
@@ -1763,9 +1762,9 @@ class ShelfAppBrowserTestWithMultiMonitor
     : public ShelfAppBrowserTestNoDefaultBrowser {
  protected:
   ShelfAppBrowserTestWithMultiMonitor() {}
-  virtual ~ShelfAppBrowserTestWithMultiMonitor() {}
+  ~ShelfAppBrowserTestWithMultiMonitor() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ShelfAppBrowserTestNoDefaultBrowser::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "800x800,801+0-800x800");

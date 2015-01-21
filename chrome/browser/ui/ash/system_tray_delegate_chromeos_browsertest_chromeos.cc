@@ -52,7 +52,7 @@ class SystemTrayDelegateChromeOSTest : public LoginManagerTest {
   SystemTrayDelegateChromeOSTest()
       : LoginManagerTest(false /* should_launch_browser */) {}
 
-  virtual ~SystemTrayDelegateChromeOSTest() {}
+  ~SystemTrayDelegateChromeOSTest() override {}
 
   void SetupUserProfile(std::string user_name, bool use_24_hour_clock) {
     const user_manager::User* user =

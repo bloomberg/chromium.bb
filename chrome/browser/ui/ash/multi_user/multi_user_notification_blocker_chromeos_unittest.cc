@@ -24,10 +24,10 @@ class MultiUserNotificationBlockerChromeOSTest
       : state_changed_count_(0),
         testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
         window_id_(0) {}
-  virtual ~MultiUserNotificationBlockerChromeOSTest() {}
+  ~MultiUserNotificationBlockerChromeOSTest() override {}
 
   // ash::test::AshTestBase overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     ash::test::AshTestBase::SetUp();
     ASSERT_TRUE(testing_profile_manager_.SetUp());
 
@@ -51,7 +51,7 @@ class MultiUserNotificationBlockerChromeOSTest
     GetMultiUserWindowManager()->notification_blocker_->AddObserver(this);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     GetMultiUserWindowManager()->notification_blocker_->RemoveObserver(this);
     if (chrome::MultiUserWindowManager::GetInstance())
       chrome::MultiUserWindowManager::DeleteInstance();
@@ -59,7 +59,7 @@ class MultiUserNotificationBlockerChromeOSTest
   }
 
   // message_center::NotificationBlocker::Observer ovverrides:
-  virtual void OnBlockingStateChanged(
+  void OnBlockingStateChanged(
       message_center::NotificationBlocker* blocker) override {
     state_changed_count_++;
   }

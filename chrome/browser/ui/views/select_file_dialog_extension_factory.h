@@ -11,13 +11,12 @@
 class SelectFileDialogExtensionFactory : public ui::SelectFileDialogFactory {
  public:
   SelectFileDialogExtensionFactory();
-  virtual ~SelectFileDialogExtensionFactory();
+  ~SelectFileDialogExtensionFactory() override;
 
  private:
   // Override from ui::SelectFileDialogFactory:
-  virtual ui::SelectFileDialog* Create(
-      ui::SelectFileDialog::Listener* listener,
-      ui::SelectFilePolicy* policy) override;
+  ui::SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
+                               ui::SelectFilePolicy* policy) override;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogExtensionFactory);
 };

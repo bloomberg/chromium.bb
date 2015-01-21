@@ -192,10 +192,10 @@ class AnimationSetter {
 class AppObserver : public extensions::AppWindowRegistry::Observer {
  public:
   explicit AppObserver(const std::string& user_id) : user_id_(user_id) {}
-  virtual ~AppObserver() {}
+  ~AppObserver() override {}
 
   // AppWindowRegistry::Observer overrides:
-  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) override {
+  void OnAppWindowAdded(extensions::AppWindow* app_window) override {
     aura::Window* window = app_window->GetNativeWindow();
     DCHECK(window);
     MultiUserWindowManagerChromeOS::GetInstance()->SetWindowOwner(window,

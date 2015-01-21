@@ -47,10 +47,9 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
   SessionStateDelegateChromeOSTest() : user_manager_(NULL) {
   }
 
-  virtual ~SessionStateDelegateChromeOSTest() {
-  }
+  ~SessionStateDelegateChromeOSTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_ = new chromeos::FakeUserManager;
     user_manager_enabler_.reset(
@@ -61,7 +60,7 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
     testing::Test::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     testing::Test::TearDown();
     session_state_delegate_.reset();
     user_manager_enabler_.reset();
