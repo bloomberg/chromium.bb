@@ -60,7 +60,7 @@ layer at (0,0) size 933x1037 backgroundClip at (0,0) size 785x585 clip at (0,0) 
             chunk 1 (middle anchor) text run 1 at (26.23,-3.00) startOffset 0 endOffset 6 width 47.54: "Mask 3"
       RenderSVGContainer {g} at (549,668) size 188x170 [transform={m=((1.00,0.00)(0.00,1.00)) t=(260.00,340.00)}]
         RenderSVGContainer {use} at (549,705) size 188x133
-          [masker="mask_4"] RenderSVGResourceMasker {mask} at (5.00,0) size 90.00x64.00
+          [masker="mask_4"] RenderSVGResourceMasker {mask} at (5,0) size 90x64
           RenderSVGRect {rect} at (539,705) size 208x166 [fill={[type=LINEAR-GRADIENT] [id="maskedGradient"]}] [x=0.00] [y=0.00] [width=100.00] [height=80.00]
         RenderSVGText {text} at (26,-18) size 48x19 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 48x18

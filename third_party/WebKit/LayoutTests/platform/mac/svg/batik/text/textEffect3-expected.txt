@@ -82,7 +82,7 @@ layer at (0,0) size 450x500
             chunk 1 (middle anchor) text run 1 at (361.10,240.00) startOffset 0 endOffset 1 width 38.51: "K"
         RenderSVGInlineText {#text} at (0,0) size 0x0
       RenderSVGText {text} at (53,292) size 148x79 contains 1 chunk(s)
-        [filter="dropShadow"] RenderSVGResourceFilter {filter} at (39.00,284.10) size 176.29x94.80
+        [filter="dropShadow"] RenderSVGResourceFilter {filter} at (39,284.10) size 176.29x94.80
         RenderSVGInlineText {#text} at (0,20) size 36x59
           [filter="dropShadow"] RenderSVGResourceFilter {filter} at (50.14,306.10) size 42.68x70.80
           chunk 1 (middle anchor) text run 1 at (53.69,360.00) startOffset 0 endOffset 1 width 35.57: "B"
