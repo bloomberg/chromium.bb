@@ -940,8 +940,12 @@
         "href": "/webstore/index",
         "items": [
           {
-            "title": "What Is the Chrome Web Store?",
+            "title": "Distribution Overview",
             "href": "/webstore/index"
+          },
+          {
+            "title": "What Is the Chrome Web Store?",
+            "href": "/webstore/about_webstore"
           },
           {
             "title": "What Can You Publish?",
