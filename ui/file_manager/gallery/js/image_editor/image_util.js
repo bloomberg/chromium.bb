@@ -95,18 +95,6 @@ function ImageRect(left, top, width, height) {
 }
 
 /**
- * Creates an image rect with a canvas.
- * @param {!HTMLCanvasElement} canvas A canvas.
- * @return {!ImageRect}
- *
- * TODO(yawano): Since createFromImage accepts HTMLCanvasElement, delete this
- *     method later.
- */
-ImageRect.createFromCanvas = function(canvas) {
-  return ImageRect.createFromImage(canvas);
-};
-
-/**
  * Creates an image rect with an image or a canvas.
  * @param {!(HTMLImageElement|HTMLCanvasElement)} image An image or a canvas.
  * @return {!ImageRect}

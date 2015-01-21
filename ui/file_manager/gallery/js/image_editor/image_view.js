@@ -180,7 +180,7 @@ ImageView.prototype.draw = function() {
     this.displayedContentGeneration_ = this.contentGeneration_;
     ImageUtil.trace.resetTimer('paint');
     this.paintDeviceRect(
-        this.contentCanvas_, ImageRect.createFromCanvas(this.contentCanvas_));
+        this.contentCanvas_, ImageRect.createFromImage(this.contentCanvas_));
     ImageUtil.trace.reportTimer('paint');
   }
 };
