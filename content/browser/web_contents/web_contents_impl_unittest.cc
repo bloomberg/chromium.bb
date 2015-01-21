@@ -597,7 +597,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundariesAfterCrash) {
 
   // Simulate a renderer crash.
   orig_rfh->GetRenderViewHost()->set_render_view_created(false);
-  orig_rfh->set_render_frame_created(false);
+  orig_rfh->SetRenderFrameCreated(false);
 
   // Navigate to new site.  We should not go into PENDING.
   const GURL url2("http://www.yahoo.com");

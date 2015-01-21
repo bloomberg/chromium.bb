@@ -120,6 +120,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(int process_id,
 
 RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
                                          RenderFrameHostDelegate* delegate,
+                                         RenderWidgetHostDelegate* rwh_delegate,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
                                          int routing_id,
@@ -140,6 +141,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
       no_create_browser_accessibility_manager_for_testing_(false),
       weak_ptr_factory_(this) {
   bool is_swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
+  bool hidden = !!(flags & CREATE_RF_HIDDEN);
   frame_tree_->RegisterRenderFrameHost(this);
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().insert(std::make_pair(
@@ -156,6 +158,12 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
   SetUpMojoIfNeeded();
   swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
+
+  if (flags & CREATE_RF_NEEDS_RENDER_WIDGET_HOST) {
+    render_widget_host_.reset(new RenderWidgetHostImpl(
+        rwh_delegate, GetProcess(), MSG_ROUTING_NONE, hidden));
+    render_widget_host_->set_owned_by_render_frame_host(true);
+  }
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
@@ -180,6 +188,9 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // NULL out the swapout timer; in crash dumps this member will be null only if
   // the dtor has run.
   swapout_event_monitor_timeout_.reset();
+
+  if (render_widget_host_)
+    render_widget_host_->Cleanup();
 }
 
 int RenderFrameHostImpl::GetRoutingID() {
@@ -515,14 +526,36 @@ bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
 
   DCHECK(GetProcess()->HasConnection());
 
+  FrameMsg_NewFrame_WidgetParams widget_params;
+  if (render_widget_host_) {
+    widget_params.routing_id = render_widget_host_->GetRoutingID();
+    widget_params.surface_id = render_widget_host_->surface_id();
+    widget_params.hidden = render_widget_host_->is_hidden();
+  } else {
+    // MSG_ROUTING_NONE will prevent a new RenderWidget from being created in
+    // the renderer process.
+    widget_params.routing_id = MSG_ROUTING_NONE;
+    widget_params.surface_id = 0;
+    widget_params.hidden = true;
+  }
+
   Send(new FrameMsg_NewFrame(routing_id_, parent_routing_id, proxy_routing_id,
-                             frame_tree_node()->current_replication_state()));
+                             frame_tree_node()->current_replication_state(),
+                             widget_params));
+
+  // The RenderWidgetHost takes ownership of its view. It is tied to the
+  // lifetime of the current RenderProcessHost for this RenderFrameHost.
+  if (render_widget_host_) {
+    RenderWidgetHostView* rwhv =
+        new RenderWidgetHostViewChildFrame(render_widget_host_.get());
+    rwhv->Hide();
+  }
 
   // The renderer now has a RenderFrame for this RenderFrameHost.  Note that
   // this path is only used for out-of-process iframes.  Main frame RenderFrames
   // are created with their RenderView, and same-site iframes are created at the
   // time of OnCreateChildFrame.
-  set_render_frame_created(true);
+  SetRenderFrameCreated(true);
 
   return true;
 }
@@ -539,6 +572,12 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
   DCHECK(!is_live || render_view_host_->IsRenderViewLive());
 
   return is_live;
+}
+
+void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
+  render_frame_created_ = created;
+  if (created && render_widget_host_)
+    render_widget_host_->InitForFrame();
 }
 
 void RenderFrameHostImpl::Init() {
@@ -582,7 +621,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
 
   // We know that the RenderFrame has been created in this case, immediately
   // after the CreateChildFrame IPC was sent.
-  new_frame->set_render_frame_created(true);
+  new_frame->SetRenderFrameCreated(true);
 
   new_frame->frame_tree_node()->set_sandbox_flags(sandbox_flags);
 
@@ -733,7 +772,27 @@ void RenderFrameHostImpl::OnDidDropNavigation() {
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
-  return static_cast<RenderWidgetHostImpl*>(render_view_host_);
+  if (render_widget_host_)
+    return render_widget_host_.get();
+
+  // TODO(kenrb): When RenderViewHost no longer inherits RenderWidgetHost,
+  // we can remove this fallback. Currently it is only used for the main
+  // frame.
+  if (!GetParent())
+    return static_cast<RenderWidgetHostImpl*>(render_view_host_);
+
+  return nullptr;
+}
+
+RenderWidgetHostView* RenderFrameHostImpl::GetView() {
+  RenderFrameHostImpl* frame = this;
+  while (frame) {
+    if (frame->render_widget_host_)
+      return frame->render_widget_host_->GetView();
+    frame = static_cast<RenderFrameHostImpl*>(frame->GetParent());
+  }
+
+  return render_view_host_->GetView();
 }
 
 int RenderFrameHostImpl::GetEnabledBindings() {

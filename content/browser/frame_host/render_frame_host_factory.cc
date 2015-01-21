@@ -17,18 +17,19 @@ RenderFrameHostFactory* RenderFrameHostFactory::factory_ = NULL;
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostFactory::Create(
     RenderViewHostImpl* render_view_host,
     RenderFrameHostDelegate* delegate,
+    RenderWidgetHostDelegate* rwh_delegate,
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
     int routing_id,
     int flags) {
   if (factory_) {
-    return factory_->CreateRenderFrameHost(render_view_host, delegate,
-                                           frame_tree, frame_tree_node,
-                                           routing_id, flags).Pass();
+    return factory_->CreateRenderFrameHost(
+        render_view_host, delegate, rwh_delegate, frame_tree, frame_tree_node,
+        routing_id, flags);
   }
-  return make_scoped_ptr(new RenderFrameHostImpl(render_view_host, delegate,
-                                                 frame_tree, frame_tree_node,
-                                                 routing_id, flags));
+  return make_scoped_ptr(
+      new RenderFrameHostImpl(render_view_host, delegate, rwh_delegate,
+                              frame_tree, frame_tree_node, routing_id, flags));
 }
 
 // static
