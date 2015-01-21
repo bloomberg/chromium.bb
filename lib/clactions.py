@@ -136,10 +136,12 @@ def GetCLPreCQStatus(change, action_history):
     The status, as a string, or None if there is no recorded pre-cq status.
   """
   actions_for_patch = ActionsForPatch(change, action_history)
-  actions_for_patch = [a for a in actions_for_patch
-                       if a.action in _PRECQ_ACTION_TO_STATUS]
+  actions_for_patch = [
+      a for a in actions_for_patch if a.action in _PRECQ_ACTION_TO_STATUS or
+      a.action == constants.CL_ACTION_PRE_CQ_RESET]
 
-  if not actions_for_patch:
+  if (not actions_for_patch or
+      actions_for_patch[-1].action == constants.CL_ACTION_PRE_CQ_RESET):
     return None
 
   return TranslatePreCQActionToStatus(actions_for_patch[-1].action)
@@ -258,6 +260,15 @@ def GetCLPreCQProgress(change, action_history):
   """
   actions_for_patch = ActionsForPatch(change, action_history)
   config_status_dict = {}
+
+  # If there is a reset action recorded, filter out all actions prior to it.
+  reset = False
+  for i, a in enumerate(actions_for_patch):
+    if a.action == constants.CL_ACTION_PRE_CQ_RESET:
+      reset = True
+      reset_index = i
+  if reset:
+    actions_for_patch = actions_for_patch[(reset_index+1):]
 
   # Only configs for which the pre-cq-launcher has requested verification
   # should be included in the per-config status.

@@ -204,6 +204,9 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     self._Act(build_id, change, 'polenta')
     self.assertEqual(self._GetCLStatus(change), constants.CL_STATUS_INFLIGHT)
 
+    self._Act(build_id, change, constants.CL_ACTION_PRE_CQ_RESET)
+    self.assertEqual(self._GetCLStatus(change), None)
+
   def testGetCLPreCQProgress(self):
     change = metadata_lib.GerritPatchTuple(1, 1, False)
     s = lambda: clactions.GetCLPreCQProgress(
@@ -281,6 +284,10 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     for c in configs:
       self.assertEqual(constants.CL_PRECQ_CONFIG_STATUS_VERIFIED,
                        s()[c][0])
+
+    # Simulate the pre-cq status being reset.
+    self._Act(launcher_build_id, change, constants.CL_ACTION_PRE_CQ_RESET)
+    self.assertEqual({}, s())
 
   def testGetCLPreCQCategoriesAndPendingCLs(self):
     c1 = metadata_lib.GerritPatchTuple(1, 1, False)
