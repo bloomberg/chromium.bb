@@ -111,6 +111,7 @@ install
 invalid
 keydown
 keypress
+keystatuseschange
 keyup
 languagechange
 levelchange

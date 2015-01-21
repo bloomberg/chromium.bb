@@ -282,6 +282,7 @@
       'exported/WebDeviceMotionData.cpp',
       'exported/WebDeviceOrientationData.cpp',
       'exported/WebEncryptedMediaClient.cpp',
+      'exported/WebEncryptedMediaKeyInformation.cpp',
       'exported/WebFederatedCredential.cpp',
       'exported/WebFileSystemCallbacks.cpp',
       'exported/WebFilterKeyframe.cpp',

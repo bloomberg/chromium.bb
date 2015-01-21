@@ -47,6 +47,7 @@
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebContentDecryptionModuleException.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
+#include "public/platform/WebEncryptedMediaKeyInformation.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "wtf/ASCIICType.h"
@@ -853,6 +854,21 @@ void MediaKeySession::close()
 void MediaKeySession::expirationChanged(double updatedExpiryTimeInMS)
 {
     m_expiration = updatedExpiryTimeInMS;
+}
+
+void MediaKeySession::keysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>& keys, bool hasAdditionalUsableKey)
+{
+    WTF_LOG(Media, "MediaKeySession(%p)::keysChange with %zu keys and usable key: %d", this, keys.size(), hasAdditionalUsableKey);
+
+    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::keystatuseschange);
+    event->setTarget(this);
+    m_asyncEventQueue->enqueueEvent(event.release());
+
+    // FIXME: Attempt to resume playback if |hasAdditionalUsableKey| is true.
+    // http://crbug.com/413413
+
+    // FIXME: Copy |keys| or whatever is necessary for the keyStatuses attribute.
+    // http://crbug.com/432671
 }
 
 const AtomicString& MediaKeySession::interfaceName() const

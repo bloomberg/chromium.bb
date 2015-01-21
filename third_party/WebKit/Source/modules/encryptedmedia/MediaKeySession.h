@@ -102,6 +102,7 @@ private:
     virtual void message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL) override;
     virtual void close() override;
     virtual void expirationChanged(double updatedExpiryTimeInMS) override;
+    virtual void keysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>&, bool hasAdditionalUsableKey) override;
 
     // Called by NewSessionResult when the new session has been created.
     void finishGenerateRequest();

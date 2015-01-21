@@ -32,11 +32,13 @@
 #define WebContentDecryptionModuleSession_h
 
 #include "WebCommon.h"
+#include "WebVector.h"
 #include "public/platform/WebContentDecryptionModuleException.h"
 #include "public/platform/WebContentDecryptionModuleResult.h"
 
 namespace blink {
 
+class WebEncryptedMediaKeyInformation;
 class WebString;
 class WebURL;
 
@@ -59,6 +61,13 @@ public:
         // |updatedExpiryTimeInMS| is specified as the number of milliseconds
         // since 01 January, 1970 UTC.
         virtual void expirationChanged(double updatedExpiryTimeInMS) = 0;
+
+        // Called when the set of keys for this session changes or existing keys
+        // change state. |hasAdditionalUsableKey| is set if a key is newly
+        // usable (e.g. new key available, previously expired key has been
+        // renewed, etc.) and the browser should attempt to resume playback
+        // if necessary.
+        virtual void keysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>&, bool hasAdditionalUsableKey) = 0;
 
     protected:
         virtual ~Client();
