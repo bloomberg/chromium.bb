@@ -17,7 +17,7 @@ public:
     virtual void destroyDecodedData(bool destroyAll) { }
     virtual bool currentFrameKnownToBeOpaque();
     virtual IntSize size() const;
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode);
+    void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode, RespectImageOrientationEnum) override;
 
 
     PassRefPtr<SkImage> skImage() override { return m_image; }

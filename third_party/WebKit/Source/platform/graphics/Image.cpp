@@ -117,11 +117,6 @@ FloatRect Image::adjustForNegativeSize(const FloatRect& rect)
     return norm;
 }
 
-void Image::draw(GraphicsContext* ctx, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator op, WebBlendMode blendMode, RespectImageOrientationEnum)
-{
-    draw(ctx, dstRect, srcRect, op, blendMode);
-}
-
 void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, CompositeOperator op, WebBlendMode blendMode, const IntSize& repeatSpacing)
 {
     if (mayFillWithSolidColor()) {
@@ -154,7 +149,7 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
         visibleSrcRect.setY((destRect.y() - oneTileRect.y()) / scale.height());
         visibleSrcRect.setWidth(destRect.width() / scale.width());
         visibleSrcRect.setHeight(destRect.height() / scale.height());
-        draw(ctxt, destRect, visibleSrcRect, op, blendMode);
+        draw(ctxt, destRect, visibleSrcRect, op, blendMode, DoNotRespectImageOrientation);
         return;
     }
 

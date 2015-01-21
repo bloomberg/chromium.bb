@@ -260,11 +260,6 @@ String BitmapImage::filenameExtension() const
     return m_source.filenameExtension();
 }
 
-void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, WebBlendMode blendMode)
-{
-    draw(ctxt, dstRect, srcRect, compositeOp, blendMode, DoNotRespectImageOrientation);
-}
-
 void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, WebBlendMode blendMode, RespectImageOrientationEnum shouldRespectImageOrientation)
 {
     // Spin the animation to the correct frame before we try to draw it, so we

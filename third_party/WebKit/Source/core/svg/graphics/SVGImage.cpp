@@ -204,7 +204,7 @@ void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize contai
     adjustedSrcSize.scale(roundedContainerSize.width() / containerSize.width(), roundedContainerSize.height() / containerSize.height());
     scaledSrc.setSize(adjustedSrcSize);
 
-    draw(context, dstRect, scaledSrc, compositeOp, blendMode);
+    draw(context, dstRect, scaledSrc, compositeOp, blendMode, DoNotRespectImageOrientation);
 }
 
 PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
@@ -269,7 +269,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     context->drawRect(dstRect, paint);
 }
 
-void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode)
+void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode, RespectImageOrientationEnum)
 {
     if (!m_page)
         return;

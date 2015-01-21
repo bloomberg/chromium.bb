@@ -74,7 +74,7 @@ void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
     context->endLayer();
 }
 
-void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, WebBlendMode blendMode)
+void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, WebBlendMode blendMode, RespectImageOrientationEnum)
 {
     // Draw nothing if either of the images hasn't loaded yet.
     if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())

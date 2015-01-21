@@ -49,8 +49,8 @@ public:
     virtual IntSize size() const override { return m_crossfadeSize; }
 
 protected:
-    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
-        CompositeOperator, WebBlendMode) override;
+    void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
+        CompositeOperator, WebBlendMode, RespectImageOrientationEnum) override;
     virtual void drawTile(GraphicsContext*, const FloatRect&) final;
 
     CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize&);

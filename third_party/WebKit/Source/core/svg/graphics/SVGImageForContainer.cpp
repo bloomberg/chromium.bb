@@ -34,7 +34,7 @@ IntSize SVGImageForContainer::size() const
 }
 
 void SVGImageForContainer::draw(GraphicsContext* context, const FloatRect& dstRect,
-    const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode)
+    const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode, RespectImageOrientationEnum)
 {
     m_image->drawForContainer(context, m_containerSize, m_zoom, dstRect, srcRect, compositeOp, blendMode);
 }
