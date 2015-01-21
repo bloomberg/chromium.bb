@@ -106,6 +106,7 @@ class CONTENT_EXPORT PluginServiceImpl
   void UnregisterInternalPlugin(const base::FilePath& path) override;
   void GetInternalPlugins(std::vector<WebPluginInfo>* plugins) override;
   bool NPAPIPluginsSupported() override;
+  void EnableNpapiPluginsForTesting() override;
   void DisablePluginsDiscoveryForTesting() override;
 #if defined(OS_MACOSX)
   void AppActivated() override;
@@ -225,6 +226,8 @@ class CONTENT_EXPORT PluginServiceImpl
   base::win::RegKey hkcu_key_;
   base::win::RegKey hklm_key_;
 #endif
+
+  bool npapi_plugins_enabled_;
 
 #if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
   ScopedVector<base::FilePathWatcher> file_watchers_;

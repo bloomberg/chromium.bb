@@ -59,6 +59,16 @@ enum FlashUsage {
   FLASH_USAGE_ENUM_COUNT
 };
 
+enum NPAPIPluginStatus {
+  // Platform does not support NPAPI.
+  NPAPI_STATUS_UNSUPPORTED,
+  // Platform supports NPAPI and NPAPI is disabled.
+  NPAPI_STATUS_DISABLED,
+  // Platform supports NPAPI and NPAPI is enabled.
+  NPAPI_STATUS_ENABLED,
+  NPAPI_STATUS_ENUM_COUNT
+};
+
 bool LoadPluginListInProcess() {
 #if defined(OS_WIN)
   return true;
@@ -143,7 +153,7 @@ PluginServiceImpl* PluginServiceImpl::GetInstance() {
 }
 
 PluginServiceImpl::PluginServiceImpl()
-    : filter_(NULL) {
+    : npapi_plugins_enabled_(false), filter_(NULL) {
   // Collect the total number of browser processes (which create
   // PluginServiceImpl objects, to be precise). The number is used to normalize
   // the number of processes which start at least one NPAPI/PPAPI Flash process.
@@ -180,6 +190,15 @@ void PluginServiceImpl::Init() {
 
   if (command_line->HasSwitch(switches::kDisablePluginsDiscovery))
     PluginList::Singleton()->DisablePluginsDiscovery();
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  npapi_plugins_enabled_ = command_line->HasSwitch(switches::kEnableNpapi);
+  NPAPIPluginStatus status =
+      npapi_plugins_enabled_ ? NPAPI_STATUS_ENABLED : NPAPI_STATUS_DISABLED;
+#else
+  NPAPIPluginStatus status = NPAPI_STATUS_UNSUPPORTED;
+#endif
+  UMA_HISTOGRAM_ENUMERATION("Plugin.NPAPIStatus", status,
+                            NPAPI_STATUS_ENUM_COUNT);
 }
 
 void PluginServiceImpl::StartWatchingPlugins() {
@@ -778,15 +797,15 @@ void PluginServiceImpl::GetInternalPlugins(
 }
 
 bool PluginServiceImpl::NPAPIPluginsSupported() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  return true;
-#else
-  return false;
-#endif
+  return npapi_plugins_enabled_;
 }
 
 void PluginServiceImpl::DisablePluginsDiscoveryForTesting() {
   PluginList::Singleton()->DisablePluginsDiscovery();
+}
+
+void PluginServiceImpl::EnableNpapiPluginsForTesting() {
+  npapi_plugins_enabled_ = true;
 }
 
 #if defined(OS_MACOSX)

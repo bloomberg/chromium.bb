@@ -955,6 +955,9 @@ const char kEnableWin32kRendererLockDown[] =
 const char kFontCacheSharedMemSuffix[] = "font-cache-shared-mem-suffix";
 #endif
 
+// Enables the use of NPAPI plugins.
+const char kEnableNpapi[]                   = "enable-npapi";
+
 #if defined(ENABLE_PLUGINS)
 // Enables the plugin power saver feature.
 const char kEnablePluginPowerSaver[] = "enable-plugin-power-saver";

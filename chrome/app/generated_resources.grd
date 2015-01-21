@@ -5794,6 +5794,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables the win32k renderer lockdown, which is only available on Windows 8 and above.
         </message>
       </if>
+      <if expr="is_win or is_macosx">
+        <message name="IDS_FLAGS_ENABLE_NPAPI_NAME" desc="Name of the 'Enable NPAPI' lab.">
+          Enable NPAPI
+        </message>
+        <message name="IDS_FLAGS_ENABLE_NPAPI_DESCRIPTION" desc="Description of the 'Enable NPAPI' lab.">
+          Enables the use of NPAPI plugins.
+        </message>
+      </if>
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_NAME" desc="Name of the 'Enable experimental canvas features' lab.">
         Enable experimental canvas features
       </message>

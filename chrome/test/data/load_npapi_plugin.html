@@ -1,0 +1,31 @@
+<html>
+<head>
+<title>Initial Title</title>
+<script>
+function PluginCreated() {
+  document.title = "Loaded";
+}
+
+function injectPlugin() {
+  var child = document.createElement('div');
+  child.innerHTML = '<embed type="application/vnd.npapi-test" src="foo"' +
+                     ' name="invoke_js_function_on_create" id="plugin"' +
+                     ' mode="np_embed"></embed>';
+  document.getElementById('content').appendChild(child);
+  // Plugins are loaded synchronously during layout, so the plugin has either
+  // been loaded or blocked at this point.
+  var plugin = document.getElementById('plugin');
+  // Check for the "loadedProperty" to determine if plugin is loaded.
+  if (plugin.loadedProperty == true) {
+    document.title = "Loaded";
+  } else {
+    document.title = "Not Loaded";
+  }
+}
+</script>
+</head>
+<body onload='injectPlugin();'>
+<div id='content'></div>
+</embed>
+</body>
+</html>

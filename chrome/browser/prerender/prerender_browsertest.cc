@@ -1082,6 +1082,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         app_dir.Append(FILE_PATH_LITERAL("plugins")));
 #endif
     command_line->AppendSwitch(switches::kAlwaysAuthorizePlugins);
+    command_line->AppendSwitch(switches::kEnableNpapi);
   }
 
   void SetPreference(NetworkPredictionOptions value) {

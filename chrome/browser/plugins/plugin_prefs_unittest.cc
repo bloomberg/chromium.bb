@@ -208,6 +208,7 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
 
   PluginService::GetInstance()->Init();
   PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
+  PluginService::GetInstance()->EnableNpapiPluginsForTesting();
 
   base::string16 component_updated_plugin_name(
       ASCIIToUTF16("Component-updated Pepper Flash"));

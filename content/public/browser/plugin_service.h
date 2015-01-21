@@ -143,6 +143,9 @@ class PluginService {
   // This can be called from any thread.
   virtual bool NPAPIPluginsSupported() = 0;
 
+  // This is equivalent to specifying kEnableNpapi, but is useful for unittests.
+  virtual void EnableNpapiPluginsForTesting() = 0;
+
   // This is equivalent to specifying kDisablePluginsDiscovery, but is useful
   // for unittests.
   virtual void DisablePluginsDiscoveryForTesting() = 0;

@@ -11,6 +11,52 @@
 
 namespace NPAPIClient {
 
+class NPWithProperty : public NPObject {
+ public:
+  NPWithProperty() : NPObject() {}
+
+  static NPObject* Allocate(NPP npp, NPClass* npclass) {
+    return new NPWithProperty();
+  }
+
+  static void Deallocate(NPObject* npobject) {
+    delete static_cast<NPWithProperty*>(npobject);
+  }
+
+  static bool HasProperty(NPObject* npobject, NPIdentifier name) {
+    return (name == PluginClient::HostFunctions()->
+                getstringidentifier("loadedProperty"));
+  }
+
+  static bool GetProperty(NPObject* npobject,
+                          NPIdentifier name,
+                          NPVariant* result) {
+    if (name == PluginClient::HostFunctions()->
+            getstringidentifier("loadedProperty")) {
+      BOOLEAN_TO_NPVARIANT(true, *result);
+      return true;
+    }
+    return false;
+  }
+};
+
+static NPClass* GetNPClass() {
+  static NPClass plugin_class = {
+      NP_CLASS_STRUCT_VERSION,
+      NPWithProperty::Allocate,
+      NPWithProperty::Deallocate,
+      NULL,  // Invalidate
+      NULL,  // HasMethod
+      NULL,  // Invoke
+      NULL,  // InvokeDefault
+      NPWithProperty::HasProperty,
+      NPWithProperty::GetProperty,
+      NULL,  // SetProperty
+      NULL,  // RemoveProperty
+  };
+  return &plugin_class;
+}
+
 NPNetscapeFuncs* PluginClient::host_functions_;
 
 NPError PluginClient::GetEntryPoints(NPPluginFuncs* pFuncs) {
@@ -227,6 +273,13 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
 
   if (variable == NPPVpluginNeedsXEmbed) {
     *static_cast<NPBool*>(value) = 1;
+    return NPERR_NO_ERROR;
+  }
+
+  if (variable == NPPVpluginScriptableNPObject) {
+    *(NPObject**)value =
+        NPAPIClient::PluginClient::HostFunctions()->createobject(
+            instance, NPAPIClient::GetNPClass());
     return NPERR_NO_ERROR;
   }
 

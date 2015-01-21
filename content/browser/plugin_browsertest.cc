@@ -74,6 +74,7 @@ class PluginTest : public ContentBrowserTest {
     // explicitly registered.
     command_line->AppendSwitchPath(switches::kExtraPluginDir, plugin_dir);
 #endif
+    command_line->AppendSwitch(switches::kEnableNpapi);
   }
 
   void SetUpOnMainThread() override {

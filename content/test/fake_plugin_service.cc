@@ -101,6 +101,9 @@ bool FakePluginService::NPAPIPluginsSupported() {
   return false;
 }
 
+void FakePluginService::EnableNpapiPluginsForTesting() {
+}
+
 void FakePluginService::DisablePluginsDiscoveryForTesting() {
 }
 

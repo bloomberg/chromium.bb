@@ -294,20 +294,84 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
 // On Aura NPAPI only works on Windows.
 #if !defined(USE_AURA) || defined(OS_WIN)
 
-class ClickToPlayPluginTest : public ContentSettingsTest {
- public:
-  ClickToPlayPluginTest() {}
+class LoadPluginTest : public ContentSettingsTest {
+ protected:
+  void PerformTest(bool expect_loaded) {
+    GURL url = ui_test_utils::GetTestUrl(
+        base::FilePath(),
+        base::FilePath().AppendASCII("load_npapi_plugin.html"));
+    ui_test_utils::NavigateToURL(browser(), url);
 
+    const char* expected_result = expect_loaded ? "Loaded" : "Not Loaded";
+    const char* unexpected_result = expect_loaded ? "Not Loaded" : "Loaded";
+
+    base::string16 expected_title(base::ASCIIToUTF16(expected_result));
+    base::string16 unexpected_title(base::ASCIIToUTF16(unexpected_result));
+
+    content::TitleWatcher title_watcher(
+        browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+    title_watcher.AlsoWaitForTitle(unexpected_title);
+
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
+  void SetUpCommandLineInternal(base::CommandLine* command_line,
+                                bool expect_loaded) {
 #if defined(OS_MACOSX)
-  void SetUpCommandLine(base::CommandLine* command_line) override {
     base::FilePath plugin_dir;
     PathService::Get(base::DIR_MODULE, &plugin_dir);
     plugin_dir = plugin_dir.AppendASCII("plugins");
     // The plugins directory isn't read by default on the Mac, so it needs to be
     // explicitly registered.
     command_line->AppendSwitchPath(switches::kExtraPluginDir, plugin_dir);
-  }
 #endif
+    command_line->AppendSwitch(switches::kAlwaysAuthorizePlugins);
+    if (expect_loaded)
+      command_line->AppendSwitch(switches::kEnableNpapi);
+  }
+};
+
+class DisabledPluginTest : public LoadPluginTest {
+ public:
+  DisabledPluginTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SetUpCommandLineInternal(command_line, false);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DisabledPluginTest, Load) {
+  PerformTest(false);
+}
+
+class EnabledPluginTest : public LoadPluginTest {
+ public:
+  EnabledPluginTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SetUpCommandLineInternal(command_line, true);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(EnabledPluginTest, Load) {
+  PerformTest(true);
+}
+
+class ClickToPlayPluginTest : public ContentSettingsTest {
+ public:
+  ClickToPlayPluginTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+#if defined(OS_MACOSX)
+    base::FilePath plugin_dir;
+    PathService::Get(base::DIR_MODULE, &plugin_dir);
+    plugin_dir = plugin_dir.AppendASCII("plugins");
+    // The plugins directory isn't read by default on the Mac, so it needs to be
+    // explicitly registered.
+    command_line->AppendSwitchPath(switches::kExtraPluginDir, plugin_dir);
+#endif
+    command_line->AppendSwitch(switches::kEnableNpapi);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, Basic) {

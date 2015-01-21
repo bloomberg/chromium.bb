@@ -291,6 +291,8 @@ CONTENT_EXPORT extern const char kFontCacheSharedMemSuffix[];
 CONTENT_EXPORT bool IsWin32kRendererLockdownEnabled();
 #endif
 
+CONTENT_EXPORT extern const char kEnableNpapi[];
+
 #if defined(ENABLE_PLUGINS)
 CONTENT_EXPORT extern const char kEnablePluginPowerSaver[];
 #endif
