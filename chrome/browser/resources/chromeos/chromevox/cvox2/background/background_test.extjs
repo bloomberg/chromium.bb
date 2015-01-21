@@ -45,6 +45,14 @@ BackgroundTest.prototype = {
     <a href='#bar'>echo</a>
     <h2>foxtraut</h2>
     <p>end<span>of test</span></p>
+  */},
+
+  formsDoc: function() {/*!
+    <select id="fruitSelect">
+      <option>apple</option>
+      <option>grape</option>
+      <option> banana</option>
+    </select>
   */}
 };
 
@@ -155,5 +163,17 @@ TEST_F('BackgroundTest', 'CaretNavigation', function() {
       expectAfter('Link echo', doCmd('nextWord'), true);
 
       cvox.ChromeVox.tts.finishExpectations();
+  }.bind(this));
+});
+
+TEST_F('BackgroundTest', 'SelectSingleBasic', function() {
+  this.runWithDocument(this.formsDoc, function(tabId) {
+    var sendDownToSelect =
+        this.sendKeyToElement.bind(this, tabId, 'Down', '#fruitSelect');
+    var expect = cvox.ChromeVox.tts.expectSpeech.bind(cvox.ChromeVox.tts);
+    expect('apple Menu item  1 of 3 ', sendDownToSelect, true);
+    expect('grape  2 of 3 ', sendDownToSelect, true);
+    expect('banana  3 of 3 ', testDone, true);
+    cvox.ChromeVox.tts.finishExpectations();
   }.bind(this));
 });

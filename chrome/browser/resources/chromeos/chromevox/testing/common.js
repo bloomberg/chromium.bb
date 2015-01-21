@@ -28,10 +28,16 @@ var TestUtils = function() {};
  *
  * @param {Function} commentEncodedHtml The html , embedded as a
  *     comment inside an anonymous function - see example, above.
+ * @param {!Array=} opt_args Optional arguments to be substituted in the form
+ *     $0, ... within the code block.
  * @return {string} The html text.
 */
-TestUtils.extractHtmlFromCommentEncodedString = function(commentEncodedHtml) {
-  return commentEncodedHtml.toString().
-      replace(/^[^\/]+\/\*!?/, '').
-      replace(/\*\/[^\/]+$/, '');
+TestUtils.extractHtmlFromCommentEncodedString =
+    function(commentEncodedHtml, opt_args) {
+  var stringified = commentEncodedHtml.toString();
+  if (opt_args) {
+    for (var i = 0; i < opt_args.length; i++)
+      stringified = stringified.replace('$' + i, opt_args[i]);
+  }
+  return stringified.replace(/^[^\/]+\/\*!?/, '').replace(/\*\/[^\/]+$/, '');
 };

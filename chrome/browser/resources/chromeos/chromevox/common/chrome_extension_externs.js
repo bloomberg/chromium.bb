@@ -1326,6 +1326,12 @@ chrome.automation.AutomationNode.prototype.focus = function() {};
 
 
 /**
+ * @param {Object} findParams
+ */
+chrome.automation.AutomationNode.prototype.find = function(findParams) {};
+
+
+/**
  * @param {function(chrome.automation.AutomationNode)} callback
  */
 chrome.automation.getDesktop = function(callback) {};

@@ -123,7 +123,8 @@ Output.RULES = {
     },
     menuItem: {
       speak: '$or($haspopup, @describe_menu_item_with_submenu($name), ' +
-          '@describe_menu_item($name))'
+          '@describe_menu_item($name)) ' +
+          '@describe_index($indexInParent, $parentChildCount)'
     },
     menuListOption: {
       speak: '$name $value @aria_role_menuitem ' +
@@ -133,7 +134,8 @@ Output.RULES = {
       speak: '$value'
     },
     popUpButton: {
-      speak: '$value $name @tag_button @aria_has_popup $earcon(LISTBOX)'
+      speak: '$value $name @tag_button @aria_has_popup $earcon(LISTBOX) ' +
+          '$or($collapsed, @aria_expanded_false, @aria_expanded_true)'
     },
     radioButton: {
       speak: '$or($checked, @describe_radio_selected($name), ' +
@@ -170,9 +172,16 @@ Output.RULES = {
       speak: '@chrome_menu_opened($name) $role $earcon(OBJECT_OPEN)'
     }
   },
-    menuEnd: {
+  menuEnd: {
     'default': {
       speak: '$earcon(OBJECT_CLOSE)'
+    }
+  },
+  menuListValueChanged: {
+    'default': {
+      speak: '$value $name ' +
+          '$find({"state": {"selected": true, "invisible": false}}, ' +
+              '@describe_index($indexInParent, $parentChildCount)) '
     }
   }
 };
@@ -328,7 +337,7 @@ Output.prototype = {
 
     // Hacky way to support args.
     if (typeof(format) == 'string') {
-      format = format.replace(/,\W/g, ',');
+      format = format.replace(/([,:])\W/g, '$1');
       tokens = format.split(' ');
     } else {
       tokens = [format];
@@ -386,6 +395,16 @@ Output.prototype = {
           Object.getOwnPropertyNames(node.state).forEach(function(s) {
             this.addToSpannable_(buff, s, options);
           }.bind(this));
+        } else if (token == 'find') {
+          // Find takes two arguments: JSON query string and format string.
+          if (tree.firstChild) {
+            var jsonQuery = tree.firstChild.value;
+            node = node.find(
+                /** @type {Object}*/(JSON.parse(jsonQuery)));
+            var formatString = tree.firstChild.nextSibling;
+            if (node)
+              this.format_(node, formatString, buff);
+          }
         } else if (node.attributes[token]) {
           this.addToSpannable_(buff, node.attributes[token], options);
         } else if (node.state[token]) {
@@ -610,6 +629,7 @@ Output.prototype = {
     var root = {value: ''};
     var currentNode = root;
     var index = 0;
+    var braceNesting = 0;
     while (index < inputStr.length) {
       if (inputStr[index] == '(') {
         currentNode.firstChild = {value: ''};
@@ -617,7 +637,13 @@ Output.prototype = {
         currentNode = currentNode.firstChild;
       } else if (inputStr[index] == ')') {
         currentNode = currentNode.parent;
-      } else if (inputStr[index] == ',') {
+      } else if (inputStr[index] == '{') {
+        braceNesting++;
+        currentNode.value += inputStr[index];
+      } else if (inputStr[index] == '}') {
+        braceNesting--;
+        currentNode.value += inputStr[index];
+      } else if (inputStr[index] == ',' && braceNesting === 0) {
         currentNode.nextSibling = {value: ''};
         currentNode.nextSibling.parent = currentNode.parent;
         currentNode = currentNode.nextSibling;

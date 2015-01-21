@@ -89,6 +89,7 @@ Background = function() {
     hover: this.onEventDefault,
     menuStart: this.onEventDefault,
     menuEnd: this.onEventDefault,
+    menuListValueChanged: this.onEventDefault,
     loadComplete: this.onLoadComplete,
     textChanged: this.onTextOrTextSelectionChanged,
     textSelectionChanged: this.onTextOrTextSelectionChanged,

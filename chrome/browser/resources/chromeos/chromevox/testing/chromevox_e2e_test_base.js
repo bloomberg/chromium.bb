@@ -74,10 +74,29 @@ ChromeVoxE2ETest.prototype = {
     chrome.tabs.create(createParams, function(tab) {
       chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
         if (tabId == tab.id && changeInfo.status == 'complete') {
-          callback();
+          callback(tabId);
         }
       });
     });
+  },
+
+  /**
+   * Send a key to the page.
+   * @param {number} tabId Of the page.
+   * @param {string} key Name of the key (e.g. Down).
+   * @param {string} elementQueryString
+   */
+  sendKeyToElement: function(tabId, key, elementQueryString) {
+    var code = TestUtils.extractHtmlFromCommentEncodedString(function() {/*!
+      var target = document.body.querySelector('$1');
+      target.focus();
+      var evt = document.createEvent('KeyboardEvent');
+      evt.initKeyboardEvent('keydown', true, true, window, '$0', 0, false,
+          false, false, false);
+      document.activeElement.dispatchEvent(evt);
+    */}, [key, elementQueryString]);
+
+    chrome.tabs.executeScript(tabId, {code: code});
   }
 };
 
