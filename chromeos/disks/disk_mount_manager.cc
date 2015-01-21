@@ -44,25 +44,25 @@ class DiskMountManagerImpl : public DiskMountManager {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual ~DiskMountManagerImpl() {
+  ~DiskMountManagerImpl() override {
     STLDeleteContainerPairSecondPointers(disks_.begin(), disks_.end());
   }
 
   // DiskMountManager override.
-  virtual void AddObserver(Observer* observer) override {
+  void AddObserver(Observer* observer) override {
     observers_.AddObserver(observer);
   }
 
   // DiskMountManager override.
-  virtual void RemoveObserver(Observer* observer) override {
+  void RemoveObserver(Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
   // DiskMountManager override.
-  virtual void MountPath(const std::string& source_path,
-                         const std::string& source_format,
-                         const std::string& mount_label,
-                         MountType type) override {
+  void MountPath(const std::string& source_path,
+                 const std::string& source_format,
+                 const std::string& mount_label,
+                 MountType type) override {
     // Hidden and non-existent devices should not be mounted.
     if (type == MOUNT_TYPE_DEVICE) {
       DiskMap::const_iterator it = disks_.find(source_path);
@@ -85,9 +85,9 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  virtual void UnmountPath(const std::string& mount_path,
-                           UnmountOptions options,
-                           const UnmountPathCallback& callback) override {
+  void UnmountPath(const std::string& mount_path,
+                   UnmountOptions options,
+                   const UnmountPathCallback& callback) override {
     UnmountChildMounts(mount_path);
     cros_disks_client_->Unmount(mount_path, options,
                                 base::Bind(&DiskMountManagerImpl::OnUnmountPath,
@@ -103,7 +103,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  virtual void FormatMountedDevice(const std::string& mount_path) override {
+  void FormatMountedDevice(const std::string& mount_path) override {
     MountPointMap::const_iterator mount_point = mount_points_.find(mount_path);
     if (mount_point == mount_points_.end()) {
       LOG(ERROR) << "Mount point with path \"" << mount_path << "\" not found.";
@@ -127,7 +127,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  virtual void UnmountDeviceRecursively(
+  void UnmountDeviceRecursively(
       const std::string& device_path,
       const UnmountDeviceRecursivelyCallbackType& callback) override {
     std::vector<std::string> devices_to_unmount;
@@ -191,7 +191,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  virtual void EnsureMountInfoRefreshed(
+  void EnsureMountInfoRefreshed(
       const EnsureMountInfoRefreshedCallback& callback) override {
     if (already_refreshed_) {
       callback.Run(true);
@@ -210,22 +210,20 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  virtual const DiskMap& disks() const override { return disks_; }
+  const DiskMap& disks() const override { return disks_; }
 
   // DiskMountManager override.
-  virtual const Disk* FindDiskBySourcePath(const std::string& source_path)
-      const override {
+  const Disk* FindDiskBySourcePath(
+      const std::string& source_path) const override {
     DiskMap::const_iterator disk_it = disks_.find(source_path);
     return disk_it == disks_.end() ? NULL : disk_it->second;
   }
 
   // DiskMountManager override.
-  virtual const MountPointMap& mount_points() const override {
-    return mount_points_;
-  }
+  const MountPointMap& mount_points() const override { return mount_points_; }
 
   // DiskMountManager override.
-  virtual bool AddDiskForTest(Disk* disk) override {
+  bool AddDiskForTest(Disk* disk) override {
     if (disks_.find(disk->device_path()) != disks_.end()) {
       LOG(ERROR) << "Attempt to add a duplicate disk";
       return false;
@@ -237,8 +235,7 @@ class DiskMountManagerImpl : public DiskMountManager {
 
   // DiskMountManager override.
   // Corresponding disk should be added to the manager before this is called.
-  virtual bool AddMountPointForTest(
-      const MountPointInfo& mount_point) override {
+  bool AddMountPointForTest(const MountPointInfo& mount_point) override {
     if (mount_points_.find(mount_point.mount_path) != mount_points_.end()) {
       LOG(ERROR) << "Attempt to add a duplicate mount point";
       return false;

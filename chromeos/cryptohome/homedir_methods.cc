@@ -174,11 +174,11 @@ class HomedirMethodsImpl : public HomedirMethods {
  public:
   HomedirMethodsImpl() : weak_ptr_factory_(this) {}
 
-  virtual ~HomedirMethodsImpl() {}
+  ~HomedirMethodsImpl() override {}
 
-  virtual void GetKeyDataEx(const Identification& id,
-                            const std::string& label,
-                            const GetKeyDataCallback& callback) override {
+  void GetKeyDataEx(const Identification& id,
+                    const std::string& label,
+                    const GetKeyDataCallback& callback) override {
     cryptohome::AccountIdentifier id_proto;
     cryptohome::AuthorizationRequest kEmptyAuthProto;
     cryptohome::GetKeyDataRequest request;
@@ -195,9 +195,9 @@ class HomedirMethodsImpl : public HomedirMethods {
                    callback));
   }
 
-  virtual void CheckKeyEx(const Identification& id,
-                          const Authorization& auth,
-                          const Callback& callback) override {
+  void CheckKeyEx(const Identification& id,
+                  const Authorization& auth,
+                  const Callback& callback) override {
     cryptohome::AccountIdentifier id_proto;
     cryptohome::AuthorizationRequest auth_proto;
     cryptohome::CheckKeyRequest request;
@@ -214,10 +214,10 @@ class HomedirMethodsImpl : public HomedirMethods {
                    callback));
   }
 
-  virtual void MountEx(const Identification& id,
-                       const Authorization& auth,
-                       const MountParameters& request,
-                       const MountCallback& callback) override {
+  void MountEx(const Identification& id,
+               const Authorization& auth,
+               const MountParameters& request,
+               const MountCallback& callback) override {
     cryptohome::AccountIdentifier id_proto;
     cryptohome::AuthorizationRequest auth_proto;
     cryptohome::MountRequest request_proto;
@@ -243,11 +243,11 @@ class HomedirMethodsImpl : public HomedirMethods {
                    callback));
   }
 
-  virtual void AddKeyEx(const Identification& id,
-                        const Authorization& auth,
-                        const KeyDefinition& new_key,
-                        bool clobber_if_exists,
-                        const Callback& callback) override {
+  void AddKeyEx(const Identification& id,
+                const Authorization& auth,
+                const KeyDefinition& new_key,
+                bool clobber_if_exists,
+                const Callback& callback) override {
     cryptohome::AccountIdentifier id_proto;
     cryptohome::AuthorizationRequest auth_proto;
     cryptohome::AddKeyRequest request;
@@ -266,10 +266,10 @@ class HomedirMethodsImpl : public HomedirMethods {
                    callback));
   }
 
-  virtual void RemoveKeyEx(const Identification& id,
-                           const Authorization& auth,
-                           const std::string& label,
-                           const Callback& callback) override {
+  void RemoveKeyEx(const Identification& id,
+                   const Authorization& auth,
+                   const std::string& label,
+                   const Callback& callback) override {
     cryptohome::AccountIdentifier id_proto;
     cryptohome::AuthorizationRequest auth_proto;
     cryptohome::RemoveKeyRequest request;
@@ -287,11 +287,11 @@ class HomedirMethodsImpl : public HomedirMethods {
                    callback));
   }
 
-  virtual void UpdateKeyEx(const Identification& id,
-                           const Authorization& auth,
-                           const KeyDefinition& new_key,
-                           const std::string& signature,
-                           const Callback& callback) override {
+  void UpdateKeyEx(const Identification& id,
+                   const Authorization& auth,
+                   const KeyDefinition& new_key,
+                   const std::string& signature,
+                   const Callback& callback) override {
     cryptohome::AccountIdentifier id_proto;
     cryptohome::AuthorizationRequest auth_proto;
     cryptohome::UpdateKeyRequest pb_update_key;

@@ -116,12 +116,12 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
 class DiskMountManagerTest : public testing::Test {
  public:
   DiskMountManagerTest() {}
-  virtual ~DiskMountManagerTest() {}
+  ~DiskMountManagerTest() override {}
 
   // Sets up test dbus tread manager and disks mount manager.
   // Initializes disk mount manager disks and mount points.
   // Adds a test observer to the disk mount manager.
-  virtual void SetUp() {
+  void SetUp() override {
     fake_cros_disks_client_ = new FakeCrosDisksClient;
     DBusThreadManager::GetSetterForTesting()->SetCrosDisksClient(
         scoped_ptr<CrosDisksClient>(fake_cros_disks_client_));
@@ -134,7 +134,7 @@ class DiskMountManagerTest : public testing::Test {
   }
 
   // Shuts down dbus thread manager and disk moutn manager used in the test.
-  virtual void TearDown() {
+  void TearDown() override {
     DiskMountManager::GetInstance()->RemoveObserver(&observer_);
     DiskMountManager::Shutdown();
     DBusThreadManager::Shutdown();

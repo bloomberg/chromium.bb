@@ -17,18 +17,18 @@ namespace system {
 class FakeStatisticsProvider : public StatisticsProvider {
  public:
   FakeStatisticsProvider();
-  virtual ~FakeStatisticsProvider();
+  ~FakeStatisticsProvider() override;
 
   // StatisticsProvider implementation:
-  virtual void StartLoadingMachineStatistics(
+  void StartLoadingMachineStatistics(
       const scoped_refptr<base::TaskRunner>& file_task_runner,
       bool load_oem_manifest) override;
-  virtual bool GetMachineStatistic(const std::string& name,
-                                   std::string* result) override;
-  virtual bool HasMachineStatistic(const std::string& name) override;
-  virtual bool GetMachineFlag(const std::string& name, bool* result) override;
-  virtual bool HasMachineFlag(const std::string& name) override;
-  virtual void Shutdown() override;
+  bool GetMachineStatistic(const std::string& name,
+                           std::string* result) override;
+  bool HasMachineStatistic(const std::string& name) override;
+  bool GetMachineFlag(const std::string& name, bool* result) override;
+  bool HasMachineFlag(const std::string& name) override;
+  void Shutdown() override;
 
   void SetMachineStatistic(const std::string& key, const std::string& value);
   void ClearMachineStatistic(const std::string& key);
@@ -47,7 +47,7 @@ class FakeStatisticsProvider : public StatisticsProvider {
 class ScopedFakeStatisticsProvider : public FakeStatisticsProvider {
  public:
   ScopedFakeStatisticsProvider();
-  virtual ~ScopedFakeStatisticsProvider();
+  ~ScopedFakeStatisticsProvider() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeStatisticsProvider);

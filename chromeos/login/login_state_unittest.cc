@@ -21,23 +21,22 @@ class LoginStateTest : public testing::Test,
   LoginStateTest() : logged_in_user_type_(LoginState::LOGGED_IN_USER_NONE),
                      login_state_changes_count_(0) {
   }
-  virtual ~LoginStateTest() {
-  }
+  ~LoginStateTest() override {}
 
   // testing::Test
-  virtual void SetUp() override {
+  void SetUp() override {
     LoginState::Initialize();
     LoginState::Get()->set_always_logged_in(false);
     LoginState::Get()->AddObserver(this);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     LoginState::Get()->RemoveObserver(this);
     LoginState::Shutdown();
   }
 
   // LoginState::Observer
-  virtual void LoggedInStateChanged() override {
+  void LoggedInStateChanged() override {
     ++login_state_changes_count_;
     logged_in_user_type_ = LoginState::Get()->GetLoggedInUserType();
   }

@@ -191,22 +191,22 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
  protected:
   explicit CrasAudioHandler(
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
-  virtual ~CrasAudioHandler();
+  ~CrasAudioHandler() override;
 
  private:
   friend class CrasAudioHandlerTest;
 
   // CrasAudioClient::Observer overrides.
-  virtual void AudioClientRestarted() override;
-  virtual void NodesChanged() override;
-  virtual void ActiveOutputNodeChanged(uint64 node_id) override;
-  virtual void ActiveInputNodeChanged(uint64 node_id) override;
+  void AudioClientRestarted() override;
+  void NodesChanged() override;
+  void ActiveOutputNodeChanged(uint64 node_id) override;
+  void ActiveInputNodeChanged(uint64 node_id) override;
 
   // AudioPrefObserver overrides.
-  virtual void OnAudioPolicyPrefChanged() override;
+  void OnAudioPolicyPrefChanged() override;
 
   // SessionManagerClient::Observer overrides.
-  virtual void EmitLoginPromptVisibleCalled() override;
+  void EmitLoginPromptVisibleCalled() override;
 
   // Sets the active audio output/input node to the node with |node_id|.
   // If |notify|, notifies Active*NodeChange.

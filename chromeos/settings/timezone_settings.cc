@@ -259,15 +259,15 @@ void SetTimezoneIDFromString(const std::string& id) {
 // Common code of the TimezoneSettings implementations.
 class TimezoneSettingsBaseImpl : public chromeos::system::TimezoneSettings {
  public:
-  virtual ~TimezoneSettingsBaseImpl();
+  ~TimezoneSettingsBaseImpl() override;
 
   // TimezoneSettings implementation:
-  virtual const icu::TimeZone& GetTimezone() override;
-  virtual base::string16 GetCurrentTimezoneID() override;
-  virtual void SetTimezoneFromID(const base::string16& timezone_id) override;
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual const std::vector<icu::TimeZone*>& GetTimezoneList() const override;
+  const icu::TimeZone& GetTimezone() override;
+  base::string16 GetCurrentTimezoneID() override;
+  void SetTimezoneFromID(const base::string16& timezone_id) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  const std::vector<icu::TimeZone*>& GetTimezoneList() const override;
 
  protected:
   TimezoneSettingsBaseImpl();
@@ -294,7 +294,7 @@ class TimezoneSettingsBaseImpl : public chromeos::system::TimezoneSettings {
 class TimezoneSettingsImpl : public TimezoneSettingsBaseImpl {
  public:
   // TimezoneSettings implementation:
-  virtual void SetTimezone(const icu::TimeZone& timezone) override;
+  void SetTimezone(const icu::TimeZone& timezone) override;
 
   static TimezoneSettingsImpl* GetInstance();
 
@@ -310,7 +310,7 @@ class TimezoneSettingsImpl : public TimezoneSettingsBaseImpl {
 class TimezoneSettingsStubImpl : public TimezoneSettingsBaseImpl {
  public:
   // TimezoneSettings implementation:
-  virtual void SetTimezone(const icu::TimeZone& timezone) override;
+  void SetTimezone(const icu::TimeZone& timezone) override;
 
   static TimezoneSettingsStubImpl* GetInstance();
 

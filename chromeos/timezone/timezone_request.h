@@ -75,7 +75,7 @@ class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
                   const Geoposition& geoposition,
                   base::TimeDelta retry_timeout);
 
-  virtual ~TimeZoneRequest();
+  ~TimeZoneRequest() override;
 
   // Initiates request.
   // Note: if request object is destroyed before callback is called,
@@ -94,7 +94,7 @@ class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
 
  private:
   // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Start new request.
   void StartRequest();

@@ -241,37 +241,27 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
     return input_gain_changed_count_;
   }
 
-  virtual ~TestObserver() {}
+  ~TestObserver() override {}
 
  protected:
   // chromeos::CrasAudioHandler::AudioObserver overrides.
-  virtual void OnActiveOutputNodeChanged() override {
+  void OnActiveOutputNodeChanged() override {
     ++active_output_node_changed_count_;
   }
 
-  virtual void OnActiveInputNodeChanged() override {
+  void OnActiveInputNodeChanged() override {
     ++active_input_node_changed_count_;
   }
 
-  virtual void OnAudioNodesChanged() override {
-    ++audio_nodes_changed_count_;
-  }
+  void OnAudioNodesChanged() override { ++audio_nodes_changed_count_; }
 
-  virtual void OnOutputMuteChanged() override {
-    ++output_mute_changed_count_;
-  }
+  void OnOutputMuteChanged() override { ++output_mute_changed_count_; }
 
-  virtual void OnInputMuteChanged() override {
-    ++input_mute_changed_count_;
-  }
+  void OnInputMuteChanged() override { ++input_mute_changed_count_; }
 
-  virtual void OnOutputVolumeChanged() override {
-    ++output_volume_changed_count_;
-  }
+  void OnOutputVolumeChanged() override { ++output_volume_changed_count_; }
 
-  virtual void OnInputGainChanged() override {
-    ++input_gain_changed_count_;
-  }
+  void OnInputGainChanged() override { ++input_gain_changed_count_; }
 
  private:
   int active_output_node_changed_count_;
@@ -290,12 +280,11 @@ class CrasAudioHandlerTest : public testing::Test {
   CrasAudioHandlerTest() : cras_audio_handler_(NULL),
                            fake_cras_audio_client_(NULL) {
   }
-  virtual ~CrasAudioHandlerTest() {}
+  ~CrasAudioHandlerTest() override {}
 
-  virtual void SetUp() override {
-  }
+  void SetUp() override {}
 
-  virtual void TearDown() override {
+  void TearDown() override {
     cras_audio_handler_->RemoveAudioObserver(test_observer_.get());
     test_observer_.reset();
     CrasAudioHandler::Shutdown();

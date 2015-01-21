@@ -95,8 +95,8 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
                           AuthStatusConsumer* consumer);
 
   // Authenticator overrides.
-  virtual void CompleteLogin(content::BrowserContext* context,
-                             const UserContext& user_context) override;
+  void CompleteLogin(content::BrowserContext* context,
+                     const UserContext& user_context) override;
 
   // Given |user_context|, this method attempts to authenticate to your
   // Chrome OS device. As soon as we have successfully mounted the encrypted
@@ -106,43 +106,43 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
   // with an error message.
   //
   // Uses |context| when doing URL fetches.
-  virtual void AuthenticateToLogin(content::BrowserContext* context,
-                                   const UserContext& user_context) override;
+  void AuthenticateToLogin(content::BrowserContext* context,
+                           const UserContext& user_context) override;
 
   // Given |user_context|, this method attempts to authenticate to the cached
   // user_context. This will never contact the server even if it's online.
   // The auth result is sent to AuthStatusConsumer in a same way as
   // AuthenticateToLogin does.
-  virtual void AuthenticateToUnlock(const UserContext& user_context) override;
+  void AuthenticateToUnlock(const UserContext& user_context) override;
 
   // Initiates supervised user login.
   // Creates cryptohome if missing or mounts existing one and
   // notifies consumer on the success/failure.
-  virtual void LoginAsSupervisedUser(const UserContext& user_context) override;
+  void LoginAsSupervisedUser(const UserContext& user_context) override;
 
   // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
-  virtual void LoginOffTheRecord() override;
+  void LoginOffTheRecord() override;
 
   // Initiates login into a public session.
   // Mounts an ephemeral cryptohome and notifies consumer on the
   // success/failure.
-  virtual void LoginAsPublicSession(const UserContext& user_context) override;
+  void LoginAsPublicSession(const UserContext& user_context) override;
 
   // Initiates login into the kiosk mode account identified by |app_user_id|.
   // Mounts an ephemeral guest cryptohome if |use_guest_mount| is |true|.
   // Otherwise, mounts a public cryptohome, which will be ephemeral if the
   // |DeviceEphemeralUsersEnabled| policy is enabled and non-ephemeral
   // otherwise.
-  virtual void LoginAsKioskAccount(const std::string& app_user_id,
-                                   bool use_guest_mount) override;
+  void LoginAsKioskAccount(const std::string& app_user_id,
+                           bool use_guest_mount) override;
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  virtual void OnAuthSuccess() override;
-  virtual void OnAuthFailure(const AuthFailure& error) override;
-  virtual void RecoverEncryptedData(const std::string& old_password) override;
-  virtual void ResyncEncryptedData() override;
+  void OnAuthSuccess() override;
+  void OnAuthFailure(const AuthFailure& error) override;
+  void RecoverEncryptedData(const std::string& old_password) override;
+  void ResyncEncryptedData() override;
 
   // AuthAttemptStateResolver overrides.
   // Attempts to make a decision and call back |consumer_| based on
@@ -151,13 +151,13 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
   // When a decision is made, will call back to |consumer_| on the UI thread.
   //
   // Must be called on the UI thread.
-  virtual void Resolve() override;
+  void Resolve() override;
 
   void OnOffTheRecordAuthSuccess();
   void OnPasswordChangeDetected();
 
  protected:
-  virtual ~CryptohomeAuthenticator();
+  ~CryptohomeAuthenticator() override;
 
   typedef base::Callback<void(bool is_owner)> IsOwnerCallback;
 

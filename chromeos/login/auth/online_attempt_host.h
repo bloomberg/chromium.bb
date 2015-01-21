@@ -34,7 +34,7 @@ class CHROMEOS_EXPORT OnlineAttemptHost : public AuthAttemptStateResolver {
   };
 
   explicit OnlineAttemptHost(Delegate* delegate);
-  virtual ~OnlineAttemptHost();
+  ~OnlineAttemptHost() override;
 
   // Performs an online check of the credentials in |request_context| and
   // invokes
@@ -50,7 +50,7 @@ class CHROMEOS_EXPORT OnlineAttemptHost : public AuthAttemptStateResolver {
 
   // AuthAttemptStateResolver overrides.
   // Executed on IO thread.
-  virtual void Resolve() override;
+  void Resolve() override;
 
   // Does an actual resolve on UI thread.
   void ResolveOnUIThread(bool success);

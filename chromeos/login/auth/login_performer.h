@@ -54,7 +54,7 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
   // Delegate class to get notifications from the LoginPerformer.
   class Delegate : public AuthStatusConsumer {
    public:
-    virtual ~Delegate() {}
+    ~Delegate() override {}
     virtual void WhiteListCheckFailed(const std::string& email) = 0;
     virtual void PolicyLoadFailed() = 0;
     virtual void OnOnlineChecked(const std::string& email, bool success) = 0;
@@ -62,7 +62,7 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
 
   LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,
                  Delegate* delegate);
-  virtual ~LoginPerformer();
+  ~LoginPerformer() override;
 
   // Performs a login for |user_context|.
   // If auth_mode is AUTH_MODE_EXTENSION, there are no further auth checks,
@@ -84,10 +84,10 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
                            bool use_guest_mount);
 
   // AuthStatusConsumer implementation:
-  virtual void OnAuthFailure(const AuthFailure& error) override;
-  virtual void OnAuthSuccess(const UserContext& user_context) override;
-  virtual void OnOffTheRecordAuthSuccess() override;
-  virtual void OnPasswordChangeDetected() override;
+  void OnAuthFailure(const AuthFailure& error) override;
+  void OnAuthSuccess(const UserContext& user_context) override;
+  void OnOffTheRecordAuthSuccess() override;
+  void OnPasswordChangeDetected() override;
 
   // Migrates cryptohome using |old_password| specified.
   void RecoverEncryptedData(const std::string& old_password);
@@ -118,7 +118,7 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
 
  protected:
   // Implements OnlineAttemptHost::Delegate.
-  virtual void OnChecked(const std::string& user_id, bool success) override;
+  void OnChecked(const std::string& user_id, bool success) override;
 
   // Platform-dependant methods to be implemented by concrete class.
 

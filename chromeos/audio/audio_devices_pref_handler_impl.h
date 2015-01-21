@@ -27,24 +27,23 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
   explicit AudioDevicesPrefHandlerImpl(PrefService* local_state);
 
   // Overridden from AudioDevicesPrefHandler.
-  virtual double GetOutputVolumeValue(const AudioDevice* device) override;
-  virtual double GetInputGainValue(const AudioDevice* device) override;
-  virtual void SetVolumeGainValue(const AudioDevice& device,
-                                  double value) override;
+  double GetOutputVolumeValue(const AudioDevice* device) override;
+  double GetInputGainValue(const AudioDevice* device) override;
+  void SetVolumeGainValue(const AudioDevice& device, double value) override;
 
-  virtual bool GetMuteValue(const AudioDevice& device) override;
-  virtual void SetMuteValue(const AudioDevice& device, bool mute_on) override;
+  bool GetMuteValue(const AudioDevice& device) override;
+  void SetMuteValue(const AudioDevice& device, bool mute_on) override;
 
-  virtual bool GetAudioOutputAllowedValue() override;
+  bool GetAudioOutputAllowedValue() override;
 
-  virtual void AddAudioPrefObserver(AudioPrefObserver* observer) override;
-  virtual void RemoveAudioPrefObserver(AudioPrefObserver* observer) override;
+  void AddAudioPrefObserver(AudioPrefObserver* observer) override;
+  void RemoveAudioPrefObserver(AudioPrefObserver* observer) override;
 
   // Registers volume and mute preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  protected:
-  virtual ~AudioDevicesPrefHandlerImpl();
+  ~AudioDevicesPrefHandlerImpl() override;
 
  private:
   // Initializes the observers for the policy prefs.

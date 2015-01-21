@@ -27,25 +27,25 @@ class CHROMEOS_EXPORT MockAuthenticator : public Authenticator {
                     const UserContext& expected_user_context);
 
   // Authenticator:
-  virtual void CompleteLogin(content::BrowserContext* context,
-                             const UserContext& user_context) override;
-  virtual void AuthenticateToLogin(content::BrowserContext* context,
-                                   const UserContext& user_context) override;
-  virtual void AuthenticateToUnlock(const UserContext& user_context) override;
-  virtual void LoginAsSupervisedUser(const UserContext& user_context) override;
-  virtual void LoginOffTheRecord() override;
-  virtual void LoginAsPublicSession(const UserContext& user_context) override;
-  virtual void LoginAsKioskAccount(const std::string& app_user_id,
-                                   bool use_guest_mount) override;
-  virtual void OnAuthSuccess() override;
-  virtual void OnAuthFailure(const AuthFailure& failure) override;
-  virtual void RecoverEncryptedData(const std::string& old_password) override;
-  virtual void ResyncEncryptedData() override;
+  void CompleteLogin(content::BrowserContext* context,
+                     const UserContext& user_context) override;
+  void AuthenticateToLogin(content::BrowserContext* context,
+                           const UserContext& user_context) override;
+  void AuthenticateToUnlock(const UserContext& user_context) override;
+  void LoginAsSupervisedUser(const UserContext& user_context) override;
+  void LoginOffTheRecord() override;
+  void LoginAsPublicSession(const UserContext& user_context) override;
+  void LoginAsKioskAccount(const std::string& app_user_id,
+                           bool use_guest_mount) override;
+  void OnAuthSuccess() override;
+  void OnAuthFailure(const AuthFailure& failure) override;
+  void RecoverEncryptedData(const std::string& old_password) override;
+  void ResyncEncryptedData() override;
 
   virtual void SetExpectedCredentials(const UserContext& user_context);
 
  protected:
-  virtual ~MockAuthenticator();
+  ~MockAuthenticator() override;
 
  private:
   UserContext expected_user_context_;

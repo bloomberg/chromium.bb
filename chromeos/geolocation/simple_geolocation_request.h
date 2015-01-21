@@ -48,7 +48,7 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
                            const GURL& service_url,
                            base::TimeDelta timeout);
 
-  virtual ~SimpleGeolocationRequest();
+  ~SimpleGeolocationRequest() override;
 
   // Initiates request.
   // Note: if request object is destroyed before callback is called,
@@ -67,7 +67,7 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
 
  private:
   // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Start new request.
   void StartRequest();

@@ -30,9 +30,9 @@ class ExpectCanceledFetcher : public net::TestURLFetcher {
                         const std::string& results,
                         net::URLFetcher::RequestType request_type,
                         net::URLFetcherDelegate* d);
-  virtual ~ExpectCanceledFetcher();
+  ~ExpectCanceledFetcher() override;
 
-  virtual void Start() override;
+  void Start() override;
 
   void CompleteFetch();
 
@@ -48,9 +48,9 @@ class GotCanceledFetcher : public net::TestURLFetcher {
                      const std::string& results,
                      net::URLFetcher::RequestType request_type,
                      net::URLFetcherDelegate* d);
-  virtual ~GotCanceledFetcher();
+  ~GotCanceledFetcher() override;
 
-  virtual void Start() override;
+  void Start() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GotCanceledFetcher);
@@ -63,9 +63,9 @@ class SuccessFetcher : public net::TestURLFetcher {
                  const std::string& results,
                  net::URLFetcher::RequestType request_type,
                  net::URLFetcherDelegate* d);
-  virtual ~SuccessFetcher();
+  ~SuccessFetcher() override;
 
-  virtual void Start() override;
+  void Start() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SuccessFetcher);
@@ -78,9 +78,9 @@ class FailFetcher : public net::TestURLFetcher {
               const std::string& results,
               net::URLFetcher::RequestType request_type,
               net::URLFetcherDelegate* d);
-  virtual ~FailFetcher();
+  ~FailFetcher() override;
 
-  virtual void Start() override;
+  void Start() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FailFetcher);
@@ -93,13 +93,13 @@ class CaptchaFetcher : public net::TestURLFetcher {
                  const std::string& results,
                  net::URLFetcher::RequestType request_type,
                  net::URLFetcherDelegate* d);
-  virtual ~CaptchaFetcher();
+  ~CaptchaFetcher() override;
 
   static std::string GetCaptchaToken();
   static std::string GetCaptchaUrl();
   static std::string GetUnlockUrl();
 
-  virtual void Start() override;
+  void Start() override;
 
  private:
   static const char kCaptchaToken[];
@@ -116,9 +116,9 @@ class HostedFetcher : public net::TestURLFetcher {
                 const std::string& results,
                 net::URLFetcher::RequestType request_type,
                 net::URLFetcherDelegate* d);
-  virtual ~HostedFetcher();
+  ~HostedFetcher() override;
 
-  virtual void Start() override;
+  void Start() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostedFetcher);
