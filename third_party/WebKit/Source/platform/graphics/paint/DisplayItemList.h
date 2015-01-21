@@ -23,12 +23,14 @@ class PLATFORM_EXPORT DisplayItemList {
 public:
     static PassOwnPtr<DisplayItemList> create() { return adoptPtr(new DisplayItemList); }
 
+    void endNewPaints() { updatePaintList(); }
+
     const PaintList& paintList();
     void add(WTF::PassOwnPtr<DisplayItem>);
 
     void invalidate(DisplayItemClient);
     void invalidateAll();
-    bool clientCacheIsValid(DisplayItemClient client) const { return m_cachedClients.contains(client); }
+    bool clientCacheIsValid(DisplayItemClient) const;
 
     // Plays back the current PaintList() into the given context.
     void replay(GraphicsContext*);

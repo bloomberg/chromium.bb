@@ -38,6 +38,12 @@ private:
         ASSERT_TRUE(m_renderView);
     }
 
+    virtual void TearDown() override
+    {
+        RuntimeEnabledFeatures::setSlimmingPaintEnabled(false);
+        RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(false);
+    }
+
     RenderView* m_renderView;
 };
 
@@ -63,7 +69,7 @@ public:
 #define EXPECT_DISPLAY_LIST(actual, expectedSize, ...) { \
     EXPECT_EQ((size_t)expectedSize, actual.size()); \
     const TestDisplayItem expected[] = { __VA_ARGS__ }; \
-    for (size_t index = 0; index < expectedSize; index++) { \
+    for (size_t index = 0; index < std::min<size_t>(actual.size(), expectedSize); index++) { \
         TRACE_DISPLAY_ITEMS(expected[index], *actual[index]); \
         EXPECT_EQ(expected[index].client(), actual[index]->client()); \
         EXPECT_EQ(expected[index].type(), actual[index]->type()); \
@@ -93,6 +99,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_NestedRecorders)
     FloatRect bound = renderView()->viewRect();
 
     drawClippedRect(&context, renderView(), PaintPhaseForeground, bound);
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(renderView(), DisplayItem::ClipLayerForeground),
@@ -110,6 +117,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
     drawRect(&context, second, PaintPhaseChildBlockBackground, FloatRect(100, 100, 200, 200));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 300, 300));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -119,6 +127,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
     rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 300, 300));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -136,6 +145,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
     drawRect(&context, unaffected, PaintPhaseBlockBackground, FloatRect(300, 300, 10, 10));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -145,6 +155,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
     rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
+    drawRect(&context, unaffected, PaintPhaseBlockBackground, FloatRect(300, 300, 10, 10));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -162,6 +174,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -171,6 +184,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     drawRect(&context, third, PaintPhaseBlockBackground, FloatRect(125, 100, 200, 50));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -195,6 +209,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 100, 100));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(100, 100, 50, 200));
     drawRect(&context, third, PaintPhaseOutline, FloatRect(300, 100, 50, 50));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 9,
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -210,10 +225,14 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
     rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
+    drawRect(&context, third, PaintPhaseBlockBackground, FloatRect(300, 100, 50, 50));
     drawRect(&context, first, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
     drawRect(&context, second, PaintPhaseForeground, FloatRect(100, 100, 50, 200));
+    drawRect(&context, third, PaintPhaseForeground, FloatRect(300, 100, 50, 50));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 100, 100));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(100, 100, 50, 200));
+    drawRect(&context, third, PaintPhaseOutline, FloatRect(300, 100, 50, 50));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 9,
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -226,6 +245,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline),
         TestDisplayItem(third, DisplayItem::DrawingPaintPhaseOutline));
 
+    // The following is only applicable when we support incremental paint.
+#if 0
     rootDisplayItemList().invalidate(second->displayItemClient());
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 6,
@@ -235,9 +256,11 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
         TestDisplayItem(third, DisplayItem::DrawingPaintPhaseForeground),
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline),
         TestDisplayItem(third, DisplayItem::DrawingPaintPhaseOutline));
+#endif
 }
 
-TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddFirstNoOverlap)
+// This test is only applicable when we support incremental paint.
+TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstNoOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
     RenderObject* first = document().body()->firstChild()->renderer();
@@ -268,7 +291,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddFirstNoOverlap)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
 }
 
-TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddFirstOverlap)
+// This test is only applicable when we support incremental paint.
+TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddFirstOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
     RenderObject* first = document().body()->firstChild()->renderer();
@@ -304,7 +328,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddFirstOverlap)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
 }
 
-TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddLastNoOverlap)
+// This test is only applicable when we support incremental paint.
+TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastNoOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
     RenderObject* first = document().body()->firstChild()->renderer();
@@ -335,7 +360,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddLastNoOverlap)
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
 }
 
-TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddLastOverlap)
+// This test is only applicable when we support incremental paint.
+TEST_F(ViewDisplayListTest, DISABLED_ViewDisplayListTest_UpdateAddLastOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
     RenderObject* first = document().body()->firstChild()->renderer();
@@ -385,6 +411,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
         drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
         drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     }
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
         TestDisplayItem(firstRenderer, DisplayItem::ClipLayerForeground),
@@ -395,6 +422,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
     rootDisplayItemList().invalidate(firstRenderer->displayItemClient());
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -407,6 +435,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
         LayerClipRecorder layerClipRecorder(secondRenderer, &context, DisplayItem::ClipLayerForeground, secondClipRect, 0, LayoutPoint(), PaintLayerFlags());
         drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     }
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 4,
         TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -417,6 +446,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
 
 TEST_F(ViewDisplayListTest, CachedDisplayItems)
 {
+    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
+
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
     RenderLayerModelObject* firstRenderer = toRenderLayerModelObject(document().body()->firstChild()->renderer());
     RenderLayerModelObject* secondRenderer = toRenderLayerModelObject(document().body()->firstChild()->firstChild()->renderer());
@@ -424,6 +455,7 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
 
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -439,6 +471,7 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
 
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -469,6 +502,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     GraphicsContext context(&canvas, &rootDisplayItemList());
     LayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
     LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(htmlRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -477,6 +511,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     div->focus();
     document().view()->updateLayoutAndStyleForPainting();
     LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
         TestDisplayItem(htmlRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),

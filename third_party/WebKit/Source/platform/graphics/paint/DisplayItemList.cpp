@@ -18,8 +18,7 @@ namespace blink {
 const PaintList& DisplayItemList::paintList()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-
-    updatePaintList();
+    ASSERT(m_newPaints.isEmpty());
     return m_paintList;
 }
 
@@ -42,6 +41,11 @@ void DisplayItemList::invalidateAll()
     ASSERT(m_newPaints.isEmpty());
     m_paintList.clear();
     m_cachedClients.clear();
+}
+
+bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
+{
+    return RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled() && m_cachedClients.contains(client);
 }
 
 PaintList::iterator DisplayItemList::findNextMatchingCachedItem(PaintList::iterator begin, const DisplayItem& displayItem)
@@ -74,6 +78,13 @@ static void appendDisplayItem(PaintList& list, HashSet<DisplayItemClient>& clien
 // the ordering implied by the existing paint list, extra treewalks are avoided.
 void DisplayItemList::updatePaintList()
 {
+    if (!RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()) {
+        m_paintList.clear();
+        m_paintList.swap(m_newPaints);
+        m_cachedClients.clear();
+        return;
+    }
+
     PaintList updatedList;
     HashSet<DisplayItemClient> newCachedClients;
 

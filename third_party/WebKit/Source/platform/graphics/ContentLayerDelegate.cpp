@@ -89,7 +89,7 @@ void ContentLayerDelegate::paintContents(
     canvas->restore();
     picture = adoptRef(recorder.endRecording());
 
-    ASSERT(m_painter->displayItemList());
+    m_painter->displayItemList()->endNewPaints();
 
     const PaintList& paintList = m_painter->displayItemList()->paintList();
     for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)

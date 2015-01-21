@@ -53,6 +53,7 @@ TEST_F(LayerClipRecorderTest, LayerClipRecorderTest_Single)
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 
     drawClip(&context, renderView(), PaintPhaseForeground, bound);
+    rootDisplayItemList().endNewPaints();
     EXPECT_EQ((size_t)2, rootDisplayItemList().paintList().size());
 }
 
