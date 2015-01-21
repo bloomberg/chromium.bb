@@ -169,6 +169,7 @@
 	@ Define the function and make it external.
 	.arm
 	.global	\name
+	.hidden \name
 	.section	.text.\name,"ax",%progbits
 	.align	2
 \name :		
