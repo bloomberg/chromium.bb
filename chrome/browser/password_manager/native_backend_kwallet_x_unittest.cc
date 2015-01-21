@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -118,6 +119,14 @@ class TestKWallet {
 
   // No need to disallow copy and assign. This class is safe to copy and assign.
 };
+
+// Runs |backend->GetAutofillableLogins(forms)| and expects that the return
+// value is false.
+void CheckGetAutofillableLoginsFails(
+    PasswordStoreX::NativeBackend* backend,
+    PasswordStoreX::NativeBackend::PasswordFormList* forms) {
+  EXPECT_FALSE(backend->GetAutofillableLogins(forms));
+}
 
 }  // anonymous namespace
 
@@ -288,6 +297,10 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
   bool kwallet_enabled_;
 
   TestKWallet wallet_;
+
+  // For all method names contained in |failing_methods_|, the mocked KWallet
+  // will return a null response.
+  std::set<std::string> failing_methods_;
 
  private:
   dbus::Response* KLauncherMethodCall(
@@ -460,6 +473,8 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     return NULL;
   EXPECT_EQ("org.kde.KWallet", method_call->GetInterface());
 
+  if (ContainsKey(failing_methods_, method_call->GetMember()))
+    return nullptr;
   scoped_ptr<dbus::Response> response;
   if (method_call->GetMember() == "isEnabled") {
     response = dbus::Response::CreateEmpty();
@@ -1045,6 +1060,28 @@ void NativeBackendKWalletPickleTest::CheckVersion0Pickle(
   if (form_list.size() > 0)
     CheckPasswordForm(form, *form_list[0]);
   STLDeleteElements(&form_list);
+}
+
+// Check that if KWallet fails to respond, the backend propagates the error.
+TEST_F(NativeBackendKWalletTest, GetAllLoginsErrorHandling) {
+  NativeBackendKWalletStub backend(42);
+  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
+  // Make KWallet fail on calling readEntry.
+  failing_methods_.insert("readEntry");
+
+  // Store some non-blacklisted logins to be potentially returned.
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                 base::Unretained(&backend), form_google_));
+
+  // Verify that nothing is in fact returned, because KWallet fails to respond.
+  std::vector<PasswordForm*> form_list;
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+                          base::Bind(&CheckGetAutofillableLoginsFails,
+                                     base::Unretained(&backend), &form_list));
+  RunDBThread();
+  EXPECT_EQ(0u, form_list.size());
 }
 
 // We try both SCHEME_HTML and SCHEME_BASIC since the scheme is stored right

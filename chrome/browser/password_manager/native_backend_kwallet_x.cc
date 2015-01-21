@@ -522,7 +522,7 @@ bool NativeBackendKWallet::GetAllLogins(PasswordFormList* forms,
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
       LOG(ERROR) << "Error contacting kwalletd (readEntry)";
-      continue;
+      return false;
     }
     dbus::MessageReader reader(response.get());
     const uint8_t* bytes = NULL;
@@ -530,7 +530,7 @@ bool NativeBackendKWallet::GetAllLogins(PasswordFormList* forms,
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
       LOG(ERROR) << "Error reading response from kwalletd (readEntry): "
                  << response->ToString();
-      continue;
+      return false;
     }
     if (!bytes || !CheckSerializedValue(bytes, length, signon_realm))
       continue;
