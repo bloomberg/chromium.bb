@@ -70,6 +70,11 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
             public TabModel getCurrentModel() {
                 return ChromeShellTabModelSelector.this.getCurrentModel();
             }
+
+            @Override
+            public boolean closeAllTabsRequest(boolean incognito) {
+                return false;
+            }
         };
         TabModel tabModel = new ChromeShellTabModel(mOrderController, tabModelDelegate);
         initialize(false, tabModel, EmptyTabModel.getInstance());

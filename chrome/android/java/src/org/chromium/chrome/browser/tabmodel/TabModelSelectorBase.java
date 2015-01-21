@@ -190,6 +190,9 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
         mObservers.removeObserver(observer);
     }
 
+    @Override
+    public void setCloseAllTabsDelegate(CloseAllTabsDelegate delegate) { }
+
     /**
      * Notifies all the listeners that the {@link TabModelSelector} or its {@link TabModel} has
      * changed.

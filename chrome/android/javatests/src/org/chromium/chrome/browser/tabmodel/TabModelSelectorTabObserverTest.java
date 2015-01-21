@@ -87,6 +87,11 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
             public TabModel getCurrentModel() {
                 return mSelector.getCurrentModel();
             }
+
+            @Override
+            public boolean closeAllTabsRequest(boolean incognito) {
+                return false;
+            }
         };
         mNormalTabModel = new TabModelBase(false, orderController, delegate) {
             @Override

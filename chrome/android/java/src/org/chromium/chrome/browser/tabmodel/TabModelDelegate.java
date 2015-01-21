@@ -20,6 +20,13 @@ public interface TabModelDelegate {
      */
     void requestToShowTab(Tab tab, TabSelectionType type);
 
+    /**
+     * Delegate a request to close all tabs in a model.
+     * @param incognito Whether the model is incognito.
+     * @return Whether the request was handled.
+     */
+    boolean closeAllTabsRequest(boolean incognito);
+
     // TODO(aurimas): clean these methods up.
     TabModel getCurrentModel();
     TabModel getModel(boolean incognito);

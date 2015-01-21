@@ -18,6 +18,18 @@ import java.util.List;
  */
 public interface TabModelSelector {
     /**
+     * A delegate interface to push close all tabs requests.
+     */
+    public interface CloseAllTabsDelegate {
+        /**
+         * Sends a request to close all tabs for a {@link TabModel}.
+         * @param incognito Whether the tabs to be closed are incognito.
+         * @return Whether the request was handled successfully.
+         */
+        boolean closeAllTabsRequest(boolean incognito);
+    }
+
+    /**
      * Set the current model. This won't cause an animation, but will still change the stack that is
      * currently visible if the tab switcher is open.
      */
@@ -135,4 +147,10 @@ public interface TabModelSelector {
      * selector.
      */
     void commitAllTabClosures();
+
+    /**
+     * Sets the delegate to handle the requests to close tabs in a single model.
+     * @param delegate The delegate to be used.
+     */
+    void setCloseAllTabsDelegate(CloseAllTabsDelegate delegate);
 }
