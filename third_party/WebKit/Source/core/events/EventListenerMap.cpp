@@ -68,8 +68,8 @@ EventListenerMap::EventListenerMap()
 
 bool EventListenerMap::contains(const AtomicString& eventType) const
 {
-    for (unsigned i = 0; i < m_entries.size(); ++i) {
-        if (m_entries[i].first == eventType)
+    for (const auto& entry : m_entries) {
+        if (entry.first == eventType)
             return true;
     }
     return false;
@@ -77,11 +77,10 @@ bool EventListenerMap::contains(const AtomicString& eventType) const
 
 bool EventListenerMap::containsCapturing(const AtomicString& eventType) const
 {
-    for (unsigned i = 0; i < m_entries.size(); ++i) {
-        if (m_entries[i].first == eventType) {
-            const EventListenerVector* vector = m_entries[i].second.get();
-            for (unsigned j = 0; j < vector->size(); ++j) {
-                if (vector->at(j).useCapture)
+    for (const auto& entry : m_entries) {
+        if (entry.first == eventType) {
+            for (const auto& eventListener: *entry.second) {
+                if (eventListener.useCapture)
                     return true;
             }
         }
@@ -101,8 +100,8 @@ Vector<AtomicString> EventListenerMap::eventTypes() const
     Vector<AtomicString> types;
     types.reserveInitialCapacity(m_entries.size());
 
-    for (unsigned i = 0; i < m_entries.size(); ++i)
-        types.uncheckedAppend(m_entries[i].first);
+    for (const auto& entry : m_entries)
+        types.uncheckedAppend(entry.first);
 
     return types;
 }
@@ -122,9 +121,9 @@ bool EventListenerMap::add(const AtomicString& eventType, PassRefPtr<EventListen
 {
     assertNoActiveIterators();
 
-    for (unsigned i = 0; i < m_entries.size(); ++i) {
-        if (m_entries[i].first == eventType)
-            return addListenerToVector(m_entries[i].second.get(), listener, useCapture);
+    for (const auto& entry : m_entries) {
+        if (entry.first == eventType)
+            return addListenerToVector(entry.second.get(), listener, useCapture);
     }
 
     m_entries.append(std::make_pair(eventType, adoptPtr(new EventListenerVector)));
@@ -161,9 +160,9 @@ EventListenerVector* EventListenerMap::find(const AtomicString& eventType)
 {
     assertNoActiveIterators();
 
-    for (unsigned i = 0; i < m_entries.size(); ++i) {
-        if (m_entries[i].first == eventType)
-            return m_entries[i].second.get();
+    for (const auto& entry : m_entries) {
+        if (entry.first == eventType)
+            return entry.second.get();
     }
 
     return 0;
