@@ -168,12 +168,7 @@ java_cpp_template("resource_id_javagen") {
 }
 
 # GYP: //chrome/chrome_shell.gypi:libchromeshell_base
-static_library("chrome_shell_base") {
-  sources = [
-    "shell/chrome_shell_google_location_settings_helper.cc",
-    "shell/chrome_shell_google_location_settings_helper.h",
-  ]
-
+group("chrome_shell_base") {
   deps = [
     "//chrome/browser/ui",
     "//chrome:chrome_android_core",
@@ -182,11 +177,6 @@ static_library("chrome_shell_base") {
     "//content/public/app:browser",
     "//skia",
   ]
-
-  # Some android targets still depend on --gc-sections to link.
-  # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
-  ldflags = [ "-Wl,--gc-sections" ]
-
   # TODO(GYP):
   #[ 'order_profiling!=0', {
   #'dependencies': [ '../tools/cygprofile/cygprofile.gyp:cygprofile', ],

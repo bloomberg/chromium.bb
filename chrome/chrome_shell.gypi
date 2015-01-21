@@ -14,19 +14,12 @@
     {
       # GN: //chrome/android:chrome_shell_base
       'target_name': 'libchromeshell_base',
-      'type': 'static_library',
+      'type': 'none',
       'dependencies': [
         '../base/base.gyp:base',
         'chrome_android_core',
         'chrome.gyp:browser_ui',
         '../content/content.gyp:content_app_browser',
-      ],
-      'sources': [
-        'android/shell/chrome_shell_google_location_settings_helper.cc',
-        'android/shell/chrome_shell_google_location_settings_helper.h',
-      ],
-      'include_dirs': [
-        '../skia/config',
       ],
       'direct_dependent_settings': {
         'ldflags': [

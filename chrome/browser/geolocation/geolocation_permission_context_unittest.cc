@@ -39,7 +39,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/android/mock_google_location_settings_helper.h"
+#include "chrome/browser/android/mock_location_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #endif
 
@@ -249,12 +249,11 @@ void GeolocationPermissionContextTests::SetUp() {
   geolocation_permission_context_ =
       GeolocationPermissionContextFactory::GetForProfile(profile());
 #if defined(OS_ANDROID)
-  scoped_ptr<GoogleLocationSettingsHelper> helper(
-                new MockGoogleLocationSettingsHelper());
   static_cast<GeolocationPermissionContextAndroid*>(
-      geolocation_permission_context_)->
-          SetGoogleLocationSettingsHelperForTesting(helper.Pass());
-  MockGoogleLocationSettingsHelper::SetLocationStatus(true, true);
+      geolocation_permission_context_)
+      ->SetLocationSettingsForTesting(
+          scoped_ptr<LocationSettings>(new MockLocationSettings()));
+  MockLocationSettings::SetLocationStatus(true, true);
 #endif
 }
 
@@ -285,7 +284,7 @@ TEST_F(GeolocationPermissionContextTests, SinglePermission) {
 TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
-  MockGoogleLocationSettingsHelper::SetLocationStatus(true, true);
+  MockLocationSettings::SetLocationStatus(true, true);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->infobar_count());
@@ -296,7 +295,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
       ConfirmInfoBarDelegate::BUTTON_OK);
 
   Reload();
-  MockGoogleLocationSettingsHelper::SetLocationStatus(true, false);
+  MockLocationSettings::SetLocationStatus(true, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
@@ -305,7 +304,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
 TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsEnabled) {
   GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
-  MockGoogleLocationSettingsHelper::SetLocationStatus(true, true);
+  MockLocationSettings::SetLocationStatus(true, true);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->infobar_count());
@@ -320,7 +319,7 @@ TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsEnabled) {
 TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsDisabled) {
   GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
-  MockGoogleLocationSettingsHelper::SetLocationStatus(true, false);
+  MockLocationSettings::SetLocationStatus(true, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());

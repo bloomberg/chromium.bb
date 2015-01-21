@@ -16,12 +16,11 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromiumApplication;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-
 /**
  * Provides methods for querying Android system-wide location settings as well as Chrome's internal
  * location setting.
+ *
+ * This class should be used only on the UI thread.
  */
 public class LocationSettings {
 
@@ -42,6 +41,7 @@ public class LocationSettings {
      */
     @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     public static LocationSettings getInstance() {
+        ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
             ChromiumApplication application =
                     (ChromiumApplication) ApplicationStatus.getApplicationContext();
@@ -55,19 +55,9 @@ public class LocationSettings {
      */
     @CalledByNative
     public static boolean areAllLocationSettingsEnabled() {
-        try {
-            return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>(){
-                @Override
-                public Boolean call() throws Exception {
-                    LocationSettings settings = LocationSettings.getInstance();
-                    return settings.isChromeLocationSettingEnabled()
-                            && settings.isSystemLocationSettingEnabled();
-                }
-            });
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-            return false;
-        }
+        LocationSettings settings = LocationSettings.getInstance();
+        return settings.isChromeLocationSettingEnabled()
+                && settings.isSystemLocationSettingEnabled();
     }
 
     /**

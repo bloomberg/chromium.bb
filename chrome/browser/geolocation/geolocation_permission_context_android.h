@@ -27,7 +27,7 @@ namespace content {
 class WebContents;
 }
 
-class GoogleLocationSettingsHelper;
+class LocationSettings;
 class GURL;
 class PermissionRequestID;
 
@@ -48,12 +48,11 @@ class GeolocationPermissionContextAndroid
        bool user_gesture,
        const BrowserPermissionCallback& callback) override;
 
-  // Overrides the GoogleLocationSettingsHelper used to determine whether
+  // Overrides the LocationSettings object used to determine whether
   // system and Chrome-wide location permissions are enabled.
-  void SetGoogleLocationSettingsHelperForTesting(
-      scoped_ptr<GoogleLocationSettingsHelper> helper);
+  void SetLocationSettingsForTesting(scoped_ptr<LocationSettings> settings);
 
-  scoped_ptr<GoogleLocationSettingsHelper> google_location_settings_helper_;
+  scoped_ptr<LocationSettings> location_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContextAndroid);
 };

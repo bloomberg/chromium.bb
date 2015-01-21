@@ -4,8 +4,8 @@
 
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 
-#include "chrome/browser/android/app_google_location_settings_helper.h"
-#include "chrome/browser/android/google_location_settings_helper.h"
+#include "chrome/browser/android/location_settings.h"
+#include "chrome/browser/android/location_settings_impl.h"
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -13,7 +13,7 @@
 GeolocationPermissionContextAndroid::
     GeolocationPermissionContextAndroid(Profile* profile)
     : GeolocationPermissionContext(profile),
-      google_location_settings_helper_(new AppGoogleLocationSettingsHelper()) {
+      location_settings_(new LocationSettingsImpl()) {
 }
 
 GeolocationPermissionContextAndroid::~GeolocationPermissionContextAndroid() {
@@ -25,7 +25,7 @@ void GeolocationPermissionContextAndroid::RequestPermission(
      const GURL& requesting_frame_origin,
      bool user_gesture,
      const BrowserPermissionCallback& callback) {
-  if (!google_location_settings_helper_->IsSystemLocationEnabled()) {
+  if (!location_settings_->IsLocationEnabled()) {
     PermissionDecided(id, requesting_frame_origin,
                       web_contents->GetLastCommittedURL().GetOrigin(),
                       callback, false /* persist */, false /* granted */);
@@ -36,8 +36,7 @@ void GeolocationPermissionContextAndroid::RequestPermission(
       web_contents, id, requesting_frame_origin, user_gesture, callback);
 }
 
-void GeolocationPermissionContextAndroid::
-    SetGoogleLocationSettingsHelperForTesting(
-        scoped_ptr<GoogleLocationSettingsHelper> helper) {
-  google_location_settings_helper_ = helper.Pass();
+void GeolocationPermissionContextAndroid::SetLocationSettingsForTesting(
+    scoped_ptr<LocationSettings> settings) {
+  location_settings_ = settings.Pass();
 }
