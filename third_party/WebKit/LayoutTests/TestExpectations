@@ -644,6 +644,13 @@ crbug.com/338887 [ Linux ] crypto/subtle/hkdf-deriveKey.html [ Failure Pass ]
 crbug.com/338887 [ Linux ] crypto/subtle/hkdf-exportKey.html [ Failure Pass ]
 crbug.com/338887 [ Linux ] crypto/subtle/hkdf-importKey-failures.html [ Failure Pass ]
 crbug.com/338887 [ Linux ] crypto/subtle/hkdf-unwrapKey.html [ Failure Pass ]
+crbug.com/399099 [ Linux ] crypto/subtle/clone-pbkdf2Key.html [ Failure Pass ]
+crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2-deriveBits.html [ Failure Pass ]
+crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2-deriveBits-empty-password-failure.html [ Failure Pass ]
+crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2-deriveBits-failures.html [ Failure Pass ]
+crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2-deriveBits-rfc6070-test-vectors.html [ Failure Pass ]
+crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2-deriveKey-aes.html [ Failure Pass ]
+crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2-deriveKey-failures.html [ Failure Pass ]
 
 # There are some unresolved problems with the teardown of WebWorkers that make
 # the "abandon" WebCrypto tests flaky-crash. This flakiness can also affect the
@@ -654,15 +661,6 @@ crbug.com/440277 crypto/subtle/abandon-crypto-operation2.html [ Crash Pass ]
 crbug.com/409767 crypto/subtle/worker-subtle-crypto-concurrent.html [ Crash Pass ]
 crbug.com/438403 crypto/subtle/aes-cbc-decrypt-failure.html [ Crash Pass ]
 crbug.com/438403 crypto/subtle/aes-cbc-encrypt-decrypt.html [ Crash Pass ]
-
-#These tests are temporary failures until the chromium-side of PBKDF2 lands
-crbug.com/399099 crypto/subtle/clone-pbkdf2Key.html [ Failure ]
-crbug.com/399099 crypto/subtle/pbkdf2-deriveBits.html [ Failure ]
-crbug.com/399099 crypto/subtle/pbkdf2-deriveBits-empty-password-failure.html [ Failure ]
-crbug.com/399099 crypto/subtle/pbkdf2-deriveBits-failures.html [ Failure ]
-crbug.com/399099 crypto/subtle/pbkdf2-deriveBits-rfc6070-test-vectors.html [ Failure ]
-crbug.com/399099 crypto/subtle/pbkdf2-deriveKey-aes.html [ Failure ]
-crbug.com/399099 crypto/subtle/pbkdf2-deriveKey-failures.html [ Failure ]
 
 crbug.com/443566 http/tests/misc/image-error.html [ Failure Pass ]
 
