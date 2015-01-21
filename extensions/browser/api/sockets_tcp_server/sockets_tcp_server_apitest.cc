@@ -4,55 +4,41 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
+#include "extensions/browser/api_test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/test_util.h"
+#include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
-using extensions::Extension;
-using extensions::core_api::SocketsTcpServerCreateFunction;
-
-namespace utils = extension_function_test_utils;
-
-namespace {
-
-// TODO(jschuh): Hanging plugin tests. crbug.com/244653
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
-#define MAYBE(x) DISABLED_##x
-#else
-#define MAYBE(x) x
-#endif
+namespace extensions {
 
 const std::string kHostname = "127.0.0.1";
 const int kPort = 8888;
 
-class SocketsTcpServerApiTest : public ExtensionApiTest {
+class SocketsTcpServerApiTest : public ShellApiTest {
  public:
-  SocketsTcpServerApiTest() : resolver_event_(true, false),
-                              resolver_creator_(
-                                  new extensions::MockHostResolverCreator()) {
-  }
+  SocketsTcpServerApiTest()
+      : resolver_event_(true, false),
+        resolver_creator_(new MockHostResolverCreator()) {}
 
   void SetUpOnMainThread() override {
-    extensions::HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
+    ShellApiTest::SetUpOnMainThread();
+
+    HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
         resolver_creator_->CreateMockHostResolver());
   }
 
   void TearDownOnMainThread() override {
-    extensions::HostResolverWrapper::GetInstance()->
-        SetHostResolverForTesting(NULL);
+    HostResolverWrapper::GetInstance()->SetHostResolverForTesting(NULL);
     resolver_creator_->DeleteMockHostResolver();
+
+    ShellApiTest::TearDownOnMainThread();
   }
 
  private:
@@ -61,24 +47,22 @@ class SocketsTcpServerApiTest : public ExtensionApiTest {
   // The MockHostResolver asserts that it's used on the same thread on which
   // it's created, which is actually a stronger rule than its real counterpart.
   // But that's fine; it's good practice.
-  scoped_refptr<extensions::MockHostResolverCreator> resolver_creator_;
+  scoped_refptr<MockHostResolverCreator> resolver_creator_;
 };
 
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPCreateGood) {
-  scoped_refptr<SocketsTcpServerCreateFunction>
-      socket_create_function(new SocketsTcpServerCreateFunction());
-  scoped_refptr<Extension> empty_extension(
-      extensions::test_util::CreateEmptyExtension());
+  scoped_refptr<core_api::SocketsTcpServerCreateFunction>
+      socket_create_function(new core_api::SocketsTcpServerCreateFunction());
+  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
 
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      socket_create_function.get(), "[]", browser(), utils::NONE));
+  scoped_ptr<base::Value> result(
+      api_test_utils::RunFunctionAndReturnSingleResult(
+          socket_create_function.get(), "[]", browser_context()));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-  base::DictionaryValue *value =
+  base::DictionaryValue* value =
       static_cast<base::DictionaryValue*>(result.get());
   int socketId = -1;
   EXPECT_TRUE(value->GetInteger("socketId", &socketId));
@@ -86,11 +70,10 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPCreateGood) {
 }
 
 IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPServerExtension) {
-  base::FilePath path = test_data_dir_.AppendASCII("sockets_tcp_server/api");
-  extensions::ResultCatcher catcher;
-  catcher.RestrictToBrowserContext(browser()->profile());
+  ResultCatcher catcher;
+  catcher.RestrictToBrowserContext(browser_context());
   ExtensionTestMessageListener listener("info_please", true);
-  ASSERT_TRUE(LoadExtension(path));
+  ASSERT_TRUE(LoadApp("sockets_tcp_server/api"));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   listener.Reply(
       base::StringPrintf("tcp_server:%s:%d", kHostname.c_str(), kPort));
@@ -99,14 +82,16 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPServerExtension) {
 }
 
 IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPServerUnbindOnUnload) {
-  base::FilePath path = test_data_dir_.AppendASCII("sockets_tcp_server/unload");
-  extensions::ResultCatcher catcher;
-  const Extension* extension = LoadExtension(path);
+  std::string path("sockets_tcp_server/unload");
+  ResultCatcher catcher;
+  const Extension* extension = LoadApp(path);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  UnloadExtension(extension->id());
+  UnloadApp(extension);
 
-  ASSERT_TRUE(LoadExtension(path)) << message_;
+  ASSERT_TRUE(LoadApp(path)) << message_;
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+}  // namespace extensions

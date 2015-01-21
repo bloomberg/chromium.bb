@@ -1229,6 +1229,7 @@
         'browser/api/idle/idle_api_unittest.cc',
         'browser/api/power/power_api_unittest.cc',
         'browser/api/sockets_tcp/sockets_tcp_api_unittest.cc',
+        'browser/api/sockets_udp/sockets_udp_api_unittest.cc',
         'browser/api/storage/settings_quota_unittest.cc',
         'browser/api/storage/storage_api_unittest.cc',
         'browser/api/storage/storage_frontend_unittest.cc',

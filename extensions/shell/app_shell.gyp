@@ -317,6 +317,7 @@
         '../browser/api/hid/hid_apitest.cc',
         '../browser/api/socket/socket_apitest.cc',
         '../browser/api/sockets_tcp/sockets_tcp_apitest.cc',
+        '../browser/api/sockets_tcp_server/sockets_tcp_server_apitest.cc',
         '../browser/api/sockets_udp/sockets_udp_apitest.cc',
         '../browser/api/system_cpu/system_cpu_apitest.cc',
         '../browser/api/system_display/system_display_apitest.cc',

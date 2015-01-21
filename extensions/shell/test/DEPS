@@ -1,4 +1,6 @@
 include_rules = [
+  "+content/public/browser",
+
   # Testing utilities can access anything in extensions/shell.
   "+extensions/shell",
 ]

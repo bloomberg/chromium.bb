@@ -31,6 +31,10 @@ class ShellApiTest : public AppShellTest {
   // subpath under extensions/test/data.
   bool RunAppTest(const std::string& app_dir);
 
+  // Removes the |app| from the ExtensionRegistry and dispatches
+  // notifications of the removal stating reason as REASON_DISABLE.
+  void UnloadApp(const Extension* app);
+
  protected:
   // If it failed, what was the error message?
   std::string message_;
