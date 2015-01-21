@@ -10,6 +10,10 @@
       'werror%': '-Werror',
       # 1 to use goma.
       'use_goma%': 0,
+      # Set to 1 to use nacl-clang rather than gcc newlib toolchain.
+      # This is designed to be set globally by GYP_DEFINES and currently
+      # only affects x86-32 and x86-64 newlib builds.
+      'use_nacl_clang%': 0,
     },
     'common_args': [
       'python',
@@ -56,6 +60,13 @@
     'conditions': [
       ['use_goma==0', {
         'gomadir%': '',
+      }],
+      ['use_nacl_clang==1', {
+        'newlib_nlib_arg': 'newlib_nlib_clang',
+        'newlib_nexe_arg': 'newlib_nexe_clang',
+      }, {
+        'newlib_nlib_arg': 'newlib_nlib',
+        'newlib_nexe_arg': 'newlib_nexe',
       }],
       ['OS=="android"', {
         'TOOLCHAIN_OS': 'linux',
@@ -244,7 +255,7 @@
                    '<@(common_args)',
                    '>@(extra_args)',
                    '--arch', 'x86-64',
-                   '--build', 'newlib_nexe',
+                   '--build', '<(newlib_nexe_arg)',
                    '--name', '>(out_newlib64)',
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
@@ -285,7 +296,7 @@
                    '<@(common_args)',
                    '>@(extra_args)',
                    '--arch', 'x86-64',
-                   '--build', 'newlib_nlib',
+                   '--build', '<(newlib_nlib_arg)',
                    '--name', '>(out_newlib64)',
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
@@ -412,7 +423,7 @@
                    '<@(common_args)',
                    '>@(extra_args)',
                    '--arch', 'x86-32',
-                   '--build', 'newlib_nexe',
+                   '--build', '<(newlib_nexe_arg)',
                    '--name', '>(out_newlib32)',
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
@@ -453,7 +464,7 @@
                    '<@(common_args)',
                    '>@(extra_args)',
                    '--arch', 'x86-32',
-                   '--build', 'newlib_nlib',
+                   '--build', '<(newlib_nlib_arg)',
                    '--name', '>(out_newlib32)',
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
