@@ -190,6 +190,7 @@ void AutofillExternalDelegate::OnPopupShown() {
 }
 
 void AutofillExternalDelegate::OnPopupHidden() {
+  driver_->PopupHidden();
 }
 
 void AutofillExternalDelegate::DidSelectSuggestion(

@@ -34,6 +34,10 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // The RenderWidgetHost got the focus.
   virtual void RenderWidgetGotFocus(RenderWidgetHostImpl* render_widget_host) {}
 
+  // The RenderWidget was resized.
+  virtual void RenderWidgetWasResized(
+      RenderWidgetHostImpl* render_widget_host) {}
+
   // Callback to give the browser a chance to handle the specified keyboard
   // event before sending it to the renderer.
   // Returns true if the |event| was handled. Otherwise, if the |event| would

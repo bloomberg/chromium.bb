@@ -219,6 +219,10 @@ void ChromeAutofillClient::DidNavigateAnyFrame(
     HideRequestAutocompleteDialog();
 }
 
+void ChromeAutofillClient::MainFrameWasResized() {
+  HideAutofillPopup();
+}
+
 void ChromeAutofillClient::WebContentsDestroyed() {
   HideAutofillPopup();
 }

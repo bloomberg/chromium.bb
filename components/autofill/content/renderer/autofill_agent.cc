@@ -172,6 +172,7 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnFillPasswordSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_PreviewPasswordSuggestion,
                         OnPreviewPasswordSuggestion)
+    IPC_MESSAGE_HANDLER(AutofillMsg_PopupHidden, OnPopupHidden)
     IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteResult,
                         OnRequestAutocompleteResult)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -232,10 +233,6 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
     return;
 
   element_ = *element;
-}
-
-void AutofillAgent::Resized() {
-  HidePopup();
 }
 
 void AutofillAgent::didRequestAutocomplete(
@@ -550,6 +547,11 @@ void AutofillAgent::OnPreviewPasswordSuggestion(
   DCHECK(handled);
 }
 
+void AutofillAgent::OnPopupHidden() {
+  if (!element_.isNull())
+    OnClearPreviewedForm();
+}
+
 void AutofillAgent::OnRequestAutocompleteResult(
     WebFormElement::AutocompleteResult result,
     const base::string16& message,
@@ -740,10 +742,6 @@ void AutofillAgent::ProcessForms() {
 void AutofillAgent::HidePopup() {
   if (!is_popup_possibly_visible_)
     return;
-
-  if (!element_.isNull())
-    OnClearPreviewedForm();
-
   is_popup_possibly_visible_ = false;
   Send(new AutofillHostMsg_HidePopup(routing_id()));
 }
@@ -783,10 +781,6 @@ void AutofillAgent::LegacyAutofillAgent::OnDestruct() {
 void AutofillAgent::LegacyAutofillAgent::FocusedNodeChanged(
     const WebNode& node) {
   agent_->FocusedNodeChanged(node);
-}
-
-void AutofillAgent::LegacyAutofillAgent::Resized() {
-  agent_->Resized();
 }
 
 }  // namespace autofill

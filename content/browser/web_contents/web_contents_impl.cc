@@ -1338,6 +1338,17 @@ void WebContentsImpl::RenderWidgetGotFocus(
     delegate_->WebContentsFocused(this);
 }
 
+void WebContentsImpl::RenderWidgetWasResized(
+    RenderWidgetHostImpl* render_widget_host) {
+  if (render_widget_host !=
+      static_cast<RenderFrameHostImpl*>(GetMainFrame())
+          ->GetRenderWidgetHost()) {
+    return;
+  }
+
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, MainFrameWasResized());
+}
+
 bool WebContentsImpl::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {

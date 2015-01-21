@@ -73,4 +73,7 @@ void TestAutofillDriver::RendererShouldPreviewFieldWithValue(
     const base::string16& value) {
 }
 
+void TestAutofillDriver::PopupHidden() {
+}
+
 }  // namespace autofill

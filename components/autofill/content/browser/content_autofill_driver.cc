@@ -145,6 +145,13 @@ void ContentAutofillDriver::RendererShouldPreviewFieldWithValue(
       render_frame_host_->GetRoutingID(), value));
 }
 
+void ContentAutofillDriver::PopupHidden() {
+  if (!RendererIsAvailable())
+    return;
+  render_frame_host_->Send(
+      new AutofillMsg_PopupHidden(render_frame_host_->GetRoutingID()));
+}
+
 bool ContentAutofillDriver::HandleMessage(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ContentAutofillDriver, message)

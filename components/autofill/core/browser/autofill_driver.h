@@ -89,6 +89,9 @@ class AutofillDriver {
   // Tells the renderer to preview the node with suggested text.
   virtual void RendererShouldPreviewFieldWithValue(
       const base::string16& value) = 0;
+
+  // Informs the renderer that the popup has been hidden.
+  virtual void PopupHidden() = 0;
 };
 
 }  // namespace autofill

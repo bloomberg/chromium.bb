@@ -637,6 +637,9 @@ void RenderWidgetHostImpl::WasResized() {
   } else {
     old_resize_params_.swap(params);
   }
+
+  if (delegate_)
+    delegate_->RenderWidgetWasResized(this);
 }
 
 void RenderWidgetHostImpl::ResizeRectChanged(const gfx::Rect& new_rect) {

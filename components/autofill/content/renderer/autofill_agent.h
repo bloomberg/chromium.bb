@@ -67,7 +67,6 @@ class AutofillAgent : public content::RenderFrameObserver,
     // content::RenderViewObserver:
     void OnDestruct() override;
     void FocusedNodeChanged(const blink::WebNode& node) override;
-    void Resized() override;
 
     AutofillAgent* agent_;
 
@@ -115,10 +114,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   void WillSubmitForm(const blink::WebFormElement& form) override;
   void DidChangeScrollOffset() override;
 
-  // Pass-throughs from LegacyAutofillAgent. These correlate with
-  // RenderViewObserver methods.
+  // Pass-through from LegacyAutofillAgent. This correlates with the
+  // RenderViewObserver method.
   void FocusedNodeChanged(const blink::WebNode& node);
-  void Resized();
 
   // PageClickListener:
   void FormControlElementClicked(const blink::WebFormControlElement& element,
@@ -158,6 +156,7 @@ class AutofillAgent : public content::RenderFrameObserver,
                                 const base::string16& password);
   void OnPreviewPasswordSuggestion(const base::string16& username,
                                    const base::string16& password);
+  void OnPopupHidden();
 
   // Called when interactive autocomplete finishes. |message| is printed to
   // the console if non-empty.

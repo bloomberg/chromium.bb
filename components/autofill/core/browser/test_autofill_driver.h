@@ -44,6 +44,7 @@ class TestAutofillDriver : public AutofillDriver {
   void RendererShouldFillFieldWithValue(const base::string16& value) override;
   void RendererShouldPreviewFieldWithValue(
       const base::string16& value) override;
+  void PopupHidden() override;
 
   // Methods that tests can use to specialize functionality.
 

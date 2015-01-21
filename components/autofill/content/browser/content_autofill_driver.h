@@ -61,6 +61,7 @@ class ContentAutofillDriver : public AutofillDriver {
   void RendererShouldFillFieldWithValue(const base::string16& value) override;
   void RendererShouldPreviewFieldWithValue(
       const base::string16& value) override;
+  void PopupHidden() override;
 
   // Handles a message that came from the associated render frame.
   bool HandleMessage(const IPC::Message& message);
