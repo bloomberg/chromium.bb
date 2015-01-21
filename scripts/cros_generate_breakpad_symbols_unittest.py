@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import ctypes
-import logging
 import mock
 import os
 import StringIO
@@ -381,4 +380,4 @@ def main(_argv):
   parallel._BackgroundTask.EXIT_TIMEOUT = 5
 
   # Run the tests.
-  cros_test_lib.main(level=logging.INFO, module=__name__)
+  cros_test_lib.main(level='info', module=__name__)

@@ -490,4 +490,4 @@ class TestConstants(cros_test_lib.TestCase):
 
 
 def main(_argv):
-  cros_test_lib.main(level=logging.INFO, module=__name__)
+  cros_test_lib.main(level='info', module=__name__)

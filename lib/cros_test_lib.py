@@ -30,6 +30,7 @@ import urllib
 
 from chromite.cbuildbot import constants
 from chromite.lib import cidb
+from chromite.lib import commandline
 from chromite.lib import git
 import cros_build_lib
 import gob_util
@@ -1455,24 +1456,8 @@ class TestProgram(unittest.TestProgram):
   can inject custom argv for example (to limit what tests run).
   """
 
-  USAGE = unittest.main.USAGE + """
-Chromite Options:
-  -d, --debug      Set logging level to debug
-      --network    Include network based tests (default: skip network tests)
-"""
-
   def __init__(self, **kwargs):
-    if '--network' in sys.argv:
-      sys.argv.remove('--network')
-      GlobalTestConfig.RUN_NETWORK_TESTS = True
-
-    level = kwargs.pop('level', logging.CRITICAL)
-    for flag in ('-d', '--debug'):
-      if flag in sys.argv:
-        sys.argv.remove(flag)
-        level = logging.DEBUG
-    logger = logging.getLogger()
-    logger.setLevel(level)
+    self.default_log_level = kwargs.pop('level', 'critical')
 
     try:
       super(TestProgram, self).__init__(**kwargs)
@@ -1480,6 +1465,58 @@ Chromite Options:
       if GlobalTestConfig.NETWORK_TESTS_SKIPPED:
         print('Note: %i network test(s) skipped; use --network to run them.' %
               GlobalTestConfig.NETWORK_TESTS_SKIPPED)
+
+  def parseArgs(self, argv):
+    """Parse the command line for the test"""
+    description = """Examples:
+  %(prog)s                            - run default set of tests
+  %(prog)s MyTestSuite                - run suite MyTestSuite
+  %(prog)s MyTestCase.testSomething   - run MyTestCase.testSomething
+  %(prog)s MyTestCase                 - run all MyTestCase.test* methods
+"""
+    parser = commandline.ArgumentParser(
+        description=description, default_log_level=self.default_log_level)
+
+    # These are options the standard unittest.TestProgram supports.
+    parser.add_argument('-v', '--verbose', default=False, action='store_true',
+                        help='Verbose output')
+    parser.add_argument('-q', '--quiet', default=False, action='store_true',
+                        help='Minimal output')
+    parser.add_argument('-f', '--failfast', default=False, action='store_true',
+                        help='Stop on first failure')
+    parser.add_argument('tests', nargs='*',
+                        help='specific test classes or methods to run')
+
+    # These are custom options we added.
+    parser.add_argument('--network', default=False, action='store_true',
+                        help='Run tests that depend on good network '
+                             'connectivity')
+
+    opts = parser.parse_args(argv[1:])
+    opts.Freeze()
+
+    # Process the common options first.
+    if opts.verbose:
+      self.verbosity = 2
+
+    if opts.quiet:
+      self.verbosity = 0
+
+    if opts.failfast:
+      self.failfast = True
+
+    # Then handle the chromite extensions.
+    if opts.network:
+      GlobalTestConfig.RUN_NETWORK_TESTS = True
+
+    # Figure out which tests the user/unittest wants to run.
+    if len(opts.tests) == 0 and self.defaultTest is None:
+      self.testNames = None
+    elif len(opts.tests) > 0:
+      self.testNames = opts.tests
+    else:
+      self.testNames = (self.defaultTest,)
+    self.createTests()
 
 
 class main(TestProgram):

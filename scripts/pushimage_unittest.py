@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import logging
 import mock
 import os
 
@@ -234,4 +233,4 @@ def main(_argv):
   signing.INPUT_INSN_DIR = signing.TEST_INPUT_INSN_DIR
 
   # Run the tests.
-  cros_test_lib.main(level=logging.INFO, module=__name__)
+  cros_test_lib.main(level='info', module=__name__)

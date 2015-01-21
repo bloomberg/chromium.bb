@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import logging
 import time
 import urllib2
 
@@ -227,4 +226,4 @@ class UploadContextTest(cros_test_lib.MockLoggingTestCase):
 
 
 def main(_argv):
-  cros_test_lib.main(level=logging.DEBUG, module=__name__)
+  cros_test_lib.main(level='debug', module=__name__)

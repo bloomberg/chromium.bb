@@ -9,7 +9,6 @@ from __future__ import print_function
 import BaseHTTPServer
 import ctypes
 import errno
-import logging
 import mock
 import multiprocessing
 import os
@@ -532,4 +531,4 @@ def main(_argv):
   upload_symbols.INITIAL_RETRY_DELAY = 0
 
   # Run the tests.
-  cros_test_lib.main(level=logging.INFO, module=__name__)
+  cros_test_lib.main(level='info', module=__name__)

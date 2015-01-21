@@ -6,8 +6,6 @@
 
 from __future__ import print_function
 
-import logging
-
 from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
 from chromite.scripts import cros_list_overlays
@@ -30,4 +28,4 @@ class ListOverlaysTest(cros_test_lib.MockTestCase):
 
 
 def main(_argv):
-  cros_test_lib.main(level=logging.INFO, module=__name__)
+  cros_test_lib.main(level='info', module=__name__)
