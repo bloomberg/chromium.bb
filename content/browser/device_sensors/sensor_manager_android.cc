@@ -35,9 +35,9 @@ namespace content {
 
 SensorManagerAndroid::SensorManagerAndroid()
     : number_active_device_motion_sensors_(0),
-      device_light_buffer_(NULL),
-      device_motion_buffer_(NULL),
-      device_orientation_buffer_(NULL),
+      device_light_buffer_(nullptr),
+      device_motion_buffer_(nullptr),
+      device_orientation_buffer_(nullptr),
       is_light_buffer_ready_(false),
       is_motion_buffer_ready_(false),
       is_orientation_buffer_ready_(false),
@@ -216,7 +216,7 @@ void SensorManagerAndroid::StopFetchingDeviceLightData() {
     base::AutoLock autolock(light_buffer_lock_);
     if (device_light_buffer_) {
       SetLightBufferValue(-1);
-      device_light_buffer_ = NULL;
+      device_light_buffer_ = nullptr;
     }
   }
 }
@@ -255,7 +255,7 @@ void SensorManagerAndroid::StopFetchingDeviceMotionData() {
     base::AutoLock autolock(motion_buffer_lock_);
     if (device_motion_buffer_) {
       ClearInternalMotionBuffers();
-      device_motion_buffer_ = NULL;
+      device_motion_buffer_ = nullptr;
     }
   }
 }
@@ -338,7 +338,7 @@ void SensorManagerAndroid::StopFetchingDeviceOrientationData() {
     base::AutoLock autolock(orientation_buffer_lock_);
     if (device_orientation_buffer_) {
       SetOrientationBufferReadyStatus(false);
-      device_orientation_buffer_ = NULL;
+      device_orientation_buffer_ = nullptr;
     }
   }
 }

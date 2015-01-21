@@ -64,12 +64,12 @@ class DataFetcherSharedMemory::SensorEventSink
 
   STDMETHODIMP OnDataUpdated(ISensor* sensor,
                              ISensorDataReport* new_data) override {
-    if (NULL == new_data || NULL == sensor)
+    if (nullptr == new_data || nullptr == sensor)
       return E_INVALIDARG;
     return UpdateSharedMemoryBuffer(sensor, new_data) ? S_OK : E_FAIL;
   }
 
-protected:
+ protected:
   virtual bool UpdateSharedMemoryBuffer(
       ISensor* sensor, ISensorDataReport* new_data) = 0;
 
@@ -100,7 +100,7 @@ class DataFetcherSharedMemory::SensorEventSinkOrientation
       DeviceOrientationHardwareBuffer* const buffer) : buffer_(buffer) {}
   virtual ~SensorEventSinkOrientation() {}
 
-protected:
+ protected:
   virtual bool UpdateSharedMemoryBuffer(
       ISensor* sensor, ISensorDataReport* new_data) override {
     double alpha, beta, gamma;
@@ -216,16 +216,14 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
     return true;
   }
 
-  private:
-   DeviceMotionHardwareBuffer* const buffer_;
+ private:
+  DeviceMotionHardwareBuffer* const buffer_;
 
-   DISALLOW_COPY_AND_ASSIGN(SensorEventSinkMotion);
- };
-
+  DISALLOW_COPY_AND_ASSIGN(SensorEventSinkMotion);
+};
 
 DataFetcherSharedMemory::DataFetcherSharedMemory()
-    : motion_buffer_(NULL),
-      orientation_buffer_(NULL) {
+    : motion_buffer_(nullptr), orientation_buffer_(nullptr) {
 }
 
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {
@@ -290,10 +288,10 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
   SetBufferAvailableState(consumer_type, false);
   switch (consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
-      orientation_buffer_ = NULL;
+      orientation_buffer_ = nullptr;
       return true;
     case CONSUMER_TYPE_MOTION:
-      motion_buffer_ = NULL;
+      motion_buffer_ = nullptr;
       return true;
     default:
       NOTREACHED();
@@ -356,17 +354,17 @@ void DataFetcherSharedMemory::DisableSensors(ConsumerType consumer_type) {
   switch(consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
       if (sensor_inclinometer_.get()) {
-        sensor_inclinometer_->SetEventSink(NULL);
+        sensor_inclinometer_->SetEventSink(nullptr);
         sensor_inclinometer_.Release();
       }
       break;
     case CONSUMER_TYPE_MOTION:
       if (sensor_accelerometer_.get()) {
-        sensor_accelerometer_->SetEventSink(NULL);
+        sensor_accelerometer_->SetEventSink(nullptr);
         sensor_accelerometer_.Release();
       }
       if (sensor_gyrometer_.get()) {
-        sensor_gyrometer_->SetEventSink(NULL);
+        sensor_gyrometer_->SetEventSink(nullptr);
         sensor_gyrometer_.Release();
       }
       break;

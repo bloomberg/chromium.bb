@@ -218,7 +218,7 @@ base::SharedMemory* DataFetcherSharedMemoryBase::GetSharedMemory(
 
   size_t buffer_size = GetConsumerSharedMemoryBufferSize(consumer_type);
   if (buffer_size == 0)
-    return NULL;
+    return nullptr;
 
   scoped_ptr<base::SharedMemory> new_shared_mem(new base::SharedMemory);
   if (new_shared_mem->CreateAndMapAnonymous(buffer_size)) {
@@ -230,18 +230,18 @@ base::SharedMemory* DataFetcherSharedMemoryBase::GetSharedMemory(
     }
   }
   LOG(ERROR) << "Failed to initialize shared memory";
-  return NULL;
+  return nullptr;
 }
 
 void* DataFetcherSharedMemoryBase::GetSharedMemoryBuffer(
     ConsumerType consumer_type) {
   if (base::SharedMemory* shared_memory = GetSharedMemory(consumer_type))
     return shared_memory->memory();
-  return NULL;
+  return nullptr;
 }
 
 base::MessageLoop* DataFetcherSharedMemoryBase::GetPollingMessageLoop() const {
-  return polling_thread_ ? polling_thread_->message_loop() : NULL;
+  return polling_thread_ ? polling_thread_->message_loop() : nullptr;
 }
 
 bool DataFetcherSharedMemoryBase::IsPollingTimerRunningForTesting() const {

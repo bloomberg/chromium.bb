@@ -178,9 +178,7 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
 class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
  public:
   DeviceInertialSensorBrowserTest()
-      : fetcher_(NULL),
-        io_loop_finished_event_(false, false) {
-  }
+      : fetcher_(nullptr), io_loop_finished_event_(false, false) {}
 
   void SetUpOnMainThread() override {
     BrowserThread::PostTask(

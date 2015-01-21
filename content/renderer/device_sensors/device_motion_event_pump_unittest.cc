@@ -71,7 +71,7 @@ class DeviceMotionEventPumpTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    const DeviceMotionHardwareBuffer* null_buffer = NULL;
+    const DeviceMotionHardwareBuffer* null_buffer = nullptr;
     listener_.reset(new MockDeviceMotionListener);
     motion_pump_.reset(new DeviceMotionEventPumpForTesting);
     buffer_ = static_cast<DeviceMotionHardwareBuffer*>(shared_memory_.memory());

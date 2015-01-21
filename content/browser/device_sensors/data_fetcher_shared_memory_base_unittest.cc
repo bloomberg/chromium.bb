@@ -29,9 +29,9 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
         updated_light_(false, false),
         updated_motion_(false, false),
         updated_orientation_(false, false),
-        light_buffer_(NULL),
-        motion_buffer_(NULL),
-        orientation_buffer_(NULL) {}
+        light_buffer_(nullptr),
+        motion_buffer_(nullptr),
+        orientation_buffer_(nullptr) {}
   ~FakeDataFetcher() override {}
 
   bool Init(ConsumerType consumer_type, void* buffer) {

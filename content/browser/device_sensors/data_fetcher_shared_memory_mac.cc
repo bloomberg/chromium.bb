@@ -164,7 +164,8 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
     case CONSUMER_TYPE_MOTION: {
       if (!sudden_motion_sensor_)
         sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
-      bool sudden_motion_sensor_available = sudden_motion_sensor_.get() != NULL;
+      bool sudden_motion_sensor_available =
+          sudden_motion_sensor_.get() != nullptr;
 
       motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.MotionMacAvailable",
@@ -180,7 +181,8 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
     case CONSUMER_TYPE_ORIENTATION: {
       if (!sudden_motion_sensor_)
         sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
-      bool sudden_motion_sensor_available = sudden_motion_sensor_.get() != NULL;
+      bool sudden_motion_sensor_available =
+          sudden_motion_sensor_.get() != nullptr;
 
       orientation_buffer_ =
           static_cast<DeviceOrientationHardwareBuffer*>(buffer);
@@ -229,7 +231,7 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
         motion_buffer_->seqlock.WriteBegin();
         motion_buffer_->data.allAvailableSensorsAreActive = false;
         motion_buffer_->seqlock.WriteEnd();
-        motion_buffer_ = NULL;
+        motion_buffer_ = nullptr;
       }
       return true;
     case CONSUMER_TYPE_ORIENTATION:
@@ -237,7 +239,7 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
         orientation_buffer_->seqlock.WriteBegin();
         orientation_buffer_->data.allAvailableSensorsAreActive = false;
         orientation_buffer_->seqlock.WriteEnd();
-        orientation_buffer_ = NULL;
+        orientation_buffer_ = nullptr;
       }
       return true;
     case CONSUMER_TYPE_LIGHT:

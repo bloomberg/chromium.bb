@@ -74,7 +74,7 @@ class DeviceOrientationEventPumpTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    const DeviceOrientationHardwareBuffer* null_buffer = NULL;
+    const DeviceOrientationHardwareBuffer* null_buffer = nullptr;
     listener_.reset(new MockDeviceOrientationListener);
     orientation_pump_.reset(new DeviceOrientationEventPumpForTesting);
     buffer_ = static_cast<DeviceOrientationHardwareBuffer*>(
