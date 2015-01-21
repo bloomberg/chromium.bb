@@ -46,7 +46,100 @@ enum BrowserType {
   OPERA_BROWSER,
   OMNIWEB_BROWSER,
   MAX_BROWSERS
-} BrowserProcess;
+};
+
+namespace {
+
+// A helper for |CollectProcessData()|, collecting data on the Chrome/Chromium
+// process with PID |pid|. The collected data is added to |processes|.
+void CollectProcessDataForChromeProcess(
+    const std::vector<ProcessMemoryInformation>& child_info,
+    base::ProcessId pid,
+    ProcessMemoryInformationList* processes) {
+  ProcessMemoryInformation info;
+  info.pid = pid;
+  if (info.pid == base::GetCurrentProcId())
+    info.process_type = content::PROCESS_TYPE_BROWSER;
+  else
+    info.process_type = content::PROCESS_TYPE_UNKNOWN;
+
+  chrome::VersionInfo version_info;
+  info.product_name = base::ASCIIToUTF16(version_info.Name());
+  info.version = base::ASCIIToUTF16(version_info.Version());
+
+  // Check if this is one of the child processes whose data was already
+  // collected and exists in |child_data|.
+  for (const ProcessMemoryInformation& child : child_info) {
+    if (child.pid == info.pid) {
+      info.titles = child.titles;
+      info.process_type = child.process_type;
+      break;
+    }
+  }
+
+  scoped_ptr<base::ProcessMetrics> metrics;
+  metrics.reset(base::ProcessMetrics::CreateProcessMetrics(
+      pid, content::BrowserChildProcessHost::GetPortProvider()));
+  metrics->GetWorkingSetKBytes(&info.working_set);
+
+  processes->push_back(info);
+}
+
+// Collects memory information from non-Chrome browser processes, using the
+// ProcessInfoSnapshot helper (which runs an external command - PS or TOP).
+// Updates |process_data| with the collected information.
+void CollectProcessDataAboutNonChromeProcesses(
+    const std::vector<base::ProcessId>& all_pids,
+    const std::vector<base::ProcessId> pids_by_browser[MAX_BROWSERS],
+    std::vector<ProcessData>* process_data) {
+  DCHECK_EQ(MAX_BROWSERS, process_data->size());
+
+  // Capture information about the processes we're interested in.
+  ProcessInfoSnapshot process_info;
+  process_info.Sample(all_pids);
+
+  // Handle the other processes first.
+  for (size_t index = CHROME_BROWSER + 1; index < MAX_BROWSERS; ++index) {
+    for (const base::ProcessId& pid : pids_by_browser[index]) {
+      ProcessMemoryInformation info;
+      info.pid = pid;
+      info.process_type = content::PROCESS_TYPE_UNKNOWN;
+
+      // Try to get version information. To do this, we need first to get the
+      // executable's name (we can only believe |proc_info.command| if it looks
+      // like an absolute path). Then we need strip the executable's name back
+      // to the bundle's name. And only then can we try to get the version.
+      scoped_ptr<FileVersionInfo> version_info;
+      ProcessInfoSnapshot::ProcInfoEntry proc_info;
+      if (process_info.GetProcInfo(info.pid, &proc_info)) {
+        if (proc_info.command.length() > 1 && proc_info.command[0] == '/') {
+          base::FilePath bundle_name =
+              base::mac::GetAppBundlePath(base::FilePath(proc_info.command));
+          if (!bundle_name.empty()) {
+            version_info.reset(
+                FileVersionInfo::CreateFileVersionInfo(bundle_name));
+          }
+        }
+      }
+      if (version_info) {
+        info.product_name = version_info->product_name();
+        info.version = version_info->product_version();
+      } else {
+        info.product_name = (*process_data)[index].name;
+        info.version.clear();
+      }
+
+      // Memory info.
+      process_info.GetCommittedKBytesOfPID(info.pid, &info.committed);
+      process_info.GetWorkingSetKBytesOfPID(info.pid, &info.working_set);
+
+      // Add the process info to our list.
+      (*process_data)[index].processes.push_back(info);
+    }
+  }
+}
+
+}  // namespace
 
 MemoryDetails::MemoryDetails() {
   const base::FilePath browser_process_path =
@@ -57,7 +150,7 @@ MemoryDetails::MemoryDetails() {
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
 
   // (Human and process) names of browsers; should match the ordering for
-  // |BrowserProcess| (i.e., |BrowserType|).
+  // |BrowserType| enum.
   // TODO(viettrungluu): The current setup means that we can't detect both
   // Chrome and Chromium at the same time!
   // TODO(viettrungluu): Get localized browser names for other browsers
@@ -88,6 +181,7 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 }
 
 void MemoryDetails::CollectProcessData(
+    CollectionMode mode,
     const std::vector<ProcessMemoryInformation>& child_info) {
   // This must be run on the file thread to avoid jank (|ProcessInfoSnapshot|
   // runs /bin/ps, which isn't instantaneous).
@@ -141,101 +235,24 @@ void MemoryDetails::CollectProcessData(
     }
   }
 
-  // Capture information about the processes we're interested in.
-  ProcessInfoSnapshot process_info;
-  process_info.Sample(all_pids);
-
-  // Handle the other processes first.
-  for (size_t index = CHROME_BROWSER + 1; index < MAX_BROWSERS; index++) {
-    for (const base::ProcessId& pid : pids_by_browser[index]) {
-      ProcessMemoryInformation info;
-      info.pid = pid;
-      info.process_type = content::PROCESS_TYPE_UNKNOWN;
-
-      // Try to get version information. To do this, we need first to get the
-      // executable's name (we can only believe |proc_info.command| if it looks
-      // like an absolute path). Then we need strip the executable's name back
-      // to the bundle's name. And only then can we try to get the version.
-      scoped_ptr<FileVersionInfo> version_info;
-      ProcessInfoSnapshot::ProcInfoEntry proc_info;
-      if (process_info.GetProcInfo(info.pid, &proc_info)) {
-        if (proc_info.command.length() > 1 && proc_info.command[0] == '/') {
-          base::FilePath bundle_name =
-              base::mac::GetAppBundlePath(base::FilePath(proc_info.command));
-          if (!bundle_name.empty()) {
-            version_info.reset(FileVersionInfo::CreateFileVersionInfo(
-                bundle_name));
-          }
-        }
-      }
-      if (version_info.get()) {
-        info.product_name = version_info->product_name();
-        info.version = version_info->product_version();
-      } else {
-        info.product_name = process_data_[index].name;
-        info.version = base::string16();
-      }
-
-      // Memory info.
-      process_info.GetCommittedKBytesOfPID(info.pid, &info.committed);
-      process_info.GetWorkingSetKBytesOfPID(info.pid, &info.working_set);
-
-      // Add the process info to our list.
-      process_data_[index].processes.push_back(info);
-    }
+  if (mode == FROM_ALL_BROWSERS) {
+    CollectProcessDataAboutNonChromeProcesses(all_pids, pids_by_browser,
+                                              &process_data_);
   }
+
+  ProcessMemoryInformationList* chrome_processes =
+      &process_data_[CHROME_BROWSER].processes;
 
   // Collect data about Chrome/Chromium.
   for (const base::ProcessId& pid : pids_by_browser[CHROME_BROWSER])
-    CollectProcessDataChrome(child_info, pid, process_info);
+    CollectProcessDataForChromeProcess(child_info, pid, chrome_processes);
 
   // And collect data about the helpers.
   for (const base::ProcessId& pid : helper_pids)
-    CollectProcessDataChrome(child_info, pid, process_info);
+    CollectProcessDataForChromeProcess(child_info, pid, chrome_processes);
 
   // Finally return to the browser thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&MemoryDetails::CollectChildInfoOnUIThread, this));
-}
-
-void MemoryDetails::CollectProcessDataChrome(
-    const std::vector<ProcessMemoryInformation>& child_info,
-    base::ProcessId pid,
-    const ProcessInfoSnapshot& process_info) {
-  ProcessMemoryInformation info;
-  info.pid = pid;
-  if (info.pid == base::GetCurrentProcId())
-    info.process_type = content::PROCESS_TYPE_BROWSER;
-  else
-    info.process_type = content::PROCESS_TYPE_UNKNOWN;
-
-  chrome::VersionInfo version_info;
-  info.product_name = base::ASCIIToUTF16(version_info.Name());
-  info.version = base::ASCIIToUTF16(version_info.Version());
-
-  // Check if this is one of the child processes whose data was already
-  // collected and exists in |child_data|.
-  for (size_t child = 0; child < child_info.size(); child++) {
-    if (child_info[child].pid == info.pid) {
-      info.titles = child_info[child].titles;
-      info.process_type = child_info[child].process_type;
-      break;
-    }
-  }
-
-  // Memory info.
-  process_info.GetCommittedKBytesOfPID(info.pid, &info.committed);
-  process_info.GetWorkingSetKBytesOfPID(info.pid, &info.working_set);
-  // On 10.9+, ProcessInfoSnapshot is not able to provide working set info. Fall
-  // back to using base::ProcessMetrics in that case.
-  if (info.working_set.priv == 0) {
-    scoped_ptr<base::ProcessMetrics> metrics;
-    metrics.reset(base::ProcessMetrics::CreateProcessMetrics(
-        pid, content::BrowserChildProcessHost::GetPortProvider()));
-    metrics->GetWorkingSetKBytes(&info.working_set);
-  }
-
-  // Add the process info to our list.
-  process_data_[CHROME_BROWSER].processes.push_back(info);
 }

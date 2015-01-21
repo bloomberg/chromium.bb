@@ -86,10 +86,6 @@ struct ProcessData {
   BrowserContextSiteDataMap site_data;
 };
 
-#if defined(OS_MACOSX)
-class ProcessInfoSnapshot;
-#endif
-
 // MemoryDetails fetches memory details about current running browsers.
 // Because this data can only be fetched asynchronously, callers use
 // this class via a callback.
@@ -117,22 +113,20 @@ class ProcessInfoSnapshot;
 //    }
 class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
  public:
-  enum UserMetricsMode {
-    UPDATE_USER_METRICS,  // Update UMA memory histograms with results.
-    SKIP_USER_METRICS
+  enum CollectionMode {
+    // Collect metrics from Chrome and other running browsers.
+    FROM_ALL_BROWSERS,
+    // Collect metrics from Chrome processes only.
+    FROM_CHROME_ONLY
   };
 
   // Constructor.
   MemoryDetails();
 
-  // Access to the process detail information.  This data is only available
-  // after OnDetailsAvailable() has been called.
-  const std::vector<ProcessData>& processes() { return process_data_; }
-
-  // Initiate updating the current memory details.  These are fetched
-  // asynchronously because data must be collected from multiple threads.
-  // OnDetailsAvailable will be called when this process is complete.
-  void StartFetch();
+  // Initiate updating the current memory details (based on |mode|).  These are
+  // fetched asynchronously because data must be collected from multiple
+  // threads. OnDetailsAvailable will be called when this process is complete.
+  void StartFetch(CollectionMode mode);
 
   virtual void OnDetailsAvailable() = 0;
 
@@ -144,6 +138,10 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   friend class base::RefCountedThreadSafe<MemoryDetails>;
 
   virtual ~MemoryDetails();
+
+  // Access to the process detail information.  This data is only available
+  // after OnDetailsAvailable() has been called.
+  const std::vector<ProcessData>& processes() { return process_data_; }
 
   // Returns a pointer to the ProcessData structure for Chrome.
   ProcessData* ChromeBrowser();
@@ -158,7 +156,7 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   // on that thread.  The data will be used by about:memory.  When finished,
   // invokes back to the file thread to run the rest of the about:memory
   // functionality.
-  void CollectChildInfoOnIOThread();
+  void CollectChildInfoOnIOThread(CollectionMode mode);
 
   // Collect current process information from the OS and store it
   // for processing.  If data has already been collected, clears old
@@ -166,17 +164,9 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   // Note - this function enumerates memory details from many processes
   // and is fairly expensive to run, hence it's run on the file thread.
   // The parameter holds information about processes from the IO thread.
-  void CollectProcessData(const std::vector<ProcessMemoryInformation>&);
-
-#if defined(OS_MACOSX)
-  // A helper for |CollectProcessData()|, collecting data on the Chrome/Chromium
-  // process with PID |pid|. The collected data is added to the state of the
-  // object (in |process_data_|).
-  void CollectProcessDataChrome(
-      const std::vector<ProcessMemoryInformation>& child_info,
-      base::ProcessId pid,
-      const ProcessInfoSnapshot& process_info);
-#endif
+  void CollectProcessData(
+      CollectionMode mode,
+      const std::vector<ProcessMemoryInformation>& child_info);
 
   // Collect child process information on the UI thread.  Information about
   // renderer processes is only available there.

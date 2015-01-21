@@ -129,7 +129,7 @@ ProcessData& ProcessData::operator=(const ProcessData& rhs) {
 // one task run for that long on the UI or IO threads.  So, we run the
 // expensive parts of this operation over on the file thread.
 //
-void MemoryDetails::StartFetch() {
+void MemoryDetails::StartFetch(CollectionMode mode) {
   // This might get called from the UI or FILE threads, but should not be
   // getting called from the IO thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -138,7 +138,7 @@ void MemoryDetails::StartFetch() {
   // However, plugin process information is only available from the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MemoryDetails::CollectChildInfoOnIOThread, this));
+      base::Bind(&MemoryDetails::CollectChildInfoOnIOThread, this, mode));
 }
 
 MemoryDetails::~MemoryDetails() {}
@@ -179,7 +179,7 @@ std::string MemoryDetails::ToLogString() {
   return log;
 }
 
-void MemoryDetails::CollectChildInfoOnIOThread() {
+void MemoryDetails::CollectChildInfoOnIOThread(CollectionMode mode) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   std::vector<ProcessMemoryInformation> child_info;
@@ -203,7 +203,7 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   // Now go do expensive memory lookups from the file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MemoryDetails::CollectProcessData, this, child_info));
+      base::Bind(&MemoryDetails::CollectProcessData, this, mode, child_info));
 }
 
 void MemoryDetails::CollectChildInfoOnUIThread() {

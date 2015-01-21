@@ -224,7 +224,7 @@ void ChromeMetricsServiceClient::CollectFinalMetrics(
 
   scoped_refptr<MetricsMemoryDetails> details(
       new MetricsMemoryDetails(callback, &memory_growth_tracker_));
-  details->StartFetch();
+  details->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
 
   // Collect WebCore cache information to put into a histogram.
   for (content::RenderProcessHost::iterator i(

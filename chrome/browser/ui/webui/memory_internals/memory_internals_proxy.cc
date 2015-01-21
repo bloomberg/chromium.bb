@@ -52,12 +52,9 @@ class ProcessDetails : public MemoryDetails {
   typedef base::Callback<void(const ProcessData&)> DataCallback;
   explicit ProcessDetails(const DataCallback& callback)
       : callback_(callback) {}
+
   // MemoryDetails:
-  void OnDetailsAvailable() override {
-    const std::vector<ProcessData>& browser_processes = processes();
-    // [0] means Chrome.
-    callback_.Run(browser_processes[0]);
-  }
+  void OnDetailsAvailable() override { callback_.Run(*ChromeBrowser()); }
 
  private:
   ~ProcessDetails() override {}
@@ -202,7 +199,7 @@ void MemoryInternalsProxy::StartFetch(const base::ListValue* list) {
   information_->Clear();
   scoped_refptr<ProcessDetails> process(new ProcessDetails(
       base::Bind(&MemoryInternalsProxy::OnProcessAvailable, this)));
-  process->StartFetch();
+  process->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
 }
 
 MemoryInternalsProxy::~MemoryInternalsProxy() {}

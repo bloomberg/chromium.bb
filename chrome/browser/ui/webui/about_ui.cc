@@ -645,7 +645,7 @@ void FinishMemoryDataRequest(
     // The AboutMemoryHandler cleans itself up, but |StartFetch()| will want
     // the refcount to be greater than 0.
     scoped_refptr<AboutMemoryHandler> handler(new AboutMemoryHandler(callback));
-    handler->StartFetch();
+    handler->StartFetch(MemoryDetails::FROM_ALL_BROWSERS);
   } else {
     int id = IDR_ABOUT_MEMORY_HTML;
     if (path == kMemoryJsPath) {

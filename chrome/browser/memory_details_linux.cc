@@ -26,6 +26,8 @@
 using base::ProcessEntry;
 using content::BrowserThread;
 
+namespace {
+
 // Known browsers which we collect details for.
 enum BrowserType {
   CHROME = 0,
@@ -36,11 +38,11 @@ enum BrowserType {
   EPIPHANY,
   MIDORI,
   MAX_BROWSERS
-} BrowserProcess;
+};
 
 // The pretty printed names of those browsers. Matches up with enum
 // BrowserType.
-static const char kBrowserPrettyNames[][10] = {
+const char kBrowserPrettyNames[][10] = {
   "Chrome",
   "Firefox",
   "Iceweasel",
@@ -51,7 +53,7 @@ static const char kBrowserPrettyNames[][10] = {
 };
 
 // A mapping from process name to the type of browser.
-static const struct {
+const struct {
   const char process_name[17];
   BrowserType browser;
 } kBrowserBinaryNames[] = {
@@ -68,13 +70,6 @@ static const struct {
   { "", MAX_BROWSERS },
 };
 
-MemoryDetails::MemoryDetails() {
-}
-
-ProcessData* MemoryDetails::ChromeBrowser() {
-  return &process_data_[0];
-}
-
 struct Process {
   pid_t pid;
   pid_t parent;
@@ -84,7 +79,7 @@ struct Process {
 typedef std::map<pid_t, Process> ProcessMap;
 
 // Get information on all the processes running on the system.
-static ProcessMap GetProcesses() {
+ProcessMap GetProcesses() {
   ProcessMap map;
 
   base::ProcessIterator process_iter(NULL);
@@ -100,7 +95,7 @@ static ProcessMap GetProcesses() {
 
 // Given a process name, return the type of the browser which created that
 // process, or |MAX_BROWSERS| if we don't know about it.
-static BrowserType GetBrowserType(const std::string& process_name) {
+BrowserType GetBrowserType(const std::string& process_name) {
   for (unsigned i = 0; kBrowserBinaryNames[i].process_name[0]; ++i) {
     if (strcmp(process_name.c_str(), kBrowserBinaryNames[i].process_name) == 0)
       return kBrowserBinaryNames[i].browser;
@@ -110,15 +105,13 @@ static BrowserType GetBrowserType(const std::string& process_name) {
 }
 
 // For each of a list of pids, collect memory information about that process.
-static ProcessData GetProcessDataMemoryInformation(
+ProcessData GetProcessDataMemoryInformation(
     const std::vector<pid_t>& pids) {
   ProcessData process_data;
-  for (std::vector<pid_t>::const_iterator iter = pids.begin();
-       iter != pids.end();
-       ++iter) {
+  for (pid_t pid : pids) {
     ProcessMemoryInformation pmi;
 
-    pmi.pid = *iter;
+    pmi.pid = pid;
     pmi.num_processes = 1;
 
     if (pmi.pid == base::GetCurrentProcId())
@@ -126,10 +119,9 @@ static ProcessData GetProcessDataMemoryInformation(
     else
       pmi.process_type = content::PROCESS_TYPE_UNKNOWN;
 
-    base::ProcessMetrics* metrics =
-        base::ProcessMetrics::CreateProcessMetrics(*iter);
+    scoped_ptr<base::ProcessMetrics> metrics(
+        base::ProcessMetrics::CreateProcessMetrics(pid));
     metrics->GetWorkingSetKBytes(&pmi.working_set);
-    delete metrics;
 
     process_data.processes.push_back(pmi);
   }
@@ -137,8 +129,7 @@ static ProcessData GetProcessDataMemoryInformation(
 }
 
 // Find all children of the given process with pid |root|.
-static std::vector<pid_t> GetAllChildren(const ProcessMap& processes,
-                                         const pid_t root) {
+std::vector<pid_t> GetAllChildren(const ProcessMap& processes, pid_t root) {
   std::vector<pid_t> children;
   children.push_back(root);
 
@@ -146,10 +137,8 @@ static std::vector<pid_t> GetAllChildren(const ProcessMap& processes,
   wavefront.insert(root);
 
   while (wavefront.size()) {
-    for (ProcessMap::const_iterator iter = processes.begin();
-         iter != processes.end();
-         ++iter) {
-      const Process& process = iter->second;
+    for (const auto& entry : processes) {
+      const Process& process = entry.second;
       if (wavefront.count(process.parent)) {
         children.push_back(process.pid);
         next_wavefront.insert(process.pid);
@@ -162,7 +151,17 @@ static std::vector<pid_t> GetAllChildren(const ProcessMap& processes,
   return children;
 }
 
+}  // namespace
+
+MemoryDetails::MemoryDetails() {
+}
+
+ProcessData* MemoryDetails::ChromeBrowser() {
+  return &process_data_[0];
+}
+
 void MemoryDetails::CollectProcessData(
+    CollectionMode mode,
     const std::vector<ProcessMemoryInformation>& child_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -171,12 +170,12 @@ void MemoryDetails::CollectProcessData(
 
   // For each process on the system, if it appears to be a browser process and
   // it's parent isn't a browser process, then record it in |browsers_found|.
-  for (ProcessMap::const_iterator iter = process_map.begin();
-       iter != process_map.end();
-       ++iter) {
-    const Process& current_process = iter->second;
+  for (const auto& entry : process_map) {
+    const Process& current_process = entry.second;
     const BrowserType type = GetBrowserType(current_process.name);
     if (type == MAX_BROWSERS)
+      continue;
+    if (type != CHROME && mode == FROM_CHROME_ONLY)
       continue;
 
     ProcessMap::const_iterator parent_iter =
@@ -187,7 +186,7 @@ void MemoryDetails::CollectProcessData(
     }
 
     if (GetBrowserType(parent_iter->second.name) != type) {
-      // We found a process whose type is diffent from its parent's type.
+      // We found a process whose type is different from its parent's type.
       // That means it is the root process of the browser.
       browsers_found.insert(current_process.pid);
       break;
@@ -217,13 +216,11 @@ void MemoryDetails::CollectProcessData(
 
   // For each browser process, collect a list of its children and get the
   // memory usage of each.
-  for (std::set<pid_t>::const_iterator iter = browsers_found.begin();
-       iter != browsers_found.end();
-       ++iter) {
-    std::vector<pid_t> browser_processes = GetAllChildren(process_map, *iter);
+  for (pid_t pid : browsers_found) {
+    std::vector<pid_t> browser_processes = GetAllChildren(process_map, pid);
     ProcessData browser = GetProcessDataMemoryInformation(browser_processes);
 
-    ProcessMap::const_iterator process_iter = process_map.find(*iter);
+    ProcessMap::const_iterator process_iter = process_map.find(pid);
     if (process_iter == process_map.end())
       continue;
     BrowserType type = GetBrowserType(process_iter->second.name);

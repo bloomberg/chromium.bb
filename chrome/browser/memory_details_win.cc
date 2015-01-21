@@ -72,6 +72,7 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 }
 
 void MemoryDetails::CollectProcessData(
+    CollectionMode mode,
     const std::vector<ProcessMemoryInformation>& child_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -104,7 +105,9 @@ void MemoryDetails::CollectProcessData(
          (windows_architecture == base::win::OSInfo::IA64_ARCHITECTURE)) &&
         (base::win::OSInfo::GetWOW64StatusForProcess(process_handle.Get()) ==
             base::win::OSInfo::WOW64_DISABLED);
-    for (unsigned int index2 = 0; index2 < process_data_.size(); index2++) {
+    const size_t browser_list_size =
+        (mode == FROM_CHROME_ONLY ? 1 : process_data_.size());
+    for (size_t index2 = 0; index2 < browser_list_size; ++index2) {
       if (_wcsicmp(process_data_[index2].process_name.c_str(),
                    process_entry.szExeFile) != 0)
         continue;
