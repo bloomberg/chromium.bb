@@ -535,6 +535,7 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
       1);
 
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  fixRotationAngle();
 
   if (type() == ET_TOUCH_PRESSED)
     IncrementTouchIdRefCount(native_event);
@@ -573,6 +574,7 @@ TouchEvent::TouchEvent(EventType type,
       force_(force),
       may_cause_scrolling_(false) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  fixRotationAngle();
 }
 
 TouchEvent::~TouchEvent() {
@@ -599,6 +601,13 @@ void TouchEvent::DisableSynchronousHandling() {
   DispatcherApi dispatcher_api(this);
   dispatcher_api.set_result(
       static_cast<EventResult>(result() | ER_DISABLE_SYNC_HANDLING));
+}
+
+void TouchEvent::fixRotationAngle() {
+  while (rotation_angle_ < 0)
+    rotation_angle_ += 180;
+  while (rotation_angle_ >= 180)
+    rotation_angle_ -= 180;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

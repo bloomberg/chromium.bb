@@ -108,7 +108,7 @@ TEST(MotionEventAuraTest, PointerCountAndIds) {
   EXPECT_EQ(ids[2], event.GetPointerId(1));
 
   // Test cloning of pointer count and id information.
-  // TODO(mustaq): Make a separate clone test
+  // TODO(mustaq): Make a separate clone test, crbug.com/450655
   scoped_ptr<MotionEvent> clone = event.Clone();
   EXPECT_EQ(2U, clone->GetPointerCount());
   EXPECT_EQ(ids[0], clone->GetPointerId(0));
@@ -207,14 +207,12 @@ TEST(MotionEventAuraTest, PointerLocations) {
 
   // Test cloning of pointer location information.
   scoped_ptr<MotionEvent> clone = event.Clone();
-  {
-    EXPECT_EQ(test::ToString(event), test::ToString(*clone));
-    EXPECT_EQ(2U, clone->GetPointerCount());
-    EXPECT_FLOAT_EQ(x, clone->GetX(1));
-    EXPECT_FLOAT_EQ(y, clone->GetY(1));
-    EXPECT_FLOAT_EQ(raw_x, clone->GetRawX(1));
-    EXPECT_FLOAT_EQ(raw_y, clone->GetRawY(1));
-  }
+  EXPECT_EQ(test::ToString(event), test::ToString(*clone));
+  EXPECT_EQ(2U, clone->GetPointerCount());
+  EXPECT_FLOAT_EQ(x, clone->GetX(1));
+  EXPECT_FLOAT_EQ(y, clone->GetY(1));
+  EXPECT_FLOAT_EQ(raw_x, clone->GetRawX(1));
+  EXPECT_FLOAT_EQ(raw_y, clone->GetRawY(1));
 
   x = 27.9f;
   y = 22.3f;
@@ -247,13 +245,14 @@ TEST(MotionEventAuraTest, TapParams) {
   // Test that touch params are stored correctly.
   MotionEventAura event;
 
-  int ids[] = {15, 13};
+  int ids[] = {15, 13, 25, 23};
 
   float radius_x;
   float radius_y;
   float rotation_angle;
   float pressure;
 
+  // Test case: radius_x > radius_y, rotation_angle < 90
   radius_x = 123.45f;
   radius_y = 67.89f;
   rotation_angle = 23.f;
@@ -268,6 +267,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(0) * 180 / M_PI + 90);
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(0));
 
+  // Test case: radius_x < radius_y, rotation_angle < 90
   radius_x = 67.89f;
   radius_y = 123.45f;
   rotation_angle = 46.f;
@@ -283,16 +283,16 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(1));
 
   // Test cloning of tap params
+  // TODO(mustaq): Make a separate clone test, crbug.com/450655
   scoped_ptr<MotionEvent> clone = event.Clone();
-  {
-    EXPECT_EQ(test::ToString(event), test::ToString(*clone));
-    EXPECT_EQ(2U, clone->GetPointerCount());
-    EXPECT_FLOAT_EQ(radius_y, clone->GetTouchMajor(1) / 2);
-    EXPECT_FLOAT_EQ(radius_x, clone->GetTouchMinor(1) / 2);
-    EXPECT_FLOAT_EQ(rotation_angle, clone->GetOrientation(1) * 180 / M_PI);
-    EXPECT_FLOAT_EQ(pressure, clone->GetPressure(1));
-  }
+  EXPECT_EQ(test::ToString(event), test::ToString(*clone));
+  EXPECT_EQ(2U, clone->GetPointerCount());
+  EXPECT_FLOAT_EQ(radius_y, clone->GetTouchMajor(1) / 2);
+  EXPECT_FLOAT_EQ(radius_x, clone->GetTouchMinor(1) / 2);
+  EXPECT_FLOAT_EQ(rotation_angle, clone->GetOrientation(1) * 180 / M_PI);
+  EXPECT_FLOAT_EQ(pressure, clone->GetPressure(1));
 
+  // TODO(mustaq): The move test seems out-of-scope here, crbug.com/450655
   radius_x = 76.98f;
   radius_y = 321.54f;
   rotation_angle = 64.f;
@@ -307,6 +307,36 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_FLOAT_EQ(radius_x, event.GetTouchMinor(1) / 2);
   EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(1) * 180 / M_PI);
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(1));
+
+  // Test case: radius_x > radius_y, rotation_angle > 90
+  radius_x = 123.45f;
+  radius_y = 67.89f;
+  rotation_angle = 92.f;
+  pressure = 0.789f;
+  TouchEvent press2 = TouchWithTapParams(
+      ET_TOUCH_PRESSED, ids[2], radius_x, radius_y, rotation_angle, pressure);
+  EXPECT_TRUE(event.OnTouch(press2));
+
+  EXPECT_EQ(3U, event.GetPointerCount());
+  EXPECT_FLOAT_EQ(radius_x, event.GetTouchMajor(2) / 2);
+  EXPECT_FLOAT_EQ(radius_y, event.GetTouchMinor(2) / 2);
+  EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(2) * 180 / M_PI + 90);
+  EXPECT_FLOAT_EQ(pressure, event.GetPressure(2));
+
+  // Test case: radius_x < radius_y, rotation_angle > 90
+  radius_x = 67.89f;
+  radius_y = 123.45f;
+  rotation_angle = 135.f;
+  pressure = 0.012f;
+  TouchEvent press3 = TouchWithTapParams(
+      ET_TOUCH_PRESSED, ids[3], radius_x, radius_y, rotation_angle, pressure);
+  EXPECT_TRUE(event.OnTouch(press3));
+
+  EXPECT_EQ(4U, event.GetPointerCount());
+  EXPECT_FLOAT_EQ(radius_y, event.GetTouchMajor(3) / 2);
+  EXPECT_FLOAT_EQ(radius_x, event.GetTouchMinor(3) / 2);
+  EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(3) * 180 / M_PI + 180);
+  EXPECT_FLOAT_EQ(pressure, event.GetPressure(3));
 }
 
 TEST(MotionEventAuraTest, Timestamps) {

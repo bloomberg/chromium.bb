@@ -505,13 +505,61 @@ TEST(EventTest, TouchEventRadiusDefaultsToOtherAxis) {
 
   TouchEvent event1(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
                     non_zero_length1, 0, 0, 0);
-  DCHECK_EQ(non_zero_length1, event1.radius_x());
-  DCHECK_EQ(non_zero_length1, event1.radius_y());
+  EXPECT_EQ(non_zero_length1, event1.radius_x());
+  EXPECT_EQ(non_zero_length1, event1.radius_y());
 
   TouchEvent event2(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
                     0, non_zero_length2, 0, 0);
-  DCHECK_EQ(non_zero_length2, event2.radius_x());
-  DCHECK_EQ(non_zero_length2, event2.radius_y());
+  EXPECT_EQ(non_zero_length2, event2.radius_x());
+  EXPECT_EQ(non_zero_length2, event2.radius_y());
+}
+
+TEST(EventTest, TouchEventRotationAngleFixing) {
+  const base::TimeDelta time = base::TimeDelta::FromMilliseconds(0);
+  const float radius_x = 20;
+  const float radius_y = 10;
+
+  {
+    const float angle_in_range = 0;
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
+                      radius_x, radius_y, angle_in_range, 0);
+    EXPECT_FLOAT_EQ(angle_in_range, event.rotation_angle());
+  }
+
+  {
+    const float angle_in_range = 179.9f;
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
+                    radius_x, radius_y, angle_in_range, 0);
+    EXPECT_FLOAT_EQ(angle_in_range, event.rotation_angle());
+  }
+
+  {
+    const float angle_negative = -0.1f;
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
+                    radius_x, radius_y, angle_negative, 0);
+    EXPECT_FLOAT_EQ(180 - 0.1f, event.rotation_angle());
+  }
+
+  {
+    const float angle_negative = -200;
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
+                    radius_x, radius_y, angle_negative, 0);
+    EXPECT_FLOAT_EQ(360 - 200, event.rotation_angle());
+  }
+
+  {
+    const float angle_too_big = 180;
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
+                    radius_x, radius_y, angle_too_big, 0);
+    EXPECT_FLOAT_EQ(0, event.rotation_angle());
+  }
+
+  {
+    const float angle_too_big = 400;
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
+                    radius_x, radius_y, angle_too_big, 0);
+    EXPECT_FLOAT_EQ(400 - 360, event.rotation_angle());
+  }
 }
 
 }  // namespace ui

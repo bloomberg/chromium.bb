@@ -28,10 +28,18 @@ PointerProperties GetPointerPropertiesFromTouchEvent(const TouchEvent& touch) {
   float radius_x = touch.radius_x();
   float radius_y = touch.radius_y();
   float rotation_angle_rad = touch.rotation_angle() * M_PI / 180.f;
+
   DCHECK_GE(radius_x, 0) << "Unexpected x-radius < 0";
   DCHECK_GE(radius_y, 0) << "Unexpected y-radius < 0";
-  DCHECK(0 <= rotation_angle_rad && rotation_angle_rad <= M_PI_2)
+  DCHECK(0 <= rotation_angle_rad && rotation_angle_rad < M_PI)
       << "Unexpected touch rotation angle";
+
+  // Make the angle acute to ease subsequent logic. The angle range effectively
+  // changes from [0, pi) to [0, pi/2).
+  if (rotation_angle_rad >= M_PI_2) {
+    rotation_angle_rad -= static_cast<float>(M_PI_2);
+    std::swap(radius_x, radius_y);
+  }
 
   if (radius_x > radius_y) {
     // The case radius_x == radius_y is omitted from here on purpose: for

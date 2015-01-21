@@ -542,19 +542,10 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
     return !!(result() & ER_DISABLE_SYNC_HANDLING);
   }
 
- protected:
-  void set_radius(float radius_x, float radius_y) {
-    radius_x_ = radius_x;
-    radius_y_ = radius_y;
-  }
-
-  void set_rotation_angle(float rotation_angle) {
-    rotation_angle_ = rotation_angle;
-  }
-
-  void set_force(float force) { force_ = force; }
-
  private:
+  // Adjusts rotation_angle_ to within the acceptable range.
+  void fixRotationAngle();
+
   // The identity (typically finger) of the touch starting at 0 and incrementing
   // for each separable additional touch that the hardware can detect.
   const int touch_id_;
@@ -568,7 +559,8 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   // Radius of the Y (minor) axis of the touch ellipse. 0.0 if unknown.
   float radius_y_;
 
-  // Angle of the major axis away from the X axis. Default 0.0.
+  // Clockwise angle (in degrees) of the major axis from the X axis. Must be
+  // less than 180 and non-negative.
   float rotation_angle_;
 
   // Force (pressure) of the touch. Normalized to be [0, 1]. Default to be 0.0.
