@@ -1226,10 +1226,12 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
 
   const NavigationEntry* current_navigation_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
-  scoped_ptr<WebUIImpl> new_web_ui;
-  bool should_reuse_web_ui = ShouldReuseWebUI(current_navigation_entry, url);
-  if (!should_reuse_web_ui)
-    new_web_ui = CreateWebUI(url, bindings);
+  // Note: |should_reuse_web_ui_| and |speculative_web_ui_| must be initialized
+  // before trying to create the |speculative_render_frame_host_|. Otherwise the
+  // WebUI won't be properly initialized.
+  bool should_reuse_web_ui_ = ShouldReuseWebUI(current_navigation_entry, url);
+  if (!should_reuse_web_ui_)
+    speculative_web_ui_ = CreateWebUI(url, bindings);
 
   int opener_route_id =
       CreateOpenerRenderViewsIfNeeded(old_instance, new_instance);
@@ -1239,16 +1241,15 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
     create_render_frame_flags |= CREATE_RF_FOR_MAIN_FRAME_NAVIGATION;
   if (delegate_->IsHidden())
     create_render_frame_flags |= CREATE_RF_HIDDEN;
-  scoped_ptr<RenderFrameHostImpl> new_render_frame_host =
-      CreateRenderFrame(new_instance, new_web_ui.get(), opener_route_id,
-                        create_render_frame_flags, nullptr);
+  speculative_render_frame_host_ =
+      CreateRenderFrame(new_instance, speculative_web_ui_.get(),
+                        opener_route_id, create_render_frame_flags, nullptr);
 
-  if (!new_render_frame_host)
+  if (!speculative_render_frame_host_) {
+    should_reuse_web_ui_ = false;
+    speculative_web_ui_.reset();
     return false;
-
-  speculative_render_frame_host_ = new_render_frame_host.Pass();
-  speculative_web_ui_ = new_web_ui.Pass();
-  should_reuse_web_ui_ = should_reuse_web_ui;
+  }
   return true;
 }
 
