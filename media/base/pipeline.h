@@ -280,7 +280,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void InitializeDemuxer(const PipelineStatusCB& done_cb);
   void InitializeRenderer(const base::Closure& done_cb);
 
-  void OnStateTransition(PipelineStatus status);
   void StateTransitionTask(PipelineStatus status);
 
   // Initiates an asynchronous pause-flush-seek-preroll call sequence

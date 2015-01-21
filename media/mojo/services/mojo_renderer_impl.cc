@@ -55,7 +55,6 @@ void MojoRendererImpl::Initialize(
   remote_media_renderer_.set_client(this);
 
   demuxer_stream_provider_ = demuxer_stream_provider;
-  // |init_cb| can be called on other thread.
   init_cb_ = init_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;

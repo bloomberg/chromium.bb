@@ -58,7 +58,8 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
   // Completes initialization of the demuxer.
   //
   // The demuxer does not own |host| as it is guaranteed to outlive the
-  // lifetime of the demuxer. Don't delete it!
+  // lifetime of the demuxer. Don't delete it!  |status_cb| must only be run
+  // after this method has returned.
   virtual void Initialize(DemuxerHost* host,
                           const PipelineStatusCB& status_cb,
                           bool enable_text_tracks) = 0;

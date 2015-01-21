@@ -303,15 +303,6 @@ void Pipeline::SetDuration(TimeDelta duration) {
     duration_change_cb_.Run();
 }
 
-void Pipeline::OnStateTransition(PipelineStatus status) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  // Force post to process state transitions after current execution frame.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &Pipeline::StateTransitionTask, weak_factory_.GetWeakPtr(), status));
-}
-
 void Pipeline::StateTransitionTask(PipelineStatus status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -335,7 +326,7 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
   pending_callbacks_.reset();
 
   PipelineStatusCB done_cb =
-      base::Bind(&Pipeline::OnStateTransition, weak_factory_.GetWeakPtr());
+      base::Bind(&Pipeline::StateTransitionTask, weak_factory_.GetWeakPtr());
 
   // Switch states, performing any entrance actions for the new state as well.
   SetState(GetNextState());
@@ -609,8 +600,8 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   text_renderer_ended_ = false;
   start_timestamp_ = seek_timestamp;
 
-  DoSeek(seek_timestamp,
-         base::Bind(&Pipeline::OnStateTransition, weak_factory_.GetWeakPtr()));
+  DoSeek(seek_timestamp, base::Bind(&Pipeline::StateTransitionTask,
+                                    weak_factory_.GetWeakPtr()));
 }
 
 void Pipeline::SetCdmTask(CdmContext* cdm_context,

@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_renderer.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/time_source.h"
 #include "media/base/video_renderer.h"
@@ -77,8 +78,8 @@ void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
   paint_cb_ = paint_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
-
   init_cb_ = init_cb;
+
   state_ = STATE_INITIALIZING;
   InitializeAudioRenderer();
 }

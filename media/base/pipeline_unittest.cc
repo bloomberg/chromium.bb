@@ -55,6 +55,20 @@ ACTION_P2(SetBufferingState, cb, buffering_state) {
   cb->Run(buffering_state);
 }
 
+ACTION_TEMPLATE(PostCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_0_VALUE_PARAMS()) {
+  return base::MessageLoop::current()->PostTask(FROM_HERE,
+                                                ::std::tr1::get<k>(args));
+}
+
+ACTION_TEMPLATE(PostCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_1_VALUE_PARAMS(p0)) {
+  return base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(::std::tr1::get<k>(args), p0));
+}
+
 // TODO(scherkus): even though some filters are initialized on separate
 // threads these test aren't flaky... why?  It's because filters' Initialize()
 // is executed on |message_loop_| and the mock filters instantly call
@@ -139,7 +153,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(callbacks_, OnDurationChange());
     EXPECT_CALL(*demuxer_, Initialize(_, _, _))
         .WillOnce(DoAll(SetDemuxerProperties(duration),
-                        RunCallback<1>(PIPELINE_OK)));
+                        PostCallback<1>(PIPELINE_OK)));
 
     // Configure the demuxer to return the streams.
     for (size_t i = 0; i < streams->size(); ++i) {
@@ -166,7 +180,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&buffering_state_cb_),
                         SaveArg<5>(&ended_cb_),
-                        RunCallback<1>()));
+                        PostCallback<1>()));
     EXPECT_CALL(*renderer_, HasAudio()).WillRepeatedly(Return(audio_stream()));
     EXPECT_CALL(*renderer_, HasVideo()).WillRepeatedly(Return(video_stream()));
   }
@@ -372,7 +386,7 @@ TEST_F(PipelineTest, StopWithoutStart) {
 
 TEST_F(PipelineTest, StartThenStopImmediately) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
-      .WillOnce(RunCallback<1>(PIPELINE_OK));
+      .WillOnce(PostCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*demuxer_, Stop());
 
   EXPECT_CALL(callbacks_, OnStart(_));
@@ -406,7 +420,7 @@ TEST_F(PipelineTest, DemuxerErrorDuringStop) {
 
 TEST_F(PipelineTest, URLNotFound) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
-      .WillOnce(RunCallback<1>(PIPELINE_ERROR_URL_NOT_FOUND));
+      .WillOnce(PostCallback<1>(PIPELINE_ERROR_URL_NOT_FOUND));
   EXPECT_CALL(*demuxer_, Stop());
 
   StartPipelineAndExpect(PIPELINE_ERROR_URL_NOT_FOUND);
@@ -414,7 +428,7 @@ TEST_F(PipelineTest, URLNotFound) {
 
 TEST_F(PipelineTest, NoStreams) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
-      .WillOnce(RunCallback<1>(PIPELINE_OK));
+      .WillOnce(PostCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*demuxer_, Stop());
 
   StartPipelineAndExpect(PIPELINE_ERROR_COULD_NOT_RENDER);
@@ -825,12 +839,12 @@ class PipelineTeardownTest : public PipelineTest {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*demuxer_, Initialize(_, _, _))
             .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
-                            RunCallback<1>(PIPELINE_OK)));
+                            PostCallback<1>(PIPELINE_OK)));
         ExpectPipelineStopAndDestroyPipeline();
       } else {
         status = DEMUXER_ERROR_COULD_NOT_OPEN;
         EXPECT_CALL(*demuxer_, Initialize(_, _, _))
-            .WillOnce(RunCallback<1>(status));
+            .WillOnce(PostCallback<1>(status));
       }
 
       EXPECT_CALL(*demuxer_, Stop());
@@ -851,12 +865,13 @@ class PipelineTeardownTest : public PipelineTest {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
             .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
-                            RunCallback<1>()));
+                            PostCallback<1>()));
         ExpectPipelineStopAndDestroyPipeline();
       } else {
         status = PIPELINE_ERROR_INITIALIZATION_FAILED;
         EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
-            .WillOnce(DoAll(RunCallback<6>(status), RunCallback<1>()));
+            .WillOnce(
+                DoAll(RunCallback<6>(status), PostCallback<1>()));
       }
 
       EXPECT_CALL(*demuxer_, Stop());
@@ -865,7 +880,7 @@ class PipelineTeardownTest : public PipelineTest {
 
     EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&buffering_state_cb_),
-                        RunCallback<1>()));
+                        PostCallback<1>()));
 
     EXPECT_CALL(callbacks_, OnMetadata(_));
 

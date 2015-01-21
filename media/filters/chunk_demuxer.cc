@@ -1132,6 +1132,7 @@ void ChunkDemuxer::Initialize(
 
   base::AutoLock auto_lock(lock_);
 
+  // The |init_cb_| must only be run after this method returns, so always post.
   init_cb_ = BindToCurrentLoop(cb);
   if (state_ == SHUTDOWN) {
     base::ResetAndReturn(&init_cb_).Run(DEMUXER_ERROR_COULD_NOT_OPEN);
