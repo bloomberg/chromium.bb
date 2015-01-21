@@ -140,11 +140,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message);
 
   WebContentsImpl* embedder_web_contents() const {
-    return attached_ ? owner_web_contents_ : NULL;
+    return attached_ ? owner_web_contents_ : nullptr;
   }
 
   // Returns the embedder's RenderWidgetHostView if it is available.
-  // Returns NULL otherwise.
+  // Returns nullptr otherwise.
   RenderWidgetHostView* GetOwnerRenderWidgetHostView();
 
   bool focused() const { return focused_; }

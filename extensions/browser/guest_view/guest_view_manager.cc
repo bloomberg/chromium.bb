@@ -28,7 +28,7 @@ using content::WebContents;
 namespace extensions {
 
 // static
-GuestViewManagerFactory* GuestViewManager::factory_ = NULL;
+GuestViewManagerFactory* GuestViewManager::factory_ = nullptr;
 
 GuestViewManager::GuestViewManager(content::BrowserContext* context)
     : current_instance_id_(0), last_instance_id_removed_(0), context_(context) {
@@ -58,7 +58,7 @@ content::WebContents* GuestViewManager::GetGuestByInstanceIDSafely(
     int embedder_render_process_id) {
   if (!CanEmbedderAccessInstanceIDMaybeKill(embedder_render_process_id,
                                             guest_instance_id)) {
-    return NULL;
+    return nullptr;
   }
   return GetGuestByInstanceID(guest_instance_id);
 }
@@ -79,8 +79,8 @@ void GuestViewManager::AttachGuest(
 
   auto rvh = content::RenderViewHost::FromID(embedder_render_process_id,
                                              embedder_routing_id);
-  // We need to check that rvh is not NULL because there may be a race between
-  // AttachGuest and destroying the embedder (i.e. when the embedder is
+  // We need to check that rvh is not nullptr because there may be a race
+  // between AttachGuest and destroying the embedder (i.e. when the embedder is
   // destroyed immediately after the guest is created).
   if (!rvh)
     return;
@@ -147,7 +147,7 @@ void GuestViewManager::CreateGuest(const std::string& view_type,
                             guest_instance_id,
                             view_type);
   if (!guest) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
   guest->Init(create_params, callback);
@@ -164,7 +164,7 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
                             guest_instance_id,
                             view_type);
   if (!guest)
-    return NULL;
+    return nullptr;
   content::WebContents::CreateParams guest_create_params(create_params);
   guest_create_params.guest_delegate = guest;
   content::WebContents* guest_web_contents =
@@ -179,7 +179,7 @@ content::WebContents* GuestViewManager::GetGuestByInstanceID(
   int guest_instance_id = GetGuestInstanceIDForElementID(owner_web_contents,
                                                          element_instance_id);
   if (guest_instance_id == guestview::kInstanceIDNone)
-    return NULL;
+    return nullptr;
 
   return GetGuestByInstanceID(guest_instance_id);
 }
@@ -196,24 +196,21 @@ int GuestViewManager::GetGuestInstanceIDForElementID(
 
 SiteInstance* GuestViewManager::GetGuestSiteInstance(
     const GURL& guest_site) {
-  for (auto it = guest_web_contents_by_instance_id_.begin();
-       it != guest_web_contents_by_instance_id_.end(); ++it) {
-    if (it->second->GetSiteInstance()->GetSiteURL() == guest_site)
-      return it->second->GetSiteInstance();
+  for (const auto& guest : guest_web_contents_by_instance_id_) {
+    if (guest.second->GetSiteInstance()->GetSiteURL() == guest_site)
+      return guest.second->GetSiteInstance();
   }
-  return NULL;
+  return nullptr;
 }
 
 bool GuestViewManager::ForEachGuest(WebContents* owner_web_contents,
                                     const GuestCallback& callback) {
-  for (auto it = guest_web_contents_by_instance_id_.begin();
-       it != guest_web_contents_by_instance_id_.end(); ++it) {
-    WebContents* guest = it->second;
-    auto guest_view = GuestViewBase::FromWebContents(guest);
-    if (owner_web_contents != guest_view->owner_web_contents())
+  for (const auto& guest : guest_web_contents_by_instance_id_) {
+    auto guest_view = GuestViewBase::FromWebContents(guest.second);
+    if (guest_view->owner_web_contents() != owner_web_contents)
       continue;
 
-    if (callback.Run(guest))
+    if (callback.Run(guest_view->web_contents()))
       return true;
   }
   return false;
@@ -266,7 +263,7 @@ content::WebContents* GuestViewManager::GetGuestByInstanceID(
     int guest_instance_id) {
   auto it = guest_web_contents_by_instance_id_.find(guest_instance_id);
   if (it == guest_web_contents_by_instance_id_.end())
-    return NULL;
+    return nullptr;
   return it->second;
 }
 

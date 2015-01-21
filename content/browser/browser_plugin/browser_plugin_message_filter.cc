@@ -33,8 +33,8 @@ bool BrowserPluginMessageFilter::OnMessageReceived(
   // a BrowserPluginGuestManager.
   if (BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(message)) {
     ForwardMessageToGuest(message);
-    // We always swallow messages destined for BrowserPluginGuestManager because
-    // we're on the UI thread and fallback code is expected to be run on the IO
+    // We always swallow messages destined for BrowserPluginGuest because we're
+    // on the UI thread and fallback code is expected to be run on the IO
     // thread.
     return true;
   }
@@ -54,14 +54,13 @@ void BrowserPluginMessageFilter::OverrideThreadForMessage(
 void BrowserPluginMessageFilter::ForwardMessageToGuest(
     const IPC::Message& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id_,
-                                               message.routing_id());
+  auto rvh = RenderViewHost::FromID(render_process_id_, message.routing_id());
   if (!rvh)
     return;
 
-  WebContents* embedder_web_contents = WebContents::FromRenderViewHost(rvh);
+  auto embedder_web_contents = WebContents::FromRenderViewHost(rvh);
 
-  int browser_plugin_instance_id = 0;
+  int browser_plugin_instance_id = browser_plugin::kInstanceIDNone;
   // All allowed messages must have instance_id as their first parameter.
   PickleIterator iter(message);
   bool success = iter.ReadInt(&browser_plugin_instance_id);

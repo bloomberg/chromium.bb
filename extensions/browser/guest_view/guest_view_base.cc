@@ -171,7 +171,7 @@ void GuestViewBase::Init(const base::DictionaryValue& create_params,
               owner_web_contents()->GetRenderViewHost());
   owner_extension_id_ = owner_extension ? owner_extension->id() : std::string();
 
-  // Ok for |owner_extension| to be NULL, the embedder might be WebUI.
+  // Ok for |owner_extension| to be nullptr, the embedder might be WebUI.
   Feature::Availability availability = feature->IsAvailableToContext(
       owner_extension,
       process_map->GetMostLikelyContextType(
@@ -182,7 +182,7 @@ void GuestViewBase::Init(const base::DictionaryValue& create_params,
     // The derived class did not create a WebContents so this class serves no
     // purpose. Let's self-destruct.
     delete this;
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 
@@ -275,7 +275,7 @@ GuestViewBase* GuestViewBase::Create(
   auto it = guest_view_registry.Get().find(view_type);
   if (it == guest_view_registry.Get().end()) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
   return it->second.Run(browser_context, owner_web_contents, guest_instance_id);
 }
@@ -284,7 +284,7 @@ GuestViewBase* GuestViewBase::Create(
 GuestViewBase* GuestViewBase::FromWebContents(WebContents* web_contents) {
   WebContentsGuestViewMap* guest_map = webcontents_guestview_map.Pointer();
   auto it = guest_map->find(web_contents);
-  return it == guest_map->end() ? NULL : it->second;
+  return it == guest_map->end() ? nullptr : it->second;
 }
 
 // static
@@ -292,13 +292,13 @@ GuestViewBase* GuestViewBase::From(int owner_process_id,
                                    int guest_instance_id) {
   auto host = content::RenderProcessHost::FromID(owner_process_id);
   if (!host)
-    return NULL;
+    return nullptr;
 
   content::WebContents* guest_web_contents =
       GuestViewManager::FromBrowserContext(host->GetBrowserContext())->
           GetGuestByInstanceIDSafely(guest_instance_id, owner_process_id);
   if (!guest_web_contents)
-    return NULL;
+    return nullptr;
 
   return GuestViewBase::FromWebContents(guest_web_contents);
 }
@@ -617,7 +617,7 @@ void GuestViewBase::CompleteInit(
     // The derived class did not create a WebContents so this class serves no
     // purpose. Let's self-destruct.
     delete this;
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
   InitWithWebContents(*create_params, guest_web_contents);

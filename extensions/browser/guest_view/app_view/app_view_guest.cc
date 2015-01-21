@@ -113,7 +113,7 @@ AppViewGuest::~AppViewGuest() {
 }
 
 WindowController* AppViewGuest::GetExtensionWindowController() const {
-  return NULL;
+  return nullptr;
 }
 
 content::WebContents* AppViewGuest::GetAssociatedWebContents() const {
@@ -184,13 +184,13 @@ void AppViewGuest::CreateWebContents(
     const WebContentsCreatedCallback& callback) {
   std::string app_id;
   if (!create_params.GetString(appview::kAppID, &app_id)) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 
-  const base::DictionaryValue* data = NULL;
+  const base::DictionaryValue* data = nullptr;
   if (!create_params.GetDictionary(appview::kData, &data)) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 
@@ -202,7 +202,7 @@ void AppViewGuest::CreateWebContents(
 
   if (!guest_extension || !guest_extension->is_platform_app() ||
       !embedder_extension | !embedder_extension->is_platform_app()) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 
@@ -261,7 +261,7 @@ void AppViewGuest::CompleteCreateWebContents(
     const Extension* guest_extension,
     const WebContentsCreatedCallback& callback) {
   if (!url.is_valid()) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
   url_ = url;
@@ -284,7 +284,7 @@ void AppViewGuest::LaunchAppAndFireEvent(
       extension_host->extension()->id(),
       app_runtime::OnEmbedRequested::kEventName);
   if (!has_event_listener) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 

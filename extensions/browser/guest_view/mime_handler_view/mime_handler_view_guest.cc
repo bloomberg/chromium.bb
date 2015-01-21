@@ -74,7 +74,7 @@ MimeHandlerViewGuest::~MimeHandlerViewGuest() {
 }
 
 WindowController* MimeHandlerViewGuest::GetExtensionWindowController() const {
-  return NULL;
+  return nullptr;
 }
 
 WebContents* MimeHandlerViewGuest::GetAssociatedWebContents() const {
@@ -112,7 +112,7 @@ void MimeHandlerViewGuest::CreateWebContents(
   if (!mime_handler_extension) {
     LOG(ERROR) << "Extension for mime_type not found, mime_type = "
                << stream_->stream_info()->mime_type;
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 

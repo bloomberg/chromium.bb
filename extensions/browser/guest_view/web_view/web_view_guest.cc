@@ -244,7 +244,7 @@ void WebViewGuest::CreateWebContents(
         base::UserMetricsAction("BadMessageTerminate_BPGM"));
     owner_render_process_host->Shutdown(content::RESULT_CODE_KILLED_BAD_MESSAGE,
                                         false);
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
   std::string url_encoded_partition = net::EscapeQueryParamValue(
@@ -885,7 +885,7 @@ content::ColorChooser* WebViewGuest::OpenColorChooser(
     SkColor color,
     const std::vector<content::ColorSuggestion>& suggestions) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
-    return NULL;
+    return nullptr;
   return embedder_web_contents()->GetDelegate()->OpenColorChooser(
       web_contents, color, suggestions);
 }
@@ -1136,12 +1136,12 @@ content::WebContents* WebViewGuest::OpenURLFromTab(
     WebViewGuest* opener = GetOpener();
     auto it = opener->pending_new_windows_.find(this);
     if (it == opener->pending_new_windows_.end())
-      return NULL;
+      return nullptr;
     const NewWindowInfo& info = it->second;
     NewWindowInfo new_window_info(params.url, info.name);
     new_window_info.changed = new_window_info.url != info.url;
     it->second = new_window_info;
-    return NULL;
+    return nullptr;
   }
   if (params.disposition == CURRENT_TAB) {
     // This can happen for cross-site redirects.
@@ -1150,7 +1150,7 @@ content::WebContents* WebViewGuest::OpenURLFromTab(
   }
 
   CreateNewGuestWebViewWindow(params);
-  return NULL;
+  return nullptr;
 }
 
 void WebViewGuest::WebContentsCreated(WebContents* source_contents,

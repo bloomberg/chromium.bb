@@ -140,7 +140,7 @@ void ExtensionsGuestViewContainer::DetachRequest::HandleResponse(
   blink::WebScopedMicrotaskSuppression suppression;
 
   // Call the DetachGuest's callback.
-  callback->Call(context->Global(), 0 /* argc */, NULL);
+  callback->Call(context->Global(), 0 /* argc */, nullptr);
 }
 
 ExtensionsGuestViewContainer::ExtensionsGuestViewContainer(
@@ -175,9 +175,8 @@ ExtensionsGuestViewContainer* ExtensionsGuestViewContainer::FromID(
     int element_instance_id) {
   ExtensionsGuestViewContainerMap* guest_view_containers =
       g_guest_view_container_map.Pointer();
-  ExtensionsGuestViewContainerMap::iterator it =
-      guest_view_containers->find(element_instance_id);
-  return it == guest_view_containers->end() ? NULL : it->second;
+  auto it = guest_view_containers->find(element_instance_id);
+  return it == guest_view_containers->end() ? nullptr : it->second;
 }
 
 void ExtensionsGuestViewContainer::IssueRequest(linked_ptr<Request> request) {

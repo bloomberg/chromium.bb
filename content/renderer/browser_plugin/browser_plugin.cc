@@ -51,20 +51,20 @@ namespace content {
 BrowserPlugin* BrowserPlugin::GetFromNode(blink::WebNode& node) {
   blink::WebPluginContainer* container = node.pluginContainer();
   if (!container)
-    return NULL;
+    return nullptr;
 
   PluginContainerMap* browser_plugins = g_plugin_container_map.Pointer();
   PluginContainerMap::iterator it = browser_plugins->find(container);
-  return it == browser_plugins->end() ? NULL : it->second;
+  return it == browser_plugins->end() ? nullptr : it->second;
 }
 
 BrowserPlugin::BrowserPlugin(RenderFrame* render_frame,
                              scoped_ptr<BrowserPluginDelegate> delegate)
     : attached_(false),
       render_view_routing_id_(render_frame->GetRenderView()->GetRoutingID()),
-      container_(NULL),
+      container_(nullptr),
       last_device_scale_factor_(GetDeviceScaleFactor()),
-      sad_guest_(NULL),
+      sad_guest_(nullptr),
       guest_crashed_(false),
       plugin_focused_(false),
       visible_(true),
@@ -154,7 +154,7 @@ void BrowserPlugin::Detach() {
   EnableCompositing(false);
   if (compositing_helper_.get()) {
     compositing_helper_->OnContainerDestroy();
-    compositing_helper_ = NULL;
+    compositing_helper_ = nullptr;
   }
 
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_Detach(
@@ -263,7 +263,7 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int browser_plugin_instance_id,
 
 void BrowserPlugin::ShowSadGraphic() {
   // If the BrowserPlugin is scheduled to be deleted, then container_ will be
-  // NULL so we shouldn't attempt to access it.
+  // nullptr so we shouldn't attempt to access it.
   if (container_)
     container_->invalidate();
 }
@@ -351,7 +351,7 @@ void BrowserPlugin::EnableCompositing(bool enable) {
   if (!enable) {
     DCHECK(compositing_helper_.get());
     compositing_helper_->OnContainerDestroy();
-    compositing_helper_ = NULL;
+    compositing_helper_ = nullptr;
   }
 }
 
@@ -362,7 +362,7 @@ void BrowserPlugin::destroy() {
     g_plugin_container_map.Get().erase(container_);
   }
 
-  container_ = NULL;
+  container_ = nullptr;
   // Will be a no-op if the mouse is not currently locked.
   auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
   if (render_view)

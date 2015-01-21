@@ -70,7 +70,7 @@ void ExtensionOptionsGuest::CreateWebContents(
   create_params.GetString(extensionoptions::kExtensionId, &extension_id);
 
   if (!crx_file::id_util::IdIsValid(extension_id)) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 
@@ -78,14 +78,14 @@ void ExtensionOptionsGuest::CreateWebContents(
   if (crx_file::id_util::IdIsValid(embedder_extension_id) &&
       extension_id != embedder_extension_id) {
     // Extensions cannot embed other extensions' options pages.
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 
   GURL extension_url =
       extensions::Extension::GetBaseURLFromExtensionId(extension_id);
   if (!extension_url.is_valid()) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 
@@ -97,13 +97,13 @@ void ExtensionOptionsGuest::CreateWebContents(
   if (!extension) {
     // The ID was valid but the extension didn't exist. Typically this will
     // happen when an extension is disabled.
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 
   options_page_ = extensions::OptionsPageInfo::GetOptionsPage(extension);
   if (!options_page_.is_valid()) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 
@@ -190,7 +190,7 @@ content::WebContents* ExtensionOptionsGuest::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   if (!extension_options_guest_delegate_)
-    return NULL;
+    return nullptr;
 
   // Don't allow external URLs with the CURRENT_TAB disposition be opened in
   // this guest view, change the disposition to NEW_FOREGROUND_TAB.

@@ -124,7 +124,7 @@ void BrowserPluginGuest::Init() {
 
 void BrowserPluginGuest::WillDestroy() {
   is_in_destruction_ = true;
-  owner_web_contents_ = NULL;
+  owner_web_contents_ = nullptr;
   attached_ = false;
 }
 
@@ -302,7 +302,7 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
     WebContentsImpl* web_contents,
     BrowserPluginGuestDelegate* delegate) {
   return new BrowserPluginGuest(
-      web_contents->opener() != NULL, web_contents, delegate);
+      web_contents->opener() != nullptr, web_contents, delegate);
 }
 
 // static
@@ -319,7 +319,7 @@ bool BrowserPluginGuest::IsGuest(RenderViewHostImpl* render_view_host) {
 
 RenderWidgetHostView* BrowserPluginGuest::GetOwnerRenderWidgetHostView() {
   if (!owner_web_contents_)
-    return NULL;
+    return nullptr;
   return owner_web_contents_->GetRenderWidgetHostView();
 }
 
@@ -760,7 +760,7 @@ void BrowserPluginGuest::OnSetFocus(int browser_plugin_instance_id,
                                     bool focused,
                                     blink::WebFocusType focus_type) {
   RenderWidgetHostView* rwhv = web_contents()->GetRenderWidgetHostView();
-  RenderWidgetHost* rwh = rwhv ? rwhv->GetRenderWidgetHost() : NULL;
+  RenderWidgetHost* rwh = rwhv ? rwhv->GetRenderWidgetHost() : nullptr;
   SetFocus(rwh, focused, focus_type);
 }
 
