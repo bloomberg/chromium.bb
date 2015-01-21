@@ -27,10 +27,10 @@ namespace {
 class RegionArray {
 public:
     typedef blink::WebVector<blink::WebGeofencingRegistration> WebType;
-    static HeapVector<Member<GeofencingRegion> > take(ScriptPromiseResolver* resolver, WebType* regionsRaw)
+    static HeapVector<Member<GeofencingRegion>> take(ScriptPromiseResolver* resolver, WebType* regionsRaw)
     {
         OwnPtr<WebType> webRegions = adoptPtr(regionsRaw);
-        HeapVector<Member<GeofencingRegion> > regions;
+        HeapVector<Member<GeofencingRegion>> regions;
         for (size_t i = 0; i < webRegions->size(); ++i)
             regions.append(CircularGeofencingRegion::create((*webRegions)[i].id, (*webRegions)[i].region));
         return regions;

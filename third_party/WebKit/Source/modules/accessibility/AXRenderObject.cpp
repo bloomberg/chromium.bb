@@ -913,7 +913,7 @@ String AXRenderObject::stringValue() const
         // This has to be overridden in the case where the selected item has an ARIA label.
         HTMLSelectElement* selectElement = toHTMLSelectElement(m_renderer->node());
         int selectedIndex = selectElement->selectedIndex();
-        const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement->listItems();
+        const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement->listItems();
         if (selectedIndex >= 0 && static_cast<size_t>(selectedIndex) < listItems.size()) {
             const AtomicString& overriddenDescription = listItems[selectedIndex]->fastGetAttribute(aria_labelAttr);
             if (!overriddenDescription.isNull())
@@ -990,7 +990,7 @@ AXObject* AXRenderObject::activeDescendant() const
 
 void AXRenderObject::accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector& children) const
 {
-    WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     elementsFromAttribute(elements, attr);
 
     AXObjectCacheImpl* cache = axObjectCache();
@@ -1972,7 +1972,7 @@ bool AXRenderObject::isTabItemSelected() const
     if (!focusedElement)
         return false;
 
-    WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     elementsFromAttribute(elements, aria_controlsAttr);
 
     unsigned count = elements.size();

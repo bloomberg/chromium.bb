@@ -143,7 +143,7 @@ private:
     IDBDatabaseMetadata m_metadata;
     OwnPtr<WebIDBDatabase> m_backend;
     Member<IDBTransaction> m_versionChangeTransaction;
-    typedef HeapHashMap<int64_t, Member<IDBTransaction> > TransactionMap;
+    typedef HeapHashMap<int64_t, Member<IDBTransaction>> TransactionMap;
     TransactionMap m_transactions;
 
     bool m_closePending;
@@ -151,7 +151,7 @@ private:
 
     // Keep track of the versionchange events waiting to be fired on this
     // database so that we can cancel them if the database closes.
-    WillBeHeapVector<RefPtrWillBeMember<Event> > m_enqueuedEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> m_enqueuedEvents;
 
     Member<IDBDatabaseCallbacks> m_databaseCallbacks;
 };

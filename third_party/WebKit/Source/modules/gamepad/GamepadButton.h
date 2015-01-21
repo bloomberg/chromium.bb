@@ -30,7 +30,7 @@ private:
     bool m_pressed;
 };
 
-typedef HeapVector<Member<GamepadButton> > GamepadButtonVector;
+typedef HeapVector<Member<GamepadButton>> GamepadButtonVector;
 
 } // namespace blink
 

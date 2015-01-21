@@ -50,7 +50,7 @@ private:
     WebSourceInfo m_webSourceInfo;
 };
 
-typedef HeapVector<Member<SourceInfo> > SourceInfoVector;
+typedef HeapVector<Member<SourceInfo>> SourceInfoVector;
 
 } // namespace blink
 

@@ -55,7 +55,7 @@ public:
     void pause();
     void resume();
 
-    const HeapVector<Member<SpeechSynthesisVoice> >& getVoices();
+    const HeapVector<Member<SpeechSynthesisVoice>>& getVoices();
 
     // Used in testing to use a mock platform synthesizer
     void setPlatformSynthesizer(PlatformSpeechSynthesizer*);
@@ -86,8 +86,8 @@ private:
     SpeechSynthesisUtterance* currentSpeechUtterance() const;
 
     Member<PlatformSpeechSynthesizer> m_platformSpeechSynthesizer;
-    HeapVector<Member<SpeechSynthesisVoice> > m_voiceList;
-    HeapDeque<Member<SpeechSynthesisUtterance> > m_utteranceQueue;
+    HeapVector<Member<SpeechSynthesisVoice>> m_voiceList;
+    HeapDeque<Member<SpeechSynthesisUtterance>> m_utteranceQueue;
     bool m_isPaused;
 
     // EventTarget

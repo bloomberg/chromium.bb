@@ -78,7 +78,7 @@ public:
     virtual void send(const String& message) override;
     virtual void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
     virtual void send(PassRefPtr<BlobDataHandle>) override;
-    virtual void send(PassOwnPtr<Vector<char> > data) override;
+    virtual void send(PassOwnPtr<Vector<char>> data) override;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
     virtual void close(int code, const String& reason) override;
@@ -100,7 +100,7 @@ private:
         explicit Message(const String&);
         explicit Message(PassRefPtr<BlobDataHandle>);
         explicit Message(PassRefPtr<DOMArrayBuffer>);
-        explicit Message(PassOwnPtr<Vector<char> >);
+        explicit Message(PassOwnPtr<Vector<char>>);
         Message(unsigned short code, const String& reason);
 
         MessageType type;
@@ -108,7 +108,7 @@ private:
         CString text;
         RefPtr<BlobDataHandle> blobDataHandle;
         RefPtr<DOMArrayBuffer> arrayBuffer;
-        OwnPtr<Vector<char> > vectorData;
+        OwnPtr<Vector<char>> vectorData;
         unsigned short code;
         String reason;
     };
@@ -153,7 +153,7 @@ private:
     // m_identifier > 0 means calling scriptContextExecution() returns a Document.
     unsigned long m_identifier;
     Member<BlobLoader> m_blobLoader;
-    Deque<OwnPtr<Message> > m_messages;
+    Deque<OwnPtr<Message>> m_messages;
     Vector<char> m_receivingMessageData;
 
     bool m_receivingMessageTypeIsText;

@@ -36,7 +36,7 @@ namespace blink {
 
 class IDBKey : public GarbageCollectedFinalized<IDBKey> {
 public:
-    typedef HeapVector<Member<IDBKey> > KeyArray;
+    typedef HeapVector<Member<IDBKey>> KeyArray;
 
     static IDBKey* createInvalid()
     {

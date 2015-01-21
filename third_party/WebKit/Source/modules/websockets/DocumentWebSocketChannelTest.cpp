@@ -38,7 +38,7 @@ namespace blink {
 
 namespace {
 
-typedef testing::StrictMock< testing::MockFunction<void(int)> > Checkpoint;
+typedef testing::StrictMock< testing::MockFunction<void(int)>> Checkpoint;
 
 class MockWebSocketChannelClient : public GarbageCollectedFinalized<MockWebSocketChannelClient>, public WebSocketChannelClient {
     USING_GARBAGE_COLLECTED_MIXIN(MockWebSocketChannelClient);
@@ -54,7 +54,7 @@ public:
 
     MOCK_METHOD2(didConnect, void(const String&, const String&));
     MOCK_METHOD1(didReceiveTextMessage, void(const String&));
-    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload) override
+    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload) override
     {
         didReceiveBinaryMessageMock(*payload);
     }

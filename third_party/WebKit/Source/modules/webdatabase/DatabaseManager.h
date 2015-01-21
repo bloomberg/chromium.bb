@@ -83,7 +83,7 @@ private:
 
     static void logErrorMessage(ExecutionContext*, const String& message);
 
-    typedef PersistentHeapHashMap<ExecutionContext*, Member<DatabaseContext> > ContextMap;
+    typedef PersistentHeapHashMap<ExecutionContext*, Member<DatabaseContext>> ContextMap;
     ContextMap m_contextMap;
 #if ENABLE(ASSERT)
     int m_databaseContextRegisteredCount;

@@ -112,7 +112,7 @@ private:
     Persistent<EntriesCallback> m_successCallback;
     Persistent<DirectoryReaderBase> m_directoryReader;
     String m_basePath;
-    PersistentHeapVector<Member<Entry> > m_entries;
+    PersistentHeapVector<Member<Entry>> m_entries;
 };
 
 class FileSystemCallbacks final : public FileSystemCallbacksBase {

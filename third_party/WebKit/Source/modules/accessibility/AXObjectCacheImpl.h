@@ -171,7 +171,7 @@ protected:
 
 private:
     Document& m_document;
-    HashMap<AXID, RefPtr<AXObject> > m_objects;
+    HashMap<AXID, RefPtr<AXObject>> m_objects;
     HashMap<RenderObject*, AXID> m_renderObjectMapping;
     HashMap<Widget*, AXID> m_widgetObjectMapping;
     HashMap<Node*, AXID> m_nodeObjectMapping;
@@ -182,7 +182,7 @@ private:
     HashSet<AXID> m_idsInUse;
 
     Timer<AXObjectCacheImpl> m_notificationPostTimer;
-    Vector<pair<RefPtr<AXObject>, AXNotification> > m_notificationsToPost;
+    Vector<pair<RefPtr<AXObject>, AXNotification>> m_notificationsToPost;
     void notificationPostTimerFired(Timer<AXObjectCacheImpl>*);
 
     AXObject* focusedImageMapUIElement(HTMLAreaElement*);

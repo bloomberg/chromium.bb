@@ -70,9 +70,9 @@ WebIDBCallbacksImpl::~WebIDBCallbacksImpl()
     InspectorInstrumentation::traceAsyncOperationCompleted(m_request->executionContext(), m_asyncOperationId);
 }
 
-static PassOwnPtr<Vector<WebBlobInfo> > ConvertBlobInfo(const WebVector<WebBlobInfo>& webBlobInfo)
+static PassOwnPtr<Vector<WebBlobInfo>> ConvertBlobInfo(const WebVector<WebBlobInfo>& webBlobInfo)
 {
-    OwnPtr<Vector<WebBlobInfo> > blobInfo = adoptPtr(new Vector<WebBlobInfo>(webBlobInfo.size()));
+    OwnPtr<Vector<WebBlobInfo>> blobInfo = adoptPtr(new Vector<WebBlobInfo>(webBlobInfo.size()));
     for (size_t i = 0; i < webBlobInfo.size(); ++i)
         (*blobInfo)[i] = webBlobInfo[i];
     return blobInfo.release();

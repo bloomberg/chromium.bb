@@ -89,7 +89,7 @@ public:
 private:
     explicit ServiceWorkerContainer(ExecutionContext*);
 
-    typedef ScriptPromiseProperty<Member<ServiceWorkerContainer>, Member<ServiceWorkerRegistration>, Member<ServiceWorkerRegistration> > ReadyProperty;
+    typedef ScriptPromiseProperty<Member<ServiceWorkerContainer>, Member<ServiceWorkerRegistration>, Member<ServiceWorkerRegistration>> ReadyProperty;
     ReadyProperty* createReadyProperty();
 
     WebServiceWorkerProvider* m_provider;

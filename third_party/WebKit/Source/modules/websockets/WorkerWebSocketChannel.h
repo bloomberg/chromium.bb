@@ -67,7 +67,7 @@ public:
     virtual void send(const String& message) override;
     virtual void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
     virtual void send(PassRefPtr<BlobDataHandle>) override;
-    virtual void send(PassOwnPtr<Vector<char> >) override
+    virtual void send(PassOwnPtr<Vector<char>>) override
     {
         ASSERT_NOT_REACHED();
     }
@@ -95,7 +95,7 @@ public:
 
         void connect(const KURL&, const String& protocol);
         void send(const String& message);
-        void sendArrayBuffer(PassOwnPtr<Vector<char> >);
+        void sendArrayBuffer(PassOwnPtr<Vector<char>>);
         void sendBlob(PassRefPtr<BlobDataHandle>);
         void close(int code, const String& reason);
         void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
@@ -106,7 +106,7 @@ public:
         // WebSocketChannelClient functions.
         virtual void didConnect(const String& subprotocol, const String& extensions) override;
         virtual void didReceiveTextMessage(const String& payload) override;
-        virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) override;
+        virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char>>) override;
         virtual void didConsumeBufferedAmount(uint64_t) override;
         virtual void didStartClosingHandshake() override;
         virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;

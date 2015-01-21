@@ -81,7 +81,7 @@ private:
     bool m_hasClientForTest;
 
     PersistentWillBeMember<GeolocationPosition> m_lastPosition;
-    typedef PersistentHeapHashSetWillBeHeapHashSet<Member<Geolocation> > ObserversSet;
+    typedef PersistentHeapHashSetWillBeHeapHashSet<Member<Geolocation>> ObserversSet;
     // All observers; both those requesting high accuracy and those not.
     ObserversSet m_observers;
     ObserversSet m_highAccuracyObservers;

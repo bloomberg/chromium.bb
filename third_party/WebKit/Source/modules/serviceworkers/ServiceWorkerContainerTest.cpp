@@ -307,8 +307,8 @@ private:
 
     private:
         StubWebServiceWorkerProvider& m_owner;
-        Vector<OwnPtr<WebServiceWorkerRegistrationCallbacks> > m_registrationCallbacksToDelete;
-        Vector<OwnPtr<WebServiceWorkerGetRegistrationCallbacks> > m_getRegistrationCallbacksToDelete;
+        Vector<OwnPtr<WebServiceWorkerRegistrationCallbacks>> m_registrationCallbacksToDelete;
+        Vector<OwnPtr<WebServiceWorkerGetRegistrationCallbacks>> m_getRegistrationCallbacksToDelete;
     };
 
 private:

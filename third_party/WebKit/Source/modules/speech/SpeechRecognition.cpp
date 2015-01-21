@@ -106,14 +106,14 @@ void SpeechRecognition::didEndAudio()
     dispatchEvent(Event::create(EventTypeNames::audioend));
 }
 
-void SpeechRecognition::didReceiveResults(const HeapVector<Member<SpeechRecognitionResult> >& newFinalResults, const HeapVector<Member<SpeechRecognitionResult> >& currentInterimResults)
+void SpeechRecognition::didReceiveResults(const HeapVector<Member<SpeechRecognitionResult>>& newFinalResults, const HeapVector<Member<SpeechRecognitionResult>>& currentInterimResults)
 {
     size_t resultIndex = m_finalResults.size();
 
     for (size_t i = 0; i < newFinalResults.size(); ++i)
         m_finalResults.append(newFinalResults[i]);
 
-    HeapVector<Member<SpeechRecognitionResult> > results = m_finalResults;
+    HeapVector<Member<SpeechRecognitionResult>> results = m_finalResults;
     for (size_t i = 0; i < currentInterimResults.size(); ++i)
         results.append(currentInterimResults[i]);
 

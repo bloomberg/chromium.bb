@@ -52,12 +52,12 @@ public:
     void shutdown();
 
 private:
-    typedef HeapDeque<Member<SQLTransactionBackend> > TransactionsQueue;
+    typedef HeapDeque<Member<SQLTransactionBackend>> TransactionsQueue;
     struct CoordinationInfo {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         TransactionsQueue pendingTransactions;
-        HeapHashSet<Member<SQLTransactionBackend> > activeReadTransactions;
+        HeapHashSet<Member<SQLTransactionBackend>> activeReadTransactions;
         Member<SQLTransactionBackend> activeWriteTransaction;
 
         void trace(Visitor* visitor)

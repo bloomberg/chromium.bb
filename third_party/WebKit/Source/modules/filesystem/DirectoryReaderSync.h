@@ -42,7 +42,7 @@ namespace blink {
 class EntrySync;
 class ExceptionState;
 
-typedef HeapVector<Member<EntrySync> > EntrySyncHeapVector;
+typedef HeapVector<Member<EntrySync>> EntrySyncHeapVector;
 
 class DirectoryReaderSync : public DirectoryReaderBase, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();

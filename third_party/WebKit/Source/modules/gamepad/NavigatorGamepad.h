@@ -80,7 +80,7 @@ private:
     virtual void didRemoveAllEventListeners(LocalDOMWindow*) override;
 
     PersistentWillBeMember<GamepadList> m_gamepads;
-    PersistentHeapDequeWillBeHeapDeque<Member<Gamepad> > m_pendingEvents;
+    PersistentHeapDequeWillBeHeapDeque<Member<Gamepad>> m_pendingEvents;
     AsyncMethodRunner<NavigatorGamepad> m_dispatchOneEventRunner;
 };
 

@@ -36,7 +36,7 @@
 namespace blink {
 
 class Entry;
-typedef HeapVector<Member<Entry> > EntryHeapVector;
+typedef HeapVector<Member<Entry>> EntryHeapVector;
 
 class EntriesCallback : public GarbageCollectedFinalized<EntriesCallback> {
 public:

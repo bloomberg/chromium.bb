@@ -119,7 +119,7 @@ public:
     // WebSocketChannelClient functions.
     virtual void didConnect(const String& subprotocol, const String& extensions) override;
     virtual void didReceiveTextMessage(const String& message) override;
-    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) override;
+    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char>>) override;
     virtual void didError() override;
     virtual void didConsumeBufferedAmount(uint64_t) override;
     virtual void didStartClosingHandshake() override;
@@ -171,7 +171,7 @@ private:
 
         State m_state;
         EventTarget* m_target;
-        WillBeHeapDeque<RefPtrWillBeMember<Event> > m_events;
+        WillBeHeapDeque<RefPtrWillBeMember<Event>> m_events;
         Timer<EventQueue> m_resumeTimer;
     };
 

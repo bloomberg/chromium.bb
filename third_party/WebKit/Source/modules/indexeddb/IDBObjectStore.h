@@ -98,7 +98,7 @@ public:
     const IDBObjectStoreMetadata& metadata() const { return m_metadata; }
     void setMetadata(const IDBObjectStoreMetadata& metadata) { m_metadata = metadata; }
 
-    typedef HeapVector<Member<IDBKey> > IndexKeys;
+    typedef HeapVector<Member<IDBKey>> IndexKeys;
 
     WebIDBDatabase* backendDB() const;
 
@@ -118,7 +118,7 @@ private:
     Member<IDBTransaction> m_transaction;
     bool m_deleted;
 
-    typedef HeapHashMap<String, Member<IDBIndex> > IDBIndexMap;
+    typedef HeapHashMap<String, Member<IDBIndex>> IDBIndexMap;
     IDBIndexMap m_indexMap;
 };
 

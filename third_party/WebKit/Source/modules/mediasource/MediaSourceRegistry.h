@@ -54,7 +54,7 @@ public:
 
 private:
     MediaSourceRegistry();
-    PersistentHeapHashMap<String, Member<MediaSource> > m_mediaSources;
+    PersistentHeapHashMap<String, Member<MediaSource>> m_mediaSources;
 };
 
 } // namespace blink

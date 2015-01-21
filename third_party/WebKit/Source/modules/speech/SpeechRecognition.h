@@ -77,7 +77,7 @@ public:
     void didEndSpeech();
     void didEndSound();
     void didEndAudio();
-    void didReceiveResults(const HeapVector<Member<SpeechRecognitionResult> >& newFinalResults, const HeapVector<Member<SpeechRecognitionResult> >& currentInterimResults);
+    void didReceiveResults(const HeapVector<Member<SpeechRecognitionResult>>& newFinalResults, const HeapVector<Member<SpeechRecognitionResult>>& currentInterimResults);
     void didReceiveNoMatch(SpeechRecognitionResult*);
     void didReceiveError(PassRefPtrWillBeRawPtr<SpeechRecognitionError>);
     void didStart();
@@ -119,7 +119,7 @@ private:
     bool m_stoppedByActiveDOMObject;
     bool m_started;
     bool m_stopping;
-    HeapVector<Member<SpeechRecognitionResult> > m_finalResults;
+    HeapVector<Member<SpeechRecognitionResult>> m_finalResults;
 };
 
 } // namespace blink

@@ -122,7 +122,7 @@ private:
     bool m_hasVersionMismatch;
 
     Mutex m_statementMutex;
-    HeapDeque<Member<SQLStatementBackend> > m_statementQueue;
+    HeapDeque<Member<SQLStatementBackend>> m_statementQueue;
 
     OwnPtr<SQLiteTransaction> m_sqliteTransaction;
 };

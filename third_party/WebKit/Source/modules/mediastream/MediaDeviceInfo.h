@@ -50,7 +50,7 @@ private:
     WebMediaDeviceInfo m_webMediaDeviceInfo;
 };
 
-typedef HeapVector<Member<MediaDeviceInfo> > MediaDeviceInfoVector;
+typedef HeapVector<Member<MediaDeviceInfo>> MediaDeviceInfoVector;
 
 } // namespace blink
 

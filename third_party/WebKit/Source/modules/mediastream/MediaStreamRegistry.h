@@ -49,7 +49,7 @@ public:
 
 private:
     MediaStreamRegistry();
-    HashMap<String, RefPtr<MediaStreamDescriptor> > m_streamDescriptors;
+    HashMap<String, RefPtr<MediaStreamDescriptor>> m_streamDescriptors;
 };
 
 } // namespace blink

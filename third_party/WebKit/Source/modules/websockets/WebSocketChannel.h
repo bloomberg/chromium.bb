@@ -78,7 +78,7 @@ public:
     virtual void send(PassRefPtr<BlobDataHandle>) = 0;
 
     // For WorkerWebSocketChannel.
-    virtual void send(PassOwnPtr<Vector<char> >) = 0;
+    virtual void send(PassOwnPtr<Vector<char>>) = 0;
 
     // Do not call |send| after calling this method.
     virtual void close(int code, const String& reason) = 0;

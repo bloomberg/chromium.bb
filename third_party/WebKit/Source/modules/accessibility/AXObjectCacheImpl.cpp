@@ -99,8 +99,8 @@ AXObjectCacheImpl::~AXObjectCacheImpl()
 {
     m_notificationPostTimer.stop();
 
-    HashMap<AXID, RefPtr<AXObject> >::iterator end = m_objects.end();
-    for (HashMap<AXID, RefPtr<AXObject> >::iterator it = m_objects.begin(); it != end; ++it) {
+    HashMap<AXID, RefPtr<AXObject>>::iterator end = m_objects.end();
+    for (HashMap<AXID, RefPtr<AXObject>>::iterator it = m_objects.begin(); it != end; ++it) {
         AXObject* obj = (*it).value.get();
         obj->detach();
         removeAXID(obj);

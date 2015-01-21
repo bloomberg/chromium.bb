@@ -40,7 +40,7 @@ class EventTarget;
 
 class IDBEventDispatcher {
 public:
-    static bool dispatch(Event*, WillBeHeapVector<RefPtrWillBeMember<EventTarget> >&); // The target first and then its ancestors in order of how the event bubbles.
+    static bool dispatch(Event*, WillBeHeapVector<RefPtrWillBeMember<EventTarget>>&); // The target first and then its ancestors in order of how the event bubbles.
 
 private:
     IDBEventDispatcher();

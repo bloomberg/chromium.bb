@@ -74,7 +74,7 @@ protected:
     float m_sampleRate;
     size_t m_length;
 
-    Vector<RefPtr<DOMFloat32Array> > m_channels;
+    Vector<RefPtr<DOMFloat32Array>> m_channels;
 };
 
 } // namespace blink

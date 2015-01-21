@@ -168,7 +168,7 @@ private:
 
     Member<DatabaseAuthorizer> m_databaseAuthorizer;
 
-    HeapDeque<Member<SQLTransactionBackend> > m_transactionQueue;
+    HeapDeque<Member<SQLTransactionBackend>> m_transactionQueue;
     Mutex m_transactionInProgressMutex;
     bool m_transactionInProgress;
     bool m_isTransactionQueueEnabled;

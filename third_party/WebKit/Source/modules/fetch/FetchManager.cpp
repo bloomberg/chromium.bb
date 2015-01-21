@@ -279,7 +279,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     ResourceRequest request(m_request->url());
     request.setRequestContext(WebURLRequest::RequestContextFetch);
     request.setHTTPMethod(m_request->method());
-    const Vector<OwnPtr<FetchHeaderList::Header> >& list = m_request->headerList()->list();
+    const Vector<OwnPtr<FetchHeaderList::Header>>& list = m_request->headerList()->list();
     for (size_t i = 0; i < list.size(); ++i) {
         request.addHTTPHeaderField(AtomicString(list[i]->first), AtomicString(list[i]->second));
     }

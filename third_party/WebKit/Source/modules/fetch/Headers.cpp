@@ -70,7 +70,7 @@ Headers* Headers::create(const Headers* init, ExceptionState& exceptionState)
     return headers;
 }
 
-Headers* Headers::create(const Vector<Vector<String> >& init, ExceptionState& exceptionState)
+Headers* Headers::create(const Vector<Vector<String>>& init, ExceptionState& exceptionState)
 {
     // The same steps as above.
     Headers* headers = create();
@@ -259,7 +259,7 @@ void Headers::fillWith(const Headers* object, ExceptionState& exceptionState)
     }
 }
 
-void Headers::fillWith(const Vector<Vector<String> >& object, ExceptionState& exceptionState)
+void Headers::fillWith(const Vector<Vector<String>>& object, ExceptionState& exceptionState)
 {
     ASSERT(!m_headerList->size());
     // "2. Otherwise, if |object| is a sequence, then for each |header| in

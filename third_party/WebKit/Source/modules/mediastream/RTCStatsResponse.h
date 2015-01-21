@@ -40,7 +40,7 @@ class RTCStatsResponse final : public RTCStatsResponseBase, public ScriptWrappab
 public:
     static RTCStatsResponse* create();
 
-    const HeapVector<Member<RTCStatsReport> >& result() const { return m_result; }
+    const HeapVector<Member<RTCStatsReport>>& result() const { return m_result; }
 
     RTCStatsReport* namedItem(const AtomicString& name);
 
@@ -52,7 +52,7 @@ public:
 private:
     RTCStatsResponse();
 
-    HeapVector<Member<RTCStatsReport> > m_result;
+    HeapVector<Member<RTCStatsReport>> m_result;
     HashMap<String, int> m_idmap;
 };
 

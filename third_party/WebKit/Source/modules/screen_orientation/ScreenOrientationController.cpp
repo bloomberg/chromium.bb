@@ -128,7 +128,7 @@ void ScreenOrientationController::notifyOrientationChanged()
     // Keep track of the frames that need to be notified before notifying the
     // current frame as it will prevent side effects from the change event
     // handlers.
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > childFrames;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>> childFrames;
     for (Frame* child = frame()->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             childFrames.append(toLocalFrame(child));

@@ -29,7 +29,7 @@
 
 namespace blink {
 
-SpeechRecognitionResult* SpeechRecognitionResult::create(const HeapVector<Member<SpeechRecognitionAlternative> >& alternatives, bool final)
+SpeechRecognitionResult* SpeechRecognitionResult::create(const HeapVector<Member<SpeechRecognitionAlternative>>& alternatives, bool final)
 {
     return new SpeechRecognitionResult(alternatives, final);
 }
@@ -42,7 +42,7 @@ SpeechRecognitionAlternative* SpeechRecognitionResult::item(unsigned index)
     return m_alternatives[index].get();
 }
 
-SpeechRecognitionResult::SpeechRecognitionResult(const HeapVector<Member<SpeechRecognitionAlternative> >& alternatives, bool final)
+SpeechRecognitionResult::SpeechRecognitionResult(const HeapVector<Member<SpeechRecognitionAlternative>>& alternatives, bool final)
     : m_final(final)
     , m_alternatives(alternatives)
 {

@@ -98,13 +98,13 @@ private:
     void propagateTrackEnded();
 
     MediaStreamSource::ReadyState m_readyState;
-    HeapHashSet<Member<MediaStream> > m_registeredMediaStreams;
+    HeapHashSet<Member<MediaStream>> m_registeredMediaStreams;
     bool m_isIteratingRegisteredMediaStreams;
     bool m_stopped;
     RefPtr<MediaStreamComponent> m_component;
 };
 
-typedef HeapVector<Member<MediaStreamTrack> > MediaStreamTrackVector;
+typedef HeapVector<Member<MediaStreamTrack>> MediaStreamTrackVector;
 
 } // namespace blink
 

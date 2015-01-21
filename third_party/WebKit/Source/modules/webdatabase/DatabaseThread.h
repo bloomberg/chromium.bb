@@ -78,7 +78,7 @@ private:
     // This set keeps track of the open databases that have been used on this thread.
     // This must be updated in the database thread though it is constructed and
     // destructed in the context thread.
-    HeapHashSet<Member<Database> > m_openDatabaseSet;
+    HeapHashSet<Member<Database>> m_openDatabaseSet;
 
     OwnPtr<SQLTransactionClient> m_transactionClient;
     Member<SQLTransactionCoordinator> m_transactionCoordinator;

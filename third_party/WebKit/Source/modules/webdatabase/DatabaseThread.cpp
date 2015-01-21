@@ -108,10 +108,10 @@ void DatabaseThread::cleanupDatabaseThread()
     // inconsistent or locked state.
     if (m_openDatabaseSet.size() > 0) {
         // As the call to close will modify the original set, we must take a copy to iterate over.
-        HeapHashSet<Member<Database> > openSetCopy;
+        HeapHashSet<Member<Database>> openSetCopy;
         openSetCopy.swap(m_openDatabaseSet);
-        HeapHashSet<Member<Database> >::iterator end = openSetCopy.end();
-        for (HeapHashSet<Member<Database> >::iterator it = openSetCopy.begin(); it != end; ++it)
+        HeapHashSet<Member<Database>>::iterator end = openSetCopy.end();
+        for (HeapHashSet<Member<Database>>::iterator it = openSetCopy.begin(); it != end; ++it)
             (*it)->close();
     }
     m_openDatabaseSet.clear();

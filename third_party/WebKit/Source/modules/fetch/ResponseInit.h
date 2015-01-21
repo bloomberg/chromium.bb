@@ -30,7 +30,7 @@ public:
         DictionaryHelper::get(options, "statusText", statusText);
         DictionaryHelper::get(options, "headers", headers);
         if (!headers) {
-            Vector<Vector<String> > headersVector;
+            Vector<Vector<String>> headersVector;
             if (DictionaryHelper::get(options, "headers", headersVector, exceptionState))
                 headers = Headers::create(headersVector, exceptionState);
             else

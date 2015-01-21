@@ -166,7 +166,7 @@ void MediaKeys::timerFired(Timer<MediaKeys>*)
 
     // Swap the queue to a local copy to avoid problems if resolving promises
     // run synchronously.
-    HeapDeque<Member<PendingAction> > pendingActions;
+    HeapDeque<Member<PendingAction>> pendingActions;
     pendingActions.swap(m_pendingActions);
 
     while (!pendingActions.isEmpty()) {

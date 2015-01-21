@@ -108,7 +108,7 @@ private:
     mutable Mutex m_listenerLock;
     // List for pannerNodes in context. This is updated only in the main thread,
     // and can be referred in audio thread.
-    HeapVector<Member<PannerNode> > m_panners;
+    HeapVector<Member<PannerNode>> m_panners;
     // HRTF DB loader for panner node.
     Member<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 };

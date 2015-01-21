@@ -156,10 +156,10 @@ void RTCDTMFSender::scheduledEventTimerFired(Timer<RTCDTMFSender>*)
     if (m_stopped)
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<Event> > events;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> events;
     events.swap(m_scheduledEvents);
 
-    WillBeHeapVector<RefPtrWillBeMember<Event> >::iterator it = events.begin();
+    WillBeHeapVector<RefPtrWillBeMember<Event>>::iterator it = events.begin();
     for (; it != events.end(); ++it)
         dispatchEvent((*it).release());
 }

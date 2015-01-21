@@ -358,7 +358,7 @@ bool IDBTransaction::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
         (*it)->transactionFinished();
     m_deletedObjectStores.clear();
 
-    WillBeHeapVector<RefPtrWillBeMember<EventTarget> > targets;
+    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> targets;
     targets.append(this);
     targets.append(db());
 

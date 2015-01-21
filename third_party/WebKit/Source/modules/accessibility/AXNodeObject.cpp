@@ -97,7 +97,7 @@ static String accessibleNameForNode(Node* node)
     return String();
 }
 
-String AXNodeObject::accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element> > &elements) const
+String AXNodeObject::accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element>> &elements) const
 {
     StringBuilder builder;
     unsigned size = elements.size();
@@ -139,7 +139,7 @@ String AXNodeObject::ariaAccessibilityDescription() const
 }
 
 
-void AXNodeObject::ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Element> >& elements) const
+void AXNodeObject::ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const
 {
     elementsFromAttribute(elements, aria_labeledbyAttr);
     if (!elements.size())
@@ -318,7 +318,7 @@ AccessibilityRole AXNodeObject::determineAriaRoleAttribute() const
     return UnknownRole;
 }
 
-void AXNodeObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element> >& elements, const QualifiedName& attribute) const
+void AXNodeObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName& attribute) const
 {
     Node* node = this->node();
     if (!node || !node->isElementNode())
@@ -1180,7 +1180,7 @@ String AXNodeObject::stringValue() const
     if (isHTMLSelectElement(*node)) {
         HTMLSelectElement& selectElement = toHTMLSelectElement(*node);
         int selectedIndex = selectElement.selectedIndex();
-        const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement.listItems();
+        const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement.listItems();
         if (selectedIndex >= 0 && static_cast<size_t>(selectedIndex) < listItems.size()) {
             const AtomicString& overriddenDescription = listItems[selectedIndex]->fastGetAttribute(aria_labelAttr);
             if (!overriddenDescription.isNull())
@@ -1216,7 +1216,7 @@ const AtomicString& AXNodeObject::textInputType() const
 
 String AXNodeObject::ariaDescribedByAttribute() const
 {
-    WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     elementsFromAttribute(elements, aria_describedbyAttr);
 
     return accessibilityDescriptionForElements(elements);
@@ -1224,7 +1224,7 @@ String AXNodeObject::ariaDescribedByAttribute() const
 
 String AXNodeObject::ariaLabeledByAttribute() const
 {
-    WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     ariaLabeledByElements(elements);
 
     return accessibilityDescriptionForElements(elements);
@@ -1943,7 +1943,7 @@ void AXNodeObject::ariaLabeledByText(Vector<AccessibilityText>& textOrder) const
 {
     String ariaLabeledBy = ariaLabeledByAttribute();
     if (!ariaLabeledBy.isEmpty()) {
-        WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
+        WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
         ariaLabeledByElements(elements);
 
         unsigned length = elements.size();

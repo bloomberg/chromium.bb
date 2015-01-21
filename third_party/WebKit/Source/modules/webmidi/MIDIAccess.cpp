@@ -69,7 +69,7 @@ MIDIAccess::~MIDIAccess()
 
 MIDIInputMap* MIDIAccess::inputs() const
 {
-    HeapHashMap<String, Member<MIDIInput> > inputs;
+    HeapHashMap<String, Member<MIDIInput>> inputs;
     size_t inactiveCount = 0;
     for (size_t i = 0; i < m_inputs.size(); ++i) {
         MIDIInput* input = m_inputs[i];
@@ -87,7 +87,7 @@ MIDIInputMap* MIDIAccess::inputs() const
 
 MIDIOutputMap* MIDIAccess::outputs() const
 {
-    HeapHashMap<String, Member<MIDIOutput> > outputs;
+    HeapHashMap<String, Member<MIDIOutput>> outputs;
     size_t inactiveCount = 0;
     for (size_t i = 0; i < m_outputs.size(); ++i) {
         MIDIOutput* output = m_outputs[i];

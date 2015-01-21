@@ -119,7 +119,7 @@ private:
     BinaryType m_binaryType;
 
     Timer<RTCDataChannel> m_scheduledEventTimer;
-    WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;
 
     WeakMember<RTCPeerConnection> m_connection;
 };

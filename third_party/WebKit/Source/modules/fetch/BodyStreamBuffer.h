@@ -59,7 +59,7 @@ public:
     void trace(Visitor*);
 
 private:
-    Deque<RefPtr<DOMArrayBuffer> > m_queue;
+    Deque<RefPtr<DOMArrayBuffer>> m_queue;
     bool m_isClosed;
     RefPtrWillBeMember<DOMException> m_exception;
     Member<Observer> m_observer;

@@ -157,7 +157,7 @@ int AXListBoxOption::listBoxOptionIndex() const
     if (!selectElement)
         return -1;
 
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement->listItems();
     unsigned length = listItems.size();
     for (unsigned i = 0; i < length; i++) {
         if (listItems[i] == node())

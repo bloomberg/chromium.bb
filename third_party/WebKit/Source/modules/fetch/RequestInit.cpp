@@ -23,7 +23,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     DictionaryHelper::get(options, "method", method);
     DictionaryHelper::get(options, "headers", headers);
     if (!headers) {
-        Vector<Vector<String> > headersVector;
+        Vector<Vector<String>> headersVector;
         if (DictionaryHelper::get(options, "headers", headersVector, exceptionState))
             headers = Headers::create(headersVector, exceptionState);
         else

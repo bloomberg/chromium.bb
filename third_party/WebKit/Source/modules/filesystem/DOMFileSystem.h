@@ -218,7 +218,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(adoptPtr(new DispatchCallbackNonPtrArgTask<CB, PersistentHeapVector<CBArg> >(callback, arg)));
+        executionContext->postTask(adoptPtr(new DispatchCallbackNonPtrArgTask<CB, PersistentHeapVector<CBArg>>(callback, arg)));
 }
 
 template <typename CB, typename CBArg>
@@ -234,7 +234,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(adoptPtr(new DispatchCallbackNonPtrArgTask<CB, Persistent<CBArg> >(callback, arg)));
+        executionContext->postTask(adoptPtr(new DispatchCallbackNonPtrArgTask<CB, Persistent<CBArg>>(callback, arg)));
 }
 
 template <typename CB>

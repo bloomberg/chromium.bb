@@ -62,7 +62,7 @@ public:
     // Called from the front-end.
     virtual void enable(ErrorString*) override;
     virtual void disable(ErrorString*) override;
-    virtual void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<TypeBuilder::Array<String> >& names) override;
+    virtual void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<TypeBuilder::Array<String>>& names) override;
     virtual void executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtrWillBeRawPtr<ExecuteSQLCallback>) override;
 
     void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);
@@ -73,7 +73,7 @@ private:
     InspectorDatabaseResource* findByFileName(const String& fileName);
 
     InspectorFrontend::Database* m_frontend;
-    typedef PersistentHeapHashMapWillBeHeapHashMap<String, Member<InspectorDatabaseResource> > DatabaseResourcesHeapMap;
+    typedef PersistentHeapHashMapWillBeHeapHashMap<String, Member<InspectorDatabaseResource>> DatabaseResourcesHeapMap;
     DatabaseResourcesHeapMap m_resources;
     bool m_enabled;
 };

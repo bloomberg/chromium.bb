@@ -74,7 +74,7 @@ private:
     const String m_keySystem;
     OwnPtr<blink::WebContentDecryptionModule> m_cdm;
 
-    HeapDeque<Member<PendingAction> > m_pendingActions;
+    HeapDeque<Member<PendingAction>> m_pendingActions;
     Timer<MediaKeys> m_timer;
 };
 

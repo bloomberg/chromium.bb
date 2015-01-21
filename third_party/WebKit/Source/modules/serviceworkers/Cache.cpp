@@ -54,7 +54,7 @@ public:
 
     virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
     {
-        HeapVector<Member<Response> > responses;
+        HeapVector<Member<Response>> responses;
         for (size_t i = 0; i < webResponses->size(); ++i)
             responses.append(Response::create(m_resolver->scriptState()->executionContext(), (*webResponses)[i]));
         m_resolver->resolve(responses);
@@ -122,7 +122,7 @@ public:
 
     virtual void onSuccess(WebVector<WebServiceWorkerRequest>* webRequests) override
     {
-        HeapVector<Member<Request> > requests;
+        HeapVector<Member<Request>> requests;
         for (size_t i = 0; i < webRequests->size(); ++i)
             requests.append(Request::create(m_resolver->scriptState()->executionContext(), (*webRequests)[i]));
         m_resolver->resolve(requests);

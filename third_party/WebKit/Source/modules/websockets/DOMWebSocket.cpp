@@ -125,7 +125,7 @@ void DOMWebSocket::EventQueue::dispatchQueuedEvents()
     if (m_state != Active)
         return;
 
-    WillBeHeapDeque<RefPtrWillBeMember<Event> > events;
+    WillBeHeapDeque<RefPtrWillBeMember<Event>> events;
     events.swap(m_events);
     while (!events.isEmpty()) {
         if (m_state == Stopped || m_state == Suspended)
@@ -594,7 +594,7 @@ void DOMWebSocket::didReceiveTextMessage(const String& msg)
     m_eventQueue->dispatch(MessageEvent::create(msg, SecurityOrigin::create(m_url)->toString()));
 }
 
-void DOMWebSocket::didReceiveBinaryMessage(PassOwnPtr<Vector<char> > binaryData)
+void DOMWebSocket::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> binaryData)
 {
     WTF_LOG(Network, "WebSocket %p didReceiveBinaryMessage() %lu byte binary message", this, static_cast<unsigned long>(binaryData->size()));
     switch (m_binaryType) {

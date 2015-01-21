@@ -10,7 +10,7 @@
 
 namespace blink {
 
-MIDIInputMap::MIDIInputMap(const HeapHashMap<String, Member<MIDIInput> >map)
+MIDIInputMap::MIDIInputMap(const HeapHashMap<String, Member<MIDIInput>> map)
     : MIDIPortMap<MIDIInput>(map)
 {
 }

@@ -137,8 +137,8 @@ private:
     // Oilpan: This HashMap holds connection references. We must call
     // AudioNode::makeConnection when we add an AudioNode to this, and must call
     // AudioNode::breakConnection() when we remove an AudioNode from this.
-    HeapHashMap<Member<AudioNodeInput>, Member<AudioNode> > m_inputs;
-    typedef HeapHashMap<Member<AudioNodeInput>, Member<AudioNode> >::iterator InputsIterator;
+    HeapHashMap<Member<AudioNodeInput>, Member<AudioNode>> m_inputs;
+    typedef HeapHashMap<Member<AudioNodeInput>, Member<AudioNode>>::iterator InputsIterator;
     bool m_isEnabled;
 
 #if ENABLE_ASSERT
@@ -150,7 +150,7 @@ private:
     unsigned m_renderingFanOutCount;
     unsigned m_renderingParamFanOutCount;
 
-    HeapHashSet<Member<AudioParam> > m_params;
+    HeapHashSet<Member<AudioParam>> m_params;
 };
 
 } // namespace blink

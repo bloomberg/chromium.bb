@@ -317,9 +317,9 @@ private:
 
     // Vector of promises created by resume(). It takes time to handle them, so we collect all of
     // the promises here until they can be resolved or rejected.
-    WillBeHeapVector<RefPtrWillBeMember<ScriptPromiseResolver> > m_resumeResolvers;
+    WillBeHeapVector<RefPtrWillBeMember<ScriptPromiseResolver>> m_resumeResolvers;
     // Like m_resumeResolvers but for suspend().
-    WillBeHeapVector<RefPtrWillBeMember<ScriptPromiseResolver> > m_suspendResolvers;
+    WillBeHeapVector<RefPtrWillBeMember<ScriptPromiseResolver>> m_suspendResolvers;
     void rejectPendingResolvers();
 
     // True if we're in the process of resolving promises for resume().  Resolving can take some
@@ -335,7 +335,7 @@ private:
     private:
         AudioNode& m_node;
     };
-    HeapHashMap<WeakMember<AudioNode>, OwnPtr<AudioNodeDisposer> > m_liveNodes;
+    HeapHashMap<WeakMember<AudioNode>, OwnPtr<AudioNodeDisposer>> m_liveNodes;
 
     class AudioSummingJunctionDisposer {
     public:
@@ -349,7 +349,7 @@ private:
     // AudioSummingJunction from m_dirtySummingJunctions. However we put all of
     // AudioSummingJunction objects to m_liveAudioSummingJunctions to avoid
     // concurrent access to m_liveAudioSummingJunctions.
-    HeapHashMap<WeakMember<AudioSummingJunction>, OwnPtr<AudioSummingJunctionDisposer> > m_liveAudioSummingJunctions;
+    HeapHashMap<WeakMember<AudioSummingJunction>, OwnPtr<AudioSummingJunctionDisposer>> m_liveAudioSummingJunctions;
 
     // These two HashSet must be accessed only when the graph lock is held.
     // Oilpan: These HashSet should be HeapHashSet<WeakMember<AudioNodeOutput>>

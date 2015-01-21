@@ -19,9 +19,9 @@
 namespace blink {
 
 template <typename T>
-class MIDIPortMap : public GarbageCollected<MIDIPortMap<T> > {
+class MIDIPortMap : public GarbageCollected<MIDIPortMap<T>> {
 public:
-    explicit MIDIPortMap(const HeapHashMap<String, Member<T> >& entries) : m_entries(entries) { }
+    explicit MIDIPortMap(const HeapHashMap<String, Member<T>>& entries) : m_entries(entries) { }
 
     // IDL attributes / methods
     size_t size() const { return m_entries.size(); }
@@ -38,8 +38,8 @@ public:
     }
 
 private:
-    typedef HeapHashMap<String, Member<T> > MapType;
-    typedef typename HeapHashMap<String, Member<T> >::const_iterator IteratorType;
+    typedef HeapHashMap<String, Member<T>> MapType;
+    typedef typename HeapHashMap<String, Member<T>>::const_iterator IteratorType;
     struct KeySelector {
         static const String& select(ScriptState*, IteratorType i) { return i->key; }
     };
@@ -91,7 +91,7 @@ private:
     private:
         // m_map is stored just for keeping it alive. It needs to be kept
         // alive while JavaScript holds the iterator to it.
-        const Member<const MIDIPortMap<T> > m_map;
+        const Member<const MIDIPortMap<T>> m_map;
         IteratorType m_iterator;
         const IteratorType m_end;
     };

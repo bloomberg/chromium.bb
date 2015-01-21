@@ -99,8 +99,8 @@ private:
 
     OwnPtr<MIDIAccessor> m_accessor;
     bool m_sysexEnabled;
-    HeapVector<Member<MIDIInput> > m_inputs;
-    HeapVector<Member<MIDIOutput> > m_outputs;
+    HeapVector<Member<MIDIInput>> m_inputs;
+    HeapVector<Member<MIDIOutput>> m_outputs;
 };
 
 } // namespace blink

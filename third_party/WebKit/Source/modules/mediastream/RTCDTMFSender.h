@@ -88,7 +88,7 @@ private:
     bool m_stopped;
 
     Timer<RTCDTMFSender> m_scheduledEventTimer;
-    WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;
 };
 
 } // namespace blink

@@ -204,7 +204,7 @@ private:
     bool didGetEntry(Entry*);
     bool didReadDirectoryEntries(const EntryHeapVector&);
 
-    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<Array<TypeBuilder::FileSystem::Entry> > entries = nullptr)
+    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<Array<TypeBuilder::FileSystem::Entry>> entries = nullptr)
     {
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), entries);
     }
@@ -217,7 +217,7 @@ private:
 
     RefPtrWillBePersistent<RequestDirectoryContentCallback> m_requestCallback;
     KURL m_url;
-    RefPtr<Array<TypeBuilder::FileSystem::Entry> > m_entries;
+    RefPtr<Array<TypeBuilder::FileSystem::Entry>> m_entries;
     Persistent<DirectoryReader> m_directoryReader;
 };
 

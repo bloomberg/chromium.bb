@@ -224,7 +224,7 @@ void Peer::send(const String& message)
         m_mainWebSocketChannel->send(message);
 }
 
-void Peer::sendArrayBuffer(PassOwnPtr<Vector<char> > data)
+void Peer::sendArrayBuffer(PassOwnPtr<Vector<char>> data)
 {
     ASSERT(isMainThread());
     if (m_mainWebSocketChannel)
@@ -293,14 +293,14 @@ void Peer::didReceiveTextMessage(const String& payload)
     m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveTextMessage, m_bridge, payload));
 }
 
-static void workerGlobalScopeDidReceiveBinaryMessage(ExecutionContext* context, Bridge* bridge, PassOwnPtr<Vector<char> > payload)
+static void workerGlobalScopeDidReceiveBinaryMessage(ExecutionContext* context, Bridge* bridge, PassOwnPtr<Vector<char>> payload)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
         bridge->client()->didReceiveBinaryMessage(payload);
 }
 
-void Peer::didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload)
+void Peer::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload)
 {
     ASSERT(isMainThread());
     m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryMessage, m_bridge, payload));
@@ -413,7 +413,7 @@ void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigne
 {
     ASSERT(m_peer);
     // ArrayBuffer isn't thread-safe, hence the content of ArrayBuffer is copied into Vector<char>.
-    OwnPtr<Vector<char> > data = adoptPtr(new Vector<char>(byteLength));
+    OwnPtr<Vector<char>> data = adoptPtr(new Vector<char>(byteLength));
     if (binaryData.byteLength())
         memcpy(data->data(), static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
 

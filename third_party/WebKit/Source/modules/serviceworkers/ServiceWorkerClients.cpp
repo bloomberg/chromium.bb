@@ -22,10 +22,10 @@ namespace {
     class ClientArray {
     public:
         typedef blink::WebServiceWorkerClientsInfo WebType;
-        static HeapVector<Member<ServiceWorkerClient> > take(ScriptPromiseResolver*, WebType* webClientsRaw)
+        static HeapVector<Member<ServiceWorkerClient>> take(ScriptPromiseResolver*, WebType* webClientsRaw)
         {
             OwnPtr<WebType> webClients = adoptPtr(webClientsRaw);
-            HeapVector<Member<ServiceWorkerClient> > clients;
+            HeapVector<Member<ServiceWorkerClient>> clients;
             for (size_t i = 0; i < webClients->clients.size(); ++i) {
                 clients.append(ServiceWorkerWindowClient::create(webClients->clients[i]));
             }

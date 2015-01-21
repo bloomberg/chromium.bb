@@ -109,13 +109,13 @@ public:
 
     virtual void onError(DOMError*);
     virtual void onSuccess(const Vector<String>&);
-    virtual void onSuccess(PassOwnPtr<WebIDBCursor>, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo> >);
+    virtual void onSuccess(PassOwnPtr<WebIDBCursor>, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo>>);
     virtual void onSuccess(IDBKey*);
-    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo> >);
-    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo> >, IDBKey*, const IDBKeyPath&);
+    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo>>);
+    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo>>, IDBKey*, const IDBKeyPath&);
     virtual void onSuccess(int64_t);
     virtual void onSuccess();
-    virtual void onSuccess(IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo> >);
+    virtual void onSuccess(IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo>>);
 
     // Only IDBOpenDBRequest instances should receive these:
     virtual void onBlocked(int64_t oldVersion) { ASSERT_NOT_REACHED(); }
@@ -155,7 +155,7 @@ protected:
     bool m_requestAborted; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 
 private:
-    void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo> >);
+    void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo>>);
     void setBlobInfo(PassOwnPtr<Vector<WebBlobInfo>>);
 
     RefPtr<ScriptState> m_scriptState;
@@ -164,7 +164,7 @@ private:
     Member<DOMError> m_error;
 
     bool m_hasPendingActivity;
-    WillBeHeapVector<RefPtrWillBeMember<Event> > m_enqueuedEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> m_enqueuedEvents;
 
     // Only used if the result type will be a cursor.
     IndexedDB::CursorType m_cursorType;

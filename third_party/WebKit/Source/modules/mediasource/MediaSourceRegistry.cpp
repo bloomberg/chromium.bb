@@ -57,7 +57,7 @@ void MediaSourceRegistry::registerURL(SecurityOrigin*, const KURL& url, URLRegis
 void MediaSourceRegistry::unregisterURL(const KURL& url)
 {
     ASSERT(isMainThread());
-    PersistentHeapHashMap<String, Member<MediaSource> >::iterator iter = m_mediaSources.find(url.string());
+    PersistentHeapHashMap<String, Member<MediaSource>>::iterator iter = m_mediaSources.find(url.string());
     if (iter == m_mediaSources.end())
         return;
 

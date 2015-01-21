@@ -215,7 +215,7 @@ void DocumentWebSocketChannel::send(const DOMArrayBuffer& buffer, unsigned byteO
     sendInternal();
 }
 
-void DocumentWebSocketChannel::send(PassOwnPtr<Vector<char> > data)
+void DocumentWebSocketChannel::send(PassOwnPtr<Vector<char>> data)
 {
     WTF_LOG(Network, "DocumentWebSocketChannel %p sendVector(%p, %llu)", this, data.get(), static_cast<unsigned long long>(data->size()));
     if (m_identifier) {
@@ -280,7 +280,7 @@ DocumentWebSocketChannel::Message::Message(PassRefPtr<DOMArrayBuffer> arrayBuffe
     : type(MessageTypeArrayBuffer)
     , arrayBuffer(arrayBuffer) { }
 
-DocumentWebSocketChannel::Message::Message(PassOwnPtr<Vector<char> > vectorData)
+DocumentWebSocketChannel::Message::Message(PassOwnPtr<Vector<char>> vectorData)
     : type(MessageTypeVector)
     , vectorData(vectorData) { }
 
@@ -515,7 +515,7 @@ void DocumentWebSocketChannel::didReceiveData(WebSocketHandle* handle, bool fin,
             m_client->didReceiveTextMessage(message);
         }
     } else {
-        OwnPtr<Vector<char> > binaryData = adoptPtr(new Vector<char>);
+        OwnPtr<Vector<char>> binaryData = adoptPtr(new Vector<char>);
         binaryData->swap(m_receivingMessageData);
         m_client->didReceiveBinaryMessage(binaryData.release());
     }

@@ -126,12 +126,12 @@ private:
     bool m_contextStopped;
     Member<DOMError> m_error;
 
-    HeapListHashSet<Member<IDBRequest> > m_requestList;
+    HeapListHashSet<Member<IDBRequest>> m_requestList;
 
-    typedef HeapHashMap<String, Member<IDBObjectStore> > IDBObjectStoreMap;
+    typedef HeapHashMap<String, Member<IDBObjectStore>> IDBObjectStoreMap;
     IDBObjectStoreMap m_objectStoreMap;
 
-    typedef HeapHashSet<Member<IDBObjectStore> > IDBObjectStoreSet;
+    typedef HeapHashSet<Member<IDBObjectStore>> IDBObjectStoreSet;
     IDBObjectStoreSet m_deletedObjectStores;
 
     typedef HeapHashMap<Member<IDBObjectStore>, IDBObjectStoreMetadata> IDBObjectStoreMetadataMap;

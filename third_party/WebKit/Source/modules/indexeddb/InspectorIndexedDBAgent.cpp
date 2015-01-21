@@ -119,7 +119,7 @@ public:
         }
 
         RefPtrWillBeRawPtr<DOMStringList> databaseNamesList = requestResult->domStringList();
-        RefPtr<TypeBuilder::Array<String> > databaseNames = TypeBuilder::Array<String>::create();
+        RefPtr<TypeBuilder::Array<String>> databaseNames = TypeBuilder::Array<String>::create();
         for (size_t i = 0; i < databaseNamesList->length(); ++i)
             databaseNames->addItem(databaseNamesList->item(i));
         m_requestCallback->sendSuccess(databaseNames.release());
@@ -243,7 +243,7 @@ static PassRefPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
         break;
     case IDBKeyPath::ArrayType: {
         keyPath = KeyPath::create().setType(KeyPath::Type::Array);
-        RefPtr<TypeBuilder::Array<String> > array = TypeBuilder::Array<String>::create();
+        RefPtr<TypeBuilder::Array<String>> array = TypeBuilder::Array<String>::create();
         const Vector<String>& stringArray = idbKeyPath.array();
         for (size_t i = 0; i < stringArray.size(); ++i)
             array->addItem(stringArray[i]);
@@ -273,12 +273,12 @@ public:
 
         const IDBDatabaseMetadata databaseMetadata = idbDatabase->metadata();
 
-        RefPtr<TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStore> > objectStores = TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStore>::create();
+        RefPtr<TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStore>> objectStores = TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStore>::create();
 
         for (const auto& storeMapEntry : databaseMetadata.objectStores) {
             const IDBObjectStoreMetadata& objectStoreMetadata = storeMapEntry.value;
 
-            RefPtr<TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStoreIndex> > indexes = TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStoreIndex>::create();
+            RefPtr<TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStoreIndex>> indexes = TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStoreIndex>::create();
 
             for (const auto& metadataMapEntry : objectStoreMetadata.indexes) {
                 const IDBIndexMetadata& indexMetadata = metadataMapEntry.value;
@@ -486,7 +486,7 @@ private:
     RefPtrWillBePersistent<RequestDataCallback> m_requestCallback;
     int m_skipCount;
     unsigned m_pageSize;
-    RefPtr<Array<DataEntry> > m_result;
+    RefPtr<Array<DataEntry>> m_result;
 };
 
 class DataLoader final : public ExecutableWithDatabase {

@@ -39,7 +39,7 @@ PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create(co
     return adoptRefWillBeNoop(new SpeechRecognitionEvent(eventName, initializer));
 }
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult> >& results)
+PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult>>& results)
 {
     return adoptRefWillBeNoop(new SpeechRecognitionEvent(EventTypeNames::result, resultIndex, SpeechRecognitionResultList::create(results)));
 }
@@ -47,7 +47,7 @@ PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createRes
 PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(SpeechRecognitionResult* result)
 {
     if (result) {
-        HeapVector<Member<SpeechRecognitionResult> > results;
+        HeapVector<Member<SpeechRecognitionResult>> results;
         results.append(result);
         return adoptRefWillBeNoop(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, SpeechRecognitionResultList::create(results)));
     }

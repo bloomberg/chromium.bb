@@ -86,12 +86,12 @@ public:
     {
         SQLResultSetRowList* rowList = resultSet->rows();
 
-        RefPtr<TypeBuilder::Array<String> > columnNames = TypeBuilder::Array<String>::create();
+        RefPtr<TypeBuilder::Array<String>> columnNames = TypeBuilder::Array<String>::create();
         const Vector<String>& columns = rowList->columnNames();
         for (size_t i = 0; i < columns.size(); ++i)
             columnNames->addItem(columns[i]);
 
-        RefPtr<TypeBuilder::Array<JSONValue> > values = TypeBuilder::Array<JSONValue>::create();
+        RefPtr<TypeBuilder::Array<JSONValue>> values = TypeBuilder::Array<JSONValue>::create();
         const Vector<SQLValue>& data = rowList->values();
         for (size_t i = 0; i < data.size(); ++i) {
             const SQLValue& value = rowList->values()[i];
@@ -281,7 +281,7 @@ void InspectorDatabaseAgent::restore()
     m_enabled = m_state->getBoolean(DatabaseAgentState::databaseAgentEnabled);
 }
 
-void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const String& databaseId, RefPtr<TypeBuilder::Array<String> >& names)
+void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const String& databaseId, RefPtr<TypeBuilder::Array<String>>& names)
 {
     if (!m_enabled) {
         *error = "Database agent is not enabled";

@@ -50,7 +50,7 @@ public:
 private:
     SpeechGrammarList();
 
-    HeapVector<Member<SpeechGrammar> > m_grammars;
+    HeapVector<Member<SpeechGrammar>> m_grammars;
 };
 
 } // namespace blink

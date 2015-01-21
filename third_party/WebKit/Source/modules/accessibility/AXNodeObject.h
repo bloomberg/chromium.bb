@@ -59,14 +59,14 @@ protected:
     virtual bool computeAccessibilityIsIgnored() const override;
     virtual AccessibilityRole determineAccessibilityRole();
     AccessibilityRole determineAccessibilityRoleUtil();
-    String accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element> > &elements) const;
+    String accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element>> &elements) const;
     void alterSliderValue(bool increase);
     String ariaAccessibilityDescription() const;
     String ariaAutoComplete() const;
-    void ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Element> >& elements) const;
+    void ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const;
     void changeValueByStep(bool increase);
     AccessibilityRole determineAriaRoleAttribute() const;
-    void elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element> >& elements, const QualifiedName&) const;
+    void elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName&) const;
     bool hasContentEditableAttributeSet() const;
     bool isDescendantOfBarrenParent() const;
     // This returns true if it's focusable but it's not content editable and it's not a control or ARIA control.

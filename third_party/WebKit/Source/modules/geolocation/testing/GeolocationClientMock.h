@@ -75,7 +75,7 @@ private:
 
     void clearError();
 
-    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<GeolocationController> > GeolocationControllers;
+    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<GeolocationController>> GeolocationControllers;
     GeolocationControllers m_controllers;
 
     PersistentWillBeMember<GeolocationPosition> m_lastPosition;
@@ -93,7 +93,7 @@ private:
 
     PermissionState m_permissionState;
 
-    typedef PersistentHeapHashSetWillBeHeapHashSet<Member<Geolocation> > GeolocationSet;
+    typedef PersistentHeapHashSetWillBeHeapHashSet<Member<Geolocation>> GeolocationSet;
     GeolocationSet m_pendingPermissions;
 };
 

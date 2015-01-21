@@ -272,7 +272,7 @@ enum InvalidState {
 
 class AXObject : public RefCounted<AXObject> {
 public:
-    typedef Vector<RefPtr<AXObject> > AccessibilityChildrenVector;
+    typedef Vector<RefPtr<AXObject>> AccessibilityChildrenVector;
 
     struct PlainTextRange {
 

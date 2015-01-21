@@ -110,10 +110,10 @@ private:
     RefPtr<MediaStreamDescriptor> m_descriptor;
 
     Timer<MediaStream> m_scheduledEventTimer;
-    WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;
 };
 
-typedef HeapVector<Member<MediaStream> > MediaStreamVector;
+typedef HeapVector<Member<MediaStream>> MediaStreamVector;
 
 } // namespace blink
 

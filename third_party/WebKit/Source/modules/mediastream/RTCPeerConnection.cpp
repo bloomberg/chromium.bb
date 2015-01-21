@@ -755,7 +755,7 @@ void RTCPeerConnection::stop()
     m_iceConnectionState = ICEConnectionStateClosed;
     m_signalingState = SignalingStateClosed;
 
-    HeapVector<Member<RTCDataChannel> >::iterator i = m_dataChannels.begin();
+    HeapVector<Member<RTCDataChannel>>::iterator i = m_dataChannels.begin();
     for (; i != m_dataChannels.end(); ++i)
         (*i)->stop();
     m_dataChannels.clear();
@@ -809,10 +809,10 @@ void RTCPeerConnection::dispatchScheduledEvent()
     if (m_stopped)
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<Event> > events;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> events;
     events.swap(m_scheduledEvents);
 
-    WillBeHeapVector<RefPtrWillBeMember<Event> >::iterator it = events.begin();
+    WillBeHeapVector<RefPtrWillBeMember<Event>>::iterator it = events.begin();
     for (; it != events.end(); ++it)
         dispatchEvent((*it).release());
 

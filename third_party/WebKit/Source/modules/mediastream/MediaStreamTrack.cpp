@@ -200,7 +200,7 @@ void MediaStreamTrack::propagateTrackEnded()
 {
     RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
     m_isIteratingRegisteredMediaStreams = true;
-    for (HeapHashSet<Member<MediaStream> >::iterator iter = m_registeredMediaStreams.begin(); iter != m_registeredMediaStreams.end(); ++iter)
+    for (HeapHashSet<Member<MediaStream>>::iterator iter = m_registeredMediaStreams.begin(); iter != m_registeredMediaStreams.end(); ++iter)
         (*iter)->trackEnded();
     m_isIteratingRegisteredMediaStreams = false;
 }
@@ -230,7 +230,7 @@ void MediaStreamTrack::registerMediaStream(MediaStream* mediaStream)
 void MediaStreamTrack::unregisterMediaStream(MediaStream* mediaStream)
 {
     RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
-    HeapHashSet<Member<MediaStream> >::iterator iter = m_registeredMediaStreams.find(mediaStream);
+    HeapHashSet<Member<MediaStream>>::iterator iter = m_registeredMediaStreams.find(mediaStream);
     RELEASE_ASSERT(iter != m_registeredMediaStreams.end());
     m_registeredMediaStreams.remove(iter);
 }

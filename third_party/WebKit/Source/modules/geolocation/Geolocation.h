@@ -102,8 +102,8 @@ private:
 
     explicit Geolocation(ExecutionContext*);
 
-    typedef HeapVector<Member<GeoNotifier> > GeoNotifierVector;
-    typedef HeapHashSet<Member<GeoNotifier> > GeoNotifierSet;
+    typedef HeapVector<Member<GeoNotifier>> GeoNotifierVector;
+    typedef HeapHashSet<Member<GeoNotifier>> GeoNotifierSet;
 
     bool hasListeners() const { return !m_oneShots.isEmpty() || !m_watchers.isEmpty(); }
 

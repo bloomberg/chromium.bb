@@ -214,8 +214,8 @@ private:
     NodeType m_nodeType;
     Member<AudioContext> m_context;
     float m_sampleRate;
-    HeapVector<Member<AudioNodeInput> > m_inputs;
-    HeapVector<Member<AudioNodeOutput> > m_outputs;
+    HeapVector<Member<AudioNodeInput>> m_inputs;
+    HeapVector<Member<AudioNodeOutput>> m_outputs;
 
     double m_lastProcessingTime;
     double m_lastNonSilentTime;

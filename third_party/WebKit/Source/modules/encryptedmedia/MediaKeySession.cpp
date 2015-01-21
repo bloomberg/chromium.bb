@@ -618,7 +618,7 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
     // Resolving promises now run synchronously and may result in additional
     // actions getting added to the queue. As a result, swap the queue to
     // a local copy to avoid problems if this happens.
-    HeapDeque<Member<PendingAction> > pendingActions;
+    HeapDeque<Member<PendingAction>> pendingActions;
     pendingActions.swap(m_pendingActions);
 
     while (!pendingActions.isEmpty()) {
