@@ -432,6 +432,13 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
         LOG(ERROR) << "Invalid output timestamp on alpha.";
         return false;
       }
+
+      if (vpx_image_alpha->d_h != vpx_image->d_h ||
+          vpx_image_alpha->d_w != vpx_image->d_w) {
+        LOG(ERROR) << "The alpha plane dimensions are not the same as the "
+                      "image dimensions.";
+        return false;
+      }
     }
   }
 
@@ -503,8 +510,8 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
     return;
   }
   CopyAPlane(vpx_image_alpha->planes[VPX_PLANE_Y],
-             vpx_image->stride[VPX_PLANE_Y],
-             vpx_image->d_h,
+             vpx_image_alpha->stride[VPX_PLANE_Y],
+             vpx_image_alpha->d_h,
              video_frame->get());
 }
 

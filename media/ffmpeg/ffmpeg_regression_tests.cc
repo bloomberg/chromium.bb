@@ -144,6 +144,10 @@ FFMPEG_TEST_CASE(Cr444546,
                  "security/444546.mp4",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
+FFMPEG_TEST_CASE(Cr449958,
+                 "security/449958.webm",
+                 PIPELINE_OK,
+                 PIPELINE_ERROR_DECODE);
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0,
