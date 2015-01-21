@@ -40,12 +40,10 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
             clipRecorder = adoptPtr(new FloatClipRecorder(*childPaintInfo.context, m_renderSVGContainer.displayItemClient(), childPaintInfo.phase, viewport));
         }
 
-        SVGRenderingContext renderingContext;
+        SVGRenderingContext renderingContext(m_renderSVGContainer, childPaintInfo);
         bool continueRendering = true;
-        if (childPaintInfo.phase == PaintPhaseForeground) {
-            renderingContext.prepareToRenderSVGContent(&m_renderSVGContainer, childPaintInfo);
-            continueRendering = renderingContext.isRenderingPrepared();
-        }
+        if (childPaintInfo.phase == PaintPhaseForeground)
+            continueRendering = renderingContext.applyClipMaskAndFilterIfNecessary();
 
         if (continueRendering) {
             childPaintInfo.updatePaintingRootForChildren(&m_renderSVGContainer);

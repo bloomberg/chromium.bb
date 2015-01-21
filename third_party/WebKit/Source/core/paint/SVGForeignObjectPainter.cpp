@@ -31,12 +31,10 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
     if (SVGRenderSupport::isOverflowHidden(&m_renderSVGForeignObject))
         clipRecorder = adoptPtr(new FloatClipRecorder(*childPaintInfo.context, m_renderSVGForeignObject.displayItemClient(), childPaintInfo.phase, m_renderSVGForeignObject.viewportRect()));
 
-    SVGRenderingContext renderingContext;
+    SVGRenderingContext renderingContext(m_renderSVGForeignObject, childPaintInfo);
     bool continueRendering = true;
-    if (paintInfo.phase == PaintPhaseForeground) {
-        renderingContext.prepareToRenderSVGContent(&m_renderSVGForeignObject, childPaintInfo);
-        continueRendering = renderingContext.isRenderingPrepared();
-    }
+    if (paintInfo.phase == PaintPhaseForeground)
+        continueRendering = renderingContext.applyClipMaskAndFilterIfNecessary();
 
     if (continueRendering) {
         // Paint all phases of FO elements atomically as though the FO element established its own stacking context.

@@ -48,53 +48,31 @@ private:
     AffineTransform m_savedContentTransformation;
 };
 
-// SVGRenderingContext
 class SVGRenderingContext {
     STACK_ALLOCATED();
 public:
-    // Does not start rendering.
-    SVGRenderingContext()
-        : m_renderingFlags(0)
-        , m_object(nullptr)
-        , m_paintInfo(nullptr)
+    SVGRenderingContext(RenderObject& object, PaintInfo& paintInfo)
+        : m_object(&object)
+        , m_paintInfo(&paintInfo)
         , m_filter(nullptr)
         , m_clipper(nullptr)
         , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
         , m_masker(nullptr)
-    {
-    }
+#if ENABLE(ASSERT)
+        , m_applyClipMaskAndFilterIfNecessaryCalled(false)
+#endif
+    { }
 
-    SVGRenderingContext(RenderObject* object, PaintInfo& paintinfo)
-        : m_renderingFlags(0)
-        , m_object(nullptr)
-        , m_paintInfo(nullptr)
-        , m_filter(nullptr)
-        , m_clipper(nullptr)
-        , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
-        , m_masker(nullptr)
-    {
-        prepareToRenderSVGContent(object, paintinfo);
-    }
-
-    // Automatically finishes context rendering.
     ~SVGRenderingContext();
 
-    // Used by all SVG renderers who apply clip/filter/etc. resources to the renderer content.
-    void prepareToRenderSVGContent(RenderObject*, PaintInfo&);
-    bool isRenderingPrepared() const { return m_renderingFlags & RenderingPrepared; }
+    // Return true if these operations aren't necessary or if they are successfully applied.
+    bool applyClipMaskAndFilterIfNecessary();
 
     static void renderSubtree(GraphicsContext*, RenderObject*);
 
     static float calculateScreenFontSizeScalingFactor(const RenderObject*);
 
 private:
-    // To properly revert partially successful initializtions in the destructor, we record all successful steps.
-    enum RenderingFlags {
-        RenderingPrepared = 1,
-        PostApplyResources = 1 << 1,
-        PrepareToRenderSVGContentWasCalled = 1 << 2
-    };
-
     void applyCompositingIfNecessary();
 
     // Return true if no clipping is necessary or if the clip is successfully applied.
@@ -108,9 +86,8 @@ private:
 
     bool isIsolationInstalled() const;
 
-    int m_renderingFlags;
     RawPtrWillBeMember<RenderObject> m_object;
-    PaintInfo* m_paintInfo;
+    RawPtrWillBeMember<PaintInfo> m_paintInfo;
     IntRect m_savedPaintRect;
     RawPtrWillBeMember<RenderSVGResourceFilter> m_filter;
     RawPtrWillBeMember<RenderSVGResourceClipper> m_clipper;
@@ -119,6 +96,9 @@ private:
     OwnPtr<CompositingRecorder> m_compositingRecorder;
     OwnPtr<FloatClipRecorder> m_clipRecorder;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;
+#if ENABLE(ASSERT)
+    bool m_applyClipMaskAndFilterIfNecessaryCalled;
+#endif
 };
 
 } // namespace blink

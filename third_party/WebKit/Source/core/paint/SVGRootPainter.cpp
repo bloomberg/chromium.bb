@@ -56,12 +56,9 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     // SVG doesn't use paintOffset internally but we need to bake it into the paint rect.
     childPaintInfo.rect.move(-adjustedPaintOffset.x(), -adjustedPaintOffset.y());
 
-    SVGRenderingContext renderingContext;
-    if (childPaintInfo.phase == PaintPhaseForeground) {
-        renderingContext.prepareToRenderSVGContent(&m_renderSVGRoot, childPaintInfo);
-        if (!renderingContext.isRenderingPrepared())
-            return;
-    }
+    SVGRenderingContext renderingContext(m_renderSVGRoot, childPaintInfo);
+    if (childPaintInfo.phase == PaintPhaseForeground && !renderingContext.applyClipMaskAndFilterIfNecessary())
+        return;
 
     BoxPainter(m_renderSVGRoot).paint(childPaintInfo, LayoutPoint());
 }

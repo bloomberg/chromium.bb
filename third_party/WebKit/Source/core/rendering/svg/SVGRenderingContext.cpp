@@ -39,42 +39,33 @@ namespace blink {
 
 SVGRenderingContext::~SVGRenderingContext()
 {
-    ASSERT(m_object && m_paintInfo);
-
-    if (m_renderingFlags & PostApplyResources) {
-        ASSERT(m_masker || m_clipper || m_filter);
+    if (m_filter) {
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
+        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->filter() == m_filter);
+        m_filter->finishEffect(m_object, m_paintInfo->context);
+        m_paintInfo->rect = m_savedPaintRect;
+        m_paintInfo->context->restore();
+    }
 
-        if (m_filter) {
-            ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->filter() == m_filter);
-            m_filter->finishEffect(m_object, m_paintInfo->context);
-            m_paintInfo->rect = m_savedPaintRect;
-            m_paintInfo->context->restore();
-        }
+    if (m_masker) {
+        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
+        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->masker() == m_masker);
+        m_masker->finishEffect(m_object, m_paintInfo->context);
+    }
 
-        if (m_masker) {
-            ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->masker() == m_masker);
-            m_masker->finishEffect(m_object, m_paintInfo->context);
-        }
-
-        if (m_clipper) {
-            ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->clipper() == m_clipper);
-            m_clipper->postApplyStatefulResource(m_object, m_paintInfo->context, m_clipperState);
-        }
+    if (m_clipper) {
+        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
+        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->clipper() == m_clipper);
+        m_clipper->postApplyStatefulResource(m_object, m_paintInfo->context, m_clipperState);
     }
 }
 
-void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintInfo& paintInfo)
+bool SVGRenderingContext::applyClipMaskAndFilterIfNecessary()
 {
 #if ENABLE(ASSERT)
-    // This function must not be called twice!
-    ASSERT(!(m_renderingFlags & PrepareToRenderSVGContentWasCalled));
-    m_renderingFlags |= PrepareToRenderSVGContentWasCalled;
+    ASSERT(!m_applyClipMaskAndFilterIfNecessaryCalled);
+    m_applyClipMaskAndFilterIfNecessaryCalled = true;
 #endif
-
-    ASSERT(object);
-    m_object = object;
-    m_paintInfo = &paintInfo;
 
     SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(m_object);
 
@@ -82,26 +73,25 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     // non-geometric operations such as compositing, masking, and filtering.
     if (m_paintInfo->isRenderingClipPathAsMaskImage()) {
         if (!applyClipIfNecessary(resources))
-            return;
-        m_renderingFlags |= RenderingPrepared;
-        return;
+            return false;
+        return true;
     }
 
     applyCompositingIfNecessary();
 
     if (!applyClipIfNecessary(resources))
-        return;
+        return false;
 
     if (!applyMaskIfNecessary(resources))
-        return;
+        return false;
 
     if (!applyFilterIfNecessary(resources))
-        return;
+        return false;
 
     if (!isIsolationInstalled() && SVGRenderSupport::isIsolationRequired(m_object))
         m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo->context, m_object->displayItemClient(), m_paintInfo->context->compositeOperation(), WebBlendModeNormal, 1, m_paintInfo->context->compositeOperation()));
 
-    m_renderingFlags |= RenderingPrepared;
+    return true;
 }
 
 void SVGRenderingContext::applyCompositingIfNecessary()
@@ -133,7 +123,6 @@ bool SVGRenderingContext::applyClipIfNecessary(SVGResources* resources)
         if (!clipper->applyStatefulResource(m_object, m_paintInfo->context, m_clipperState))
             return false;
         m_clipper = clipper;
-        m_renderingFlags |= PostApplyResources;
     } else {
         ClipPathOperation* clipPathOperation = m_object->style()->clipPath();
         if (clipPathOperation && clipPathOperation->type() == ClipPathOperation::SHAPE) {
@@ -152,7 +141,6 @@ bool SVGRenderingContext::applyMaskIfNecessary(SVGResources* resources)
         if (!masker->prepareEffect(m_object, m_paintInfo->context))
             return false;
         m_masker = masker;
-        m_renderingFlags |= PostApplyResources;
     }
     return true;
 }
@@ -166,7 +154,6 @@ bool SVGRenderingContext::applyFilterIfNecessary(SVGResources* resources)
         // FIXME: This code should use the same pattern as clipping and masking
         // instead of always creating m_filter. See crbug.com/449743.
         m_filter = filter;
-        m_renderingFlags |= PostApplyResources;
         m_savedPaintRect = m_paintInfo->rect;
         m_paintInfo->context->save();
 

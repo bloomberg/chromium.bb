@@ -35,8 +35,8 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     TransformRecorder transformRecorder(*paintInfo.context, m_renderSVGImage.displayItemClient(), m_renderSVGImage.localToParentTransform());
     {
         PaintInfo childPaintInfo(paintInfo);
-        SVGRenderingContext renderingContext(&m_renderSVGImage, childPaintInfo);
-        if (renderingContext.isRenderingPrepared()) {
+        SVGRenderingContext renderingContext(m_renderSVGImage, childPaintInfo);
+        if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
             RenderDrawingRecorder recorder(childPaintInfo.context, m_renderSVGImage, childPaintInfo.phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
                 if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {

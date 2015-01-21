@@ -36,8 +36,8 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         }
     }
 
-    SVGRenderingContext renderingContext(&m_svgRootInlineBox.renderer(), childPaintInfo);
-    if (renderingContext.isRenderingPrepared()) {
+    SVGRenderingContext renderingContext(m_svgRootInlineBox.renderer(), childPaintInfo);
+    if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine())
             child->paint(childPaintInfo, paintOffset, 0, 0);
     }

@@ -56,8 +56,8 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
     FloatRect boundingBox = m_renderSVGShape.paintInvalidationRectInLocalCoordinates();
 
     TransformRecorder transformRecorder(*childPaintInfo.context, m_renderSVGShape.displayItemClient(), m_renderSVGShape.localTransform());
-    SVGRenderingContext renderingContext(&m_renderSVGShape, childPaintInfo);
-    if (renderingContext.isRenderingPrepared()) {
+    SVGRenderingContext renderingContext(m_renderSVGShape, childPaintInfo);
+    if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
         RenderDrawingRecorder recorder(childPaintInfo.context, m_renderSVGShape, childPaintInfo.phase, boundingBox);
         if (!recorder.canUseCachedDrawing()) {
             const SVGRenderStyle& svgStyle = m_renderSVGShape.style()->svgStyle();
