@@ -5,11 +5,13 @@
 #ifndef CHROME_RENDERER_PLUGINS_CHROME_PLUGIN_PLACEHOLDER_H_
 #define CHROME_RENDERER_PLUGINS_CHROME_PLUGIN_PLACEHOLDER_H_
 
-#include "components/plugins/renderer/plugin_placeholder.h"
+#include "components/plugins/renderer/loadable_plugin_placeholder.h"
+#include "content/public/renderer/context_menu_client.h"
+#include "content/public/renderer/render_process_observer.h"
 
 struct ChromeViewHostMsg_GetPluginInfo_Status;
 
-class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
+class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
                                 public content::RenderProcessObserver,
                                 public content::ContextMenuClient {
  public:
@@ -73,8 +75,6 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   // Javascript callback opens chrome://plugins in a new tab.
   void OpenAboutPluginsCallback();
 
-  void OnLoadBlockedPlugins(const std::string& identifier);
-  void OnSetIsPrerendering(bool is_prerendering);
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   void OnDidNotFindMissingPlugin();
   void OnFoundMissingPlugin(const base::string16& plugin_name);

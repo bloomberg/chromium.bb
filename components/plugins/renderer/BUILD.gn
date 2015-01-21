@@ -4,6 +4,8 @@
 
 static_library("renderer") {
   sources = [
+    "loadable_plugin_placeholder.cc",
+    "loadable_plugin_placeholder.h",
     "plugin_placeholder.cc",
     "plugin_placeholder.h",
     "webview_plugin.cc",

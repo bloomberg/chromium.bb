@@ -20,6 +20,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'plugins/renderer/loadable_plugin_placeholder.cc',
+        'plugins/renderer/loadable_plugin_placeholder.h',
         'plugins/renderer/plugin_placeholder.cc',
         'plugins/renderer/plugin_placeholder.h',
         'plugins/renderer/webview_plugin.cc',
