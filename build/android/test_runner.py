@@ -142,7 +142,7 @@ def AddRemoteDeviceOptions(parser):
                      help='Type of test to run as.')
   group.add_argument('--runner-package', default='',
                      help='Package name of test.')
-  group.add_argument('--apk-under-test', default='apks/Chrome.apk',
+  group.add_argument('--app-under-test', default='',
                      help='APK to run tests on.')
 
   api_secret_group = group.add_mutually_exclusive_group()
@@ -316,6 +316,7 @@ def AddInstrumentationTestOptions(parser):
 
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
+  AddRemoteDeviceOptions(parser)
 
 
 def ProcessInstrumentationOptions(args):

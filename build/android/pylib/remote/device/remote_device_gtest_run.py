@@ -24,7 +24,7 @@ _EXTRA_ONLY_OUTPUT_FAILURES = (
         'OnlyOutputFailures')
 
 
-class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
+class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
   """Run gtests and uirobot tests on a remote device."""
 
   DEFAULT_RUNNER_PACKAGE = (

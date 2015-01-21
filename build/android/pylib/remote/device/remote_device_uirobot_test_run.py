@@ -15,7 +15,7 @@ from pylib.remote.device import remote_device_test_run
 from pylib.remote.device import remote_device_helper
 
 
-class RemoteDeviceUirobotRun(remote_device_test_run.RemoteDeviceTestRun):
+class RemoteDeviceUirobotTestRun(remote_device_test_run.RemoteDeviceTestRun):
   """Run uirobot tests on a remote device."""
 
   DEFAULT_RUNNER_TYPE = 'android_robot'
@@ -27,7 +27,7 @@ class RemoteDeviceUirobotRun(remote_device_test_run.RemoteDeviceTestRun):
       env: Environment the tests will run in.
       test_instance: The test that will be run.
     """
-    super(RemoteDeviceUirobotRun, self).__init__(env, test_instance)
+    super(RemoteDeviceUirobotTestRun, self).__init__(env, test_instance)
 
   #override
   def TestPackage(self):

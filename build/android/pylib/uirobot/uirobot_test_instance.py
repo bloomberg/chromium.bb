@@ -18,7 +18,7 @@ class UirobotTestInstance(test_instance.TestInstance):
     """
     super(UirobotTestInstance, self).__init__()
     self._apk_under_test = os.path.join(
-        constants.GetOutDirectory(), args.apk_under_test)
+        constants.GetOutDirectory(), args.app_under_test)
     self._minutes = args.minutes
     self._package_name = apk_helper.GetPackageName(self._apk_under_test)
     self._suite = 'Android Uirobot'

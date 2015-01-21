@@ -219,7 +219,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
         config['sdcard_files'] = ','.join(sdcard_files)
         config['host_test'] = host_test
         self._test_id = self._UploadTestToDevice(
-            'robotium', test_with_deps.name)
+            'robotium', test_with_deps.name, app_id=self._app_id)
     else:
       self._test_id = self._UploadTestToDevice('robotium', test_path)
 
@@ -238,7 +238,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
           upload_results, 'Unable to upload %s.' % app_path)
       return upload_results.json()['response']['app_id']
 
-  def _UploadTestToDevice(self, test_type, test_path):
+  def _UploadTestToDevice(self, test_type, test_path, app_id=None):
     """Upload test to device
     Args:
       test_type: Type of test that is being uploaded. Ex. uirobot, gtest..
@@ -248,7 +248,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
       with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
                                               logging.WARNING):
         upload_results = appurify_sanitized.api.tests_upload(
-            self._env.token, test_src, 'raw', test_type)
+            self._env.token, test_src, 'raw', test_type, app_id=app_id)
       remote_device_helper.TestHttpResponse(upload_results,
           'Unable to upload %s.' % test_path)
       return upload_results.json()['response']['test_id']

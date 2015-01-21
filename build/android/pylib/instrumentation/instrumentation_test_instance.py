@@ -5,6 +5,7 @@
 import logging
 import os
 import pickle
+import re
 import sys
 
 from pylib import cmd_helper
@@ -24,6 +25,7 @@ import unittest_util
 _DEFAULT_ANNOTATIONS = [
     'Smoke', 'SmallTest', 'MediumTest', 'LargeTest',
     'EnormousTest', 'IntegrationTest']
+_NATIVE_CRASH_RE = re.compile('native crash', re.IGNORECASE)
 _PICKLE_FORMAT_VERSION = 10
 
 
@@ -270,6 +272,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
         self._flags.extend([flag for flag in stripped_lines if flag])
 
   @property
+  def suite(self):
+    return 'instrumentation'
+
+  @property
   def apk_under_test(self):
     return self._apk_under_test
 
@@ -457,6 +463,33 @@ class InstrumentationTestInstance(test_instance.TestInstance):
             'annotations': a,
         })
     return inflated_tests
+
+  @staticmethod
+  def GenerateMultiTestResult(errors, statuses):
+    INSTR_STATUS_CODE_START = 1
+    results = []
+    skip_counter = 1
+    for status_code, bundle in statuses:
+      if status_code != INSTR_STATUS_CODE_START:
+        # TODO(rnephew): Make skipped tests still output test name. This is only
+        # there to give skipped tests a unique name so they are counted
+        if 'test_skipped' in bundle:
+          test_name = str(skip_counter)
+          skip_counter += 1
+        else:
+          test_name = '%s#%s' % (
+              ''.join(bundle.get('class', [''])),
+              ''.join(bundle.get('test', [''])))
+
+        results.append(
+            GenerateTestResult(test_name, [(status_code, bundle)], 0, 0))
+    for error in errors:
+      if _NATIVE_CRASH_RE.search(error):
+        results.append(
+            base_test_result.BaseTestResult(
+            'Crash detected', base_test_result.ResultType.CRASH))
+
+    return results
 
   @staticmethod
   def ParseAmInstrumentRawOutput(raw_output):

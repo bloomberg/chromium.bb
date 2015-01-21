@@ -9,7 +9,8 @@ from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_instrumentation_test_run
 from pylib.remote.device import remote_device_environment
 from pylib.remote.device import remote_device_gtest_run
-from pylib.remote.device import remote_device_uirobot_run
+from pylib.remote.device import remote_device_instrumentation_test_run
+from pylib.remote.device import remote_device_uirobot_test_run
 from pylib.uirobot import uirobot_test_instance
 
 
@@ -24,10 +25,14 @@ def CreateTestRun(_args, env, test_instance, error_func):
 
   if isinstance(env, remote_device_environment.RemoteDeviceEnvironment):
     if isinstance(test_instance, gtest_test_instance.GtestTestInstance):
-      return remote_device_gtest_run.RemoteDeviceGtestRun(env, test_instance)
-    # TODO(rnephew): Add remote_device instrumentation test runs.
+      return remote_device_gtest_run.RemoteDeviceGtestTestRun(
+          env, test_instance)
+    if isinstance(test_instance,
+                  instrumentation_test_instance.InstrumentationTestInstance):
+      return (remote_device_instrumentation_test_run
+              .RemoteDeviceInstrumentationTestRun(env, test_instance))
     if isinstance(test_instance, uirobot_test_instance.UirobotTestInstance):
-      return remote_device_uirobot_run.RemoteDeviceUirobotRun(
+      return remote_device_uirobot_test_run.RemoteDeviceUirobotTestRun(
           env, test_instance)
 
 
