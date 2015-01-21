@@ -175,7 +175,6 @@ public:
     static void allVisitedStateChanged();
     static void visitedStateChanged(LinkHash visitedHash);
 
-    StorageNamespace* sessionStorage(bool optionalCreate = true);
     StorageClient& storageClient() const { return *m_storageClient; }
 
     PageVisibilityState visibilityState() const;
@@ -263,8 +262,6 @@ private:
     bool m_defersLoading;
 
     float m_deviceScaleFactor;
-
-    OwnPtr<StorageNamespace> m_sessionStorage;
 
     double m_timerAlignmentInterval;
 

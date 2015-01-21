@@ -1919,6 +1919,8 @@
             'storage/StorageEvent.h',
             'storage/StorageNamespace.cpp',
             'storage/StorageNamespace.h',
+            'storage/StorageNamespaceController.cpp',
+            'storage/StorageNamespaceController.h',
             'streams/ReadableStream.cpp',
             'streams/ReadableStream.h',
             'streams/ReadableStreamImpl.h',

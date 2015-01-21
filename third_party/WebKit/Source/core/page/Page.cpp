@@ -57,7 +57,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
-#include "core/storage/StorageNamespace.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/HashMap.h"
@@ -395,13 +394,6 @@ void Page::visitedStateChanged(LinkHash linkHash)
                 toLocalFrame(frame)->document()->visitedLinkState().invalidateStyleForLink(linkHash);
         }
     }
-}
-
-StorageNamespace* Page::sessionStorage(bool optionalCreate)
-{
-    if (!m_sessionStorage && optionalCreate)
-        m_sessionStorage = m_storageClient->createSessionStorageNamespace();
-    return m_sessionStorage.get();
 }
 
 void Page::setTimerAlignmentInterval(double interval)

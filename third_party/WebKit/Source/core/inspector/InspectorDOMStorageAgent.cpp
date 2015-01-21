@@ -43,6 +43,7 @@
 #include "core/page/Page.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageNamespace.h"
+#include "core/storage/StorageNamespaceController.h"
 #include "platform/JSONValues.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -225,7 +226,7 @@ PassOwnPtrWillBeRawPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(Er
 
     if (isLocalStorage)
         return StorageNamespace::localStorageArea(frame->document()->securityOrigin());
-    return m_pageAgent->page()->sessionStorage()->storageArea(frame->document()->securityOrigin());
+    return StorageNamespaceController::from(m_pageAgent->page())->sessionStorage()->storageArea(frame->document()->securityOrigin());
 }
 
 } // namespace blink

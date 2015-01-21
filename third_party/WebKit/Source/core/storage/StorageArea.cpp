@@ -39,6 +39,7 @@
 #include "core/storage/Storage.h"
 #include "core/storage/StorageEvent.h"
 #include "core/storage/StorageNamespace.h"
+#include "core/storage/StorageNamespaceController.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebStorageArea.h"
 #include "public/platform/WebString.h"
@@ -181,7 +182,7 @@ static Page* findPageWithSessionStorageNamespace(const WebStorageNamespace& sess
     const HashSet<Page*>& pages = Page::ordinaryPages();
     for (Page* page : pages) {
         const bool dontCreateIfMissing = false;
-        StorageNamespace* storageNamespace = page->sessionStorage(dontCreateIfMissing);
+        StorageNamespace* storageNamespace = StorageNamespaceController::from(page)->sessionStorage(dontCreateIfMissing);
         if (storageNamespace && storageNamespace->isSameNamespace(sessionNamespace))
             return page;
     }

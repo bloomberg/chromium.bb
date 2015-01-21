@@ -13,6 +13,7 @@
 #include "core/page/Page.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageNamespace.h"
+#include "core/storage/StorageNamespaceController.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -94,7 +95,7 @@ Storage* DOMWindowStorage::sessionStorage(ExceptionState& exceptionState) const
     if (!page)
         return nullptr;
 
-    OwnPtrWillBeRawPtr<StorageArea> storageArea = page->sessionStorage()->storageArea(document->securityOrigin());
+    OwnPtrWillBeRawPtr<StorageArea> storageArea = StorageNamespaceController::from(page)->sessionStorage()->storageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_window.frame())) {
         exceptionState.throwSecurityError(accessDeniedMessage);
         return nullptr;
