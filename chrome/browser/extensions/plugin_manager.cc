@@ -89,7 +89,7 @@ void PluginManager::OnExtensionLoaded(content::BrowserContext* browser_context,
 
     content::WebPluginInfo info;
     info.type = content::WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN;
-    info.name = base::UTF8ToUTF16(handler->extension_id());
+    info.name = base::UTF8ToUTF16(extension->name());
     info.path = base::FilePath::FromUTF8Unsafe(handler->extension_id());
 
     for (std::set<std::string>::const_iterator mime_type =
