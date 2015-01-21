@@ -163,6 +163,7 @@ function runTest() {
     shouldThrow("node.curve = new Float32Array(1)");
     shouldBeNull("node.curve");
     shouldNotThrow("node.curve = new Float32Array(2)");
+    shouldNotThrow("node.curve = null");
 
     // Start/stop for AudioBufferSourceNodes
     buffer = context.createBuffer(1,1, context.sampleRate);
