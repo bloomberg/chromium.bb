@@ -14,19 +14,24 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/test_renderer_host.h"
 #include "rlz/test/rlz_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
 #endif
 
 using content::NavigationEntry;
+using content::LoadCommittedDetails;
 using testing::AssertionResult;
 using testing::AssertionSuccess;
 using testing::AssertionFailure;
@@ -161,9 +166,10 @@ class TestRLZTracker : public RLZTracker {
   DISALLOW_COPY_AND_ASSIGN(TestRLZTracker);
 };
 
-class RlzLibTest : public RlzLibTestNoMachineState {
+class RlzLibTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override;
+  void TearDown() override;
 
   void SetMainBrand(const char* brand);
   void SetReactivationBrand(const char* brand);
@@ -181,18 +187,25 @@ class RlzLibTest : public RlzLibTestNoMachineState {
   void ExpectReactivationRlzPingSent(bool expected);
 
   TestRLZTracker tracker_;
+  RlzLibTestNoMachineStateHelper m_rlz_test_helper_;
 #if defined(OS_POSIX)
   scoped_ptr<google_brand::BrandForTesting> brand_override_;
 #endif
 };
 
 void RlzLibTest::SetUp() {
-  RlzLibTestNoMachineState::SetUp();
+  ChromeRenderViewHostTestHarness::SetUp();
+  m_rlz_test_helper_.SetUp();
 
   // Make sure a non-organic brand code is set in the registry or the RLZTracker
   // is pretty much a no-op.
   SetMainBrand("TEST");
   SetReactivationBrand("");
+}
+
+void RlzLibTest::TearDown() {
+  ChromeRenderViewHostTestHarness::TearDown();
+  m_rlz_test_helper_.TearDown();
 }
 
 void RlzLibTest::SetMainBrand(const char* brand) {
@@ -250,12 +263,16 @@ void RlzLibTest::SimulateOmniboxUsage() {
 }
 
 void RlzLibTest::SimulateHomepageUsage() {
-  scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
-  entry->SetPageID(0);
-  entry->SetTransitionType(ui::PAGE_TRANSITION_HOME_PAGE);
-  tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
-                   content::NotificationService::AllSources(),
-                   content::Details<NavigationEntry>(entry.get()));
+  GURL home_url = GURL("https://www.google.com/");
+  GURL search_url = GURL("https://www.google.com/#q=search");
+
+  content::RenderFrameHostTester* rfht =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Simulate a navigation to homepage first.
+  rfht->SendNavigateWithTransition(0, home_url, ui::PAGE_TRANSITION_HOME_PAGE);
+  // Then simulate a search from homepage.
+  rfht->SendNavigateWithTransition(1, search_url, ui::PAGE_TRANSITION_LINK);
 }
 
 void RlzLibTest::SimulateAppListUsage() {
@@ -825,15 +842,17 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
 }
 
 TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
-  scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
-  entry->SetPageID(0);
-  entry->SetTransitionType(ui::PAGE_TRANSITION_LINK);
-  tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
+  scoped_ptr<LoadCommittedDetails> details(new LoadCommittedDetails());
+  details->entry = NavigationEntry::Create();
+  details->entry->SetPageID(0);
+  details->entry->SetTransitionType(ui::PAGE_TRANSITION_LINK);
+
+  tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    content::NotificationService::AllSources(),
                    content::Details<NavigationEntry>(NULL));
-  tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
+  tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    content::NotificationService::AllSources(),
-                   content::Details<NavigationEntry>(entry.get()));
+                   content::Details<LoadCommittedDetails>(details.get()));
 }
 
 // TODO(thakis): Reactivation doesn't exist on Mac yet.

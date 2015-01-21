@@ -125,7 +125,7 @@ void InitializeRegistryOverridesForTesting(
 
 #endif  // defined(OS_WIN)
 
-void RlzLibTestNoMachineState::SetUp() {
+void RlzLibTestNoMachineStateHelper::SetUp() {
 #if defined(OS_WIN)
   InitializeRegistryOverridesForTesting(&override_manager_);
 #elif defined(OS_MACOSX)
@@ -137,10 +137,18 @@ void RlzLibTestNoMachineState::SetUp() {
 #endif  // defined(OS_POSIX)
 }
 
-void RlzLibTestNoMachineState::TearDown() {
+void RlzLibTestNoMachineStateHelper::TearDown() {
 #if defined(OS_POSIX)
   rlz_lib::testing::SetRlzStoreDirectory(base::FilePath());
 #endif  // defined(OS_POSIX)
+}
+
+void RlzLibTestNoMachineState::SetUp() {
+  m_rlz_test_helper_.SetUp();
+}
+
+void RlzLibTestNoMachineState::TearDown() {
+  m_rlz_test_helper_.TearDown();
 }
 
 void RlzLibTestBase::SetUp() {

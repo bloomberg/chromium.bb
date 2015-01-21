@@ -30,6 +30,8 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "net/http/http_util.h"
@@ -57,6 +59,7 @@ static bool ClearReferral() {
 
 using content::BrowserThread;
 using content::NavigationEntry;
+using content::NavigationController;
 
 namespace {
 
@@ -302,7 +305,7 @@ bool RLZTracker::Init(bool first_run,
 #if !defined(OS_IOS)
     // Register for notifications from navigations, to see if the user has used
     // the home page.
-    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    content::NotificationService::AllSources());
 #endif  // !defined(OS_IOS)
   }
@@ -421,15 +424,43 @@ void RLZTracker::Observe(int type,
                         content::NotificationService::AllSources());
       break;
 #if !defined(OS_IOS)
-    case content::NOTIFICATION_NAV_ENTRY_PENDING: {
-      const NavigationEntry* entry =
-          content::Details<content::NavigationEntry>(details).ptr();
-      if (entry != NULL &&
-          ((entry->GetTransitionType() &
-            ui::PAGE_TRANSITION_HOME_PAGE) != 0)) {
-        RecordFirstSearch(ChromeHomePage());
-        registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-                          content::NotificationService::AllSources());
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
+      // Firstly check if it is a Google search.
+      content::LoadCommittedDetails* load_details =
+          content::Details<content::LoadCommittedDetails>(details).ptr();
+      if (load_details == NULL)
+        break;
+
+      NavigationEntry* entry = load_details->entry;
+      if (entry == NULL)
+        break;
+
+      if (google_util::IsGoogleSearchUrl(entry->GetURL())) {
+        // If it is a Google search, check if it originates from HOMEPAGE by
+        // getting the previous NavigationEntry.
+        NavigationController* controller =
+            content::Source<NavigationController>(source).ptr();
+        if (controller == NULL)
+          break;
+
+        int entry_index = controller->GetLastCommittedEntryIndex();
+        if (entry_index < 1)
+          break;
+
+        const NavigationEntry* previous_entry = controller->GetEntryAtIndex(
+            entry_index - 1);
+
+        if (previous_entry == NULL)
+          break;
+
+        // Make sure it is a Google web page originated from HOMEPAGE.
+        if (google_util::IsGoogleHomePageUrl(previous_entry->GetURL()) &&
+            ((previous_entry->GetTransitionType() &
+                  ui::PAGE_TRANSITION_HOME_PAGE) != 0)) {
+            RecordFirstSearch(ChromeHomePage());
+            registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                              content::NotificationService::AllSources());
+        }
       }
       break;
     }
