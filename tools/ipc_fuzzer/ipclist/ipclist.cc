@@ -53,6 +53,14 @@ static bool check_msgtable() {
   exemptions.push_back(MetroViewerMsgStart);
   exemptions.push_back(CCMsgStart);  // Nothing but param traits.
   exemptions.push_back(CldDataProviderMsgStart); // Conditional build.
+
+  // Sent from browser to renderer.
+  exemptions.push_back(WebCacheMsgStart);
+
+#if defined(DISABLE_NACL)
+  exemptions.push_back(NaClMsgStart);
+#endif  // defined(DISABLE_NACL)
+
 #if !defined(OS_ANDROID)
   exemptions.push_back(JavaBridgeMsgStart);
   exemptions.push_back(MediaPlayerMsgStart);
@@ -60,6 +68,11 @@ static bool check_msgtable() {
   exemptions.push_back(GinJavaBridgeMsgStart);
   exemptions.push_back(AndroidWebViewMsgStart);
 #endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_POSIX)
+  exemptions.push_back(CastMediaMsgStart); // FIXME: Add support for types.
+#endif  // !defined(OS_POSIX)
+
 #if !defined(USE_OZONE)
   exemptions.push_back(OzoneGpuMsgStart);
 #endif  // !defined(USE_OZONE)

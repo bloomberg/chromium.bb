@@ -46,7 +46,7 @@ IPC_MESSAGE_CONTROL2(CmaHostMsg_SetPlaybackRate,
 IPC_MESSAGE_CONTROL3(CmaHostMsg_CreateAvPipe,
                      int /* Media pipeline ID */,
                      chromecast::media::TrackId /* Track ID */,
-                     size_t /* Fifo size */);
+                     size_t /* Fifo size */)
 IPC_MESSAGE_CONTROL3(CmaHostMsg_AudioInitialize,
                      int /* Media pipeline ID */,
                      chromecast::media::TrackId /* Track ID */,
