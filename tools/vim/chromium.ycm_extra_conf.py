@@ -97,14 +97,15 @@ def FindChromeSrcFromFilename(filename):
     (String) Path of 'src/', or None if unable to find.
   """
   curdir = os.path.normpath(os.path.dirname(filename))
-  while not (PathExists(curdir, 'src') and PathExists(curdir, 'src', 'DEPS')
-             and (PathExists(curdir, '.gclient')
-                  or PathExists(curdir, 'src', '.git'))):
+  while not (os.path.basename(os.path.realpath(curdir)) == 'src'
+             and PathExists(curdir, 'DEPS')
+             and (PathExists(curdir, '..', '.gclient')
+                  or PathExists(curdir, '.git'))):
     nextdir = os.path.normpath(os.path.join(curdir, '..'))
     if nextdir == curdir:
       return None
     curdir = nextdir
-  return os.path.join(curdir, 'src')
+  return curdir
 
 
 def GetClangCommandFromNinjaForFilename(chrome_root, filename):
