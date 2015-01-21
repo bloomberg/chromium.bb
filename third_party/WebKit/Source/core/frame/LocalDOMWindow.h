@@ -110,8 +110,6 @@ public:
     Document* document() const override;
     StyleMedia* styleMedia() const override;
     double devicePixelRatio() const override;
-    Storage* sessionStorage(ExceptionState&) const override;
-    Storage* localStorage(ExceptionState&) const override;
     ApplicationCache* applicationCache() const override;
     int orientation() const override;
     Console* console() const override;
@@ -191,9 +189,6 @@ public:
 
     void finishedLoading();
 
-    // HTML 5 key/value storage
-    Storage* optionalSessionStorage() const { return m_sessionStorage.get(); }
-    Storage* optionalLocalStorage() const { return m_localStorage.get(); }
     ApplicationCache* optionalApplicationCache() const { return m_applicationCache.get(); }
 
     // Dispatch the (deprecated) orientationchange event to this DOMWindow and
@@ -298,8 +293,6 @@ private:
     String m_status;
     String m_defaultStatus;
 
-    mutable RefPtrWillBeMember<Storage> m_sessionStorage;
-    mutable RefPtrWillBeMember<Storage> m_localStorage;
     mutable RefPtrWillBeMember<ApplicationCache> m_applicationCache;
 
     mutable RefPtrWillBeMember<Performance> m_performance;

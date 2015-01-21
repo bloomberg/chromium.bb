@@ -624,8 +624,6 @@ void LocalDOMWindow::reset()
     m_performance = nullptr;
     m_location = nullptr;
     m_media = nullptr;
-    m_sessionStorage = nullptr;
-    m_localStorage = nullptr;
     m_applicationCache = nullptr;
 #if ENABLE(ASSERT)
     m_hasBeenReset = true;
@@ -769,91 +767,6 @@ Location* LocalDOMWindow::location() const
     if (!m_location)
         m_location = Location::create(frame());
     return m_location.get();
-}
-
-Storage* LocalDOMWindow::sessionStorage(ExceptionState& exceptionState) const
-{
-    if (!isCurrentlyDisplayedInFrame())
-        return nullptr;
-
-    Document* document = this->document();
-    if (!document)
-        return nullptr;
-
-    String accessDeniedMessage = "Access is denied for this document.";
-    if (!document->securityOrigin()->canAccessLocalStorage()) {
-        if (document->isSandboxed(SandboxOrigin))
-            exceptionState.throwSecurityError("The document is sandboxed and lacks the 'allow-same-origin' flag.");
-        else if (document->url().protocolIs("data"))
-            exceptionState.throwSecurityError("Storage is disabled inside 'data:' URLs.");
-        else
-            exceptionState.throwSecurityError(accessDeniedMessage);
-        return nullptr;
-    }
-
-    if (m_sessionStorage) {
-        if (!m_sessionStorage->area()->canAccessStorage(frame())) {
-            exceptionState.throwSecurityError(accessDeniedMessage);
-            return nullptr;
-        }
-        return m_sessionStorage.get();
-    }
-
-    Page* page = document->page();
-    if (!page)
-        return nullptr;
-
-    OwnPtrWillBeRawPtr<StorageArea> storageArea = page->sessionStorage()->storageArea(document->securityOrigin());
-    if (!storageArea->canAccessStorage(frame())) {
-        exceptionState.throwSecurityError(accessDeniedMessage);
-        return nullptr;
-    }
-
-    m_sessionStorage = Storage::create(frame(), storageArea.release());
-    return m_sessionStorage.get();
-}
-
-Storage* LocalDOMWindow::localStorage(ExceptionState& exceptionState) const
-{
-    if (!isCurrentlyDisplayedInFrame())
-        return nullptr;
-
-    Document* document = this->document();
-    if (!document)
-        return nullptr;
-
-    String accessDeniedMessage = "Access is denied for this document.";
-    if (!document->securityOrigin()->canAccessLocalStorage()) {
-        if (document->isSandboxed(SandboxOrigin))
-            exceptionState.throwSecurityError("The document is sandboxed and lacks the 'allow-same-origin' flag.");
-        else if (document->url().protocolIs("data"))
-            exceptionState.throwSecurityError("Storage is disabled inside 'data:' URLs.");
-        else
-            exceptionState.throwSecurityError(accessDeniedMessage);
-        return nullptr;
-    }
-
-    if (m_localStorage) {
-        if (!m_localStorage->area()->canAccessStorage(frame())) {
-            exceptionState.throwSecurityError(accessDeniedMessage);
-            return nullptr;
-        }
-        return m_localStorage.get();
-    }
-
-    // FIXME: Seems this check should be much higher?
-    FrameHost* host = document->frameHost();
-    if (!host || !host->settings().localStorageEnabled())
-        return nullptr;
-
-    OwnPtrWillBeRawPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
-    if (!storageArea->canAccessStorage(frame())) {
-        exceptionState.throwSecurityError(accessDeniedMessage);
-        return nullptr;
-    }
-
-    m_localStorage = Storage::create(frame(), storageArea.release());
-    return m_localStorage.get();
 }
 
 void LocalDOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, const String& targetOrigin, LocalDOMWindow* source, ExceptionState& exceptionState)
@@ -1897,8 +1810,6 @@ void LocalDOMWindow::trace(Visitor* visitor)
     visitor->trace(m_navigator);
     visitor->trace(m_location);
     visitor->trace(m_media);
-    visitor->trace(m_sessionStorage);
-    visitor->trace(m_localStorage);
     visitor->trace(m_applicationCache);
     visitor->trace(m_performance);
     visitor->trace(m_css);

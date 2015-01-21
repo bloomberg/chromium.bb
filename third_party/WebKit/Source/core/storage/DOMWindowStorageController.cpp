@@ -9,6 +9,7 @@
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
+#include "core/storage/DOMWindowStorage.h"
 
 namespace blink {
 
@@ -53,8 +54,8 @@ void DOMWindowStorageController::didAddEventListener(LocalDOMWindow* window, con
         // notifications about storage events that might be triggered in other processes. Rather
         // than subscribe to these notifications explicitly, we subscribe to them implicitly to
         // simplify the work done by the system.
-        window->localStorage(IGNORE_EXCEPTION);
-        window->sessionStorage(IGNORE_EXCEPTION);
+        DOMWindowStorage::from(*window).localStorage(IGNORE_EXCEPTION);
+        DOMWindowStorage::from(*window).sessionStorage(IGNORE_EXCEPTION);
     }
 }
 

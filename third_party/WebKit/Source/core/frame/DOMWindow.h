@@ -115,9 +115,6 @@ public:
     // WebKit extensions
     virtual double devicePixelRatio() const = 0;
 
-    // HTML 5 key/value storage
-    virtual Storage* sessionStorage(ExceptionState&) const = 0;
-    virtual Storage* localStorage(ExceptionState&) const = 0;
     virtual ApplicationCache* applicationCache() const = 0;
 
     // This is the interface orientation in degrees. Some examples are:

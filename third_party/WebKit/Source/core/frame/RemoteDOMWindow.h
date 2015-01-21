@@ -53,8 +53,6 @@ public:
     Document* document() const override;
     StyleMedia* styleMedia() const override;
     double devicePixelRatio() const override;
-    Storage* sessionStorage(ExceptionState&) const override;
-    Storage* localStorage(ExceptionState&) const override;
     ApplicationCache* applicationCache() const override;
     int orientation() const override;
     Console* console() const override;

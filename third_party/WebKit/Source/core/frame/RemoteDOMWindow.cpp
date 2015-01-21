@@ -197,18 +197,6 @@ double RemoteDOMWindow::devicePixelRatio() const
     return 0.0;
 }
 
-Storage* RemoteDOMWindow::sessionStorage(ExceptionState&) const
-{
-    ASSERT_NOT_REACHED();
-    return nullptr;
-}
-
-Storage* RemoteDOMWindow::localStorage(ExceptionState&) const
-{
-    ASSERT_NOT_REACHED();
-    return nullptr;
-}
-
 ApplicationCache* RemoteDOMWindow::applicationCache() const
 {
     ASSERT_NOT_REACHED();

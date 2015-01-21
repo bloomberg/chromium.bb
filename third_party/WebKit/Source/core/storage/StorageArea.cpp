@@ -35,6 +35,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/page/StorageClient.h"
+#include "core/storage/DOMWindowStorage.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageEvent.h"
 #include "core/storage/StorageNamespace.h"
@@ -165,7 +166,8 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
             if (!frame->isLocalFrame())
                 continue;
             LocalFrame* localFrame = toLocalFrame(frame);
-            Storage* storage = localFrame->localDOMWindow()->optionalLocalStorage();
+            LocalDOMWindow* localWindow = localFrame->localDOMWindow();
+            Storage* storage = DOMWindowStorage::from(*localWindow).optionalLocalStorage();
             if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
                 localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
         }
@@ -197,7 +199,8 @@ void StorageArea::dispatchSessionStorageEvent(const String& key, const String& o
         if (!frame->isLocalFrame())
             continue;
         LocalFrame* localFrame = toLocalFrame(frame);
-        Storage* storage = localFrame->localDOMWindow()->optionalSessionStorage();
+        LocalDOMWindow* localWindow = localFrame->localDOMWindow();
+        Storage* storage = DOMWindowStorage::from(*localWindow).optionalSessionStorage();
         if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
             localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
     }
