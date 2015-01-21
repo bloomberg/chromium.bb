@@ -48,6 +48,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "url/url_parse.h"
 
 namespace password_manager {
@@ -134,6 +135,17 @@ class FacetURI {
 
 // A collection of facets affiliated with each other, i.e. an equivalence class.
 typedef std::vector<FacetURI> AffiliatedFacets;
+
+// A collection of facets affiliated with each other, i.e. an equivalence class,
+// plus a timestamp that indicates the last time the data was updated from an
+// authoritative source.
+struct AffiliatedFacetsWithUpdateTime {
+  AffiliatedFacetsWithUpdateTime();
+  ~AffiliatedFacetsWithUpdateTime();
+
+  AffiliatedFacets facets;
+  base::Time last_update_time;
+};
 
 // Returns whether or not equivalence classes |a| and |b| are equal, that is,
 // whether or not they consist of the same set of facets.

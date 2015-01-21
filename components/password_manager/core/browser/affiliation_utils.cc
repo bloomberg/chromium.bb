@@ -186,6 +186,9 @@ bool ParseAndCanonicalizeFacetURI(const std::string& input_uri,
 
 }  // namespace
 
+
+// FacetURI -------------------------------------------------------------------
+
 FacetURI::FacetURI() : is_valid_(false) {
 }
 
@@ -252,6 +255,18 @@ FacetURI::FacetURI(const std::string& canonical_spec, bool is_valid)
   url::ParseStandardURL(canonical_spec_.c_str(), canonical_spec_.size(),
                         &parsed_);
 }
+
+
+// AffiliatedFacetsWithUpdateTime ---------------------------------------------
+
+AffiliatedFacetsWithUpdateTime::AffiliatedFacetsWithUpdateTime() {
+}
+
+AffiliatedFacetsWithUpdateTime::~AffiliatedFacetsWithUpdateTime() {
+}
+
+
+// Helpers --------------------------------------------------------------------
 
 bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
                                 const AffiliatedFacets& b) {

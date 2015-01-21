@@ -19,6 +19,8 @@ static_library("browser") {
   sources = [
     "affiliation_backend.cc",
     "affiliation_backend.h",
+    "affiliation_database.cc",
+    "affiliation_database.h",
     "affiliation_fetcher_delegate.h",
     "affiliation_fetcher.cc",
     "affiliation_fetcher.h",

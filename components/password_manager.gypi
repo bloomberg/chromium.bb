@@ -30,6 +30,8 @@
         'password_manager/core/browser/affiliation_backend.cc',
         'password_manager/core/browser/affiliation_backend.h',
         'password_manager/core/browser/affiliation_fetcher_delegate.h',
+        'password_manager/core/browser/affiliation_database.cc',
+        'password_manager/core/browser/affiliation_database.h',
         'password_manager/core/browser/affiliation_fetcher.cc',
         'password_manager/core/browser/affiliation_fetcher.h',
         'password_manager/core/browser/affiliation_service.cc',

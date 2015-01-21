@@ -62664,6 +62664,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="SqliteDatabases" separator=".">
   <owner>shess@chromium.org</owner>
   <suffix name="Activity" label="Activity"/>
+  <suffix name="Affiliation" label="Affiliation"/>
   <suffix name="AppCache" label="AppCache"/>
   <suffix name="BookmarkImages" label="BookmarkImages"/>
   <suffix name="Cookie" label="Cookie"/>
