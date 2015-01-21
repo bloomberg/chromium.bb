@@ -2012,22 +2012,10 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
 
   // Allocation of routing id failed, so we can't create a child frame. This can
   // happen if this RenderFrameImpl's IPCs are being filtered when in swapped
-  // out state.
+  // out state or synchronous IPC message above has failed.
   if (child_routing_id == MSG_ROUTING_NONE) {
-#if !defined(OS_LINUX)
-    // DumpWithoutCrashing() crashes on Linux in renderer processes when
-    // breakpad and sandboxing are enabled: crbug.com/349600
-    base::debug::Alias(parent);
-    base::debug::Alias(&routing_id_);
-    bool render_view_is_swapped_out = GetRenderWidget()->is_swapped_out();
-    base::debug::Alias(&render_view_is_swapped_out);
-    bool render_view_is_closing = GetRenderWidget()->closing();
-    base::debug::Alias(&render_view_is_closing);
-    base::debug::Alias(&is_swapped_out_);
-    base::debug::DumpWithoutCrashing();
-#endif
     NOTREACHED() << "Failed to allocate routing id for child frame.";
-    return NULL;
+    return nullptr;
   }
 
   // Create the RenderFrame and WebLocalFrame, linking the two.
