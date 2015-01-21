@@ -1518,6 +1518,29 @@ class TraceTestRunner(unittest.TextTestRunner):
     return tracer.runfunc(unittest.TextTestRunner.run, self, test)
 
 
+class ProfileTestRunner(unittest.TextTestRunner):
+  """Test runner that profiles the test code as it runs
+
+  We insert profiling at the test runner level rather than test suite or test
+  case because both of those can execute code we've written (e.g. setUpClass
+  and setUp), and we want to profile that code too.  It might be unexpectedly
+  heavy by invoking expensive setup logic.
+  """
+
+  PROFILE_KWARGS = {}
+  SORT_STATS_KEYS = ()
+
+  def run(self, test):
+    import cProfile
+    profiler = cProfile.Profile(**self.PROFILE_KWARGS)
+    ret = profiler.runcall(unittest.TextTestRunner.run, self, test)
+
+    import pstats
+    stats = pstats.Stats(profiler, stream=sys.stderr)
+    stats.strip_dirs().sort_stats(*self.SORT_STATS_KEYS).print_stats()
+    return ret
+
+
 class TestProgram(unittest.TestProgram):
   """Helper wrapper around unittest.TestProgram
 
@@ -1576,6 +1599,15 @@ class TestProgram(unittest.TestProgram):
                        dest='ignore_system',
                        help='Do not ignore sys paths automatically')
 
+    group = parser.add_argument_group('Profiling options')
+    group.add_argument('--profile', default=False, action='store_true',
+                       help='Profile test execution')
+    group.add_argument('--profile-sort-keys', default='time',
+                       help='Keys to sort stats by (comma delimited)')
+    group.add_argument('--no-profile-builtins', default=True,
+                       action='store_false', dest='profile_builtins',
+                       help='Do not profile builtin functions')
+
     opts = parser.parse_args(argv[1:])
     opts.Freeze()
 
@@ -1592,6 +1624,12 @@ class TestProgram(unittest.TestProgram):
     # Then handle the chromite extensions.
     if opts.network:
       GlobalTestConfig.RUN_NETWORK_TESTS = True
+
+    # We allow --list because it's nice to be able to throw --list onto an
+    # existing command line to quickly get the output.  It's clear to users
+    # that it does nothing else.
+    if sum((opts.trace, opts.profile)) > 1:
+      parser.error('--trace/--profile are exclusive')
 
     if opts.list:
       self.testRunner = ListTestRunner
@@ -1620,6 +1658,15 @@ class TestProgram(unittest.TestProgram):
           'ignoremods': opts.ignore_module.split(','),
           'ignoredirs': set(opts.ignore_dir.split(',')) | auto_ignore,
       }
+    elif opts.profile:
+      self.testRunner = ProfileTestRunner
+
+      ProfileTestRunner.PROFILE_KWARGS = {
+          'subcalls': True,
+          'builtins': opts.profile_builtins,
+      }
+
+      ProfileTestRunner.SORT_STATS_KEYS = opts.profile_sort_keys.split(',')
 
     # Figure out which tests the user/unittest wants to run.
     if len(opts.tests) == 0 and self.defaultTest is None:
