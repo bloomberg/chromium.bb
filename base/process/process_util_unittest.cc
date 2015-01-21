@@ -10,6 +10,8 @@
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -27,21 +29,26 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
 #if defined(OS_LINUX)
 #include <malloc.h>
 #include <sched.h>
+#include <sys/syscall.h>
 #endif
 #if defined(OS_POSIX)
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sched.h>
 #include <signal.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #endif
 #if defined(OS_WIN)
 #include <windows.h>
@@ -913,4 +920,107 @@ MULTIPROCESS_TEST_MAIN(process_util_test_die_immediately) {
   return 0;
 }
 
+#if !defined(OS_ANDROID)
+const char kPipeValue = '\xcc';
+
+class ReadFromPipeDelegate : public base::LaunchOptions::PreExecDelegate {
+ public:
+  explicit ReadFromPipeDelegate(int fd) : fd_(fd) {}
+  ~ReadFromPipeDelegate() override {}
+  void RunAsyncSafe() override {
+    char c;
+    RAW_CHECK(HANDLE_EINTR(read(fd_, &c, 1)) == 1);
+    RAW_CHECK(IGNORE_EINTR(close(fd_)) == 0);
+    RAW_CHECK(c == kPipeValue);
+  }
+
+ private:
+  int fd_;
+  DISALLOW_COPY_AND_ASSIGN(ReadFromPipeDelegate);
+};
+
+TEST_F(ProcessUtilTest, PreExecHook) {
+  int pipe_fds[2];
+  ASSERT_EQ(0, pipe(pipe_fds));
+
+  base::ScopedFD read_fd(pipe_fds[0]);
+  base::ScopedFD write_fd(pipe_fds[1]);
+  base::FileHandleMappingVector fds_to_remap;
+  fds_to_remap.push_back(std::make_pair(read_fd.get(), read_fd.get()));
+
+  ReadFromPipeDelegate read_from_pipe_delegate(read_fd.get());
+  base::LaunchOptions options;
+  options.fds_to_remap = &fds_to_remap;
+  options.pre_exec_delegate = &read_from_pipe_delegate;
+  base::Process process(SpawnChildWithOptions("SimpleChildProcess", options));
+  ASSERT_TRUE(process.IsValid());
+
+  read_fd.reset();
+  ASSERT_EQ(1, HANDLE_EINTR(write(write_fd.get(), &kPipeValue, 1)));
+
+  int exit_code = 42;
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_EQ(0, exit_code);
+}
+#endif  // !defined(OS_ANDROID)
+
 #endif  // defined(OS_POSIX)
+
+#if defined(OS_LINUX)
+const int kSuccess = 0;
+
+MULTIPROCESS_TEST_MAIN(CheckPidProcess) {
+  const pid_t kInitPid = 1;
+  const pid_t pid = syscall(__NR_getpid);
+  CHECK(pid == kInitPid);
+  CHECK(getpid() == pid);
+  return kSuccess;
+}
+
+TEST_F(ProcessUtilTest, CloneFlags) {
+  if (RunningOnValgrind() ||
+      !base::PathExists(FilePath("/proc/self/ns/user")) ||
+      !base::PathExists(FilePath("/proc/self/ns/pid"))) {
+    // User or PID namespaces are not supported.
+    return;
+  }
+
+  base::LaunchOptions options;
+  options.clone_flags = CLONE_NEWUSER | CLONE_NEWPID;
+
+  base::Process process(SpawnChildWithOptions("CheckPidProcess", options));
+  ASSERT_TRUE(process.IsValid());
+
+  int exit_code = 42;
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_EQ(kSuccess, exit_code);
+}
+
+TEST(ForkWithFlagsTest, UpdatesPidCache) {
+  // The libc clone function, which allows ForkWithFlags to keep the pid cache
+  // up to date, does not work on Valgrind.
+  if (RunningOnValgrind()) {
+    return;
+  }
+
+  // Warm up the libc pid cache, if there is one.
+  ASSERT_EQ(syscall(__NR_getpid), getpid());
+
+  pid_t ctid = 0;
+  const pid_t pid =
+      base::ForkWithFlags(SIGCHLD | CLONE_CHILD_SETTID, nullptr, &ctid);
+  if (pid == 0) {
+    // In child.  Check both the raw getpid syscall and the libc getpid wrapper
+    // (which may rely on a pid cache).
+    RAW_CHECK(syscall(__NR_getpid) == ctid);
+    RAW_CHECK(getpid() == ctid);
+    _exit(kSuccess);
+  }
+
+  ASSERT_NE(-1, pid);
+  int status = 42;
+  ASSERT_EQ(pid, HANDLE_EINTR(waitpid(pid, &status, 0)));
+  ASSERT_TRUE(WIFEXITED(status));
+  EXPECT_EQ(kSuccess, WEXITSTATUS(status));
+}
+#endif

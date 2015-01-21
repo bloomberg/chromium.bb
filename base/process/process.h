@@ -117,25 +117,6 @@ class BASE_EXPORT Process {
 #endif
 };
 
-#if defined(OS_LINUX)
-// A wrapper for clone with fork-like behavior, meaning that it returns the
-// child's pid in the parent and 0 in the child. |flags|, |ptid|, and |ctid| are
-// as in the clone system call (the CLONE_VM flag is not supported).
-//
-// This function uses the libc clone wrapper (which updates libc's pid cache)
-// internally, so callers may expect things like getpid() to work correctly
-// after in both the child and parent. An exception is when this code is run
-// under Valgrind. Valgrind does not support the libc clone wrapper, so the libc
-// pid cache may be incorrect after this function is called under Valgrind.
-//
-// As with fork(), callers should be extremely careful when calling this while
-// multiple threads are running, since at the time the fork happened, the
-// threads could have been in any state (potentially holding locks, etc.).
-// Callers should most likely call execve() in the child soon after calling
-// this.
-BASE_EXPORT pid_t ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid);
-#endif
-
 }  // namespace base
 
 #endif  // BASE_PROCESS_PROCESS_PROCESS_H_

@@ -22,6 +22,9 @@
 #include "base/posix/global_descriptors.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/kill.h"
+#include "base/process/launch.h"
+#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "content/common/child_process_sandbox_support_impl_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/set_process_title.h"
@@ -33,7 +36,6 @@
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
-#include "sandbox/linux/services/syscall_wrappers.h"
 
 #if defined(ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
