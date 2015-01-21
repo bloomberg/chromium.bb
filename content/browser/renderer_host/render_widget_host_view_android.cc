@@ -1744,7 +1744,17 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks() {
 
 void RenderWidgetHostViewAndroid::OnGestureEvent(
     const ui::GestureEventData& gesture) {
-  SendGestureEvent(CreateWebGestureEventFromGestureEventData(gesture));
+  blink::WebGestureEvent web_gesture =
+      CreateWebGestureEventFromGestureEventData(gesture);
+  // TODO(jdduke): Remove this workaround after Android fixes UiAutomator to
+  // stop providing shift meta values to synthetic MotionEvents. This prevents
+  // unintended shift+click interpretation of all accessibility clicks.
+  // See crbug.com/443247.
+  if (web_gesture.type == blink::WebInputEvent::GestureTap &&
+      web_gesture.modifiers == blink::WebInputEvent::ShiftKey) {
+    web_gesture.modifiers = 0;
+  }
+  SendGestureEvent(web_gesture);
 }
 
 void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
