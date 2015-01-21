@@ -470,9 +470,7 @@ scoped_refptr<base::debug::ConvertableToTraceFormat>
   scoped_refptr<base::debug::TracedValue> record_data =
       new base::debug::TracedValue();
   TracedValue::SetIDRef(this, record_data.get(), "picture_id");
-  record_data->BeginArray("layer_rect");
-  MathUtil::AddToTracedValue(layer_rect_, record_data.get());
-  record_data->EndArray();
+  MathUtil::AddToTracedValue("layer_rect", layer_rect_, record_data.get());
   return record_data;
 }
 

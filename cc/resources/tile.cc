@@ -55,9 +55,7 @@ void Tile::AsValueInto(base::debug::TracedValue* res) const {
   TracedValue::SetIDRef(raster_source_.get(), res, "picture_pile");
   res->SetDouble("contents_scale", contents_scale_);
 
-  res->BeginArray("content_rect");
-  MathUtil::AddToTracedValue(content_rect_, res);
-  res->EndArray();
+  MathUtil::AddToTracedValue("content_rect", content_rect_, res);
 
   res->SetInteger("layer_id", layer_id_);
 

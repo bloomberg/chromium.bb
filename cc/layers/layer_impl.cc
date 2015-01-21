@@ -1466,35 +1466,24 @@ void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
       LayerTypeAsString(),
       this);
   state->SetInteger("layer_id", id());
-  state->BeginDictionary("bounds");
-  MathUtil::AddToTracedValue(bounds_, state);
-  state->EndDictionary();
+  MathUtil::AddToTracedValue("bounds", bounds_, state);
 
   state->SetDouble("opacity", opacity());
 
-  state->BeginArray("position");
-  MathUtil::AddToTracedValue(position_, state);
-  state->EndArray();
+  MathUtil::AddToTracedValue("position", position_, state);
 
   state->SetInteger("draws_content", DrawsContent());
   state->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
 
-  state->BeginArray("scroll_offset");
-  MathUtil::AddToTracedValue(scroll_offset_, state);
-  state->EndArray();
-
-  state->BeginArray("transform_origin");
-  MathUtil::AddToTracedValue(transform_origin_, state);
-  state->EndArray();
+  MathUtil::AddToTracedValue("scroll_offset", scroll_offset_, state);
+  MathUtil::AddToTracedValue("transform_origin", transform_origin_, state);
 
   bool clipped;
   gfx::QuadF layer_quad = MathUtil::MapQuad(
       screen_space_transform(),
       gfx::QuadF(gfx::Rect(content_bounds())),
       &clipped);
-  state->BeginArray("layer_quad");
-  MathUtil::AddToTracedValue(layer_quad, state);
-  state->EndArray();
+  MathUtil::AddToTracedValue("layer_quad", layer_quad, state);
   if (!touch_event_handler_region_.IsEmpty()) {
     state->BeginArray("touch_event_handler_region");
     touch_event_handler_region_.AsValueInto(state);
@@ -1552,11 +1541,8 @@ void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
       layer_animation_controller()->HasAnimationThatInflatesBounds());
 
   gfx::BoxF box;
-  if (LayerUtils::GetAnimationBounds(*this, &box)) {
-    state->BeginArray("animation_bounds");
-    MathUtil::AddToTracedValue(box, state);
-    state->EndArray();
-  }
+  if (LayerUtils::GetAnimationBounds(*this, &box))
+    MathUtil::AddToTracedValue("animation_bounds", box, state);
 
   if (debug_info_.get()) {
     std::string str;

@@ -181,13 +181,8 @@ void RenderPass::SetAll(RenderPassId id,
 }
 
 void RenderPass::AsValueInto(base::debug::TracedValue* value) const {
-  value->BeginArray("output_rect");
-  MathUtil::AddToTracedValue(output_rect, value);
-  value->EndArray();
-
-  value->BeginArray("damage_rect");
-  MathUtil::AddToTracedValue(damage_rect, value);
-  value->EndArray();
+  MathUtil::AddToTracedValue("output_rect", output_rect, value);
+  MathUtil::AddToTracedValue("damage_rect", damage_rect, value);
 
   value->SetBoolean("has_transparent_background", has_transparent_background);
   value->SetInteger("copy_requests", copy_requests.size());

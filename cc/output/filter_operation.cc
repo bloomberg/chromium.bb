@@ -272,9 +272,7 @@ void FilterOperation::AsValueInto(base::debug::TracedValue* value) const {
       break;
     case FilterOperation::DROP_SHADOW:
       value->SetDouble("std_deviation", amount_);
-      value->BeginArray("offset");
-      MathUtil::AddToTracedValue(drop_shadow_offset_, value);
-      value->EndArray();
+      MathUtil::AddToTracedValue("offset", drop_shadow_offset_, value);
       value->SetInteger("color", drop_shadow_color_);
       break;
     case FilterOperation::COLOR_MATRIX: {

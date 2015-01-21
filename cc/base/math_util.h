@@ -199,29 +199,41 @@ class CC_EXPORT MathUtil {
   static bool FromValue(const base::Value*, gfx::Rect* out_rect);
   static scoped_ptr<base::Value> AsValue(const gfx::PointF& q);
 
-  static void AddToTracedValue(const gfx::Size& s,
+  static void AddToTracedValue(const char* name,
+                               const gfx::Size& s,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::SizeF& s,
+  static void AddToTracedValue(const char* name,
+                               const gfx::SizeF& s,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::Rect& r,
+  static void AddToTracedValue(const char* name,
+                               const gfx::Rect& r,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::PointF& q,
+  static void AddToTracedValue(const char* name,
+                               const gfx::PointF& q,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::Point3F&,
+  static void AddToTracedValue(const char* name,
+                               const gfx::Point3F&,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::Vector2d& v,
+  static void AddToTracedValue(const char* name,
+                               const gfx::Vector2d& v,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::Vector2dF& v,
+  static void AddToTracedValue(const char* name,
+                               const gfx::Vector2dF& v,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::ScrollOffset& v,
+  static void AddToTracedValue(const char* name,
+                               const gfx::ScrollOffset& v,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::QuadF& q,
+  static void AddToTracedValue(const char* name,
+                               const gfx::QuadF& q,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::RectF& rect,
+  static void AddToTracedValue(const char* name,
+                               const gfx::RectF& rect,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::Transform& transform,
+  static void AddToTracedValue(const char* name,
+                               const gfx::Transform& transform,
                                base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::BoxF& box,
+  static void AddToTracedValue(const char* name,
+                               const gfx::BoxF& box,
                                base::debug::TracedValue* res);
 
   // Returns a base::Value representation of the floating point value.

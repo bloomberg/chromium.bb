@@ -869,9 +869,7 @@ void PictureLayerTiling::GetAllTilesForTracing(
 void PictureLayerTiling::AsValueInto(base::debug::TracedValue* state) const {
   state->SetInteger("num_tiles", tiles_.size());
   state->SetDouble("content_scale", contents_scale_);
-  state->BeginDictionary("tiling_size");
-  MathUtil::AddToTracedValue(tiling_size(), state);
-  state->EndDictionary();
+  MathUtil::AddToTracedValue("tiling_size", tiling_size(), state);
 }
 
 size_t PictureLayerTiling::GPUMemoryUsageInBytes() const {

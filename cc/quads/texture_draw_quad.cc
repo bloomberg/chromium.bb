@@ -94,13 +94,9 @@ const TextureDrawQuad* TextureDrawQuad::MaterialCast(const DrawQuad* quad) {
 void TextureDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
   value->SetInteger("resource_id", resource_id);
   value->SetBoolean("premultiplied_alpha", premultiplied_alpha);
-  value->BeginArray("uv_top_left");
-  MathUtil::AddToTracedValue(uv_top_left, value);
-  value->EndArray();
 
-  value->BeginArray("uv_bottom_right");
-  MathUtil::AddToTracedValue(uv_bottom_right, value);
-  value->EndArray();
+  MathUtil::AddToTracedValue("uv_top_left", uv_top_left, value);
+  MathUtil::AddToTracedValue("uv_bottom_right", uv_bottom_right, value);
 
   value->SetInteger("background_color", background_color);
 

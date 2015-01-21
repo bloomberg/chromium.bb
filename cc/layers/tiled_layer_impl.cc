@@ -107,9 +107,7 @@ scoped_ptr<LayerImpl> TiledLayerImpl::CreateLayerImpl(
 
 void TiledLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
   LayerImpl::AsValueInto(state);
-  state->BeginArray("invalidation");
-  MathUtil::AddToTracedValue(update_rect(), state);
-  state->EndArray();
+  MathUtil::AddToTracedValue("invalidation", update_rect(), state);
 }
 
 size_t TiledLayerImpl::GPUMemoryUsageInBytes() const {

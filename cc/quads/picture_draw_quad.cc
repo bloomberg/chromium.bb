@@ -86,9 +86,7 @@ const PictureDrawQuad* PictureDrawQuad::MaterialCast(const DrawQuad* quad) {
 
 void PictureDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
   ContentDrawQuadBase::ExtendValue(value);
-  value->BeginArray("content_rect");
-  MathUtil::AddToTracedValue(content_rect, value);
-  value->EndArray();
+  MathUtil::AddToTracedValue("content_rect", content_rect, value);
   value->SetDouble("contents_scale", contents_scale);
   value->SetInteger("texture_format", texture_format);
   // TODO(piman): raster_source?

@@ -58,9 +58,7 @@ const IOSurfaceDrawQuad* IOSurfaceDrawQuad::MaterialCast(
 }
 
 void IOSurfaceDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
-  value->BeginDictionary("io_surface_size");
-  MathUtil::AddToTracedValue(io_surface_size, value);
-  value->EndDictionary();
+  MathUtil::AddToTracedValue("io_surface_size", io_surface_size, value);
 
   value->SetInteger("io_surface_resource_id", io_surface_resource_id);
   const char* orientation_string = NULL;

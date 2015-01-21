@@ -52,9 +52,7 @@ const StreamVideoDrawQuad* StreamVideoDrawQuad::MaterialCast(
 
 void StreamVideoDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
   value->SetInteger("resource_id", resource_id);
-  value->BeginArray("matrix");
-  MathUtil::AddToTracedValue(matrix, value);
-  value->EndArray();
+  MathUtil::AddToTracedValue("matrix", matrix, value);
 }
 
 }  // namespace cc

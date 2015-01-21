@@ -55,13 +55,8 @@ void ContentDrawQuadBase::SetAll(const SharedQuadState* shared_quad_state,
 }
 
 void ContentDrawQuadBase::ExtendValue(base::debug::TracedValue* value) const {
-  value->BeginArray("tex_coord_rect");
-  MathUtil::AddToTracedValue(tex_coord_rect, value);
-  value->EndArray();
-
-  value->BeginDictionary("texture_size");
-  MathUtil::AddToTracedValue(texture_size, value);
-  value->EndDictionary();
+  MathUtil::AddToTracedValue("tex_coord_rect", tex_coord_rect, value);
+  MathUtil::AddToTracedValue("texture_size", texture_size, value);
 
   value->SetBoolean("swizzle_contents", swizzle_contents);
   value->SetBoolean("nearest_neighbor", nearest_neighbor);

@@ -1179,13 +1179,10 @@ void PictureLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
   tilings_->AsValueInto(state);
   state->EndArray();
 
-  state->BeginArray("tile_priority_rect");
-  MathUtil::AddToTracedValue(GetViewportForTilePriorityInContentSpace(), state);
-  state->EndArray();
+  MathUtil::AddToTracedValue("tile_priority_rect",
+                             GetViewportForTilePriorityInContentSpace(), state);
 
-  state->BeginArray("visible_rect");
-  MathUtil::AddToTracedValue(visible_content_rect(), state);
-  state->EndArray();
+  MathUtil::AddToTracedValue("visible_rect", visible_content_rect(), state);
 
   state->BeginArray("pictures");
   raster_source_->AsValueInto(state);
@@ -1202,9 +1199,7 @@ void PictureLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
        iter; ++iter) {
     state->BeginDictionary();
 
-    state->BeginArray("geometry_rect");
-    MathUtil::AddToTracedValue(iter.geometry_rect(), state);
-    state->EndArray();
+    MathUtil::AddToTracedValue("geometry_rect", iter.geometry_rect(), state);
 
     if (*iter)
       TracedValue::SetIDRef(*iter, state, "tile");

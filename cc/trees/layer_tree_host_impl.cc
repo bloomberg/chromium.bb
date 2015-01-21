@@ -3298,9 +3298,8 @@ void LayerTreeHostImpl::AsValueWithFrameInto(
     ActivationStateAsValueInto(state);
     state->EndDictionary();
   }
-  state->BeginDictionary("device_viewport_size");
-  MathUtil::AddToTracedValue(device_viewport_size_, state);
-  state->EndDictionary();
+  MathUtil::AddToTracedValue("device_viewport_size", device_viewport_size_,
+                             state);
 
   std::set<const Tile*> tiles;
   active_tree_->GetAllTilesForTracing(&tiles);
