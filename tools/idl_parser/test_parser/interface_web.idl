@@ -75,6 +75,23 @@ interface MyIFaceBig {
 };
 
 /* TREE
+ *Interface(MyIfaceEmptySequenceDefalutValue)
+ *  Operation(foo)
+ *    Arguments()
+ *      Argument(arg)
+ *        Type()
+ *          Sequence()
+ *            Type()
+ *              PrimitiveType(DOMString)
+ *        Default()
+ *    Type()
+ *      PrimitiveType(void)
+ */
+interface MyIfaceEmptySequenceDefalutValue {
+  void foo(optional sequence<DOMString> arg = []);
+};
+
+/* TREE
  *Interface(MyIFaceBig2)
  *  Const(nullValue)
  *    PrimitiveType(DOMString)
