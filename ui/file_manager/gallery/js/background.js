@@ -187,7 +187,7 @@ function launch(selectedEntriesPromise) {
     appWindowPromise,
     backgroundComponentsPromise
   ]).then(function(args) {
-    var appWindow = /** @type {!AppWindow} */ (args[0]);
+    var appWindow = /** @type {!chrome.app.window.AppWindow} */ (args[0]);
     var galleryWindow = /** @type {!GalleryWindow} */ (appWindow.contentWindow);
     galleryWindow.initialize(args[1]);
     return Promise.all([

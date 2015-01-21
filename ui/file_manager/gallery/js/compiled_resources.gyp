@@ -27,7 +27,6 @@
           '<(CLOSURE_DIR)/externs/chrome_extensions.js',
           '<(CLOSURE_DIR)/externs/file_manager_private.js',
           '../../externs/chrome_test.js',
-          '../../externs/chrome_app_window.js',
           '../../externs/gallery_background.js',
           '../../externs/platform.js',
         ],
