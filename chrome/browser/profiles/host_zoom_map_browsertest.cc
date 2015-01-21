@@ -465,3 +465,25 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
                 "Parent change should propagate to child.";
   base::RunLoop().RunUntilIdle();
 }
+
+IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
+                       ParentDefaultZoomPropagatesToIncognitoChild) {
+  Profile* parent_profile = browser()->profile();
+  Profile* child_profile =
+      static_cast<ProfileImpl*>(parent_profile)->GetOffTheRecordProfile();
+
+  double new_default_zoom_level =
+      parent_profile->GetZoomLevelPrefs()->GetDefaultZoomLevelPref() + 1.f;
+  HostZoomMap* parent_host_zoom_map =
+      HostZoomMap::GetDefaultForBrowserContext(parent_profile);
+  HostZoomMap* child_host_zoom_map =
+      HostZoomMap::GetDefaultForBrowserContext(child_profile);
+  ASSERT_TRUE(parent_host_zoom_map);
+  ASSERT_TRUE(child_host_zoom_map);
+  EXPECT_NE(parent_host_zoom_map, child_host_zoom_map);
+  EXPECT_NE(new_default_zoom_level, child_host_zoom_map->GetDefaultZoomLevel());
+
+  parent_profile->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(
+      new_default_zoom_level);
+  EXPECT_EQ(new_default_zoom_level, child_host_zoom_map->GetDefaultZoomLevel());
+}

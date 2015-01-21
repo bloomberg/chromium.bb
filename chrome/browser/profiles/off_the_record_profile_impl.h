@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -119,6 +120,7 @@ class OffTheRecordProfileImpl : public Profile {
   // Callback function for tracking parent's zoom level changes.
   void OnParentZoomLevelChanged(
       const content::HostZoomMap::ZoomLevelChange& change);
+  void UpdateDefaultZoomLevel();
 
   // The real underlying profile.
   Profile* profile_;
@@ -127,6 +129,8 @@ class OffTheRecordProfileImpl : public Profile {
   PrefServiceSyncable* prefs_;
 
   scoped_ptr<content::HostZoomMap::Subscription> track_zoom_subscription_;
+  scoped_ptr<chrome::ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
+      parent_default_zoom_level_subscription_;
   scoped_ptr<OffTheRecordProfileIOData::Handle> io_data_;
 
   // We use a non-persistent content settings map for OTR.

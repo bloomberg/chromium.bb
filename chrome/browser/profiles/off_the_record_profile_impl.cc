@@ -215,6 +215,14 @@ void OffTheRecordProfileImpl::TrackZoomLevelsFromParent() {
   track_zoom_subscription_ = parent_host_zoom_map->AddZoomLevelChangedCallback(
       base::Bind(&OffTheRecordProfileImpl::OnParentZoomLevelChanged,
                  base::Unretained(this)));
+  if (!profile_->GetZoomLevelPrefs())
+    return;
+
+  // Also track changes to the parent profile's default zoom level.
+  parent_default_zoom_level_subscription_ =
+      profile_->GetZoomLevelPrefs()->RegisterDefaultZoomLevelCallback(
+          base::Bind(&OffTheRecordProfileImpl::UpdateDefaultZoomLevel,
+                     base::Unretained(this)));
 }
 
 std::string OffTheRecordProfileImpl::GetProfileName() {
@@ -551,6 +559,13 @@ void OffTheRecordProfileImpl::OnParentZoomLevelChanged(
            change.zoom_level);
        return;
   }
+}
+
+void OffTheRecordProfileImpl::UpdateDefaultZoomLevel() {
+  HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
+  double default_zoom_level =
+      profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref();
+  host_zoom_map->SetDefaultZoomLevel(default_zoom_level);
 }
 
 PrefProxyConfigTracker* OffTheRecordProfileImpl::CreateProxyConfigTracker() {

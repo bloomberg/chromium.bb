@@ -334,15 +334,15 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
   PrefService* prefs = GetProfile()->GetPrefs();
   pref_change_registrar_.Init(prefs);
   if (prefs) {
-    // TODO(wjmaclean): Convert this to use the content-specific zoom-level
-    // prefs when HostZoomMap moves to StoragePartition.
+    // If the tab is in an incognito profile, we track changes in the default
+    // zoom level of the parent profile instead.
+    Profile* profile_to_track = GetProfile()->GetOriginalProfile();
     chrome::ChromeZoomLevelPrefs* zoom_level_prefs =
-        GetProfile()->GetZoomLevelPrefs();
+        profile_to_track->GetZoomLevelPrefs();
 
     base::Closure renderer_callback = base::Bind(
         &PrefsTabHelper::UpdateRendererPreferences, base::Unretained(this));
-    // Incognito mode does not have a zoom_level_prefs, and not all tests
-    // should need to create one either.
+    // Tests should not need to create a ZoomLevelPrefs.
     if (zoom_level_prefs) {
       default_zoom_level_subscription_ =
           zoom_level_prefs->RegisterDefaultZoomLevelCallback(renderer_callback);
