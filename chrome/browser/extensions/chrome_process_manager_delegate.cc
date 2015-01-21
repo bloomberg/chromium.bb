@@ -41,17 +41,17 @@ bool ChromeProcessManagerDelegate::IsBackgroundPageAllowed(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
-  bool is_normal_session = true;
+  bool is_normal_session = !profile->IsGuestSession();
 #if defined(OS_CHROMEOS)
-  is_normal_session = user_manager::UserManager::Get()->IsUserLoggedIn() &&
-                      !profile->IsGuestSession();
+  is_normal_session = is_normal_session &&
+                      user_manager::UserManager::Get()->IsUserLoggedIn();
 #endif
 
   // Disallow if the current session is a Guest mode session or login screen but
   // the current browser context is *not* off-the-record. Such context is
   // artificial and background page shouldn't be created in it.
   // http://crbug.com/329498
-  return !(!is_normal_session && !profile->IsOffTheRecord());
+  return is_normal_session || profile->IsOffTheRecord();
 }
 
 bool ChromeProcessManagerDelegate::DeferCreatingStartupBackgroundHosts(
