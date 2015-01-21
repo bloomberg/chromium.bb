@@ -1136,10 +1136,12 @@ void InspectorDebuggerAgent::traceAsyncCallbackStarting(int operationId)
 void InspectorDebuggerAgent::traceAsyncOperationCompleted(int operationId)
 {
     ASSERT(operationId > 0 || operationId == unknownAsyncOperationId);
+    if (operationId > 0) {
+        m_asyncOperations.remove(operationId);
+        m_asyncOperationsForStepInto.remove(operationId);
+    }
     if (!m_performingAsyncStepIn)
         return;
-    if (operationId > 0)
-        m_asyncOperationsForStepInto.remove(operationId);
     if (!m_inAsyncOperationForStepInto && m_asyncOperationsForStepInto.isEmpty())
         clearStepIntoAsync();
 }
