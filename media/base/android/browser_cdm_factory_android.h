@@ -18,11 +18,11 @@ class MEDIA_EXPORT BrowserCdmFactoryAndroid : public BrowserCdmFactory {
 
   scoped_ptr<BrowserCdm> CreateBrowserCdm(
       const std::string& key_system,
-      const BrowserCdm::SessionCreatedCB& session_created_cb,
-      const BrowserCdm::SessionMessageCB& session_message_cb,
-      const BrowserCdm::SessionReadyCB& session_ready_cb,
-      const BrowserCdm::SessionClosedCB& session_closed_cb,
-      const BrowserCdm::SessionErrorCB& session_error_cb) final;
+      const SessionMessageCB& session_message_cb,
+      const SessionClosedCB& session_closed_cb,
+      const SessionErrorCB& session_error_cb,
+      const SessionKeysChangeCB& session_keys_change_cb,
+      const SessionExpirationUpdateCB& session_expiration_update_cb) final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserCdmFactoryAndroid);

@@ -13,6 +13,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/cdm_promise_adapter.h"
 #include "media/base/media_keys.h"
 
 class GURL;
@@ -65,52 +66,40 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
   int GetCdmId() const override;
 
   // Callbacks.
-  void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
-  void OnSessionMessage(uint32 session_id,
+  void OnSessionMessage(const std::string& session_id,
+                        media::MediaKeys::MessageType message_type,
                         const std::vector<uint8>& message,
                         const GURL& legacy_destination_url);
-  void OnSessionReady(uint32 session_id);
-  void OnSessionClosed(uint32 session_id);
-  void OnSessionError(uint32 session_id,
-                      media::MediaKeys::KeyError error_code,
-                      uint32 system_code);
+  void OnSessionClosed(const std::string& session_id);
+  void OnLegacySessionError(const std::string& session_id,
+                            media::MediaKeys::Exception exception,
+                            uint32 system_code,
+                            const std::string& error_message);
+  void OnSessionKeysChange(const std::string& session_id,
+                           bool has_additional_usable_key,
+                           media::CdmKeysInfo keys_info);
+  void OnSessionExpirationUpdate(const std::string& session_id,
+                                 const base::Time& new_expiry_time);
+
+  void OnPromiseResolved(uint32_t promise_id);
+  void OnPromiseResolvedWithSession(uint32_t promise_id,
+                                    const std::string& session_id);
+  void OnPromiseRejected(uint32_t promise_id,
+                         media::MediaKeys::Exception exception,
+                         uint32_t system_code,
+                         const std::string& error_message);
 
  private:
-  // The Android-specific code that handles sessions uses integer session ids
-  // (basically a reference id), but media::MediaKeys bases everything on
-  // web_session_id (a string representing the actual session id as generated
-  // by the CDM). SessionIdMap is used to map between the web_session_id and
-  // the session_id used by the Android-specific code.
-  typedef base::hash_map<std::string, uint32_t> SessionIdMap;
-
-  // The following types keep track of Promises. The index is the
-  // Android-specific session_id, so that returning results can be matched to
-  // the corresponding promise.
-  typedef base::ScopedPtrHashMap<uint32_t, media::CdmPromise> PromiseMap;
-
-  ProxyMediaKeys(RendererCdmManager* manager,
-                 const media::SessionMessageCB& session_message_cb,
-                 const media::SessionClosedCB& session_closed_cb,
-                 const media::SessionErrorCB& session_error_cb);
+  ProxyMediaKeys(
+      RendererCdmManager* manager,
+      const media::SessionMessageCB& session_message_cb,
+      const media::SessionClosedCB& session_closed_cb,
+      const media::SessionErrorCB& session_error_cb,
+      const media::SessionKeysChangeCB& session_keys_change_cb,
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
   void InitializeCdm(const std::string& key_system,
                      const GURL& security_origin);
-
-  // These functions keep track of Android-specific session_ids <->
-  // web_session_ids mappings.
-  // TODO(jrummell): Remove this once the Android-specific code changes to
-  // support string web session ids.
-  uint32_t CreateSessionId();
-  void AssignWebSessionId(uint32_t session_id,
-                          const std::string& web_session_id);
-  uint32_t LookupSessionId(const std::string& web_session_id) const;
-  std::string LookupWebSessionId(uint32_t session_id) const;
-  void DropWebSessionId(const std::string& web_session_id);
-
-  // Helper function to keep track of promises. Adding takes ownership of the
-  // promise, transferred back to caller on take.
-  void SavePromise(uint32_t session_id, scoped_ptr<media::CdmPromise> promise);
-  scoped_ptr<media::CdmPromise> TakePromise(uint32_t session_id);
 
   RendererCdmManager* manager_;
   int cdm_id_;
@@ -118,13 +107,10 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
   media::SessionMessageCB session_message_cb_;
   media::SessionClosedCB session_closed_cb_;
   media::SessionErrorCB session_error_cb_;
+  media::SessionKeysChangeCB session_keys_change_cb_;
+  media::SessionExpirationUpdateCB session_expiration_update_cb_;
 
-  // Android-specific. See comment above CreateSessionId().
-  uint32_t next_session_id_;
-  SessionIdMap web_session_to_session_id_map_;
-
-  // Keep track of outstanding promises. This map owns the promise object.
-  PromiseMap session_id_to_promise_map_;
+  media::CdmPromiseAdapter cdm_promise_adapter_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyMediaKeys);
 };

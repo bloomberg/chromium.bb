@@ -18,7 +18,8 @@ struct MEDIA_EXPORT CdmKeyInformation {
     USABLE = 0,
     INTERNAL_ERROR = 1,
     EXPIRED = 2,
-    OUTPUT_NOT_ALLOWED = 3
+    OUTPUT_NOT_ALLOWED = 3,
+    KEY_STATUS_MAX = OUTPUT_NOT_ALLOWED
   };
 
   CdmKeyInformation();

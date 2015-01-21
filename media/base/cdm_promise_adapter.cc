@@ -42,14 +42,13 @@ void CdmPromiseAdapter::ResolvePromise(uint32_t promise_id,
   static_cast<CdmPromiseTemplate<T...>*>(promise.get())->resolve(result...);
 }
 
-void CdmPromiseAdapter::RejectPromise(
-    uint32_t promise_id,
-    MediaKeys::Exception exception_code,
-    uint32 system_code,
-    const std::string& error_message) {
+void CdmPromiseAdapter::RejectPromise(uint32_t promise_id,
+                                      MediaKeys::Exception exception_code,
+                                      uint32 system_code,
+                                      const std::string& error_message) {
   scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
   if (!promise) {
-    NOTREACHED()  << "No promise found for promise_id " << promise_id;
+    NOTREACHED() << "No promise found for promise_id " << promise_id;
     return;
   }
 

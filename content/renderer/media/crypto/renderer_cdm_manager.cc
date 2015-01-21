@@ -8,13 +8,15 @@
 #include "content/common/media/cdm_messages.h"
 #include "content/renderer/media/crypto/proxy_media_keys.h"
 #include "media/base/cdm_context.h"
+#include "media/base/limits.h"
 
 namespace content {
+
+using media::MediaKeys;
 
 // Maximum sizes for various EME API parameters. These are checks to prevent
 // unnecessarily large messages from being passed around, and the sizes
 // are somewhat arbitrary as the EME spec doesn't specify any limits.
-const size_t kMaxWebSessionIdLength = 512;
 const size_t kMaxSessionMessageLength = 10240;  // 10 KB
 
 RendererCdmManager::RendererCdmManager(RenderFrame* render_frame)
@@ -31,11 +33,16 @@ RendererCdmManager::~RendererCdmManager() {
 bool RendererCdmManager::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RendererCdmManager, msg)
-    IPC_MESSAGE_HANDLER(CdmMsg_SessionCreated, OnSessionCreated)
     IPC_MESSAGE_HANDLER(CdmMsg_SessionMessage, OnSessionMessage)
-    IPC_MESSAGE_HANDLER(CdmMsg_SessionReady, OnSessionReady)
     IPC_MESSAGE_HANDLER(CdmMsg_SessionClosed, OnSessionClosed)
-    IPC_MESSAGE_HANDLER(CdmMsg_SessionError, OnSessionError)
+    IPC_MESSAGE_HANDLER(CdmMsg_LegacySessionError, OnLegacySessionError)
+    IPC_MESSAGE_HANDLER(CdmMsg_SessionKeysChange, OnSessionKeysChange)
+    IPC_MESSAGE_HANDLER(CdmMsg_SessionExpirationUpdate,
+                        OnSessionExpirationUpdate)
+    IPC_MESSAGE_HANDLER(CdmMsg_ResolvePromise, OnPromiseResolved)
+    IPC_MESSAGE_HANDLER(CdmMsg_ResolvePromiseWithSession,
+                        OnPromiseResolvedWithSession)
+    IPC_MESSAGE_HANDLER(CdmMsg_RejectPromise, OnPromiseRejected)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -50,27 +57,40 @@ void RendererCdmManager::InitializeCdm(int cdm_id,
       routing_id(), cdm_id, key_system, security_origin));
 }
 
-void RendererCdmManager::CreateSession(
+void RendererCdmManager::SetServerCertificate(
     int cdm_id,
-    uint32 session_id,
-    CdmHostMsg_CreateSession_ContentType content_type,
-    const std::vector<uint8>& init_data) {
+    uint32_t promise_id,
+    const std::vector<uint8_t>& certificate) {
   DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
-  Send(new CdmHostMsg_CreateSession(
-      routing_id(), cdm_id, session_id, content_type, init_data));
+  Send(new CdmHostMsg_SetServerCertificate(routing_id(), cdm_id, promise_id,
+                                           certificate));
+}
+
+void RendererCdmManager::CreateSessionAndGenerateRequest(
+    int cdm_id,
+    uint32_t promise_id,
+    CdmHostMsg_CreateSession_InitDataType init_data_type,
+    const std::vector<uint8_t>& init_data) {
+  DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
+  Send(new CdmHostMsg_CreateSessionAndGenerateRequest(
+      routing_id(), cdm_id, promise_id, init_data_type, init_data));
 }
 
 void RendererCdmManager::UpdateSession(int cdm_id,
-                                       uint32 session_id,
-                                       const std::vector<uint8>& response) {
+                                       uint32_t promise_id,
+                                       const std::string& session_id,
+                                       const std::vector<uint8_t>& response) {
   DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
-  Send(
-      new CdmHostMsg_UpdateSession(routing_id(), cdm_id, session_id, response));
+  Send(new CdmHostMsg_UpdateSession(routing_id(), cdm_id, promise_id,
+                                    session_id, response));
 }
 
-void RendererCdmManager::ReleaseSession(int cdm_id, uint32 session_id) {
+void RendererCdmManager::CloseSession(int cdm_id,
+                                      uint32_t promise_id,
+                                      const std::string& session_id) {
   DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
-  Send(new CdmHostMsg_ReleaseSession(routing_id(), cdm_id, session_id));
+  Send(new CdmHostMsg_CloseSession(routing_id(), cdm_id, promise_id,
+                                   session_id));
 }
 
 void RendererCdmManager::DestroyCdm(int cdm_id) {
@@ -78,52 +98,101 @@ void RendererCdmManager::DestroyCdm(int cdm_id) {
   Send(new CdmHostMsg_DestroyCdm(routing_id(), cdm_id));
 }
 
-void RendererCdmManager::OnSessionCreated(int cdm_id,
-                                          uint32 session_id,
-                                          const std::string& web_session_id) {
-  if (web_session_id.length() > kMaxWebSessionIdLength) {
-    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
-    return;
-  }
-
-  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
-  if (media_keys)
-    media_keys->OnSessionCreated(session_id, web_session_id);
-}
-
-void RendererCdmManager::OnSessionMessage(int cdm_id,
-                                          uint32 session_id,
-                                          const std::vector<uint8>& message,
-                                          const GURL& destination_url) {
+void RendererCdmManager::OnSessionMessage(
+    int cdm_id,
+    const std::string& session_id,
+    media::MediaKeys::MessageType message_type,
+    const std::vector<uint8>& message,
+    const GURL& legacy_destination_url) {
   if (message.size() > kMaxSessionMessageLength) {
-    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
+    NOTREACHED();
+    LOG(ERROR) << "Message is too long and dropped.";
     return;
   }
 
   ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
-    media_keys->OnSessionMessage(session_id, message, destination_url);
+    media_keys->OnSessionMessage(session_id, message_type, message,
+                                 legacy_destination_url);
 }
 
-void RendererCdmManager::OnSessionReady(int cdm_id, uint32 session_id) {
-  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
-  if (media_keys)
-    media_keys->OnSessionReady(session_id);
-}
-
-void RendererCdmManager::OnSessionClosed(int cdm_id, uint32 session_id) {
+void RendererCdmManager::OnSessionClosed(int cdm_id,
+                                         const std::string& session_id) {
   ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
     media_keys->OnSessionClosed(session_id);
 }
 
-void RendererCdmManager::OnSessionError(int cdm_id,
-                                        uint32 session_id,
-                                        media::MediaKeys::KeyError error_code,
-                                        uint32 system_code) {
+void RendererCdmManager::OnLegacySessionError(
+    int cdm_id,
+    const std::string& session_id,
+    MediaKeys::Exception exception,
+    uint32 system_code,
+    const std::string& error_message) {
   ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
-    media_keys->OnSessionError(session_id, error_code, system_code);
+    media_keys->OnLegacySessionError(session_id, exception, system_code,
+                                     error_message);
+}
+
+void RendererCdmManager::OnSessionKeysChange(
+    int cdm_id,
+    const std::string& session_id,
+    bool has_additional_usable_key,
+    const std::vector<media::CdmKeyInformation>& key_info_vector) {
+  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
+  if (!media_keys)
+    return;
+
+  media::CdmKeysInfo keys_info;
+  keys_info.reserve(key_info_vector.size());
+  for (const auto& key_info : key_info_vector)
+    keys_info.push_back(new media::CdmKeyInformation(key_info));
+
+  media_keys->OnSessionKeysChange(session_id, has_additional_usable_key,
+                                  keys_info.Pass());
+}
+
+void RendererCdmManager::OnSessionExpirationUpdate(
+    int cdm_id,
+    const std::string& session_id,
+    const base::Time& new_expiry_time) {
+  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
+  if (media_keys)
+    media_keys->OnSessionExpirationUpdate(session_id, new_expiry_time);
+}
+
+void RendererCdmManager::OnPromiseResolved(int cdm_id, uint32_t promise_id) {
+  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
+  if (media_keys)
+    media_keys->OnPromiseResolved(promise_id);
+}
+
+void RendererCdmManager::OnPromiseResolvedWithSession(
+    int cdm_id,
+    uint32_t promise_id,
+    const std::string& session_id) {
+  if (session_id.length() > media::limits::kMaxWebSessionIdLength) {
+    NOTREACHED();
+    OnPromiseRejected(cdm_id, promise_id, MediaKeys::INVALID_ACCESS_ERROR, 0,
+                      "Session ID is too long");
+    return;
+  }
+
+  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
+  if (media_keys)
+    media_keys->OnPromiseResolvedWithSession(promise_id, session_id);
+}
+
+void RendererCdmManager::OnPromiseRejected(int cdm_id,
+                                           uint32_t promise_id,
+                                           MediaKeys::Exception exception,
+                                           uint32_t system_code,
+                                           const std::string& error_message) {
+  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
+  if (media_keys)
+    media_keys->OnPromiseRejected(promise_id, exception, system_code,
+                                  error_message);
 }
 
 int RendererCdmManager::RegisterMediaKeys(ProxyMediaKeys* media_keys) {

@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/cdm_messages_enums.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
 
@@ -19,9 +20,20 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START CdmMsgStart
 
-IPC_ENUM_TRAITS(media::MediaKeys::KeyError)
-IPC_ENUM_TRAITS_MAX_VALUE(CdmHostMsg_CreateSession_ContentType,
+IPC_ENUM_TRAITS_MAX_VALUE(media::CdmKeyInformation::KeyStatus,
+                          media::CdmKeyInformation::KEY_STATUS_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::Exception,
+                          media::MediaKeys::EXCEPTION_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::MessageType,
+                          media::MediaKeys::MESSAGE_TYPE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(CdmHostMsg_CreateSession_InitDataType,
                           CREATE_SESSION_TYPE_LAST)
+
+IPC_STRUCT_TRAITS_BEGIN(media::CdmKeyInformation)
+  IPC_STRUCT_TRAITS_MEMBER(key_id)
+  IPC_STRUCT_TRAITS_MEMBER(status)
+  IPC_STRUCT_TRAITS_MEMBER(system_code)
+IPC_STRUCT_TRAITS_END()
 
 // Messages from render to browser.
 
@@ -31,23 +43,31 @@ IPC_MESSAGE_CONTROL4(CdmHostMsg_InitializeCdm,
                      std::string /* key_system */,
                      GURL /* security_origin */)
 
-IPC_MESSAGE_CONTROL5(CdmHostMsg_CreateSession,
+IPC_MESSAGE_CONTROL4(CdmHostMsg_SetServerCertificate,
                      int /* render_frame_id */,
                      int /* cdm_id */,
-                     uint32_t /* session_id */,
-                     CdmHostMsg_CreateSession_ContentType /* content_type */,
-                     std::vector<uint8> /* init_data */)
+                     uint32_t /* promise_id */,
+                     std::vector<uint8_t> /* certificate */)
 
-IPC_MESSAGE_CONTROL4(CdmHostMsg_UpdateSession,
+IPC_MESSAGE_CONTROL5(CdmHostMsg_CreateSessionAndGenerateRequest,
                      int /* render_frame_id */,
                      int /* cdm_id */,
-                     uint32_t /* session_id */,
-                     std::vector<uint8> /* response */)
+                     uint32_t /* promise_id */,
+                     CdmHostMsg_CreateSession_InitDataType /* init_data_type */,
+                     std::vector<uint8_t> /* init_data */)
 
-IPC_MESSAGE_CONTROL3(CdmHostMsg_ReleaseSession,
+IPC_MESSAGE_CONTROL5(CdmHostMsg_UpdateSession,
                      int /* render_frame_id */,
                      int /* cdm_id */,
-                     uint32_t /* session_id */)
+                     uint32_t /* promise_id */,
+                     std::string /* session_id */,
+                     std::vector<uint8_t> /* response */)
+
+IPC_MESSAGE_CONTROL4(CdmHostMsg_CloseSession,
+                     int /* render_frame_id */,
+                     int /* cdm_id */,
+                     uint32_t /* promise_id */,
+                     std::string /* session_id */)
 
 IPC_MESSAGE_CONTROL2(CdmHostMsg_DestroyCdm,
                      int /* render_frame_id */,
@@ -55,27 +75,47 @@ IPC_MESSAGE_CONTROL2(CdmHostMsg_DestroyCdm,
 
 // Messages from browser to render.
 
-IPC_MESSAGE_ROUTED3(CdmMsg_SessionCreated,
+IPC_MESSAGE_ROUTED5(CdmMsg_SessionMessage,
                     int /* cdm_id */,
-                    uint32_t /* session_id */,
-                    std::string /* web_session_id */)
-
-IPC_MESSAGE_ROUTED4(CdmMsg_SessionMessage,
-                    int /* cdm_id */,
-                    uint32_t /* session_id */,
-                    std::vector<uint8> /* message */,
-                    GURL /* destination_url */)
-
-IPC_MESSAGE_ROUTED2(CdmMsg_SessionReady,
-                    int /* cdm_id */,
-                    uint32_t /* session_id */)
+                    std::string /* session_id */,
+                    media::MediaKeys::MessageType /* message_type */,
+                    std::vector<uint8_t> /* message */,
+                    GURL /* legacy_destination_url */)
 
 IPC_MESSAGE_ROUTED2(CdmMsg_SessionClosed,
                     int /* cdm_id */,
-                    uint32_t /* session_id */)
+                    std::string /* session_id */)
 
-IPC_MESSAGE_ROUTED4(CdmMsg_SessionError,
+IPC_MESSAGE_ROUTED5(CdmMsg_LegacySessionError,
                     int /* cdm_id */,
-                    uint32_t /* session_id */,
-                    media::MediaKeys::KeyError /* error_code */,
-                    uint32_t /* system_code */)
+                    std::string /* session_id */,
+                    media::MediaKeys::Exception /* exception_code */,
+                    uint32_t /* system_code */,
+                    std::string /* error_message */)
+
+IPC_MESSAGE_ROUTED4(CdmMsg_SessionKeysChange,
+                    int /* cdm_id */,
+                    std::string /* session_id */,
+                    bool /* has_additional_usable_key */,
+                    std::vector<media::CdmKeyInformation> /* keys_info */)
+
+IPC_MESSAGE_ROUTED3(CdmMsg_SessionExpirationUpdate,
+                    int /* cdm_id */,
+                    std::string /* session_id */,
+                    base::Time /* new_expiry_time */)
+
+IPC_MESSAGE_ROUTED2(CdmMsg_ResolvePromise,
+                    int /* cdm_id */,
+                    uint32_t /* promise_id */)
+
+IPC_MESSAGE_ROUTED3(CdmMsg_ResolvePromiseWithSession,
+                    int /* cdm_id */,
+                    uint32_t /* promise_id */,
+                    std::string /* session_id */)
+
+IPC_MESSAGE_ROUTED5(CdmMsg_RejectPromise,
+                    int /* cdm_id */,
+                    uint32_t /* promise_id */,
+                    media::MediaKeys::Exception /* exception */,
+                    uint32_t /* system_code */,
+                    std::string /* error_message */)

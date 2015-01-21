@@ -14,22 +14,19 @@ namespace media {
 
 scoped_ptr<BrowserCdm> BrowserCdmFactoryAndroid::CreateBrowserCdm(
     const std::string& key_system,
-    const BrowserCdm::SessionCreatedCB& session_created_cb,
-    const BrowserCdm::SessionMessageCB& session_message_cb,
-    const BrowserCdm::SessionReadyCB& session_ready_cb,
-    const BrowserCdm::SessionClosedCB& session_closed_cb,
-    const BrowserCdm::SessionErrorCB& session_error_cb) {
+    const SessionMessageCB& session_message_cb,
+    const SessionClosedCB& session_closed_cb,
+    const SessionErrorCB& session_error_cb,
+    const SessionKeysChangeCB& session_keys_change_cb,
+    const SessionExpirationUpdateCB& session_expiration_update_cb) {
   if (!MediaDrmBridge::IsKeySystemSupported(key_system)) {
     NOTREACHED() << "Unsupported key system: " << key_system;
     return scoped_ptr<BrowserCdm>();
   }
 
-  scoped_ptr<MediaDrmBridge> cdm(MediaDrmBridge::Create(key_system,
-                                                        session_created_cb,
-                                                        session_message_cb,
-                                                        session_ready_cb,
-                                                        session_closed_cb,
-                                                        session_error_cb));
+  scoped_ptr<MediaDrmBridge> cdm(MediaDrmBridge::Create(
+      key_system, session_message_cb, session_closed_cb, session_error_cb,
+      session_keys_change_cb, session_expiration_update_cb));
   if (!cdm) {
     NOTREACHED() << "MediaDrmBridge cannot be created for " << key_system;
     return scoped_ptr<BrowserCdm>();

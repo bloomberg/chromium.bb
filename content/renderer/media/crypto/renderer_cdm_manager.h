@@ -38,14 +38,21 @@ class RendererCdmManager : public RenderFrameObserver {
                      ProxyMediaKeys* media_keys,
                      const std::string& key_system,
                      const GURL& security_origin);
-  void CreateSession(int cdm_id,
-                     uint32 session_id,
-                     CdmHostMsg_CreateSession_ContentType conent_type,
-                     const std::vector<uint8>& init_data);
+  void SetServerCertificate(int cdm_id,
+                            uint32_t promise_id,
+                            const std::vector<uint8>& certificate);
+  void CreateSessionAndGenerateRequest(
+      int cdm_id,
+      uint32_t promise_id,
+      CdmHostMsg_CreateSession_InitDataType init_data_type,
+      const std::vector<uint8>& init_data);
   void UpdateSession(int cdm_id,
-                     uint32 session_id,
+                     uint32_t promise_id,
+                     const std::string& session_id,
                      const std::vector<uint8>& response);
-  void ReleaseSession(int cdm_id, uint32 session_id);
+  void CloseSession(int cdm_id,
+                    uint32_t promise_id,
+                    const std::string& session_id);
   void DestroyCdm(int cdm_id);
 
   // Registers a ProxyMediaKeys object. Returns allocated CDM ID.
@@ -59,19 +66,35 @@ class RendererCdmManager : public RenderFrameObserver {
   ProxyMediaKeys* GetMediaKeys(int cdm_id);
 
   // Message handlers.
-  void OnSessionCreated(int cdm_id,
-                        uint32 session_id,
-                        const std::string& web_session_id);
   void OnSessionMessage(int cdm_id,
-                        uint32 session_id,
+                        const std::string& session_id,
+                        media::MediaKeys::MessageType message_type,
                         const std::vector<uint8>& message,
-                        const GURL& destination_url);
-  void OnSessionReady(int cdm_id, uint32 session_id);
-  void OnSessionClosed(int cdm_id, uint32 session_id);
-  void OnSessionError(int cdm_id,
-                      uint32 session_id,
-                      media::MediaKeys::KeyError error_code,
-                      uint32 system_code);
+                        const GURL& legacy_destination_url);
+  void OnSessionClosed(int cdm_id, const std::string& session_id);
+  void OnLegacySessionError(int cdm_id,
+                            const std::string& session_id,
+                            media::MediaKeys::Exception exception,
+                            uint32 system_code,
+                            const std::string& error_message);
+  void OnSessionKeysChange(
+      int cdm_id,
+      const std::string& session_id,
+      bool has_additional_usable_key,
+      const std::vector<media::CdmKeyInformation>& key_info_vector);
+  void OnSessionExpirationUpdate(int cdm_id,
+                                 const std::string& session_id,
+                                 const base::Time& new_expiry_time);
+
+  void OnPromiseResolved(int cdm_id, uint32_t promise_id);
+  void OnPromiseResolvedWithSession(int cdm_id,
+                                    uint32_t promise_id,
+                                    const std::string& session_id);
+  void OnPromiseRejected(int cdm_id,
+                         uint32_t promise_id,
+                         media::MediaKeys::Exception exception,
+                         uint32_t system_code,
+                         const std::string& error_message);
 
   // CDM ID should be unique per renderer frame.
   // TODO(xhwang): Use uint32 to prevent undefined overflow behavior.

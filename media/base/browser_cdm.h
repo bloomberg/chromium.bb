@@ -12,44 +12,9 @@
 namespace media {
 
 // Interface for browser side CDMs.
-class MEDIA_EXPORT BrowserCdm : public PlayerTracker {
+class MEDIA_EXPORT BrowserCdm : public MediaKeys, public PlayerTracker {
  public:
-  // TODO(jrummell): Update this to actually derive from MediaKeys
-  // (Use web_session_id rather than session_id).
-  typedef base::Callback<
-      void(uint32 session_id, const std::string& web_session_id)>
-      SessionCreatedCB;
-
-  typedef base::Callback<void(uint32 session_id,
-                              const std::vector<uint8>& message,
-                              const GURL& destination_url)> SessionMessageCB;
-
-  typedef base::Callback<void(uint32 session_id)> SessionReadyCB;
-
-  typedef base::Callback<void(uint32 session_id)> SessionClosedCB;
-
-  typedef base::Callback<void(uint32 session_id,
-                              media::MediaKeys::KeyError error_code,
-                              uint32 system_code)> SessionErrorCB;
-
   ~BrowserCdm() override;
-
-  // MediaKeys-like implementation.
-  virtual bool CreateSession(uint32 session_id,
-                             const std::string& content_type,
-                             const uint8* init_data,
-                             int init_data_length) = 0;
-  virtual void LoadSession(uint32 session_id,
-                           const std::string& web_session_id) = 0;
-  virtual void UpdateSession(uint32 session_id,
-                             const uint8* response,
-                             int response_length) = 0;
-  virtual void ReleaseSession(uint32 session_id) = 0;
-
-  // PlayerTracker implementation.
-  int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb) override = 0;
-  void UnregisterPlayer(int registration_id) override = 0;
 
  protected:
    BrowserCdm();
