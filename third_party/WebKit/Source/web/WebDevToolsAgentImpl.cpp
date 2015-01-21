@@ -123,7 +123,7 @@ private:
         // 0. Flush pending frontend messages.
         WebViewImpl* viewImpl = WebViewImpl::fromPage(page);
         WebDevToolsAgentImpl* agent = static_cast<WebDevToolsAgentImpl*>(viewImpl->devToolsAgent());
-        agent->flushPendingFrontendMessages();
+        agent->flushPendingProtocolNotifications();
 
         Vector<WebViewImpl*> views;
 
@@ -546,19 +546,26 @@ void WebDevToolsAgentImpl::hideHighlight()
     m_webViewImpl->removePageOverlay(this);
 }
 
-void WebDevToolsAgentImpl::sendMessageToFrontend(PassRefPtr<JSONObject> message)
+void WebDevToolsAgentImpl::sendProtocolResponse(int callId, PassRefPtr<JSONObject> message)
 {
-    m_frontendMessageQueue.append(message);
+    flushPendingProtocolNotifications();
+    m_client->sendProtocolMessage(callId, message->toJSONString(), m_stateCookie);
+    m_stateCookie = String();
+}
+
+void WebDevToolsAgentImpl::sendProtocolNotification(PassRefPtr<JSONObject> message)
+{
+    m_notificationQueue.append(message);
 }
 
 void WebDevToolsAgentImpl::flush()
 {
-    flushPendingFrontendMessages();
+    flushPendingProtocolNotifications();
 }
 
 void WebDevToolsAgentImpl::updateInspectorStateCookie(const String& state)
 {
-    m_client->saveAgentRuntimeState(state);
+    m_stateCookie = state;
 }
 
 void WebDevToolsAgentImpl::resumeStartup()
@@ -578,14 +585,14 @@ void WebDevToolsAgentImpl::evaluateInWebInspector(long callId, const WebString& 
     ic->evaluateForTestInFrontend(callId, script);
 }
 
-void WebDevToolsAgentImpl::flushPendingFrontendMessages()
+void WebDevToolsAgentImpl::flushPendingProtocolNotifications()
 {
     InspectorController* ic = inspectorController();
-    ic->flushPendingFrontendMessages();
+    ic->flushPendingProtocolNotifications();
 
-    for (size_t i = 0; i < m_frontendMessageQueue.size(); ++i)
-        m_client->sendMessageToInspectorFrontend(m_frontendMessageQueue[i]->toJSONString());
-    m_frontendMessageQueue.clear();
+    for (size_t i = 0; i < m_notificationQueue.size(); ++i)
+        m_client->sendProtocolMessage(0, m_notificationQueue[i]->toJSONString(), WebString());
+    m_notificationQueue.clear();
 }
 
 void WebDevToolsAgentImpl::willProcessTask()
@@ -604,7 +611,7 @@ void WebDevToolsAgentImpl::didProcessTask()
     if (InspectorController* ic = inspectorController())
         ic->didProcessTask();
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Program");
-    flushPendingFrontendMessages();
+    flushPendingProtocolNotifications();
 }
 
 void WebDevToolsAgent::interruptAndDispatch(MessageDescriptor* rawDescriptor)

@@ -33,6 +33,7 @@
 
 #include "../platform/WebCString.h"
 #include "../platform/WebCommon.h"
+#include "../platform/WebString.h"
 
 namespace blink {
 
@@ -41,7 +42,20 @@ struct WebDeviceEmulationParams;
 
 class WebDevToolsAgentClient {
 public:
+    // Send response message over the protocol, update agent state on the browser side for
+    // potential re-attach.
+    virtual void sendProtocolMessage(int callId, const WebString& response, const WebString& state)
+    {
+        if (!state.isEmpty())
+            saveAgentRuntimeState(state);
+        sendMessageToInspectorFrontend(response);
+    }
+
+    // FIXME: remove sendMessageToInspectorFrontend and saveAgentRuntimeState once embedder
+    // migrates to the methods above.
     virtual void sendMessageToInspectorFrontend(const WebString&) { }
+    virtual void saveAgentRuntimeState(const WebString&) { }
+
     virtual void sendDebuggerOutput(const WebString&) { }
 
     // Returns process id.
@@ -49,10 +63,6 @@ public:
 
     // Returns unique identifier of the entity within process.
     virtual int debuggerId() { return -1; }
-
-    // Save the agent state in order to pass it later into WebDevToolsAgent::reattach
-    // if the same client is reattached to another agent.
-    virtual void saveAgentRuntimeState(const WebString&) { }
 
     // Resume the inspected renderer that is waiting for DevTools front-end to initialize its state.
     virtual void resumeStartup() { }

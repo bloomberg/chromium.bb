@@ -64,7 +64,12 @@ public:
     explicit PageInspectorProxy(WorkerGlobalScope* workerGlobalScope) : m_workerGlobalScope(workerGlobalScope) { }
     virtual ~PageInspectorProxy() { }
 private:
-    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) override
+    virtual void sendProtocolResponse(int callId, PassRefPtr<JSONObject> message) override
+    {
+        // Worker messages are wrapped, no need to handle callId.
+        m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
+    }
+    virtual void sendProtocolNotification(PassRefPtr<JSONObject> message) override
     {
         m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
     }

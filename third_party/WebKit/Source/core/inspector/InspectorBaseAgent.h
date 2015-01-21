@@ -58,7 +58,7 @@ public:
     virtual void registerInDispatcher(InspectorBackendDispatcher*) = 0;
     virtual void discardAgent() { }
     virtual void didCommitLoadForMainFrame() { }
-    virtual void flushPendingFrontendMessages() { }
+    virtual void flushPendingProtocolNotifications() { }
 
     String name() { return m_name; }
     void appended(InstrumentingAgents*, InspectorState*);
@@ -82,7 +82,7 @@ public:
     void restore();
     void registerInDispatcher(InspectorBackendDispatcher*);
     void discardAgents();
-    void flushPendingFrontendMessages();
+    void flushPendingProtocolNotifications();
     void didCommitLoadForMainFrame();
 
     void trace(Visitor*);

@@ -50,7 +50,8 @@ public:
     virtual void highlight() override;
     virtual void hideHighlight() override;
 
-    virtual void sendMessageToFrontend(PassRefPtr<JSONObject>) override;
+    virtual void sendProtocolResponse(int callId, PassRefPtr<JSONObject> message) override;
+    virtual void sendProtocolNotification(PassRefPtr<JSONObject> message) override;
     virtual void flush() override;
 
     virtual void updateInspectorStateCookie(const WTF::String&) override;

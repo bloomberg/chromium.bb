@@ -110,7 +110,7 @@ public:
     virtual void discardAgent() override;
     virtual void didCommitLoadForMainFrame() override;
     virtual void restore() override;
-    virtual void flushPendingFrontendMessages() override;
+    virtual void flushPendingProtocolNotifications() override;
     virtual void enable(ErrorString*, PassRefPtrWillBeRawPtr<EnableCallback>) override;
     virtual void disable(ErrorString*) override;
     void reset();

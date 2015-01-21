@@ -69,10 +69,16 @@ void InspectorClientImpl::hideHighlight()
         agent->hideHighlight();
 }
 
-void InspectorClientImpl::sendMessageToFrontend(PassRefPtr<JSONObject> message)
+void InspectorClientImpl::sendProtocolResponse(int callId, PassRefPtr<JSONObject> message)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->sendMessageToFrontend(message);
+        agent->sendProtocolResponse(callId, message);
+}
+
+void InspectorClientImpl::sendProtocolNotification(PassRefPtr<JSONObject> message)
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->sendProtocolNotification(message);
 }
 
 void InspectorClientImpl::flush()

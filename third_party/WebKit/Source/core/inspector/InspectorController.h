@@ -122,7 +122,7 @@ public:
 
     void willProcessTask();
     void didProcessTask();
-    void flushPendingFrontendMessages();
+    void flushPendingProtocolNotifications();
 
     void didCommitLoadForMainFrame();
     void didBeginFrame(int frameId);

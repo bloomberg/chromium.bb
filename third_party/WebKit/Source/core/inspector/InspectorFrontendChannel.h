@@ -34,7 +34,8 @@ namespace blink {
 class InspectorFrontendChannel {
 public:
     virtual ~InspectorFrontendChannel() { }
-    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) = 0;
+    virtual void sendProtocolResponse(int callId, PassRefPtr<JSONObject> message) = 0;
+    virtual void sendProtocolNotification(PassRefPtr<JSONObject> message) = 0;
     virtual void flush() = 0;
 };
 

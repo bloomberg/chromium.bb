@@ -476,9 +476,9 @@ void InspectorController::didProcessTask()
         profilerAgent->didProcessTask();
 }
 
-void InspectorController::flushPendingFrontendMessages()
+void InspectorController::flushPendingProtocolNotifications()
 {
-    m_agents.flushPendingFrontendMessages();
+    m_agents.flushPendingProtocolNotifications();
 }
 
 void InspectorController::didCommitLoadForMainFrame()

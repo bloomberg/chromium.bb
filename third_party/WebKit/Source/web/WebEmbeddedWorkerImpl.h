@@ -86,8 +86,7 @@ private:
     virtual void didFinishDocumentLoad(WebLocalFrame*) override;
 
     // WebDevToolsAgentClient overrides.
-    virtual void sendMessageToInspectorFrontend(const WebString&) override;
-    virtual void saveAgentRuntimeState(const WebString&) override;
+    virtual void sendProtocolMessage(int callId, const WebString&, const WebString&) override;
     virtual void resumeStartup() override;
 
     void onScriptLoaderFinished();

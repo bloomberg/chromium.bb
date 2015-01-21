@@ -476,7 +476,7 @@ void InspectorCSSAgent::restore()
         wasEnabled();
 }
 
-void InspectorCSSAgent::flushPendingFrontendMessages()
+void InspectorCSSAgent::flushPendingProtocolNotifications()
 {
     if (!m_invalidatedDocuments.size())
         return;
@@ -546,7 +546,7 @@ void InspectorCSSAgent::didCommitLoadForMainFrame()
 
 void InspectorCSSAgent::mediaQueryResultChanged()
 {
-    flushPendingFrontendMessages();
+    flushPendingProtocolNotifications();
     m_frontend->mediaQueryResultChanged();
 }
 
@@ -591,7 +591,7 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 
     m_invalidatedDocuments.add(document);
     if (m_creatingViaInspectorStyleSheet)
-        flushPendingFrontendMessages();
+        flushPendingProtocolNotifications();
 }
 
 void InspectorCSSAgent::updateActiveStyleSheets(Document* document, StyleSheetsUpdateType styleSheetsUpdateType)
@@ -1518,7 +1518,7 @@ void InspectorCSSAgent::didModifyDOMAttr(Element* element)
 
 void InspectorCSSAgent::styleSheetChanged(InspectorStyleSheetBase* styleSheet)
 {
-    flushPendingFrontendMessages();
+    flushPendingProtocolNotifications();
     m_frontend->styleSheetChanged(styleSheet->id());
 }
 

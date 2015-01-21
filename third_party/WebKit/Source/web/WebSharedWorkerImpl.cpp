@@ -248,9 +248,9 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
         bind(&WebSharedWorkerImpl::onScriptLoaderFinished, this));
 }
 
-void WebSharedWorkerImpl::sendMessageToInspectorFrontend(const WebString& message)
+void WebSharedWorkerImpl::sendProtocolMessage(int callId, const WebString& message, const WebString& state)
 {
-    client()->dispatchDevToolsMessage(message);
+    client()->sendDevToolsMessage(callId, message, state);
 }
 
 void WebSharedWorkerImpl::resumeStartup()
@@ -259,11 +259,6 @@ void WebSharedWorkerImpl::resumeStartup()
     m_isPausedOnStart = false;
     if (isPausedOnStart)
         loadShadowPage();
-}
-
-void WebSharedWorkerImpl::saveAgentRuntimeState(const WebString& inspectorState)
-{
-    client()->saveDevToolsAgentState(inspectorState);
 }
 
 // WorkerReportingProxy --------------------------------------------------------

@@ -103,10 +103,10 @@ void InspectorAgentRegistry::discardAgents()
         m_agents[i]->discardAgent();
 }
 
-void InspectorAgentRegistry::flushPendingFrontendMessages()
+void InspectorAgentRegistry::flushPendingProtocolNotifications()
 {
     for (size_t i = 0; i < m_agents.size(); i++)
-        m_agents[i]->flushPendingFrontendMessages();
+        m_agents[i]->flushPendingProtocolNotifications();
 }
 
 void InspectorAgentRegistry::trace(Visitor* visitor)

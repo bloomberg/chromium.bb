@@ -1706,7 +1706,7 @@ class Generator:
 
         Generator.method_name_enum_list.append("        %s," % cmd_enum_name)
         Generator.method_handler_list.append("            &InspectorBackendDispatcherImpl::%s_%s," % (domain_name, json_command_name))
-        Generator.backend_method_declaration_list.append("    void %s_%s(long callId, JSONObject* requestMessageObject, JSONArray* protocolErrors);" % (domain_name, json_command_name))
+        Generator.backend_method_declaration_list.append("    void %s_%s(int callId, JSONObject* requestMessageObject, JSONArray* protocolErrors);" % (domain_name, json_command_name))
 
         backend_agent_interface_list = [] if "redirect" in json_command else Generator.backend_agent_interface_list
 

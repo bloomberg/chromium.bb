@@ -44,13 +44,13 @@ ${frontendDomainMethodDeclarations}
 """)
 
 backend_method = (
-"""void InspectorBackendDispatcherImpl::${domainName}_$methodName(long callId, JSONObject*$requestMessageObject, JSONArray* protocolErrors)
+"""void InspectorBackendDispatcherImpl::${domainName}_$methodName(int callId, JSONObject*$requestMessageObject, JSONArray* protocolErrors)
 {
     if (!$agentField)
         protocolErrors->pushString("${domainName} handler is not available.");
 $methodCode
     if (protocolErrors->length()) {
-        reportProtocolError(&callId, InvalidParams, String::format(InvalidParamsFormatString, commandName($commandNameIndex)), protocolErrors);
+        reportProtocolError(callId, InvalidParams, String::format(InvalidParamsFormatString, commandName($commandNameIndex)), protocolErrors);
         return;
     }
 $agentCallParamsDeclaration
@@ -65,7 +65,7 @@ frontend_method = ("""void InspectorFrontend::$domainName::$eventName($parameter
     RefPtr<JSONObject> jsonMessage = JSONObject::create();
     jsonMessage->setString("method", "$domainName.$eventName");
 $code    if (m_inspectorFrontendChannel)
-        m_inspectorFrontendChannel->sendMessageToFrontend(jsonMessage.release());
+        m_inspectorFrontendChannel->sendProtocolNotification(jsonMessage.release());
 }
 """)
 
@@ -183,8 +183,8 @@ $virtualSetters
         LastEntry,
     };
 
-    void reportProtocolError(const long* const callId, CommonErrorCode, const String& errorMessage) const;
-    virtual void reportProtocolError(const long* const callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const = 0;
+    void reportProtocolError(int callId, CommonErrorCode, const String& errorMessage) const;
+    virtual void reportProtocolError(int callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const = 0;
     virtual void dispatch(const String& message) = 0;
     static bool getCommandName(const String& message, String* result);
 
@@ -243,10 +243,10 @@ $constructorInit
 
     virtual void clearFrontend() { m_inspectorFrontendChannel = 0; }
     virtual void dispatch(const String& message);
-    virtual void reportProtocolError(const long* const callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const;
+    virtual void reportProtocolError(int callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const;
     using InspectorBackendDispatcher::reportProtocolError;
 
-    void sendResponse(long callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result);
+    void sendResponse(int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result);
     bool isActive() { return m_inspectorFrontendChannel; }
 
 $setters
@@ -266,11 +266,11 @@ $fieldDeclarations
     static PassRefPtr<JSONObject> getObject(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
     static PassRefPtr<JSONArray> getArray(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
 
-    void sendResponse(long callId, ErrorString invocationError, PassRefPtr<JSONObject> result)
+    void sendResponse(int callId, ErrorString invocationError, PassRefPtr<JSONObject> result)
     {
         sendResponse(callId, invocationError, RefPtr<JSONValue>(), result);
     }
-    void sendResponse(long callId, ErrorString invocationError)
+    void sendResponse(int callId, ErrorString invocationError)
     {
         sendResponse(callId, invocationError, RefPtr<JSONValue>(), JSONObject::create());
     }
@@ -290,10 +290,10 @@ PassRefPtrWillBeRawPtr<InspectorBackendDispatcher> InspectorBackendDispatcher::c
 void InspectorBackendDispatcherImpl::dispatch(const String& message)
 {
     RefPtrWillBeRawPtr<InspectorBackendDispatcher> protect(this);
-    typedef void (InspectorBackendDispatcherImpl::*CallHandler)(long callId, JSONObject* messageObject, JSONArray* protocolErrors);
+    typedef void (InspectorBackendDispatcherImpl::*CallHandler)(int callId, JSONObject* messageObject, JSONArray* protocolErrors);
     typedef HashMap<String, CallHandler> DispatchMap;
     DEFINE_STATIC_LOCAL(DispatchMap, dispatchMap, );
-    long callId = 0;
+    int callId = 0;
 
     if (dispatchMap.isEmpty()) {
         static const CallHandler handlers[] = {
@@ -304,38 +304,22 @@ $messageHandlers
     }
 
     RefPtr<JSONValue> parsedMessage = parseJSON(message);
-    if (!parsedMessage) {
-        reportProtocolError(0, ParseError, "Message must be in JSON format");
-        return;
-    }
-
+    ASSERT(parsedMessage);
     RefPtr<JSONObject> messageObject = parsedMessage->asObject();
-    if (!messageObject) {
-        reportProtocolError(0, InvalidRequest, "Message must be a JSONified object");
-        return;
-    }
+    ASSERT(messageObject);
 
     RefPtr<JSONValue> callIdValue = messageObject->get("id");
-    if (!callIdValue || !callIdValue->asNumber(&callId)) {
-        reportProtocolError(0, InvalidRequest, "The type of 'id' property must be number");
-        return;
-    }
+    bool success = callIdValue->asNumber(&callId);
+    ASSERT_UNUSED(success, success);
 
     RefPtr<JSONValue> methodValue = messageObject->get("method");
-    if (!methodValue) {
-        reportProtocolError(&callId, InvalidRequest, "'method' property wasn't found");
-        return;
-    }
-
     String method;
-    if (!methodValue->asString(&method)) {
-        reportProtocolError(&callId, InvalidRequest, "The type of 'method' property must be string");
-        return;
-    }
+    success = methodValue && methodValue->asString(&method);
+    ASSERT_UNUSED(success, success);
 
     HashMap<String, CallHandler>::iterator it = dispatchMap.find(method);
     if (it == dispatchMap.end()) {
-        reportProtocolError(&callId, MethodNotFound, "'" + method + "' wasn't found");
+        reportProtocolError(callId, MethodNotFound, "'" + method + "' wasn't found");
         return;
     }
 
@@ -343,10 +327,10 @@ $messageHandlers
     ((*this).*it->value)(callId, messageObject.get(), protocolErrors.get());
 }
 
-void InspectorBackendDispatcherImpl::sendResponse(long callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result)
+void InspectorBackendDispatcherImpl::sendResponse(int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result)
 {
     if (invocationError.length()) {
-        reportProtocolError(&callId, ServerError, invocationError, errorData);
+        reportProtocolError(callId, ServerError, invocationError, errorData);
         return;
     }
 
@@ -354,15 +338,15 @@ void InspectorBackendDispatcherImpl::sendResponse(long callId, const ErrorString
     responseMessage->setNumber("id", callId);
     responseMessage->setObject("result", result);
     if (m_inspectorFrontendChannel)
-        m_inspectorFrontendChannel->sendMessageToFrontend(responseMessage.release());
+        m_inspectorFrontendChannel->sendProtocolResponse(callId, responseMessage.release());
 }
 
-void InspectorBackendDispatcher::reportProtocolError(const long* const callId, CommonErrorCode code, const String& errorMessage) const
+void InspectorBackendDispatcher::reportProtocolError(int callId, CommonErrorCode code, const String& errorMessage) const
 {
     reportProtocolError(callId, code, errorMessage, PassRefPtr<JSONValue>());
 }
 
-void InspectorBackendDispatcherImpl::reportProtocolError(const long* const callId, CommonErrorCode code, const String& errorMessage, PassRefPtr<JSONValue> data) const
+void InspectorBackendDispatcherImpl::reportProtocolError(int callId, CommonErrorCode code, const String& errorMessage, PassRefPtr<JSONValue> data) const
 {
     DEFINE_STATIC_LOCAL(Vector<int>,s_commonErrors,);
     if (!s_commonErrors.size()) {
@@ -384,12 +368,9 @@ void InspectorBackendDispatcherImpl::reportProtocolError(const long* const callI
         error->setValue("data", data);
     RefPtr<JSONObject> message = JSONObject::create();
     message->setObject("error", error);
-    if (callId)
-        message->setNumber("id", *callId);
-    else
-        message->setValue("id", JSONValue::null());
+    message->setNumber("id", callId);
     if (m_inspectorFrontendChannel)
-        m_inspectorFrontendChannel->sendMessageToFrontend(message.release());
+        m_inspectorFrontendChannel->sendProtocolResponse(callId, message.release());
 }
 
 template<typename R, typename V, typename V0>

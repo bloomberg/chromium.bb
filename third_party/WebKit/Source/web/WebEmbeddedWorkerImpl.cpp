@@ -359,9 +359,9 @@ void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
         bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
 }
 
-void WebEmbeddedWorkerImpl::sendMessageToInspectorFrontend(const WebString& message)
+void WebEmbeddedWorkerImpl::sendProtocolMessage(int callId, const WebString& message, const WebString& state)
 {
-    m_workerContextClient->dispatchDevToolsMessage(message);
+    m_workerContextClient->sendDevToolsMessage(callId, message, state);
 }
 
 void WebEmbeddedWorkerImpl::resumeStartup()
@@ -372,11 +372,6 @@ void WebEmbeddedWorkerImpl::resumeStartup()
         loadShadowPage();
     else if (waitingForDebuggerState == WaitingForDebuggerAfterScriptLoaded)
         startWorkerThread();
-}
-
-void WebEmbeddedWorkerImpl::saveAgentRuntimeState(const WebString& inspectorState)
-{
-    m_workerContextClient->saveDevToolsAgentState(inspectorState);
 }
 
 void WebEmbeddedWorkerImpl::onScriptLoaderFinished()

@@ -90,7 +90,8 @@ public:
     virtual void highlight() override;
     virtual void hideHighlight() override;
     virtual void updateInspectorStateCookie(const WTF::String&) override;
-    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) override;
+    virtual void sendProtocolResponse(int callId, PassRefPtr<JSONObject> message) override;
+    virtual void sendProtocolNotification(PassRefPtr<JSONObject> message) override;
     virtual void flush() override;
     virtual void resumeStartup() override;
 
@@ -112,7 +113,7 @@ public:
     // WebPageOverlay
     virtual void paintPageOverlay(WebCanvas*) override;
 
-    void flushPendingFrontendMessages();
+    void flushPendingProtocolNotifications();
 
 private:
     // WebThread::TaskObserver
@@ -146,8 +147,9 @@ private:
     OwnPtr<IntPoint> m_lastPinchAnchorCss;
     OwnPtr<IntPoint> m_lastPinchAnchorDip;
 
-    typedef Vector<RefPtr<JSONObject>> FrontendMessageQueue;
-    FrontendMessageQueue m_frontendMessageQueue;
+    typedef Vector<RefPtr<JSONObject> > NotificationQueue;
+    NotificationQueue m_notificationQueue;
+    String m_stateCookie;
 };
 
 } // namespace blink
