@@ -10,11 +10,11 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class ExtensionSyncService;
+class Profile;
 
 class ExtensionSyncServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static ExtensionSyncService* GetForBrowserContext(
-      content::BrowserContext* context);
+  static ExtensionSyncService* GetForProfile(Profile* profile);
 
   static ExtensionSyncServiceFactory* GetInstance();
 
@@ -25,7 +25,7 @@ class ExtensionSyncServiceFactory : public BrowserContextKeyedServiceFactory {
   ~ExtensionSyncServiceFactory() override;
 
   KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const override;
+      content::BrowserContext* profile) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };

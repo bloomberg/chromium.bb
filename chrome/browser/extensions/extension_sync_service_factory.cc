@@ -14,10 +14,10 @@
 #include "extensions/browser/extensions_browser_client.h"
 
 // static
-ExtensionSyncService* ExtensionSyncServiceFactory::GetForBrowserContext(
-    content::BrowserContext* context) {
+ExtensionSyncService* ExtensionSyncServiceFactory::GetForProfile(
+    Profile* profile) {
   return static_cast<ExtensionSyncService*>(
-      GetInstance()->GetServiceForBrowserContext(context, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static

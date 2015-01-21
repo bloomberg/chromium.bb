@@ -301,7 +301,9 @@ void ChromeManagementAPIDelegate::SetLaunchType(
     content::BrowserContext* context,
     const std::string& extension_id,
     extensions::LaunchType launch_type) const {
-  extensions::SetLaunchType(context, extension_id, launch_type);
+  extensions::SetLaunchType(
+      extensions::ExtensionSystem::Get(context)->extension_service(),
+      extension_id, launch_type);
 }
 
 GURL ChromeManagementAPIDelegate::GetIconURL(

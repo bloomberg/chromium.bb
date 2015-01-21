@@ -88,9 +88,8 @@ ExtensionSyncService::ExtensionSyncService(Profile* profile,
 ExtensionSyncService::~ExtensionSyncService() {}
 
 // static
-ExtensionSyncService* ExtensionSyncService::Get(
-    content::BrowserContext* context) {
-  return ExtensionSyncServiceFactory::GetForBrowserContext(context);
+ExtensionSyncService* ExtensionSyncService::Get(Profile* profile) {
+  return ExtensionSyncServiceFactory::GetForProfile(profile);
 }
 
 syncer::SyncChange ExtensionSyncService::PrepareToSyncUninstallExtension(
@@ -347,7 +346,8 @@ bool ExtensionSyncService::ProcessAppSyncData(
   // is in AppSyncData::PopulateAppSpecifics.
   if (app_sync_data.launch_type() >= extensions::LAUNCH_TYPE_FIRST &&
       app_sync_data.launch_type() < extensions::NUM_LAUNCH_TYPES) {
-    extensions::SetLaunchType(profile_, id, app_sync_data.launch_type());
+    extensions::SetLaunchType(extension_service_, id,
+                              app_sync_data.launch_type());
   }
 
   if (!app_sync_data.bookmark_app_url().empty())

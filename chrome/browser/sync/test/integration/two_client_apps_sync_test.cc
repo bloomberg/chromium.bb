@@ -366,17 +366,21 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateLaunchType) {
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
   // Change the launch type to window.
-  extensions::SetLaunchType(GetProfile(1), extensions::kWebStoreAppId,
+  extensions::SetLaunchType(GetExtensionService(GetProfile(1)),
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_WINDOW);
-  extensions::SetLaunchType(verifier(), extensions::kWebStoreAppId,
+  extensions::SetLaunchType(GetExtensionService(verifier()),
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_WINDOW);
   ASSERT_TRUE(AwaitAllProfilesHaveSameAppsAsVerifier());
 
   // Change the launch type to regular tab.
-  extensions::SetLaunchType(GetProfile(1), extensions::kWebStoreAppId,
+  extensions::SetLaunchType(GetExtensionService(GetProfile(1)),
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_REGULAR);
   ASSERT_FALSE(HasSameAppsAsVerifier(1));
-  extensions::SetLaunchType(verifier(), extensions::kWebStoreAppId,
+  extensions::SetLaunchType(GetExtensionService(verifier()),
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_REGULAR);
   ASSERT_TRUE(AwaitAllProfilesHaveSameAppsAsVerifier());
 }
@@ -385,9 +389,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UnexpectedLaunchType) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
-  extensions::SetLaunchType(GetProfile(1), extensions::kWebStoreAppId,
+  extensions::SetLaunchType(GetExtensionService(GetProfile(1)),
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_REGULAR);
-  extensions::SetLaunchType(verifier(), extensions::kWebStoreAppId,
+  extensions::SetLaunchType(GetExtensionService(verifier()),
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_REGULAR);
   ASSERT_TRUE(AwaitAllProfilesHaveSameAppsAsVerifier());
 

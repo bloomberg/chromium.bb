@@ -565,7 +565,7 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
             : extensions::LAUNCH_TYPE_WINDOW;
     profile->GetPrefs()->SetInteger(
         extensions::pref_names::kBookmarkAppCreationLaunchType, launch_type);
-    extensions::SetLaunchType(profile, extension_id, launch_type);
+    extensions::SetLaunchType(service, extension_id, launch_type);
 
     // Update name of app.
     NSString* new_title = [app_title stringValue];

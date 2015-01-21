@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/launch_util.h"
 
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -12,7 +13,6 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 
@@ -59,21 +59,22 @@ LaunchType GetLaunchTypePrefValue(const ExtensionPrefs* prefs,
       ? static_cast<LaunchType>(value) : LAUNCH_TYPE_INVALID;
 }
 
-void SetLaunchType(content::BrowserContext* context,
+void SetLaunchType(ExtensionService* service,
                    const std::string& extension_id,
                    LaunchType launch_type) {
   DCHECK(launch_type >= LAUNCH_TYPE_FIRST && launch_type < NUM_LAUNCH_TYPES);
 
-  ExtensionPrefs::Get(context)->UpdateExtensionPref(
-      extension_id, kPrefLaunchType,
+  ExtensionPrefs::Get(service->profile())->UpdateExtensionPref(
+      extension_id,
+      kPrefLaunchType,
       new base::FundamentalValue(static_cast<int>(launch_type)));
 
   // Sync the launch type.
-  const Extension* extension =
-      ExtensionRegistry::Get(context)
-          ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
-  if (extension)
-    ExtensionSyncService::Get(context)->SyncExtensionChangeIfNeeded(*extension);
+  const Extension* extension = service->GetInstalledExtension(extension_id);
+  if (extension) {
+    ExtensionSyncService::Get(service->profile())->
+        SyncExtensionChangeIfNeeded(*extension);
+  }
 }
 
 LaunchContainer GetLaunchContainer(const ExtensionPrefs* prefs,
