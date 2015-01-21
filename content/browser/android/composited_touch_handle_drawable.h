@@ -30,7 +30,8 @@ class CompositedTouchHandleDrawable : public ui::TouchHandleDrawable {
   static bool RegisterHandleViewResources(JNIEnv* env);
 
  private:
-  void Detach();
+  void DetachLayer();
+  void UpdateLayerPosition();
 
   const float dpi_scale_;
   ui::TouchHandleOrientation orientation_;

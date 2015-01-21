@@ -91,11 +91,14 @@ CompositedTouchHandleDrawable::CompositedTouchHandleDrawable(
 }
 
 CompositedTouchHandleDrawable::~CompositedTouchHandleDrawable() {
-  Detach();
+  DetachLayer();
 }
 
 void CompositedTouchHandleDrawable::SetEnabled(bool enabled) {
   layer_->SetIsDrawable(enabled);
+  // Force a position update in case the disabled layer's properties are stale.
+  if (enabled)
+    UpdateLayerPosition();
 }
 
 void CompositedTouchHandleDrawable::SetOrientation(
@@ -122,7 +125,7 @@ void CompositedTouchHandleDrawable::SetOrientation(
       break;
   };
 
-  layer_->SetPosition(focal_position_ - focal_offset_from_origin_);
+  UpdateLayerPosition();
 }
 
 void CompositedTouchHandleDrawable::SetAlpha(float alpha) {
@@ -136,7 +139,7 @@ void CompositedTouchHandleDrawable::SetAlpha(float alpha) {
 void CompositedTouchHandleDrawable::SetFocus(const gfx::PointF& position) {
   DCHECK(layer_->parent());
   focal_position_ = gfx::ScalePoint(position, dpi_scale_);
-  layer_->SetPosition(focal_position_ - focal_offset_from_origin_);
+  UpdateLayerPosition();
 }
 
 gfx::RectF CompositedTouchHandleDrawable::GetVisibleBounds() const {
@@ -147,8 +150,12 @@ gfx::RectF CompositedTouchHandleDrawable::GetVisibleBounds() const {
                         1.f / dpi_scale_);
 }
 
-void CompositedTouchHandleDrawable::Detach() {
+void CompositedTouchHandleDrawable::DetachLayer() {
   layer_->RemoveFromParent();
+}
+
+void CompositedTouchHandleDrawable::UpdateLayerPosition() {
+  layer_->SetPosition(focal_position_ - focal_offset_from_origin_);
 }
 
 // static
