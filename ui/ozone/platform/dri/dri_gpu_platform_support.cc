@@ -34,8 +34,7 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
         main_thread_listener_(main_thread_listener),
         main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         pending_main_thread_operations_(0),
-        cursor_animating_(false),
-        start_on_main_(true) {}
+        cursor_animating_(false) {}
 
   void OnFilterAdded(IPC::Sender* sender) override {
     io_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -60,8 +59,7 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
     bool cursor_was_animating = cursor_animating_;
     UpdateAnimationState(message);
     if (cursor_state_message || pending_main_thread_operations_ ||
-        cursor_animating_ || cursor_was_animating || start_on_main_) {
-      start_on_main_ = false;
+        cursor_animating_ || cursor_was_animating) {
       pending_main_thread_operations_++;
 
       base::Closure main_thread_message_handler =
@@ -153,12 +151,6 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   int32 pending_main_thread_operations_;
   bool cursor_animating_;
-  // The filter is not installed early enough, so some messages may
-  // get routed to main thread. Once we get our first message on io, send it
-  // to main to ensure all prior main thread operations are finished before we
-  // continue on io.
-  // TODO: remove this once filter is properly installed.
-  bool start_on_main_;
 };
 }
 
