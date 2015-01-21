@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
@@ -17,6 +18,7 @@ namespace content {
 class FrameTreeNode;
 class NavigationURLLoader;
 class ResourceRequestBody;
+class SiteInstanceImpl;
 struct NavigationRequestInfo;
 
 // PlzNavigate
@@ -51,7 +53,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
-                    const CommitNavigationParams& commit_params);
+                    const CommitNavigationParams& commit_params,
+                    const NavigationEntryImpl* navitation_entry);
 
   ~NavigationRequest() override;
 
@@ -63,11 +66,29 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   CommonNavigationParams& common_params() { return common_params_; }
 
+  const CommonNavigationParams& common_params() const { return common_params_; }
+
   const CommitNavigationParams& commit_params() const { return commit_params_; }
 
   NavigationURLLoader* loader_for_testing() const { return loader_.get(); }
 
   NavigationState state() const { return state_; }
+
+  SiteInstanceImpl* source_site_instance() const {
+    return source_site_instance_.get();
+  }
+
+  SiteInstanceImpl* dest_site_instance() const {
+    return dest_site_instance_.get();
+  }
+
+  NavigationEntryImpl::RestoreType restore_type() const {
+    return restore_type_;
+  };
+
+  bool is_view_source() const { return is_view_source_; };
+
+  int bindings() const { return bindings_; };
 
   void SetWaitingForRendererResponse() {
     DCHECK(state_ == NOT_STARTED);
@@ -96,6 +117,15 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   NavigationState state_;
 
   scoped_ptr<NavigationURLLoader> loader_;
+
+  // These next items are used in browser-initiated navigations to store
+  // information from the NavigationEntryImpl that is required after request
+  // creation time.
+  scoped_refptr<SiteInstanceImpl> source_site_instance_;
+  scoped_refptr<SiteInstanceImpl> dest_site_instance_;
+  NavigationEntryImpl::RestoreType restore_type_;
+  bool is_view_source_;
+  int bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationRequest);
 };

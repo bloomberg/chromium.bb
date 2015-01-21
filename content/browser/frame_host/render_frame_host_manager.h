@@ -31,6 +31,7 @@ class InterstitialPageImpl;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationEntryImpl;
+class NavigationRequest;
 class NavigatorTestWithBrowserSideNavigation;
 class RenderFrameHost;
 class RenderFrameHostDelegate;
@@ -372,15 +373,15 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // PlzNavigate
   // Notifies the RFHM that a navigation has begun so that it can speculatively
   // create a new RenderFrameHost (and potentially a new process) if needed.
-  void BeginNavigation(const CommonNavigationParams& common_params);
+  void BeginNavigation(const NavigationRequest& request);
 
   // PlzNavigate
   // Called (possibly several times) during a navigation to select or create an
   // appropriate RenderFrameHost for the provided URL. The returned pointer will
   // be for the current or the speculative RenderFrameHost and the instance is
   // owned by this manager.
-  RenderFrameHostImpl* GetFrameHostForNavigation(const GURL& url,
-                                                 ui::PageTransition transition);
+  RenderFrameHostImpl* GetFrameHostForNavigation(
+      const NavigationRequest& request);
 
   // PlzNavigate
   // Clean up any state for any ongoing navigation.

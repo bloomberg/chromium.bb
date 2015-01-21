@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -654,8 +655,7 @@ void RenderFrameHostManager::ResetProxyHosts() {
 }
 
 // PlzNavigate
-void RenderFrameHostManager::BeginNavigation(
-    const CommonNavigationParams& common_params) {
+void RenderFrameHostManager::BeginNavigation(const NavigationRequest& request) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   // Clean up any state in case there's an ongoing navigation.
@@ -663,24 +663,23 @@ void RenderFrameHostManager::BeginNavigation(
   // navigations.
   CleanUpNavigation();
 
-  RenderFrameHostImpl* dest_rfh =
-      GetFrameHostForNavigation(common_params.url, common_params.transition);
+  RenderFrameHostImpl* dest_rfh = GetFrameHostForNavigation(request);
   DCHECK(dest_rfh);
 }
 
 // PlzNavigate
 RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
-    const GURL& url,
-    ui::PageTransition transition) {
+    const NavigationRequest& request) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
 
   SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
 
-  // TODO(carlosk): Replace the default values with the right ones for
-  // source_instance, dest_instance, dest_is_restore, dest_is_view_source_mode.
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
-      url, nullptr, nullptr, transition, false, false);
+      request.common_params().url, request.source_site_instance(),
+      request.dest_site_instance(), request.common_params().transition,
+      request.restore_type() != NavigationEntryImpl::RESTORE_NONE,
+      request.is_view_source());
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
 
@@ -714,10 +713,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         speculative_render_frame_host_->GetSiteInstance() !=
             dest_site_instance.get()) {
       CleanUpNavigation();
-      // TODO(carlosk): Replace the binding value with the right one.
       bool success = CreateSpeculativeRenderFrameHost(
-          url, current_site_instance, dest_site_instance.get(),
-          NavigationEntryImpl::kInvalidBindings);
+          request.common_params().url, current_site_instance,
+          dest_site_instance.get(), request.bindings());
       DCHECK(success);
     }
     DCHECK(speculative_render_frame_host_);

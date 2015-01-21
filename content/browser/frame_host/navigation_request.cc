@@ -8,6 +8,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/navigation_url_loader.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/common/resource_request_body.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/stream_handle.h"
@@ -18,11 +19,22 @@ namespace content {
 NavigationRequest::NavigationRequest(
     FrameTreeNode* frame_tree_node,
     const CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params)
+    const CommitNavigationParams& commit_params,
+    const NavigationEntryImpl* entry)
     : frame_tree_node_(frame_tree_node),
       common_params_(common_params),
       commit_params_(commit_params),
-      state_(NOT_STARTED) {
+      state_(NOT_STARTED),
+      restore_type_(NavigationEntryImpl::RESTORE_NONE),
+      is_view_source_(false),
+      bindings_(NavigationEntryImpl::kInvalidBindings) {
+  if (entry) {
+    source_site_instance_ = entry->source_site_instance();
+    dest_site_instance_ = entry->site_instance();
+    restore_type_ = entry->restore_type();
+    is_view_source_ = entry->IsViewSourceMode();
+    bindings_ = entry->bindings();
+  }
 }
 
 NavigationRequest::~NavigationRequest() {

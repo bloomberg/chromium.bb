@@ -755,10 +755,9 @@ void NavigatorImpl::OnBeginNavigation(
     // TODO(clamy): See if the navigation start time should be measured in the
     // renderer and sent to the browser instead of being measured here.
     scoped_ptr<NavigationRequest> scoped_request(new NavigationRequest(
-        frame_tree_node,
-        common_params,
-        CommitNavigationParams(
-            PageState(), false, base::TimeTicks::Now())));
+        frame_tree_node, common_params,
+        CommitNavigationParams(PageState(), false, base::TimeTicks::Now()),
+        nullptr));
     navigation_request = scoped_request.get();
     navigation_request_map_.set(
         frame_tree_node->frame_tree_node_id(), scoped_request.Pass());
@@ -783,7 +782,7 @@ void NavigatorImpl::OnBeginNavigation(
 
   // Then notify the RenderFrameHostManager so it can speculatively create a
   // RenderFrameHost (and potentially a new renderer process) in parallel.
-  frame_tree_node->render_manager()->BeginNavigation(common_params);
+  frame_tree_node->render_manager()->BeginNavigation(*navigation_request);
 }
 
 // PlzNavigate
@@ -809,8 +808,7 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
   // Select an appropriate renderer to commit the navigation.
   RenderFrameHostImpl* render_frame_host =
       frame_tree_node->render_manager()->GetFrameHostForNavigation(
-          navigation_request->common_params().url,
-          navigation_request->common_params().transition);
+          *navigation_request);
   CheckWebUIRendererDoesNotDisplayNormalURL(
       render_frame_host, navigation_request->common_params().url);
 
@@ -887,14 +885,13 @@ bool NavigatorImpl::RequestNavigation(
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
   scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node,
-      CommonNavigationParams(entry.GetURL(),
-                             entry.GetReferrer(),
-                             entry.GetTransitionType(),
-                             navigation_type,
+      CommonNavigationParams(entry.GetURL(), entry.GetReferrer(),
+                             entry.GetTransitionType(), navigation_type,
                              !entry.IsViewSourceMode()),
       CommitNavigationParams(entry.GetPageState(),
                              entry.GetIsOverridingUserAgent(),
-                             navigation_start)));
+                             navigation_start),
+      &entry));
   RequestNavigationParams request_params(entry.GetHasPostData(),
                                          entry.extra_headers(),
                                          entry.GetBrowserInitiatedPostData());
