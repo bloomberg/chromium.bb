@@ -73,6 +73,7 @@ static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, Cont
         if (typeString == "separator") {
             ContextMenuItem item(ContextMenuItem(SeparatorType,
                 ContextMenuItemCustomTagNoAction,
+                String(),
                 String()));
             menu.appendItem(item);
         } else if (typeString == "subMenu" && subItems->IsArray()) {
@@ -84,12 +85,13 @@ static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, Cont
             ContextMenuItem item(SubmenuType,
                 ContextMenuItemCustomTagNoAction,
                 labelString,
+                String(),
                 &subMenu);
             menu.appendItem(item);
         } else {
             ContextMenuAction typedId = static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + id->ToInt32(isolate)->Value());
             TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, labelString, label, false);
-            ContextMenuItem menuItem((typeString == "checkbox" ? CheckableActionType : ActionType), typedId, labelString);
+            ContextMenuItem menuItem((typeString == "checkbox" ? CheckableActionType : ActionType), typedId, labelString, String());
             if (checked->IsBoolean())
                 menuItem.setChecked(checked->ToBoolean(isolate)->Value());
             if (enabled->IsBoolean())

@@ -51,8 +51,8 @@ enum ContextMenuItemType {
 class PLATFORM_EXPORT ContextMenuItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String&, ContextMenu* subMenu = 0);
-    ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String&, bool enabled, bool checked);
+    ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String& title, const String& icon, ContextMenu* subMenu = 0);
+    ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String& title, const String& icon, bool enabled, bool checked);
 
     ~ContextMenuItem();
 
@@ -75,12 +75,16 @@ public:
     void setTitle(const String& title) { m_title = title; }
     const String& title() const { return m_title; }
 
+    void setIcon(const String& icon) { m_icon = icon; }
+    const String& icon() const { return m_icon; }
+
     const Vector<ContextMenuItem>& subMenuItems() const { return m_subMenuItems; }
 
 private:
     ContextMenuItemType m_type;
     ContextMenuAction m_action;
     String m_title;
+    String m_icon;
     bool m_enabled;
     bool m_checked;
     Vector<ContextMenuItem> m_subMenuItems;

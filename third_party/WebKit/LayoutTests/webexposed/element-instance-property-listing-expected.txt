@@ -582,6 +582,7 @@ html element menuitem
     property checked
     property default
     property disabled
+    property icon
     property label
     property radiogroup
     property type

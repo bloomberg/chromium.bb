@@ -30,10 +30,11 @@
 
 namespace blink {
 
-ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, ContextMenu* subMenu)
+ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, const String& icon, ContextMenu* subMenu)
     : m_type(type)
     , m_action(action)
     , m_title(title)
+    , m_icon(icon)
     , m_enabled(true)
     , m_checked(false)
 {
@@ -41,10 +42,11 @@ ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction act
         setSubMenu(subMenu);
 }
 
-ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, bool enabled, bool checked)
+ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, const String& icon, bool enabled, bool checked)
     : m_type(type)
     , m_action(action)
     , m_title(title)
+    , m_icon(icon)
     , m_enabled(enabled)
     , m_checked(checked)
 {

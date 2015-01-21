@@ -412,6 +412,7 @@ static void populateSubMenuItems(const Vector<ContextMenuItem>& inputMenu, WebVe
 
         WebMenuItemInfo outputItem;
         outputItem.label = inputItem->title();
+        outputItem.icon = inputItem->icon();
         outputItem.enabled = inputItem->enabled();
         outputItem.checked = inputItem->checked();
         outputItem.action = static_cast<unsigned>(inputItem->action() - ContextMenuItemBaseCustomTag);
