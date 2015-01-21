@@ -4,7 +4,6 @@ Tests the Timeline events for XMLHttpReqeust
 
 XHRReadyStateChange Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         readyState : 1

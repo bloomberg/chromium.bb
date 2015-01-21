@@ -2,7 +2,6 @@ Tests the Timeline events for XMLHttpReqeust with responseType="blob"
 
 XHRReadyStateChange Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         readyState : 1
