@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
+#include "components/gcm_driver/gcm_account_mapper.h"
 #include "components/gcm_driver/gcm_backoff_policy.h"
 #include "google_apis/gcm/base/encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
@@ -242,6 +243,7 @@ GCMClientImpl::GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder)
     : internals_builder_(internals_builder.Pass()),
       state_(UNINITIALIZED),
       delegate_(NULL),
+      start_mode_(DELAYED_START),
       clock_(internals_builder_->BuildClock()),
       url_request_context_getter_(NULL),
       pending_registration_requests_deleter_(&pending_registration_requests_),
@@ -285,8 +287,24 @@ void GCMClientImpl::Initialize(
   state_ = INITIALIZED;
 }
 
-void GCMClientImpl::Start() {
-  DCHECK_EQ(INITIALIZED, state_);
+void GCMClientImpl::Start(StartMode start_mode) {
+  DCHECK_NE(UNINITIALIZED, state_);
+
+  if (state_ == LOADED) {
+    // Start the GCM if not yet.
+    if (start_mode == IMMEDIATE_START)
+      StartGCM();
+    return;
+  }
+
+  // The delay start behavior will be abandoned when Start has been called
+  // once with IMMEDIATE_START behavior.
+  if (start_mode == IMMEDIATE_START)
+    start_mode_ = IMMEDIATE_START;
+
+  // Bail out if the loading is not started or completed.
+  if (state_ != INITIALIZED)
+    return;
 
   // Once the loading is completed, the check-in will be initiated.
   gcm_store_->Load(base::Bind(&GCMClientImpl::OnLoadCompleted,
@@ -315,13 +333,25 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
     device_checkin_info_.accounts_set = true;
   last_checkin_time_ = result->last_checkin_time;
   gservices_settings_.UpdateFromLoadResult(*result);
+  load_result_ = result.Pass();
+  state_ = LOADED;
+
+  // Don't initiate the GCM connection when GCM is in delayed start mode and
+  // not any standalone app has registered GCM yet.
+  if (start_mode_ == DELAYED_START && !HasStandaloneRegisteredApp())
+    return;
+
+  StartGCM();
+}
+
+void GCMClientImpl::StartGCM() {
   // Taking over the value of account_mappings before passing the ownership of
   // load result to InitializeMCSClient.
   std::vector<AccountMapping> account_mappings;
-  account_mappings.swap(result->account_mappings);
-  base::Time last_token_fetch_time = result->last_token_fetch_time;
+  account_mappings.swap(load_result_->account_mappings);
+  base::Time last_token_fetch_time = load_result_->last_token_fetch_time;
 
-  InitializeMCSClient(result.Pass());
+  InitializeMCSClient();
 
   if (device_checkin_info_.IsValid()) {
     SchedulePeriodicCheckin();
@@ -334,8 +364,7 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
   StartCheckin();
 }
 
-void GCMClientImpl::InitializeMCSClient(
-    scoped_ptr<GCMStore::LoadResult> result) {
+void GCMClientImpl::InitializeMCSClient() {
   std::vector<GURL> endpoints;
   endpoints.push_back(gservices_settings_.GetMCSMainEndpoint());
   endpoints.push_back(gservices_settings_.GetMCSFallbackEndpoint());
@@ -362,7 +391,7 @@ void GCMClientImpl::InitializeMCSClient(
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&GCMClientImpl::OnMessageSentToMCS,
                  weak_ptr_factory_.GetWeakPtr()),
-      result.Pass());
+      load_result_.Pass());
 }
 
 void GCMClientImpl::OnFirstTimeDeviceCheckinCompleted(
@@ -786,6 +815,8 @@ std::string GCMClientImpl::GetStateString() const {
       return "UNINITIALIZED";
     case GCMClientImpl::LOADING:
       return "LOADING";
+    case GCMClientImpl::LOADED:
+      return "LOADED";
     case GCMClientImpl::INITIAL_DEVICE_CHECKIN:
       return "INITIAL_DEVICE_CHECKIN";
     case GCMClientImpl::READY:
@@ -984,6 +1015,15 @@ void GCMClientImpl::HandleIncomingSendError(
       data_message_stanza.id());
   delegate_->OnMessageSendError(data_message_stanza.category(),
                                 send_error_details);
+}
+
+bool GCMClientImpl::HasStandaloneRegisteredApp() const {
+  if (registrations_.empty())
+    return false;
+  // Note that account mapper is not counted as a standalone app since it is
+  // automatically started when other app uses GCM.
+  return registrations_.size() > 1 ||
+         !registrations_.count(kGCMAccountMapperAppId);
 }
 
 }  // namespace gcm

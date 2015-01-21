@@ -39,7 +39,6 @@ KeyedService* BuildGCMProfileService(content::BrowserContext* context) {
   return new GCMProfileService(
       Profile::FromBrowserContext(context),
       scoped_ptr<GCMClientFactory>(new FakeGCMClientFactory(
-          FakeGCMClient::NO_DELAY_START,
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::UI),
           content::BrowserThread::GetMessageLoopProxyForThread(

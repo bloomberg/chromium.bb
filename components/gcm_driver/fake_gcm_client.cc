@@ -19,13 +19,12 @@
 namespace gcm {
 
 FakeGCMClient::FakeGCMClient(
-    StartMode start_mode,
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
     const scoped_refptr<base::SequencedTaskRunner>& io_thread)
     : delegate_(NULL),
-      sequence_id_(0),
       started_(false),
-      start_mode_(start_mode),
+      start_mode_(DELAYED_START),
+      start_mode_overridding_(RESPECT_START_MODE),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
       weak_ptr_factory_(this) {
@@ -45,20 +44,27 @@ void FakeGCMClient::Initialize(
   delegate_ = delegate;
 }
 
-void FakeGCMClient::Start() {
+void FakeGCMClient::Start(StartMode start_mode) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
-  DCHECK(!started_);
 
-  if (start_mode_ == DELAY_START)
+  if (started_)
     return;
-  DoLoading();
+
+  if (start_mode == IMMEDIATE_START)
+    start_mode_ = IMMEDIATE_START;
+  if (start_mode_ == DELAYED_START ||
+      start_mode_overridding_ == FORCE_TO_ALWAYS_DELAY_START_GCM) {
+    return;
+  }
+
+  DoStart();
 }
 
-void FakeGCMClient::DoLoading() {
+void FakeGCMClient::DoStart() {
   started_ = true;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeGCMClient::CheckinFinished,
+      base::Bind(&FakeGCMClient::Started,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -131,12 +137,12 @@ void FakeGCMClient::SetLastTokenFetchTime(const base::Time& time) {
 void FakeGCMClient::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
 }
 
-void FakeGCMClient::PerformDelayedLoading() {
+void FakeGCMClient::PerformDelayedStart() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&FakeGCMClient::DoLoading, weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&FakeGCMClient::DoStart, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeGCMClient::ReceiveMessage(const std::string& app_id,
@@ -178,12 +184,11 @@ std::string FakeGCMClient::GetRegistrationIdFromSenderIds(
         registration_id += ",";
       registration_id += normalized_sender_ids[i];
     }
-    registration_id += base::IntToString(sequence_id_);
   }
   return registration_id;
 }
 
-void FakeGCMClient::CheckinFinished() {
+void FakeGCMClient::Started() {
   delegate_->OnGCMReady(std::vector<AccountMapping>(), base::Time());
   delegate_->OnConnected(net::IPEndPoint());
 }

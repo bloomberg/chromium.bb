@@ -79,6 +79,24 @@ class GCMClientImpl
     : public GCMClient, public GCMStatsRecorder::Delegate,
       public ConnectionFactory::ConnectionListener {
  public:
+  // State representation of the GCMClient.
+  // Any change made to this enum should have corresponding change in the
+  // GetStateString(...) function.
+  enum State {
+    // Uninitialized.
+    UNINITIALIZED,
+    // Initialized,
+    INITIALIZED,
+    // GCM store loading is in progress.
+    LOADING,
+    // GCM store is loaded.
+    LOADED,
+    // Initial device checkin is in progress.
+    INITIAL_DEVICE_CHECKIN,
+    // Ready to accept requests.
+    READY,
+  };
+
   explicit GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder);
   ~GCMClientImpl() override;
 
@@ -91,7 +109,7 @@ class GCMClientImpl
           url_request_context_getter,
       scoped_ptr<Encryptor> encryptor,
       GCMClient::Delegate* delegate) override;
-  void Start() override;
+  void Start(StartMode start_mode) override;
   void Stop() override;
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids) override;
@@ -118,22 +136,6 @@ class GCMClientImpl
   void OnDisconnected() override;
 
  private:
-  // State representation of the GCMClient.
-  // Any change made to this enum should have corresponding change in the
-  // GetStateString(...) function.
-  enum State {
-    // Uninitialized.
-    UNINITIALIZED,
-    // Initialized,
-    INITIALIZED,
-    // GCM store loading is in progress.
-    LOADING,
-    // Initial device checkin is in progress.
-    INITIAL_DEVICE_CHECKIN,
-    // Ready to accept requests.
-    READY,
-  };
-
   // The check-in info for the device.
   // TODO(fgorski): Convert to a class with explicit getters/setters.
   struct CheckinInfo {
@@ -188,8 +190,10 @@ class GCMClientImpl
   // Runs after GCM Store load is done to trigger continuation of the
   // initialization.
   void OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result);
+  // Starts the GCM.
+  void StartGCM();
   // Initializes mcs_client_, which handles the connection to MCS.
-  void InitializeMCSClient(scoped_ptr<GCMStore::LoadResult> result);
+  void InitializeMCSClient();
   // Complets the first time device checkin.
   void OnFirstTimeDeviceCheckinCompleted(const CheckinInfo& checkin_info);
   // Starts a login on mcs_client_.
@@ -261,6 +265,9 @@ class GCMClientImpl
       const mcs_proto::DataMessageStanza& data_message_stanza,
       MessageData& message_data);
 
+  // Is there any standalone app being registered for GCM?
+  bool HasStandaloneRegisteredApp() const;
+
   // Builder for the GCM internals (mcs client, etc.).
   scoped_ptr<GCMInternalsBuilder> internals_builder_;
 
@@ -271,6 +278,12 @@ class GCMClientImpl
   State state_;
 
   GCMClient::Delegate* delegate_;
+
+  // Flag to indicate if the GCM should be delay started until it is actually
+  // used in either of the following cases:
+  // 1) The GCM store contains the registration records.
+  // 2) GCM functionailities are explicitly called.
+  StartMode start_mode_;
 
   // Device checkin info (android ID and security token used by device).
   CheckinInfo device_checkin_info_;
@@ -286,6 +299,9 @@ class GCMClientImpl
   // Persistent data store for keeping device credentials, messages and user to
   // serial number mappings.
   scoped_ptr<GCMStore> gcm_store_;
+
+  // Data loaded from the GCM store.
+  scoped_ptr<GCMStore::LoadResult> load_result_;
 
   scoped_refptr<net::HttpNetworkSession> network_session_;
   net::BoundNetLog net_log_;

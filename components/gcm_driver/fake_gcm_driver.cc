@@ -60,7 +60,8 @@ void FakeGCMDriver::SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                     bool recording) {
 }
 
-GCMClient::Result FakeGCMDriver::EnsureStarted() {
+GCMClient::Result FakeGCMDriver::EnsureStarted(
+    GCMClient::StartMode start_mode) {
   return GCMClient::SUCCESS;
 }
 

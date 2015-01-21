@@ -69,7 +69,8 @@ class GCMDriverAndroid : public GCMDriver {
 
  protected:
   // GCMDriver implementation:
-  virtual GCMClient::Result EnsureStarted() override;
+  virtual GCMClient::Result EnsureStarted(
+      GCMClient::StartMode start_mode) override;
   virtual void RegisterImpl(
       const std::string& app_id,
       const std::vector<std::string>& sender_ids) override;

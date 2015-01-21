@@ -162,7 +162,8 @@ void GCMDriverAndroid::SetLastTokenFetchTime(const base::Time& time) {
 void GCMDriverAndroid::WakeFromSuspendForHeartbeat(bool wake) {
 }
 
-GCMClient::Result GCMDriverAndroid::EnsureStarted() {
+GCMClient::Result GCMDriverAndroid::EnsureStarted(
+    GCMClient::StartMode start_mode) {
   // TODO(johnme): Maybe we should check if GMS is available?
   return GCMClient::SUCCESS;
 }

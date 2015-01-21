@@ -37,6 +37,17 @@ struct AccountMapping;
 // Messaging server. This interface is not supposed to be thread-safe.
 class GCMClient {
  public:
+  // Controls how GCM is being started. At first, GCMClient will be initialized
+  // and GCM store will be loaded. Then GCM connection may or may not be
+  // initiated depending on this enum value.
+  enum StartMode {
+    // GCM should be started only when it is being actually used. If no
+    // registration record is found, GCM will not kick off.
+    DELAYED_START,
+    // GCM should be started immediately.
+    IMMEDIATE_START
+  };
+
   enum Result {
     // Successful operation.
     SUCCESS,
@@ -238,10 +249,11 @@ class GCMClient {
       scoped_ptr<Encryptor> encryptor,
       Delegate* delegate) = 0;
 
-  // Starts the GCM service by first loading the data from the persistent store.
-  // This will then kick off the check-in if the check-in info is not found in
-  // the store.
-  virtual void Start() = 0;
+  // This will initiate the GCM connection only if |start_mode| means to start
+  // the GCM immediately or the GCM registration records are found in the store.
+  // Note that it is OK to call Start multiple times and the implementation
+  // should handle it gracefully.
+  virtual void Start(StartMode start_mode) = 0;
 
   // Stops using the GCM service. This will not erase the persisted data.
   virtual void Stop() = 0;

@@ -17,13 +17,15 @@ namespace gcm {
 
 class FakeGCMClient : public GCMClient {
  public:
-  enum StartMode {
-    NO_DELAY_START,
-    DELAY_START,
+  // For testing purpose.
+  enum StartModeOverridding {
+    // No change to how delay start is handled.
+    RESPECT_START_MODE,
+    // Force to delay start GCM until PerformDelayedStart is called.
+    FORCE_TO_ALWAYS_DELAY_START_GCM,
   };
 
-  FakeGCMClient(StartMode start_mode,
-                const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
+  FakeGCMClient(const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
                 const scoped_refptr<base::SequencedTaskRunner>& io_thread);
   ~FakeGCMClient() override;
 
@@ -37,7 +39,7 @@ class FakeGCMClient : public GCMClient {
           url_request_context_getter,
       scoped_ptr<Encryptor> encryptor,
       Delegate* delegate) override;
-  void Start() override;
+  void Start(StartMode start_mode) override;
   void Stop() override;
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids) override;
@@ -55,9 +57,9 @@ class FakeGCMClient : public GCMClient {
   void SetLastTokenFetchTime(const base::Time& time) override;
   void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) override;
 
-  // Initiate the loading that has been delayed.
+  // Initiate the start that has been delayed.
   // Called on UI thread.
-  void PerformDelayedLoading();
+  void PerformDelayedStart();
 
   // Simulate receiving something from the server.
   // Called on UI thread.
@@ -68,10 +70,14 @@ class FakeGCMClient : public GCMClient {
   std::string GetRegistrationIdFromSenderIds(
       const std::vector<std::string>& sender_ids) const;
 
+  void set_start_mode_overridding(StartModeOverridding overridding) {
+    start_mode_overridding_ = overridding;
+  }
+
  private:
   // Called on IO thread.
-  void DoLoading();
-  void CheckinFinished();
+  void DoStart();
+  void Started();
   void RegisterFinished(const std::string& app_id,
                         const std::string& registrion_id);
   void UnregisterFinished(const std::string& app_id);
@@ -85,11 +91,9 @@ class FakeGCMClient : public GCMClient {
                            const std::string& message_id);
 
   Delegate* delegate_;
-  // Increased at checkout in order to produce a different registration ID
-  // after checkout and re-checkin.
-  int sequence_id_;
   bool started_;
   StartMode start_mode_;
+  StartModeOverridding start_mode_overridding_;
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_thread_;
   base::WeakPtrFactory<FakeGCMClient> weak_ptr_factory_;

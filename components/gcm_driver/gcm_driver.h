@@ -137,7 +137,7 @@ class GCMDriver {
 
  protected:
   // Ensures that the GCM service starts (if necessary conditions are met).
-  virtual GCMClient::Result EnsureStarted() = 0;
+  virtual GCMClient::Result EnsureStarted(GCMClient::StartMode start_mode) = 0;
 
   // Platform-specific implementation of Register.
   virtual void RegisterImpl(const std::string& app_id,

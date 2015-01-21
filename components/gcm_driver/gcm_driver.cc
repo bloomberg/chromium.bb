@@ -25,7 +25,7 @@ void GCMDriver::Register(const std::string& app_id,
   DCHECK(!sender_ids.empty());
   DCHECK(!callback.is_null());
 
-  GCMClient::Result result = EnsureStarted();
+  GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
   if (result != GCMClient::SUCCESS) {
     callback.Run(std::string(), result);
     return;
@@ -73,7 +73,7 @@ void GCMDriver::Unregister(const std::string& app_id,
   DCHECK(!app_id.empty());
   DCHECK(!callback.is_null());
 
-  GCMClient::Result result = EnsureStarted();
+  GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
   if (result != GCMClient::SUCCESS) {
     callback.Run(result);
     return;
@@ -99,7 +99,7 @@ void GCMDriver::Send(const std::string& app_id,
   DCHECK(!receiver_id.empty());
   DCHECK(!callback.is_null());
 
-  GCMClient::Result result = EnsureStarted();
+  GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
   if (result != GCMClient::SUCCESS) {
     callback.Run(std::string(), result);
     return;

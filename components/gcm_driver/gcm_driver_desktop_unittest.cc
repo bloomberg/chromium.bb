@@ -123,7 +123,7 @@ class GCMDriverTest : public testing::Test {
   bool HasAppHandlers() const;
   FakeGCMClient* GetGCMClient();
 
-  void CreateDriver(FakeGCMClient::StartMode gcm_client_start_mode);
+  void CreateDriver();
   void ShutdownDriver();
   void AddAppHandlers();
   void RemoveAppHandlers();
@@ -222,15 +222,13 @@ FakeGCMClient* GCMDriverTest::GetGCMClient() {
   return static_cast<FakeGCMClient*>(driver_->GetGCMClientForTesting());
 }
 
-void GCMDriverTest::CreateDriver(
-    FakeGCMClient::StartMode gcm_client_start_mode) {
+void GCMDriverTest::CreateDriver() {
   scoped_refptr<net::URLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
   // TODO(johnme): Need equivalent test coverage of GCMDriverAndroid.
   driver_.reset(new GCMDriverDesktop(
       scoped_ptr<GCMClientFactory>(
-          new FakeGCMClientFactory(gcm_client_start_mode,
-                                   base::MessageLoopProxy::current(),
+          new FakeGCMClientFactory(base::MessageLoopProxy::current(),
                                    io_thread_.message_loop_proxy())).Pass(),
       GCMClient::ChromeBuildInfo(),
       "http://channel.status.request.url",
@@ -332,20 +330,27 @@ void GCMDriverTest::UnregisterCompleted(GCMClient::Result result) {
 }
 
 TEST_F(GCMDriverTest, Create) {
-  // Create GCMDriver first. GCM is not started.
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  // Create GCMDriver first. By default GCM is set to delay start.
+  CreateDriver();
   EXPECT_FALSE(driver()->IsStarted());
 
-  // GCM will be started after an app handler is added.
+  // Adding an app handler will not start GCM.
   AddAppHandlers();
-  EXPECT_TRUE(driver()->IsStarted());
   PumpIOLoop();
+  PumpUILoop();
+  EXPECT_FALSE(driver()->IsStarted());
+  EXPECT_FALSE(driver()->IsConnected());
+  EXPECT_FALSE(gcm_connection_observer()->connected());
+
+  // The GCM registration will kick off the GCM.
+  Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
+  EXPECT_TRUE(driver()->IsStarted());
   EXPECT_TRUE(driver()->IsConnected());
   EXPECT_TRUE(gcm_connection_observer()->connected());
 }
 
 TEST_F(GCMDriverTest, Shutdown) {
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
   EXPECT_FALSE(HasAppHandlers());
 
   AddAppHandlers();
@@ -358,40 +363,43 @@ TEST_F(GCMDriverTest, Shutdown) {
 }
 
 TEST_F(GCMDriverTest, DisableAndReenableGCM) {
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
   AddAppHandlers();
   PumpIOLoop();
   PumpUILoop();
+  EXPECT_FALSE(driver()->IsStarted());
 
-  // GCMClient should be started.
+  // The GCM registration will kick off the GCM.
+  Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
   EXPECT_TRUE(driver()->IsStarted());
 
-  // Disables the GCM.
+  // Disables the GCM. GCM will be stopped.
   driver()->Disable();
   PumpIOLoop();
   PumpUILoop();
-
-  // GCMClient should be stopped.
   EXPECT_FALSE(driver()->IsStarted());
 
-  // Enables the GCM.
+  // Enables the GCM. GCM will be started.
   driver()->Enable();
   PumpIOLoop();
   PumpUILoop();
-
-  // GCMClient should be started.
   EXPECT_TRUE(driver()->IsStarted());
 }
 
 TEST_F(GCMDriverTest, StartOrStopGCMOnDemand) {
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
   PumpIOLoop();
   PumpUILoop();
+  EXPECT_FALSE(driver()->IsStarted());
 
-  // GCMClient is started after an app handler has been added.
+  // Adding an app handler will not start GCM.
   driver()->AddAppHandler(kTestAppID1, gcm_app_handler());
   PumpIOLoop();
   PumpUILoop();
+  EXPECT_FALSE(driver()->IsStarted());
+
+  // The GCM registration will kick off the GCM.
+  Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
   EXPECT_TRUE(driver()->IsStarted());
 
   // Add another app handler.
@@ -423,39 +431,37 @@ TEST_F(GCMDriverTest, RegisterFailed) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
 
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
+
+  // Registration fails when the no app handler is added.
+  Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
+  EXPECT_TRUE(registration_id().empty());
+  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, registration_result());
+
+  ClearResults();
 
   // Registration fails when GCM is disabled.
+  AddAppHandlers();
   driver()->Disable();
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   EXPECT_TRUE(registration_id().empty());
   EXPECT_EQ(GCMClient::GCM_DISABLED, registration_result());
-
-  ClearResults();
-
-  // Registration fails when the no app handler is added.
-  driver()->Enable();
-  RemoveAppHandlers();
-  Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
-  EXPECT_TRUE(registration_id().empty());
-  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, registration_result());
 }
 
 TEST_F(GCMDriverTest, UnregisterFailed) {
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
 
-  // Unregistration fails when GCM is disabled.
-  driver()->Disable();
+  // Unregistration fails when the no app handler is added.
   Unregister(kTestAppID1, GCMDriverTest::WAIT);
-  EXPECT_EQ(GCMClient::GCM_DISABLED, unregistration_result());
+  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, unregistration_result());
 
   ClearResults();
 
-  // Unregistration fails when the no app handler is added.
-  driver()->Enable();
-  RemoveAppHandlers();
+  // Unregistration fails when GCM is disabled.
+  AddAppHandlers();
+  driver()->Disable();
   Unregister(kTestAppID1, GCMDriverTest::WAIT);
-  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, unregistration_result());
+  EXPECT_EQ(GCMClient::GCM_DISABLED, unregistration_result());
 }
 
 TEST_F(GCMDriverTest, SendFailed) {
@@ -463,27 +469,32 @@ TEST_F(GCMDriverTest, SendFailed) {
   message.id = "1";
   message.data["key1"] = "value1";
 
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
+
+  // Sending fails when the no app handler is added.
+  Send(kTestAppID1, kUserID1, message, GCMDriverTest::WAIT);
+  EXPECT_TRUE(send_message_id().empty());
+  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, send_result());
+
+  ClearResults();
 
   // Sending fails when GCM is disabled.
+  AddAppHandlers();
   driver()->Disable();
   Send(kTestAppID1, kUserID1, message, GCMDriverTest::WAIT);
   EXPECT_TRUE(send_message_id().empty());
   EXPECT_EQ(GCMClient::GCM_DISABLED, send_result());
-
-  ClearResults();
-
-  // Sending fails when the no app handler is added.
-  driver()->Enable();
-  RemoveAppHandlers();
-  Send(kTestAppID1, kUserID1, message, GCMDriverTest::WAIT);
-  EXPECT_TRUE(send_message_id().empty());
-  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, send_result());
 }
 
 TEST_F(GCMDriverTest, GCMClientNotReadyBeforeRegistration) {
-  // Make GCMClient not ready initially.
-  CreateDriver(FakeGCMClient::DELAY_START);
+  CreateDriver();
+  PumpIOLoop();
+  PumpUILoop();
+
+  // Make GCMClient not ready until PerformDelayedStart is called.
+  GetGCMClient()->set_start_mode_overridding(
+      FakeGCMClient::FORCE_TO_ALWAYS_DELAY_START_GCM);
+
   AddAppHandlers();
 
   // The registration is on hold until GCMClient is ready.
@@ -498,15 +509,21 @@ TEST_F(GCMDriverTest, GCMClientNotReadyBeforeRegistration) {
   EXPECT_EQ(GCMClient::UNKNOWN_ERROR, registration_result());
 
   // Register operation will be invoked after GCMClient becomes ready.
-  GetGCMClient()->PerformDelayedLoading();
+  GetGCMClient()->PerformDelayedStart();
   WaitForAsyncOperation();
   EXPECT_FALSE(registration_id().empty());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
 }
 
 TEST_F(GCMDriverTest, GCMClientNotReadyBeforeSending) {
-  // Make GCMClient not ready initially.
-  CreateDriver(FakeGCMClient::DELAY_START);
+  CreateDriver();
+  PumpIOLoop();
+  PumpUILoop();
+
+  // Make GCMClient not ready until PerformDelayedStart is called.
+  GetGCMClient()->set_start_mode_overridding(
+      FakeGCMClient::FORCE_TO_ALWAYS_DELAY_START_GCM);
+
   AddAppHandlers();
 
   // The sending is on hold until GCMClient is ready.
@@ -522,7 +539,7 @@ TEST_F(GCMDriverTest, GCMClientNotReadyBeforeSending) {
   EXPECT_EQ(GCMClient::UNKNOWN_ERROR, send_result());
 
   // Send operation will be invoked after GCMClient becomes ready.
-  GetGCMClient()->PerformDelayedLoading();
+  GetGCMClient()->PerformDelayedStart();
   WaitForAsyncOperation();
   EXPECT_EQ(message.id, send_message_id());
   EXPECT_EQ(GCMClient::SUCCESS, send_result());
@@ -550,7 +567,7 @@ GCMDriverFunctionalTest::~GCMDriverFunctionalTest() {
 void GCMDriverFunctionalTest::SetUp() {
   GCMDriverTest::SetUp();
 
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
   AddAppHandlers();
   PumpIOLoop();
   PumpUILoop();
@@ -755,7 +772,9 @@ TEST_F(GCMDriverFunctionalTest, SendError) {
 }
 
 TEST_F(GCMDriverFunctionalTest, MessageReceived) {
+  // GCM registration has to be performed otherwise GCM will not be started.
   Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
+
   GCMClient::IncomingMessage message;
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
@@ -771,7 +790,9 @@ TEST_F(GCMDriverFunctionalTest, MessageReceived) {
 }
 
 TEST_F(GCMDriverFunctionalTest, MessageWithCollapseKeyReceived) {
+  // GCM registration has to be performed otherwise GCM will not be started.
   Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
+
   GCMClient::IncomingMessage message;
   message.data["key1"] = "value1";
   message.collapse_key = "collapse_key_value";
@@ -787,6 +808,9 @@ TEST_F(GCMDriverFunctionalTest, MessageWithCollapseKeyReceived) {
 }
 
 TEST_F(GCMDriverFunctionalTest, MessagesDeleted) {
+  // GCM registration has to be performed otherwise GCM will not be started.
+  Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
+
   GetGCMClient()->DeleteMessages(kTestAppID1);
   gcm_app_handler()->WaitForNotification();
   EXPECT_EQ(FakeGCMAppHandler::MESSAGES_DELETED_EVENT,
@@ -795,6 +819,9 @@ TEST_F(GCMDriverFunctionalTest, MessagesDeleted) {
 }
 
 TEST_F(GCMDriverFunctionalTest, LastTokenFetchTime) {
+  // GCM registration has to be performed otherwise GCM will not be started.
+  Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
+
   EXPECT_EQ(base::Time(), driver()->GetLastTokenFetchTime());
   base::Time fetch_time = base::Time::Now();
   driver()->SetLastTokenFetchTime(fetch_time);
@@ -871,22 +898,16 @@ bool GCMChannelStatusSyncerTest::CompareDelaySeconds(
 }
 
 TEST_F(GCMChannelStatusSyncerTest, DisableAndEnable) {
-  // Create GCMDriver first. GCM is not started.
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
-  EXPECT_FALSE(driver()->IsStarted());
-
-  // By default, GCM is enabled.
+  // Create GCMDriver first. By default, GCM is enabled.
+  CreateDriver();
   EXPECT_TRUE(driver()->gcm_enabled());
   EXPECT_TRUE(syncer()->gcm_enabled());
 
   // Remove delay such that the request could be executed immediately.
   syncer()->set_delay_removed_for_testing(true);
 
-  // GCM will be started after app handler is added.
-  AddAppHandlers();
-  EXPECT_TRUE(driver()->IsStarted());
-
   // GCM is still enabled at this point.
+  AddAppHandlers();
   EXPECT_TRUE(driver()->gcm_enabled());
   EXPECT_TRUE(syncer()->gcm_enabled());
 
@@ -906,26 +927,19 @@ TEST_F(GCMChannelStatusSyncerTest, DisableAndEnable) {
   CompleteGCMChannelStatusRequest(true, 0);
   EXPECT_TRUE(driver()->gcm_enabled());
   EXPECT_TRUE(syncer()->gcm_enabled());
-  EXPECT_TRUE(driver()->IsStarted());
 }
 
 TEST_F(GCMChannelStatusSyncerTest, DisableRestartAndEnable) {
-  // Create GCMDriver first. GCM is not started.
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
-  EXPECT_FALSE(driver()->IsStarted());
-
-  // By default, GCM is enabled.
+  // Create GCMDriver first. By default, GCM is enabled.
+  CreateDriver();
   EXPECT_TRUE(driver()->gcm_enabled());
   EXPECT_TRUE(syncer()->gcm_enabled());
 
   // Remove delay such that the request could be executed immediately.
   syncer()->set_delay_removed_for_testing(true);
 
-  // GCM will be started after app handler is added.
-  AddAppHandlers();
-  EXPECT_TRUE(driver()->IsStarted());
-
   // GCM is still enabled at this point.
+  AddAppHandlers();
   EXPECT_TRUE(driver()->gcm_enabled());
   EXPECT_TRUE(syncer()->gcm_enabled());
 
@@ -936,11 +950,10 @@ TEST_F(GCMChannelStatusSyncerTest, DisableRestartAndEnable) {
   CompleteGCMChannelStatusRequest(false, 0);
   EXPECT_FALSE(driver()->gcm_enabled());
   EXPECT_FALSE(syncer()->gcm_enabled());
-  EXPECT_FALSE(driver()->IsStarted());
 
   // Simulate browser start by recreating GCMDriver.
   ShutdownDriver();
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
 
   // Remove delay such that the request could be executed immediately.
   syncer()->set_delay_removed_for_testing(true);
@@ -948,12 +961,10 @@ TEST_F(GCMChannelStatusSyncerTest, DisableRestartAndEnable) {
   // GCM is still disabled.
   EXPECT_FALSE(driver()->gcm_enabled());
   EXPECT_FALSE(syncer()->gcm_enabled());
-  EXPECT_FALSE(driver()->IsStarted());
 
   AddAppHandlers();
   EXPECT_FALSE(driver()->gcm_enabled());
   EXPECT_FALSE(syncer()->gcm_enabled());
-  EXPECT_FALSE(driver()->IsStarted());
 
   // Wait until the GCM channel status request gets triggered.
   PumpUILoop();
@@ -962,12 +973,11 @@ TEST_F(GCMChannelStatusSyncerTest, DisableRestartAndEnable) {
   CompleteGCMChannelStatusRequest(true, 0);
   EXPECT_TRUE(driver()->gcm_enabled());
   EXPECT_TRUE(syncer()->gcm_enabled());
-  EXPECT_TRUE(driver()->IsStarted());
 }
 
 TEST_F(GCMChannelStatusSyncerTest, FirstTimePolling) {
   // Start GCM.
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
   AddAppHandlers();
 
   // The 1st request should be triggered shortly without jittering.
@@ -977,7 +987,7 @@ TEST_F(GCMChannelStatusSyncerTest, FirstTimePolling) {
 
 TEST_F(GCMChannelStatusSyncerTest, SubsequentPollingWithDefaultInterval) {
   // Create GCMDriver first. GCM is not started.
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
 
   // Remove delay such that the request could be executed immediately.
   syncer()->set_delay_removed_for_testing(true);
@@ -1005,7 +1015,7 @@ TEST_F(GCMChannelStatusSyncerTest, SubsequentPollingWithDefaultInterval) {
 
   // Simulate browser start by recreating GCMDriver.
   ShutdownDriver();
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
   AddAppHandlers();
 
   // After start-up, the request should still be scheduled at the expected
@@ -1019,7 +1029,7 @@ TEST_F(GCMChannelStatusSyncerTest, SubsequentPollingWithDefaultInterval) {
 
 TEST_F(GCMChannelStatusSyncerTest, SubsequentPollingWithUpdatedInterval) {
   // Create GCMDriver first. GCM is not started.
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
 
   // Remove delay such that the request could be executed immediately.
   syncer()->set_delay_removed_for_testing(true);
@@ -1048,7 +1058,7 @@ TEST_F(GCMChannelStatusSyncerTest, SubsequentPollingWithUpdatedInterval) {
 
   // Simulate browser start by recreating GCMDriver.
   ShutdownDriver();
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
+  CreateDriver();
   AddAppHandlers();
 
   // After start-up, the request should still be scheduled at the expected

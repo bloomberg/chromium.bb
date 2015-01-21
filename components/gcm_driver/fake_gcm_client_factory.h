@@ -21,7 +21,6 @@ class GCMClient;
 class FakeGCMClientFactory : public GCMClientFactory {
  public:
   FakeGCMClientFactory(
-      FakeGCMClient::StartMode gcm_client_start_mode,
       const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
       const scoped_refptr<base::SequencedTaskRunner>& io_thread);
   ~FakeGCMClientFactory() override;
@@ -30,7 +29,6 @@ class FakeGCMClientFactory : public GCMClientFactory {
   scoped_ptr<GCMClient> BuildInstance() override;
 
  private:
-  FakeGCMClient::StartMode gcm_client_start_mode_;
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_thread_;
 
