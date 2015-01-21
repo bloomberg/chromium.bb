@@ -47776,6 +47776,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="653" label="OfflineAudioContext"/>
   <int value="654" label="PrefixedAudioContext"/>
   <int value="655" label="PrefixedOfflineAudioContext"/>
+  <int value="656" label="AddEventListenerNoArguments"/>
+  <int value="657" label="AddEventListenerOneArgument"/>
+  <int value="658" label="RemoveEventListenerNoArguments"/>
+  <int value="659" label="RemoveEventListenerOneArgument"/>
+  <int value="660" label="SRIElementWithNonMatchingIntegrityType"/>
+  <int value="661"
+      label="MixedContentInNonHTTPSFrameThatRestrictsMixedContent"/>
+  <int value="662"
+      label="MixedContentInSecureFrameThatDoesNotRestrictMixedContent"/>
+  <int value="663" label="MixedContentWebSocket"/>
+  <int value="664" label="SyntheticKeyframesInCompositedCSSAnimation"/>
+  <int value="665" label="MixedContentFormPresent"/>
+  <int value="666" label="GetUserMediaInsecureOrigin"/>
+  <int value="667" label="GetUserMediaSecureOrigin"/>
+  <int value="668" label="DeviceMotionInsecureOrigin"/>
+  <int value="669" label="DeviceMotionSecureOrigin"/>
+  <int value="670" label="DeviceOrientationInsecureOrigin"/>
+  <int value="671" label="DeviceOrientationSecureOrigin"/>
+  <int value="672" label="SandboxViaIFrame"/>
+  <int value="673" label="SandboxViaCSP"/>
+  <int value="674" label="BlockedSniffingImageToScript"/>
+  <int value="675" label="Fetch"/>
+  <int value="676" label="FetchBodyStream"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
