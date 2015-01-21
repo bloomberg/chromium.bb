@@ -35,7 +35,9 @@ def GetMemberFilename(member, strtab_data):
   else:
     # GNU style long filenames are /[index]
     # where index is a position within the strtab_data.
-    name_index = int(member.name[1:].strip())
+    # Filter out non-digits
+    name = ''.join([c for c in member.name if c.isdigit()])
+    name_index = int(name)
     name_data = strtab_data[name_index:]
     name_data = name_data.split('\n', 2)[0]
     assert (name_data.endswith('/'))
