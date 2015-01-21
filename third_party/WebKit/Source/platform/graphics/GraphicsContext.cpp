@@ -445,13 +445,12 @@ void GraphicsContext::setCompositeOperation(SkXfermode::Mode xferMode)
     mutableState()->setCompositeOperation(xferMode);
 }
 
-void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation, WebBlendMode blendMode)
+SkXfermode::Mode GraphicsContext::compositeOperation() const
 {
-    SkXfermode::Mode xferMode = WebCoreCompositeToSkiaComposite(compositeOperation, blendMode);
-    setCompositeOperation(xferMode);
+    return immutableState()->compositeOperation();
 }
 
-CompositeOperator GraphicsContext::compositeOperation() const
+CompositeOperator GraphicsContext::compositeOperationDeprecated() const
 {
     return compositeOperatorFromSkia(immutableState()->compositeOperation());
 }
@@ -1697,10 +1696,10 @@ void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, Compos
     if (contextDisabled())
         return;
 
-    CompositeOperator previousOperator = compositeOperation();
-    setCompositeOperation(op);
+    SkXfermode::Mode previousOperation = compositeOperation();
+    setCompositeOperation(WebCoreCompositeToSkiaComposite(op));
     fillRect(rect, color);
-    setCompositeOperation(previousOperator);
+    setCompositeOperation(previousOperation);
 }
 
 void GraphicsContext::fillRoundedRect(const FloatRoundedRect& rect, const Color& color)

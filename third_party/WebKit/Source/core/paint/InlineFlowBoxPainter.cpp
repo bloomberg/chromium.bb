@@ -277,7 +277,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
 
         compositeOp = CompositeDestinationIn;
         if (pushTransparencyLayer) {
-            paintInfo.context->setCompositeOperation(CompositeDestinationIn);
+            paintInfo.context->setCompositeOperation(SkXfermode::kDstIn_Mode);
             paintInfo.context->beginTransparencyLayer(1.0f);
             compositeOp = CompositeSourceOver;
         }

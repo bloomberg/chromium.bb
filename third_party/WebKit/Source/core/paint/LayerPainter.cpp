@@ -220,7 +220,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
             &paintingInfo, LayoutPoint(), paintFlags));
 
         compositingRecorder = adoptPtr(new CompositingRecorder(context, m_renderLayer.renderer()->displayItemClient(),
-            context->compositeOperation(), m_renderLayer.renderer()->style()->blendMode(), m_renderLayer.renderer()->opacity(), context->compositeOperation()));
+            context->compositeOperationDeprecated(), m_renderLayer.renderer()->style()->blendMode(), m_renderLayer.renderer()->opacity(), context->compositeOperationDeprecated()));
     }
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);

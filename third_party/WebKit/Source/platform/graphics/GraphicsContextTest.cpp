@@ -260,18 +260,18 @@ TEST(GraphicsContextTest, trackImageMask)
     // out a transparency layer below that is filled with the mask color. In the end this should
     // not be marked opaque.
 
-    context.setCompositeOperation(CompositeSourceOver);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.beginTransparencyLayer(1);
     context.fillRect(FloatRect(10, 10, 10, 10), opaque, CompositeSourceOver);
 
-    context.setCompositeOperation(CompositeDestinationIn);
+    context.setCompositeOperation(SkXfermode::kDstIn_Mode);
     context.beginTransparencyLayer(1);
 
     OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
     EXPECT_FALSE(!alphaImage);
     alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
 
-    context.setCompositeOperation(CompositeSourceOver);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
 
     context.endLayer();
@@ -298,18 +298,18 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     // out a transparency layer below that is filled with the mask color. In the end this should
     // not be marked opaque.
 
-    context.setCompositeOperation(CompositeSourceOver);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.beginTransparencyLayer(1);
     context.fillRect(FloatRect(10, 10, 10, 10), opaque, CompositeSourceOver);
 
-    context.setCompositeOperation(CompositeDestinationIn);
+    context.setCompositeOperation(SkXfermode::kDstIn_Mode);
     context.beginTransparencyLayer(1);
 
     OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
     EXPECT_FALSE(!alphaImage);
     alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
 
-    context.setCompositeOperation(CompositeSourceOver);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
 
     // We can't have an opaque mask actually, but we can pretend here like it would look if we did.
@@ -397,13 +397,13 @@ TEST(GraphicsContextTest, trackOpaqueLineTest)
     context.setStrokeThickness(4);
     context.setLineCap(SquareCap);
     context.setStrokeStyle(SolidStroke);
-    context.setCompositeOperation(CompositeSourceOver);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
 
     context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
     EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.setCompositeOperation(CompositeSourceIn);
+    context.setCompositeOperation(SkXfermode::kSrcIn_Mode);
 
     context.save();
     context.setStrokeColor(alpha);
@@ -434,13 +434,13 @@ TEST(GraphicsContextTest, trackOpaqueLineTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
     context.setShouldAntialias(true);
-    context.setCompositeOperation(CompositeSourceOver);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
 
     context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
     EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.setCompositeOperation(CompositeSourceIn);
+    context.setCompositeOperation(SkXfermode::kSrcIn_Mode);
 
     context.save();
     context.setStrokeColor(alpha);
@@ -494,7 +494,7 @@ TEST(GraphicsContextTest, trackOpaquePathTest)
     context.setStrokeThickness(5);
     context.setLineCap(SquareCap);
     context.setStrokeStyle(SolidStroke);
-    context.setCompositeOperation(CompositeSourceIn);
+    context.setCompositeOperation(SkXfermode::kSrcIn_Mode);
 
     Path path;
 
@@ -638,7 +638,7 @@ TEST(GraphicsContextTest, trackOpaqueOvalTest)
     EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.setCompositeOperation(CompositeSourceIn);
+    context.setCompositeOperation(SkXfermode::kSrcIn_Mode);
 
     context.setShouldAntialias(false);
 
@@ -693,7 +693,7 @@ TEST(GraphicsContextTest, trackOpaqueRoundedRectTest)
     EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.setCompositeOperation(CompositeSourceIn);
+    context.setCompositeOperation(SkXfermode::kSrcIn_Mode);
     context.setShouldAntialias(false);
 
     context.fillRoundedRect(FloatRect(10, 10, 50, 30), radii, radii, radii, radii, opaque);
@@ -985,7 +985,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     context.clip(IntRect(10, 10, 10, 40));
 
     // Draw a path that gets clipped. This should destroy the opaque area but only inside the clip.
-    context.setCompositeOperation(CompositeSourceOut);
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
     context.setFillColor(alpha);
     path.moveTo(FloatPoint(10, 10));
     path.addLineTo(FloatPoint(40, 40));
@@ -1027,11 +1027,11 @@ TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 
     // Begin a layer that preserves opaque.
-    context.setCompositeOperation(CompositeSourceOver);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.beginTransparencyLayer(0.5);
 
     // Begin a layer that does not preserve opaque.
-    context.setCompositeOperation(CompositeSourceOut);
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
     context.beginTransparencyLayer(0.5);
 
     // This should not destroy the device opaqueness.
@@ -1049,7 +1049,7 @@ TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 
     // Now begin a layer that does not preserve opaque and draw through it to the device.
-    context.setCompositeOperation(CompositeSourceOut);
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
     context.beginTransparencyLayer(0.5);
 
     // This should destroy the device opaqueness.
@@ -1061,7 +1061,7 @@ TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
 
     // Now we draw with a path for which it cannot compute fast bounds. This should destroy the entire opaque region.
 
-    context.setCompositeOperation(CompositeSourceOut);
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
     context.beginTransparencyLayer(0.5);
 
     // This should nuke the device opaqueness.
@@ -1088,7 +1088,7 @@ TEST(GraphicsContextTest, OpaqueRegionForLayerWithNonRectDeviceClip)
 
     context.fillRect(FloatRect(30, 30, 90, 90), opaque, CompositeSourceOver);
 
-    context.setCompositeOperation(CompositeSourceOver);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.beginTransparencyLayer(0.5);
     context.endLayer();
     EXPECT_EQ_RECT(IntRect(30, 30, 70, 70), context.opaqueRegion().asRect());
@@ -1101,14 +1101,14 @@ TEST(GraphicsContextTest, OpaqueRegionForLayerWithNonRectDeviceClip)
     // we will not alter opaque rect.
     context.clipPath(path, RULE_EVENODD);
 
-    context.setCompositeOperation(CompositeSourceOver);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.beginTransparencyLayer(0.5);
     context.endLayer();
     EXPECT_EQ_RECT(IntRect(30, 30, 70, 70), context.opaqueRegion().asRect());
 
     // For non-opaque preserving mode and deviceClip is not rect
     // we will mark opaque rect as empty.
-    context.setCompositeOperation(CompositeSourceOut);
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
     context.beginTransparencyLayer(0.5);
 
     context.endLayer();
@@ -1132,7 +1132,7 @@ TEST(GraphicsContextTest, OpaqueRegionForLayerWithRectDeviceClip)
 
     // For non-opaque preserving mode and deviceClip is rect
     // we will mark device clip rect as non opaque.
-    context.setCompositeOperation(CompositeSourceOut);
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
     context.beginTransparencyLayer(0.5);
     context.endLayer();
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
@@ -1143,7 +1143,7 @@ TEST(GraphicsContextTest, OpaqueRegionForLayerWithRectDeviceClip)
 
     // For opaque preserving mode and deviceClip is rect
     // we will intersect device clip rect with src opaque rect.
-    context.setCompositeOperation(CompositeSourceOver);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.beginTransparencyLayer(0.5);
     context.endLayer();
     EXPECT_EQ_RECT(IntRect(20, 20, 30, 30), context.opaqueRegion().asRect());

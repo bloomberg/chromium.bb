@@ -179,9 +179,9 @@ public:
     InterpolationQuality imageInterpolationQuality() const { return immutableState()->interpolationQuality(); }
 
     void setCompositeOperation(SkXfermode::Mode);
+    SkXfermode::Mode compositeOperation() const;
     // TODO(dshwang): remove these method. crbug.com/425656
-    void setCompositeOperation(CompositeOperator, WebBlendMode = WebBlendModeNormal);
-    CompositeOperator compositeOperation() const;
+    CompositeOperator compositeOperationDeprecated() const;
     WebBlendMode blendModeOperation() const;
 
     // Specify the device scale factor which may change the way document markers

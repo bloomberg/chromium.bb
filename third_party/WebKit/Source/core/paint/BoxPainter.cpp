@@ -464,7 +464,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
             if (isOpaqueRoot && !skipBaseColor) {
                 paintRootBackgroundColor(obj, paintInfo, rect, bgColor);
             } else if (bgColor.alpha()) {
-                context->fillRect(backgroundRect, bgColor, context->compositeOperation());
+                context->fillRect(backgroundRect, bgColor, context->compositeOperationDeprecated());
             }
         }
     }
@@ -491,7 +491,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
 
     if (bgLayer.clip() == TextFillBox) {
         // Create the text mask layer.
-        context->setCompositeOperation(CompositeDestinationIn);
+        context->setCompositeOperation(SkXfermode::kDstIn_Mode);
         context->beginTransparencyLayer(1);
 
         // FIXME: Workaround for https://code.google.com/p/skia/issues/detail?id=1291.
@@ -500,7 +500,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
         // Now draw the text into the mask. We do this by painting using a special paint phase that signals to
         // InlineTextBoxes that they should just add their contents to the clip.
         PaintInfo info(context, maskRect, PaintPhaseTextClip, PaintBehaviorForceBlackText, 0);
-        context->setCompositeOperation(CompositeSourceOver);
+        context->setCompositeOperation(SkXfermode::kSrcOver_Mode);
         if (box) {
             RootInlineBox& root = box->root();
             box->paint(info, LayoutPoint(scrolledPaintRect.x() - box->x(), scrolledPaintRect.y() - box->y()), root.lineTop(), root.lineBottom());
@@ -533,7 +533,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
 
     bool allMaskImagesLoaded = true;
 
-    CompositeOperator previousCompositeOperator = paintInfo.context->compositeOperation();
+    SkXfermode::Mode previousCompositeOperation = paintInfo.context->compositeOperation();
 
     if (!compositedMask || flattenCompositingLayers) {
         pushTransparencyLayer = true;
@@ -546,7 +546,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
 
         allMaskImagesLoaded &= maskLayers.imagesAreLoaded();
 
-        paintInfo.context->setCompositeOperation(CompositeDestinationIn);
+        paintInfo.context->setCompositeOperation(SkXfermode::kDstIn_Mode);
         paintInfo.context->beginTransparencyLayer(1);
     }
 
@@ -557,7 +557,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
 
     if (pushTransparencyLayer) {
         paintInfo.context->endLayer();
-        paintInfo.context->setCompositeOperation(previousCompositeOperator);
+        paintInfo.context->setCompositeOperation(previousCompositeOperation);
     }
 }
 
@@ -586,7 +586,7 @@ void BoxPainter::paintRootBackgroundColor(RenderObject& obj, const PaintInfo& pa
 
     Color baseColor = obj.view()->frameView()->baseBackgroundColor();
     bool shouldClearDocumentBackground = obj.document().settings() && obj.document().settings()->shouldClearDocumentBackground();
-    CompositeOperator operation = shouldClearDocumentBackground ? CompositeCopy : context->compositeOperation();
+    CompositeOperator operation = shouldClearDocumentBackground ? CompositeCopy : context->compositeOperationDeprecated();
 
     // If we have an alpha go ahead and blend with the base background color.
     if (baseColor.alpha()) {

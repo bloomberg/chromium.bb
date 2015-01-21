@@ -14,9 +14,9 @@ namespace blink {
 
 void BeginCompositingDisplayItem::replay(GraphicsContext* context)
 {
-    context->setCompositeOperation(m_preCompositeOp, m_preBlendMode);
+    context->setCompositeOperation(WebCoreCompositeToSkiaComposite(m_preCompositeOp, m_preBlendMode));
     context->beginLayer(m_opacity, WebCoreCompositeToSkiaComposite(m_preCompositeOp, m_preBlendMode));
-    context->setCompositeOperation(m_postCompositeOp, WebBlendModeNormal);
+    context->setCompositeOperation(WebCoreCompositeToSkiaComposite(m_postCompositeOp, WebBlendModeNormal));
 }
 
 void BeginCompositingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const

@@ -97,10 +97,10 @@ void Image::fillWithSolidColor(GraphicsContext* ctxt, const FloatRect& dstRect, 
     if (!color.alpha())
         return;
 
-    CompositeOperator previousOperator = ctxt->compositeOperation();
-    ctxt->setCompositeOperation(!color.hasAlpha() && op == CompositeSourceOver ? CompositeCopy : op);
+    SkXfermode::Mode previousOperation = ctxt->compositeOperation();
+    ctxt->setCompositeOperation(!color.hasAlpha() && op == CompositeSourceOver ? SkXfermode::kSrc_Mode : WebCoreCompositeToSkiaComposite(op));
     ctxt->fillRect(dstRect, color);
-    ctxt->setCompositeOperation(previousOperator);
+    ctxt->setCompositeOperation(previousOperation);
 }
 
 FloatRect Image::adjustForNegativeSize(const FloatRect& rect)

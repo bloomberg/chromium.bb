@@ -206,7 +206,7 @@ void HTMLVideoElement::paintCurrentFrameInContext(GraphicsContext* context, cons
         return;
 
     WebCanvas* canvas = context->canvas();
-    SkXfermode::Mode mode = WebCoreCompositeToSkiaComposite(context->compositeOperation(), context->blendModeOperation());
+    SkXfermode::Mode mode = context->compositeOperation();
     webMediaPlayer()->paint(canvas, destRect, context->getNormalizedAlpha(), mode);
 }
 

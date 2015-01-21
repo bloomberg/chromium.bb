@@ -81,7 +81,7 @@ void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& ds
         return;
 
     GraphicsContextStateSaver stateSaver(*context);
-    context->setCompositeOperation(compositeOp, blendMode);
+    context->setCompositeOperation(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
     context->clip(dstRect);
     context->translate(dstRect.x(), dstRect.y());
     if (dstRect.size() != srcRect.size())

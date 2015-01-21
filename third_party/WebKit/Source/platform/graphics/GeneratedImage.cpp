@@ -64,7 +64,7 @@ void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& 
     picturePattern->setPatternSpaceTransform(patternTransform);
 
     GraphicsContextStateSaver saver(*destContext);
-    destContext->setCompositeOperation(compositeOp, blendMode);
+    destContext->setCompositeOperation(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
     destContext->setFillPattern(picturePattern);
     destContext->fillRect(destRect);
 }

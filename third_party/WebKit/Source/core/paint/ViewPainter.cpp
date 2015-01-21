@@ -75,10 +75,10 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     if (!m_renderView.frameView()->isTransparent()) {
         Color baseColor = m_renderView.frameView()->baseBackgroundColor();
         if (baseColor.alpha()) {
-            CompositeOperator previousOperator = paintInfo.context->compositeOperation();
-            paintInfo.context->setCompositeOperation(CompositeCopy);
+            SkXfermode::Mode previousOperation = paintInfo.context->compositeOperation();
+            paintInfo.context->setCompositeOperation(SkXfermode::kSrc_Mode);
             paintInfo.context->fillRect(paintInfo.rect, baseColor);
-            paintInfo.context->setCompositeOperation(previousOperator);
+            paintInfo.context->setCompositeOperation(previousOperation);
         } else {
             paintInfo.context->clearRect(paintInfo.rect);
         }
