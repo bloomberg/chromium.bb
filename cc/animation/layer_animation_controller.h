@@ -65,14 +65,12 @@ class CC_EXPORT LayerAnimationController
   // are deleted.
   void ActivateAnimations();
 
-  // Returns the active animation in the given group, animating the given
-  // property, if such an animation exists.
-  Animation* GetAnimation(int group_id,
-                          Animation::TargetProperty target_property) const;
-
   // Returns the active animation animating the given property that is either
   // running, or is next to run, if such an animation exists.
   Animation* GetAnimation(Animation::TargetProperty target_property) const;
+
+  // Returns the active animation for the given unique animation id.
+  Animation* GetAnimationById(int animation_id) const;
 
   // Returns true if there are any animations that have neither finished nor
   // aborted.

@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/atomic_sequence_num.h"
 #include "cc/animation/animation_id_provider.h"
 
 namespace cc {
 
+base::StaticAtomicSequenceNumber g_next_animation_id;
+base::StaticAtomicSequenceNumber g_next_group_id;
+
 int AnimationIdProvider::NextAnimationId() {
-  static int next_animation_id = 1;
-  return next_animation_id++;
+  // Animation IDs start from 1.
+  return g_next_animation_id.GetNext() + 1;
 }
 
 int AnimationIdProvider::NextGroupId() {
-  static int next_group_id = 1;
-  return next_group_id++;
+  // Animation group IDs start from 1.
+  return g_next_group_id.GetNext() + 1;
 }
 
 }  // namespace cc

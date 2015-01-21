@@ -174,14 +174,13 @@ class CC_EXPORT Animation {
 
   scoped_ptr<AnimationCurve> curve_;
 
-  // IDs are not necessarily unique.
+  // IDs must be unique.
   int id_;
 
   // Animations that must be run together are called 'grouped' and have the same
   // group id. Grouped animations are guaranteed to start at the same time and
   // no other animations may animate any of the group's target properties until
-  // all animations in the group have finished animating. Note: an active
-  // animation's group id and target property uniquely identify that animation.
+  // all animations in the group have finished animating.
   int group_;
 
   TargetProperty target_property_;
