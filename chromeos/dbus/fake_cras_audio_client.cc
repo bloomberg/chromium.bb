@@ -18,46 +18,54 @@ void FakeCrasAudioClient::Init(dbus::Bus* bus) {
   VLOG(1) << "FakeCrasAudioClient is created";
 
   // Fake audio output nodes.
-  AudioNode node_1;
-  node_1.is_input = false;
-  node_1.id = 10001;
-  node_1.device_name = "Fake Speaker";
-  node_1.type = "INTERNAL_SPEAKER";
-  node_1.name = "Speaker";
-  node_list_.push_back(node_1);
+  AudioNode output_1;
+  output_1.is_input = false;
+  output_1.id = 10001;
+  output_1.device_name = "Fake Speaker";
+  output_1.type = "INTERNAL_SPEAKER";
+  output_1.name = "Speaker";
+  node_list_.push_back(output_1);
 
-  AudioNode node_2;
-  node_2.is_input = false;
-  node_2.id = 10002;
-  node_2.device_name = "Fake Headphone";
-  node_2.type = "HEADPHONE";
-  node_2.name = "Headphone";
-  node_list_.push_back(node_2);
+  AudioNode output_2;
+  output_2.is_input = false;
+  output_2.id = 10002;
+  output_2.device_name = "Fake Headphone";
+  output_2.type = "HEADPHONE";
+  output_2.name = "Headphone";
+  node_list_.push_back(output_2);
 
-  AudioNode node_3;
-  node_3.is_input = false;
-  node_3.id = 10003;
-  node_3.device_name = "Fake Bluetooth Headphone";
-  node_3.type = "BLUETOOTH";
-  node_3.name = "Headphone";
-  node_list_.push_back(node_3);
+  AudioNode output_3;
+  output_3.is_input = false;
+  output_3.id = 10003;
+  output_3.device_name = "Fake Bluetooth Headphone";
+  output_3.type = "BLUETOOTH";
+  output_3.name = "Headphone";
+  node_list_.push_back(output_3);
 
-  // Fake audio input ndoes
-  AudioNode node_4;
-  node_4.is_input = true;
-  node_4.id = 10004;
-  node_4.device_name = "Fake Internal Mic";
-  node_4.type = "INTERNAL_MIC";
-  node_4.name = "Internal Mic";
-  node_list_.push_back(node_4);
+  AudioNode output_4;
+  output_4.is_input = false;
+  output_4.id = 10004;
+  output_4.device_name = "Fake HDMI Speaker";
+  output_4.type = "HDMI";
+  output_4.name = "HDMI Speaker";
+  node_list_.push_back(output_4);
 
-  AudioNode node_5;
-  node_5.is_input = true;
-  node_5.id = 10005;
-  node_5.device_name = "Fake USB Mic";
-  node_5.type = "USB";
-  node_5.name = "Mic";
-  node_list_.push_back(node_5);
+  // Fake audio input nodes
+  AudioNode input_1;
+  input_1.is_input = true;
+  input_1.id = 20001;
+  input_1.device_name = "Fake Internal Mic";
+  input_1.type = "INTERNAL_MIC";
+  input_1.name = "Internal Mic";
+  node_list_.push_back(input_1);
+
+  AudioNode input_2;
+  input_2.is_input = true;
+  input_2.id = 20002;
+  input_2.device_name = "Fake USB Mic";
+  input_2.type = "USB";
+  input_2.name = "Mic";
+  node_list_.push_back(input_2);
 }
 
 void FakeCrasAudioClient::AddObserver(Observer* observer) {
