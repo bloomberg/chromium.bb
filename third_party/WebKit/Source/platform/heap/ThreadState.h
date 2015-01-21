@@ -421,9 +421,6 @@ public:
         // succeeds.
         virtual void requestInterrupt() = 0;
 
-        // Clear previous interrupt request.
-        virtual void clearInterrupt() = 0;
-
     protected:
         // This method is called on the interrupted thread to
         // create a safepoint for a GC.

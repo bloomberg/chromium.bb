@@ -48,8 +48,6 @@ public:
         m_thread->postTask(new GCTask);
     }
 
-    virtual void clearInterrupt() override { }
-
 private:
     class GCTask : public WebThread::Task {
     public:

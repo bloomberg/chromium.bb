@@ -215,15 +215,6 @@ public:
             m_resume.broadcast();
         }
 
-        ThreadState* current = ThreadState::current();
-        for (ThreadState* state : threads) {
-            if (state == current)
-                continue;
-
-            for (ThreadState::Interruptor* interruptor : state->interruptors())
-                interruptor->clearInterrupt();
-        }
-
         threadAttachMutex().unlock();
         ASSERT(ThreadState::current()->isAtSafePoint());
     }
