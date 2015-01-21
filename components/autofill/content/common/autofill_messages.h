@@ -156,7 +156,7 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_PreviewFieldWithValue,
                     base::string16 /* value */)
 
 // The popup has been hidden.
-IPC_MESSAGE_ROUTED0(AutofillMsg_PopupHidden);
+IPC_MESSAGE_ROUTED0(AutofillMsg_PopupHidden)
 
 // Sets the currently selected node's value to be the given data list value.
 IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptDataListSuggestion,
