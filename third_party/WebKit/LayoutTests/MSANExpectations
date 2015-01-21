@@ -22,3 +22,6 @@ crbug.com/445160 [ Linux ] virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum
 crbug.com/445160 [ Linux ] virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ Pass Crash ]
 
 crbug.com/448590 [ Linux ] virtual/gpu/canvas/philip/tests/toDataURL.jpeg.alpha.html [ Pass Crash ]
+
+crbug.com/450639 [ Linux ] inspector/tracing/animations.html [ Timeout ]
+crbug.com/450639 [ Linux ] virtual/deferred/inspector/tracing/animations.html [ Timeout ]
