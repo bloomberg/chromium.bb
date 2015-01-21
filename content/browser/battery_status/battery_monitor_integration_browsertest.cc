@@ -91,6 +91,16 @@ class TestContentBrowserClient : public ContentBrowserClient {
   void OverrideRenderProcessMojoServices(ServiceRegistry* registry) override {
     registry->AddService(base::Bind(&FakeBatteryMonitor::Create));
   }
+
+#if defined(OS_ANDROID)
+  void GetAdditionalMappedFilesForChildProcess(
+      const base::CommandLine& command_line,
+      int child_process_id,
+      FileDescriptorInfo* mappings) override {
+    ShellContentBrowserClient::Get()->GetAdditionalMappedFilesForChildProcess(
+        command_line, child_process_id, mappings);
+  }
+#endif  // defined(OS_ANDROID)
 };
 
 class BatteryMonitorIntegrationTest : public ContentBrowserTest {
