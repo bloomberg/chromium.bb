@@ -35,12 +35,13 @@ AmbientLightSensor::AmbientLightSensor() : io_connection_(IO_OBJECT_NULL) {
 }
 
 bool AmbientLightSensor::Init() {
-  // Tested and verified by riju that the following call works on -
-  // MacBookPro9,1 : Macbook Pro 15" (Mid 2012 model).
-  // MacBookPro10,2 : Macbook Pro 13" (Retina Display, Early 2013 model).
+  // Tested and verified by riju that the following call works on
+  // MacBookPro9,1 : Macbook Pro 15" (Mid 2012 model)
   // MacBookPro10,1 : Macbook Pro 15" (Retina Display, Early 2013 model).
+  // MacBookPro10,2 : Macbook Pro 13" (Retina Display, Early 2013 model).
+  // MacBookAir5,2 : Macbook Air 13" (Mid 2012 model) (by François Beaufort).
   // MacBookAir6,2 : Macbook Air 13" (Mid 2013 model).
-  // Testing plans : Please download the code and follow the comments :-
+  // Testing plans : please download the code and follow the comments :-
   // https://gist.github.com/riju/74af8c81a665e412d122/
   // and add an entry here about the model and the status returned by the code.
 
