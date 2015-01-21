@@ -87,14 +87,23 @@ This directory contains the source code of ICU 54.1 for C/C++.
   - Add source/data/mappings/ucmlocal.txt : to list only converters we need.
 
   - Add new tables per the WHATWG encoding standards for EUC-JP,
-    Shift_JIS and all the single byte encodings.
-    They're generated with scripts : scripts/{eucjp, sjis, single_byte}_gen.sh
+    Shift_JIS, Big5 (Big5+Big5HKSCS) and all the single byte encodings.
+    They're generated with scripts :
+      scripts/{eucjp,sjis,big5,single_byte}_gen.sh
+
+  - Add euc-kr-html.ucm along with scripts/euckr_gen.sh, but it's not
+    yet used pending the resolution of http://crbug.com/450312 and the
+    corresponding w3c encoding bug.
 
   - uconv.patch
     a. ISO-2022-JP-[1-4] is dropped.
     b. SCSU, BOCU, ISCII, UTF-7, LMB, ibm42*, ISO-2022-{KR,CN*} and HZ-GB  :
        converters and detectors are dropped leading to the ~100kB reduction
        in the code size.
+
+  - Upstream bugs
+    http://www.icu-project.org/trac/ticket/11296 (uconv.patch)
+    http://www.icu-project.org/trac/ticket/10303 (html5 encoding tables)
 
 
 5. Locale changes
@@ -173,13 +182,8 @@ This directory contains the source code of ICU 54.1 for C/C++.
       ${CHROME_ICU_TREE_TOP}/source/runConfigureICU Linux --disable-layout
 
     c. Run 'make'
-    d. 'make' will fail in the 1st pass. Copy
-       ${CHROME_ICU_TREE_TOP}/source/data/in/coll/invuca.icu
-       to {BUILD_DIR_ROOT}/data/out/build/icudt52l/coll and re-run 'make'
-       in {BUILD_DIR_ROOT}/data.
-
-    e. 'make' will fail again when pkgdata looks for css3transform.res. Edit
-    data/out/tmp/icudata.lst to replace 'css3transform.res' with 'root.res'.
+    d. 'make' will fail  when pkgdata looks for css3transform.res. Edit
+      data/out/tmp/icudata.lst to replace 'css3transform.res' with 'root.res'.
     (see http://bugs.icu-project.org/trac/ticket/10570 ) and run 'make' again.
 
 
