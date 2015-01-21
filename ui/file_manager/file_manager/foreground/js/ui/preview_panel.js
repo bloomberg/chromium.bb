@@ -33,10 +33,7 @@ var PreviewPanel = function(element,
    * @const
    * @private
    */
-  this.model_ = new PreviewPanelModel(visibilityType, [
-    util.queryDecoratedElement('#share', cr.ui.Command),
-    util.queryDecoratedElement('#cloud-import', cr.ui.Command)
-  ]);
+  this.model_ = new PreviewPanelModel(visibilityType);
 
   /**
    * Dom element of the preview panel.

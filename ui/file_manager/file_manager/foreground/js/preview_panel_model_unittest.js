@@ -2,40 +2,74 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var waitFulfill = null;
+/**
+ * Timeout in milliseconds to determine if the event is dispatched or not.
+ * If the event is dispached in the timeout, the test regards the event is
+ * dispatched, otherwise not. Otherwise it regards the event is not dispatched.
+ */
+var TIMEOUT_MS = 3000;
 
-function testPreviewPanelModel() {
-  var command = util.queryDecoratedElement('#test-command', cr.ui.Command);
-  command.disabled = true;
-  var model = new PreviewPanelModel(
-      PreviewPanelModel.VisibilityType.AUTO,
-      [command]);
-  var visibleList = [];
-  model.addEventListener(PreviewPanelModel.EventType.CHANGE, function() {
-    visibleList.push(model.visible);
-  });
+function testPreviewPanelModel(callback) {
+  document.querySelector('body').innerHTML =
+      '<command class="cloud-import" hidden></command>';
+  var command = document.querySelector('command.cloud-import');
+  var model = new PreviewPanelModel(PreviewPanelModel.VisibilityType.AUTO);
 
-  assertFalse(model.visible);
-  // Shoulld turn visible = true.
-  model.setSelection({entries: ["NotEmpty"]});
-  // Shoulld turn visible = false.
-  model.setSelection({entries: []});
-  // Shoulld turn visible = true.
-  command.disabled = false;
-  // Shoulld turn visible = false.
-  command.disabled = true;
-  // Shoulld turn visible = true.
-  model.setVisibilityType(PreviewPanelModel.VisibilityType.ALWAYS_VISIBLE);
-  // Shoulld turn visible = false.
-  model.setVisibilityType(PreviewPanelModel.VisibilityType.ALWAYS_HIDDEN);
-  command.disabled = true;
-  model.setSelection({entries: ["NotEmpty"]});
+  var testStep = function(step, changed) {
+    var waitPromise = new Promise(function(fulfill) {
+      model.addEventListener(
+          PreviewPanelModel.EventType.CHANGE, fulfill.bind(null, true));
+      setTimeout(fulfill.bind(null, false), TIMEOUT_MS);
+    });
 
-  assertEquals(6, visibleList.length);
-  assertTrue(visibleList[0]);
-  assertFalse(visibleList[1]);
-  assertTrue(visibleList[2]);
-  assertFalse(visibleList[3]);
-  assertTrue(visibleList[4]);
-  assertFalse(visibleList[5]);
+    switch (step) {
+      case 0:
+        assertFalse(model.visible);
+        model.setSelection({entries: ["NotEmpty"]});
+        break;
+      case 1:
+        assertTrue(changed);
+        assertTrue(model.visible);
+        model.setSelection({entries: []});
+        break;
+      case 2:
+        assertTrue(changed);
+        assertFalse(model.visible);
+        command.setHidden(false);
+        break;
+      case 3:
+        assertTrue(changed);
+        assertTrue(model.visible);
+        command.setHidden(true);
+        break;
+      case 4:
+        assertTrue(changed);
+        assertFalse(model.visible);
+        model.setVisibilityType(
+            PreviewPanelModel.VisibilityType.ALWAYS_VISIBLE);
+        break;
+      case 5:
+        assertTrue(changed);
+        assertTrue(model.visible);
+        model.setVisibilityType(
+            PreviewPanelModel.VisibilityType.ALWAYS_HIDDEN);
+        model.setSelection({entries: ["NotEmpty"]});
+        break;
+      case 6:
+        assertTrue(changed);
+        assertFalse(model.visible);
+        command.setHidden(false);
+        break;
+      case 7:
+        assertFalse(changed);
+        assertFalse(model.visible);
+        return;
+    }
+
+    return waitPromise.then(function(newChanged) {
+      return testStep(step + 1, newChanged);
+    });
+  };
+
+  reportPromise(testStep(0), callback);
 }

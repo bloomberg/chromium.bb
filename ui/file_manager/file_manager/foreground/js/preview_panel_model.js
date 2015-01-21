@@ -4,13 +4,12 @@
 
 /**
  * @param {PreviewPanelModel.VisibilityType} initialVisibilityType
- * @param {!Array<!cr.ui.Command>} autoVisibilityCommands
  * @extends {cr.EventTarget}
  * @constructor
  * @struct
  * @suppress {checkStructDictInheritance}
  */
-function PreviewPanelModel(initialVisibilityType, autoVisibilityCommands) {
+function PreviewPanelModel(initialVisibilityType) {
   cr.EventTarget.call(this);
 
   /**
@@ -24,7 +23,9 @@ function PreviewPanelModel(initialVisibilityType, autoVisibilityCommands) {
    * @const
    * @private
    */
-  this.autoVisibilityCommands_ = autoVisibilityCommands;
+  this.cloudImportCommands_ = Array.prototype.slice.call(
+      document.querySelectorAll('command.cloud-import'));
+  cr.ui.decorate('command.cloud-import', cr.ui.Command);
 
   /**
    * FileSelection to be displayed.
@@ -41,11 +42,10 @@ function PreviewPanelModel(initialVisibilityType, autoVisibilityCommands) {
    */
   this.visible = false;
 
-  for (var i = 0; i < this.autoVisibilityCommands_.length; i++) {
-    this.autoVisibilityCommands_[i].addEventListener(
-        'disabledChange', this.updateVisibility_.bind(this));
+  for (var i = 0; i < this.cloudImportCommands_.length; i++) {
+    this.cloudImportCommands_[i].addEventListener(
+        'hiddenChange', this.updateVisibility_.bind(this));
   }
-
   this.updateVisibility_();
 }
 
@@ -92,8 +92,8 @@ PreviewPanelModel.prototype.updateVisibility_ = function() {
     case PreviewPanelModel.VisibilityType.AUTO:
       newVisible =
           this.selection_.entries.length !== 0 ||
-          this.autoVisibilityCommands_.some(function(command) {
-            return !command.disabled;
+          this.cloudImportCommands_.some(function(command) {
+            return !command.hidden;
           });
       break;
     case PreviewPanelModel.VisibilityType.ALWAYS_HIDDEN:

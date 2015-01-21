@@ -213,12 +213,12 @@
       <command id="zip-selection"
                i18n-values="label:ZIP_SELECTION_BUTTON_LABEL">
 
-      <!-- The following commands' availability is refered by preview panel.
-           Set disabled until availability is obtained once. -->
       <command id="share" i18n-values="label:SHARE_BUTTON_LABEL" disabled
                shortcut="U+00BE" hide-shortcut-text><!-- Shortcut: '.' -->
-      <command id="cloud-import" i18n-values="label:CLOUD_IMPORT_BUTTON_LABEL"
-               disabled>
+      <!-- The visibility is refered by preview panel.  Set hidden until
+           visibility is obtained once. -->
+      <command id="cloud-import" class="cloud-import"
+               i18n-values="label:CLOUD_IMPORT_BUTTON_LABEL" hidden>
 
       <command id="zoom-in" shortcut="U+00BB-Ctrl">
       <command id="zoom-out" shortcut="U+00BD-Ctrl">
