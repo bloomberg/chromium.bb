@@ -55,7 +55,7 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size
     SkAlphaType alphaType = (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
     SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-    m_surface = adoptPtr(SkSurface::NewScratchRenderTarget(grContext, info, msaaSampleCount,
+    m_surface = adoptPtr(SkSurface::NewRenderTarget(grContext, SkSurface::kYes_Budgeted, info, msaaSampleCount,
         Opaque == opacityMode ? 0 : &disableLCDProps));
     if (!m_surface.get())
         return;
