@@ -485,6 +485,8 @@ static_library("browser") {
   if (use_x11) {
     sources +=
         rebase_path(gypi_values.chrome_browser_x11_sources, ".", "//chrome")
+  } else {
+    sources -= [ "password_manager/password_store_x.cc" ]
   }
   if (is_posix && !is_mac && !is_ios) {
     sources += [
@@ -640,6 +642,7 @@ static_library("browser") {
     deps += [
       "//chrome:version_header",
       "//chrome/installer/util:strings",
+      "//google_update",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//third_party/wtl",
@@ -648,7 +651,6 @@ static_library("browser") {
       #"../chrome_elf/chrome_elf.gyp:chrome_elf",  TODO(GYP)
       #"../chrome_elf/chrome_elf.gyp:chrome_elf_constants",  TODO(GYP)
       #"../chrome_elf/chrome_elf.gyp:dll_hash",  TODO(GYP)
-      #"../google_update/google_update.gyp:google_update",  TODO(GYP)
       "//ui/metro_viewer",
       "//win8:metro_viewer",
     ]

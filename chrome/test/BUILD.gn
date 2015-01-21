@@ -159,7 +159,6 @@ source_set("test_support") {
   if (is_win) {
     deps += [
       "//third_party/wtl",
-      "//ui/snapshot:test_support",
     ]
     if (use_aura) {
       deps += [

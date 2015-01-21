@@ -39,8 +39,6 @@ static_library("utility") {
     deps += [
       "//chrome/common/extensions/api",
       "//extensions/utility",
-
-      #"//third_party/libexif",  TODO(GYP)
     ]
 
     public_deps += [ "//chrome/common/extensions/api" ]
@@ -65,6 +63,12 @@ static_library("utility") {
           rebase_path(gypi_values.chrome_utility_mac_media_gallery_sources,
                       ".",
                       "..")
+    }
+
+    # Linux should use system libexif
+    if (!is_linux) {
+      # TODO(thestig): Properly support building on Linux and ChromeOS.
+      deps += [ "//third_party/libexif" ]
     }
   }
 
