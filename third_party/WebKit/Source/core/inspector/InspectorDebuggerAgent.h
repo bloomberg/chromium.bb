@@ -290,7 +290,7 @@ private:
     using AsyncOperationIdToAsyncCallChain = WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain>>;
     AsyncOperationIdToAsyncCallChain m_asyncOperations;
     int m_lastAsyncOperationId;
-    WillBeHeapHashSet<int> m_asyncOperationsForStepInto;
+    HashSet<int> m_asyncOperationsForStepInto;
     unsigned m_maxAsyncCallStackDepth;
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
