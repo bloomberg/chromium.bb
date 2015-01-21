@@ -12,6 +12,7 @@
 #include "base/debug/alias.h"
 #include "base/lazy_instance.h"
 #include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -98,8 +99,7 @@ template<typename T>
 void ParseEnum(const std::string& string_value,
                T* enum_value,
                const std::map<std::string, T>& mapping) {
-  typename std::map<std::string, T>::const_iterator iter =
-      mapping.find(string_value);
+  const auto& iter = mapping.find(string_value);
   if (iter == mapping.end()) {
     // For http://crbug.com/365192.
     char minidump[256];
@@ -136,20 +136,17 @@ void ParseEnumSet(const base::DictionaryValue* value,
   std::string property_string;
   if (value->GetString(property, &property_string)) {
     if (property_string == "all") {
-      for (typename std::map<std::string, T>::const_iterator j =
-               mapping.begin(); j != mapping.end(); ++j) {
-        enum_set->insert(j->second);
-      }
+      for (const auto& it : mapping)
+        enum_set->insert(it.second);
     }
     return;
   }
 
   std::set<std::string> string_set;
   ParseSet(value, property, &string_set);
-  for (std::set<std::string>::iterator iter = string_set.begin();
-       iter != string_set.end(); ++iter) {
+  for (const auto& str : string_set) {
     T enum_value = static_cast<T>(0);
-    ParseEnum(*iter, &enum_value, mapping);
+    ParseEnum(str, &enum_value, mapping);
     enum_set->insert(enum_value);
   }
 }
@@ -225,7 +222,7 @@ std::string GetDisplayName(Feature::Context context) {
 // Gets a human-readable list of the display names (pluralized, comma separated
 // with the "and" in the correct place) for each of |enum_types|.
 template <typename EnumType>
-std::string ListDisplayNames(const std::vector<EnumType> enum_types) {
+std::string ListDisplayNames(const std::vector<EnumType>& enum_types) {
   std::string display_name_list;
   for (size_t i = 0; i < enum_types.size(); ++i) {
     // Pluralize type name.
@@ -246,7 +243,7 @@ std::string ListDisplayNames(const std::vector<EnumType> enum_types) {
 
 std::string HashExtensionId(const std::string& extension_id) {
   const std::string id_hash = base::SHA1HashString(extension_id);
-  DCHECK(id_hash.length() == base::kSHA1Length);
+  DCHECK_EQ(base::kSHA1Length, id_hash.length());
   return base::HexEncode(id_hash.c_str(), id_hash.length());
 }
 
@@ -269,12 +266,12 @@ SimpleFeature::SimpleFeature()
 
 SimpleFeature::~SimpleFeature() {}
 
-bool SimpleFeature::HasDependencies() {
+bool SimpleFeature::HasDependencies() const {
   return !dependencies_.empty();
 }
 
 void SimpleFeature::AddFilter(scoped_ptr<SimpleFeatureFilter> filter) {
-  filters_.push_back(make_linked_ptr(filter.release()));
+  filters_.push_back(filter.release());
 }
 
 std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
@@ -310,16 +307,14 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
   // "matches" to be chromium.org/*. That sub-feature doesn't need to specify
   // "web_page" context because it's inherited, but we don't know that here.
 
-  for (FilterList::iterator filter_iter = filters_.begin();
-       filter_iter != filters_.end();
-       ++filter_iter) {
-    std::string result = (*filter_iter)->Parse(value);
-    if (!result.empty()) {
-      return result;
-    }
+  std::string result;
+  for (const auto& filter : filters_) {
+    result = filter->Parse(value);
+    if (!result.empty())
+      break;
   }
 
-  return std::string();
+  return result;
 }
 
 Feature::Availability SimpleFeature::IsAvailableToManifest(
@@ -335,7 +330,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   Manifest::Type type_to_check = (type == Manifest::TYPE_USER_SCRIPT) ?
       Manifest::TYPE_EXTENSION : type;
   if (!extension_types_.empty() &&
-      extension_types_.find(type_to_check) == extension_types_.end()) {
+      !ContainsKey(extension_types_, type_to_check)) {
     return CreateAvailability(INVALID_TYPE, type);
   }
 
@@ -368,8 +363,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (!MatchesManifestLocation(location))
     return CreateAvailability(INVALID_LOCATION, type);
 
-  if (!platforms_.empty() &&
-      platforms_.find(platform) == platforms_.end())
+  if (!platforms_.empty() && !ContainsKey(platforms_, platform))
     return CreateAvailability(INVALID_PLATFORM, type);
 
   if (min_manifest_version_ != 0 && manifest_version < min_manifest_version_)
@@ -383,10 +377,8 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
     return CreateAvailability(MISSING_COMMAND_LINE_SWITCH, type);
   }
 
-  for (FilterList::const_iterator filter_iter = filters_.begin();
-       filter_iter != filters_.end();
-       ++filter_iter) {
-    Availability availability = (*filter_iter)->IsAvailableToManifest(
+  for (const auto& filter : filters_) {
+    Availability availability = filter->IsAvailableToManifest(
         extension_id, type, location, manifest_version, platform);
     if (!availability.is_available())
       return availability;
@@ -415,7 +407,7 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
       return result;
   }
 
-  if (!contexts_.empty() && contexts_.find(context) == contexts_.end())
+  if (!contexts_.empty() && !ContainsKey(contexts_, context))
     return CreateAvailability(INVALID_CONTEXT, context);
 
   // TODO(kalman): Consider checking |matches_| regardless of context type.
@@ -426,11 +418,9 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
     return CreateAvailability(INVALID_URL, url);
   }
 
-  for (FilterList::const_iterator filter_iter = filters_.begin();
-       filter_iter != filters_.end();
-       ++filter_iter) {
+  for (const auto& filter : filters_) {
     Availability availability =
-        (*filter_iter)->IsAvailableToContext(extension, context, url, platform);
+        filter->IsAvailableToContext(extension, context, url, platform);
     if (!availability.is_available())
       return availability;
   }
@@ -558,12 +548,8 @@ bool SimpleFeature::IsIdInList(const std::string& extension_id,
   if (extension_id.length() != 32)  // 128 bits / 4 = 32 mpdecimal characters
     return false;
 
-  if (list.find(extension_id) != list.end() ||
-      list.find(HashExtensionId(extension_id)) != list.end()) {
-    return true;
-  }
-
-  return false;
+  return (ContainsKey(list, extension_id) ||
+          ContainsKey(list, HashExtensionId(extension_id)));
 }
 
 bool SimpleFeature::MatchesManifestLocation(
@@ -585,11 +571,9 @@ bool SimpleFeature::MatchesManifestLocation(
 
 Feature::Availability SimpleFeature::CheckDependencies(
     const base::Callback<Availability(const Feature*)>& checker) const {
-  for (std::set<std::string>::const_iterator it = dependencies_.begin();
-       it != dependencies_.end();
-       ++it) {
+  for (const auto& dep_name : dependencies_) {
     Feature* dependency =
-        ExtensionAPI::GetSharedInstance()->GetFeatureDependency(*it);
+        ExtensionAPI::GetSharedInstance()->GetFeatureDependency(dep_name);
     if (!dependency)
       return CreateAvailability(NOT_PRESENT);
     Availability dependency_availability = checker.Run(dependency);

@@ -11,8 +11,8 @@
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
@@ -71,7 +71,7 @@ class SimpleFeature : public Feature {
   // Dependency resolution is a property of Features that is preferrably
   // handled internally to avoid temptation, but FeatureFilters may need
   // to know if there are any at all.
-  bool HasDependencies();
+  bool HasDependencies() const;
 
   // Adds a filter to this feature. The feature takes ownership of the filter.
   void AddFilter(scoped_ptr<SimpleFeatureFilter> filter);
@@ -155,8 +155,7 @@ class SimpleFeature : public Feature {
   bool component_extensions_auto_granted_;
   std::string command_line_switch_;
 
-  typedef std::vector<linked_ptr<SimpleFeatureFilter> > FilterList;
-  FilterList filters_;
+  ScopedVector<SimpleFeatureFilter> filters_;;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFeature);
 };
