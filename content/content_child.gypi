@@ -309,6 +309,7 @@
       'child/webcrypto/openssl/hmac_openssl.cc',
       'child/webcrypto/openssl/key_openssl.cc',
       'child/webcrypto/openssl/key_openssl.h',
+      'child/webcrypto/openssl/pbkdf2_openssl.cc',
       'child/webcrypto/openssl/rsa_hashed_algorithm_openssl.cc',
       'child/webcrypto/openssl/rsa_hashed_algorithm_openssl.h',
       'child/webcrypto/openssl/rsa_oaep_openssl.cc',

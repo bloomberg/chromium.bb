@@ -35,6 +35,7 @@ AlgorithmImplementation* CreatePlatformRsaPssImplementation();
 AlgorithmImplementation* CreatePlatformEcdsaImplementation();
 AlgorithmImplementation* CreatePlatformEcdhImplementation();
 AlgorithmImplementation* CreatePlatformHkdfImplementation();
+AlgorithmImplementation* CreatePlatformPbkdf2Implementation();
 
 }  // namespace webcrypto
 

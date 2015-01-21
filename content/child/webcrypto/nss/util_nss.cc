@@ -106,6 +106,12 @@ AlgorithmImplementation* CreatePlatformHkdfImplementation() {
   return NULL;
 }
 
+AlgorithmImplementation* CreatePlatformPbkdf2Implementation() {
+  // PBKDF2 will only be implemented for BoringSSL, since the NSS
+  // implementation is being deprecated.
+  return NULL;
+}
+
 }  // namespace webcrypto
 
 }  // namespace content
