@@ -34,7 +34,6 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/test/extension_test_message_listener.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
@@ -375,9 +374,8 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
   NSString* bundle_id = GetBundleID(shim_path);
 
   // Explicitly set the launch type to open in a new window.
-  extensions::SetLaunchType(
-      extensions::ExtensionSystem::Get(profile())->extension_service(),
-      app->id(), extensions::LAUNCH_TYPE_WINDOW);
+  extensions::SetLaunchType(profile(), app->id(),
+                            extensions::LAUNCH_TYPE_WINDOW);
 
   // Case 1: Launch the hosted app, it should start the shim.
   {

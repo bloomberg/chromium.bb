@@ -9,7 +9,9 @@
 
 #include "extensions/common/constants.h"
 
-class ExtensionService;
+namespace content {
+class BrowserContext;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -38,7 +40,7 @@ LaunchType GetLaunchTypePrefValue(const ExtensionPrefs* prefs,
                                   const std::string& extension_id);
 
 // Sets an extension's launch type preference and syncs the value if necessary.
-void SetLaunchType(ExtensionService* prefs,
+void SetLaunchType(content::BrowserContext* context,
                    const std::string& extension_id,
                    LaunchType launch_type);
 

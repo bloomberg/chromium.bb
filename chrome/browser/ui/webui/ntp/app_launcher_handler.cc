@@ -565,8 +565,7 @@ void AppLauncherHandler::HandleSetLaunchType(const base::ListValue* args) {
   base::AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   extensions::SetLaunchType(
-      extension_service_,
-      extension_id,
+      Profile::FromWebUI(web_ui()), extension_id,
       static_cast<extensions::LaunchType>(static_cast<int>(launch_type)));
 }
 

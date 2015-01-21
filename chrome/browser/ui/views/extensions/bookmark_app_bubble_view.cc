@@ -266,9 +266,7 @@ void BookmarkAppBubbleView::ApplyEdits() {
       : extensions::LAUNCH_TYPE_WINDOW;
   profile_->GetPrefs()->SetInteger(
           extensions::pref_names::kBookmarkAppCreationLaunchType, launch_type);
-  extensions::SetLaunchType(GetExtensionService(profile_),
-                            extension_id_,
-                            launch_type);
+  extensions::SetLaunchType(profile_, extension_id_, launch_type);
 
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(

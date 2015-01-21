@@ -127,9 +127,7 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
 
   void SetAppLaunchPref(const std::string& app_id,
                         extensions::LaunchType launch_type) {
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
-    extensions::SetLaunchType(service, app_id, launch_type);
+    extensions::SetLaunchType(browser()->profile(), app_id, launch_type);
   }
 
   Browser* FindOneOtherBrowserForProfile(Profile* profile,

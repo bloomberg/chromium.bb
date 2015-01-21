@@ -302,9 +302,7 @@ extensions::LaunchType AppInfoSummaryPanel::GetLaunchType() const {
 void AppInfoSummaryPanel::SetLaunchType(
     extensions::LaunchType launch_type) const {
   DCHECK(CanSetLaunchType());
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  extensions::SetLaunchType(service, app_->id(), launch_type);
+  extensions::SetLaunchType(profile_, app_->id(), launch_type);
 }
 
 bool AppInfoSummaryPanel::CanSetLaunchType() const {
