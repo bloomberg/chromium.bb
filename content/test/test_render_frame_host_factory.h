@@ -27,7 +27,6 @@ class TestRenderFrameHostFactory : public RenderFrameHostFactory {
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
       RenderViewHostImpl* render_view_host,
       RenderFrameHostDelegate* delegate,
-      RenderWidgetHostDelegate* rwh_delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int routing_id,

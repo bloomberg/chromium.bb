@@ -490,10 +490,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // we are staying in the same BrowsingInstance. This allows the new RFH
   // to send cross-process script calls to its opener(s). Returns the opener
   // route ID to be used for the new RenderView to be created.
-  // |create_render_frame_flags| allows the method to set additional flags.
   int CreateOpenerRenderViewsIfNeeded(SiteInstance* old_instance,
-                                      SiteInstance* new_instance,
-                                      int* create_render_frame_flags);
+                                      SiteInstance* new_instance);
 
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,

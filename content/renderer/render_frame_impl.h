@@ -43,7 +43,6 @@ class GURL;
 class TransportDIB;
 struct FrameHostMsg_AddNavigationTransitionData_Params;
 struct FrameMsg_Navigate_Params;
-struct FrameMsg_NewFrame_WidgetParams;
 struct FrameMsg_RequestNavigation_Params;
 
 namespace blink {
@@ -72,7 +71,6 @@ class WebEncryptedMediaClientImpl;
 namespace content {
 
 class ChildFrameCompositingHelper;
-class CompositorDependencies;
 class ExternalPopupMenu;
 class GeolocationDispatcher;
 class ManifestManager;
@@ -126,9 +124,7 @@ class CONTENT_EXPORT RenderFrameImpl
   static void CreateFrame(int routing_id,
                           int parent_routing_id,
                           int proxy_routing_id,
-                          const FrameReplicationState& replicated_state,
-                          CompositorDependencies* compositor_deps,
-                          const FrameMsg_NewFrame_WidgetParams& params);
+                          const FrameReplicationState& replicated_state);
 
   // Returns the RenderFrameImpl for the given routing ID.
   static RenderFrameImpl* FromRoutingID(int routing_id);
@@ -744,13 +740,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // cleared.
   // TODO(creis): Remove this after switching to PlzNavigate.
   int proxy_routing_id_;
-
-  // Used when the RenderFrame is a local root. For now, RenderWidgets are
-  // added only when a child frame is in a different process from its parent
-  // frame, but eventually this will also apply to top-level frames.
-  // TODO(kenrb): Correct the above statement when top-level frames have their
-  // own RenderWidgets.
-  scoped_refptr<RenderWidget> render_widget_;
 
 #if defined(ENABLE_PLUGINS)
   // Current text input composition text. Empty if no composition is in

@@ -54,15 +54,12 @@ class SyncMessageFilter;
 
 namespace blink {
 struct WebDeviceEmulationParams;
-class WebFrameWidget;
 class WebGestureEvent;
 class WebKeyboardEvent;
-class WebLocalFrame;
 class WebMouseEvent;
 class WebNode;
 struct WebPoint;
 class WebTouchEvent;
-class WebView;
 }
 
 namespace cc {
@@ -103,17 +100,6 @@ class CONTENT_EXPORT RenderWidget
                               blink::WebPopupType popup_type,
                               const blink::WebScreenInfo& screen_info);
 
-  // Creates a new RenderWidget that will be attached to a RenderFrame.
-  static RenderWidget* CreateForFrame(int routing_id,
-                                      int surface_id,
-                                      bool hidden,
-                                      const blink::WebScreenInfo& screen_info,
-                                      CompositorDependencies* compositor_deps,
-                                      blink::WebLocalFrame* frame);
-
-  static blink::WebWidget* CreateWebFrameWidget(RenderWidget* render_widget,
-                                                blink::WebLocalFrame* frame);
-
   // Creates a WebWidget based on the popup type.
   static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);
 
@@ -138,9 +124,6 @@ class CONTENT_EXPORT RenderWidget
   gfx::Point host_context_menu_location() {
     return host_context_menu_location_;
   }
-
-  // ScreenInfo exposed so it can be passed to subframe RenderWidgets.
-  blink::WebScreenInfo screen_info() const { return screen_info_; }
 
   // Functions to track out-of-process frames for special notifications.
   void RegisterRenderFrameProxy(RenderFrameProxy* proxy);

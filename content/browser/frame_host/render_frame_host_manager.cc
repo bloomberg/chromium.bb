@@ -128,9 +128,9 @@ RenderViewHostImpl* RenderFrameHostManager::pending_render_view_host() const {
 RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
   if (interstitial_page_)
     return interstitial_page_->GetView();
-  if (render_frame_host_)
-    return render_frame_host_->GetView();
-  return nullptr;
+  if (!render_frame_host_)
+    return NULL;
+  return render_frame_host_->render_view_host()->GetView();
 }
 
 RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
@@ -221,8 +221,8 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     // our primary one.  Otherwise, we might crash if we try to call Show()
     // on it later.
     if (dest_render_frame_host != render_frame_host_ &&
-        dest_render_frame_host->GetView()) {
-      dest_render_frame_host->GetView()->Hide();
+        dest_render_frame_host->render_view_host()->GetView()) {
+      dest_render_frame_host->render_view_host()->GetView()->Hide();
     } else {
       // Notify here as we won't be calling CommitPending (which does the
       // notify).
@@ -1154,8 +1154,8 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
   if (delegate_->IsHidden())
     create_render_frame_flags |= CREATE_RF_HIDDEN;
 
-  int opener_route_id = CreateOpenerRenderViewsIfNeeded(
-      old_instance, new_instance, &create_render_frame_flags);
+  int opener_route_id =
+      CreateOpenerRenderViewsIfNeeded(old_instance, new_instance);
 
   if (pending_render_frame_host_)
     CancelPending();
@@ -1168,8 +1168,7 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
 
 int RenderFrameHostManager::CreateOpenerRenderViewsIfNeeded(
     SiteInstance* old_instance,
-    SiteInstance* new_instance,
-    int* create_render_frame_flags) {
+    SiteInstance* new_instance) {
   int opener_route_id = MSG_ROUTING_NONE;
   if (new_instance->IsRelatedSiteInstance(old_instance)) {
     opener_route_id =
@@ -1180,13 +1179,6 @@ int RenderFrameHostManager::CreateOpenerRenderViewsIfNeeded(
       // SiteInstance in all nodes except the current one.
       frame_tree_node_->frame_tree()->CreateProxiesForSiteInstance(
           frame_tree_node_, new_instance);
-      // RenderFrames in different processes from their parent RenderFrames
-      // in the frame tree require RenderWidgets for rendering and processing
-      // input events.
-      if (frame_tree_node_->parent() &&
-          frame_tree_node_->parent()->current_frame_host()->GetSiteInstance() !=
-              new_instance)
-        *create_render_frame_flags |= CREATE_RF_NEEDS_RENDER_WIDGET_HOST;
     }
   }
   return opener_route_id;
@@ -1216,10 +1208,10 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
   }
 
   // TODO(creis): Pass hidden to RFH.
-  scoped_ptr<RenderFrameHostImpl> render_frame_host = make_scoped_ptr(
-      RenderFrameHostFactory::Create(
-          render_view_host, render_frame_delegate_, render_widget_delegate_,
-          frame_tree, frame_tree_node_, frame_routing_id, flags).release());
+  scoped_ptr<RenderFrameHostImpl> render_frame_host =
+      make_scoped_ptr(RenderFrameHostFactory::Create(
+                          render_view_host, render_frame_delegate_, frame_tree,
+                          frame_tree_node_, frame_routing_id, flags).release());
   return render_frame_host.Pass();
 }
 
@@ -1241,11 +1233,10 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   if (!should_reuse_web_ui_)
     speculative_web_ui_ = CreateWebUI(url, bindings);
 
-  int create_render_frame_flags = 0;
   int opener_route_id =
-      CreateOpenerRenderViewsIfNeeded(old_instance, new_instance,
-                                      &create_render_frame_flags);
+      CreateOpenerRenderViewsIfNeeded(old_instance, new_instance);
 
+  int create_render_frame_flags = 0;
   if (frame_tree_node_->IsMainFrame())
     create_render_frame_flags |= CREATE_RF_FOR_MAIN_FRAME_NAVIGATION;
   if (delegate_->IsHidden())
@@ -1343,11 +1334,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     if (success) {
       if (frame_tree_node_->IsMainFrame()) {
         // Don't show the main frame's view until we get a DidNavigate from it.
-        // Only the RenderViewHost for the top-level RenderFrameHost has a
-        // RenderWidgetHostView; RenderWidgetHosts for out-of-process iframes
-        // will be created later and hidden.
-        if (render_view_host->GetView())
-          render_view_host->GetView()->Hide();
+        render_view_host->GetView()->Hide();
       } else if (!swapped_out) {
         // Init the RFH, so a RenderFrame is created in the renderer.
         DCHECK(new_render_frame_host.get());
@@ -1517,8 +1504,8 @@ void RenderFrameHostManager::CommitPending() {
   // Remember if the page was focused so we can focus the new renderer in
   // that case.
   bool focus_render_view = !will_focus_location_bar &&
-                           render_frame_host_->GetView() &&
-                           render_frame_host_->GetView()->HasFocus();
+      render_frame_host_->render_view_host()->GetView() &&
+      render_frame_host_->render_view_host()->GetView()->HasFocus();
 
   bool is_main_frame = frame_tree_node_->IsMainFrame();
 
@@ -1544,10 +1531,10 @@ void RenderFrameHostManager::CommitPending() {
   render_frame_host_->GetProcess()->RemovePendingView();
 
   // Show the new view (or a sad tab) if necessary.
-  bool new_rfh_has_view = !!render_frame_host_->GetView();
+  bool new_rfh_has_view = !!render_frame_host_->render_view_host()->GetView();
   if (!delegate_->IsHidden() && new_rfh_has_view) {
     // In most cases, we need to show the new view.
-    render_frame_host_->GetView()->Show();
+    render_frame_host_->render_view_host()->GetView()->Show();
   }
   if (!new_rfh_has_view) {
     // If the view is gone, then this RenderViewHost died while it was hidden.
@@ -1570,8 +1557,9 @@ void RenderFrameHostManager::CommitPending() {
 
   if (will_focus_location_bar) {
     delegate_->SetFocusToLocationBar(false);
-  } else if (focus_render_view && render_frame_host_->GetView()) {
-    render_frame_host_->GetView()->Focus();
+  } else if (focus_render_view &&
+             render_frame_host_->render_view_host()->GetView()) {
+    render_frame_host_->render_view_host()->GetView()->Focus();
   }
 
   // Notify that we've swapped RenderFrameHosts. We do this before shutting down
@@ -1597,7 +1585,8 @@ void RenderFrameHostManager::CommitPending() {
     // the proxy we're looking for.
     RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
     if (proxy_to_parent) {
-      proxy_to_parent->SetChildRWHView(render_frame_host_->GetView());
+      proxy_to_parent->SetChildRWHView(
+          render_frame_host_->render_view_host()->GetView());
     }
 
     // Since the new RenderFrameHost is now committed, there must be no proxies

@@ -34,7 +34,6 @@
 
 class GrContext;
 class SkBitmap;
-struct FrameMsg_NewFrame_WidgetParams;
 struct ViewMsg_New_Params;
 struct WorkerProcessMsg_CreateWorker_Params;
 
@@ -430,8 +429,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnCreateNewFrame(int routing_id,
                         int parent_routing_id,
                         int proxy_routing_id,
-                        const FrameReplicationState& replicated_state,
-                        FrameMsg_NewFrame_WidgetParams params);
+                        const FrameReplicationState& replicated_state);
   void OnCreateNewFrameProxy(int routing_id,
                              int parent_routing_id,
                              int render_view_routing_id,

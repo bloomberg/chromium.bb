@@ -16,7 +16,6 @@ class FrameTreeNode;
 class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
 class RenderViewHostImpl;
-class RenderWidgetHostDelegate;
 
 // A factory for creating RenderFrameHosts. There is a global factory function
 // that can be installed for the purposes of testing to provide a specialized
@@ -28,7 +27,6 @@ class CONTENT_EXPORT RenderFrameHostFactory {
   static scoped_ptr<RenderFrameHostImpl> Create(
       RenderViewHostImpl* render_view_host,
       RenderFrameHostDelegate* delegate,
-      RenderWidgetHostDelegate* rwh_delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int routing_id,
@@ -46,7 +44,6 @@ class CONTENT_EXPORT RenderFrameHostFactory {
   virtual scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
       RenderViewHostImpl* render_view_host,
       RenderFrameHostDelegate* delegate,
-      RenderWidgetHostDelegate* rwh_delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int routing_id,

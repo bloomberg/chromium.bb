@@ -61,15 +61,12 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
-#include "third_party/WebKit/public/web/WebFrameWidget.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebPopupMenu.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
 #include "third_party/WebKit/public/web/WebRange.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/frame_time.h"
@@ -536,32 +533,7 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
 }
 
 // static
-RenderWidget* RenderWidget::CreateForFrame(
-    int routing_id,
-    int surface_id,
-    bool hidden,
-    const blink::WebScreenInfo& screen_info,
-    CompositorDependencies* compositor_deps,
-    blink::WebLocalFrame* frame) {
-  CHECK_NE(routing_id, MSG_ROUTING_NONE);
-  scoped_refptr<RenderWidget> widget(new RenderWidget(
-      blink::WebPopupTypeNone, screen_info, false, hidden, false));
-  widget->routing_id_ = routing_id;
-  widget->surface_id_ = surface_id;
-  widget->compositor_deps_ = compositor_deps;
-  // DoInit increments the reference count on |widget|, keeping it alive after
-  // this function returns.
-  if (widget->DoInit(MSG_ROUTING_NONE, compositor_deps,
-                     RenderWidget::CreateWebFrameWidget(widget.get(), frame),
-                     nullptr)) {
-    widget->CompleteInit();
-    return widget.get();
-  }
-  return nullptr;
-}
-
-// static
-blink::WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
+WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
   switch (render_widget->popup_type_) {
     case blink::WebPopupTypeNone:  // Nothing to create.
       break;
@@ -574,13 +546,6 @@ blink::WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
       NOTREACHED();
   }
   return NULL;
-}
-
-// static
-blink::WebWidget* RenderWidget::CreateWebFrameWidget(
-    RenderWidget* render_widget,
-    blink::WebLocalFrame* frame) {
-  return blink::WebFrameWidget::create(render_widget, frame);
 }
 
 bool RenderWidget::Init(int32 opener_id,
@@ -602,10 +567,7 @@ bool RenderWidget::DoInit(int32 opener_id,
   compositor_deps_ = compositor_deps;
   webwidget_ = web_widget;
 
-  bool result = true;
-  if (create_widget_message)
-    result = RenderThread::Get()->Send(create_widget_message);
-
+  bool result = RenderThread::Get()->Send(create_widget_message);
   if (result) {
     RenderThread::Get()->AddRoute(routing_id_, this);
     // Take a reference on behalf of the RenderThread.  This will be balanced

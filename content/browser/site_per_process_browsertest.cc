@@ -285,12 +285,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   proxy_to_parent = child->render_manager()->GetProxyToParent();
   EXPECT_TRUE(proxy_to_parent);
   EXPECT_TRUE(proxy_to_parent->cross_process_frame_connector());
-  // The out-of-process iframe should have its own RenderWidgetHost,
-  // independent of any RenderViewHost.
-  EXPECT_NE(
+  EXPECT_EQ(
       rvh->GetView(),
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
-  EXPECT_TRUE(child->current_frame_host()->GetRenderWidgetHost());
 
   // Load another cross-site page into the same iframe.
   url = embedded_test_server()->GetURL("bar.com", "/title3.html");
@@ -320,10 +317,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   }
   EXPECT_EQ(proxy_to_parent, child->render_manager()->GetProxyToParent());
   EXPECT_TRUE(proxy_to_parent->cross_process_frame_connector());
-  EXPECT_NE(
+  EXPECT_EQ(
       child->current_frame_host()->render_view_host()->GetView(),
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
-  EXPECT_TRUE(child->current_frame_host()->GetRenderWidgetHost());
 }
 
 // Disabled for flaky crashing: crbug.com/446575
