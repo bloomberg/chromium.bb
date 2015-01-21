@@ -290,8 +290,8 @@ int AutofillManager::AccessAddressBookPromptCount() {
 
 bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
                                                const FormFieldData& field) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          autofill::switches::kDisableCreditCardScan)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          autofill::switches::kEnableCreditCardScan)) {
     return false;
   }
 
