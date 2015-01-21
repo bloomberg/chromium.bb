@@ -1548,6 +1548,7 @@ int main(int argc, char **argv) {
   }
 
   base::ShadowingAtExitManager at_exit_manager;
+  base::MessageLoop main_loop;
   content::RenderingHelper::InitializeOneOff();
 
   return RUN_ALL_TESTS();

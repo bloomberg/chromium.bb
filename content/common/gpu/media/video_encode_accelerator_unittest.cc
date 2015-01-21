@@ -1319,12 +1319,14 @@ int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
   base::CommandLine::Init(argc, argv);
 
+  base::ShadowingAtExitManager at_exit_manager;
+  base::MessageLoop main_loop;
+
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitializeForUI();
   ui::OzonePlatform::InitializeForGPU();
 #endif
 
-  base::ShadowingAtExitManager at_exit_manager;
   scoped_ptr<base::FilePath::StringType> test_stream_data(
       new base::FilePath::StringType(
           media::GetTestDataFilePath(content::g_default_in_filename).value() +
