@@ -609,6 +609,9 @@ CL_ACTION_PRE_CQ_LAUNCHING = 'pre_cq_launching'
 CL_ACTION_PRE_CQ_WAITING = 'pre_cq_waiting'
 CL_ACTION_PRE_CQ_FULLY_VERIFIED = 'pre_cq_fully_verified'
 CL_ACTION_PRE_CQ_READY_TO_SUBMIT = 'pre_cq_ready_to_submit'
+# Recording this action causes the pre-cq status and all per-config statuses to
+# be reset.
+CL_ACTION_PRE_CQ_RESET = 'pre_cq_reset'
 
 # Miscellaneous actions
 
@@ -659,7 +662,8 @@ CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_TRYBOT_LAUNCHING,
               CL_ACTION_SPECULATIVE,
               CL_ACTION_FORGIVEN,
-              CL_ACTION_PRE_CQ_FULLY_VERIFIED]
+              CL_ACTION_PRE_CQ_FULLY_VERIFIED,
+              CL_ACTION_PRE_CQ_RESET]
 
 # Per-config status strings for a CL.
 CL_PRECQ_CONFIG_STATUS_PENDING = 'pending'
