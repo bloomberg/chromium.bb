@@ -51,6 +51,7 @@ public:
     // fills in the start location and column span of cell
     virtual void columnIndexRange(pair<unsigned, unsigned>& columnRange);
 
+    AccessibilityRole scanToDecideHeaderRole();
 protected:
     virtual AXObject* parentTable() const;
     int m_rowIndex;
@@ -61,7 +62,6 @@ private:
     bool isRowHeaderCell() const;
     bool isColumnHeaderCell() const;
 
-    AccessibilityRole scanToDecideHeaderRole();
     // If a table cell is not exposed as a table cell, a TH element can serve as its title UI element.
     virtual AXObject* titleUIElement() const override final;
     virtual bool exposesTitleUIElement() const override final { return true; }

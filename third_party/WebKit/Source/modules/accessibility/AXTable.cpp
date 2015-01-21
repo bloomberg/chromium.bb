@@ -469,14 +469,9 @@ void AXTable::columnHeaders(AccessibilityChildrenVector& headers)
         return;
 
     updateChildrenIfNecessary();
-
-    unsigned colCount = m_columns.size();
-    for (unsigned k = 0; k < colCount; ++k) {
-        AXObject* header = toAXTableColumn(m_columns[k].get())->headerObject();
-        if (!header)
-            continue;
-        headers.append(header);
-    }
+    unsigned columnCount = m_columns.size();
+    for (unsigned c = 0; c < columnCount; c++)
+        toAXTableColumn(m_columns[c].get())->headerObjectsForColumn(headers);
 }
 
 void AXTable::rowHeaders(AccessibilityChildrenVector& headers)
@@ -485,12 +480,9 @@ void AXTable::rowHeaders(AccessibilityChildrenVector& headers)
         return;
 
     updateChildrenIfNecessary();
-
     unsigned rowCount = m_rows.size();
-    for (unsigned r = 0; r < rowCount; r++) {
-        if (AXObject* header = toAXTableRow(m_rows[r].get())->headerObject())
-            headers.append(header);
-    }
+    for (unsigned r = 0; r < rowCount; r++)
+        toAXTableRow(m_rows[r].get())->headerObjectsForRow(headers);
 }
 
 void AXTable::cells(AXObject::AccessibilityChildrenVector& cells)

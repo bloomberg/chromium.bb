@@ -46,7 +46,10 @@ public:
     static PassRefPtr<AXTableColumn> create(AXObjectCacheImpl*);
     virtual ~AXTableColumn();
 
+    // retrieves the topmost "column" header (th)
     AXObject* headerObject();
+    // retrieves the "column" headers (th, scope) from top to bottom
+    void headerObjectsForColumn(AccessibilityChildrenVector&);
 
     virtual AccessibilityRole roleValue() const override { return ColumnRole; }
 

@@ -52,6 +52,7 @@ PassRefPtr<AXTableColumn> AXTableColumn::create(AXObjectCacheImpl* axObjectCache
     return adoptRef(new AXTableColumn(axObjectCache));
 }
 
+
 void AXTableColumn::setParent(AXObject* parent)
 {
     AXMockObject::setParent(parent);
@@ -63,6 +64,39 @@ LayoutRect AXTableColumn::elementRect() const
 {
     // this will be filled in when addChildren is called
     return m_columnRect;
+}
+
+void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
+{
+    if (!m_parent)
+        return;
+
+    RenderObject* renderer = m_parent->renderer();
+    if (!renderer || !renderer->isTable())
+        return;
+
+    RenderTable* table = toRenderTable(renderer);
+    RenderTableSection* tableSection = table->topSection();
+    for (; tableSection; tableSection = table->sectionBelow(tableSection, SkipEmptySections)) {
+        unsigned numRows = tableSection->numRows();
+        for (unsigned r = 0; r < numRows; r++) {
+            RenderTableCell* renderCell = tableSection->primaryCellAt(r, m_columnIndex);
+            if (!renderCell)
+                continue;
+
+            // Whenever cell's col is less then current column index, we've found the cell with colspan.
+            // We do not need to add this cell, it's already been added.
+            if (renderCell->col() < m_columnIndex)
+                continue;
+
+            AXObject* cell = axObjectCache()->getOrCreate(renderCell->node());
+            if (!cell)
+                continue;
+
+            if (toAXTableCell(cell)->scanToDecideHeaderRole() == ColumnHeaderRole)
+                headers.append(cell);
+        }
+    }
 }
 
 AXObject* AXTableColumn::headerObject()

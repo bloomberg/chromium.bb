@@ -126,4 +126,21 @@ AXObject* AXTableRow::headerObject()
     return cell;
 }
 
+void AXTableRow::headerObjectsForRow(AccessibilityChildrenVector& headers)
+{
+    if (!m_renderer || !m_renderer->isTableRow())
+        return;
+
+    AccessibilityChildrenVector rowChildren = children();
+    unsigned childrenCount = rowChildren.size();
+    for (unsigned i = 0; i < childrenCount; i++) {
+        AXObject* cell = rowChildren[i].get();
+        if (!cell->isTableCell())
+            continue;
+
+        if (toAXTableCell(cell)->scanToDecideHeaderRole() == RowHeaderRole)
+            headers.append(cell);
+    }
+}
+
 } // namespace blink
