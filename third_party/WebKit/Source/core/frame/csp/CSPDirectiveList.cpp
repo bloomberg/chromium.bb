@@ -32,9 +32,7 @@ String getSha256String(const String& content)
 
     // For consistency with Subresource Integrity, we output base64url encoded
     // data in error messages.
-    String encoding = base64Encode(reinterpret_cast<char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
-    encoding.replace('+', '-').replace('/', '_');
-    return "sha256-" + encoding;
+    return "sha256-" + base64URLEncode(reinterpret_cast<char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
 }
 
 }

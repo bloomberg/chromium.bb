@@ -237,4 +237,14 @@ bool base64Decode(const String& in, Vector<char>& out, CharacterMatchFunctionPtr
     return base64DecodeInternal<UChar>(in.characters16(), in.length(), out, shouldIgnoreCharacter, policy);
 }
 
+String base64URLEncode(const char* data, unsigned length, Base64EncodePolicy policy)
+{
+    return base64Encode(data, length, policy).replace('+', '-').replace('/', '_');
+}
+
+String normalizeToBase64(const String& encoding)
+{
+    return String(encoding).replace('-', '+').replace('_', '/');
+}
+
 } // namespace WTF

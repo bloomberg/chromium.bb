@@ -79,8 +79,7 @@ static String algorithmToString(HashAlgorithm algorithm)
 static String digestToString(const DigestValue& digest)
 {
     // We always output base64url encoded data, even though we use base64 internally.
-    String output = base64Encode(reinterpret_cast<const char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
-    return output.replace('+', '-').replace('/', '_');
+    return base64URLEncode(reinterpret_cast<const char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
 }
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl, const String& resourceType)
@@ -219,7 +218,7 @@ bool SubresourceIntegrity::parseDigest(const UChar*& position, const UChar* end,
     }
 
     // We accept base64url encoding, but normalize to "normal" base64 internally:
-    digest = String(begin, position - begin).replace('-', '+').replace('_', '/');
+    digest = normalizeToBase64(String(begin, position - begin));
     return true;
 }
 

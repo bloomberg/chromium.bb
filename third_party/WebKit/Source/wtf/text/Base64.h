@@ -56,6 +56,12 @@ WTF_EXPORT bool base64Decode(const Vector<char>&, Vector<char>&, CharacterMatchF
 WTF_EXPORT bool base64Decode(const char*, unsigned, Vector<char>&, CharacterMatchFunctionPtr shouldIgnoreCharacter = 0, Base64DecodePolicy = Base64DoNotValidatePadding);
 WTF_EXPORT bool base64Decode(const UChar*, unsigned, Vector<char>&, CharacterMatchFunctionPtr shouldIgnoreCharacter = 0, Base64DecodePolicy = Base64DoNotValidatePadding);
 
+// Given an encoding in either base64 or base64url, returns a normalized
+// encoding in plain base64.
+WTF_EXPORT String normalizeToBase64(const String&);
+
+WTF_EXPORT String base64URLEncode(const char*, unsigned, Base64EncodePolicy = Base64DoNotInsertLFs);
+
 inline void base64Encode(const Vector<char>& in, Vector<char>& out, Base64EncodePolicy policy)
 {
     base64Encode(in.data(), in.size(), out, policy);

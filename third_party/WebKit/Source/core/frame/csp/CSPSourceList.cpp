@@ -335,7 +335,7 @@ bool CSPSourceList::parseHash(const UChar* begin, const UChar* end, DigestValue&
 
     Vector<char> hashVector;
     // We accept base64url-encoded data here by normalizing it to base64.
-    base64Decode(String(hashBegin, position - hashBegin).replace('-', '+').replace('_', '/'), hashVector);
+    base64Decode(normalizeToBase64(String(hashBegin, position - hashBegin)), hashVector);
     if (hashVector.size() > kMaxDigestSize)
         return false;
     hash.append(reinterpret_cast<uint8_t*>(hashVector.data()), hashVector.size());
