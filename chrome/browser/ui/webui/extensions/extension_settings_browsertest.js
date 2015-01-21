@@ -24,6 +24,10 @@ function ExtensionSettingsWebUITest() {}
 ExtensionSettingsWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
+  /** @override */
+  runAccessibilityChecks: true,
+
+  /** @override */
   accessibilityIssuesAreErrors: true,
 
   /** @override */
@@ -60,6 +64,34 @@ TEST_F('ExtensionSettingsWebUITest', 'testChromeSendHandled', function() {
   assertTrue($('pack-extension-overlay').classList.contains('showing'));
 });
 
+function AsyncExtensionSettingsWebUITest() {}
+
+AsyncExtensionSettingsWebUITest.prototype = {
+  __proto__: ExtensionSettingsWebUITest.prototype,
+
+  /** @override */
+  isAsync: true,
+};
+
+TEST_F('AsyncExtensionSettingsWebUITest', 'testDeveloperModeA11y', function() {
+  var devControl = $('dev-controls');
+
+  // Make sure developer controls are hidden before checkbox is clicked.
+  assertTrue(devControl.hidden);
+  $('toggle-dev-on').click();
+
+  document.addEventListener('webkitTransitionEnd', function f(e) {
+    if (e.target == devControl) {
+      // Make sure developer controls are not hidden after checkbox is clicked.
+      assertFalse(devControl.hidden);
+
+      document.removeEventListener(f, 'webkitTransitionEnd');
+      testDone();
+    }
+  });
+  ensureTransitionEndEvent(devControl, 500);
+});
+
 /**
  * TestFixture for extension settings WebUI testing (commands config edition).
  * @extends {testing.Test}
@@ -70,6 +102,10 @@ function ExtensionSettingsCommandsConfigWebUITest() {}
 ExtensionSettingsCommandsConfigWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
+  /** @override */
+  runAccessibilityChecks: true,
+
+  /** @override */
   accessibilityIssuesAreErrors: true,
 
   /**
