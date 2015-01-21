@@ -58,6 +58,10 @@ static const int kPcmRecoverIsSilent = 1;
 static const int kPcmRecoverIsSilent = 0;
 #endif
 
+// The output channel layout if we set up downmixing for the kDefaultDevice
+// device.
+static const ChannelLayout kDefaultOutputChannelLayout = CHANNEL_LAYOUT_STEREO;
+
 // While the "default" device may support multi-channel audio, in Alsa, only
 // the device names surround40, surround41, surround50, etc, have a defined
 // channel mapping according to Lennart:
@@ -368,9 +372,11 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
     // TODO(dalecurtis): Channel downmixing, upmixing, should be done in mixer;
     // volume adjust should use SSE optimized vector_fmul() prior to interleave.
     AudioBus* output_bus = audio_bus_.get();
+    ChannelLayout output_channel_layout = channel_layout_;
     if (channel_mixer_) {
       output_bus = mixed_audio_bus_.get();
       channel_mixer_->Transform(audio_bus_.get(), output_bus);
+      output_channel_layout = kDefaultOutputChannelLayout;
       // Adjust packet size for downmix.
       packet_size = packet_size / bytes_per_frame_ * bytes_per_output_frame_;
     }
@@ -378,7 +384,7 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
     // Reorder channels for 5.0, 5.1, and 7.1 to match ALSA's channel order,
     // which has front center at channel index 4 and LFE at channel index 5.
     // See http://ffmpeg.org/pipermail/ffmpeg-cvslog/2011-June/038454.html.
-    switch (channel_layout_) {
+    switch (output_channel_layout) {
       case media::CHANNEL_LAYOUT_5_0:
       case media::CHANNEL_LAYOUT_5_0_BACK:
         output_bus->SwapChannels(2, 3);
@@ -696,8 +702,8 @@ snd_pcm_t* AlsaPcmOutputStream::AutoSelectDevice(unsigned int latency) {
   // downmixing.
   uint32 default_channels = channels_;
   if (default_channels > 2) {
-    channel_mixer_.reset(new ChannelMixer(
-        channel_layout_, CHANNEL_LAYOUT_STEREO));
+    channel_mixer_.reset(
+        new ChannelMixer(channel_layout_, kDefaultOutputChannelLayout));
     default_channels = 2;
     mixed_audio_bus_ = AudioBus::Create(
         default_channels, audio_bus_->frames());
