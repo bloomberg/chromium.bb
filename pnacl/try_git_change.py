@@ -27,6 +27,7 @@ The trybot results will appear on the Rietveld code review created by
 import argparse
 import base64
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -108,8 +109,20 @@ def Main(args):
     WriteGitBundle(after_dir, component_name)
 
     patch_file = os.path.join(temp_dir, 'trybot_patch')
-    rc = subprocess.call(['diff', '-urN', 'a', 'b'], cwd=temp_dir,
-                         stdout=open(patch_file, 'w'))
+    with open(patch_file, 'w') as f:
+      rc = subprocess.call(['diff', '-urN', 'a', 'b'], cwd=temp_dir, stdout=f)
+
+    # massage patch file to resemble one produced by 'git diff --no-prefix'
+    # which is how 'git try' normally generates patches.  Unless we do this
+    # the code in bot_update.py fails to parse or apply the patch correctly.
+    with open(patch_file) as f:
+      patch_data = f.read()
+    patch_data = re.sub("^diff -urN", "diff --git", patch_data, flags=re.M)
+    patch_data = re.sub("^--- a/", "--- ", patch_data, flags=re.M)
+    patch_data = re.sub("^\+\+\+ b/", "+++ ", patch_data, flags=re.M)
+    with open(patch_file, 'w') as f:
+      f.write(patch_data)
+
     # diff returns 1 when the patch is non-empty.
     if rc != 1:
       raise Exception('diff failed with exit status %i' % rc)
