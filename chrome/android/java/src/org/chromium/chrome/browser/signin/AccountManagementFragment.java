@@ -23,6 +23,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -87,6 +88,13 @@ public class AccountManagementFragment extends PreferenceFragment
      * preference fragment. See account_management_preferences.xml for details.
      */
     private static final int FIRST_ACCOUNT_PREF_ORDER = 100;
+
+    /**
+     * SharedPreference name for the preference that disables signing out of Chrome.
+     * Signing out is forever disabled once Chrome signs the user in automatically
+     * if the device has a child account or if the device is an Android EDU device.
+     */
+    private static final String SIGN_OUT_ALLOWED = "auto_signed_in_school_account";
 
     private static final HashMap<String, Pair<String, Bitmap>> sToNamePicture =
             new HashMap<String, Pair<String, Bitmap>>();
@@ -211,7 +219,7 @@ public class AccountManagementFragment extends PreferenceFragment
                     if ((boolean) newValue) return true;
 
                     if (ChromeSigninController.get(getActivity()).isSignedIn()
-                            && getDelegate().getSignOutAllowedPreferenceValue(getActivity())) {
+                            && getSignOutAllowedPreferenceValue(getActivity())) {
                         AccountManagementScreenHelper.logEvent(
                                 ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
                                 mGaiaServiceType);
@@ -679,5 +687,26 @@ public class AccountManagementFragment extends PreferenceFragment
             }
         });
         startFetchingAccountInformation(context, profile, accountName);
+    }
+
+    /**
+     * @param context A context
+     * @return Whether the sign out is not disabled due to a child/EDU account.
+     */
+    private static boolean getSignOutAllowedPreferenceValue(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(SIGN_OUT_ALLOWED, true);
+    }
+
+    /**
+     * Sets the sign out allowed preference value.
+     * @param context A context
+     * @param isAllowed True if the sign out is not disabled due to a child/EDU account
+     */
+    public static void setSignOutAllowedPreferenceValue(Context context, boolean isAllowed) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putBoolean(SIGN_OUT_ALLOWED, isAllowed)
+                .apply();
     }
 }

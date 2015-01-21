@@ -54,12 +54,6 @@ public class AccountManagementScreenHelper {
          * @param account An account to customize
          */
         void openSyncCustomizationFragment(Preferences activity, Account account);
-
-        /**
-         * @return Whether sign out is allowed
-         * @param activity Fragment activity
-         */
-        boolean getSignOutAllowedPreferenceValue(Activity activity);
     }
 
     /**
