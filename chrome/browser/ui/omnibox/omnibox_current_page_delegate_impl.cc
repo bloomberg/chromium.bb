@@ -71,8 +71,12 @@ bool OmniboxCurrentPageDelegateImpl::ProcessExtensionKeyword(
   if (template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION)
     return false;
 
-  // Strip the keyword + leading space off the input.
-  size_t prefix_length = match.keyword.length() + 1;
+  // Strip the keyword + leading space off the input, but don't exceed
+  // fill_into_edit.  An obvious case is that the user may not have entered
+  // a leading space and is asking to launch this extension without any
+  // additional input.
+  size_t prefix_length =
+      std::min(match.keyword.length() + 1, match.fill_into_edit.length());
   extensions::ExtensionOmniboxEventRouter::OnInputEntered(
       controller_->GetWebContents(),
       template_url->GetExtensionId(),
