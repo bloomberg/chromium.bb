@@ -471,6 +471,8 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   size_ = size;
   if (host_)
     host_->SetViewportSize(size);
+  if (display_client_)
+    display_client_->display()->Resize(size);
   root_layer_->SetBounds(size);
 }
 
@@ -599,6 +601,7 @@ void CompositorImpl::CreateOutputSurface() {
 
     display_client_->set_surface_output_surface(surface_output_surface.get());
     surface_output_surface->set_display_client(display_client_.get());
+    display_client_->display()->Resize(size_);
     host_->SetOutputSurface(surface_output_surface.Pass());
   } else {
     host_->SetOutputSurface(real_output_surface.Pass());
