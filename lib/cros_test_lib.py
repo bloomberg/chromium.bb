@@ -1449,6 +1449,52 @@ def SetTimeZone(tz):
     time.tzset()
 
 
+class ListTestSuite(unittest.BaseTestSuite):
+  """Stub test suite to list all possible tests"""
+
+  # We hack in |top| for local recursive usage.
+  # pylint: disable=arguments-differ
+  def run(self, result, _debug=False, top=True):
+    """List all the tests this suite would have run."""
+    # Recursively build a list of all the tests and the descriptions.
+    # We do this so we can align the output when printing.
+    tests = []
+    # Walk all the tests that this suite itself holds.
+    for test in self:
+      if isinstance(test, type(self)):
+        tests += test(result, top=False)
+      else:
+        desc = test.shortDescription()
+        if desc is None:
+          desc = ''
+        tests.append((test.id(), desc))
+
+    if top:
+      if tests:
+        # Now that we have all the tests, print them in lined up columns.
+        maxlen = max(len(x[0]) for x in tests)
+        for test, desc in tests:
+          print('%-*s  %s' % (maxlen, test, desc))
+      return result
+    else:
+      return tests
+
+
+class ListTestLoader(unittest.TestLoader):
+  """Stub test loader to list all possible tests"""
+
+  suiteClass = ListTestSuite
+
+
+class ListTestRunner(object):
+  """Stub test runner to list all possible tests"""
+
+  def run(self, test):
+    result = unittest.TestResult()
+    test(result)
+    return result
+
+
 class TestProgram(unittest.TestProgram):
   """Helper wrapper around unittest.TestProgram
 
@@ -1488,6 +1534,8 @@ class TestProgram(unittest.TestProgram):
                         help='specific test classes or methods to run')
 
     # These are custom options we added.
+    parser.add_argument('-l', '--list', default=False, action='store_true',
+                        help='List all the available tests')
     parser.add_argument('--network', default=False, action='store_true',
                         help='Run tests that depend on good network '
                              'connectivity')
@@ -1508,6 +1556,10 @@ class TestProgram(unittest.TestProgram):
     # Then handle the chromite extensions.
     if opts.network:
       GlobalTestConfig.RUN_NETWORK_TESTS = True
+
+    if opts.list:
+      self.testRunner = ListTestRunner
+      self.testLoader = ListTestLoader()
 
     # Figure out which tests the user/unittest wants to run.
     if len(opts.tests) == 0 and self.defaultTest is None:
