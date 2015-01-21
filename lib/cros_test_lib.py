@@ -1502,6 +1502,22 @@ class ListTestRunner(object):
     return result
 
 
+class TraceTestRunner(unittest.TextTestRunner):
+  """Test runner that traces the test code as it runs
+
+  We insert tracing at the test runner level rather than test suite or test
+  case because both of those can execute code we've written (e.g. setUpClass
+  and setUp), and we want to trace that code too.
+  """
+
+  TRACE_KWARGS = {}
+
+  def run(self, test):
+    import trace
+    tracer = trace.Trace(**self.TRACE_KWARGS)
+    return tracer.runfunc(unittest.TextTestRunner.run, self, test)
+
+
 class TestProgram(unittest.TestProgram):
   """Helper wrapper around unittest.TestProgram
 
@@ -1547,6 +1563,19 @@ class TestProgram(unittest.TestProgram):
                         help='Run tests that depend on good network '
                              'connectivity')
 
+    # Note: The tracer module includes coverage options ...
+    group = parser.add_argument_group('Tracing options')
+    group.add_argument('--trace', default=False, action='store_true',
+                       help='Trace test execution')
+    group.add_argument('--ignore-module', default='',
+                       help='Ignore the specified modules (comma delimited)')
+    group.add_argument('--ignore-dir', default='',
+                       help='Ignore modules/packages in the specified dirs '
+                            '(comma delimited)')
+    group.add_argument('--no-ignore-system', default=True, action='store_false',
+                       dest='ignore_system',
+                       help='Do not ignore sys paths automatically')
+
     opts = parser.parse_args(argv[1:])
     opts.Freeze()
 
@@ -1567,6 +1596,30 @@ class TestProgram(unittest.TestProgram):
     if opts.list:
       self.testRunner = ListTestRunner
       self.testLoader = ListTestLoader()
+    elif opts.trace:
+      self.testRunner = TraceTestRunner
+
+      # Create the automatic ignore list based on sys.path.  We need to filter
+      # out chromite paths though as we might have automatic local paths in it.
+      auto_ignore = set()
+      if opts.ignore_system:
+        auto_ignore.add(os.path.join(constants.CHROMITE_DIR, 'third_party'))
+        for path in sys.path:
+          path = os.path.realpath(path)
+          if path.startswith(constants.CHROMITE_DIR):
+            continue
+          auto_ignore.add(path)
+
+      TraceTestRunner.TRACE_KWARGS = {
+          # Disable counting as it only applies to coverage collection.
+          'count': False,
+          # Enable tracing support since that's what we want w/--trace.
+          'trace': True,
+          # Enable relative timestamps before each traced line.
+          'timing': True,
+          'ignoremods': opts.ignore_module.split(','),
+          'ignoredirs': set(opts.ignore_dir.split(',')) | auto_ignore,
+      }
 
     # Figure out which tests the user/unittest wants to run.
     if len(opts.tests) == 0 and self.defaultTest is None:
