@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/dom/DocumentFragment.h"
@@ -55,7 +56,6 @@
 
 namespace blink {
 
-static const float undefinedPosition = -1;
 static const float undefinedSize = -1;
 
 static const CSSValueID displayWritingModeMap[] = {
@@ -69,6 +69,12 @@ static const CSSValueID displayAlignmentMap[] = {
 };
 static_assert(WTF_ARRAY_LENGTH(displayAlignmentMap) == VTTCue::NumberOfAlignments,
     "displayAlignmentMap should have the same number of elements as VTTCue::NumberOfAlignments");
+
+static const String& autoKeyword()
+{
+    DEFINE_STATIC_LOCAL(const String, autoString, ("auto"));
+    return autoString;
+}
 
 static const String& startKeyword()
 {
@@ -117,10 +123,15 @@ static const String& verticalGrowingRightKeyword()
     return verticallr;
 }
 
-static bool isInvalidPercentage(double value, ExceptionState& exceptionState)
+static bool isInvalidPercentage(double value)
 {
     ASSERT(std::isfinite(value));
-    if (value < 0 || value > 100) {
+    return value < 0 || value > 100;
+}
+
+static bool isInvalidPercentage(double value, ExceptionState& exceptionState)
+{
+    if (isInvalidPercentage(value)) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange<double>("value", value, 0, ExceptionMessages::InclusiveBound, 100, ExceptionMessages::InclusiveBound));
         return true;
     }
@@ -211,8 +222,8 @@ void VTTCueBox::trace(Visitor* visitor)
 VTTCue::VTTCue(Document& document, double startTime, double endTime, const String& text)
     : TextTrackCue(startTime, endTime)
     , m_text(text)
-    , m_linePosition(undefinedPosition)
-    , m_computedLinePosition(undefinedPosition)
+    , m_linePosition(std::numeric_limits<float>::quiet_NaN())
+    , m_computedLinePosition(std::numeric_limits<float>::quiet_NaN())
     , m_textPosition(50)
     , m_cueSize(100)
     , m_writingDirection(Horizontal)
@@ -306,20 +317,43 @@ void VTTCue::setSnapToLines(bool value)
     cueDidChange();
 }
 
-void VTTCue::setLine(double position, ExceptionState& exceptionState)
+bool VTTCue::lineIsAuto() const
 {
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-line
-    // On setting, if the text track cue snap-to-lines flag is not set, and the new
-    // value is negative or greater than 100, then throw an IndexSizeError exception.
-    if (!m_snapToLines && (position < 0 || position > 100)) {
-        exceptionState.throwDOMException(IndexSizeError, "The snap-to-lines flag is not set, and the value provided (" + String::number(position) + ") is not between 0 and 100.");
+    return std::isnan(m_linePosition);
+}
+
+void VTTCue::line(DoubleOrAutoKeyword& result) const
+{
+    if (lineIsAuto())
+        result.setAutoKeyword(autoKeyword());
+    else
+        result.setDouble(m_linePosition);
+}
+
+void VTTCue::setLine(const DoubleOrAutoKeyword& position, ExceptionState& exceptionState)
+{
+    // FIXME: Expecting bindings code to handle this case: https://crbug.com/450252.
+    if (position.isDouble() && !std::isfinite(position.getAsDouble())) {
+        exceptionState.throwTypeError("The provided double value is non-finite.");
         return;
     }
 
-    // Otherwise, set the text track cue line position to the new value.
-    float floatPosition = narrowPrecisionToFloat(position);
-    if (m_linePosition == floatPosition)
-        return;
+    // http://dev.w3.org/html5/webvtt/#dfn-vttcue-line
+    // On setting, the text track cue line position must be set to the new
+    // value; if the new value is the string "auto", then it must be
+    // interpreted as the special value auto.
+    // ("auto" is translated to NaN.)
+    float floatPosition;
+    if (position.isAutoKeyword()) {
+        if (lineIsAuto())
+            return;
+        floatPosition = std::numeric_limits<float>::quiet_NaN();
+    } else {
+        ASSERT(position.isDouble());
+        floatPosition = narrowPrecisionToFloat(position.getAsDouble());
+        if (m_linePosition == floatPosition)
+            return;
+    }
 
     cueWillChange();
     m_linePosition = floatPosition;
@@ -472,36 +506,47 @@ void VTTCue::notifyRegionWhenRemovingDisplayTree(bool notifyRegion)
 
 float VTTCue::calculateComputedLinePosition()
 {
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#text-track-cue-computed-line-position
+    // http://dev.w3.org/html5/webvtt/#dfn-text-track-cue-computed-line-position
+    // A text track cue has a text track cue computed line position whose value
+    // is that returned by the following algorithm, which is defined in terms
+    // of the other aspects of the cue:
 
-    // If the text track cue line position is numeric, then that is the text
-    // track cue computed line position.
-    if (m_linePosition != undefinedPosition)
+    // 1. If the text track cue line position is numeric, the text track cue
+    //    snap-to-lines flag of the text track cue is not set, and the text
+    //    track cue line position is negative or greater than 100, then return
+    //    100 and abort these steps.
+    if (!lineIsAuto() && !m_snapToLines && isInvalidPercentage(m_linePosition))
+        return 100;
+
+    // 2. If the text track cue line position is numeric, return the value of
+    //    the text track cue line position and abort these steps. (Either the
+    //    text track cue snap-to-lines flag is set, so any value, not just
+    //    those in the range 0..100, is valid, or the value is in the range
+    //    0..100 and is thus valid regardless of the value of that flag.)
+    if (!lineIsAuto())
         return m_linePosition;
 
-    // If the text track cue snap-to-lines flag of the text track cue is not
-    // set, the text track cue computed line position is the value 100;
+    // 3. If the text track cue snap-to-lines flag of the text track cue is not
+    //    set, return the value 100 and abort these steps. (The text track cue
+    //    line position is the special value auto.)
     if (!m_snapToLines)
         return 100;
 
-    // Otherwise, it is the value returned by the following algorithm:
-
-    // If cue is not associated with a text track, return -1 and abort these
-    // steps.
+    // 4. Let cue be the text track cue.
+    // 5. If cue is not in a list of cues of a text track, or if that text
+    //    track is not in the list of text tracks of a media element, return -1
+    //    and abort these steps.
     if (!track())
         return -1;
 
-    // Let n be the number of text tracks whose text track mode is showing or
-    // showing by default and that are in the media element's list of text
-    // tracks before track.
+    // 6. Let track be the text track whose list of cues the cue is in.
+    // 7. Let n be the number of text tracks whose text track mode is showing
+    //    and that are in the media element's list of text tracks before track.
     int n = track()->trackIndexRelativeToRenderedTracks();
 
-    // Increment n by one.
+    // 8. Increment n by one. / 9. Negate n. / 10. Return n.
     n++;
-
-    // Negate n.
     n = -n;
-
     return n;
 }
 
@@ -788,7 +833,7 @@ void VTTCue::updateDisplay(const IntSize& videoSize, HTMLDivElement& container)
     if (!m_snapToLines)
         UseCounter::count(document(), UseCounter::VTTCueRenderSnapToLinesFalse);
 
-    if (m_linePosition != undefinedPosition)
+    if (!lineIsAuto())
         UseCounter::count(document(), UseCounter::VTTCueRenderLineNotAuto);
 
     if (m_textPosition != 50)
@@ -829,6 +874,7 @@ void VTTCue::updateDisplay(const IntSize& videoSize, HTMLDivElement& container)
 FloatPoint VTTCue::getPositionCoordinates() const
 {
     // This method is used for setting x and y when snap to lines is not set.
+    ASSERT(std::isfinite(m_computedLinePosition));
 
     if (m_writingDirection == Horizontal && m_displayDirection == CSSValueLtr)
         return FloatPoint(m_textPosition, m_computedLinePosition);
@@ -1038,7 +1084,7 @@ void VTTCue::parseSettings(const String& inputString)
     if (m_regionId.isEmpty())
         return;
 
-    if (m_linePosition != undefinedPosition || m_cueSize != 100 || m_writingDirection != Horizontal)
+    if (!lineIsAuto() || m_cueSize != 100 || m_writingDirection != Horizontal)
         m_regionId = emptyString();
 }
 

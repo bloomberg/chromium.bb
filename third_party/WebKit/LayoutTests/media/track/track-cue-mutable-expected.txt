@@ -7,7 +7,7 @@ EXPECTED (textCue.endTime == '1') OK
 EXPECTED (textCue.pauseOnExit == 'false') OK
 EXPECTED (textCue.vertical == '') OK
 EXPECTED (textCue.snapToLines == 'true') OK
-EXPECTED (textCue.line == '-1') OK
+EXPECTED (textCue.line == 'auto') OK
 EXPECTED (textCue.position == '50') OK
 EXPECTED (textCue.size == '100') OK
 EXPECTED (textCue.align == 'middle') OK
@@ -32,13 +32,17 @@ EXPECTED (textCue.vertical == 'rl') OK
 RUN(textCue.snapToLines = false)
 EXPECTED (textCue.snapToLines == 'false') OK
 
-On setting, if the text track cue snap-to-lines flag is not set, and the new value is negative or greater than 100, then throw an IndexSizeError exception.
-http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-line
-TEST(textCue.line = -2) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'line' property on 'VTTCue': The snap-to-lines flag is not set, and the value provided (-2) is not between 0 and 100.) OK
-TEST(textCue.line = 102) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'line' property on 'VTTCue': The snap-to-lines flag is not set, and the value provided (102) is not between 0 and 100.) OK
-EXPECTED (textCue.line == '-1') OK
+On setting, the text track cue line position must be set to the new value; if the new value is the string 'auto', then it must be interpreted as the special value auto.
+http://dev.w3.org/html5/webvtt/#dfn-vttcue-line
+EXPECTED (textCue.line == 'auto') OK
+TEST(textCue.line = 'gazonk') THROWS("TypeError: Failed to set the 'line' property on 'VTTCue': 'gazonk' is not a valid enum value.") OK
+EXPECTED (textCue.line == 'auto') OK
 RUN(textCue.line = 42)
 EXPECTED (textCue.line == '42') OK
+RUN(textCue.line = -2)
+EXPECTED (textCue.line == '-2') OK
+RUN(textCue.line = 102)
+EXPECTED (textCue.line == '102') OK
 RUN(textCue.snapToLines = true)
 RUN(textCue.line = -2)
 EXPECTED (textCue.line == '-2') OK

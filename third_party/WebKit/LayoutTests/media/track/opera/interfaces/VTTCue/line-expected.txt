@@ -1,5 +1,0 @@
- This is a testharness.js-based test.
-FAIL VTTCue.line, script-created cue assert_equals: expected -2 but got -1
-PASS VTTCue.line, parsed cue 
-Harness: the test ran to completion.
-

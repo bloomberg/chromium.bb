@@ -36,6 +36,7 @@
 namespace blink {
 
 class Document;
+class DoubleOrAutoKeyword;
 class ExecutionContext;
 class VTTCue;
 class VTTScanner;
@@ -76,8 +77,8 @@ public:
     bool snapToLines() const { return m_snapToLines; }
     void setSnapToLines(bool);
 
-    double line() const { return m_linePosition; }
-    void setLine(double, ExceptionState&);
+    void line(DoubleOrAutoKeyword&) const;
+    void setLine(const DoubleOrAutoKeyword&, ExceptionState&);
 
     double position() const { return m_textPosition; }
     void setPosition(double, ExceptionState&);
@@ -156,6 +157,7 @@ private:
     void copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* root);
 
     FloatPoint getPositionCoordinates() const;
+    bool lineIsAuto() const;
 
     void calculateDisplayParameters();
 
