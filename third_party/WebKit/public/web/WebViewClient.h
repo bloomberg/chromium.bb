@@ -186,8 +186,11 @@ public:
     virtual void focusNext() { }
     virtual void focusPrevious() { }
 
-    // Called when a new node gets focused.
+    // FIXME: remove this function.
     virtual void focusedNodeChanged(const WebNode&) { }
+    // Called when a new node gets focused. |fromNode| is the previously focused node, |toNode|
+    // is the newly focused node. Either can be null.
+    virtual void focusedNodeChanged(const WebNode& fromNode, const WebNode& toNode) { }
 
     // Indicates two things:
     //   1) This view may have a new layout now.

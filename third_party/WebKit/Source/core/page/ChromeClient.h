@@ -84,7 +84,7 @@ public:
     virtual bool canTakeFocus(WebFocusType) = 0;
     virtual void takeFocus(WebFocusType) = 0;
 
-    virtual void focusedNodeChanged(Node*) = 0;
+    virtual void focusedNodeChanged(Node*, Node*) = 0;
 
     virtual void focusedFrameChanged(LocalFrame*) = 0;
 

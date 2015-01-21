@@ -76,7 +76,7 @@ public:
     virtual void focus() override;
     virtual bool canTakeFocus(WebFocusType) override;
     virtual void takeFocus(WebFocusType) override;
-    virtual void focusedNodeChanged(Node*) override;
+    virtual void focusedNodeChanged(Node* fromNode, Node* toNode) override;
     virtual void focusedFrameChanged(LocalFrame*) override;
     virtual Page* createWindow(
         LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) override;

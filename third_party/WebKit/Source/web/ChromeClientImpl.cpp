@@ -197,13 +197,15 @@ void ChromeClientImpl::takeFocus(WebFocusType type)
         m_webView->client()->focusNext();
 }
 
-void ChromeClientImpl::focusedNodeChanged(Node* node)
+void ChromeClientImpl::focusedNodeChanged(Node* fromNode, Node* toNode)
 {
-    m_webView->client()->focusedNodeChanged(WebNode(node));
+    // FIXME: remove.
+    m_webView->client()->focusedNodeChanged(WebNode(toNode));
+    m_webView->client()->focusedNodeChanged(WebNode(fromNode), WebNode(toNode));
 
     WebURL focusURL;
-    if (node && node->isElementNode() && toElement(node)->isLiveLink())
-        focusURL = toElement(node)->hrefURL();
+    if (toNode && toNode->isElementNode() && toElement(toNode)->isLiveLink())
+        focusURL = toElement(toNode)->hrefURL();
     m_webView->client()->setKeyboardFocusURL(focusURL);
 }
 

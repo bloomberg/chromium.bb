@@ -83,7 +83,7 @@ public:
     bool canTakeFocus(WebFocusType) const;
     void takeFocus(WebFocusType) const;
 
-    void focusedNodeChanged(Node*) const;
+    void focusedNodeChanged(Node*, Node*) const;
 
     void show(NavigationPolicy = NavigationPolicyIgnore) const;
 

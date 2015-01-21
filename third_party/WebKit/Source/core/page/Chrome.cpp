@@ -114,9 +114,9 @@ void Chrome::takeFocus(WebFocusType type) const
     m_client->takeFocus(type);
 }
 
-void Chrome::focusedNodeChanged(Node* node) const
+void Chrome::focusedNodeChanged(Node* fromNode, Node* toNode) const
 {
-    m_client->focusedNodeChanged(node);
+    m_client->focusedNodeChanged(fromNode, toNode);
 }
 
 void Chrome::show(NavigationPolicy policy) const
