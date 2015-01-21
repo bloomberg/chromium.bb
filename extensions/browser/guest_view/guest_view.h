@@ -22,25 +22,24 @@ class GuestView : public GuestViewBase {
   }
 
   static T* From(int embedder_process_id, int guest_instance_id) {
-    GuestViewBase* guest =
-        GuestViewBase::From(embedder_process_id, guest_instance_id);
+    auto guest = GuestViewBase::From(embedder_process_id, guest_instance_id);
     if (!guest)
       return NULL;
     return guest->As<T>();
   }
 
   static T* FromWebContents(content::WebContents* contents) {
-    GuestViewBase* guest = GuestViewBase::FromWebContents(contents);
+    auto guest = GuestViewBase::FromWebContents(contents);
     return guest ? guest->As<T>() : NULL;
   }
 
   static T* FromFrameID(int render_process_id, int render_frame_id) {
-    content::RenderFrameHost* render_frame_host =
+    auto render_frame_host =
         content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-    if (!render_frame_host) {
+    if (!render_frame_host)
       return NULL;
-    }
-    content::WebContents* web_contents =
+
+    auto web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
     return FromWebContents(web_contents);
   }
@@ -62,11 +61,9 @@ class GuestView : public GuestViewBase {
   }
 
  protected:
-  GuestView(content::BrowserContext* browser_context,
-            content::WebContents* owner_web_contents,
-            int guest_instance_id)
-      : GuestViewBase(browser_context, owner_web_contents, guest_instance_id) {}
-  virtual ~GuestView() {}
+  GuestView(content::WebContents* owner_web_contents, int guest_instance_id)
+      : GuestViewBase(owner_web_contents, guest_instance_id) {}
+  ~GuestView() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestView);

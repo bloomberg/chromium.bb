@@ -37,12 +37,9 @@ namespace extensions {
 const char ExtensionOptionsGuest::Type[] = "extensionoptions";
 
 ExtensionOptionsGuest::ExtensionOptionsGuest(
-    content::BrowserContext* browser_context,
     content::WebContents* owner_web_contents,
     int guest_instance_id)
-    : GuestView<ExtensionOptionsGuest>(browser_context,
-                                       owner_web_contents,
-                                       guest_instance_id),
+    : GuestView<ExtensionOptionsGuest>(owner_web_contents, guest_instance_id),
       extension_options_guest_delegate_(
           extensions::ExtensionsAPIClient::Get()
               ->CreateExtensionOptionsGuestDelegate(this)),
@@ -54,12 +51,9 @@ ExtensionOptionsGuest::~ExtensionOptionsGuest() {
 
 // static
 extensions::GuestViewBase* ExtensionOptionsGuest::Create(
-    content::BrowserContext* browser_context,
     content::WebContents* owner_web_contents,
     int guest_instance_id) {
-  return new ExtensionOptionsGuest(browser_context,
-                                   owner_web_contents,
-                                   guest_instance_id);
+  return new ExtensionOptionsGuest(owner_web_contents, guest_instance_id);
 }
 
 void ExtensionOptionsGuest::CreateWebContents(

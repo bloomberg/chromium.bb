@@ -88,20 +88,14 @@ bool AppViewGuest::CompletePendingRequest(
 }
 
 // static
-GuestViewBase* AppViewGuest::Create(content::BrowserContext* browser_context,
-                                    content::WebContents* owner_web_contents,
+GuestViewBase* AppViewGuest::Create(content::WebContents* owner_web_contents,
                                     int guest_instance_id) {
-  return new AppViewGuest(browser_context,
-                          owner_web_contents,
-                          guest_instance_id);
+  return new AppViewGuest(owner_web_contents, guest_instance_id);
 }
 
-AppViewGuest::AppViewGuest(content::BrowserContext* browser_context,
-                           content::WebContents* owner_web_contents,
+AppViewGuest::AppViewGuest(content::WebContents* owner_web_contents,
                            int guest_instance_id)
-    : GuestView<AppViewGuest>(browser_context,
-                              owner_web_contents,
-                              guest_instance_id),
+    : GuestView<AppViewGuest>(owner_web_contents, guest_instance_id),
       app_view_guest_delegate_(
           ExtensionsAPIClient::Get()->CreateAppViewGuestDelegate()),
       weak_ptr_factory_(this) {

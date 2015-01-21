@@ -42,12 +42,12 @@ namespace extensions {
 
 namespace {
 
-typedef std::map<std::string, GuestViewBase::GuestCreationCallback>
-    GuestViewCreationMap;
+using GuestViewCreationMap =
+    std::map<std::string, GuestViewBase::GuestCreationCallback>;
 static base::LazyInstance<GuestViewCreationMap> guest_view_registry =
     LAZY_INSTANCE_INITIALIZER;
 
-typedef std::map<WebContents*, GuestViewBase*> WebContentsGuestViewMap;
+using WebContentsGuestViewMap = std::map<WebContents*, GuestViewBase*>;
 static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -137,11 +137,10 @@ class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(OpenerLifetimeObserver);
 };
 
-GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
-                             content::WebContents* owner_web_contents,
+GuestViewBase::GuestViewBase(content::WebContents* owner_web_contents,
                              int guest_instance_id)
     : owner_web_contents_(owner_web_contents),
-      browser_context_(browser_context),
+      browser_context_(owner_web_contents->GetBrowserContext()),
       guest_instance_id_(guest_instance_id),
       view_instance_id_(guestview::kInstanceIDNone),
       element_instance_id_(guestview::kInstanceIDNone),
@@ -265,7 +264,6 @@ void GuestViewBase::RegisterGuestViewType(
 
 // static
 GuestViewBase* GuestViewBase::Create(
-    content::BrowserContext* browser_context,
     content::WebContents* owner_web_contents,
     int guest_instance_id,
     const std::string& view_type) {
@@ -277,7 +275,7 @@ GuestViewBase* GuestViewBase::Create(
     NOTREACHED();
     return nullptr;
   }
-  return it->second.Run(browser_context, owner_web_contents, guest_instance_id);
+  return it->second.Run(owner_web_contents, guest_instance_id);
 }
 
 // static

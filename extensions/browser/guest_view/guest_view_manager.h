@@ -65,8 +65,8 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
       content::WebContents* owner_web_contents,
       int element_instance_id);
 
-  typedef base::Callback<void(content::WebContents*)>
-      WebContentsCreatedCallback;
+  using WebContentsCreatedCallback =
+      base::Callback<void(content::WebContents*)>;
   void CreateGuest(const std::string& view_type,
                    content::WebContents* owner_web_contents,
                    const base::DictionaryValue& create_params,
@@ -117,7 +117,7 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   static GuestViewManagerFactory* factory_;
 
   // Contains guests' WebContents, mapping from their instance ids.
-  typedef std::map<int, content::WebContents*> GuestInstanceMap;
+  using GuestInstanceMap = std::map<int, content::WebContents*>;
   GuestInstanceMap guest_web_contents_by_instance_id_;
 
   struct ElementInstanceKey {
@@ -145,10 +145,11 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
     }
   };
 
-  typedef std::map<ElementInstanceKey, int> GuestInstanceIDMap;
+  using GuestInstanceIDMap = std::map<ElementInstanceKey, int>;
   GuestInstanceIDMap instance_id_map_;
+
   // The reverse map of GuestInstanceIDMap.
-  typedef std::map<int, ElementInstanceKey> GuestInstanceIDReverseMap;
+  using GuestInstanceIDReverseMap = std::map<int, ElementInstanceKey>;
   GuestInstanceIDReverseMap reverse_instance_id_map_;
 
   int current_instance_id_;

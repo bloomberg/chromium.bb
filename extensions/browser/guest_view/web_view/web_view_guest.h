@@ -36,8 +36,7 @@ class WebViewInternalFindFunction;
 class WebViewGuest : public GuestView<WebViewGuest>,
                      public content::NotificationObserver {
  public:
-  static GuestViewBase* Create(content::BrowserContext* browser_context,
-                               content::WebContents* owner_web_contents,
+  static GuestViewBase* Create(content::WebContents* owner_web_contents,
                                int guest_instance_id);
 
   // For WebViewGuest, we create special guest processes, which host the
@@ -190,9 +189,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Reload the guest.
   void Reload();
 
-  typedef base::Callback<void(bool /* allow */,
-                              const std::string& /* user_input */)>
-      PermissionResponseCallback;
+  using PermissionResponseCallback =
+      base::Callback<void(bool /* allow */,
+                          const std::string& /* user_input */)>;
   int RequestPermission(
       WebViewPermissionType permission_type,
       const base::DictionaryValue& request_info,
@@ -241,9 +240,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
  private:
   friend class WebViewPermissionHelper;
 
-  WebViewGuest(content::BrowserContext* browser_context,
-               content::WebContents* owner_web_contents,
-               int guest_instance_id);
+  WebViewGuest(content::WebContents* owner_web_contents, int guest_instance_id);
 
   ~WebViewGuest() override;
 
@@ -364,7 +361,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
         changed(false) {}
   };
 
-  typedef std::map<WebViewGuest*, NewWindowInfo> PendingWindowMap;
+  using PendingWindowMap = std::map<WebViewGuest*, NewWindowInfo>;
   PendingWindowMap pending_new_windows_;
 
   // Stores the current zoom factor.

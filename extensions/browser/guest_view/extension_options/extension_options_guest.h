@@ -23,7 +23,6 @@ class ExtensionOptionsGuest
  public:
   static const char Type[];
   static extensions::GuestViewBase* Create(
-      content::BrowserContext* browser_context,
       content::WebContents* owner_web_contents,
       int guest_instance_id);
 
@@ -67,8 +66,7 @@ class ExtensionOptionsGuest
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  ExtensionOptionsGuest(content::BrowserContext* browser_context,
-                        content::WebContents* owner_web_contents,
+  ExtensionOptionsGuest(content::WebContents* owner_web_contents,
                         int guest_instance_id);
   ~ExtensionOptionsGuest() override;
   void OnRequest(const ExtensionHostMsg_Request_Params& params);

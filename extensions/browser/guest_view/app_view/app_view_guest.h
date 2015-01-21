@@ -31,8 +31,7 @@ class AppViewGuest : public GuestView<AppViewGuest>,
       int guest_instance_id,
       const std::string& guest_extension_id);
 
-  static GuestViewBase* Create(content::BrowserContext* browser_context,
-                               content::WebContents* owner_web_contents,
+  static GuestViewBase* Create(content::WebContents* owner_web_contents,
                                int guest_instance_id);
 
   // ExtensionFunctionDispatcher::Delegate implementation.
@@ -64,9 +63,7 @@ class AppViewGuest : public GuestView<AppViewGuest>,
   void SetAppDelegateForTest(AppDelegate* delegate);
 
  private:
-  AppViewGuest(content::BrowserContext* browser_context,
-               content::WebContents* owner_web_contents,
-               int guest_instance_id);
+  AppViewGuest(content::WebContents* owner_web_contents, int guest_instance_id);
 
   ~AppViewGuest() override;
 

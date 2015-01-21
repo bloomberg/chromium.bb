@@ -56,15 +56,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
     return NULL;
   }
 
-  typedef base::Callback<GuestViewBase*(
-      content::BrowserContext*,
-      content::WebContents*,
-      int)> GuestCreationCallback;
+  using GuestCreationCallback =
+      base::Callback<GuestViewBase*(content::WebContents*, int)>;
   static void RegisterGuestViewType(const std::string& view_type,
                                     const GuestCreationCallback& callback);
 
-  static GuestViewBase* Create(content::BrowserContext* browser_context,
-                               content::WebContents* owner_web_contents,
+  static GuestViewBase* Create(content::WebContents* owner_web_contents,
                                int guest_instance_id,
                                const std::string& view_type);
 
@@ -172,8 +169,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // This method is to be implemented by the derived class. Given a set of
   // initialization parameters, a concrete subclass of GuestViewBase can
   // create a specialized WebContents that it returns back to GuestViewBase.
-  typedef base::Callback<void(content::WebContents*)>
-      WebContentsCreatedCallback;
+  using WebContentsCreatedCallback =
+      base::Callback<void(content::WebContents*)>;
   virtual void CreateWebContents(
       const base::DictionaryValue& create_params,
       const WebContentsCreatedCallback& callback) = 0;
@@ -276,8 +273,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void DispatchEventToEmbedder(Event* event);
 
  protected:
-  GuestViewBase(content::BrowserContext* browser_context,
-                content::WebContents* owner_web_contents,
+  GuestViewBase(content::WebContents* owner_web_contents,
                 int guest_instance_id);
 
   ~GuestViewBase() override;
@@ -325,7 +321,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // guest will also self-destruct.
   content::WebContents* owner_web_contents_;
   std::string owner_extension_id_;
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* const browser_context_;
 
   // |guest_instance_id_| is a profile-wide unique identifier for a guest
   // WebContents.

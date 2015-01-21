@@ -140,12 +140,8 @@ void GuestViewManager::CreateGuest(const std::string& view_type,
                                    content::WebContents* owner_web_contents,
                                    const base::DictionaryValue& create_params,
                                    const WebContentsCreatedCallback& callback) {
-  int guest_instance_id = GetNextInstanceID();
-  GuestViewBase* guest =
-      GuestViewBase::Create(context_,
-                            owner_web_contents,
-                            guest_instance_id,
-                            view_type);
+  auto guest =
+      GuestViewBase::Create(owner_web_contents, GetNextInstanceID(), view_type);
   if (!guest) {
     callback.Run(nullptr);
     return;
@@ -157,18 +153,13 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
     const std::string& view_type,
     content::WebContents* owner_web_contents,
     const content::WebContents::CreateParams& create_params) {
-  int guest_instance_id = GetNextInstanceID();
-  GuestViewBase* guest =
-      GuestViewBase::Create(context_,
-                            owner_web_contents,
-                            guest_instance_id,
-                            view_type);
+  auto guest =
+      GuestViewBase::Create(owner_web_contents, GetNextInstanceID(), view_type);
   if (!guest)
     return nullptr;
   content::WebContents::CreateParams guest_create_params(create_params);
   guest_create_params.guest_delegate = guest;
-  content::WebContents* guest_web_contents =
-      WebContents::Create(guest_create_params);
+  auto guest_web_contents = WebContents::Create(guest_create_params);
   guest->InitWithWebContents(base::DictionaryValue(), guest_web_contents);
   return guest_web_contents;
 }

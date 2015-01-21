@@ -150,12 +150,9 @@ void RemoveWebViewEventListenersOnIOThread(
 }  // namespace
 
 // static
-GuestViewBase* WebViewGuest::Create(content::BrowserContext* browser_context,
-                                    content::WebContents* owner_web_contents,
+GuestViewBase* WebViewGuest::Create(content::WebContents* owner_web_contents,
                                     int guest_instance_id) {
-  return new WebViewGuest(browser_context,
-                          owner_web_contents,
-                          guest_instance_id);
+  return new WebViewGuest(owner_web_contents, guest_instance_id);
 }
 
 // static
@@ -184,8 +181,8 @@ bool WebViewGuest::GetGuestPartitionConfigForSite(
 // static
 const char WebViewGuest::Type[] = "webview";
 
-typedef std::pair<int, int> WebViewKey;
-typedef std::map<WebViewKey, int> WebViewKeyToIDMap;
+using WebViewKey = std::pair<int, int>;
+using WebViewKeyToIDMap = std::map<WebViewKey, int>;
 static base::LazyInstance<WebViewKeyToIDMap> web_view_key_to_id_map =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -644,12 +641,9 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
   return true;
 }
 
-WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
-                           content::WebContents* owner_web_contents,
+WebViewGuest::WebViewGuest(content::WebContents* owner_web_contents,
                            int guest_instance_id)
-    : GuestView<WebViewGuest>(browser_context,
-                              owner_web_contents,
-                              guest_instance_id),
+    : GuestView<WebViewGuest>(owner_web_contents, guest_instance_id),
       rules_registry_id_(RulesRegistryService::kInvalidRulesRegistryID),
       find_helper_(this),
       is_overriding_user_agent_(false),

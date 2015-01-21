@@ -51,21 +51,15 @@ const char MimeHandlerViewGuest::Type[] = "mimehandler";
 
 // static
 GuestViewBase* MimeHandlerViewGuest::Create(
-    content::BrowserContext* browser_context,
     content::WebContents* owner_web_contents,
     int guest_instance_id) {
-  return new MimeHandlerViewGuest(browser_context,
-                                  owner_web_contents,
-                                  guest_instance_id);
+  return new MimeHandlerViewGuest(owner_web_contents, guest_instance_id);
 }
 
 MimeHandlerViewGuest::MimeHandlerViewGuest(
-    content::BrowserContext* browser_context,
     content::WebContents* owner_web_contents,
     int guest_instance_id)
-    : GuestView<MimeHandlerViewGuest>(browser_context,
-                                      owner_web_contents,
-                                      guest_instance_id),
+    : GuestView<MimeHandlerViewGuest>(owner_web_contents, guest_instance_id),
       delegate_(ExtensionsAPIClient::Get()->CreateMimeHandlerViewGuestDelegate(
           this)) {
 }
