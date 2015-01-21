@@ -44,7 +44,7 @@ message Study {
 
   // An experiment within the study.
   //
-  // Next tag: 10
+  // Next tag: 11
   message Experiment {
     // A named parameter value for this experiment.
     //
@@ -75,6 +75,9 @@ message Study {
 
     // Optional id used to uniquely identify this experiment for Google Update.
     optional uint64 google_update_experiment_id = 4;
+
+    // Optional id used to uniquely identify this experiment for Chrome Sync.
+    optional uint64 chrome_sync_experiment_id = 10;
 
     // Optional name of a Chrome flag that, when present, causes this experiment
     // to be forced. If the forcing_flag field is set, users will not be

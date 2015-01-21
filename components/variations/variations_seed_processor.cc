@@ -58,6 +58,14 @@ void RegisterVariationIds(const Study_Experiment& experiment,
                                     experiment.name(),
                                     variation_id);
   }
+  if (experiment.has_chrome_sync_experiment_id()) {
+    const VariationID variation_id =
+        static_cast<VariationID>(experiment.chrome_sync_experiment_id());
+    AssociateGoogleVariationIDForce(CHROME_SYNC_SERVICE,
+                                    trial_name,
+                                    experiment.name(),
+                                    variation_id);
+  }
 }
 
 // Executes |callback| on every override defined by |experiment|.

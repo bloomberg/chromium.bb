@@ -60,6 +60,9 @@ enum IDCollectionKey {
   // This collection is used by Google update services, transmitted through the
   // Google Update experiment labels.
   GOOGLE_UPDATE_SERVICE,
+  // This collection is used by Chrome Sync services, transmitted through the
+  // Chrome Sync experiment labels.
+  CHROME_SYNC_SERVICE,
   // The total count of collections.
   ID_COLLECTION_COUNT,
 };
