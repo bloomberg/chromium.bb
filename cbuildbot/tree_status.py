@@ -17,6 +17,7 @@ import urllib2
 
 from chromite.cbuildbot import constants
 from chromite.lib import alerts
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 
@@ -379,7 +380,10 @@ def SendHealthAlert(builder_run, subject, body, extra_fields=None):
                   to be added to the message. Custom field names should begin
                   with the prefix 'X-'.
   """
-  if builder_run.InProduction():
+  # TODO(davidjames): Implement the ability to send emails in GCE.
+  # https://cloud.google.com/compute/docs/sending-mail
+  in_golo = cros_build_lib.HostIsCIBuilder(golo_only=True)
+  if in_golo and builder_run.InProduction():
     alerts.SendEmail(subject,
                      GetHealthAlertRecipients(builder_run),
                      message=body,

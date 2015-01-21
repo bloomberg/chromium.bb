@@ -24,6 +24,7 @@ from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.lib import alerts
 from chromite.lib import cidb
+from chromite.lib import cros_build_lib
 from chromite.lib import fake_cidb
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -222,6 +223,9 @@ class ReportStageTest(AbstractReportStageTest):
 
   def testAlertEmail(self):
     """Send out alerts when streak counter reaches the threshold."""
+    self.PatchObject(cbuildbot_run._BuilderRunBase,
+                     'InProduction', return_value=True)
+    self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
     self._Prepare(extra_config={'health_threshold': 3,
                                 'health_alert_recipients': ['foo@bar.org']})
     self._SetupUpdateStreakCounter(counter_value=-3)
@@ -234,6 +238,9 @@ class ReportStageTest(AbstractReportStageTest):
 
   def testAlertEmailOnFailingStreak(self):
     """Continue sending out alerts when streak counter exceeds the threshold."""
+    self.PatchObject(cbuildbot_run._BuilderRunBase,
+                     'InProduction', return_value=True)
+    self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
     self._Prepare(extra_config={'health_threshold': 3,
                                 'health_alert_recipients': ['foo@bar.org']})
     self._SetupUpdateStreakCounter(counter_value=-5)

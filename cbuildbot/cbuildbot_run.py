@@ -728,9 +728,7 @@ class _BuilderRunBase(object):
 
   def InProduction(self):
     """Return True if this is a production run."""
-    options = self.options
-    pre_cq = options.remote_trybot and (options.pre_cq or self.config.pre_cq)
-    return (options.buildbot or pre_cq) and not options.debug
+    return cidb.CIDBConnectionFactory.GetCIDBConnectionType() == 'prod'
 
   @classmethod
   def GetVersionInfo(cls, buildroot):

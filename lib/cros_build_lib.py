@@ -776,12 +776,26 @@ def GetHostDomain():
   return domain if domain else 'localdomain'
 
 
-def HostIsCIBuilder(fq_hostname=None):
-  """Return True iff a host is a continuous-integration builder."""
+def HostIsCIBuilder(fq_hostname=None, golo_only=False, gce_only=False):
+  """Return True iff a host is a continuous-integration builder.
+
+  Args:
+    fq_hostname: The fully qualified hostname. By default, we fetch it for you.
+    golo_only: Only return True if the host is in the Chrome Golo. Defaults to
+      False.
+    gce_only: Only return True if the host is in the Chrome GCE block. Defaults
+      to False.
+  """
   if not fq_hostname:
     fq_hostname = GetHostName(fully_qualified=True)
-  return (fq_hostname.endswith('.' + constants.GOLO_DOMAIN) or
-          fq_hostname.endswith('.' + constants.CHROME_DOMAIN))
+  in_golo = fq_hostname.endswith('.' + constants.GOLO_DOMAIN)
+  in_gce = fq_hostname.endswith('.' + constants.CHROME_DOMAIN)
+  if golo_only:
+    return in_golo
+  elif gce_only:
+    return in_gce
+  else:
+    return in_golo or in_gce
 
 
 def TimedCommand(functor, *args, **kwargs):
