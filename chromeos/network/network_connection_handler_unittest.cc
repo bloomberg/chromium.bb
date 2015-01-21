@@ -24,8 +24,8 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_constants.h"
-#include "crypto/nss_util_internal.h"
-#include "crypto/scoped_test_nss_chromeos_user.h"
+#include "crypto/scoped_nss_types.h"
+#include "crypto/scoped_test_nss_db.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/nss_cert_database_chromeos.h"
@@ -34,12 +34,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-// http://crbug.com/418369
-#ifdef NDEBUG
-
 namespace {
 
 const char* kSuccessResult = "success";
+const char* kUsernameHash = "userhash";
 
 void ConfigureCallback(const dbus::ObjectPath& result) {
 }
@@ -55,23 +53,18 @@ namespace chromeos {
 class NetworkConnectionHandlerTest : public testing::Test {
  public:
   NetworkConnectionHandlerTest()
-      : user_("userhash"),
-        test_manager_client_(NULL),
-        test_service_client_(NULL) {}
+      : test_manager_client_(nullptr), test_service_client_(nullptr) {}
 
-  virtual ~NetworkConnectionHandlerTest() {
-  }
+  ~NetworkConnectionHandlerTest() override {}
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(user_.constructed_successfully());
-    user_.FinishInit();
+  void SetUp() override {
+    ASSERT_TRUE(test_nssdb_.is_open());
 
-    test_nssdb_.reset(new net::NSSCertDatabaseChromeOS(
-        crypto::GetPublicSlotForChromeOSUser(user_.username_hash()),
-        crypto::GetPrivateSlotForChromeOSUser(
-            user_.username_hash(),
-            base::Callback<void(crypto::ScopedPK11Slot)>())));
-    test_nssdb_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
+    // Use the same DB for public and private slot.
+    test_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())),
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot()))));
+    test_nsscertdb_->SetSlowTaskRunnerForTest(message_loop_.task_runner());
 
     CertLoader::Initialize();
     CertLoader::ForceHardwareBackedForTesting();
@@ -91,23 +84,23 @@ class NetworkConnectionHandlerTest : public testing::Test {
     dbus_manager->GetShillProfileClient()->GetTestInterface()->AddProfile(
         "shared_profile_path", std::string() /* shared profile */);
     dbus_manager->GetShillProfileClient()->GetTestInterface()->AddProfile(
-        "user_profile_path", user_.username_hash());
+        "user_profile_path", kUsernameHash);
 
     base::RunLoop().RunUntilIdle();
     LoginState::Initialize();
     network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
     network_config_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
-            network_state_handler_.get(), NULL /* network_device_handler */));
+            network_state_handler_.get(),
+            nullptr /* network_device_handler */));
 
     network_profile_handler_.reset(new NetworkProfileHandler());
     network_profile_handler_->Init();
 
     managed_config_handler_.reset(new ManagedNetworkConfigurationHandlerImpl());
-    managed_config_handler_->Init(network_state_handler_.get(),
-                                  network_profile_handler_.get(),
-                                  network_config_handler_.get(),
-                                  NULL /* network_device_handler */);
+    managed_config_handler_->Init(
+        network_state_handler_.get(), network_profile_handler_.get(),
+        network_config_handler_.get(), nullptr /* network_device_handler */);
 
     network_connection_handler_.reset(new NetworkConnectionHandler);
     network_connection_handler_->Init(network_state_handler_.get(),
@@ -117,7 +110,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     managed_config_handler_.reset();
     network_profile_handler_.reset();
     network_connection_handler_.reset();
@@ -192,7 +185,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
   }
 
   void StartCertLoader() {
-    CertLoader::Get()->StartWithNSSDB(test_nssdb_.get());
+    CertLoader::Get()->StartWithNSSDB(test_nsscertdb_.get());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -203,46 +196,27 @@ class NetworkConnectionHandlerTest : public testing::Test {
   }
 
   scoped_refptr<net::X509Certificate> ImportTestClientCert() {
-    net::CertificateList ca_cert_list =
-        net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
-                                           "websocket_cacert.pem",
-                                           net::X509Certificate::FORMAT_AUTO);
+    net::CertificateList ca_cert_list(net::CreateCertificateListFromFile(
+        net::GetTestCertsDirectory(), "client_1_ca.pem",
+        net::X509Certificate::FORMAT_AUTO));
     if (ca_cert_list.empty()) {
       LOG(ERROR) << "No CA cert loaded.";
-      return NULL;
+      return nullptr;
     }
     net::NSSCertDatabase::ImportCertFailureList failures;
-    EXPECT_TRUE(test_nssdb_->ImportCACerts(
+    EXPECT_TRUE(test_nsscertdb_->ImportCACerts(
         ca_cert_list, net::NSSCertDatabase::TRUST_DEFAULT, &failures));
     if (!failures.empty()) {
       LOG(ERROR) << net::ErrorToString(failures[0].net_error);
-      return NULL;
+      return nullptr;
     }
 
-    std::string pkcs12_data;
-    base::FilePath pkcs12_path =
-        net::GetTestCertsDirectory().Append("websocket_client_cert.p12");
-    if (!base::ReadFileToString(pkcs12_path, &pkcs12_data))
-      return NULL;
-
-    net::CertificateList loaded_certs;
-    scoped_refptr<net::CryptoModule> module(net::CryptoModule::CreateFromHandle(
-        test_nssdb_->GetPrivateSlot().get()));
-    if (test_nssdb_->ImportFromPKCS12(module.get(),
-                                      pkcs12_data,
-                                      base::string16(),
-                                      false,
-                                      &loaded_certs) != net::OK) {
-      LOG(ERROR) << "Error while importing to NSSDB.";
-      return NULL;
-    }
-
-    // File contains two certs, the client cert first and the CA cert second.
-    if (loaded_certs.size() != 2U) {
-      LOG(ERROR) << "Expected two certs in file, found " << loaded_certs.size();
-      return NULL;
-    }
-    return loaded_certs[0];
+    // Import a client cert signed by that CA.
+    scoped_refptr<net::X509Certificate> client_cert(
+        net::ImportClientCertAndKeyFromFile(net::GetTestCertsDirectory(),
+                                            "client_1.pem", "client_1.pk8",
+                                            test_nssdb_.slot()));
+    return client_cert;
   }
 
   void SetupPolicy(const std::string& network_configs_json,
@@ -252,19 +226,16 @@ class NetworkConnectionHandlerTest : public testing::Test {
     scoped_ptr<base::Value> network_configs_value(
         base::JSONReader::ReadAndReturnError(network_configs_json,
                                              base::JSON_ALLOW_TRAILING_COMMAS,
-                                             NULL,
-                                             &error));
+                                             nullptr, &error));
     ASSERT_TRUE(network_configs_value) << error;
 
-    base::ListValue* network_configs = NULL;
+    base::ListValue* network_configs = nullptr;
     ASSERT_TRUE(network_configs_value->GetAsList(&network_configs));
 
     if (user_policy) {
-      managed_config_handler_->SetPolicy(
-          ::onc::ONC_SOURCE_USER_POLICY,
-          user_.username_hash(),
-          *network_configs,
-          global_config);
+      managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
+                                         kUsernameHash, *network_configs,
+                                         global_config);
     } else {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY,
                                          std::string(),  // no username hash
@@ -279,10 +250,10 @@ class NetworkConnectionHandlerTest : public testing::Test {
   scoped_ptr<NetworkConnectionHandler> network_connection_handler_;
   scoped_ptr<ManagedNetworkConfigurationHandlerImpl> managed_config_handler_;
   scoped_ptr<NetworkProfileHandler> network_profile_handler_;
-  crypto::ScopedTestNSSChromeOSUser user_;
   ShillManagerClient::TestInterface* test_manager_client_;
   ShillServiceClient::TestInterface* test_service_client_;
-  scoped_ptr<net::NSSCertDatabaseChromeOS> test_nssdb_;
+  crypto::ScopedTestNSSDB test_nssdb_;
+  scoped_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
   base::MessageLoopForUI message_loop_;
   std::string result_;
 
@@ -427,5 +398,3 @@ TEST_F(NetworkConnectionHandlerTest,
 }
 
 }  // namespace chromeos
-
-#endif
