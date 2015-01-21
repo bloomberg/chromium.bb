@@ -403,6 +403,67 @@ invalid_desc_tag:
 	return false;
 }
 
+#if defined(__APPLE__)
+
+#define TAG_dscm  0x6473636D // 'dscm'
+
+// Use dscm tag to change profile description "Display" to its more specific en-localized monitor name, if any.
+static bool read_tag_dscmType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
+{
+	if (strcmp(profile->description, "Display") != 0)
+		return true;
+
+	struct tag *tag = find_tag(index, tag_id);
+	if (tag) {
+		uint32_t offset = tag->offset;
+		uint32_t type = read_u32(src, offset);
+		uint32_t records = read_u32(src, offset+8);
+
+		if (!src->valid || !records || type != MLUC_TYPE)
+			goto invalid_dscm_tag;
+		if (read_u32(src, offset+12) != 12) // MLUC record size: bytes
+			goto invalid_dscm_tag;
+
+		for (uint32_t i = 0; i < records; ++i) {
+			const uint32_t limit = sizeof profile->description;
+			const uint16_t isoen = 0x656E; // ISO-3166-1 language 'en'
+
+			uint16_t language = read_u16(src, offset + 16 + (i * 12) + 0);
+			uint32_t length = read_u32(src, offset + 16 + (i * 12) + 4);
+			uint32_t description_offset = read_u32(src, offset + 16 + (i * 12) + 8);
+
+			if (!src->valid || !length || (length & 1))
+				goto invalid_dscm_tag;
+			if (language != isoen)
+				continue;
+
+			// Use a prefix to identify the display description source
+			strcpy(profile->description, "dscm:");
+			length += 5;
+
+			if (length >= limit)
+				length = limit - 1;
+			for (uint32_t j = 5; j < length; ++j) {
+				uint8_t value = read_u8(src, offset + description_offset + j - 5);
+				if (!src->valid)
+					goto invalid_dscm_tag;
+				profile->description[j] = value ? value : '.';
+			}
+			profile->description[length] = 0;
+			break;
+		}
+	}
+
+	if (src->valid)
+		return true;
+
+invalid_dscm_tag:
+	invalid_source(src, "invalid dscm tag");
+	return false;
+}
+
+#endif // __APPLE__
+
 #define XYZ_TYPE		0x58595a20 // 'XYZ '
 #define CURVE_TYPE		0x63757276 // 'curv'
 #define PARAMETRIC_CURVE_TYPE	0x70617261 // 'para'
@@ -1099,6 +1160,10 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
 
 	if (!read_tag_descType(profile, src, index, TAG_desc))
 		goto invalid_tag_table;
+#if defined(__APPLE__)
+	if (!read_tag_dscmType(profile, src, index, TAG_dscm))
+		goto invalid_tag_table;
+#endif // __APPLE__
 
 	if (find_tag(index, TAG_CHAD)) {
 		profile->chromaticAdaption = read_tag_s15Fixed16ArrayType(src, index, TAG_CHAD);
