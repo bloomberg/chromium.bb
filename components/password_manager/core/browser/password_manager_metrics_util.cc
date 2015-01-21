@@ -113,8 +113,8 @@ void LogUMAHistogramEnumeration(const std::string& name,
 
 void LogUMAHistogramBoolean(const std::string& name, bool sample) {
   // Note: This leaks memory, which is expected behavior.
-  base::HistogramBase* histogram =
-      base::BooleanHistogram::FactoryGet(name, base::Histogram::kNoFlags);
+  base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
+      name, base::Histogram::kUmaTargetedHistogramFlag);
   histogram->AddBoolean(sample);
 }
 
