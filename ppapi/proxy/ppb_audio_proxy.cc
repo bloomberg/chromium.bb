@@ -38,20 +38,19 @@ class Audio : public Resource, public PPB_Audio_Shared {
         PP_Resource config_id,
         const AudioCallbackCombined& callback,
         void* user_data);
-  virtual ~Audio();
+  ~Audio() override;
 
   // Resource overrides.
-  virtual PPB_Audio_API* AsPPB_Audio_API();
+  PPB_Audio_API* AsPPB_Audio_API() override;
 
   // PPB_Audio_API implementation.
-  virtual PP_Resource GetCurrentConfig() override;
-  virtual PP_Bool StartPlayback() override;
-  virtual PP_Bool StopPlayback() override;
-  virtual int32_t Open(
-      PP_Resource config_id,
-      scoped_refptr<TrackedCallback> create_callback) override;
-  virtual int32_t GetSyncSocket(int* sync_socket) override;
-  virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) override;
+  PP_Resource GetCurrentConfig() override;
+  PP_Bool StartPlayback() override;
+  PP_Bool StopPlayback() override;
+  int32_t Open(PP_Resource config_id,
+               scoped_refptr<TrackedCallback> create_callback) override;
+  int32_t GetSyncSocket(int* sync_socket) override;
+  int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) override;
 
  private:
   // Owning reference to the current config object. This isn't actually used,

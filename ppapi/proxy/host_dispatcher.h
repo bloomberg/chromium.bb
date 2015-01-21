@@ -81,12 +81,12 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   PP_Module pp_module() const { return pp_module_; }
 
   // Dispatcher overrides.
-  virtual bool IsPlugin() const;
-  virtual bool Send(IPC::Message* msg);
+  bool IsPlugin() const override;
+  bool Send(IPC::Message* msg) override;
 
   // IPC::Listener.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnChannelError() override;
 
   // Proxied version of calling GetInterface on the plugin. This will check
   // if the plugin supports the given interface (with caching) and returns the
@@ -115,7 +115,7 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
 
  protected:
   // Overridden from Dispatcher.
-  virtual void OnInvalidMessageReceived();
+  void OnInvalidMessageReceived() override;
 
  private:
   void OnHostMsgLogWithSource(PP_Instance instance,
