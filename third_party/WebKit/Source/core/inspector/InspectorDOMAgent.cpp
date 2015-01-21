@@ -748,7 +748,7 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
 int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush, NodeToIdMap* nodeMap)
 {
     ASSERT(nodeToPush); // Invalid input
-
+    // InspectorDOMAgent might have been resetted already. See crbug.com/450491
     if (!m_document)
         return 0;
     if (!m_documentNodeToIdMap->contains(m_document))
@@ -782,6 +782,9 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush, NodeToIdMap* nod
 
 int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
 {
+    if (!m_document)
+        return 0;
+
     int nodeId = pushNodePathToFrontend(nodeToPush, m_documentNodeToIdMap.get());
     if (nodeId)
         return nodeId;
