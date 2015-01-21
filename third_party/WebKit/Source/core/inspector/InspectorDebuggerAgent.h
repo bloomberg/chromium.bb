@@ -49,6 +49,7 @@
 namespace blink {
 
 class AsyncCallChain;
+class AsyncCallStack;
 class ConsoleMessage;
 class InjectedScript;
 class InjectedScriptManager;
@@ -172,11 +173,12 @@ public:
 
     // Async call stacks implementation
     PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole();
-    PassRefPtrWillBeRawPtr<AsyncCallChain> traceAsyncOperationStarting(const String& description);
-    void traceAsyncCallbackStarting(v8::Isolate*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
+    static const int unknownAsyncOperationId;
+    int traceAsyncOperationStarting(const String& description);
+    void traceAsyncCallbackStarting(v8::Isolate*, int operationId);
     const AsyncCallChain* currentAsyncCallChain() const;
     void traceAsyncCallbackCompleted();
-    void traceAsyncOperationCompleted(AsyncCallChain*);
+    void traceAsyncOperationCompleted(int operationId);
     bool trackingAsyncCalls() const { return m_maxAsyncCallStackDepth; }
 
     class AsyncCallTrackingListener : public WillBeGarbageCollectedMixin {
@@ -218,7 +220,6 @@ private:
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
 
     void resetAsyncCallTracker();
-    void didCreateAsyncCallChain(AsyncCallChain*);
 
     void changeJavaScriptRecursionLevel(int step);
 
@@ -286,7 +287,10 @@ private:
     OwnPtrWillBeMember<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
 
-    WillBeHeapHashSet<RefPtrWillBeMember<AsyncCallChain> > m_asyncOperationsForStepInto;
+    using AsyncOperationIdToAsyncCallChain = WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain>>;
+    AsyncOperationIdToAsyncCallChain m_asyncOperations;
+    int m_lastAsyncOperationId;
+    WillBeHeapHashSet<int> m_asyncOperationsForStepInto;
     unsigned m_maxAsyncCallStackDepth;
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;

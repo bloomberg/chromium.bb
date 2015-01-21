@@ -105,7 +105,7 @@ public:
 private:
     void willHandleXHREvent(XMLHttpRequest*, Event*);
 
-    void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
+    void setCurrentAsyncCallChain(ExecutionContext*, int operationId);
     void didFireAsyncCall();
 
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);

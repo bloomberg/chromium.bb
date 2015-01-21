@@ -114,13 +114,13 @@ void V8AsyncCallTracker::didEnqueueV8AsyncTask(ScriptState* state, const String&
 {
     ASSERT(state);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->traceAsyncOperationStarting(eventName);
-    if (!callChain)
+    int operationId = m_debuggerAgent->traceAsyncOperationStarting(eventName);
+    if (!operationId)
         return;
     V8ContextAsyncCallChains* contextCallChains = m_contextAsyncCallChainMap.get(state);
     if (!contextCallChains)
         contextCallChains = m_contextAsyncCallChainMap.set(state, adoptPtrWillBeNoop(new V8ContextAsyncCallChains(m_debuggerAgent))).storedValue->value.get();
-    contextCallChains->m_v8AsyncCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), callChain.release());
+    contextCallChains->m_v8AsyncCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), operationId);
 }
 
 void V8AsyncCallTracker::willHandleV8AsyncTask(ScriptState* state, const String& eventName, int id)
@@ -132,7 +132,7 @@ void V8AsyncCallTracker::willHandleV8AsyncTask(ScriptState* state, const String&
         m_debuggerAgent->traceAsyncCallbackStarting(state->isolate(), contextCallChains->m_v8AsyncCallChains.get(taskId));
         contextCallChains->m_v8AsyncCallChains.remove(taskId);
     } else {
-        m_debuggerAgent->traceAsyncCallbackStarting(state->isolate(), nullptr);
+        m_debuggerAgent->traceAsyncCallbackStarting(state->isolate(), InspectorDebuggerAgent::unknownAsyncOperationId);
     }
 }
 

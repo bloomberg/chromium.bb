@@ -18,7 +18,7 @@ template <class K>
 class AsyncCallChainMap final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    using MapType = WillBeHeapHashMap<K, RefPtrWillBeMember<AsyncCallChain>>;
+    using MapType = WillBeHeapHashMap<K, int>;
     explicit AsyncCallChainMap(InspectorDebuggerAgent* debuggerAgent)
         : m_debuggerAgent(debuggerAgent)
     {
@@ -47,13 +47,13 @@ public:
     {
         ASSERT(m_debuggerAgent);
         for (auto it : m_asyncCallChains)
-            m_debuggerAgent->traceAsyncOperationCompleted(it.value.get());
+            m_debuggerAgent->traceAsyncOperationCompleted(it.value);
         m_asyncCallChains.clear();
     }
 
-    void set(typename MapType::KeyPeekInType key, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
+    void set(typename MapType::KeyPeekInType key, int operationId)
     {
-        m_asyncCallChains.set(key, chain);
+        m_asyncCallChains.set(key, operationId);
     }
 
     bool contains(typename MapType::KeyPeekInType key) const
@@ -61,7 +61,7 @@ public:
         return m_asyncCallChains.contains(key);
     }
 
-    PassRefPtrWillBeRawPtr<AsyncCallChain> get(typename MapType::KeyPeekInType key) const
+    int get(typename MapType::KeyPeekInType key) const
     {
         return m_asyncCallChains.get(key);
     }
@@ -69,9 +69,9 @@ public:
     void remove(typename MapType::KeyPeekInType key)
     {
         ASSERT(m_debuggerAgent);
-        RefPtrWillBeRawPtr<AsyncCallChain> chain = m_asyncCallChains.take(key);
-        if (chain)
-            m_debuggerAgent->traceAsyncOperationCompleted(chain.get());
+        int operationId = m_asyncCallChains.take(key);
+        if (operationId)
+            m_debuggerAgent->traceAsyncOperationCompleted(operationId);
     }
 
     void trace(Visitor* visitor)
