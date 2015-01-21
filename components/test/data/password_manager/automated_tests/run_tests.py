@@ -12,33 +12,24 @@ import tempfile
 from environment import Environment
 import tests
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser(
-      description="Password Manager automated tests runner help.")
-  parser.add_argument(
-      "--chrome-path", action="store", dest="chrome_path",
-      help="Set the chrome path (required).", nargs=1, required=True)
-  parser.add_argument(
-      "--chromedriver-path", action="store", dest="chromedriver_path",
-      help="Set the chromedriver path (required).", nargs=1, required=True)
-  parser.add_argument(
-      "--profile-path", action="store", dest="profile_path",
-      help="Set the profile path (required). You just need to choose a "
-           "temporary empty folder. If the folder is not empty all its content "
-           "is going to be removed.",
-      nargs=1, required=True)
-  parser.add_argument(
-      "--passwords-path", action="store", dest="passwords_path",
-      help="Set the usernames/passwords path (required).", nargs=1,
-      required=True)
-  parser.add_argument("--save-path", action="store", nargs=1, dest="save_path",
-      help="Write the results in a file.", required=True)
-  args = parser.parse_args()
+def run_tests(
+    save_path, chrome_path, chromedriver_path,
+    passwords_path, profile_path, *args, **kwargs):
+  """ Runs automated tests.
 
+  Args:
+   save_path: File, where results of run will be logged.
+   chrome_path: Location of Chrome binary.
+   chromedriver_path: Location of Chrome Driver.
+   passwords_path: Location of file with credentials.
+   profile_path: Location of profile path.
+   *args: Variable length argument list.
+   **kwargs: Arbitrary keyword arguments.
+  """
   environment = Environment('', '', '', None, False)
   tests.Tests(environment)
 
-  xml = open(args.save_path[0],"w")
+  xml = open(save_path, "w")
   xml.write("<xml>")
   try:
     results = tempfile.NamedTemporaryFile(
@@ -71,9 +62,9 @@ if __name__ == "__main__":
         os.system("timeout 600 python %s %s --chrome-path %s "
             "--chromedriver-path %s --passwords-path %s --profile-path %s "
             "--save-path %s" %
-            (tests_path, websitetest.name, args.chrome_path[0],
-             args.chromedriver_path[0], args.passwords_path[0],
-             args.profile_path[0], results_path))
+            (tests_path, websitetest.name, chrome_path,
+             chromedriver_path, passwords_path,
+             profile_path, results_path))
         if os.path.isfile(results_path):
           results = open(results_path, "r")
           count = 0 # Count the number of successful tests.
@@ -98,3 +89,26 @@ if __name__ == "__main__":
 
   xml.write("</xml>")
   xml.close()
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(
+      description="Password Manager automated tests runner help.")
+  parser.add_argument(
+      "--chrome-path", action="store", dest="chrome_path",
+      help="Set the chrome path (required).", required=True)
+  parser.add_argument(
+      "--chromedriver-path", action="store", dest="chromedriver_path",
+      help="Set the chromedriver path (required).", required=True)
+  parser.add_argument(
+      "--profile-path", action="store", dest="profile_path",
+      help="Set the profile path (required). You just need to choose a "
+           "temporary empty folder. If the folder is not empty all its content "
+           "is going to be removed.",
+      required=True)
+  parser.add_argument(
+      "--passwords-path", action="store", dest="passwords_path",
+      help="Set the usernames/passwords path (required).", required=True)
+  parser.add_argument("--save-path", action="store",  dest="save_path",
+      help="Write the results in a file.", required=True)
+  args = vars(parser.parse_args())
+  run_tests(**args)
