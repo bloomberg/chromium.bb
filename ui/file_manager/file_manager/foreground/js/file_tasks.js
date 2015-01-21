@@ -373,18 +373,18 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
   }.bind(this);
 
   var onViewFilesFailure = function() {
-    var fm = this.fileManager_;
-    if (!fm.isOnDrive() ||
-        !entries[0] ||
-        FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension) !== -1) {
+    var fileManager = this.fileManager_;
+
+    if (FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension) !== -1 ||
+        FileTasks.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1) {
       showAlert();
       return;
     }
 
-    fm.taskController.openSuggestAppsDialog(
+    fileManager.taskController.openSuggestAppsDialog(
         entries[0],
         function() {
-          var newTasks = new FileTasks(fm);
+          var newTasks = new FileTasks(fileManager);
           newTasks.init(entries, this.mimeTypes_);
           newTasks.executeDefault();
           callback(true, entries);

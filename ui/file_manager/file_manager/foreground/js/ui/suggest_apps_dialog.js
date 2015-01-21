@@ -190,21 +190,6 @@ SuggestAppsDialog.prototype.showByExtensionAndMime =
 };
 
 /**
- * Shows suggest-apps dialog by the filename.
- *
- * @param {string} filename Filename (without extension) of the file.
- * @param {function(boolean)} onDialogClosed Called when the dialog is closed.
- *     The argument is the result of installation: true if an app is installed,
- *     false otherwise.
- */
-SuggestAppsDialog.prototype.showByFilename =
-    function(filename, onDialogClosed) {
-  this.text_.hidden = false;
-  this.dialogText_ = str('SUGGEST_DIALOG_MESSAGE_FOR_EXECUTABLE');
-  this.showInternal_(filename, null, null, onDialogClosed);
-};
-
-/**
  * Internal method to show a dialog. This should be called only from 'Suggest.
  * appDialog.showXxxx()' functions.
  *

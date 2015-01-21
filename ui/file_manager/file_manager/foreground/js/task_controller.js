@@ -212,25 +212,18 @@ TaskController.prototype.onActionMenuItemActivated_ = function() {
  */
 TaskController.prototype.openSuggestAppsDialog =
     function(entry, onSuccess, onCancelled, onFailure) {
-  if (!url) {
+  if (!entry) {
     onFailure();
     return;
   }
 
-  this.metadataCache_.getOne(entry, 'external', function(prop) {
-    if (!prop || !prop.contentMimeType) {
-      onFailure();
-      return;
-    }
-
+  this.getMimeType_(entry).then(function(mimeType) {
     var basename = entry.name;
     var splitted = util.splitExtension(basename);
-    var filename = splitted[0];
     var extension = splitted[1];
-    var mime = prop.contentMimeType;
 
-    // Returns with failure if the file has neither extension nor mime.
-    if (!extension || !mime) {
+    // Returns with failure if the file has neither extension nor MIME type.
+    if (!extension || !mimeType) {
       onFailure();
       return;
     }
@@ -248,14 +241,30 @@ TaskController.prototype.openSuggestAppsDialog =
       }
     };
 
-    if (FileTasks.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1) {
-      this.ui_.suggestAppsDialog.showByFilename(filename, onDialogClosed);
-    } else {
-      this.ui_.suggestAppsDialog.showByExtensionAndMime(
-          extension, mime, onDialogClosed);
-    }
+    this.ui_.suggestAppsDialog.showByExtensionAndMime(
+        extension, mimeType, onDialogClosed);
   }.bind(this));
 };
+
+/**
+ * Get MIME type for an entry. This method first tries to obtain the MIME type
+ * from metadata. If it fails, this falls back to obtain the MIME type from its
+ * content or name.
+ *
+ * @param {Entry} entry An entry to obtain its mime type.
+ * @return {!Promise}
+ * @private
+ */
+TaskController.prototype.getMimeType_ = function(entry) {
+  return new Promise(function(resolve, reject) {
+    this.metadataCache_.getOne(entry, 'external', function(prop) {
+      if (prop && prop.contentMimeType)
+        resolve(prop.contentMimeType);
+      else
+        chrome.fileManagerPrivate.getMimeType(entry.toURL(), resolve);
+    });
+  }.bind(this));
+}
 
 /**
  * Handles change of selection and clears context menu.
