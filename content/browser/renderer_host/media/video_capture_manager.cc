@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 
-#include <algorithm>
 #include <set>
 
 #include "base/bind.h"
@@ -95,9 +94,6 @@ void LogVideoCaptureEvent(VideoCaptureEvent event) {
                             NUM_VIDEO_CAPTURE_EVENT);
 }
 
-// Counter used for identifying a DeviceRequest to start a capture device.
-static int g_device_start_id = 0;
-
 }  // namespace
 
 namespace content {
@@ -106,22 +102,11 @@ VideoCaptureManager::DeviceEntry::DeviceEntry(
     MediaStreamType stream_type,
     const std::string& id,
     scoped_ptr<VideoCaptureController> controller)
-    : serial_id(g_device_start_id++),
-      stream_type(stream_type),
+    : stream_type(stream_type),
       id(id),
       video_capture_controller(controller.Pass()) {}
 
 VideoCaptureManager::DeviceEntry::~DeviceEntry() {}
-
-VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
-    int serial_id,
-    media::VideoCaptureSessionId session_id,
-    const media::VideoCaptureParams& params)
-    : serial_id_(serial_id),
-      session_id_(session_id),
-      params_(params),
-      abort_start_(false) {
-}
 
 
 VideoCaptureManager::VideoCaptureManager(
@@ -133,7 +118,6 @@ VideoCaptureManager::VideoCaptureManager(
 
 VideoCaptureManager::~VideoCaptureManager() {
   DCHECK(devices_.empty());
-  DCHECK(device_start_queue_.empty());
 }
 
 void VideoCaptureManager::Register(
@@ -232,131 +216,22 @@ void VideoCaptureManager::Close(int capture_session_id) {
   sessions_.erase(session_it);
 }
 
-void VideoCaptureManager::QueueStartDevice(
+void VideoCaptureManager::DoStartDeviceOnDeviceThread(
     media::VideoCaptureSessionId session_id,
     DeviceEntry* entry,
-    const media::VideoCaptureParams& params) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  device_start_queue_.push_back(
-      CaptureDeviceStartRequest(entry->serial_id, session_id, params));
-  if (device_start_queue_.size() == 1)
-    HandleQueuedStartRequest();
-}
-
-void VideoCaptureManager::DoStopDevice(DeviceEntry* entry) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(std::find(devices_.begin(), devices_.end(), entry) != devices_.end());
-
-  // Find the matching start request.
-  for (DeviceStartQueue::reverse_iterator request =
-           device_start_queue_.rbegin();
-       request != device_start_queue_.rend(); ++request) {
-    if (request->serial_id() == entry->serial_id) {
-      request->set_abort_start();
-      DVLOG(3) << "DoStopDevice, aborting start request for device "
-               << entry->id << " serial_id = " << entry->serial_id;
-      return;
-    }
-  }
-
-  DVLOG(3) << "DoStopDevice. Send stop request for device = " << entry->id
-           << " serial_id = " << entry->serial_id << ".";
-  if (entry->video_capture_device.get()) {
-    // |entry->video_capture_device| can be null if creating the device fails.
-    device_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&VideoCaptureManager::DoStopDeviceOnDeviceThread, this,
-                   base::Passed(&entry->video_capture_device)));
-  }
-}
-
-void VideoCaptureManager::HandleQueuedStartRequest() {
-  // Remove all start requests that have been aborted.
-  while (device_start_queue_.begin() != device_start_queue_.end() &&
-      device_start_queue_.begin()->abort_start()) {
-    device_start_queue_.pop_front();
-  }
-  DeviceStartQueue::iterator request = device_start_queue_.begin();
-  if (request == device_start_queue_.end())
-    return;
-
-  const int serial_id = request->serial_id();
-  DeviceEntries::iterator entry_it = std::find_if(
-      devices_.begin(), devices_.end(),
-      [serial_id] (const DeviceEntry* e) {
-        return e->serial_id == serial_id;
-      });
-  DCHECK(entry_it != devices_.end());
-  DeviceEntry* entry =  (*entry_it);
-
-  DVLOG(3) << "HandleQueuedStartRequest, Post start to device thread, device = "
-           << entry->id << " start id = " << entry->serial_id;
-  base::PostTaskAndReplyWithResult(
-      device_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(
-          &VideoCaptureManager::DoStartDeviceOnDeviceThread,
-          this,
-          request->session_id(),
-          entry->id,
-          entry->stream_type,
-          request->params(),
-          base::Passed(entry->video_capture_controller->NewDeviceClient())),
-      base::Bind(&VideoCaptureManager::OnDeviceStarted, this,
-                 request->serial_id()));
-}
-
-void VideoCaptureManager::OnDeviceStarted(
-    int serial_id,
-    scoped_ptr<media::VideoCaptureDevice> device) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(serial_id == device_start_queue_.begin()->serial_id());
-  DVLOG(3) << "OnDeviceStarted";
-  if (device_start_queue_.front().abort_start()) {
-    // |device| can be null if creation failed in DoStartDeviceOnDeviceThread.
-    // The device is no longer wanted. Stop the device again.
-    DVLOG(3) << "OnDeviceStarted but start request have been aborted.";
-    media::VideoCaptureDevice* device_ptr = device.get();
-    base::Closure closure =
-        base::Bind(&VideoCaptureManager::DoStopDeviceOnDeviceThread, this,
-                   base::Passed(&device));
-    if (device_ptr && !device_task_runner_->PostTask(FROM_HERE, closure)) {
-      // PostTask failed. The device must be stopped anyway.
-      device_ptr->StopAndDeAllocate();
-    }
-  } else {
-    DeviceEntries::iterator entry_it = std::find_if(
-        devices_.begin(), devices_.end(),
-        [serial_id] (const DeviceEntry* e) {
-          return e->serial_id == serial_id;
-        });
-    DCHECK(entry_it != devices_.end());
-    DCHECK(!(*entry_it)->video_capture_device.get());
-    (*entry_it)->video_capture_device.swap(device);
-  }
-
-  device_start_queue_.pop_front();
-  HandleQueuedStartRequest();
-}
-
-scoped_ptr<media::VideoCaptureDevice>
-VideoCaptureManager::DoStartDeviceOnDeviceThread(
-    media::VideoCaptureSessionId session_id,
-    const std::string& id,
-    MediaStreamType stream_type,
     const media::VideoCaptureParams& params,
     scoped_ptr<media::VideoCaptureDevice::Client> device_client) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(IsOnDeviceThread());
 
   scoped_ptr<media::VideoCaptureDevice> video_capture_device;
-  switch (stream_type) {
+  switch (entry->stream_type) {
     case MEDIA_DEVICE_VIDEO_CAPTURE: {
       // We look up the device id from the renderer in our local enumeration
       // since the renderer does not have all the information that might be
       // held in the browser-side VideoCaptureDevice::Name structure.
       media::VideoCaptureDeviceInfo* found =
-          FindDeviceInfoById(id, devices_info_cache_);
+          FindDeviceInfoById(entry->id, devices_info_cache_);
       if (found) {
         video_capture_device =
             video_capture_device_factory_->Create(found->name);
@@ -365,21 +240,20 @@ VideoCaptureManager::DoStartDeviceOnDeviceThread(
     }
     case MEDIA_TAB_VIDEO_CAPTURE: {
       video_capture_device.reset(
-          WebContentsVideoCaptureDevice::Create(id));
+          WebContentsVideoCaptureDevice::Create(entry->id));
       break;
     }
     case MEDIA_DESKTOP_VIDEO_CAPTURE: {
 #if defined(ENABLE_SCREEN_CAPTURE)
-      DesktopMediaID desktop_id = DesktopMediaID::Parse(id);
+      DesktopMediaID id = DesktopMediaID::Parse(entry->id);
 #if defined(USE_AURA)
-      if (desktop_id.type == DesktopMediaID::TYPE_AURA_WINDOW) {
-        video_capture_device.reset(
-            DesktopCaptureDeviceAura::Create(desktop_id));
+      if (id.type == DesktopMediaID::TYPE_AURA_WINDOW) {
+        video_capture_device.reset(DesktopCaptureDeviceAura::Create(id));
       } else
 #endif
-      if (desktop_id.type != DesktopMediaID::TYPE_NONE &&
-          desktop_id.type != DesktopMediaID::TYPE_AURA_WINDOW) {
-        video_capture_device = DesktopCaptureDevice::Create(desktop_id);
+      if (id.type != DesktopMediaID::TYPE_NONE &&
+          id.type != DesktopMediaID::TYPE_AURA_WINDOW) {
+        video_capture_device = DesktopCaptureDevice::Create(id);
         if (notification_window_ids_.find(session_id) !=
             notification_window_ids_.end()) {
           static_cast<DesktopCaptureDevice*>(video_capture_device.get())
@@ -399,11 +273,11 @@ VideoCaptureManager::DoStartDeviceOnDeviceThread(
 
   if (!video_capture_device) {
     device_client->OnError("Could not create capture device");
-    return nullptr;
+    return;
   }
 
   video_capture_device->AllocateAndStart(params, device_client.Pass());
-  return video_capture_device.Pass();
+  entry->video_capture_device = video_capture_device.Pass();
 }
 
 void VideoCaptureManager::StartCaptureForClient(
@@ -432,7 +306,16 @@ void VideoCaptureManager::StartCaptureForClient(
   if (entry->video_capture_controller->GetActiveClientCount() == 0) {
     DVLOG(1) << "VideoCaptureManager starting device (type = "
              << entry->stream_type << ", id = " << entry->id << ")";
-    QueueStartDevice(session_id, entry, params);
+
+    device_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &VideoCaptureManager::DoStartDeviceOnDeviceThread,
+            this,
+            session_id,
+            entry,
+            params,
+            base::Passed(entry->video_capture_controller->NewDeviceClient())));
   }
   // Run the callback first, as AddClient() may trigger OnFrameInfo().
   done_cb.Run(entry->video_capture_controller->GetWeakPtr());
@@ -509,7 +392,10 @@ void VideoCaptureManager::PauseCaptureForClient(
     return;
 
   // There is no more client, release the camera.
-  DoStopDevice(entry);
+  device_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoCaptureManager::DoStopDeviceOnDeviceThread, this,
+                 base::Unretained(entry)));
 }
 
 void VideoCaptureManager::ResumeCaptureForClient(
@@ -537,7 +423,15 @@ void VideoCaptureManager::ResumeCaptureForClient(
     return;
 
   // This is first active client, allocate the camera.
-  QueueStartDevice(session_id, entry, params);
+  device_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &VideoCaptureManager::DoStartDeviceOnDeviceThread,
+          this,
+          session_id,
+          entry,
+          params,
+          base::Passed(entry->video_capture_controller->NewDeviceClient())));
 }
 
 bool VideoCaptureManager::GetDeviceSupportedFormats(
@@ -623,12 +517,13 @@ void VideoCaptureManager::SetDesktopCaptureWindowId(
                  window_id));
 }
 
-void VideoCaptureManager::DoStopDeviceOnDeviceThread(
-    scoped_ptr<media::VideoCaptureDevice> device) {
+void VideoCaptureManager::DoStopDeviceOnDeviceThread(DeviceEntry* entry) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StopDeviceTime");
   DCHECK(IsOnDeviceThread());
-  device->StopAndDeAllocate();
-  DVLOG(3) << "DoStopDeviceOnDeviceThread";
+  if (entry->video_capture_device) {
+    entry->video_capture_device->StopAndDeAllocate();
+  }
+  entry->video_capture_device.reset();
 }
 
 void VideoCaptureManager::OnOpened(
@@ -758,11 +653,12 @@ void VideoCaptureManager::DestroyDeviceEntryIfNoClients(DeviceEntry* entry) {
     // deleted immediately, and the device is freed asynchronously. After this
     // point, subsequent requests to open this same device ID will create a new
     // DeviceEntry, VideoCaptureController, and VideoCaptureDevice.
-    DoStopDevice(entry);
-    DeviceEntries::iterator device_it = std::find(devices_.begin(),
-                                                  devices_.end(),
-                                                  entry);
-    devices_.erase(device_it);
+    devices_.erase(entry);
+    entry->video_capture_controller.reset();
+    device_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&VideoCaptureManager::DoStopDeviceOnDeviceThread, this,
+                   base::Owned(entry)));
   }
 }
 
@@ -792,7 +688,7 @@ VideoCaptureManager::DeviceEntry* VideoCaptureManager::GetOrCreateDeviceEntry(
   DeviceEntry* new_device = new DeviceEntry(device_info.type,
                                             device_info.id,
                                             video_capture_controller.Pass());
-  devices_.push_back(new_device);
+  devices_.insert(new_device);
   return new_device;
 }
 
