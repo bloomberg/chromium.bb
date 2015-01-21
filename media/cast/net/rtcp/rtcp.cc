@@ -71,7 +71,9 @@ Rtcp::Rtcp(const RtcpCastMessageCallback& cast_callback,
       last_report_truncated_ntp_(0),
       local_clock_ahead_by_(ClockDriftSmoother::GetDefaultTimeConstant()),
       lip_sync_rtp_timestamp_(0),
-      lip_sync_ntp_timestamp_(0) {
+      lip_sync_ntp_timestamp_(0),
+      largest_seen_timestamp_(
+          base::TimeTicks::FromInternalValue(kint64min)) {
 }
 
 Rtcp::~Rtcp() {}
@@ -359,8 +361,9 @@ void Rtcp::SaveLastSentNtpTime(const base::TimeTicks& now,
                                uint32 last_ntp_fraction) {
   // Make sure |now| is always greater than the last element in
   // |last_reports_sent_queue_|.
-  if (!last_reports_sent_queue_.empty())
+  if (!last_reports_sent_queue_.empty()) {
     DCHECK(now >= last_reports_sent_queue_.back().second);
+  }
 
   uint32 last_report = ConvertToNtpDiff(last_ntp_seconds, last_ntp_fraction);
   last_reports_sent_map_[last_report] = now;

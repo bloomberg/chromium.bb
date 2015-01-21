@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
@@ -25,7 +26,8 @@ class FakeRtcpTransport : public PacedPacketSender {
  public:
   explicit FakeRtcpTransport(base::SimpleTestTickClock* clock)
       : clock_(clock),
-        packet_delay_(base::TimeDelta::FromMilliseconds(42)) {}
+        packet_delay_(base::TimeDelta::FromMilliseconds(42)),
+        paused_(false) {}
 
   void set_rtcp_destination(Rtcp* rtcp) { rtcp_ = rtcp; }
 
@@ -34,7 +36,11 @@ class FakeRtcpTransport : public PacedPacketSender {
 
   bool SendRtcpPacket(uint32 ssrc, PacketRef packet) override {
     clock_->Advance(packet_delay_);
-    rtcp_->IncomingRtcpPacket(&packet->data[0], packet->data.size());
+    if (paused_) {
+      packet_queue_.push_back(packet);
+    } else {
+      rtcp_->IncomingRtcpPacket(&packet->data[0], packet->data.size());
+    }
     return true;
   }
 
@@ -47,10 +53,29 @@ class FakeRtcpTransport : public PacedPacketSender {
 
   void CancelSendingPacket(const PacketKey& packet_key) override {}
 
+  void Pause() {
+    paused_ = true;
+  }
+
+  void Unpause() {
+    paused_ = false;
+    for (size_t i = 0; i < packet_queue_.size(); ++i) {
+      rtcp_->IncomingRtcpPacket(&packet_queue_[i]->data[0],
+                                packet_queue_[i]->data.size());
+    }
+    packet_queue_.clear();
+  }
+
+  void ReversePacketQueue() {
+    std::reverse(packet_queue_.begin(), packet_queue_.end());
+  }
+
  private:
   base::SimpleTestTickClock* const clock_;
   base::TimeDelta packet_delay_;
   Rtcp* rtcp_;
+  bool paused_;
+  std::vector<PacketRef> packet_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRtcpTransport);
 };
@@ -196,6 +221,47 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
     expected_rtt_according_to_receiver =
         (one_way_trip_time + one_way_trip_time * 2) / 2;
   }
+}
+
+TEST_F(RtcpTest, RejectOldRtcpPacket) {
+  EXPECT_CALL(mock_frame_sender_, OnReceivedCastFeedback(_))
+      .Times(1);
+
+  // This is rejected.
+  RtcpCastMessage cast_message(kSenderSsrc);
+  cast_message.ack_frame_id = 1;
+  receiver_to_sender_.Pause();
+  rtcp_for_receiver_.SendRtcpFromRtpReceiver(
+      rtcp_for_receiver_.ConvertToNTPAndSave(
+          receiver_clock_->NowTicks() - base::TimeDelta::FromSeconds(10)),
+      &cast_message, base::TimeDelta(), NULL, NULL);
+
+  cast_message.ack_frame_id = 2;
+  rtcp_for_receiver_.SendRtcpFromRtpReceiver(
+      rtcp_for_receiver_.ConvertToNTPAndSave(receiver_clock_->NowTicks()),
+      &cast_message, base::TimeDelta(), NULL, NULL);
+
+  receiver_to_sender_.ReversePacketQueue();
+  receiver_to_sender_.Unpause();
+}
+
+TEST_F(RtcpTest, NegativeTimeTicks) {
+  EXPECT_CALL(mock_frame_sender_, OnReceivedCastFeedback(_))
+      .Times(2);
+
+  // Send a RRTR with NTP timestamp that translates to a very negative
+  // value for TimeTicks.
+  RtcpCastMessage cast_message(kSenderSsrc);
+  cast_message.ack_frame_id = 2;
+  rtcp_for_receiver_.SendRtcpFromRtpReceiver(
+      rtcp_for_receiver_.ConvertToNTPAndSave(
+          base::TimeTicks() - base::TimeDelta::FromSeconds(5)),
+      &cast_message, base::TimeDelta(), NULL, NULL);
+
+  cast_message.ack_frame_id = 1;
+  rtcp_for_receiver_.SendRtcpFromRtpReceiver(
+      rtcp_for_receiver_.ConvertToNTPAndSave(base::TimeTicks()),
+      &cast_message, base::TimeDelta(), NULL, NULL);
 }
 
 // TODO(miu): Find a better home for this test.
