@@ -10,13 +10,18 @@
 namespace ui {
 
 bool IsTouchDevicePresent() {
-  // TODO(sadrul@chromium.org): Support evdev hotplugging.
   return ui::DeviceDataManager::GetInstance()->touchscreen_devices().size() > 0;
 }
 
 int MaxTouchPoints() {
-  // Hard-code this to 11 until we have a real implementation.
-  return 11;
+  int max_touch = 0;
+  const std::vector<ui::TouchscreenDevice>& touchscreen_devices =
+      ui::DeviceDataManager::GetInstance()->touchscreen_devices();
+  for (const ui::TouchscreenDevice& device : touchscreen_devices) {
+    if (device.touch_points > max_touch)
+      max_touch = device.touch_points;
+  }
+  return max_touch;
 }
 
 // TODO(mustaq@chromium.org): Use mouse detection logic. crbug.com/440503

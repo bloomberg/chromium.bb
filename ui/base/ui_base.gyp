@@ -362,8 +362,7 @@
         'touch/touch_device.cc',
         'touch/touch_device.h',
         'touch/touch_device_android.cc',
-        'touch/touch_device_aurax11.cc',
-        'touch/touch_device_ozone.cc',
+        'touch/touch_device_linux.cc',
         'touch/touch_device_win.cc',
         'touch/touch_editing_controller.cc',
         'touch/touch_editing_controller.h',
@@ -540,13 +539,20 @@
         ['chromeos==1 or (use_aura==1 and OS=="linux" and use_x11==0)', {
           'sources!': [
             'dragdrop/os_exchange_data_provider_aurax11.cc',
-            'touch/touch_device.cc',
           ],
         }, {
           'sources!': [
             'dragdrop/os_exchange_data_provider_aura.cc',
             'dragdrop/os_exchange_data_provider_aura.h',
-            'touch/touch_device_aurax11.cc',
+          ],
+        }],
+        ['OS=="linux"', {
+          'sources!': [
+            'touch/touch_device.cc',
+          ],
+        }, {
+          'sources!': [
+            'touch/touch_device_linux.cc',
           ],
         }],
         ['OS=="win"', {
@@ -583,7 +589,7 @@
               '-loleacc.lib',
             ],
           },
-        },{  # OS!="win"
+        }, {  # OS!="win"
           'conditions': [
             ['use_aura==0', {
               'sources!': [

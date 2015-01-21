@@ -286,10 +286,8 @@ component("base") {
     sources += [ "touch/touch_device_win.cc" ]
   } else if (is_android) {
     sources += [ "touch/touch_device_android.cc" ]
-  } else if (use_ozone) {
-    sources += [ "touch/touch_device_ozone.cc" ]
-  } else if (use_aura && use_x11) {
-    sources += [ "touch/touch_device_aurax11.cc" ]
+  } else if (is_linux) {
+    sources += [ "touch/touch_device_linux.cc" ]
   } else {
     # Empty implementation for all other cases.
     sources += [ "touch/touch_device.cc" ]
