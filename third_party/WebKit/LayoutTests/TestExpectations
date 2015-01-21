@@ -435,11 +435,6 @@ crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ 
 
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 
-crbug.com/444921 [ Win Linux Android ] fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-crbug.com/444921 virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-crbug.com/444921 virtual/antialiasedtext/fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
-crbug.com/444921 virtual/slimmingpaint/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 
 crbug.com/396823 [ Mac ] virtual/regionbasedmulticol/fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
