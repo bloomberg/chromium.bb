@@ -99,6 +99,7 @@
           'conditions': [
             [ 'os_posix == 1 and OS != "mac"', {
               'libraries': [
+                '-lrt',
                 # Copied by widevine_cdm_binaries.
                 '<(PRODUCT_DIR)/libwidevinecdm.so',
               ],
