@@ -144,18 +144,6 @@ a:focus {
   width: 190px;
 }
 
-.dialog-navigation-list-header {
-  flex: none;
-  height: 48px;  /* Keep in sync with #dialog-header. */
-  line-height: 45px;
-}
-
-.dialog-navigation-list-header #app-name {
-  color: #303030;
-  font-size: 130%;
-  margin: 0 15px;
-}
-
 .dialog-navigation-list-contents {
   display: flex;
   flex: 1 1 auto;

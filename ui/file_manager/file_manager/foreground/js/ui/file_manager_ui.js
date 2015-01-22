@@ -233,8 +233,6 @@ function FileManagerUI(element, launchParam) {
       this.dialogType_, /** @type {!Document} */(this.element.ownerDocument));
 
   // Initialize attributes.
-  this.element.querySelector('#app-name').innerText =
-      chrome.runtime.getManifest().name;
   this.element.setAttribute('type', this.dialogType_);
 
   // Modify UI default behavior.
