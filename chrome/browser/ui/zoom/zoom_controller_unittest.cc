@@ -127,3 +127,41 @@ TEST_F(ZoomControllerTest, Observe_ZoomController) {
     zoom_change_watcher2.Wait();
   }
 }
+
+TEST_F(ZoomControllerTest, ObserveManualZoomCanShowBubble) {
+  NavigateAndCommit(GURL("about:blank"));
+  double old_zoom_level = zoom_controller_->GetZoomLevel();
+  double new_zoom_level1 = old_zoom_level + 0.5;
+  double new_zoom_level2 = old_zoom_level + 1.0;
+
+  zoom_controller_->SetZoomMode(ui_zoom::ZoomController::ZOOM_MODE_MANUAL);
+  // By default, the zoom controller will send 'true' for can_show_bubble.
+  ZoomController::ZoomChangedEventData zoom_change_data1(
+      web_contents(),
+      old_zoom_level,
+      new_zoom_level1,
+      ZoomController::ZOOM_MODE_MANUAL,
+      true /* can_show_bubble */);
+  {
+    ZoomChangedWatcher zoom_change_watcher1(zoom_controller_.get(),
+                                            zoom_change_data1);
+    zoom_controller_->SetZoomLevel(new_zoom_level1);
+    zoom_change_watcher1.Wait();
+  }
+
+  // Override default and verify the subsequent event reflects this change.
+  zoom_controller_->SetShowsNotificationBubble(false);
+  ZoomController::ZoomChangedEventData zoom_change_data2(
+      web_contents(),
+      new_zoom_level1,
+      new_zoom_level2,
+      ZoomController::ZOOM_MODE_MANUAL,
+      false /* can_show_bubble */);
+  {
+    ZoomChangedWatcher zoom_change_watcher2(zoom_controller_.get(),
+                                            zoom_change_data2);
+    zoom_controller_->SetZoomLevel(new_zoom_level2);
+    zoom_change_watcher2.Wait();
+  }
+
+}

@@ -107,7 +107,7 @@ bool ZoomController::SetZoomLevelByClient(
 
     ZoomChangedEventData zoom_change_data(web_contents(), old_zoom_level,
                                           zoom_level_, zoom_mode_,
-                                          false /* can_show_bubble */);
+                                          can_show_bubble_);
     FOR_EACH_OBSERVER(ZoomObserver, observers_,
                       OnZoomChanged(zoom_change_data));
 
