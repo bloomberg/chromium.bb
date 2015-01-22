@@ -852,29 +852,33 @@ public:
     static bool containedInHeapOrOrphanedPage(void*);
 #endif
 
-    // Is the finalizable GC object still alive? If no GC is in progress,
-    // it must be true. If a lazy sweep is in progress, it will be true if
-    // the object hasn't been swept yet and it is marked, or it has
-    // been swept and it is still alive.
+    // Is the finalizable GC object still alive, but slated for lazy sweeping?
+    // If a lazy sweep is in progress, returns true if the object was found
+    // to be not reachable during the marking phase, but it has yet to be swept
+    // and finalized. The predicate returns false in all other cases.
     //
-    // isFinalizedObjectAlive() must not be used with already-finalized object
-    // references.
-    //
+    // Holding a reference to an already-dead object is not a valid state
+    // to be in; willObjectBeLazilySwept() has undefined behavior if passed
+    // such a reference.
     template<typename T>
-    static bool isFinalizedObjectAlive(const T* objectPointer)
+    static bool willObjectBeLazilySwept(const T* objectPointer)
     {
         static_assert(IsGarbageCollectedType<T>::value, "only objects deriving from GarbageCollected can be used.");
+#if ENABLE(ASSERT)
+        ASSERT(objectPointer);
+        HeapObjectHeader::fromPayload(objectPointer)->checkHeader();
+#endif
 #if ENABLE(OILPAN)
         BaseHeapPage* page = pageFromObject(objectPointer);
         if (page->hasBeenSwept())
-            return true;
+            return false;
         ASSERT(page->heap()->threadState()->isSweepingInProgress());
 
-        return ObjectAliveTrait<T>::isHeapObjectAlive(s_markingVisitor, const_cast<T*>(objectPointer));
+        return !ObjectAliveTrait<T>::isHeapObjectAlive(s_markingVisitor, const_cast<T*>(objectPointer));
 #else
         // FIXME: remove when lazy sweeping is always on
         // (cf. ThreadState::postGCProcessing()).
-        return true;
+        return false;
 #endif
     }
 
