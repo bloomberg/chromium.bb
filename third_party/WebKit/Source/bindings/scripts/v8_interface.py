@@ -369,7 +369,7 @@ def interface_context(interface):
 
         iterator_method = generated_iterator_method('iterator')
 
-        if interface.iterable:
+        if interface.iterable or interface.maplike or interface.setlike:
             methods.extend([
                 generated_iterator_method('keys'),
                 generated_iterator_method('values'),
