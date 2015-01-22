@@ -81,12 +81,12 @@ bool isDelayAgnosticAecEnabled() {
   // Note: It's important to query the field trial state first, to ensure that
   // UMA reports the correct group.
   const std::string group_name =
-      base::FieldTrialList::FindFullName("NoReportedDelayOnMac");
+      base::FieldTrialList::FindFullName("UseDelayAgnosticAEC");
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDelayAgnosticAec))
     return true;
 
-  return (!group_name.empty() && group_name == "Enabled");
+  return group_name == "Enabled";
 }
 }  // namespace
 
