@@ -349,8 +349,7 @@ void ThreadProxy::DidSwapBuffersOnImplThread() {
 }
 
 void ThreadProxy::DidSwapBuffersCompleteOnImplThread() {
-  TRACE_EVENT0("cc,benchmark",
-               "ThreadProxy::DidSwapBuffersCompleteOnImplThread");
+  TRACE_EVENT0("cc", "ThreadProxy::DidSwapBuffersCompleteOnImplThread");
   DCHECK(IsImplThread());
   impl().scheduler->DidSwapBuffersComplete();
   Proxy::MainThreadTaskRunner()->PostTask(

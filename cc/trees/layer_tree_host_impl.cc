@@ -1592,7 +1592,7 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   active_tree()->FinishSwapPromises(&metadata);
   for (size_t i = 0; i < metadata.latency_info.size(); i++) {
     TRACE_EVENT_FLOW_STEP0(
-        "input,benchmark",
+        "input",
         "LatencyInfo.Flow",
         TRACE_ID_DONT_MANGLE(metadata.latency_info[i].trace_id),
         "SwapBuffers");

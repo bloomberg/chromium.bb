@@ -1776,7 +1776,7 @@ void RenderWidgetHostViewAndroid::OnDetachCompositor() {
 
 void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,
                                           base::TimeDelta vsync_period) {
-  TRACE_EVENT0("cc,benchmark", "RenderWidgetHostViewAndroid::OnVSync");
+  TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::OnVSync");
   if (!host_)
     return;
 

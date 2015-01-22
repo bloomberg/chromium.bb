@@ -239,7 +239,7 @@ void CompositorImpl::PostComposite(CompositingTrigger trigger) {
       delay = next_composite - now;
     }
   }
-  TRACE_EVENT2("cc,benchmark", "CompositorImpl::PostComposite",
+  TRACE_EVENT2("cc", "CompositorImpl::PostComposite",
                "trigger", trigger,
                "delay", delay.InMillisecondsF());
 

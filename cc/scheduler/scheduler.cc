@@ -399,7 +399,7 @@ void Scheduler::SetupPollingMechanisms() {
 // If the scheduler is busy, we queue the BeginFrame to be handled later as
 // a BeginRetroFrame.
 bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
-  TRACE_EVENT1("cc,benchmark", "Scheduler::BeginFrame", "args", args.AsValue());
+  TRACE_EVENT1("cc", "Scheduler::BeginFrame", "args", args.AsValue());
 
   // Deliver BeginFrames to children.
   if (settings_.forward_begin_frames_to_children &&
@@ -461,7 +461,7 @@ void Scheduler::SetChildrenNeedBeginFrames(bool children_need_begin_frames) {
 // BeginRetroFrame is called for BeginFrames that we've deferred because
 // the scheduler was in the middle of processing a previous BeginFrame.
 void Scheduler::BeginRetroFrame() {
-  TRACE_EVENT0("cc,benchmark", "Scheduler::BeginRetroFrame");
+  TRACE_EVENT0("cc", "Scheduler::BeginRetroFrame");
   DCHECK(!settings_.using_synchronous_renderer_compositor);
   DCHECK(!begin_retro_frame_args_.empty());
   DCHECK(!begin_retro_frame_task_.IsCancelled());
@@ -537,7 +537,7 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
 void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   bool main_thread_is_in_high_latency_mode =
       state_machine_.MainThreadIsInHighLatencyMode();
-  TRACE_EVENT2("cc,benchmark",
+  TRACE_EVENT2("cc",
                "Scheduler::BeginImplFrame",
                "args",
                args.AsValue(),
@@ -635,7 +635,7 @@ void Scheduler::RescheduleBeginImplFrameDeadlineIfNeeded() {
 }
 
 void Scheduler::OnBeginImplFrameDeadline() {
-  TRACE_EVENT0("cc,benchmark", "Scheduler::OnBeginImplFrameDeadline");
+  TRACE_EVENT0("cc", "Scheduler::OnBeginImplFrameDeadline");
   begin_impl_frame_deadline_task_.Cancel();
   // We split the deadline actions up into two phases so the state machine
   // has a chance to trigger actions that should occur durring and after
