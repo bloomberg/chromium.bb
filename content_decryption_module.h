@@ -469,19 +469,19 @@ class ContentDecryptionModule_6 {
       const uint8_t* init_data, uint32_t init_data_size,
       SessionType session_type) = 0;
 
-  // Loads the session with |web_session_id|. The CDM must respond by calling
+  // Loads the session with |session_id|. The CDM must respond by calling
   // either Host::OnResolveNewSessionPromise() or Host::OnRejectPromise().
   // If the session is not found, call Host::OnResolveNewSessionPromise()
-  // with web_session_id = NULL.
+  // with session_id = NULL.
   virtual void LoadSession(
       uint32_t promise_id,
-      const char* web_session_id, uint32_t web_session_id_length) = 0;
+      const char* session_id, uint32_t session_id_length) = 0;
 
   // Updates the session with |response|. The CDM must respond by calling
   // either Host::OnResolvePromise() or Host::OnRejectPromise().
   virtual void UpdateSession(
       uint32_t promise_id,
-      const char* web_session_id, uint32_t web_session_id_length,
+      const char* session_id, uint32_t session_id_length,
       const uint8_t* response, uint32_t response_size) = 0;
 
   // Requests that the CDM close the session. The CDM must respond by calling
@@ -490,7 +490,7 @@ class ContentDecryptionModule_6 {
   // session is closed, Host::OnSessionClosed() must also be called.
   virtual void CloseSession(
       uint32_t promise_id,
-      const char* web_session_id, uint32_t web_session_id_length) = 0;
+      const char* session_id, uint32_t session_id_length) = 0;
 
   // Removes any stored session data associated with this session. Will only be
   // called for persistent sessions. The CDM must respond by calling either
@@ -498,14 +498,14 @@ class ContentDecryptionModule_6 {
   // been processed.
   virtual void RemoveSession(
       uint32_t promise_id,
-      const char* web_session_id, uint32_t web_session_id_length) = 0;
+      const char* session_id, uint32_t session_id_length) = 0;
 
   // Requests the key IDs for keys in the session that the CDM knows are
   // currently usable to decrypt media data. The CDM must respond by calling
   // either Host::OnResolveKeyIdsPromise() or Host::OnRejectPromise().
   virtual void GetUsableKeyIds(
       uint32_t promise_id,
-      const char* web_session_id, uint32_t web_session_id_length) = 0;
+      const char* session_id, uint32_t session_id_length) = 0;
 
   // Provides a server certificate to be used to encrypt messages to the
   // license server. The CDM must respond by calling either
@@ -843,16 +843,16 @@ class Host_6 {
   virtual Time GetCurrentWallTime() = 0;
 
   // Called by the CDM when a session is created or loaded and the value for the
-  // MediaKeySession's sessionId attribute is available (|web_session_id|).
+  // MediaKeySession's sessionId attribute is available (|session_id|).
   // This must be called before OnSessionMessage() or
   // OnSessionUsableKeysChange() is called for the same session.
-  // |web_session_id_length| should not include null termination.
-  // When called in response to LoadSession(), the |web_session_id| must be the
-  // same as the |web_session_id| passed in LoadSession(), or NULL if the
+  // |session_id_length| should not include null termination.
+  // When called in response to LoadSession(), the |session_id| must be the
+  // same as the |session_id| passed in LoadSession(), or NULL if the
   // session could not be loaded.
   virtual void OnResolveNewSessionPromise(
       uint32_t promise_id,
-      const char* web_session_id, uint32_t web_session_id_length) = 0;
+      const char* session_id, uint32_t session_id_length) = 0;
 
   // Called by the CDM when a session is updated or released.
   virtual void OnResolvePromise(uint32_t promise_id) = 0;
@@ -873,44 +873,44 @@ class Host_6 {
       uint32_t system_code,
       const char* error_message, uint32_t error_message_length) = 0;
 
-  // Called by the CDM when it has a message for session |web_session_id|.
+  // Called by the CDM when it has a message for session |session_id|.
   // Length parameters should not include null termination.
   virtual void OnSessionMessage(
-      const char* web_session_id, uint32_t web_session_id_length,
+      const char* session_id, uint32_t session_id_length,
       const char* message, uint32_t message_length,
       const char* destination_url, uint32_t destination_url_length) = 0;
 
   // Called by the CDM when there has been a change in usable keys for
-  // session |web_session_id|. |has_additional_usable_key| should be set if a
+  // session |session_id|. |has_additional_usable_key| should be set if a
   // key is newly usable (e.g. new key available, previously expired key has
   // been renewed, etc.) and the browser should attempt to resume playback.
   // Length parameter should not include null termination.
   virtual void OnSessionUsableKeysChange(
-      const char* web_session_id, uint32_t web_session_id_length,
+      const char* session_id, uint32_t session_id_length,
       bool has_additional_usable_key) = 0;
 
   // Called by the CDM when there has been a change in the expiration time for
-  // session |web_session_id|. This can happen as the result of an Update() call
+  // session |session_id|. This can happen as the result of an Update() call
   // or some other event. If this happens as a result of a call to Update(),
   // it must be called before resolving the Update() promise. |new_expiry_time|
   // can be 0 to represent "undefined". Length parameter should not include
   // null termination.
   virtual void OnExpirationChange(
-      const char* web_session_id, uint32_t web_session_id_length,
+      const char* session_id, uint32_t session_id_length,
       Time new_expiry_time) = 0;
 
-  // Called by the CDM when session |web_session_id| is closed. Length
+  // Called by the CDM when session |session_id| is closed. Length
   // parameter should not include null termination.
   virtual void OnSessionClosed(
-      const char* web_session_id, uint32_t web_session_id_length) = 0;
+      const char* session_id, uint32_t session_id_length) = 0;
 
-  // Called by the CDM when an error occurs in session |web_session_id|
+  // Called by the CDM when an error occurs in session |session_id|
   // unrelated to one of the ContentDecryptionModule calls that accept a
   // |promise_id|. |error| must be specified, |error_message| and
   // |system_code| are optional. Length parameters should not include null
   // termination.
   virtual void OnSessionError(
-      const char* web_session_id, uint32_t web_session_id_length,
+      const char* session_id, uint32_t session_id_length,
       Error error,
       uint32_t system_code,
       const char* error_message, uint32_t error_message_length) = 0;
