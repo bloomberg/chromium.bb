@@ -90,7 +90,7 @@ public:
 
     // Mixed Content Directive
     // https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode
-    static const char StrictMixedContentChecking[];
+    static const char BlockAllMixedContent[];
 
     enum ReportingStatus {
         SendReport,

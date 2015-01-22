@@ -91,7 +91,7 @@ const char ContentSecurityPolicy::ManifestSrc[] = "manifest-src";
 
 // Mixed Content Directive
 // https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode
-const char ContentSecurityPolicy::StrictMixedContentChecking[] = "strict-mixed-content-checking";
+const char ContentSecurityPolicy::BlockAllMixedContent[] = "block-all-mixed-content";
 
 bool ContentSecurityPolicy::isDirectiveName(const String& name)
 {
@@ -114,7 +114,7 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name)
         || equalIgnoringCase(name, ReflectedXSS)
         || equalIgnoringCase(name, Referrer)
         || equalIgnoringCase(name, ManifestSrc)
-        || equalIgnoringCase(name, StrictMixedContentChecking));
+        || equalIgnoringCase(name, BlockAllMixedContent));
 }
 
 static UseCounter::Feature getUseCounterType(ContentSecurityPolicyHeaderType type)
