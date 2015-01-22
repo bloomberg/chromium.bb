@@ -1,4 +1,0 @@
-include_rules = [
-  "+athena/athena_export.h",
-  "-athena/virtual_keyboard",
-]

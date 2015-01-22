@@ -1,4 +1,0 @@
-include_rules = [
-  "-athena/home",
-  "+athena/athena_export.h",
-]

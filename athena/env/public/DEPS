@@ -1,4 +1,0 @@
-include_rules = [
-  "-athena/env",
-  "+athena/athena_export.h",
-]

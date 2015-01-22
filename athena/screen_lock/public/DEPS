@@ -1,4 +1,0 @@
-include_rules = [
-  "-athena/screen_lock",
-  "+athena/athena_export.h",
-]

@@ -1,4 +1,0 @@
-include_rules = [
-  "-athena/screen",
-  "+athena/athena_export.h",
-]

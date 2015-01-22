@@ -1,5 +1,0 @@
-include_rules = [
-  "-athena/content",
-  "+athena/athena_export.h",
-  "+third_party/skia/include/core/SkColor.h",
-]

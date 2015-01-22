@@ -1,3 +1,0 @@
-include_rules = [
-  "+ash/resources/grit/ash_resources.h",
-]

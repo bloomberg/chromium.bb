@@ -1,6 +1,0 @@
-include_rules = [
-  "+athena/screen",
-  "+content/public",
-  "+ui/aura",
-  "+ui/keyboard",
-]
