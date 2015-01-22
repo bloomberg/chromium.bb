@@ -42,7 +42,8 @@ int OnNoMemory(size_t) {
 
 void ExhaustMemoryWithMalloc() {
   for (;;) {
-    void* buf = malloc(kLargePermittedAllocation);
+    // Without the |volatile|, clang optimizes away the allocation.
+    void* volatile buf = malloc(kLargePermittedAllocation);
     if (!buf)
       break;
   }
