@@ -136,7 +136,6 @@ class APIPermission {
     kLogPrivate,
     kManagement,
     kMediaGalleries,
-    kMediaGalleriesPrivate,
     kMediaPlayerPrivate,
     kMetricsPrivate,
     kMDns,

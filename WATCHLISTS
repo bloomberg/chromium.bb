@@ -436,7 +436,6 @@
     },
     'media_galleries': {
       'filepath': 'chrome/browser/extensions/api/media_galleries/'\
-                  '|chrome/browser/extensions/api/media_galleries_private/'\
                   '|chrome/browser/media_galleries/'\
                   '|chrome/browser/storage_monitor/'\
                   '|chrome/common/media_galleries/'\

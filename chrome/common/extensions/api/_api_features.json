@@ -507,10 +507,6 @@
     "dependencies": ["permission:mediaGalleries"],
     "contexts": ["blessed_extension"]
   },
-  "mediaGalleriesPrivate": {
-    "dependencies": ["permission:mediaGalleriesPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "mediaPlayerPrivate": {
     "dependencies": ["permission:mediaPlayerPrivate"],
     "contexts": ["blessed_extension"]

@@ -173,7 +173,6 @@
       'browser/extensions/api/mdns/mdns_apitest.cc',
       'browser/extensions/api/media_galleries/media_galleries_apitest.cc',
       'browser/extensions/api/media_galleries/media_galleries_watch_apitest.cc',
-      'browser/extensions/api/media_galleries_private/media_galleries_watch_apitest.cc',
       'browser/extensions/api/messaging/native_messaging_apitest.cc',
       'browser/extensions/api/metrics_private/metrics_apitest.cc',
       'browser/extensions/api/module/module_apitest.cc',

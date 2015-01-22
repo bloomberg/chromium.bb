@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_finder.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
@@ -97,9 +96,7 @@ int NumberExtensionsUsingMediaGalleries(Profile* profile) {
     const extensions::PermissionsData* permissions_data =
         extension->permissions_data();
     if (permissions_data->HasAPIPermission(
-            extensions::APIPermission::kMediaGalleries) ||
-        permissions_data->HasAPIPermission(
-            extensions::APIPermission::kMediaGalleriesPrivate)) {
+            extensions::APIPermission::kMediaGalleries)) {
       count++;
     }
   }

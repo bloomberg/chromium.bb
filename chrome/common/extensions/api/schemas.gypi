@@ -61,7 +61,6 @@
       'manifest_types.json',
       'mdns.idl',
       'media_galleries.idl',
-      'media_galleries_private.idl',
       'metrics_private.json',
       'networking_private.json',
       'notification_provider.idl',
