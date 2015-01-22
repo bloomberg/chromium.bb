@@ -315,6 +315,7 @@
         '../browser/api/audio/audio_apitest.cc',
         '../browser/api/dns/dns_apitest.cc',
         '../browser/api/hid/hid_apitest.cc',
+        '../browser/api/printer_provider/printer_provider_apitest.cc',
         '../browser/api/socket/socket_apitest.cc',
         '../browser/api/sockets_tcp/sockets_tcp_apitest.cc',
         '../browser/api/sockets_tcp_server/sockets_tcp_server_apitest.cc',

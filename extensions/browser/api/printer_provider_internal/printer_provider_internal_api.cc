@@ -4,11 +4,52 @@
 
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
 
+#include "base/lazy_instance.h"
+#include "extensions/common/api/printer_provider.h"
 #include "extensions/common/api/printer_provider_internal.h"
 
 namespace internal_api = extensions::core_api::printer_provider_internal;
 
 namespace extensions {
+
+namespace {
+
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<PrinterProviderInternalAPI>> g_api_factory =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+// static
+BrowserContextKeyedAPIFactory<PrinterProviderInternalAPI>*
+PrinterProviderInternalAPI::GetFactoryInstance() {
+  return g_api_factory.Pointer();
+}
+
+PrinterProviderInternalAPI::PrinterProviderInternalAPI(
+    content::BrowserContext* browser_context) {
+}
+
+PrinterProviderInternalAPI::~PrinterProviderInternalAPI() {
+}
+
+void PrinterProviderInternalAPI::AddObserver(
+    PrinterProviderInternalAPIObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PrinterProviderInternalAPI::RemoveObserver(
+    PrinterProviderInternalAPIObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void PrinterProviderInternalAPI::NotifyPrintResult(
+    const Extension* extension,
+    int request_id,
+    core_api::printer_provider_internal::PrintError error) {
+  FOR_EACH_OBSERVER(PrinterProviderInternalAPIObserver, observers_,
+                    OnPrintResult(extension, request_id, error));
+}
 
 PrinterProviderInternalReportPrintResultFunction::
     PrinterProviderInternalReportPrintResultFunction() {
@@ -24,6 +65,9 @@ PrinterProviderInternalReportPrintResultFunction::Run() {
       internal_api::ReportPrintResult::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  PrinterProviderInternalAPI::GetFactoryInstance()
+      ->Get(browser_context())
+      ->NotifyPrintResult(extension(), params->request_id, params->error);
   return RespondNow(NoArguments());
 }
 
