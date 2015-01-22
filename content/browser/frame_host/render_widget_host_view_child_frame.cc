@@ -145,7 +145,7 @@ void RenderWidgetHostViewChildFrame::TextInputTypeChanged(
     ui::TextInputMode input_mode,
     bool can_compose_inline,
     int flags) {
-  NOTREACHED();
+  // TODO(kenrb): Implement.
 }
 
 void RenderWidgetHostViewChildFrame::RenderProcessGone(

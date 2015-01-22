@@ -60,7 +60,9 @@ class RenderFrameHostDelegate;
 class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
+class RenderWidgetHostDelegate;
 class RenderWidgetHostImpl;
+class RenderWidgetHostView;
 class StreamHandle;
 class TimeoutMonitor;
 struct CommitNavigationParams;
@@ -79,7 +81,11 @@ enum CreateRenderFrameFlags {
   // top-level frame.
   CREATE_RF_FOR_MAIN_FRAME_NAVIGATION = 1 << 1,
   // The RenderFrame is initially hidden.
-  CREATE_RF_HIDDEN = 1 << 2
+  CREATE_RF_HIDDEN = 1 << 2,
+  // The RenderFrameHost will have a new RenderWidgetHost created and
+  // attached to it. This is used when the RenderFrameHost is in a different
+  // process from its parent frame.
+  CREATE_RF_NEEDS_RENDER_WIDGET_HOST = 1 << 3
 };
 
 class CONTENT_EXPORT RenderFrameHostImpl
@@ -177,9 +183,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Tracks whether the RenderFrame for this RenderFrameHost has been created in
   // the renderer process.  This is currently only used for subframes.
   // TODO(creis): Use this for main frames as well when RVH goes away.
-  void set_render_frame_created(bool created) {
-    render_frame_created_ = created;
-  }
+  void SetRenderFrameCreated(bool created);
 
   // Called for renderer-created windows to resume requests from this frame,
   // after they are blocked in RenderWidgetHelper::CreateNewWindow.
@@ -193,9 +197,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
-  // TODO(nasko): The RenderWidgetHost will be owned by RenderFrameHost in
-  // the future, so update this accessor to return the right pointer.
+
+  // This returns the RenderFrameHost's owned RenderWidgetHost if it has one,
+  // or else it returns nullptr.
+  // If the RenderFrameHost is the page's main frame, this returns instead a
+  // pointer to the RenderViewHost (which inherits RenderWidgetHost).
   RenderWidgetHostImpl* GetRenderWidgetHost();
+
+  // This returns the RenderWidgetHostView that can be used to control
+  // focus and visibility for this frame.
+  RenderWidgetHostView* GetView();
 
   // This function is called when this is a swapped out RenderFrameHost that
   // lives in the same process as the parent frame. The
@@ -403,6 +414,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // into WebContentsObserver::FrameDetached for now.
   RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
                       RenderFrameHostDelegate* delegate,
+                      RenderWidgetHostDelegate* rwh_delegate,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int routing_id,
@@ -547,6 +559,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The mapping of pending JavaScript calls created by
   // ExecuteJavaScript and their corresponding callbacks.
   std::map<int, JavaScriptResultCallback> javascript_callbacks_;
+
+  // RenderFrameHosts that need management of the rendering and input events
+  // for their frame subtrees require RenderWidgetHosts. This typically
+  // means frames that are rendered in different processes from their parent
+  // frames.
+  // TODO(kenrb): Later this will also be used on the top-level frame, when
+  // RenderFrameHost owns its RenderViewHost.
+  scoped_ptr<RenderWidgetHostImpl> render_widget_host_;
 
   int routing_id_;
 

@@ -1494,9 +1494,11 @@ void RenderThreadImpl::OnCreateNewFrame(
     int routing_id,
     int parent_routing_id,
     int proxy_routing_id,
-    const FrameReplicationState& replicated_state) {
+    const FrameReplicationState& replicated_state,
+    FrameMsg_NewFrame_WidgetParams params) {
+  CompositorDependencies* compositor_deps = this;
   RenderFrameImpl::CreateFrame(routing_id, parent_routing_id, proxy_routing_id,
-                               replicated_state);
+                               replicated_state, compositor_deps, params);
 }
 
 void RenderThreadImpl::OnCreateNewFrameProxy(

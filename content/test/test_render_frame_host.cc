@@ -36,12 +36,14 @@ void TestRenderFrameHostCreationObserver::RenderFrameCreated(
 
 TestRenderFrameHost::TestRenderFrameHost(RenderViewHostImpl* render_view_host,
                                          RenderFrameHostDelegate* delegate,
+                                         RenderWidgetHostDelegate* rwh_delegate,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
                                          int routing_id,
                                          int flags)
     : RenderFrameHostImpl(render_view_host,
                           delegate,
+                          rwh_delegate,
                           frame_tree,
                           frame_tree_node,
                           routing_id,

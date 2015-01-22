@@ -37,6 +37,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
  public:
   TestRenderFrameHost(RenderViewHostImpl* render_view_host,
                       RenderFrameHostDelegate* delegate,
+                      RenderWidgetHostDelegate* rwh_delegate,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int routing_id,

@@ -117,6 +117,7 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebGlyphCache.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
@@ -551,7 +552,9 @@ void RenderFrameImpl::CreateFrame(
     int routing_id,
     int parent_routing_id,
     int proxy_routing_id,
-    const FrameReplicationState& replicated_state) {
+    const FrameReplicationState& replicated_state,
+    CompositorDependencies* compositor_deps,
+    const FrameMsg_NewFrame_WidgetParams& widget_params) {
   // TODO(nasko): For now, this message is only sent for subframes, as the
   // top level frame is created when the RenderView is created through the
   // ViewMsg_New IPC.
@@ -583,6 +586,20 @@ void RenderFrameImpl::CreateFrame(
     web_frame->initializeToReplaceRemoteFrame(proxy->web_frame());
   }
   render_frame->SetWebFrame(web_frame);
+
+  if (widget_params.routing_id != MSG_ROUTING_NONE) {
+    CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kSitePerProcess));
+    render_frame->render_widget_ = RenderWidget::CreateForFrame(
+        widget_params.routing_id, widget_params.surface_id,
+        widget_params.hidden, render_frame->render_view_->screen_info(),
+        compositor_deps, web_frame);
+    // TODO(kenrb): Observing shouldn't be necessary when we sort out
+    // WasShown and WasHidden, separating page-level visibility from
+    // frame-level visibility.
+    render_frame->render_widget_->RegisterRenderFrame(render_frame);
+  }
+
   render_frame->Initialize();
 }
 
@@ -3565,6 +3582,13 @@ void RenderFrameImpl::WasHidden() {
 }
 
 void RenderFrameImpl::WasShown() {
+  // TODO(kenrb): Need to figure out how to do this better. Should
+  // VisibilityState remain a page-level concept or move to frames?
+  // The semantics of 'Show' might have to change here.
+  if (render_widget_) {
+    render_view()->webview()->setVisibilityState(
+        blink::WebPageVisibilityStateVisible, false);
+  }
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WasShown());
 }
 

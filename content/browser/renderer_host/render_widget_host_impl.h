@@ -191,6 +191,18 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // menus, and other times when the renderer initiates creating an object.
   virtual void Init();
 
+  // Initializes a RenderWidgetHost that is attached to a RenderFrameHost.
+  void InitForFrame();
+
+  // Signal whether this RenderWidgetHost is owned by a RenderFrameHost, in
+  // which case it does not do self-deletion.
+  void set_owned_by_render_frame_host(bool owned_by_rfh) {
+    owned_by_render_frame_host_ = owned_by_rfh;
+  }
+
+  // Called by RenderFrameHost before destroying this object.
+  void Cleanup();
+
   // Tells the renderer to die and then calls Destroy().
   virtual void Shutdown();
 
@@ -827,6 +839,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   typedef std::map<int,
       base::Callback<void(const unsigned char*, size_t)> > PendingSnapshotMap;
   PendingSnapshotMap pending_browser_snapshots_;
+
+  // Indicates whether a RenderFramehost has ownership, in which case this
+  // object does not self destroy.
+  bool owned_by_render_frame_host_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

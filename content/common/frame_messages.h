@@ -230,6 +230,19 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
   IPC_STRUCT_TRAITS_MEMBER(name)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_BEGIN(FrameMsg_NewFrame_WidgetParams)
+  // Gives the routing ID for the RenderWidget that will be attached to the
+  // new RenderFrame. If the RenderFrame does not need a RenderWidget, this
+  // is MSG_ROUTING_NONE and the other parameters are not read.
+  IPC_STRUCT_MEMBER(int, routing_id)
+
+  // Identifier for the output surface for the new RenderWidget.
+  IPC_STRUCT_MEMBER(int, surface_id)
+
+  // Tells the new RenderWidget whether it is initially hidden.
+  IPC_STRUCT_MEMBER(bool, hidden)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   // TODO(clamy): investigate which parameters are also needed in PlzNavigate
   // and move them to the appropriate NavigationParams struct.
@@ -389,11 +402,12 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DisownOpener)
 // to replace the proxy on commit.  When the new frame has a parent,
 // |replication_state| holds properties replicated from the process rendering
 // the parent frame, such as the new frame's sandbox flags.
-IPC_MESSAGE_CONTROL4(FrameMsg_NewFrame,
+IPC_MESSAGE_CONTROL5(FrameMsg_NewFrame,
                      int /* routing_id */,
                      int /* parent_routing_id */,
                      int /* proxy_routing_id */,
-                     content::FrameReplicationState /* replication_state */)
+                     content::FrameReplicationState /* replication_state */,
+                     FrameMsg_NewFrame_WidgetParams /* widget_params */)
 
 // Instructs the renderer to create a new RenderFrameProxy object with
 // |routing_id|. The new proxy should be created as a child of the object

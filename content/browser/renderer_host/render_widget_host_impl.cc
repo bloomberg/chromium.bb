@@ -184,6 +184,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
       next_browser_snapshot_id_(1),
+      owned_by_render_frame_host_(false),
       weak_factory_(this) {
   CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
@@ -412,6 +413,11 @@ void RenderWidgetHostImpl::Init() {
   GetProcess()->ResumeRequestsForView(routing_id_);
 
   WasResized();
+}
+
+void RenderWidgetHostImpl::InitForFrame() {
+  DCHECK(process_->HasConnection());
+  renderer_initialized_ = true;
 }
 
 void RenderWidgetHostImpl::Shutdown() {
@@ -1312,6 +1318,13 @@ void RenderWidgetHostImpl::SetAutoResize(bool enable,
   max_size_for_auto_resize_ = max_size;
 }
 
+void RenderWidgetHostImpl::Cleanup() {
+  if (view_) {
+    view_->Destroy();
+    view_ = nullptr;
+  }
+}
+
 void RenderWidgetHostImpl::Destroy() {
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
@@ -1322,8 +1335,10 @@ void RenderWidgetHostImpl::Destroy() {
   // Note that in the process of the view shutting down, it can call a ton
   // of other messages on us.  So if you do any other deinitialization here,
   // do it after this call to view_->Destroy().
-  if (view_)
+  if (view_) {
     view_->Destroy();
+    view_ = nullptr;
+  }
 
   delete this;
 }
@@ -1350,10 +1365,16 @@ void RenderWidgetHostImpl::OnRenderViewReady() {
 }
 
 void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
-  // TODO(evanm): This synchronously ends up calling "delete this".
-  // Is that really what we want in response to this message?  I'm matching
-  // previous behavior of the code here.
-  Destroy();
+  // RenderFrameHost owns a RenderWidgetHost when it needs one, in which case
+  // it handles destruction.
+  if (!owned_by_render_frame_host_) {
+    // TODO(evanm): This synchronously ends up calling "delete this".
+    // Is that really what we want in response to this message?  I'm matching
+    // previous behavior of the code here.
+    Destroy();
+  } else {
+    RendererExited(static_cast<base::TerminationStatus>(status), exit_code);
+  }
 }
 
 void RenderWidgetHostImpl::OnClose() {
