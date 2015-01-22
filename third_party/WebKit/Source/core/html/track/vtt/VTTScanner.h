@@ -129,6 +129,9 @@ public:
     // Scan a floating point value on one of the forms: \d+\.? \d+\.\d+ \.\d+
     bool scanFloat(float& number);
 
+    // Scan a floating point value (per scanFloat) followed by a '%'.
+    bool scanPercentage(float& percentage);
+
 protected:
     Position position() const { return m_data.characters8; }
     Position end() const { return m_end.characters8; }

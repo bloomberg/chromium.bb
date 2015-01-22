@@ -968,31 +968,25 @@ VTTCue::CueSetting VTTCue::settingName(VTTScanner& input)
     return None;
 }
 
-// Used for 'position' and 'size'.
-static bool scanPercentage(VTTScanner& input, const VTTScanner::Run& valueRun, int& number)
+static bool scanPercentage(VTTScanner& input, float& number)
 {
-    // 1. If value contains any characters other than U+0025 PERCENT SIGN
-    //    characters (%) and characters in the range U+0030 DIGIT ZERO (0) to
-    //    U+0039 DIGIT NINE (9), then jump to the step labeled next setting.
-    // 2. If value does not contain at least one character in the range U+0030
-    //    DIGIT ZERO (0) to U+0039 DIGIT NINE (9), then jump to the step
-    //    labeled next setting.
-    if (!input.scanDigits(number))
-        return false;
+    // http://dev.w3.org/html5/webvtt/#dfn-parse-a-percentage-string
 
-    // 3. If any character in value other than the last character is a U+0025
-    //    PERCENT SIGN character (%), then jump to the step labeled next
-    //    setting.
-    // 4. If the last character in value is not a U+0025 PERCENT SIGN character
-    //    (%), then jump to the step labeled next setting.
-    if (!input.scan('%') || !input.isAt(valueRun.end()))
-        return false;
-
-    // 5. Ignoring the trailing percent sign, interpret value as an integer,
-    //    and let number be that number.
-    // 6. If number is not in the range 0 ≤ number ≤ 100, then jump to the step
-    //    labeled next setting.
-    return number >= 0 && number <= 100;
+    // 1. Let input be the string being parsed.
+    // 2. If input contains any characters other than U+0025 PERCENT SIGN
+    //    characters (%), U+002E DOT characters (.) and ASCII digits, then
+    //    fail.
+    // 3. If input does not contain at least one ASCII digit, then fail.
+    // 4. If input contains more than one U+002E DOT character (.), then fail.
+    // 5. If any character in input other than the last character is a U+0025
+    //    PERCENT SIGN character (%), then fail.
+    // 6. If the last character in input is not a U+0025 PERCENT SIGN character
+    //    (%), then fail.
+    // 7. Ignoring the trailing percent sign, interpret input as a real
+    //    number. Let that number be the percentage.
+    // 8. If percentage is outside the range 0..100, then fail.
+    // 9. Return percentage.
+    return input.scanPercentage(number) && !isInvalidPercentage(number);
 }
 
 void VTTCue::parseSettings(const String& inputString)
@@ -1024,100 +1018,114 @@ void VTTCue::parseSettings(const String& inputString)
         switch (name) {
         case Vertical: {
             // If name is a case-sensitive match for "vertical"
-            // 1. If value is a case-sensitive match for the string "rl", then let cue's text track cue writing direction
-            //    be vertical growing left.
+            // 1. If value is a case-sensitive match for the string "rl", then
+            //    let cue's text track cue writing direction be vertical
+            //    growing left.
             if (input.scanRun(valueRun, verticalGrowingLeftKeyword()))
                 m_writingDirection = VerticalGrowingLeft;
 
-            // 2. Otherwise, if value is a case-sensitive match for the string "lr", then let cue's text track cue writing
-            //    direction be vertical growing right.
+            // 2. Otherwise, if value is a case-sensitive match for the string
+            //    "lr", then let cue's text track cue writing direction be
+            //    vertical growing right.
             else if (input.scanRun(valueRun, verticalGrowingRightKeyword()))
                 m_writingDirection = VerticalGrowingRight;
             break;
         }
         case Line: {
-            // 1-2 - Collect chars that are either '-', '%', or a digit.
-            // 1. If value contains any characters other than U+002D HYPHEN-MINUS characters (-), U+0025 PERCENT SIGN
-            //    characters (%), and characters in the range U+0030 DIGIT ZERO (0) to U+0039 DIGIT NINE (9), then jump
-            //    to the step labeled next setting.
-            bool isNegative = input.scan('-');
-            int linePosition;
-            unsigned numDigits = input.scanDigits(linePosition);
-            bool isPercentage = input.scan('%');
-
+            // If name is a case-sensitive match for "line"
+            // Steps 1 - 2 skipped.
+            float number;
+            // 3. If linepos does not contain at least one ASCII digit, then
+            //    jump to the step labeled next setting.
+            // 4. If the last character in linepos is a U+0025 PERCENT SIGN character (%)
+            //
+            //    If parse a percentage string from linepos doesn't fail, let
+            //    number be the returned percentage, otherwise jump to the step
+            //    labeled next setting.
+            bool isPercentage = scanPercentage(input, number);
+            if (!isPercentage) {
+                // Otherwise
+                //
+                // 1. If linepos contains any characters other than U+002D
+                //    HYPHEN-MINUS characters (-) and ASCII digits, then jump to
+                //    the step labeled next setting.
+                // 2. If any character in linepos other than the first character is
+                //    a U+002D HYPHEN-MINUS character (-), then jump to the step
+                //    labeled next setting.
+                bool isNegative = input.scan('-');
+                int intLinePosition;
+                if (!input.scanDigits(intLinePosition))
+                    break;
+                // 3. Interpret linepos as a (potentially signed) integer, and let
+                //    number be that number.
+                number = isNegative ? -intLinePosition : intLinePosition;
+            }
             if (!input.isAt(valueRun.end()))
                 break;
-
-            // 2. If value does not contain at least one character in the range U+0030 DIGIT ZERO (0) to U+0039 DIGIT
-            //    NINE (9), then jump to the step labeled next setting.
-            // 3. If any character in value other than the first character is a U+002D HYPHEN-MINUS character (-), then
-            //    jump to the step labeled next setting.
-            // 4. If any character in value other than the last character is a U+0025 PERCENT SIGN character (%), then
-            //    jump to the step labeled next setting.
-
-            // 5. If the first character in value is a U+002D HYPHEN-MINUS character (-) and the last character in value is a
-            //    U+0025 PERCENT SIGN character (%), then jump to the step labeled next setting.
-            if (!numDigits || (isPercentage && isNegative))
-                break;
-
-            // 6. Ignoring the trailing percent sign, if any, interpret value as a (potentially signed) integer, and
-            //    let number be that number.
-            // 7. If the last character in value is a U+0025 PERCENT SIGN character (%), but number is not in the range
-            //    0 ≤ number ≤ 100, then jump to the step labeled next setting.
-            // 8. Let cue's text track cue line position be number.
-            // 9. If the last character in value is a U+0025 PERCENT SIGN character (%), then let cue's text track cue
-            //    snap-to-lines flag be false. Otherwise, let it be true.
-            if (isPercentage) {
-                if (linePosition < 0 || linePosition > 100)
-                    break;
-                // 10 - If '%' then set snap-to-lines flag to false.
-                m_snapToLines = false;
-            } else {
-                if (isNegative)
-                    linePosition = -linePosition;
-                m_snapToLines = true;
-            }
-            m_linePosition = linePosition;
+            // 5. Let cue's text track cue line position be number.
+            m_linePosition = number;
+            // 6. If the last character in linepos is a U+0025 PERCENT SIGN
+            //    character (%), then let cue's text track cue snap-to-lines
+            //    flag be false. Otherwise, let it be true.
+            m_snapToLines = !isPercentage;
+            // Steps 7 - 9 skipped.
             break;
         }
         case Position: {
-            int number;
-            // Steps 1 - 6.
-            if (!scanPercentage(input, valueRun, number))
+            // If name is a case-sensitive match for "position".
+            float number;
+            // Steps 1 - 2 skipped.
+            // 3. If parse a percentage string from colpos doesn't fail, let
+            //    number be the returned percentage, otherwise jump to the step
+            //    labeled next setting (text track cue text position's value
+            //    remains the special value auto).
+            if (!scanPercentage(input, number))
                 break;
-
-            // 7. Let cue's text track cue text position be number.
+            if (!input.isAt(valueRun.end()))
+                break;
+            // 4. Let cue's text track cue text position be number.
             m_textPosition = number;
+            // Steps 5 - 7 skipped.
             break;
         }
         case Size: {
-            int number;
-            // Steps 1 - 6.
-            if (!scanPercentage(input, valueRun, number))
+            // If name is a case-sensitive match for "size"
+            float number;
+            // 1. If parse a percentage string from value doesn't fail, let
+            //    number be the returned percentage, otherwise jump to the step
+            //    labeled next setting.
+            if (!scanPercentage(input, number))
                 break;
-
-            // 7. Let cue's text track cue size be number.
+            if (!input.isAt(valueRun.end()))
+                break;
+            // 2. Let cue's text track cue size be number.
             m_cueSize = number;
             break;
         }
         case Align: {
-            // 1. If value is a case-sensitive match for the string "start", then let cue's text track cue alignment be start alignment.
+            // If name is a case-sensitive match for "align"
+            // 1. If value is a case-sensitive match for the string "start",
+            //    then let cue's text track cue alignment be start alignment.
             if (input.scanRun(valueRun, startKeyword()))
                 m_cueAlignment = Start;
 
-            // 2. If value is a case-sensitive match for the string "middle", then let cue's text track cue alignment be middle alignment.
+            // 2. If value is a case-sensitive match for the string "middle",
+            //    then let cue's text track cue alignment be middle alignment.
             else if (input.scanRun(valueRun, middleKeyword()))
                 m_cueAlignment = Middle;
 
-            // 3. If value is a case-sensitive match for the string "end", then let cue's text track cue alignment be end alignment.
+            // 3. If value is a case-sensitive match for the string "end", then
+            //    let cue's text track cue alignment be end alignment.
             else if (input.scanRun(valueRun, endKeyword()))
                 m_cueAlignment = End;
 
-            // 4. If value is a case-sensitive match for the string "left", then let cue's text track cue alignment be left alignment.
+            // 4. If value is a case-sensitive match for the string "left",
+            //    then let cue's text track cue alignment be left alignment.
             else if (input.scanRun(valueRun, leftKeyword()))
                 m_cueAlignment = Left;
 
-            // 5. If value is a case-sensitive match for the string "right", then let cue's text track cue alignment be right alignment.
+            // 5. If value is a case-sensitive match for the string "right",
+            //    then let cue's text track cue alignment be right alignment.
             else if (input.scanRun(valueRun, rightKeyword()))
                 m_cueAlignment = Right;
             break;

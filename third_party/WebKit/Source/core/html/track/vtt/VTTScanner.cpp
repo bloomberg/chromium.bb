@@ -168,4 +168,16 @@ bool VTTScanner::scanFloat(float& number)
     return true;
 }
 
+bool VTTScanner::scanPercentage(float& percentage)
+{
+    Position savedPosition = position();
+    if (!scanFloat(percentage))
+        return false;
+    if (scan('%'))
+        return true;
+    // Restore scanner position.
+    seekTo(savedPosition);
+    return false;
+}
+
 }
