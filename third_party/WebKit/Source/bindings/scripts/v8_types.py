@@ -476,9 +476,9 @@ V8_VALUE_TO_CPP_VALUE = {
     'ByteString': 'toByteString({arguments})',
     'USVString': 'toUSVString({arguments})',
     'boolean': '{v8_value}->BooleanValue()',
-    'float': 'toFloat({arguments})',
+    'float': 'toRestrictedFloat({arguments})',
     'unrestricted float': 'toFloat({arguments})',
-    'double': 'toDouble({arguments})',
+    'double': 'toRestrictedDouble({arguments})',
     'unrestricted double': 'toDouble({arguments})',
     'byte': 'toInt8({arguments})',
     'octet': 'toUInt8({arguments})',
@@ -530,7 +530,7 @@ def v8_conversion_is_trivial(idl_type):
 IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)
 
 
-def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate):
+def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate, restricted_float=False):
     if idl_type.name == 'void':
         return ''
 
@@ -554,6 +554,11 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         arguments = v8_value
 
     if base_idl_type in V8_VALUE_TO_CPP_VALUE:
+        # FIXME: Once float/double are implemented per-specification (without
+        # [TypeChecking=Unrestricted]) this special handling can be dropped.
+        # http://crbug.com/354298
+        if base_idl_type in ('float', 'double') and not restricted_float:
+            base_idl_type = 'unrestricted ' + base_idl_type
         cpp_expression_format = V8_VALUE_TO_CPP_VALUE[base_idl_type]
     elif idl_type.is_array_buffer_or_view:
         cpp_expression_format = (
@@ -592,7 +597,7 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
 
 
 # FIXME: this function should be refactored, as this takes too many flags.
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name=None, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False, needs_exception_state_for_string=False):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name=None, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False, needs_exception_state_for_string=False, restricted_float=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
@@ -601,7 +606,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     if idl_type.base_type in ('void', 'object', 'EventHandler', 'EventListener'):
         return '/* no V8 -> C++ conversion for IDL type: %s */' % idl_type.name
 
-    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate)
+    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate, restricted_float=restricted_float)
 
     if idl_type.is_dictionary or idl_type.is_union_type:
         return 'TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(%s, exceptionState)' % cpp_value

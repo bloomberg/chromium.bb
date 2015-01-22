@@ -519,6 +519,18 @@ float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     return static_cast<float>(toDouble(value, exceptionState));
 }
 
+float toRestrictedFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+{
+    float numberValue = toFloat(value, exceptionState);
+    if (exceptionState.hadException())
+        return 0;
+    if (!std::isfinite(numberValue)) {
+        exceptionState.throwTypeError("The provided float value is non-finite.");
+        return 0;
+    }
+    return numberValue;
+}
+
 double toDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     if (value->IsNumber())
@@ -532,6 +544,18 @@ double toDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
         return 0;
     }
     return numberObject->NumberValue();
+}
+
+double toRestrictedDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+{
+    double numberValue = toDouble(value, exceptionState);
+    if (exceptionState.hadException())
+        return 0;
+    if (!std::isfinite(numberValue)) {
+        exceptionState.throwTypeError("The provided double value is non-finite.");
+        return 0;
+    }
+    return numberValue;
 }
 
 String toByteString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)

@@ -14,7 +14,9 @@ TestDictionary::TestDictionary()
 {
     setEnumMember(String("foo"));
     setLongMember(1);
+    setRestrictedDoubleMember(3.14);
     setStringOrNullMember(String("default string value"));
+    setUnrestrictedDoubleMember(3.14);
 }
 
 void TestDictionary::trace(Visitor* visitor)

@@ -468,6 +468,9 @@ uint64_t toUInt64(v8::Handle<v8::Value>);
 // Convert a value to a single precision float, which might fail.
 float toFloat(v8::Handle<v8::Value>, ExceptionState&);
 
+// Convert a value to a single precision float, throwing on non-finite values.
+float toRestrictedFloat(v8::Handle<v8::Value>, ExceptionState&);
+
 // Convert a value to a single precision float assuming the conversion cannot fail.
 inline float toFloat(v8::Local<v8::Value> value)
 {
@@ -476,6 +479,9 @@ inline float toFloat(v8::Local<v8::Value> value)
 
 // Convert a value to a double precision float, which might fail.
 double toDouble(v8::Handle<v8::Value>, ExceptionState&);
+
+// Convert a value to a double precision float, throwing on non-finite values.
+double toRestrictedDouble(v8::Handle<v8::Value>, ExceptionState&);
 
 // Converts a value to a String, throwing if any code unit is outside 0-255.
 String toByteString(v8::Handle<v8::Value>, ExceptionState&);

@@ -206,6 +206,18 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         impl.setObjectOrNullMember(objectOrNullMember);
     }
 
+    v8::Local<v8::Value> restrictedDoubleMemberValue = v8Object->Get(v8String(isolate, "restrictedDoubleMember"));
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (restrictedDoubleMemberValue.IsEmpty() || restrictedDoubleMemberValue->IsUndefined()) {
+        // Do nothing.
+    } else {
+        TONATIVE_VOID_EXCEPTIONSTATE(double, restrictedDoubleMember, toRestrictedDouble(restrictedDoubleMemberValue, exceptionState), exceptionState);
+        impl.setRestrictedDoubleMember(restrictedDoubleMember);
+    }
+
     v8::Local<v8::Value> stringArrayMemberValue = v8Object->Get(v8String(isolate, "stringArrayMember"));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
@@ -387,6 +399,18 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         impl.setUint8ArrayMember(uint8ArrayMember);
     }
 
+    v8::Local<v8::Value> unrestrictedDoubleMemberValue = v8Object->Get(v8String(isolate, "unrestrictedDoubleMember"));
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (unrestrictedDoubleMemberValue.IsEmpty() || unrestrictedDoubleMemberValue->IsUndefined()) {
+        // Do nothing.
+    } else {
+        TONATIVE_VOID_EXCEPTIONSTATE(double, unrestrictedDoubleMember, toDouble(unrestrictedDoubleMemberValue, exceptionState), exceptionState);
+        impl.setUnrestrictedDoubleMember(unrestrictedDoubleMember);
+    }
+
 }
 
 v8::Local<v8::Value> toV8(const TestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
@@ -454,6 +478,12 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
         dictionary->Set(v8String(isolate, "objectOrNullMember"), impl.objectOrNullMember().v8Value());
     }
 
+    if (impl.hasRestrictedDoubleMember()) {
+        dictionary->Set(v8String(isolate, "restrictedDoubleMember"), v8::Number::New(isolate, impl.restrictedDoubleMember()));
+    } else {
+        dictionary->Set(v8String(isolate, "restrictedDoubleMember"), v8::Number::New(isolate, 3.14));
+    }
+
     if (impl.hasStringArrayMember()) {
         dictionary->Set(v8String(isolate, "stringArrayMember"), toV8(impl.stringArrayMember(), creationContext, isolate));
     }
@@ -502,6 +532,12 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
 
     if (impl.hasUint8ArrayMember()) {
         dictionary->Set(v8String(isolate, "uint8ArrayMember"), toV8(impl.uint8ArrayMember(), creationContext, isolate));
+    }
+
+    if (impl.hasUnrestrictedDoubleMember()) {
+        dictionary->Set(v8String(isolate, "unrestrictedDoubleMember"), v8::Number::New(isolate, impl.unrestrictedDoubleMember()));
+    } else {
+        dictionary->Set(v8String(isolate, "unrestrictedDoubleMember"), v8::Number::New(isolate, 3.14));
     }
 
 }

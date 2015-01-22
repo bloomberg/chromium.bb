@@ -198,6 +198,10 @@ def argument_context(interface, method, argument, index):
          has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and
         idl_type.is_wrapper_type)
 
+    restricted_float = (
+        has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
+        has_extended_attribute_value(method, 'TypeChecking', 'Unrestricted'))
+
     if ('ImplementedInPrivateScript' in extended_attributes and
         not idl_type.is_wrapper_type and
         not idl_type.is_basic_type):
@@ -216,10 +220,6 @@ def argument_context(interface, method, argument, index):
         # FIXME: remove once [Default] removed and just use argument.default_value
         'has_default': 'Default' in extended_attributes or set_default_value,
         'has_type_checking_interface': type_checking_interface,
-        'has_type_checking_unrestricted':
-            (has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
-             has_extended_attribute_value(method, 'TypeChecking', 'Unrestricted')) and
-            idl_type.name in ('Float', 'Double'),
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': idl_type.base_type,
         'idl_type_object': idl_type,
@@ -240,7 +240,7 @@ def argument_context(interface, method, argument, index):
         'use_permissive_dictionary_conversion': 'PermissiveDictionaryConversion' in extended_attributes,
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
-        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, return_promise=method.returns_promise),
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, return_promise=method.returns_promise, restricted_float=restricted_float),
         'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type),
     }
 
@@ -367,7 +367,7 @@ def v8_value_to_local_cpp_variadic_value(argument, index, return_promise):
     return '%s%s(%s)' % (macro, suffix, ', '.join(macro_args))
 
 
-def v8_value_to_local_cpp_value(argument, index, return_promise=False):
+def v8_value_to_local_cpp_value(argument, index, return_promise=False, restricted_float=False):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
@@ -375,7 +375,8 @@ def v8_value_to_local_cpp_value(argument, index, return_promise=False):
         return v8_value_to_local_cpp_variadic_value(argument, index, return_promise)
     return idl_type.v8_value_to_local_cpp_value(extended_attributes, 'info[%s]' % index,
                                                 name, index=index, declare_variable=False,
-                                                return_promise=return_promise)
+                                                return_promise=return_promise,
+                                                restricted_float=restricted_float)
 
 
 ################################################################################

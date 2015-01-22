@@ -254,7 +254,7 @@ void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         return;
 
     if (v8Value->IsNumber()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
+        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toRestrictedDouble(v8Value, exceptionState), exceptionState);
         impl.setDouble(cppValue);
         return;
     }
@@ -498,7 +498,7 @@ void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         return;
 
     if (v8Value->IsNumber()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
+        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toRestrictedDouble(v8Value, exceptionState), exceptionState);
         impl.setDouble(cppValue);
         return;
     }
@@ -647,7 +647,7 @@ void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
         return;
 
     if (v8Value->IsNumber()) {
-        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
+        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toRestrictedDouble(v8Value, exceptionState), exceptionState);
         impl.setDouble(cppValue);
         return;
     }
@@ -1065,6 +1065,78 @@ TestInterfaceWillBeGarbageCollectedOrTestDictionary NativeValueTraits<TestInterf
 {
     TestInterfaceWillBeGarbageCollectedOrTestDictionary impl;
     V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(isolate, value, impl, exceptionState);
+    return impl;
+}
+
+UnrestrictedDoubleOrString::UnrestrictedDoubleOrString()
+    : m_type(SpecificTypeNone)
+{
+}
+
+double UnrestrictedDoubleOrString::getAsUnrestrictedDouble() const
+{
+    ASSERT(isUnrestrictedDouble());
+    return m_unrestrictedDouble;
+}
+
+void UnrestrictedDoubleOrString::setUnrestrictedDouble(double value)
+{
+    ASSERT(isNull());
+    m_unrestrictedDouble = value;
+    m_type = SpecificTypeUnrestrictedDouble;
+}
+
+String UnrestrictedDoubleOrString::getAsString() const
+{
+    ASSERT(isString());
+    return m_string;
+}
+
+void UnrestrictedDoubleOrString::setString(String value)
+{
+    ASSERT(isNull());
+    m_string = value;
+    m_type = SpecificTypeString;
+}
+
+void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, UnrestrictedDoubleOrString& impl, ExceptionState& exceptionState)
+{
+    if (v8Value.IsEmpty())
+        return;
+
+    if (v8Value->IsNumber()) {
+        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
+        impl.setUnrestrictedDouble(cppValue);
+        return;
+    }
+
+    {
+        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        impl.setString(cppValue);
+        return;
+    }
+
+}
+
+v8::Local<v8::Value> toV8(const UnrestrictedDoubleOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    switch (impl.m_type) {
+    case UnrestrictedDoubleOrString::SpecificTypeNone:
+        return v8::Null(isolate);
+    case UnrestrictedDoubleOrString::SpecificTypeUnrestrictedDouble:
+        return v8::Number::New(isolate, impl.getAsUnrestrictedDouble());
+    case UnrestrictedDoubleOrString::SpecificTypeString:
+        return v8String(isolate, impl.getAsString());
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return v8::Local<v8::Value>();
+}
+
+UnrestrictedDoubleOrString NativeValueTraits<UnrestrictedDoubleOrString>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    UnrestrictedDoubleOrString impl;
+    V8UnrestrictedDoubleOrString::toImpl(isolate, value, impl, exceptionState);
     return impl;
 }
 

@@ -1175,12 +1175,16 @@ def property_getter(getter, cpp_arguments):
     }
 
 
-def property_setter(setter):
+def property_setter(interface, setter):
     idl_type = setter.arguments[1].idl_type
     extended_attributes = setter.extended_attributes
     is_raises_exception = 'RaisesException' in extended_attributes
+    restricted_float = (
+        has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
+        has_extended_attribute_value(setter, 'TypeChecking', 'Unrestricted'))
     return {
         'has_type_checking_interface':
+            # FIXME: check interface's [TypeChecking] attribute too.
             has_extended_attribute_value(setter, 'TypeChecking', 'Interface') and
             idl_type.is_wrapper_type,
         'idl_type': idl_type.base_type,
@@ -1190,7 +1194,7 @@ def property_setter(setter):
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, 'v8Value', 'propertyValue'),
+            extended_attributes, 'v8Value', 'propertyValue', restricted_float),
     }
 
 
@@ -1242,7 +1246,7 @@ def indexed_property_setter(interface):
     except StopIteration:
         return None
 
-    return property_setter(setter)
+    return property_setter(interface, setter)
 
 
 def indexed_property_deleter(interface):
@@ -1296,7 +1300,7 @@ def named_property_setter(interface):
     except StopIteration:
         return None
 
-    return property_setter(setter)
+    return property_setter(interface, setter)
 
 
 def named_property_deleter(interface):

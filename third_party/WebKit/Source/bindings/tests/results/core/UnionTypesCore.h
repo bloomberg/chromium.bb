@@ -648,6 +648,52 @@ struct NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary> {
     static TestInterfaceWillBeGarbageCollectedOrTestDictionary nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
 };
 
+class UnrestrictedDoubleOrString final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    UnrestrictedDoubleOrString();
+    bool isNull() const { return m_type == SpecificTypeNone; }
+
+    bool isUnrestrictedDouble() const { return m_type == SpecificTypeUnrestrictedDouble; }
+    double getAsUnrestrictedDouble() const;
+    void setUnrestrictedDouble(double);
+
+    bool isString() const { return m_type == SpecificTypeString; }
+    String getAsString() const;
+    void setString(String);
+
+private:
+    enum SpecificTypes {
+        SpecificTypeNone,
+        SpecificTypeUnrestrictedDouble,
+        SpecificTypeString,
+    };
+    SpecificTypes m_type;
+
+    double m_unrestrictedDouble;
+    String m_string;
+
+    friend v8::Local<v8::Value> toV8(const UnrestrictedDoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
+};
+
+class V8UnrestrictedDoubleOrString final {
+public:
+    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, UnrestrictedDoubleOrString&, ExceptionState&);
+};
+
+v8::Local<v8::Value> toV8(const UnrestrictedDoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
+
+template <class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, UnrestrictedDoubleOrString& impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template <>
+struct NativeValueTraits<UnrestrictedDoubleOrString> {
+    static UnrestrictedDoubleOrString nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
 class V8DoubleOrStringOrNull final {
 public:
     static void toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrString& impl, ExceptionState& exceptionState)

@@ -76,6 +76,10 @@ public:
     void setObjectOrNullMember(ScriptValue value) { m_objectOrNullMember = value; }
     void setObjectOrNullMemberToNull() { m_objectOrNullMember = ScriptValue(); }
 
+    bool hasRestrictedDoubleMember() const { return !m_restrictedDoubleMember.isNull(); }
+    double restrictedDoubleMember() const { return m_restrictedDoubleMember.get(); }
+    void setRestrictedDoubleMember(double value) { m_restrictedDoubleMember = value; }
+
     bool hasStringArrayMember() const { return !m_stringArrayMember.isNull(); }
     const Vector<String>& stringArrayMember() const { return m_stringArrayMember.get(); }
     void setStringArrayMember(const Vector<String>& value) { m_stringArrayMember = value; }
@@ -128,6 +132,10 @@ public:
     PassRefPtr<DOMUint8Array> uint8ArrayMember() const { return m_uint8ArrayMember; }
     void setUint8ArrayMember(PassRefPtr<DOMUint8Array> value) { m_uint8ArrayMember = value; }
 
+    bool hasUnrestrictedDoubleMember() const { return !m_unrestrictedDoubleMember.isNull(); }
+    double unrestrictedDoubleMember() const { return m_unrestrictedDoubleMember.get(); }
+    void setUnrestrictedDoubleMember(double value) { m_unrestrictedDoubleMember = value; }
+
     virtual void trace(Visitor*);
 
 private:
@@ -142,6 +150,7 @@ private:
     Nullable<int> m_longMember;
     ScriptValue m_objectMember;
     ScriptValue m_objectOrNullMember;
+    Nullable<double> m_restrictedDoubleMember;
     Nullable<Vector<String> > m_stringArrayMember;
     String m_stringMember;
     String m_stringOrNullMember;
@@ -154,6 +163,7 @@ private:
     RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollectedMember;
     RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollectedOrNullMember;
     RefPtr<DOMUint8Array> m_uint8ArrayMember;
+    Nullable<double> m_unrestrictedDoubleMember;
 
     friend class V8TestDictionary;
 };

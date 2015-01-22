@@ -1901,6 +1901,39 @@ static void testEnumOrDoubleAttributeAttributeSetterCallback(v8::Local<v8::Strin
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void unrestrictedDoubleOrStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toImpl(holder);
+    UnrestrictedDoubleOrString result;
+    impl->unrestrictedDoubleOrStringAttribute(result);
+    v8SetReturnValue(info, result);
+}
+
+static void unrestrictedDoubleOrStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void unrestrictedDoubleOrStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedDoubleOrStringAttribute", "TestObject", holder, info.GetIsolate());
+    UnrestrictedDoubleOrString cppValue;
+    TestObject* impl = V8TestObject::toImpl(holder);
+    TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8UnrestrictedDoubleOrString::toImpl(info.GetIsolate(), v8Value, cppValue, exceptionState), exceptionState);
+    impl->setUnrestrictedDoubleOrStringAttribute(cppValue);
+}
+
+static void unrestrictedDoubleOrStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void activityLoggingAccessForAllWorldsLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -10390,18 +10423,8 @@ static void typeCheckingUnrestrictedVoidMethodFloatArgDoubleArgMethod(const v8::
     float floatArg;
     double doubleArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(floatArg, toFloat(info[0], exceptionState), exceptionState);
-        if (!std::isfinite(floatArg)) {
-            exceptionState.throwTypeError("float parameter 1 is non-finite.");
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[1], exceptionState), exceptionState);
-        if (!std::isfinite(doubleArg)) {
-            exceptionState.throwTypeError("double parameter 2 is non-finite.");
-            exceptionState.throwIfNeeded();
-            return;
-        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(floatArg, toRestrictedFloat(info[0], exceptionState), exceptionState);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toRestrictedDouble(info[1], exceptionState), exceptionState);
     }
     impl->typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg(floatArg, doubleArg);
 }
@@ -10779,6 +10802,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"doubleOrNullStringAttribute", TestObjectV8Internal::doubleOrNullStringAttributeAttributeGetterCallback, TestObjectV8Internal::doubleOrNullStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"stringOrStringSequenceAttribute", TestObjectV8Internal::stringOrStringSequenceAttributeAttributeGetterCallback, TestObjectV8Internal::stringOrStringSequenceAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"testEnumOrDoubleAttribute", TestObjectV8Internal::testEnumOrDoubleAttributeAttributeGetterCallback, TestObjectV8Internal::testEnumOrDoubleAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"unrestrictedDoubleOrStringAttribute", TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeGetterCallback, TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"activityLoggingAccessForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"activityLoggingGetterForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"activityLoggingSetterForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},

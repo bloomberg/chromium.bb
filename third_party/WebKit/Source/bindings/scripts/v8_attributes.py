@@ -62,11 +62,6 @@ def attribute_context(interface, attribute):
     # [PerWorldBindings]
     if 'PerWorldBindings' in extended_attributes:
         assert idl_type.is_wrapper_type or 'LogActivity' in extended_attributes, '[PerWorldBindings] should only be used with wrapper types: %s.%s' % (interface.name, attribute.name)
-    # [TypeChecking]
-    has_type_checking_unrestricted = (
-        (has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
-         has_extended_attribute_value(attribute, 'TypeChecking', 'Unrestricted')) and
-         idl_type.name in ('Float', 'Double'))
     # [ImplementedInPrivateScript]
     is_implemented_in_private_script = 'ImplementedInPrivateScript' in extended_attributes
     if is_implemented_in_private_script:
@@ -100,7 +95,6 @@ def attribute_context(interface, attribute):
         'exposed_test': v8_utilities.exposed(attribute, interface),  # [Exposed]
         'has_custom_getter': has_custom_getter(attribute),
         'has_custom_setter': has_custom_setter(attribute),
-        'has_type_checking_unrestricted': has_type_checking_unrestricted,
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_state': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ScriptState'),
@@ -325,11 +319,14 @@ def setter_context(interface, attribute, context):
         (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
          has_extended_attribute_value(attribute, 'TypeChecking', 'Interface')) and
         idl_type.is_wrapper_type)
+    # [TypeChecking=Unrestricted]
+    restricted_float = (
+        has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
+        has_extended_attribute_value(attribute, 'TypeChecking', 'Unrestricted'))
 
     context.update({
         'has_setter_exception_state':
             is_setter_raises_exception or has_type_checking_interface or
-            context['has_type_checking_unrestricted'] or
             idl_type.v8_conversion_needs_exception_state,
         'has_type_checking_interface': has_type_checking_interface,
         'is_setter_call_with_execution_context': v8_utilities.has_extended_attribute_value(
@@ -339,7 +336,7 @@ def setter_context(interface, attribute, context):
             'cppValue', isolate='scriptState->isolate()',
             creation_context='scriptState->context()->Global()'),
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, 'v8Value', 'cppValue'),
+            extended_attributes, 'v8Value', 'cppValue', restricted_float=restricted_float),
     })
 
     # setter_expression() depends on context values we set above.

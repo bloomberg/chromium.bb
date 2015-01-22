@@ -241,16 +241,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {# Type checking, possibly throw a TypeError, per:
        http://www.w3.org/TR/WebIDL/#es-type-mapping #}
-    {% if attribute.has_type_checking_unrestricted %}
-    {# Non-finite floating point values (NaN, +Infinity or −Infinity), per:
-       http://heycam.github.io/webidl/#es-float
-       http://heycam.github.io/webidl/#es-double #}
-    if (!std::isfinite(cppValue)) {
-        exceptionState.throwTypeError("The provided {{attribute.idl_type}} value is non-finite.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    {% elif attribute.has_type_checking_interface %}
+    {% if attribute.has_type_checking_interface %}
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
     if (!cppValue{% if attribute.is_nullable %} && !isUndefinedOrNull(v8Value){% endif %}) {

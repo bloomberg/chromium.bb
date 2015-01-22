@@ -108,12 +108,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
-    if (!std::isfinite(cppValue)) {
-        exceptionState.throwTypeError("The provided double value is non-finite.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
+    TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toRestrictedDouble(v8Value, exceptionState), exceptionState);
     impl->setDoubleAttribute(cppValue);
 }
 
@@ -143,12 +138,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "floatAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(float, cppValue, toFloat(v8Value, exceptionState), exceptionState);
-    if (!std::isfinite(cppValue)) {
-        exceptionState.throwTypeError("The provided float value is non-finite.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
+    TONATIVE_VOID_EXCEPTIONSTATE(float, cppValue, toRestrictedFloat(v8Value, exceptionState), exceptionState);
     impl->setFloatAttribute(cppValue);
 }
 
@@ -995,18 +985,8 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
     double doubleArg;
     float floatArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[0], exceptionState), exceptionState);
-        if (!std::isfinite(doubleArg)) {
-            exceptionState.throwTypeError("double parameter 1 is non-finite.");
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(floatArg, toFloat(info[1], exceptionState), exceptionState);
-        if (!std::isfinite(floatArg)) {
-            exceptionState.throwTypeError("float parameter 2 is non-finite.");
-            exceptionState.throwIfNeeded();
-            return;
-        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toRestrictedDouble(info[0], exceptionState), exceptionState);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(floatArg, toRestrictedFloat(info[1], exceptionState), exceptionState);
     }
     impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
@@ -1301,12 +1281,7 @@ static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     double doubleArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[0], exceptionState), exceptionState);
-        if (!std::isfinite(doubleArg)) {
-            exceptionState.throwTypeError("double parameter 1 is non-finite.");
-            exceptionState.throwIfNeeded();
-            return;
-        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toRestrictedDouble(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodPartialOverload(doubleArg);
 }

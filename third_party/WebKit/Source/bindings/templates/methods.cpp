@@ -175,16 +175,7 @@ if (!isUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->I
 {% endif %}{# argument.is_nullable #}
 {# Type checking, possibly throw a TypeError, per:
    http://www.w3.org/TR/WebIDL/#es-type-mapping #}
-{% if argument.has_type_checking_unrestricted %}
-{# Non-finite floating point values (NaN, +Infinity or −Infinity), per:
-   http://heycam.github.io/webidl/#es-float
-   http://heycam.github.io/webidl/#es-double #}
-if (!std::isfinite({{argument.name}})) {
-    {{throw_type_error(method, '"%s parameter %s is non-finite."' %
-                               (argument.idl_type, argument.index + 1)) | indent}}
-    return;
-}
-{% elif argument.has_type_checking_interface and not argument.is_variadic_wrapper_type %}
+{% if argument.has_type_checking_interface and not argument.is_variadic_wrapper_type %}
 {# Type checking for wrapper interface types (if interface not implemented,
    throw a TypeError), per http://www.w3.org/TR/WebIDL/#es-interface
    Note: for variadic arguments, the type checking is done for each matched
