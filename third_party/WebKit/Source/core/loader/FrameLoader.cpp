@@ -80,6 +80,7 @@
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/svg/graphics/SVGImage.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
@@ -217,7 +218,7 @@ void FrameLoader::dispatchUnloadEvent()
 {
     saveScrollState();
 
-    if (m_frame->document())
+    if (m_frame->document() && !SVGImage::isInSVGImage(m_frame->document()))
         m_frame->document()->dispatchUnloadEvents();
 
     if (Page* page = m_frame->page())
