@@ -146,7 +146,7 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
     GALLERY_ASPECT_RATIO_16_9: 16 / 9
   };
   for (var name in aspects) {
-    toolbar.addButton(
+    var button = toolbar.addButton(
         name,
         name,
         function(aspect, event) {
@@ -171,6 +171,12 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
             this.toolbar_.getElement().removeAttribute('dimmed');
           }
         }.bind(this, aspects[name]));
+    // Prevent from cropping by Enter key if the button is focused.
+    button.addEventListener('keydown', function(event) {
+      var key = util.getKeyModifiers(event) + event.keyIdentifier;
+      if (key === 'Enter')
+        event.stopPropagation();
+    });
   }
   this.toolbar_ = toolbar;
 };
