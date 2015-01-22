@@ -14,6 +14,18 @@ from pylib.device import device_errors
 from pylib.local import local_test_server_spawner
 from pylib.perf import perf_control
 
+# Test case statuses.
+RE_RUN = re.compile('\\[ RUN      \\] ?(.*)\r\n')
+RE_FAIL = re.compile('\\[  FAILED  \\] ?(.*?)( \\((\\d+) ms\\))?\r\r\n')
+RE_OK = re.compile('\\[       OK \\] ?(.*?)( \\((\\d+) ms\\))?\r\r\n')
+
+# Test run statuses.
+RE_PASSED = re.compile('\\[  PASSED  \\] ?(.*)\r\n')
+RE_RUNNER_FAIL = re.compile('\\[ RUNNER_FAILED \\] ?(.*)\r\n')
+# Signal handlers are installed before starting tests
+# to output the CRASHED marker when a crash happens.
+RE_CRASH = re.compile('\\[ CRASHED      \\](.*)\r\n')
+
 
 def _TestSuiteRequiresMockTestServer(suite_name):
   """Returns True if the test suite requires mock test server."""
@@ -77,45 +89,33 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """
     results = base_test_result.TestRunResults()
 
-    # Test case statuses.
-    re_run = re.compile('\\[ RUN      \\] ?(.*)\r\n')
-    re_fail = re.compile('\\[  FAILED  \\] ?(.*?)( \\((\\d+) ms\\))?\r\r\n')
-    re_ok = re.compile('\\[       OK \\] ?(.*?)( \\((\\d+) ms\\))?\r\r\n')
-
-    # Test run statuses.
-    re_passed = re.compile('\\[  PASSED  \\] ?(.*)\r\n')
-    re_runner_fail = re.compile('\\[ RUNNER_FAILED \\] ?(.*)\r\n')
-    # Signal handlers are installed before starting tests
-    # to output the CRASHED marker when a crash happens.
-    re_crash = re.compile('\\[ CRASHED      \\](.*)\r\n')
-
     log = ''
     try:
       while True:
         full_test_name = None
 
-        found = p.expect([re_run, re_passed, re_runner_fail],
+        found = p.expect([RE_RUN, RE_PASSED, RE_RUNNER_FAIL],
                          timeout=self._timeout)
-        if found == 1:  # re_passed
+        if found == 1:  # RE_PASSED
           break
-        elif found == 2:  # re_runner_fail
+        elif found == 2:  # RE_RUNNER_FAIL
           break
-        else:  # re_run
+        else:  # RE_RUN
           full_test_name = p.match.group(1).replace('\r', '')
-          found = p.expect([re_ok, re_fail, re_crash], timeout=self._timeout)
+          found = p.expect([RE_OK, RE_FAIL, RE_CRASH], timeout=self._timeout)
           log = p.before.replace('\r', '')
-          if found == 0:  # re_ok
+          if found == 0:  # RE_OK
             if full_test_name == p.match.group(1).replace('\r', ''):
               duration_ms = int(p.match.group(3)) if p.match.group(3) else 0
               results.AddResult(base_test_result.BaseTestResult(
                   full_test_name, base_test_result.ResultType.PASS,
                   duration=duration_ms, log=log))
-          elif found == 2:  # re_crash
+          elif found == 2:  # RE_CRASH
             results.AddResult(base_test_result.BaseTestResult(
                 full_test_name, base_test_result.ResultType.CRASH,
                 log=log))
             break
-          else:  # re_fail
+          else:  # RE_FAIL
             duration_ms = int(p.match.group(3)) if p.match.group(3) else 0
             results.AddResult(base_test_result.BaseTestResult(
                 full_test_name, base_test_result.ResultType.FAIL,

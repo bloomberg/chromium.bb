@@ -634,9 +634,12 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    # Check that the package exists before clearing it. Necessary because
-    # calling pm clear on a package that doesn't exist may never return.
-    if self.GetApplicationPath(package):
+    # Check that the package exists before clearing it for android builds below
+    # JB MR2. Necessary because calling pm clear on a package that doesn't exist
+    # may never return.
+    if ((self.build_version_sdk >=
+         constants.ANDROID_SDK_VERSION_CODES.JELLY_BEAN_MR2)
+        or self.GetApplicationPath(package)):
       self.RunShellCommand(['pm', 'clear', package], check_return=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()

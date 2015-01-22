@@ -930,15 +930,31 @@ class DeviceUtilsForceStopTest(DeviceUtilsNewImplTest):
 class DeviceUtilsClearApplicationStateTest(DeviceUtilsNewImplTest):
 
   def testClearApplicationState_packageDoesntExist(self):
-    with self.assertCall(
-        self.call.device.GetApplicationPath('this.package.does.not.exist'),
-        None):
+    with self.assertCalls(
+        (self.call.adb.Shell('getprop ro.build.version.sdk'), '17\n'),
+        (self.call.device.GetApplicationPath('this.package.does.not.exist'),
+         None)):
+      self.device.ClearApplicationState('this.package.does.not.exist')
+
+  def testClearApplicationState_packageDoesntExistOnAndroidJBMR2OrAbove(self):
+    with self.assertCalls(
+        (self.call.adb.Shell('getprop ro.build.version.sdk'), '18\n'),
+        (self.call.adb.Shell('pm clear this.package.does.not.exist'),
+         'Failed\r\n')):
       self.device.ClearApplicationState('this.package.does.not.exist')
 
   def testClearApplicationState_packageExists(self):
     with self.assertCalls(
+        (self.call.adb.Shell('getprop ro.build.version.sdk'), '17\n'),
         (self.call.device.GetApplicationPath('this.package.exists'),
          '/data/app/this.package.exists.apk'),
+        (self.call.adb.Shell('pm clear this.package.exists'),
+         'Success\r\n')):
+      self.device.ClearApplicationState('this.package.exists')
+
+  def testClearApplicationState_packageExistsOnAndroidJBMR2OrAbove(self):
+    with self.assertCalls(
+        (self.call.adb.Shell('getprop ro.build.version.sdk'), '18\n'),
         (self.call.adb.Shell('pm clear this.package.exists'),
          'Success\r\n')):
       self.device.ClearApplicationState('this.package.exists')

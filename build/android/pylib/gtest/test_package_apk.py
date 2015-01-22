@@ -55,11 +55,11 @@ class TestPackageApk(TestPackage):
     device.RunShellCommand('rm -f ' + self._GetFifo())
 
   def _WatchFifo(self, device, timeout, logfile=None):
-    for i in range(10):
+    for i in range(100):
       if device.FileExists(self._GetFifo()):
-        logging.info('Fifo created.')
+        logging.info('Fifo created. Slept for %f secs' % (i * 0.5))
         break
-      time.sleep(i)
+      time.sleep(0.5)
     else:
       raise device_errors.DeviceUnreachableError(
           'Unable to find fifo on device %s ' % self._GetFifo())
@@ -67,14 +67,14 @@ class TestPackageApk(TestPackage):
     args += ['shell', 'cat', self._GetFifo()]
     return pexpect.spawn('adb', args, timeout=timeout, logfile=logfile)
 
-  def _StartActivity(self, device):
+  def _StartActivity(self, device, force_stop=True):
     device.StartActivity(
         intent.Intent(package=self._package_info.package,
                       activity=self._package_info.activity,
                       action='android.intent.action.MAIN'),
         # No wait since the runner waits for FIFO creation anyway.
         blocking=False,
-        force_stop=True)
+        force_stop=force_stop)
 
   #override
   def ClearApplicationState(self, device):
@@ -119,7 +119,10 @@ class TestPackageApk(TestPackage):
     try:
       self.tool.SetupEnvironment()
       self._ClearFifo(device)
-      self._StartActivity(device)
+      # Doesn't need to stop an Activity because ClearApplicationState() is
+      # always called before this call and so it is already stopped at this
+      # point.
+      self._StartActivity(device, force_stop=False)
     finally:
       self.tool.CleanUpEnvironment()
     logfile = android_commands.NewLineNormalizer(sys.stdout)
