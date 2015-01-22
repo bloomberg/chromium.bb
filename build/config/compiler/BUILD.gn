@@ -349,8 +349,10 @@ config("compiler") {
       "-Wl,-z,noexecstack",
       "-Wl,-z,now",
       "-Wl,-z,relro",
-      "-Wl,-z,defs",
     ]
+    if (!using_sanitizer) {
+      ldflags += [ "-Wl,-z,defs" ]
+    }
   }
 
   # Linux-specific compiler flags setup.
