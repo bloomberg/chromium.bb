@@ -66,6 +66,9 @@ void ContentLayerDelegate::paintContents(
         context.setAnnotationMode(AnnotateAll);
 
     m_painter->paint(context, clip);
+
+    if (DisplayItemList* displayItemList = m_painter->displayItemList())
+        displayItemList->endNewPaints();
 }
 
 void ContentLayerDelegate::paintContents(
@@ -89,8 +92,6 @@ void ContentLayerDelegate::paintContents(
     paintContents(canvas, clip, canPaintLCDText, contextStatus);
     canvas->restore();
     picture = adoptRef(recorder.endRecording());
-
-    m_painter->displayItemList()->endNewPaints();
 
     const PaintList& paintList = m_painter->displayItemList()->paintList();
     for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
