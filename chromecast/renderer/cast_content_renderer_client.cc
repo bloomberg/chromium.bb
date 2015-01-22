@@ -29,12 +29,11 @@ namespace shell {
 namespace {
 
 #if defined(ARCH_CPU_ARM_FAMILY) && !defined(OS_ANDROID)
-// These memory thresholds are set for Chromecast. See the UMA histogram
+// This memory threshold is set for Chromecast. See the UMA histogram
 // Platform.MeminfoMemFree when tuning.
 // TODO(gunsch): These should be platform/product-dependent. Look into a way
 // to move these to platform-specific repositories.
 const int kCriticalMinFreeMemMB = 24;
-const int kModerateMinFreeMemMB = 48;
 const int kPollingIntervalMS = 5000;
 
 void PlatformPollFreemem(void) {
@@ -46,17 +45,11 @@ void PlatformPollFreemem(void) {
     int free_mem_mb = static_cast<int64_t>(sys.freeram) *
         sys.mem_unit / (1024 * 1024);
 
-    if (free_mem_mb <= kModerateMinFreeMemMB) {
-      if (free_mem_mb <= kCriticalMinFreeMemMB) {
-        // Memory is getting really low, we need to do whatever we can to
-        // prevent deadlocks and interfering with other processes.
-        base::MemoryPressureListener::NotifyMemoryPressure(
-            base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL);
-      } else {
-        // There is enough memory, but it is starting to get low.
-        base::MemoryPressureListener::NotifyMemoryPressure(
-            base::MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
-      }
+    if (free_mem_mb <= kCriticalMinFreeMemMB) {
+      // Memory is getting really low, we need to do whatever we can to
+      // prevent deadlocks and interfering with other processes.
+      base::MemoryPressureListener::NotifyMemoryPressure(
+          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
     }
   }
 
