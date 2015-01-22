@@ -26,6 +26,7 @@
       <input type="radio" id="radio_delete" name="group">Delete File/Directory
       <input type="radio" id="radio_listDir" name="group">List Directory
       <input type="radio" id="radio_makeDir" name="group">Make Directory
+      <input type="radio" id="radio_rename" name="group">Rename
     </span>
   </div>
   <div class="function" id="saveFile">
@@ -74,6 +75,17 @@
       <input type="text" value="/directory">
       <button>Make Directory</button>
     </span>
+  </div>
+  <div class="function" id="rename" hidden>
+    <div>
+      Old name:
+      <input id="renameOld" type="text" value="/filename.txt">
+    </div>
+    <div>
+      New name:
+      <input id="renameNew" type="text" value="/filename2.txt">
+    </div>
+    <button>Rename</button>
   </div>
 
   <pre id="log" style="font-weight: bold"></pre>

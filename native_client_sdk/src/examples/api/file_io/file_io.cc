@@ -6,8 +6,11 @@
 /// This example demonstrates the use of persistent file I/O
 
 #define __STDC_LIMIT_MACROS
+#include <stdio.h>
+
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_file_io.h"
@@ -19,6 +22,7 @@
 #include "ppapi/cpp/message_loop.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "ppapi/utility/threading/simple_thread.h"
 
@@ -36,12 +40,7 @@
 #endif
 
 namespace {
-/// Used for our simple protocol to communicate with Javascript
-const char* const kLoadPrefix = "ld";
-const char* const kSavePrefix = "sv";
-const char* const kDeletePrefix = "de";
-const char* const kListPrefix = "ls";
-const char* const kMakeDirPrefix = "md";
+typedef std::vector<std::string> StringVector;
 }
 
 /// The Instance class.  One of these exists for each instance of your NaCl
@@ -87,6 +86,26 @@ class FileIoInstance : public pp::Instance {
   // We do all our file operations on the file_thread_.
   pp::SimpleThread file_thread_;
 
+  void PostArrayMessage(const char* command, const StringVector& strings) {
+    pp::VarArray message;
+    message.Set(0, command);
+    for (size_t i = 0; i < strings.size(); ++i) {
+      message.Set(i + 1, strings[i]);
+    }
+
+    PostMessage(message);
+  }
+
+  void PostArrayMessage(const char* command) {
+    PostArrayMessage(command, StringVector());
+  }
+
+  void PostArrayMessage(const char* command, std::string s) {
+    StringVector sv;
+    sv.push_back(s);
+    PostArrayMessage(command, sv);
+  }
+
   /// Handler for messages coming in from the browser via postMessage().  The
   /// @a var_message can contain anything: a JSON string; a string that encodes
   /// method names and arguments; etc.
@@ -95,47 +114,44 @@ class FileIoInstance : public pp::Instance {
   ///
   /// @param[in] var_message The message posted by the browser.
   virtual void HandleMessage(const pp::Var& var_message) {
-    if (!var_message.is_string())
+    if (!var_message.is_array())
       return;
 
-    // Parse message into: instruction file_name_length file_name [file_text]
-    std::string message = var_message.AsString();
-    std::string instruction;
-    std::string file_name;
-    std::stringstream reader(message);
-    int file_name_length;
-
-    reader >> instruction >> file_name_length;
-    file_name.resize(file_name_length);
-    reader.ignore(1);  // Eat the delimiter
-    reader.read(&file_name[0], file_name_length);
+    // Message should be an array with the following elements:
+    // [command, path, extra args]
+    pp::VarArray message(var_message);
+    std::string command = message.Get(0).AsString();
+    std::string file_name = message.Get(1).AsString();
 
     if (file_name.length() == 0 || file_name[0] != '/') {
       ShowStatusMessage("File name must begin with /");
       return;
     }
 
-    // Dispatch the instruction
-    if (instruction == kLoadPrefix) {
+    printf("command: %s file_name: %s\n", command.c_str(), file_name.c_str());
+
+    if (command == "load") {
       file_thread_.message_loop().PostWork(
           callback_factory_.NewCallback(&FileIoInstance::Load, file_name));
-    } else if (instruction == kSavePrefix) {
-      // Read the rest of the message as the file text
-      reader.ignore(1);  // Eat the delimiter
-      std::string file_text = message.substr(reader.tellg());
+    } else if (command == "save") {
+      std::string file_text = message.Get(2).AsString();
       file_thread_.message_loop().PostWork(callback_factory_.NewCallback(
           &FileIoInstance::Save, file_name, file_text));
-    } else if (instruction == kDeletePrefix) {
+    } else if (command == "delete") {
       file_thread_.message_loop().PostWork(
           callback_factory_.NewCallback(&FileIoInstance::Delete, file_name));
-    } else if (instruction == kListPrefix) {
+    } else if (command == "list") {
       const std::string& dir_name = file_name;
       file_thread_.message_loop().PostWork(
           callback_factory_.NewCallback(&FileIoInstance::List, dir_name));
-    } else if (instruction == kMakeDirPrefix) {
+    } else if (command == "makedir") {
       const std::string& dir_name = file_name;
       file_thread_.message_loop().PostWork(
           callback_factory_.NewCallback(&FileIoInstance::MakeDir, dir_name));
+    } else if (command == "rename") {
+      const std::string new_name = message.Get(2).AsString();
+      file_thread_.message_loop().PostWork(callback_factory_.NewCallback(
+          &FileIoInstance::Rename, file_name, new_name));
     }
   }
 
@@ -144,7 +160,7 @@ class FileIoInstance : public pp::Instance {
     if (rv == PP_OK) {
       file_system_ready_ = true;
       // Notify the user interface that we're ready
-      PostMessage("READY|");
+      PostArrayMessage("READY");
     } else {
       ShowErrorMessage("Failed to open file system", rv);
     }
@@ -250,7 +266,7 @@ class FileIoInstance : public pp::Instance {
     }
     // Done reading, send content to the user interface
     std::string string_data(data.begin(), data.end());
-    PostMessage("DISP|" + string_data);
+    PostArrayMessage("DISP", string_data);
     ShowStatusMessage("Load success");
   }
 
@@ -293,15 +309,14 @@ class FileIoInstance : public pp::Instance {
       return;
     }
 
-    std::stringstream ss;
-    ss << "LIST";
+    StringVector sv;
     for (size_t i = 0; i < entries.size(); ++i) {
       pp::Var name = entries[i].file_ref().GetName();
       if (name.is_string()) {
-        ss << "|" << name.AsString();
+        sv.push_back(name.AsString());
       }
     }
-    PostMessage(ss.str());
+    PostArrayMessage("LIST", sv);
     ShowStatusMessage("List success");
   }
 
@@ -321,18 +336,34 @@ class FileIoInstance : public pp::Instance {
     ShowStatusMessage("Make directory success");
   }
 
-  /// Encapsulates our simple javascript communication protocol
-  void ShowErrorMessage(const std::string& message, int32_t result) {
-    std::stringstream ss;
-    ss << "ERR|" << message << " -- Error #: " << result;
-    PostMessage(ss.str());
+  void Rename(int32_t /* result */,
+              const std::string& old_name,
+              const std::string& new_name) {
+    if (!file_system_ready_) {
+      ShowErrorMessage("File system is not open", PP_ERROR_FAILED);
+      return;
+    }
+
+    pp::FileRef ref_old(file_system_, old_name.c_str());
+    pp::FileRef ref_new(file_system_, new_name.c_str());
+
+    int32_t result = ref_old.Rename(ref_new, pp::BlockUntilComplete());
+    if (result != PP_OK) {
+      ShowErrorMessage("Rename failed", result);
+      return;
+    }
+    ShowStatusMessage("Rename success");
   }
 
   /// Encapsulates our simple javascript communication protocol
-  void ShowStatusMessage(const std::string& message) {
+  void ShowErrorMessage(const std::string& message, int32_t result) {
     std::stringstream ss;
-    ss << "STAT|" << message;
-    PostMessage(ss.str());
+    ss << message << " -- Error #: " << result;
+    PostArrayMessage("ERR", ss.str());
+  }
+
+  void ShowStatusMessage(const std::string& message) {
+    PostArrayMessage("STAT", message);
   }
 };
 

@@ -19,9 +19,13 @@ function addTests() {
     dispatchClick(document.getElementById('radio_' + name));
   }
 
-  function setInputValue(value) {
+  function setInputValue(value, selector) {
+    if (!selector) {
+      selector = 'input';
+    }
+
     currentTest.log('Setting input box to "' + value + '".');
-    getVisibleElementByTagName('input').value = value;
+    getVisibleElementByTagName(selector).value = value;
   }
 
   function setTextareaValue(value) {
@@ -40,12 +44,6 @@ function addTests() {
   }
 
   function waitForLog(logMessage, onLogChanged, onError) {
-    // First see if the message we want is already there.
-    if (getLastLogMessage() === logMessage) {
-      onLogChanged();
-      return;
-    }
-
     // Clear the log. This prevents a previous failure from propagating to the
     // current check. (NOTE: the log is backed by an array, so as soon as a
     // message is logged it will be refilled with its previous data in addition
@@ -132,6 +130,13 @@ function addTests() {
                                     onDirectoryMade, onError);
   }
 
+  function rename(oldname, newname, onRenamed, onError) {
+    clickRadio('rename');
+    setInputValue(oldname, '#renameOld');
+    setInputValue(newname, '#renameNew');
+    clickExecuteButtonAndWaitForLog('Rename success', onRenamed, onError);
+  }
+
   function expectEq(expected, actual, additionalInfo) {
     var message;
     if (expected !== actual) {
@@ -173,6 +178,14 @@ function addTests() {
     // This is a bit fragile; we rely on this test being run first (and
     // completing) before we can run any of the other tests.
     currentTest = test;
+    var message = 'Filesystem ready!';
+
+    // This message may already be logged.
+    if (getLastLogMessage() == message) {
+      test.pass();
+      return;
+    }
+
     waitForLog('Filesystem ready!', function() {
       test.pass();
     }, function() {
@@ -246,6 +259,37 @@ function addTests() {
         var fileText = 'A file within a directory.';
         saveFile(filename, fileText, function() {
           test.pass();
+        });
+      });
+    });
+  });
+
+  common.tester.addAsyncTest('rename_file', function(test) {
+    currentTest = test;
+    var filename = '/rename_old.txt';
+    var newFilename = '/rename_new.txt';
+    var fileText = 'What\'s in a name? that which we call a rose ' +
+                   'by any other name would smell as sweet;';
+
+    // Save the file.
+    saveFile(filename, fileText, function() {
+      // Now rename it.
+      rename(filename, newFilename, function() {
+        // Now try to load it.
+        loadFile(newFilename, function() {
+          // Make sure the text matches.
+          expectEq(fileText, getTextareaValue(), 'Incorrect textarea');
+
+          // Make sure the old file no longer exists.
+          loadFile(filename, function() {
+            test.fail('Unexpected load success.');
+          },
+          function() {
+            expectEq('', getTextareaValue(), 'Unexpected data in file');
+            expectContains('File not found', getLastLogMessage(),
+                           'Unexpected log message');
+            test.pass();
+          });
         });
       });
     });

@@ -8,7 +8,7 @@ function moduleDidLoad() {
 
 // Called by the common.js module.
 function domContentLoaded(name, tc, config, width, height) {
-  navigator.webkitPersistentStorage.requestQuota(1024 * 1024,
+  navigator.webkitPersistentStorage.requestQuota(5 * 1024 * 1024,
     function(bytes) {
       common.updateStatus(
           'Allocated ' + bytes + ' bytes of persistant storage.');
@@ -35,6 +35,7 @@ function attachListeners() {
   addEventListenerToButton('delete', deleteFileOrDirectory);
   addEventListenerToButton('listDir', listDir);
   addEventListenerToButton('makeDir', makeDir);
+  addEventListenerToButton('rename', rename);
 }
 
 function onRadioClicked(e) {
@@ -51,15 +52,10 @@ function onRadioClicked(e) {
 
 function makeMessage(command, path) {
   // Package a message using a simple protocol containing:
-  // command <path length> <path> <space-separated extra args>
-  var msg = command;
-  msg += ' ';
-  msg += path.length;
-  msg += ' ';
-  msg += path;
-  // Maybe add extra args
+  // [command, <path>, <extra args>...]
+  var msg = [command, path];
   for (var i = 2; i < arguments.length; ++i) {
-    msg += ' ' + arguments[i];
+    msg.push(arguments[i]);
   }
   return msg;
 }
@@ -68,7 +64,7 @@ function saveFile() {
   if (common.naclModule) {
     var fileName = document.querySelector('#saveFile input').value;
     var fileText = document.querySelector('#saveFile textarea').value;
-    common.naclModule.postMessage(makeMessage('sv', fileName, fileText));
+    common.naclModule.postMessage(makeMessage('save', fileName, fileText));
     // clear the editor.
     fileText.value = '';
   }
@@ -80,37 +76,44 @@ function loadFile() {
     // clear the editor first (in case there is an error and there is no
     // output).
     document.querySelector('#loadFile textarea').value = '';
-    common.naclModule.postMessage(makeMessage('ld', fileName));
+    common.naclModule.postMessage(makeMessage('load', fileName));
   }
 }
 
 function deleteFileOrDirectory() {
   if (common.naclModule) {
     var fileName = document.querySelector('#delete input').value;
-    common.naclModule.postMessage(makeMessage('de', fileName));
+    common.naclModule.postMessage(makeMessage('delete', fileName));
   }
 }
 
 function listDir() {
   if (common.naclModule) {
     var dirName = document.querySelector('#listDir input').value;
-    common.naclModule.postMessage(makeMessage('ls', dirName));
+    common.naclModule.postMessage(makeMessage('list', dirName));
   }
 }
 
 function makeDir() {
   if (common.naclModule) {
     var dirName = document.querySelector('#makeDir input').value;
-    common.naclModule.postMessage(makeMessage('md', dirName));
+    common.naclModule.postMessage(makeMessage('makedir', dirName));
+  }
+}
+
+function rename() {
+  if (common.naclModule) {
+    var oldName = document.querySelector('#renameOld').value;
+    var newName = document.querySelector('#renameNew').value;
+    common.naclModule.postMessage(makeMessage('rename', oldName, newName));
   }
 }
 
 // Called by the common.js module.
 function handleMessage(message_event) {
   var msg = message_event.data;
-  var parts = msg.split('|');
-  var command = parts[0];
-  var args = parts.slice(1);
+  var command = msg[0];
+  var args = msg.slice(1);
 
   if (command == 'ERR') {
     common.logMessage('Error: ' + args[0]);
