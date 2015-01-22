@@ -113,17 +113,20 @@
       }, {
         "name": "onCompositionBoundsChanged",
         "type": "function",
-        "description": "Fired when the composition bounds are changed.",
+        "description": "Fired when the composition bounds or cursor bounds are changed.",
         "parameters": [
           {
             "name": "bounds",
-            "type": "object",
-            "description": "Composition bounds.",
-            "properties": {
-              "x": {"type": "integer"},
-              "y": {"type": "integer"},
-              "w": {"type": "integer"},
-              "h": {"type": "integer"}
+            "type": "array",
+            "description": "List of bounds information.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {"type": "integer"},
+                "y": {"type": "integer"},
+                "w": {"type": "integer"},
+                "h": {"type": "integer"}
+              }
             }
           }
         ]

@@ -189,19 +189,20 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   const gfx::Rect caret_rect = client->GetCaretBounds();
 
   gfx::Rect composition_head;
+  std::vector<gfx::Rect> rects;
   if (client->HasCompositionText()) {
-    std::vector<gfx::Rect> rects;
     uint32 i = 0;
     gfx::Rect rect;
     while (client->GetCompositionCharacterBounds(i++, &rect))
       rects.push_back(rect);
-    if (rects.size() > 0) {
-      if (GetEngine())
-        GetEngine()->SetCompositionBounds(rects);
-      composition_head = rects[0];
-    }
   } else {
-    composition_head = caret_rect;
+    rects.push_back(caret_rect);
+  }
+
+  if (rects.size() > 0) {
+    composition_head = rects[0];
+    if (GetEngine())
+      GetEngine()->SetCompositionBounds(rects);
   }
 
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
