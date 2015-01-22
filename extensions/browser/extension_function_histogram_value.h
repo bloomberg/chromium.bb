@@ -1010,6 +1010,7 @@ enum HistogramValue {
   PRINTERPROVIDERINTERNAL_REPORTPRINTERCAPABILITY,
   PRINTERPROVIDERINTERNAL_REPORTPRINTERS,
   FILESYSTEMPROVIDER_GET,
+  FILEMANAGERPRIVATE_SEARCHFILESBYHASHES,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

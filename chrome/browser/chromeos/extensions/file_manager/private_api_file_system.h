@@ -245,6 +245,19 @@ class FileManagerPrivateComputeChecksumFunction
   void Respond(const std::string& hash);
 };
 
+// Implements the chrome.fileManagerPrivate.searchFilesByHashes method.
+class FileManagerPrivateSearchFilesByHashesFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.searchFilesByHashes",
+                             FILEMANAGERPRIVATE_SEARCHFILESBYHASHES)
+
+ protected:
+  ~FileManagerPrivateSearchFilesByHashesFunction() override {}
+
+  bool RunAsync() override;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_FILE_SYSTEM_H_

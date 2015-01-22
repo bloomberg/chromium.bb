@@ -536,6 +536,10 @@ callback SearchDriveCallback =
 
 callback SearchDriveMetadataCallback = void(SearchResult[] results);
 
+// |urls| The map of hash and array of FileEntry's URL. The array can be empty
+// if the corresponding file is not found.
+callback SearchFilesByHashesCallback = void(object urls);
+
 callback ZipSelectionCallback = void(optional boolean success);
 
 callback GetDriveConnectionStateCallback = void(DriveConnectionState result);
@@ -746,6 +750,12 @@ interface Functions {
   // |callback|
   static void searchDriveMetadata(SearchMetadataParams searchParams,
                                   SearchDriveMetadataCallback callback);
+
+  // Search files in the volume having |volumeId| by using |hashList|.
+  // sub-directories) the given |targetDirectoryUrl|.
+  static void searchFilesByHashes(DOMString volumeId,
+                                  DOMString[] hashList,
+                                  SearchFilesByHashesCallback callback);
 
   // Create a zip file for the selected files.
   // |dirURL| URL of the directory containing the selected files.

@@ -746,4 +746,9 @@ void FileManagerPrivateComputeChecksumFunction::Respond(
   SendResponse(true);
 }
 
+bool FileManagerPrivateSearchFilesByHashesFunction::RunAsync() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace extensions
