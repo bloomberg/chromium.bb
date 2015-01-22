@@ -161,8 +161,8 @@ protected:
 private:
     void disposeWrapper(v8::Local<v8::Object> wrapper)
     {
-        ASSERT(containsWrapper());
-        ASSERT(wrapper == m_wrapper);
+        RELEASE_ASSERT(containsWrapper());
+        RELEASE_ASSERT(wrapper == m_wrapper);
         m_wrapper.Reset();
     }
 
