@@ -60,7 +60,8 @@ if (!chrome.virtualKeyboardPrivate) {
     callback({
       layout: 'qwerty',
       a11ymode: false,
-      experimental: false
+      experimental: false,
+      gesturetyping: false
     });
   };
 

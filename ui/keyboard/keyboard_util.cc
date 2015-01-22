@@ -154,11 +154,13 @@ bool IsInputViewEnabled() {
 }
 
 bool IsExperimentalInputViewEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalInputViewFeatures)) {
-    return true;
-  }
-  return false;
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalInputViewFeatures);
+}
+
+bool IsGestureTypingEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGestureTyping);
 }
 
 bool InsertText(const base::string16& text) {

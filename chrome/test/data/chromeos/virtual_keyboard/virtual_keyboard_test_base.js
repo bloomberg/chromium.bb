@@ -187,7 +187,8 @@ function setUp() {
   chrome.virtualKeyboardPrivate.getKeyboardConfig.setCallbackData({
     layout: 'qwerty',
     a11ymode: false,
-    experimental: false
+    experimental: false,
+    gesturetyping: false,
   });
 
   chrome.inputMethodPrivate.getCurrentInputMethod.setCallbackData('us:en');

@@ -14238,6 +14238,12 @@ Do you accept?
         <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_DESCRIPTION" desc="Description of about::flags option to enable experimental features for IME input-views">
           Enable experimental features for IME input views.
         </message>
+        <message name="IDS_FLAGS_ENABLE_GESTURE_TYPING_NAME" desc="Name of about::flags option to enable gesture typing for the virtual keyboard">
+          Gesture typing for the virtual keyboard.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_GESTURE_TYPING_DESCRIPTION" desc="Description of about::flags option to enable gesture typing for the virtual keyboard">
+          Enable gesture typing for the virtual keyboard.
+        </message>
         <message name="IDS_FLAGS_ENABLE_CAPTIVE_PORTAL_BYPASS_PROXY_NAME" desc="Name of about::flags option to enable bypass proxy for captive portal authorization on Chrome OS.">
           Enable bypass proxy for Captive Portal Authorization
         </message>

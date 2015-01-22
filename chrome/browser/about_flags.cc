@@ -1311,6 +1311,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(keyboard::switches::kEnableExperimentalInputViewFeatures)
   },
   {
+    "enable-gesture-typing",
+    IDS_FLAGS_ENABLE_GESTURE_TYPING_NAME,
+    IDS_FLAGS_ENABLE_GESTURE_TYPING_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(keyboard::switches::kEnableGestureTyping)
+  },
+  {
     "disable-smart-virtual-keyboard",
     IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_NAME,
     IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_DESCRIPTION,

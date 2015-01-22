@@ -143,6 +143,10 @@
                   "experimental": {
                     "type": "boolean",
                     "description": "True if experimental features are enabled."
+                  },
+                  "gesturetyping": {
+                    "type": "boolean",
+                    "description": "True if gesture typing is enabled."
                   }
                 }
               }

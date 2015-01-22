@@ -96,6 +96,9 @@ KEYBOARD_EXPORT bool IsInputViewEnabled();
 // Returns true if experimental features are enabled for IME input-views.
 KEYBOARD_EXPORT bool IsExperimentalInputViewEnabled();
 
+// Returns true if gesture typing is enabled for virtual keyboard.
+KEYBOARD_EXPORT bool IsGestureTypingEnabled();
+
 // Insert |text| into the active TextInputClient if there is one. Returns true
 // if |text| was successfully inserted.
 KEYBOARD_EXPORT bool InsertText(const base::string16& text);

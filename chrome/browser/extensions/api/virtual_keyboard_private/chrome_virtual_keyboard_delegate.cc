@@ -39,6 +39,7 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
   results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
   results->SetBoolean("experimental",
                       keyboard::IsExperimentalInputViewEnabled());
+  results->SetBoolean("gesturetyping", keyboard::IsGestureTypingEnabled());
   return true;
 }
 
