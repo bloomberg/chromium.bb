@@ -107,7 +107,26 @@ bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
   if (grabber != gfx::kNullAcceleratedWidget)
     return grabber == widget_;
 
-  if (event->IsLocatedEvent()) {
+  if (event->IsTouchEvent()) {
+    // Dispatch the event if it is from the touchscreen associated with the
+    // DriWindow. We cannot check the event's location because if the
+    // touchscreen has a bezel, touches in the bezel have a location outside of
+    // |bounds_|.
+    int64_t display_id =
+        DeviceDataManager::GetInstance()->GetDisplayForTouchDevice(
+            event->source_device_id());
+
+    if (display_id == gfx::Display::kInvalidDisplayID)
+      return false;
+
+    DisplaySnapshot* snapshot = display_manager_->GetDisplay(display_id);
+    if (!snapshot || !snapshot->current_mode())
+      return false;
+
+    gfx::Rect display_bounds(snapshot->origin(),
+                             snapshot->current_mode()->size());
+    return display_bounds == bounds_;
+  } else if (event->IsLocatedEvent()) {
     LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
     return bounds_.Contains(gfx::ToFlooredPoint(located_event->location()));
   }
