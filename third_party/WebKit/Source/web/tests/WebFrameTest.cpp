@@ -2076,17 +2076,6 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedLayout)
         url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
 }
 
-#define EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, opaqueRect) \
-{ \
-    SkAutoLockPixels locker(bitmap); \
-    for (int y = 0; y < bitmap.height(); ++y) \
-        for (int x = 0; x < bitmap.width(); ++x) {     \
-            int alpha = *bitmap.getAddr32(x, y) >> 24; \
-            bool opaque = opaqueRect.contains(x, y); \
-            EXPECT_EQ(opaque, alpha == 255); \
-        } \
-}
-
 TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
@@ -2117,6 +2106,9 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     SkCanvas canvas(bitmap);
 
     GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    EXPECT_RECT_EQ(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
 
     FrameView* view = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
     IntRect paintRect(0, 0, 200, 200);
@@ -2130,7 +2122,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     int viewportWidthMinusScrollbar = 50 - (view->verticalScrollbar()->isOverlayScrollbar() ? 0 : 15);
     int viewportHeightMinusScrollbar = 50 - (view->horizontalScrollbar()->isOverlayScrollbar() ? 0 : 15);
     IntRect clippedRect(0, 0, viewportWidthMinusScrollbar * 2, viewportHeightMinusScrollbar * 2);
-    EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, clippedRect);
+    EXPECT_RECT_EQ(clippedRect, context.opaqueRegion().asRect());
 #endif
 }
 

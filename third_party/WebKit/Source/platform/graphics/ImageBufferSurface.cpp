@@ -66,6 +66,7 @@ void ImageBufferSurface::clear()
             canvas()->drawARGB(255, 0, 0, 0, SkXfermode::kSrc_Mode);
         else
             canvas()->drawARGB(0, 0, 0, 0, SkXfermode::kClear_Mode);
+        didClearCanvas();
     }
 }
 

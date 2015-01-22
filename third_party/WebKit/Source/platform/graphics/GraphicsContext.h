@@ -39,8 +39,8 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "platform/graphics/GraphicsContextState.h"
+#include "platform/graphics/RegionTracker.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -61,7 +61,6 @@ class ClipRecorderStack;
 class DisplayItemList;
 class ImageBuffer;
 class KURL;
-class GraphicsContextClient;
 
 class PLATFORM_EXPORT GraphicsContext {
     WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED;
@@ -105,9 +104,6 @@ public:
 #endif
 
     bool hasStroke() const { return strokeStyle() != NoStroke && strokeThickness() > 0; }
-
-    // Returns true if the clip is anything more than an intersection of rectangles
-    bool hasComplexClip() const { return immutableState()->hasComplexClip(); }
 
     float strokeThickness() const { return immutableState()->strokeData().thickness(); }
     void setStrokeThickness(float thickness) { mutableState()->setStrokeThickness(thickness); }
@@ -208,7 +204,16 @@ public:
     bool isAccelerated() const { return m_accelerated; }
     void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
 
-    void setClient(GraphicsContextClient*);
+    // The opaque region is empty until tracking is turned on.
+    // It is never clerared by the context.
+    enum RegionTrackingMode {
+        RegionTrackingDisabled = 0,
+        RegionTrackingOpaque,
+        RegionTrackingOverwrite
+    };
+    void setRegionTrackingMode(RegionTrackingMode);
+    bool regionTrackingEnabled() { return m_regionTrackingMode != RegionTrackingDisabled; }
+    const RegionTracker& opaqueRegion() const { return m_trackedRegion; }
 
     // The text region is empty until tracking is turned on.
     // It is never clerared by the context.
@@ -278,7 +283,7 @@ public:
 
     void drawImageBuffer(ImageBuffer*, const FloatRect& destRect, const FloatRect* srcRect = 0, CompositeOperator = CompositeSourceOver, WebBlendMode = WebBlendModeNormal);
 
-    // These methods write to the canvas.
+    // These methods write to the canvas and modify the opaque region, if tracked.
     // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect
     void writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
     void drawBitmap(const SkBitmap&, SkScalar, SkScalar, const SkPaint* = 0);
@@ -322,7 +327,6 @@ public:
     // Don't change the current SkXfermode::Mode states.
     void beginLayer(float opacity, SkXfermode::Mode, const FloatRect* = 0, ColorFilter = ColorFilterNone, ImageFilter* = 0);
     void endLayer();
-    bool isDrawingToLayer() { return m_layerCount; }
 
     // Instead of being dispatched to the active canvas, draw commands following beginRecording()
     // are stored in a display list that can be replayed at a later time. Pass in the bounding
@@ -476,8 +480,6 @@ private:
     // null indicates painting is contextDisabled. Never delete this object.
     SkCanvas* m_canvas;
 
-    GraphicsContextClient* m_client;
-
     // This being null indicates not to paint into a DisplayItemList, and instead directly into the canvas.
     DisplayItemList* m_displayItemList;
 
@@ -496,13 +498,14 @@ private:
 
     Vector<OwnPtr<RecordingState>> m_recordingStateStack;
 
-    unsigned m_layerCount;
-
 #if ENABLE(ASSERT)
     unsigned m_annotationCount;
+    unsigned m_layerCount;
     bool m_disableDestructionChecks;
     bool m_inDrawingRecorder;
 #endif
+    // Tracks the region painted opaque via the GraphicsContext.
+    RegionTracker m_trackedRegion;
 
     // Tracks the region where text is painted via the GraphicsContext.
     SkRect m_textRegion;
@@ -511,6 +514,8 @@ private:
 
     float m_deviceScaleFactor;
 
+    // Activation for the above region tracking features
+    unsigned m_regionTrackingMode : 2;
     unsigned m_trackTextRegion : 1;
 
     unsigned m_accelerated : 1;

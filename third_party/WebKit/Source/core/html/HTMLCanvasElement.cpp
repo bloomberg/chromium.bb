@@ -266,8 +266,6 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
     if (m_dirtyRect.isEmpty())
         blink::Platform::current()->currentThread()->addTaskObserver(this);
     m_dirtyRect.unite(rect);
-    if (m_context && m_context->is2d() && hasImageBuffer())
-        buffer()->didDraw();
 }
 
 void HTMLCanvasElement::didFinalizeFrame()

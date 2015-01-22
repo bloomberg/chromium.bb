@@ -92,7 +92,6 @@ public:
     bool isSurfaceValid() const;
     bool restoreSurface() const;
     bool needsClipTracking() const { return m_surface->needsClipTracking(); }
-    void didDraw() const { m_surface->didDraw(); }
 
     void setFilterLevel(SkPaint::FilterLevel filterLevel) { m_surface->setFilterLevel(filterLevel); }
     void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }

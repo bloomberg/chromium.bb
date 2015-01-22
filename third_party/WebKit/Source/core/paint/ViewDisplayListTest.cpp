@@ -13,7 +13,6 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include <gtest/gtest.h>
 
 namespace blink {

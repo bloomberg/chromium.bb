@@ -27,17 +27,11 @@
 #include "platform/graphics/GraphicsContext.h"
 
 #include "platform/graphics/BitmapImage.h"
-#include "platform/graphics/GraphicsContextClient.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkShader.h"
-#include "third_party/skia/include/effects/SkBlurDrawLooper.h"
-#include "third_party/skia/include/effects/SkBlurImageFilter.h"
-#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
-
 #include <gtest/gtest.h>
 
 using namespace blink;
@@ -50,7 +44,7 @@ namespace {
     EXPECT_EQ(a.width(), b.width()); \
     EXPECT_EQ(a.height(), b.height());
 
-#define EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, opaqueRect) \
+#define EXPECT_PIXELS_MATCH(bitmap, opaqueRect) \
 { \
     SkAutoLockPixels locker(bitmap); \
     for (int y = opaqueRect.y(); y < opaqueRect.maxY(); ++y) \
@@ -60,7 +54,7 @@ namespace {
         } \
 }
 
-#define EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, opaqueRect) \
+#define EXPECT_PIXELS_MATCH_EXACT(bitmap, opaqueRect) \
 { \
     SkAutoLockPixels locker(bitmap); \
     for (int y = 0; y < bitmap.height(); ++y) \
@@ -71,6 +65,158 @@ namespace {
         } \
 }
 
+TEST(GraphicsContextTest, trackOpaqueTest)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(400, 400);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(10, 10, 90, 90), alpha, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(99, 13, 10, 90), opaque, CompositePlusLighter);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(99, 13, 10, 90), opaque, CompositeSourceIn);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(99, 13, 10, 90), alpha, CompositeSourceIn);
+    EXPECT_EQ_RECT(IntRect(10, 10, 89, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(8, 8, 3, 90), opaque, CompositeSourceOut);
+    EXPECT_EQ_RECT(IntRect(11, 10, 88, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(30, 30, 290, 290), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(30, 30, 290, 290), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(40, 20, 290, 50), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(30, 30, 290, 290), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(10, 10, 390, 50), opaque, CompositeSourceIn);
+    EXPECT_EQ_RECT(IntRect(30, 30, 290, 290), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(10, 10, 390, 50), alpha);
+    EXPECT_EQ_RECT(IntRect(30, 30, 290, 290), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(10, 10, 390, 50), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(30, 10, 290, 310), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, trackOpaqueClipTest)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(400, 400);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.clearRect(FloatRect(10, 10, 90, 90));
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+
+    context.save();
+    context.clip(FloatRect(0, 0, 10, 10));
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    context.restore();
+
+    context.clearRect(FloatRect(10, 10, 90, 90));
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+
+    context.save();
+    context.clip(FloatRect(20, 20, 10, 10));
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(20, 20, 10, 10), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.clearRect(FloatRect(10, 10, 90, 90));
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+
+    // The intersection of the two clips becomes empty.
+    context.clip(FloatRect(30, 20, 10, 10));
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    context.restore();
+
+    context.clearRect(FloatRect(10, 10, 90, 90));
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+
+    // The transform and the clip need to interact correctly (transform first)
+    context.save();
+    context.translate(10, 10);
+    context.clip(FloatRect(20, 20, 10, 10));
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(30, 30, 10, 10), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    context.restore();
+
+    context.clearRect(FloatRect(10, 10, 90, 90));
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+
+    // The transform and the clip need to interact correctly (clip first)
+    context.save();
+    context.clip(FloatRect(20, 20, 10, 10));
+    context.translate(10, 10);
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(20, 20, 10, 10), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    context.restore();
+
+    context.clearRect(FloatRect(10, 10, 90, 90));
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+
+    Path path;
+    path.moveTo(FloatPoint(0, 0));
+    path.addLineTo(FloatPoint(100, 0));
+
+    // Non-rectangular clips just cause the paint to be considered non-opaque.
+    context.save();
+    context.clipPath(path, RULE_EVENODD);
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    context.restore();
+
+    // Another non-rectangular clip.
+    context.save();
+    context.clip(IntRect(30, 30, 20, 20));
+    context.clipOut(IntRect(30, 30, 10, 10));
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    context.restore();
+}
+
 TEST(GraphicsContextTest, trackDisplayListRecording)
 {
     SkBitmap bitmap;
@@ -78,19 +224,23 @@ TEST(GraphicsContextTest, trackDisplayListRecording)
     SkCanvas canvas(bitmap);
 
     GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
 
     context.fillRect(FloatRect(0, 0, 50, 50), opaque, CompositeSourceOver);
-    EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
-
+    EXPECT_EQ_RECT(IntRect(0, 0, 50, 50), context.opaqueRegion().asRect());
     FloatRect bounds(0, 0, 100, 100);
     context.beginRecording(bounds);
     context.fillRect(FloatRect(0, 0, 100, 100), opaque, CompositeSourceOver);
     RefPtr<const SkPicture> picture = context.endRecording();
 
     // Make sure the opaque region was unaffected by the rect drawn during Picture recording.
-    EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
+    EXPECT_EQ_RECT(IntRect(0, 0, 50, 50), context.opaqueRegion().asRect());
+
+    // Make sure the opaque region *is* affected (reset) by drawing the Picture itself.
+    context.drawPicture(picture.get());
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
 }
 
 TEST(GraphicsContextTest, trackImageMask)
@@ -101,6 +251,7 @@ TEST(GraphicsContextTest, trackImageMask)
     SkCanvas canvas(bitmap);
 
     GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
     Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
@@ -126,7 +277,8 @@ TEST(GraphicsContextTest, trackImageMask)
     context.endLayer();
     context.endLayer();
 
-    EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect());
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 }
 
 TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
@@ -137,6 +289,7 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     SkCanvas canvas(bitmap);
 
     GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
     Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
@@ -165,232 +318,636 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     context.endLayer();
     context.endLayer();
 
-    EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(12, 12, 3, 3));
+    EXPECT_EQ_RECT(IntRect(12, 12, 3, 3), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 }
 
-#define TEST_CLEAR_SETUP \
-        SkBitmap bitmap; \
-        bitmap.allocN32Pixels(10, 10); \
-        bitmap.eraseColor(0); \
-        SkCanvas canvas(bitmap); \
-        TestGraphicsContextClient gcClient; \
-        GraphicsContext context(&canvas, nullptr); \
-        context.setClient(&gcClient);
-
-#define TEST_CLEAR_1(SHOULD_CLEAR, CALL1) \
-    do { \
-        TEST_CLEAR_SETUP \
-        context.CALL1; \
-        EXPECT_TRUE((SHOULD_CLEAR == gcClient.didClear())); \
-    } while (0)
-
-#define TEST_CLEAR_2(SHOULD_CLEAR, CALL1, CALL2) \
-    do { \
-        TEST_CLEAR_SETUP \
-        context.CALL1; \
-        context.CALL2; \
-        EXPECT_TRUE((SHOULD_CLEAR == gcClient.didClear())); \
-    } while (0)
-
-#define TEST_CLEAR_3(SHOULD_CLEAR, CALL1, CALL2, CALL3) \
-    do { \
-        TEST_CLEAR_SETUP \
-        context.CALL1; \
-        context.CALL2; \
-        context.CALL3; \
-        EXPECT_TRUE((SHOULD_CLEAR == gcClient.didClear())); \
-    } while (0)
-
-class TestGraphicsContextClient : public blink::GraphicsContextClient {
-public:
-    TestGraphicsContextClient() : m_didClear(false) { }
-    bool didClear() { return m_didClear; }
-
-protected:
-    virtual void willOverwriteCanvas() { m_didClear = true; }
-
-private:
-    bool m_didClear;
-};
-
-enum BitmapOpacity {
-    OpaqueBitmap,
-    TransparentBitmap
-};
-
-static SkBitmap createTestBitmap(BitmapOpacity opacity)
+TEST(GraphicsContextTest, trackOpaqueJoinTest)
 {
     SkBitmap bitmap;
-    SkColor color = opacity == OpaqueBitmap ? SK_ColorWHITE : SK_ColorTRANSPARENT;
-    bitmap.allocN32Pixels(10, 10, opacity == OpaqueBitmap);
-    for (int y = 0; y < bitmap.height(); ++y)
-        for (int x = 0; x < bitmap.width(); ++x)
-            *bitmap.getAddr32(x, y) = color;
-    return bitmap;
+    bitmap.allocN32Pixels(400, 400);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+
+    context.fillRect(FloatRect(20, 20, 10, 10), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(20, 20, 10, 10), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    // Doesn't join
+    context.fillRect(FloatRect(31, 20, 10, 10), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(20, 20, 10, 10), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    // Does join
+    context.fillRect(FloatRect(30, 20, 10, 10), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(20, 20, 20, 10), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    // Doesn't join
+    context.fillRect(FloatRect(20, 31, 20, 10), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(20, 20, 20, 10), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    // Does join
+    context.fillRect(FloatRect(20, 30, 20, 10), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(20, 20, 20, 20), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    // Doesn't join
+    context.fillRect(FloatRect(9, 20, 10, 20), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(20, 20, 20, 20), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    // Does join
+    context.fillRect(FloatRect(10, 20, 10, 20), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 20, 30, 20), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    // Doesn't join
+    context.fillRect(FloatRect(10, 9, 30, 10), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 20, 30, 20), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    // Does join
+    context.fillRect(FloatRect(10, 10, 30, 10), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 30, 30), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(GraphicsContextTest, detectClear)
+TEST(GraphicsContextTest, trackOpaqueLineTest)
 {
-    SkRect fullRect = SkRect::MakeWH(10, 10);
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(200, 200);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+
+    context.setShouldAntialias(false);
+    context.setMiterLimit(0);
+    context.setStrokeThickness(4);
+    context.setLineCap(SquareCap);
+    context.setStrokeStyle(SolidStroke);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setCompositeOperation(SkXfermode::kSrcIn_Mode);
+
+    context.save();
+    context.setStrokeColor(alpha);
+    context.drawLine(IntPoint(0, 0), IntPoint(100, 0));
+    context.restore();
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.save();
+    context.setStrokeColor(opaque);
+    context.drawLine(IntPoint(0, 10), IntPoint(100, 10));
+    context.restore();
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.save();
+    context.setStrokeColor(alpha);
+    context.drawLine(IntPoint(0, 10), IntPoint(100, 10));
+    context.restore();
+    EXPECT_EQ_RECT(IntRect(10, 13, 90, 87), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.save();
+    context.setStrokeColor(alpha);
+    context.drawLine(IntPoint(0, 11), IntPoint(100, 11));
+    context.restore();
+    EXPECT_EQ_RECT(IntRect(10, 14, 90, 86), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setShouldAntialias(true);
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setCompositeOperation(SkXfermode::kSrcIn_Mode);
+
+    context.save();
+    context.setStrokeColor(alpha);
+    context.drawLine(IntPoint(0, 0), IntPoint(100, 0));
+    context.restore();
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setShouldAntialias(false);
+    context.save();
+    context.setStrokeColor(opaque);
+    context.drawLine(IntPoint(0, 10), IntPoint(100, 10));
+    context.restore();
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setShouldAntialias(true);
+    context.save();
+    context.setStrokeColor(opaque);
+    context.drawLine(IntPoint(0, 10), IntPoint(100, 10));
+    context.restore();
+    EXPECT_EQ_RECT(IntRect(10, 13, 90, 87), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.save();
+    context.setStrokeColor(alpha);
+    context.drawLine(IntPoint(0, 11), IntPoint(100, 11));
+    context.restore();
+    EXPECT_EQ_RECT(IntRect(10, 14, 90, 86), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, trackOpaquePathTest)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(200, 200);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setShouldAntialias(false);
+    context.setMiterLimit(1);
+    context.setStrokeThickness(5);
+    context.setLineCap(SquareCap);
+    context.setStrokeStyle(SolidStroke);
+    context.setCompositeOperation(SkXfermode::kSrcIn_Mode);
+
+    Path path;
+
+    context.setFillColor(alpha);
+    path.moveTo(FloatPoint(0, 0));
+    path.addLineTo(FloatPoint(100, 0));
+    context.fillPath(path);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    path.clear();
+
+    context.setFillColor(opaque);
+    path.moveTo(FloatPoint(0, 10));
+    path.addLineTo(FloatPoint(100, 13));
+    context.fillPath(path);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    path.clear();
+
+    context.setFillColor(alpha);
+    path.moveTo(FloatPoint(0, 10));
+    path.addLineTo(FloatPoint(100, 13));
+    context.fillPath(path);
+    EXPECT_EQ_RECT(IntRect(10, 13, 90, 87), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    path.clear();
+
+    context.setFillColor(alpha);
+    path.moveTo(FloatPoint(0, 14));
+    path.addLineTo(FloatPoint(100, 10));
+    context.fillPath(path);
+    EXPECT_EQ_RECT(IntRect(10, 14, 90, 86), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    path.clear();
+}
+
+TEST(GraphicsContextTest, trackOpaqueImageTest)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(200, 200);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+
+    SkBitmap opaqueBitmap;
+    opaqueBitmap.allocN32Pixels(10, 10, true /* opaque */);
+
+    for (int y = 0; y < opaqueBitmap.height(); ++y)
+        for (int x = 0; x < opaqueBitmap.width(); ++x)
+            *opaqueBitmap.getAddr32(x, y) = 0xFFFFFFFF;
+    RefPtr<BitmapImage> opaqueImage = BitmapImage::create(NativeImageSkia::create(opaqueBitmap));
+    EXPECT_TRUE(opaqueImage->currentFrameKnownToBeOpaque());
+
+    SkBitmap alphaBitmap;
+    alphaBitmap.allocN32Pixels(10, 10);
+
+    for (int y = 0; y < alphaBitmap.height(); ++y)
+        for (int x = 0; x < alphaBitmap.width(); ++x)
+            *alphaBitmap.getAddr32(x, y) = 0x00000000;
+    RefPtr<BitmapImage> alphaImage = BitmapImage::create(NativeImageSkia::create(alphaBitmap));
+    EXPECT_FALSE(alphaImage->currentFrameKnownToBeOpaque());
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawImage(opaqueImage.get(), IntPoint(0, 0));
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    context.drawImage(alphaImage.get(), IntPoint(0, 0));
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawImage(opaqueImage.get(), IntPoint(5, 5));
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    context.drawImage(alphaImage.get(), IntPoint(5, 5));
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawImage(opaqueImage.get(), IntPoint(10, 10));
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+    context.drawImage(alphaImage.get(), IntPoint(10, 10));
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawImage(alphaImage.get(), IntPoint(20, 10), CompositeSourceIn);
+    EXPECT_EQ_RECT(IntRect(10, 20, 90, 80), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.save();
+    context.setAlphaAsFloat(0.5);
+    context.drawImage(opaqueImage.get(), IntPoint(25, 15), CompositeSourceIn);
+    context.restore();
+    EXPECT_EQ_RECT(IntRect(10, 25, 90, 75), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawImage(alphaImage.get(), IntPoint(10, 20), CompositeSourceIn);
+    EXPECT_EQ_RECT(IntRect(20, 10, 80, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.save();
+    context.setAlphaAsFloat(0.5);
+    context.drawImage(opaqueImage.get(), IntPoint(15, 25), CompositeSourceIn);
+    context.restore();
+    EXPECT_EQ_RECT(IntRect(25, 10, 75, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, trackOpaqueOvalTest)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(200, 200);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+
+    EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillEllipse(FloatRect(10, 10, 90, 90));
+    context.strokeEllipse(FloatRect(10, 10, 90, 90));
+    EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setCompositeOperation(SkXfermode::kSrcIn_Mode);
+
+    context.setShouldAntialias(false);
+
+    context.setFillColor(opaque);
+    context.fillEllipse(FloatRect(10, 10, 50, 30));
+    context.strokeEllipse(FloatRect(10, 10, 50, 30));
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setFillColor(alpha);
+    context.fillEllipse(FloatRect(10, 10, 30, 50));
+    context.strokeEllipse(FloatRect(10, 10, 30, 50));
+    EXPECT_EQ_RECT(IntRect(40, 10, 60, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setShouldAntialias(true);
+
+    context.setFillColor(opaque);
+    context.fillEllipse(FloatRect(10, 10, 50, 30));
+    context.strokeEllipse(FloatRect(10, 10, 50, 30));
+    EXPECT_EQ_RECT(IntRect(40, 41, 60, 59), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setFillColor(alpha);
+    context.fillEllipse(FloatRect(20, 10, 30, 50));
+    context.strokeEllipse(FloatRect(20, 10, 30, 50));
+    EXPECT_EQ_RECT(IntRect(51, 41, 49, 59), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, trackOpaqueRoundedRectTest)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(200, 200);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+    IntSize radii(10, 10);
+
+    EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRoundedRect(FloatRect(10, 10, 90, 90), radii, radii, radii, radii, opaque);
+    EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.setCompositeOperation(SkXfermode::kSrcIn_Mode);
+    context.setShouldAntialias(false);
+
+    context.fillRoundedRect(FloatRect(10, 10, 50, 30), radii, radii, radii, radii, opaque);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRoundedRect(FloatRect(10, 10, 30, 50), radii, radii, radii, radii, alpha);
+    EXPECT_EQ_RECT(IntRect(40, 10, 60, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRoundedRect(FloatRect(10, 0, 50, 30), radii, radii, radii, radii, alpha);
+    EXPECT_EQ_RECT(IntRect(40, 30, 60, 70), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRoundedRect(FloatRect(30, 0, 70, 50), radii, radii, radii, radii, opaque);
+    EXPECT_EQ_RECT(IntRect(40, 30, 60, 70), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, trackOpaqueTextTest)
+{
+    int width = 200, height = 200;
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(width, height);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+    SkRect textRect = SkRect::MakeWH(width, height);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+
     SkPaint opaquePaint;
+    opaquePaint.setColor(opaque.rgb());
+    opaquePaint.setXfermodeMode(SkXfermode::kSrc_Mode);
     SkPaint alphaPaint;
-    alphaPaint.setAlpha(0x7F);
-    SkRect partialRect = SkRect::MakeWH(1, 1);
-    SkImageInfo opaqueImageInfo = SkImageInfo::MakeN32(10, 10, kOpaque_SkAlphaType);
-    SkImageInfo alphaImageInfo = SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType);
-    SkImageInfo smallImageInfo = SkImageInfo::MakeN32(1, 1, kOpaque_SkAlphaType);
+    alphaPaint.setColor(alpha.rgb());
+    alphaPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
 
-    SkBitmap opaqueBitmap = createTestBitmap(OpaqueBitmap);
-    SkBitmap alphaBitmap = createTestBitmap(TransparentBitmap);
+    SkPoint point = SkPoint::Make(0, 0);
 
-    const void* imageData = opaqueBitmap.getAddr32(0, 0);
-    size_t imageRowBytes = opaqueBitmap.rowBytes();
+    context.fillRect(FloatRect(50, 50, 50, 50), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    // Test drawRect
-    TEST_CLEAR_1(true, drawRect(fullRect, opaquePaint));
-    TEST_CLEAR_1(false, drawRect(fullRect, alphaPaint));
-    TEST_CLEAR_1(false, drawRect(partialRect, opaquePaint));
-    TEST_CLEAR_2(false, translate(1, 1), drawRect(fullRect, opaquePaint));
+    context.drawPosText("A", 1, &point, textRect, opaquePaint);
+    EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    // Test drawBitmap
-    TEST_CLEAR_1(true, drawBitmap(opaqueBitmap, 0, 0, 0));
-    TEST_CLEAR_1(true, drawBitmap(opaqueBitmap, 0, 0, &opaquePaint));
-    TEST_CLEAR_1(true, drawBitmap(opaqueBitmap, 0, 0, &alphaPaint));
-    TEST_CLEAR_1(false, drawBitmap(alphaBitmap, 0, 0, &opaquePaint));
-    TEST_CLEAR_1(false, drawBitmap(alphaBitmap, 0, 0, &alphaPaint));
-    TEST_CLEAR_1(false, drawBitmap(opaqueBitmap, 1, 0, 0));
-    TEST_CLEAR_2(true, translate(-1, 0), drawBitmap(opaqueBitmap, 1, 0, 0));
-    TEST_CLEAR_1(true, drawBitmapRect(opaqueBitmap, 0, fullRect, 0));
-    TEST_CLEAR_1(true, drawBitmapRect(opaqueBitmap, &partialRect, fullRect, 0));
-    TEST_CLEAR_1(false, drawBitmapRect(opaqueBitmap, 0, partialRect, 0));
-    TEST_CLEAR_2(true, scale(10, 10), drawBitmapRect(opaqueBitmap, 0, partialRect, 0));
+    context.drawPosText("A", 1, &point, textRect, alphaPaint);
+    EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    // Test writePixels
-    TEST_CLEAR_1(true, writePixels(opaqueImageInfo, imageData, imageRowBytes, 0, 0));
-    TEST_CLEAR_1(true, writePixels(alphaImageInfo, imageData, imageRowBytes, 0, 0)); // alpha has no effect
-    TEST_CLEAR_1(false, writePixels(smallImageInfo, imageData, imageRowBytes, 0, 0));
-    TEST_CLEAR_2(true, translate(1, 1), writePixels(opaqueImageInfo, imageData, imageRowBytes, 0, 0)); // ignores tranforms
-    TEST_CLEAR_1(false, writePixels(opaqueImageInfo, imageData, imageRowBytes, 1, 0));
+    context.fillRect(FloatRect(50, 50, 50, 50), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    // Test clipping
-    TEST_CLEAR_2(false, clipRect(partialRect), drawRect(fullRect, opaquePaint));
+    context.fillRect(FloatRect(50, 50, 50, 50), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
-TEST(GraphicsContextTest, detectClearWithOpaquePaint)
+static inline void writePixels(GraphicsContext* context, const SkBitmap& bm, int x, int y)
 {
-    // This test ensures that a draw that covers the canvas is detected as a clear
-    // if its paint is opaque.
-
-    SkRect fullRect = SkRect::MakeWH(10, 10);
-
-    SkBitmap opaqueBitmap = createTestBitmap(OpaqueBitmap);
-    SkBitmap alphaBitmap = createTestBitmap(TransparentBitmap);
-
-    SkAutoTUnref<SkShader> opaqueShader(SkShader::CreateBitmapShader(opaqueBitmap, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
-
-    {
-        SkPaint paint;
-        paint.setStyle(SkPaint::kFill_Style);
-        TEST_CLEAR_1(true, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        paint.setStyle(SkPaint::kStrokeAndFill_Style);
-        TEST_CLEAR_1(true, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        paint.setShader(opaqueShader);
-        TEST_CLEAR_1(true, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        paint.setAlpha(0x7F); // shader overrides color
-        paint.setShader(opaqueShader);
-        TEST_CLEAR_1(true, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        paint.setShader(opaqueShader); // shader overrides the bitmap
-        TEST_CLEAR_1(true, drawBitmap(alphaBitmap, 0, 0, &paint));
-    }
-    {
-        SkPaint paint;
-        paint.setAlpha(0); // bitmap overrides color
-        TEST_CLEAR_1(true, drawBitmap(opaqueBitmap, 0, 0, &paint));
-    }
-    {
-        SkPaint paint;
-        paint.setAlpha(0x7F);
-        paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-        TEST_CLEAR_1(true, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        paint.setAlpha(0x7F);
-        paint.setXfermodeMode(SkXfermode::kClear_Mode);
-        TEST_CLEAR_1(true, drawRect(fullRect, paint));
-    }
+    SkAutoLockPixels locker(bm);
+    context->writePixels(bm.info(), bm.getPixels(), bm.rowBytes(), x, y);
 }
 
-TEST(GraphicsContextTest, detectNoClearWithTransparentPaint)
+TEST(GraphicsContextTest, trackOpaqueWritePixelsTest)
 {
-    // This test ensures that a draw that covers the canvas is never detected as a clear
-    // if its paint has any properties that make it non-opaque
-    SkRect fullRect = SkRect::MakeWH(10, 10);
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(200, 200);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
 
-    SkBitmap opaqueBitmap = createTestBitmap(OpaqueBitmap);
-    SkBitmap alphaBitmap = createTestBitmap(TransparentBitmap);
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
-    SkAutoTUnref<SkShader> alphaShader(SkShader::CreateBitmapShader(alphaBitmap, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
 
-    {
-        SkPaint paint;
-        paint.setStyle(SkPaint::kStroke_Style);
-        TEST_CLEAR_1(false, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        paint.setColor(SK_ColorTRANSPARENT);
-        TEST_CLEAR_1(false, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        paint.setShader(alphaShader);
-        TEST_CLEAR_1(false, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        paint.setShader(alphaShader); // shader overrides the bitmap.
-        TEST_CLEAR_1(false, drawBitmap(opaqueBitmap, 0, 0, &paint));
-    }
-    for (int mode = SkXfermode::kDstOver_Mode; mode <= SkXfermode::kLastMode; mode++) {
-        SkPaint paint;
-        paint.setXfermodeMode(static_cast<SkXfermode::Mode>(mode));
-        TEST_CLEAR_1(false, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        SkAutoTUnref<SkMaskFilter> filter(SkBlurMaskFilter::Create(kNormal_SkBlurStyle, 1));
-        paint.setMaskFilter(filter.get());
-        TEST_CLEAR_1(false, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        SkAutoTUnref<SkImageFilter> filter(SkBlurImageFilter::Create(1, 1));
-        paint.setImageFilter(filter.get());
-        TEST_CLEAR_1(false, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        SkAutoTUnref<SkDrawLooper> looper(SkBlurDrawLooper::Create(SK_ColorWHITE, 1, 1, 1));
-        paint.setLooper(looper.get());
-        TEST_CLEAR_1(false, drawRect(fullRect, paint));
-    }
-    {
-        SkPaint paint;
-        TEST_CLEAR_3(false, beginLayer(1.0f, SkXfermode::kSrcOver_Mode), drawRect(fullRect, paint), endLayer());
-    }
+    SkBitmap opaqueBitmap;
+    opaqueBitmap.allocN32Pixels(10, 10, true /* opaque */);
+    for (int y = 0; y < opaqueBitmap.height(); ++y)
+        for (int x = 0; x < opaqueBitmap.width(); ++x)
+            *opaqueBitmap.getAddr32(x, y) = 0xFFFFFFFF;
+
+    SkBitmap alphaBitmap;
+    alphaBitmap.allocN32Pixels(10, 10);
+    for (int y = 0; y < alphaBitmap.height(); ++y)
+        for (int x = 0; x < alphaBitmap.width(); ++x)
+            *alphaBitmap.getAddr32(x, y) = 0x00000000;
+
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
+    writePixels(&context, opaqueBitmap, 50, 50);
+    EXPECT_EQ_RECT(IntRect(50, 50, 10, 10), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    writePixels(&context, alphaBitmap, 10, 0);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    writePixels(&context, alphaBitmap, 10, 1);
+    EXPECT_EQ_RECT(IntRect(10, 11, 90, 89), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    writePixels(&context, alphaBitmap, 0, 10);
+    EXPECT_EQ_RECT(IntRect(10, 11, 90, 89), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    writePixels(&context, alphaBitmap, 1, 10);
+    EXPECT_EQ_RECT(IntRect(11, 11, 89, 89), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, trackOpaqueDrawBitmapTest)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(200, 200);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+
+    SkBitmap opaqueBitmap;
+    opaqueBitmap.allocN32Pixels(10, 10, true /* opaque */);
+    for (int y = 0; y < opaqueBitmap.height(); ++y)
+        for (int x = 0; x < opaqueBitmap.width(); ++x)
+            *opaqueBitmap.getAddr32(x, y) = 0xFFFFFFFF;
+
+    SkBitmap alphaBitmap;
+    alphaBitmap.allocN32Pixels(10, 10);
+    for (int y = 0; y < alphaBitmap.height(); ++y)
+        for (int x = 0; x < alphaBitmap.width(); ++x)
+            *alphaBitmap.getAddr32(x, y) = 0x00000000;
+
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
+    context.drawBitmap(opaqueBitmap, 10, 10, &paint);
+    EXPECT_EQ_RECT(IntRect(10, 10, 10, 10), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawBitmap(alphaBitmap, 10, 0, &paint);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawBitmap(alphaBitmap, 10, 1, &paint);
+    EXPECT_EQ_RECT(IntRect(10, 11, 90, 89), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawBitmap(alphaBitmap, 0, 10, &paint);
+    EXPECT_EQ_RECT(IntRect(10, 11, 90, 89), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawBitmap(alphaBitmap, 1, 10, &paint);
+    EXPECT_EQ_RECT(IntRect(11, 11, 89, 89), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, trackOpaqueDrawBitmapRectTest)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(200, 200);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+
+    SkBitmap opaqueBitmap;
+    opaqueBitmap.allocN32Pixels(10, 10, true /* opaque */);
+    for (int y = 0; y < opaqueBitmap.height(); ++y)
+        for (int x = 0; x < opaqueBitmap.width(); ++x)
+            *opaqueBitmap.getAddr32(x, y) = 0xFFFFFFFF;
+
+    SkBitmap alphaBitmap;
+    alphaBitmap.allocN32Pixels(10, 10);
+    for (int y = 0; y < alphaBitmap.height(); ++y)
+        for (int x = 0; x < alphaBitmap.width(); ++x)
+            *alphaBitmap.getAddr32(x, y) = 0x00000000;
+
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
+    context.drawBitmapRect(opaqueBitmap, 0, SkRect::MakeXYWH(10, 10, 90, 90), &paint);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawBitmapRect(alphaBitmap, 0, SkRect::MakeXYWH(10, 0, 10, 10), &paint);
+    EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawBitmapRect(alphaBitmap, 0, SkRect::MakeXYWH(10, 0, 10, 11), &paint);
+    EXPECT_EQ_RECT(IntRect(10, 11, 90, 89), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawBitmapRect(alphaBitmap, 0, SkRect::MakeXYWH(0, 10, 10, 10), &paint);
+    EXPECT_EQ_RECT(IntRect(10, 11, 90, 89), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.drawBitmapRect(alphaBitmap, 0, SkRect::MakeXYWH(0, 10, 11, 10), &paint);
+    EXPECT_EQ_RECT(IntRect(11, 11, 89, 89), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, contextTransparencyLayerTest)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(400, 400);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    context.fillRect(FloatRect(20, 20, 10, 10), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(20, 20, 10, 10), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.clearRect(FloatRect(20, 20, 10, 10));
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+
+    context.beginTransparencyLayer(0.5);
+    context.save();
+    context.fillRect(FloatRect(20, 20, 10, 10), opaque, CompositeSourceOver);
+    context.restore();
+    context.endLayer();
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+
+    context.clearRect(FloatRect(20, 20, 10, 10));
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+
+    context.beginTransparencyLayer(0.5);
+    context.fillRect(FloatRect(20, 20, 10, 10), opaque, CompositeSourceOver);
+    context.endLayer();
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
 }
 
 TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
@@ -401,6 +958,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     SkCanvas canvas(bitmap);
 
     GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
     Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
@@ -420,7 +978,8 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
 
     // Make the device opaque in 10,10 40x40.
     context.fillRect(FloatRect(10, 10, 40, 40), opaque, CompositeSourceOver);
-    EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(10, 10, 40, 40));
+    EXPECT_EQ_RECT(IntRect(10, 10, 40, 40), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 
     // Clip to the left edge of the opaque area.
     context.clip(IntRect(10, 10, 10, 40));
@@ -432,7 +991,163 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     path.addLineTo(FloatPoint(40, 40));
     context.strokePath(path);
 
-    EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, IntRect(20, 10, 30, 40));
+    EXPECT_EQ_RECT(IntRect(20, 10, 30, 40), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(400, 400);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+
+    Path path;
+    context.setShouldAntialias(false);
+    context.setMiterLimit(1);
+    context.setStrokeThickness(5);
+    context.setLineCap(SquareCap);
+    context.setStrokeStyle(SolidStroke);
+
+    // Make skia unable to compute fast bounds for our paths.
+    DashArray dashArray;
+    dashArray.append(1);
+    dashArray.append(0);
+    context.setLineDash(dashArray, 0);
+
+    // Make the device opaque in 10,10 40x40.
+    context.fillRect(FloatRect(10, 10, 40, 40), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(10, 10, 40, 40), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
+
+    // Begin a layer that preserves opaque.
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
+    context.beginTransparencyLayer(0.5);
+
+    // Begin a layer that does not preserve opaque.
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
+    context.beginTransparencyLayer(0.5);
+
+    // This should not destroy the device opaqueness.
+    context.fillRect(FloatRect(10, 10, 40, 40), opaque, CompositeSourceOver);
+
+    // This should not destroy the device opaqueness either.
+    context.setFillColor(opaque);
+    path.moveTo(FloatPoint(10, 10));
+    path.addLineTo(FloatPoint(40, 40));
+    context.strokePath(path);
+
+    context.endLayer();
+    context.endLayer();
+    EXPECT_EQ_RECT(IntRect(10, 10, 40, 40), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
+
+    // Now begin a layer that does not preserve opaque and draw through it to the device.
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
+    context.beginTransparencyLayer(0.5);
+
+    // This should destroy the device opaqueness.
+    context.fillRect(FloatRect(10, 10, 40, 40), opaque, CompositeSourceOver);
+
+    context.endLayer();
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
+
+    // Now we draw with a path for which it cannot compute fast bounds. This should destroy the entire opaque region.
+
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
+    context.beginTransparencyLayer(0.5);
+
+    // This should nuke the device opaqueness.
+    context.setFillColor(opaque);
+    path.moveTo(FloatPoint(10, 10));
+    path.addLineTo(FloatPoint(40, 40));
+    context.strokePath(path);
+
+    context.endLayer();
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, OpaqueRegionForLayerWithNonRectDeviceClip)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(100, 100);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+
+    context.fillRect(FloatRect(30, 30, 90, 90), opaque, CompositeSourceOver);
+
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
+    context.beginTransparencyLayer(0.5);
+    context.endLayer();
+    EXPECT_EQ_RECT(IntRect(30, 30, 70, 70), context.opaqueRegion().asRect());
+
+    Path path;
+    path.moveTo(FloatPoint(0, 0));
+    path.addLineTo(FloatPoint(50, 50));
+
+    // For opaque preserving mode and deviceClip is not rect
+    // we will not alter opaque rect.
+    context.clipPath(path, RULE_EVENODD);
+
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
+    context.beginTransparencyLayer(0.5);
+    context.endLayer();
+    EXPECT_EQ_RECT(IntRect(30, 30, 70, 70), context.opaqueRegion().asRect());
+
+    // For non-opaque preserving mode and deviceClip is not rect
+    // we will mark opaque rect as empty.
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
+    context.beginTransparencyLayer(0.5);
+
+    context.endLayer();
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+}
+
+TEST(GraphicsContextTest, OpaqueRegionForLayerWithRectDeviceClip)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(100, 100);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+
+    GraphicsContext context(&canvas, nullptr);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    context.fillRect(FloatRect(30, 30, 90, 90), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(30, 30, 70, 70), context.opaqueRegion().asRect());
+
+    // For non-opaque preserving mode and deviceClip is rect
+    // we will mark device clip rect as non opaque.
+    context.setCompositeOperation(SkXfermode::kSrcOut_Mode);
+    context.beginTransparencyLayer(0.5);
+    context.endLayer();
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
+
+    context.clip(FloatRect(0, 0, 50, 50));
+    context.fillRect(FloatRect(20, 20, 100, 100), opaque, CompositeSourceOver);
+
+    // For opaque preserving mode and deviceClip is rect
+    // we will intersect device clip rect with src opaque rect.
+    context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
+    context.beginTransparencyLayer(0.5);
+    context.endLayer();
+    EXPECT_EQ_RECT(IntRect(20, 20, 30, 30), context.opaqueRegion().asRect());
+    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
 #define DISPATCH1(c1, c2, op, param1) do { c1.op(param1); c2.op(param1); } while (0);
