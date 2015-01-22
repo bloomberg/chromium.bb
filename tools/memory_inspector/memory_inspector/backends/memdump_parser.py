@@ -11,7 +11,7 @@ import re
 from memory_inspector.core import memory_map
 
 
-def Parse(lines):
+def Parse(content):
   """Parses the output of memdump.
 
   memdump (see chrome/src/tools/memdump) is a Linux/Android binary meant to be
@@ -36,7 +36,7 @@ def Parse(lines):
   See tests/android_backend_test.py for a more complete example.
 
   Args:
-      lines: array of strings containing memdump output.
+      content: string containing the memdump output.
 
   Returns:
       An instance of |memory_map.Map|.
@@ -53,7 +53,7 @@ def Parse(lines):
   skip_first_n_lines = 1
   maps = memory_map.Map()
 
-  for line in lines:
+  for line in content.splitlines():
     line = line.rstrip('\r\n')
 
     if skip_first_n_lines > 0:

@@ -4,15 +4,12 @@
 
 """Unittests for the android backends modules."""
 
-import os
 import unittest
 
+from memory_inspector.backends import adb_client
 from memory_inspector.backends import android_backend
 from memory_inspector.backends import prebuilts_fetcher
-from memory_inspector.unittest.mock_adb import mock_adb
 
-
-_MOCK_ADB_PATH = os.path.dirname(mock_adb.__file__)
 
 _MOCK_DEVICES_OUT = """List of devices attached
 0000000000000001\tdevice
@@ -73,33 +70,59 @@ _MOCK_PS_EXT_OUT = """
 """
 
 
+class MockADBDevice(object):
+  """A Mock for adb_client.py."""
+  _PROPS = {'ro.product.model': 'Mock device',
+            'ro.build.type': 'userdebug',
+            'ro.build.id': 'ZZ007',
+            'ro.product.cpu.abi': 'armeabi'}
+
+  def __init__(self, serial):
+    self.serial = serial
+
+  def GetProp(self, name, cached=False):  # pylint: disable=W0613
+    return MockADBDevice._PROPS[name]
+
+  def Shell(self, cmd):
+    if 'getprop' in cmd:
+      return '\n'.join('[%s]: [%s]' % (k, v)
+                       for k, v in MockADBDevice._PROPS.iteritems())
+    if '/data/local/tmp/ps_ext' in cmd:
+      return _MOCK_PS_EXT_OUT
+    if '/data/local/tmp/memdump' in cmd:
+      return _MOCK_MEMDUMP_OUT
+    if '/data/local/tmp/heap_dump' in cmd:
+      return _MOCK_HEAP_DUMP_OUT
+    assert False, 'Not reached'
+
+  def RestartShellAsRoot(self):
+    pass
+
+  def WaitForDevice(self):
+    pass
+
+  def Push(self, host_path, device_path):  # pylint: disable=W0613
+    pass
+
+
+def MockListDevices():
+  yield MockADBDevice('0000000000000001')
+  yield MockADBDevice('0000000000000002')
+
+
 class AndroidBackendTest(unittest.TestCase):
+
   def setUp(self):
     prebuilts_fetcher.in_test_harness = True
-    self._mock_adb = mock_adb.MockAdb()
-    planned_adb_responses = {
-      'devices': _MOCK_DEVICES_OUT,
-      'shell getprop ro.product.model': 'Mock device',
-      'shell getprop ro.build.type': 'userdebug',
-      'shell getprop ro.build.id': 'ZZ007',
-      'shell getprop ro.product.cpu.abi': 'armeabi',
-      'root': 'adbd is already running as root',
-      'shell /data/local/tmp/ps_ext': _MOCK_PS_EXT_OUT,
-      'shell /data/local/tmp/memdump': _MOCK_MEMDUMP_OUT,
-      'shell /data/local/tmp/heap_dump': _MOCK_HEAP_DUMP_OUT,
-      'shell test -e "/data/local/tmp/heap': '0',
-    }
-    for (cmd, response) in planned_adb_responses.iteritems():
-      self._mock_adb.PrepareResponse(cmd, response)
-    self._mock_adb.Start()
+    adb_client.ListDevices = MockListDevices  # Sets up the ADBClient mock.
 
   def runTest(self):
     ab = android_backend.AndroidBackend()
 
-    # Test settings load/store logic and setup the mock adb path.
-    self.assertTrue('adb_path' in ab.settings.expected_keys)
-    ab.settings['adb_path'] = _MOCK_ADB_PATH
-    self.assertEqual(ab.settings['adb_path'], _MOCK_ADB_PATH)
+    # Test settings load/store logic.
+    self.assertTrue('toolchain_path' in ab.settings.expected_keys)
+    ab.settings['toolchain_path'] = 'foo'
+    self.assertEqual(ab.settings['toolchain_path'], 'foo')
 
     # Test device enumeration.
     devices = list(ab.EnumerateDevices())
@@ -138,7 +161,7 @@ class AndroidBackendTest(unittest.TestCase):
     self.assertIsNotNone(mmaps.Lookup(0x32FFF))
     self.assertIsNotNone(mmaps.Lookup(0x33000))
     self.assertIsNone(mmaps.Lookup(0x6d000))
-    self.assertIsNotNone(mmaps.Lookup(0xffff00ffff0000))
+    self.assertIsNotNone(mmaps.Lookup(0xffff00ffff0000L))
     self.assertIsNone(mmaps.Lookup(0xffff0000))
 
     entry = mmaps.Lookup(0xbe8b7000)
@@ -172,6 +195,3 @@ class AndroidBackendTest(unittest.TestCase):
         self.assertEqual(alloc.stack_trace.depth, 3)
         self.assertEqual([x.address for x in alloc.stack_trace.frames],
                          [50, 60, 70])
-
-  def tearDown(self):
-    self._mock_adb.Stop()

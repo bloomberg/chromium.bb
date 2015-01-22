@@ -19,7 +19,6 @@ def RegisterAllBackends():
 def _IncludeDeps():
   """Imports all the project dependencies."""
   chromium_dir = os.path.abspath(os.path.join(ROOT_DIR, os.pardir, os.pardir))
-  assert(os.path.isdir(chromium_dir)), 'Cannot find chromium ' + chromium_dir
 
   sys.path += [
       ROOT_DIR,

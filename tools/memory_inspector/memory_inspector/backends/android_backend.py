@@ -13,8 +13,11 @@ import hashlib
 import json
 import os
 import posixpath
+import tempfile
+import time
 
 from memory_inspector import constants
+from memory_inspector.backends import adb_client
 from memory_inspector.backends import memdump_parser
 from memory_inspector.backends import native_heap_dump_parser
 from memory_inspector.backends import prebuilts_fetcher
@@ -22,13 +25,6 @@ from memory_inspector.core import backends
 from memory_inspector.core import exceptions
 from memory_inspector.core import native_heap
 from memory_inspector.core import symbol
-
-# The memory_inspector/__init__ module will add the <CHROME_SRC>/build/android
-# deps to the PYTHONPATH for pylib.
-from pylib import android_commands
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.symbols import elf_symbolizer
 
 
 _SUPPORTED_32BIT_ABIS = {'armeabi': 'arm', 'armeabi-v7a': 'arm'}
@@ -51,7 +47,6 @@ class AndroidBackend(backends.Backend):
   """Android-specific implementation of the core |Backend| interface."""
 
   _SETTINGS_KEYS = {
-      'adb_path': 'Path of directory containing the adb binary',
       'toolchain_path': 'Path of toolchain (for addr2line)'}
 
   def __init__(self):
@@ -60,18 +55,11 @@ class AndroidBackend(backends.Backend):
     self._devices = {}  # 'device id' -> |Device|.
 
   def EnumerateDevices(self):
-    # If a custom adb_path has been setup through settings, prepend that to the
-    # PATH. The android_commands module will use that to locate adb.
-    if (self.settings['adb_path'] and
-        not os.environ['PATH'].startswith(self.settings['adb_path'])):
-      os.environ['PATH'] = os.pathsep.join([self.settings['adb_path'],
-                                           os.environ['PATH']])
-    for device_id in android_commands.GetAttachedDevices():
-      device = self._devices.get(device_id)
+    for adb_device in adb_client.ListDevices():
+      device = self._devices.get(adb_device.serial)
       if not device:
-        device = AndroidDevice(
-          self, device_utils.DeviceUtils(device_id))
-        self._devices[device_id] = device
+        device = AndroidDevice(self, adb_device)
+        self._devices[adb_device.serial] = device
       yield device
 
   def ExtractSymbols(self, native_heaps, sym_paths):
@@ -150,6 +138,9 @@ class AndroidBackend(backends.Backend):
       if not os.path.isfile(exec_file_abs_path):
         continue
 
+      # The memory_inspector/__init__ module will add the /src/build/android
+      # deps to the PYTHONPATH for pylib.
+      from pylib.symbols import elf_symbolizer
       symbolizer = elf_symbolizer.ELFSymbolizer(
           elf_file_path=exec_file_abs_path,
           addr2line_path=addr2line_path,
@@ -179,9 +170,9 @@ class AndroidDevice(backends.Device):
         backend=backend,
         settings=backends.Settings(AndroidDevice._SETTINGS_KEYS))
     self.adb = adb
-    self._name = '%s %s' % (adb.GetProp('ro.product.model'),
-                            adb.GetProp('ro.build.id'))
-    self._id = str(adb)
+    self._name = '%s %s' % (adb.GetProp('ro.product.model', cached=True),
+                            adb.GetProp('ro.build.id', cached=True))
+    self._id = adb.serial
     self._sys_stats = None
     self._last_device_stats = None
     self._sys_stats_last_update = None
@@ -196,7 +187,7 @@ class AndroidDevice(backends.Device):
     self._arch = None
     self._arch32 = None
     self._arch64 = None
-    abi = adb.GetProp('ro.product.cpu.abi')
+    abi = adb.GetProp('ro.product.cpu.abi', cached=True)
     if abi in _SUPPORTED_64BIT_ABIS:
       self._arch = self._arch64 = _SUPPORTED_64BIT_ABIS[abi]
     elif abi in _SUPPORTED_32BIT_ABIS:
@@ -207,10 +198,9 @@ class AndroidDevice(backends.Device):
   def Initialize(self):
     """Starts adb root and deploys the prebuilt binaries on initialization."""
     try:
-      self.adb.EnableRoot()
-    except device_errors.CommandFailedError:
-      # TODO(jbudorick): Handle this exception appropriately after interface
-      # conversions are finished.
+      self.adb.RestartShellAsRoot()
+      self.adb.WaitForDevice()
+    except adb_client.ADBClientError:
       raise exceptions.MemoryInspectorException(
           'The device must be adb root-able in order to use memory_inspector')
 
@@ -232,20 +222,22 @@ class AndroidDevice(backends.Device):
     if not zygote_process:
       raise exceptions.MemoryInspectorException('Zygote process not found')
     zygote_pid = zygote_process[0].pid
-    zygote_maps = self.adb.RunShellCommand('cat /proc/%d/maps' % zygote_pid)
-    return any(('libheap_profiler' in line for line in zygote_maps))
+    zygote_maps = self.adb.Shell(['cat', '/proc/%d/maps' % zygote_pid])
+    return 'libheap_profiler' in zygote_maps
 
   def EnableNativeTracing(self, enabled):
     """Installs libheap_profiler in and injects it in the Zygote."""
 
     def WrapZygote(app_process):
-      WRAPPER_SCRIPT = ('#!/system/bin/sh\n'
-                        'LD_PRELOAD="libheap_profiler.so:$LD_PRELOAD" '
-                        'exec %s.real "$@"\n' % app_process)
-      self.adb.RunShellCommand('mv %(0)s %(0)s.real' % {'0': app_process})
-      self.adb.WriteFile(app_process, WRAPPER_SCRIPT)
-      self.adb.RunShellCommand('chown root.shell ' + app_process)
-      self.adb.RunShellCommand('chmod 755 ' + app_process)
+      self.adb.Shell(['mv', app_process, app_process + '.real'])
+      with tempfile.NamedTemporaryFile() as wrapper_file:
+        wrapper_file.write('#!/system/bin/sh\n'
+                           'LD_PRELOAD="libheap_profiler.so:$LD_PRELOAD" '
+                           'exec %s.real "$@"\n' % app_process)
+        wrapper_file.close()
+        self.adb.Push(wrapper_file.name, app_process)
+      self.adb.Shell(['chown', 'root.shell', app_process])
+      self.adb.Shell(['chmod', '755', app_process])
 
     def UnwrapZygote():
       for suffix in ('', '32', '64'):
@@ -253,17 +245,17 @@ class AndroidDevice(backends.Device):
         # If app_processX.real doesn't exists, either app_processX is already
         # unwrapped or it doesn't exists for the current arch.
         app_process = '/system/bin/app_process' + suffix
-        self.adb.RunShellCommand('mv %(0)s.real %(0)s' % {'0': app_process})
+        self.adb.Shell(['mv', app_process + '.real', app_process])
 
     assert(self._initialized)
-    self.adb.old_interface.MakeSystemFolderWritable()
+    self.adb.RemountSystemPartition()
 
     # Start restoring the original state in any case.
     UnwrapZygote()
 
     if enabled:
       # Temporarily disable SELinux (until next reboot).
-      self.adb.RunShellCommand('setenforce 0')
+      self.adb.Shell(['setenforce', '0'])
 
       # Wrap the Zygote startup binary (app_process) with a script which
       # LD_PRELOADs libheap_profiler and invokes the original Zygote process.
@@ -287,8 +279,17 @@ class AndroidDevice(backends.Device):
         WrapZygote(app_process)
 
     # Respawn the zygote (the device will kind of reboot at this point).
-    self.adb.old_interface.RestartShell()
-    self.adb.old_interface.Adb().WaitForDevicePm(wait_time=30)
+    self.adb.Shell('stop')
+    self.adb.Shell('start')
+
+    # Wait for the package manger to come back.
+    for _ in xrange(10):
+      found_pm = 'package:' in self.adb.Shell(['pm', 'path', 'android'])
+      if found_pm:
+        break
+      time.sleep(3)
+    if not found_pm:
+      raise exceptions.MemoryInspectorException('Device unresponsive (no pm)')
 
     # Remove the wrapper. This won't have effect until the next reboot, when
     # the profiler will be automatically disarmed.
@@ -296,7 +297,7 @@ class AndroidDevice(backends.Device):
 
     # We can also unlink the lib files at this point. Once the Zygote has
     # started it will keep the inodes refcounted anyways through its lifetime.
-    self.adb.RunShellCommand('rm /system/lib*/' + _LIBHEAPPROF_FILE_NAME)
+    self.adb.Shell(['rm', '/system/lib*/' + _LIBHEAPPROF_FILE_NAME])
 
   def ListProcesses(self):
     """Returns a sequence of |AndroidProcess|."""
@@ -352,8 +353,7 @@ class AndroidDevice(backends.Device):
         datetime.datetime.now() - self._sys_stats_last_update <= max_ttl):
       return self._sys_stats
 
-    dump_out = '\n'.join(
-        self.adb.RunShellCommand(_PSEXT_PATH_ON_DEVICE))
+    dump_out = self.adb.Shell(_PSEXT_PATH_ON_DEVICE)
     stats = json.loads(dump_out)
     assert(all([x in stats for x in ['cpu', 'processes', 'time', 'mem']])), (
         'ps_ext returned a malformed JSON dictionary.')
@@ -380,12 +380,11 @@ class AndroidDevice(backends.Device):
     prebuilts_fetcher.GetIfChanged(local_path)
     with open(local_path, 'rb') as f:
       local_hash = hashlib.md5(f.read()).hexdigest()
-    device_md5_out = self.adb.RunShellCommand(
-        'md5 "%s"' % path_on_device)
+    device_md5_out = self.adb.Shell(['md5', path_on_device])
     if local_hash in device_md5_out:
       return
-    self.adb.old_interface.Adb().Push(local_path, path_on_device)
-    self.adb.RunShellCommand('chmod 755 "%s"' % path_on_device)
+    self.adb.Push(local_path, path_on_device)
+    self.adb.Shell(['chmod', '755', path_on_device])
 
   @property
   def name(self):
@@ -407,21 +406,20 @@ class AndroidProcess(backends.Process):
 
   def DumpMemoryMaps(self):
     """Grabs and parses memory maps through memdump."""
-    cmd = '%s %d' % (_MEMDUMP_PATH_ON_DEVICE, self.pid)
-    dump_out = self.device.adb.RunShellCommand(cmd)
+    dump_out = self.device.adb.Shell([_MEMDUMP_PATH_ON_DEVICE, str(self.pid)])
     return memdump_parser.Parse(dump_out)
 
   def DumpNativeHeap(self):
     """Grabs and parses native heap traces using heap_dump."""
-    cmd = '%s -n -x %d' % (_HEAP_DUMP_PATH_ON_DEVICE, self.pid)
-    out_lines = self.device.adb.RunShellCommand(cmd)
-    return native_heap_dump_parser.Parse('\n'.join(out_lines))
+    cmd = [_HEAP_DUMP_PATH_ON_DEVICE, '-n', '-x', str(self.pid)]
+    dump_out = self.device.adb.Shell(cmd)
+    return native_heap_dump_parser.Parse(dump_out)
 
   def Freeze(self):
-    self.device.adb.RunShellCommand('kill -STOP %d' % self.pid)
+    self.device.adb.Shell(['kill', '-STOP', str(self.pid)])
 
   def Unfreeze(self):
-    self.device.adb.RunShellCommand('kill -CONT %d' % self.pid)
+    self.device.adb.Shell(['kill', '-CONT', str(self.pid)])
 
   def GetStats(self):
     """Calculate process CPU/VM stats (CPU stats are relative to last call)."""

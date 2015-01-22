@@ -48,8 +48,11 @@ class ADBHostSession(object):
     self._transport = transport
 
   def __enter__(self):
-    self._sock = socket.create_connection(('127.0.0.1', ADB_PORT),
-                                          timeout=TIMEOUT)
+    try:
+      self._sock = socket.create_connection(('127.0.0.1', ADB_PORT),
+                                            timeout=TIMEOUT)
+    except socket.error:
+      raise ADBClientError('adb daemon not running. Run adb start-server.')
     if self._transport:
       self.SendCmd('host:transport:' + self._transport)
     return self
@@ -147,7 +150,8 @@ class ADBDevice(object):
 
   def RestartShellAsRoot(self):
     with ADBHostSession(transport=self.serial) as s:
-      return s.SendCmdAndGetReply('root:')
+      s.SendCmd('root:')
+      return s.ReadAll()
 
   def RemountSystemPartition(self):
     with ADBHostSession(transport=self.serial) as s:
@@ -158,7 +162,7 @@ class ADBDevice(object):
 
   def Reboot(self):
     with ADBHostSession(transport=self.serial) as s:
-      s.SendCmd('reboot')
+      s.SendCmd('reboot:')
 
   def ForwardTCPPort(self, local_port, remote_port):
     with ADBHostSession() as s:
