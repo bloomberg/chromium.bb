@@ -200,6 +200,10 @@ class OzonePlatformGbm : public OzonePlatform {
 
 OzonePlatform* CreateOzonePlatformGbm() {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+#if defined(USE_MESA_PLATFORM_NULL)
+  // Only works with surfaceless.
+  cmd->AppendSwitch(switches::kOzoneUseSurfaceless);
+#endif
   return new OzonePlatformGbm(cmd->HasSwitch(switches::kOzoneUseSurfaceless));
 }
 

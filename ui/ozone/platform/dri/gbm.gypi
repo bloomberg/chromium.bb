@@ -10,6 +10,7 @@
     'internal_ozone_platforms': [
       'gbm',
     ],
+    'use_mesa_platform_null%': 0,
   },
   'targets': [
     {
@@ -44,6 +45,11 @@
         'gbm_surface_factory.h',
         'ozone_platform_gbm.cc',
         'ozone_platform_gbm.h',
+      ],
+      'conditions': [
+        ['use_mesa_platform_null==1', {
+          'defines': ['USE_MESA_PLATFORM_NULL'],
+        }],
       ],
     },
   ],

@@ -5,6 +5,10 @@
 import("//build/config/linux/pkg_config.gni")
 import("//ui/ozone/ozone.gni")
 
+declare_args() {
+  use_mesa_platform_null = false
+}
+
 pkg_config("libdrm") {
   packages = [ "libdrm" ]
 }
@@ -153,5 +157,9 @@ if (ozone_platform_gbm) {
     ]
 
     public_configs = [ ":libgbm" ]
+
+    if (use_mesa_platform_null) {
+      defines += [ "USE_MESA_PLATFORM_NULL" ]
+    }
   }
 }
