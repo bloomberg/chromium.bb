@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/network/public/interfaces/udp_socket.mojom.h"
 #include "net/base/ip_endpoint.h"
-#include "net/udp/udp_server_socket.h"
+#include "net/udp/udp_socket.h"
 
 namespace net {
 class IOBuffer;
@@ -57,6 +57,12 @@ class UDPSocketImpl : public InterfaceImpl<UDPSocket> {
               const Callback<void(NetworkErrorPtr)>& callback) override;
 
  private:
+  enum State {
+    NOT_BOUND_OR_CONNECTED,
+    BOUND,
+    CONNECTED
+  };
+
   struct PendingSendRequest {
     PendingSendRequest();
     ~PendingSendRequest();
@@ -75,13 +81,19 @@ class UDPSocketImpl : public InterfaceImpl<UDPSocket> {
   void OnSendToCompleted(const Callback<void(NetworkErrorPtr)>& callback,
                          int net_result);
 
-  net::UDPServerSocket socket_;
+  bool IsBoundOrConnected() const {
+    return state_ == BOUND || state_ == CONNECTED;
+  }
 
-  bool bound_;
+  net::UDPSocket socket_;
 
-  // Non-NULL when there is a pending RecvFrom operation on |socket_|.
+  State state_;
+
+  bool allow_address_reuse_;
+
+  // Non-null when there is a pending RecvFrom operation on |socket_|.
   scoped_refptr<net::IOBuffer> recvfrom_buffer_;
-  // Non-NULL when there is a pending SendTo operation on |socket_|.
+  // Non-null when there is a pending SendTo operation on |socket_|.
   scoped_refptr<net::IOBufferWithSize> sendto_buffer_;
 
   net::IPEndPoint recvfrom_address_;

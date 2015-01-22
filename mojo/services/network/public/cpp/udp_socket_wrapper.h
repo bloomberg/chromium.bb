@@ -43,6 +43,9 @@ class UDPSocketWrapper : public UDPSocketClient {
   void Bind(NetAddressPtr addr,
             const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback);
 
+  void Connect(NetAddressPtr remote_addr,
+               const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback);
+
   void SetSendBufferSize(uint32_t size, const ErrorCallback& callback);
 
   void SetReceiveBufferSize(uint32_t size, const ErrorCallback& callback);
@@ -51,10 +54,13 @@ class UDPSocketWrapper : public UDPSocketClient {
   // |callback| before it returns, and the return value is set to true.
   // Otherwise, the return value is set to false and the callback will be run
   // asynchronously.
+  // If the socket is connected, the net address pointer passed into the
+  // callback is set to null.
   bool ReceiveFrom(const ReceiveCallback& callback);
 
   // This method is aware of the max pending send requests allowed by the
   // service, and caches send requests locally if necessary.
+  // |dest_addr| is allowed to be null if the socket is connected.
   void SendTo(NetAddressPtr dest_addr,
               Array<uint8_t> data,
               const ErrorCallback& callback);

@@ -85,6 +85,12 @@ void UDPSocketWrapper::Bind(
   socket_->Bind(addr.Pass(), callback);
 }
 
+void UDPSocketWrapper::Connect(
+    NetAddressPtr remote_addr,
+    const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
+  socket_->Connect(remote_addr.Pass(), callback);
+}
+
 void UDPSocketWrapper::SetSendBufferSize(uint32_t size,
                                          const ErrorCallback& callback) {
   socket_->SetSendBufferSize(size, callback);
