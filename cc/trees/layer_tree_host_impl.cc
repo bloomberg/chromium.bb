@@ -295,7 +295,7 @@ void LayerTreeHostImpl::BeginCommit() {
   // Ensure all textures are returned so partial texture updates can happen
   // during the commit. Impl-side-painting doesn't upload during commits, so
   // is unaffected.
-  if (!settings_.impl_side_painting)
+  if (!settings_.impl_side_painting && output_surface_)
     output_surface_->ForceReclaimResources();
 
   if (UsePendingTreeForSync())
