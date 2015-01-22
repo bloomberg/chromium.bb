@@ -35,6 +35,7 @@ class TestPasswordManagerClient
   TestPasswordManagerClient(password_manager::PasswordStore* store)
       : did_prompt_user_to_save_(false),
         did_prompt_user_to_choose_(false),
+        is_off_the_record_(false),
         store_(store) {}
   ~TestPasswordManagerClient() override {}
 
@@ -67,6 +68,8 @@ class TestPasswordManagerClient
     return true;
   }
 
+  bool IsOffTheRecord() override { return is_off_the_record_; }
+
   bool did_prompt_user_to_save() const { return did_prompt_user_to_save_; }
   bool did_prompt_user_to_choose() const { return did_prompt_user_to_choose_; }
 
@@ -74,9 +77,14 @@ class TestPasswordManagerClient
     return manager_.get();
   }
 
+  void set_off_the_record(bool off_the_record) {
+    is_off_the_record_ = off_the_record;
+  }
+
  private:
   bool did_prompt_user_to_save_;
   bool did_prompt_user_to_choose_;
+  bool is_off_the_record_;
   password_manager::PasswordStore* store_;
   scoped_ptr<password_manager::PasswordFormManager> manager_;
 };
@@ -204,6 +212,23 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
   EXPECT_EQ(form_.origin, new_form.origin);
   EXPECT_EQ(form_.signon_realm, new_form.signon_realm);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
+}
+
+TEST_F(CredentialManagerDispatcherTest, CredentialManagerIncognitoSignedIn) {
+  CredentialInfo info(form_);
+  client_->set_off_the_record(true);
+  dispatcher()->OnNotifySignedIn(kRequestId, info);
+
+  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedIn::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  process()->sink().ClearMessages();
+
+  RunAllPendingTasks();
+
+  EXPECT_FALSE(client_->did_prompt_user_to_save());
+  EXPECT_FALSE(client_->pending_manager());
 }
 
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedOut) {

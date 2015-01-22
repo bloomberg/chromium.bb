@@ -74,6 +74,8 @@ class CredentialManagerDispatcher : public content::WebContentsObserver,
 
   PasswordStore* GetPasswordStore();
 
+  bool IsSavingEnabledForCurrentPage() const;
+
   // Returns the driver for the current main frame.
   // Virtual for testing.
   virtual base::WeakPtr<PasswordManagerDriver> GetDriver();

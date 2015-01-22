@@ -78,6 +78,13 @@ void CredentialManagerDispatcher::OnNotifySignedIn(
     int request_id,
     const password_manager::CredentialInfo& credential) {
   DCHECK(request_id);
+  web_contents()->GetRenderViewHost()->Send(
+      new CredentialManagerMsg_AcknowledgeSignedIn(
+          web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
+
+  if (!IsSavingEnabledForCurrentPage())
+    return;
+
   scoped_ptr<autofill::PasswordForm> form(CreatePasswordFormFromCredentialInfo(
       credential, web_contents()->GetLastCommittedURL().GetOrigin()));
 
@@ -86,10 +93,6 @@ void CredentialManagerDispatcher::OnNotifySignedIn(
   // accordingly.
   form_manager_.reset(new CredentialManagerPasswordFormManager(
       client_, GetDriver(), *form, this));
-
-  web_contents()->GetRenderViewHost()->Send(
-      new CredentialManagerMsg_AcknowledgeSignedIn(
-          web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
 }
 
 void CredentialManagerDispatcher::OnProvisionalSaveComplete() {
@@ -172,6 +175,11 @@ void CredentialManagerDispatcher::OnGetPasswordStoreResults(
 
 PasswordStore* CredentialManagerDispatcher::GetPasswordStore() {
   return client_ ? client_->GetPasswordStore() : nullptr;
+}
+
+bool CredentialManagerDispatcher::IsSavingEnabledForCurrentPage() const {
+  // TODO(vasilii): add more, see http://crbug.com/450583.
+  return !client_->IsOffTheRecord();
 }
 
 base::WeakPtr<PasswordManagerDriver> CredentialManagerDispatcher::GetDriver() {
