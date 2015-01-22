@@ -351,13 +351,6 @@ section {
   background-position: -3px -2px;
 }
 
-#host-list-empty-hosting-supported {
-  margin-top: 14px;
-  padding-top: 20px;
-  border-top: 1px solid #E5E5E5;
-  background-position-y: 18px;
-}
-
 .selectable {
   -webkit-user-select: text;
   cursor: text;

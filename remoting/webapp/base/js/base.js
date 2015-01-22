@@ -270,6 +270,29 @@ base.Promise.negate = function(promise) {
 };
 
 /**
+ * Converts a |method| with callbacks into a Promise.
+ *
+ * @param {Function} method
+ * @param {Array} params
+ * @param {*=} opt_context
+ * @param {boolean=} opt_hasErrorHandler whether the method has an error handler
+ * @return {Promise}
+ */
+base.Promise.as = function(method, params, opt_context, opt_hasErrorHandler) {
+  return new Promise(function(resolve, reject) {
+    params.push(resolve);
+    if (opt_hasErrorHandler) {
+      params.push(reject);
+    }
+    try {
+      method.apply(opt_context, params);
+    } catch (/** @type {*} */ e) {
+      reject(e);
+    }
+  });
+};
+
+/**
  * A mixin for classes with events.
  *
  * For example, to create an alarm event for SmokeDetector:

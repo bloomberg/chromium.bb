@@ -21,8 +21,6 @@ remoting.initGlobalObjects = function() {
   if (base.isAppsV2()) {
     var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
     htmlNode.classList.add('apps-v2');
-  } else {
-    migrateLocalToChromeStorage_();
   }
 
   console.log(remoting.getExtensionInfo());
@@ -231,26 +229,3 @@ function isWindowed_(callback) {
   }
 }
 
-/**
- * Migrate settings in window.localStorage to chrome.storage.local so that
- * users of older web-apps that used the former do not lose their settings.
- */
-function migrateLocalToChromeStorage_() {
-  // The OAuth2 class still uses window.localStorage, so don't migrate any of
-  // those settings.
-  var oauthSettings = [
-      'oauth2-refresh-token',
-      'oauth2-refresh-token-revokable',
-      'oauth2-access-token',
-      'oauth2-xsrf-token',
-      'remoting-email'
-  ];
-  for (var setting in window.localStorage) {
-    if (oauthSettings.indexOf(setting) == -1) {
-      var copy = {}
-      copy[setting] = window.localStorage.getItem(setting);
-      chrome.storage.local.set(copy);
-      window.localStorage.removeItem(setting);
-    }
-  }
-}

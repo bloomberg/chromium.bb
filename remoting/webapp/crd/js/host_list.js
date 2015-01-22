@@ -289,10 +289,45 @@ remoting.HostList.prototype.display = function() {
   remoting.updateModalUi(enabled ? 'enabled' : 'disabled', 'data-daemon-state');
   var element = document.getElementById('daemon-control');
   element.hidden = !canChangeLocalHostState;
-  element = document.getElementById('host-list-empty-hosting-supported');
-  element.hidden = !canChangeLocalHostState;
-  element = document.getElementById('host-list-empty-hosting-unsupported');
-  element.hidden = canChangeLocalHostState;
+
+  if (noHostsRegistered) {
+    this.showHostListEmptyMessage_(canChangeLocalHostState);
+  }
+};
+
+/**
+ * Displays a message to the user when the host list is empty.
+ *
+ * @param {boolean} hostingSupported
+ * @return {void}
+ * @private
+ */
+remoting.HostList.prototype.showHostListEmptyMessage_ = function(
+    hostingSupported) {
+  var that = this;
+  remoting.AppsV2Migration.hasHostsInV1App().then(
+    /**
+     * @param {remoting.MigrationSettings} previousIdentity
+     * @this {remoting.HostList}
+     */
+    function(previousIdentity) {
+      that.noHosts_.innerHTML = remoting.AppsV2Migration.buildMigrationTips(
+          previousIdentity.email, previousIdentity.fullName);
+    },
+    function() {
+      var buttonLabel = l10n.getTranslationOrError(
+          /*i18n-content*/'HOME_DAEMON_START_BUTTON');
+      if (hostingSupported) {
+        that.noHosts_.innerText = l10n.getTranslationOrError(
+            /*i18n-content*/'HOST_LIST_EMPTY_HOSTING_SUPPORTED',
+            [buttonLabel]);
+      } else {
+        that.noHosts_.innerText = l10n.getTranslationOrError(
+            /*i18n-content*/'HOST_LIST_EMPTY_HOSTING_UNSUPPORTED',
+            [buttonLabel]);
+      }
+    }
+  );
 };
 
 /**
@@ -462,6 +497,9 @@ remoting.HostList.prototype.save_ = function() {
   var items = {};
   items[remoting.HostList.HOSTS_KEY] = JSON.stringify(this.hosts_);
   chrome.storage.local.set(items);
+  if (this.hosts_.length !== 0) {
+    remoting.AppsV2Migration.saveUserInfo();
+  }
 };
 
 /**
