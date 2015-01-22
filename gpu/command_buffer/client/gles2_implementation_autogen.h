@@ -163,6 +163,8 @@ void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) override;
 
 void DeleteSamplers(GLsizei n, const GLuint* samplers) override;
 
+void DeleteSync(GLsync sync) override;
+
 void DeleteShader(GLuint shader) override;
 
 void DeleteTextures(GLsizei n, const GLuint* textures) override;
@@ -187,6 +189,8 @@ void DrawElements(GLenum mode,
                   const void* indices) override;
 
 void Enable(GLenum cap) override;
+
+GLsync FenceSync(GLenum condition, GLbitfield flags) override;
 
 void Finish() override;
 
@@ -348,6 +352,8 @@ GLboolean IsRenderbuffer(GLuint renderbuffer) override;
 GLboolean IsSampler(GLuint sampler) override;
 
 GLboolean IsShader(GLuint shader) override;
+
+GLboolean IsSync(GLsync sync) override;
 
 GLboolean IsTexture(GLuint texture) override;
 

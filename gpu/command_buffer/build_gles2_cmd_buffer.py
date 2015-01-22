@@ -1368,6 +1368,27 @@ _NAMED_TYPE_INFO = {
       'GL_UNKNOWN_CONTEXT_RESET_ARB',
     ],
   },
+  'SyncCondition': {
+    'type': 'GLenum',
+    'is_complete': True,
+    'valid': [
+      #TODO(zmo): avoid using the direct number.
+      '0x9117',  # GL_SYNC_GPU_COMMANDS_COMPLETE
+    ],
+    'invalid': [
+      '0',
+    ],
+  },
+  'SyncFlags': {
+    'type': 'GLbitfield',
+    'is_complete': True,
+    'valid': [
+      '0',
+    ],
+    'invalid': [
+      '1',
+    ],
+  },
 }
 
 # This table specifies the different pepper interfaces that are supported for
@@ -1815,7 +1836,7 @@ _FUNCTION_INFO = {
     'resource_type': 'Framebuffer',
     'resource_types': 'Framebuffers',
   },
-  'DeleteProgram': {'type': 'Delete', 'decoder_func': 'DoDeleteProgram'},
+  'DeleteProgram': { 'type': 'Delete' },
   'DeleteRenderbuffers': {
     'type': 'DELn',
     'gl_test_func': 'glDeleteRenderbuffersEXT',
@@ -1828,7 +1849,13 @@ _FUNCTION_INFO = {
     'resource_types': 'Samplers',
     'unsafe': True,
   },
-  'DeleteShader': {'type': 'Delete', 'decoder_func': 'DoDeleteShader'},
+  'DeleteShader': { 'type': 'Delete' },
+  'DeleteSync': {
+    'type': 'Delete',
+    'cmd_args': 'GLuint sync',
+    'resource_type': 'Sync',
+    'unsafe': True,
+  },
   'DeleteTextures': {
     'type': 'DELn',
     'resource_type': 'Texture',
@@ -1882,6 +1909,11 @@ _FUNCTION_INFO = {
   'EnableVertexAttribArray': {
     'decoder_func': 'DoEnableVertexAttribArray',
     'impl_decl': False,
+  },
+  'FenceSync': {
+    'type': 'Create',
+    'client_test': False,
+    'unsafe': True,
   },
   'Finish': {
     'impl_func': False,
@@ -2209,6 +2241,7 @@ _FUNCTION_INFO = {
   'IsEnabled': {
     'type': 'Is',
     'decoder_func': 'DoIsEnabled',
+    'client_test': False,
     'impl_func': False,
     'expectation': False,
   },
@@ -2235,6 +2268,13 @@ _FUNCTION_INFO = {
   'IsSampler': {
     'type': 'Is',
     'id_mapping': [ 'Sampler' ],
+    'expectation': False,
+    'unsafe': True,
+  },
+  'IsSync': {
+    'type': 'Is',
+    'id_mapping': [ 'Sync' ],
+    'cmd_args': 'GLuint sync',
     'expectation': False,
     'unsafe': True,
   },
@@ -4942,26 +4982,61 @@ class CreateHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     func.AddCmdArg(Argument("client_id", 'uint32_t'))
 
+  def __GetResourceType(self, func):
+    if func.return_type == "GLsync":
+      return "Sync"
+    else:
+      return func.name[6:]  # Create*
+
   def WriteServiceUnitTest(self, func, file, *extras):
     """Overrriden from TypeHandler."""
     valid_test = """
 TEST_P(%(test_name)s, %(name)sValidArgs) {
-  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s))
-      .WillOnce(Return(kNewServiceId));
+  %(id_type_cast)sEXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s))
+      .WillOnce(Return(%(const_service_id)s));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
-  cmd.Init(%(args)s%(comma)skNewClientId);
+  cmd.Init(%(args)s%(comma)skNewClientId);"""
+    if func.IsUnsafe():
+      valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(true);"""
+    valid_test += """
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != NULL);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
+    if func.IsUnsafe():
+      valid_test += """
+  %(return_type)s service_id = 0;
+  EXPECT_TRUE(Get%(resource_type)sServiceId(kNewClientId, &service_id));
+  EXPECT_EQ(%(const_service_id)s, service_id);
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+"""
+    else:
+      valid_test += """
+  EXPECT_TRUE(Get%(resource_type)s(kNewClientId));
 }
 """
     comma = ""
-    if len(func.GetOriginalArgs()):
-      comma =", "
+    cmd_arg_count = 0
+    for arg in func.GetOriginalArgs():
+      if not arg.IsConstant():
+        cmd_arg_count += 1
+    if cmd_arg_count:
+      comma = ", "
+    if func.return_type == 'GLsync':
+      id_type_cast = ("const GLsync kNewServiceIdGLuint = reinterpret_cast"
+                      "<GLsync>(kNewServiceId);\n  ")
+      const_service_id = "kNewServiceIdGLuint"
+    else:
+      id_type_cast = ""
+      const_service_id = "kNewServiceId"
     self.WriteValidUnitTest(func, file, valid_test, {
           'comma': comma,
-          'resource_type': func.name[6:],
+          'resource_type': self.__GetResourceType(func),
+          'return_type': func.return_type,
+          'id_type_cast': id_type_cast,
+          'const_service_id': const_service_id,
         }, *extras)
     invalid_test = """
 TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
@@ -4978,11 +5053,33 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  uint32_t client_id = c.client_id;\n")
-    file.Write("  if (!%sHelper(%s)) {\n" %
-               (func.name, func.MakeCmdArgString("")))
-    file.Write("    return error::kInvalidArguments;\n")
-    file.Write("  }\n")
+    if func.IsUnsafe():
+      code = """  uint32_t client_id = c.client_id;
+  %(return_type)s service_id = 0;
+  if (group_->Get%(resource_name)sServiceId(client_id, &service_id)) {
+    return error::kInvalidArguments;
+  }
+  service_id = %(gl_func_name)s(%(gl_args)s);
+  if (service_id) {
+    group_->Add%(resource_name)sId(client_id, service_id);
+  }
+"""
+    else:
+      code = """  uint32_t client_id = c.client_id;
+  if (Get%(resource_name)s(client_id)) {
+    return error::kInvalidArguments;
+  }
+  %(return_type)s service_id = %(gl_func_name)s(%(gl_args)s);
+  if (service_id) {
+    Create%(resource_name)s(client_id, service_id%(gl_args_with_comma)s);
+  }
+"""
+    file.Write(code % {
+        'resource_name': self.__GetResourceType(func),
+        'return_type': func.return_type,
+        'gl_func_name': func.GetGLFunctionName(),
+        'gl_args': func.MakeOriginalArgString(""),
+        'gl_args_with_comma': func.MakeOriginalArgString("", True) })
 
   def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
@@ -4995,14 +5092,21 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  GLuint client_id;\n")
-    file.Write(
-        "  GetIdHandler(id_namespaces::kProgramsAndShaders)->\n")
+    if func.return_type == "GLsync":
+      file.Write(
+          "  GetIdHandler(id_namespaces::kSyncs)->\n")
+    else:
+      file.Write(
+          "  GetIdHandler(id_namespaces::kProgramsAndShaders)->\n")
     file.Write("      MakeIds(this, 0, 1, &client_id);\n")
     file.Write("  helper_->%s(%s);\n" %
                (func.name, func.MakeCmdArgString("")))
     file.Write('  GPU_CLIENT_LOG("returned " << client_id);\n')
     file.Write("  CheckGLError();\n")
-    file.Write("  return client_id;\n")
+    if func.return_type == "GLsync":
+      file.Write("  return reinterpret_cast<GLsync>(client_id);\n")
+    else:
+      file.Write("  return client_id;\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -5015,6 +5119,9 @@ class DeleteHandler(TypeHandler):
 
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
+    if func.IsUnsafe():
+      TypeHandler.WriteServiceImplementation(self, func, file)
+    # HandleDeleteShader and HandleDeleteProgram are manually written.
     pass
 
   def WriteGLES2Implementation(self, func, file):
@@ -5035,6 +5142,25 @@ class DeleteHandler(TypeHandler):
     file.Write("}\n")
     file.Write("\n")
 
+  def WriteHandlerImplementation (self, func, file):
+    """Overrriden from TypeHandler."""
+    assert len(func.GetOriginalArgs()) == 1
+    arg = func.GetOriginalArgs()[0]
+    if func.IsUnsafe():
+      file.Write("""  %(arg_type)s service_id = 0;
+  if (group_->Get%(resource_type)sServiceId(%(arg_name)s, &service_id)) {
+    glDelete%(resource_type)s(service_id);
+    group_->Remove%(resource_type)sId(%(arg_name)s);
+  } else {
+     LOCAL_SET_GL_ERROR(
+         GL_INVALID_VALUE, "gl%(func_name)s", "unknown %(arg_name)s");
+  }
+""" % { 'resource_type': func.GetInfo('resource_type'),
+        'arg_name': arg.name,
+        'arg_type': arg.type,
+        'func_name': func.original_name })
+    else:
+      file.Write("  %sHelper(%s);\n" % (func.original_name, arg.name))
 
 class DELnHandler(TypeHandler):
   """Handler for glDelete___ type functions."""
@@ -6715,8 +6841,10 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
     if func.IsUnsafe():
       assert func.GetInfo('id_mapping')
       assert len(func.GetInfo('id_mapping')) == 1
+      assert len(args) == 1
       id_type = func.GetInfo('id_mapping')[0]
-      file.Write("  *result_dst = group_->Get%sServiceId(%s, &%s);\n" %
+      file.Write("  %s service_%s = 0;\n" % (args[0].type, id_type.lower()))
+      file.Write("  *result_dst = group_->Get%sServiceId(%s, &service_%s);\n" %
                  (id_type, id_type.lower(), id_type.lower()))
     else:
       file.Write("  *result_dst = %s(%s);\n" %
@@ -6743,13 +6871,15 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       file.Write("    return %s;\n" % error_value)
       file.Write("  }\n")
       file.Write("  *result = 0;\n")
-      arg_string = func.MakeOriginalArgString("")
-      comma = ""
-      if len(arg_string) > 0:
-        comma = ", "
+      assert len(func.GetOriginalArgs()) == 1
+      id_arg = func.GetOriginalArgs()[0]
+      if id_arg.type == 'GLsync':
+        arg_string = "ToGLuint(%s)" % func.MakeOriginalArgString("")
+      else:
+        arg_string = func.MakeOriginalArgString("")
       file.Write(
-          "  helper_->%s(%s%sGetResultShmId(), GetResultShmOffset());\n" %
-                 (func.name, arg_string, comma))
+          "  helper_->%s(%s, GetResultShmId(), GetResultShmOffset());\n" %
+              (func.name, arg_string))
       file.Write("  WaitForCmd();\n")
       file.Write("  %s result_value = *result" % func.return_type)
       if func.return_type == "GLboolean":
@@ -6773,20 +6903,23 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::%(name)s::Result));
-  expected.cmd.Init(1, result1.id, result1.offset);
+  expected.cmd.Init(%(cmd_id_value)s, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
-  GLboolean result = gl_->%(name)s(1);
+  GLboolean result = gl_->%(name)s(%(gl_id_value)s);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(result);
 }
 """
+      args = func.GetOriginalArgs()
+      assert len(args) == 1
       file.Write(code % {
-            'name': func.name,
-          })
+          'name': func.name,
+          'cmd_id_value': args[0].GetValidClientSideCmdArg(func),
+          'gl_id_value': args[0].GetValidClientSideArg(func) })
 
 
 class STRnHandler(TypeHandler):
@@ -7011,6 +7144,8 @@ class Argument(object):
       return valid_arg
 
     index = func.GetOriginalArgs().index(self)
+    if self.type == 'GLsync':
+      return ("reinterpret_cast<GLsync>(%d)" % (index + 1))
     return str(index + 1)
 
   def GetValidClientSideCmdArg(self, func):
@@ -7028,7 +7163,10 @@ class Argument(object):
 
   def GetValidGLArg(self, func):
     """Gets a valid GL value for this argument."""
-    return self.GetValidArg(func)
+    value = self.GetValidArg(func)
+    if self.type == 'GLsync':
+      return ("reinterpret_cast<GLsync>(%s)" % value)
+    return value
 
   def GetValidNonCachedClientSideArg(self, func):
     """Returns a valid value for this argument in a GL call.
@@ -7061,8 +7199,12 @@ class Argument(object):
 
   def WriteGetCode(self, file):
     """Writes the code to get an argument from a command structure."""
+    if self.type == 'GLsync':
+      my_type = 'GLuint'
+    else:
+      my_type = self.type
     file.Write("  %s %s = static_cast<%s>(c.%s);\n" %
-               (self.type, self.name, self.type, self.name))
+               (my_type, self.name, my_type, self.name))
 
   def WriteValidationCode(self, file, func):
     """Writes the validation code for an argument."""
@@ -7196,7 +7338,8 @@ class SizeNotNegativeArgument(SizeArgument):
 
 
 class EnumBaseArgument(Argument):
-  """Base class for EnumArgument, IntArgument and ValidatedBoolArgument"""
+  """Base class for EnumArgument, IntArgument, BitfieldArgument, and
+  ValidatedBoolArgument."""
 
   def __init__(self, name, gl_type, type, gl_error):
     Argument.__init__(self, name, gl_type)
@@ -7312,7 +7455,7 @@ class EnumArgument(EnumBaseArgument):
 
 
 class IntArgument(EnumBaseArgument):
-  """A class for a GLint argument that can only except specific values.
+  """A class for a GLint argument that can only accept specific values.
 
   For example glTexImage2D takes a GLint for its internalformat
   argument instead of a GLenum.
@@ -7323,7 +7466,7 @@ class IntArgument(EnumBaseArgument):
 
 
 class ValidatedBoolArgument(EnumBaseArgument):
-  """A class for a GLboolean argument that can only except specific values.
+  """A class for a GLboolean argument that can only accept specific values.
 
   For example glUniformMatrix takes a GLboolean for it's transpose but it
   must be false.
@@ -7335,6 +7478,18 @@ class ValidatedBoolArgument(EnumBaseArgument):
   def GetLogArg(self):
     """Overridden from Argument."""
     return 'GLES2Util::GetStringBool(%s)' % self.name
+
+
+class BitFieldArgument(EnumBaseArgument):
+  """A class for a GLbitfield argument that can only accept specific values.
+
+  For example glFenceSync takes a GLbitfield for its flags argument bit it
+  must be 0.
+  """
+
+  def __init__(self, name, type):
+    EnumBaseArgument.__init__(self, name, "GLbitfield", type,
+                              "GL_INVALID_VALUE")
 
 
 class ImmediatePointerArgument(Argument):
@@ -7584,17 +7739,26 @@ class ResourceIdArgument(Argument):
   def __init__(self, name, type):
     match = re.match("(GLid\w+)", type)
     self.resource_type = match.group(1)[4:]
-    type = type.replace(match.group(1), "GLuint")
+    if self.resource_type == "Sync":
+      type = type.replace(match.group(1), "GLsync")
+    else:
+      type = type.replace(match.group(1), "GLuint")
     Argument.__init__(self, name, type)
 
   def WriteGetCode(self, file):
     """Overridden from Argument."""
-    file.Write("  %s %s = c.%s;\n" % (self.type, self.name, self.name))
+    if self.type == "GLsync":
+      my_type = "GLuint"
+    else:
+      my_type = self.type
+    file.Write("  %s %s = c.%s;\n" % (my_type, self.name, self.name))
 
   def GetValidArg(self, func):
     return "client_%s_id_" % self.resource_type.lower()
 
   def GetValidGLArg(self, func):
+    if self.resource_type == "Sync":
+      return "reinterpret_cast<GLsync>(kService%sId)" % self.resource_type
     return "kService%sId" % self.resource_type
 
 
@@ -8307,6 +8471,8 @@ def CreateArg(arg_string):
     return ResourceIdArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif arg_parts[0].startswith('GLenum') and len(arg_parts[0]) > 6:
     return EnumArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
+  elif arg_parts[0].startswith('GLbitfield') and len(arg_parts[0]) > 10:
+    return BitFieldArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif arg_parts[0].startswith('GLboolean') and len(arg_parts[0]) > 9:
     return ValidatedBoolArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif arg_parts[0].startswith('GLboolean'):

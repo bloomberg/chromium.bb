@@ -546,6 +546,14 @@ void GLES2Implementation::DeleteSamplers(GLsizei n, const GLuint* samplers) {
   CheckGLError();
 }
 
+void GLES2Implementation::DeleteSync(GLsync sync) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDeleteSync(" << sync << ")");
+  GPU_CLIENT_DCHECK(sync != 0);
+  DeleteSyncHelper(sync);
+  CheckGLError();
+}
+
 void GLES2Implementation::DeleteShader(GLuint shader) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDeleteShader(" << shader << ")");
@@ -629,6 +637,27 @@ void GLES2Implementation::DetachShader(GLuint program, GLuint shader) {
                      << shader << ")");
   helper_->DetachShader(program, shader);
   CheckGLError();
+}
+
+GLsync GLES2Implementation::FenceSync(GLenum condition, GLbitfield flags) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFenceSync("
+                     << GLES2Util::GetStringSyncCondition(condition) << ", "
+                     << flags << ")");
+  if (condition != 0x9117) {
+    SetGLError(GL_INVALID_ENUM, "glFenceSync", "condition GL_INVALID_ENUM");
+    return 0;
+  }
+  if (flags != 0) {
+    SetGLError(GL_INVALID_VALUE, "glFenceSync", "flags GL_INVALID_VALUE");
+    return 0;
+  }
+  GLuint client_id;
+  GetIdHandler(id_namespaces::kSyncs)->MakeIds(this, 0, 1, &client_id);
+  helper_->FenceSync(client_id);
+  GPU_CLIENT_LOG("returned " << client_id);
+  CheckGLError();
+  return reinterpret_cast<GLsync>(client_id);
 }
 
 void GLES2Implementation::FramebufferRenderbuffer(GLenum target,
@@ -1456,6 +1485,24 @@ GLboolean GLES2Implementation::IsShader(GLuint shader) {
   }
   *result = 0;
   helper_->IsShader(shader, GetResultShmId(), GetResultShmOffset());
+  WaitForCmd();
+  GLboolean result_value = *result != 0;
+  GPU_CLIENT_LOG("returned " << result_value);
+  CheckGLError();
+  return result_value;
+}
+
+GLboolean GLES2Implementation::IsSync(GLsync sync) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  TRACE_EVENT0("gpu", "GLES2Implementation::IsSync");
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsSync(" << sync << ")");
+  typedef cmds::IsSync::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
+  *result = 0;
+  helper_->IsSync(ToGLuint(sync), GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GLboolean result_value = *result != 0;
   GPU_CLIENT_LOG("returned " << result_value);

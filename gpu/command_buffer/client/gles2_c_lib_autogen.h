@@ -205,6 +205,9 @@ void GLES2DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
 void GLES2DeleteSamplers(GLsizei n, const GLuint* samplers) {
   gles2::GetGLContext()->DeleteSamplers(n, samplers);
 }
+void GLES2DeleteSync(GLsync sync) {
+  gles2::GetGLContext()->DeleteSync(sync);
+}
 void GLES2DeleteShader(GLuint shader) {
   gles2::GetGLContext()->DeleteShader(shader);
 }
@@ -246,6 +249,9 @@ void GLES2Enable(GLenum cap) {
 }
 void GLES2EnableVertexAttribArray(GLuint index) {
   gles2::GetGLContext()->EnableVertexAttribArray(index);
+}
+GLsync GLES2FenceSync(GLenum condition, GLbitfield flags) {
+  return gles2::GetGLContext()->FenceSync(condition, flags);
 }
 void GLES2Finish() {
   gles2::GetGLContext()->Finish();
@@ -466,6 +472,9 @@ GLboolean GLES2IsSampler(GLuint sampler) {
 }
 GLboolean GLES2IsShader(GLuint shader) {
   return gles2::GetGLContext()->IsShader(shader);
+}
+GLboolean GLES2IsSync(GLsync sync) {
+  return gles2::GetGLContext()->IsSync(sync);
 }
 GLboolean GLES2IsTexture(GLuint texture) {
   return gles2::GetGLContext()->IsTexture(texture);
@@ -1384,6 +1393,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glDeleteSamplers),
     },
     {
+     "glDeleteSync",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteSync),
+    },
+    {
      "glDeleteShader",
      reinterpret_cast<GLES2FunctionPointer>(glDeleteShader),
     },
@@ -1434,6 +1447,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glEnableVertexAttribArray",
      reinterpret_cast<GLES2FunctionPointer>(glEnableVertexAttribArray),
+    },
+    {
+     "glFenceSync",
+     reinterpret_cast<GLES2FunctionPointer>(glFenceSync),
     },
     {
      "glFinish",
@@ -1643,6 +1660,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glIsShader",
      reinterpret_cast<GLES2FunctionPointer>(glIsShader),
+    },
+    {
+     "glIsSync",
+     reinterpret_cast<GLES2FunctionPointer>(glIsSync),
     },
     {
      "glIsTexture",

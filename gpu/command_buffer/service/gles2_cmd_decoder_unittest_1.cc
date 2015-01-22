@@ -252,33 +252,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetProgramInfoLog, 0>(
                 base::Bind(&ShaderCacheCb));
 };
 
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::GetVertexAttribfv, 0>(
-    bool valid) {
-  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
-  DoVertexAttribPointer(1, 1, GL_FLOAT, 0, 0);
-  if (valid) {
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-  }
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::GetVertexAttribiv, 0>(
-    bool valid) {
-  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
-  DoVertexAttribPointer(1, 1, GL_FLOAT, 0, 0);
-  if (valid) {
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-  }
-};
-
-
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h"
 
 }  // namespace gles2

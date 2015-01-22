@@ -12,6 +12,85 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest2, GetVertexAttribfvValidArgs) {
+  SpecializedSetup<cmds::GetVertexAttribfv, 0>(true);
+  typedef cmds::GetVertexAttribfv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetVertexAttribfv cmd;
+  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
+                GL_VERTEX_ATTRIB_ARRAY_NORMALIZED),
+            result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, GetVertexAttribfvInvalidArgs2_0) {
+  EXPECT_CALL(*gl_, GetVertexAttribfv(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetVertexAttribfv, 0>(false);
+  cmds::GetVertexAttribfv::Result* result =
+      static_cast<cmds::GetVertexAttribfv::Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetVertexAttribfv cmd;
+  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, kInvalidSharedMemoryId, 0);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+}
+
+TEST_P(GLES2DecoderTest2, GetVertexAttribfvInvalidArgs2_1) {
+  EXPECT_CALL(*gl_, GetVertexAttribfv(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetVertexAttribfv, 0>(false);
+  cmds::GetVertexAttribfv::Result* result =
+      static_cast<cmds::GetVertexAttribfv::Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetVertexAttribfv cmd;
+  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
+           kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+}
+
+TEST_P(GLES2DecoderTest2, GetVertexAttribivValidArgs) {
+  SpecializedSetup<cmds::GetVertexAttribiv, 0>(true);
+  typedef cmds::GetVertexAttribiv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetVertexAttribiv cmd;
+  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
+                GL_VERTEX_ATTRIB_ARRAY_NORMALIZED),
+            result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, GetVertexAttribivInvalidArgs2_0) {
+  EXPECT_CALL(*gl_, GetVertexAttribiv(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetVertexAttribiv, 0>(false);
+  cmds::GetVertexAttribiv::Result* result =
+      static_cast<cmds::GetVertexAttribiv::Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetVertexAttribiv cmd;
+  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, kInvalidSharedMemoryId, 0);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+}
+
+TEST_P(GLES2DecoderTest2, GetVertexAttribivInvalidArgs2_1) {
+  EXPECT_CALL(*gl_, GetVertexAttribiv(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetVertexAttribiv, 0>(false);
+  cmds::GetVertexAttribiv::Result* result =
+      static_cast<cmds::GetVertexAttribiv::Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetVertexAttribiv cmd;
+  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
+           kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+}
 // TODO(gman): GetVertexAttribPointerv
 
 TEST_P(GLES2DecoderTest2, HintValidArgs) {
@@ -178,6 +257,28 @@ TEST_P(GLES2DecoderTest2, IsShaderInvalidArgsBadSharedMemoryId) {
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   cmd.Init(client_shader_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderTest2, IsSyncValidArgs) {
+  SpecializedSetup<cmds::IsSync, 0>(true);
+  cmds::IsSync cmd;
+  cmd.Init(client_sync_id_, shared_memory_id_, shared_memory_offset_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderTest2, IsSyncInvalidArgsBadSharedMemoryId) {
+  SpecializedSetup<cmds::IsSync, 0>(false);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  cmds::IsSync cmd;
+  cmd.Init(client_sync_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(client_sync_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  decoder_->set_unsafe_es3_apis_enabled(true);
 }
 
 TEST_P(GLES2DecoderTest2, IsTextureValidArgs) {
@@ -1322,30 +1423,4 @@ TEST_P(GLES2DecoderTest2, VertexAttribI4uivImmediateValidArgs) {
 
 // TODO(gman): VertexAttribPointer
 
-TEST_P(GLES2DecoderTest2, ViewportValidArgs) {
-  EXPECT_CALL(*gl_, Viewport(1, 2, 3, 4));
-  SpecializedSetup<cmds::Viewport, 0>(true);
-  cmds::Viewport cmd;
-  cmd.Init(1, 2, 3, 4);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, ViewportInvalidArgs2_0) {
-  EXPECT_CALL(*gl_, Viewport(_, _, _, _)).Times(0);
-  SpecializedSetup<cmds::Viewport, 0>(false);
-  cmds::Viewport cmd;
-  cmd.Init(1, 2, -1, 4);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
-  EXPECT_CALL(*gl_, Viewport(_, _, _, _)).Times(0);
-  SpecializedSetup<cmds::Viewport, 0>(false);
-  cmds::Viewport cmd;
-  cmd.Init(1, 2, 3, -1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

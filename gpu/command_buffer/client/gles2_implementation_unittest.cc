@@ -3555,6 +3555,29 @@ TEST_F(GLES2ImplementationTest, AllowNestedTracesCHROMIUM) {
   EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
 }
 
+TEST_F(GLES2ImplementationTest, IsEnabled) {
+  // If we use a valid enum, its state is cached on client side, so no command
+  // is actually generated, and this test will fail.
+  // TODO(zmo): it seems we never need the command. Maybe remove it.
+  GLenum kCap = 1;
+  struct Cmds {
+    cmds::IsEnabled cmd;
+  };
+
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(cmds::IsEnabled::Result));
+  expected.cmd.Init(kCap, result1.id, result1.offset);
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32_t(kCap)))
+      .RetiresOnSaturation();
+
+  GLboolean result = gl_->IsEnabled(kCap);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(result);
+}
+
 TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {
   ContextInitOptions init_options;
   init_options.lose_context_when_out_of_memory = true;

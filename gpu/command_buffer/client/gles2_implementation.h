@@ -478,6 +478,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void DeleteSamplersHelper(GLsizei n, const GLuint* samplers);
   void DeleteTransformFeedbacksHelper(
       GLsizei n, const GLuint* transformfeedbacks);
+  void DeleteSyncHelper(GLsync sync);
 
   void DeleteBuffersStub(GLsizei n, const GLuint* buffers);
   void DeleteFramebuffersStub(GLsizei n, const GLuint* framebuffers);
@@ -490,6 +491,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void DeleteSamplersStub(GLsizei n, const GLuint* samplers);
   void DeleteTransformFeedbacksStub(
       GLsizei n, const GLuint* transformfeedbacks);
+  void DeleteSyncStub(GLsizei n, const GLuint* syncs);
 
   void BufferDataHelper(
       GLenum target, GLsizeiptr size, const void* data, GLenum usage);

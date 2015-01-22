@@ -976,6 +976,20 @@ void GLES2Implementation::DeleteShaderStub(
   helper_->DeleteShader(shaders[0]);
 }
 
+void GLES2Implementation::DeleteSyncHelper(GLsync sync) {
+  GLuint sync_uint = ToGLuint(sync);
+  if (!GetIdHandler(id_namespaces::kSyncs)->FreeIds(
+      this, 1, &sync_uint, &GLES2Implementation::DeleteSyncStub)) {
+    SetGLError(
+        GL_INVALID_VALUE,
+        "glDeleteSync", "id not created by this context.");
+  }
+}
+
+void GLES2Implementation::DeleteSyncStub(GLsizei n, const GLuint* syncs) {
+  DCHECK_EQ(1, n);
+  helper_->DeleteSync(syncs[0]);
+}
 
 GLint GLES2Implementation::GetAttribLocationHelper(
     GLuint program, const char* name) {

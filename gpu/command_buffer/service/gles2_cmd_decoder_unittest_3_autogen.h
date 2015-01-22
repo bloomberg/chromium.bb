@@ -12,6 +12,32 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest3, ViewportValidArgs) {
+  EXPECT_CALL(*gl_, Viewport(1, 2, 3, 4));
+  SpecializedSetup<cmds::Viewport, 0>(true);
+  cmds::Viewport cmd;
+  cmd.Init(1, 2, 3, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest3, ViewportInvalidArgs2_0) {
+  EXPECT_CALL(*gl_, Viewport(_, _, _, _)).Times(0);
+  SpecializedSetup<cmds::Viewport, 0>(false);
+  cmds::Viewport cmd;
+  cmd.Init(1, 2, -1, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest3, ViewportInvalidArgs3_0) {
+  EXPECT_CALL(*gl_, Viewport(_, _, _, _)).Times(0);
+  SpecializedSetup<cmds::Viewport, 0>(false);
+  cmds::Viewport cmd;
+  cmd.Init(1, 2, 3, -1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
 // TODO(gman): TexStorage2DEXT
 // TODO(gman): GenQueriesEXTImmediate
 // TODO(gman): DeleteQueriesEXTImmediate

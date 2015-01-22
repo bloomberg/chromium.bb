@@ -174,13 +174,13 @@ TEST_F(GLES2ImplementationTest, CheckFramebufferStatus) {
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::CheckFramebufferStatus::Result));
-  expected.cmd.Init(1, result1.id, result1.offset);
+  expected.cmd.Init(GL_FRAMEBUFFER, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
-  GLboolean result = gl_->CheckFramebufferStatus(1);
+  GLboolean result = gl_->CheckFramebufferStatus(GL_FRAMEBUFFER);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(result);
 }
@@ -426,6 +426,17 @@ TEST_F(GLES2ImplementationTest, DeleteSamplers) {
   expected.data[0] = kSamplersStartId;
   expected.data[1] = kSamplersStartId + 1;
   gl_->DeleteSamplers(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, DeleteSync) {
+  struct Cmds {
+    cmds::DeleteSync cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1);
+
+  gl_->DeleteSync(reinterpret_cast<GLsync>(1));
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -1058,29 +1069,10 @@ TEST_F(GLES2ImplementationTest, IsBuffer) {
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsBuffer(1);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_TRUE(result);
-}
-
-TEST_F(GLES2ImplementationTest, IsEnabled) {
-  struct Cmds {
-    cmds::IsEnabled cmd;
-  };
-
-  Cmds expected;
-  ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(cmds::IsEnabled::Result));
-  expected.cmd.Init(1, result1.id, result1.offset);
-
-  EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
-      .RetiresOnSaturation();
-
-  GLboolean result = gl_->IsEnabled(1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(result);
 }
@@ -1096,7 +1088,7 @@ TEST_F(GLES2ImplementationTest, IsFramebuffer) {
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsFramebuffer(1);
@@ -1115,7 +1107,7 @@ TEST_F(GLES2ImplementationTest, IsProgram) {
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsProgram(1);
@@ -1134,7 +1126,7 @@ TEST_F(GLES2ImplementationTest, IsRenderbuffer) {
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsRenderbuffer(1);
@@ -1153,7 +1145,7 @@ TEST_F(GLES2ImplementationTest, IsSampler) {
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsSampler(1);
@@ -1172,10 +1164,29 @@ TEST_F(GLES2ImplementationTest, IsShader) {
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsShader(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(result);
+}
+
+TEST_F(GLES2ImplementationTest, IsSync) {
+  struct Cmds {
+    cmds::IsSync cmd;
+  };
+
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(cmds::IsSync::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
+      .RetiresOnSaturation();
+
+  GLboolean result = gl_->IsSync(reinterpret_cast<GLsync>(1));
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(result);
 }
@@ -1191,7 +1202,7 @@ TEST_F(GLES2ImplementationTest, IsTexture) {
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsTexture(1);
@@ -1210,7 +1221,7 @@ TEST_F(GLES2ImplementationTest, IsTransformFeedback) {
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsTransformFeedback(1);
@@ -2516,7 +2527,7 @@ TEST_F(GLES2ImplementationTest, IsVertexArrayOES) {
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsVertexArrayOES(1);
@@ -2628,7 +2639,7 @@ TEST_F(GLES2ImplementationTest, IsValuebufferCHROMIUM) {
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(1)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsValuebufferCHROMIUM(1);

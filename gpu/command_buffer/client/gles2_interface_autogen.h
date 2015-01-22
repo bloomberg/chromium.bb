@@ -121,6 +121,7 @@ virtual void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) = 0;
 virtual void DeleteProgram(GLuint program) = 0;
 virtual void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) = 0;
 virtual void DeleteSamplers(GLsizei n, const GLuint* samplers) = 0;
+virtual void DeleteSync(GLsync sync) = 0;
 virtual void DeleteShader(GLuint shader) = 0;
 virtual void DeleteTextures(GLsizei n, const GLuint* textures) = 0;
 virtual void DeleteTransformFeedbacks(GLsizei n, const GLuint* ids) = 0;
@@ -137,6 +138,7 @@ virtual void DrawElements(GLenum mode,
                           const void* indices) = 0;
 virtual void Enable(GLenum cap) = 0;
 virtual void EnableVertexAttribArray(GLuint index) = 0;
+virtual GLsync FenceSync(GLenum condition, GLbitfield flags) = 0;
 virtual void Finish() = 0;
 virtual void Flush() = 0;
 virtual void FramebufferRenderbuffer(GLenum target,
@@ -254,6 +256,7 @@ virtual GLboolean IsProgram(GLuint program) = 0;
 virtual GLboolean IsRenderbuffer(GLuint renderbuffer) = 0;
 virtual GLboolean IsSampler(GLuint sampler) = 0;
 virtual GLboolean IsShader(GLuint shader) = 0;
+virtual GLboolean IsSync(GLsync sync) = 0;
 virtual GLboolean IsTexture(GLuint texture) = 0;
 virtual GLboolean IsTransformFeedback(GLuint transformfeedback) = 0;
 virtual void LineWidth(GLfloat width) = 0;

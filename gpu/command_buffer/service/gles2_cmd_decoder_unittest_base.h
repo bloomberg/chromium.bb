@@ -142,6 +142,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return group_->GetTransformFeedbackServiceId(client_id, service_id);
   }
 
+  bool GetSyncServiceId(GLuint client_id, GLsync* service_id) const {
+    return group_->GetSyncServiceId(client_id, service_id);
+  }
+
   // This name doesn't match the underlying function, but doing it this way
   // prevents the need to special-case the unit test generation
   VertexAttribManager* GetVertexArrayInfo(GLuint client_id) {
@@ -164,6 +168,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
   void DoCreateProgram(GLuint client_id, GLuint service_id);
   void DoCreateShader(GLenum shader_type, GLuint client_id, GLuint service_id);
+  void DoFenceSync(GLuint client_id, GLuint service_id);
 
   void SetBucketAsCString(uint32 bucket_id, const char* str);
   // If we want a valid bucket, just set |count_in_header| as |count|,
@@ -448,6 +453,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const GLuint kServiceQueryId = 309;
   static const GLuint kServiceVertexArrayId = 310;
   static const GLuint kServiceTransformFeedbackId = 311;
+  static const GLuint kServiceSyncId = 312;
 
   static const int32 kSharedMemoryId = 401;
   static const size_t kSharedBufferSize = 2048;
@@ -547,6 +553,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   GLuint client_vertexarray_id_;
   GLuint client_valuebuffer_id_;
   GLuint client_transformfeedback_id_;
+  GLuint client_sync_id_;
 
   uint32 shared_memory_id_;
   uint32 shared_memory_offset_;

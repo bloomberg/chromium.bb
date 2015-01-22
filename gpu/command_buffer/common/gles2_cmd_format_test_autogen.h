@@ -675,6 +675,16 @@ TEST_F(GLES2FormatTest, DeleteSamplersImmediate) {
   // TODO(gman): Check that ids were inserted;
 }
 
+TEST_F(GLES2FormatTest, DeleteSync) {
+  cmds::DeleteSync& cmd = *GetBufferAs<cmds::DeleteSync>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::DeleteSync::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.sync);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, DeleteShader) {
   cmds::DeleteShader& cmd = *GetBufferAs<cmds::DeleteShader>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11));
@@ -829,6 +839,15 @@ TEST_F(GLES2FormatTest, EnableVertexAttribArray) {
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.index);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, FenceSync) {
+  cmds::FenceSync& cmd = *GetBufferAs<cmds::FenceSync>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<uint32_t>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::FenceSync::kCmdId), cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<uint32_t>(11), cmd.client_id);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -1602,6 +1621,19 @@ TEST_F(GLES2FormatTest, IsShader) {
   EXPECT_EQ(static_cast<uint32_t>(cmds::IsShader::kCmdId), cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.shader);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.result_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, IsSync) {
+  cmds::IsSync& cmd = *GetBufferAs<cmds::IsSync>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<uint32_t>(12),
+              static_cast<uint32_t>(13));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::IsSync::kCmdId), cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.sync);
   EXPECT_EQ(static_cast<uint32_t>(12), cmd.result_shm_id);
   EXPECT_EQ(static_cast<uint32_t>(13), cmd.result_shm_offset);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));

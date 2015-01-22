@@ -1278,12 +1278,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void GetVertexAttribHelper(
     const VertexAttrib* attrib, GLenum pname, GLint* param);
 
-  // Wrapper for glCreateProgram
-  bool CreateProgramHelper(GLuint client_id);
-
-  // Wrapper for glCreateShader
-  bool CreateShaderHelper(GLenum type, GLuint client_id);
-
   // Wrapper for glActiveTexture
   void DoActiveTexture(GLenum texture_unit);
 
@@ -4047,28 +4041,6 @@ error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
 
 void GLES2DecoderImpl::RemoveBuffer(GLuint client_id) {
   buffer_manager()->RemoveBuffer(client_id);
-}
-
-bool GLES2DecoderImpl::CreateProgramHelper(GLuint client_id) {
-  if (GetProgram(client_id)) {
-    return false;
-  }
-  GLuint service_id = glCreateProgram();
-  if (service_id != 0) {
-    CreateProgram(client_id, service_id);
-  }
-  return true;
-}
-
-bool GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
-  if (GetShader(client_id)) {
-    return false;
-  }
-  GLuint service_id = glCreateShader(type);
-  if (service_id != 0) {
-    CreateShader(client_id, service_id, type);
-  }
-  return true;
 }
 
 void GLES2DecoderImpl::DoFinish() {

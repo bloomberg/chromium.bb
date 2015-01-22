@@ -46,6 +46,7 @@ GL_APICALL void         GL_APIENTRY glDeleteFramebuffers (GLsizeiNotNegative n, 
 GL_APICALL void         GL_APIENTRY glDeleteProgram (GLidProgram program);
 GL_APICALL void         GL_APIENTRY glDeleteRenderbuffers (GLsizeiNotNegative n, const GLuint* renderbuffers);
 GL_APICALL void         GL_APIENTRY glDeleteSamplers (GLsizeiNotNegative n, const GLuint* samplers);
+GL_APICALL void         GL_APIENTRY glDeleteSync (GLidSync sync);
 GL_APICALL void         GL_APIENTRY glDeleteShader (GLidShader shader);
 GL_APICALL void         GL_APIENTRY glDeleteTextures (GLsizeiNotNegative n, const GLuint* textures);
 GL_APICALL void         GL_APIENTRY glDeleteTransformFeedbacks (GLsizeiNotNegative n, const GLuint* ids);
@@ -59,6 +60,7 @@ GL_APICALL void         GL_APIENTRY glDrawArrays (GLenumDrawMode mode, GLint fir
 GL_APICALL void         GL_APIENTRY glDrawElements (GLenumDrawMode mode, GLsizei count, GLenumIndexType type, const void* indices);
 GL_APICALL void         GL_APIENTRY glEnable (GLenumCapability cap);
 GL_APICALL void         GL_APIENTRY glEnableVertexAttribArray (GLuint index);
+GL_APICALL GLsync       GL_APIENTRY glFenceSync (GLenumSyncCondition condition, GLbitfieldSyncFlags flags);
 GL_APICALL void         GL_APIENTRY glFinish (void);
 GL_APICALL void         GL_APIENTRY glFlush (void);
 GL_APICALL void         GL_APIENTRY glFramebufferRenderbuffer (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumRenderBufferTarget renderbuffertarget, GLidRenderbuffer renderbuffer);
@@ -111,6 +113,7 @@ GL_APICALL GLboolean    GL_APIENTRY glIsProgram (GLidProgram program);
 GL_APICALL GLboolean    GL_APIENTRY glIsRenderbuffer (GLidRenderbuffer renderbuffer);
 GL_APICALL GLboolean    GL_APIENTRY glIsSampler (GLidSampler sampler);
 GL_APICALL GLboolean    GL_APIENTRY glIsShader (GLidShader shader);
+GL_APICALL GLboolean    GL_APIENTRY glIsSync (GLidSync sync);
 GL_APICALL GLboolean    GL_APIENTRY glIsTexture (GLidTexture texture);
 GL_APICALL GLboolean    GL_APIENTRY glIsTransformFeedback (GLidTransformFeedback transformfeedback);
 GL_APICALL void         GL_APIENTRY glLineWidth (GLfloat width);

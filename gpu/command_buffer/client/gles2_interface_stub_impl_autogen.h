@@ -178,6 +178,8 @@ void GLES2InterfaceStub::DeleteRenderbuffers(
 void GLES2InterfaceStub::DeleteSamplers(GLsizei /* n */,
                                         const GLuint* /* samplers */) {
 }
+void GLES2InterfaceStub::DeleteSync(GLsync /* sync */) {
+}
 void GLES2InterfaceStub::DeleteShader(GLuint /* shader */) {
 }
 void GLES2InterfaceStub::DeleteTextures(GLsizei /* n */,
@@ -212,6 +214,10 @@ void GLES2InterfaceStub::DrawElements(GLenum /* mode */,
 void GLES2InterfaceStub::Enable(GLenum /* cap */) {
 }
 void GLES2InterfaceStub::EnableVertexAttribArray(GLuint /* index */) {
+}
+GLsync GLES2InterfaceStub::FenceSync(GLenum /* condition */,
+                                     GLbitfield /* flags */) {
+  return 0;
 }
 void GLES2InterfaceStub::Finish() {
 }
@@ -415,6 +421,9 @@ GLboolean GLES2InterfaceStub::IsSampler(GLuint /* sampler */) {
   return 0;
 }
 GLboolean GLES2InterfaceStub::IsShader(GLuint /* shader */) {
+  return 0;
+}
+GLboolean GLES2InterfaceStub::IsSync(GLsync /* sync */) {
   return 0;
 }
 GLboolean GLES2InterfaceStub::IsTexture(GLuint /* texture */) {

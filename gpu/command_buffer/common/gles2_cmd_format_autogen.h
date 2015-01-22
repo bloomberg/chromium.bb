@@ -2071,6 +2071,38 @@ static_assert(offsetof(DeleteSamplersImmediate, header) == 0,
 static_assert(offsetof(DeleteSamplersImmediate, n) == 4,
               "offset of DeleteSamplersImmediate n should be 4");
 
+struct DeleteSync {
+  typedef DeleteSync ValueType;
+  static const CommandId kCmdId = kDeleteSync;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _sync) {
+    SetHeader();
+    sync = _sync;
+  }
+
+  void* Set(void* cmd, GLuint _sync) {
+    static_cast<ValueType*>(cmd)->Init(_sync);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sync;
+};
+
+static_assert(sizeof(DeleteSync) == 8, "size of DeleteSync should be 8");
+static_assert(offsetof(DeleteSync, header) == 0,
+              "offset of DeleteSync header should be 0");
+static_assert(offsetof(DeleteSync, sync) == 4,
+              "offset of DeleteSync sync should be 4");
+
 struct DeleteShader {
   typedef DeleteShader ValueType;
   static const CommandId kCmdId = kDeleteShader;
@@ -2538,6 +2570,40 @@ static_assert(offsetof(EnableVertexAttribArray, header) == 0,
               "offset of EnableVertexAttribArray header should be 0");
 static_assert(offsetof(EnableVertexAttribArray, index) == 4,
               "offset of EnableVertexAttribArray index should be 4");
+
+struct FenceSync {
+  typedef FenceSync ValueType;
+  static const CommandId kCmdId = kFenceSync;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(uint32_t _client_id) {
+    SetHeader();
+    client_id = _client_id;
+  }
+
+  void* Set(void* cmd, uint32_t _client_id) {
+    static_cast<ValueType*>(cmd)->Init(_client_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t client_id;
+  static const uint32_t condition = 0x9117;
+  static const uint32_t flags = 0;
+};
+
+static_assert(sizeof(FenceSync) == 8, "size of FenceSync should be 8");
+static_assert(offsetof(FenceSync, header) == 0,
+              "offset of FenceSync header should be 0");
+static_assert(offsetof(FenceSync, client_id) == 4,
+              "offset of FenceSync client_id should be 4");
 
 struct Finish {
   typedef Finish ValueType;
@@ -5133,6 +5199,53 @@ static_assert(offsetof(IsShader, result_shm_id) == 8,
               "offset of IsShader result_shm_id should be 8");
 static_assert(offsetof(IsShader, result_shm_offset) == 12,
               "offset of IsShader result_shm_offset should be 12");
+
+struct IsSync {
+  typedef IsSync ValueType;
+  static const CommandId kCmdId = kIsSync;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef uint32_t Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _sync,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    SetHeader();
+    sync = _sync;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _sync,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_sync, _result_shm_id, _result_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sync;
+  uint32_t result_shm_id;
+  uint32_t result_shm_offset;
+};
+
+static_assert(sizeof(IsSync) == 16, "size of IsSync should be 16");
+static_assert(offsetof(IsSync, header) == 0,
+              "offset of IsSync header should be 0");
+static_assert(offsetof(IsSync, sync) == 4, "offset of IsSync sync should be 4");
+static_assert(offsetof(IsSync, result_shm_id) == 8,
+              "offset of IsSync result_shm_id should be 8");
+static_assert(offsetof(IsSync, result_shm_offset) == 12,
+              "offset of IsSync result_shm_offset should be 12");
 
 struct IsTexture {
   typedef IsTexture ValueType;

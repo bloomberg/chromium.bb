@@ -5092,6 +5092,14 @@ std::string GLES2Util::GetStringSubscriptionTarget(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringSyncCondition(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {0x9117, "0x9117"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringTexture3DTarget(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_TEXTURE_3D, "GL_TEXTURE_3D"},

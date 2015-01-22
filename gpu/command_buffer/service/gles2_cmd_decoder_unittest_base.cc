@@ -100,6 +100,7 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       client_vertexarray_id_(124),
       client_valuebuffer_id_(125),
       client_transformfeedback_id_(126),
+      client_sync_id_(127),
       service_renderbuffer_id_(0),
       service_renderbuffer_valid_(false),
       ignore_cached_state_for_test_(GetParam()),
@@ -430,6 +431,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       .WillOnce(SetArgumentPointee<1>(kServiceTransformFeedbackId))
       .RetiresOnSaturation();
   GenHelper<cmds::GenTransformFeedbacksImmediate>(client_transformfeedback_id_);
+  DoFenceSync(client_sync_id_, kServiceSyncId);
   if (reset_unsafe_es3_apis_enabled) {
     decoder_->set_unsafe_es3_apis_enabled(false);
   }
@@ -532,6 +534,17 @@ bool GLES2DecoderTestBase::DoIsProgram(GLuint client_id) {
 void GLES2DecoderTestBase::DoDeleteProgram(
     GLuint client_id, GLuint /* service_id */) {
   cmds::DeleteProgram cmd;
+  cmd.Init(client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderTestBase::DoFenceSync(
+    GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+      .Times(1)
+      .WillOnce(Return(reinterpret_cast<GLsync>(service_id)))
+      .RetiresOnSaturation();
+  cmds::FenceSync cmd;
   cmd.Init(client_id);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
@@ -1307,6 +1320,7 @@ const GLuint GLES2DecoderTestBase::kServiceElementBufferId;
 const GLuint GLES2DecoderTestBase::kServiceQueryId;
 const GLuint GLES2DecoderTestBase::kServiceVertexArrayId;
 const GLuint GLES2DecoderTestBase::kServiceTransformFeedbackId;
+const GLuint GLES2DecoderTestBase::kServiceSyncId;
 
 const int32 GLES2DecoderTestBase::kSharedMemoryId;
 const size_t GLES2DecoderTestBase::kSharedBufferSize;

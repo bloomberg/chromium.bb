@@ -703,8 +703,12 @@ error::Error GLES2DecoderImpl::HandleCreateProgram(uint32_t immediate_data_size,
       *static_cast<const gles2::cmds::CreateProgram*>(cmd_data);
   (void)c;
   uint32_t client_id = c.client_id;
-  if (!CreateProgramHelper(client_id)) {
+  if (GetProgram(client_id)) {
     return error::kInvalidArguments;
+  }
+  GLuint service_id = glCreateProgram();
+  if (service_id) {
+    CreateProgram(client_id, service_id);
   }
   return error::kNoError;
 }
@@ -720,8 +724,12 @@ error::Error GLES2DecoderImpl::HandleCreateShader(uint32_t immediate_data_size,
     return error::kNoError;
   }
   uint32_t client_id = c.client_id;
-  if (!CreateShaderHelper(type, client_id)) {
+  if (GetShader(client_id)) {
     return error::kInvalidArguments;
+  }
+  GLuint service_id = glCreateShader(type);
+  if (service_id) {
+    CreateShader(client_id, service_id, type);
   }
   return error::kNoError;
 }
@@ -827,6 +835,24 @@ error::Error GLES2DecoderImpl::HandleDeleteSamplersImmediate(
       glDeleteSamplers(1, &service_id);
       group_->RemoveSamplerId(samplers[ii]);
     }
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleDeleteSync(uint32_t immediate_data_size,
+                                                const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::DeleteSync& c =
+      *static_cast<const gles2::cmds::DeleteSync*>(cmd_data);
+  (void)c;
+  GLuint sync = c.sync;
+  GLsync service_id = 0;
+  if (group_->GetSyncServiceId(sync, &service_id)) {
+    glDeleteSync(service_id);
+    group_->RemoveSyncId(sync);
+  } else {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteSync", "unknown sync");
   }
   return error::kNoError;
 }
@@ -979,6 +1005,27 @@ error::Error GLES2DecoderImpl::HandleEnableVertexAttribArray(
   (void)c;
   GLuint index = static_cast<GLuint>(c.index);
   DoEnableVertexAttribArray(index);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleFenceSync(uint32_t immediate_data_size,
+                                               const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::FenceSync& c =
+      *static_cast<const gles2::cmds::FenceSync*>(cmd_data);
+  (void)c;
+  GLenum condition = static_cast<GLenum>(c.condition);
+  GLbitfield flags = static_cast<GLbitfield>(c.flags);
+  uint32_t client_id = c.client_id;
+  GLsync service_id = 0;
+  if (group_->GetSyncServiceId(client_id, &service_id)) {
+    return error::kInvalidArguments;
+  }
+  service_id = glFenceSync(condition, flags);
+  if (service_id) {
+    group_->AddSyncId(client_id, service_id);
+  }
   return error::kNoError;
 }
 
@@ -2044,7 +2091,8 @@ error::Error GLES2DecoderImpl::HandleIsSampler(uint32_t immediate_data_size,
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  *result_dst = group_->GetSamplerServiceId(sampler, &sampler);
+  GLuint service_sampler = 0;
+  *result_dst = group_->GetSamplerServiceId(sampler, &service_sampler);
   return error::kNoError;
 }
 
@@ -2061,6 +2109,25 @@ error::Error GLES2DecoderImpl::HandleIsShader(uint32_t immediate_data_size,
     return error::kOutOfBounds;
   }
   *result_dst = DoIsShader(shader);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleIsSync(uint32_t immediate_data_size,
+                                            const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::IsSync& c =
+      *static_cast<const gles2::cmds::IsSync*>(cmd_data);
+  (void)c;
+  GLuint sync = c.sync;
+  typedef cmds::IsSync::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
+  GLsync service_sync = 0;
+  *result_dst = group_->GetSyncServiceId(sync, &service_sync);
   return error::kNoError;
 }
 
@@ -2095,8 +2162,9 @@ error::Error GLES2DecoderImpl::HandleIsTransformFeedback(
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  *result_dst = group_->GetTransformFeedbackServiceId(transformfeedback,
-                                                      &transformfeedback);
+  GLuint service_transformfeedback = 0;
+  *result_dst = group_->GetTransformFeedbackServiceId(
+      transformfeedback, &service_transformfeedback);
   return error::kNoError;
 }
 

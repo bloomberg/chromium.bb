@@ -42,6 +42,7 @@ typedef double GLclampd;
 typedef void GLvoid;
 typedef khronos_intptr_t GLintptr;
 typedef khronos_ssize_t  GLsizeiptr;
+typedef struct __GLsync *GLsync;
 
 namespace gpu {
 namespace gles2 {
@@ -63,6 +64,7 @@ enum IdNamespaces {
   kValuebuffers,
   kSamplers,
   kTransformFeedbacks,
+  kSyncs,
   kNumIdNamespaces
 };
 

@@ -558,7 +558,7 @@ TEST_P(GLES2DecoderTest1, CreateProgramValidArgs) {
   cmd.Init(kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetProgram(kNewClientId) != NULL);
+  EXPECT_TRUE(GetProgram(kNewClientId));
 }
 
 TEST_P(GLES2DecoderTest1, CreateShaderValidArgs) {
@@ -569,7 +569,7 @@ TEST_P(GLES2DecoderTest1, CreateShaderValidArgs) {
   cmd.Init(GL_VERTEX_SHADER, kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetShader(kNewClientId) != NULL);
+  EXPECT_TRUE(GetShader(kNewClientId));
 }
 
 TEST_P(GLES2DecoderTest1, CreateShaderInvalidArgs0_0) {
@@ -690,6 +690,18 @@ TEST_P(GLES2DecoderTest1, DeleteSamplersImmediateInvalidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   decoder_->set_unsafe_es3_apis_enabled(false);
   EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
+}
+
+TEST_P(GLES2DecoderTest1, DeleteSyncValidArgs) {
+  EXPECT_CALL(*gl_, DeleteSync(reinterpret_cast<GLsync>(kServiceSyncId)));
+  SpecializedSetup<cmds::DeleteSync, 0>(true);
+  cmds::DeleteSync cmd;
+  cmd.Init(client_sync_id_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderTest1, DeleteShaderValidArgs) {
@@ -860,6 +872,22 @@ TEST_P(GLES2DecoderTest1, EnableVertexAttribArrayValidArgs) {
   cmd.Init(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest1, FenceSyncValidArgs) {
+  const GLsync kNewServiceIdGLuint = reinterpret_cast<GLsync>(kNewServiceId);
+  EXPECT_CALL(*gl_, FenceSync(0x9117, 0)).WillOnce(Return(kNewServiceIdGLuint));
+  SpecializedSetup<cmds::FenceSync, 0>(true);
+  cmds::FenceSync cmd;
+  cmd.Init(kNewClientId);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  GLsync service_id = 0;
+  EXPECT_TRUE(GetSyncServiceId(kNewClientId, &service_id));
+  EXPECT_EQ(kNewServiceIdGLuint, service_id);
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderTest1, FinishValidArgs) {
@@ -1917,83 +1945,4 @@ TEST_P(GLES2DecoderTest1, GetTexParameterivInvalidArgs2_1) {
 
 // TODO(gman): GetUniformLocation
 
-TEST_P(GLES2DecoderTest1, GetVertexAttribfvValidArgs) {
-  SpecializedSetup<cmds::GetVertexAttribfv, 0>(true);
-  typedef cmds::GetVertexAttribfv::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
-  result->size = 0;
-  cmds::GetVertexAttribfv cmd;
-  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
-           shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
-                GL_VERTEX_ATTRIB_ARRAY_NORMALIZED),
-            result->GetNumResults());
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, GetVertexAttribfvInvalidArgs2_0) {
-  EXPECT_CALL(*gl_, GetVertexAttribfv(_, _, _)).Times(0);
-  SpecializedSetup<cmds::GetVertexAttribfv, 0>(false);
-  cmds::GetVertexAttribfv::Result* result =
-      static_cast<cmds::GetVertexAttribfv::Result*>(shared_memory_address_);
-  result->size = 0;
-  cmds::GetVertexAttribfv cmd;
-  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  EXPECT_EQ(0u, result->size);
-}
-
-TEST_P(GLES2DecoderTest1, GetVertexAttribfvInvalidArgs2_1) {
-  EXPECT_CALL(*gl_, GetVertexAttribfv(_, _, _)).Times(0);
-  SpecializedSetup<cmds::GetVertexAttribfv, 0>(false);
-  cmds::GetVertexAttribfv::Result* result =
-      static_cast<cmds::GetVertexAttribfv::Result*>(shared_memory_address_);
-  result->size = 0;
-  cmds::GetVertexAttribfv cmd;
-  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
-           kInvalidSharedMemoryOffset);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  EXPECT_EQ(0u, result->size);
-}
-
-TEST_P(GLES2DecoderTest1, GetVertexAttribivValidArgs) {
-  SpecializedSetup<cmds::GetVertexAttribiv, 0>(true);
-  typedef cmds::GetVertexAttribiv::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
-  result->size = 0;
-  cmds::GetVertexAttribiv cmd;
-  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
-           shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
-                GL_VERTEX_ATTRIB_ARRAY_NORMALIZED),
-            result->GetNumResults());
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, GetVertexAttribivInvalidArgs2_0) {
-  EXPECT_CALL(*gl_, GetVertexAttribiv(_, _, _)).Times(0);
-  SpecializedSetup<cmds::GetVertexAttribiv, 0>(false);
-  cmds::GetVertexAttribiv::Result* result =
-      static_cast<cmds::GetVertexAttribiv::Result*>(shared_memory_address_);
-  result->size = 0;
-  cmds::GetVertexAttribiv cmd;
-  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  EXPECT_EQ(0u, result->size);
-}
-
-TEST_P(GLES2DecoderTest1, GetVertexAttribivInvalidArgs2_1) {
-  EXPECT_CALL(*gl_, GetVertexAttribiv(_, _, _)).Times(0);
-  SpecializedSetup<cmds::GetVertexAttribiv, 0>(false);
-  cmds::GetVertexAttribiv::Result* result =
-      static_cast<cmds::GetVertexAttribiv::Result*>(shared_memory_address_);
-  result->size = 0;
-  cmds::GetVertexAttribiv cmd;
-  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
-           kInvalidSharedMemoryOffset);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  EXPECT_EQ(0u, result->size);
-}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_

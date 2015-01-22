@@ -5,7 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 #define GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 
-#include <map>
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
@@ -184,7 +183,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   }
 
   bool GetSamplerServiceId(GLuint client_id, GLuint* service_id) const {
-    std::map<GLuint, GLuint>::const_iterator iter =
+    base::hash_map<GLuint, GLuint>::const_iterator iter =
         samplers_id_map_.find(client_id);
     if (iter == samplers_id_map_.end())
       return false;
@@ -203,7 +202,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   bool GetTransformFeedbackServiceId(
       GLuint client_id, GLuint* service_id) const {
-    std::map<GLuint, GLuint>::const_iterator iter =
+    base::hash_map<GLuint, GLuint>::const_iterator iter =
         transformfeedbacks_id_map_.find(client_id);
     if (iter == transformfeedbacks_id_map_.end())
       return false;
@@ -214,6 +213,24 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   void RemoveTransformFeedbackId(GLuint client_id) {
     transformfeedbacks_id_map_.erase(client_id);
+  }
+
+  void AddSyncId(GLuint client_id, GLsync service_id) {
+    syncs_id_map_[client_id] = service_id;
+  }
+
+  bool GetSyncServiceId(GLuint client_id, GLsync* service_id) const {
+    base::hash_map<GLuint, GLsync>::const_iterator iter =
+        syncs_id_map_.find(client_id);
+    if (iter == syncs_id_map_.end())
+      return false;
+    if (service_id)
+      *service_id = iter->second;
+    return true;
+  }
+
+  void RemoveSyncId(GLuint client_id) {
+    syncs_id_map_.erase(client_id);
   }
 
  private:
@@ -267,8 +284,9 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   std::vector<base::WeakPtr<gles2::GLES2Decoder> > decoders_;
 
   // Mappings from client side IDs to service side IDs.
-  std::map<GLuint, GLuint> samplers_id_map_;
-  std::map<GLuint, GLuint> transformfeedbacks_id_map_;
+  base::hash_map<GLuint, GLuint> samplers_id_map_;
+  base::hash_map<GLuint, GLuint> transformfeedbacks_id_map_;
+  base::hash_map<GLuint, GLsync> syncs_id_map_;
 
   GLenum draw_buffer_;
 

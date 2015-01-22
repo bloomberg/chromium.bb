@@ -302,6 +302,11 @@ void GLES2TraceImplementation::DeleteSamplers(GLsizei n,
   gl_->DeleteSamplers(n, samplers);
 }
 
+void GLES2TraceImplementation::DeleteSync(GLsync sync) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DeleteSync");
+  gl_->DeleteSync(sync);
+}
+
 void GLES2TraceImplementation::DeleteShader(GLuint shader) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DeleteShader");
   gl_->DeleteShader(shader);
@@ -372,6 +377,11 @@ void GLES2TraceImplementation::Enable(GLenum cap) {
 void GLES2TraceImplementation::EnableVertexAttribArray(GLuint index) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::EnableVertexAttribArray");
   gl_->EnableVertexAttribArray(index);
+}
+
+GLsync GLES2TraceImplementation::FenceSync(GLenum condition, GLbitfield flags) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::FenceSync");
+  return gl_->FenceSync(condition, flags);
 }
 
 void GLES2TraceImplementation::Finish() {
@@ -723,6 +733,11 @@ GLboolean GLES2TraceImplementation::IsSampler(GLuint sampler) {
 GLboolean GLES2TraceImplementation::IsShader(GLuint shader) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::IsShader");
   return gl_->IsShader(shader);
+}
+
+GLboolean GLES2TraceImplementation::IsSync(GLsync sync) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::IsSync");
+  return gl_->IsSync(sync);
 }
 
 GLboolean GLES2TraceImplementation::IsTexture(GLuint texture) {

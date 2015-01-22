@@ -120,6 +120,7 @@ void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) override;
 void DeleteProgram(GLuint program) override;
 void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) override;
 void DeleteSamplers(GLsizei n, const GLuint* samplers) override;
+void DeleteSync(GLsync sync) override;
 void DeleteShader(GLuint shader) override;
 void DeleteTextures(GLsizei n, const GLuint* textures) override;
 void DeleteTransformFeedbacks(GLsizei n, const GLuint* ids) override;
@@ -136,6 +137,7 @@ void DrawElements(GLenum mode,
                   const void* indices) override;
 void Enable(GLenum cap) override;
 void EnableVertexAttribArray(GLuint index) override;
+GLsync FenceSync(GLenum condition, GLbitfield flags) override;
 void Finish() override;
 void Flush() override;
 void FramebufferRenderbuffer(GLenum target,
@@ -249,6 +251,7 @@ GLboolean IsProgram(GLuint program) override;
 GLboolean IsRenderbuffer(GLuint renderbuffer) override;
 GLboolean IsSampler(GLuint sampler) override;
 GLboolean IsShader(GLuint shader) override;
+GLboolean IsSync(GLsync sync) override;
 GLboolean IsTexture(GLuint texture) override;
 GLboolean IsTransformFeedback(GLuint transformfeedback) override;
 void LineWidth(GLfloat width) override;
