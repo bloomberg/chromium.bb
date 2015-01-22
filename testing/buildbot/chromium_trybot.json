@@ -79,7 +79,6 @@
     },
     {
       "test": "courgette_unittests",
-      "can_use_on_swarming_builders": true,
       "platforms": ["win"]
     },
     {
