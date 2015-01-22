@@ -53,6 +53,8 @@ bool ScrollbarTheme::gMockScrollbarsEnabled = false;
 bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)
 {
     DrawingRecorder recorder(graphicsContext, displayItemClient(), DisplayItem::Scrollbar, damageRect);
+    if (recorder.canUseCachedDrawing())
+        return false;
     return paintInternal(scrollbar, graphicsContext, damageRect);
 }
 
