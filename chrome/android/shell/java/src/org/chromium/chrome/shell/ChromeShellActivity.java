@@ -5,6 +5,7 @@
 package org.chromium.chrome.shell;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -31,15 +32,20 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
+import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
+import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.shell.sync.SyncController;
+import org.chromium.chrome.shell.sync.AccountChooserFragment;
+import org.chromium.chrome.shell.sync.SignoutFragment;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
@@ -58,6 +64,8 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class ChromeShellActivity extends ActionBarActivity implements AppMenuPropertiesDelegate {
     private static final String TAG = "ChromeShellActivity";
+
+    private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
 
     /**
      * Factory used to set up a mock ActivityWindowAndroid for testing.
@@ -177,10 +185,12 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
 
         mPrintingController = PrintingControllerFactory.create(this);
 
+        setupSessionSyncId();
+
         mSyncController = SyncController.get(this);
         // In case this method is called after the first onStart(), we need to inform the
         // SyncController that we have started.
-        mSyncController.onStart();
+        mSyncController.updateSyncStateFromAndroid();
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
 
         BeamController.registerForBeam(this, new BeamProvider() {
@@ -249,7 +259,7 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
         if (activeTab != null) activeTab.onActivityStart();
 
         if (mSyncController != null) {
-            mSyncController.onStart();
+            mSyncController.updateSyncStateFromAndroid();
         }
     }
 
@@ -328,9 +338,9 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
         int id = item.getItemId();
         if (id == R.id.signin) {
             if (ChromeSigninController.get(this).isSignedIn()) {
-                SyncController.openSignOutDialog(getFragmentManager());
+                openSignOutDialog(getFragmentManager());
             } else if (AccountManagerHelper.get(this).hasGoogleAccounts()) {
-                SyncController.openSigninDialog(getFragmentManager());
+                openSigninDialog(getFragmentManager());
             } else {
                 Toast.makeText(this, R.string.signin_no_account, Toast.LENGTH_SHORT).show();
             }
@@ -448,5 +458,38 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
     @VisibleForTesting
     public static void setAppMenuHandlerFactory(AppMenuHandlerFactory factory) {
         sAppMenuHandlerFactory = factory;
+    }
+
+    private void setupSessionSyncId() {
+        // Ensure that sync uses the correct UniqueIdentificationGenerator, but do not force the
+        // registration, in case a test case has already overridden it.
+        UuidBasedUniqueIdentificationGenerator generator =
+                new UuidBasedUniqueIdentificationGenerator(this, SESSIONS_UUID_PREF_KEY);
+        UniqueIdentificationGeneratorFactory.registerGenerator(
+                UuidBasedUniqueIdentificationGenerator.GENERATOR_ID, generator, false);
+        // Since we do not override the UniqueIdentificationGenerator, we get it from the factory,
+        // instead of using the instance we just created.
+        ProfileSyncService.get(this).setSessionsId(UniqueIdentificationGeneratorFactory
+                .getInstance(UuidBasedUniqueIdentificationGenerator.GENERATOR_ID));
+    }
+
+    /**
+     * Open a dialog that gives the user the option to sign in from a list of available accounts.
+     *
+     * @param fragmentManager the FragmentManager.
+     */
+    private static void openSigninDialog(FragmentManager fragmentManager) {
+        AccountChooserFragment chooserFragment = new AccountChooserFragment();
+        chooserFragment.show(fragmentManager, null);
+    }
+
+    /**
+     * Open a dialog that gives the user the option to sign out.
+     *
+     * @param fragmentManager the FragmentManager.
+     */
+    private static void openSignOutDialog(FragmentManager fragmentManager) {
+        SignoutFragment signoutFragment = new SignoutFragment();
+        signoutFragment.show(fragmentManager, null);
     }
 }

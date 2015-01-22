@@ -10,6 +10,7 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.shell.R;
 import org.chromium.sync.signin.AccountManagerHelper;
 

@@ -1,37 +1,40 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.shell.sync;
+package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
-import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**
- * A helper class for managing sync state for the ChromeShell.
+ * SyncController handles the coordination of sync state between the invalidation controller,
+ * the Android sync settings, and the native sync code.
  *
- * Builds on top of the ProfileSyncService (which manages Chrome's sync engine's state) and mimics
- * the minimum additional functionality needed to fully enable sync for Chrome on Android.
+ * Sync state can be changed from four places:
+ *
+ * - The Chrome UI, which will call SyncController directly.
+ * - Native sync, which can disable it via a dashboard stop and clear.
+ * - Android's Chrome sync setting.
+ * - Android's master sync setting.
+ *
+ * SyncController implements listeners for the last three cases. When master sync is disabled, we
+ * are careful to not change the Android Chrome sync setting so we know whether to turn sync back
+ * on when it is re-enabled.
  */
 public class SyncController implements ProfileSyncService.SyncStateChangedListener,
         SyncStatusHelper.SyncSettingsChangedObserver {
     private static final String TAG = "SyncController";
-
-    private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
 
     private static SyncController sInstance;
 
@@ -47,8 +50,6 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         mSyncStatusHelper.registerSyncSettingsChangedObserver(this);
         mProfileSyncService = ProfileSyncService.get(mContext);
         mProfileSyncService.addSyncStateChangedListener(this);
-
-        setupSessionSyncId();
         mChromeSigninController.ensureGcmIsInitialized();
     }
 
@@ -64,26 +65,6 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
             sInstance = new SyncController(context.getApplicationContext());
         }
         return sInstance;
-    }
-
-    /**
-     * Open a dialog that gives the user the option to sign in from a list of available accounts.
-     *
-     * @param fragmentManager the FragmentManager.
-     */
-    public static void openSigninDialog(FragmentManager fragmentManager) {
-        AccountChooserFragment chooserFragment = new AccountChooserFragment();
-        chooserFragment.show(fragmentManager, null);
-    }
-
-    /**
-     * Open a dialog that gives the user the option to sign out.
-     *
-     * @param fragmentManager the FragmentManager.
-     */
-    public static void openSignOutDialog(FragmentManager fragmentManager) {
-        SignoutFragment signoutFragment = new SignoutFragment();
-        signoutFragment.show(fragmentManager, null);
     }
 
     /**
@@ -119,31 +100,23 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         });
     }
 
-    public void onStart() {
-        refreshSyncState();
-    }
-
-    private void setupSessionSyncId() {
-        // Ensure that sync uses the correct UniqueIdentificationGenerator, but do not force the
-        // registration, in case a test case has already overridden it.
-        UuidBasedUniqueIdentificationGenerator generator =
-                new UuidBasedUniqueIdentificationGenerator(mContext, SESSIONS_UUID_PREF_KEY);
-        UniqueIdentificationGeneratorFactory.registerGenerator(
-                UuidBasedUniqueIdentificationGenerator.GENERATOR_ID, generator, false);
-        // Since we do not override the UniqueIdentificationGenerator, we get it from the factory,
-        // instead of using the instance we just created.
-        mProfileSyncService.setSessionsId(UniqueIdentificationGeneratorFactory
-                .getInstance(UuidBasedUniqueIdentificationGenerator.GENERATOR_ID));
-    }
-
-    private void refreshSyncState() {
-        if (mSyncStatusHelper.isSyncEnabled())
+    /**
+     * Updates sync to reflect the state of the Android sync settings.
+     */
+    public void updateSyncStateFromAndroid() {
+        if (mSyncStatusHelper.isSyncEnabled()) {
             start();
-        else
+        } else {
             stop();
+        }
     }
 
-    private void start() {
+    /**
+     * Starts sync if the master sync flag is enabled.
+     *
+     * Affects native sync, the invalidation controller, and the Android sync settings.
+     */
+    public void start() {
         ThreadUtils.assertOnUiThread();
         if (mSyncStatusHelper.isMasterSyncAutomaticallyEnabled()) {
             Log.d(TAG, "Enabling sync");
@@ -156,6 +129,8 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
 
     /**
      * Stops Sync if a user is currently signed in.
+     *
+     * Affects native sync, the invalidation controller, and the Android sync settings.
      */
     public void stop() {
         ThreadUtils.assertOnUiThread();
@@ -164,22 +139,39 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
             Account account = mChromeSigninController.getSignedInUser();
             InvalidationController.get(mContext).stop();
             mProfileSyncService.disableSync();
-            mSyncStatusHelper.disableAndroidSync(account);
+            if (mSyncStatusHelper.isMasterSyncAutomaticallyEnabled()) {
+                // Only disable Android's Chrome sync setting if we weren't disabled
+                // by the master sync setting. This way, when master sync is enabled
+                // they will both be on and sync will start again.
+                mSyncStatusHelper.disableAndroidSync(account);
+            }
         }
     }
 
     /**
      * From {@link ProfileSyncService.SyncStateChangedListener}.
+     *
+     * Changes the invalidation controller and Android sync setting state to match
+     * the new native sync state.
      */
     @Override
     public void syncStateChanged() {
         ThreadUtils.assertOnUiThread();
-        // If sync has been disabled from the dashboard, we must disable it.
         Account account = mChromeSigninController.getSignedInUser();
-        boolean isSyncSuppressStart = mProfileSyncService.isStartSuppressed();
-        boolean isSyncEnabled = mSyncStatusHelper.isSyncEnabled(account);
-        if (account != null && isSyncSuppressStart && isSyncEnabled)
-            stop();
+        // Don't do anything if there isn't an account.
+        if (account == null) return;
+        boolean isSyncActive = !mProfileSyncService.isStartSuppressed();
+        // Make the Java state match the native state.
+        if (isSyncActive) {
+            InvalidationController.get(mContext).start();
+            mSyncStatusHelper.enableAndroidSync(account);
+        } else {
+            InvalidationController.get(mContext).stop();
+            if (mSyncStatusHelper.isMasterSyncAutomaticallyEnabled()) {
+                // See comment in stop().
+                mSyncStatusHelper.disableAndroidSync(account);
+            }
+        }
     }
 
     /**
@@ -190,7 +182,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                refreshSyncState();
+                updateSyncStateFromAndroid();
             }
         });
     }
