@@ -143,7 +143,7 @@ class ValidatorBase(page_test.PageTest):
     # PNG to disk, following the pattern in bitmap_unittest.py. The key to
     # avoiding PermissionErrors seems to be to not actually try to write to
     # the temporary file object, but to re-open its name for all operations.
-    temp_file = tempfile.NamedTemporaryFile().name
+    temp_file = tempfile.NamedTemporaryFile(suffix='.png').name
     image_util.WritePngFile(bitmap, temp_file)
     cloud_storage.Insert(bucket, name, temp_file, publicly_readable=public)
 
@@ -169,7 +169,7 @@ class ValidatorBase(page_test.PageTest):
     # temporary file and gsutil's overwriting it.
     if not self.options.refimg_cloud_storage_bucket:
       raise Exception('--refimg-cloud-storage-bucket argument is required')
-    temp_file = tempfile.NamedTemporaryFile().name
+    temp_file = tempfile.NamedTemporaryFile(suffix='.png').name
     cloud_storage.Get(self.options.refimg_cloud_storage_bucket,
                       self._FormatReferenceImageName(img_name, page, tab),
                       temp_file)
