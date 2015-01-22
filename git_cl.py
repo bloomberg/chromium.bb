@@ -2529,10 +2529,9 @@ def CMDtry(parser, args):
       "-b", "--bot", action="append",
       help=("IMPORTANT: specify ONE builder per --bot flag. Use it multiple "
             "times to specify multiple builders. ex: "
-            "'-b win_rel:ui_tests,webkit_unit_tests -b win_layout'. See "
+            "'-b win_rel -b win_layout'. See "
             "the try server waterfall for the builders name and the tests "
-            "available. Can also be used to specify gtest_filter, e.g. "
-            "-b win_rel:base_unittests:ValuesTest.*Value"))
+            "available."))
   group.add_option(
       "-m", "--master", default='',
       help=("Specify a try master where to run the tries."))
@@ -2549,11 +2548,6 @@ def CMDtry(parser, args):
       "--project",
       help="Override which project to use. Projects are defined "
            "server-side to define what default bot set to use")
-  group.add_option(
-      "-t", "--testfilter", action="append", default=[],
-      help=("Apply a testfilter to all the selected builders. Unless the "
-            "builders configurations are similar, use multiple "
-            "--bot <builder>:<test> arguments."))
   group.add_option(
       "-n", "--name", help="Try job name; default to current branch name")
   parser.add_option_group(group)
@@ -2584,7 +2578,7 @@ def CMDtry(parser, args):
                    ', e.g. "-m tryserver.chromium.linux".' % err_msg)
 
   def GetMasterMap():
-    # Process --bot and --testfilter.
+    # Process --bot.
     if not options.bot:
       change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
 
@@ -2620,8 +2614,7 @@ def CMDtry(parser, args):
 
     for bot in old_style:
       if ':' in bot:
-        builder, tests = bot.split(':', 1)
-        builders_and_tests.setdefault(builder, []).extend(tests.split(','))
+        parser.error('Specifying testfilter is no longer supported')
       elif ',' in bot:
         parser.error('Specify one bot per --bot flag')
       else:
@@ -2636,12 +2629,6 @@ def CMDtry(parser, args):
     return {options.master: builders_and_tests}
 
   masters = GetMasterMap()
-
-  if options.testfilter:
-    forced_tests = sum((t.split(',') for t in options.testfilter), [])
-    masters = dict((master, dict(
-        (b, forced_tests) for b, t in slaves.iteritems()
-        if t != ['compile'])) for master, slaves in masters.iteritems())
 
   for builders in masters.itervalues():
     if any('triggered' in b for b in builders):
