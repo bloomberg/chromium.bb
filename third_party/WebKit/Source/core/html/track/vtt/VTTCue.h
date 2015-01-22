@@ -162,6 +162,7 @@ private:
     void calculateDisplayParameters();
     float calculateComputedTextPosition() const;
     bool textPositionIsAuto() const;
+    CueAlignment calculateComputedCueAlignment() const;
 
     enum CueSetting {
         None,

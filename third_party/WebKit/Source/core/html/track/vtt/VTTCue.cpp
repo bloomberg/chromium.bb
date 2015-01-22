@@ -657,16 +657,15 @@ float VTTCue::calculateComputedTextPosition() const
     }
 }
 
-static inline VTTCue::CueAlignment resolveCueAlignment(VTTCue::CueAlignment specifiedCueAlignment, CSSValueID direction)
+VTTCue::CueAlignment VTTCue::calculateComputedCueAlignment() const
 {
-    ASSERT(direction == CSSValueLtr || direction == CSSValueRtl);
-    switch (specifiedCueAlignment) {
-    case VTTCue::Start:
-        return direction == CSSValueLtr ? VTTCue::Left : VTTCue::Right;
-    case VTTCue::End:
-        return direction == CSSValueLtr ? VTTCue::Right : VTTCue::Left;
+    switch (m_cueAlignment) {
+    case VTTCue::Left:
+        return VTTCue::Start;
+    case VTTCue::Right:
+        return VTTCue::End;
     default:
-        return specifiedCueAlignment;
+        return m_cueAlignment;
     }
 }
 
@@ -674,13 +673,15 @@ void VTTCue::calculateDisplayParameters()
 {
     createVTTNodeTree();
 
-    // Steps 10.2, 10.3
+    // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings
+
+    // Steps 1 and 2.
     m_displayDirection = determineTextDirection(m_vttNodeTree.get());
 
     if (m_displayDirection == CSSValueRtl)
         UseCounter::count(document(), UseCounter::VTTCueRenderRtl);
 
-    // 10.4 If the text track cue writing direction is horizontal, then let
+    // 3. If the text track cue writing direction is horizontal, then let
     // block-flow be 'tb'. Otherwise, if the text track cue writing direction is
     // vertical growing left, then let block-flow be 'lr'. Otherwise, the text
     // track cue writing direction is vertical growing right; let block-flow be
@@ -688,63 +689,57 @@ void VTTCue::calculateDisplayParameters()
 
     // The above step is done through the writing direction static map.
 
-    // 10.5 Determine the value of maximum size for cue as per the appropriate
+    // Resolve the cue alignment to one of the values {start, end, middle}.
+    CueAlignment computedCueAlignment = calculateComputedCueAlignment();
+
+    // 4. Determine the value of maximum size for cue as per the appropriate
     // rules from the following list:
     float computedTextPosition = calculateComputedTextPosition();
     float maximumSize = computedTextPosition;
-    if ((m_writingDirection == Horizontal && m_cueAlignment == Start && m_displayDirection == CSSValueLtr)
-        || (m_writingDirection == Horizontal && m_cueAlignment == End && m_displayDirection == CSSValueRtl)
-        || (m_writingDirection == Horizontal && m_cueAlignment == Left)
-        || (m_writingDirection == VerticalGrowingLeft && (m_cueAlignment == Start || m_cueAlignment == Left))
-        || (m_writingDirection == VerticalGrowingRight && (m_cueAlignment == Start || m_cueAlignment == Left))) {
+    if (computedCueAlignment == Start) {
         maximumSize = 100 - computedTextPosition;
-    } else if ((m_writingDirection == Horizontal && m_cueAlignment == End && m_displayDirection == CSSValueLtr)
-        || (m_writingDirection == Horizontal && m_cueAlignment == Start && m_displayDirection == CSSValueRtl)
-        || (m_writingDirection == Horizontal && m_cueAlignment == Right)
-        || (m_writingDirection == VerticalGrowingLeft && (m_cueAlignment == End || m_cueAlignment == Right))
-        || (m_writingDirection == VerticalGrowingRight && (m_cueAlignment == End || m_cueAlignment == Right))) {
+    } else if (computedCueAlignment == End) {
         maximumSize = computedTextPosition;
-    } else if (m_cueAlignment == Middle) {
+    } else if (computedCueAlignment == Middle) {
         maximumSize = computedTextPosition <= 50 ? computedTextPosition : (100 - computedTextPosition);
         maximumSize = maximumSize * 2;
     } else {
         ASSERT_NOT_REACHED();
     }
 
-    // 10.6 If the text track cue size is less than maximum size, then let size
+    // 5. If the text track cue size is less than maximum size, then let size
     // be text track cue size. Otherwise, let size be maximum size.
     m_displaySize = std::min(m_cueSize, maximumSize);
 
-    // FIXME: Understand why step 10.7 is missing (just a copy/paste error?)
-    // Could be done within a spec implementation check - http://crbug.com/301580
+    // 6. If the text track cue writing direction is horizontal, then let width
+    // be 'size vw' and height be 'auto'. Otherwise, let width be 'auto' and
+    // height be 'size vh'. (These are CSS values used by the next section to
+    // set CSS properties for the rendering; 'vw' and 'vh' are CSS units.)
+    // (Emulated in VTTCueBox::applyCSSProperties.)
 
-    // 10.8 Determine the value of x-position or y-position for cue as per the
+    // 7. Determine the value of x-position or y-position for cue as per the
     // appropriate rules from the following list:
     if (m_writingDirection == Horizontal) {
-        float visualTextPosition = m_displayDirection == CSSValueLtr ? computedTextPosition : 100 - computedTextPosition;
-
-        switch (resolveCueAlignment(m_cueAlignment, m_displayDirection)) {
-        case Left:
-            m_displayPosition.setX(visualTextPosition);
+        switch (computedCueAlignment) {
+        case Start:
+            m_displayPosition.setX(computedTextPosition);
             break;
-        case Right:
-            m_displayPosition.setX(visualTextPosition - m_displaySize);
+        case End:
+            m_displayPosition.setX(computedTextPosition - m_displaySize);
             break;
         case Middle:
-            m_displayPosition.setX(visualTextPosition - m_displaySize / 2);
+            m_displayPosition.setX(computedTextPosition - m_displaySize / 2);
             break;
         default:
             ASSERT_NOT_REACHED();
         }
     } else {
         // Cases for m_writingDirection being VerticalGrowing{Left|Right}
-        switch (m_cueAlignment) {
+        switch (computedCueAlignment) {
         case Start:
-        case Left:
             m_displayPosition.setY(computedTextPosition);
             break;
         case End:
-        case Right:
             m_displayPosition.setY(computedTextPosition - m_displaySize);
             break;
         case Middle:
@@ -759,20 +754,20 @@ void VTTCue::calculateDisplayParameters()
     // is defined in terms of the other aspects of the cue.
     m_computedLinePosition = calculateComputedLinePosition();
 
-    // 10.9 Determine the value of whichever of x-position or y-position is not
+    // 8. Determine the value of whichever of x-position or y-position is not
     // yet calculated for cue as per the appropriate rules from the following
     // list:
-    if (m_snapToLines && m_writingDirection == Horizontal)
-        m_displayPosition.setY(0);
-
-    if (!m_snapToLines && m_writingDirection == Horizontal)
-        m_displayPosition.setY(m_computedLinePosition);
-
-    if (m_snapToLines && (m_writingDirection == VerticalGrowingLeft || m_writingDirection == VerticalGrowingRight))
-        m_displayPosition.setX(0);
-
-    if (!m_snapToLines && (m_writingDirection == VerticalGrowingLeft || m_writingDirection == VerticalGrowingRight))
-        m_displayPosition.setX(m_computedLinePosition);
+    if (!m_snapToLines) {
+        if (m_writingDirection == Horizontal)
+            m_displayPosition.setY(m_computedLinePosition);
+        else
+            m_displayPosition.setX(m_computedLinePosition);
+    } else {
+        if (m_writingDirection == Horizontal)
+            m_displayPosition.setY(0);
+        else
+            m_displayPosition.setX(0);
+    }
 }
 
 void VTTCue::markFutureAndPastNodes(ContainerNode* root, double previousTimestamp, double movieTime)
