@@ -68,6 +68,7 @@ void  free(void *ptr);
 
 static size_t max_alloc_size= INT_MAX;
 
+/* Set to 0 to remove the maximum allocation size. */
 void av_max_alloc(size_t max){
     max_alloc_size = max;
 }
@@ -80,7 +81,7 @@ void *av_malloc(size_t size)
 #endif
 
     /* let's disallow possibly ambiguous cases */
-    if (size > (max_alloc_size - 32))
+    if (max_alloc_size && size > (max_alloc_size - 32))
         return NULL;
 
 #if CONFIG_MEMALIGN_HACK
@@ -147,7 +148,7 @@ void *av_realloc(void *ptr, size_t size)
 #endif
 
     /* let's disallow possibly ambiguous cases */
-    if (size > (max_alloc_size - 32))
+    if (max_alloc_size && size > (max_alloc_size - 32))
         return NULL;
 
 #if CONFIG_MEMALIGN_HACK

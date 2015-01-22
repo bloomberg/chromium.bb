@@ -425,6 +425,14 @@
                     4267
                   ],
                 }],
+                ['win_use_allocator_shim==1', {
+                  'dependencies': [
+                    '../../base/allocator/allocator.gyp:allocator',
+                  ],
+                  'sources': [
+                    'chromium/dllmain.cc',
+                  ],
+                }],
               ],
               'msvs_settings': {
                 # Ignore warnings about a local symbol being inefficiently imported,
