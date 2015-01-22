@@ -78,13 +78,9 @@ class SocketAcceptor : public base::MessageLoopForIO::Watcher {
 };
 
 const base::FilePath GetChannelDir() {
-#if defined(OS_ANDROID)
   base::FilePath tmp_dir;
-  PathService::Get(base::DIR_CACHE, &tmp_dir);
+  PathService::Get(base::DIR_TEMP, &tmp_dir);
   return tmp_dir;
-#else
-  return base::FilePath("/var/tmp");
-#endif
 }
 
 class TestUnixSocketConnection {

@@ -117,13 +117,9 @@ class IPCChannelPosixTest : public base::MultiProcessTest {
 };
 
 const std::string IPCChannelPosixTest::GetChannelDirName() {
-#if defined(OS_ANDROID)
   base::FilePath tmp_dir;
-  PathService::Get(base::DIR_CACHE, &tmp_dir);
+  PathService::Get(base::DIR_TEMP, &tmp_dir);
   return tmp_dir.value();
-#else
-  return "/var/tmp";
-#endif
 }
 
 const std::string IPCChannelPosixTest::GetConnectionSocketName() {
@@ -211,6 +207,7 @@ TEST_F(IPCChannelPosixTest, BasicListen) {
   ASSERT_FALSE(channel->HasAcceptedConnection());
   channel->ResetToAcceptingConnectionState();
   ASSERT_FALSE(channel->HasAcceptedConnection());
+  unlink(handle.name.c_str());
 }
 
 TEST_F(IPCChannelPosixTest, BasicConnected) {
@@ -308,6 +305,7 @@ TEST_F(IPCChannelPosixTest, AdvancedConnected) {
   EXPECT_EQ(0, exit_code);
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
   ASSERT_FALSE(channel->HasAcceptedConnection());
+  unlink(chan_handle.name.c_str());
 }
 
 TEST_F(IPCChannelPosixTest, ResetState) {
@@ -347,6 +345,7 @@ TEST_F(IPCChannelPosixTest, ResetState) {
   EXPECT_EQ(0, exit_code);
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
   ASSERT_FALSE(channel->HasAcceptedConnection());
+  unlink(chan_handle.name.c_str());
 }
 
 TEST_F(IPCChannelPosixTest, BadChannelName) {
@@ -405,6 +404,7 @@ TEST_F(IPCChannelPosixTest, MultiConnection) {
   EXPECT_EQ(exit_code, 0);
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
   ASSERT_FALSE(channel->HasAcceptedConnection());
+  unlink(chan_handle.name.c_str());
 }
 
 TEST_F(IPCChannelPosixTest, DoubleServer) {
@@ -443,6 +443,7 @@ TEST_F(IPCChannelPosixTest, IsNamedServerInitialized) {
   channel->Close();
   ASSERT_FALSE(IPC::Channel::IsNamedServerInitialized(
       connection_socket_name));
+  unlink(chan_handle.name.c_str());
 }
 
 // A long running process that connects to us
