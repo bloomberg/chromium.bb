@@ -1774,7 +1774,8 @@
     { "name": "uonstaffhub.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "whd-guide.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "whocalld.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "wootton95.com", "include_subdomains": true, "mode": "force-https" }
+    { "name": "wootton95.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "fassadenverkleidung24.de", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
