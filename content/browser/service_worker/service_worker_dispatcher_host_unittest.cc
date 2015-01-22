@@ -132,7 +132,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
                                          MSG_ROUTING_NONE,
                                          provider_id,
                                          context()->AsWeakPtr(),
-                                         nullptr);
+                                         dispatcher_host_.get());
   }
 
 

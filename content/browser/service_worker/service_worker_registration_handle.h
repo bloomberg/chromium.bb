@@ -28,8 +28,7 @@ class ServiceWorkerRegistrationHandle
  public:
   CONTENT_EXPORT ServiceWorkerRegistrationHandle(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerDispatcherHost* dispatcher_host,
-      int provider_id,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration);
   virtual ~ServiceWorkerRegistrationHandle();
 
@@ -62,7 +61,7 @@ class ServiceWorkerRegistrationHandle
       ServiceWorkerVersion* active_version);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  ServiceWorkerDispatcherHost* dispatcher_host_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   const int provider_id_;
   const int handle_id_;
   int ref_count_;  // Created with 1.

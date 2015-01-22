@@ -165,17 +165,16 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
 TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   const GURL kScope("http://www.example.not/");
   int64 kRegistrationId = 1L;
-  int kProviderId = 1;
   scoped_refptr<ServiceWorkerRegistration> registration =
       new ServiceWorkerRegistration(
           kScope,
           kRegistrationId,
           context_ptr_);
   scoped_ptr<ServiceWorkerRegistrationHandle> handle(
-      new ServiceWorkerRegistrationHandle(context_ptr_,
-                                          NULL,
-                                          kProviderId,
-                                          registration.get()));
+      new ServiceWorkerRegistrationHandle(
+          context_ptr_,
+          base::WeakPtr<ServiceWorkerProviderHost>(),
+          registration.get()));
   registration->NotifyRegistrationFailed();
   // Don't crash when handle gets destructed.
 }

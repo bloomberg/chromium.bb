@@ -5,7 +5,6 @@
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -14,12 +13,12 @@ namespace content {
 
 ServiceWorkerRegistrationHandle::ServiceWorkerRegistrationHandle(
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerDispatcherHost* dispatcher_host,
-    int provider_id,
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerRegistration* registration)
     : context_(context),
-      dispatcher_host_(dispatcher_host),
-      provider_id_(provider_id),
+      provider_host_(provider_host),
+      provider_id_(provider_host ? provider_host->provider_id()
+                                 : kInvalidServiceWorkerProviderId),
       handle_id_(context ? context->GetNewRegistrationHandleId()
                          : kInvalidServiceWorkerRegistrationHandleId),
       ref_count_(1),
@@ -86,10 +85,9 @@ void ServiceWorkerRegistrationHandle::OnRegistrationFailed(
 
 void ServiceWorkerRegistrationHandle::OnUpdateFound(
     ServiceWorkerRegistration* registration) {
-  if (!dispatcher_host_)
+  if (!provider_host_)
     return;  // Could be nullptr in some tests.
-  dispatcher_host_->Send(new ServiceWorkerMsg_UpdateFound(
-      kDocumentMainThreadId, GetObjectInfo()));
+  provider_host_->SendUpdateFoundMessage(GetObjectInfo());
 }
 
 void ServiceWorkerRegistrationHandle::SetVersionAttributes(
@@ -97,29 +95,13 @@ void ServiceWorkerRegistrationHandle::SetVersionAttributes(
     ServiceWorkerVersion* installing_version,
     ServiceWorkerVersion* waiting_version,
     ServiceWorkerVersion* active_version) {
-  if (!dispatcher_host_)
+  if (!provider_host_)
     return;  // Could be nullptr in some tests.
-  if (!changed_mask.changed())
-    return;
-
-  ServiceWorkerVersionAttributes attributes;
-  if (changed_mask.installing_changed()) {
-    attributes.installing =
-        dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
-            installing_version);
-  }
-  if (changed_mask.waiting_changed()) {
-    attributes.waiting =
-        dispatcher_host_->CreateAndRegisterServiceWorkerHandle(waiting_version);
-  }
-  if (changed_mask.active_changed()) {
-    attributes.active =
-        dispatcher_host_->CreateAndRegisterServiceWorkerHandle(active_version);
-  }
-
-  dispatcher_host_->Send(new ServiceWorkerMsg_SetVersionAttributes(
-      kDocumentMainThreadId, provider_id_, handle_id_,
-      changed_mask.changed(), attributes));
+  provider_host_->SendSetVersionAttributesMessage(handle_id_,
+                                                  changed_mask,
+                                                  installing_version,
+                                                  waiting_version,
+                                                  active_version);
 }
 
 }  // namespace content

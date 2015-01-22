@@ -7,12 +7,14 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
@@ -38,6 +40,30 @@ void VerifyStateChangedMessage(int expected_handle_id,
 
 }  // namespace
 
+class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
+ public:
+  TestingServiceWorkerDispatcherHost(
+      int process_id,
+      ServiceWorkerContextWrapper* context_wrapper,
+      ResourceContext* resource_context,
+      EmbeddedWorkerTestHelper* helper)
+      : ServiceWorkerDispatcherHost(process_id, nullptr, resource_context),
+        bad_message_received_count_(0),
+        helper_(helper) {
+    Init(context_wrapper);
+  }
+
+  bool Send(IPC::Message* message) override { return helper_->Send(message); }
+
+  void BadMessageReceived() override { ++bad_message_received_count_; }
+
+  int bad_message_received_count_;
+
+ protected:
+  EmbeddedWorkerTestHelper* helper_;
+  ~TestingServiceWorkerDispatcherHost() override {}
+};
+
 class ServiceWorkerHandleTest : public testing::Test {
  public:
   ServiceWorkerHandleTest()
@@ -45,6 +71,10 @@ class ServiceWorkerHandleTest : public testing::Test {
 
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
+
+    dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
+        kRenderProcessId, helper_->context_wrapper(),
+        &resource_context_, helper_.get());
 
     const GURL pattern("http://www.example.com/");
     registration_ = new ServiceWorkerRegistration(
@@ -57,21 +87,31 @@ class ServiceWorkerHandleTest : public testing::Test {
         1L,
         helper_->context()->AsWeakPtr());
 
+    provider_host_.reset(new ServiceWorkerProviderHost(
+        kRenderProcessId, MSG_ROUTING_NONE, 1,
+        helper_->context()->AsWeakPtr(), dispatcher_host_.get()));
+
     helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
   }
 
   void TearDown() override {
+    dispatcher_host_ = NULL;
     registration_ = NULL;
     version_ = NULL;
+    provider_host_.reset();
     helper_.reset();
   }
 
   IPC::TestSink* ipc_sink() { return helper_->ipc_sink(); }
 
   TestBrowserThreadBundle browser_thread_bundle_;
+  MockResourceContext resource_context_;
+
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  scoped_ptr<ServiceWorkerProviderHost> provider_host_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
+  scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandleTest);
@@ -80,7 +120,7 @@ class ServiceWorkerHandleTest : public testing::Test {
 TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
   scoped_ptr<ServiceWorkerHandle> handle =
       ServiceWorkerHandle::Create(helper_->context()->AsWeakPtr(),
-                                  helper_.get(),
+                                  provider_host_->AsWeakPtr(),
                                   version_.get());
 
   // Start the worker, and then...
@@ -99,6 +139,7 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
 
   ASSERT_EQ(4UL, ipc_sink()->message_count());
+  ASSERT_EQ(0L, dispatcher_host_->bad_message_received_count_);
 
   // We should be sending 1. StartWorker,
   EXPECT_EQ(EmbeddedWorkerMsg_StartWorker::ID,

@@ -115,6 +115,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<ResourceRequestBody> body);
 
+  // Creates a ServiceWorkerHandle to retain |version| and returns a
+  // ServiceWorkerInfo with a newly created handle ID. The handle is held in
+  // the dispatcher host until its ref-count becomes zero.
+  ServiceWorkerObjectInfo CreateAndRegisterServiceWorkerHandle(
+      ServiceWorkerVersion* version);
+
   // Returns true if |registration| can be associated with this provider.
   bool CanAssociateRegistration(ServiceWorkerRegistration* registration);
 
@@ -154,6 +160,21 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   ServiceWorkerDispatcherHost* dispatcher_host() const {
     return dispatcher_host_;
   }
+
+  // Called from ServiceWorkerRegistrationHandle.
+  void SendUpdateFoundMessage(
+      const ServiceWorkerRegistrationObjectInfo& object_info);
+  void SendSetVersionAttributesMessage(
+      int registration_handle_id,
+      ChangedVersionAttributesMask changed_mask,
+      ServiceWorkerVersion* installing_version,
+      ServiceWorkerVersion* waiting_version,
+      ServiceWorkerVersion* active_version);
+
+  // Called from ServiceWorkerHandle.
+  void SendServiceWorkerStateChangedMessage(
+      int worker_handle_id,
+      blink::WebServiceWorkerState state);
 
  private:
   friend class ServiceWorkerProviderHostTest;

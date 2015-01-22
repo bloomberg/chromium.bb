@@ -54,18 +54,15 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   // be destroyed.
   bool Send(IPC::Message* message) override;
 
+  void RegisterServiceWorkerHandle(scoped_ptr<ServiceWorkerHandle> handle);
+  void RegisterServiceWorkerRegistrationHandle(
+      scoped_ptr<ServiceWorkerRegistrationHandle> handle);
+
   // Returns the existing registration handle whose reference count is
   // incremented or newly created one if it doesn't exist.
   ServiceWorkerRegistrationHandle* GetOrCreateRegistrationHandle(
-      int provider_id,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration);
-
-  // Creates a ServiceWorkerHandle to retain |version| and returns a
-  // ServiceWorkerInfo with a newly created handle ID. The handle is held in
-  // the dispatcher host until its ref-count becomes zero via
-  // OnDecrementServiceWorkerRefCount.
-  ServiceWorkerObjectInfo CreateAndRegisterServiceWorkerHandle(
-      ServiceWorkerVersion* version);
 
   MessagePortMessageFilter* message_port_message_filter() {
     return message_port_message_filter_;
@@ -124,16 +121,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnServiceWorkerObjectDestroyed(int handle_id);
   void OnTerminateWorker(int handle_id);
 
-  void RegisterServiceWorkerHandle(scoped_ptr<ServiceWorkerHandle> handle);
-  void RegisterServiceWorkerRegistrationHandle(
-      scoped_ptr<ServiceWorkerRegistrationHandle> handle);
-
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(
       int provider_id,
       int64 registration_id);
 
   void GetRegistrationObjectInfoAndVersionAttributes(
-      int provider_id,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration,
       ServiceWorkerRegistrationObjectInfo* info,
       ServiceWorkerVersionAttributes* attrs);

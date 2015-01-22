@@ -215,12 +215,25 @@ bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {
   return true;
 }
 
+void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
+    scoped_ptr<ServiceWorkerHandle> handle) {
+  int handle_id = handle->handle_id();
+  handles_.AddWithID(handle.release(), handle_id);
+}
+
+void ServiceWorkerDispatcherHost::RegisterServiceWorkerRegistrationHandle(
+    scoped_ptr<ServiceWorkerRegistrationHandle> handle) {
+  int handle_id = handle->handle_id();
+  registration_handles_.AddWithID(handle.release(), handle_id);
+}
+
 ServiceWorkerRegistrationHandle*
 ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
-    int provider_id,
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerRegistration* registration) {
+  DCHECK(provider_host);
   ServiceWorkerRegistrationHandle* handle =
-      FindRegistrationHandle(provider_id, registration->id());
+      FindRegistrationHandle(provider_host->provider_id(), registration->id());
   if (handle) {
     handle->IncrementRefCount();
     return handle;
@@ -228,23 +241,10 @@ ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
 
   scoped_ptr<ServiceWorkerRegistrationHandle> new_handle(
       new ServiceWorkerRegistrationHandle(
-          GetContext()->AsWeakPtr(), this, provider_id, registration));
+          GetContext()->AsWeakPtr(), provider_host, registration));
   handle = new_handle.get();
   RegisterServiceWorkerRegistrationHandle(new_handle.Pass());
   return handle;
-}
-
-ServiceWorkerObjectInfo
-ServiceWorkerDispatcherHost::CreateAndRegisterServiceWorkerHandle(
-    ServiceWorkerVersion* version) {
-  ServiceWorkerObjectInfo info;
-  if (GetContext() && version) {
-    scoped_ptr<ServiceWorkerHandle> handle =
-        ServiceWorkerHandle::Create(GetContext()->AsWeakPtr(), this, version);
-    info = handle->GetObjectInfo();
-    RegisterServiceWorkerHandle(handle.Pass());
-  }
-  return info;
 }
 
 void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
@@ -572,20 +572,23 @@ ServiceWorkerDispatcherHost::FindRegistrationHandle(int provider_id,
 }
 
 void ServiceWorkerDispatcherHost::GetRegistrationObjectInfoAndVersionAttributes(
-    int provider_id,
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerRegistration* registration,
     ServiceWorkerRegistrationObjectInfo* info,
     ServiceWorkerVersionAttributes* attrs) {
   ServiceWorkerRegistrationHandle* handle =
-    GetOrCreateRegistrationHandle(provider_id, registration);
+    GetOrCreateRegistrationHandle(provider_host, registration);
   *info = handle->GetObjectInfo();
 
-  attrs->installing = CreateAndRegisterServiceWorkerHandle(
-      registration->installing_version());
-  attrs->waiting = CreateAndRegisterServiceWorkerHandle(
-      registration->waiting_version());
-  attrs->active = CreateAndRegisterServiceWorkerHandle(
-      registration->active_version());
+  attrs->installing =
+      provider_host->CreateAndRegisterServiceWorkerHandle(
+          registration->installing_version());
+  attrs->waiting =
+      provider_host->CreateAndRegisterServiceWorkerHandle(
+          registration->waiting_version());
+  attrs->active =
+      provider_host->CreateAndRegisterServiceWorkerHandle(
+          registration->active_version());
 }
 
 void ServiceWorkerDispatcherHost::RegistrationComplete(
@@ -597,6 +600,11 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
     int64 registration_id) {
   if (!GetContext())
     return;
+
+  ServiceWorkerProviderHost* provider_host =
+      GetContext()->GetProviderHost(render_process_id_, provider_id);
+  if (!provider_host)
+    return;  // The provider has already been destroyed.
 
   if (status != SERVICE_WORKER_OK) {
     SendRegistrationError(thread_id, request_id, status, status_message);
@@ -610,7 +618,7 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
   ServiceWorkerRegistrationObjectInfo info;
   ServiceWorkerVersionAttributes attrs;
   GetRegistrationObjectInfoAndVersionAttributes(
-      provider_id, registration, &info, &attrs);
+      provider_host->AsWeakPtr(), registration, &info, &attrs);
 
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
       thread_id, request_id, info, attrs));
@@ -832,6 +840,11 @@ void ServiceWorkerDispatcherHost::GetRegistrationComplete(
   if (!GetContext())
     return;
 
+  ServiceWorkerProviderHost* provider_host =
+      GetContext()->GetProviderHost(render_process_id_, provider_id);
+  if (!provider_host)
+    return;  // The provider has already been destroyed.
+
   if (status != SERVICE_WORKER_OK && status != SERVICE_WORKER_ERROR_NOT_FOUND) {
     SendGetRegistrationError(thread_id, request_id, status);
     return;
@@ -843,7 +856,7 @@ void ServiceWorkerDispatcherHost::GetRegistrationComplete(
     DCHECK(registration.get());
     if (!registration->is_uninstalling()) {
       GetRegistrationObjectInfoAndVersionAttributes(
-          provider_id, registration.get(), &info, &attrs);
+          provider_host->AsWeakPtr(), registration.get(), &info, &attrs);
     }
   }
 
@@ -906,18 +919,6 @@ void ServiceWorkerDispatcherHost::OnTerminateWorker(int handle_id) {
   }
   handle->version()->StopWorker(
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-}
-
-void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
-    scoped_ptr<ServiceWorkerHandle> handle) {
-  int handle_id = handle->handle_id();
-  handles_.AddWithID(handle.release(), handle_id);
-}
-
-void ServiceWorkerDispatcherHost::RegisterServiceWorkerRegistrationHandle(
-    scoped_ptr<ServiceWorkerRegistrationHandle> handle) {
-  int handle_id = handle->handle_id();
-  registration_handles_.AddWithID(handle.release(), handle_id);
 }
 
 }  // namespace content

@@ -121,7 +121,7 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
 
   dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
       kDocumentMainThreadId, provider_id(),
-      dispatcher_host_->CreateAndRegisterServiceWorkerHandle(version),
+      CreateAndRegisterServiceWorkerHandle(version),
       should_notify_controllerchange));
 }
 
@@ -202,6 +202,20 @@ ServiceWorkerProviderHost::CreateRequestHandler(
                                                   body));
   }
   return scoped_ptr<ServiceWorkerRequestHandler>();
+}
+
+ServiceWorkerObjectInfo
+ServiceWorkerProviderHost::CreateAndRegisterServiceWorkerHandle(
+    ServiceWorkerVersion* version) {
+  DCHECK(dispatcher_host_);
+  ServiceWorkerObjectInfo info;
+  if (context_ && version) {
+    scoped_ptr<ServiceWorkerHandle> handle =
+        ServiceWorkerHandle::Create(context_, AsWeakPtr(), version);
+    info = handle->GetObjectInfo();
+    dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
+  }
+  return info;
 }
 
 bool ServiceWorkerProviderHost::CanAssociateRegistration(
@@ -298,11 +312,60 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
     if (dispatcher_host_ && associated_registration_->active_version()) {
       dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
           kDocumentMainThreadId, provider_id(),
-          dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
+          CreateAndRegisterServiceWorkerHandle(
               associated_registration_->active_version()),
           false /* shouldNotifyControllerChange */));
     }
   }
+}
+
+void ServiceWorkerProviderHost::SendUpdateFoundMessage(
+    const ServiceWorkerRegistrationObjectInfo& object_info) {
+  if (!dispatcher_host_)
+    return;  // Could be nullptr in some tests.
+
+  // TODO(nhiroki): Queue the message if a receiver's thread is not ready yet
+  // (http://crbug.com/437677).
+  dispatcher_host_->Send(new ServiceWorkerMsg_UpdateFound(
+      kDocumentMainThreadId, object_info));
+}
+
+void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(
+    int registration_handle_id,
+    ChangedVersionAttributesMask changed_mask,
+    ServiceWorkerVersion* installing_version,
+    ServiceWorkerVersion* waiting_version,
+    ServiceWorkerVersion* active_version) {
+  if (!dispatcher_host_)
+    return;  // Could be nullptr in some tests.
+  if (!changed_mask.changed())
+    return;
+
+  ServiceWorkerVersionAttributes attrs;
+  if (changed_mask.installing_changed())
+    attrs.installing = CreateAndRegisterServiceWorkerHandle(installing_version);
+  if (changed_mask.waiting_changed())
+    attrs.waiting = CreateAndRegisterServiceWorkerHandle(waiting_version);
+  if (changed_mask.active_changed())
+    attrs.active = CreateAndRegisterServiceWorkerHandle(active_version);
+
+  // TODO(nhiroki): Queue the message if a receiver's thread is not ready yet
+  // (http://crbug.com/437677).
+  dispatcher_host_->Send(new ServiceWorkerMsg_SetVersionAttributes(
+      kDocumentMainThreadId, provider_id_, registration_handle_id,
+      changed_mask.changed(), attrs));
+}
+
+void ServiceWorkerProviderHost::SendServiceWorkerStateChangedMessage(
+    int worker_handle_id,
+    blink::WebServiceWorkerState state) {
+  if (!dispatcher_host_)
+    return;
+
+  // TODO(nhiroki): Queue the message if a receiver's thread is not ready yet
+  // (http://crbug.com/437677).
+  dispatcher_host_->Send(new ServiceWorkerMsg_ServiceWorkerStateChanged(
+      kDocumentMainThreadId, worker_handle_id, state));
 }
 
 void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
@@ -311,14 +374,14 @@ void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
 
   ServiceWorkerRegistrationHandle* handle =
       dispatcher_host_->GetOrCreateRegistrationHandle(
-          provider_id(), associated_registration_.get());
+          AsWeakPtr(), associated_registration_.get());
 
   ServiceWorkerVersionAttributes attrs;
-  attrs.installing = dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
+  attrs.installing = CreateAndRegisterServiceWorkerHandle(
       associated_registration_->installing_version());
-  attrs.waiting = dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
+  attrs.waiting = CreateAndRegisterServiceWorkerHandle(
       associated_registration_->waiting_version());
-  attrs.active = dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
+  attrs.active = CreateAndRegisterServiceWorkerHandle(
       associated_registration_->active_version());
 
   dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(

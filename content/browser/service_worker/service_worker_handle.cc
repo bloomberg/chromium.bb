@@ -8,7 +8,6 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "ipc/ipc_sender.h"
 
 namespace content {
 
@@ -39,23 +38,23 @@ GetWebServiceWorkerState(ServiceWorkerVersion* version) {
 
 scoped_ptr<ServiceWorkerHandle> ServiceWorkerHandle::Create(
     base::WeakPtr<ServiceWorkerContextCore> context,
-    IPC::Sender* sender,
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerVersion* version) {
-  if (!context || !version)
+  if (!context || !provider_host || !version)
     return scoped_ptr<ServiceWorkerHandle>();
   ServiceWorkerRegistration* registration =
       context->GetLiveRegistration(version->registration_id());
   return make_scoped_ptr(new ServiceWorkerHandle(
-      context, sender, registration, version));
+      context, provider_host, registration, version));
 }
 
 ServiceWorkerHandle::ServiceWorkerHandle(
     base::WeakPtr<ServiceWorkerContextCore> context,
-    IPC::Sender* sender,
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version)
     : context_(context),
-      sender_(sender),
+      provider_host_(provider_host),
       handle_id_(context.get() ? context->GetNewServiceWorkerHandleId() : -1),
       ref_count_(1),
       registration_(registration),
@@ -73,8 +72,10 @@ ServiceWorkerHandle::~ServiceWorkerHandle() {
 }
 
 void ServiceWorkerHandle::OnVersionStateChanged(ServiceWorkerVersion* version) {
-  sender_->Send(new ServiceWorkerMsg_ServiceWorkerStateChanged(
-      kDocumentMainThreadId, handle_id_, GetWebServiceWorkerState(version)));
+  if (!provider_host_)
+    return;
+  provider_host_->SendServiceWorkerStateChangedMessage(
+      handle_id_, GetWebServiceWorkerState(version));
 }
 
 ServiceWorkerObjectInfo ServiceWorkerHandle::GetObjectInfo() {
