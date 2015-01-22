@@ -20,9 +20,11 @@ from telemetry.value import trace
 _CR_RENDERER_MAIN = 'CrRendererMain'
 _RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
 _NAMES_TO_DUMP = ['oilpan_precise_mark',
-                  'oilpan_precise_sweep',
+                  'oilpan_precise_lazy_sweep',
+                  'oilpan_precise_complete_sweep',
                   'oilpan_conservative_mark',
-                  'oilpan_conservative_sweep',
+                  'oilpan_conservative_lazy_sweep',
+                  'oilpan_conservative_complete_sweep',
                   'oilpan_coalesce']
 
 def _AddTracingResults(events, results):
@@ -35,7 +37,8 @@ def _AddTracingResults(events, results):
   gc_type = None
   forced = False
   mark_time = 0
-  sweep_time = 0
+  lazy_sweep_time = 0
+  complete_sweep_time = 0
   for event in events:
     duration = event.thread_duration or event.duration
     if event.name == 'ThreadHeap::coalesce':
@@ -44,20 +47,26 @@ def _AddTracingResults(events, results):
     if event.name == 'Heap::collectGarbage':
       if not gc_type is None and not forced:
         values['oilpan_%s_mark' % gc_type].append(mark_time)
-        values['oilpan_%s_sweep' % gc_type].append(sweep_time)
+        values['oilpan_%s_lazy_sweep' % gc_type].append(lazy_sweep_time)
+        values['oilpan_%s_complete_sweep' % gc_type].append(complete_sweep_time)
 
       gc_type = 'precise' if event.args['precise'] else 'conservative'
       forced = event.args['forced']
       mark_time = duration
-      sweep_time = 0
+      lazy_sweep_time = 0
+      complete_sweep_time = 0
       continue
-    if event.name == 'ThreadState::performPendingSweep':
-      sweep_time += duration
+    if event.name == 'ThreadHeap::lazySweepPages':
+      lazy_sweep_time += duration
+      continue
+    if event.name == 'ThreadState::completeSweep':
+      complete_sweep_time += duration
       continue
 
   if not gc_type is None and not forced:
     values['oilpan_%s_mark' % gc_type].append(mark_time)
-    values['oilpan_%s_sweep' % gc_type].append(sweep_time)
+    values['oilpan_%s_lazy_sweep' % gc_type].append(lazy_sweep_time)
+    values['oilpan_%s_complete_sweep' % gc_type].append(complete_sweep_time)
 
   # Dump
   page = results.current_page
@@ -71,12 +80,24 @@ def _AddTracingResults(events, results):
     results.AddValue(scalar.ScalarValue(
         page, name + '_total', unit, sum(values[name])))
 
-  for do_type in ['mark', 'sweep']:
-    work_time = 0
+  # Summarize marking time
+  total_mark_time = 0
+  for gc_type in ['precise', 'conservative']:
+    total_mark_time += sum(values['oilpan_%s_mark' % gc_type])
+  results.AddValue(
+      scalar.ScalarValue(page, 'oilpan_mark', unit, total_mark_time))
+
+  # Summarize sweeping time
+  total_sweep_time = 0
+  for do_type in ['lazy_sweep', 'complete_sweep']:
+    sweep_time = 0
     for gc_type in ['precise', 'conservative']:
-      work_time += sum(values['oilpan_%s_%s' % (gc_type, do_type)])
+      sweep_time += sum(values['oilpan_%s_%s' % (gc_type, do_type)])
     key = 'oilpan_%s' % do_type
-    results.AddValue(scalar.ScalarValue(page, key, unit, work_time))
+    results.AddValue(scalar.ScalarValue(page, key, unit, sweep_time))
+    total_sweep_time += sweep_time
+  results.AddValue(
+      scalar.ScalarValue(page, 'oilpan_sweep', unit, total_sweep_time))
 
   gc_time = 0
   for key in values:
