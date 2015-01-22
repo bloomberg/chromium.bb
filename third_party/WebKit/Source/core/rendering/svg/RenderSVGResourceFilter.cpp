@@ -186,10 +186,8 @@ bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContex
     clearInvalidationMask();
 
     if (m_filter.contains(object)) {
-        FilterData* filterData = m_filter.get(object);
-        if (filterData->state == FilterData::PaintingSource)
-            filterData->state = FilterData::CycleDetected;
-        return false; // Already built, or we're in a cycle. Regardless, just do nothing more now.
+        // The filter has already begun or there is a filter cycle.
+        return false;
     }
 
     OwnPtrWillBeRawPtr<FilterData> filterData = FilterData::create();
@@ -220,6 +218,7 @@ bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContex
     FilterData* data = filterData.get();
     m_filter.set(object, filterData.release());
     beginDeferredFilter(context, data);
+    data->m_needToEndFilter = true;
     return true;
 }
 
@@ -232,24 +231,11 @@ void RenderSVGResourceFilter::finishEffect(RenderObject* object, GraphicsContext
     if (!filterData)
         return;
 
-    switch (filterData->state) {
-    case FilterData::CycleDetected:
-        // applyResource detected a cycle. This can occur due to FeImage
-        // referencing a source that makes use of the FEImage itself. This is
-        // the first place we've hit the cycle, so set the state back to
-        // PaintingSource so the return stack will continue correctly.
-        filterData->state = FilterData::PaintingSource;
-        return;
-
-    case FilterData::PaintingSource:
+    if (filterData->m_needToEndFilter)
         endDeferredFilter(context, filterData);
-        break;
-
-    case FilterData::Built: { } // Empty
-    }
 
     drawDeferredFilter(context, filterData, toSVGFilterElement(element()));
-    filterData->state = FilterData::Built;
+    filterData->m_needToEndFilter = false;
 }
 
 FloatRect RenderSVGResourceFilter::resourceBoundingBox(const RenderObject* object)
@@ -268,7 +254,7 @@ void RenderSVGResourceFilter::primitiveAttributeChanged(RenderObject* object, co
 
     for (; it != end; ++it) {
         FilterData* filterData = it->value.get();
-        if (filterData->state != FilterData::Built)
+        if (filterData->m_needToEndFilter)
             continue;
 
         SVGFilterBuilder* builder = filterData->builder.get();

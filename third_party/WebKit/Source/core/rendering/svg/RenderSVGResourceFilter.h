@@ -34,8 +34,6 @@ namespace blink {
 class FilterData final : public NoBaseWillBeGarbageCollected<FilterData> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    enum FilterDataState { PaintingSource, Built, CycleDetected };
-
     static PassOwnPtrWillBeRawPtr<FilterData> create()
     {
         return adoptPtrWillBeNoop(new FilterData());
@@ -46,13 +44,10 @@ public:
     RefPtrWillBeMember<SVGFilter> filter;
     RefPtrWillBeMember<SVGFilterBuilder> builder;
     FloatRect boundaries;
-    FilterDataState state;
+    bool m_needToEndFilter;
 
 private:
-    FilterData()
-        : state(PaintingSource)
-    {
-    }
+    FilterData() : m_needToEndFilter(false) { }
 
 };
 

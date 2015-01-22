@@ -44,7 +44,6 @@ SVGRenderingContext::~SVGRenderingContext()
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->filter() == m_filter);
         m_filter->finishEffect(m_object, m_paintInfo->context);
         m_paintInfo->rect = m_savedPaintRect;
-        m_paintInfo->context->restore();
     }
 
     if (m_masker) {
@@ -151,18 +150,14 @@ bool SVGRenderingContext::applyFilterIfNecessary(SVGResources* resources)
         if (m_object->style()->svgStyle().hasFilter())
             return false;
     } else if (RenderSVGResourceFilter* filter = resources->filter()) {
-        // FIXME: This code should use the same pattern as clipping and masking
-        // instead of always creating m_filter. See crbug.com/449743.
-        m_filter = filter;
-        m_savedPaintRect = m_paintInfo->rect;
-        m_paintInfo->context->save();
-
         if (!filter->prepareEffect(m_object, m_paintInfo->context))
             return false;
+        m_filter = filter;
 
         // Because we cache the filter contents and do not invalidate on paint
         // invalidation rect changes, we need to paint the entire filter region
         // so elements outside the initial paint (due to scrolling, etc) paint.
+        m_savedPaintRect = m_paintInfo->rect;
         m_paintInfo->rect = LayoutRect::infiniteIntRect();
     }
     return true;
