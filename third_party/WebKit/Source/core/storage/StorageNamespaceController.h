@@ -18,6 +18,7 @@ class StorageNamespaceController final : public NoBaseWillBeGarbageCollectedFina
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StorageNamespaceController);
 public:
     StorageNamespace* sessionStorage(bool optionalCreate = true);
+    StorageClient* storageClient() { return m_client; }
     ~StorageNamespaceController();
 
     static void provideStorageNamespaceTo(Page&, StorageClient*);

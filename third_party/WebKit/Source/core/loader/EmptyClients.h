@@ -38,7 +38,6 @@
 #include "core/page/EditorClient.h"
 #include "core/page/Page.h"
 #include "core/page/SpellCheckerClient.h"
-#include "core/page/StorageClient.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/Handle.h"
@@ -321,12 +320,6 @@ public:
 
     virtual void highlight() override { }
     virtual void hideHighlight() override { }
-};
-
-class EmptyStorageClient final : public StorageClient {
-public:
-    virtual PassOwnPtr<StorageNamespace> createSessionStorageNamespace() override;
-    virtual bool canAccessStorage(LocalFrame*, StorageType) const override { return false; }
 };
 
 void fillWithEmptyClients(Page::PageClients&);

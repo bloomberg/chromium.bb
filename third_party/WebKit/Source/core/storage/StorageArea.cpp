@@ -145,7 +145,10 @@ bool StorageArea::canAccessStorage(LocalFrame* frame)
     // this StorageArea does, that cached reference will be cleared.
     if (m_frame == frame)
         return m_canAccessStorageCachedResult;
-    bool result = frame->page()->storageClient().canAccessStorage(frame, m_storageType);
+    StorageNamespaceController* controller = StorageNamespaceController::from(frame->page());
+    if (!controller)
+        return false;
+    bool result = controller->storageClient()->canAccessStorage(frame, m_storageType);
     // Move attention to the new LocalFrame.
     observeFrame(frame);
     m_canAccessStorageCachedResult = result;

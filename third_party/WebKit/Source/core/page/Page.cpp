@@ -51,7 +51,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PointerLockController.h"
-#include "core/page/StorageClient.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/RenderLayer.h"
@@ -127,7 +126,6 @@ Page::Page(PageClients& pageClients)
     , m_mainFrame(nullptr)
     , m_editorClient(pageClients.editorClient)
     , m_spellCheckerClient(pageClients.spellCheckerClient)
-    , m_storageClient(pageClients.storageClient)
     , m_openedByDOM(false)
     , m_tabKeyCyclesThroughElements(true)
     , m_defersLoading(false)
@@ -633,7 +631,6 @@ Page::PageClients::PageClients()
     , dragClient(nullptr)
     , inspectorClient(nullptr)
     , spellCheckerClient(nullptr)
-    , storageClient(nullptr)
 {
 }
 

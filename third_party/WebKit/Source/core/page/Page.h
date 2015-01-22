@@ -58,11 +58,9 @@ class InspectorController;
 class PageLifecycleNotifier;
 class PluginData;
 class PointerLockController;
-class StorageClient;
 class ScrollingCoordinator;
 class Settings;
 class SpellCheckerClient;
-class StorageNamespace;
 class UndoStack;
 class ValidationMessageClient;
 
@@ -90,7 +88,6 @@ public:
         DragClient* dragClient;
         InspectorClient* inspectorClient;
         SpellCheckerClient* spellCheckerClient;
-        StorageClient* storageClient;
     };
 
     explicit Page(PageClients&);
@@ -175,8 +172,6 @@ public:
     static void allVisitedStateChanged();
     static void visitedStateChanged(LinkHash visitedHash);
 
-    StorageClient& storageClient() const { return *m_storageClient; }
-
     PageVisibilityState visibilityState() const;
     void setVisibilityState(PageVisibilityState, bool);
 
@@ -251,7 +246,6 @@ private:
 
     EditorClient* const m_editorClient;
     SpellCheckerClient* const m_spellCheckerClient;
-    StorageClient* m_storageClient;
     OwnPtrWillBeMember<ValidationMessageClient> m_validationMessageClient;
 
     UseCounter m_useCounter;

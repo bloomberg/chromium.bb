@@ -422,7 +422,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.dragClient = &m_dragClientImpl;
     pageClients.inspectorClient = &m_inspectorClientImpl;
     pageClients.spellCheckerClient = &m_spellCheckerClientImpl;
-    pageClients.storageClient = &m_storageClientImpl;
 
     m_page = adoptPtrWillBeNoop(new Page(pageClients));
     MediaKeysController::provideMediaKeysTo(*m_page, &m_mediaKeysClientImpl);
