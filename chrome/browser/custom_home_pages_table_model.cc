@@ -70,7 +70,8 @@ struct CustomHomePagesTableModel::Entry {
 
 CustomHomePagesTableModel::CustomHomePagesTableModel(Profile* profile)
     : profile_(profile),
-      observer_(NULL) {
+      observer_(NULL),
+      num_outstanding_title_lookups_(0) {
 }
 
 CustomHomePagesTableModel::~CustomHomePagesTableModel() {
@@ -81,11 +82,8 @@ void CustomHomePagesTableModel::SetURLs(const std::vector<GURL>& urls) {
   for (size_t i = 0; i < urls.size(); ++i) {
     entries_[i].url = urls[i];
     entries_[i].title.erase();
-    LoadTitle(&(entries_[i]));
   }
-  // Complete change, so tell the view to just rebuild itself.
-  if (observer_)
-    observer_->OnModelChanged();
+  LoadAllTitles();
 }
 
 /**
@@ -146,16 +144,21 @@ void CustomHomePagesTableModel::MoveURLs(int insert_before,
     observer_->OnModelChanged();
 }
 
-void CustomHomePagesTableModel::Add(int index, const GURL& url) {
+void CustomHomePagesTableModel::AddWithoutNotification(
+    int index, const GURL& url) {
   DCHECK(index >= 0 && index <= RowCount());
   entries_.insert(entries_.begin() + static_cast<size_t>(index), Entry());
   entries_[index].url = url;
+}
+
+void CustomHomePagesTableModel::Add(int index, const GURL& url) {
+  AddWithoutNotification(index, url);
   LoadTitle(&(entries_[index]));
   if (observer_)
     observer_->OnItemsAdded(index, 1);
 }
 
-void CustomHomePagesTableModel::Remove(int index) {
+void CustomHomePagesTableModel::RemoveWithoutNotification(int index) {
   DCHECK(index >= 0 && index < RowCount());
   Entry* entry = &(entries_[index]);
   // Cancel any pending load requests now so we don't deref a bogus pointer when
@@ -165,6 +168,10 @@ void CustomHomePagesTableModel::Remove(int index) {
     entry->task_id = base::CancelableTaskTracker::kBadTaskId;
   }
   entries_.erase(entries_.begin() + static_cast<size_t>(index));
+}
+
+void CustomHomePagesTableModel::Remove(int index) {
+  RemoveWithoutNotification(index);
   if (observer_)
     observer_->OnItemsRemoved(index, 1);
 }
@@ -172,7 +179,7 @@ void CustomHomePagesTableModel::Remove(int index) {
 void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
   // Remove the current entries.
   while (RowCount())
-    Remove(0);
+    RemoveWithoutNotification(0);
 
   // And add all tabs for all open browsers with our profile.
   int add_index = 0;
@@ -187,9 +194,10 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
       const GURL url =
           browser->tab_strip_model()->GetWebContentsAt(tab_index)->GetURL();
       if (ShouldAddPage(url))
-        Add(add_index++, url);
+        AddWithoutNotification(add_index++, url);
     }
   }
+  LoadAllTitles();
 }
 
 std::vector<GURL> CustomHomePagesTableModel::GetURLs() {
@@ -228,12 +236,44 @@ void CustomHomePagesTableModel::LoadTitle(Entry* entry) {
         false,
         base::Bind(&CustomHomePagesTableModel::OnGotTitle,
                    base::Unretained(this),
-                   entry->url),
+                   entry->url,
+                   false),
         &task_tracker_);
   }
 }
 
+void CustomHomePagesTableModel::LoadAllTitles() {
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  // It's possible for multiple LoadAllTitles() queries to be inflight we want
+  // to make sure everything is resolved before updating the observer or we risk
+  // getting rendering glitches.
+  num_outstanding_title_lookups_ += entries_.size();
+  for (Entry& entry : entries_) {
+    if (history_service) {
+      entry.task_id = history_service->QueryURL(
+          entry.url,
+          false,
+          base::Bind(&CustomHomePagesTableModel::OnGotOneOfManyTitles,
+                     base::Unretained(this),
+                     entry.url),
+          &task_tracker_);
+    }
+  }
+}
+
+void CustomHomePagesTableModel::OnGotOneOfManyTitles(const GURL& entry_url,
+                                           bool found_url,
+                                           const history::URLRow& row,
+                                           const history::VisitVector& visits) {
+  OnGotTitle(entry_url, false, found_url, row, visits);
+  DCHECK_GE(num_outstanding_title_lookups_, 1);
+  if (--num_outstanding_title_lookups_ == 0 && observer_)
+    observer_->OnModelChanged();
+}
+
 void CustomHomePagesTableModel::OnGotTitle(const GURL& entry_url,
+                                           bool observable,
                                            bool found_url,
                                            const history::URLRow& row,
                                            const history::VisitVector& visits) {
@@ -253,7 +293,7 @@ void CustomHomePagesTableModel::OnGotTitle(const GURL& entry_url,
   entry->task_id = base::CancelableTaskTracker::kBadTaskId;
   if (found_url && !row.title().empty()) {
     entry->title = row.title();
-    if (observer_)
+    if (observer_ && observable)
       observer_->OnItemsChanged(static_cast<int>(entry_index), 1);
   }
 }
