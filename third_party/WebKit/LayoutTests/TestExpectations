@@ -1654,6 +1654,10 @@ crbug.com/441738 inspector/extensions/extensions-network.html [ Pass Failure ]
 
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Pass Failure ]
 
+crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Pass Failure Timeout ]
+crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Pass Failure Timeout ]
+crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/overflow-interrupted-scroll.html [ Pass Failure Timeout ]
+
 crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 crbug.com/442181 virtual/slimmingpaint/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 
