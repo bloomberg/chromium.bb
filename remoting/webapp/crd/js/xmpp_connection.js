@@ -157,6 +157,14 @@ remoting.XmppConnection.prototype.sendMessage = function(message) {
   this.sendString_(message);
 };
 
+/**
+ * @param {remoting.LogToServer} logToServer The LogToServer instance for the
+ *     connection.
+ */
+remoting.XmppConnection.prototype.sendConnectionSetupResults =
+    function(logToServer) {
+};
+
 /** @return {remoting.SignalStrategy.State} Current state */
 remoting.XmppConnection.prototype.getState = function() {
   return this.state_;
@@ -170,6 +178,11 @@ remoting.XmppConnection.prototype.getError = function() {
 /** @return {string} Current JID when in CONNECTED state. */
 remoting.XmppConnection.prototype.getJid = function() {
   return this.jid_;
+};
+
+/** @return {remoting.SignalStrategy.Type} The signal strategy type. */
+remoting.XmppConnection.prototype.getType = function() {
+  return remoting.SignalStrategy.Type.XMPP;
 };
 
 remoting.XmppConnection.prototype.dispose = function() {

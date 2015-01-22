@@ -6,14 +6,16 @@
 
 'use strict';
 
-var ControllableSignalStrategy = function(jid) {
+var ControllableSignalStrategy = function(jid, type, stateChangeCallback) {
   this.jid = jid;
-  this.onStateChangedCallback = function() {};
-  this.state = null;
+  this.type = type;
+  this.stateChangeCallback_ = stateChangeCallback;
+  this.state_ = null;
   this.onIncomingStanzaCallback = function() {};
   this.dispose = sinon.spy();
   this.connect = sinon.spy();
   this.sendMessage = sinon.spy();
+  this.sendConnectionSetupResults = sinon.spy();
 };
 
 ControllableSignalStrategy.prototype.setStateChangedCallback = function(
@@ -41,6 +43,10 @@ ControllableSignalStrategy.prototype.getJid = function(message) {
   return this.jid;
 };
 
+ControllableSignalStrategy.prototype.getType = function(message) {
+  return this.type;
+};
+
 ControllableSignalStrategy.prototype.setExternalCallbackForTesting =
     function(externalCallback) {
   this.externalCallback_ = externalCallback;
@@ -60,44 +66,51 @@ ControllableSignalStrategy.prototype.setStateForTesting =
   }
 };
 
+var MockLogToServer = function() {
+  this.logSignalStrategyProgress = sinon.spy();
+};
+
+MockLogToServer.prototype.assertProgress = function() {
+  equal(this.logSignalStrategyProgress.callCount * 2, arguments.length);
+  for (var i = 0; i < this.logSignalStrategyProgress.callCount; ++i) {
+    equal(this.logSignalStrategyProgress.getCall(i).args[0], arguments[2 * i]);
+    equal(this.logSignalStrategyProgress.getCall(i).args[1],
+          arguments[2 * i + 1]);
+  }
+};
+
 var onStateChange = null;
-var onProgressCallback = null;
 var onIncomingStanzaCallback = null;
 var strategy = null;
 var primary = null;
 var secondary = null;
+var logToServer = null;
 
 module('fallback_signal_strategy', {
   setup: function() {
     onStateChange = sinon.spy();
-    onProgressCallback = sinon.spy();
     onIncomingStanzaCallback = sinon.spy();
     strategy = new remoting.FallbackSignalStrategy(
-        new ControllableSignalStrategy('primary-jid'),
-        new ControllableSignalStrategy('secondary-jid'),
-        onProgressCallback);
+        new ControllableSignalStrategy('primary-jid',
+                                       remoting.SignalStrategy.Type.XMPP),
+        new ControllableSignalStrategy('secondary-jid',
+                                       remoting.SignalStrategy.Type.WCS));
     strategy.setStateChangedCallback(onStateChange);
     strategy.setIncomingStanzaCallback(onIncomingStanzaCallback);
     primary = strategy.primary_;
     secondary = strategy.secondary_;
+    logToServer = new MockLogToServer();
     primary.setExternalCallbackForTesting(onStateChange);
     secondary.setExternalCallbackForTesting(onStateChange);
   },
   teardown: function() {
     onStateChange = null;
-    onProgressCallback = null;
     onIncomingStanzaCallback = null;
     strategy = null;
     primary = null;
     secondary = null;
+    logToServer = null;
   },
-  // Assert that the progress callback has been called exactly once
-  // since the last call, and with the specified state.
-  assertProgress: function(state) {
-    ok(onProgressCallback.calledOnce);
-    ok(onProgressCallback.calledWith(state));
-    onProgressCallback.reset();
-  }
 });
 
 test('primary succeeds; send & receive routed to it',
@@ -112,11 +125,13 @@ test('primary succeeds; send & receive routed to it',
     primary.setStateForTesting(remoting.SignalStrategy.State.CONNECTING, true);
     primary.setStateForTesting(remoting.SignalStrategy.State.HANDSHAKE, true);
 
-    ok(!onProgressCallback.called);
     primary.setStateForTesting(remoting.SignalStrategy.State.CONNECTED, true);
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.PRIMARY_SUCCEEDED);
     equal(strategy.getJid(), 'primary-jid');
+
+    strategy.sendConnectionSetupResults(logToServer);
+    logToServer.assertProgress(
+        remoting.SignalStrategy.Type.XMPP,
+        remoting.FallbackSignalStrategy.Progress.SUCCEEDED);
 
     ok(!onIncomingStanzaCallback.called);
     primary.onIncomingStanzaCallback('test-receive-primary');
@@ -149,12 +164,9 @@ test('primary fails; secondary succeeds; send & receive routed to it',
                                true);
     primary.setStateForTesting(remoting.SignalStrategy.State.CONNECTING, true);
 
-    ok(!onProgressCallback.called);
     ok(!secondary.connect.called);
     primary.setStateForTesting(remoting.SignalStrategy.State.FAILED, false);
     ok(secondary.connect.calledWith('server', 'username', 'authToken'));
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.PRIMARY_FAILED);
 
     secondary.setStateForTesting(remoting.SignalStrategy.State.NOT_CONNECTED,
                                  false);
@@ -162,11 +174,15 @@ test('primary fails; secondary succeeds; send & receive routed to it',
                                  false);
     secondary.setStateForTesting(remoting.SignalStrategy.State.HANDSHAKE, true);
 
-    ok(!onProgressCallback.called);
     secondary.setStateForTesting(remoting.SignalStrategy.State.CONNECTED, true);
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.SECONDARY_SUCCEEDED);
     equal(strategy.getJid(), 'secondary-jid');
+
+    strategy.sendConnectionSetupResults(logToServer);
+    logToServer.assertProgress(
+        remoting.SignalStrategy.Type.XMPP,
+        remoting.FallbackSignalStrategy.Progress.FAILED,
+        remoting.SignalStrategy.Type.WCS,
+        remoting.FallbackSignalStrategy.Progress.SUCCEEDED);
 
     ok(!onIncomingStanzaCallback.called);
     primary.onIncomingStanzaCallback('test-receive-primary');
@@ -191,19 +207,14 @@ test('primary fails; secondary fails',
 
     primary.setStateForTesting(remoting.SignalStrategy.State.NOT_CONNECTED,
                                true);
-    ok(!onProgressCallback.called);
     ok(!secondary.connect.called);
     primary.setStateForTesting(remoting.SignalStrategy.State.CONNECTING, true);
     primary.setStateForTesting(remoting.SignalStrategy.State.FAILED, false);
     ok(secondary.connect.calledWith('server', 'username', 'authToken'));
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.PRIMARY_FAILED);
     secondary.setStateForTesting(remoting.SignalStrategy.State.NOT_CONNECTED,
                                  false);
     primary.setStateForTesting(remoting.SignalStrategy.State.CONNECTING, false);
     secondary.setStateForTesting(remoting.SignalStrategy.State.FAILED, true);
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.SECONDARY_FAILED);
   }
 );
 
@@ -219,23 +230,26 @@ test('primary times out; secondary succeeds',
     primary.setStateForTesting(remoting.SignalStrategy.State.CONNECTING, true);
     this.clock.tick(strategy.PRIMARY_CONNECT_TIMEOUT_MS_ - 1);
     ok(!secondary.connect.called);
-    ok(!onProgressCallback.called);
     this.clock.tick(1);
     ok(secondary.connect.calledWith('server', 'username', 'authToken'));
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.PRIMARY_TIMED_OUT);
     secondary.setStateForTesting(remoting.SignalStrategy.State.NOT_CONNECTED,
                                  false);
     secondary.setStateForTesting(remoting.SignalStrategy.State.CONNECTING,
                                  false);
     secondary.setStateForTesting(remoting.SignalStrategy.State.HANDSHAKE, true);
     secondary.setStateForTesting(remoting.SignalStrategy.State.CONNECTED, true);
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.SECONDARY_SUCCEEDED);
+    strategy.sendConnectionSetupResults(logToServer);
+
     secondary.setStateForTesting(remoting.SignalStrategy.State.CLOSED, true);
     primary.setStateForTesting(remoting.SignalStrategy.State.FAILED, false);
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.PRIMARY_FAILED_LATE);
+
+    logToServer.assertProgress(
+        remoting.SignalStrategy.Type.XMPP,
+        remoting.FallbackSignalStrategy.Progress.TIMED_OUT,
+        remoting.SignalStrategy.Type.WCS,
+        remoting.FallbackSignalStrategy.Progress.SUCCEEDED,
+        remoting.SignalStrategy.Type.XMPP,
+        remoting.FallbackSignalStrategy.Progress.FAILED_LATE);
   }
 );
 
@@ -251,18 +265,13 @@ test('primary times out; secondary fails',
     primary.setStateForTesting(remoting.SignalStrategy.State.CONNECTING, true);
     this.clock.tick(strategy.PRIMARY_CONNECT_TIMEOUT_MS_ - 1);
     ok(!secondary.connect.called);
-    ok(!onProgressCallback.called);
     this.clock.tick(1);
     ok(secondary.connect.calledWith('server', 'username', 'authToken'));
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.PRIMARY_TIMED_OUT);
     secondary.setStateForTesting(remoting.SignalStrategy.State.NOT_CONNECTED,
                                  false);
     secondary.setStateForTesting(remoting.SignalStrategy.State.CONNECTING,
                                  false);
     secondary.setStateForTesting(remoting.SignalStrategy.State.FAILED, true);
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.SECONDARY_FAILED);
   }
 );
 
@@ -278,20 +287,24 @@ test('primary times out; secondary succeeds; primary succeeds late',
     primary.setStateForTesting(remoting.SignalStrategy.State.CONNECTING, true);
     this.clock.tick(strategy.PRIMARY_CONNECT_TIMEOUT_MS_);
     ok(secondary.connect.calledWith('server', 'username', 'authToken'));
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.PRIMARY_TIMED_OUT);
     secondary.setStateForTesting(remoting.SignalStrategy.State.NOT_CONNECTED,
                                  false);
     secondary.setStateForTesting(remoting.SignalStrategy.State.CONNECTING,
                                  false);
     secondary.setStateForTesting(remoting.SignalStrategy.State.HANDSHAKE, true);
     secondary.setStateForTesting(remoting.SignalStrategy.State.CONNECTED, true);
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.SECONDARY_SUCCEEDED);
+    strategy.sendConnectionSetupResults(logToServer);
+
     primary.setStateForTesting(remoting.SignalStrategy.State.HANDSHAKE, false);
     primary.setStateForTesting(remoting.SignalStrategy.State.CONNECTED, false);
-    this.assertProgress(
-        remoting.FallbackSignalStrategy.Progress.PRIMARY_SUCCEEDED_LATE);
+
+    logToServer.assertProgress(
+        remoting.SignalStrategy.Type.XMPP,
+        remoting.FallbackSignalStrategy.Progress.TIMED_OUT,
+        remoting.SignalStrategy.Type.WCS,
+        remoting.FallbackSignalStrategy.Progress.SUCCEEDED,
+        remoting.SignalStrategy.Type.XMPP,
+        remoting.FallbackSignalStrategy.Progress.SUCCEEDED_LATE);
   }
 );
 

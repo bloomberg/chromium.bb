@@ -35,6 +35,15 @@ remoting.SignalStrategy.State = {
   CLOSED: 5
 };
 
+/**
+ * @enum {string} SignalStrategy types. Do not add to these values without
+ *     updating the corresponding enum in chromoting_extensions.proto.
+ */
+remoting.SignalStrategy.Type = {
+  XMPP: 'xmpp',
+  WCS: 'wcs'
+};
+
 remoting.SignalStrategy.prototype.dispose = function() {};
 
 /**
@@ -66,6 +75,16 @@ remoting.SignalStrategy.prototype.connect =
  */
 remoting.SignalStrategy.prototype.sendMessage = function(message) {};
 
+/**
+ * Send any messages accumulated during connection set-up.
+ *
+ * @param {remoting.LogToServer} logToServer The LogToServer instance for the
+ *     connection.
+ */
+remoting.SignalStrategy.prototype.sendConnectionSetupResults =
+    function(logToServer) {
+};
+
 /** @return {remoting.SignalStrategy.State} Current state */
 remoting.SignalStrategy.prototype.getState = function() {};
 
@@ -74,6 +93,9 @@ remoting.SignalStrategy.prototype.getError = function() {};
 
 /** @return {string} Current JID when in CONNECTED state. */
 remoting.SignalStrategy.prototype.getJid = function() {};
+
+/** @return {remoting.SignalStrategy.Type} The signal strategy type. */
+remoting.SignalStrategy.prototype.getType = function() {};
 
 /**
  * Creates the appropriate signal strategy for the current environment.
@@ -92,8 +114,7 @@ remoting.SignalStrategy.create = function() {
     };
 
     return new remoting.FallbackSignalStrategy(new remoting.XmppConnection(),
-                                               new remoting.WcsAdapter(),
-                                               progressCallback);
+                                               new remoting.WcsAdapter());
 
   } else {
     return new remoting.WcsAdapter();

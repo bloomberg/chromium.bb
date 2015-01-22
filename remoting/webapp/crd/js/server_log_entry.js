@@ -29,6 +29,9 @@ remoting.ServerLogEntry.KEY_EVENT_NAME_ = 'event-name';
 /** @private */
 remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_ = 'session-state';
 /** @private */
+remoting.ServerLogEntry.VALUE_EVENT_NAME_SIGNAL_STRATEGY_PROGRESS_ =
+    'signal-strategy-progress';
+/** @private */
 remoting.ServerLogEntry.KEY_SESSION_ID_ = 'session-id';
 /** @private */
 remoting.ServerLogEntry.KEY_ROLE_ = 'role';
@@ -38,13 +41,21 @@ remoting.ServerLogEntry.VALUE_ROLE_CLIENT_ = 'client';
 remoting.ServerLogEntry.KEY_SESSION_STATE_ = 'session-state';
 /** @private */
 remoting.ServerLogEntry.KEY_CONNECTION_TYPE_ = 'connection-type';
+/** @private */
+remoting.ServerLogEntry.KEY_SIGNAL_STRATEGY_TYPE_ = 'signal-strategy-type';
+/** @private */
+remoting.ServerLogEntry.KEY_SIGNAL_STRATEGY_PROGRESS_ =
+    'signal-strategy-progress';
+/** @private */
+remoting.ServerLogEntry.KEY_SIGNAL_STRATEGY_ELAPSED_TIME_ =
+    'signal-strategy-elapsed-time';
 
 /**
  * @private
  * @param {remoting.ClientSession.State} state
  * @return {string}
  */
-remoting.ServerLogEntry.getValueForSessionState = function(state) {
+remoting.ServerLogEntry.getValueForSessionState_ = function(state) {
   switch(state) {
     case remoting.ClientSession.State.UNKNOWN:
       return 'unknown';
@@ -77,8 +88,7 @@ remoting.ServerLogEntry.KEY_CONNECTION_ERROR_ = 'connection-error';
  * @param {remoting.Error} connectionError
  * @return {string}
  */
-remoting.ServerLogEntry.getValueForError =
-    function(connectionError) {
+remoting.ServerLogEntry.getValueForError_ = function(connectionError) {
   // Directory service should be updated if a new string is added here as
   // otherwise the error code will be ignored (i.e. recorded as 0 instead).
   switch(connectionError) {
@@ -175,7 +185,7 @@ remoting.ServerLogEntry.VALUE_MODE_UNKNOWN_ = 'unknown';
  * @param {string} key
  * @param {string} value
  */
-remoting.ServerLogEntry.prototype.set = function(key, value) {
+remoting.ServerLogEntry.prototype.set_ = function(key, value) {
   this.dict[key] = value;
 };
 
@@ -217,15 +227,15 @@ remoting.ServerLogEntry.prototype.toDebugLog = function(indentLevel) {
 remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
     connectionError, mode) {
   var entry = new remoting.ServerLogEntry();
-  entry.set(remoting.ServerLogEntry.KEY_ROLE_,
-            remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
-  entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
-            remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_);
-  entry.set(remoting.ServerLogEntry.KEY_SESSION_STATE_,
-            remoting.ServerLogEntry.getValueForSessionState(state));
+  entry.set_(remoting.ServerLogEntry.KEY_ROLE_,
+             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
+  entry.set_(remoting.ServerLogEntry.KEY_EVENT_NAME_,
+             remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_);
+  entry.set_(remoting.ServerLogEntry.KEY_SESSION_STATE_,
+             remoting.ServerLogEntry.getValueForSessionState_(state));
   if (connectionError != remoting.Error.NONE) {
-    entry.set(remoting.ServerLogEntry.KEY_CONNECTION_ERROR_,
-              remoting.ServerLogEntry.getValueForError(connectionError));
+    entry.set_(remoting.ServerLogEntry.KEY_CONNECTION_ERROR_,
+               remoting.ServerLogEntry.getValueForError_(connectionError));
   }
   entry.addModeField(mode);
   return entry;
@@ -238,8 +248,8 @@ remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
  */
 remoting.ServerLogEntry.prototype.addSessionDurationField = function(
     sessionDuration) {
-  this.set(remoting.ServerLogEntry.KEY_SESSION_DURATION_,
-      sessionDuration.toString());
+  this.set_(remoting.ServerLogEntry.KEY_SESSION_DURATION_,
+            sessionDuration.toString());
 };
 
 /**
@@ -255,32 +265,32 @@ remoting.ServerLogEntry.makeStats = function(statsAccumulator,
                                              connectionType,
                                              mode) {
   var entry = new remoting.ServerLogEntry();
-  entry.set(remoting.ServerLogEntry.KEY_ROLE_,
-            remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
-  entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
-            remoting.ServerLogEntry.VALUE_EVENT_NAME_CONNECTION_STATISTICS_);
+  entry.set_(remoting.ServerLogEntry.KEY_ROLE_,
+             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
+  entry.set_(remoting.ServerLogEntry.KEY_EVENT_NAME_,
+             remoting.ServerLogEntry.VALUE_EVENT_NAME_CONNECTION_STATISTICS_);
   if (connectionType) {
-    entry.set(remoting.ServerLogEntry.KEY_CONNECTION_TYPE_,
-              connectionType);
+    entry.set_(remoting.ServerLogEntry.KEY_CONNECTION_TYPE_,
+               connectionType);
   }
   entry.addModeField(mode);
   var nonZero = false;
-  nonZero |= entry.addStatsField(
+  nonZero |= entry.addStatsField_(
       remoting.ServerLogEntry.KEY_VIDEO_BANDWIDTH_,
       remoting.ClientSession.STATS_KEY_VIDEO_BANDWIDTH, statsAccumulator);
-  nonZero |= entry.addStatsField(
+  nonZero |= entry.addStatsField_(
       remoting.ServerLogEntry.KEY_CAPTURE_LATENCY_,
       remoting.ClientSession.STATS_KEY_CAPTURE_LATENCY, statsAccumulator);
-  nonZero |= entry.addStatsField(
+  nonZero |= entry.addStatsField_(
       remoting.ServerLogEntry.KEY_ENCODE_LATENCY_,
       remoting.ClientSession.STATS_KEY_ENCODE_LATENCY, statsAccumulator);
-  nonZero |= entry.addStatsField(
+  nonZero |= entry.addStatsField_(
       remoting.ServerLogEntry.KEY_DECODE_LATENCY_,
       remoting.ClientSession.STATS_KEY_DECODE_LATENCY, statsAccumulator);
-  nonZero |= entry.addStatsField(
+  nonZero |= entry.addStatsField_(
       remoting.ServerLogEntry.KEY_RENDER_LATENCY_,
       remoting.ClientSession.STATS_KEY_RENDER_LATENCY, statsAccumulator);
-  nonZero |= entry.addStatsField(
+  nonZero |= entry.addStatsField_(
       remoting.ServerLogEntry.KEY_ROUNDTRIP_LATENCY_,
       remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY, statsAccumulator);
   if (nonZero) {
@@ -298,10 +308,10 @@ remoting.ServerLogEntry.makeStats = function(statsAccumulator,
  * @param {remoting.StatsAccumulator} statsAccumulator
  * @return {boolean} whether the statistic is non-zero
  */
-remoting.ServerLogEntry.prototype.addStatsField = function(
+remoting.ServerLogEntry.prototype.addStatsField_ = function(
     entryKey, statsKey, statsAccumulator) {
   var val = statsAccumulator.calcMean(statsKey);
-  this.set(entryKey, val.toFixed(2));
+  this.set_(entryKey, val.toFixed(2));
   return (val != 0);
 };
 
@@ -314,10 +324,10 @@ remoting.ServerLogEntry.prototype.addStatsField = function(
  */
 remoting.ServerLogEntry.makeSessionIdOld = function(sessionId, mode) {
   var entry = new remoting.ServerLogEntry();
-  entry.set(remoting.ServerLogEntry.KEY_ROLE_,
-            remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
-  entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
-            remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_OLD_);
+  entry.set_(remoting.ServerLogEntry.KEY_ROLE_,
+             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
+  entry.set_(remoting.ServerLogEntry.KEY_EVENT_NAME_,
+             remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_OLD_);
   entry.addSessionIdField(sessionId);
   entry.addModeField(mode);
   return entry;
@@ -332,12 +342,38 @@ remoting.ServerLogEntry.makeSessionIdOld = function(sessionId, mode) {
  */
 remoting.ServerLogEntry.makeSessionIdNew = function(sessionId, mode) {
   var entry = new remoting.ServerLogEntry();
-  entry.set(remoting.ServerLogEntry.KEY_ROLE_,
-            remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
-  entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
-            remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_NEW_);
+  entry.set_(remoting.ServerLogEntry.KEY_ROLE_,
+             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
+  entry.set_(remoting.ServerLogEntry.KEY_EVENT_NAME_,
+             remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_NEW_);
   entry.addSessionIdField(sessionId);
   entry.addModeField(mode);
+  return entry;
+};
+
+/**
+ * Makes a log entry for a "signal strategy fallback" event.
+ *
+ * @param {string} sessionId
+ * @param {remoting.SignalStrategy.Type} strategyType
+ * @param {remoting.FallbackSignalStrategy.Progress} progress
+ * @param {number} elapsedTimeInMs
+ * @return {remoting.ServerLogEntry}
+ */
+remoting.ServerLogEntry.makeSignalStrategyProgress =
+    function(sessionId, strategyType, progress, elapsedTimeInMs) {
+  var entry = new remoting.ServerLogEntry();
+  entry.set_(remoting.ServerLogEntry.KEY_ROLE_,
+             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
+  entry.set_(
+      remoting.ServerLogEntry.KEY_EVENT_NAME_,
+      remoting.ServerLogEntry.VALUE_EVENT_NAME_SIGNAL_STRATEGY_PROGRESS_);
+  entry.addSessionIdField(sessionId);
+  entry.set_(remoting.ServerLogEntry.KEY_SIGNAL_STRATEGY_TYPE_, strategyType);
+  entry.set_(remoting.ServerLogEntry.KEY_SIGNAL_STRATEGY_PROGRESS_, progress);
+  entry.set_(remoting.ServerLogEntry.KEY_SIGNAL_STRATEGY_ELAPSED_TIME_,
+             String(elapsedTimeInMs));
+
   return entry;
 };
 
@@ -347,23 +383,23 @@ remoting.ServerLogEntry.makeSessionIdNew = function(sessionId, mode) {
  * @param {string} sessionId
  */
 remoting.ServerLogEntry.prototype.addSessionIdField = function(sessionId) {
-  this.set(remoting.ServerLogEntry.KEY_SESSION_ID_, sessionId);
+  this.set_(remoting.ServerLogEntry.KEY_SESSION_ID_, sessionId);
 }
 
 /**
  * Adds fields describing the host to this log entry.
  */
 remoting.ServerLogEntry.prototype.addHostFields = function() {
-  var host = remoting.ServerLogEntry.getHostData();
+  var host = remoting.ServerLogEntry.getHostData_();
   if (host) {
     if (host.os_name.length > 0) {
-      this.set(remoting.ServerLogEntry.KEY_OS_NAME_, host.os_name);
+      this.set_(remoting.ServerLogEntry.KEY_OS_NAME_, host.os_name);
     }
     if (host.os_version.length > 0) {
-      this.set(remoting.ServerLogEntry.KEY_OS_VERSION_, host.os_version);
+      this.set_(remoting.ServerLogEntry.KEY_OS_VERSION_, host.os_version);
     }
     if (host.cpu.length > 0) {
-      this.set(remoting.ServerLogEntry.KEY_CPU_, host.cpu);
+      this.set_(remoting.ServerLogEntry.KEY_CPU_, host.cpu);
     }
   }
 };
@@ -374,8 +410,8 @@ remoting.ServerLogEntry.prototype.addHostFields = function() {
  * @private
  * @return {{os_name:string, os_version:string, cpu:string} | null}
  */
-remoting.ServerLogEntry.getHostData = function() {
-  return remoting.ServerLogEntry.extractHostDataFrom(navigator.userAgent);
+remoting.ServerLogEntry.getHostData_ = function() {
+  return remoting.ServerLogEntry.extractHostDataFrom_(navigator.userAgent);
 };
 
 /**
@@ -385,7 +421,7 @@ remoting.ServerLogEntry.getHostData = function() {
  * @param {string} s
  * @return {{os_name:string, os_version:string, cpu:string} | null}
  */
-remoting.ServerLogEntry.extractHostDataFrom = function(s) {
+remoting.ServerLogEntry.extractHostDataFrom_ = function(s) {
   // Sample userAgent strings:
   // 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 ' +
   //   '(KHTML, like Gecko) Chrome/15.0.874.106 Safari/535.2'
@@ -436,7 +472,7 @@ remoting.ServerLogEntry.extractHostDataFrom = function(s) {
 remoting.ServerLogEntry.prototype.addChromeVersionField = function() {
   var version = remoting.getChromeVersion();
   if (version != null) {
-    this.set(remoting.ServerLogEntry.KEY_BROWSER_VERSION_, version);
+    this.set_(remoting.ServerLogEntry.KEY_BROWSER_VERSION_, version);
   }
 };
 
@@ -446,7 +482,7 @@ remoting.ServerLogEntry.prototype.addChromeVersionField = function() {
 remoting.ServerLogEntry.prototype.addWebappVersionField = function() {
   var manifest = chrome.runtime.getManifest();
   if (manifest && manifest.version) {
-    this.set(remoting.ServerLogEntry.KEY_WEBAPP_VERSION_, manifest.version);
+    this.set_(remoting.ServerLogEntry.KEY_WEBAPP_VERSION_, manifest.version);
   }
 };
 
@@ -456,8 +492,8 @@ remoting.ServerLogEntry.prototype.addWebappVersionField = function() {
  * @param {remoting.ClientSession.Mode} mode
  */
 remoting.ServerLogEntry.prototype.addModeField = function(mode) {
-  this.set(remoting.ServerLogEntry.KEY_MODE_,
-      remoting.ServerLogEntry.getModeField(mode));
+  this.set_(remoting.ServerLogEntry.KEY_MODE_,
+            remoting.ServerLogEntry.getModeField_(mode));
 };
 
 /**
@@ -467,7 +503,7 @@ remoting.ServerLogEntry.prototype.addModeField = function(mode) {
  * @param {remoting.ClientSession.Mode} mode
  * @return {string}
  */
-remoting.ServerLogEntry.getModeField = function(mode) {
+remoting.ServerLogEntry.getModeField_ = function(mode) {
   switch(mode) {
     case remoting.ClientSession.Mode.IT2ME:
       return remoting.ServerLogEntry.VALUE_MODE_IT2ME_;

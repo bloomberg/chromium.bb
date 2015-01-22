@@ -14,15 +14,12 @@ var remoting = remoting || {};
  *
  * @param {remoting.SignalStrategy} primary
  * @param {remoting.SignalStrategy} secondary
- * @param {function(remoting.FallbackSignalStrategy.Progress)}
- *     onProgressCallback
  *
  * @implements {remoting.SignalStrategy}
  * @constructor
  */
 remoting.FallbackSignalStrategy = function(primary,
-                                           secondary,
-                                           onProgressCallback) {
+                                           secondary) {
   /**
    * @type {remoting.SignalStrategy}
    * @private
@@ -43,12 +40,6 @@ remoting.FallbackSignalStrategy = function(primary,
    * @private
    */
   this.onStateChangedCallback_ = null;
-
-  /**
-   * @type {function(remoting.FallbackSignalStrategy.Progress)}
-   * @private
-   */
-  this.onProgressCallback_ = onProgressCallback;
 
   /**
    * @type {?function(Element):void}
@@ -112,19 +103,36 @@ remoting.FallbackSignalStrategy = function(primary,
    * @private
    */
   this.primaryConnectTimerId_ = 0;
+
+  /**
+   * @type {remoting.LogToServer}
+   * @private
+   */
+  this.logToServer_ = null;
+
+  /**
+   * @type {Array.<{strategyType: remoting.SignalStrategy.Type,
+                    progress: remoting.FallbackSignalStrategy.Progress,
+   *                elapsed: number}>}
+   */
+  this.connectionSetupResults_ = [];
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.startTime_ = 0;
 };
 
 /**
  * @enum {string}
  */
 remoting.FallbackSignalStrategy.Progress = {
-  PRIMARY_SUCCEEDED: 'primary-succeeded',
-  PRIMARY_FAILED: 'primary-failed',
-  PRIMARY_TIMED_OUT: 'primary-timed-out',
-  PRIMARY_SUCCEEDED_LATE: 'primary-succeeded-late',
-  PRIMARY_FAILED_LATE: 'primary-failed-late',
-  SECONDARY_SUCCEEDED: 'secondary-succeeded',
-  SECONDARY_FAILED: 'secondary-failed'
+  SUCCEEDED: 'succeeded',
+  FAILED: 'failed',
+  TIMED_OUT: 'timed-out',
+  SUCCEEDED_LATE: 'succeeded-late',
+  FAILED_LATE: 'failed-late',
 };
 
 remoting.FallbackSignalStrategy.prototype.dispose = function() {
@@ -170,6 +178,7 @@ remoting.FallbackSignalStrategy.prototype.connect =
   this.username_ = username;
   this.authToken_ = authToken;
   this.state_ = this.State.PRIMARY_PENDING;
+  this.startTime_ = new Date().getTime();
   this.primary_.setIncomingStanzaCallback(this.onIncomingStanzaCallback_);
   this.primary_.connect(server, username, authToken);
   this.primaryConnectTimerId_ =
@@ -183,6 +192,29 @@ remoting.FallbackSignalStrategy.prototype.connect =
  */
 remoting.FallbackSignalStrategy.prototype.sendMessage = function(message) {
   this.getConnectedSignalStrategy_().sendMessage(message);
+};
+
+/**
+ * Send any messages accumulated during connection set-up.
+ *
+ * @param {remoting.LogToServer} logToServer The LogToServer instance for the
+ *     connection.
+ */
+remoting.FallbackSignalStrategy.prototype.sendConnectionSetupResults =
+    function(logToServer) {
+  this.logToServer_ = logToServer;
+  this.sendConnectionSetupResultsInternal_();
+}
+
+remoting.FallbackSignalStrategy.prototype.sendConnectionSetupResultsInternal_ =
+    function() {
+  for (var i = 0; i < this.connectionSetupResults_.length; ++i) {
+    var result = this.connectionSetupResults_[i];
+    this.logToServer_.logSignalStrategyProgress(result.strategyType,
+                                                result.progress,
+                                                result.elapsed);
+  }
+  this.connectionSetupResults_ = [];
 };
 
 /** @return {remoting.SignalStrategy.State} Current state */
@@ -203,6 +235,11 @@ remoting.FallbackSignalStrategy.prototype.getError = function() {
 /** @return {string} Current JID when in CONNECTED state. */
 remoting.FallbackSignalStrategy.prototype.getJid = function() {
   return this.getConnectedSignalStrategy_().getJid();
+};
+
+/** @return {remoting.SignalStrategy.Type} The signal strategy type. */
+remoting.FallbackSignalStrategy.prototype.getType = function() {
+  return this.getConnectedSignalStrategy_().getType();
 };
 
 /**
@@ -238,24 +275,28 @@ remoting.FallbackSignalStrategy.prototype.onPrimaryStateChanged_ =
     case remoting.SignalStrategy.State.CONNECTED:
       if (this.state_ == this.State.PRIMARY_PENDING) {
         window.clearTimeout(this.primaryConnectTimerId_);
-        this.onProgressCallback_(
-            remoting.FallbackSignalStrategy.Progress.PRIMARY_SUCCEEDED);
+        this.updateProgress_(
+            this.primary_,
+            remoting.FallbackSignalStrategy.Progress.SUCCEEDED);
         this.state_ = this.State.PRIMARY_SUCCEEDED;
       } else {
-        this.onProgressCallback_(
-            remoting.FallbackSignalStrategy.Progress.PRIMARY_SUCCEEDED_LATE);
+        this.updateProgress_(
+            this.primary_,
+            remoting.FallbackSignalStrategy.Progress.SUCCEEDED_LATE);
       }
       break;
 
     case remoting.SignalStrategy.State.FAILED:
       if (this.state_ == this.State.PRIMARY_PENDING) {
         window.clearTimeout(this.primaryConnectTimerId_);
-        this.onProgressCallback_(
-            remoting.FallbackSignalStrategy.Progress.PRIMARY_FAILED);
+        this.updateProgress_(
+            this.primary_,
+            remoting.FallbackSignalStrategy.Progress.FAILED);
         this.connectSecondary_();
       } else {
-        this.onProgressCallback_(
-            remoting.FallbackSignalStrategy.Progress.PRIMARY_FAILED_LATE);
+        this.updateProgress_(
+            this.primary_,
+            remoting.FallbackSignalStrategy.Progress.FAILED_LATE);
       }
       return;  // Don't notify the external callback
 
@@ -275,14 +316,16 @@ remoting.FallbackSignalStrategy.prototype.onSecondaryStateChanged_ =
     function(state) {
   switch (state) {
     case remoting.SignalStrategy.State.CONNECTED:
-      this.onProgressCallback_(
-          remoting.FallbackSignalStrategy.Progress.SECONDARY_SUCCEEDED);
+      this.updateProgress_(
+          this.secondary_,
+          remoting.FallbackSignalStrategy.Progress.SUCCEEDED);
       this.state_ = this.State.SECONDARY_SUCCEEDED;
       break;
 
     case remoting.SignalStrategy.State.FAILED:
-      this.onProgressCallback_(
-          remoting.FallbackSignalStrategy.Progress.SECONDARY_FAILED);
+      this.updateProgress_(
+          this.secondary_,
+          remoting.FallbackSignalStrategy.Progress.FAILED);
       this.state_ = this.State.SECONDARY_FAILED;
       break;
 
@@ -331,7 +374,27 @@ remoting.FallbackSignalStrategy.prototype.connectSecondary_ = function() {
  * @private
  */
 remoting.FallbackSignalStrategy.prototype.onPrimaryTimeout_ = function() {
-  this.onProgressCallback_(
-      remoting.FallbackSignalStrategy.Progress.PRIMARY_TIMED_OUT);
+  this.updateProgress_(
+      this.primary_,
+      remoting.FallbackSignalStrategy.Progress.TIMED_OUT);
   this.connectSecondary_();
+};
+
+/**
+ * @param {remoting.SignalStrategy} strategy
+ * @param {remoting.FallbackSignalStrategy.Progress} progress
+ * @private
+ */
+remoting.FallbackSignalStrategy.prototype.updateProgress_ = function(
+    strategy, progress) {
+  console.log('FallbackSignalStrategy progress: ' + strategy.getType() + ' ' +
+      progress);
+  this.connectionSetupResults_.push({
+    'strategyType': strategy.getType(),
+    'progress': progress,
+    'elapsed': new Date().getTime() - this.startTime_
+  });
+  if (this.logToServer_) {
+    this.sendConnectionSetupResultsInternal_();
+  }
 };
