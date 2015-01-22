@@ -32,6 +32,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "components/user_manager/user_manager.h"
 #include "grit/keyboard_resources.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -85,6 +86,12 @@ LoadManifestOnFileThread(
       chromevox_path, manifest.get(), &error);
   CHECK(localized) << error;
   return manifest.Pass();
+}
+
+bool IsNormalSession() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kGuestSession) &&
+         user_manager::UserManager::Get()->IsUserLoggedIn();
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -356,12 +363,9 @@ void ComponentLoader::AddChromeVoxExtension(
   base::FilePath chromevox_path =
       resources_path.Append(extension_misc::kChromeVoxExtensionPath);
 
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  bool is_guest = command_line->HasSwitch(chromeos::switches::kGuestSession);
   const char* manifest_filename =
-      is_guest ? extension_misc::kChromeVoxGuestManifestFilename
-               : extension_misc::kChromeVoxManifestFilename;
+      IsNormalSession() ? extension_misc::kChromeVoxManifestFilename
+                        : extension_misc::kChromeVoxGuestManifestFilename;
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,
@@ -385,10 +389,8 @@ void ComponentLoader::AddChromeVoxExtensionWithManifest(
 }
 
 std::string ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  int idr = command_line->HasSwitch(chromeos::switches::kGuestSession) ?
-      IDR_SPEECH_SYNTHESIS_GUEST_MANIFEST : IDR_SPEECH_SYNTHESIS_MANIFEST;
+  int idr = IsNormalSession() ? IDR_SPEECH_SYNTHESIS_MANIFEST
+                              : IDR_SPEECH_SYNTHESIS_GUEST_MANIFEST;
   std::string id = Add(idr,
       base::FilePath(extension_misc::kSpeechSynthesisExtensionPath));
   EnableFileSystemInGuestMode(id);
@@ -645,9 +647,7 @@ void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
 
 void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {
 #if defined(OS_CHROMEOS)
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+  if (!IsNormalSession()) {
     // TODO(dpolukhin): Hack to enable HTML5 temporary file system for
     // the extension. Some component extensions don't work without temporary
     // file system access. Make sure temporary file system is enabled in the off
