@@ -76,7 +76,7 @@ private:
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    OwnPtr<WorkerScriptDebugServer> m_debugServer;
+    OwnPtrWillBeMember<WorkerScriptDebugServer> m_debugServer;
     InspectorAgentRegistry m_agents;
     OwnPtr<InspectorFrontendChannel> m_frontendChannel;
     OwnPtr<InspectorFrontend> m_frontend;

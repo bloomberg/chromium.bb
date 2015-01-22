@@ -39,7 +39,7 @@ namespace InspectorInstrumentation {
 
 bool isDebuggerPausedImpl(InstrumentingAgents*);
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
-PassOwnPtr<ScriptSourceCode> preprocessImpl(InstrumentingAgents*, LocalFrame*, const ScriptSourceCode&);
+ScriptSourceCode preprocessImpl(InstrumentingAgents*, LocalFrame*, const ScriptSourceCode&);
 String preprocessEventListenerImpl(InstrumentingAgents*, LocalFrame*, const String& source, const String& url, const String& functionName);
 void appendAsyncCallStack(ExecutionContext*, ScriptCallStack*);
 
@@ -70,16 +70,16 @@ inline String preprocessEventListener(LocalFrame* frame, const String& source, c
     return source;
 }
 
-inline PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
+inline ScriptSourceCode preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
 {
-    FAST_RETURN_IF_NO_FRONTENDS(PassOwnPtr<ScriptSourceCode>());
+    FAST_RETURN_IF_NO_FRONTENDS(ScriptSourceCode());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(frame))
         return preprocessImpl(instrumentingAgents, frame, sourceCode);
-    return PassOwnPtr<ScriptSourceCode>();
+    return ScriptSourceCode();
 }
 
 } // namespace InspectorInstrumentation
 
 } // namespace blink
 
-#endif // !defined(InspectorInstrumentationCustom_inl_h)
+#endif // InspectorInstrumentationCustom_inl_h

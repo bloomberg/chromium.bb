@@ -65,6 +65,7 @@ PageDebuggerAgent::~PageDebuggerAgent()
 
 void PageDebuggerAgent::trace(Visitor* visitor)
 {
+    visitor->trace(m_pageScriptDebugServer);
     visitor->trace(m_pageAgent);
     InspectorDebuggerAgent::trace(visitor);
 }

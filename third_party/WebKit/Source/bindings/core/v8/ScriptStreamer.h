@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptStreamingMode.h"
 #include "core/dom/PendingScript.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 #include <v8.h>
@@ -28,9 +29,17 @@ class SourceStream;
 // streaming. It is possible, though, that Document and the PendingScript are
 // destroyed while the streaming is in progress, and ScriptStreamer handles it
 // gracefully.
-class ScriptStreamer : public RefCounted<ScriptStreamer> {
+class ScriptStreamer final : public RefCountedWillBeRefCountedGarbageCollected<ScriptStreamer> {
     WTF_MAKE_NONCOPYABLE(ScriptStreamer);
 public:
+    static PassRefPtrWillBeRawPtr<ScriptStreamer> create(ScriptResource* resource, PendingScript::Type scriptType, ScriptStreamingMode mode, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions)
+    {
+        return adoptRefWillBeNoop(new ScriptStreamer(resource, scriptType, mode, scriptState, compileOptions));
+    }
+
+    ~ScriptStreamer();
+    void trace(Visitor*);
+
     // Launches a task (on a background thread) which will stream the given
     // PendingScript into V8 as it loads. It's also possible that V8 cannot
     // stream the given script; in that case this function returns
@@ -122,7 +131,7 @@ private:
     // This pointer is weak. If PendingScript and its Resource are deleted
     // before ScriptStreamer, PendingScript will notify ScriptStreamer of its
     // deletion by calling cancel().
-    ScriptResource* m_resource;
+    RawPtrWillBeMember<ScriptResource> m_resource;
     // Whether ScriptStreamer is detached from the Resource. In those cases, the
     // script data is not needed any more, and the client won't get notified
     // when the loading and streaming are done.

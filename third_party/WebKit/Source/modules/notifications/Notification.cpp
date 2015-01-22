@@ -40,6 +40,7 @@
 #include "core/frame/UseCounter.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/notifications/NotificationPermissionClient.h"
+#include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebNotificationData.h"
 #include "public/platform/WebNotificationManager.h"

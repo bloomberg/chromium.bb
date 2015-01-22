@@ -412,7 +412,7 @@ void ScriptStreamer::notifyFinished(Resource* resource)
 
     // Calling notifyFinishedToClient can result into the upper layers dropping
     // references to ScriptStreamer. Keep it alive until this function ends.
-    RefPtr<ScriptStreamer> protect(this);
+    RefPtrWillBeRawPtr<ScriptStreamer> protect(this);
 
     notifyFinishedToClient();
 
@@ -441,6 +441,15 @@ ScriptStreamer::ScriptStreamer(ScriptResource* resource, PendingScript::Type scr
     , m_mainThreadWaitingForParserThread(false)
     , m_encoding(v8::ScriptCompiler::StreamedSource::TWO_BYTE) // Unfortunately there's no dummy encoding value in the enum; let's use one we don't stream.
 {
+}
+
+ScriptStreamer::~ScriptStreamer()
+{
+}
+
+void ScriptStreamer::trace(Visitor* visitor)
+{
+    visitor->trace(m_resource);
 }
 
 void ScriptStreamer::streamingComplete()
@@ -544,7 +553,7 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* set
     // The Resource might go out of scope if the script is no longer
     // needed. This makes PendingScript notify the ScriptStreamer when it is
     // destroyed.
-    script.setStreamer(adoptRef(new ScriptStreamer(resource, scriptType, settings->v8ScriptStreamingMode(), scriptState, compileOption)));
+    script.setStreamer(ScriptStreamer::create(resource, scriptType, settings->v8ScriptStreamingMode(), scriptState, compileOption));
 
     return true;
 }

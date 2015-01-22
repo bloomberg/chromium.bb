@@ -95,7 +95,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(m_stateClient.get())))
     , m_instrumentingAgents(InstrumentingAgents::create())
     , m_injectedScriptManager(InjectedScriptManager::createForWorker())
-    , m_debugServer(adoptPtr(new WorkerScriptDebugServer(workerGlobalScope)))
+    , m_debugServer(WorkerScriptDebugServer::create(workerGlobalScope))
     , m_agents(m_instrumentingAgents.get(), m_state.get())
 {
     m_agents.append(WorkerRuntimeAgent::create(m_injectedScriptManager.get(), m_debugServer.get(), workerGlobalScope));
@@ -189,6 +189,7 @@ void WorkerInspectorController::trace(Visitor* visitor)
     visitor->trace(m_state);
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_injectedScriptManager);
+    visitor->trace(m_debugServer);
     visitor->trace(m_backendDispatcher);
     visitor->trace(m_agents);
     visitor->trace(m_workerDebuggerAgent);

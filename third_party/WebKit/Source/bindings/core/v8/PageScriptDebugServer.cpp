@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptPreprocessor.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
@@ -77,16 +78,16 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> co
 void PageScriptDebugServer::setPreprocessorSource(const String& preprocessorSource)
 {
     if (preprocessorSource.isEmpty())
-        m_preprocessorSourceCode.clear();
+        m_preprocessorSourceCode = ScriptSourceCode();
     else
-        m_preprocessorSourceCode = adoptPtr(new ScriptSourceCode(preprocessorSource));
+        m_preprocessorSourceCode = ScriptSourceCode(preprocessorSource);
     m_scriptPreprocessor.clear();
 }
 
 PageScriptDebugServer& PageScriptDebugServer::shared()
 {
-    DEFINE_STATIC_LOCAL(PageScriptDebugServer, server, ());
-    return server;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<PageScriptDebugServer>, server, (adoptPtrWillBeNoop(new PageScriptDebugServer())));
+    return *server;
 }
 
 v8::Isolate* PageScriptDebugServer::s_mainThreadIsolate = 0;
@@ -98,12 +99,23 @@ void PageScriptDebugServer::setMainThreadIsolate(v8::Isolate* isolate)
 
 PageScriptDebugServer::PageScriptDebugServer()
     : ScriptDebugServer(s_mainThreadIsolate)
-    , m_pausedPage(0)
+    , m_pausedPage(nullptr)
+    , m_preprocessorSourceCode()
 {
 }
 
 PageScriptDebugServer::~PageScriptDebugServer()
 {
+}
+
+void PageScriptDebugServer::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_listenersMap);
+    visitor->trace(m_pausedPage);
+    visitor->trace(m_preprocessorSourceCode);
+#endif
+    ScriptDebugServer::trace(visitor);
 }
 
 void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* page)
@@ -270,14 +282,14 @@ bool PageScriptDebugServer::canPreprocess(LocalFrame* frame)
 {
     ASSERT(frame);
 
-    if (!m_preprocessorSourceCode || !frame->page() || isCreatingPreprocessor)
+    if (m_preprocessorSourceCode.isNull() || !frame->page() || isCreatingPreprocessor)
         return false;
 
     // We delay the creation of the preprocessor until just before the first JS from the
     // Web page to ensure that the debugger's console initialization code has completed.
     if (!m_scriptPreprocessor) {
         TemporaryChange<bool> isPreprocessing(isCreatingPreprocessor, true);
-        m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(m_isolate, *m_preprocessorSourceCode.get(), frame));
+        m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(m_isolate, m_preprocessorSourceCode, frame));
     }
 
     if (m_scriptPreprocessor->isValid())
@@ -285,18 +297,18 @@ bool PageScriptDebugServer::canPreprocess(LocalFrame* frame)
 
     m_scriptPreprocessor.clear();
     // Don't retry the compile if we fail one time.
-    m_preprocessorSourceCode.clear();
+    m_preprocessorSourceCode = ScriptSourceCode();
     return false;
 }
 
 // Source to Source processing iff debugger enabled and it has loaded a preprocessor.
-PassOwnPtr<ScriptSourceCode> PageScriptDebugServer::preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
+ScriptSourceCode PageScriptDebugServer::preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
 {
     if (!canPreprocess(frame))
-        return PassOwnPtr<ScriptSourceCode>();
+        return ScriptSourceCode();
 
     String preprocessedSource = m_scriptPreprocessor->preprocessSourceCode(sourceCode.source(), sourceCode.url());
-    return adoptPtr(new ScriptSourceCode(preprocessedSource, sourceCode.url()));
+    return ScriptSourceCode(preprocessedSource, sourceCode.url());
 }
 
 String PageScriptDebugServer::preprocessEventListener(LocalFrame* frame, const String& source, const String& url, const String& functionName)

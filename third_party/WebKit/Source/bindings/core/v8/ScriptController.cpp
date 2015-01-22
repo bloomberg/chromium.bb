@@ -572,8 +572,8 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     if (frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument())
         frame()->loader().didAccessInitialDocument();
 
-    OwnPtr<ScriptSourceCode> maybeProcessedSourceCode =  InspectorInstrumentation::preprocess(frame(), sourceCode);
-    const ScriptSourceCode& sourceCodeToCompile = maybeProcessedSourceCode ? *maybeProcessedSourceCode : sourceCode;
+    ScriptSourceCode maybeProcessedSourceCode = InspectorInstrumentation::preprocess(frame(), sourceCode);
+    const ScriptSourceCode& sourceCodeToCompile = maybeProcessedSourceCode.isNull() ? sourceCode : maybeProcessedSourceCode;
 
     v8::Local<v8::Value> object = executeScriptAndReturnValue(scriptState->context(), sourceCodeToCompile, corsStatus, compilationFinishTime);
     m_sourceURL = savedSourceURL;
@@ -584,7 +584,7 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     return handleScope.Escape(object);
 }
 
-void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value> >* results)
+void ScriptController::executeScriptInIsolatedWorld(int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value> >* results)
 {
     ASSERT(worldID > 0);
 

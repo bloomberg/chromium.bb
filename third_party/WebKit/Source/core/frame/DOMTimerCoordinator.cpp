@@ -6,6 +6,7 @@
 #include "core/frame/DOMTimerCoordinator.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/DOMTimer.h"
 
 namespace blink {
 
@@ -15,7 +16,7 @@ DOMTimerCoordinator::DOMTimerCoordinator()
 {
 }
 
-int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
+int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context, PassOwnPtrWillBeRawPtr<ScheduledAction> action, int timeout, bool singleShot)
 {
     // FIXME: DOMTimers depends heavily on ExecutionContext. Decouple them.
     ASSERT(context->timers() == this);

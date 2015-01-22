@@ -30,6 +30,7 @@
 #include "bindings/core/v8/PageScriptDebugServer.h"
 #include "bindings/core/v8/ScriptGCEvent.h"
 #include "bindings/core/v8/ScriptProfiler.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"

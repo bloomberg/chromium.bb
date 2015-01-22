@@ -84,6 +84,7 @@
             'ScriptPromiseResolver.h',
             'ScriptRegexp.cpp',
             'ScriptRegexp.h',
+            'ScriptSourceCode.cpp',
             'ScriptSourceCode.h',
             'ScriptState.cpp',
             'ScriptState.h',

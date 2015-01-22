@@ -285,9 +285,9 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
     }
 }
 
-static Vector<ScriptSourceCode> createSourcesVector(const WebScriptSource* sourcesIn, unsigned numSources)
+static WillBeHeapVector<ScriptSourceCode> createSourcesVector(const WebScriptSource* sourcesIn, unsigned numSources)
 {
-    Vector<ScriptSourceCode> sources;
+    WillBeHeapVector<ScriptSourceCode> sources;
     sources.append(sourcesIn, numSources);
     return sources;
 }
@@ -739,7 +739,7 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScrip
     RELEASE_ASSERT(worldID > 0);
     RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
 
-    Vector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
+    WillBeHeapVector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
     v8::HandleScope handleScope(toIsolate(frame()));
     frame()->script().executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
 }
@@ -829,7 +829,7 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScrip
     RELEASE_ASSERT(worldID > 0);
     RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
 
-    Vector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
+    WillBeHeapVector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
 
     if (results) {
         Vector<v8::Local<v8::Value>> scriptResults;

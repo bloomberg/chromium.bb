@@ -131,11 +131,11 @@ bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
     return false;
 }
 
-PassOwnPtr<ScriptSourceCode> preprocessImpl(InstrumentingAgents* instrumentingAgents, LocalFrame* frame, const ScriptSourceCode& sourceCode)
+ScriptSourceCode preprocessImpl(InstrumentingAgents* instrumentingAgents, LocalFrame* frame, const ScriptSourceCode& sourceCode)
 {
     if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
         return debuggerAgent->preprocess(frame, sourceCode);
-    return PassOwnPtr<ScriptSourceCode>();
+    return ScriptSourceCode();
 }
 
 String preprocessEventListenerImpl(InstrumentingAgents* instrumentingAgents, LocalFrame* frame, const String& source, const String& url, const String& functionName)

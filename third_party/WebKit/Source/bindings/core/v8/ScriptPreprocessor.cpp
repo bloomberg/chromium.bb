@@ -54,7 +54,7 @@ ScriptPreprocessor::ScriptPreprocessor(v8::Isolate* isolate, const ScriptSourceC
     ASSERT(frame);
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(true);
-    Vector<ScriptSourceCode> sources;
+    WillBeHeapVector<ScriptSourceCode> sources;
     sources.append(preprocessorSourceCode);
     Vector<v8::Local<v8::Value> > scriptResults;
     frame->script().executeScriptInIsolatedWorld(ScriptPreprocessorIsolatedWorldId, sources, DOMWrapperWorld::mainWorldExtensionGroup, &scriptResults);

@@ -19,7 +19,7 @@ class WebScriptExecutionCallback;
 class SuspendableScriptExecutor final : public RefCountedWillBeRefCountedGarbageCollected<SuspendableScriptExecutor>, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SuspendableScriptExecutor);
 public:
-    static void createAndRun(LocalFrame*, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
+    static void createAndRun(LocalFrame*, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
     virtual ~SuspendableScriptExecutor();
 
     virtual void resume() override;
@@ -28,14 +28,14 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
-    SuspendableScriptExecutor(LocalFrame*, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
+    SuspendableScriptExecutor(LocalFrame*, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
 
     void run();
     void executeAndDestroySelf();
 
     RawPtrWillBeMember<LocalFrame> m_frame;
     int m_worldID;
-    Vector<ScriptSourceCode> m_sources;
+    WillBeHeapVector<ScriptSourceCode> m_sources;
     int m_extensionGroup;
     bool m_userGesture;
     WebScriptExecutionCallback* m_callback;

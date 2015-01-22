@@ -28,6 +28,7 @@
 #include "web/SpellCheckerClientImpl.h"
 
 #include "core/dom/DocumentMarkerController.h"
+#include "core/dom/Element.h"
 #include "core/editing/Editor.h"
 #include "core/editing/SpellChecker.h"
 #include "core/frame/LocalFrame.h"

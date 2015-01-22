@@ -35,6 +35,8 @@
 #include "core/loader/ThreadableLoaderClientWrapper.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
+#include "platform/network/ResourceError.h"
+#include "platform/network/ResourceResponse.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include <limits>

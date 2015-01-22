@@ -6,6 +6,7 @@
 #include "web/SuspendableScriptExecutor.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/UserGestureIndicator.h"
@@ -14,7 +15,7 @@
 
 namespace blink {
 
-void SuspendableScriptExecutor::createAndRun(LocalFrame* frame, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
+void SuspendableScriptExecutor::createAndRun(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
 {
     RefPtrWillBeRawPtr<SuspendableScriptExecutor> executor = adoptRefWillBeNoop(new SuspendableScriptExecutor(frame, worldID, sources, extensionGroup, userGesture, callback));
     executor->run();
@@ -35,7 +36,7 @@ void SuspendableScriptExecutor::contextDestroyed()
     deref();
 }
 
-SuspendableScriptExecutor::SuspendableScriptExecutor(LocalFrame* frame, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
+SuspendableScriptExecutor::SuspendableScriptExecutor(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
     : ActiveDOMObject(frame->document())
     , m_frame(frame)
     , m_worldID(worldID)
@@ -81,7 +82,10 @@ void SuspendableScriptExecutor::executeAndDestroySelf()
 
 void SuspendableScriptExecutor::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_frame);
+    visitor->trace(m_sources);
+#endif
     ActiveDOMObject::trace(visitor);
 }
 

@@ -43,7 +43,7 @@ class DOMTimer final : public RefCountedWillBeGarbageCollectedFinalized<DOMTimer
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
 public:
     // Creates a new timer owned by the ExecutionContext, starts it and returns its ID.
-    static int install(ExecutionContext*, PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
+    static int install(ExecutionContext*, PassOwnPtrWillBeRawPtr<ScheduledAction>, int timeout, bool singleShot);
     static void removeByID(ExecutionContext*, int timeoutID);
 
     virtual ~DOMTimer();
@@ -62,12 +62,12 @@ public:
 private:
     friend class DOMTimerCoordinator; // For create().
 
-    static PassRefPtrWillBeRawPtr<DOMTimer> create(ExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot, int timeoutID)
+    static PassRefPtrWillBeRawPtr<DOMTimer> create(ExecutionContext* context, PassOwnPtrWillBeRawPtr<ScheduledAction> action, int timeout, bool singleShot, int timeoutID)
     {
         return adoptRefWillBeNoop(new DOMTimer(context, action, timeout, singleShot, timeoutID));
     }
 
-    DOMTimer(ExecutionContext*, PassOwnPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
+    DOMTimer(ExecutionContext*, PassOwnPtrWillBeRawPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
     virtual void fired() override;
 
     // Retuns timer fire time rounded to the next multiple of timer alignment interval.
@@ -75,7 +75,7 @@ private:
 
     int m_timeoutID;
     int m_nestingLevel;
-    OwnPtr<ScheduledAction> m_action;
+    OwnPtrWillBeMember<ScheduledAction> m_action;
     RefPtr<UserGestureToken> m_userGestureToken;
 };
 

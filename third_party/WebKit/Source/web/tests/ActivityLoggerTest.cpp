@@ -6,6 +6,7 @@
 
 #include "FrameTestHelpers.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "web/WebLocalFrameImpl.h"
@@ -78,7 +79,7 @@ protected:
     void executeScriptInIsolatedWorld(const String& script) const
     {
         v8::HandleScope scope(v8::Isolate::GetCurrent());
-        Vector<ScriptSourceCode> sources;
+        WillBeHeapVector<ScriptSourceCode> sources;
         sources.append(ScriptSourceCode(script));
         Vector<v8::Local<v8::Value>> results;
         m_scriptController->executeScriptInIsolatedWorld(isolatedWorldId, sources, extensionGroup, 0);

@@ -46,15 +46,20 @@
 
 namespace blink {
 
-PassOwnPtr<ScheduledAction> ScheduledAction::create(ScriptState* scriptState, const ScriptValue& handler, const Vector<ScriptValue>& arguments)
+PassOwnPtrWillBeRawPtr<ScheduledAction> ScheduledAction::create(ScriptState* scriptState, const ScriptValue& handler, const Vector<ScriptValue>& arguments)
 {
     ASSERT(handler.isFunction());
-    return adoptPtr(new ScheduledAction(scriptState, handler, arguments));
+    return adoptPtrWillBeNoop(new ScheduledAction(scriptState, handler, arguments));
 }
 
-PassOwnPtr<ScheduledAction> ScheduledAction::create(ScriptState* scriptState, const String& handler)
+PassOwnPtrWillBeRawPtr<ScheduledAction> ScheduledAction::create(ScriptState* scriptState, const String& handler)
 {
-    return adoptPtr(new ScheduledAction(scriptState, handler));
+    return adoptPtrWillBeNoop(new ScheduledAction(scriptState, handler));
+}
+
+void ScheduledAction::trace(Visitor* visitor)
+{
+    visitor->trace(m_code);
 }
 
 ScheduledAction::~ScheduledAction()

@@ -26,8 +26,6 @@
 #ifndef PendingScript_h
 #define PendingScript_h
 
-#include "core/dom/Element.h"
-#include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ScriptResource.h"
 #include "platform/heap/Handle.h"
@@ -37,6 +35,7 @@
 
 namespace blink {
 
+class Element;
 class ScriptSourceCode;
 class ScriptStreamer;
 
@@ -68,7 +67,7 @@ public:
     void stopWatchingForLoad(ScriptResourceClient*);
 
     Element* element() const { return m_element.get(); }
-    void setElement(Element* element) { m_element = element; }
+    void setElement(Element*);
     PassRefPtrWillBeRawPtr<Element> releaseElementAndClear();
 
     void setScriptResource(ScriptResource*);
@@ -80,7 +79,7 @@ public:
 
     ScriptSourceCode getSource(const KURL& documentURL, bool& errorOccurred) const;
 
-    void setStreamer(PassRefPtr<ScriptStreamer>);
+    void setStreamer(PassRefPtrWillBeRawPtr<ScriptStreamer>);
 
     bool isReady() const;
 
@@ -89,7 +88,7 @@ private:
     RefPtrWillBeMember<Element> m_element;
     TextPosition m_startingPosition; // Only used for inline script tags.
 
-    RefPtr<ScriptStreamer> m_streamer;
+    RefPtrWillBeMember<ScriptStreamer> m_streamer;
 };
 
 } // namespace blink

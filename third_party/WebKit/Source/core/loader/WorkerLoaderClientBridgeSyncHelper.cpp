@@ -33,6 +33,8 @@
 
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
+#include "platform/network/ResourceError.h"
+#include "platform/network/ResourceResponse.h"
 #include "public/platform/WebWaitableEvent.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"

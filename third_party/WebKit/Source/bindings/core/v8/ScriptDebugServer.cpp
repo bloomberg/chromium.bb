@@ -86,6 +86,10 @@ ScriptDebugServer::~ScriptDebugServer()
 {
 }
 
+void ScriptDebugServer::trace(Visitor* visitor)
+{
+}
+
 String ScriptDebugServer::setBreakpoint(const String& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation)
 {
     v8::HandleScope scope(m_isolate);
@@ -743,9 +747,9 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
     }
 }
 
-PassOwnPtr<ScriptSourceCode> ScriptDebugServer::preprocess(LocalFrame*, const ScriptSourceCode&)
+ScriptSourceCode ScriptDebugServer::preprocess(LocalFrame*, const ScriptSourceCode&)
 {
-    return PassOwnPtr<ScriptSourceCode>();
+    return ScriptSourceCode();
 }
 
 String ScriptDebugServer::preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName)

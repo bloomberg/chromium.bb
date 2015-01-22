@@ -39,7 +39,6 @@
 #include "wtf/MessageQueue.h"
 #include <v8.h>
 
-
 namespace blink {
 
 WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobalScope)
@@ -48,6 +47,12 @@ WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobal
     , m_workerGlobalScope(workerGlobalScope)
 {
     ASSERT(m_isolate);
+}
+
+void WorkerScriptDebugServer::trace(Visitor* visitor)
+{
+    visitor->trace(m_workerGlobalScope);
+    ScriptDebugServer::trace(visitor);
 }
 
 void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)

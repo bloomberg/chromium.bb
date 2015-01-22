@@ -32,19 +32,21 @@
 #define PageScriptDebugServer_h
 
 #include "bindings/core/v8/ScriptDebugServer.h"
-#include "bindings/core/v8/ScriptPreprocessor.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include <v8.h>
 
 namespace blink {
 
 class Page;
 class ScriptPreprocessor;
-class ScriptSourceCode;
 
 class PageScriptDebugServer final : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
 public:
     static PageScriptDebugServer& shared();
+
+    ~PageScriptDebugServer() override;
+    void trace(Visitor*) override;
 
     static void setMainThreadIsolate(v8::Isolate*);
 
@@ -66,7 +68,7 @@ public:
     void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
     void setPreprocessorSource(const String&) override;
     void preprocessBeforeCompile(const v8::Debug::EventDetails&) override;
-    PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&) override;
+    ScriptSourceCode preprocess(LocalFrame*, const ScriptSourceCode&) override;
     String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName) override;
     void clearPreprocessor() override;
 
@@ -75,19 +77,18 @@ public:
 
 private:
     PageScriptDebugServer();
-    ~PageScriptDebugServer() override;
 
     ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) override;
     void runMessageLoopOnPause(v8::Handle<v8::Context>) override;
     void quitMessageLoopOnPause() override;
 
-    typedef HashMap<Page*, ScriptDebugListener*> ListenersMap;
+    using ListenersMap = WillBeHeapHashMap<RawPtrWillBeMember<Page>, ScriptDebugListener*>;
     ListenersMap m_listenersMap;
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
-    Page* m_pausedPage;
+    RawPtrWillBeMember<Page> m_pausedPage;
     HashMap<String, String> m_compiledScriptURLs;
 
-    OwnPtr<ScriptSourceCode> m_preprocessorSourceCode;
+    ScriptSourceCode m_preprocessorSourceCode;
     OwnPtr<ScriptPreprocessor> m_scriptPreprocessor;
     bool canPreprocess(LocalFrame*);
     static v8::Isolate* s_mainThreadIsolate;

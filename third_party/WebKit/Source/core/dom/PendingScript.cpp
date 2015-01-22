@@ -102,6 +102,11 @@ void PendingScript::stopWatchingForLoad(ScriptResourceClient* client)
     m_watchingForLoad = false;
 }
 
+void PendingScript::setElement(Element* element)
+{
+    m_element = element;
+}
+
 PassRefPtrWillBeRawPtr<Element> PendingScript::releaseElementAndClear()
 {
     setScriptResource(0);
@@ -133,6 +138,7 @@ void PendingScript::notifyAppendData(ScriptResource* resource)
 void PendingScript::trace(Visitor* visitor)
 {
     visitor->trace(m_element);
+    visitor->trace(m_streamer);
 }
 
 ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOccurred) const
@@ -148,7 +154,7 @@ ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOc
     return ScriptSourceCode(m_element->textContent(), documentURL, startingPosition());
 }
 
-void PendingScript::setStreamer(PassRefPtr<ScriptStreamer> streamer)
+void PendingScript::setStreamer(PassRefPtrWillBeRawPtr<ScriptStreamer> streamer)
 {
     ASSERT(!m_streamer);
     ASSERT(!m_watchingForLoad);

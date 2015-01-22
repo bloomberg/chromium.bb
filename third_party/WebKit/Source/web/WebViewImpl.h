@@ -67,6 +67,7 @@ namespace blink {
 class DataObject;
 class Frame;
 class FullscreenController;
+class InputMethodContext;
 class LinkHighlight;
 class PopupContainer;
 class RenderLayerCompositor;

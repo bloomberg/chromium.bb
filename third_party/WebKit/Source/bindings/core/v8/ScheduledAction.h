@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8PersistentValueVector.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include <v8.h>
 
@@ -44,13 +45,14 @@ class LocalFrame;
 class ExecutionContext;
 class WorkerGlobalScope;
 
-class ScheduledAction {
+class ScheduledAction final : public NoBaseWillBeGarbageCollectedFinalized<ScheduledAction> {
     WTF_MAKE_NONCOPYABLE(ScheduledAction);
 public:
-    static PassOwnPtr<ScheduledAction> create(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
-    static PassOwnPtr<ScheduledAction> create(ScriptState*, const String& handler);
+    static PassOwnPtrWillBeRawPtr<ScheduledAction> create(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
+    static PassOwnPtrWillBeRawPtr<ScheduledAction> create(ScriptState*, const String& handler);
 
     ~ScheduledAction();
+    void trace(Visitor*);
 
     void execute(ExecutionContext*);
 

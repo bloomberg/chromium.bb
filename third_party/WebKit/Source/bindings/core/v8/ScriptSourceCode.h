@@ -34,68 +34,55 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/ScriptResource.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class ScriptSourceCode {
-public:
-    ScriptSourceCode(const String& source, const KURL& url = KURL(), const TextPosition& startPosition = TextPosition::minimumPosition())
-        : m_source(source)
-        , m_resource(0)
-        , m_url(url)
-        , m_startPosition(startPosition)
-    {
-        if (!m_url.isEmpty())
-            m_url.removeFragmentIdentifier();
-    }
+template <class R> class ResourcePtr;
+class ScriptResource;
 
+class ScriptSourceCode final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    ScriptSourceCode();
     // We lose the encoding information from ScriptResource.
     // Not sure if that matters.
-    ScriptSourceCode(ScriptResource* resource)
-        : m_source(resource->script())
-        , m_resource(resource)
-        , m_startPosition(TextPosition::minimumPosition())
-    {
-    }
+    explicit ScriptSourceCode(ScriptResource*);
+    ScriptSourceCode(const String&, const KURL& = KURL(), const TextPosition& startPosition = TextPosition::minimumPosition());
+    ScriptSourceCode(PassRefPtrWillBeRawPtr<ScriptStreamer>, ScriptResource*);
 
-    ScriptSourceCode(PassRefPtr<ScriptStreamer> streamer, ScriptResource* resource)
-        : m_source(resource->script())
-        , m_resource(resource)
-        , m_streamer(streamer)
-        , m_startPosition(TextPosition::minimumPosition())
-    {
-    }
+    ~ScriptSourceCode();
+    void trace(Visitor*);
 
     bool isEmpty() const { return m_source.isEmpty(); }
 
+    // The null value represents a missing script, created by the nullary
+    // constructor, and differs from the empty script.
+    bool isNull() const { return m_source.isNull(); }
+
     const String& source() const { return m_source; }
     ScriptResource* resource() const { return m_resource.get(); }
-    const KURL& url() const
-    {
-        if (m_url.isEmpty() && m_resource) {
-            m_url = m_resource->response().url();
-            if (!m_url.isEmpty())
-                m_url.removeFragmentIdentifier();
-        }
-        return m_url;
-    }
+    const KURL& url() const;
     int startLine() const { return m_startPosition.m_line.oneBasedInt(); }
     const TextPosition& startPosition() const { return m_startPosition; }
 
     ScriptStreamer* streamer() const { return m_streamer.get(); }
 
 private:
+    void treatNullSourceAsEmpty();
+
     String m_source;
     ResourcePtr<ScriptResource> m_resource;
-    RefPtr<ScriptStreamer> m_streamer;
+    RefPtrWillBeMember<ScriptStreamer> m_streamer;
     mutable KURL m_url;
     TextPosition m_startPosition;
 };
 
 } // namespace blink
+
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::ScriptSourceCode);
 
 #endif // ScriptSourceCode_h

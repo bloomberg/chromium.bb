@@ -48,9 +48,12 @@ class ScriptSourceCode;
 class ScriptValue;
 class JavaScriptCallFrame;
 
-class ScriptDebugServer {
+class ScriptDebugServer : public NoBaseWillBeGarbageCollectedFinalized<ScriptDebugServer> {
     WTF_MAKE_NONCOPYABLE(ScriptDebugServer);
 public:
+    virtual ~ScriptDebugServer();
+    virtual void trace(Visitor*);
+
     String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String& breakpointId);
     void clearBreakpoints();
@@ -104,7 +107,7 @@ public:
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace);
     virtual void setPreprocessorSource(const String&) { }
     virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) { }
-    virtual PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&);
+    virtual ScriptSourceCode preprocess(LocalFrame*, const ScriptSourceCode&);
     virtual String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
     virtual void clearPreprocessor() { }
 
@@ -115,7 +118,6 @@ public:
 
 protected:
     explicit ScriptDebugServer(v8::Isolate*);
-    virtual ~ScriptDebugServer();
 
     virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) = 0;
     virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) = 0;

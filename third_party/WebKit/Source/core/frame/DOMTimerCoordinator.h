@@ -5,7 +5,6 @@
 #ifndef DOMTimerCoordinator_h
 #define DOMTimerCoordinator_h
 
-#include "core/frame/DOMTimer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
@@ -28,7 +27,7 @@ public:
     DOMTimerCoordinator();
 
     // Creates and installs a new timer. Returns the assigned ID.
-    int installNewTimeout(ExecutionContext*, PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
+    int installNewTimeout(ExecutionContext*, PassOwnPtrWillBeRawPtr<ScheduledAction>, int timeout, bool singleShot);
 
     // Removes and disposes the timer with the specified ID, if any. This may
     // destroy the timer.
@@ -55,7 +54,7 @@ public:
 private:
     int nextID();
 
-    typedef WillBeHeapHashMap<int, RefPtrWillBeMember<DOMTimer> > TimeoutMap;
+    using TimeoutMap = WillBeHeapHashMap<int, RefPtrWillBeMember<DOMTimer>>;
     TimeoutMap m_timers;
 
     int m_circularSequentialID;

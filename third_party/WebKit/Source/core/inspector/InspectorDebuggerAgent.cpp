@@ -320,7 +320,7 @@ String InspectorDebuggerAgent::preprocessEventListener(LocalFrame* frame, const 
     return scriptDebugServer().preprocessEventListener(frame, source, url, functionName);
 }
 
-PassOwnPtr<ScriptSourceCode> InspectorDebuggerAgent::preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
+ScriptSourceCode InspectorDebuggerAgent::preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
 {
     return scriptDebugServer().preprocess(frame, sourceCode);
 }
