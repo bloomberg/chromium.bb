@@ -570,9 +570,9 @@ void RenderFrameImpl::CreateFrame(
     // Create the RenderFrame and WebLocalFrame, linking the two.
     render_frame =
         RenderFrameImpl::Create(parent_proxy->render_view(), routing_id);
-    web_frame = parent_web_frame->createLocalChild("",
-        ContentToWebSandboxFlags(replicated_state.sandbox_flags),
-        render_frame);
+    web_frame = parent_web_frame->createLocalChild(
+        WebString::fromUTF8(replicated_state.name),
+        ContentToWebSandboxFlags(replicated_state.sandbox_flags), render_frame);
   } else {
     RenderFrameProxy* proxy =
         RenderFrameProxy::FromRoutingID(proxy_routing_id);

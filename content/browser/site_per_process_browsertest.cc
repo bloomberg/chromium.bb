@@ -955,6 +955,38 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
   EXPECT_EQ(result + "/", main_url.GetOrigin().spec());
 }
 
+// Verify that a child frame can retrieve the name property set by its parent.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, WindowNameReplication) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/2-4.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  SitePerProcessWebContentsObserver observer(shell()->web_contents());
+
+  // Load cross-site page into iframe.
+  GURL frame_url =
+      embedded_test_server()->GetURL("foo.com", "/frame_tree/3-1.html");
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  EXPECT_TRUE(observer.navigation_succeeded());
+  EXPECT_EQ(frame_url, observer.navigation_url());
+
+  // Ensure that a new process is created for the subframe.
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+
+  // Check that the window.name seen by the frame matches the name attribute
+  // specified by its parent in the iframe tag.
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(window.name);", &result));
+  EXPECT_EQ(result, "3-1-name");
+}
+
 // TODO(lfg): Merge the test below with NavigateRemoteFrame test.
 // TODO(lfg): Disabled because this triggers http://crbug.com/433012, and since
 // the renderer process crashes, it causes the title watcher to never return.

@@ -37,6 +37,7 @@ enum class SandboxFlags : int {
 // RenderFrame and any of its associated RenderFrameProxies.
 struct CONTENT_EXPORT FrameReplicationState {
   FrameReplicationState();
+  FrameReplicationState(const std::string& name);
   ~FrameReplicationState();
 
   // Current serialized security origin of the frame. Unique origins are
@@ -45,6 +46,10 @@ struct CONTENT_EXPORT FrameReplicationState {
 
   // Current sandbox flags of the frame.
   SandboxFlags sandbox_flags;
+
+  // The assigned name of the frame. This name can be empty, unlike the unique
+  // name generated internally in the DOM tree.
+  std::string name;
 
   // TODO(alexmos): Eventually, this structure can also hold other state that
   // needs to be replicated, such as frame sizing info.

@@ -73,7 +73,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     // should not wind up here.
     RenderFrameProxy* parent =
         RenderFrameProxy::FromRoutingID(parent_routing_id);
-    web_frame = parent->web_frame()->createRemoteChild("", proxy.get());
+    web_frame = parent->web_frame()->createRemoteChild(
+        blink::WebString::fromUTF8(replicated_state.name), proxy.get());
     render_view = parent->render_view();
   }
 
@@ -159,6 +160,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
       blink::WebString::fromUTF8(state.origin.string())));
   web_frame_->setReplicatedSandboxFlags(
       RenderFrameImpl::ContentToWebSandboxFlags(state.sandbox_flags));
+  web_frame_->setReplicatedName(blink::WebString::fromUTF8(state.name));
 }
 
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {

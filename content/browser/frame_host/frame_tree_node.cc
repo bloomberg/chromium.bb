@@ -33,9 +33,10 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                       render_widget_delegate,
                       manager_delegate),
       frame_tree_node_id_(next_frame_tree_node_id_++),
-      frame_name_(name),
       parent_(NULL),
-      is_loading_(false) {}
+      replication_state_(name),
+      is_loading_(false) {
+}
 
 FrameTreeNode::~FrameTreeNode() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -6,8 +6,11 @@
 
 namespace content {
 
-FrameReplicationState::FrameReplicationState()
-    : origin(), sandbox_flags(SandboxFlags::NONE) {
+FrameReplicationState::FrameReplicationState() : FrameReplicationState("") {
+}
+
+FrameReplicationState::FrameReplicationState(const std::string& name)
+    : origin(), sandbox_flags(SandboxFlags::NONE), name(name) {
 }
 
 FrameReplicationState::~FrameReplicationState() {
