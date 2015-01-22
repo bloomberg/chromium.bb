@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Timeout in milliseconds to determine if the event is dispatched or not.
- * If the event is dispached in the timeout, the test regards the event is
- * dispatched, otherwise not. Otherwise it regards the event is not dispatched.
- */
-var TIMEOUT_MS = 3000;
-
 function testPreviewPanelModel(callback) {
   document.querySelector('body').innerHTML =
-      '<command class="cloud-import" hidden></command>';
-  var command = document.querySelector('command.cloud-import');
+      '<command class="auto-visibility" hidden></command>';
+  var command = document.querySelector('command.auto-visibility');
   var model = new PreviewPanelModel(PreviewPanelModel.VisibilityType.AUTO);
 
   var testStep = function(step, changed) {
     var waitPromise = new Promise(function(fulfill) {
       model.addEventListener(
           PreviewPanelModel.EventType.CHANGE, fulfill.bind(null, true));
-      setTimeout(fulfill.bind(null, false), TIMEOUT_MS);
+      // The handler of hiddenChange event in PreviewPanelModel dispatches
+      // PreviewPanelModel.EventType.CHANGE event synchronously. Thus if
+      // the below hiddenChange handler is called ahead of the above change
+      // handler, it means PreviewPanelModel.EventType.CHANGE was not
+      // dispatched.
+      command.addEventListener('hiddenChange', fulfill.bind(null, false));
     });
 
     switch (step) {

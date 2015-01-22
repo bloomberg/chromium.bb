@@ -23,9 +23,9 @@ function PreviewPanelModel(initialVisibilityType) {
    * @const
    * @private
    */
-  this.cloudImportCommands_ = Array.prototype.slice.call(
-      document.querySelectorAll('command.cloud-import'));
-  cr.ui.decorate('command.cloud-import', cr.ui.Command);
+  this.autoVisibilityCommands_ = Array.prototype.slice.call(
+      document.querySelectorAll('command.auto-visibility'));
+  cr.ui.decorate('command.auto-visibility', cr.ui.Command);
 
   /**
    * FileSelection to be displayed.
@@ -42,8 +42,8 @@ function PreviewPanelModel(initialVisibilityType) {
    */
   this.visible = false;
 
-  for (var i = 0; i < this.cloudImportCommands_.length; i++) {
-    this.cloudImportCommands_[i].addEventListener(
+  for (var i = 0; i < this.autoVisibilityCommands_.length; i++) {
+    this.autoVisibilityCommands_[i].addEventListener(
         'hiddenChange', this.updateVisibility_.bind(this));
   }
   this.updateVisibility_();
@@ -92,7 +92,7 @@ PreviewPanelModel.prototype.updateVisibility_ = function() {
     case PreviewPanelModel.VisibilityType.AUTO:
       newVisible =
           this.selection_.entries.length !== 0 ||
-          this.cloudImportCommands_.some(function(command) {
+          this.autoVisibilityCommands_.some(function(command) {
             return !command.hidden;
           });
       break;
