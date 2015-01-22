@@ -4,7 +4,7 @@
   "manifest_version": 2,
   "name": "Gallery",
   "version": "2.0",
-  "description": "Picture and video browser app.",
+  "description": "Picture browser app",
   "display_in_launcher": false,
   "incognito" : "split",
   "icons": {
