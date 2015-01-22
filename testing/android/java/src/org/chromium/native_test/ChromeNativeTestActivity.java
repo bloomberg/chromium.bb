@@ -29,6 +29,8 @@ public class ChromeNativeTestActivity extends Activity {
             "org.chromium.native_test.ChromeNativeTestActivity.CommandLineFile";
     public static final String EXTRA_COMMAND_LINE_FLAGS =
             "org.chromium.native_test.ChromeNativeTestActivity.CommandLineFlags";
+    public static final String EXTRA_STDOUT_FILE =
+            "org.chromium.native_test.ChromeNativeTestActivity.StdoutFile";
 
     private static final String TAG = "ChromeNativeTestActivity";
     private static final String EXTRA_RUN_IN_SUB_THREAD = "RunInSubThread";
@@ -89,9 +91,17 @@ public class ChromeNativeTestActivity extends Activity {
             Log.i(TAG, "command line file path: " + commandLineFilePath);
         }
 
+        String stdoutFilePath = getIntent().getStringExtra(EXTRA_STDOUT_FILE);
+        boolean stdoutFifo = false;
+        if (stdoutFilePath == null) {
+            stdoutFilePath = new File(getFilesDir(), "test.fifo").getAbsolutePath();
+            stdoutFifo = true;
+        }
+
         // This directory is used by build/android/pylib/test_package_apk.py.
-        nativeRunTests(commandLineFlags, commandLineFilePath, getFilesDir().getAbsolutePath(),
+        nativeRunTests(commandLineFlags, commandLineFilePath, stdoutFilePath, stdoutFifo,
                 getApplicationContext());
+        finish();
     }
 
     // Signal a failure of the native test loader to python scripts
@@ -110,5 +120,5 @@ public class ChromeNativeTestActivity extends Activity {
     }
 
     private native void nativeRunTests(String commandLineFlags, String commandLineFilePath,
-            String filesDir, Context appContext);
+            String stdoutFilePath, boolean stdoutFifo, Context appContext);
 }
