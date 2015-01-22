@@ -38,7 +38,7 @@ class RenderSVGShape;
 class RenderSVGRoot;
 class RenderSVGText;
 
-// functions used by the main RenderTreeAsText code
+// functions used by the main LayoutTreeAsText code
 void write(TextStream&, const RenderSVGShape&, int indent);
 void write(TextStream&, const RenderSVGRoot&, int indent);
 void writeSVGGradientStop(TextStream&, const RenderSVGGradientStop&, int indent);

@@ -19,7 +19,7 @@ if (window.testRunner && window.eventSender) {
   // We need to show in the result the title text of the select when popup is visible.
   // Must dump renderer tree here otherwise dump-render-tree will close the popup.
   // The title text should be "C".
-  output.textContent = internals.elementRenderTreeAsText(select.parentNode);
+  output.textContent = internals.elementLayoutTreeAsText(select.parentNode);
   testRunner.notifyDone();
 }
 </script>

@@ -83,7 +83,7 @@ public:
 
     static void resetToConsistentState(Page*);
 
-    String elementRenderTreeAsText(Element*, ExceptionState&);
+    String elementLayoutTreeAsText(Element*, ExceptionState&);
 
     String address(Node*);
 

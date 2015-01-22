@@ -40,11 +40,11 @@ for (var i = 0; i < cases.length; ++i) {
 
     targetContainer.innerHTML = targetMarkup;
     comparisonContainer.innerHTML = expectedMarkup;
-    targetRenderTree = removeContainerLines(window.internals.elementRenderTreeAsText(targetContainer));
-    targetRenderTree = targetRenderTree.replace(/CONTENT/g, "UNKNOWN");
-    comparisonRenderTree = removeContainerLines(window.internals.elementRenderTreeAsText(comparisonContainer));
+    targetLayoutTree = removeContainerLines(window.internals.elementLayoutTreeAsText(targetContainer));
+    targetLayoutTree = targetLayoutTree.replace(/CONTENT/g, "UNKNOWN");
+    comparisonLayoutTree = removeContainerLines(window.internals.elementLayoutTreeAsText(comparisonContainer));
     debug(escapeHTML(targetMarkup));
-    shouldBe("targetRenderTree", "comparisonRenderTree");
+    shouldBe("targetLayoutTree", "comparisonLayoutTree");
 }
 
 targetContainer.innerHTML = comparisonContainer.innerHTML = "";

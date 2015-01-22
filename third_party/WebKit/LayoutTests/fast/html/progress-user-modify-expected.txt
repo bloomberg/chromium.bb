@@ -1,4 +1,4 @@
-PASS renderTreeAfterType is renderTreeBeforeType
+PASS layoutTreeAfterType is layoutTreeBeforeType
 PASS successfullyParsed is true
 
 TEST COMPLETE

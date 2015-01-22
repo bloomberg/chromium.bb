@@ -102,6 +102,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/layout/LayoutTreeAsText.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
 #include "core/page/Chrome.h"
@@ -116,7 +117,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -513,7 +513,7 @@ Node* Internals::previousInComposedTree(Node* node, ExceptionState& exceptionSta
     return ComposedTreeTraversal::previous(*node);
 }
 
-String Internals::elementRenderTreeAsText(Element* element, ExceptionState& exceptionState)
+String Internals::elementLayoutTreeAsText(Element* element, ExceptionState& exceptionState)
 {
     ASSERT(element);
     String representation = externalRepresentation(element);

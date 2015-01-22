@@ -134,7 +134,7 @@ public:
     // FIXME: size() should ASSERT(!m_needsPositionUpdate) as well, but that fails in some tests,
     // for example, fast/repaint/clipped-relative.html.
     const IntSize& size() const { return m_size; }
-    void setSizeHackForRenderTreeAsText(const IntSize& size) { m_size = size; }
+    void setSizeHackForLayoutTreeAsText(const IntSize& size) { m_size = size; }
 
     LayoutRect rect() const { return LayoutRect(location(), LayoutSize(size())); }
 

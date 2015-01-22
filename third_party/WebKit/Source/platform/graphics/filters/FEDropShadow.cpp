@@ -84,7 +84,7 @@ TextStream& FEDropShadow::externalRepresentation(TextStream& ts, int indent) con
     writeIndent(ts, indent);
     ts << "[feDropShadow";
     FilterEffect::externalRepresentation(ts);
-    ts << " stdDeviation=\"" << m_stdX << ", " << m_stdY << "\" dx=\"" << m_dx << "\" dy=\"" << m_dy << "\" flood-color=\"" << m_shadowColor.nameForRenderTreeAsText() <<"\" flood-opacity=\"" << m_shadowOpacity << "]\n";
+    ts << " stdDeviation=\"" << m_stdX << ", " << m_stdY << "\" dx=\"" << m_dx << "\" dy=\"" << m_dy << "\" flood-color=\"" << m_shadowColor.nameForLayoutTreeAsText() <<"\" flood-opacity=\"" << m_shadowOpacity << "]\n";
     inputEffect(0)->externalRepresentation(ts, indent + 1);
     return ts;
 }

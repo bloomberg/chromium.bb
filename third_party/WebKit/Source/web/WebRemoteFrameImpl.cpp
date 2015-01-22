@@ -770,6 +770,11 @@ WebString WebRemoteFrameImpl::contentAsMarkup() const
 
 WebString WebRemoteFrameImpl::renderTreeAsText(RenderAsTextControls toShow) const
 {
+    return layoutTreeAsText(static_cast<LayoutAsTextControls>(toShow));
+}
+
+WebString WebRemoteFrameImpl::layoutTreeAsText(LayoutAsTextControls toShow) const
+{
     ASSERT_NOT_REACHED();
     return WebString();
 }

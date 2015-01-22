@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderTreeAsText_h
-#define RenderTreeAsText_h
+#ifndef LayoutTreeAsText_h
+#define LayoutTreeAsText_h
 #include "platform/text/TextStream.h"
 
 #include "wtf/Forward.h"
@@ -40,31 +40,31 @@ class RenderLayer;
 class RenderObject;
 class TextStream;
 
-enum RenderAsTextBehaviorFlags {
-    RenderAsTextBehaviorNormal = 0,
-    RenderAsTextShowAllLayers = 1 << 0, // Dump all layers, not just those that would paint.
-    RenderAsTextShowLayerNesting = 1 << 1, // Annotate the layer lists.
-    RenderAsTextShowCompositedLayers = 1 << 2, // Show which layers are composited.
-    RenderAsTextShowAddresses = 1 << 3, // Show layer and renderer addresses.
-    RenderAsTextShowIDAndClass = 1 << 4, // Show id and class attributes
-    RenderAsTextPrintingMode = 1 << 5, // Dump the tree in printing mode.
-    RenderAsTextDontUpdateLayout = 1 << 6, // Don't update layout, to make it safe to call showLayerTree() from the debugger inside layout or painting code.
-    RenderAsTextShowLayoutState = 1 << 7 // Print the various 'needs layout' bits on renderers.
+enum LayoutAsTextBehaviorFlags {
+    LayoutAsTextBehaviorNormal = 0,
+    LayoutAsTextShowAllLayers = 1 << 0, // Dump all layers, not just those that would paint.
+    LayoutAsTextShowLayerNesting = 1 << 1, // Annotate the layer lists.
+    LayoutAsTextShowCompositedLayers = 1 << 2, // Show which layers are composited.
+    LayoutAsTextShowAddresses = 1 << 3, // Show layer and renderer addresses.
+    LayoutAsTextShowIDAndClass = 1 << 4, // Show id and class attributes
+    LayoutAsTextPrintingMode = 1 << 5, // Dump the tree in printing mode.
+    LayoutAsTextDontUpdateLayout = 1 << 6, // Don't update layout, to make it safe to call showLayerTree() from the debugger inside layout or painting code.
+    LayoutAsTextShowLayoutState = 1 << 7 // Print the various 'needs layout' bits on renderers.
 };
-typedef unsigned RenderAsTextBehavior;
+typedef unsigned LayoutAsTextBehavior;
 
-// You don't need pageWidthInPixels if you don't specify RenderAsTextInPrintingMode.
-String externalRepresentation(LocalFrame*, RenderAsTextBehavior = RenderAsTextBehaviorNormal);
-String externalRepresentation(Element*, RenderAsTextBehavior = RenderAsTextBehaviorNormal);
-void write(TextStream&, const RenderObject&, int indent = 0, RenderAsTextBehavior = RenderAsTextBehaviorNormal);
+// You don't need pageWidthInPixels if you don't specify LayoutAsTextInPrintingMode.
+String externalRepresentation(LocalFrame*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+String externalRepresentation(Element*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+void write(TextStream&, const RenderObject&, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 
-class RenderTreeAsText {
+class LayoutTreeAsText {
 // FIXME: This is a cheesy hack to allow easy access to RenderStyle colors.  It won't be needed if we convert
 // it to use visitedDependentColor instead. (This just involves rebaselining many results though, so for now it's
 // not being done).
 public:
-static void writeRenderObject(TextStream& ts, const RenderObject& o, RenderAsTextBehavior behavior);
-static void writeLayers(TextStream&, const RenderLayer* rootLayer, RenderLayer*, const LayoutRect& paintDirtyRect, int indent = 0, RenderAsTextBehavior = RenderAsTextBehaviorNormal);
+static void writeRenderObject(TextStream&, const RenderObject&, LayoutAsTextBehavior);
+static void writeLayers(TextStream&, const RenderLayer* rootLayer, RenderLayer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 };
 
 // Helper function shared with SVGRenderTreeAsText
@@ -80,4 +80,4 @@ TextStream& operator<<(TextStream&, const Color&);
 
 } // namespace blink
 
-#endif // RenderTreeAsText_h
+#endif // LayoutTreeAsText_h

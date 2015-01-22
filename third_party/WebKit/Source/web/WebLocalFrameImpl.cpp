@@ -128,6 +128,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/layout/LayoutTreeAsText.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
@@ -144,7 +145,6 @@
 #include "core/rendering/RenderFrame.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "core/timing/Performance.h"
@@ -1493,13 +1493,18 @@ WebString WebLocalFrameImpl::contentAsMarkup() const
 
 WebString WebLocalFrameImpl::renderTreeAsText(RenderAsTextControls toShow) const
 {
-    RenderAsTextBehavior behavior = RenderAsTextShowAllLayers;
+    return layoutTreeAsText(static_cast<LayoutAsTextControls>(toShow));
+}
 
-    if (toShow & RenderAsTextDebug)
-        behavior |= RenderAsTextShowCompositedLayers | RenderAsTextShowAddresses | RenderAsTextShowIDAndClass | RenderAsTextShowLayerNesting;
+WebString WebLocalFrameImpl::layoutTreeAsText(LayoutAsTextControls toShow) const
+{
+    LayoutAsTextBehavior behavior = LayoutAsTextShowAllLayers;
 
-    if (toShow & RenderAsTextPrinting)
-        behavior |= RenderAsTextPrintingMode;
+    if (toShow & LayoutAsTextDebug)
+        behavior |= LayoutAsTextShowCompositedLayers | LayoutAsTextShowAddresses | LayoutAsTextShowIDAndClass | LayoutAsTextShowLayerNesting;
+
+    if (toShow & LayoutAsTextPrinting)
+        behavior |= LayoutAsTextPrintingMode;
 
     return externalRepresentation(frame(), behavior);
 }

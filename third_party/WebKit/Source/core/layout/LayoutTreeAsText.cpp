@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderTreeAsText.h"
+#include "core/layout/LayoutTreeAsText.h"
 
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
@@ -67,36 +67,36 @@ using namespace HTMLNames;
 static void printBorderStyle(TextStream& ts, const EBorderStyle borderStyle)
 {
     switch (borderStyle) {
-        case BNONE:
-            ts << "none";
-            break;
-        case BHIDDEN:
-            ts << "hidden";
-            break;
-        case INSET:
-            ts << "inset";
-            break;
-        case GROOVE:
-            ts << "groove";
-            break;
-        case RIDGE:
-            ts << "ridge";
-            break;
-        case OUTSET:
-            ts << "outset";
-            break;
-        case DOTTED:
-            ts << "dotted";
-            break;
-        case DASHED:
-            ts << "dashed";
-            break;
-        case SOLID:
-            ts << "solid";
-            break;
-        case DOUBLE:
-            ts << "double";
-            break;
+    case BNONE:
+        ts << "none";
+        break;
+    case BHIDDEN:
+        ts << "hidden";
+        break;
+    case INSET:
+        ts << "inset";
+        break;
+    case GROOVE:
+        ts << "groove";
+        break;
+    case RIDGE:
+        ts << "ridge";
+        break;
+    case OUTSET:
+        ts << "outset";
+        break;
+    case DOTTED:
+        ts << "dotted";
+        break;
+    case DASHED:
+        ts << "dashed";
+        break;
+    case SOLID:
+        ts << "solid";
+        break;
+    case DOUBLE:
+        ts << "double";
+        break;
     }
 
     ts << " ";
@@ -139,12 +139,12 @@ String quoteAndEscapeNonPrintables(const String& s)
         } else if (c == '"') {
             result.append('\\');
             result.append('"');
-        } else if (c == '\n' || c == noBreakSpace)
+        } else if (c == '\n' || c == noBreakSpace) {
             result.append(' ');
-        else {
-            if (c >= 0x20 && c < 0x7F)
+        } else {
+            if (c >= 0x20 && c < 0x7F) {
                 result.append(c);
-            else {
+            } else {
                 result.append('\\');
                 result.append('x');
                 result.append('{');
@@ -159,14 +159,14 @@ String quoteAndEscapeNonPrintables(const String& s)
 
 TextStream& operator<<(TextStream& ts, const Color& c)
 {
-    return ts << c.nameForRenderTreeAsText();
+    return ts << c.nameForLayoutTreeAsText();
 }
 
-void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, RenderAsTextBehavior behavior)
+void LayoutTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, LayoutAsTextBehavior behavior)
 {
     ts << o.renderName();
 
-    if (behavior & RenderAsTextShowAddresses)
+    if (behavior & LayoutAsTextShowAddresses)
         ts << " " << static_cast<const void*>(&o);
 
     if (o.style() && o.style()->zIndex())
@@ -206,8 +206,9 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
         // captured by the results.
         const RenderTableCell& cell = toRenderTableCell(o);
         r = LayoutRect(cell.location().x(), cell.location().y() + cell.intrinsicPaddingBefore(), cell.size().width(), cell.size().height() - cell.intrinsicPaddingBefore() - cell.intrinsicPaddingAfter());
-    } else if (o.isBox())
+    } else if (o.isBox()) {
         r = toRenderBox(&o)->frameRect();
+    }
 
     // FIXME: Temporary in order to ensure compatibility with existing layout test results.
     if (adjustForTableCells)
@@ -257,9 +258,9 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
             ts << " [border:";
 
             BorderValue prevBorder = o.style()->borderTop();
-            if (!box.borderTop())
+            if (!box.borderTop()) {
                 ts << " none";
-            else {
+            } else {
                 ts << " (" << box.borderTop() << "px ";
                 printBorderStyle(ts, o.style()->borderTopStyle());
                 ts << o.resolveColor(CSSPropertyBorderTopColor) << ")";
@@ -267,9 +268,9 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
 
             if (o.style()->borderRight() != prevBorder) {
                 prevBorder = o.style()->borderRight();
-                if (!box.borderRight())
+                if (!box.borderRight()) {
                     ts << " none";
-                else {
+                } else {
                     ts << " (" << box.borderRight() << "px ";
                     printBorderStyle(ts, o.style()->borderRightStyle());
                     ts << o.resolveColor(CSSPropertyBorderRightColor) << ")";
@@ -278,9 +279,9 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
 
             if (o.style()->borderBottom() != prevBorder) {
                 prevBorder = box.style()->borderBottom();
-                if (!box.borderBottom())
+                if (!box.borderBottom()) {
                     ts << " none";
-                else {
+                } else {
                     ts << " (" << box.borderBottom() << "px ";
                     printBorderStyle(ts, o.style()->borderBottomStyle());
                     ts << o.resolveColor(CSSPropertyBorderBottomColor) << ")";
@@ -289,9 +290,9 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
 
             if (o.style()->borderLeft() != prevBorder) {
                 prevBorder = o.style()->borderLeft();
-                if (!box.borderLeft())
+                if (!box.borderLeft()) {
                     ts << " none";
-                else {
+                } else {
                     ts << " (" << box.borderLeft() << "px ";
                     printBorderStyle(ts, o.style()->borderLeftStyle());
                     ts << o.resolveColor(CSSPropertyBorderLeftColor) << ")";
@@ -328,28 +329,28 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
     if (o.isListMarker()) {
         String text = toRenderListMarker(o).text();
         if (!text.isEmpty()) {
-            if (text.length() != 1)
+            if (text.length() != 1) {
                 text = quoteAndEscapeNonPrintables(text);
-            else {
+            } else {
                 switch (text[0]) {
-                    case bullet:
-                        text = "bullet";
-                        break;
-                    case blackSquare:
-                        text = "black square";
-                        break;
-                    case whiteBullet:
-                        text = "white bullet";
-                        break;
-                    default:
-                        text = quoteAndEscapeNonPrintables(text);
+                case bullet:
+                    text = "bullet";
+                    break;
+                case blackSquare:
+                    text = "black square";
+                    break;
+                case whiteBullet:
+                    text = "white bullet";
+                    break;
+                default:
+                    text = quoteAndEscapeNonPrintables(text);
                 }
             }
             ts << ": " << text;
         }
     }
 
-    if (behavior & RenderAsTextShowIDAndClass) {
+    if (behavior & LayoutAsTextShowIDAndClass) {
         Node* node = o.node();
         if (node && node->isElementNode()) {
             Element& element = toElement(*node);
@@ -368,7 +369,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
         }
     }
 
-    if (behavior & RenderAsTextShowLayoutState) {
+    if (behavior & LayoutAsTextShowLayoutState) {
         bool needsLayout = o.selfNeedsLayout() || o.needsPositionedMovementLayout() || o.posChildNeedsLayout() || o.normalChildNeedsLayout();
         if (needsLayout)
             ts << " (needs layout:";
@@ -429,7 +430,7 @@ static void writeTextRun(TextStream& ts, const RenderText& o, const InlineTextBo
     ts << "\n";
 }
 
-void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavior behavior)
+void write(TextStream& ts, const RenderObject& o, int indent, LayoutAsTextBehavior behavior)
 {
     if (o.isSVGShape()) {
         write(ts, toRenderSVGShape(o), indent);
@@ -466,7 +467,7 @@ void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavi
 
     writeIndent(ts, indent);
 
-    RenderTreeAsText::writeRenderObject(ts, o, behavior);
+    LayoutTreeAsText::writeRenderObject(ts, o, behavior);
     ts << "\n";
 
     if (o.isText() && !o.isBR()) {
@@ -490,9 +491,9 @@ void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavi
             RenderView* root = view->renderView();
             if (root) {
                 view->layout();
-                RenderLayer* l = root->layer();
-                if (l)
-                    RenderTreeAsText::writeLayers(ts, l, l, l->rect(), indent + 1, behavior);
+                RenderLayer* layer = root->layer();
+                if (layer)
+                    LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), indent + 1, behavior);
             }
         }
     }
@@ -504,9 +505,9 @@ enum LayerPaintPhase {
     LayerPaintPhaseForeground = 1
 };
 
-static void write(TextStream& ts, RenderLayer& l,
-                  const LayoutRect& layerBounds, const LayoutRect& backgroundClipRect, const LayoutRect& clipRect, const LayoutRect& outlineClipRect,
-                  LayerPaintPhase paintPhase = LayerPaintPhaseAll, int indent = 0, RenderAsTextBehavior behavior = RenderAsTextBehaviorNormal)
+static void write(TextStream& ts, RenderLayer& layer,
+    const LayoutRect& layerBounds, const LayoutRect& backgroundClipRect, const LayoutRect& clipRect, const LayoutRect& outlineClipRect,
+    LayerPaintPhase paintPhase = LayerPaintPhaseAll, int indent = 0, LayoutAsTextBehavior behavior = LayoutAsTextBehaviorNormal)
 {
     IntRect adjustedLayoutBounds = pixelSnappedIntRect(layerBounds);
     IntRect adjustedLayoutBoundsWithScrollbars = adjustedLayoutBounds;
@@ -514,11 +515,11 @@ static void write(TextStream& ts, RenderLayer& l,
     IntRect adjustedClipRect = pixelSnappedIntRect(clipRect);
     IntRect adjustedOutlineClipRect = pixelSnappedIntRect(outlineClipRect);
 
-    Settings* settings = l.renderer()->document().settings();
-    bool reportFrameScrollInfo = l.renderer()->isRenderView() && settings && !settings->rootLayerScrolls();
+    Settings* settings = layer.renderer()->document().settings();
+    bool reportFrameScrollInfo = layer.renderer()->isRenderView() && settings && !settings->rootLayerScrolls();
 
     if (reportFrameScrollInfo) {
-        RenderView* renderView = toRenderView(l.renderer());
+        RenderView* renderView = toRenderView(layer.renderer());
 
         adjustedLayoutBoundsWithScrollbars.setWidth(renderView->viewWidth(IncludeScrollbars));
         adjustedLayoutBoundsWithScrollbars.setHeight(renderView->viewHeight(IncludeScrollbars));
@@ -526,13 +527,13 @@ static void write(TextStream& ts, RenderLayer& l,
 
     writeIndent(ts, indent);
 
-    if (l.renderer()->style()->visibility() == HIDDEN)
+    if (layer.renderer()->style()->visibility() == HIDDEN)
         ts << "hidden ";
 
     ts << "layer ";
 
-    if (behavior & RenderAsTextShowAddresses)
-        ts << static_cast<const void*>(&l) << " ";
+    if (behavior & LayoutAsTextShowAddresses)
+        ts << static_cast<const void*>(&layer) << " ";
 
     ts << adjustedLayoutBoundsWithScrollbars;
 
@@ -544,25 +545,25 @@ static void write(TextStream& ts, RenderLayer& l,
         if (!adjustedOutlineClipRect.contains(adjustedLayoutBounds))
             ts << " outlineClip " << adjustedOutlineClipRect;
     }
-    if (l.isTransparent())
+    if (layer.isTransparent())
         ts << " transparent";
 
-    if (l.renderer()->hasOverflowClip() || reportFrameScrollInfo) {
+    if (layer.renderer()->hasOverflowClip() || reportFrameScrollInfo) {
         ScrollableArea* scrollableArea;
         if (reportFrameScrollInfo)
-            scrollableArea = toRenderView(l.renderer())->frameView();
+            scrollableArea = toRenderView(layer.renderer())->frameView();
         else
-            scrollableArea = l.scrollableArea();
+            scrollableArea = layer.scrollableArea();
 
         DoublePoint adjustedScrollOffset = scrollableArea->scrollPositionDouble() + toDoubleSize(scrollableArea->scrollOrigin());
         if (adjustedScrollOffset.x())
             ts << " scrollX " << adjustedScrollOffset.x();
         if (adjustedScrollOffset.y())
             ts << " scrollY " << adjustedScrollOffset.y();
-        if (l.renderBox() && l.renderBox()->pixelSnappedClientWidth() != l.renderBox()->pixelSnappedScrollWidth())
-            ts << " scrollWidth " << l.renderBox()->pixelSnappedScrollWidth();
-        if (l.renderBox() && l.renderBox()->pixelSnappedClientHeight() != l.renderBox()->pixelSnappedScrollHeight())
-            ts << " scrollHeight " << l.renderBox()->pixelSnappedScrollHeight();
+        if (layer.renderBox() && layer.renderBox()->pixelSnappedClientWidth() != layer.renderBox()->pixelSnappedScrollWidth())
+            ts << " scrollWidth " << layer.renderBox()->pixelSnappedScrollWidth();
+        if (layer.renderBox() && layer.renderBox()->pixelSnappedClientHeight() != layer.renderBox()->pixelSnappedScrollHeight())
+            ts << " scrollHeight " << layer.renderBox()->pixelSnappedScrollHeight();
     }
 
     if (paintPhase == LayerPaintPhaseBackground)
@@ -570,16 +571,16 @@ static void write(TextStream& ts, RenderLayer& l,
     else if (paintPhase == LayerPaintPhaseForeground)
         ts << " layerType: foreground only";
 
-    if (l.renderer()->style()->hasBlendMode())
-        ts << " blendMode: " << compositeOperatorName(CompositeSourceOver, l.renderer()->style()->blendMode());
+    if (layer.renderer()->style()->hasBlendMode())
+        ts << " blendMode: " << compositeOperatorName(CompositeSourceOver, layer.renderer()->style()->blendMode());
 
-    if (behavior & RenderAsTextShowCompositedLayers) {
-        if (l.hasCompositedLayerMapping()) {
+    if (behavior & LayoutAsTextShowCompositedLayers) {
+        if (layer.hasCompositedLayerMapping()) {
             ts << " (composited, bounds="
-                << l.compositedLayerMapping()->compositedBounds()
+                << layer.compositedLayerMapping()->compositedBounds()
                 << ", drawsContent="
-                << l.compositedLayerMapping()->mainGraphicsLayer()->drawsContent()
-                << (l.shouldIsolateCompositedDescendants() ? ", isolatesCompositedBlending" : "")
+                << layer.compositedLayerMapping()->mainGraphicsLayer()->drawsContent()
+                << (layer.shouldIsolateCompositedDescendants() ? ", isolatesCompositedBlending" : "")
                 << ")";
         }
     }
@@ -587,11 +588,11 @@ static void write(TextStream& ts, RenderLayer& l,
     ts << "\n";
 
     if (paintPhase != LayerPaintPhaseBackground)
-        write(ts, *l.renderer(), indent + 1, behavior);
+        write(ts, *layer.renderer(), indent + 1, behavior);
 }
 
-void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLayer* layer,
-    const LayoutRect& paintRect, int indent, RenderAsTextBehavior behavior)
+void LayoutTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLayer* layer,
+    const LayoutRect& paintRect, int indent, LayoutAsTextBehavior behavior)
 {
     // Calculate the clip rects we should use.
     LayoutRect layerBounds;
@@ -601,7 +602,7 @@ void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
     // Ensure our lists are up-to-date.
     layer->stackingNode()->updateLayerListsIfNeeded();
 
-    bool shouldPaint = (behavior & RenderAsTextShowAllLayers) ? true : layer->intersectsDamageRect(layerBounds, damageRect.rect(), rootLayer);
+    bool shouldPaint = (behavior & LayoutAsTextShowAllLayers) ? true : layer->intersectsDamageRect(layerBounds, damageRect.rect(), rootLayer);
 
     Vector<RenderLayerStackingNode*>* negList = layer->stackingNode()->negZOrderList();
     bool paintsBackgroundSeparately = negList && negList->size() > 0;
@@ -610,7 +611,7 @@ void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
 
     if (negList) {
         int currIndent = indent;
-        if (behavior & RenderAsTextShowLayerNesting) {
+        if (behavior & LayoutAsTextShowLayerNesting) {
             writeIndent(ts, indent);
             ts << " negative z-order list(" << negList->size() << ")\n";
             ++currIndent;
@@ -624,7 +625,7 @@ void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
 
     if (Vector<RenderLayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
         int currIndent = indent;
-        if (behavior & RenderAsTextShowLayerNesting) {
+        if (behavior & LayoutAsTextShowLayerNesting) {
             writeIndent(ts, indent);
             ts << " normal flow list(" << normalFlowList->size() << ")\n";
             ++currIndent;
@@ -635,7 +636,7 @@ void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
 
     if (Vector<RenderLayerStackingNode*>* posList = layer->stackingNode()->posZOrderList()) {
         int currIndent = indent;
-        if (behavior & RenderAsTextShowLayerNesting) {
+        if (behavior & LayoutAsTextShowLayerNesting) {
             writeIndent(ts, indent);
             ts << " positive z-order list(" << posList->size() << ")\n";
             ++currIndent;
@@ -672,8 +673,9 @@ String nodePositionAsStringForTesting(Node* node)
                 result.append(getTagName(n));
                 result.append('}');
             }
-        } else
+        } else {
             result.appendLiteral("document");
+        }
     }
 
     return result.toString();
@@ -702,21 +704,21 @@ static void writeSelection(TextStream& ts, const RenderObject* o)
     }
 }
 
-static String externalRepresentation(RenderBox* renderer, RenderAsTextBehavior behavior)
+static String externalRepresentation(RenderBox* renderer, LayoutAsTextBehavior behavior)
 {
     TextStream ts;
     if (!renderer->hasLayer())
         return ts.release();
 
     RenderLayer* layer = renderer->layer();
-    RenderTreeAsText::writeLayers(ts, layer, layer, layer->rect(), 0, behavior);
+    LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), 0, behavior);
     writeSelection(ts, renderer);
     return ts.release();
 }
 
-String externalRepresentation(LocalFrame* frame, RenderAsTextBehavior behavior)
+String externalRepresentation(LocalFrame* frame, LayoutAsTextBehavior behavior)
 {
-    if (!(behavior & RenderAsTextDontUpdateLayout))
+    if (!(behavior & LayoutAsTextDontUpdateLayout))
         frame->document()->updateLayout();
 
     RenderObject* renderer = frame->contentRenderer();
@@ -724,24 +726,24 @@ String externalRepresentation(LocalFrame* frame, RenderAsTextBehavior behavior)
         return String();
 
     PrintContext printContext(frame);
-    if (behavior & RenderAsTextPrintingMode)
+    if (behavior & LayoutAsTextPrintingMode)
         printContext.begin(toRenderBox(renderer)->size().width().toFloat());
 
     return externalRepresentation(toRenderBox(renderer), behavior);
 }
 
-String externalRepresentation(Element* element, RenderAsTextBehavior behavior)
+String externalRepresentation(Element* element, LayoutAsTextBehavior behavior)
 {
     // Doesn't support printing mode.
-    ASSERT(!(behavior & RenderAsTextPrintingMode));
-    if (!(behavior & RenderAsTextDontUpdateLayout))
+    ASSERT(!(behavior & LayoutAsTextPrintingMode));
+    if (!(behavior & LayoutAsTextDontUpdateLayout))
         element->document().updateLayout();
 
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isBox())
         return String();
 
-    return externalRepresentation(toRenderBox(renderer), behavior | RenderAsTextShowAllLayers);
+    return externalRepresentation(toRenderBox(renderer), behavior | LayoutAsTextShowAllLayers);
 }
 
 static void writeCounterValuesFromChildren(TextStream& stream, RenderObject* parent, bool& isFirstCounter)

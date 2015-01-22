@@ -248,7 +248,7 @@ String Color::serialized() const
     return result.toString();
 }
 
-String Color::nameForRenderTreeAsText() const
+String Color::nameForLayoutTreeAsText() const
 {
     if (alpha() < 0xFF)
         return String::format("#%02X%02X%02X%02X", red(), green(), blue(), alpha());

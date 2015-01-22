@@ -619,7 +619,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
         json->setString("client", pointerAsString(m_client));
 
     if (m_backgroundColor.alpha())
-        json->setString("backgroundColor", m_backgroundColor.nameForRenderTreeAsText());
+        json->setString("backgroundColor", m_backgroundColor.nameForLayoutTreeAsText());
 
     if (!m_transform.isIdentity())
         json->setArray("transform", transformAsJSONArray(m_transform));

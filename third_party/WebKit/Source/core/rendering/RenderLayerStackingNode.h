@@ -99,7 +99,7 @@ public:
 private:
     friend class RenderLayerStackingNodeIterator;
     friend class RenderLayerStackingNodeReverseIterator;
-    friend class RenderTreeAsText;
+    friend class LayoutTreeAsText;
 
     Vector<RenderLayerStackingNode*>* posZOrderList() const
     {

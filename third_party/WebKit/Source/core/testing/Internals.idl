@@ -32,7 +32,7 @@
 
     GCObservation observeGC(any observed);
 
-    [RaisesException, TypeChecking=Interface] DOMString elementRenderTreeAsText(Element element);
+    [RaisesException, TypeChecking=Interface] DOMString elementLayoutTreeAsText(Element element);
     boolean isPreloaded(DOMString url);
     boolean isLoadingFromMemoryCache(DOMString url);
 

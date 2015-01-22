@@ -41,25 +41,25 @@ function check() {
     var originalDisplayValue = actualContainer.style.display;
     actualContainer.style.display = 'none';
     expectContainer.offsetLeft;
-    var refContainerRenderTree = internals.elementRenderTreeAsText(expectContainer);
-    var refRenderTree = removeContainerLines(refContainerRenderTree);
+    var refContainerLayoutTree = internals.elementLayoutTreeAsText(expectContainer);
+    var refLayoutTree = removeContainerLines(refContainerLayoutTree);
     actualContainer.style.display = originalDisplayValue;
 
     originalDisplayValue = expectContainer.style.display;
     expectContainer.style.display = 'none';
     actualContainer.offsetLeft;
-    var targetContainerRenderTree = internals.elementRenderTreeAsText(actualContainer);
-    var targetRenderTree = removeContainerLines(targetContainerRenderTree);
+    var targetContainerLayoutTree = internals.elementLayoutTreeAsText(actualContainer);
+    var targetLayoutTree = removeContainerLines(targetContainerLayoutTree);
     expectContainer.style.display = originalDisplayValue;
 
-    if (targetRenderTree == refRenderTree)
+    if (targetLayoutTree == refLayoutTree)
         log("PASS");
     else {
         log("FAIL");
         log("Expected: ");
-        log(refRenderTree);
+        log(refLayoutTree);
         log("Actual: ");
-        log(targetRenderTree);
+        log(targetLayoutTree);
     }
 }
 

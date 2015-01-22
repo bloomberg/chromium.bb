@@ -97,7 +97,14 @@ template <typename T> class WebVector;
 // getting a frame's parent or its opener.
 class WebFrame {
 public:
-    // Control of renderTreeAsText output
+    // Control of layoutTreeAsText output
+    enum LayoutAsTextControl {
+        LayoutAsTextNormal = 0,
+        LayoutAsTextDebug = 1 << 0,
+        LayoutAsTextPrinting = 1 << 1
+    };
+    typedef unsigned LayoutAsTextControls;
+    // DEPRECATED. Use LayoutAsTextControl. crbug.com/450624
     enum RenderAsTextControl {
         RenderAsTextNormal = 0,
         RenderAsTextDebug = 1 << 0,
@@ -631,9 +638,11 @@ public:
 
     // Returns a text representation of the render tree.  This method is used
     // to support layout tests.
+    // DEPRECATED. Use layoutTreeAsText below. crbug.com/450624
     virtual WebString renderTreeAsText(RenderAsTextControls toShow = RenderAsTextNormal) const = 0;
+    virtual WebString layoutTreeAsText(LayoutAsTextControls toShow = LayoutAsTextNormal) const = 0;
 
-    // Calls markerTextForListItem() defined in WebCore/rendering/RenderTreeAsText.h.
+    // Calls markerTextForListItem() defined in core/layout/LayoutTreeAsText.h.
     virtual WebString markerTextForListItem(const WebElement&) const = 0;
 
     // Prints all of the pages into the canvas, with page boundaries drawn as

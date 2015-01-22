@@ -100,7 +100,7 @@ function testWithContentAndShadow(contentHtml, shadowHtml, label)
     cleanupContainer(targetContainer);
     var target = createTargetTree(contentHtml, shadowHtml);
     targetContainer.appendChild(target);
-    var targetRenderTree = removeContainerLines(window.internals.elementRenderTreeAsText(targetContainer));
+    var targetLayoutTree = removeContainerLines(window.internals.elementLayoutTreeAsText(targetContainer));
 
     var referenceContainer = document.getElementById("referenceContainer");
     cleanupContainer(referenceContainer);
@@ -108,15 +108,15 @@ function testWithContentAndShadow(contentHtml, shadowHtml, label)
     var referenceHtml = shadowHtml.replace("<content/>", (separator + contentHtml + separator));
     var reference = createTreeFrom(referenceHtml);
     referenceContainer.appendChild(reference);
-    var referenceRenderTree = removeContainerLines(window.internals.elementRenderTreeAsText(referenceContainer));
-    if (targetRenderTree == referenceRenderTree)
+    var referenceLayoutTree = removeContainerLines(window.internals.elementLayoutTreeAsText(referenceContainer));
+    if (targetLayoutTree == referenceLayoutTree)
         log("PASS[" + label + "]: content=" + contentHtml + " shadow=" + shadowHtml);
     else {
         log("FAIL[" + label + "]: content=" + contentHtml + " shadow=" + shadowHtml);
         log("Expected: (for " + reference.innerHTML + ")");
-        log(referenceRenderTree);
+        log(referenceLayoutTree);
         log("Actual: (for " + target.innerHTML + ")");
-        log(targetRenderTree);
+        log(targetLayoutTree);
     }
 }
 

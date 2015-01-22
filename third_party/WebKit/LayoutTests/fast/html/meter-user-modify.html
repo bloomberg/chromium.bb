@@ -31,12 +31,12 @@ function focusAndType(id, key)
 }
 
 var container = document.getElementById("container");
-renderTreeBeforeType = internals.elementRenderTreeAsText(document.documentElement);
+layoutTreeBeforeType = internals.elementLayoutTreeAsText(document.documentElement);
 
 focusAndType("meter", "X");
 
-renderTreeAfterType = internals.elementRenderTreeAsText(document.documentElement);
-shouldBe("renderTreeAfterType", "renderTreeBeforeType");
+layoutTreeAfterType = internals.elementLayoutTreeAsText(document.documentElement);
+shouldBe("layoutTreeAfterType", "layoutTreeBeforeType");
 
 var successfullyParsed = true;
 </script>

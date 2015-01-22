@@ -30,8 +30,8 @@
 
 #include "core/rendering/svg/SVGRenderTreeAsText.h"
 
+#include "core/layout/LayoutTreeAsText.h"
 #include "core/rendering/InlineTextBox.h"
-#include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
@@ -394,7 +394,7 @@ static void writeRenderSVGTextBox(TextStream& ts, const RenderSVGText& text)
     ts << " contains 1 chunk(s)";
 
     if (text.parent() && (text.parent()->resolveColor(CSSPropertyColor) != text.resolveColor(CSSPropertyColor)))
-        writeNameValuePair(ts, "color", text.resolveColor(CSSPropertyColor).nameForRenderTreeAsText());
+        writeNameValuePair(ts, "color", text.resolveColor(CSSPropertyColor).nameForLayoutTreeAsText());
 }
 
 static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textBox, int indent)

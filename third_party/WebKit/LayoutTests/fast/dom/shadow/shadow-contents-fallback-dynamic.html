@@ -35,20 +35,20 @@ function removeContainerLines(text) {
 }
 
 function check() {
-    var refContainerRenderTree = internals.elementRenderTreeAsText(document.getElementById('expect-container'));
-    var refRenderTree = removeContainerLines(refContainerRenderTree);
+    var refContainerLayoutTree = internals.elementLayoutTreeAsText(document.getElementById('expect-container'));
+    var refLayoutTree = removeContainerLines(refContainerLayoutTree);
 
-    var targetContainerRenderTree = internals.elementRenderTreeAsText(document.getElementById('actual-container'));
-    var targetRenderTree = removeContainerLines(targetContainerRenderTree);
+    var targetContainerLayoutTree = internals.elementLayoutTreeAsText(document.getElementById('actual-container'));
+    var targetLayoutTree = removeContainerLines(targetContainerLayoutTree);
 
-    if (targetRenderTree == refRenderTree)
+    if (targetLayoutTree == refLayoutTree)
         log("PASS");
     else {
         log("FAIL");
         log("Expected: ");
-        log(refRenderTree);
+        log(refLayoutTree);
         log("Actual: ");
-        log(targetRenderTree);
+        log(targetLayoutTree);
     }
 }
 

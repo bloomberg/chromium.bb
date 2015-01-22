@@ -92,7 +92,7 @@ public:
 
     // Returns the color serialized as either #RRGGBB or #RRGGBBAA
     // The latter format is not a valid CSS color, and should only be seen in DRT dumps.
-    String nameForRenderTreeAsText() const;
+    String nameForLayoutTreeAsText() const;
 
     // Returns whether parsing succeeded. The resulting Color is arbitrary
     // if parsing fails.

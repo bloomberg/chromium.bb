@@ -54,7 +54,7 @@
         var parentNode = createValidNode(parentTag, svgContainer, true);
         createValidNode(childTag, parentNode, false);
 
-        var drt = internals.elementRenderTreeAsText(divContainer);
+        var drt = internals.elementLayoutTreeAsText(divContainer);
         divContainer.removeChild(svgContainer);
 
         // Skip 4 lines to get to the child tag subtree (layer, div, svg and parent).
