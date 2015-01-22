@@ -63,8 +63,7 @@ PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* 
     if (!cgFontRef)
         return nullptr;
 
-    SkAutoTUnref<SkMemoryStream> stream(new SkMemoryStream(buffer->getAsSkData().get()));
-    RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromStream(stream.get()));
+    RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromStream(new SkMemoryStream(buffer->getAsSkData().get())));
     if (!typeface)
         return nullptr;
 
