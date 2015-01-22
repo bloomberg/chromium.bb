@@ -550,6 +550,14 @@ chrome.fileManagerPrivate.visitDesktop = function(profileId, callback) {};
  */
 chrome.fileManagerPrivate.openInspector = function(type) {};
 
+/**
+ * Gets the MIME type of a file.
+ * @param {string} fileUrl File url.
+ * @param {function(string)} callback Callback that MIME type of the file is
+ *     passed.
+ */
+chrome.fileManagerPrivate.getMimeType = function(fileUrl, callback) {};
+
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
 
