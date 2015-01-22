@@ -225,6 +225,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
         return;
       }
     }
+    scaled_frame_->set_timestamp(last_frame_->timestamp());
     libyuv::I420Scale(last_frame_->visible_data(media::VideoFrame::kYPlane),
                       last_frame_->stride(media::VideoFrame::kYPlane),
                       last_frame_->visible_data(media::VideoFrame::kUPlane),
