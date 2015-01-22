@@ -513,13 +513,12 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def testClearElement(self):
     text = self._driver.ExecuteScript(
         'document.body.innerHTML = \'<input type="text" value="abc">\';'
-        'var input = document.getElementsByTagName("input")[0];'
-        'input.addEventListener("change", function() {'
-        '  document.body.appendChild(document.createElement("br"));'
-        '});'
-        'return input;')
+        'return document.getElementsByTagName("input")[0];')
+    value = self._driver.ExecuteScript('return arguments[0].value;', text)
+    self.assertEquals('abc', value)
     text.Clear()
-    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+    value = self._driver.ExecuteScript('return arguments[0].value;', text)
+    self.assertEquals('', value)
 
   def testSendKeysToElement(self):
     text = self._driver.ExecuteScript(
