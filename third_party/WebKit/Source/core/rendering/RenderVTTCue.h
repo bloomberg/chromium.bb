@@ -56,7 +56,7 @@ private:
     void repositionCueSnapToLinesNotSet();
 
     RawPtrWillBeMember<VTTCue> m_cue;
-    LayoutPoint m_defaultPosition;
+    LayoutPoint m_specifiedPosition;
 };
 
 } // namespace blink

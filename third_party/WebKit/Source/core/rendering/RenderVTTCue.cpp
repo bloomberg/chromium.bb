@@ -57,6 +57,7 @@ void RenderVTTCue::layout()
 
     LayoutState state(*this, locationOffset());
 
+    // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings - step 13.
     if (m_cue->snapToLines())
         repositionCueSnapToLinesSet();
     else
@@ -77,35 +78,36 @@ bool RenderVTTCue::initializeLayoutParameters(InlineFlowBox* firstLineBox, Layou
 {
     ASSERT(firstChild());
 
-    RenderBlock* parentBlock = containingBlock();
-
-    // 1. Horizontal: Let step be the height of the first line box in boxes.
+    // 4. Horizontal: Let step be the height of the first line box in boxes.
     //    Vertical: Let step be the width of the first line box in boxes.
     step = m_cue->getWritingDirection() == VTTCue::Horizontal ? firstLineBox->size().height() : firstLineBox->size().width();
 
-    // 2. If step is zero, then jump to the step labeled done positioning below.
+    // 5. If step is zero, then jump to the step labeled done positioning below.
     if (!step)
         return false;
 
-    // 3. Let line position be the text track cue computed line position.
-    int linePosition = m_cue->calculateComputedLinePosition();
+    // 6. Let line position be the text track cue computed line position.
+    // 7. Round line position to an integer by adding 0.5 and then flooring it.
+    LayoutUnit linePosition = floorf(m_cue->calculateComputedLinePosition() + 0.5f);
 
-    // 4. Vertical Growing Left: Add one to line position then negate it.
+    // 8. Vertical Growing Left: Add one to line position then negate it.
     if (m_cue->getWritingDirection() == VTTCue::VerticalGrowingLeft)
         linePosition = -(linePosition + 1);
 
-    // 5. Let position be the result of multiplying step and line position.
+    // 9. Let position be the result of multiplying step and line position.
     position = step * linePosition;
 
-    // 6. Vertical Growing Left: Decrease position by the width of the
+    // 10. Vertical Growing Left: Decrease position by the width of the
     // bounding box of the boxes in boxes, then increase position by step.
     if (m_cue->getWritingDirection() == VTTCue::VerticalGrowingLeft) {
         position -= size().width();
         position += step;
     }
 
-    // 7. If line position is less than zero...
+    // 11. If line position is less than zero...
     if (linePosition < 0) {
+        RenderBlock* parentBlock = containingBlock();
+
         // Horizontal / Vertical: ... then increase position by the
         // height / width of the video's rendering area ...
         position += m_cue->getWritingDirection() == VTTCue::Horizontal ? parentBlock->size().height() : parentBlock->size().width();
@@ -113,13 +115,12 @@ bool RenderVTTCue::initializeLayoutParameters(InlineFlowBox* firstLineBox, Layou
         // ... and negate step.
         step = -step;
     }
-
     return true;
 }
 
 void RenderVTTCue::placeBoxInDefaultPosition(LayoutUnit position, bool& switched)
 {
-    // 8. Move all boxes in boxes ...
+    // 12. Move all boxes in boxes ...
     if (m_cue->getWritingDirection() == VTTCue::Horizontal) {
         // Horizontal: ... down by the distance given by position
         setY(location().y() + position);
@@ -128,11 +129,13 @@ void RenderVTTCue::placeBoxInDefaultPosition(LayoutUnit position, bool& switched
         setX(location().x() + position);
     }
 
-    // 9. Default: Remember the position of all the boxes in boxes as their
-    // default position.
-    m_defaultPosition = location();
+    // 13. Remember the position of all the boxes in boxes as their specified position.
+    m_specifiedPosition = location();
 
-    // 10. Let switched be false.
+    // 14. Let best position be null. It will hold a position for boxes, much like specified position in the previous step.
+    // 15. Let best position score be null.
+
+    // 16. Let switched be false.
     switched = false;
 }
 
@@ -160,20 +163,19 @@ bool RenderVTTCue::shouldSwitchDirection(InlineFlowBox* firstLineBox, LayoutUnit
     LayoutUnit bottom = top + firstLineBox->size().height();
     LayoutUnit right = left + firstLineBox->size().width();
 
-    // 12. Horizontal: If step is negative and the top of the first line
-    // box in boxes is now above the top of the video's rendering area,
-    // or if step is positive and the bottom of the first line box in
-    // boxes is now below the bottom of the video's rendering area, jump
-    // to the step labeled switch direction.
+    // 21. Horizontal: If step is negative and the top of the first line box in
+    // boxes is now above the top of the title area, or if step is positive and
+    // the bottom of the first line box in boxes is now below the bottom of the
+    // title area, jump to the step labeled switch direction.
     LayoutUnit parentHeight = containingBlock()->size().height();
     if (m_cue->getWritingDirection() == VTTCue::Horizontal && ((step < 0 && top < 0) || (step > 0 && bottom > parentHeight)))
         return true;
 
-    // 12. Vertical: If step is negative and the left edge of the first line
-    // box in boxes is now to the left of the left edge of the video's
-    // rendering area, or if step is positive and the right edge of the
-    // first line box in boxes is now to the right of the right edge of
-    // the video's rendering area, jump to the step labeled switch direction.
+    // 21. Vertical: If step is negative and the left edge of the first line
+    // box in boxes is now to the left of the left edge of the title area, or
+    // if step is positive and the right edge of the first line box in boxes is
+    // now to the right of the right edge of the title area, jump to the step
+    // labeled switch direction.
     LayoutUnit parentWidth = containingBlock()->size().width();
     if (m_cue->getWritingDirection() != VTTCue::Horizontal && ((step < 0 && left < 0) || (step > 0 && right > parentWidth)))
         return true;
@@ -183,13 +185,13 @@ bool RenderVTTCue::shouldSwitchDirection(InlineFlowBox* firstLineBox, LayoutUnit
 
 void RenderVTTCue::moveBoxesByStep(LayoutUnit step)
 {
-    // 13. Horizontal: Move all the boxes in boxes down by the distance
+    // 22. Horizontal: Move all the boxes in boxes down by the distance
     // given by step. (If step is negative, then this will actually
     // result in an upwards movement of the boxes in absolute terms.)
     if (m_cue->getWritingDirection() == VTTCue::Horizontal)
         setY(location().y() + step);
 
-    // 13. Vertical: Move all the boxes in boxes right by the distance
+    // 22. Vertical: Move all the boxes in boxes right by the distance
     // given by step. (If step is negative, then this will actually
     // result in a leftwards movement of the boxes in absolute terms.)
     else
@@ -198,51 +200,71 @@ void RenderVTTCue::moveBoxesByStep(LayoutUnit step)
 
 bool RenderVTTCue::switchDirection(bool& switched, LayoutUnit& step)
 {
-    // 15. Switch direction: Move all the boxes in boxes back to their
-    // default position as determined in the step above labeled default.
-    setLocation(m_defaultPosition);
+    // 24. Switch direction: If switched is true, then move all the boxes in
+    // boxes back to their best position, and jump to the step labeled done
+    // positioning below.
 
-    // 16. If switched is true, jump to the step labeled done
+    // 25. Otherwise, move all the boxes in boxes back to their specified
+    // position as determined in the earlier step.
+    setLocation(m_specifiedPosition);
+
+    // XX. If switched is true, jump to the step labeled done
     // positioning below.
     if (switched)
         return false;
 
-    // 17. Negate step.
+    // 26. Negate step.
     step = -step;
 
-    // 18. Set switched to true.
+    // 27. Set switched to true.
     switched = true;
     return true;
 }
 
 void RenderVTTCue::repositionCueSnapToLinesSet()
 {
-    InlineFlowBox* firstLineBox;
-    LayoutUnit step;
-    LayoutUnit position;
+    // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings
+    // Step 13, "If cue's text track cue snap-to-lines flag is set".
 
+    InlineFlowBox* firstLineBox;
     if (!findFirstLineBox(firstLineBox))
         return;
 
+    // Step 1 skipped.
+
+    LayoutUnit step;
+    LayoutUnit position;
     if (!initializeLayoutParameters(firstLineBox, step, position))
         return;
 
     bool switched;
     placeBoxInDefaultPosition(position, switched);
 
-    // 11. Step loop: If none of the boxes in boxes would overlap any of the boxes
-    // in output and all the boxes in output are within the video's rendering area
-    // then jump to the step labeled done positioning.
+    // Step 17 skipped. (margin == 0; title area == video area)
+
+    // 18. Step loop: If none of the boxes in boxes would overlap any of the
+    // boxes in output, and all of the boxes in output are entirely within the
+    // title area box, then jump to the step labeled done positioning below.
     while (isOutside() || isOverlapping()) {
+        // 19. Let current position score be the percentage of the area of the
+        // bounding box of the boxes in boxes that is outside the title area
+        // box.
+        // 20. If best position is null (i.e. this is the first run through
+        // this loop, switched is still false, the boxes in boxes are at their
+        // specified position, and best position score is still null), or if
+        // current position score is a lower percentage than that in best
+        // position score, then remember the position of all the boxes in boxes
+        // as their best position, and set best position score to current
+        // position score.
         if (!shouldSwitchDirection(firstLineBox, step)) {
-            // 13. Move all the boxes in boxes ...
-            // 14. Jump back to the step labeled step loop.
+            // 22. Move all the boxes in boxes ...
             moveBoxesByStep(step);
+            // 23. Jump back to the step labeled step loop.
         } else if (!switchDirection(switched, step)) {
             break;
         }
 
-        // 19. Jump back to the step labeled step loop.
+        // 28. Jump back to the step labeled step loop.
     }
 
     // Acommodate extra top and bottom padding, border or margin.
@@ -268,6 +290,45 @@ void RenderVTTCue::repositionCueSnapToLinesSet()
 void RenderVTTCue::repositionCueSnapToLinesNotSet()
 {
     // FIXME: Implement overlapping detection when snap-to-lines is not set. http://wkb.ug/84296
+
+    // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings
+    // Step 13, "If cue's text track cue snap-to-lines flag is not set".
+
+    // 1. Let bounding box be the bounding box of the boxes in boxes.
+
+    // 2. Run the appropriate steps from the following list:
+    //    If the text track cue writing direction is horizontal
+    //       If the text track cue line alignment is middle alignment
+    //          Move all the boxes in boxes up by half of the height of
+    //          bounding box.
+    //       If the text track cue line alignment is end alignment
+    //          Move all the boxes in boxes up by the height of bounding box.
+    //
+    //    If the text track cue writing direction is vertical growing left or
+    //    vertical growing right
+    //       If the text track cue line alignment is middle alignment
+    //          Move all the boxes in boxes left by half of the width of
+    //          bounding box.
+    //       If the text track cue line alignment is end alignment
+    //          Move all the boxes in boxes left by the width of bounding box.
+
+    // 3. If none of the boxes in boxes would overlap any of the boxes in
+    // output, and all the boxes in output are within the video's rendering
+    // area, then jump to the step labeled done positioning below.
+
+    // 4. If there is a position to which the boxes in boxes can be moved while
+    // maintaining the relative positions of the boxes in boxes to each other
+    // such that none of the boxes in boxes would overlap any of the boxes in
+    // output, and all the boxes in output would be within the video's
+    // rendering area, then move the boxes in boxes to the closest such
+    // position to their current position, and then jump to the step labeled
+    // done positioning below. If there are multiple such positions that are
+    // equidistant from their current position, use the highest one amongst
+    // them; if there are several at that height, then use the leftmost one
+    // amongst them.
+
+    // 5. Otherwise, jump to the step labeled done positioning below. (The
+    // boxes will unfortunately overlap.)
 }
 
 } // namespace blink
