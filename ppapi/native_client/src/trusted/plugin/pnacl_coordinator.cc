@@ -227,7 +227,7 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   struct NaClDesc* desc = temp_nexe_file_->read_wrapper()->desc();
   if (0 == (*((struct NaClDescVtbl const *)desc->base.vtbl)->Fstat)(desc,
                                                                     &stbuf)) {
-    size_t nexe_size = stbuf.nacl_abi_st_size;
+    nacl_abi_off_t nexe_size = stbuf.nacl_abi_st_size;
     HistogramSizeKB(plugin_->uma_interface(),
                     "NaCl.Perf.Size.PNaClTranslatedNexe",
                     static_cast<int32_t>(nexe_size / 1024));
