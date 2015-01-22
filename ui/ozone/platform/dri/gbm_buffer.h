@@ -13,23 +13,21 @@
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 struct gbm_bo;
-struct gbm_device;
 
 namespace ui {
 
-class DriWrapper;
+class GbmWrapper;
 
 class GbmBuffer : public GbmBufferBase {
  public:
   static scoped_refptr<GbmBuffer> CreateBuffer(
-      DriWrapper* dri,
-      gbm_device* device,
+      GbmWrapper* gbm,
       SurfaceFactoryOzone::BufferFormat format,
       const gfx::Size& size,
       bool scanout);
 
  private:
-  GbmBuffer(DriWrapper* dri, gbm_bo* bo, bool scanout);
+  GbmBuffer(GbmWrapper* gbm, gbm_bo* bo, bool scanout);
   ~GbmBuffer() override;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBuffer);
@@ -38,7 +36,7 @@ class GbmBuffer : public GbmBufferBase {
 class GbmPixmap : public NativePixmap {
  public:
   GbmPixmap(scoped_refptr<GbmBuffer> buffer);
-  bool Initialize(DriWrapper* dri);
+  bool Initialize(GbmWrapper* gbm);
 
   // NativePixmap:
   void* GetEGLClientBuffer() override;

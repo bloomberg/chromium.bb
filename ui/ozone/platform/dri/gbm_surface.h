@@ -12,14 +12,13 @@
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 struct gbm_bo;
-struct gbm_device;
 struct gbm_surface;
 
 namespace ui {
 
 class DriBuffer;
-class DriWrapper;
 class DriWindowDelegate;
+class GbmWrapper;
 
 // Extends the GBM surfaceless functionality and adds an implicit surface for
 // the primary plane. Arbitrary buffers can still be allocated and displayed as
@@ -27,9 +26,7 @@ class DriWindowDelegate;
 // surface and is updated via an EGLSurface.
 class GbmSurface : public GbmSurfaceless {
  public:
-  GbmSurface(DriWindowDelegate* window_delegate,
-             gbm_device* device,
-             DriWrapper* dri);
+  GbmSurface(DriWindowDelegate* window_delegate, GbmWrapper* gbm);
   ~GbmSurface() override;
 
   bool Initialize();
@@ -44,9 +41,7 @@ class GbmSurface : public GbmSurfaceless {
   void OnSwapBuffersCallback(const SwapCompletionCallback& callback,
                              gbm_bo* pending_buffer);
 
-  gbm_device* gbm_device_;
-
-  DriWrapper* dri_;
+  GbmWrapper* gbm_;  // Not owned.
 
   // The native GBM surface. In EGL this represents the EGLNativeWindowType.
   gbm_surface* native_surface_;

@@ -7,12 +7,11 @@
 
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 
-struct gbm_device;
-
 namespace ui {
 
 class DriWindowDelegate;
 class DriWindowDelegateManager;
+class GbmWrapper;
 class ScreenManager;
 
 class GbmSurfaceFactory : public DriSurfaceFactory {
@@ -20,8 +19,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   GbmSurfaceFactory(bool allow_surfaceless);
   ~GbmSurfaceFactory() override;
 
-  void InitializeGpu(DriWrapper* dri,
-                     gbm_device* device,
+  void InitializeGpu(GbmWrapper* gbm,
                      ScreenManager* screen_manager,
                      DriWindowDelegateManager* window_manager);
 
@@ -55,8 +53,8 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
  private:
   DriWindowDelegate* GetOrCreateWindowDelegate(gfx::AcceleratedWidget widget);
 
+  GbmWrapper* gbm_;                // Not owned.
   ScreenManager* screen_manager_;  // Not owned.
-  gbm_device* device_;  // Not owned.
   bool allow_surfaceless_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceFactory);

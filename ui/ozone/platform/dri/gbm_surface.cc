@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/gbm_buffer_base.h"
+#include "ui/ozone/platform/dri/gbm_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 
@@ -76,12 +76,9 @@ void GbmSurfaceBuffer::Destroy(gbm_bo* buffer, void* data) {
 
 }  // namespace
 
-GbmSurface::GbmSurface(DriWindowDelegate* window_delegate,
-                       gbm_device* device,
-                       DriWrapper* dri)
+GbmSurface::GbmSurface(DriWindowDelegate* window_delegate, GbmWrapper* gbm)
     : GbmSurfaceless(window_delegate),
-      gbm_device_(device),
-      dri_(dri),
+      gbm_(gbm),
       native_surface_(NULL),
       current_buffer_(NULL),
       weak_factory_(this) {
@@ -105,12 +102,9 @@ bool GbmSurface::Initialize() {
     size = window_delegate_->GetController()->GetModeSize();
   }
   // TODO(dnicoara) Check underlying system support for pixel format.
-  native_surface_ =
-      gbm_surface_create(gbm_device_,
-                         size.width(),
-                         size.height(),
-                         GBM_BO_FORMAT_XRGB8888,
-                         GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+  native_surface_ = gbm_surface_create(
+      gbm_->device(), size.width(), size.height(), GBM_BO_FORMAT_XRGB8888,
+      GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
 
   if (!native_surface_)
     return false;
@@ -142,7 +136,7 @@ bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
   scoped_refptr<GbmSurfaceBuffer> primary =
       GbmSurfaceBuffer::GetBuffer(pending_buffer);
   if (!primary.get()) {
-    primary = GbmSurfaceBuffer::CreateBuffer(dri_, pending_buffer);
+    primary = GbmSurfaceBuffer::CreateBuffer(gbm_, pending_buffer);
     if (!primary.get()) {
       LOG(ERROR) << "Failed to associate the buffer with the controller";
       callback.Run();

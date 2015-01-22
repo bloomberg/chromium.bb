@@ -43,6 +43,8 @@
         'gbm_surfaceless.h',
         'gbm_surface_factory.cc',
         'gbm_surface_factory.h',
+        'gbm_wrapper.cc',
+        'gbm_wrapper.h',
         'ozone_platform_gbm.cc',
         'ozone_platform_gbm.h',
       ],

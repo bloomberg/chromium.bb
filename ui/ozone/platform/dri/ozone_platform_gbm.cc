@@ -22,10 +22,10 @@
 #include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
-#include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surface_factory.h"
+#include "ui/ozone/platform/dri/gbm_wrapper.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
 #include "ui/ozone/platform/dri/native_display_delegate_proxy.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
@@ -49,34 +49,38 @@ namespace {
 
 const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
 
-class GbmBufferGenerator : public ScanoutBufferGenerator {
+class GlApiLoader {
  public:
-  GbmBufferGenerator(DriWrapper* dri)
-      : glapi_lib_(dlopen("libglapi.so.0", RTLD_LAZY | RTLD_GLOBAL)),
-        device_(gbm_create_device(dri->get_fd())) {
-    if (!device_)
-      LOG(FATAL) << "Unable to initialize gbm for " << kDefaultGraphicsCardPath;
-  }
-  virtual ~GbmBufferGenerator() {
-    gbm_device_destroy(device_);
+  GlApiLoader()
+      : glapi_lib_(dlopen("libglapi.so.0", RTLD_LAZY | RTLD_GLOBAL)) {}
+
+  ~GlApiLoader() {
     if (glapi_lib_)
       dlclose(glapi_lib_);
   }
 
-  gbm_device* device() const { return device_; }
+ private:
+  // HACK: gbm drivers have broken linkage. The Mesa DRI driver references
+  // symbols in the libglapi library however it does not explicitly link against
+  // it. That caused linkage errors when running an application that does not
+  // explicitly link against libglapi.
+  void* glapi_lib_;
+
+  DISALLOW_COPY_AND_ASSIGN(GlApiLoader);
+};
+
+class GbmBufferGenerator : public ScanoutBufferGenerator {
+ public:
+  GbmBufferGenerator() {}
+  ~GbmBufferGenerator() override {}
 
   scoped_refptr<ScanoutBuffer> Create(DriWrapper* drm,
                                       const gfx::Size& size) override {
-    return GbmBuffer::CreateBuffer(drm, device_, SurfaceFactoryOzone::RGBA_8888,
-                                   size, true);
+    return GbmBuffer::CreateBuffer(static_cast<GbmWrapper*>(drm),
+                                   SurfaceFactoryOzone::RGBA_8888, size, true);
   }
 
  protected:
-  // HACK: gbm drivers have broken linkage
-  void* glapi_lib_;
-
-  gbm_device* device_;
-
   DISALLOW_COPY_AND_ASSIGN(GbmBufferGenerator);
 };
 
@@ -146,30 +150,31 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 
   void InitializeGPU() override {
+    gl_api_loader_.reset(new GlApiLoader());
     // Async page flips are supported only on surfaceless mode.
-    dri_.reset(new DriWrapper(kDefaultGraphicsCardPath, !use_surfaceless_));
-    dri_->Initialize();
-    buffer_generator_.reset(new GbmBufferGenerator(dri_.get()));
+    gbm_.reset(new GbmWrapper(kDefaultGraphicsCardPath, !use_surfaceless_));
+    gbm_->Initialize();
+    buffer_generator_.reset(new GbmBufferGenerator());
     screen_manager_.reset(
-        new ScreenManager(dri_.get(), buffer_generator_.get()));
+        new ScreenManager(gbm_.get(), buffer_generator_.get()));
     window_delegate_manager_.reset(new DriWindowDelegateManager());
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
-    surface_factory_ozone_->InitializeGpu(
-        dri_.get(), buffer_generator_->device(), screen_manager_.get(),
-        window_delegate_manager_.get());
+    surface_factory_ozone_->InitializeGpu(gbm_.get(), screen_manager_.get(),
+                                          window_delegate_manager_.get());
     scoped_ptr<NativeDisplayDelegateDri> ndd(
-        new NativeDisplayDelegateDri(dri_.get(), screen_manager_.get()));
+        new NativeDisplayDelegateDri(gbm_.get(), screen_manager_.get()));
     ndd->Initialize();
     gpu_platform_support_.reset(
-        new DriGpuPlatformSupport(dri_.get(), window_delegate_manager_.get(),
+        new DriGpuPlatformSupport(gbm_.get(), window_delegate_manager_.get(),
                                   screen_manager_.get(), ndd.Pass()));
   }
 
  private:
   bool use_surfaceless_;
-  scoped_ptr<DriWrapper> dri_;
+  scoped_ptr<GlApiLoader> gl_api_loader_;
+  scoped_ptr<GbmWrapper> gbm_;
   scoped_ptr<GbmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DeviceManager> device_manager_;
