@@ -68,9 +68,6 @@ ScriptPromise PushManager::subscribe(ScriptState* scriptState)
 
 ScriptPromise PushManager::getSubscription(ScriptState* scriptState)
 {
-    if (!m_registration->active())
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Could not get subscription - no active Service Worker"));
-
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
