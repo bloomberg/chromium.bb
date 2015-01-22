@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -40,8 +41,14 @@ class SQLiteFeaturesTest : public testing::Test {
   void TearDown() override {
     // If any error happened the original sql statement can be found in
     // |sql_text_|.
-    EXPECT_EQ(SQLITE_OK, error_);
+    EXPECT_EQ(SQLITE_OK, error_) << sql_text_;
     db_.Close();
+  }
+
+  void VerifyAndClearLastError(int expected_error) {
+    EXPECT_EQ(expected_error, error_);
+    error_ = SQLITE_OK;
+    sql_text_.clear();
   }
 
   sql::Connection& db() { return db_; }
@@ -128,5 +135,36 @@ TEST_F(SQLiteFeaturesTest, UsesUsleep) {
   EXPECT_LT(delta.InMilliseconds(), 1000);
 }
 #endif
+
+// Ensure that our SQLite version has working foreign key support with cascade
+// delete support.
+TEST_F(SQLiteFeaturesTest, ForeignKeySupport) {
+  ASSERT_TRUE(db().Execute("PRAGMA foreign_keys=1"));
+  ASSERT_TRUE(db().Execute("CREATE TABLE parents (id INTEGER PRIMARY KEY)"));
+  ASSERT_TRUE(db().Execute(
+      "CREATE TABLE children ("
+      "    id INTEGER PRIMARY KEY,"
+      "    pid INTEGER NOT NULL REFERENCES parents(id) ON DELETE CASCADE)"));
+
+  // Inserting without a matching parent should fail with constraint violation.
+  EXPECT_FALSE(db().Execute("INSERT INTO children VALUES (10, 1)"));
+  VerifyAndClearLastError(SQLITE_CONSTRAINT);
+
+  size_t rows;
+  EXPECT_TRUE(sql::test::CountTableRows(&db(), "children", &rows));
+  EXPECT_EQ(0u, rows);
+
+  // Inserting with a matching parent should work.
+  ASSERT_TRUE(db().Execute("INSERT INTO parents VALUES (1)"));
+  EXPECT_TRUE(db().Execute("INSERT INTO children VALUES (11, 1)"));
+  EXPECT_TRUE(db().Execute("INSERT INTO children VALUES (12, 1)"));
+  EXPECT_TRUE(sql::test::CountTableRows(&db(), "children", &rows));
+  EXPECT_EQ(2u, rows);
+
+  // Deleting the parent should cascade, i.e., delete the children as well.
+  ASSERT_TRUE(db().Execute("DELETE FROM parents"));
+  EXPECT_TRUE(sql::test::CountTableRows(&db(), "children", &rows));
+  EXPECT_EQ(0u, rows);
+}
 
 }  // namespace
