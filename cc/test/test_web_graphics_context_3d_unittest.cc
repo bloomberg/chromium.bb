@@ -93,5 +93,19 @@ TEST(TestWebGraphicsContext3DTest,
       check_parameter_value(context.get(), GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 }
 
+TEST(TestWebGraphicsContext3DTest, UseMultipleRenderAndFramebuffers) {
+  scoped_ptr<TestWebGraphicsContext3D> context(
+      TestWebGraphicsContext3D::Create());
+
+  GLuint ids[2];
+  context->genFramebuffers(2, ids);
+  EXPECT_NE(ids[0], ids[1]);
+  context->deleteFramebuffers(2, ids);
+
+  context->genRenderbuffers(2, ids);
+  EXPECT_NE(ids[0], ids[1]);
+  context->deleteRenderbuffers(2, ids);
+}
+
 }  // namespace
 }  // namespace cc

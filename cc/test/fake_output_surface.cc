@@ -20,7 +20,8 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(context_provider),
       client_(NULL),
       num_sent_frames_(0),
-      has_external_stencil_test_(false) {
+      has_external_stencil_test_(false),
+      framebuffer_(0) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
     capabilities_.max_frames_pending = 1;
@@ -33,7 +34,8 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(software_device.Pass()),
       client_(NULL),
       num_sent_frames_(0),
-      has_external_stencil_test_(false) {
+      has_external_stencil_test_(false),
+      framebuffer_(0) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
     capabilities_.max_frames_pending = 1;
@@ -47,7 +49,8 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(context_provider, software_device.Pass()),
       client_(NULL),
       num_sent_frames_(0),
-      has_external_stencil_test_(false) {
+      has_external_stencil_test_(false),
+      framebuffer_(0) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
     capabilities_.max_frames_pending = 1;
@@ -76,6 +79,14 @@ void FakeOutputSurface::SwapBuffers(CompositorFrame* frame) {
   }
   PostSwapBuffersComplete();
   client_->DidSwapBuffers();
+}
+
+void FakeOutputSurface::BindFramebuffer() {
+  if (framebuffer_)
+    context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER,
+                                                    framebuffer_);
+  else
+    OutputSurface::BindFramebuffer();
 }
 
 bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {

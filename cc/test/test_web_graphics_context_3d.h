@@ -352,6 +352,12 @@ class TestWebGraphicsContext3D {
   virtual GLuint NextImageId();
   virtual void RetireImageId(GLuint id);
 
+  virtual GLuint NextFramebufferId();
+  virtual void RetireFramebufferId(GLuint id);
+
+  virtual GLuint NextRenderbufferId();
+  virtual void RetireRenderbufferId(GLuint id);
+
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
   size_t max_used_transfer_buffer_usage_bytes() const {
     return max_used_transfer_buffer_usage_bytes_;
@@ -422,9 +428,11 @@ class TestWebGraphicsContext3D {
     unsigned next_buffer_id;
     unsigned next_image_id;
     unsigned next_texture_id;
+    unsigned next_renderbuffer_id;
     base::ScopedPtrHashMap<unsigned, Buffer> buffers;
     base::hash_set<unsigned> images;
     OrderedTextureMap textures;
+    base::hash_set<unsigned> renderbuffer_set;
 
    private:
     friend class base::RefCountedThreadSafe<Namespace>;
@@ -453,6 +461,9 @@ class TestWebGraphicsContext3D {
   base::hash_set<unsigned> program_set_;
   unsigned next_shader_id_;
   base::hash_set<unsigned> shader_set_;
+  unsigned next_framebuffer_id_;
+  base::hash_set<unsigned> framebuffer_set_;
+  unsigned current_framebuffer_;
   std::vector<TestWebGraphicsContext3D*> shared_contexts_;
   int max_texture_size_;
   bool reshape_called_;

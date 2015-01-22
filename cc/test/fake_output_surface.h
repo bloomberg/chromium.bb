@@ -96,6 +96,9 @@ class FakeOutputSurface : public OutputSurface {
 
   bool BindToClient(OutputSurfaceClient* client) override;
 
+  void set_framebuffer(unsigned framebuffer) { framebuffer_ = framebuffer; }
+  void BindFramebuffer() override;
+
   using OutputSurface::ReleaseGL;
   using OutputSurface::InitializeAndSetContext3d;
 
@@ -138,6 +141,7 @@ class FakeOutputSurface : public OutputSurface {
   CompositorFrame last_sent_frame_;
   size_t num_sent_frames_;
   bool has_external_stencil_test_;
+  unsigned framebuffer_;
   TransferableResourceArray resources_held_by_parent_;
   scoped_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
   gfx::Rect last_swap_rect_;
