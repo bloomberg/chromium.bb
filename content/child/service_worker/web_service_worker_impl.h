@@ -47,7 +47,6 @@ class WebServiceWorkerImpl
   virtual void setProxy(blink::WebServiceWorkerProxy* proxy);
   virtual blink::WebServiceWorkerProxy* proxy();
   virtual void proxyReadyChanged();
-  virtual blink::WebURL scope() const;
   virtual blink::WebURL url() const;
   virtual blink::WebServiceWorkerState state() const;
   virtual void postMessage(const blink::WebString& message,

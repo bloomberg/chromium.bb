@@ -161,7 +161,6 @@ struct CONTENT_EXPORT ServiceWorkerBatchOperation {
 struct CONTENT_EXPORT ServiceWorkerObjectInfo {
   ServiceWorkerObjectInfo();
   int handle_id;
-  GURL scope;
   GURL url;
   blink::WebServiceWorkerState state;
   int64 version_id;

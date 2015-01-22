@@ -69,10 +69,6 @@ void WebServiceWorkerImpl::proxyReadyChanged() {
   queued_states_.clear();
 }
 
-blink::WebURL WebServiceWorkerImpl::scope() const {
-  return handle_ref_->scope();
-}
-
 blink::WebURL WebServiceWorkerImpl::url() const {
   return handle_ref_->url();
 }
