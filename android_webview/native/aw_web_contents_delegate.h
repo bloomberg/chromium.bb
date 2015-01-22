@@ -61,8 +61,6 @@ class AwWebContentsDelegate
       const content::WebContents* web_contents) const override;
 
  private:
-  void ToggleFullscreenModeForTab(content::WebContents* web_contents,
-                                  bool enter_fullscreen);
   bool is_fullscreen_;
 };
 

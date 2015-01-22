@@ -210,24 +210,15 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
 
 void AwWebContentsDelegate::EnterFullscreenModeForTab(
     content::WebContents* web_contents, const GURL& origin) {
-  ToggleFullscreenModeForTab(web_contents, true);
+  WebContentsDelegateAndroid::EnterFullscreenModeForTab(web_contents, origin);
+  is_fullscreen_ = true;
+  web_contents->GetRenderViewHost()->WasResized();
 }
 
 void AwWebContentsDelegate::ExitFullscreenModeForTab(
     content::WebContents* web_contents) {
-  ToggleFullscreenModeForTab(web_contents, false);
-}
-
-void AwWebContentsDelegate::ToggleFullscreenModeForTab(
-    content::WebContents* web_contents, bool enter_fullscreen) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
-  if (java_delegate.obj()) {
-    Java_AwWebContentsDelegate_toggleFullscreenModeForTab(
-        env, java_delegate.obj(), enter_fullscreen);
-  }
-  is_fullscreen_ = enter_fullscreen;
+  WebContentsDelegateAndroid::ExitFullscreenModeForTab(web_contents);
+  is_fullscreen_ = false;
   web_contents->GetRenderViewHost()->WasResized();
 }
 
