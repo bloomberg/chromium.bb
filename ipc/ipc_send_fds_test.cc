@@ -38,9 +38,9 @@ const unsigned kNumMessages = 20;
 const char* kDevZeroPath = "/dev/zero";
 
 #if defined(OS_POSIX)
-COMPILE_ASSERT(kNumFDsToSend ==
-                   IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage,
-               num_fds_to_send_must_be_the_same_as_the_max_desc_per_message);
+static_assert(kNumFDsToSend ==
+                  IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage,
+              "The number of FDs to send must be kMaxDescriptorsPerMessage.");
 #endif
 
 class MyChannelDescriptorListenerBase : public IPC::Listener {

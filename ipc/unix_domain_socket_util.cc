@@ -20,8 +20,8 @@
 namespace IPC {
 
 // Verify that kMaxSocketNameLength is a decent size.
-COMPILE_ASSERT(sizeof(((sockaddr_un*)0)->sun_path) >= kMaxSocketNameLength,
-               BAD_SUN_PATH_LENGTH);
+static_assert(sizeof(((sockaddr_un*)0)->sun_path) >= kMaxSocketNameLength,
+              "sun_path is too long.");
 
 namespace {
 
