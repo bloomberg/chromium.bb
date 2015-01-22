@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // system.display api test
-// app_shell_browsertests --gtest_filter=SystemDisplayApiTest.*
+// extensions_browsertests --gtest_filter=SystemDisplayApiTest.*
 
 chrome.test.runTests([
   function testGet() {

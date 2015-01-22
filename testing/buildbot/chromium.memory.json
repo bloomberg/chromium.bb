@@ -2,7 +2,7 @@
   "Linux ASan LSan Tests (1)": {
     "gtest_tests": [
       "accessibility_unittests",
-      "app_shell_browsertests",
+      "extensions_browsertests",
       {
         "test": "base_unittests",
         "swarming": {

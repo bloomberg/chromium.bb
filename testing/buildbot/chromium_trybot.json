@@ -233,7 +233,7 @@
       "platforms": ["linux", "win"]
     },
     {
-      "test": "app_shell_browsertests",
+      "test": "extensions_browsertests",
       "platforms": ["linux", "win"]
     },
     {

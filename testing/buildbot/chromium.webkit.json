@@ -83,9 +83,9 @@
       },
       "sql_unittests",
       "nacl_loader_unittests",
-      "app_shell_browsertests",
       "app_shell_unittests",
       "chromevox_tests",
+      "extensions_browsertests",
       "skia_unittests"
     ]
   },
@@ -163,7 +163,6 @@
           "shards": 20
         }
       },
-      "app_shell_browsertests",
       "app_shell_unittests",
       {
         "test": "content_browsertests",
@@ -172,6 +171,7 @@
           "shards": 2
         }
       },
+      "extensions_browsertests",
       "gcm_unit_tests",
       "skia_unittests",
       {

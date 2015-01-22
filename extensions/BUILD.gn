@@ -289,3 +289,65 @@ if (false) {
     }
   }
 }
+
+test("extensions_browsertests") {
+  sources = [
+    "browser/api/audio/audio_apitest.cc",
+    "browser/api/dns/dns_apitest.cc",
+    "browser/api/hid/hid_apitest.cc",
+    "browser/api/socket/socket_apitest.cc",
+    "browser/api/sockets_tcp/sockets_tcp_apitest.cc",
+    "browser/api/sockets_udp/sockets_udp_apitest.cc",
+    "browser/api/system_cpu/system_cpu_apitest.cc",
+    "browser/api/system_display/system_display_apitest.cc",
+    "browser/api/system_memory/system_memory_apitest.cc",
+    "browser/api/system_network/system_network_apitest.cc",
+    "browser/api/system_storage/storage_api_test_util.cc",
+    "browser/api/system_storage/storage_api_test_util.h",
+    "browser/api/system_storage/system_storage_apitest.cc",
+    "browser/api/system_storage/system_storage_eject_apitest.cc",
+    "browser/api/usb/usb_apitest.cc",
+    "browser/guest_view/app_view/app_view_apitest.cc",
+    "browser/guest_view/web_view/web_view_apitest.h",
+    "browser/guest_view/web_view/web_view_apitest.cc",
+    "browser/guest_view/web_view/web_view_media_access_apitest.cc",
+    "browser/updater/update_service_browsertest.cc",
+    "shell/browser/geolocation/geolocation_apitest.cc",
+    "shell/browser/shell_browsertest.cc",
+    "shell/test/shell_apitest.cc",
+    "shell/test/shell_apitest.h",
+    "shell/test/shell_test.cc",
+    "shell/test/shell_test.h",
+    "shell/test/shell_test_launcher_delegate.cc",
+    "shell/test/shell_test_launcher_delegate.h",
+    "shell/test/shell_tests_main.cc",
+  ]
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  deps = [
+    ":test_support",
+    "shell:app_shell_lib",
+
+    # TODO(yoz): find the right deps
+    "//base",
+    "//base:prefs_test_support",
+    "//base/test:test_support",
+    "//components/storage_monitor:test_support",
+    "//content/test:test_support",
+    "//mojo/environment:chromium",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/mojo/src/mojo/edk/js",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+  ]
+
+  if (is_win) {
+    deps += [ "//base/allocator" ]
+  }
+
+  if (is_mac) {
+    deps += [ "shell:app_shell" ]  # Needed for App Shell.app's Helper.
+  }
+}

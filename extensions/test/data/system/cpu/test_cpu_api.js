@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // system.cpu.getInfo api test
-// app_shell_browsertests --gtest_filter=SystemCpuApiTest.*
+// extensions_browsertests --gtest_filter=SystemCpuApiTest.*
 
 chrome.test.runTests([
   function testGet() {

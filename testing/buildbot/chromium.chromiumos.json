@@ -86,9 +86,9 @@
       },
       "sql_unittests",
       "nacl_loader_unittests",
-      "app_shell_browsertests",
       "app_shell_unittests",
       "chromevox_tests",
+      "extensions_browsertests",
       "skia_unittests"
     ]
   },
@@ -96,7 +96,6 @@
     "gtest_tests": [
       "accessibility_unittests",
       "app_list_unittests",
-      "app_shell_browsertests",
       "app_shell_unittests",
       "ash_unittests",
       "aura_unittests",
@@ -118,6 +117,7 @@
       "device_unittests",
       "display_unittests",
       "events_unittests",
+      "extensions_browsertests",
       "extensions_unittests",
       "gcm_unit_tests",
       "google_apis_unittests",
@@ -239,7 +239,6 @@
           "shards": 10
         }
       },
-      "app_shell_browsertests",
       "app_shell_unittests",
       {
         "test": "content_browsertests",
@@ -248,6 +247,7 @@
           "shards": 2
         }
       },
+      "extensions_browsertests",
       "gcm_unit_tests",
       "skia_unittests",
       {

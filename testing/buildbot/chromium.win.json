@@ -8,7 +8,6 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "app_shell_browsertests",
       "app_shell_unittests",
       "aura_unittests",
       {
@@ -50,6 +49,7 @@
       },
       "crypto_unittests",
       "events_unittests",
+      "extensions_browsertests",
       "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
@@ -127,7 +127,6 @@
   "Vista Tests (1)": {
     "gtest_tests": [
       "accessibility_unittests",
-      "app_shell_browsertests",
       "app_shell_unittests",
       "aura_unittests",
       {
@@ -174,6 +173,7 @@
         }
       },
       "crypto_unittests",
+      "extensions_browsertests",
       "extensions_unittests",
       "events_unittests",
       "gcm_unit_tests",
@@ -262,7 +262,6 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "app_shell_browsertests",
       "app_shell_unittests",
       "aura_unittests",
       {
@@ -312,6 +311,7 @@
       "crypto_unittests",
       "device_unittests",
       "events_unittests",
+      "extensions_browsertests",
       "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
@@ -412,7 +412,6 @@
       },
       "app_installer_unittests",
       "app_list_unittests",
-      "app_shell_browsertests",
       "app_shell_unittests",
       {
         "test": "ash_unittests",
@@ -455,6 +454,7 @@
       "crypto_unittests",
       "device_unittests",
       "events_unittests",
+      "extensions_browsertests",
       "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
@@ -546,7 +546,6 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "app_shell_browsertests",
       "app_shell_unittests",
       "aura_unittests",
       {
@@ -595,6 +594,7 @@
       },
       "crypto_unittests",
       "events_unittests",
+      "extensions_browsertests",
       "extensions_unittests",
       "gcm_unit_tests",
       {
