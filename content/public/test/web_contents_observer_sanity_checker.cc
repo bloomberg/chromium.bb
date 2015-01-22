@@ -87,6 +87,11 @@ void WebContentsObserverSanityChecker::RenderFrameHostChanged(
   AssertFrameExists(new_host);
 }
 
+void WebContentsObserverSanityChecker::FrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  AssertFrameExists(render_frame_host);
+}
+
 void WebContentsObserverSanityChecker::DidStartProvisionalLoadForFrame(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
@@ -164,11 +169,6 @@ void WebContentsObserverSanityChecker::DidOpenRequestedURL(
     WindowOpenDisposition disposition,
     ui::PageTransition transition) {
   AssertFrameExists(source_render_frame_host);
-}
-
-void WebContentsObserverSanityChecker::FrameDetached(
-    RenderFrameHost* render_frame_host) {
-  AssertFrameExists(render_frame_host);
 }
 
 bool WebContentsObserverSanityChecker::OnMessageReceived(

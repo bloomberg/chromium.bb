@@ -192,6 +192,10 @@ class WebContents : public PageNavigator,
   virtual RenderFrameHost* GetFocusedFrame() = 0;
 
   // Calls |on_frame| for each frame in the currently active view.
+  // Note: The RenderFrameHost parameter is not guaranteed to have a live
+  // RenderFrame counterpart in the renderer process. Callbacks should check
+  // IsRenderFrameLive, as sending IPC messages to it in this case will fail
+  // silently.
   virtual void ForEachFrame(
       const base::Callback<void(RenderFrameHost*)>& on_frame) = 0;
 

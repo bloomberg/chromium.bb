@@ -4393,7 +4393,7 @@ gfx::Size WebContentsImpl::GetSizeForNewRenderView() {
 
 void WebContentsImpl::OnFrameRemoved(RenderFrameHost* render_frame_host) {
   FOR_EACH_OBSERVER(
-      WebContentsObserver, observers_, FrameDetached(render_frame_host));
+      WebContentsObserver, observers_, FrameDeleted(render_frame_host));
 }
 
 void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {

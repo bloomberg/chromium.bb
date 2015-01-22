@@ -48,12 +48,34 @@ struct ResourceRequestDetails;
 class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                            public IPC::Sender {
  public:
-  // Called when a RenderFrameHost associated with this WebContents is created.
+  // Called when a RenderFrame for |render_frame_host| is created in the
+  // renderer process. Use |RenderFrameDeleted| to listen for when this
+  // RenderFrame goes away.
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) {}
 
-  // Called whenever a RenderFrameHost associated with this WebContents is
-  // deleted.
+  // Called when a RenderFrame for |render_frame_host| is deleted or the
+  // renderer process in which it runs it has died. Use |RenderFrameCreated| to
+  // listen for when RenderFrame objects are created.
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) {}
+
+  // This method is invoked whenever one of the current frames of a WebContents
+  // swaps its RenderFrameHost with another one; for example because that frame
+  // navigated and the new content is in a different process. The
+  // RenderFrameHost that has been replaced is in |old_host|, which can be
+  // nullptr if the old RenderFrameHost was shut down or a new frame has been
+  // created and no old RenderFrameHost exists.
+  //
+  // This method, in combination with |FrameDeleted|, is appropriate for
+  // observers wishing to track the set of current RenderFrameHosts -- i.e.,
+  // those hosts that would be visited by calling WebContents::ForEachFrame.
+  virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
+                                      RenderFrameHost* new_host) {}
+
+  // This method is invoked when a subframe associated with a WebContents is
+  // deleted or the WebContents is destroyed and the top-level frame is deleted.
+  // Use |RenderFrameHostChanged| to listen for when a RenderFrameHost object is
+  // made the current host for a frame.
+  virtual void FrameDeleted(RenderFrameHost* render_frame_host) {}
 
   // This is called when a RVH is created for a WebContents, but not if it's an
   // interstitial.
@@ -88,18 +110,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // down.
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
                                      RenderViewHost* new_host) {}
-
-  // This method is invoked whenever one of the current frames of a WebContents
-  // swaps its RenderFrameHost with another one; for example because that frame
-  // navigated and the new content is in a different process. The
-  // RenderFrameHost that has been replaced is in |old_host|, which can be
-  // nullptr if the old RFH was shut down.
-  //
-  // This method, in combination with RenderFrameDeleted, is appropriate for
-  // observers wishing to track the set of active RenderFrameHosts -- i.e.,
-  // those hosts that would be visited by calling WebContents::ForEachFrame.
-  virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
-                                      RenderFrameHost* new_host) {}
 
   // This method is invoked after the WebContents decides which RenderFrameHost
   // to use for the next browser-initiated navigation, but before the navigation
@@ -227,10 +237,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                    WindowOpenDisposition disposition,
                                    ui::PageTransition transition) {}
 
-  virtual void FrameDetached(RenderFrameHost* render_frame_host) {}
-
-  // This method is invoked when the renderer has completed its first paint
-  // after a non-empty layout.
+  // This method is invoked when the renderer process has completed its first
+  // paint after a non-empty layout.
   virtual void DidFirstVisuallyNonEmptyPaint() {}
 
   // These two methods correspond to the points in time when the spinner of the
@@ -267,9 +275,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Notification that a plugin has crashed.
   // |plugin_pid| is the process ID identifying the plugin process. Note that
-  // this ID is supplied by the renderer, so should not be trusted. Besides, the
-  // corresponding process has probably died at this point. The ID may even have
-  // been reused by a new process.
+  // this ID is supplied by the renderer process, so should not be trusted.
+  // Besides, the corresponding process has probably died at this point. The ID
+  // may even have been reused by a new process.
   virtual void PluginCrashed(const base::FilePath& plugin_path,
                              base::ProcessId plugin_pid) {}
 
@@ -277,8 +285,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // notification is only for Pepper plugins.
   //
   // The plugin_child_id is the unique child process ID from the plugin. Note
-  // that this ID is supplied by the renderer, so should be validated before
-  // it's used for anything in case there's an exploited renderer.
+  // that this ID is supplied by the renderer process, so should be validated
+  // before it's used for anything in case there's an exploited renderer
+  // process.
   virtual void PluginHungStatusChanged(int plugin_child_id,
                                        const base::FilePath& plugin_path,
                                        bool is_hung) {}
@@ -295,15 +304,17 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Called when the user agent override for a WebContents has been changed.
   virtual void UserAgentOverrideSet(const std::string& user_agent) {}
 
-  // Invoked when new FaviconURL candidates are received from the renderer.
+  // Invoked when new FaviconURL candidates are received from the renderer
+  // process.
   virtual void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) {}
 
   // Invoked when a pepper plugin creates and shows or destroys a fullscreen
-  // render widget.
+  // RenderWidget.
   virtual void DidShowFullscreenWidget(int routing_id) {}
   virtual void DidDestroyFullscreenWidget(int routing_id) {}
 
-  // Invoked when the renderer has toggled the tab into/out of fullscreen mode.
+  // Invoked when the renderer process has toggled the tab into/out of
+  // fullscreen mode.
   virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) {}
 
   // Invoked when an interstitial page is attached or detached.
@@ -313,13 +324,14 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked before a form repost warning is shown.
   virtual void BeforeFormRepostWarningShow() {}
 
-  // Invoked when the beforeunload handler fires. The time is from the renderer.
+  // Invoked when the beforeunload handler fires. The time is from the renderer
+  // process.
   virtual void BeforeUnloadFired(const base::TimeTicks& proceed_time) {}
 
   // Invoked when a user cancels a before unload dialog.
   virtual void BeforeUnloadDialogCancelled() {}
 
-  // Invoked when an accessibility event is received from the renderer.
+  // Invoked when an accessibility event is received from the renderer process.
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
 
