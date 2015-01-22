@@ -21,7 +21,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
 
   // content::IndexedDBFactory overrides:
   void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
-                       bool forcedClose) override;
+                       bool forced_close) override;
 
   void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
                         const GURL& origin_url,

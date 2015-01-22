@@ -971,11 +971,11 @@ TEST(IndexedDBLevelDBCodingTest, EncodeVarIntVSEncodeByteTest) {
   for (size_t i = 0; i < test_cases.size(); ++i) {
     unsigned char n = test_cases[i];
 
-    std::string vA = WrappedEncodeByte(n);
-    std::string vB = WrappedEncodeVarInt(static_cast<int64>(n));
+    std::string a = WrappedEncodeByte(n);
+    std::string b = WrappedEncodeVarInt(static_cast<int64>(n));
 
-    EXPECT_EQ(vA.size(), vB.size());
-    EXPECT_EQ(*vA.begin(), *vB.begin());
+    EXPECT_EQ(a.size(), b.size());
+    EXPECT_EQ(*a.begin(), *b.begin());
   }
 }
 

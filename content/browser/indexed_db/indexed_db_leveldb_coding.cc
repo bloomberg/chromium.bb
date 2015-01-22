@@ -223,9 +223,9 @@ static const unsigned char kIndexMetaDataTypeMaximum = 255;
 
 const unsigned char kMinimumIndexId = 30;
 
-inline void EncodeIntSafely(int64 nParam, int64 max, std::string* into) {
-  DCHECK_LE(nParam, max);
-  return EncodeInt(nParam, into);
+inline void EncodeIntSafely(int64 value, int64 max, std::string* into) {
+  DCHECK_LE(value, max);
+  return EncodeInt(value, into);
 }
 
 std::string MaxIDBKey() {

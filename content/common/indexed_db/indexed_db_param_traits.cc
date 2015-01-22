@@ -198,8 +198,8 @@ void ParamTraits<IndexedDBKeyPath>::Log(const param_type& p, std::string* l) {
 void ParamTraits<IndexedDBKeyRange>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.lower());
   WriteParam(m, p.upper());
-  WriteParam(m, p.lowerOpen());
-  WriteParam(m, p.upperOpen());
+  WriteParam(m, p.lower_open());
+  WriteParam(m, p.upper_open());
 }
 
 bool ParamTraits<IndexedDBKeyRange>::Read(const Message* m,
@@ -231,9 +231,9 @@ void ParamTraits<IndexedDBKeyRange>::Log(const param_type& p, std::string* l) {
   l->append(", upper=");
   LogParam(p.upper(), l);
   l->append(", lower_open=");
-  LogParam(p.lowerOpen(), l);
+  LogParam(p.lower_open(), l);
   l->append(", upper_open=");
-  LogParam(p.upperOpen(), l);
+  LogParam(p.upper_open(), l);
   l->append(")");
 }
 

@@ -37,7 +37,7 @@ class CONTENT_EXPORT IndexedDBFactory
   typedef std::pair<OriginDBMapIterator, OriginDBMapIterator> OriginDBs;
 
   virtual void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
-                               bool forcedClose) = 0;
+                               bool forced_close) = 0;
 
   virtual void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
                                 const GURL& origin_url,

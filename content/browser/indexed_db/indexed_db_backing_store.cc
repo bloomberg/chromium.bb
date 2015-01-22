@@ -51,31 +51,31 @@ namespace content {
 
 namespace {
 
-FilePath GetBlobDirectoryName(const FilePath& pathBase, int64 database_id) {
-  return pathBase.AppendASCII(base::StringPrintf("%" PRIx64, database_id));
+FilePath GetBlobDirectoryName(const FilePath& path_base, int64 database_id) {
+  return path_base.AppendASCII(base::StringPrintf("%" PRIx64, database_id));
 }
 
-FilePath GetBlobDirectoryNameForKey(const FilePath& pathBase,
+FilePath GetBlobDirectoryNameForKey(const FilePath& path_base,
                                     int64 database_id,
                                     int64 key) {
-  FilePath path = GetBlobDirectoryName(pathBase, database_id);
+  FilePath path = GetBlobDirectoryName(path_base, database_id);
   path = path.AppendASCII(base::StringPrintf(
       "%02x", static_cast<int>(key & 0x000000000000ff00) >> 8));
   return path;
 }
 
-FilePath GetBlobFileNameForKey(const FilePath& pathBase,
+FilePath GetBlobFileNameForKey(const FilePath& path_base,
                                int64 database_id,
                                int64 key) {
-  FilePath path = GetBlobDirectoryNameForKey(pathBase, database_id, key);
+  FilePath path = GetBlobDirectoryNameForKey(path_base, database_id, key);
   path = path.AppendASCII(base::StringPrintf("%" PRIx64, key));
   return path;
 }
 
-bool MakeIDBBlobDirectory(const FilePath& pathBase,
+bool MakeIDBBlobDirectory(const FilePath& path_base,
                           int64 database_id,
                           int64 key) {
-  FilePath path = GetBlobDirectoryNameForKey(pathBase, database_id, key);
+  FilePath path = GetBlobDirectoryNameForKey(path_base, database_id, key);
   return base::CreateDirectory(path);
 }
 
@@ -1167,8 +1167,8 @@ std::vector<base::string16> IndexedDBBackingStore::GetDatabaseNames(
 
     // Decode database id (in iterator value).
     int64 database_id = 0;
-    StringPiece valueSlice(it->Value());
-    if (!DecodeInt(&valueSlice, &database_id) || !valueSlice.empty()) {
+    StringPiece value_slice(it->Value());
+    if (!DecodeInt(&value_slice, &database_id) || !value_slice.empty()) {
       INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_DATABASE_NAMES);
       continue;
     }
@@ -2622,13 +2622,13 @@ leveldb::Status IndexedDBBackingStore::GetIndexes(
 }
 
 bool IndexedDBBackingStore::RemoveBlobFile(int64 database_id, int64 key) {
-  FilePath fileName = GetBlobFileName(database_id, key);
-  return base::DeleteFile(fileName, false);
+  FilePath path = GetBlobFileName(database_id, key);
+  return base::DeleteFile(path, false);
 }
 
 bool IndexedDBBackingStore::RemoveBlobDirectory(int64 database_id) {
-  FilePath dirName = GetBlobDirectoryName(blob_path_, database_id);
-  return base::DeleteFile(dirName, true);
+  FilePath path = GetBlobDirectoryName(blob_path_, database_id);
+  return base::DeleteFile(path, true);
 }
 
 leveldb::Status IndexedDBBackingStore::CleanUpBlobJournal(
@@ -3648,7 +3648,7 @@ bool ObjectStoreCursorOptions(
   } else {
     cursor_options->low_key =
         ObjectStoreDataKey::Encode(database_id, object_store_id, range.lower());
-    cursor_options->low_open = range.lowerOpen();
+    cursor_options->low_open = range.lower_open();
   }
 
   leveldb::Status s;
@@ -3672,7 +3672,7 @@ bool ObjectStoreCursorOptions(
   } else {
     cursor_options->high_key =
         ObjectStoreDataKey::Encode(database_id, object_store_id, range.upper());
-    cursor_options->high_open = range.upperOpen();
+    cursor_options->high_open = range.upper_open();
 
     if (!cursor_options->forward) {
       // For reverse cursors, we need a key that exists.
@@ -3727,7 +3727,7 @@ bool IndexCursorOptions(
   } else {
     cursor_options->low_key = IndexDataKey::Encode(
         database_id, object_store_id, index_id, range.lower());
-    cursor_options->low_open = range.lowerOpen();
+    cursor_options->low_open = range.lower_open();
   }
 
   leveldb::Status s;
@@ -3748,7 +3748,7 @@ bool IndexCursorOptions(
   } else {
     cursor_options->high_key = IndexDataKey::Encode(
         database_id, object_store_id, index_id, range.upper());
-    cursor_options->high_open = range.upperOpen();
+    cursor_options->high_open = range.upper_open();
 
     std::string found_high_key;
     // Seek to the *last* key in the set of non-unique keys
@@ -3904,7 +3904,7 @@ void IndexedDBBackingStore::Transaction::Begin() {
     incognito_blob_map_[iter.first] = iter.second->Clone().release();
 }
 
-static GURL getURLFromUUID(const string& uuid) {
+static GURL GetURLFromUUID(const string& uuid) {
   return GURL("blob:uuid/" + uuid);
 }
 
@@ -3941,10 +3941,8 @@ leveldb::Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
                               entry.last_modified()));
         } else {
           new_files_to_write->push_back(
-              WriteDescriptor(getURLFromUUID(entry.uuid()),
-                              next_blob_key,
-                              entry.size(),
-                              entry.last_modified()));
+              WriteDescriptor(GetURLFromUUID(entry.uuid()), next_blob_key,
+                              entry.size(), entry.last_modified()));
         }
         entry.set_key(next_blob_key);
         new_blob_keys.push_back(&entry);

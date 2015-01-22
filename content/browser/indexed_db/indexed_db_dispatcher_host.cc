@@ -281,8 +281,8 @@ IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 ipc_cursor_id) {
     ::IndexedDBObjectStoreMetadata idb_store_metadata;
     idb_store_metadata.id = web_store_metadata.id;
     idb_store_metadata.name = web_store_metadata.name;
-    idb_store_metadata.keyPath = web_store_metadata.key_path;
-    idb_store_metadata.autoIncrement = web_store_metadata.auto_increment;
+    idb_store_metadata.key_path = web_store_metadata.key_path;
+    idb_store_metadata.auto_increment = web_store_metadata.auto_increment;
     idb_store_metadata.max_index_id = web_store_metadata.max_index_id;
 
     for (const auto& index_iter : web_store_metadata.indexes) {
@@ -291,9 +291,9 @@ IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 ipc_cursor_id) {
       ::IndexedDBIndexMetadata idb_index_metadata;
       idb_index_metadata.id = web_index_metadata.id;
       idb_index_metadata.name = web_index_metadata.name;
-      idb_index_metadata.keyPath = web_index_metadata.key_path;
+      idb_index_metadata.key_path = web_index_metadata.key_path;
       idb_index_metadata.unique = web_index_metadata.unique;
-      idb_index_metadata.multiEntry = web_index_metadata.multi_entry;
+      idb_index_metadata.multi_entry = web_index_metadata.multi_entry;
       idb_store_metadata.indexes.push_back(idb_index_metadata);
     }
     metadata.object_stores.push_back(idb_store_metadata);

@@ -52,7 +52,7 @@ void IndexedDBFactoryImpl::RemoveDatabaseFromMaps(
 
 void IndexedDBFactoryImpl::ReleaseDatabase(
     const IndexedDBDatabase::Identifier& identifier,
-    bool forcedClose) {
+    bool forced_close) {
   DCHECK(!database_map_.find(identifier)->second->backing_store());
 
   RemoveDatabaseFromMaps(identifier);
@@ -60,7 +60,7 @@ void IndexedDBFactoryImpl::ReleaseDatabase(
   // No grace period on a forced-close, as the initiator is
   // assuming the backing store will be released once all
   // connections are closed.
-  ReleaseBackingStore(identifier.first, forcedClose);
+  ReleaseBackingStore(identifier.first, forced_close);
 }
 
 void IndexedDBFactoryImpl::ReleaseBackingStore(const GURL& origin_url,

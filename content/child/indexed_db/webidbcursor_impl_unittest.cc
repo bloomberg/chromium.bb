@@ -97,7 +97,7 @@ class MockContinueCallbacks : public WebIDBCallbacks {
  public:
   MockContinueCallbacks(IndexedDBKey* key = 0,
                         WebVector<WebBlobInfo>* webBlobInfo = 0)
-      : key_(key), webBlobInfo_(webBlobInfo) {}
+      : key_(key), web_blob_info_(webBlobInfo) {}
 
   virtual void onSuccess(const WebIDBKey& key,
                          const WebIDBKey& primaryKey,
@@ -105,13 +105,13 @@ class MockContinueCallbacks : public WebIDBCallbacks {
                          const WebVector<WebBlobInfo>& webBlobInfo) override {
     if (key_)
       *key_ = IndexedDBKeyBuilder::Build(key);
-    if (webBlobInfo_)
-      *webBlobInfo_ = webBlobInfo;
+    if (web_blob_info_)
+      *web_blob_info_ = webBlobInfo;
   }
 
  private:
   IndexedDBKey* key_;
-  WebVector<WebBlobInfo>* webBlobInfo_;
+  WebVector<WebBlobInfo>* web_blob_info_;
 };
 
 }  // namespace

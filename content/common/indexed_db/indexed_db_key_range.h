@@ -14,7 +14,7 @@ namespace content {
 class CONTENT_EXPORT IndexedDBKeyRange {
  public:
   IndexedDBKeyRange();
-  explicit IndexedDBKeyRange(const IndexedDBKey& onlyKey);
+  explicit IndexedDBKeyRange(const IndexedDBKey& key);
   IndexedDBKeyRange(const IndexedDBKey& lower,
                     const IndexedDBKey& upper,
                     bool lower_open,
@@ -23,8 +23,8 @@ class CONTENT_EXPORT IndexedDBKeyRange {
 
   const IndexedDBKey& lower() const { return lower_; }
   const IndexedDBKey& upper() const { return upper_; }
-  bool lowerOpen() const { return lower_open_; }
-  bool upperOpen() const { return upper_open_; }
+  bool lower_open() const { return lower_open_; }
+  bool upper_open() const { return upper_open_; }
 
   bool IsOnlyKey() const;
 

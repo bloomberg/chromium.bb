@@ -17,7 +17,7 @@ class MockIndexedDBFactory : public IndexedDBFactory {
   MockIndexedDBFactory();
   MOCK_METHOD2(ReleaseDatabase,
                void(const IndexedDBDatabase::Identifier& identifier,
-                    bool forcedClose));
+                    bool forced_close));
   MOCK_METHOD4(GetDatabaseNames,
                void(scoped_refptr<IndexedDBCallbacks> callbacks,
                     const GURL& origin_url,
