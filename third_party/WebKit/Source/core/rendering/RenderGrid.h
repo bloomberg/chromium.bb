@@ -138,6 +138,7 @@ private:
     LayoutUnit childIntrinsicWidth(const RenderBox&) const;
     LayoutUnit intrinsicLogicalHeightForChild(const RenderBox&) const;
     LayoutUnit marginLogicalHeightForChild(const RenderBox&) const;
+    LayoutUnit computeMarginLogicalHeightForChild(const RenderBox&) const;
     LayoutUnit availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const RenderBox&) const;
     void applyStretchAlignmentToChildIfNeeded(RenderBox&, LayoutUnit gridAreaBreadthForChild);
 

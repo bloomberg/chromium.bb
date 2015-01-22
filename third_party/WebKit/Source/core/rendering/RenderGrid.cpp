@@ -1098,10 +1098,6 @@ void RenderGrid::layoutGridItems()
             continue;
         }
 
-        // FIXME: This logic is part of the RenderBlockFlow::layoutBlockChild, which probably
-        // should be part of the refactor to be done for RenderGrid::layoutBlock.
-        child->computeAndSetBlockDirectionMargins(this);
-
         // Because the grid area cannot be styled, we don't need to adjust
         // the grid breadth to account for 'box-sizing'.
         LayoutUnit oldOverrideContainingBlockContentLogicalWidth = child->hasOverrideContainingBlockLogicalWidth() ? child->overrideContainingBlockContentLogicalWidth() : LayoutUnit();
@@ -1117,6 +1113,9 @@ void RenderGrid::layoutGridItems()
         child->setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
         child->setOverrideContainingBlockContentLogicalHeight(overrideContainingBlockContentLogicalHeight);
 
+        // Stretching logic might force a child layout, so we need to run it before the layoutIfNeeded
+        // call to avoid unnecessary relayouts. This might imply that child margins, needed to correctly
+        // determine the available space before stretching, are not set yet.
         applyStretchAlignmentToChildIfNeeded(*child, overrideContainingBlockContentLogicalHeight);
 
         child->layoutIfNeeded();
@@ -1468,10 +1467,28 @@ LayoutUnit RenderGrid::marginLogicalHeightForChild(const RenderBox& child) const
     return isHorizontalWritingMode() ? child.marginHeight() : child.marginWidth();
 }
 
-// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
+LayoutUnit RenderGrid::computeMarginLogicalHeightForChild(const RenderBox& child) const
+{
+    LayoutUnit marginBefore;
+    LayoutUnit marginAfter;
+    child.computeMarginsForDirection(BlockDirection, this, child.containingBlockLogicalWidthForContent(), child.logicalHeight(), marginBefore, marginAfter,
+        child.style()->marginBeforeUsing(style()),
+        child.style()->marginAfterUsing(style()));
+
+    return marginBefore + marginAfter;
+}
+
 LayoutUnit RenderGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const RenderBox& child) const
 {
-    LayoutUnit childLogicalHeight = marginLogicalHeightForChild(child) + intrinsicLogicalHeightForChild(child);
+    LayoutUnit childMarginLogicalHeight = marginLogicalHeightForChild(child);
+
+    // Because we want to avoid multiple layouts, stretching logic might be performed before
+    // children are laid out, so we can't use the child cached values. Hence, we need to
+    // compute margins in order to determine the available height before stretching.
+    if (childMarginLogicalHeight == 0)
+        childMarginLogicalHeight = computeMarginLogicalHeightForChild(child);
+
+    LayoutUnit childLogicalHeight = childMarginLogicalHeight + intrinsicLogicalHeightForChild(child);
     return gridAreaBreadthForChild - childLogicalHeight;
 }
 
