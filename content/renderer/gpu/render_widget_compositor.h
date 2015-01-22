@@ -152,6 +152,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidCommit() override;
   void DidCommitAndDrawFrame() override;
   void DidCompleteSwapBuffers() override;
+  void DidCompletePageScaleAnimation() override;
   void RateLimitSharedMainThreadContext() override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.

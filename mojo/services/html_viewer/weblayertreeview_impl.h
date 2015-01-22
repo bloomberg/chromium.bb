@@ -67,6 +67,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   void DidCommit() override;
   void DidCommitAndDrawFrame() override;
   void DidCompleteSwapBuffers() override;
+  void DidCompletePageScaleAnimation() override {}
   void RateLimitSharedMainThreadContext() override {}
 
   // blink::WebLayerTreeView implementation.

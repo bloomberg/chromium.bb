@@ -59,6 +59,7 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
   virtual void DidCommit() override {}
   virtual void DidCommitAndDrawFrame() override {}
   virtual void DidCompleteSwapBuffers() override {}
+  virtual void DidCompletePageScaleAnimation() override {}
 
   // cc::LayerTreeHostSingleThreadClient overrides.
   virtual void DidPostSwapBuffers() override {}

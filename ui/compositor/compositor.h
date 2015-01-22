@@ -264,6 +264,7 @@ class COMPOSITOR_EXPORT Compositor
   void DidCommit() override;
   void DidCommitAndDrawFrame() override;
   void DidCompleteSwapBuffers() override;
+  void DidCompletePageScaleAnimation() override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void ScheduleComposite() override;

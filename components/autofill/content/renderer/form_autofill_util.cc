@@ -1364,7 +1364,7 @@ bool IsWebElementEmpty(const blink::WebElement& element) {
   return true;
 }
 
-gfx::RectF GetScaledBoundingBox(float scale, WebFormControlElement* element) {
+gfx::RectF GetScaledBoundingBox(float scale, WebElement* element) {
   gfx::Rect bounding_box(element->boundsInViewportSpace());
   return gfx::RectF(bounding_box.x() * scale,
                     bounding_box.y() * scale,

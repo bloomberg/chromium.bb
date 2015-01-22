@@ -322,17 +322,23 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
   gfx::Rect bounds = GetElementBounds(element_id);
   if (bounds.IsEmpty())
     return false;
+  SimulatePointClick(bounds.CenterPoint());
+  return true;
+}
+
+void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
   WebMouseEvent mouse_event;
   mouse_event.type = WebInputEvent::MouseDown;
   mouse_event.button = WebMouseEvent::ButtonLeft;
-  mouse_event.x = bounds.CenterPoint().x();
-  mouse_event.y = bounds.CenterPoint().y();
+  mouse_event.x = point.x();
+  mouse_event.y = point.y();
   mouse_event.clickCount = 1;
-  scoped_ptr<IPC::Message> input_message(
-      new InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnMessageReceived(*input_message);
-  return true;
+  impl->OnMessageReceived(
+      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
+  mouse_event.type = WebInputEvent::MouseUp;
+  impl->OnMessageReceived(
+      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
 }
 
 void RenderViewTest::SetFocused(const blink::WebNode& node) {

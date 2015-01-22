@@ -49,6 +49,7 @@
 
 using blink::WebAutofillClient;
 using blink::WebConsoleMessage;
+using blink::WebDocument;
 using blink::WebElement;
 using blink::WebElementCollection;
 using blink::WebFormControlElement;
@@ -215,12 +216,6 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   if (node.document().frame() != render_frame()->GetWebFrame())
     return;
 
-  if (password_generation_agent_ &&
-      password_generation_agent_->FocusedNodeHasChanged(node)) {
-    is_popup_possibly_visible_ = true;
-    return;
-  }
-
   WebElement web_element = node.toConst<WebElement>();
 
   if (!web_element.document().frame())
@@ -229,10 +224,22 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   const WebInputElement* element = toWebInputElement(&web_element);
 
   if (!element || !element->isEnabled() || element->isReadOnly() ||
-      !element->isTextField() || element->isPasswordField())
+      !element->isTextField())
     return;
 
   element_ = *element;
+}
+
+void AutofillAgent::FocusChangeComplete() {
+  WebDocument doc = render_frame()->GetWebFrame()->document();
+  WebElement focused_element;
+  if (!doc.isNull())
+    focused_element = doc.focusedElement();
+
+  if (!focused_element.isNull() && password_generation_agent_ &&
+      password_generation_agent_->FocusedNodeHasChanged(focused_element)) {
+    is_popup_possibly_visible_ = true;
+  }
 }
 
 void AutofillAgent::didRequestAutocomplete(
@@ -781,6 +788,10 @@ void AutofillAgent::LegacyAutofillAgent::OnDestruct() {
 void AutofillAgent::LegacyAutofillAgent::FocusedNodeChanged(
     const WebNode& node) {
   agent_->FocusedNodeChanged(node);
+}
+
+void AutofillAgent::LegacyAutofillAgent::FocusChangeComplete() {
+  agent_->FocusChangeComplete();
 }
 
 }  // namespace autofill

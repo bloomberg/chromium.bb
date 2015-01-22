@@ -90,6 +90,11 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void Navigate(const GURL& url) {}
   virtual void ClosePage() {}
 
+  // This indicates that animations to scroll the focused element into view (if
+  // any) have completed. May be called more than once for a single focus. Can
+  // be called from browser, renderer, or compositor.
+  virtual void FocusChangeComplete() {}
+
   virtual void OnStop() {}
 
   // IPC::Listener implementation.

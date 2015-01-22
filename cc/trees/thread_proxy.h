@@ -209,6 +209,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
                                             base::TimeDelta delay) override;
   void DidActivateSyncTree() override;
   void DidPrepareTiles() override;
+  void DidCompletePageScaleAnimationOnImplThread() override;
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
@@ -251,6 +252,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void DidInitializeOutputSurface(bool success,
                                   const RendererCapabilities& capabilities);
   void SendCommitRequestToImplThreadIfNeeded();
+  void DidCompletePageScaleAnimation();
 
   // Called on impl thread.
   struct SchedulerStateRequest;

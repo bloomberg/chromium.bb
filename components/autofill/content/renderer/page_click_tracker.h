@@ -16,7 +16,7 @@ namespace autofill {
 
 class PageClickListener;
 
-// This class is responsible notifiying the associated listener when a node is
+// This class is responsible notifying the associated listener when a node is
 // clicked or tapped. It also tracks whether a node was focused before the event
 // was handled.
 //
@@ -39,12 +39,14 @@ class PageClickTracker : public content::RenderViewObserver {
   void DidHandleMouseEvent(const blink::WebMouseEvent& event) override;
   void DidHandleGestureEvent(const blink::WebGestureEvent& event) override;
   void FocusedNodeChanged(const blink::WebNode& node) override;
+  void FocusChangeComplete() override;
 
   // Called there is a tap or click at |x|, |y|.
   void PotentialActivationAt(int x, int y);
 
-  // Sets |was_focused_before_now_| to true.
-  void SetWasFocused();
+  // The node that was clicked. Non-null only when the animations caused by
+  // focus change are still ongoing.
+  blink::WebNode clicked_node_;
 
   // This is set to false when the focus changes, then set back to true soon
   // afterwards. This helps track whether an event happened after a node was
@@ -53,8 +55,6 @@ class PageClickTracker : public content::RenderViewObserver {
 
   // The listener getting the actual notifications.
   PageClickListener* listener_;
-
-  base::WeakPtrFactory<PageClickTracker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageClickTracker);
 };

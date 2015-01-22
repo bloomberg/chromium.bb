@@ -39,6 +39,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
                                             base::TimeDelta delay) override {}
   void DidActivateSyncTree() override {}
   void DidPrepareTiles() override {}
+  void DidCompletePageScaleAnimationOnImplThread() override {}
 };
 
 }  // namespace cc

@@ -106,6 +106,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
                                             base::TimeDelta delay) override {}
   void DidActivateSyncTree() override;
   void DidPrepareTiles() override;
+  void DidCompletePageScaleAnimationOnImplThread() override;
   void SetDebugState(const LayerTreeDebugState& debug_state) override {}
 
   void RequestNewOutputSurface();

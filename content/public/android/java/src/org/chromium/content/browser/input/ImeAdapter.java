@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.input;
 
+import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
@@ -65,6 +66,11 @@ public class ImeAdapter {
          * Called when a request to hide the keyboard is sent to InputMethodManager.
          */
         void onDismissInput();
+
+        /**
+         * Called when the keyboard could not be shown due to the hardware keyboard being present.
+         */
+        void onKeyboardBoundsUnchanged();
 
         /**
          * @return View that the keyboard should be attached to.
@@ -274,8 +280,13 @@ public class ImeAdapter {
 
     private void showKeyboard() {
         mIsShowWithoutHideOutstanding = true;
-        mInputMethodManagerWrapper.showSoftInput(mViewEmbedder.getAttachedView(), 0,
-                mViewEmbedder.getNewShowKeyboardReceiver());
+        if (mViewEmbedder.getAttachedView().getResources().getConfiguration().keyboard
+                == Configuration.KEYBOARD_NOKEYS) {
+            mInputMethodManagerWrapper.showSoftInput(mViewEmbedder.getAttachedView(), 0,
+                    mViewEmbedder.getNewShowKeyboardReceiver());
+        } else {
+            mViewEmbedder.onKeyboardBoundsUnchanged();
+        }
     }
 
     private void dismissInput(boolean unzoomIfNeeded) {

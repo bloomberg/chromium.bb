@@ -660,6 +660,12 @@ public class ContentViewCore
                     }
 
                     @Override
+                    public void onKeyboardBoundsUnchanged() {
+                        assert mWebContents != null;
+                        mWebContents.scrollFocusedEditableNodeIntoView();
+                    }
+
+                    @Override
                     public View getAttachedView() {
                         return mContainerView;
                     }

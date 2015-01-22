@@ -8,11 +8,13 @@
 #include "components/autofill/content/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace autofill {
@@ -50,12 +52,17 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
     // Rather than make it do so for the test, we create a new object.
     page_click_tracker_.reset(new PageClickTracker(view_, &test_listener_));
 
+    // Must be set before loading HTML.
+    view_->GetWebView()->setDefaultPageScaleLimits(1, 4);
+    view_->GetWebView()->settings()->setPinchVirtualViewportEnabled(true);
+
     LoadHTML("<form>"
              "  <input type='text' id='text_1'></input><br>"
              "  <input type='text' id='text_2'></input><br>"
              "  <textarea  id='textarea_1'></textarea><br>"
              "  <textarea  id='textarea_2'></textarea><br>"
              "  <input type='button' id='button'></input><br>"
+             "  <input type='button' id='button_2' disabled></input><br>"
              "</form>");
     GetWebWidget()->resize(blink::WebSize(500, 500));
     GetWebWidget()->setFocus(true);
@@ -64,6 +71,10 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
     textarea_ = document.getElementById("textarea_1");
     ASSERT_FALSE(text_.isNull());
     ASSERT_FALSE(textarea_.isNull());
+
+    // Enable show-ime event when element is focused by indicating that a user
+    // gesture has been processed since load.
+    EXPECT_TRUE(SimulateElementClick("button"));
   }
 
   void TearDown() override {
@@ -72,29 +83,6 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
     test_listener_.ClearResults();
     page_click_tracker_.reset();
     ChromeRenderViewTest::TearDown();
-  }
-
-  // Simulates a click on the given element and then waits for the stack
-  // to unwind.
-  void SendElementClick(const std::string& element_id) {
-    EXPECT_TRUE(SimulateElementClick(element_id));
-    ProcessPendingMessages();
-  }
-
-  // Send all the messages required for a complete key press.
-  void SendKeyPress(int key_code) {
-    blink::WebKeyboardEvent keyboard_event;
-    keyboard_event.windowsKeyCode = key_code;
-    keyboard_event.setKeyIdentifierFromWindowsKeyCode();
-
-    keyboard_event.type = blink::WebInputEvent::RawKeyDown;
-    SendWebKeyboardEvent(keyboard_event);
-
-    keyboard_event.type = blink::WebInputEvent::Char;
-    SendWebKeyboardEvent(keyboard_event);
-
-    keyboard_event.type = blink::WebInputEvent::KeyUp;
-    SendWebKeyboardEvent(keyboard_event);
   }
 
   scoped_ptr<PageClickTracker> page_click_tracker_;
@@ -108,43 +96,96 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
 TEST_F(PageClickTrackerTest, PageClickTrackerInputClicked) {
   EXPECT_NE(text_, text_.document().focusedElement());
   // Click the text field once.
-  SendElementClick("text_1");
+  EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
   EXPECT_FALSE(test_listener_.was_focused_);
   EXPECT_TRUE(text_ == test_listener_.form_control_element_clicked_);
   test_listener_.ClearResults();
 
   // Click the text field again to test that was_focused_ is set correctly.
-  SendElementClick("text_1");
+  EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
   EXPECT_TRUE(test_listener_.was_focused_);
   EXPECT_TRUE(text_ == test_listener_.form_control_element_clicked_);
   test_listener_.ClearResults();
 
   // Click the button, no notification should happen (this is not a text-input).
-  SendElementClick("button");
+  EXPECT_TRUE(SimulateElementClick("button"));
   EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
+}
+
+TEST_F(PageClickTrackerTest, PageClickTrackerInputFocusedAndClicked) {
+  // Focus the text field without a click.
+  ExecuteJavaScript("document.getElementById('text_1').focus();");
+  EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
+  test_listener_.ClearResults();
+
+  // Click the focused text field to test that was_focused_ is set correctly.
+  EXPECT_TRUE(SimulateElementClick("text_1"));
+  EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
+  EXPECT_TRUE(test_listener_.was_focused_);
+  EXPECT_TRUE(text_ == test_listener_.form_control_element_clicked_);
 }
 
 // Tests that PageClickTracker does notify correctly when a textarea
 // node is clicked.
 TEST_F(PageClickTrackerTest, PageClickTrackerTextAreaClicked) {
   // Click the textarea field once.
-  SendElementClick("textarea_1");
+  EXPECT_TRUE(SimulateElementClick("textarea_1"));
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
   EXPECT_FALSE(test_listener_.was_focused_);
   EXPECT_TRUE(textarea_ == test_listener_.form_control_element_clicked_);
   test_listener_.ClearResults();
 
   // Click the textarea field again to test that was_focused_ is set correctly.
-  SendElementClick("textarea_1");
+  EXPECT_TRUE(SimulateElementClick("textarea_1"));
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
   EXPECT_TRUE(test_listener_.was_focused_);
   EXPECT_TRUE(textarea_ == test_listener_.form_control_element_clicked_);
   test_listener_.ClearResults();
 
   // Click the button, no notification should happen (this is not a text-input).
-  SendElementClick("button");
+  EXPECT_TRUE(SimulateElementClick("button"));
+  EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
+}
+
+TEST_F(PageClickTrackerTest, PageClickTrackerTextAreaFocusedAndClicked) {
+  // Focus the textarea without a click.
+  ExecuteJavaScript("document.getElementById('textarea_1').focus();");
+  EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
+  test_listener_.ClearResults();
+
+  // Click the focused text field to test that was_focused_ is set correctly.
+  EXPECT_TRUE(SimulateElementClick("textarea_1"));
+  EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
+  EXPECT_TRUE(test_listener_.was_focused_);
+  EXPECT_TRUE(textarea_ == test_listener_.form_control_element_clicked_);
+  test_listener_.ClearResults();
+}
+
+TEST_F(PageClickTrackerTest, PageClickTrackerScaledTextareaClicked) {
+  EXPECT_NE(text_, text_.document().focusedElement());
+  view_->GetWebView()->setPageScaleFactor(3);
+  view_->GetWebView()->setPinchViewportOffset(blink::WebFloatPoint(50, 50));
+
+  // Click textarea_1.
+  SimulatePointClick(gfx::Point(30, 30));
+  EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
+  EXPECT_FALSE(test_listener_.was_focused_);
+  EXPECT_TRUE(textarea_ == test_listener_.form_control_element_clicked_);
+}
+
+TEST_F(PageClickTrackerTest, PageClickTrackerDisabledInputClickedNoEvent) {
+  EXPECT_NE(text_, text_.document().focusedElement());
+  // Click the text field once.
+  EXPECT_TRUE(SimulateElementClick("text_1"));
+  EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
+  EXPECT_FALSE(test_listener_.was_focused_);
+  EXPECT_TRUE(text_ == test_listener_.form_control_element_clicked_);
+  test_listener_.ClearResults();
+
+  // Click the disabled element.
+  EXPECT_TRUE(SimulateElementClick("button_2"));
   EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
 }
 

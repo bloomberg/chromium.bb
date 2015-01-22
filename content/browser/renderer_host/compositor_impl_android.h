@@ -84,6 +84,7 @@ class CONTENT_EXPORT CompositorImpl
   virtual void DidCommit() override;
   virtual void DidCommitAndDrawFrame() override {}
   virtual void DidCompleteSwapBuffers() override;
+  virtual void DidCompletePageScaleAnimation() override {}
 
   // LayerTreeHostSingleThreadClient implementation.
   virtual void ScheduleComposite() override;

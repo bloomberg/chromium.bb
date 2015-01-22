@@ -135,6 +135,9 @@ class CC_EXPORT LayerTreeHost {
   void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
   bool UpdateLayers(ResourceUpdateQueue* queue);
 
+  // Called when the compositor completed page scale animation.
+  void DidCompletePageScaleAnimation();
+
   LayerTreeHostClient* client() { return client_; }
   const base::WeakPtr<InputHandler>& GetInputHandler() {
     return input_handler_weak_ptr_;
@@ -448,6 +451,10 @@ class CC_EXPORT LayerTreeHost {
   scoped_ptr<AnimationRegistrar> animation_registrar_;
 
   scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
+
+  // If set, then page scale animation has completed, but the client hasn't been
+  // notified about it yet.
+  bool did_complete_scale_animation_;
 
   bool in_paint_layer_contents_;
 

@@ -1423,15 +1423,20 @@ void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
   if (has_scrolled_focused_editable_node_into_rect_ &&
       rect == rect_for_scrolled_focused_editable_node_) {
+    FocusChangeComplete();
     return;
   }
 
   blink::WebElement element = GetFocusedElement();
+  bool will_animate = false;
   if (!element.isNull() && IsEditableNode(element)) {
     rect_for_scrolled_focused_editable_node_ = rect;
     has_scrolled_focused_editable_node_into_rect_ = true;
-    webview()->scrollFocusedNodeIntoRect(rect);
+    will_animate = webview()->scrollFocusedNodeIntoRect(rect);
   }
+
+  if (!will_animate)
+    FocusChangeComplete();
 }
 
 void RenderViewImpl::OnSetEditCommandsForNextKeyEvent(
@@ -3601,6 +3606,11 @@ void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
   RenderWidget::GetSelectionBounds(start, end);
 }
 
+void RenderViewImpl::FocusChangeComplete() {
+  RenderWidget::FocusChangeComplete();
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusChangeComplete());
+}
+
 void RenderViewImpl::GetCompositionCharacterBounds(
     std::vector<gfx::Rect>* bounds) {
   DCHECK(bounds);
@@ -3685,6 +3695,10 @@ void RenderViewImpl::InstrumentWillComposite() {
   if (!webview()->devToolsAgent())
     return;
   webview()->devToolsAgent()->willComposite();
+}
+
+void RenderViewImpl::DidCompletePageScaleAnimation() {
+  FocusChangeComplete();
 }
 
 void RenderViewImpl::SetScreenMetricsEmulationParameters(

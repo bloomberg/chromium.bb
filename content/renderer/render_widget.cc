@@ -1230,8 +1230,9 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   // Show the virtual keyboard if enabled and a user gesture triggers a focus
   // change.
   if (processed && (input_event->type == WebInputEvent::TouchEnd ||
-      input_event->type == WebInputEvent::MouseUp))
+                    input_event->type == WebInputEvent::MouseUp)) {
     UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_IME);
+  }
 #endif
 
   if (!prevent_default) {
@@ -1242,6 +1243,16 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     if (WebInputEvent::isTouchEventType(input_event->type))
       DidHandleTouchEvent(*(static_cast<const WebTouchEvent*>(input_event)));
   }
+
+// TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
+// virtual keyboard.
+#if !defined(OS_ANDROID)
+  // Virtual keyboard is not supported, so react to focus change immediately.
+  if (processed && (input_event->type == WebInputEvent::TouchEnd ||
+                    input_event->type == WebInputEvent::MouseUp)) {
+    FocusChangeComplete();
+  }
+#endif
 }
 
 void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
@@ -1696,6 +1707,12 @@ void RenderWidget::showImeIfNeeded() {
 void RenderWidget::OnShowImeIfNeeded() {
 #if defined(OS_ANDROID) || defined(USE_AURA)
   UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
+#endif
+
+// TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
+// virtual keyboard.
+#if !defined(OS_ANDROID)
+  FocusChangeComplete();
 #endif
 }
 

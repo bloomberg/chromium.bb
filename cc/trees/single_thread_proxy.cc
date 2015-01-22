@@ -447,6 +447,10 @@ void SingleThreadProxy::DidPrepareTiles() {
     scheduler_on_impl_thread_->DidPrepareTiles();
 }
 
+void SingleThreadProxy::DidCompletePageScaleAnimationOnImplThread() {
+  layer_tree_host_->DidCompletePageScaleAnimation();
+}
+
 void SingleThreadProxy::UpdateRendererCapabilitiesOnImplThread() {
   DCHECK(IsImplThread());
   renderer_capabilities_for_main_thread_ =

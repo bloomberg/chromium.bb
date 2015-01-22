@@ -267,6 +267,11 @@ void ThreadProxy::SendCommitRequestToImplThreadIfNeeded() {
                  impl_thread_weak_ptr_));
 }
 
+void ThreadProxy::DidCompletePageScaleAnimation() {
+  DCHECK(IsMainThread());
+  layer_tree_host()->DidCompletePageScaleAnimation();
+}
+
 const RendererCapabilities& ThreadProxy::GetRendererCapabilities() const {
   DCHECK(IsMainThread());
   DCHECK(!layer_tree_host()->output_surface_lost());
@@ -1351,6 +1356,13 @@ void ThreadProxy::DidActivateSyncTree() {
 void ThreadProxy::DidPrepareTiles() {
   DCHECK(IsImplThread());
   impl().scheduler->DidPrepareTiles();
+}
+
+void ThreadProxy::DidCompletePageScaleAnimationOnImplThread() {
+  DCHECK(IsImplThread());
+  Proxy::MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ThreadProxy::DidCompletePageScaleAnimation,
+                            main_thread_weak_ptr_));
 }
 
 }  // namespace cc

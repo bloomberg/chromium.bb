@@ -3106,6 +3106,7 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
     page_scale_animation_ = nullptr;
     client_->SetNeedsCommitOnImplThread();
     client_->RenewTreePriority();
+    client_->DidCompletePageScaleAnimationOnImplThread();
   } else {
     SetNeedsAnimate();
   }

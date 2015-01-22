@@ -4,13 +4,9 @@
 
 #include "components/autofill/content/renderer/page_click_tracker.h"
 
-#include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/page_click_listener.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebDOMMouseEvent.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -18,19 +14,13 @@
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using blink::WebDOMEvent;
-using blink::WebDOMMouseEvent;
 using blink::WebElement;
-using blink::WebFormControlElement;
-using blink::WebFrame;
 using blink::WebGestureEvent;
 using blink::WebInputElement;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebNode;
-using blink::WebString;
 using blink::WebTextAreaElement;
-using blink::WebView;
 
 namespace {
 
@@ -68,8 +58,7 @@ PageClickTracker::PageClickTracker(content::RenderView* render_view,
                                    PageClickListener* listener)
     : content::RenderViewObserver(render_view),
       was_focused_before_now_(false),
-      listener_(listener),
-      weak_ptr_factory_(this) {
+      listener_(listener) {
 }
 
 PageClickTracker::~PageClickTracker() {
@@ -88,50 +77,48 @@ void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
   PotentialActivationAt(event.x, event.y);
 }
 
-void PageClickTracker::DidHandleGestureEvent(
-    const blink::WebGestureEvent& event) {
-  if (event.type != blink::WebGestureEvent::GestureTap)
+void PageClickTracker::DidHandleGestureEvent(const WebGestureEvent& event) {
+  if (event.type != WebGestureEvent::GestureTap)
     return;
 
   PotentialActivationAt(event.x, event.y);
 }
 
-void PageClickTracker::FocusedNodeChanged(const blink::WebNode& node) {
+void PageClickTracker::FocusedNodeChanged(const WebNode& node) {
   was_focused_before_now_ = false;
-  // If the focus change was a result of handling a click or tap, we'll soon get
-  // an associated event. Reset |was_focused_before_now_| to true only after the
-  // message loop unwinds.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PageClickTracker::SetWasFocused,
-                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PageClickTracker::FocusChangeComplete() {
+  if (!clicked_node_.isNull()) {
+    const WebInputElement input_element = GetTextWebInputElement(clicked_node_);
+    if (!input_element.isNull()) {
+      listener_->FormControlElementClicked(input_element,
+                                           was_focused_before_now_);
+    } else {
+      const WebTextAreaElement textarea_element =
+          GetWebTextAreaElement(clicked_node_);
+      if (!textarea_element.isNull()) {
+        listener_->FormControlElementClicked(textarea_element,
+                                             was_focused_before_now_);
+      }
+    }
+  }
+
+  clicked_node_.reset();
+  was_focused_before_now_ = true;
 }
 
 void PageClickTracker::PotentialActivationAt(int x, int y) {
-  blink::WebNode focused_node = render_view()->GetFocusedElement();
-  if (focused_node.isNull())
+  WebElement focused_element = render_view()->GetFocusedElement();
+  if (focused_element.isNull())
     return;
 
-  if (!render_view()->NodeContainsPoint(focused_node, gfx::Point(x, y)))
-    return;
-
-  const WebInputElement input_element = GetTextWebInputElement(focused_node);
-  if (!input_element.isNull()) {
-    listener_->FormControlElementClicked(input_element,
-                                         was_focused_before_now_);
+  if (!GetScaledBoundingBox(render_view()->GetWebView()->pageScaleFactor(),
+                            &focused_element).Contains(x, y)) {
     return;
   }
 
-  const WebTextAreaElement textarea_element =
-      GetWebTextAreaElement(focused_node);
-  if (!textarea_element.isNull()) {
-    listener_->FormControlElementClicked(textarea_element,
-                                         was_focused_before_now_);
-  }
-}
-
-void PageClickTracker::SetWasFocused() {
-  was_focused_before_now_ = true;
+  clicked_node_ = focused_element;
 }
 
 }  // namespace autofill

@@ -858,6 +858,10 @@ void RenderWidgetCompositor::DidCompleteSwapBuffers() {
     widget_->OnSwapBuffersComplete();
 }
 
+void RenderWidgetCompositor::DidCompletePageScaleAnimation() {
+  widget_->DidCompletePageScaleAnimation();
+}
+
 void RenderWidgetCompositor::ScheduleAnimation() {
   widget_->scheduleAnimation();
 }

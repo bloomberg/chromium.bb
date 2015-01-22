@@ -50,6 +50,7 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
   void DidCommit() override {}
   void DidCommitAndDrawFrame() override {}
   void DidCompleteSwapBuffers() override {}
+  void DidCompletePageScaleAnimation() override {}
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidPostSwapBuffers() override {}

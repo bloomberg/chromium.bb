@@ -108,6 +108,9 @@ class LayerTreeHostImplClient {
   virtual void DidActivateSyncTree() = 0;
   virtual void DidPrepareTiles() = 0;
 
+  // Called when page scale animation has completed on the impl thread.
+  virtual void DidCompletePageScaleAnimationOnImplThread() = 0;
+
  protected:
   virtual ~LayerTreeHostImplClient() {}
 };

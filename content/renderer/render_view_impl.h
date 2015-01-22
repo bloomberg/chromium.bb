@@ -497,6 +497,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnOrientationChange() override;
   ui::TextInputType GetTextInputType() override;
   void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) override;
+  void FocusChangeComplete() override;
   void GetCompositionCharacterBounds(
       std::vector<gfx::Rect>* character_bounds) override;
   void GetCompositionRange(gfx::Range* range) override;
@@ -506,6 +507,7 @@ class CONTENT_EXPORT RenderViewImpl
   void InstrumentDidBeginFrame() override;
   void InstrumentDidCancelFrame() override;
   void InstrumentWillComposite() override;
+  void DidCompletePageScaleAnimation() override;
 
  protected:
   explicit RenderViewImpl(const ViewMsg_New_Params& params);

@@ -186,8 +186,7 @@ bool IsWebpageEmpty(const blink::WebFrame* frame);
 bool IsWebElementEmpty(const blink::WebElement& element);
 
 // Return a gfx::RectF that is the bounding box for |element| scaled by |scale|.
-gfx::RectF GetScaledBoundingBox(float scale,
-                                blink::WebFormControlElement* element);
+gfx::RectF GetScaledBoundingBox(float scale, blink::WebElement* element);
 
 }  // namespace autofill
 

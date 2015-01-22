@@ -49,6 +49,9 @@ class LayerTreeHostClient {
   virtual void DidCommitAndDrawFrame() = 0;
   virtual void DidCompleteSwapBuffers() = 0;
 
+  // Called when page scale animation has completed.
+  virtual void DidCompletePageScaleAnimation() = 0;
+
   // TODO(simonhong): Makes this to pure virtual function when client
   // implementation is ready.
   virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) {}

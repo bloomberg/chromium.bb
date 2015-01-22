@@ -107,6 +107,9 @@ class RenderViewTest : public testing::Test {
   // the element was not found).
   bool SimulateElementClick(const std::string& element_id);
 
+  // Sends a left mouse click at the |point|.
+  void SimulatePointClick(const gfx::Point& point);
+
   // Simulates |node| being focused.
   void SetFocused(const blink::WebNode& node);
 

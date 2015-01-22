@@ -243,6 +243,9 @@ class CONTENT_EXPORT RenderWidget
   virtual void InstrumentDidCancelFrame() {}
   virtual void InstrumentWillComposite() {}
 
+  // Called by the compositor when page scale animation completed.
+  virtual void DidCompletePageScaleAnimation() {}
+
   // When paused in debugger, we send ack for mouse event early. This ensures
   // that we continue receiving mouse moves and pass them to debugger. Returns
   // whether we are paused in mouse move event and have sent the ack.
@@ -305,6 +308,10 @@ class CONTENT_EXPORT RenderWidget
   // the browser side, such as changes by JavaScript or autofill.
   void UpdateTextInputState(ShowIme show_ime, ChangeSource change_source);
 #endif
+
+  // Called when animations due to focus change have completed (if any). Can be
+  // called from the renderer, browser, or compositor.
+  virtual void FocusChangeComplete() {}
 
   // Checks if the composition range or composition character bounds have been
   // changed. If they are changed, the new value will be sent to the browser

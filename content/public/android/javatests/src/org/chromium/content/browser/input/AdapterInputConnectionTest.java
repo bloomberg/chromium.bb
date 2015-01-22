@@ -193,6 +193,9 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         public void onDismissInput() {}
 
         @Override
+        public void onKeyboardBoundsUnchanged() {}
+
+        @Override
         public View getAttachedView() {
             return null;
         }

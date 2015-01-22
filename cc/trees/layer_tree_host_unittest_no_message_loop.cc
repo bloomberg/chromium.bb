@@ -78,6 +78,7 @@ class LayerTreeHostNoMessageLoopTest
   void DidCommit() override { did_commit_ = true; }
   void DidCommitAndDrawFrame() override { did_commit_and_draw_frame_ = true; }
   void DidCompleteSwapBuffers() override {}
+  void DidCompletePageScaleAnimation() override {}
 
   // LayerTreeHostSingleThreadClient overrides.
   void DidPostSwapBuffers() override {}
