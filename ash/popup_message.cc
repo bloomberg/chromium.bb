@@ -108,7 +108,7 @@ PopupMessage::MessageBubble::MessageBubble(const base::string16& caption,
   //       |                                                 |-
   //       +-------------------------------------------------+
   //             |------------details container--------------|
-  // Note that the icon, caption and massage are optional.
+  // Note that the icon, caption and message are optional.
 
   // Add the icon to the first column (if there is one).
   if (message_type != ICON_NONE) {
