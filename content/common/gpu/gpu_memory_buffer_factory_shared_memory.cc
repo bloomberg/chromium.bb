@@ -38,8 +38,18 @@ GpuMemoryBufferFactorySharedMemory::CreateGpuMemoryBuffer(
     int client_id,
     gfx::PluginWindowHandle surface_handle) {
   base::SharedMemory shared_memory;
-  if (!shared_memory.CreateAnonymous(
-          size.GetArea() * GpuMemoryBufferImpl::BytesPerPixel(format)))
+
+  size_t stride_in_bytes = 0;
+  if (!GpuMemoryBufferImpl::StrideInBytes(
+          size.width(), format, &stride_in_bytes))
+    return gfx::GpuMemoryBufferHandle();
+
+  base::CheckedNumeric<size_t> size_in_bytes = stride_in_bytes;
+  size_in_bytes *= size.height();
+  if (!size_in_bytes.IsValid())
+    return gfx::GpuMemoryBufferHandle();
+
+  if (!shared_memory.CreateAnonymous(size_in_bytes.ValueOrDie()))
     return gfx::GpuMemoryBufferHandle();
 
   gfx::GpuMemoryBufferHandle handle;
