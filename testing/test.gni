@@ -126,6 +126,9 @@ template("test") {
       if (defined(invoker.apk_deps)) {
         deps += invoker.apk_deps
       }
+      if (defined(invoker.apk_asset_location)) {
+        asset_location = invoker.apk_asset_location
+      }
     }
 
     group(target_name) {
