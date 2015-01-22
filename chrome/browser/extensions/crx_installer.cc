@@ -299,6 +299,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
                               install_source_,
                               *expected_manifest_->value(),
                               creation_flags_,
+                              extension->id(),
                               &error);
         if (error.empty()) {
           scoped_refptr<const PermissionSet> expected_permissions =
