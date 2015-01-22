@@ -418,8 +418,9 @@ def GypNinjaInstall(pepperdir, toolchains):
     tools_files = [
       ['irt_core_newlib_arm.nexe', 'irt_core_arm.nexe'],
       ['irt_core_newlib_arm.nexe', 'irt_core_arm.nexe'],
-      ['sel_ldr', 'sel_ldr_arm'],
-      ['nacl_helper_bootstrap', 'nacl_helper_bootstrap_arm']
+      ['nacl_helper_bootstrap', 'nacl_helper_bootstrap_arm'],
+      ['nonsfi_loader_newlib_arm_nonsfi.nexe', 'nonsfi_loader_arm'],
+      ['sel_ldr', 'sel_ldr_arm']
     ]
     ninja_out_dir = os.path.join(OUT_DIR, build_dir + '-arm', 'Release')
     InstallFiles(ninja_out_dir, os.path.join(pepperdir, 'tools'), tools_files)

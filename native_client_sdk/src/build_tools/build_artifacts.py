@@ -243,6 +243,8 @@ def GetToolsFiles():
     files.append(['nacl_helper_bootstrap', 'nacl_helper_bootstrap_x86_32'])
     files.append(['nonsfi_loader_newlib_x32_nonsfi.nexe',
                   'nonsfi_loader_x86_32'])
+    files.append(['nonsfi_loader_newlib_arm_nonsfi.nexe',
+                  'nonsfi_loader_arm'])
 
   # Add .exe extensions to all windows tools
   for pair in files:
