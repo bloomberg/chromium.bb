@@ -659,11 +659,11 @@ class NSSInitSingleton {
     EnsureNSPRInit();
 
     // We *must* have NSS >= 3.14.3.
-    COMPILE_ASSERT(
+    static_assert(
         (NSS_VMAJOR == 3 && NSS_VMINOR == 14 && NSS_VPATCH >= 3) ||
         (NSS_VMAJOR == 3 && NSS_VMINOR > 14) ||
         (NSS_VMAJOR > 3),
-        nss_version_check_failed);
+        "nss version check failed");
     // Also check the run-time NSS version.
     // NSS_VersionCheck is a >= check, not strict equality.
     if (!NSS_VersionCheck("3.14.3")) {
