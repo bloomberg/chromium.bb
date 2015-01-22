@@ -831,20 +831,33 @@ fsi_images: 2913.331.0,2465.105.0
     self.mox.StubOutWithMock(urilib, 'ListFiles')
 
     urilib.ListFiles(
-        'gs://crt/foo-channel/foo-board/find_full_version/payloads/'
-        'chromeos_find_full_version_foo-board_foo-channel_full_test.bin-*'
+        'gs://crt/find_channel/foo-board/find_full_version/payloads/'
+        'chromeos_find_full_version_foo-board_find_channel_full_test.bin-*'
     ).AndReturn(['foo', 'foo.json', 'foo.log', 'bar'])
+
+    urilib.ListFiles(
+        'gs://crt/diff_channel/foo-board/find_full_version/payloads/'
+        'chromeos_find_full_version_foo-board_diff_channel_full_test.bin-*'
+    ).AndReturn(['foo'])
 
     # Run the test verification.
     self.mox.ReplayAll()
 
     # Call once and use mocked look up. Make sure we filter properly.
-    self.assertEqual(paygen._FindFullTestPayloads('find_full_version'),
-                     ['foo', 'bar'])
+    self.assertEqual(
+        paygen._FindFullTestPayloads('find_channel', 'find_full_version'),
+        ['foo', 'bar'])
+
+    # Call with different channel, which does a different lookup.
+    self.assertEqual(
+        paygen._FindFullTestPayloads('diff_channel', 'find_full_version'),
+        ['foo'])
+
 
     # Call a second time to verify we get cached results (no lookup).
-    self.assertEqual(paygen._FindFullTestPayloads('find_full_version'),
-                     ['foo', 'bar'])
+    self.assertEqual(
+        paygen._FindFullTestPayloads('find_channel', 'find_full_version'),
+        ['foo', 'bar'])
 
   def DoGeneratePayloadsTest(self, run_parallel, test_dry_run):
     """Test paygen_build_lib._GeneratePayloads."""

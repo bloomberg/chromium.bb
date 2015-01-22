@@ -297,12 +297,14 @@ class _PaygenBuild(object):
 
     Attrs:
       payload: A gspaths.Payload object describing the payload to be tested.
-      src_version: The build version the payload needs to be applied to; None
+      src_channel: The channel of the image to test updating from.
+      src_version: The version of the image to test updating from.
         for a delta payload, as it already encodes the source version.
     """
 
-    def __init__(self, payload, src_version=None):
+    def __init__(self, payload, src_channel=None, src_version=None):
       self.payload = payload
+      self.src_channel = src_channel
       self.src_version = src_version
 
     def __str__(self):
@@ -744,12 +746,12 @@ class _PaygenBuild(object):
 
     _LogList('Images found', images)
 
-    # Discover FSI builds we need deltas from.
+    # Discover active FSI builds we need deltas from.
     fsi_builds = self._DiscoverActiveFsiBuilds()
     if fsi_builds:
-      _LogList('FSI builds considered', fsi_builds)
+      _LogList('Active FSI builds considered', fsi_builds)
     else:
-      logging.info('No FSI builds found')
+      logging.info('No active FSI builds found')
 
     # Discover other previous builds we need deltas from.
     previous_builds = [b for b in self._DiscoverNmoBuild()
@@ -879,25 +881,29 @@ class _PaygenBuild(object):
         if lock:
           lock.Renew()
 
-  def _FindFullTestPayloads(self, version):
+  def _FindFullTestPayloads(self, channel, version):
     """Returns a list of full test payloads for a given version.
 
-    Uses the current build's channel, board and bucket values. This method
-    caches the full test payloads previously discovered as we may be using them
-    for multiple tests in a single run.
+    Uses the current build's board and bucket values. This method caches the
+    full test payloads previously discovered as we may be using them for
+    multiple tests in a single run.
 
     Args:
+      channel: Channel to look in for payload. If None, use build's channel.
       version: A build version whose payloads to look for.
 
     Returns:
       A (possibly empty) list of payload URIs.
     """
-    if version in self._version_to_full_test_payloads:
+    if channel is None:
+      channel = self._build.channel
+
+    if (channel, version) in self._version_to_full_test_payloads:
       # Serve from cache, if possible.
-      return self._version_to_full_test_payloads[version]
+      return self._version_to_full_test_payloads[(channel, version)]
 
     payload_search_uri = gspaths.ChromeosReleases.PayloadUri(
-        self._build.channel, self._build.board, version, '*',
+        channel, self._build.board, version, '*',
         bucket=self._build.bucket)
 
     payload_candidate = urilib.ListFiles(payload_search_uri)
@@ -908,7 +914,7 @@ class _PaygenBuild(object):
     full_test_payloads = [u for u in payload_candidate
                           if not any([u.endswith(n) for n in NOT_PAYLOAD])]
     # Store in cache.
-    self._version_to_full_test_payloads[version] = full_test_payloads
+    self._version_to_full_test_payloads[(channel, version)] = full_test_payloads
     return full_test_payloads
 
   def _EmitControlFile(self, payload_test, suite_name, control_dump_dir):
@@ -916,6 +922,7 @@ class _PaygenBuild(object):
     # Figure out the source version for the test.
     payload = payload_test.payload
     src_version = payload_test.src_version
+    src_channel = payload_test.src_channel
     if not src_version:
       if not payload.src_image:
         raise PayloadTestError(
@@ -925,7 +932,7 @@ class _PaygenBuild(object):
       src_version = payload.src_image.version
 
     # Discover the full test payload that corresponds to the source version.
-    src_payload_uri_list = self._FindFullTestPayloads(src_version)
+    src_payload_uri_list = self._FindFullTestPayloads(src_channel, src_version)
     if not src_payload_uri_list:
       logging.error('Cannot find full test payload for source version (%s), '
                     'control file not generated', src_version)
@@ -1093,6 +1100,42 @@ class _PaygenBuild(object):
     return (payload.tgt_image.get('image_type', 'signed') != 'signed' and
             payload.src_image is not None)
 
+  def _CreateFsiPayloadTests(self, payload, fsi_versions):
+    """Create PayloadTests against a list of board FSIs.
+
+    Args:
+      payload: The payload we are trying to test.
+      fsi_versions: The list of known FSIs for this board.
+
+    Returns:
+      A list of PayloadTest objects to test with, may be empty.
+    """
+    # Make sure we try oldest FSIs first for testing.
+    fsi_versions = sorted(fsi_versions, key=gspaths.VersionKey)
+    logging.info('Considering FSI tests against: %s', ', '.join(fsi_versions))
+
+    for fsi in fsi_versions:
+      # If the FSI is newer than what we are generating, skip it.
+      if gspaths.VersionGreater(fsi, payload.tgt_image.version):
+        logging.info(
+            '  FSI newer than payload, Skipping FSI test against: %s', fsi)
+        continue
+
+      # Validate that test artifacts exist. The results are thrown away.
+      if not self._FindFullTestPayloads('stable-channel', fsi):
+        # Some of our old FSIs have no test artifacts, so not finding them
+        # isn't an error. Skip that FSI and try the next.
+        logging.info('  No artifacts, skipping FSI test against: %s', fsi)
+        continue
+
+      logging.info('  Scheduling FSI test against: %s', fsi)
+      return [self.PayloadTest(
+          payload, src_channel='stable-channel', src_version=fsi)]
+
+    # If there are no FSIs, or no testable FSIs, no tests.
+    logging.info('No FSIs with artifacts, not scheduling FSI update test.')
+    return []
+
   def _CreatePayloadTests(self, payloads):
     """Returns a list of test configurations for a given list of payloads.
 
@@ -1110,17 +1153,26 @@ class _PaygenBuild(object):
 
       # Distinguish between delta (source version encoded) and full payloads.
       if payload.src_image is None:
-        # Create a full update test from NMO.
-        if self._previous_version:
-          payload_tests.append(self.PayloadTest(
-              payload, src_version=self._previous_version))
-        else:
+        # Create a full update test from NMO, if we are newer.
+        if not self._previous_version:
           logging.warn('No previous build, not testing full update %s from '
                        'NMO', payload)
+        elif gspaths.VersionGreater(
+            self._previous_version, payload.tgt_image.version):
+          logging.warn(
+              'NMO (%s) is newer than target (%s), skipping NMO full '
+              'update test.', self._previous_version, payload)
+        else:
+          payload_tests.append(self.PayloadTest(
+              payload, src_version=self._previous_version))
 
         # Create a full update test from the current version to itself.
         payload_tests.append(self.PayloadTest(
-            payload, src_version=self._build.version))
+            payload, src_channel=None, src_version=self._build.version))
+
+        # Create a full update test from oldest viable FSI.
+        payload_tests += self._CreateFsiPayloadTests(
+            payload, self._DiscoverAllFsiBuilds())
       else:
         # Create a delta update test.
         payload_tests.append(self.PayloadTest(payload))
