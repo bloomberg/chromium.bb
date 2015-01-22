@@ -220,7 +220,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       max_memory_needed_bytes_(0),
       zero_budget_(false),
       device_scale_factor_(1.f),
-      overhang_ui_resource_id_(0),
       resourceless_software_draw_(false),
       begin_impl_frame_interval_(BeginFrameArgs::DefaultInterval()),
       animation_registrar_(AnimationRegistrar::Create()),
@@ -595,8 +594,6 @@ static void AppendQuadsForRenderSurfaceLayer(
 }
 
 static void AppendQuadsToFillScreen(
-    ResourceProvider::ResourceId overhang_resource_id,
-    const gfx::SizeF& overhang_resource_scaled_size,
     const gfx::Rect& root_scroll_layer_rect,
     RenderPass* target_render_pass,
     LayerImpl* root_layer,
@@ -608,16 +605,6 @@ static void AppendQuadsToFillScreen(
   Region fill_region = occlusion_tracker.ComputeVisibleRegionInScreen();
   if (fill_region.IsEmpty())
     return;
-
-  // Divide the fill region into the part to be filled with the overhang
-  // resource and the part to be filled with the background color.
-  Region screen_background_color_region = fill_region;
-  Region overhang_region;
-  if (overhang_resource_id) {
-    overhang_region = fill_region;
-    overhang_region.Subtract(root_scroll_layer_rect);
-    screen_background_color_region.Intersect(root_scroll_layer_rect);
-  }
 
   // Manually create the quad state for the gutter quads, as the root layer
   // doesn't have any bounds and so can't generate this itself.
@@ -638,8 +625,7 @@ static void AppendQuadsToFillScreen(
                             SkXfermode::kSrcOver_Mode,
                             sorting_context_id);
 
-  for (Region::Iterator fill_rects(screen_background_color_region);
-       fill_rects.has_rect();
+  for (Region::Iterator fill_rects(fill_region); fill_rects.has_rect();
        fill_rects.next()) {
     gfx::Rect screen_space_rect = fill_rects.rect();
     gfx::Rect visible_screen_space_rect = screen_space_rect;
@@ -652,35 +638,6 @@ static void AppendQuadsToFillScreen(
                  visible_screen_space_rect,
                  screen_background_color,
                  false);
-  }
-  for (Region::Iterator fill_rects(overhang_region);
-       fill_rects.has_rect();
-       fill_rects.next()) {
-    DCHECK(overhang_resource_id);
-    gfx::Rect screen_space_rect = fill_rects.rect();
-    gfx::Rect opaque_screen_space_rect = screen_space_rect;
-    gfx::Rect visible_screen_space_rect = screen_space_rect;
-    TextureDrawQuad* tex_quad =
-        target_render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    const float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
-    tex_quad->SetNew(
-        shared_quad_state,
-        screen_space_rect,
-        opaque_screen_space_rect,
-        visible_screen_space_rect,
-        overhang_resource_id,
-        false,
-        gfx::PointF(
-            screen_space_rect.x() / overhang_resource_scaled_size.width(),
-            screen_space_rect.y() / overhang_resource_scaled_size.height()),
-        gfx::PointF(
-            screen_space_rect.right() / overhang_resource_scaled_size.width(),
-            screen_space_rect.bottom() /
-                overhang_resource_scaled_size.height()),
-        screen_background_color,
-        vertex_opacity,
-        false,
-        false);
   }
 }
 
@@ -894,8 +851,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   if (!active_tree_->has_transparent_background()) {
     frame->render_passes.back()->has_transparent_background = false;
     AppendQuadsToFillScreen(
-        ResourceIdForUIResource(overhang_ui_resource_id_),
-        gfx::ScaleSize(overhang_ui_resource_size_, device_scale_factor_),
         active_tree_->RootScrollLayerDeviceViewportBounds(),
         frame->render_passes.back(),
         active_tree_->root_layer(),
@@ -2232,13 +2187,6 @@ void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
   client_->OnCanDrawStateChanged(CanDraw());
   SetFullRootLayerDamage();
   active_tree_->set_needs_update_draw_properties();
-}
-
-void LayerTreeHostImpl::SetOverhangUIResource(
-    UIResourceId overhang_ui_resource_id,
-    const gfx::Size& overhang_ui_resource_size) {
-  overhang_ui_resource_id_ = overhang_ui_resource_id;
-  overhang_ui_resource_size_ = overhang_ui_resource_size;
 }
 
 void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {

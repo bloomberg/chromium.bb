@@ -4759,49 +4759,6 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredScaled) {
   TestLayerIsLargerThanViewport();
 }
 
-TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredOverhangBitmap) {
-  viewport_size_ = gfx::Size(1000, 1000);
-
-  bool always_draw = false;
-  CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(always_draw));
-
-  host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
-  SetupActiveTreeLayers();
-
-  // Specify an overhang bitmap to use.
-  bool is_opaque = false;
-  UIResourceBitmap ui_resource_bitmap(gfx::Size(2, 2), is_opaque);
-  ui_resource_bitmap.SetWrapMode(UIResourceBitmap::REPEAT);
-  UIResourceId ui_resource_id = 12345;
-  host_impl_->CreateUIResource(ui_resource_id, ui_resource_bitmap);
-  host_impl_->SetOverhangUIResource(ui_resource_id, gfx::Size(32, 32));
-  set_gutter_quad_material(DrawQuad::TEXTURE_CONTENT);
-  set_gutter_texture_size(gfx::Size(32, 32));
-
-  TestLayerCoversFullViewport();
-  TestEmptyLayer();
-  TestLayerInMiddleOfViewport();
-  TestLayerIsLargerThanViewport();
-
-  // Change the resource size.
-  host_impl_->SetOverhangUIResource(ui_resource_id, gfx::Size(128, 16));
-  set_gutter_texture_size(gfx::Size(128, 16));
-
-  TestLayerCoversFullViewport();
-  TestEmptyLayer();
-  TestLayerInMiddleOfViewport();
-  TestLayerIsLargerThanViewport();
-
-  // Change the device scale factor
-  host_impl_->SetDeviceScaleFactor(2.f);
-  host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
-
-  TestLayerCoversFullViewport();
-  TestEmptyLayer();
-  TestLayerInMiddleOfViewport();
-  TestLayerIsLargerThanViewport();
-}
-
 TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeGrowViewportInvalid) {
   viewport_size_ = gfx::Size(1000, 1000);
 

@@ -155,10 +155,6 @@ void WebLayerTreeViewImpl::setHasTransparentBackground(
   layer_tree_host_->set_has_transparent_background(has_transparent_background);
 }
 
-void WebLayerTreeViewImpl::setOverhangBitmap(const SkBitmap& bitmap) {
-  layer_tree_host_->SetOverhangBitmap(bitmap);
-}
-
 void WebLayerTreeViewImpl::setVisible(bool visible) {
   layer_tree_host_->SetVisible(visible);
 }

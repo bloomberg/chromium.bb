@@ -98,7 +98,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   virtual float deviceScaleFactor() const;
   virtual void setBackgroundColor(blink::WebColor color);
   virtual void setHasTransparentBackground(bool transparent);
-  virtual void setOverhangBitmap(const SkBitmap& bitmap);
   virtual void setVisible(bool visible);
   virtual void setPageScaleFactorAndLimits(float page_scale_factor,
                                            float minimum,

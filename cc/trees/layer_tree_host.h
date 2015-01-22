@@ -235,8 +235,6 @@ class CC_EXPORT LayerTreeHost {
     has_transparent_background_ = transparent;
   }
 
-  void SetOverhangBitmap(const SkBitmap& bitmap);
-
   PrioritizedResourceManager* contents_texture_manager() const {
     return contents_texture_manager_.get();
   }
@@ -440,10 +438,6 @@ class CC_EXPORT LayerTreeHost {
 
   SkColor background_color_;
   bool has_transparent_background_;
-
-  // If set, this texture is used to fill in the parts of the screen not
-  // covered by layers.
-  scoped_ptr<ScopedUIResource> overhang_ui_resource_;
 
   typedef ScopedPtrVector<PrioritizedResource> TextureList;
   size_t partial_texture_update_requests_;

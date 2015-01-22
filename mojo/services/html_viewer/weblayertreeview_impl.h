@@ -79,7 +79,6 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   virtual float deviceScaleFactor() const;
   virtual void setBackgroundColor(blink::WebColor color);
   virtual void setHasTransparentBackground(bool has_transparent_background);
-  virtual void setOverhangBitmap(const SkBitmap& bitmap);
   virtual void setVisible(bool visible);
   virtual void setPageScaleFactorAndLimits(float page_scale_factor,
                                            float minimum,

@@ -184,8 +184,6 @@ void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
 LayerTreeHost::~LayerTreeHost() {
   TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
 
-  overhang_ui_resource_ = nullptr;
-
   if (root_layer_.get())
     root_layer_->SetLayerTreeHost(NULL);
 
@@ -360,11 +358,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   if (!ui_resource_request_queue_.empty()) {
     sync_tree->set_ui_resource_request_queue(ui_resource_request_queue_);
     ui_resource_request_queue_.clear();
-  }
-  if (overhang_ui_resource_) {
-    host_impl->SetOverhangUIResource(
-        overhang_ui_resource_->id(),
-        GetUIResourceSize(overhang_ui_resource_->id()));
   }
 
   DCHECK(!sync_tree->ViewportSizeInvalid());
@@ -718,23 +711,6 @@ void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
   min_page_scale_factor_ = min_page_scale_factor;
   max_page_scale_factor_ = max_page_scale_factor;
   SetNeedsCommit();
-}
-
-void LayerTreeHost::SetOverhangBitmap(const SkBitmap& bitmap) {
-  DCHECK(bitmap.width() && bitmap.height());
-  DCHECK_EQ(bitmap.bytesPerPixel(), 4);
-
-  SkBitmap bitmap_copy;
-  if (bitmap.isImmutable()) {
-    bitmap_copy = bitmap;
-  } else {
-    bitmap.copyTo(&bitmap_copy);
-    bitmap_copy.setImmutable();
-  }
-
-  UIResourceBitmap overhang_bitmap(bitmap_copy);
-  overhang_bitmap.SetWrapMode(UIResourceBitmap::REPEAT);
-  overhang_ui_resource_ = ScopedUIResource::Create(this, overhang_bitmap);
 }
 
 void LayerTreeHost::SetVisible(bool visible) {
