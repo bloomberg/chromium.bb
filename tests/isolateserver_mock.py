@@ -38,6 +38,14 @@ class IsolateServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Reads the request body."""
     return self.rfile.read(int(self.headers['Content-Length']))
 
+  def _drop_body(self):
+    """Reads the request body."""
+    size = int(self.headers['Content-Length'])
+    while size:
+      chunk = min(4096, size)
+      self.rfile.read(chunk)
+      size -= chunk
+
   def do_GET(self):
     logging.info('GET %s', self.path)
     if self.path in ('/on/load', '/on/quit'):
@@ -89,7 +97,11 @@ class IsolateServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       raise NotImplementedError(self.path)
 
   def do_PUT(self):
-    body = self._read_body()
+    if self.server.discard_content:
+      body = '<skipped>'
+      self._drop_body()
+    else:
+      body = self._read_body()
     if self.path.startswith('/mockimpl/push/'):
       namespace, h = self.path[len('/mockimpl/push/'):].split('/', 1)
       self.server.contents.setdefault(namespace, {})[h] = body
@@ -109,6 +121,7 @@ class MockIsolateServer(object):
     self._server = BaseHTTPServer.HTTPServer(
         ('127.0.0.1', 0), IsolateServerHandler)
     self._server.contents = {}
+    self._server.discard_content = False
     self._server.url = self.url = 'http://localhost:%d' % (
         self._server.server_port)
     self._thread = threading.Thread(target=self._run, name='httpd')
@@ -116,11 +129,16 @@ class MockIsolateServer(object):
     self._thread.start()
     logging.info('%s', self.url)
 
+  def discard_content(self):
+    """Stops saving content in memory. Used to test large files."""
+    self._server.discard_content = True
+
   @property
   def contents(self):
     return self._server.contents
 
   def add_content(self, namespace, content):
+    assert not self._server.discard_content
     h = hash_content(content)
     logging.info('add_content(%s, %s)', namespace, h)
     self._server.contents.setdefault(namespace, {})[h] = content

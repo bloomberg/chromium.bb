@@ -5,6 +5,7 @@
 
 # pylint: disable=W0212,W0223,W0231,W0613
 
+import hashlib
 import json
 import logging
 import os
@@ -767,6 +768,42 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
   def test_push_and_fetch_gzip(self):
     self.run_push_and_fetch_test('default-gzip')
 
+  if sys.maxsize == (2**31) - 1:
+    def test_archive_multiple_huge_file(self):
+      self.server.discard_content()
+      # Create multiple files over 2.5gb. This test exists to stress the virtual
+      # address space on 32 bits systems. Make real files since it wouldn't fit
+      # memory by definition.
+      # Sadly, this makes this test very slow so it's only run on 32 bits
+      # platform, since it's known to work on 64 bits platforms anyway.
+      #
+      # It's a fairly slow test, well over 15 seconds.
+      files = {}
+      size = 512 * 1024 * 1024
+      for i in xrange(5):
+        name = '512mb_%d.%s' % (i, isolateserver.ALREADY_COMPRESSED_TYPES[0])
+        p = os.path.join(self.tempdir, name)
+        with open(p, 'wb') as f:
+          # Write 512mb.
+          h = hashlib.sha1()
+          data = os.urandom(1024)
+          for _ in xrange(size / 1024):
+            f.write(data)
+            h.update(data)
+          os.chmod(p, 0600)
+          files[p] = {
+            'h': h.hexdigest(),
+            'm': 0600,
+            's': size,
+          }
+          if sys.platform == 'win32':
+            files[p].pop('m')
+
+      # upload_tree() is a thin wrapper around Storage.
+      isolateserver.upload_tree(self.server.url, files.items(), 'testing')
+      expected = {'testing': {f['h']: '<skipped>' for f in files.itervalues()}}
+      self.assertEqual(expected, self.server.contents)
+
 
 class IsolateServerDownloadTest(TestCase):
   def test_download_two_files(self):
@@ -858,101 +895,6 @@ class IsolateServerDownloadTest(TestCase):
     self.checkOutput(expected_stdout, '')
 
 
-class TestIsolated(auto_stub.TestCase):
-  def test_load_isolated_empty(self):
-    m = isolated_format.load_isolated('{}', isolateserver_mock.ALGO)
-    self.assertEqual({}, m)
-
-  def test_load_isolated_good(self):
-    data = {
-      u'command': [u'foo', u'bar'],
-      u'files': {
-        u'a': {
-          u'l': u'somewhere',
-        },
-        u'b': {
-          u'm': 123,
-          u'h': u'0123456789abcdef0123456789abcdef01234567',
-          u's': 3,
-        }
-      },
-      u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
-      u'read_only': 1,
-      u'relative_cwd': u'somewhere_else',
-      u'version': isolated_format.ISOLATED_FILE_VERSION,
-    }
-    m = isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
-    self.assertEqual(data, m)
-
-  def test_load_isolated_bad(self):
-    data = {
-      u'files': {
-        u'a': {
-          u'l': u'somewhere',
-          u'h': u'0123456789abcdef0123456789abcdef01234567'
-        }
-      },
-      u'version': isolated_format.ISOLATED_FILE_VERSION,
-    }
-    with self.assertRaises(isolated_format.IsolatedError):
-      isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
-
-  def test_load_isolated_os_only(self):
-    # Tolerate 'os' on older version.
-    data = {
-      u'os': 'HP/UX',
-      u'version': '1.3',
-    }
-    m = isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
-    self.assertEqual(data, m)
-
-  def test_load_isolated_os_only_bad(self):
-    data = {
-      u'os': 'HP/UX',
-      u'version': isolated_format.ISOLATED_FILE_VERSION,
-    }
-    with self.assertRaises(isolated_format.IsolatedError):
-      isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
-
-  def test_load_isolated_path(self):
-    # Automatically convert the path case.
-    wrong_path_sep = u'\\' if os.path.sep == '/' else u'/'
-    def gen_data(path_sep):
-      return {
-        u'command': [u'foo', u'bar'],
-        u'files': {
-          path_sep.join(('a', 'b')): {
-            u'l': path_sep.join(('..', 'somewhere')),
-          },
-        },
-        u'relative_cwd': path_sep.join(('somewhere', 'else')),
-        u'version': isolated_format.ISOLATED_FILE_VERSION,
-      }
-
-    data = gen_data(wrong_path_sep)
-    actual = isolated_format.load_isolated(
-        json.dumps(data), isolateserver_mock.ALGO)
-    expected = gen_data(os.path.sep)
-    self.assertEqual(expected, actual)
-
-  def test_save_isolated_good_long_size(self):
-    calls = []
-    self.mock(isolateserver.tools, 'write_json', lambda *x: calls.append(x))
-    data = {
-      u'algo': 'sha-1',
-      u'files': {
-        u'b': {
-          u'm': 123,
-          u'h': u'0123456789abcdef0123456789abcdef01234567',
-          u's': 2181582786L,
-        }
-      },
-    }
-    m = isolated_format.save_isolated('foo', data)
-    self.assertEqual([], m)
-    self.assertEqual([('foo', data, True)], calls)
-
-
 def get_storage(_isolate_server, namespace):
   class StorageFake(object):
     def __enter__(self, *_):
@@ -1041,8 +983,7 @@ class TestArchive(TestCase):
         '')
 
   def test_archive_directory(self):
-    self.help_test_archive(['archive', '--isolate-server',
-                            'https://localhost:1'])
+    self.help_test_archive(['archive', '-I', 'https://localhost:1'])
 
   def test_archive_directory_envvar(self):
     with test_utils.EnvVars({'ISOLATE_SERVER': 'https://localhost:1'}):

@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.4'
+__version__ = '0.4.1'
 
 import functools
 import logging
@@ -17,6 +17,7 @@ import sys
 import tempfile
 import threading
 import time
+import types
 import urllib
 import urlparse
 import zlib
@@ -910,11 +911,12 @@ class _IsolateServerPushState(object):
   Note this needs to be a global class to support pickling.
   """
 
-  def __init__(self, upload_url, finalize_url):
+  def __init__(self, upload_url, finalize_url, size):
     self.upload_url = upload_url
     self.finalize_url = finalize_url
     self.uploaded = False
     self.finalized = False
+    self.size = size
 
 
 class IsolateServer(StorageApi):
@@ -931,6 +933,7 @@ class IsolateServer(StorageApi):
     self._namespace = namespace
     self._lock = threading.Lock()
     self._server_caps = None
+    self._memory_use = 0
 
   @staticmethod
   def _generate_handshake_request():
@@ -1049,48 +1052,79 @@ class IsolateServer(StorageApi):
 
     # Default to item.content().
     content = item.content() if content is None else content
-
-    # Do not iterate byte by byte over 'str'. Push it all as a single chunk.
-    if isinstance(content, basestring):
-      assert not isinstance(content, unicode), 'Unicode string is not allowed'
-      content = [content]
-
-    # TODO(vadimsh): Do not read from |content| generator when retrying push.
-    # If |content| is indeed a generator, it can not be re-winded back
-    # to the beginning of the stream. A retry will find it exhausted. A possible
-    # solution is to wrap |content| generator with some sort of caching
-    # restartable generator. It should be done alongside streaming support
-    # implementation.
-
-    # This push operation may be a retry after failed finalization call below,
-    # no need to reupload contents in that case.
-    if not push_state.uploaded:
-      # PUT file to |upload_url|.
-      success = self.do_push(push_state.upload_url, content)
-      if not success:
-        raise IOError('Failed to upload a file %s to %s' % (
-            item.digest, push_state.upload_url))
-      push_state.uploaded = True
+    logging.info('Push state size: %d', push_state.size)
+    if isinstance(content, (basestring, list)):
+      # Memory is already used, too late.
+      with self._lock:
+        self._memory_use += push_state.size
     else:
-      logging.info(
-          'A file %s already uploaded, retrying finalization only', item.digest)
+      # TODO(vadimsh): Do not read from |content| generator when retrying push.
+      # If |content| is indeed a generator, it can not be re-winded back to the
+      # beginning of the stream. A retry will find it exhausted. A possible
+      # solution is to wrap |content| generator with some sort of caching
+      # restartable generator. It should be done alongside streaming support
+      # implementation.
+      #
+      # In theory, we should keep the generator, so that it is not serialized in
+      # memory. Sadly net.HttpService.request() requires the body to be
+      # serialized.
+      assert isinstance(content, types.GeneratorType), repr(content)
+      slept = False
+      # HACK HACK HACK. Please forgive me for my sins but OMG, it works!
+      # One byte less than 1gb. This is to cope with incompressible content.
+      max_size = int(sys.maxsize * 0.5)
+      while True:
+        with self._lock:
+          # This is due to 32 bits python when uploading very large files. The
+          # problem is that it's comparing uncompressed sizes, while we care
+          # about compressed sizes since it's what is serialized in memory.
+          # The first check assumes large files are compressible and that by
+          # throttling one upload at once, we can survive. Otherwise, kaboom.
+          memory_use = self._memory_use
+          if ((push_state.size >= max_size and not memory_use) or
+              (memory_use + push_state.size <= max_size)):
+            self._memory_use += push_state.size
+            memory_use = self._memory_use
+            break
+        time.sleep(0.1)
+        slept = True
+      if slept:
+        logging.info('Unblocked: %d %d', memory_use, push_state.size)
 
-    # Optionally notify the server that it's done.
-    if push_state.finalize_url:
-      # TODO(vadimsh): Calculate MD5 or CRC32C sum while uploading a file and
-      # send it to isolated server. That way isolate server can verify that
-      # the data safely reached Google Storage (GS provides MD5 and CRC32C of
-      # stored files).
-      # TODO(maruel): Fix the server to accept properly data={} so
-      # url_read_json() can be used.
-      response = net.url_read(
-          url=push_state.finalize_url,
-          data='',
-          content_type='application/json',
-          method='POST')
-      if response is None:
-        raise IOError('Failed to finalize an upload of %s' % item.digest)
-    push_state.finalized = True
+    try:
+      # This push operation may be a retry after failed finalization call below,
+      # no need to reupload contents in that case.
+      if not push_state.uploaded:
+        # PUT file to |upload_url|.
+        success = self.do_push(push_state.upload_url, content)
+        if not success:
+          raise IOError('Failed to upload a file %s to %s' % (
+              item.digest, push_state.upload_url))
+        push_state.uploaded = True
+      else:
+        logging.info(
+            'A file %s already uploaded, retrying finalization only',
+            item.digest)
+
+      # Optionally notify the server that it's done.
+      if push_state.finalize_url:
+        # TODO(vadimsh): Calculate MD5 or CRC32C sum while uploading a file and
+        # send it to isolated server. That way isolate server can verify that
+        # the data safely reached Google Storage (GS provides MD5 and CRC32C of
+        # stored files).
+        # TODO(maruel): Fix the server to accept properly data={} so
+        # url_read_json() can be used.
+        response = net.url_read(
+            url=push_state.finalize_url,
+            data='',
+            content_type='application/json',
+            method='POST')
+        if response is None:
+          raise IOError('Failed to finalize an upload of %s' % item.digest)
+      push_state.finalized = True
+    finally:
+      with self._lock:
+        self._memory_use -= push_state.size
 
   def contains(self, items):
     # Ensure all items were initialized with 'prepare' call. Storage does that.
@@ -1133,7 +1167,7 @@ class IsolateServer(StorageApi):
       if push_urls:
         assert len(push_urls) == 2, str(push_urls)
         missing_items[items[i]] = _IsolateServerPushState(
-            push_urls[0], push_urls[1])
+            push_urls[0], push_urls[1], items[i].size)
     logging.info('Queried %d files, %d cache hit',
         len(items), len(items) - len(missing_items))
     return missing_items

@@ -20,12 +20,8 @@ import isolated_format
 import test_utils
 from utils import file_path
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 # Ensure that the testing machine has access to this server.
 ISOLATE_SERVER = 'https://isolateserver.appspot.com/'
-
-# The directory containing the test data files.
 
 
 CONTENTS = {
@@ -102,22 +98,28 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
 
   def test_archive_huge_file(self):
     # Create a file over 2gbs.
-    filepath = None
-    try:
-      try:
-        handle, filepath = tempfile.mkstemp(prefix='isolateserver')
-        # Write 2.1gb.
-        chunk = chr(0) + chr(57) + chr(128) + chr(255)
-        chunk1mb = chunk * (1024 * 1024 / len(chunk))
-        for _ in xrange(1280):
-          os.write(handle, chunk1mb)
-      finally:
-        os.close(handle)
+    name = '2.1gb.7z'
+    with open(os.path.join(self.test_data, name), 'wb') as f:
+      # Write 2.1gb.
+      data = os.urandom(1024)
+      for _ in xrange(2150 * 1024):
+        f.write(data)
+    self._archive_given_files([name])
 
-      self._archive_given_files([filepath])
-    finally:
-      if filepath:
-        os.remove(filepath)
+  if sys.maxsize == (2**31) - 1:
+    def test_archive_multiple_huge_file(self):
+      # Create multiple files over 2.5gb. This test exists to stress the virtual
+      # address space on 32 bits systems
+      files = []
+      for i in xrange(5):
+        name = '512mb_%d.7z' % i
+        files.append(name)
+        with open(os.path.join(self.test_data, name), 'wb') as f:
+          # Write 512mb.
+          data = os.urandom(1024)
+          for _ in xrange(512 * 1024):
+            f.write(data)
+      self._archive_given_files(files)
 
 
 if __name__ == '__main__':

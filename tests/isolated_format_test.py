@@ -4,6 +4,7 @@
 # can be found in the LICENSE file.
 
 import hashlib
+import json
 import logging
 import os
 import shutil
@@ -15,6 +16,10 @@ import unittest
 import net_utils
 
 import isolated_format
+from depot_tools import auto_stub
+from utils import tools
+
+import isolateserver_mock
 
 
 ALGO = hashlib.sha1
@@ -137,6 +142,101 @@ class SymlinkTest(unittest.TestCase):
       open(os.path.join(tmp_foo, 'bar.txt'), 'w').close()
       actual = isolated_format.expand_symlinks(src, u'out/foo/bar.txt')
       self.assertEqual((u'out/foo/bar.txt', []), actual)
+
+
+class TestIsolated(auto_stub.TestCase):
+  def test_load_isolated_empty(self):
+    m = isolated_format.load_isolated('{}', isolateserver_mock.ALGO)
+    self.assertEqual({}, m)
+
+  def test_load_isolated_good(self):
+    data = {
+      u'command': [u'foo', u'bar'],
+      u'files': {
+        u'a': {
+          u'l': u'somewhere',
+        },
+        u'b': {
+          u'm': 123,
+          u'h': u'0123456789abcdef0123456789abcdef01234567',
+          u's': 3,
+        }
+      },
+      u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
+      u'read_only': 1,
+      u'relative_cwd': u'somewhere_else',
+      u'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    m = isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+    self.assertEqual(data, m)
+
+  def test_load_isolated_bad(self):
+    data = {
+      u'files': {
+        u'a': {
+          u'l': u'somewhere',
+          u'h': u'0123456789abcdef0123456789abcdef01234567'
+        }
+      },
+      u'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    with self.assertRaises(isolated_format.IsolatedError):
+      isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+
+  def test_load_isolated_os_only(self):
+    # Tolerate 'os' on older version.
+    data = {
+      u'os': 'HP/UX',
+      u'version': '1.3',
+    }
+    m = isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+    self.assertEqual(data, m)
+
+  def test_load_isolated_os_only_bad(self):
+    data = {
+      u'os': 'HP/UX',
+      u'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    with self.assertRaises(isolated_format.IsolatedError):
+      isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+
+  def test_load_isolated_path(self):
+    # Automatically convert the path case.
+    wrong_path_sep = u'\\' if os.path.sep == '/' else u'/'
+    def gen_data(path_sep):
+      return {
+        u'command': [u'foo', u'bar'],
+        u'files': {
+          path_sep.join(('a', 'b')): {
+            u'l': path_sep.join(('..', 'somewhere')),
+          },
+        },
+        u'relative_cwd': path_sep.join(('somewhere', 'else')),
+        u'version': isolated_format.ISOLATED_FILE_VERSION,
+      }
+
+    data = gen_data(wrong_path_sep)
+    actual = isolated_format.load_isolated(
+        json.dumps(data), isolateserver_mock.ALGO)
+    expected = gen_data(os.path.sep)
+    self.assertEqual(expected, actual)
+
+  def test_save_isolated_good_long_size(self):
+    calls = []
+    self.mock(tools, 'write_json', lambda *x: calls.append(x))
+    data = {
+      u'algo': 'sha-1',
+      u'files': {
+        u'b': {
+          u'm': 123,
+          u'h': u'0123456789abcdef0123456789abcdef01234567',
+          u's': 2181582786L,
+        }
+      },
+    }
+    m = isolated_format.save_isolated('foo', data)
+    self.assertEqual([], m)
+    self.assertEqual([('foo', data, True)], calls)
 
 
 if __name__ == '__main__':
