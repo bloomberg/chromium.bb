@@ -863,11 +863,11 @@ OSType MacKeychainPasswordFormAdapter::CreatorCodeForSearch() {
 PasswordStoreMac::PasswordStoreMac(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-    AppleKeychain* keychain,
-    password_manager::LoginDatabase* login_db)
+    scoped_ptr<AppleKeychain> keychain,
+    scoped_ptr<password_manager::LoginDatabase> login_db)
     : password_manager::PasswordStore(main_thread_runner, db_thread_runner),
-      keychain_(keychain),
-      login_metadata_db_(login_db) {
+      keychain_(keychain.Pass()),
+      login_metadata_db_(login_db.Pass()) {
   DCHECK(keychain_.get());
   DCHECK(login_metadata_db_.get());
 }
@@ -883,7 +883,18 @@ bool PasswordStoreMac::Init(
     thread_.reset(NULL);
     return false;
   }
+
+  ScheduleTask(base::Bind(&PasswordStoreMac::InitOnBackgroundThread, this));
   return password_manager::PasswordStore::Init(flare);
+}
+
+void PasswordStoreMac::InitOnBackgroundThread() {
+  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  DCHECK(login_metadata_db_);
+  if (!login_metadata_db_->Init()) {
+    login_metadata_db_.reset();
+    LOG(ERROR) << "Could not create/open login database.";
+  }
 }
 
 void PasswordStoreMac::Shutdown() {
@@ -903,6 +914,8 @@ PasswordStoreMac::GetBackgroundTaskRunner() {
 
 void PasswordStoreMac::ReportMetricsImpl(const std::string& sync_username,
                                          bool custom_passphrase_sync_enabled) {
+  if (!login_metadata_db_)
+    return;
   login_metadata_db_->ReportMetrics(sync_username,
                                     custom_passphrase_sync_enabled);
 }
@@ -910,16 +923,17 @@ void PasswordStoreMac::ReportMetricsImpl(const std::string& sync_username,
 PasswordStoreChangeList PasswordStoreMac::AddLoginImpl(
     const PasswordForm& form) {
   DCHECK(thread_->message_loop() == base::MessageLoop::current());
-  PasswordStoreChangeList changes;
-  if (AddToKeychainIfNecessary(form)) {
-    changes = login_metadata_db_->AddLogin(form);
-  }
-  return changes;
+  if (login_metadata_db_ && AddToKeychainIfNecessary(form))
+    return login_metadata_db_->AddLogin(form);
+  return PasswordStoreChangeList();
 }
 
 PasswordStoreChangeList PasswordStoreMac::UpdateLoginImpl(
     const PasswordForm& form) {
   DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  if (!login_metadata_db_)
+    return PasswordStoreChangeList();
+
   PasswordStoreChangeList changes = login_metadata_db_->UpdateLogin(form);
 
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_.get());
@@ -942,7 +956,7 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginImpl(
     const PasswordForm& form) {
   DCHECK(thread_->message_loop() == base::MessageLoop::current());
   PasswordStoreChangeList changes;
-  if (login_metadata_db_->RemoveLogin(form)) {
+  if (login_metadata_db_ && login_metadata_db_->RemoveLogin(form)) {
     // See if we own a Keychain item associated with this item. We can do an
     // exact search rather than messing around with trying to do fuzzy matching
     // because passwords that we created will always have an exact-match
@@ -970,15 +984,15 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
     base::Time delete_end) {
   PasswordStoreChangeList changes;
   ScopedVector<PasswordForm> forms;
-  if (login_metadata_db_->GetLoginsCreatedBetween(delete_begin, delete_end,
-                                                  &forms.get())) {
-    if (login_metadata_db_->RemoveLoginsCreatedBetween(delete_begin,
-                                                       delete_end)) {
-      RemoveKeychainForms(forms.get());
-      CleanOrphanedForms(&forms.get());
-      changes = FormsToRemoveChangeList(forms.get());
-      LogStatsForBulkDeletion(changes.size());
-    }
+  if (login_metadata_db_ &&
+      login_metadata_db_->GetLoginsCreatedBetween(delete_begin, delete_end,
+                                                  &forms.get()) &&
+      login_metadata_db_->RemoveLoginsCreatedBetween(delete_begin,
+                                                     delete_end)) {
+    RemoveKeychainForms(forms.get());
+    CleanOrphanedForms(&forms.get());
+    changes = FormsToRemoveChangeList(forms.get());
+    LogStatsForBulkDeletion(changes.size());
   }
   return changes;
 }
@@ -988,15 +1002,14 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsSyncedBetweenImpl(
     base::Time delete_end) {
   PasswordStoreChangeList changes;
   ScopedVector<PasswordForm> forms;
-  if (login_metadata_db_->GetLoginsSyncedBetween(
-          delete_begin, delete_end, &forms.get())) {
-    if (login_metadata_db_->RemoveLoginsSyncedBetween(delete_begin,
-                                                      delete_end)) {
-      RemoveKeychainForms(forms.get());
-      CleanOrphanedForms(&forms.get());
-      changes = FormsToRemoveChangeList(forms.get());
-      LogStatsForBulkDeletionDuringRollback(changes.size());
-    }
+  if (login_metadata_db_ &&
+      login_metadata_db_->GetLoginsSyncedBetween(delete_begin, delete_end,
+                                                 &forms.get()) &&
+      login_metadata_db_->RemoveLoginsSyncedBetween(delete_begin, delete_end)) {
+    RemoveKeychainForms(forms.get());
+    CleanOrphanedForms(&forms.get());
+    changes = FormsToRemoveChangeList(forms.get());
+    LogStatsForBulkDeletionDuringRollback(changes.size());
   }
   return changes;
 }
@@ -1007,6 +1020,11 @@ void PasswordStoreMac::GetLoginsImpl(
     const ConsumerCallbackRunner& callback_runner) {
   chrome::ScopedSecKeychainSetUserInteractionAllowed user_interaction_allowed(
       prompt_policy == ALLOW_PROMPT);
+
+  if (!login_metadata_db_) {
+    callback_runner.Run(std::vector<PasswordForm*>());
+    return;
+  }
 
   ScopedVector<PasswordForm> database_forms;
   login_metadata_db_->GetLogins(form, &database_forms.get());
@@ -1076,7 +1094,8 @@ bool PasswordStoreMac::FillAutofillableLogins(
   DCHECK(thread_->message_loop() == base::MessageLoop::current());
 
   ScopedVector<PasswordForm> database_forms;
-  if (!login_metadata_db_->GetAutofillableLogins(&database_forms.get()))
+  if (!login_metadata_db_ ||
+      !login_metadata_db_->GetAutofillableLogins(&database_forms.get()))
     return false;
 
   std::vector<PasswordForm*> merged_forms =
@@ -1095,7 +1114,7 @@ bool PasswordStoreMac::FillAutofillableLogins(
 bool PasswordStoreMac::FillBlacklistLogins(
          std::vector<PasswordForm*>* forms) {
   DCHECK(thread_->message_loop() == base::MessageLoop::current());
-  return login_metadata_db_->GetBlacklistLogins(forms);
+  return login_metadata_db_ && login_metadata_db_->GetBlacklistLogins(forms);
 }
 
 bool PasswordStoreMac::AddToKeychainIfNecessary(const PasswordForm& form) {
@@ -1108,6 +1127,7 @@ bool PasswordStoreMac::AddToKeychainIfNecessary(const PasswordForm& form) {
 
 bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
     const autofill::PasswordForm& form) {
+  DCHECK(login_metadata_db_);
   bool has_match = false;
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetLogins(form, &database_forms);
@@ -1129,6 +1149,7 @@ bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
 
 void PasswordStoreMac::RemoveDatabaseForms(
     const std::vector<PasswordForm*>& forms) {
+  DCHECK(login_metadata_db_);
   for (std::vector<PasswordForm*>::const_iterator i = forms.begin();
        i != forms.end(); ++i) {
     login_metadata_db_->RemoveLogin(**i);
@@ -1147,6 +1168,8 @@ void PasswordStoreMac::RemoveKeychainForms(
 
 void PasswordStoreMac::CleanOrphanedForms(std::vector<PasswordForm*>* forms) {
   DCHECK(forms);
+  DCHECK(login_metadata_db_);
+
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetAutofillableLogins(&database_forms);
 

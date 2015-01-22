@@ -45,15 +45,15 @@ class PasswordStoreTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    login_db_.reset(new LoginDatabase());
-    ASSERT_TRUE(login_db_->Init(
-        temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"))));
   }
 
   void TearDown() override { ASSERT_TRUE(temp_dir_.Delete()); }
 
+  base::FilePath test_login_db_file_path() const {
+    return temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"));
+  }
+
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<LoginDatabase> login_db_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -63,9 +63,8 @@ ACTION(STLDeleteElements0) {
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current(),
-      login_db_.release()));
+      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
@@ -193,9 +192,8 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
 TEST_F(PasswordStoreTest, StartSyncFlare) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current(),
-      login_db_.release()));
+      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
   StartSyncFlareMock mock;
   store->Init(
       base::Bind(&StartSyncFlareMock::StartSyncFlare, base::Unretained(&mock)));

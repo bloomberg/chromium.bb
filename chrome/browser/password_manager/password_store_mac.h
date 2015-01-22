@@ -28,13 +28,13 @@ class LoginDatabase;
 // http://dev.chromium.org/developers/design-documents/os-x-password-manager-keychain-integration
 class PasswordStoreMac : public password_manager::PasswordStore {
  public:
-  // Takes ownership of |keychain| and |login_db|, both of which must be
-  // non-NULL.
+  // The |login_db| must not have been Init()-ed yet. It will be initialized in
+  // a deferred manner on the background thread.
   PasswordStoreMac(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-      crypto::AppleKeychain* keychain,
-      password_manager::LoginDatabase* login_db);
+      scoped_ptr<crypto::AppleKeychain> keychain,
+      scoped_ptr<password_manager::LoginDatabase> login_db);
 
   // Initializes |thread_|.
   bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
@@ -42,8 +42,19 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   // Stops |thread_|.
   void Shutdown() override;
 
+  // To be used for testing.
+  password_manager::LoginDatabase* login_metadata_db() const {
+    return login_metadata_db_.get();
+  }
+
+  // To be used for testing.
+  crypto::AppleKeychain* keychain() const { return keychain_.get(); }
+
  protected:
   ~PasswordStoreMac() override;
+
+  // Opens |login_metadata_db_| on the background |thread_|.
+  void InitOnBackgroundThread();
 
   scoped_refptr<base::SingleThreadTaskRunner> GetBackgroundTaskRunner()
       override;
@@ -97,6 +108,11 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   void CleanOrphanedForms(std::vector<autofill::PasswordForm*>* forms);
 
   scoped_ptr<crypto::AppleKeychain> keychain_;
+
+  // The login metadata SQL database. The LoginDatabase instance is received via
+  // the in an uninitialized state, so as to allow injecting mocks, then Init()
+  // is called on the DB thread in a deferred manner. If opening the DB fails,
+  // |login_metadata_db_| will be reset to NULL for the lifetime of |this|.
   scoped_ptr<password_manager::LoginDatabase> login_metadata_db_;
 
   // Thread that the synchronous methods are run on.

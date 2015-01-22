@@ -41,12 +41,15 @@ bool AddLoginToBackend(const scoped_ptr<PasswordStoreX::NativeBackend>& backend,
 PasswordStoreX::PasswordStoreX(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-    password_manager::LoginDatabase* login_db,
+    scoped_ptr<password_manager::LoginDatabase> login_db,
     NativeBackend* backend)
-    : PasswordStoreDefault(main_thread_runner, db_thread_runner, login_db),
+    : PasswordStoreDefault(main_thread_runner,
+                           db_thread_runner,
+                           login_db.Pass()),
       backend_(backend),
       migration_checked_(!backend),
-      allow_fallback_(false) {}
+      allow_fallback_(false) {
+}
 
 PasswordStoreX::~PasswordStoreX() {}
 

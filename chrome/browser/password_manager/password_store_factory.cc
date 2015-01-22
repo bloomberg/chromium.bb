@@ -146,19 +146,12 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
   DelayReportOsPassword();
   Profile* profile = static_cast<Profile*>(context);
 
+  // Given that LoginDatabase::Init() takes ~100ms on average; it will be called
+  // by PasswordStore::Init() on the background thread to avoid UI jank.
   base::FilePath login_db_file_path = profile->GetPath();
   login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
   scoped_ptr<password_manager::LoginDatabase> login_db(
-      new password_manager::LoginDatabase());
-  {
-    // TODO(paivanof@gmail.com): execution of login_db->Init() should go
-    // to DB thread. http://crbug.com/138903
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    if (!login_db->Init(login_db_file_path)) {
-      LOG(ERROR) << "Could not initialize login database.";
-      return NULL;
-    }
-  }
+      new password_manager::LoginDatabase(login_db_file_path));
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(
       base::MessageLoopProxy::current());
@@ -168,24 +161,23 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<PasswordStore> ps;
 #if defined(OS_WIN)
-  ps = new PasswordStoreWin(main_thread_runner,
-                            db_thread_runner,
-                            login_db.release(),
+  ps = new PasswordStoreWin(main_thread_runner, db_thread_runner,
+                            login_db.Pass(),
                             WebDataServiceFactory::GetPasswordWebDataForProfile(
                                 profile, ServiceAccessType::EXPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
-  crypto::AppleKeychain* keychain =
+  scoped_ptr<crypto::AppleKeychain> keychain(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           os_crypt::switches::kUseMockKeychain)
           ? new crypto::MockAppleKeychain()
-          : new crypto::AppleKeychain();
-  ps = new PasswordStoreMac(
-      main_thread_runner, db_thread_runner, keychain, login_db.release());
+          : new crypto::AppleKeychain());
+  ps = new PasswordStoreMac(main_thread_runner, db_thread_runner,
+                            keychain.Pass(), login_db.Pass());
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.
   ps = new password_manager::PasswordStoreDefault(
-      main_thread_runner, db_thread_runner, login_db.release());
+      main_thread_runner, db_thread_runner, login_db.Pass());
 #elif defined(USE_X11)
   // On POSIX systems, we try to use the "native" password management system of
   // the desktop environment currently running, allowing GNOME Keyring in XFCE.
@@ -240,13 +232,11 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
         "more information about password storage options.";
   }
 
-  ps = new PasswordStoreX(main_thread_runner,
-                          db_thread_runner,
-                          login_db.release(),
+  ps = new PasswordStoreX(main_thread_runner, db_thread_runner, login_db.Pass(),
                           backend.release());
 #elif defined(USE_OZONE)
   ps = new password_manager::PasswordStoreDefault(
-      main_thread_runner, db_thread_runner, login_db.release());
+      main_thread_runner, db_thread_runner, login_db.Pass());
 #else
   NOTIMPLEMENTED();
 #endif

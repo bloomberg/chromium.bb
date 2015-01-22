@@ -239,12 +239,13 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    login_db_.reset(new password_manager::LoginDatabase());
-    ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append("login_test")));
   }
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
+
+  base::FilePath test_login_db_file_path() const {
+    return temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"));
+  }
 
   PasswordStoreX::NativeBackend* GetBackend() {
     switch (GetParam()) {
@@ -259,7 +260,6 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
 
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<password_manager::LoginDatabase> login_db_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -268,11 +268,11 @@ ACTION(STLDeleteElements0) {
 }
 
 TEST_P(PasswordStoreXTest, Notifications) {
-  scoped_refptr<PasswordStoreX> store(
-      new PasswordStoreX(base::MessageLoopProxy::current(),
-                         base::MessageLoopProxy::current(),
-                         login_db_.release(),
-                         GetBackend()));
+  scoped_ptr<password_manager::LoginDatabase> login_db(
+      new password_manager::LoginDatabase(test_login_db_file_path()));
+  scoped_refptr<PasswordStoreX> store(new PasswordStoreX(
+      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      login_db.Pass(), GetBackend()));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
   password_manager::PasswordFormData form_data = {
@@ -345,13 +345,15 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   VectorOfForms expected_blacklisted;
   InitExpectedForms(false, 50, &expected_blacklisted);
 
+  const base::FilePath login_db_file = test_login_db_file_path();
+  scoped_ptr<password_manager::LoginDatabase> login_db(
+      new password_manager::LoginDatabase(login_db_file));
+  ASSERT_TRUE(login_db->Init());
+
   // Get the initial size of the login DB file, before we populate it.
   // This will be used later to make sure it gets back to this size.
-  const base::FilePath login_db_file = temp_dir_.path().Append("login_test");
   base::File::Info db_file_start_info;
   ASSERT_TRUE(base::GetFileInfo(login_db_file, &db_file_start_info));
-
-  password_manager::LoginDatabase* login_db = login_db_.get();
 
   // Populate the login DB with logins that should be migrated.
   for (VectorOfForms::iterator it = expected_autofillable.begin();
@@ -369,11 +371,10 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   EXPECT_GT(db_file_full_info.size, db_file_start_info.size);
 
   // Initializing the PasswordStore shouldn't trigger a native migration (yet).
-  scoped_refptr<PasswordStoreX> store(
-      new PasswordStoreX(base::MessageLoopProxy::current(),
-                         base::MessageLoopProxy::current(),
-                         login_db_.release(),
-                         GetBackend()));
+  login_db.reset(new password_manager::LoginDatabase(login_db_file));
+  scoped_refptr<PasswordStoreX> store(new PasswordStoreX(
+      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      login_db.Pass(), GetBackend()));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
   MockPasswordStoreConsumer consumer;
@@ -410,7 +411,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
         .WillOnce(WithArg<0>(STLDeleteElements0()));
   }
 
-  LoginDatabaseQueryCallback(login_db, true, &ld_return);
+  LoginDatabaseQueryCallback(store->login_db(), true, &ld_return);
 
   // Wait for the login DB methods to execute.
   base::RunLoop().RunUntilIdle();
@@ -427,7 +428,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
         .WillOnce(WithArg<0>(STLDeleteElements0()));
   }
 
-  LoginDatabaseQueryCallback(login_db, false, &ld_return);
+  LoginDatabaseQueryCallback(store->login_db(), false, &ld_return);
 
   // Wait for the login DB methods to execute.
   base::RunLoop().RunUntilIdle();

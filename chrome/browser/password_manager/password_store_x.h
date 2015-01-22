@@ -69,7 +69,7 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   // case this PasswordStoreX will act the same as PasswordStoreDefault.
   PasswordStoreX(scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
                  scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-                 password_manager::LoginDatabase* login_db,
+                 scoped_ptr<password_manager::LoginDatabase> login_db,
                  NativeBackend* backend);
 
  private:

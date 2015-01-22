@@ -17,14 +17,23 @@ namespace password_manager {
 // the LoginDatabase.
 class PasswordStoreDefault : public PasswordStore {
  public:
-  // Takes ownership of |login_db|.
+  // The |login_db| must not have been Init()-ed yet. It will be initialized in
+  // a deferred manner on the DB thread.
   PasswordStoreDefault(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-      LoginDatabase* login_db);
+      scoped_ptr<LoginDatabase> login_db);
+
+  bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
+
+  // To be used only for testing.
+  LoginDatabase* login_db() const { return login_db_.get(); }
 
  protected:
   ~PasswordStoreDefault() override;
+
+  // Opens |login_db_| on the DB thread.
+  void InitOnDBThread();
 
   // Implements PasswordStore interface.
   void ReportMetricsImpl(const std::string& sync_username,
@@ -57,6 +66,10 @@ class PasswordStoreDefault : public PasswordStore {
   }
 
  private:
+  // The login SQL database. The LoginDatabase instance is received via the
+  // in an uninitialized state, so as to allow injecting mocks, then Init() is
+  // called on the DB thread in a deferred manner. If opening the DB fails,
+  // |login_db_| will be reset and stay NULL for the lifetime of |this|.
   scoped_ptr<LoginDatabase> login_db_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefault);

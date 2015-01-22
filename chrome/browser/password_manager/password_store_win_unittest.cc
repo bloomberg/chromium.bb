@@ -116,9 +116,6 @@ class PasswordStoreWinTest : public testing::Test {
 
     profile_.reset(new TestingProfile());
 
-    login_db_.reset(new LoginDatabase());
-    ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
-        FILE_PATH_LITERAL("login_test"))));
     base::FilePath path = temp_dir_.path().AppendASCII("web_data_test");
     wdbs_ = new WebDatabaseService(path,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
@@ -150,11 +147,15 @@ class PasswordStoreWinTest : public testing::Test {
     db_thread_.Stop();
   }
 
+  base::FilePath test_login_db_file_path() const {
+    return temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"));
+  }
+
   PasswordStoreWin* CreatePasswordStore() {
     return new PasswordStoreWin(
         base::MessageLoopProxy::current(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-        login_db_.release(),
+        make_scoped_ptr(new LoginDatabase(test_login_db_file_path())),
         wds_.get());
   }
 
@@ -165,7 +166,6 @@ class PasswordStoreWinTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<LoginDatabase> login_db_;
   scoped_refptr<PasswordWebDataService> wds_;
   scoped_refptr<WebDatabaseService> wdbs_;
   scoped_refptr<PasswordStore> store_;

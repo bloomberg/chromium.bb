@@ -51,6 +51,11 @@ class PasswordSyncableService;
 // Interface for storing form passwords in a platform-specific secure way.
 // The login request/manipulation API is not threadsafe and must be used
 // from the UI thread.
+// Implementations, however, should carry out most tasks asynchronously on a
+// background thread: the base class provides functionality to facilitate this.
+// I/O heavy initialization should also be performed asynchronously in this
+// manner. If this deferred initialization fails, all subsequent method calls
+// should fail without side effects, return no data, and send no notifications.
 // PasswordStoreSync is a hidden base class because only PasswordSyncableService
 // needs to access these methods.
 class PasswordStore : protected PasswordStoreSync,

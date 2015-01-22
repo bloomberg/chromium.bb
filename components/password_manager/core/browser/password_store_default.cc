@@ -18,17 +18,34 @@ namespace password_manager {
 PasswordStoreDefault::PasswordStoreDefault(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-    LoginDatabase* login_db)
-    : PasswordStore(main_thread_runner, db_thread_runner), login_db_(login_db) {
-  DCHECK(login_db);
+    scoped_ptr<LoginDatabase> login_db)
+    : PasswordStore(main_thread_runner, db_thread_runner),
+      login_db_(login_db.Pass()) {
 }
 
 PasswordStoreDefault::~PasswordStoreDefault() {
 }
 
+bool PasswordStoreDefault::Init(
+    const syncer::SyncableService::StartSyncFlare& flare) {
+  ScheduleTask(base::Bind(&PasswordStoreDefault::InitOnDBThread, this));
+  return PasswordStore::Init(flare);
+}
+
+void PasswordStoreDefault::InitOnDBThread() {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(login_db_);
+  if (!login_db_->Init()) {
+    login_db_.reset();
+    LOG(ERROR) << "Could not create/open login database.";
+  }
+}
+
 void PasswordStoreDefault::ReportMetricsImpl(
     const std::string& sync_username,
     bool custom_passphrase_sync_enabled) {
+  if (!login_db_)
+    return;
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   login_db_->ReportMetrics(sync_username, custom_passphrase_sync_enabled);
 }
@@ -36,12 +53,16 @@ void PasswordStoreDefault::ReportMetricsImpl(
 PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(
     const PasswordForm& form) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  if (!login_db_)
+    return PasswordStoreChangeList();
   return login_db_->AddLogin(form);
 }
 
 PasswordStoreChangeList PasswordStoreDefault::UpdateLoginImpl(
     const PasswordForm& form) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  if (!login_db_)
+    return PasswordStoreChangeList();
   return login_db_->UpdateLogin(form);
 }
 
@@ -49,7 +70,7 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginImpl(
     const PasswordForm& form) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   PasswordStoreChangeList changes;
-  if (login_db_->RemoveLogin(form))
+  if (login_db_ && login_db_->RemoveLogin(form))
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
   return changes;
 }
@@ -59,7 +80,8 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
     base::Time delete_end) {
   std::vector<PasswordForm*> forms;
   PasswordStoreChangeList changes;
-  if (login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
+  if (login_db_ &&
+      login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
     if (login_db_->RemoveLoginsCreatedBetween(delete_begin, delete_end)) {
       for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
            it != forms.end(); ++it) {
@@ -78,7 +100,8 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
     base::Time delete_end) {
   std::vector<PasswordForm*> forms;
   PasswordStoreChangeList changes;
-  if (login_db_->GetLoginsSyncedBetween(delete_begin, delete_end, &forms)) {
+  if (login_db_ &&
+      login_db_->GetLoginsSyncedBetween(delete_begin, delete_end, &forms)) {
     if (login_db_->RemoveLoginsSyncedBetween(delete_begin, delete_end)) {
       for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
            it != forms.end(); ++it) {
@@ -97,7 +120,8 @@ void PasswordStoreDefault::GetLoginsImpl(
     AuthorizationPromptPolicy prompt_policy,
     const ConsumerCallbackRunner& callback_runner) {
   std::vector<PasswordForm*> matched_forms;
-  login_db_->GetLogins(form, &matched_forms);
+  if (login_db_)
+    login_db_->GetLogins(form, &matched_forms);
   callback_runner.Run(matched_forms);
 }
 
@@ -115,13 +139,13 @@ void PasswordStoreDefault::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
 bool PasswordStoreDefault::FillAutofillableLogins(
     std::vector<PasswordForm*>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
-  return login_db_->GetAutofillableLogins(forms);
+  return login_db_ && login_db_->GetAutofillableLogins(forms);
 }
 
 bool PasswordStoreDefault::FillBlacklistLogins(
     std::vector<PasswordForm*>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
-  return login_db_->GetBlacklistLogins(forms);
+  return login_db_ && login_db_->GetBlacklistLogins(forms);
 }
 
 }  // namespace password_manager

@@ -153,13 +153,14 @@ void LogTimesUsedStat(const std::string& name, int sample) {
 
 }  // namespace
 
-LoginDatabase::LoginDatabase() {
+LoginDatabase::LoginDatabase(const base::FilePath& db_path)
+    : db_path_(db_path) {
 }
 
 LoginDatabase::~LoginDatabase() {
 }
 
-bool LoginDatabase::Init(const base::FilePath& db_path) {
+bool LoginDatabase::Init() {
   // Set pragmas for a small, private database (based on WebDatabase).
   db_.set_page_size(2048);
   db_.set_cache_size(32);
@@ -171,7 +172,7 @@ bool LoginDatabase::Init(const base::FilePath& db_path) {
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION("138903 LoginDatabase::Init db init"));
 
-    if (!db_.Open(db_path)) {
+    if (!db_.Open(db_path_)) {
       LOG(WARNING) << "Unable to open the password store database.";
       return false;
     }
@@ -198,9 +199,6 @@ bool LoginDatabase::Init(const base::FilePath& db_path) {
     db_.Close();
     return false;
   }
-
-  // Save the path for DeleteDatabaseFile().
-  db_path_ = db_path;
 
   // If the file on disk is an older database version, bring it up to date.
   if (!MigrateOldVersionsAsNeeded()) {
@@ -891,7 +889,7 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
   meta_table_.Reset();
   db_.Close();
   sql::Connection::Delete(db_path_);
-  return Init(db_path_);
+  return Init();
 }
 
 }  // namespace password_manager

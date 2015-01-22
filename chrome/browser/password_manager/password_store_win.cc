@@ -167,11 +167,11 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
 PasswordStoreWin::PasswordStoreWin(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-    password_manager::LoginDatabase* login_database,
+    scoped_ptr<password_manager::LoginDatabase> login_db,
     const scoped_refptr<PasswordWebDataService>& web_data_service)
     : PasswordStoreDefault(main_thread_runner,
                            db_thread_runner,
-                           login_database) {
+                           login_db.Pass()) {
   db_handler_.reset(new DBHandler(web_data_service, this));
 }
 
