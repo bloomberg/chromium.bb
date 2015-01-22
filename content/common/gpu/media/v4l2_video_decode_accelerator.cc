@@ -247,10 +247,13 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     return false;
   }
 
+// TODO(posciak): crbug.com/450898.
+#if defined(ARCH_CPU_ARMEL)
   if (!gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
     LOG(ERROR) << "Initialize(): context does not have EGL_KHR_fence_sync";
     return false;
   }
+#endif
 
   // Capabilities check.
   struct v4l2_capability caps;
@@ -383,13 +386,16 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
     return;
   }
 
-  EGLSyncKHR egl_sync =
-      eglCreateSyncKHR(egl_display_, EGL_SYNC_FENCE_KHR, NULL);
+  EGLSyncKHR egl_sync = EGL_NO_SYNC_KHR;
+// TODO(posciak): crbug.com/450898.
+#if defined(ARCH_CPU_ARMEL)
+  egl_sync = eglCreateSyncKHR(egl_display_, EGL_SYNC_FENCE_KHR, NULL);
   if (egl_sync == EGL_NO_SYNC_KHR) {
     LOG(ERROR) << "ReusePictureBuffer(): eglCreateSyncKHR() failed";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
+#endif
 
   scoped_ptr<EGLSyncKHRRef> egl_sync_ref(new EGLSyncKHRRef(
       egl_display_, egl_sync));
