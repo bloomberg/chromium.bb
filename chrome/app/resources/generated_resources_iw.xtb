@@ -19,6 +19,7 @@
 <translation id="3228679360002431295">מתחבר ומאמת<ph name="ANIMATED_ELLIPSIS"/></translation>
 <translation id="5028012205542821824">ההתקנה אינה מופעלת.</translation>
 <translation id="1058418043520174283"><ph name="INDEX"/> מתוך <ph name="COUNT"/></translation>
+<translation id="7717536746040464035">‏הפעל את ה-Sandbox של המעבד seccomp-bpf</translation>
 <translation id="1128109161498068552">‏אל תאפשר לאף אתר להשתמש בהודעות בלעדיות של המערכת כדי לגשת למכשירי MIDI.</translation>
 <translation id="2368075211218459617">הפעל חיפוש קולי לפי הקשר</translation>
 <translation id="8417199120207155527">‏הפעלת אפשרות זו מונעת מיישומי אינטרנט לגשת לממשק ה-API של WebRTC.</translation>
@@ -50,6 +51,7 @@
 <translation id="6610610633807698299">הזן כתובת אתר...</translation>
 <translation id="4168015872538332605">חלק מההגדרות השייכות ל-<ph name="PRIMARY_EMAIL"/> משותפות איתך. ההגדרות האלה משפיעות על החשבון שלך רק בעת שימוש בכניסה עם מספר חשבונות.</translation>
 <translation id="7900476766547206086">יש צורך בסיסמאות עבור משתמשים מחוברים מכיוון שההגדרה הזו פועלת אצל משתמש אחד או יותר.</translation>
+<translation id="168282077338734107">‏הפעל את הדמית תכונות החומרה של Ok Google.</translation>
 <translation id="3300394989536077382">נחתם על ידי</translation>
 <translation id="654233263479157500">השתמש בשירות אינטרנט כדי לפתור שגיאות ניווט</translation>
 <translation id="3792890930871100565">נתק מדפסות</translation>
@@ -74,6 +76,7 @@
 <translation id="4405141258442788789">תם פרק הזמן שהוקצב לפעולה.</translation>
 <translation id="5048179823246820836">נורדית</translation>
 <translation id="1160536908808547677">כאשר מגדילים את התצוגה, רכיבים עם מיקום קבוע וסרגלי גלילה המותאמים לקנה מידה מצורפים לנקודת מבט זו.</translation>
+<translation id="7880929200318491232">‏יבא תמונות וסרטונים אל Google Drive</translation>
 <translation id="7180735793221405711">הפעל מטא תג של נקודת מבט.</translation>
 <translation id="1763046204212875858">צור קיצורי דרך ליישום</translation>
 <translation id="2105006017282194539">לא נטען עדיין</translation>
@@ -92,6 +95,7 @@
 <translation id="5241298539944515331">‏מקלדת וייטנאמית (VIQR)</translation>
 <translation id="6156863943908443225">קובץ סקריפט שמור</translation>
 <translation id="4274187853770964845">שגיאת סנכרון: הפסק והפעל מחדש את הסנכרון.</translation>
+<translation id="4209562316857013835">‏מפעיל סנכרון של הגדרות רשת WiFi במכשירים שונים. כשהסנכרון מופעל, סוג הנתונים של אישור WiFi נרשם בסנכרון Chrome, ואישורי WiFi מסונכרנים בהתאם להעדפות המשתמש. (ראה גם chrome://settings/syncSetup.)</translation>
 <translation id="6499114579475440437">‏היכנס כדי לשלם עם ארנק Google</translation>
 <translation id="656293578423618167">הנתיב או שם הקובץ ארוך מדי. שמור בשם קצר יותר או למיקום אחר.</translation>
 <translation id="3484869148456018791">קבל אישור חדש</translation>
@@ -102,6 +106,7 @@
 <translation id="1036860914056215505">מזהה תוסף</translation>
 <translation id="3775432569830822555">‏אישור שרת SSL</translation>
 <translation id="1829192082282182671">הת&amp;רחק</translation>
+<translation id="8946359700442089734">תכונות לאיתור באגים לא הופעלו באופן מלא במכשיר <ph name="IDS_SHORT_PRODUCT_NAME"/> זה.</translation>
 <translation id="5042319201438341383">(UTC)</translation>
 <translation id="8564827370391515078">128</translation>
 <translation id="6390799748543157332">‏הדפים שאתה מציג בחלון זה לא יופיעו בהיסטוריית הדפדפן, ולאחר שתסגור את כל חלונות האורח הפתוחים, לא יותירו במחשב עקבות, כמו קובצי Cookie. עם זאת, כל הקבצים שאתה מוריד יישמרו.</translation>
@@ -124,6 +129,7 @@
 <translation id="3648460724479383440">לחצן בחירה שנבחר</translation>
 <translation id="2494837236724268445">מקלדת גוג'אראטי (פונטית)</translation>
 <translation id="512903556749061217">מחובר</translation>
+<translation id="573719557377416048">‏נקה מצב Copresence</translation>
 <translation id="4654488276758583406">קטן מאוד</translation>
 <translation id="6647228709620733774">‏כתובת אתר לביטול של רשות אישורי Netscape</translation>
 <translation id="546411240573627095">סגנון מקלדת מספרים</translation>
@@ -171,6 +177,9 @@
 <translation id="5177479852722101802">המשך לחסום גישה אל המצלמה והמיקרופון</translation>
 <translation id="496888482094675990">‏היישום 'קבצים' מספק גישה מהירה לקבצים ששמרת ב-Google Drive, באחסון חיצוני או במכשיר שלך עם מערכת הפעלה של Chrome.</translation>
 <translation id="4422428420715047158">דומיין:</translation>
+<translation id="8754200782896249056">‏&lt;p&gt;בעת הפעלת <ph name="PRODUCT_NAME"/> בסביבה של שולחנות עבודה נתמכים, ייעשה שימוש בהגדרות ה-Proxy של המערכת. עם זאת, ייתכן שהמערכת שלך אינה נתמכת, או שאירעה בעיה בהפעלת תצורת המערכת.&lt;/p&gt;
+
+          &lt;p&gt;באפשרותך עדיין לבצע הגדרת תצורה באמצעות שורת הפקודה. עיין בקטע &lt;code&gt;man<ph name="PRODUCT_BINARY_NAME"/>&lt;/code&gt; לקבלת מידע נוסף על סימונים ומשתנים סביבתיים.&lt;/p&gt;</translation>
 <translation id="7788444488075094252">שפות וקלט</translation>
 <translation id="6723354935081862304">‏הדפס ל-Google Docs ויעדי ענן אחרים. <ph name="BEGIN_LINK"/>היכנס<ph name="END_LINK"/> כדי להדפיס אל Google Cloud Print.</translation>
 <translation id="7115051913071512405">נסה את זה</translation>
@@ -197,6 +206,7 @@
 <translation id="6721972322305477112">&amp;קובץ</translation>
 <translation id="3626281679859535460">בהירות</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
+<translation id="970794034573172516">הפעל פעילות קול ואודיו</translation>
 <translation id="9056810968620647706">לא נמצאו התאמות.</translation>
 <translation id="1461041542809785877">ביצועים</translation>
 <translation id="2861301611394761800">עדכון המערכת הושלם. הפעל מחדש את המערכת.</translation>
@@ -251,6 +261,7 @@
 <translation id="4395129973926795186">מ-<ph name="START_DATE"/> עד <ph name="END_DATE"/></translation>
 <translation id="98515147261107953">לרוחב</translation>
 <translation id="1024631832052850226">‏הפעל סינון SafeSites עבור משתמשים בפיקוח.</translation>
+<translation id="7334190995941642545">‏מערכת Smart Lock אינה זמינה כרגע. נסה שוב מאוחר יותר.</translation>
 <translation id="1303101771013849280">‏קובץ HTML לסימניות</translation>
 <translation id="8974161578568356045">אתר באופן אוטומטי</translation>
 <translation id="1549045574060481141">אשר הורדה</translation>
@@ -277,13 +288,14 @@
 <translation id="5748743223699164725">הפעל תכונות ניסיוניות של פלטפורמת האינטרנט שנמצאות בפיתוח.</translation>
 <translation id="8110513421455578152">ציין את גובה האריח שישמש כברירת מחדל.</translation>
 <translation id="7002454948392136538">בחר את המנהל עבור משתמש בפיקוח זה</translation>
+<translation id="9091975085874311841">החיבור שלך אל <ph name="DOMAIN"/> מוצפן באמצעות קריפטוגרפיה מודרנית.</translation>
 <translation id="4640525840053037973">‏היכנס עם חשבון Google</translation>
 <translation id="4923279099980110923">כן, אני רוצה לעזור</translation>
 <translation id="5255315797444241226">משפט הסיסמה שהזנת שגוי.</translation>
 <translation id="521582610500777512">התצלום נמחק</translation>
 <translation id="762917759028004464">דפדפן ברירת המחדל הוא כרגע <ph name="BROWSER_NAME"/>.</translation>
 <translation id="7740287852186792672">תוצאות חיפוש</translation>
-<translation id="218492098606937156">אפשר אירועי מגע</translation>
+<translation id="218492098606937156">הפעל אירועי מגע</translation>
 <translation id="300544934591011246">סיסמה קודמת</translation>
 <translation id="3202173864863109533">האודיו בכרטיסייה זו מושתק.</translation>
 <translation id="6015796118275082299">שנה</translation>
@@ -383,6 +395,7 @@
 <translation id="4792711294155034829">&amp;דווח על בעיה...</translation>
 <translation id="5819484510464120153">צור קיצורי דרך ליישום...</translation>
 <translation id="8861743108205592297">מוסיף לחצן לסרגל הכלים המשמש להצגת גרסה קריאה יותר של הדף הנוכחי.</translation>
+<translation id="2894745200702272315">‏מאפשר גרסה ניסיונית של תכונות זיהוי מילות הפעלה ב-Ok Google בהתאם לחומרה.</translation>
 <translation id="3088325635286126843">&amp;שנה שם...</translation>
 <translation id="5376931455988532197">הקובץ גדול מדי</translation>
 <translation id="5397578532367286026">‏המנהל (<ph name="MANAGER_EMAIL"/>) יכול לבדוק את השימוש וההיסטוריה של משתמש זה ב-chrome.com.</translation>
@@ -398,6 +411,7 @@
 <translation id="3587482841069643663">הכל</translation>
 <translation id="6698381487523150993">נוצר:</translation>
 <translation id="4684748086689879921">בטל ייבוא</translation>
+<translation id="6912686727854004322">‏לשם כך, עליך להפעיל את 'פעילות קול ואודיו' ולאמן את ה-Chromebook בשלבים הבאים.</translation>
 <translation id="6418443601594065950">השבת את סרגל המידע הקופץ עבור מדיה מוגנת.</translation>
 <translation id="8191230140820435481">לנהל את היישומים, התוספים והעיצובים שלך</translation>
 <translation id="8279107132611114222">בקשתך לגישה אל אתר זה נשלחה אל <ph name="NAME"/>.</translation>
@@ -408,10 +422,12 @@
 <translation id="4950138595962845479">אפשרויות...</translation>
 <translation id="4653235815000740718">אירעה בעיה במהלך היצירה של מדיית השחזור של מערכת ההפעלה. מכשיר האחסון שבו נעשה שימוש לא נמצא.</translation>
 <translation id="1407489512183974736">חתוך במרכז</translation>
+<translation id="1870557287802238488">הפעל הצגה של בקשה להזנת סיסמה תוך כדי ניווט בתוך הדף.</translation>
 <translation id="2688196195245426394">אירעה שגיאה בעת רישום המכשיר בשרת: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="667115622929458276">הורדות במצב גלישה בסתר מתבצעות כעת. האם ברצונך לצאת ממצב גלישה בסתר ולבטל את ההורדות?</translation>
 <translation id="1528372117901087631">חיבור לאינטרנט</translation>
 <translation id="1788636309517085411">השתמש בברירת המחדל</translation>
+<translation id="449680153165689114">הפעל עם הדגשת שדה</translation>
 <translation id="2540140729418125086">אפשר עיצוב מחדש של סרגל הכלים של התוסף.</translation>
 <translation id="554255992331574958">‏הפעל Korean IME חדש, המבוסס על מנוע HMM של 'כלי Google לקליטת נתונים'.</translation>
 <translation id="5965661248935608907">הגדרה זו גם קובעת איזה דף מוצג כשאתה לוחץ על הלחצן 'דף הבית' או מבצע חיפוש מסרגל הכתובות.</translation>
@@ -424,11 +440,12 @@
 <translation id="4218259925454408822">היכנס לחשבון אחר</translation>
 <translation id="2178614541317717477">‏רשות האישורים (CA) בסכנה</translation>
 <translation id="4449935293120761385">על 'מילוי אוטומטי'</translation>
-<translation id="4194570336751258953">אפשר הקש ללחיצה</translation>
+<translation id="4194570336751258953">הפעל אפשרות של 'הקש ללחיצה'</translation>
 <translation id="6066742401428748382">הגישה לדף האינטרנט נדחתה</translation>
 <translation id="5111692334209731439">&amp;מנהל הסימניות</translation>
 <translation id="1199341378292808368">בשבוע שעבר</translation>
 <translation id="8295070100601117548">שגיאת שרת</translation>
+<translation id="3234666976984236645">זהה תמיד תוכן חשוב באתר זה</translation>
 <translation id="2638942478653899953">‏לא ניתן היה להגיע אל Google Drive‏. <ph name="BEGIN_LINK"/>צא<ph name="END_LINK"/> ואז התחבר שוב.</translation>
 <translation id="1983450660696935749">אירועים של השבתת תוסף</translation>
 <translation id="3084548735795614657">שחרר כדי להתקין</translation>
@@ -455,6 +472,7 @@
 <translation id="7414321908956986214">‏שרת proxy חלופי להפחתת נתונים</translation>
 <translation id="7264275118036872269">‏הפעלת גילוי מכשיר Bluetooth נכשלה.</translation>
 <translation id="3855676282923585394">יבא סימניות והגדרות...</translation>
+<translation id="8012647001091218357">לא הצלחנו ליצור קשר עם ההורים שלך. נסה שוב מאוחר יותר.</translation>
 <translation id="1116694919640316211">מידע כללי</translation>
 <translation id="8381977081675353473">סלובקית</translation>
 <translation id="2849866606957084126">‏משתמש בפיקוח בשם <ph name="NEW_PROFILE_NAME"/> נוצר. כדי להגדיר אילו אתרים משתמש בפיקוח זה יכול להציג, תוכל לקבוע הגבלות והגדרות על ידי ביקור בכתובת <ph name="BEGIN_LINK"/>www.chrome.com/manage‏<ph name="END_LINK"/>. אם לא תשנה את הגדרות ברירת המחדל, <ph name="NEW_PROFILE_NAME"/> יוכל לגלוש בכל האתרים באינטרנט. 
@@ -506,14 +524,17 @@
 <translation id="7428061718435085649">‏השתמש במקשי ה-Shift מצד ימין ומצד שמאל לבחירת המועמד השני והשלישי</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="2630681426381349926">‏התחבר ל-Wi-Fi כדי להתחיל</translation>
+<translation id="7591494541411132320">‏לשם כך, עליך לאמן את ה-Chromebook בצעד הבא.</translation>
 <translation id="1764226536771329714">ביטא</translation>
 <translation id="5191625995327478163">הגד&amp;רות שפה...</translation>
 <translation id="769569204874261517"><ph name="USER_DISPLAY_NAME"/> (כבר במכשיר הזה)</translation>
 <translation id="734651947642430719">‏ שיטת קלט טמילית (InScript)</translation>
+<translation id="4633259109628217358">‏הפעלה חד-פעמית: הקלד את הסיסמה שלך כדי להפעיל את מערכת Smart Lock. עם Smart Lock, הטלפון שלך יבטל את נעילת <ph name="DEVICE_TYPE"/>—ללא סיסמה. כדי לשנות או להשבית תכונה זו, עבור אל הגדרות <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="5618972959246891967">תאריך מערכת</translation>
 <translation id="3809280248639369696">מר ירח</translation>
 <translation id="1985136186573666099">‏<ph name="PRODUCT_NAME"/> משתמש בהגדרות שרת proxy של מערכת המחשב שלך כדי להתחבר לרשת.</translation>
 <translation id="8206859287963243715">סלולארי</translation>
+<translation id="5610637197759059204">השבת טעינות חוזרות של דפים כתוצאה מגלילה אנכית רבה מדי של תוכן.</translation>
 <translation id="6435285122322546452">נהל יישומי קיוסק...</translation>
 <translation id="5748409721703101646">‏ה-Chromebook לא מצליח להתחבר לאינטרנט באמצעות <ph name="NETWORK_NAME"/>. בחר רשת אחרת. <ph name="LEARN_MORE_LINK_START"/>למידע נוסף<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">הצטרף לרשת פרטית</translation>
@@ -549,6 +570,7 @@
 <translation id="6500116422101723010">השרת אינו יכול לטפל בבקשה כעת. קוד זה מצביע על כך שזה מצב זמני והשרת יעלה לאחר עיכוב.</translation>
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="2386631145847373156">יציאה אפשרית רק לאחר כניסה.</translation>
+<translation id="8253198102038551905">לחץ על '+' כדי לקבל מאפייני רשת</translation>
 <translation id="4206944295053515692">‏בקש הצעות מ-Google</translation>
 <translation id="1297175357211070620">יעד</translation>
 <translation id="479280082949089240">‏קובצי Cookie שהוגדרו על ידי דף זה</translation>
@@ -558,6 +580,7 @@
 <translation id="8713570323158206935">שלח <ph name="BEGIN_LINK1"/>פרטי מערכת<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">שגיאה בהורדה</translation>
 <translation id="5941343993301164315">היכנס ל-<ph name="TOKEN_NAME"/>.</translation>
+<translation id="684095112754891891">‏הפעל מקלדת תצוגת קלט בסגנון QP.</translation>
 <translation id="1916935104118658523">הסתר פלאגין זה</translation>
 <translation id="1046059554679513793">אופס, שם זה כבר נמצא בשימוש!</translation>
 <translation id="5868571107634815419">‏השבת 'עריכת Office' של Docs,‏ Sheets‏ ו-Slides</translation>
@@ -587,6 +610,7 @@
 <translation id="5953576419932384180">לא מצליח לזכור את הסיסמה?</translation>
 <translation id="100869152053188797">הזהות של האתר הזה אומתה על ידי <ph name="ISSUER"/>, הוא טוען שיש לו רשומות ביקורת ציבוריות, אך לא ניתן לאמת אותן.</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="8054635925509770969">‏קרא ושנה כל דבר שאתה מקליד, כולל מקשים למעבר בין משימות, כמו CMD+TAB</translation>
 <translation id="8214962590150211830">הסר משתמש זה</translation>
 <translation id="6190567164219599794">‏נקה קובצי Cookie ונתוני אתר אחרים לאחר שתתנתק</translation>
 <translation id="3225319735946384299">חתימת קוד</translation>
@@ -596,12 +620,14 @@
 <translation id="6060685159320643512">זהירות, ניסויים אלה עלולים לנשוך</translation>
 <translation id="4755351698505571593">רק הבעלים יכול לשנות הגדרות אלה.</translation>
 <translation id="806748131267246010">זכור במשך שבוע אחד</translation>
+<translation id="8777218413579204310">זיהוי תוכן</translation>
 <translation id="8757640015637159332">היכנס לפעילות ציבורית באתר</translation>
 <translation id="7800304661137206267">החיבור מוצפן באמצעות <ph name="CIPHER"/> עם <ph name="MAC"/> לאימות הודעות ועם <ph name="KX"/> בתור מנגנון להחלפת מפתחות.</translation>
 <translation id="5707185214361380026">כשל בטעינת תוסף מ:</translation>
 <translation id="7706319470528945664">מקלדת פורטוגזית</translation>
 <translation id="7331786426925973633">דפדפן שמיועד לעבודה מהירה, פשוטה ובטוחה</translation>
 <translation id="5584537427775243893">מייבא</translation>
+<translation id="9128870381267983090">התחבר לרשת</translation>
 <translation id="168841957122794586">אישור השרת מכיל מפתח הצפנה חלש.</translation>
 <translation id="4181841719683918333">שפות</translation>
 <translation id="1758831820837444715">הגדרת רשת אתרנט</translation>
@@ -621,7 +647,6 @@
 <translation id="8793975580333839911">הפעל פלאגין זה</translation>
 <translation id="1864146862702347178">הפעל חיזוי גלילה</translation>
 <translation id="1363055550067308502">עבור בין מצב רוחב מלא/חלקי</translation>
-<translation id="5933265534405972182">‏הפעל לקוח DNS אסינכרוני ניסיוני.</translation>
 <translation id="3108967419958202225">בחר...</translation>
 <translation id="6451650035642342749">הסר הגדרות לפתיחה אוטומטית</translation>
 <translation id="5948544841277865110">הוסף רשת פרטית</translation>
@@ -672,9 +697,11 @@
 <translation id="6074963268421707432">אל תרשה לאף אתר להציג התראות בשולחן העבודה</translation>
 <translation id="3603385196401704894">צרפתית קנדית</translation>
 <translation id="3584169441612580296">קריאה ושינוי של קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
+<translation id="6972754398087986839">תחילת העבודה</translation>
 <translation id="3530751398950974194">עדכן את משפט הסיסמה עבור סנכרון</translation>
 <translation id="4735819417216076266">סגנון קלט רווח</translation>
 <translation id="220138918934036434">לחצן הסתר</translation>
+<translation id="4340515029017875942"><ph name="ORIGIN"/> רוצה לתקשר עם האפליקציה &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="5374359983950678924">שנה תמונה</translation>
 <translation id="2859738163554174612">לעולם אל תציע להכניס אותי לחשבון</translation>
 <translation id="1378727793141957596">‏ברוכים הבאים ל-Google Drive!</translation>
@@ -688,6 +715,7 @@
 <translation id="8628085465172583869">שם מארח של שרת:</translation>
 <translation id="3633586230741134985">הגדרות מפעיל היישומים</translation>
 <translation id="1992397118740194946">לא מוגדר</translation>
+<translation id="1302266607673321769">‏הפעל ניסיון שימוש בגופני Roboto בממשק המשתמש.</translation>
 <translation id="6867678160199975333">עבור אל <ph name="NEW_PROFILE_NAME"/></translation>
 <translation id="3718720264653688555">מקלדת וירטואלית</translation>
 <translation id="7760004034676677601">האם זהו דף הפתיחה שציפית לראות?</translation>
@@ -714,6 +742,7 @@
 <translation id="2263497240924215535">(מושבת)</translation>
 <translation id="773426152488311044">אתה כרגע המשתמש היחיד ב-<ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2042078858148122628">‏לא ניתן למצוא את השרת ב-<ph name="HOST_NAME"/>, משום שחיפוש ה-DNS נכשל. DNS הוא שירות הרשת שמתרגם את שם האתר לכתובת האינטרנט שלו. שגיאה זו מתרחשת בדרך כלל כשאין חיבור לאינטרנט או בשל תצורת רשת שגויה. היא יכולה גם להתרחש עקב שרת DNS שאינו מגיב או כאשר חומת אש מונעת מ-<ph name="PRODUCT_NAME"/> גישה לרשת.</translation>
+<translation id="7122257124254355941">‏לצורך שמירה על בטיחות מכשיר <ph name="DEVICE_TYPE"/> שלך, מערכת Smart Lock for Chrome מחייבת נעילת מסך בטלפון שלך.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK"/>עזרה<ph name="END_LINK"/></translation>
 <translation id="58625595078799656">‏<ph name="PRODUCT_NAME"/> דורש ממך להצפין את הנתונים שלך באמצעות סיסמת Google או משפט-סיסמה משלך.</translation>
 <translation id="3026050830483105579">הכל כאן.</translation>
@@ -748,7 +777,7 @@
 <translation id="5396126354477659676">הפלאגין <ph name="PEPPER_PLUGIN_NAME"/> ב-<ph name="PEPPER_PLUGIN_DOMAIN"/> מבקש גישה למחשב שלך.</translation>
 <translation id="7850851215703745691">‏קובצי Drive אלו עדיין לא משותפים</translation>
 <translation id="5946591249682680882">מזהה דיווח <ph name="WEBRTC_LOG_REPORT_ID"/></translation>
-<translation id="3435896845095436175">אפשר</translation>
+<translation id="3435896845095436175">הפעל</translation>
 <translation id="1891668193654680795">בטח באישור זה לזיהוי יצרני תוכנה.</translation>
 <translation id="7968833647796919681">הפעל איסוף של נתוני ביצועים</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME"/> (בעלים)</translation>
@@ -771,6 +800,7 @@
 <translation id="5711983031544731014">לא ניתן לבטל את הנעילה. הזן את הסיסמה שלך.</translation>
 <translation id="2149850907588596975">סיסמאות וטפסים</translation>
 <translation id="3672928695873425336">איסור על צמצום בקליק של המדף.</translation>
+<translation id="7707053413911715161">הפעל ללא הדגשת שדה</translation>
 <translation id="657402800789773160">&amp;טען דף זה מחדש</translation>
 <translation id="6163363155248589649">&amp;רגיל</translation>
 <translation id="2399147786307302860">הגדרות סנכרון מתקדמות...</translation>
@@ -783,6 +813,7 @@
 <translation id="5524517123096967210">הקובץ לא ניתן לקריאה.</translation>
 <translation id="8426519927982004547">‏HTTPS/‏SSL</translation>
 <translation id="5548207786079516019">זוהי התקנה משנית של <ph name="PRODUCT_NAME"/> ולא ניתן להפוך אותו לדפדפן ברירת המחדל שלך.</translation>
+<translation id="2341970829213454584">התחבר לרשת</translation>
 <translation id="3984413272403535372">שגיאה בחתימה על התוסף.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3298461240075561421">גם אם הורדת קבצים מהאתר הזה בעבר, ייתכן שהאתר נפרץ. במקום לשחזר את הקובץ הזה, תוכל לנסות להוריד אותו במועד מאוחר יותר.</translation>
@@ -807,7 +838,6 @@
 <translation id="6985235333261347343">‏סוכן שחזור המפתחות של Microsoft</translation>
 <translation id="8245799906159200274">כעת בערוץ <ph name="CHANNEL_NAME"/>.</translation>
 <translation id="7485236722522518129">F4</translation>
-<translation id="1373282068478817608">‏צביעת Impl-side</translation>
 <translation id="5618333180342767515">(פעולה זו עשויה להימשך מספר דקות)</translation>
 <translation id="3392020134425442298">שחזר קובץ זדוני</translation>
 <translation id="1697820107502723922">ארכיונים</translation>
@@ -843,6 +873,7 @@
 <translation id="8106045200081704138">בשיתוף איתי</translation>
 <translation id="1652965563555864525">ה&amp;שתק</translation>
 <translation id="4200983522494130825">&amp;כרטיסייה חדשה</translation>
+<translation id="507545315046894839">הפעל את כל רכיבי הפלאגין (מומלץ)</translation>
 <translation id="7979036127916589816">שגיאת סנכרון</translation>
 <translation id="4426082685552308673">ממוצע</translation>
 <translation id="802597130941734897">ניהול כתובות למשלוח...</translation>
@@ -859,13 +890,16 @@
 <translation id="2192280117622171197">תוסף שינה את הדף שמוצג כשאתה מבצע חיפוש מסרגל הכתובות.</translation>
 <translation id="2731700343119398978">המתן בבקשה...</translation>
 <translation id="5731751937436428514">‏שיטת קלט וייטנאמית (VIQR)</translation>
+<translation id="4526944011780447765">‏האם ברצונך לשלוח את כתובת האתר הזה אל Google כדי לשפר את מנהל הסיסמאות של Chrome?</translation>
 <translation id="1151169732719877940">‏הפעל עקביות עבור זהות בין הדפדפן ובין מאגר קובצי ה-Cookie</translation>
 <translation id="1045157690796831147">‏תעתוק (namaskar → നമസ്കാരം)</translation>
 <translation id="7615851733760445951">‏&lt;לא נבחרו קובצי Cookie‏&gt;</translation>
+<translation id="3623352357061924734">הזן את קוד האימות בעל ארבע הספרות שנמצא בחזית כרטיס האשראי שלך</translation>
 <translation id="2493021387995458222">בחר &quot;מילה אחת בכל פעם&quot;</translation>
 <translation id="5723508132121499792">אין יישומים פועלים ברקע</translation>
 <translation id="474421578985060416">נחסם על ידך</translation>
 <translation id="7392915005464253525">פ&amp;תח מחדש חלון סגור</translation>
+<translation id="5485218677916520078">‏הפעל יצירת כלי shim באפליקציות לאפליקציות שמתארחות ב-Mac.</translation>
 <translation id="3433621910545056227">אופס!  המערכת לא הצליחה ליצור את נעילת התכונות של המכשיר המתרחשת בזמן ההתקנה.</translation>
 <translation id="6677037229676347494">המזהה הצפוי הוא &quot;<ph name="EXPECTED_ID"/>&quot;, אך המזהה היה &quot;<ph name="NEW_ID"/>&quot;.</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
@@ -934,6 +968,7 @@
 <translation id="3636096452488277381">אהלן, <ph name="USER_GIVEN_NAME"/>.</translation>
 <translation id="4911714727432509308">לאף תוסף לא הוקצו מקשי קיצור.</translation>
 <translation id="5999606216064768721">השתמש בגבולות ובשורת הכותרת של המערכת</translation>
+<translation id="6314819609899340042">הפעלת בהצלחה תכונות איתור באגים במכשיר <ph name="IDS_SHORT_PRODUCT_NAME"/> זה.</translation>
 <translation id="225943865679747347">קוד שגיאה: <ph name="ERROR_CODE"/></translation>
 <translation id="2384596874640104496">מקלדת סינהלה</translation>
 <translation id="3511528412952710609">קצרה</translation>
@@ -951,6 +986,7 @@
 <translation id="7864539943188674973">‏השבת Bluetooth</translation>
 <translation id="9070219033670098627">החלף משתמש</translation>
 <translation id="1486096554574027028">חפש בסיסמאות</translation>
+<translation id="189696606071654167">‏הפעל נעילת מעבד win32k</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> זיהה שייתכן שהגדרות הדפדפן שלך שונו ללא ידיעתך. האם ברצונך לאפס את הגדרות הדפדפן לערכי ברירת המחדל המקוריים שלהן?</translation>
 <translation id="1836938920852968258">השבת את התפריט 'מכשירים אחרים' בדף כרטיסייה חדשה.</translation>
 <translation id="3825863595139017598">מקלדת מונגולית</translation>
@@ -979,6 +1015,7 @@
 <translation id="2019718679933488176">&amp;פתח שמע בכרטיסייה חדשה</translation>
 <translation id="1031362278801463162">טוען תצוגה מקדימה</translation>
 <translation id="4409697491990005945">שוליים</translation>
+<translation id="3189728638771818048">אסימונים שהתקבלו</translation>
 <translation id="3456236151053308041">‏הפעל תוספי IME כדי לאפשר תצוגות מותאמות אישית עבור קלט משתמש, כגון מקלדות וירטואליות.</translation>
 <translation id="4138267921960073861">הצג שמות משתמשים ותמונות במסך הכניסה</translation>
 <translation id="3045551944631926023">טען אוטומטית רק כרטיסיות גלויות</translation>
@@ -1004,6 +1041,7 @@
 <translation id="3764986667044728669">לא ניתן להירשם</translation>
 <translation id="8352772353338965963">הוסף חשבון לכניסה עם מספר חשבונות. כל החשבונות שאליהם נכנסת נגישים ללא סיסמה, לכן יש להשתמש בתכונה זו עם חשבונות אמינים בלבד.</translation>
 <translation id="5361686177218315158">‏חריגי המצלמה והמיקרופון של Adobe Flash Player שונים.</translation>
+<translation id="787150342916295244">סריקת כרטיס אשראי</translation>
 <translation id="3005723025932146533">הצג עותק שמור</translation>
 <translation id="5043766625767731235">‏המשך לחסום יישומי פלאגין שאינם מבוססי ארגז חול (sandbox)</translation>
 <translation id="4667176955651319626">‏חסום נתוני אתר וקובצי Cookie של צד שלישי</translation>
@@ -1013,10 +1051,12 @@
 <translation id="474217410105706308">השתק כרטיסייה</translation>
 <translation id="420665587194630159">(תוסף זה מנוהל ולא ניתן להסיר או להשבית אותו)</translation>
 <translation id="2809346626032021864">קריאה</translation>
+<translation id="1093457606523402488">רשתות גלויות:</translation>
 <translation id="9156814239012955406">MD5</translation>
 <translation id="2397374778584840405">אירועים שבהם מערכת ההפעלה משביתה תהליך של כרטיסייה (&quot;<ph name="IDS_KILLED_TAB_TITLE"/>&quot;)</translation>
 <translation id="2396635603035772766">הפעל ממשק משתמש ניסיוני המבוסס על בועות לשמירת סיסמאות. מחליף את סרגל המידע הקיים.</translation>
 <translation id="2676946222714718093">מופעל ב-</translation>
+<translation id="8972727166872864532">אופס! עליך לשאול את ההורים אם זה בסדר לבקר בדף הזה.</translation>
 <translation id="2738771556149464852">לא אחרי</translation>
 <translation id="1958820272620550857">חסום פריטים</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
@@ -1025,6 +1065,7 @@
 <translation id="7530016656428373557">שיעור פריקה בוואט</translation>
 <translation id="5774515636230743468">מניפסט:</translation>
 <translation id="1313832887664610176">‏החיבור ל-Chromebox אבד</translation>
+<translation id="3465566417615315331">לחץ על התמונה שלך</translation>
 <translation id="4960944339761782076">השתמש בבועות לבקשות הרשאה</translation>
 <translation id="7474889694310679759">מקלדת אנגלית (קנדה)</translation>
 <translation id="1817871734039893258">‏שחזור קבצים של Microsoft</translation>
@@ -1048,6 +1089,7 @@
 <translation id="7219357088166514551">חפש ב-<ph name="ENGINE"/> או הקלד כתובת אתר</translation>
 <translation id="1832511806131704864">השינוי בטלפון עודכן</translation>
 <translation id="4684427112815847243">סנכרן הכל</translation>
+<translation id="2498857833812906273">‏הצג הודעה בעת יציאה מ-Chrome אם פועלות באותו רגע אפליקציות מתארחות.</translation>
 <translation id="4699357559218762027">(מופעל אוטומטית)</translation>
 <translation id="4037463823853863991">‏הפעל את מתגי כרטיסיית הנגישות עבור Android.</translation>
 <translation id="7394102162464064926">האם אתה בטוח שברצונך למחוק את הדפים האלה מההיסטוריה?
@@ -1064,6 +1106,7 @@
 <translation id="7787129790495067395">‏אתה משתמש כרגע במשפט סיסמה. אם שכחת את משפט הסיסמה שלך, תוכל לאפס את הסינכרון כדי לנקות את הנתונים שלך משרתי Google באמצעות מרכז השליטה של Google.</translation>
 <translation id="2098305189700762159">לא נמצא</translation>
 <translation id="2260654768907572711">פלאגין לדפדפן</translation>
+<translation id="2663384537032943132">&amp;אפשרויות בדיקת איות</translation>
 <translation id="242184683889529951">השבתת טיפול בשרשור באירועי קלט הקשורים לגלילה, אשר גורמת לכל אירועי גלילה מסוג זה להיות מטופלים בשרשור הראשי. שים לב, הדבר עלול לפגוע משמעותית בביצועי הגלילה של רוב האתרים והוא נועד לצורכי בדיקה בלבד.</translation>
 <translation id="2521119273159503752">מזהה יומן</translation>
 <translation id="2686759344028411998">לא ניתן לזהות מודולים שנטענו.</translation>
@@ -1080,12 +1123,14 @@
 <translation id="6285395082104474418">מגש הסטטוס מציג לך את המצב הנוכחי של הרשת, הסוללה ועוד.</translation>
 <translation id="3317459757438853210">דו-צדדי</translation>
 <translation id="6020949471045037306">מפעיל את המערכת החדשה לניהול פרופילים, כולל נעילת פרופילים וממשק המשתמש החדש של תפריט הדמויות.</translation>
+<translation id="8777628254805677039">‏סיסמת root</translation>
 <translation id="2011110593081822050">‏Web Worker:‏ <ph name="WORKER_NAME"/></translation>
 <translation id="3294437725009624529">אורח</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN"/> הוא במסך מלא כעת.</translation>
 <translation id="1465078513372056452">השתמש בכתובת לחיוב בתור הכתובת המשלוח</translation>
 <translation id="2053312383184521053">נתוני מצב של חוסר פעילות</translation>
 <translation id="6232017090690406397">סוללה</translation>
+<translation id="2560633531288539217">ניהול פעילות קול ואודיו</translation>
 <translation id="529175790091471945">פרמט מכשיר זה</translation>
 <translation id="3512284449647229026">דפים שהטעינה שלהם נכשלת כאשר הדפדפן במצב לא מקוון ייטענו אוטומטית רק אם הכרטיסייה גלויה.</translation>
 <translation id="8494979374722910010">ניסיון ההתחברות לשרת נכשל.</translation>
@@ -1118,6 +1163,7 @@
 <translation id="8744641000906923997">Romaji</translation>
 <translation id="5451561500892538488">הסתר את סמל ההודעות</translation>
 <translation id="8784626084144195648">ממוצע צבור</translation>
+<translation id="1624222566970728082">לא ניתן למצוא את הטלפון שלך. ודא שהוא בטווח הושטת יד.</translation>
 <translation id="4276796043975446927">‏ברוכים הבאים אל Chromebox לניהול פגישות</translation>
 <translation id="5457459357461771897">קריאה ומחיקה של קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
 <translation id="348620396154188443">אפשר לכל האתרים להציג התראות בשולחן העבודה</translation>
@@ -1125,9 +1171,11 @@
 <translation id="8214489666383623925">פתח קובץ...</translation>
 <translation id="5350965906220856151">אוי לא!</translation>
 <translation id="4583537898417244378">קובץ לא חוקי או פגום.</translation>
+<translation id="1059059430032922484">‏קרא ושנה כל דבר שאתה מקליד, כולל מקשי מעבר בין משימות, כמו ALT+TAB</translation>
 <translation id="212862741129535676">אחוז תפוסה במצב תדירות</translation>
 <translation id="7761701407923456692">אישור השרת אינו תואם לכתובת האתר.</translation>
 <translation id="4495419450179050807">אל תציג בדף זה</translation>
+<translation id="6529214173428607795">‏כך תוכל להשתמש בתכונה הנסיונית SurfaceWorker.</translation>
 <translation id="8818152613617627612">פרטי חיוב</translation>
 <translation id="1104652314727136854">‏הפעל שילוב מערכת הפעלה של שיוכי קבצים עבור יישומי Chrome.</translation>
 <translation id="2164938406766990399">‏למידע נוסף על הרשמה ל-Enterprise</translation>
@@ -1136,6 +1184,7 @@
 <translation id="939736085109172342">תיקייה חדשה</translation>
 <translation id="5182671122927417841">השבת את התוסף</translation>
 <translation id="4242577469625748426">התקנת הגדרות המדיניות במכשיר: <ph name="VALIDATION_ERROR"/> נכשלה.</translation>
+<translation id="2783321960289401138">צור קיצור דרך...</translation>
 <translation id="8165208966034452696"><ph name="PLUGIN_NAME"/></translation>
 <translation id="4933484234309072027">מוטבע ב-<ph name="URL"/></translation>
 <translation id="5554720593229208774">רשות אישורי אימייל</translation>
@@ -1193,6 +1242,8 @@
 <translation id="3589283827341767588">אפשר קישור לניהול סיסמאות מרחוק</translation>
 <translation id="6871690136546646783">השבתת התמיכה בהתאמת מגע.  התאמת מגע היא התהליך של צמצום המיקום של מחוות מגע כדי לפצות על מגעים שהרזולוציה שלהם נמוכה בהשוואה לעכבר.</translation>
 <translation id="7518003948725431193">לא נמצא דף אינטרנט עבור כתובת האינטרנט: <ph name="URL"/></translation>
+<translation id="6503521261542448765">נמאס לך להקליד סיסמאות? השתמש בטלפון כדי לבטל את נעילת <ph name="DEVICE_TYPE"/>—ללא סיסמה.</translation>
+<translation id="4611931061048022376">לדעתי לא צריך לחסום אתר זה.</translation>
 <translation id="7484645889979462775">לעולם לא עבור אתר זה</translation>
 <translation id="9086455579313502267">אין אפשרות לגשת לרשת</translation>
 <translation id="8833566263911081574">הסיסמה שיצרת נשמרה. תוכל לגשת אליה ולכל <ph name="SAVED_PASSWORDS_LINK"/> שלך מכל דפדפן.</translation>
@@ -1211,6 +1262,7 @@
 <translation id="2694026874607847549">‏קובץ Cookie אחד</translation>
 <translation id="469230890969474295">‏תיקיית OEM</translation>
 <translation id="3909791450649380159">גז&amp;ור</translation>
+<translation id="5545275430221931959">‏כדי לשמור על בטחון ה-<ph name="DEVICE_TYPE"/>, Smart Lock דורש נעילת מסך בטלפון שמבטל את הנעילה שלו. כבר אבטחת את הטלפון? לחץ על 'בדוק שוב' כדי לאמת ולהמשיך בהגדרה.</translation>
 <translation id="2955913368246107853">סגור את חלונית החיפוש</translation>
 <translation id="4044260751144303020">הרכבה לרכיבי מיקום קבוע.</translation>
 <translation id="8722708758503989074">הפעל מנהל מיקוד ניסיוני כדי לעקוב אחר לקוחות של קלט טקסט.</translation>
@@ -1232,9 +1284,11 @@
 <translation id="4744574733485822359">ההורדה הסתיימה</translation>
 <translation id="8104696615244072556">‏בצע פעולת Powerwash במכשיר <ph name="IDS_SHORT_PRODUCT_NAME"/> שלך וחזור לגרסה הקודמת.</translation>
 <translation id="2872754556057097683">‏התקבלו מספר כותרות נפרדות של אורך תוכן. דבר זה אסור לצורך הגנה מפני מתקפות פיצול של תגובת HTTP.</translation>
+<translation id="843730695811085446">‏מפעיל את מסגרת סגנון אפליקציית האינטרנט עבור אפליקציות מתארחות, כולל אפליקציות של סימניות. כרגע הדבר זמין רק עבור Ash.</translation>
 <translation id="4804818685124855865">נתק</translation>
 <translation id="1645228020260124617"><ph name="PRECENTAGE"/>%</translation>
 <translation id="2585300050980572691">הגדרות ברירת מחדל של חיפוש</translation>
+<translation id="5122371513570456792">נמצאו <ph name="NUMBER_OF_RESULTS"/> <ph name="SEARCH_RESULTS"/> לגבי '<ph name="SEARCH_STRING"/>'.</translation>
 <translation id="2617919205928008385">אין מספיק שטח</translation>
 <translation id="3623574769078102674">משתמש בפיקוח זה ינוהל על ידי <ph name="MANAGER_EMAIL"/>.</translation>
 <translation id="8919081441417203123">דנית</translation>
@@ -1289,7 +1343,9 @@
 <translation id="6219717821796422795">Hanyu</translation>
 <translation id="255937426064304553">ארה&quot;ב - בינלאומית</translation>
 <translation id="2803407661478021186">‏גיבוי מסוג SSLv3 הצליח לבצע לחיצת יד עם השרת, אך אנו כבר לא מקבלים גיבויי SSLv3 עקב התקפות חדשות על הפרוטוקול. יש לעדכן את השרת כך שיתמוך ב-TLS 1.0 לכל הפחות, עם עדיפות ל-TLS 1.2.</translation>
+<translation id="7719421816612904796">תם הזמן הקצוב לאימון</translation>
 <translation id="3725367690636977613">דפים</translation>
+<translation id="3498215018399854026">לא הצלחנו ליצור קשר עם ההורה שלך. נסה שוב מאוחר יותר.</translation>
 <translation id="8656946437567854031">בלחיצה על 'המשך', אתה מביע הסכמה ל<ph name="LEGAL_DOC_LINK_TEXT_1"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_2"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_3"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_4"/>,<ph name="LEGAL_DOC_LINK_TEXT_5"/> ול<ph name="LEGAL_DOC_LINK_TEXT_6"/>.</translation>
 <translation id="830598693585544337">‏הפעלת אפשרות זו מונעת מאתרי אינטרנט גישה לממשק ה-API של WebAudio.</translation>
 <translation id="3574777678278664892">אם אפשרות זו מופעלת, מנהל הסיסמאות לא יציע לשמור את פרטי הכניסה המשמשים לסנכרון.</translation>
@@ -1311,6 +1367,7 @@
 <translation id="2804069535547505235">מחיקת סיסמאות שמורות קיימות</translation>
 <translation id="6750299625019870383">אפשר סגירה מהירה של כרטיסיות/חלונות</translation>
 <translation id="5228309736894624122">‏שגיאת פרוטוקול SSL.</translation>
+<translation id="7243055093079293866">‏אמור 'Ok Google' בכרטיסיה חדשה של google.com</translation>
 <translation id="8008356846765065031">האינטרנט מנותק. בדוק את חיבור האינטרנט.</translation>
 <translation id="8216170236829567922">‏שיטת קלט תאית (מקלדת Pattachote)</translation>
 <translation id="799547531016638432">הסר קיצור דרך</translation>
@@ -1319,6 +1376,7 @@
 <translation id="8442065444327205563">המסמך מוכן להצגה.</translation>
 <translation id="236141728043665931">חסום תמיד גישה למיקרופון</translation>
 <translation id="2307462900900812319">הגדר את הרשת</translation>
+<translation id="7624674027161923493">הפעל מקלדות תצוגת קלט בסגנון עיצוב חדשני תלת-ממדי.</translation>
 <translation id="3324301154597925148">האם זהו דף החיפוש שציפית לראות?</translation>
 <translation id="3555812735919707620">הסר תוסף</translation>
 <translation id="7018275672629230621">קריאה ושינוי של היסטוריית הגלישה שלך</translation>
@@ -1348,6 +1406,7 @@
 <translation id="3128230619496333808">כרטיסייה 6</translation>
 <translation id="6655190889273724601">מצב מפתח</translation>
 <translation id="1071917609930274619">קידוד נתונים</translation>
+<translation id="5055073909323877129">יבא כרטיסי ארנק</translation>
 <translation id="3473105180351527598">הפעל הגנה מפני דיוג ותוכנות זדוניות</translation>
 <translation id="6151323131516309312">לחץ על <ph name="SEARCH_KEY"/> כדי לחפש ב-<ph name="SITE_NAME"/></translation>
 <translation id="7955383984025963790">כרטיסייה 5</translation>
@@ -1356,10 +1415,11 @@
 <translation id="1910572251697014317">‏Google שלחה הודעה לטלפון הזה. לידיעתך, עם Bluetooth, הטלפון שלך עשוי להשאיר את <ph name="DEVICE_TYPE"/> לא נעול במרחק של מעל 3 מטרים. אם הדבר מהווה בעיה מבחינתך, תוכל &lt;a&gt;להשבית זמנית את התכונה הזו‎&lt;/a&gt;‎.</translation>
 <translation id="9014987600015527693">הצג טלפון אחר</translation>
 <translation id="6736045498964449756">אופס, הסיסמאות אינן תואמות!</translation>
+<translation id="7285011324031710154">מפעיל את מסגרת סגנון אפליקציות האינטרנט לאפליקציות מתארחות.</translation>
 <translation id="1221825588892235038">בחירה בלבד</translation>
+<translation id="2379007896477690480">הזן את קוד האימות בן שלוש הספרות שנמצא בגב כרטיס האשראי שלך</translation>
 <translation id="2227939492629426903">מפעיל את תפריט הדמות החדש. בשילוב עם ניהול הפרופיל החדש, מציג את תפריט הדמות החדש לניהול פרופיל. לחלופין, מציג תפריט דמות שעוצב מחדש הכולל את אותה פונקציונליות כמו התפריט הישן, יחד עם כרטיס הדרכה בחלק העליון המבקש מהמשתמש לנסות את ממשק המשתמש החדש לניהול פרופיל.</translation>
 <translation id="8713979477561846077">הפעל תיקון אוטומטי של מקלדת פיזית עבור מקלדת באנגלית ארה&quot;ב, אשר יכולה לספק הצעות כמו בהקלדה במקלדת פיזית.</translation>
-<translation id="5745682574648644290">‏הפעלת זרימות כניסה אל Chrome על בסיס תצוגת אינטרנט. סימן זה מבטל כניסה מבוססת-אינטרנט שהופעלה.</translation>
 <translation id="7201354769043018523">צד ימין של הסוגריים</translation>
 <translation id="7517569744831774757">החזר את ההגדרות לברירות המחדל המקוריות שלהן.</translation>
 <translation id="4974733135013075877">יציאה והפעלת נעילה בטיחותית לילדים</translation>
@@ -1388,6 +1448,7 @@
 <translation id="1737968601308870607">דווח על באג</translation>
 <translation id="8437238597147034694">&amp;ביטול העברה</translation>
 <translation id="2594056015203442344">כאשר הם מופעלים, סימני האודיו החזותיים ברצועת הכרטיסייה משמשים כפקדי השתקת אודיו. נוספות גם פקודות בתפריט ההקשר של הכרטיסייה להשתקה של כרטיסיות מרובות שנבחרו.</translation>
+<translation id="5316588172263354223">חיפוש קולי בכל עת</translation>
 <translation id="1389297115360905376">ניתן להוסיף רק מ-<ph name="CHROME_WEB_STORE"/>.</translation>
 <translation id="5474139872592516422">כאשר יסתיים עדכון <ph name="PLUGIN_NAME"/>, טען מחדש את הדף כדי להפעיל אותו.</translation>
 <translation id="4012550234655138030">הגדר או נהל מדפסות ב-<ph name="CLOUD_PRINT_NAME"/></translation>
@@ -1410,6 +1471,7 @@
 <translation id="5451646087589576080">הצג מסגרת &amp;ופרטים</translation>
 <translation id="5050209346295804497">השבת את הצורך בתנועה עבור הפעלת מדיה.</translation>
 <translation id="5880247576487732437">אסימון קיים</translation>
+<translation id="3704162925118123524">ייתכן שתוצג דרישה לבקר בדף ההתחברות עבור הרשת שבה אתה משתמש.</translation>
 <translation id="7157063064925785854">בלחיצה על 'המשך', אתה מביע הסכמה ל<ph name="LEGAL_DOC_LINK_TEXT_1"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_2"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_3"/>‏, ול<ph name="LEGAL_DOC_LINK_TEXT_4"/>.</translation>
 <translation id="3368922792935385530">מחובר</translation>
 <translation id="6273677812470008672">איכות</translation>
@@ -1419,7 +1481,10 @@
 <translation id="6824564591481349393">העתק כתובת &amp;אימייל</translation>
 <translation id="907148966137935206">אל תרשה לאף אתר להציג חלונות קופצים (מומלץ)</translation>
 <translation id="7618337809041914424">&amp;הדפס מסגרת...</translation>
+<translation id="4406896451731180161">תוצאות חיפוש</translation>
 <translation id="5184063094292164363">‏קונסולת JavaScript&amp; </translation>
+<translation id="3331799185273394951">הפעל את מצב המסך המשוקף. מצב זה הופך את תמונת המסך בצורה אופקית.</translation>
+<translation id="3350315265529339476">‏ניתן לשנות זאת בכל עת ב<ph name="BEGIN_LINK"/>הגדרות Chrome<ph name="END_LINK"/></translation>
 <translation id="2280486287150724112">שוליים ימניים</translation>
 <translation id="3494768541638400973">‏קלט יפני של Google (למקלדת יפנית)</translation>
 <translation id="5631017369956619646">שימוש במעבד</translation>
@@ -1428,6 +1493,7 @@
 <translation id="3118046075435288765">השרת סגר את החיבור באופן בלתי צפוי.</translation>
 <translation id="6133173853026656527">מעביר את <ph name="FILE_NAME"/>...</translation>
 <translation id="4697214168136963651"><ph name="URL"/> היתה חסומה</translation>
+<translation id="514044437453994462">‏כדי להגדיר את Smart Lock for Chrome, Google צריכה לאמת את הזהות שלך - הזן את הסיסמה שלך כדי להתחיל.</translation>
 <translation id="5380103295189760361">‏החזק את Control‏, Alt‏, Shift או 'חפש' כדי לראות מקשי קיצור עבור מקשי הצירוף האלה.</translation>
 <translation id="3851428669031642514">טען סקריפטים לא בטוחים</translation>
 <translation id="7791543448312431591">הוסף</translation>
@@ -1443,16 +1509,20 @@
 <translation id="2960393411257968125">כיצד מנהל הסיסמאות מטפל במילוי אוטומטי עבור פרטי הכניסה המשמשים לסנכרון.</translation>
 <translation id="6178664161104547336">בחר אישור</translation>
 <translation id="8204086856545141093">בקשות שנשלחו לשרת נחסמו על ידי מדיניות.</translation>
+<translation id="3345135638360864351">לא ניתן היה לשלוח אל <ph name="NAME"/> את הבקשה שלך לגשת לאתר הזה. נסה שוב.</translation>
 <translation id="2450531422290975480">אם אתה מבין את הסיכונים בנוגע לאבטחה שלך, תוכל <ph name="BEGIN_LINK"/>לבקר באתר לא בטוח זה<ph name="END_LINK"/> (לא מומלץ) לפני הסרת התכניות המסוכנות.</translation>
 <translation id="1721937473331968728">תוכל להוסיף ל-<ph name="CLOUD_PRINT_NAME"/> מדפסות קלאסיות המחוברות למחשב שלך.</translation>
 <translation id="3341703758641437857">אפשר גישה לכתובות אתרים של קבצים</translation>
 <translation id="6948142510520900350">‏&lt;strong&gt;מנהל המערכת&lt;/strong&gt; חסם את הגישה לדף האינטרנט הזה.</translation>
 <translation id="5702898740348134351">&amp;ערוך מנועי חיפוש...</translation>
 <translation id="3687701603889589626">‏מאפשר הפעלה של תוספים בכתובות אתר המתחילות ב-chrome://, שבהן תוספים מבקשים באופן מפורש את ההרשאה הזו.</translation>
+<translation id="4899376560703610051">מכשיר <ph name="DEVICE_TYPE"/> שלך ננעל באופן ידני. עליך להזין את הסיסמה כדי להיכנס.</translation>
 <translation id="1756681705074952506">שיטת קלט</translation>
 <translation id="418179967336296930">‏מקלדת רוסית פונטית (YaZHert)</translation>
 <translation id="8545211332741562162">‏מאפשר לדפי אינטרנט להשתמש בתכונות ניסיוניות של JavaScript.</translation>
+<translation id="1642494467033190216">‏דרושות הסרה של הגנת rootfs והפעלה מחדש לפני שתפעיל תכונות אחרות של איתור באגים.</translation>
 <translation id="734303607351427494">נהל מנועי חיפוש...</translation>
+<translation id="8223479393428528563">כדי לשמור קבצים אלה לשימוש לא מקוון, חזור למצב מקוון, לחץ לחיצה ימנית על הקבצים ובחר את האפשרות <ph name="OFFLINE_CHECKBOX_NAME"/>.</translation>
 <translation id="7117303293717852287">טען מחדש את דף האינטרנט הזה</translation>
 <translation id="3706919628594312718">הגדרות עכבר</translation>
 <translation id="3001660530462287301">כן, התקן</translation>
@@ -1464,6 +1534,7 @@
 <translation id="839736845446313156">הירשם</translation>
 <translation id="2660779039299703961">אירוע</translation>
 <translation id="4249248555939881673">ממתין לחיבור רשת...</translation>
+<translation id="5620568081365989559">‏DevTools מבקש גישה מלאה אל <ph name="FOLDER_PATH"/>. ודא שאינך חושף מידע רגיש.</translation>
 <translation id="996987097147224996">‏הקש על CTRL + רווח כדי לבחור את שיטת הקלט הקודמת.</translation>
 <translation id="4240069395079660403">לא ניתן להציג את <ph name="PRODUCT_NAME"/> בשפה זו</translation>
 <translation id="747114903913869239">שגיאה: לא ניתן לפענח תוסף</translation>
@@ -1480,6 +1551,8 @@
 <translation id="732677191631732447">ה&amp;עתק כתובת אתר של שמע</translation>
 <translation id="7224023051066864079">מסיכת רשת משנה:</translation>
 <translation id="2401813394437822086">אין לך גישה לחשבון?</translation>
+<translation id="6071181508177083058">אשר סיסמה</translation>
+<translation id="5059080137749553367">אין מספיק נפח פנוי במכשיר שלך!</translation>
 <translation id="4906679076183257864">אפס לברירת המחדל</translation>
 <translation id="4747597332667805440">הפעל את ממשק הבועות לשחזור הפעלה.</translation>
 <translation id="2344262275956902282">השתמש במקשים - וכן = כדי ליצור רשימת מועמדים</translation>
@@ -1489,6 +1562,7 @@
 <translation id="3369624026883419694">מברר כתובת שרת מארח...</translation>
 <translation id="8870413625673593573">נסגרו לאחרונה</translation>
 <translation id="8297222119869486204">הפעלת רכיב מסוג 'בקרי חלונות'</translation>
+<translation id="1497296278783728207">‏ה-Sandbox‏ Seccomp-BPF ‏תומך ‏ב-TSYNC</translation>
 <translation id="8502803898357295528">הסיסמה שלך השתנתה</translation>
 <translation id="5171045022955879922">חפש או הקלד כתובת אתר</translation>
 <translation id="6830600606572693159">דף האינטרנט <ph name="URL"/> אינו זמין כעת. ייתכן שהוא בעומס יתר או שהושבת לצורך תחזוקה.</translation>
@@ -1629,7 +1703,9 @@
 <translation id="8571032220281885258">‏כשתאמר &quot;Ok Google,&quot; דפדפן Chrome יחפש את מה שתאמר לאחר מכן.</translation>
 <translation id="8598687241883907630">‏נתק את חשבון Google שלך​​...</translation>
 <translation id="3195445837372719522">‏Chromebox לפגישות צריך לדעת לאיזה דומיין הוא שייך. לשם כך תידרש להיכנס לחשבונך.</translation>
+<translation id="7920092496846849526">שאלת את ההורים אם זה בסדר לבקר בדף זה.</translation>
 <translation id="5984304957315422459">אופס. לא ניתן היה להכניס אותך לחשבון. הכניסה נכשלה מפני שלא ניתן היה לאמת את הסיסמה.</translation>
+<translation id="9003677638446136377">בדוק שוב</translation>
 <translation id="9187827965378254003">אוי, נראה שאין ניסויים זמינים כרגע.</translation>
 <translation id="6022526133015258832">פתח במסך מלא</translation>
 <translation id="8933960630081805351">‏ה&amp;צג ב-Finder</translation>
@@ -1639,6 +1715,7 @@
 <translation id="5023943178135355362">גלילה פשוטה <ph name="BEGIN_LINK"/>למידע נוסף<ph name="END_LINK"/></translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="6426039856985689743">השבת נתונים לנייד</translation>
+<translation id="5159488553889181171">ההורדה של <ph name="PLUGIN_NAME"/> בוטלה.</translation>
 <translation id="8571992327053899347">‏משתמש בפיקוח יכול לגלוש באינטרנט על פי הנחיותיך. בתור המנהל של משתמש בפיקוח ב-Chrome, אתה יכול
 
  • להתיר או לאסור גישה לאתרים מסוימים,
@@ -1657,10 +1734,12 @@
 <translation id="8104727996780335409">אנונימי</translation>
 <translation id="2875698561019555027">‏(דפי שגיאה ב-Chrome)</translation>
 <translation id="3733127536501031542">‏שרת SSL עם הגברה</translation>
+<translation id="5667292716764603079">אפשר אפליקציות זמניות נסיוניות מחנות האינטרנט.</translation>
 <translation id="2870836398458454343">‏תעתוק (مرحبا ← marhaban)</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="8312871300878166382">הדבק בתיקייה</translation>
 <translation id="49896407730300355">סובב נ&amp;גד כיוון השעון</translation>
+<translation id="8616748524633185354">‏חלק מדפי האינטרנט משתמשים בתוספי JavaScript מדור קודם או לא סטנדרטיים, שעלולים להתנגש עם תכונות ה-JavaScript האחרונות. סימון זה משבית את התמיכה בתכונות אלה לצורך תאימות עם דפים אלה.</translation>
 <translation id="4366553784388256545">רושם את המכשיר. אנא המתן...</translation>
 <translation id="5745056705311424885">‏זוהה מקל זיכרון USB</translation>
 <translation id="3812525830114410218">אישור פגום</translation>
@@ -1674,6 +1753,7 @@
 <translation id="1886996562706621347">אפשר לאתרים לבקש להפוך למטפלי ברירת המחדל עבור פרוטוקולים (מומלץ)</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> ‏[<ph name="ISSUED_TO"/>]‏</translation>
 <translation id="8899388739470541164">וייאטנאמית</translation>
+<translation id="1828473288054410476">יבא כרטיסים מהארנק שלי.</translation>
 <translation id="6423064450797205562">מדדים המתייחסים למהירות שבה <ph name="SHORT_PRODUCT_NAME"/> מבצע פעולות מבוקשות</translation>
 <translation id="3690673539902120157">האם אתה בטוח שאתה רוצה להתקין את התוסף הזה בהינתן שהוא דורש את ההרשאות האלה?</translation>
 <translation id="4091434297613116013">גליונות נייר</translation>
@@ -1747,9 +1827,12 @@
 <translation id="8757742102600829832">‏מחר Chromebox שאליו ברצונך להתחבר</translation>
 <translation id="2335122562899522968">‏דף זה מגדיר קובצי Cookie.</translation>
 <translation id="4628757576491864469">מכשירים</translation>
+<translation id="3607789584023790186">‏השבת את גרסה 2 של תכונות זיהוי מילות ההפעלה של  'Ok Google' .</translation>
 <translation id="8461914792118322307">‏שרת proxy</translation>
 <translation id="4707934200082538898">בדוק את האימייל שלך בכתובת <ph name="BEGIN_BOLD"/><ph name="MANAGER_EMAIL"/><ph name="END_BOLD"/> לקבלת הוראות נוספות.</translation>
+<translation id="4135940742524487934">‏אם מוגדר proxy, הוא בדרך כלל מונע הרשאה בפורטלי חובה שונים. סימון זה מפעיל דו-שיח להרשאת פורטל חובה בחלון נפרד, שמתעלם מהגדרות ה-proxy.</translation>
 <translation id="391445228316373457">מקלדת נפאלית (פונטית)</translation>
+<translation id="8071942001314758122">‏רק אמור &quot;Ok Google&quot; שלוש פעמים</translation>
 <translation id="4089521618207933045">יש תפריט משנה</translation>
 <translation id="4793866834012505469">אימון מחדש של מודל קולי</translation>
 <translation id="3470442499439619530">הסר משתמש זה</translation>
@@ -1762,9 +1845,11 @@
 <translation id="968174221497644223">קובץ שמור של יישום</translation>
 <translation id="8726888928275282477">‏הצג אפשרויות תוסף כרכיב מוטמע ב-chrome://extensions במקום לפתוח כרטיסייה חדשה.</translation>
 <translation id="3847089579761895589">אתה מקבל עזרה. האם ברצונך להמשיך?</translation>
+<translation id="7518657099163789435">‏דרושה פעילות קול ואודיו כדי להשתמש ב-&quot;Ok Google&quot;</translation>
 <translation id="8452588990572106089">מספר כרטיס לא חוקי. בדוק ונסה שוב.</translation>
 <translation id="8412586565681117057">‏שיטת קלט Quick</translation>
 <translation id="7701869757853594372">מזהים ייחודיים של משתמשים</translation>
+<translation id="919412290393329570">השבת את אפקט משוך לרענון.</translation>
 <translation id="8466234950814670489">‏ארכיון TAR</translation>
 <translation id="2564980044983637068">‏האם להשבית את Smart Lock?</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -1779,9 +1864,11 @@
 <translation id="1120026268649657149">מילת המפתח חייבת להיות ריקה או ייחודית</translation>
 <translation id="542318722822983047">העבר את הסמן באופן אוטומטי לתו הבא</translation>
 <translation id="8872155268274985541">נמצא קובץ מניפסט לא חוקי לעדכון חיצוני של קיוסק. העדכון של אפליקצית הקיוסק נכשל. הסר את הדיסק און קי.</translation>
+<translation id="7293829658948450872">הפעל פריסה אוטומטית של המקלדת הווירטואלית.</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="8152091997436726702">פג הזמן הקצוב של רישום המדפסת. על מנת לרשום מדפסת, עליך לאמת את הרישום במדפסת.</translation>
 <translation id="651942933739530207">האם ברצונך ש-<ph name="APP_NAME"/> ישתף את המסך ואת פלט האודיו שלך?</translation>
+<translation id="5799551393681493217">‏מפעיל תהליכי כניסה אל Chrome המבוססים על iframe. הסימן הזה מבטל את --enable-web-based-signin.</translation>
 <translation id="1151972924205500581">נדרשת סיסמה</translation>
 <translation id="9027459031423301635">פתח קישור בכרטיסייה &amp;חדשה</translation>
 <translation id="1523350272063152305">‏קיים מכשיר 'Chromebox לניהול פגישות' המוכן להגדרה.</translation>
@@ -1857,6 +1944,7 @@
 <translation id="3378572629723696641">ייתכן שתוסף זה פגום.</translation>
 <translation id="7558050486864662801">שאל כשאתר מבקש גישה אל המיקרופון שלך (מומלץ)</translation>
 <translation id="8238649969398088015">טיפ עזרה</translation>
+<translation id="7522255036471229694">‏אמור &quot;Ok Google&quot;</translation>
 <translation id="8221729492052686226">אם לא יזמת בקשה זו, ייתכן שהיא מהווה ניסיון למתקפה על המערכת שלך. אלא אם נקטת פעולה מפורשת ליזום בקשה זו, עליך ללחוץ על 'אל תעשה כלום'.</translation>
 <translation id="4956752588882954117">הדף שלך זמין להצגה.</translation>
 <translation id="1114202307280046356">יהלום</translation>
@@ -1883,6 +1971,9 @@
 <translation id="5525695896049981561">כן, אני רואה אותו</translation>
 <translation id="1410616244180625362">המשך לאפשר ל-<ph name="HOST"/> לגשת למצלמה שלך</translation>
 <translation id="298577602575286468">‏רשום את Chromebook</translation>
+<translation id="257319924029987030">[<ph name="TIMESTAMP"/>]
+    <ph name="FILE_INFO"/>
+    <ph name="EVENT_NAME"/></translation>
 <translation id="8494214181322051417">חדש!</translation>
 <translation id="2937174152333875430">הפעל סנכרון של מפעיל היישומים</translation>
 <translation id="5370819323174483825">&amp;טען מחדש</translation>
@@ -1892,6 +1983,7 @@
 <translation id="6365411474437319296">הוספת בני משפחה וחברים</translation>
 <translation id="2135787500304447609">&amp;המשך ביצוע</translation>
 <translation id="6143635259298204954">לא ניתן לפרוק את התוסף. כדי לפרוק תוספים בצורה בטוחה, יש צורך בנתיב לספריית הפרופילים שלך שלא מכיל קישור סמלי. לא קיים נתיב שכזה לפרופיל שלך.</translation>
+<translation id="5647553909023151171">‏מאפשר יצירת כלי shim לאפליקציות ב-Mac בעת יצירת אפליקציה מתארחת.</translation>
 <translation id="3326821416087822643">מכווץ את <ph name="FILE_NAME"/>...</translation>
 <translation id="3081104028562135154">הגדל</translation>
 <translation id="3734816294831429815"><ph name="PRODUCT_NAME"/> יופעל מחדש בתוך <ph name="SECONDS"/> שניות.</translation>
@@ -1901,6 +1993,7 @@
 <translation id="158917669717260118">‏לא ניתן להעלות את דף האינטרנט משום שהמחשב שלך עבר למצב שינה (Sleep) או תרדמה (Hibrenate). במקרה כזה, החיבורים לרשת מתנתקים ובקשות חדשות ברשת נכשלות. טעינה מחדש של הדף תפתור את הבעיה.</translation>
 <translation id="6316671927443834085">נכשלה ההתנתקות מ-&quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="1962233722219655970">‏דף זה משתמש ביישום Native Client שאינו פועל במחשב שלך.</translation>
+<translation id="5458733660263868683">‏אסור להשתמש במערכת Smart Lock, שמאפשרת לך לבטל את הנעילה ב-Chromebook כשהוא קרוב לטלפון שלך. אם אתה בעלי המכשיר, פעולה זו גם מכבה את מערכת Smart Lock במסך הכניסה.</translation>
 <translation id="1108685299869803282">למעלה מ-80% מהאנשים שרואים אזהרה זו מעדיפים לבחור באפשרות הבטוחה במקום להסתכן בתוכנה זדונית. עם זאת, אם אתה מבין את הסיכונים בנוגע לאבטחה שלך, תוכל <ph name="BEGIN_LINK"/>לבקר באתר לא בטוח זה<ph name="END_LINK"/> לפני הסרת התכניות המסוכנות.</translation>
 <translation id="219008588003277019">‏<ph name="NEXE_NAME"/> :Native Client יישום </translation>
 <translation id="2902382079633781842">הסימניה נוספה!</translation>
@@ -1919,6 +2012,7 @@
 <translation id="6606070663386660533">כרטיסייה 8</translation>
 <translation id="6232139169545176020">‏סכימת ה-URI המבוקשת אינה נתמכת.</translation>
 <translation id="1974159311422864474">https:////www.google.com//calendar//render?cid=%s</translation>
+<translation id="2031695690821674406">מילוי סיסמאות כשמשתמש בוחר במפורש בחשבון, במקום מילוי אוטומטי של פרטי כניסה בעת טעינת הדף.</translation>
 <translation id="5834581999798853053">נותרו בערך <ph name="TIME"/> דקות</translation>
 <translation id="7839809549045544450">‏לשרת יש מפתח ציבורי ארעי וחלש מסוג Diffie-Hellman</translation>
 <translation id="5515806255487262353">חפש במילון</translation>
@@ -1965,6 +2059,7 @@
 <translation id="2682935131208585215">שאל כשאתר מנסה לעקוב אחר המיקום הפיזי שלך (מומלץ)</translation>
 <translation id="5015344424288992913">פותר פרוקסי...</translation>
 <translation id="4389091756366370506"><ph name="VALUE"/> משתמש</translation>
+<translation id="7769353642898261262">כיצד לאבטח את הטלפון</translation>
 <translation id="4620809267248568679">הגדרה זו נאכפת על ידי תוסף.</translation>
 <translation id="4724168406730866204">Eten 26</translation>
 <translation id="308268297242056490">URI</translation>
@@ -2022,6 +2117,7 @@
 <translation id="1293556467332435079">קבצים</translation>
 <translation id="2287590536030307392">כבה את כל החיבורים האלחוטיים.</translation>
 <translation id="8535658110233909809">מיקום של תוסף</translation>
+<translation id="7768981235767647187">האם זה היה צפוי? ספר לנו על זה!</translation>
 <translation id="8116483400482790018">מילון איות מותאם אישית</translation>
 <translation id="1343517687228689568">בטל את ההצמדה של דף זה למסך הפתיחה...</translation>
 <translation id="9123104177314065219">‏מתן אפשרות לשימוש בפרטי Google לאכלוס שם הפרופיל והסמל בתפריט הדמויות.</translation>
@@ -2063,6 +2159,7 @@
 <translation id="2078019350989722914">הזהר לפני היציאה (<ph name="KEY_EQUIVALENT"/>)</translation>
 <translation id="7965010376480416255">זיכרון משותף</translation>
 <translation id="6248988683584659830">חפש בהגדרות</translation>
+<translation id="8786030250256226288">‏שאילתות חיפוש ייקשרו לחשבון Google שלך. תוכל להציג ולמחוק אותן ב<ph name="BEGIN_LINK"/>היסטוריית החשבון<ph name="END_LINK"/> שלך</translation>
 <translation id="4071455357575500271">מצלמה ומיקרופון</translation>
 <translation id="7273110280511444812">חובר לאחרונה ב-<ph name="DATE"/></translation>
 <translation id="6588399906604251380">הפעל בדיקת איות</translation>
@@ -2098,10 +2195,13 @@
 <translation id="6827236167376090743">סרטון זה ימשיך לפעול ללא הפסקה.</translation>
 <translation id="9157595877708044936">מגדיר...</translation>
 <translation id="499955951116857523">מנהל הקבצים</translation>
+<translation id="9033453977881595182">מזהה אסימון</translation>
 <translation id="4475552974751346499">חפש בהורדות</translation>
 <translation id="6624687053722465643">מתוקי</translation>
 <translation id="8083739373364455075">‏קבל ‏GB ‏100 ללא תשלום עם Google Drive</translation>
 <translation id="271083069174183365">הגדרות קלט יפני</translation>
+<translation id="2462168109652162565">‏מצטערים, כדי ליצור משתמש בפיקוח, עליך להוסיף לפחות חשבון Google אחד למכשיר זה. לא ניתן להשתמש בחשבונות Google לילדים כדי ליצור משתמש בפיקוח.</translation>
+<translation id="615216289547575801">‏מאפשר הפעלה של אפליקציות זמניות, אשר מופעלות ללא התקנה ב-Chrome, מחנות האינטרנט של Chrome. מפעיל היישומים הנסיוני חייב להיות מופעל.</translation>
 <translation id="5185386675596372454">הגרסה החדשה ביותר של &quot;<ph name="EXTENSION_NAME"/>&quot; הושבתה מכיוון שהיא דורשת הרשאות נרחבות יותר.</translation>
 <translation id="4147376274874979956">לא ניתן לגשת לקובץ.</translation>
 <translation id="5849162989368494245">‏גרסת SSL/TLS מינימלית נתמכת.</translation>
@@ -2119,6 +2219,7 @@
 <translation id="4544744325790288581">‏השתמש בגרסה ניסיונית של שרת proxy להפחתת נתונים. על שרת ה-proxy להיות מופעל בהגדרות על מנת שסמן זה ייכנס לתוקף.</translation>
 <translation id="5502500733115278303">‏מיובא מ-Firefox</translation>
 <translation id="569109051430110155">איתור אוטומטי</translation>
+<translation id="8597845839771543242">פורמט מאפיין:</translation>
 <translation id="4408599188496843485">ע&amp;זרה</translation>
 <translation id="7969525169268594403">סלובנית</translation>
 <translation id="5399158067281117682">‏קודי ה-PIN אינם תואמים!</translation>
@@ -2135,6 +2236,7 @@
 <translation id="1521442365706402292">נהל אישורים</translation>
 <translation id="7627262197844840899">‏אתר זה אינו מקבל כרטיסי אשראי מסוג MasterCard.</translation>
 <translation id="1679068421605151609">כלים עבור מפתחים</translation>
+<translation id="2596092989116824292">‏הפעל את התכונה הנסיונית SurfaceWorker.</translation>
 <translation id="7014051144917845222">הניסיון של <ph name="PRODUCT_NAME"/> להתחבר אל <ph name="HOST_NAME"/> נדחה. ייתכן שהאתר מושבת או שתצורת הרשת שלך אינה מוגדרת כהלכה.</translation>
 <translation id="2097372108957554726">‏עליך להיכנס מחדש ל-Chrome כדי לרשום מכשירים חדשים</translation>
 <translation id="4332213577120623185">נדרש מידע נוסף להשלמת הרכישה.</translation>
@@ -2166,6 +2268,7 @@
 <translation id="5701381305118179107">מרכז</translation>
 <translation id="1406500794671479665">מאמת...</translation>
 <translation id="7193047015510747410">מילוי אוטומטי של אישור סנכרון</translation>
+<translation id="7257173066616499747">‏רשתות Wi-Fi</translation>
 <translation id="2726841397172503890">הפעלת תמיכה בבחירה בהחלקה עבור המקלדת הווירטואלית. התמיכה לא תועיל אלא אם המקלדת הווירטואלית מופעלת גם כן.</translation>
 <translation id="6199801702437275229">מחכה למידע שטח האחסון...</translation>
 <translation id="2767649238005085901">‏הקש Enter כדי להתקדם, ועל מקש תפריט הקשר כדי להציג היסטוריה </translation>
@@ -2183,10 +2286,12 @@
 <translation id="1783075131180517613">עדכן את משפט-הסיסמה של הסינכרון.</translation>
 <translation id="1601560923496285236">החל</translation>
 <translation id="2390045462562521613">שכח רשת זו</translation>
+<translation id="3796648294839530037">רשתות מועדפות:</translation>
 <translation id="3348038390189153836">זוהה התקן נשלף</translation>
 <translation id="1663298465081438178">כל היתרונות, בלי דאגות.</translation>
 <translation id="8005540215158006229">‏Chrome כמעט מוכן.</translation>
 <translation id="1666788816626221136">יש לך אישורים בקובץ שאינם מתאימים לאף אחת מהקטגוריות האחרות:</translation>
+<translation id="1718396316646584626">לפי בקשתך</translation>
 <translation id="4821935166599369261">&amp;יצירת פרופילים מופעלת</translation>
 <translation id="1429740407920618615">עוצמת אות:</translation>
 <translation id="1297922636971898492">‏Google Drive אינו זמין כעת. ההעלאה תופעל מחדש באופן אוטומטי לאחר ש-Google Drive יחזור לפעול.</translation>
@@ -2215,6 +2320,7 @@
 <translation id="7842346819602959665">הגרסה החדשה ביותר של ההרחבה, &quot;<ph name="EXTENSION_NAME"/>&quot;, דורשת הרשאות נוספות, כך שהיא הושבתה.</translation>
 <translation id="2412835451908901523">‏הזן את מפתח ביטול הנעילה של ה-PIN בן 8 ספרות שסופק על ידי <ph name="CARRIER_ID"/>.</translation>
 <translation id="25770266525034120">כתובת אתר של תוסף</translation>
+<translation id="5856721540245522153">הפעל תכונות לאיתור באגים</translation>
 <translation id="2725200716980197196">קישוריות הרשת התחדשה</translation>
 <translation id="7019805045859631636">מהיר</translation>
 <translation id="4880520557730313061">תיקון אוטומטי</translation>
@@ -2238,7 +2344,6 @@
 <translation id="4641539339823703554">‏Chrome לא הצליח להגדיר את שעת המערכת. בדוק את השעה המצוינת בהמשך ותקן אותה במקרה הצורך.</translation>
 <translation id="7463006580194749499">הוסף אדם</translation>
 <translation id="895944840846194039">‏זיכרון JavaScript</translation>
-<translation id="705930313433934122">‏כדי לשמור על האבטחה של <ph name="DEVICE_TYPE"/>, תכונת Smart Lock עבור Chrome מחייבת מסך נעילה בטלפון שלך. &lt;a&gt;למד כיצד לאבטח את הטלפון שלך‎&lt;/a&gt;‎‎</translation>
 <translation id="6462080265650314920">היישומים חייבים להיות מוצגים עם סוג תוכן &quot;<ph name="CONTENT_TYPE"/>&quot;.</translation>
 <translation id="7857949311770343000">האם זהו דף הכרטיסייה החדשה שציפית לראות?</translation>
 <translation id="1559235587769913376">‏תווי קלט Unicode</translation>
@@ -2248,6 +2353,7 @@
 <translation id="583281660410589416">לא ידוע</translation>
 <translation id="3774278775728862009">‏שיטת קלט תאית (מקלדת TIS-820.2538)</translation>
 <translation id="9115675100829699941">&amp;סימניות</translation>
+<translation id="7191877888075697060">החיבור שלך אל <ph name="DOMAIN"/> מוצפן באמצעות קריפטוגרפיה מיושנת.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="1731589410171062430">סך הכל: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">הצמד</translation>
@@ -2265,7 +2371,6 @@
 <translation id="1560991001553749272">הסימנייה נוספה!</translation>
 <translation id="3966072572894326936">בחר תיקייה אחרת...</translation>
 <translation id="5342451237681332106">השתמש ב-<ph name="PHONE_NAME"/></translation>
-<translation id="8758455334359714415">‏DNS מובנה אסינכרוני</translation>
 <translation id="5585912436068747822">הפרמוט נכשל</translation>
 <translation id="8766796754185931010">Kotoeri</translation>
 <translation id="6357619544108132570">ברוכים הבאים אל משפחת <ph name="SHORT_PRODUCT_NAME"/>. לא מדובר במחשב רגיל.</translation>
@@ -2276,8 +2381,10 @@
 <translation id="4509345063551561634">מיקום:</translation>
 <translation id="7434509671034404296">למפתחים</translation>
 <translation id="7668654391829183341">מכשיר לא ידוע</translation>
+<translation id="2712173769900027643">בקש רשות</translation>
 <translation id="1790550373387225389">היכנס למצב מצגת</translation>
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
+<translation id="5303188905453814025">‏אם תכבה את Smart Lock for Chrome, לא תוכל לבטל את נעילת מכשירי ה-Chrome שלך באמצעות הטלפון ותצטרך להקליד את הסיסמה.</translation>
 <translation id="8059178146866384858">קובץ בשם &quot;$ 1&quot; כבר קיים. בחר שם אחר.</translation>
 <translation id="8871974300055371298">הגדרות תוכן</translation>
 <translation id="3685387984467886507">‏זכור את ההחלטות להמשיך למרות שגיאות SSL למשך פרק זמן שצוין.</translation>
@@ -2305,6 +2412,7 @@
 <translation id="8183644773978894558">הורדה במצב גלישה סתר מתבצעת כעת. האם ברצונך לצאת ממצב גלישה בסתר ולבטל את ההורדה?</translation>
 <translation id="871476437400413057">‏סיסמאות שמורות ב-Google</translation>
 <translation id="8767072502252310690">משתמשים</translation>
+<translation id="3960566196862329469">ONC</translation>
 <translation id="5434437302044090070">‏אפשרות זו מפעילה תמיכת Chromecast ניסיונית ליישום Video Player במערכת ההפעלה של Chrome.</translation>
 <translation id="683526731807555621">הוסף מנוע חיפוש חדש</translation>
 <translation id="6871644448911473373">‏מגיב OCSP: <ph name="LOCATION"/></translation>
@@ -2316,6 +2424,7 @@
 <translation id="3456874833152462816">‏בדף זה נמנעה הפעלה של פלאגין שאינו מבוסס ארגז חול (sandbox).</translation>
 <translation id="8449008133205184768">הדבק והתאם סגנון</translation>
 <translation id="5258266922137542658">‏PPAPI (בשימוש)</translation>
+<translation id="2208311832613497869">אופס! עליך לשאול את ההורים אם זה בסדר לבקר בדף זה.</translation>
 <translation id="5127881134400491887">ניהול חיבורי רשת</translation>
 <translation id="8028993641010258682">גודל</translation>
 <translation id="5846929185714966548">כרטיסייה 4</translation>
@@ -2324,6 +2433,7 @@
 <translation id="5299682071747318445">כל הנתונים מסונכרנים באמצעות משפט הסיסמה שלך לסנכרון</translation>
 <translation id="7556242789364317684">‏לצערנו, <ph name="SHORT_PRODUCT_NAME"/> לא יכול לשחזר את ההגדרות שלך. כדי לתקן את השגיאה, <ph name="SHORT_PRODUCT_NAME"/> צריך לאפס את המכשיר שלך באמצעות Powerwash.</translation>
 <translation id="1383876407941801731">חפש</translation>
+<translation id="6581304841712695137">אל תפעיל רכיבי פלאגין כברירת מחדל</translation>
 <translation id="3270965368676314374">קריאה, שינוי ומחיקה של קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
 <translation id="409579654357498729">‏הוסף ל-Google Cloud Print</translation>
 <translation id="2120316813730635488">אירועים של התקנת תוסף</translation>
@@ -2338,6 +2448,7 @@
 <translation id="3967885517199024316">היכנס כדי שכל הסימניות, ההיסטוריה, וההגדרות יופיעו בכל המכשירים שלך.</translation>
 <translation id="5463856536939868464">התפריט מכיל סימניות נסתרות</translation>
 <translation id="8286227656784970313">השתמש במילון המערכת</translation>
+<translation id="5113739826273394829">אם תלחץ על סמל זה, תנעל ידנית את <ph name="DEVICE_TYPE"/> זה. בפעם הבאה, תצטרך להקליד את הסיסמה כדי להיכנס.</translation>
 <translation id="1493263392339817010">התאם אישית גופנים...</translation>
 <translation id="5352033265844765294">הטבעת חותמת זמן</translation>
 <translation id="1493892686965953381">ממתין ל-<ph name="LOAD_STATE_PARAMETER"/>...</translation>
@@ -2358,6 +2469,7 @@
 <translation id="6423731501149634044">‏האם להשתמש ב-Adobe Reader כמציג ברירת המחדל עבור PDF?</translation>
 <translation id="1965328510789761112">זיכרון פרטי</translation>
 <translation id="7312441861087971374"><ph name="PLUGIN_NAME"/> אינו מעודכן.</translation>
+<translation id="4159681666905192102">זהו חשבון לילדים המנוהל על-ידי <ph name="CUSTODIAN_EMAIL"/> ועל-ידי <ph name="SECOND_CUSTODIAN_EMAIL"/>.</translation>
 <translation id="5790085346892983794">הצלחה</translation>
 <translation id="7639178625568735185">הבנתי</translation>
 <translation id="1901769927849168791">‏זוהה כרטיס SD</translation>
@@ -2384,6 +2496,7 @@
 <translation id="3550915441744863158">‏Chrome מתעדכן באופן אוטומטי כך שתשתמש תמיד בגרסה העדכנית ביותר</translation>
 <translation id="57646104491463491">תארך השינוי</translation>
 <translation id="3941357410013254652">מזהה ערוץ</translation>
+<translation id="7266345500930177944">לחץ כדי להפעיל את <ph name="PLUGIN_NAME"/>.</translation>
 <translation id="1355542767438520308">אירעה שגיאה. ייתכן שפריטים מסוימים לא נמחקו.</translation>
 <translation id="8264718194193514834">&quot;<ph name="EXTENSION_NAME"/>&quot; הפעיל מסך מלא.</translation>
 <translation id="6223447490656896591">תמונה מותאמת אישית:</translation>
@@ -2467,11 +2580,13 @@
 <translation id="8216278935161109887">צא והיכנס שוב</translation>
 <translation id="6254503684448816922">המפתח בסכנה</translation>
 <translation id="6555432686520421228">הסר את כל חשבונות המשתמשים ואפס את המכשיר <ph name="IDS_SHORT_PRODUCT_NAME"/> כך שיהיה כמו חדש.</translation>
+<translation id="8215006357356267795">‏מאפשר טיפול משופר בלחץ על הזיכרון במערכת ההפעלה של Chrome.</translation>
 <translation id="1346748346194534595">ימינה</translation>
 <translation id="7756363132985736290">התעודה כבר קיימת.</translation>
 <translation id="1181037720776840403">הסר</translation>
 <translation id="5261073535210137151">תיקייה זו מכילה <ph name="COUNT"/> סימניות. האם אתה בטוח שאתה רוצה למחוק אותה?</translation>
 <translation id="59174027418879706">מופעל</translation>
+<translation id="7839051173341654115">הצג/גבה מדיה</translation>
 <translation id="4194415033234465088">Dachen 26</translation>
 <translation id="8800004011501252845">מציג יעדים עבור</translation>
 <translation id="3554751249011484566">הפרטים הבאים ישותפו עם <ph name="SITE"/></translation>
@@ -2507,7 +2622,6 @@
 <translation id="18139523105317219">‏שם צד EDI</translation>
 <translation id="8356258244599961364">לשפה זו אין שיטות קלט</translation>
 <translation id="733186066867378544">חריגים של מיקום גיאוגרפי</translation>
-<translation id="1835256678913069239">‏לאחר ההפעלה, נשתמש בזרימת כניסה אל Chrome על בסיס תצוגת אינטרנט.</translation>
 <translation id="3328801116991980348">פרטי אתר</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> נתקל בבעיות בגישה לרשת. <ph name="PRODUCT_NAME"/> הסיבה עשויה להיות שתוכנת חומת האש או האנטי וירוס שלך חושבת בטעות ש-<ph name="LINE_BREAK"/> פורץ למחשב שלך ולכן חוסמת את ההתחברות שלו לאינטרנט.</translation>
 <translation id="2065985942032347596">נדרש אימות</translation>
@@ -2576,6 +2690,7 @@
 <translation id="4690246192099372265">שוודית</translation>
 <translation id="1682548588986054654">חלון נסתר חדש</translation>
 <translation id="6833901631330113163">דרום אירופאית</translation>
+<translation id="5697118958262594262">זהה תוכן חשוב כברירת מחדל</translation>
 <translation id="6065289257230303064">תכונות ספרייה של נושא אישור</translation>
 <translation id="7424027215640192571">הפעל את ההנחיה 'לא פעיל בזמן אימות מחדש של קובץ שמור'</translation>
 <translation id="8398790343843005537">אתר את הטלפון שלך</translation>
@@ -2633,6 +2748,7 @@
 <translation id="2756798847867733934">‏כרטיס SIM מושבת</translation>
 <translation id="8054921503121346576">‏מקלדת USB מחוברת</translation>
 <translation id="3846833722648675493">הצג חלונות של יישומים אחרי הופעת הפריט הראשון. חלונות של יישומים  כבדים הטוענים משאבים באופן סנכרוני יוצגו באיחור משמעותי, אבל האיחור יהיה בלתי מורגש כמעט ביישומים שטוענים את רוב המשאבים שלהם באופן אסנכרוני.</translation>
+<translation id="8863489667196658337">מפעיל את המערכת החדשה לאפליקציות של יצירת סימניות.</translation>
 <translation id="5464632865477611176">הפעל באופן חד פעמי</translation>
 <translation id="4268025649754414643">קידוד מפתח</translation>
 <translation id="916745092148443205">הדגשה של מחוות הקשה</translation>
@@ -2662,6 +2778,7 @@
 <translation id="5832805196449965646">הוסף אדם</translation>
 <translation id="7595321929944401166">פלאגין זה אינו נתמך.</translation>
 <translation id="3996912167543967198">מאפס...</translation>
+<translation id="346431825526753">זהו חשבון לילדים, המנוהל על-ידי <ph name="CUSTODIAN_EMAIL"/>.</translation>
 <translation id="4479639480957787382">אתרנט</translation>
 <translation id="1541724327541608484">בדוק את האיות של שדות הטקסט</translation>
 <translation id="8637688295594795546">עדכון מערכת זמין. מתכונן להוריד…</translation>
@@ -2673,8 +2790,10 @@
 <translation id="7371490661692457119">ברירת מחדל של רוחב אריח</translation>
 <translation id="5148652308299789060">‏בטל rasterizer של תוכנות תלת ממד</translation>
 <translation id="9205143043463108573">ממקם את מפעיל היישומים במרכז המסך עם יחס של מסך לרוחב.</translation>
+<translation id="7996005831155352675">הפעל מילוי אוטומטי בלחיצה אחת</translation>
 <translation id="1414648216875402825">אתה מעדכן לגרסה לא יציבה של <ph name="PRODUCT_NAME"/> המכילה תכונות שנמצאות בתהליך. ייתכנו קריסות מחשב ובאגים לא צפויים. המשך בזהירות.</translation>
 <translation id="8382913212082956454">העתק &amp;כתובת אימייל</translation>
+<translation id="7887192723714330082">‏הגב ל-&quot;Ok Google&quot; כשהמסך פועל ואינו נעול</translation>
 <translation id="3427342743765426898">&amp;ביצוע מחדש של עריכה</translation>
 <translation id="4157188838832721931">השבת בקשות מהמשתמש להזין את הסיסמה של מערכת ההפעלה לפני חשיפת סיסמאות בדף הסיסמאות.</translation>
 <translation id="2993517869960930405">מידע על היישום</translation>
@@ -2716,6 +2835,7 @@
 <translation id="8381055888183086563">הפעלת אפשרויות תפריט ההקשר של ניקוי באגים, כגון בדיקת רכיב ביישומים ארוזים.</translation>
 <translation id="8145409227593688472">‏שיטת קלט Wubi</translation>
 <translation id="4037732314385844870">‏הפעל את ממשק ה-API הניסיוני לניהול אישורי כניסה.</translation>
+<translation id="7017004637493394352">‏אמור שוב &quot;Ok Google&quot;</translation>
 <translation id="1189418886587279221">הפעל תכונות נגישות על מנת להקל את השימוש במכשיר שלך.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN"/> השבית את סמן העכבר.</translation>
 <translation id="3367237600478196733">טעינות דפים</translation>
@@ -2815,6 +2935,7 @@
 <translation id="8728672262656704056">עברת למצב גלישה בסתר</translation>
 <translation id="1611704746353331382">‏יצוא סימניות לקובץ HTML...</translation>
 <translation id="662607201886173483">DSA</translation>
+<translation id="8275863942928500239">השבת משוב מגע נוסף ברכיבי ממשק המשתמש.</translation>
 <translation id="2391419135980381625">גופן רגיל</translation>
 <translation id="8652139471850419555">רשתות מועדפות</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (ברירת מחדל)</translation>
@@ -2876,6 +2997,7 @@
 <translation id="8053390638574070785">טען דף זה מחדש</translation>
 <translation id="5507756662695126555">אי התכחשות</translation>
 <translation id="3678156199662914018">תוסף: <ph name="EXTENSION_NAME"/></translation>
+<translation id="3047477924825107454">זהו חשבון לילדים, המנוהל על-ידי <ph name="MANAGER_EMAIL"/></translation>
 <translation id="2620090360073999360">‏לא ניתן להגיע אל Google Drive בשלב זה.</translation>
 <translation id="6842820677392219821">‏כבה את Smart Lock</translation>
 <translation id="1370646789215800222">האם להסיר את המשתמש?</translation>
@@ -2916,8 +3038,10 @@
 <translation id="1204242529756846967">שפה לבדיקת איות</translation>
 <translation id="3981760180856053153">הוזן סוג שמירה לא חוקי.</translation>
 <translation id="4919987486109157213">התוסף פגום. נסה להתקין מחדש.</translation>
+<translation id="5232178406098309195">‏כאשר אתה משתמש בפקודות אודיו להפעלה, כגון 'Ok Google', או נוגע בסמל של מיקרופון, פעילות הקול והאודיו הפרטית שלך מאחסנת קטע קול וצלילים נוספים בחשבון שלך. תישמר הקלטה של קטע הדיבור/אודיו הבא, וכן של מספר שניות שקדמו לו. </translation>
 <translation id="4508345242223896011">גלילה חלקה</translation>
 <translation id="7922282834014874897"><ph name="SITE_NAME"/> רוצה להשתמש ב:</translation>
+<translation id="4151403195736952345">השתמש בברירת מחדל גלובלית (זיהוי)</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
 <translation id="5622158329259661758">‏משבית את השימוש ב-GPU לביצוע עיבוד בד ציור דו-ממדי ובמקום זאת משתמש בעיבוד תוכנה.</translation>
 <translation id="3654092442379740616">שגיאת סנכרון:  <ph name="PRODUCT_NAME"/> אינו מעודכן ויש לעדכן אותו.</translation>
@@ -2928,6 +3052,7 @@
 <translation id="7870790288828963061">לא נמצאו אפליקציות קיוסק בגרסה חדשה יותר. אין צורך בעדכון. הסר את הדיסק און קי.</translation>
 <translation id="1463985642028688653">חסום</translation>
 <translation id="1715941336038158809">שם משתמש או סיסמה לא חוקיים.</translation>
+<translation id="9205622428312247615">מאפשר פעילות קול ואודיו...</translation>
 <translation id="1901303067676059328">בחר &amp;הכל</translation>
 <translation id="8846141544112579928">מחפש מקלדת...</translation>
 <translation id="674375294223700098">שגיאת אישור שרת לא ידוע.</translation>
@@ -2936,6 +3061,7 @@
 <translation id="8534579021159131403">דקות</translation>
 <translation id="4883993111890464517">ייתכן שהתוסף נפגם. נסה להתקין מחדש.</translation>
 <translation id="1767519210550978135">Hsu</translation>
+<translation id="7798967305731890792">‏מאפשר נעילת מעבד win32k, הזמין רק ב-Windows 8 ומעלה.</translation>
 <translation id="3223445644493024689">‏לחץ על Control ואז על לחצן העכבר כדי להפעיל את <ph name="PLUGIN_NAME"/>.</translation>
 <translation id="2498539833203011245">מזער</translation>
 <translation id="7410344089573941623">שאל אם <ph name="HOST"/> רוצה גישה למצלמה ולמיקרופון</translation>
@@ -2951,6 +3077,7 @@
 <translation id="2350182423316644347">מאתחל את היישום...</translation>
 <translation id="132101382710394432">רשתות מועדפות...</translation>
 <translation id="3669978261190414172">‏לא ניתן לחבר את טלפון ה-Android שלך ל-<ph name="DEVICE_TYPE"/>. ודא שאתה משתמש בטלפון Android תואם שנמצא איתך ופועל במצב מקוון.</translation>
+<translation id="4316363078957068868">הפעל תמיכה במסכי מגע שתומכים בריחוף.</translation>
 <translation id="532360961509278431">לא ניתן לפתוח את &quot;$1&quot; : $2</translation>
 <translation id="324056286105023296">האם אינך <ph name="PROFILE_NAME"/>?</translation>
 <translation id="8096505003078145654">‏שרת Proxy הוא שרת שמתפקד כמתווך בין המכשיר הנייד שלך ובין שרתים אחרים. בשלב זה, המערכת שלך מוגדרת להשתמש בשרת Proxy, אך <ph name="PRODUCT_NAME"/> לא יכול להתחבר אליו.</translation>
@@ -2963,6 +3090,7 @@
 <translation id="394984172568887996">‏מיובא מ-IE</translation>
 <translation id="5311260548612583999">קובץ מפתח פרטי (אופציונלי):</translation>
 <translation id="8235141838561081489">השבת את תיבת הדו-שיח 'פרטי תוספים'.</translation>
+<translation id="2831904287943562142">הפעל הצגה של בקשה להזנת סיסמה תוך כדי ניווט בתוך הדף. מצב זה מאפשר שמירה של סיסמאות בדפים רבים יותר, אך לעתים הבקשה תופיע לאחר ניסיונות התחברות שנכשלו.</translation>
 <translation id="8256319818471787266">נבחן</translation>
 <translation id="7568790562536448087">מעדכן</translation>
 <translation id="3910699493603749297">מקלדת חמר</translation>
@@ -2996,6 +3124,7 @@
 <translation id="725109152065019550">מצטערים, מנהל המערכת השבית את האחסון החיצוני בחשבונך.</translation>
 <translation id="5624120631404540903">נהל סיסמאות</translation>
 <translation id="3784455785234192852">נעילה</translation>
+<translation id="8124313775439841391">‏ONC מנוהל</translation>
 <translation id="1594155067816010104">הקובץ הזה יגרום נזק למחשב שלך.</translation>
 <translation id="3378503599595235699">שמור נתונים מקומיים רק עד שתסגור את הדפדפן</translation>
 <translation id="5605830556594064952">‏ארה&quot;ב - Dvorak</translation>
@@ -3073,6 +3202,7 @@
 <translation id="4279125075627804580">הפעל שליטת ממשק משתמש על השתקת אודיו של כרטיסיות.</translation>
 <translation id="1358735829858566124">לא ניתן להשתמש בקובץ או בספרייה.</translation>
 <translation id="175772926354468439">הפעל עיצוב</translation>
+<translation id="8479179092158736425">הוראות פעילות</translation>
 <translation id="3144135466825225871">‏הנסיון להחליף קובץ crx נכשל. בדוק אם הקובץ נמצא בשימוש.</translation>
 <translation id="2744221223678373668">משותף</translation>
 <translation id="885701979325669005">אחסון</translation>
@@ -3104,6 +3234,7 @@
 <translation id="154603084978752493">הוסף כמנוע&amp; חיפוש...</translation>
 <translation id="2079545284768500474">בטל</translation>
 <translation id="114140604515785785">ספריית בסיס של תוסף:</translation>
+<translation id="2470332835941011566">האם לאפשר ל-<ph name="URL"/> לזהות אותך לפי מפתח האבטחה שלך?</translation>
 <translation id="5055309315264875868">הצג קישור בדף ההגדרות של מנהל הסיסמאות כדי לנהל את הסיסמאות המסונכרנות שלך באינטרנט.</translation>
 <translation id="3925842537050977900">בטל את ההצמדה למדף</translation>
 <translation id="6664237456442406323">‏לצערנו, המחשב שלך מוגדר עם זיהוי חומרה פגום. המצב הזה מונע ממערכת ההפעלה של Chrome להתקין את עדכוני האבטחה האחרונים, וייתכן שהמחשב שלך יהיה <ph name="BEGIN_BOLD"/>חשוף להתקפות זדוניות<ph name="END_BOLD"/>.</translation>
@@ -3115,6 +3246,7 @@
 <translation id="5694501201003948907">מכווץ $1 פריטים...</translation>
 <translation id="2677924368525077324">הפעל עריכה מבוססת-מגע</translation>
 <translation id="283669119850230892">כדי להשתמש ב-<ph name="NETWORK_ID"/> של הרשת, השלם קודם את ההתחברות לאינטרנט, למטה.</translation>
+<translation id="7513996269498582533">זיהוי על ידך</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="7581279002575751816">‏יישומי פלאגין מסוג NPAPI אינם נתמכים.</translation>
 <translation id="7225807090967870017">מזהה גרסה</translation>
@@ -3127,7 +3259,7 @@
 <translation id="4958202758642732872">חריגים של מסך מלא</translation>
 <translation id="6990778048354947307">עיצוב כהה</translation>
 <translation id="8119631488458759651">הסר אתר זה</translation>
-<translation id="158765438169997550">אם מופעל, הצביעה מבוצעת בשרשור נפרד במקום בשרשור הראשי.</translation>
+<translation id="510058201183951243">‏מנהל הסיסמאות של Chrome לא זיהה טופס סיסמה בדף זה.</translation>
 <translation id="5225324770654022472">הצג קיצורי יישומים</translation>
 <translation id="1408803555324839240">מצטערים! לא ניתן ליצור את המשתמש בפיקוח החדש. ודא שאתה מחובר למערכת כהלכה ונסה שוב.</translation>
 <translation id="6016551720757758985">‏אשר פעולת Powerwash בעת חזרה לגרסה קודמת</translation>
@@ -3144,6 +3276,7 @@
 <translation id="862727964348362408">מושעה</translation>
 <translation id="2482878487686419369">התראות</translation>
 <translation id="8004582292198964060">דפדפן</translation>
+<translation id="3025022340603654002">תן הצעות למילוי אוטומטי בלחיצת עכבר ראשונית על רכיב טופס.</translation>
 <translation id="2040460856718599782">אופס! משהו השתבש במהלך ניסיון האימות שלך. בדוק שוב את פרטי הכניסה שלך ונסה שוב.</translation>
 <translation id="8733326791725507133">‏מפעיל יישום ניסיוני של ממשק ה-API לניהול אישורי כניסה. אין כל ערובה שפעולה זו לא תחשוף את כל הסיסמאות שלך לכל אתר באינטרנט. הפעל את היישום רק אם אתה יודע מה אתה עושה.</translation>
 <translation id="695755122858488207">לחצן בחירה שלא נבחר</translation>
@@ -3207,6 +3340,7 @@
 <translation id="4623537843784569564">ייתכן שתוסף זה עודכן באופן שגוי. נסה להתקינו מחדש.</translation>
 <translation id="4342311272543222243">‏אופס, טעות של TPM.</translation>
 <translation id="3727884750434605207">‏הפעל הזרקת סקריפט במקום נגישות ייעודית של Android.</translation>
+<translation id="5152451685298621771">(חשבון לילדים)</translation>
 <translation id="1285484354230578868">‏אחסן נתונים בחשבון Google Drive</translation>
 <translation id="7106346894903675391">קנה שטח אחסון נוסף...</translation>
 <translation id="994289308992179865">הפעל ב&amp;רצף</translation>
@@ -3295,6 +3429,7 @@
 <translation id="5317217568993504939">לחלופין, בחר רשת חדשה</translation>
 <translation id="7487969577036436319">לא מותקנים רכיבים</translation>
 <translation id="986761196352057687">לא ניתן ליצור חיבור מאובטח מפני שהאתר הזה משתמש בפרוטוקול שאינו נתמך.</translation>
+<translation id="2165453356262207111">‏Smart Lock (ביטא)</translation>
 <translation id="8249462233460427882">‏אתחול (קבל expected צפויים, אך אל תאכוף אותם)</translation>
 <translation id="4862642413395066333">‏חתימה על תגובות OCSP</translation>
 <translation id="8811314776632711217">‏מאפשר בעל גישה (מוכר גם בשם Übercompositor).</translation>
@@ -3307,6 +3442,7 @@
 <translation id="3544347428588533940">‏ה-Smart Lock כמעט מוכן</translation>
 <translation id="8044899503464538266">אטי</translation>
 <translation id="3789841737615482174">התקן</translation>
+<translation id="4782449893814226250">שאלת את הוריך אם זה בסדר לבקר בדף זה.</translation>
 <translation id="4320697033624943677">הוסף משתמשים</translation>
 <translation id="1283379245075810567">התחל שיקוף</translation>
 <translation id="9153934054460603056">שמור זהות וסיסמה</translation>
@@ -3333,6 +3469,7 @@
 <translation id="9011178328451474963">הכרטיסייה האחרונה</translation>
 <translation id="8319414634934645341">שימוש מורחב במפתח</translation>
 <translation id="6056710589053485679">טעינה מחדש רגילה</translation>
+<translation id="161821681072026592">מלא סיסמאות בבחירת חשבון</translation>
 <translation id="4563210852471260509">שפת הקלט הראשונית היא סינית</translation>
 <translation id="2888807692577297075">‏אין פריטים התואמים ל-&lt;b&gt;&quot;<ph name="SEARCH_STRING"/>&quot;&lt;/b&gt;</translation>
 <translation id="3908501907586732282">הפעל תוסף</translation>
@@ -3376,6 +3513,7 @@
 <translation id="7052914147756339792">הגדר טפט...</translation>
 <translation id="5865597920301323962">‏קובצי Cookie מ-<ph name="DOMAIN"/> יימחקו בעת היציאה.</translation>
 <translation id="2702540957532124911">מקלדת:</translation>
+<translation id="4011219958405096740">‏כשמצב זה מופעל, יעשה שימוש בתהליך כניסה אל Chrome המבוסס על iframe. אם לא יופעל, יעשה שימוש בתהליך המבוסס על WebView.</translation>
 <translation id="7444983668544353857">השבת <ph name="NETWORKDEVICE"/></translation>
 <translation id="36954862089075551">אופס! לא הייתה אפשרות ליצור את המשתמש החדש. בדוק את השטח הפנוי בכונן הקשיח ואת ההרשאות שלך ונסה שוב.</translation>
 <translation id="6003177993629630467">ייתכן ש-<ph name="PRODUCT_NAME"/> לא יוכל להתעדכן.</translation>
@@ -3397,11 +3535,12 @@
 <translation id="7014174261166285193">ההתקנה נכשלה.</translation>
 <translation id="1970746430676306437">צפה בפרטי הדף</translation>
 <translation id="4384652540891215547">הפעל את התוסף</translation>
+<translation id="4130199216115862831">יומן מכשיר</translation>
 <translation id="9133055936679483811">הכיווץ נכשל. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="2718998670920917754">תוכנת האנטי-וירוס זיהתה וירוס.</translation>
 <translation id="3199127022143353223">שרתים</translation>
 <translation id="6829270497922309893">הירשם לארגון שלך</translation>
-<translation id="408898940369358887">‏אפשר JavaScript ניסיוני</translation>
+<translation id="408898940369358887">‏הפעל JavaScript ניסיוני</translation>
 <translation id="7489605380874780575">בדוק כשירות</translation>
 <translation id="6607831829715835317">כלים &amp;נוספים</translation>
 <translation id="442477792133831654">אפשר תקשורת עם מכשירים בקרבת מקום</translation>
@@ -3413,6 +3552,7 @@
 <translation id="4509017836361568632">מחק תמונה</translation>
 <translation id="1244303850296295656">שגיאת תוסף</translation>
 <translation id="3541661933757219855">‏הקלד Ctrl+Alt+/ או Escape כדי להסתיר</translation>
+<translation id="3060433672989552055">אתר זה נחסם בשל התנהגות ברירת המחדל של חזרה למצב קודם.</translation>
 <translation id="2948300991547862301">עבור אל <ph name="PAGE_TITLE"/></translation>
 <translation id="3090819949319990166">‏לא ניתן להעתיק קובץ crx חיצוני ל-<ph name="TEMP_CRX_FILE"/>.</translation>
 <translation id="5357579842739549440">מקשי קיצור לתיקון באגים</translation>
@@ -3465,18 +3605,20 @@
 <translation id="5857090052475505287">תיקייה חדשה</translation>
 <translation id="4619415398457343772">‏סיכון AA</translation>
 <translation id="7450732239874446337">הקלט והפלט של הרשת הושעו.</translation>
+<translation id="6107079717483424262">‏זיהוי הקול שלך כשאתה אומר &quot;Ok Google&quot;</translation>
 <translation id="4003393903129308792">הפעל את יוצר רשת הנקודות עבור עותק יחיד</translation>
 <translation id="5178667623289523808">חפש את הקודם</translation>
 <translation id="1510785804673676069">‏אם אתה משתמש בשרת proxy, בדוק את הגדרות שרת ה-proxy או צור קשר עם מנהל הרשת כדי לוודא ששרת ה-proxy פועל. אם אינך סבור שעליך להשתמש בשרת proxy, שנה את <ph name="LINK_START"/>הגדרות שרת ה-proxy שלך<ph name="LINK_END"/>.</translation>
 <translation id="6773575010135450071">פעולות נוספות...</translation>
 <translation id="8687485617085920635">החלון הבא</translation>
 <translation id="2610780100389066815">‏חתימת רשימת יחסי אמון של Microsoft</translation>
+<translation id="7405422715075171617">אפשר סריקה של מספר כרטיס אשראי חדש בעת מילוי טופס של כרטיס אשראי.</translation>
 <translation id="4535353504827549990">החלף חלון זמן</translation>
 <translation id="7959074893852789871">הקובץ הכיל אישורים מרובים, חלקם לא יובאו:</translation>
 <translation id="2918322085844739869">4</translation>
 <translation id="3414758901256308084">הסרות התקנה</translation>
 <translation id="7791536208663663346">משבית פענוח וידאו עם האצת חומרה כאשר הדבר אפשרי.</translation>
-<translation id="87377425248837826">אפשר חלוניות</translation>
+<translation id="87377425248837826">הפעל חלוניות</translation>
 <translation id="2805707493867224476">אפשר לכל האתרים להציג חלונות קופצים</translation>
 <translation id="3561217442734750519">ערך קלט עבור מפתח פרטי חייב להיות נתיב חוקי.</translation>
 <translation id="3582930987043644930">הוסף שם</translation>
@@ -3486,6 +3628,7 @@
 <translation id="3012917896646559015">צור קשר עם יצרן החומרה באופן מיידי כדי לשלוח את המחשב לתיקון.</translation>
 <translation id="3694678678240097321">דרוש הסכמת משתמש עבור תוסף המפעיל סקריפט בדף, אם התוסף ביקש הרשאה לפעול בכל כתובות האתרים.</translation>
 <translation id="8117957376775388318">‏שיטת קלט Dayi</translation>
+<translation id="5470838072096800024">הפעם האחרונה שהתקבל</translation>
 <translation id="3088034400796962477">‏תעתוק (‎سلام ← salam)</translation>
 <translation id="902638246363752736">הגדרות מקלדת</translation>
 <translation id="7925686952655276919">אין להשתמש בנתונים ניידים עבור סנכרון</translation>
@@ -3547,6 +3690,7 @@
 <translation id="2478176599153288112">הרשאות של קובץ מדיה עבור &quot;<ph name="EXTENSION"/>&quot;</translation>
 <translation id="3473479545200714844">מגדיל התצוגה</translation>
 <translation id="6759193508432371551">איפוס להגדרות היצרן</translation>
+<translation id="5557991081552967863">‏השאר את Wi-Fi פועל בזמן שינה</translation>
 <translation id="2981493173545878420">מופעל בכל הדפים</translation>
 <translation id="6439776357918534023">הפעל תמיד</translation>
 <translation id="4254689404087172933">%‏<ph name="USAGE"/> שימוש בסוללה</translation>
@@ -3561,6 +3705,7 @@
 <translation id="2267273557509361161">‏הפעל מחדש את Chrome במצב Windows 8</translation>
 <translation id="5269977353971873915">ההדפסה נכשלה</translation>
 <translation id="3193734264051635522">מהירות:</translation>
+<translation id="1188996643586277948">‏אתר זה נחסם בשל בדיקה מקוונת של SafeSites.</translation>
 <translation id="869884720829132584">תפריט יישומים</translation>
 <translation id="2336381494582898602">שחזור הגדרות יצרן</translation>
 <translation id="8211868401977897190">'ארנק' אינו יכול לטפל בעסקה זו.</translation>
@@ -3574,7 +3719,7 @@
 <translation id="6957703620025723294">הפעל תכונות ניסיוניות של בד ציור</translation>
 <translation id="8151185429379586178">כלים למפתחים</translation>
 <translation id="1526560967942511387">מסמך ללא שם</translation>
-<translation id="3979748722126423326">אפשר <ph name="NETWORKDEVICE"/></translation>
+<translation id="3979748722126423326">הפעל את <ph name="NETWORKDEVICE"/></translation>
 <translation id="7819857487979277519">‏PSK ‏(WPA או RSN)</translation>
 <translation id="2238379619048995541">נתוני מצב תדירות</translation>
 <translation id="4367133129601245178">ה&amp;עתק כתובת אתר של תמונה</translation>
@@ -3586,10 +3731,12 @@
 <translation id="5731247495086897348">הד&amp;בק ועבור אל</translation>
 <translation id="6426993025560594914">כל הניסויים זמינים בפלטפורמה שלך!</translation>
 <translation id="1834560242799653253">כיוון:</translation>
+<translation id="6150853954427645995">כדי לשמור קובץ זה לשימוש לא מקוון, חזור למצב מקוון, לחץ לחיצה ימנית על הקובץ ובחר את האפשרות <ph name="OFFLINE_CHECKBOX_NAME"/>.</translation>
 <translation id="6440616190620341629">‏הפעל פענוח ללא הרכבה ב-MediaDrm כברירת מחדל לתוספי מדיה מוצפנים.</translation>
 <translation id="2501921478111875330">הפעל את הרשימה השחורה של המארח לשימוש על ידי משתמשים בפיקוח.</translation>
 <translation id="8353683614194668312">יכול:</translation>
 <translation id="1047956942837015229">מוחק <ph name="COUNT"/> פריטים...</translation>
+<translation id="2059334576206320859">‏הפעל סנכרון פרטי כניסה ב-WiFi.</translation>
 <translation id="7361039089383199231">$1 בייטים</translation>
 <translation id="191688485499383649">אירעה שגיאה לא ידועה בעת הניסיון להתחבר אל &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="7208594729785140450">‏ארנק Google לא תומך בגרסה הזו של Chrome או שאינו מזהה את מפתח Google API שלך.</translation>
@@ -3620,6 +3767,7 @@
 <translation id="534916491091036097">צד שמאל של הסוגריים</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4110559665646603267">מיקוד במדף</translation>
+<translation id="7712140766624186755">שאל לפי מדיניות</translation>
 <translation id="5685236799358487266">הו&amp;סף כמנוע חיפוש...</translation>
 <translation id="8903921497873541725">התקרב</translation>
 <translation id="6820687829547641339">‏ארכיון Gzip מכווץ של Bzip2</translation>
@@ -3691,6 +3839,7 @@
 <translation id="4871370605780490696">הוסף סימניה</translation>
 <translation id="6136253676302684829">ההגדרה הזו נשלטת על ידי:</translation>
 <translation id="1859234291848436338">כיוון כתיבה</translation>
+<translation id="8595292892789160700">‏צור התקשרות עם התקן USB <ph name="NUMBER_OF_DEVICES"/>.</translation>
 <translation id="5038625366300922036">פרטים נוספים...</translation>
 <translation id="8437209419043462667">ארה&quot;ב</translation>
 <translation id="5045550434625856497">סיסמה שגויה</translation>
@@ -3705,6 +3854,7 @@
 <translation id="2028997212275086731">‏ארכיון RAR</translation>
 <translation id="7627790789328695202">אופס, <ph name="FILE_NAME"/> כבר קיים. שנה את השם שלו ונסה שוב.</translation>
 <translation id="616750447093982078">‏נהל הגדרות Bluetooth</translation>
+<translation id="7234907163682057631">זהה והפעל רכיבי פלאגין חשובים</translation>
 <translation id="7887334752153342268">שכפול</translation>
 <translation id="9207194316435230304">ATOK</translation>
 <translation id="7788668840732459509">מיקום:</translation>
@@ -3723,7 +3873,7 @@
 <translation id="3869917919960562512">אינדקס שגוי.</translation>
 <translation id="7031962166228839643">‏המערכת מכינה את TPM, אנא המתן (פעולה זו עשויה להימשך מספר דקות)...</translation>
 <translation id="715118844758971915">מדפסות קלאסיות</translation>
-<translation id="5242724311594467048">האם לאפשר את &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
+<translation id="5242724311594467048">האם להפעיל את &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
 <translation id="4446785517224762398">‏לא ניתן לאתר את טלפון ה-Android שלך. ודא ש-Bluetooth מופעל ב-<ph name="DEVICE_TYPE"/> שלך.</translation>
 <translation id="7877451762676714207">שגיאת שרת לא ידועה. נסה שוב או פנה למנהל השרת.</translation>
 <translation id="5085162214018721575">מחפש עדכונים</translation>
@@ -3732,12 +3882,13 @@
 <translation id="7054808953701320293">הבנתי, אל תציג הודעה זו שוב.</translation>
 <translation id="144932861331386147">‏התחבר לאינטרנט כדי לעדכן את ה-Chromebook שלך.</translation>
 <translation id="2938685643439809023">מונגולית</translation>
-<translation id="7833505010723562327">לחץ כדי להיכנס</translation>
 <translation id="5737306429639033676">נבא פעולות רשת לשיפור ביצועים של טעינת דפים</translation>
 <translation id="4530494379350999373">מקור</translation>
+<translation id="5368720394188453070">הטלפון שלך נעול. בטל את הנעילה כדי להיכנס.</translation>
 <translation id="2070909990982335904">שמות המתחילים בנקודה שמורים עבור המערכת. בחר שם אחר.</translation>
 <translation id="3707020109030358290">לא רשות אישורים.</translation>
 <translation id="5293659407874396561"><ph name="SUBJECT"/> ‏(<ph name="ISSUER"/>)</translation>
+<translation id="8711453844311572806">כשהטלפון שלך נמצא בקרבת מקום ואינו נעול, לחץ כדי להיכנס. אחרת, תראה סמל מנעול ותצטרך להקליד את הסיסמה.</translation>
 <translation id="7196835305346730603">‏מחפש מכשירי Chromebox בסביבה...</translation>
 <translation id="2115926821277323019">חייבת להיות כתובת אתר חוקית</translation>
 <translation id="3464726836683998962">השבת נדידת נתונים לנייד</translation>
@@ -3753,6 +3904,7 @@
 <translation id="1307041843857566458">אשר הפעלה מחדש</translation>
 <translation id="8654151524613148204">הקובץ גדול מכדי שהמחשב שלך יוכל לטפל בו. מצטערים.</translation>
 <translation id="7419189809450554452">זכור במשך יום אחד</translation>
+<translation id="2987776766682852234">צמצם ברירת מחדל של רמת פירוט בכותרת 'גורם מפנה'.</translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 עם הצפנת RSA</translation>
 <translation id="5620612546311710611">נתונים סטטיסטיים של שימוש</translation>
 <translation id="3323447499041942178">תיבת טקסט</translation>
@@ -3788,6 +3940,7 @@
 <translation id="3085235303151103497">הפעל ניקוי באגים ביישומים ארוזים.</translation>
 <translation id="2433728760128592593">‏הקש על ALT + SHIFT כדי לעבור בין שיטות קלט.</translation>
 <translation id="1056898198331236512">אזהרה</translation>
+<translation id="1427049173708736891">‏השאר את ה-<ph name="DEVICE_TYPE"/> לא נעול בזמן שטלפון ה-Android שלך נמצא בקרבתך ואינו נעול - אין צורך להקליד סיסמה.</translation>
 <translation id="5934281776477898549">אין עדכון</translation>
 <translation id="8432745813735585631">‏מקלדת Colemak אנגלית (ארה&quot;ב)</translation>
 <translation id="537813040452600081">‏דפים שתעיין בהם בחלון זה לא יופיעו בהיסטוריה של הדפדפן, והם לא ישאירו במחשב עקבות אחרים, כגון קובצי Cookie, לאחר שתצא. קבצים שתוריד וסימניות שתיצור לא יישמרו.</translation>
@@ -3796,14 +3949,18 @@
 <translation id="1208421848177517699">‏תעתוק (namaste → નમસ્તે)</translation>
 <translation id="996250603853062861">יוצר חיבור מאובטח...</translation>
 <translation id="7529471622666797993"><ph name="BEGIN_LINK"/>הגדרות גופן מתקדמות<ph name="END_LINK"/> (יש צורך בתוסף)</translation>
+<translation id="6190552617269794435">‏ניסיונות להתחבר אל מכשירים קרובים יבוטלו. כל נתוני Copresence המקומיים ינוקו ואפליקציות העושות שימוש ב-Copresence עשויות להפסיק לפעול. האם אתה בטוח?</translation>
 <translation id="6059232451013891645">תיקייה:</translation>
 <translation id="1233721473400465416">מקום</translation>
 <translation id="2739240477418971307">שינוי הגדרות הנגישות שלך</translation>
 <translation id="7042418530779813870">הדבק וחפש</translation>
+<translation id="4685045708662437080">‏הדבר מסייע ל- Google לזהות את הקול שלך ולשפר זיהוי דיבור ואודיו, כדי לספק לך תוצאות מהירות יותר בפחות טרחה. <ph name="BEGIN_LINK"/>למידע נוסף<ph name="END_LINK"/></translation>
 <translation id="5026874946691314267">אל תציג הודעה זו שוב</translation>
+<translation id="7372973238305370288">תוצאת חיפוש</translation>
 <translation id="2101225219012730419">גרסה:</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE"/> - <ph name="PAGE_URL"/></translation>
 <translation id="4588173105134911375">נראה שאתה מנסה להריץ יישום קלאסי. נסה כחלופה אחד מהיישומים הבאים המבוססים על האינטרנט.</translation>
+<translation id="1792705092719258158">הפעל מצב מסך משוקף.</translation>
 <translation id="8050038245906040378">‏חתימת קוד מסחרי של Microsoft</translation>
 <translation id="3031557471081358569">בחר פריטים לייבוא:</translation>
 <translation id="6728144975495880845">‏אם תכונה זו הופעלה, שרשורים של רשת נקודות נכתבים בזיכרון GPU.</translation>
@@ -3812,10 +3969,13 @@
 <translation id="133014027510889724">הפעל ניטור ביצועים</translation>
 <translation id="3627320433825461852">נותרה פחות מדקה אחת</translation>
 <translation id="3123569374670379335">(בפיקוח)</translation>
+<translation id="854600348164706309">‏הכרטיסיות, הסימניות, ההיסטוריה והגדרות נוספות יסונכרנו עם חשבון Google שלך.</translation>
 <translation id="4047345532928475040">לא זמין</translation>
 <translation id="5604324414379907186">הצג תמיד את סרגל הסימניות</translation>
 <translation id="249113932447298600">מצטערים, המכשיר <ph name="DEVICE_LABEL"/> אינו נתמך בשלב זה.</translation>
 <translation id="6401445054534215853">פריט מדף 1</translation>
+<translation id="2365626167708453863">‏בחר חשבון ממערכת Google Smart Lock</translation>
+<translation id="232562464593865424">‏בואו נאמן את ה-Chromebook</translation>
 <translation id="2351520734632194850">‎<ph name="MHZ"/> MHz‎</translation>
 <translation id="2799223571221894425">הפעל מחדש</translation>
 <translation id="5771816112378578655">ההתקנה מתבצעת...</translation>
@@ -3847,6 +4007,7 @@
 <translation id="7848981435749029886">הגישה למצלמה שלך נשלטת על ידי מנהל המערכת שלך.</translation>
 <translation id="7004562620237466965">פענוח בלבד</translation>
 <translation id="6228691855869374890">‏לאתר זה יש שליטה מלאה על מכשירי MIDI.</translation>
+<translation id="7076293881109082629">כניסה</translation>
 <translation id="5120421890733714118">תן אמון באישור זה לזיהוי אתרי אינטרנט.</translation>
 <translation id="166278006618318542">אלגוריתם מפתח ציבורי של נושא</translation>
 <translation id="3627052133907344175">כדי להשתמש בתוסף יש צורך ב-&quot;<ph name="IMPORT_NAME"/>&quot; בגרסה &quot;<ph name="IMPORT_VERSION"/>&quot; לכל הפחות, אך רק גרסה &quot;<ph name="INSTALLED_VERSION"/>&quot; מותקנת.</translation>
@@ -3897,11 +4058,13 @@
 <translation id="8261387128019234107">הוסף חשבון עבור <ph name="PROFILE_NAME"/></translation>
 <translation id="3535652963535405415">‏הפעל תמיכה ניסיונית בממשק ה-API של MIDI באינטרנט.</translation>
 <translation id="8761567432415473239">‏גלישה בטוחה של Google <ph name="BEGIN_LINK"/>איתרה לאחרונה תוכניות מזיקות<ph name="END_LINK"/> באתר <ph name="SITE"/>.</translation>
+<translation id="2317031807364506312">ביטול</translation>
 <translation id="2885378588091291677">מנהל המשימות</translation>
 <translation id="7412226954991670867">‏זיכרון GPU</translation>
 <translation id="4916679969857390442">עדשה</translation>
 <translation id="2080796051686842158">‏משבית את אנימציית אתחול הטפט (למעט במקרה OOBE).</translation>
 <translation id="305932878998873762">‏הקובץ השמור הפשוט עבור HTTP הוא קובץ שמור חדש. הוא מתבסס על מערכת הקבצים להקצאת שטח דיסק.</translation>
+<translation id="3018764264205044879">‏משבית את הגרסה החדשה ביותר של זיהוי מילות הפעלה ב-'Ok Google', כגון שימוש בתוסף המובנה. במקום זאת ייעשה שימוש בתוסף מילות ההפעלה מחנות האינטרנט של Chrome.</translation>
 <translation id="8962083179518285172">הסתר פרטים</translation>
 <translation id="5695323626817702678">קצרה</translation>
 <translation id="2359808026110333948">המשך</translation>
@@ -3916,6 +4079,7 @@
 <translation id="3915280005470252504">חפש לפי קול</translation>
 <translation id="3752582316358263300">אישור...</translation>
 <translation id="6224481128663248237">הפרמוט הסתיים בהצלחה!</translation>
+<translation id="2455399605793454000">אפשר טיפול בלחץ על הזיכרון</translation>
 <translation id="3065140616557457172">הקלד לחיפוש או הזן כתובת אתר לניווט - שניהם עובדים.</translation>
 <translation id="3643454140968246241">מסנכרן <ph name="COUNT"/> קבצים...</translation>
 <translation id="5801379388827258083">מוריד מילון לבדיקת איות...</translation>
@@ -3960,6 +4124,7 @@
 <translation id="3077195744811823826">כעת בשולחן העבודה שלך</translation>
 <translation id="527605719918376753">השתק כרטיסייה</translation>
 <translation id="4059285154003114015">&amp;הדפס מסגרת...</translation>
+<translation id="4841374967186574017">אסימונים ששודרו</translation>
 <translation id="354211537509721945">מנהל המערכת ביטל את העדכונים</translation>
 <translation id="1375198122581997741">מידע על הגרסה</translation>
 <translation id="642282551015776456">ייתכן שלא ניתן להשתמש בשם זה כשם קובץ או תיקייה</translation>
@@ -3986,6 +4151,7 @@
 <translation id="770015031906360009">יוונית</translation>
 <translation id="7455133967321480974">השתמש בברירת המחדל הכללית (חסום)</translation>
 <translation id="8463215747450521436">ייתכן שמשתמש בפיקוח זה נמחק או הושבת על ידי המנהל. פנה למנהל אם ברצונך להמשיך להיכנס בתור משתמש זה.</translation>
+<translation id="91568222606626347">צור מקש קיצור...</translation>
 <translation id="3454157711543303649">ההפעלה הושלמה</translation>
 <translation id="2131077480075264">לא ניתן להתקין את '<ph name="APP_NAME"/>' מכיוון שהוא לא מאושר על ידי '<ph name="IMPORT_NAME"/>'</translation>
 <translation id="3895034729709274924">הפעל ניקוי באגים שקט.</translation>
@@ -3996,6 +4162,7 @@
 <translation id="5771849619911534867">סריקת המכשיר הופסקה.</translation>
 <translation id="291886813706048071">תוכל לחפש מכאן עם <ph name="SEARCH_ENGINE"/></translation>
 <translation id="556042886152191864">לחצן</translation>
+<translation id="3928494192447988737">רכיבי ממשק משתמש מסוימים יפסיקו להציג משוב חזותי עם ביצוע אינטראקציות מגע.</translation>
 <translation id="834457929814110454">אם אתה מבין את סיכוני האבטחה, תוכל <ph name="BEGIN_LINK"/>לבקר באתר לא בטוח זה<ph name="END_LINK"/> לפני הסרת התכניות המסוכנות.</translation>
 <translation id="1638861483461592770">הפעל את היישום הניסיוני של הדגשת מחוות הקשה</translation>
 <translation id="132090119144658135">התאמת נושא:</translation>
@@ -4008,6 +4175,7 @@
 <translation id="8714838604780058252">גרפיקת רקע</translation>
 <translation id="7158238151765743968">החיבור אל &quot;<ph name="DEVICE_NAME"/>&quot; עדיין מתבצע.</translation>
 <translation id="8782565991310229362">ההפעלה של יישום קיוסק בוטלה.</translation>
+<translation id="4529540249825352788">סורק את המדיה שלך...</translation>
 <translation id="2252923619938421629">‏עזור לשפר את Google Chrome על ידי דיווח על ההגדרות הנוכחיות</translation>
 <translation id="4647697156028544508">‏הזן PIN עבור &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="2291643155573394834">הכרטיסייה הבאה</translation>
@@ -4032,6 +4200,7 @@
 <translation id="494286511941020793">‏עזרה של תצורת שרת Proxy</translation>
 <translation id="2765217105034171413">קטן</translation>
 <translation id="7773845170078702898">‏האם אתה מעוניין ש-Google Chrome ישמור את הסיסמה עבור אתר זה?</translation>
+<translation id="7855759346726093224">‏אתר זה נחסם בשל הרשימה השחורה הסטטית של SafeSites.</translation>
 <translation id="7938594894617528435">לא מקוונת כעת</translation>
 <translation id="6825883775269213504">רוסית</translation>
 <translation id="3842552989725514455">‏גופן Serif</translation>
@@ -4094,6 +4263,7 @@
 <translation id="6506262503848065804">נרשם...</translation>
 <translation id="6460601847208524483">חפש את הבא</translation>
 <translation id="397703832102027365">מסיים...</translation>
+<translation id="8100401006985332080">האתר התעדכן ברקע.</translation>
 <translation id="6466492211071551451">מקלדת אירית</translation>
 <translation id="8146177459103116374">אם אתה כבר רשום במכשיר זה, תוכל <ph name="LINK2_START"/>להתחבר כמשתמש קיים<ph name="LINK2_END"/>.</translation>
 <translation id="5072836811783999860">הצג סימניות מנוהלות</translation>
@@ -4130,6 +4300,7 @@
 <translation id="9076523132036239772">מצטערים, לא ניתן לאמת את האימייל או הסיסמה שלך. נסה תחילה להתחבר לרשת.</translation>
 <translation id="4260442535208228602">הוסף למפעיל היישומים</translation>
 <translation id="6965978654500191972">התקן</translation>
+<translation id="225163402930830576">רענן רשתות</translation>
 <translation id="8623004009673949077">‏יש להתקין יישומים עם מאפיין המניפסט 'kiosk_only' במצב קיוסק של מערכת ההפעלה של Chrome.</translation>
 <translation id="358796204584394954">הקלד את הקוד הזה ב-&quot;<ph name="DEVICE_NAME"/>&quot; כדי לבצע התאמה:</translation>
 <translation id="6102988872254107946">‏גם אם ביקרת בעבר באתר זה, הוא אינו בטוח כעת. לאחרונה, 'גלישה בטוחה של Google‏' <ph name="BEGIN_LINK"/>זיהתה תוכנה זדונית<ph name="END_LINK"/> באתר <ph name="SITE"/>. אתרים שבדרך כלל נחשבים לבטוחים נדבקים לעתים בתוכנה זדונית.</translation>
@@ -4148,6 +4319,7 @@
 <translation id="1104054824888299003">ארוכה</translation>
 <translation id="637062427944097960">הקובץ הזה נפתח בשולחן עבודה שונה. עבור אל <ph name="USER_NAME"/>‏ (<ph name="MAIL_ADDRESS"/>) כדי לראות אותו.</translation>
 <translation id="7479479221494776793">אם מצב חוסר הפעילות יימשך, תצא באופן אוטומטי מהחשבון בעוד <ph name="LOGOUT_TIME_LEFT"/>.</translation>
+<translation id="1465619815762735808">לחץ להפעלה</translation>
 <translation id="6941937518557314510">היכנס אל <ph name="TOKEN_NAME"/> כדי לבצע אימות בפני <ph name="HOST_NAME"/> באמצעות האישור שלך.</translation>
 <translation id="5850516540536751549">‏סוג קובץ זה אינו נתמך. בקר ב<ph name="BEGIN_LINK"/>חנות האינטרנט של Chrome‏<ph name="END_LINK"/> כדי למצוא יישום שבאמצעותו ניתן לפתוח קובץ מסוג זה.
 	      <ph name="BEGIN_LINK_HELP"/>למידע נוסף<ph name="END_LINK_HELP"/></translation>
@@ -4177,6 +4349,7 @@
 <translation id="5833726373896279253">רק הבעלים יכול לשנות הגדרות אלה:</translation>
 <translation id="9203962528777363226">מנהל המערכת של מכשיר זה השבית את ההוספה של משתמשים חדשים</translation>
 <translation id="6005282720244019462">מקלדת של אמריקה הלטינית</translation>
+<translation id="4669109953235344059">נסה שוב</translation>
 <translation id="3758760622021964394">הדף מעוניין להשבית את סמן העכבר שלך.</translation>
 <translation id="4165986682804962316">הגדרות אתרים</translation>
 <translation id="4106164762195622179">‏דפים שאתה מציג בכרטיסיות גלישה בסתר לא יישארו בהיסטוריית הדפדפן, באחסון קובצי ה-Cookie או בהיסטוריית החיפושים לאחר שתסגור את <ph name="BEGIN_BOLD"/>כל<ph name="END_BOLD"/> כרטיסיות הגלישה בסתר. קבצים שהורדת או סימניות שיצרת יישמרו.</translation>
@@ -4195,11 +4368,13 @@
 <translation id="4672657274720418656">זקק דף</translation>
 <translation id="7434055648644416032">‏צור התקשרות עם <ph name="NUMBER_OF_DEVICES"/> התקני USB</translation>
 <translation id="2081322486940989439">‏אתר זה אינו מקבל כרטיסי אשראי מסוג Visa.</translation>
+<translation id="7543104066686362383">הפעל תכונות איתור באגים במכשיר <ph name="IDS_SHORT_PRODUCT_NAME"/> זה</translation>
 <translation id="1514298457297359873">‏מאפשר ליישומים להשתמש בממשק API של NaCl Socket. השתמש רק כדי לבדוק יישומי פלאגין של NaCl.</translation>
 <translation id="8263231521757761563">תוכניות פעילות לטיפול בפרוטוקולים</translation>
 <translation id="6930242544192836755">משך החיבור</translation>
 <translation id="2749756011735116528">היכנס אל <ph name="PRODUCT_NAME"/></translation>
 <translation id="8434480141477525001">יציאת ניקוי באגים של לקוח מקומי</translation>
+<translation id="8957210676456822347">הרשאת פורטל חובה</translation>
 <translation id="1979444449436715782">איכות בעת הקטנת קנה מידה של צילום כרטיסייה.</translation>
 <translation id="8579549103199280730">שאל כברירת מחדל</translation>
 <translation id="1330145147221172764">הפעל מקלדת על המסך</translation>
@@ -4213,6 +4388,7 @@
 <translation id="4285498937028063278">בטל הצמדה</translation>
 <translation id="8734073480934656039">הפעלת ההגדרה הזו מאפשרת הפעלה אוטומטית של יישומי קיוסק בעת האתחול.</translation>
 <translation id="2588322182880276190">‏הלוגו של Chrome</translation>
+<translation id="316307797510303346">הצג את האתרים שבהם משתמש זה מבקר מתוך <ph name="CUSTODIAN_EMAIL"/> ושלוט בהם. פרטי הכניסה שלך אינם עדכניים.</translation>
 <translation id="5449624072515809082">הפעלת תיקון אוטומטי של טקסט תוך כדי הקלדה. תיקון שגיאות איות סנכרוני אינו תואם לתכונה זו.</translation>
 <translation id="3685122418104378273">‏הסנכרון של Google Drive מושבת כברירת מחדל בעת שימוש בנתונים לנייד.</translation>
 <translation id="8144022414479088182">‏האם אתה בטוח שברצונך להגדיר מכשיר זה כמכשיר Chromebox לניהול פגישות?</translation>
@@ -4248,6 +4424,7 @@
 <translation id="2143778271340628265">‏תצורת שרת proxy ידנית</translation>
 <translation id="440150639010863291">‏השתמש בארנק Google</translation>
 <translation id="8888432776533519951">צבע:</translation>
+<translation id="5247176778442128277">‏השבת את Smart Lock</translation>
 <translation id="5294529402252479912">‏עדכן את Adobe Reader עכשיו</translation>
 <translation id="641087317769093025">לא ניתן לבטל את הדחיסה של התוסף</translation>
 <translation id="7461850476009326849">השבת חלק מיישומי הפלאגין...</translation>
@@ -4270,6 +4447,7 @@
 <translation id="5554573843028719904">‏רשת Wi-Fi אחרת...</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="7013485839273047434">קבל תוספים נוספים</translation>
+<translation id="1176657834397978991">‏הטלפון שבו אתה משתמש במערכת Smart Lock השתנה. הקלד את הסיסמה כדי לעדכן את Smart Lock במכשיר זה. בפעם הבאה, תוכל פשוט ללחוץ על התמונה כדי להיכנס.</translation>
 <translation id="2124335647227850314">השבת כיול של צבע המסך, גם אם המסך תומך בתכונה הזו.</translation>
 <translation id="428565720843367874">תוכנת האנטי-וירוס נכשלה באופן בלתי צפוי בעת סריקת קובץ זה.</translation>
 <translation id="7709152031285164251">נכשל - <ph name="INTERRUPT_REASON"/></translation>
@@ -4306,6 +4484,7 @@
 <translation id="7017219178341817193">הוסף דף חדש</translation>
 <translation id="1038168778161626396">הצפן בלבד</translation>
 <translation id="8765985713192161328">נהל מטפלים...</translation>
+<translation id="7073555242265688099">‏אם יש לך מכשירים אחרים עם Chrome, הם יסונכרנו באופן אוטומטי, כך שהטלפון שלך יפתח גם את הנעילה שלהם.</translation>
 <translation id="7179921470347911571">הפעל מחדש עכשיו</translation>
 <translation id="9065203028668620118">ערוך</translation>
 <translation id="6978611942794658017">‏קובץ זה מיועד עבור מחשב אישי המשתמש בתוכנת Windows. הוא אינו מתאים למכשירך שעובד עם מערכת הפעלה של Chrome. חפש יישום חלופי מתאים בחנות האינטרנט של Chrome.</translation>
@@ -4333,17 +4512,22 @@
 <translation id="3252266817569339921">צרפתית</translation>
 <translation id="2665717534925640469">דף זה מוצג כעת במסך מלא והשבית את סמן העכבר שלך.</translation>
 <translation id="3414952576877147120">גודל:</translation>
+<translation id="2868746137289129307">תוסף זה הוא מיושן והושבת בהתאם למדיניות הארגון. ייתכן שהוא יופעל באופן אוטומטי כשתצא גרסה חדשה יותר.</translation>
+<translation id="8321029433037466758">‏אם המעבדים מופעלים, יהיה להם sandbox שכבה שנייה שסופק על-ידי  seccomp-bpf. לשם כך דרושות תכונות ליבה הזמינות רק בגרסאות Android נבחרות.</translation>
 <translation id="3592260987370335752">למידע נוסף</translation>
 <translation id="3631337165634322335">החריגים שבהמשך חלים רק על ההפעלה הנוכחית של גלישה בסתר</translation>
 <translation id="676327646545845024">אל תציג שוב לעולם את תיבת הדו-שיח לכל הקישורים מסוג זה.</translation>
 <translation id="1485146213770915382">הכנס <ph name="SEARCH_TERMS_LITERAL"/> בכתובת האתר שבה יופיעו מונחי החיפוש.</translation>
 <translation id="8141725884565838206">נהל את הסיסמאות שלך</translation>
+<translation id="7707398793534090429"><ph name="URL"/> עודכן</translation>
+<translation id="6016809788585079594">‏אמור 'Ok Google' בפעם האחרונה</translation>
 <translation id="7792122566227574447">‏דפי חיפוש מסוג ‎excl.‎ עם שיעור הביקורים הגבוה ביותר</translation>
 <translation id="4839303808932127586">שמ&amp;ור וידאו כ...</translation>
 <translation id="317583078218509884">הגדרות חדשות של אישורי אתר ייכנסו לתוקף לאחר טעינה מחדש של הדף.</translation>
 <translation id="3135204511829026971">סובב את המסך</translation>
 <translation id="1317502925920562130">האם זהו דף הבית שציפית לראות?</translation>
 <translation id="7763146744708046348">אל תצבור את הנתונים - פעולה זו עשויה להיות אטית!</translation>
+<translation id="203165784383062719">&amp;אפשרויות בודק האיות</translation>
 <translation id="5626134646977739690">שם:</translation>
 <translation id="4899837262951879307">מצב גלילת נגיעה.</translation>
 <translation id="5854409662653665676">אם אתה נתקל בבעיות לעתים קרובות, תוכל לנסות את הפעולות הבאות לפתירת הבעיה במודול זה:</translation>
@@ -4370,6 +4554,7 @@
 <translation id="7387829944233909572">תיבת הדו-שיח 'ניקוי נתוני גלישה'</translation>
 <translation id="8023801379949507775">עדכן תוספים כעת</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES"/> (שיא של <ph name="NUM_KILOBYTES_LIVE"/>)</translation>
+<translation id="2462165167543540982">‏תחילת העבודה עם Smart Lock</translation>
 <translation id="7782250248211791706">‏נתק את חשבון Google</translation>
 <translation id="6782622603507084740">‏הפעל את ממשק ה-API של EmbeddedSearch</translation>
 <translation id="4348766275249686434">תעד שגיאות</translation>
@@ -4379,6 +4564,7 @@
 <translation id="1454188386658974462">הזנת הסיסמה מחדש תאפשר לך להיכנס במצב לא מקוון.</translation>
 <translation id="8241707690549784388">הדף שאתה מחפש השתמש במידע שהזנת. החזרה לדף זה עלולה לגרום לכפילות בפעולות שביצעת. האם ברצונך להמשיך?</translation>
 <translation id="5359419173856026110">מציג את קצב הפריימים בפועל של הדף, ביחידות של פריימים לשנייה, כאשר האצת החומרה פועלת.</translation>
+<translation id="7198197644913728186">‏Bluetooth כבוי ב-<ph name="DEVICE_TYPE"/> זה. הקלד את הסיסמה כדי להיכנס והפעל את Bluetooth.</translation>
 <translation id="3462200631372590220">הסתר פרטים מתקדמים</translation>
 <translation id="4104163789986725820">יי&amp;צא...</translation>
 <translation id="9022026332614591902">חלונות קופצים חסומים (<ph name="POP_UP_COUNT"/>)</translation>
@@ -4406,6 +4592,7 @@
 <translation id="4350711002179453268">אין אפשרות ליצור חיבור מאובטח לשרת. ייתכן שיש בעיה בשרת או שנדרש אישור אימות לקוח שאין לך.</translation>
 <translation id="4731422630970790516">פריט מדף 3</translation>
 <translation id="750509436279396091">פתח את תיקיית ההורדות</translation>
+<translation id="4125496372515105318">‏השבת את תכונות ה-JavaScript היציבות האחרונות</translation>
 <translation id="5963026469094486319">ראה עיצובים</translation>
 <translation id="7586312264284919041">האם ברצונך לתרגם את הדף הזה?</translation>
 <translation id="3855072293748278406">גישה לפלאגין שאינו בארגז חול</translation>
@@ -4482,7 +4669,9 @@
 <translation id="7939412583708276221">שמור בכל מקרה</translation>
 <translation id="8579285237314169903">מבצע סנכרון ל-<ph name="NUMBER_OF_FILES"/> פריטים...</translation>
 <translation id="8140778357236808512">יבא 'משתמש בפיקוח' קיים</translation>
+<translation id="4336979451636460645">ליומני רשת, ראה: <ph name="DEVICE_LOG_LINK"/></translation>
 <translation id="8737260648576902897">‏התקן את Adobe Reader</translation>
+<translation id="7878999881405658917">‏Google שלחה הודעה לטלפון הזה. לידיעתך, עם Bluetooth, הטלפון שלך עשוי להשאיר את <ph name="DEVICE_TYPE"/> לא נעול במרחק של מעל 3 מטרים. אם הדבר מהווה בעיה מבחינתך, תוכל &lt;a&gt;להשבית זמנית את התכונה הזו&lt;/a&gt;.</translation>
 <translation id="7876243839304621966">הסר הכל</translation>
 <translation id="5663459693447872156">עבור באופן אוטומטי לחצי רוחב</translation>
 <translation id="8900820606136623064">הונגרית</translation>
@@ -4491,6 +4680,7 @@
 <translation id="9056034633062863292">‏עדכון Chromebox</translation>
 <translation id="1128987120443782698">‏התקן האחסון הוא בעל קיבולת של <ph name="DEVICE_CAPACITY"/>. הכנס כרטיס SD או מקל זיכרון USB עם קיבולת של ‎4GB לפחות.</translation>
 <translation id="869257642790614972">פתח מחדש את הכרטיסייה האחרונה שנסגרה</translation>
+<translation id="1364639026564874341">‏השאר את מכשיר ה-<ph name="DEVICE_TYPE"/> לא נעול כל עוד הטלפון נמצא בקרבת מקום ואינו נעול. שים לב - Bluetooth יופעל בכל המכשירים התואמים של <ph name="USER_DISPLAY_EMAIL"/>פרטי חומרה מסוימים יישלחו אל Google. &lt;a&gt;למידע נוסף&lt;/a&gt;</translation>
 <translation id="4707302005824653064">‏המנהל (<ph name="CUSTODIAN_EMAIL"/>) יכול לבדוק את נתוני השימוש וההיסטוריה באתר chrome.com.</translation>
 <translation id="3665371460012342183">הפעל את הבועה שגודלה ניתן לשינוי, אשר מופיעה במסכי מגע בעת נגיעה בטעות במספר קישורים בו-זמנית.</translation>
 <translation id="3978267865113951599">(קריסה)</translation>
@@ -4548,10 +4738,12 @@
 <translation id="713888829801648570">מצטערים, לא ניתן לאמת את סיסמתך מכיוון שאתה במצב לא מקוון.</translation>
 <translation id="7464861219980961605">מחק סיסמאות שמורות</translation>
 <translation id="7507930499305566459">אישור מגיב סטטוס</translation>
+<translation id="8990541431840429284">שלח כתובת אתר</translation>
 <translation id="5831217499016131155">‏ארנק Google</translation>
 <translation id="3958088479270651626">יבא סימניות והגדרות</translation>
 <translation id="8518865679229538285">שיטת קלט טמילית (מכונת כתיבה)</translation>
 <translation id="1545177026077493356">מצב קיוסק אוטומטי</translation>
+<translation id="8570618730045879048">האתר נחסם עקב הכנסה ידנית לרשימה שחורה.</translation>
 <translation id="7792486981525357145">‏הוסף את המדפסת אל Google Cloud Print כך שתוכל להדפיס מכל מקום.</translation>
 <translation id="4557136421275541763">אזהרה:</translation>
 <translation id="3872687746103784075">‏ניקוי באגים מבוסס Native Client GDB</translation>
@@ -4574,6 +4766,7 @@
 <translation id="7339763383339757376">‏PKCS #7, אישור יחיד</translation>
 <translation id="7587108133605326224">בלטית</translation>
 <translation id="3340978935015468852">הגדרות</translation>
+<translation id="4562982562425894419">‏Chromebook יכול עכשיו:</translation>
 <translation id="3581912141526548234">‏אכיפה (נסה לקבל hashes, ואכוף אותם אם התקבלו בהצלחה)</translation>
 <translation id="2127961234480775624">‏נהל מרחוק סיסמאות ב|חשבון Google| שלך</translation>
 <translation id="3991936620356087075">‏הזנת את המפתח השגוי של ביטול הנעילה של ה-PIN יותר מדי פעמים. כרטיס ה-SIM שלך הושבת לצמיתות.</translation>
@@ -4588,6 +4781,7 @@
 <translation id="7945967575565699145">‏פרוטוקול QUIC ניסיוני.</translation>
 <translation id="5187295959347858724">‏נכנסת ל-<ph name="SHORT_PRODUCT_NAME"/>. הסימניות, ההיסטוריה והגדרות אחרות שלך מסתנכרנות עם חשבון Google שלך.</translation>
 <translation id="2421956571193030337">השתמש בתכונה זו עם חשבונות מהימנים בלבד.</translation>
+<translation id="223714078860837942">אם דף לא קבע מדיניות מפורשת לגורמים מפנים, הגדרת סימון זה תקטין את כמות המידע בכותרת 'הגורם המפנה' לבקשות ממקורות צולבים.</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="444267095790823769">חריגים בתוכן מוגן</translation>
 <translation id="7419106976560586862">נתיב פרופיל</translation>
@@ -4617,6 +4811,7 @@
 <translation id="6187344976531853059">העברת חלונות לשולחן עבודה אחר עלולה לגרום להתנהגות בלתי צפויה.</translation>
 <translation id="1839913225882990152">ספר לנו מה קורה.</translation>
 <translation id="3936390757709632190">&amp;פתח שמע בכרטיסייה חדשה</translation>
+<translation id="8559748832541950395">באפשרותך לשנות הגדרה זו או <ph name="BEGIN_LINK"/>לנהל את הנתונים הפרטיים שלך<ph name="END_LINK"/> מתי שתרצה. זכור שכאשר תכונת 'פעילות קול ואודיו' מופעלת, ניתן לשמור נתונים אלה מכל אחד מהמכשירים המחוברים שלך.</translation>
 <translation id="143027896309062157">קריאה ושינוי של כל הנתונים במחשב שלך ובאתרים שבהם אתה מבקר</translation>
 <translation id="3296763833017966289">גיאורגית</translation>
 <translation id="2242687258748107519">פרטי קובץ</translation>
@@ -4653,6 +4848,7 @@
 <translation id="7278870042769914968">‏השתמש בעיצוב GTK+‎</translation>
 <translation id="4501530680793980440">אשר הסרה</translation>
 <translation id="6456623799351433175">אישור הפעלת היישום</translation>
+<translation id="8737709691285775803">Shill</translation>
 <translation id="1902576642799138955">תקופת תוקף</translation>
 <translation id="1883460408637458805">טרהבייטים</translation>
 <translation id="4910021444507283344">WebGL</translation>
@@ -4673,6 +4869,24 @@
 <translation id="437184764829821926">הגדרות גופן מתקדמות</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="9052208328806230490">רשמת את המדפסות שלך ב-<ph name="CLOUD_PRINT_NAME"/> באמצעות החשבון <ph name="EMAIL"/></translation>
+<translation id="2803887722080936828">‏<ph name="BEGIN_H3"/>תכונות של ניקוי באגים<ph name="END_H3"/>
+<ph name="BR"/>
+ניתן להפעיל את תכונות ניקוי הבאגים במכשיר ה-Chrome כדי לבצע במכשיר התקנה ובדיקה של קוד בהתאמה אישית. כך תוכל:<ph name="BR"/>
+<ph name="BEGIN_LIST"/>
+<ph name="LIST_ITEM"/>להסיר אימות rootfs כדי לשנות קבצים במערכת ההפעלה
+<ph name="LIST_ITEM"/>להפעיל גישת SSH אל המכשיר באמצעות מקשי הבדיקה הרגילים, כדי שתוכל להשתמש בכלים כמו <ph name="BEGIN_CODE"/>'cros flash'<ph name="END_CODE"/> על מנת לגשת למכשיר
+<ph name="LIST_ITEM"/>להפעיל אתחול באמצעות USB כדי להתקין תמונה של מערכת ההפעלה מכונן USB
+<ph name="LIST_ITEM"/>להגדיר ערך מותאם אישית עבור סיסמת ההתחברות לשורש המערכת ולערוץ הפיתוח על מנת לגשת אל המכשיר באופן ידני באמצעות SSH
+<ph name="END_LIST"/>
+<ph name="BR"/>
+לאחר ההפעלה, רוב התכונות של ניקוי הבאגים יישארו פעילות, גם לאחר ביצוע Powerwash או מחיקה של הנתונים במכשיר ארגוני מנוהל. כדי להשבית באופן מלא את כל תכונות ניקוי הבאגים, בצע את תהליך השחזור של מערכת ההפעלה של Chrome‏ (https://support.google.com/chromebook/answer/1080595).
+<ph name="BR"/>
+<ph name="BR"/>
+למידע נוסף על תכונות ניקוי הבאגים, בקר בכתובת:<ph name="BR"/>
+http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
+<ph name="BR"/>
+<ph name="BR"/>
+<ph name="BEGIN_BOLD"/>שים לב:<ph name="END_BOLD"/> המערכת תבצע אתחול בזמן התהליך.</translation>
 <translation id="7674629440242451245">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את הערוץ שלנו למפתחים בכתובת chrome.com/dev.</translation>
 <translation id="7818135753970109980">עיצוב חדש נוסף (<ph name="EXTENSION_NAME"/>)</translation>
 <translation id="5448293924669608770">אופס. משהו השתבש בכניסה לחשבון</translation>
@@ -4697,6 +4911,7 @@
 <translation id="3163460631729938959">הצג הרשאות</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="3551117997325569860">‏כדי לשנות את שרת ה-Proxy, הפוך את ההגדרה &quot;<ph name="USE_SHARED_PROXIES"/>&quot; לפעילה.</translation>
+<translation id="2810731435681289055">‏בפעם הבאה שתבטל נעילה של <ph name="DEVICE_TYPE"/> זה, מערכת Smart Lock תתעדכן כך שתוכל פשוט ללחוץ על התמונה כדי להיכנס.</translation>
 <translation id="6268747994388690914">‏יבוא סימניות מקובץ HTML...</translation>
 <translation id="6096047740730590436">פתח בגודל מרבי</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -4756,11 +4971,16 @@
 <translation id="7269802741830436641">דף אינטרנט זה מכיל לולאת כתובת אתר להפניה מחדש</translation>
 <translation id="4180788401304023883">‏למחוק את אישור CA של &quot;<ph name="CERTIFICATE_NAME"/>&quot;?</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
+<translation id="4918021164741308375"><ph name="ORIGIN"/> רוצה לתקשר עם התוסף&quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="2089090684895656482">פחות</translation>
+<translation id="2020716932700893720">מייבא $1 קבצים...</translation>
+<translation id="3151551617779652190">‏הפעל proxy עוקף להרשאת פורטל חובה</translation>
 <translation id="6656103420185847513">ערוך תיקייה</translation>
+<translation id="1937256809970138538">‏אמור &quot;Ok Google&quot; כשהמסך פועל ואינו נעול</translation>
 <translation id="4918241738772068049">יש צורך בפעולה על מנת להתחבר</translation>
 <translation id="1949433054743893124">מעבר למצב גלישה בסתר לא מסתיר את הגלישה שלך מהמעסיק, מספק האינטרנט או מהאתרים שבהם אתה מבקר.</translation>
 <translation id="4193154014135846272">‏מסמך Google</translation>
+<translation id="8297988703329826657">מקלדת וירטואלית אוטומטית</translation>
 <translation id="4771973620359291008">‏אירעה שגיאה לא מוכרת.
 
 
@@ -4778,11 +4998,13 @@ Del</translation>
 <translation id="7716284821709466371">ברירת מחדל של גובה אריח</translation>
 <translation id="978146274692397928">רוחב סימן הפיסוק הראשוני הוא מלא</translation>
 <translation id="4775266380558160821">‏אפשר תמיד יישומי פלאגין שאינם מבוססי ארגז חול (sandbox) ב-<ph name="HOST"/></translation>
+<translation id="6324839205543480136">‏לא מצליח למצוא את הטלפון. ודא שהוא בטווח הושטת יד ושה-Bluetooth פועל.</translation>
 <translation id="497244430928947428">מקלדת מליאלאם (פונטית)</translation>
 <translation id="6921812972154549137">‏קובצי Cookie ונתוני אתר ופלאגין נוספים.</translation>
 <translation id="8137559199583651773">נהל תוספים</translation>
 <translation id="6886871292305414135">פתח קישור &amp;בכרטיסייה חדשה</translation>
 <translation id="4499634737431431434">שבועות</translation>
+<translation id="5863445608433396414">הפעל תכונות איתור באגים</translation>
 <translation id="7961015016161918242">אף פעם</translation>
 <translation id="3950924596163729246">אין אפשרות לגשת לרשת.</translation>
 <translation id="5212461935944305924">‏חריגים של קובצי Cookie ונתוני אתר</translation>
@@ -4792,6 +5014,7 @@ Del</translation>
 <translation id="4631110328717267096">עדכון המערכת נכשל.</translation>
 <translation id="3695919544155087829">הזן את הסיסמה שבה השתמשת כדי להצפין קובץ אישור זה.</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="3356580349448036450">בוצע</translation>
 <translation id="2509857212037838238">התקן את <ph name="PLUGIN_NAME"/></translation>
 <translation id="2943400156390503548">שקופיות</translation>
 <translation id="3790146417033334899"><ph name="PLUGIN_NAME"/> פועל בשולחן העבודה בלבד.</translation>
@@ -4821,10 +5044,13 @@ Del</translation>
 <translation id="7496192982082800780">ימים</translation>
 <translation id="1122198203221319518">&amp;כלים</translation>
 <translation id="5751545372099101699">פריט מדף 4</translation>
+<translation id="6402990355583388081">מאפשר תכונת ריחוף באמצעות החזקת האצבע מעט מעל המסך כדי לדמות אירוע של העברת העכבר מעל לפריט.</translation>
 <translation id="5132929315877954718">‏גלה יישומים, משחקים, תוספים ועיצובים מעולים עבור Google Chrome.</translation>
 <translation id="6051028581720248124">‏על ידי הדפסה ל-FedEx Office, אתה מקבל את <ph name="START_LINK"/>תנאי השימוש<ph name="END_LINK"/> שלהם.</translation>
 <translation id="5435226530530647560">יציאה לא תקינה</translation>
+<translation id="207439088875642105">זהו חשבון עבור ילדים, המנוהל על-ידי <ph name="FIRST_PARENT_EMAIL"/> ועל-ידי <ph name="SECOND_PARENT_EMAIL"/></translation>
 <translation id="1979718561647571293">האם זהו דף הפתיחה שציפית לראות?</translation>
+<translation id="111207713573793441">‏תקשר עם <ph name="NUMBER_OF_DEVICES"/> מכשירי USB.</translation>
 <translation id="6608140561353073361">‏כל קובצי ה-Cookies ונתוני האתר...</translation>
 <translation id="6485131920355264772">נכשל בקבלת מידע על שטח האחסון</translation>
 <translation id="6547316139431024316">אל תציג שוב אזהרה עבור התוסף הזה</translation>
@@ -4846,6 +5072,7 @@ Del</translation>
 <translation id="8722421161699219904">מקלדת בינ&quot;ל של ארה&quot;ב</translation>
 <translation id="4345703751611431217">חוסר תאימות של תוכנה: למידע נוסף</translation>
 <translation id="7148311641502571842"><ph name="PLUGIN_NAME"/> הושבת. כדי להפעילו מחדש, עבור אל <ph name="CHROME_PLUGINS_LINK"/>.</translation>
+<translation id="6231881193380278751">‏הוסף פרמטר שאילתה בכתובת האתר כדי לרענן את הדף באופן אוטומטי: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="3258281577757096226">‏‎3 Set‎ (סופי)</translation>
 <translation id="973473557718930265">צא</translation>
 <translation id="6906268095242253962">התחבר לאינטרנט כדי להמשיך.</translation>
@@ -4857,6 +5084,7 @@ Del</translation>
 <translation id="4189406272289638749">‏ההגדרה הזו נמצאת בשליטה של תוסף - &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;.</translation>
 <translation id="803771048473350947">קובץ</translation>
 <translation id="8037117027592400564">קריאת כל הטקסט הנאמר באמצעות דיבור מסונתז</translation>
+<translation id="1519759545815312682">פעילות קול ואודיו מופעלת עבור <ph name="USER_EMAIL"/>.</translation>
 <translation id="6206311232642889873">העת&amp;ק תמונה</translation>
 <translation id="5158983316805876233">‏השתמש באותו שרת proxy עבור כל הפרוטוקולים</translation>
 <translation id="7108338896283013870">הסתר</translation>
@@ -4930,6 +5158,7 @@ Del</translation>
 <translation id="1097658378307015415">לפני הכניסה לחשבון, היכנס כאורח כדי להפעיל את הרשת <ph name="NETWORK_ID"/></translation>
 <translation id="5170477580121653719">‏שטח אחסון שנותר ב-Google Drive‏: <ph name="SPACE_AVAILABLE"/>.</translation>
 <translation id="4114470632216071239">‏נעל כרטיס SIM (דרוש PIN לשימוש בנתונים לנייד)</translation>
+<translation id="8570598320156947604">מעבד...</translation>
 <translation id="6581162200855843583">‏קישור ל-Google Drive</translation>
 <translation id="5783221160790377646">עקב שגיאה, לא נוצר משתמש בפיקוח. נסה שוב מאוחר יותר.</translation>
 <translation id="340771324714262530">הפסק שיקוף</translation>
@@ -4952,6 +5181,7 @@ Del</translation>
 <translation id="6251889282623539337">תנאים והגבלות של <ph name="DOMAIN"/></translation>
 <translation id="1952456732281820252">האם להוסיף קיצור דרך?</translation>
 <translation id="2470702053775288986">תוספים שלא נתמכים הושבתו</translation>
+<translation id="4047112090469382184">כיצד נשמרת האבטחה</translation>
 <translation id="5461512418490148136">רק שניה. קפצנו להביא את הקבצים שלך.</translation>
 <translation id="4268574628540273656">כתובת אתר:</translation>
 <translation id="2766585356456507052">הזהות של <ph name="ORGANIZATION"/> ב-<ph name="LOCALITY"/> אומתה על ידי <ph name="ISSUER"/>, הוא טוען שיש לו רשומות ביקורת ציבוריות, אך לא ניתן לאמת אותן.</translation>
@@ -4983,6 +5213,7 @@ Del</translation>
 <translation id="2632795170092344386">‏נקה קובצי Cookie ונתונים אחרים של אתרים ויישומי פלאגין כשאתה סוגר את הדפדפן</translation>
 <translation id="4146026355784316281">פתח תמיד באמצעות מציג המערכת</translation>
 <translation id="5941864346249299673">מספר הבייטים שנקראו בכל הרשת</translation>
+<translation id="367645871420407123">‏השאר ריק אם ברצונך להגדיר את סיסמת root לערך תמונת בדיקת ברירת המחדל</translation>
 <translation id="3030138564564344289">נסה שוב להוריד</translation>
 <translation id="2603463522847370204">פתח בחלון &amp;גלישה בסתר</translation>
 <translation id="1035094536595558507">תצוגת שקופיות</translation>
@@ -5019,6 +5250,7 @@ Del</translation>
 <translation id="1984603991036629094">מקלדת פונטית ארמנית</translation>
 <translation id="3046910703532196514">דף אינטרנט, שלם</translation>
 <translation id="5062930723426326933">הכניסה נכשלה. התחבר לאינטרנט ונסה שוב.</translation>
+<translation id="3444783709767514481">שעת השידור הראשון</translation>
 <translation id="5316716239522500219">שיקוף צגים</translation>
 <translation id="9112614144067920641">‏בחר PIN חדש.</translation>
 <translation id="1338950911836659113">מוחק...</translation>
@@ -5035,6 +5267,7 @@ Del</translation>
 <translation id="6643016212128521049">נקה</translation>
 <translation id="3633997706330212530">יש לך אפשרות להשבית שירותים אלה.</translation>
 <translation id="426015154560005552">מקלדת ערבית</translation>
+<translation id="6793649375377511437">‏מידע נוכחות משותפת של Google</translation>
 <translation id="4335713051520279344">מחשב זה יופעל מחדש בעוד שניה אחת.
 הקש על מקש כלשהו כדי להמשיך בסיור.</translation>
 <translation id="4775135101712609478">הצג בקשות להרשאות תוכן (לדוגמה, הודעות, מכסה, שימוש במצלמה, שימוש במיקרופון) בבועות במקום בסרגלי מידע.</translation>
@@ -5074,6 +5307,7 @@ Del</translation>
 <translation id="711840821796638741">הצג סימניות מנוהלות</translation>
 <translation id="3360297538363969800">ההדפסה נכשלה. בדוק את המדפסת ונסה שוב.</translation>
 <translation id="680572642341004180">‏הפעל מעקב RLZ ב-<ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
+<translation id="5061188462607594407">אבטח את ה-<ph name="PHONE_TYPE"/> כדי להמשיך</translation>
 <translation id="4746971725921104503">נראה שאתה כבר מנהל משתמש בשם הזה. האם רצית <ph name="LINK_START"/>לייבא את <ph name="USER_DISPLAY_NAME"/> אל המכשיר הזה<ph name="LINK_END"/>?</translation>
 <translation id="8142699993796781067">רשת פרטית</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME"/> רוצה לשתף את תוכן המסך שלך. בחר את התוכן שברצונך לשתף.</translation>
@@ -5102,6 +5336,7 @@ Del</translation>
 <translation id="1405126334425076373">סמן העכבר</translation>
 <translation id="2796424461616874739">פג הזמן הקצוב של אימות בעת ההתחברות ל-&quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="6096326118418049043">‏שם X.500</translation>
+<translation id="7634566076839829401">משהו השתבש. נסה שוב.</translation>
 <translation id="923467487918828349">הצג הכל</translation>
 <translation id="8180786512391440389">&quot;<ph name="EXTENSION"/>&quot; יכול לקרוא ולמחוק קובצי תמונות, וידאו ואודיו במיקומים המסומנים.</translation>
 <translation id="8054517699425078995">קובץ מסוג זה יכול לפגוע במכשיר שלך. האם אתה רוצה לשמור את <ph name="FILE_NAME"/> בכל זאת?</translation>
@@ -5147,6 +5382,7 @@ Del</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="4196861286325780578">&amp;ביצוע מחדש של העברה</translation>
 <translation id="5075306601479391924">השבת את הצורך בתנועת משתמש להפעלה של רכיבי מדיה. הפעלת התכונה הזו תאפשר הפעלה אוטומטית.</translation>
+<translation id="4872789845503416415">‏כדי לסייע ל-Chromebook להגיב לפקודותיך וכדי ליהנות מחיפוש קולי אמין ונוח, עליך ללמד את Google את צליל קולך.</translation>
 <translation id="4377363674125277448">הייתה בעיה באישור השרת.</translation>
 <translation id="9112748030372401671">שינוי הטפט שלך</translation>
 <translation id="8938356204940892126">אני מוותר</translation>
@@ -5154,6 +5390,7 @@ Del</translation>
 <translation id="7839804798877833423">הבאת קבצים אלה תשתמש בערך ב-<ph name="FILE_SIZE"/> של נתונים לנייד.</translation>
 <translation id="3268451620468152448">כרטיסיות פתוחות</translation>
 <translation id="4918086044614829423">אשר</translation>
+<translation id="5167131699331641907">מקלדת להולנד</translation>
 <translation id="7401762151840183030">‏ההגדרות שלך יוחזרו לברירת המחדל המקורית שלהן. הפעולה הזו תגרום לאיפוס דף הבית, דף הכרטיסייה החדשה ומנוע החיפוש, תשבית את התוספים ותבטל את ההצמדה של כל הכרטיסיות. היא גם תמחק נתונים אחרים מאחסון זמני ומהקובץ השמור, כמו נתונים של קובצי cookie, תוכן ואתרים.</translation>
 <translation id="4085298594534903246">‏JavaScript נחסם בדף זה.</translation>
 <translation id="7825543042214876779">נחסם על ידי המדיניות</translation>
@@ -5194,6 +5431,7 @@ Del</translation>
 <translation id="3184560914950696195">לא ניתן לשמור ב-$1. תמונות ערוכות יישמרו בתיקיית ההורדות.</translation>
 <translation id="8366396658833131068">קישוריות הרשת שלך התחדשה. בחר רשת אחרת או לחץ על הלחצן 'המשך' שלמטה כדי להפעיל את יישום הקיוסק.</translation>
 <translation id="4664482161435122549">‏שגיאת ייצוא של PKCS #12</translation>
+<translation id="3811328435734979057">הפעל את המערכת החדשה של אפליקציה ליצירת סימניות.</translation>
 <translation id="2445081178310039857">ספריית הבסיס של ההרחבה נחוצה.</translation>
 <translation id="146187176629751223">‏משתתף ב-Hangout זה הציע לעזור לך על ידי השתלטות על המחשב שלך. אם אתה מאשר כי:
 
@@ -5211,6 +5449,7 @@ Del</translation>
 <translation id="2085470240340828803">כבר קיים קובץ בשם &quot;<ph name="FILENAME"/>&quot;. מה ברצונך לעשות?</translation>
 <translation id="7088674813905715446">המכשיר הזה הועבר למצב 'ללא הקצאה' על ידי מנהל המערכת. על מנת להפעיל אותו עבור הרשמה, בקש ממנהל המערכת להעביר את המכשיר למצב המתנה.</translation>
 <translation id="3037605927509011580">אוי, לא!</translation>
+<translation id="2099172618127234427">‏אתה מאפשר תכונות איתור באגים במערכת ההפעלה של Chrome שיגדירו sshd daemon ויאפשרו אתחול מכונני USB.</translation>
 <translation id="5803531701633845775">בחר ביטויים מהסוף, מבלי להזיז את הסמן</translation>
 <translation id="1434886155212424586">דף הבית הוא הדף 'כרטיסייה חדשה'</translation>
 <translation id="2966598748518102999">‏שפר את החיפוש הקולי על ידי שליחת הצליל &quot;Ok Google,&quot; והקלטה של מספר שניות לפני כן, אל Google.</translation>
@@ -5261,6 +5500,7 @@ Del</translation>
 <translation id="3948633535993872459"><ph name="PROTOCOL"/> קישורים</translation>
 <translation id="6492313032770352219">גודל בדיסק:</translation>
 <translation id="3225919329040284222">השרת הציג אישור שאינו תואם את הציפיות המובנות. ציפיות אלה נכללות עבור אתרי אינטרנט מסוימים בעלי אבטחה גבוהה כדי להגן עליך.</translation>
+<translation id="8600748102260271062">‏השתמש בגופני Roboto בממשק המשתמש.</translation>
 <translation id="5233231016133573565">זיהוי תהליך</translation>
 <translation id="5941711191222866238">מזער</translation>
 <translation id="1478340334823509079">פרטים: <ph name="FILE_NAME"/></translation>
@@ -5290,6 +5530,7 @@ Del</translation>
 <translation id="4034042927394659004">הפחת את בהירות המקשים</translation>
 <translation id="5898154795085152510">השרת החזיר אישור לקוח לא חוקי. שגיאה <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>).</translation>
 <translation id="2704184184447774363">‏חתימה על מסמכים של Microsoft</translation>
+<translation id="1340527397989195812">גבה את המדיה מהמכשיר באמצעות אפליקציית 'קבצים'.</translation>
 <translation id="5677928146339483299">במצב חסום</translation>
 <translation id="9110990317705400362">‏אנחנו מחפשים כל הזמן דרכים לגלישה בטוחה יותר. בעבר, כל אתר יכול היה להציע לך להוסיף תוסף לדפדפן. בגרסאות האחרונות של Google Chrome, עליך לציין באופן מפורש ל-Chrome שברצונך להתקין תוספים אלה על-ידי הוספתם דרך הדף 'תוספים'. <ph name="BEGIN_LINK"/>למידע נוסף<ph name="END_LINK"/></translation>
 <translation id="4645676300727003670">&amp;שמור</translation>
@@ -5340,17 +5581,20 @@ Del</translation>
 <translation id="4732760563705710320">‏מצטערים, סרטון וידאו זה אינו נתמך במכשיר ה-cast שלך.</translation>
 <translation id="3590587280253938212">מהר</translation>
 <translation id="6053401458108962351">&amp;נקה נתוני גלישה...</translation>
+<translation id="1231728991993914119">הפעל הודעת יציאה לאפליקציות מתארחות.</translation>
 <translation id="2339641773402824483">מחפש עדכונים...</translation>
 <translation id="5770385044111747894">NPAPI</translation>
 <translation id="9111742992492686570">הורד עדכון אבטחה קריטי</translation>
 <translation id="1979280758666859181">אתה עובר לערוץ עם גרסה ישנה יותר של <ph name="PRODUCT_NAME"/>. שינוי הערוץ יוחל כאשר גרסת הערוץ תתאים לגרסה המותקנת כעת במכשיר שלך.</translation>
 <translation id="304009983491258911">‏שנה PIN של כרטיס SIM</translation>
+<translation id="7556033326131260574">‏מערכת Smart Lock לא הצליחה לאמת את חשבונך. הזן את הסיסמה שלך כדי להיכנס.</translation>
 <translation id="8600929685092827187">Wake On Packets</translation>
 <translation id="8636666366616799973">החבילה לא חוקית. פרטים: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="2045969484888636535">‏המשך לחסום קובצי Cookie</translation>
 <translation id="8131740175452115882">אישור</translation>
 <translation id="7353601530677266744">שורת פקודה </translation>
 <translation id="2766006623206032690">הדבק והמשך</translation>
+<translation id="5253753933804516447">‏הפעל את 'Ok Google' בחיפוש קולי כשהמסך פועל ואינו נעול</translation>
 <translation id="5511823366942919280">האם אתה בטוח שברצונך להגדיר מכשיר זה כ'כריש'?</translation>
 <translation id="5286673433070377078">נתיבי עיבוד מתקדמים ביותר - סבירות גבוהה לקריסת דפדפן</translation>
 <translation id="4682551433947286597">טפטים מופיעים במסך הכניסה.</translation>
@@ -5414,6 +5658,7 @@ Del</translation>
 <translation id="5233736638227740678">&amp;הדבק</translation>
 <translation id="1828901632669367785">הדפס באמצעות תיבת דו-שיח של המערכת...</translation>
 <translation id="1801298019027379214">‏PIN שגוי, נסה שוב. ניסיונות שנותרו: <ph name="TRIES_COUNT"/></translation>
+<translation id="7352651011704765696">משהו השתבש</translation>
 <translation id="992543612453727859">הוסף ביטויים לפני</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
 <translation id="7127980134843952133">היסטוריית הורדות</translation>

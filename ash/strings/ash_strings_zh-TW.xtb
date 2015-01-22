@@ -43,6 +43,7 @@
 <translation id="3891340733213178823">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
 <translation id="5871632337994001636">管理裝置...</translation>
 <translation id="785750925697875037">查看行動帳戶</translation>
+<translation id="8356164830168736643">關閉「<ph name="WINDOW_TITLE"/>」</translation>
 <translation id="7864539943188674973">停用藍牙</translation>
 <translation id="939252827960237676">無法儲存螢幕擷取畫面</translation>
 <translation id="9080206825613744995">麥克風正在使用中。</translation>
@@ -70,6 +71,7 @@
 <translation id="7823564328645135659">同步處理您的設定後，系統已將語言從「<ph name="FROM_LOCALE"/>」變更為「<ph name="TO_LOCALE"/>」。</translation>
 <translation id="3606978283550408104">已連接點字顯示器。</translation>
 <translation id="8654520615680304441">開啟 Wi-Fi...</translation>
+<translation id="4421231901400348175">透過遠端協助與<ph name="HELPER_NAME"/>分享螢幕控制功能。</translation>
 <translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限，請在裝置上輸入此密碼金鑰：<ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90 度</translation>
 <translation id="5825747213122829519">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>。
@@ -145,6 +147,7 @@
 <translation id="5977415296283489383">耳機</translation>
 <translation id="225680501294068881">正在掃描裝置...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
+<translation id="5978382165065462689">透過遠端協助分享螢幕控制功能。</translation>
 <translation id="737451040872859086">麥克風 (內部)</translation>
 <translation id="2475982808118771221">發生錯誤</translation>
 <translation id="3783640748446814672">Alt</translation>

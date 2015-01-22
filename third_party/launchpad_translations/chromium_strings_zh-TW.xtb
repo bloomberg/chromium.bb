@@ -170,6 +170,7 @@
 <translation id="2648074677641340862">安裝期間發生作業系統錯誤，請重新下載 Chromium。</translation>
 <translation id="5942520288919337908">已將「<ph name="EXTENSION_NAME"/>」加到 Chromium。</translation>
 <translation id="549669000822060376">請稍候，Chromium 正在安裝最新的系統更新。</translation>
+<translation id="1240763998429950591">Chromium 無法更新至最新版本，因此您並未取得最新功能和安全性問題修正。請自行更新 Chromium。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">將某個字詞及其上下文傳送給 Google 搜尋，就會傳回字詞定義、相關圖片、搜尋結果和其他詳細資料。</translation>
 <translation id="4559775032954821361">前往
@@ -209,6 +210,7 @@
 <translation id="2966088006374919794">Chromium 需要啟用外部應用程式才能處理 <ph name="SCHEME"/> 連結。所要求的連結為 <ph name="PROTOLINK"/>。</translation>
 <translation id="2558235863893655150">您希望 Chromium 儲存密碼嗎？</translation>
 <translation id="6485906693002546646">您正使用 <ph name="PROFILE_EMAIL"/> 帳戶同步處理您的 Chromium 資料。如要更新您的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chromium，請前往 [<ph name="SETTINGS_LINK"/>]。</translation>
+<translation id="705851970750939768">更新 Chromium</translation>
 <translation id="5772805321386874569">(必須<ph name="BEGIN_BUTTON"/>重新啟動<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">設定同步處理功能，即可在網路上儲存您的個人化瀏覽器功能，並且透過任何電腦從 Chromium 使用這些功能。</translation>
 <translation id="8610831143142469229">允許 Chromium 存取受到防火牆或防毒軟體設定所阻擋的

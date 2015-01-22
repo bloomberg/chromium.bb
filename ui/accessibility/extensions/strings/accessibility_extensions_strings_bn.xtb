@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">ডিফল্ট স্কীম হিসাবে সেট করুন</translation>
 <translation id="2179565792157161713">নতুন ট্যাবে দীর্ঘ বিবরণ খুলুন</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> এর জন্য রঙের স্কীম:</translation>
+<translation id="381767806621926835">কোনো &quot;longdesc&quot; বা &quot;aria-describedat&quot; অ্যাট্রিবিউটগুলির সাথে যেকোনো কিছুর উপর ডান-ক্লিক করুন৷</translation>
+<translation id="786423340267544509">aria-describedat বা longdesc অ্যাট্রিবিউটগুলির সাথে উপাদানগুলিতে সীমানা যোগ করুন৷</translation>
 <translation id="690628312087070417">যখন ক্যারেট একটি বড় দূরত্বে সরে যায়:</translation>
 <translation id="5331422999063554397">ইনভার্টেড রঙ</translation>
 <translation id="2648340354586434750">শব্দগুলির দ্বারা সরাতে &lt;span class='key'&gt;বিকল্প&lt;/span&gt; টিপে ধরে রাখুন৷</translation>
+<translation id="4769065380738716500">চিত্রগুলিকে তাদের বিকল্প পাঠ্যের দ্বারা প্রতিস্থাপিত করা হয়েছে৷</translation>
 <translation id="5287723860611749454">&lt;p&gt;দস্তাবেজটি বরাবর সরাতে নির্দেশক তীরচিহ্নগুলি ব্যবহার করুন৷ &lt;/p&gt;&lt;p&gt;সেই অবস্থানে কার্সার সরাতে যেকোনো স্থানে ক্লিক করুন৷ &lt;/p&gt; &lt;p&gt; পাঠ্য নির্বাচন করতে &lt;span class='key'&gt;Shift&lt;/span&gt; + তীরচিহ্নগুলি টিপুন৷</translation>
 <translation id="5558600050691192317">কীবোর্ড কমান্ডগুলি</translation>
 <translation id="633394792577263429">শব্দগুলির দ্বারা সরাতে &lt;span class='key'&gt;নিয়ন্ত্রণ&lt;/span&gt; টিপে ধরে রাখুন৷</translation>

@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Aseta oletusteemaksi</translation>
 <translation id="2179565792157161713">Avaa pitkä kuvaus uudella välilehdellä</translation>
 <translation id="2471847333270902538">Sivuston <ph name="SITE"/> väriteema:</translation>
+<translation id="381767806621926835">Klikkaa hiiren kakkospainikkeella longdesc- tai aria-describedat-attribuutin sisältäviä kohteita, jos haluat nähdä niiden pitkän kuvauksen.</translation>
+<translation id="786423340267544509">Lisää reunus elementteihin, joissa on aria-describedat- tai longdesc-attribuutteja.</translation>
 <translation id="690628312087070417">Kun osoitin siirtyy pitkän välimatkan:</translation>
 <translation id="5331422999063554397">Käänteiset värit</translation>
 <translation id="2648340354586434750">Siirry sanojen mukaan painamalla &lt;span class='key'&gt;option&lt;/span&gt;-näppäintä pitkään.</translation>
+<translation id="4769065380738716500">Kuvat on korvattu niiden vaihtoehtoisella tekstillä.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Liiku dokumentissa nuolinäppäimillä. &lt;/p&gt;&lt;p&gt;Siirrä osoitin haluamaasi kohtaan klikkaamalla. &lt;/p&gt; &lt;p&gt;   Valitse tekstiä painamalla &lt;span class='key'&gt;shift&lt;/span&gt; + nuolinäppäimiä.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Näppäimistökomennot</translation>
 <translation id="633394792577263429">Liiku sanojen mukaan painamalla &lt;span class='key'&gt;control&lt;/span&gt;-näppäintä pitkään.</translation>

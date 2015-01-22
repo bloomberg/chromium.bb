@@ -172,6 +172,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2648074677641340862">Ett operativsystemsfel inträffade under installationen. Hämta Chromium igen.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> har lagts till i Chromium.</translation>
 <translation id="549669000822060376">Vänta medan de senaste systemuppdateringarna installeras av Chromium.</translation>
+<translation id="1240763998429950591">Det gick inte att uppdatera Chromium till den senaste versionen, så du går miste om några nya funktioner och säkerhetskorrigeringar. Du måste uppdatera Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">skickar ett ord med omgivande sammanhang till Google Sök och returnerar definitioner, bilder, sökresultat och annan information.</translation>
 <translation id="4559775032954821361">Öppna
@@ -211,6 +212,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="2966088006374919794">Chromium måste starta ett externt program för att kunna hantera <ph name="SCHEME"/>-länkar. Den länk som efterfrågas är <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Vill du att Chromium ska spara ditt lösenord?</translation>
 <translation id="6485906693002546646">Du synkroniserar dina grejer i Chromium med <ph name="PROFILE_EMAIL"/>. Om du vill ändra synkroniseringsinställningen eller använda Chromium utan ett Google-konto besöker du <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Uppdatera Chromium</translation>
 <translation id="5772805321386874569">(Chromium måste <ph name="BEGIN_BUTTON"/>startas om<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Konfigurera synkronisering för att spara dina webbläsarfunktioner på webben och använda dem i Chromium på alla datorer.</translation>
 <translation id="8610831143142469229">Tillåt att Chromium får åtkomst till nätverket i din brandvägg eller dina

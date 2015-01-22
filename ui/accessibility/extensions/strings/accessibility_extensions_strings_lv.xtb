@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Iestatīt kā noklusējuma shēmu</translation>
 <translation id="2179565792157161713">Atvērt garo aprakstu jaunā cilnē</translation>
 <translation id="2471847333270902538">Vietnes <ph name="SITE"/> krāsu shēma:</translation>
+<translation id="381767806621926835">Lai piekļūtu garajam aprakstam, ar peles labo pogu noklikšķiniet uz jebkura elementa, kuram ir atribūts “longdesc” vai “aria-describedat”.</translation>
+<translation id="786423340267544509">Pievienot apmali elementiem, kuriem ir atribūts “aria-describedat” vai “longdesc”.</translation>
 <translation id="690628312087070417">Kad kursors tiek pārvietots ļoti tālu</translation>
 <translation id="5331422999063554397">Apgrieztas krāsas</translation>
 <translation id="2648340354586434750">Lai pārvietotos pa vārdiem, turiet nospiestu taustiņu &lt;span class='key'&gt;Option&lt;/span&gt;.</translation>
+<translation id="4769065380738716500">Attēli ir aizstāti, izmantojot to alternatīvo tekstu.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Lai pārvietotos visā dokumentā, izmantojiet bulttaustiņus. &lt;/p&gt;&lt;p&gt;Lai pārvietotu kursoru uz kādu vietu, noklikšķiniet attiecīgajā vietā. &lt;/p&gt; &lt;p&gt;Lai atlasītu tekstu, nospiediet taustiņu &lt;span class='key'&gt;Shift&lt;/span&gt; un attiecīgo bultiņu.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Tastatūras komandas</translation>
 <translation id="633394792577263429">Lai pārvietotos pa vārdiem, turiet nospiestu taustiņu &lt;span class='key'&gt;Control&lt;/span&gt;.</translation>

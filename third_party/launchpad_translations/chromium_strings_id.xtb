@@ -59,7 +59,7 @@
 <translation id="872034308864968620">Jalankan Chromium di Latar Belakang</translation>
 <translation id="459535195905078186">Aplikasi Chromium</translation>
 <translation id="5109068449432240255">Ya, keluar dari Chromium</translation>
-<translation id="8134284582177628525">Jika Anda berbagi komputer dengan <ph name="PROFILE_NAME"/>, tambahkan diri Anda ke Chromium untuk menjelajah secara terpisah. Jika tidak putuskan Akun Google-nya.</translation>
+<translation id="8134284582177628525">Jika Anda berbagi komputer dengan <ph name="PROFILE_NAME"/>, tambahkan diri Anda ke Chromium untuk menjelajah secara terpisah. Jika tidak, putuskan Akun Google-nya.</translation>
 <translation id="1480489203462860648">Cobalah, ini sudah dipasang</translation>
 <translation id="3032787606318309379">Menambahkan Chromium...</translation>
 <translation id="4831257561365056138">Copot pemasangan Peluncur Aplikasi Chromium</translation>
@@ -106,7 +106,7 @@
 <translation id="5466153949126434691">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru. Saat unduhan ini selesai, Chromium akan dimulai ulang dan siap digunakan.</translation>
 <translation id="7707841053049645517">Situs ini menggunakan konten digital Chromium Frame yang akan segera tidak didukung. Copot pemasangannya dan tingkatkan versi ke browser modern.</translation>
 <translation id="3656661827369545115">Meluncurkan Chromium secara otomatis saat komputer Anda dimulai</translation>
-<translation id="2241627712206172106">Jika Anda berbagi komputer, teman dan keluarga dapat menjelajah secara terpisah dan menyiapkan Chromium sesuai keinginan mereka.</translation>
+<translation id="2241627712206172106">Jika Anda berbagi komputer, teman dan keluarga bisa menjelajah secara terpisah dan menyiapkan Chromium sesuai keinginannya.</translation>
 <translation id="1763864636252898013">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN"/>; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="6055895534982063517">Tersedia Chromium versi baru, dan versi ini lebih cepat dari sebelumnya.</translation>
 <translation id="8821041990367117597">Chromium tidak dapat menyinkronkan data karena detail proses masuk Anda sebelum diperbarui.</translation>
@@ -171,6 +171,7 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE"/>, ata
 <translation id="2648074677641340862">Terjadi kesalahan pada sistem operasi saat pemasangan berlangsung. Unduh Chromium lagi.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> telah ditambahkan ke Chromium.</translation>
 <translation id="549669000822060376">Harap tunggu selagi Chromium memasang pembaruan sistem terkini.</translation>
+<translation id="1240763998429950591">Chromium tidak dapat diperbarui ke versi terkini, sehingga Anda tidak memiliki fitur dan perbaikan keamanan paling mutakhir. Anda perlu memperbarui Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">mengirim kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, dan detail lain.</translation>
 <translation id="4559775032954821361">Buka
@@ -210,6 +211,7 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="2966088006374919794">Chromium harus meluncurkan aplikasi eksternal untuk menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Apakah Anda ingin Chromium menyimpan sandi Anda?</translation>
 <translation id="6485906693002546646">Anda menggunakan <ph name="PROFILE_EMAIL"/> untuk menyinkronkan barang-barang Chromium. Untuk memperbarui preferensi sinkronisasi atau menggunakan Chromium tanpa akun Google, kunjungi <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Perbarui Chromium</translation>
 <translation id="5772805321386874569">(Chromium perlu <ph name="BEGIN_BUTTON"/>dimulai ulang<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Chromium di komputer mana saja.</translation>
 <translation id="8610831143142469229">Izinkan Chromium untuk mengakses jaringan di setelan firewall atau antivirus

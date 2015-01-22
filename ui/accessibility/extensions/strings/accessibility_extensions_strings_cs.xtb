@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Nastavit jako výchozí schéma</translation>
 <translation id="2179565792157161713">Otevřít dlouhý popis na nové kartě</translation>
 <translation id="2471847333270902538">Barevné schéma webu <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Kliknutím pravým tlačítkem na libovolný prvek s atributem „longdesc“ nebo „aria-describedat“ získáte jeho dlouhý popis.</translation>
+<translation id="786423340267544509">Přidat k prvkům s atributem aria-describedat nebo longdesc ohraničení.</translation>
 <translation id="690628312087070417">Když kurzor přeskočí o velkou vzdálenost:</translation>
 <translation id="5331422999063554397">Převrácené barvy</translation>
 <translation id="2648340354586434750">Chcete-li se pohybovat po jednotlivých slovech, přidržte klávesu &lt;span class='key'&gt;Option&lt;/span&gt;.</translation>
+<translation id="4769065380738716500">Obrázky byly nahrazeny textem z atributu alt.</translation>
 <translation id="5287723860611749454">&lt;p&gt;V dokumentu se můžete pohybovat pomocí kláves s šipkami. &lt;/p&gt;&lt;p&gt;Chcete-li přesunout kurzor, klikněte na libovolné místo. &lt;/p&gt; &lt;p&gt; Chcete-li vybrat text, stiskněte klávesy se šipkami a přidržte klávesu &lt;span class='key'&gt;Shift&lt;/span&gt;.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Klávesové příkazy</translation>
 <translation id="633394792577263429">Chcete-li se pohybovat po jednotlivých slovech, přidržte klávesu &lt;span class='key'&gt;Control&lt;/span&gt;.</translation>

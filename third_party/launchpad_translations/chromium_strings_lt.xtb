@@ -172,6 +172,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2648074677641340862">Diegiant įvyko operacinės sistemos klaida. Atsisiųskite „Chromium“ dar kartą.</translation>
 <translation id="5942520288919337908">„<ph name="EXTENSION_NAME"/>“ pridėtas prie „Chromium“.</translation>
 <translation id="549669000822060376">Palaukite, kol „Chromium“ įdiegs naujausius sistemos naujinius.</translation>
+<translation id="1240763998429950591">Nepavyko atnaujinti „Chromium“ į naujausią versiją, todėl negalėsite naudoti naujų funkcijų ir nebus išspręstos problemos dėl saugumo. Turite atnaujinti „Chromium“.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">nusiuntus žodį ir jo kontekstą „Google“ paieškai, gaunamos apibrėžtys, paveikslėliai, paieškos rezultatai ir kita išsami informacija.</translation>
 <translation id="4559775032954821361">Eikite į 
@@ -211,6 +212,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="2966088006374919794">„Chromium“ reikia paleisti išorinę programą, skirtą „<ph name="SCHEME"/>“ nuorodoms tvarkyti. Nuoroda, dėl kurios pateikta užklausa, yra <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Ar norite, kad „Chromium“ išsaugotų jūsų slaptažodį?</translation>
 <translation id="6485906693002546646">Sinchronizuoti „Chromium“ duomenims naudojate <ph name="PROFILE_EMAIL"/>. Jei norite atnaujinti sinchronizavimo nuostatą arba naudoti „Chromium“ be „Google“ paskyros, apsilankykite <ph name="SETTINGS_LINK"/> skiltyje.</translation>
+<translation id="705851970750939768">Atnaujinti „Chromium“</translation>
 <translation id="5772805321386874569">(„Chromium“ būtina <ph name="BEGIN_BUTTON"/>paleisti iš naujo<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Nustatykite sinchronizavimą, kad žiniatinklyje išsaugotumėte suasmenintas naršyklės funkcijas ir pasiektumėte jas iš „Chromium“ bet kuriuo kompiuteriu.</translation>
 <translation id="8610831143142469229">Leiskite „Chromium“ pasiekti tinklą užkardos ar antivirusinės

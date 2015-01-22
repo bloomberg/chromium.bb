@@ -43,6 +43,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="3891340733213178823">Presiona Ctrl + Mayús + Q dos veces para salir.</translation>
 <translation id="5871632337994001636">Administrar dispositivos…</translation>
 <translation id="785750925697875037">Ver cuenta móvil</translation>
+<translation id="8356164830168736643">Cerrar <ph name="WINDOW_TITLE"/></translation>
 <translation id="7864539943188674973">Desactivar Bluetooth</translation>
 <translation id="939252827960237676">No se pudo guardar la captura de pantalla.</translation>
 <translation id="9080206825613744995">El micrófono está en uso.</translation>
@@ -70,6 +71,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="7823564328645135659">Después de sincronizar tu configuración, el idioma se cambió de &quot;<ph name="FROM_LOCALE"/>&quot; a &quot;<ph name="TO_LOCALE"/>&quot;.</translation>
 <translation id="3606978283550408104">Dispositivo braille conectado</translation>
 <translation id="8654520615680304441">Encender Wi-Fi...</translation>
+<translation id="4421231901400348175">Se está compartiendo el control de la pantalla con <ph name="HELPER_NAME"/> mediante la Asistencia remota.</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; solicita permiso para sincronizarse. Ingresa la siguiente clave de contraseña en el dispositivo: <ph name="PASSKEY"/>.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Tu método de introducción cambió a <ph name="INPUT_METHOD_ID"/>.
@@ -145,6 +147,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="5977415296283489383">Auriculares</translation>
 <translation id="225680501294068881">Buscando dispositivos...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
+<translation id="5978382165065462689">Se está compartiendo el control de la pantalla mediante la Asistencia remota.</translation>
 <translation id="737451040872859086">Micrófono (interno)</translation>
 <translation id="2475982808118771221">Se ha producido un error</translation>
 <translation id="3783640748446814672">alt</translation>

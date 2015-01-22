@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Imposta come schema predefinito</translation>
 <translation id="2179565792157161713">Apri descrizione dettagliata in una nuova scheda</translation>
 <translation id="2471847333270902538">Combinazione di colori per <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Fai clic con il pulsante destro del mouse su qualsiasi elemento con attributo &quot;longdesc&quot; o &quot;aria-describedat&quot; per accedere alla relativa descrizione dettagliata.</translation>
+<translation id="786423340267544509">Aggiungi bordo a elementi con attributi aria-describedat o longdesc.</translation>
 <translation id="690628312087070417">Quando il cursore salta a un'altra parte lontana:</translation>
 <translation id="5331422999063554397">Colore invertito</translation>
 <translation id="2648340354586434750">Tieni premuto &lt;span class='key'&gt;Opzione&lt;/span&gt; per spostarti per parole.</translation>
+<translation id="4769065380738716500">Le immagini sono state sostituite dal rispettivo testo alternativo.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Premi i tasti freccia per spostarti nel documento. &lt;/p&gt;&lt;p&gt;Fai clic su un punto qualsiasi per spostare il cursore in tale punto. &lt;/p&gt; &lt;p&gt; Premi &lt;span class='key'&gt;Maiusc&lt;/span&gt; + frecce per selezionare il testo.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Comandi da tastiera</translation>
 <translation id="633394792577263429">Tieni premuto &lt;span class='key'&gt;Ctrl&lt;/span&gt; per spostarti per parole.</translation>

@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Set as default scheme</translation>
 <translation id="2179565792157161713">Open Long Description In New Tab</translation>
 <translation id="2471847333270902538">Colour scheme for <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Right-click on anything with a &quot;longdesc&quot; or &quot;aria-describedat&quot; attribute to access its long description.</translation>
+<translation id="786423340267544509">Add border to elements with aria-describedat or longdesc attributes.</translation>
 <translation id="690628312087070417">When the caret jumps by a large distance:</translation>
 <translation id="5331422999063554397">Inverted Colour</translation>
 <translation id="2648340354586434750">Hold down &lt;span class='key'&gt;Option&lt;/span&gt; to move by words.</translation>
+<translation id="4769065380738716500">Images have been replaced by their alt text.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Use arrow keys to move throughout the document. &lt;/p&gt;&lt;p&gt;Click anywhere to move the cursor to that location. &lt;/p&gt; &lt;p&gt; Press &lt;span class='key'&gt;Shift&lt;/span&gt; + arrows to select text.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Keyboard Commands</translation>
 <translation id="633394792577263429">Hold down &lt;span class='key'&gt;Control&lt;/span&gt; to move by words.</translation>

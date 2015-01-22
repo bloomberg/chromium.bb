@@ -18,6 +18,7 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> seg.</translation>
 <translation id="7511635910912978956">Faltan <ph name="NUMBER_FEW"/> horas</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="598033046487663418">Todas las aplicaciones</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
@@ -122,6 +123,7 @@
 <translation id="8677655579646609597"><ph name="QUANTITY"/> KB/s</translation>
 <translation id="8394908167088220973">Reproducir o pausar contenido multimedia</translation>
 <translation id="2148716181193084225">Hoy</translation>
+<translation id="5120799197269191491">Buscar+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7960078400008666149">No molestar durante una hora</translation>
 <translation id="4373894838514502496">Hace <ph name="NUMBER_FEW"/> minutos</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> días</translation>

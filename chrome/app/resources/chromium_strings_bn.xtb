@@ -170,6 +170,7 @@
 <translation id="2648074677641340862">ইনস্টলেশনের সময় একটি অপারেটিং সিস্টেম ত্রুটি ঘটেছে৷ দয়া করে Chromium পুনরায় ডাউনলোড করুন৷</translation>
 <translation id="5942520288919337908">Chromium-এ <ph name="EXTENSION_NAME"/> জোড়া হয়েছে৷</translation>
 <translation id="549669000822060376">Chromium যখন সিস্টেম আপডেটগুলিকে ইনস্টল করে তখন দয়া করে অপেক্ষা করুন৷</translation>
+<translation id="1240763998429950591">সর্বশেষ সংস্করণে Chromium আপডেট করতে পারেনি, সেই জন্য আপনার কাছে নতুন বৈশিষ্ট্য এবং নিরাপত্তা সমাধানগুলি নেই৷ আপনাকে Chromium আপডেট করতে হবে৷</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">Google অনুসন্ধানে একটি শব্দ এবং এটির পার্শ্ববর্তী প্রসঙ্গ পাঠায়, সংজ্ঞা, ছবি, অনুসন্ধান ফলাফল, এবং অন্যান্য বিবরণ ফেরত পাঠায়৷</translation>
 <translation id="4559775032954821361">Chromium মেনুতে
@@ -206,6 +207,7 @@
 <translation id="2966088006374919794">Chromiumএকটি বহিঃস্থ অ্যপ্লিকেশন আরম্ভ করার জন্য <ph name="SCHEME"/> সংযোগগুলি নিয়ন্ত্রণ করে৷ অনুরোধকৃত লিংকটি হল <ph name="PROTOLINK"/>৷</translation>
 <translation id="2558235863893655150">আপনি কি আপনার পাসওয়ার্ড সংরক্ষণ করতে Chromium চান?</translation>
 <translation id="6485906693002546646">আপনার Chromium জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL"/> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chromium ব্যবহার করতে <ph name="SETTINGS_LINK"/> এ যান৷</translation>
+<translation id="705851970750939768">Chromium আপডেট করুন</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON"/>পুনরায় চালু করা<ph name="END_BUTTON"/> প্রয়োজন)</translation>
 <translation id="1688750314291223739">ওয়েবে আপনার ব্যক্তিগতকৃত ব্রাউজার বিষয় সংরক্ষণ করতে সিঙ্ক সেট করুন এবং যেকোনো কম্পিউটারে Chromium থেকে সেগুলিতে অ্যাক্সেস করুন৷</translation>
 <translation id="8610831143142469229">আপনার ফায়ারওয়াল বা অ্যান্টিভাইরাস সেটিংসে Chromium কে নেটওয়ার্ক অ্যাক্সেস 

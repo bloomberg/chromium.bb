@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Vælg som standardtema</translation>
 <translation id="2179565792157161713">Åbn lang beskrivelse på en ny fane</translation>
 <translation id="2471847333270902538">Farvetema for <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Højreklik på indhold med en &quot;longdesc&quot;- eller &quot;Aria-describedat&quot;-attribut for at få adgang den lange version af beskrivelsen.</translation>
+<translation id="786423340267544509">Føj en grænse til elementer med aria-describedat- eller longdesc-attributter.</translation>
 <translation id="690628312087070417">Når markøren springer med stor afstand:</translation>
 <translation id="5331422999063554397">Omvendt farve</translation>
 <translation id="2648340354586434750">Hold &lt;span class='key'&gt;Alt&lt;/span&gt; nede for at flytte efter ord.</translation>
+<translation id="4769065380738716500">Billeder er blevet erstattet af deres alternative tekst.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Brug piletasterne til at bevæge dig rundt i dokumentet. &lt;/p&gt;&lt;p&gt;Klik et tilfældigt sted for at flytte markøren til det sted. &lt;/p&gt; &lt;p&gt;   Tryk på &lt;span class='key'&gt;Shift&lt;/span&gt; + pilene for at vælge tekst.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Tastaturkommandoer</translation>
 <translation id="633394792577263429">Hold &lt;span class='key'&gt;Ctrl&lt;/span&gt; nede for at flytte efter ord.</translation>

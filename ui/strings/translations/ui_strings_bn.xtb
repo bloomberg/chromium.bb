@@ -18,6 +18,7 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> সেকেন্ড</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ঘন্টা বাকি</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="598033046487663418">সমস্ত অ্যাপ্লিকেশান</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
@@ -122,6 +123,7 @@
 <translation id="8677655579646609597"><ph name="QUANTITY"/> KB/s</translation>
 <translation id="8394908167088220973">মিডিয়া প্লে করুন/বিরতি</translation>
 <translation id="2148716181193084225">আজ</translation>
+<translation id="5120799197269191491">অনুসন্ধান+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7960078400008666149">এক ঘন্টার জন্য বিরক্ত করবেন না</translation>
 <translation id="4373894838514502496"><ph name="NUMBER_FEW"/> mins ago</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> দিন</translation>

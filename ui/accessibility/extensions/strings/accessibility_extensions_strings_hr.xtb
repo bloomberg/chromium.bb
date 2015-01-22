@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Postavi kao zadanu shemu</translation>
 <translation id="2179565792157161713">Otvori dugi opis na novoj kartici</translation>
 <translation id="2471847333270902538">Shema boja za <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Kliknite desnom tipkom bilo koju stavku s atributima &quot;longdesc&quot; ili &quot;aria-describedat&quot; da biste pristupili dugom opisu.</translation>
+<translation id="786423340267544509">Dodajte granicu elementima s atributima aria-describedat ili longdesc.</translation>
 <translation id="690628312087070417">Kada kursor skoči s velike udaljenosti:</translation>
 <translation id="5331422999063554397">Preokrenuta boja</translation>
 <translation id="2648340354586434750">Držite tipku &lt;span class='key'&gt;Option&lt;/span&gt; da biste se pomicali po riječima.</translation>
+<translation id="4769065380738716500">Slike su zamijenjene alternativnim tekstom.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Koristite se tipkama strelica za pomicanje kroz dokument. &lt;/p&gt;&lt;p&gt;Kliknite bilo gdje da biste pomaknuli kursor na tu lokaciju. &lt;/p&gt; &lt;p&gt;   Pritisnite &lt;span class='key'&gt;Shift&lt;/span&gt; i strelice da biste odabrali tekst.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Tipkovne naredbe</translation>
 <translation id="633394792577263429">Držite tipku &lt;span class='key'&gt;Control&lt;/span&gt; da biste se pomicali po riječima.</translation>

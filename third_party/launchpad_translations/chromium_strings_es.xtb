@@ -174,6 +174,7 @@ e incorrectas. Por tanto, es posible que un atacante esté intentando suplantar 
 <translation id="2648074677641340862">Se ha producido un error de sistema operativo durante el proceso de instalación. Vuelve a descargar Chromium.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> se ha añadido a Chromium.</translation>
 <translation id="549669000822060376">Espera mientras Chromium instala las últimas actualizaciones del sistema.</translation>
+<translation id="1240763998429950591">Chromium no se ha podido actualizar a la última versión, por lo que no estás disfrutando de las últimas funciones y soluciones de seguridad. Tienes que actualizar Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">envía una palabra y el contexto circundante a la Búsqueda de Google y muestra definiciones, imágenes, resultados de búsqueda y otros detalles.</translation>
 <translation id="4559775032954821361">Accede al
@@ -213,6 +214,7 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="2966088006374919794">Chromium necesita iniciar una aplicación externa para gestionar enlaces <ph name="SCHEME"/>. El enlace solicitado es <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">¿Quieres que Chromium guarde tu contraseña?</translation>
 <translation id="6485906693002546646">Estás utilizando <ph name="PROFILE_EMAIL"/> para sincronizar tu contenido de Chromium. Para actualizar tus preferencias de sincronización o utilizar Chromium sin una cuenta de Google, accede a <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Actualizar Chromium</translation>
 <translation id="5772805321386874569">(se debe <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Chromium en cualquier ordenador.</translation>
 <translation id="8610831143142469229">Configura tu cortafuegos o tu antivirus para permitir el acceso de

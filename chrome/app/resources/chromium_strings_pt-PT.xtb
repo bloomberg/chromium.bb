@@ -171,6 +171,7 @@ invulgares e incorretas. É possível que um utilizador mal intencionado esteja 
 <translation id="2648074677641340862">Ocorreu um erro no sistema operativo durante a instalação. Transfira novamente o Chromium.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> foi adicionada ao Chromium.</translation>
 <translation id="549669000822060376">Aguarde até que o Chromium instale as atualizações do sistema mais recentes.</translation>
+<translation id="1240763998429950591">Não foi possível atualizar o Chromium para a versão mais recente, pelo que não está a beneficiar das funcionalidades e das correções de segurança novas. Tem de atualizar o Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">envia uma palavra e o contexto à Pesquisa Google, devolvendo definições, imagens, resultados de pesquisa e outras informações.</translation>
 <translation id="4559775032954821361">Aceda ao
@@ -208,6 +209,7 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="2966088006374919794">O Chromium precisa de iniciar uma aplicação externa para processar links de <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Pretende que o Chromium guarde a sua palavra-passe?</translation>
 <translation id="6485906693002546646">Está a utilizar <ph name="PROFILE_EMAIL"/> para sincronizar os seus conteúdos do Chromium. Para atualizar a preferência de sincronização ou utilizar o Chromium sem uma Conta Google, aceda a <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="5772805321386874569">(é necessário <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> o Chromium)</translation>
 <translation id="1688750314291223739">Configure a Sincronização para guardar as suas funcionalidades personalizadas do navegador para a Web e aceder às mesmas a partir do Chromium em qualquer computador.</translation>
 <translation id="8610831143142469229">Permita que o Chromium aceda à rede nas definições da sua firewall ou antivírus.</translation>

@@ -171,6 +171,7 @@
 <translation id="2648074677641340862">설치 중 운영체제 오류가 발생했습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/>이(가) Chromium에 추가되었습니다.</translation>
 <translation id="549669000822060376">Chromium에서 최신 시스템 업데이트를 설치하는 동안 잠시 기다려 주세요.</translation>
+<translation id="1240763998429950591">Chromium을 최신 버전으로 업데이트하지 못했기 때문에 새로운 기능과 보안 수정 사항이 누락될 수 있습니다. Chromium을 업데이트해야 합니다.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">단어 및 주변 내용을 Google 검색에 전송하며 정의, 사진, 검색결과, 기타 세부정보를 표시합니다.</translation>
 <translation id="4559775032954821361">Chromium 메뉴 &gt;
@@ -208,6 +209,7 @@
 <translation id="2966088006374919794"><ph name="SCHEME"/> 링크 처리를 위해 Chrome에서 외부 응용 프로그램을 실행해야 합니다. 요청 링크는 <ph name="PROTOLINK"/>입니다.</translation>
 <translation id="2558235863893655150">Chromium을 통해 비밀번호를 저장하시겠습니까?</translation>
 <translation id="6485906693002546646">Chromium 콘텐츠를 동기화하기 위해 <ph name="PROFILE_EMAIL"/>을(를) 사용 중입니다. 동기화 환경설정을 업데이트하거나 Google 계정 없이 Chromium을 사용하려면 <ph name="SETTINGS_LINK"/>(으)로 이동하세요.</translation>
+<translation id="705851970750939768">Chromium 업데이트</translation>
 <translation id="5772805321386874569">(Chromium을 <ph name="BEGIN_BUTTON"/>다시 시작<ph name="END_BUTTON"/>해야 함)</translation>
 <translation id="1688750314291223739">맞춤설정한 브라우저 기능을 웹에 저장하고 모든 컴퓨터의 Chromium에서 액세스할 수 있도록 동기화를 설정합니다.</translation>
 <translation id="8610831143142469229">Chromium이 방화벽이나 바이러스 백신이 설정된

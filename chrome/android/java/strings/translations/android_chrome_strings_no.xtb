@@ -3,16 +3,23 @@
 <translation id="7998918019931843664">Åpne lukkede faner igjen</translation>
 <translation id="4996978546172906250">Del via</translation>
 <translation id="6292937202013477045">Det kan hende at angripere prøver å stjele informasjonen din (for eksempel bilder, passord, meldinger og kredittkort) fra <ph name="DOMAIN_NAME"/>.</translation>
+<translation id="1506061864768559482">Søkemotor</translation>
 <translation id="346339498574870680">Kopiér bildenettadressen</translation>
 <translation id="6657585470893396449">Passord</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE"/></translation>
+<translation id="7764225426217299476">Legg til adresse</translation>
+<translation id="8237438615979997762">Data som er lagret på denne enheten, samt data som er lagret i Google-kontoen din, blir værende på begge steder. Nye data eller eventuelle endringer i eksisterende data blir imidlertid ikke synkronisert mellom enheten og kontoen din.</translation>
 <translation id="6831043979455480757">Oversett</translation>
+<translation id="6504836143156866575">JavaScript-versjon</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
 <translation id="7644305409888602715">Oversetter siden til <ph name="SOURCE_LANGUAGE"/> …</translation>
+<translation id="326254929494722411">Du har ikke konfigurert noen Google-konto på denne enheten ennå</translation>
+<translation id="3895926599014793903">Tving zoom på</translation>
 <translation id="7015922086425404465">Få appen fra Google Play-butikken: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Last inn denne siden på nytt</translation>
 <translation id="5233638681132016545">Ny fane</translation>
 <translation id="641643625718530986">Skriv ut</translation>
+<translation id="6317634962183824346">Systemsynkronisering for Android er slått av. Slå det på igjen, og prøv på nytt.</translation>
 <translation id="5763382633136178763">Inkognitofaner</translation>
 <translation id="5210365745912300556">Lukk fanen</translation>
 <translation id="7658239707568436148">Avbryt</translation>
@@ -22,13 +29,19 @@
 <translation id="6846298663435243399">Laster inn …</translation>
 <translation id="7378627244592794276">Nei takk</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9133515669113036225">Nullstill påloggingsinformasjon for enheten</translation>
+<translation id="9019902583201351841">Administrert av foreldrene dine</translation>
+<translation id="7596558890252710462">Operativsystem</translation>
 <translation id="3358663646935160692">Denne kontoen administreres av <ph name="DOMAIN_NAME"/>.
 
 Du logger på med en administrert konto, og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine blir permanent knyttet til denne kontoen. Hvis du kobler fra denne kontoen, slettes de lokale Chrome-dataene.</translation>
+<translation id="666981079809192359">Merknad om personvern for Chrome</translation>
 <translation id="1966710179511230534">Oppdater påloggingsinformasjonen din.</translation>
+<translation id="3410346880900521918">Hvis du ser denne meldingen ofte, kan du prøve disse <ph name="BEGIN_LINK"/>forslagene<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
+<translation id="4256782883801055595">Lisenser for åpen kildekode</translation>
 <translation id="8218346974737627104">Bekreft påloggingen</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/> – fane</translation>
 <translation id="624558823898732418">Målspråk: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,17 +50,22 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="8719023831149562936">Kan ikke beame gjeldende fane</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="3896036286668839683">Sertifikatfremviser</translation>
+<translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="8583805026567836021">Fjerner kontodata …</translation>
 <translation id="5860033963881614850">Av</translation>
+<translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Med enerett.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="552553974213252141">Ble tekstutdraget riktig?</translation>
 <translation id="5317780077021120954">Lagre</translation>
+<translation id="1151972924205500581">Passord er påkrevd</translation>
 <translation id="2718352093833049315">Bare på Wi-Fi</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
+<translation id="4645575059429386691">Administreres av foreldrene dine</translation>
+<translation id="8562452229998620586">Lagrede passord listes opp her.</translation>
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgjengelig. Prøv på nytt senere.</translation>
 <translation id="473775607612524610">Oppdater</translation>
@@ -55,19 +73,27 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="1807246157184219062">Lys</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
+<translation id="6406506848690869874">Synkroniser</translation>
 <translation id="8481940801237642152">Tilkoblingen til dette området er privat, men det kan hende at noen på nettverket kan endre utseendet på siden.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Navn som er oppført på kortet</translation>
 <translation id="656628257199996201">Oversett alltid <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="2387895666653383613">Tekstskalering</translation>
 <translation id="2748463065602559597">Du ser på en sikker Google Chrome-side.</translation>
+<translation id="5626370437647899551">Legg til en Google-konto</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="4543661749405994812">Kopiér e-postadressen</translation>
 <translation id="5659593005791499971">E-post</translation>
+<translation id="7987073022710626672">Vilkår for bruk av Chrome</translation>
+<translation id="5668404140385795438">Overstyr nettstedets forespørsel om å forhindre zooming</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
+<translation id="6064211167623632605">Kjørbar bane</translation>
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="8503813439785031346">Brukernavn</translation>
+<translation id="4827948050554950725">Legg til et kredittkort</translation>
+<translation id="7817177303494746697">Blink-versjon</translation>
 <translation id="2532336938189706096">Nettvisning</translation>
 <translation id="6571070086367343653">Rediger kredittkort</translation>
 <translation id="7080851568148064063">Legg til på startsiden</translation>
@@ -76,25 +102,41 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="3254409185687681395">Legg til bokmerke for denne siden</translation>
 <translation id="907015151729920253">Smartkort</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="2600241144430299006">Kortets utløpsmåned</translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
 <translation id="8106211421800660735">Kredittkortnummer</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="7267430310003164111">Forespørsel om nedlasting av en app fra Google Play-butikken. Appnavn: <ph name="APP_NAME"/>. Appens gjennomsnittlige vurdering: <ph name="APP_RATING"/>.</translation>
+<translation id="7358682983403815415">De åpne fanene, bokmerkene, loggen og mer blir synkronisert med Google-kontoen din.</translation>
+<translation id="1943432128510653496">Lagring av passord</translation>
+<translation id="4113030288477039509">Styres av administratoren din</translation>
+<translation id="9100610230175265781">Det kreves en passordfrase</translation>
 <translation id="4148957013307229264">Installerer …</translation>
 <translation id="3992315671621218278">Lagre linken</translation>
+<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="5424715742813396254">Rediger lagret navn/passord eller unntak</translation>
 <translation id="2476578072172137802">Nettstedsinnstillinger</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="651048280540227067">Lukk menyen</translation>
+<translation id="748127970106343339">Bekreft sletting av enhetslegitimasjon</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
+<translation id="1583256385106514953">Kortets utløpsår</translation>
+<translation id="1082482054625560856">Administrer lagrede passord i <ph name="BEGIN_LINK"/>Google-kontoen<ph name="END_LINK"/> din</translation>
+<translation id="2699916814609764774">Profilbane</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8909135823018751308">Del</translation>
+<translation id="6575643671698722332">Tilbakestillingen var mislykket. Sjekk at enheten din har Internett-tilkobling og prøv på nytt.</translation>
 <translation id="654446541061731451">Velg en fane for beaming</translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
+<translation id="2359808026110333948">Fortsett</translation>
+<translation id="2512222046227390255">Fyll ut skjemaer automatisk</translation>
 <translation id="8261506727792406068">Slett</translation>
+<translation id="1080790410959514870">Du er i ferd med å logge av en konto som er administrert av <ph name="DOMAIN_NAME"/>. Dette fører til at Chrome-data som er lagret på enheten, slettes. Dataene er imidlertid fortsatt lagret i Google-kontoen din.</translation>
 <translation id="4510973599275542560">Ikke last inn på nytt</translation>
 <translation id="1206892813135768548">Kopiér linkteksten</translation>
 <translation id="9154176715500758432">Bli værende på denne siden</translation>
+<translation id="1416550906796893042">Programversjon</translation>
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
 <translation id="4271185234001491831">Oversett aldri <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Kopiér bildet</translation>
@@ -103,6 +145,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="8941248009481596111">Tilkoblingen til dette nettstedet er privat.</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="5164482624172255778">Vil du at Google Chrome skal tilby seg å oversette sider på <ph name="LANGUAGE"/> fra dette nettstedet neste gang?</translation>
+<translation id="4062305924942672200">Juridisk informasjon</translation>
 <translation id="8528538445849828817">Sidespråk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="6512448926095770873">Forlat siden</translation>
@@ -115,17 +158,29 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="5138299137310274655">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="969096075394517431">Endre språk</translation>
+<translation id="1614564776292091138">Når beskyttet innhold er PÅ, kan nettsteder autentisere enheten din for å sikre at den er autorisert til å spille av beskyttede premiumvideoer.
+
+Hvis denne funksjonen er AV, kan du sannsynligvis ikke spille av premiumvideoer på denne enheten.</translation>
+<translation id="8928220460877261598">Du er nå logget på Chrome.</translation>
 <translation id="5032574515228824816">Ledetekst</translation>
 <translation id="6165508094623778733">Les mer</translation>
+<translation id="862875433388403934">Innhold (filmer, musikk osv.) som er lastet ned i andre apper, kan kanskje ikke spilles av lenger, før appene får nye lisenser basert på ny enhetslegitimasjon.
+
+For å få nye lisenser må du koble deg til Internett og spille av innholdet du har lastet ned.</translation>
+<translation id="2913733558842973836">Dette nettstedet vises i fullskjerm.
+Dra fra toppen for å avslutte.</translation>
 <translation id="7961015016161918242">Aldri</translation>
+<translation id="8109148095642131923">Kunne ikke legge til nedlastet element i Nedlaster.</translation>
 <translation id="497421865427891073">Gå til neste</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">Standardfaner</translation>
+<translation id="411254640334432676">Nedlastingen mislyktes.</translation>
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>
 <translation id="7634554953375732414">Tilkoblingen til dette nettstedet er ikke privat.</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
 <translation id="1742134235943978220">Oversatt til <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7437998757836447326">Logg av Chrome</translation>
 <translation id="7561196759112975576">Alltid</translation>
 </translationbundle>

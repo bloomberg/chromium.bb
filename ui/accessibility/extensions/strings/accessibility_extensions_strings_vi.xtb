@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Đặt làm giao thức mặc định</translation>
 <translation id="2179565792157161713">Mở mô tả dài trong tab mới</translation>
 <translation id="2471847333270902538">Lược đồ màu dành cho <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Nhấp chuột phải vào bất cứ nội dung nào có thuộc tính &quot;longdesc&quot; hoặc &quot;aria-describedat&quot; để truy cập vào mô tả dài của nội dung đó.</translation>
+<translation id="786423340267544509">Thêm đường viền vào phần tử có thuộc tính aria-describedat hoặc longdesc.</translation>
 <translation id="690628312087070417">Khi con nháy nhảy một khoảng cách rộng:</translation>
 <translation id="5331422999063554397">Màu đảo ngược</translation>
 <translation id="2648340354586434750">Nhấn và giữ &lt;span class='key'&gt;Tùy chọn&lt;/span&gt; để di chuyển theo từ.</translation>
+<translation id="4769065380738716500">Hình ảnh đã được thay thế bởi văn bản thay thế của hình ảnh.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Sử dụng các phím mũi tên để di chuyển trong toàn bộ tài liệu. &lt;/p&gt;&lt;p&gt;Nhấp vào nơi bất kỳ để di chuyển con trỏ tới vị trí đó. &lt;/p&gt; &lt;p&gt;   Nhấn &lt;span class='key'&gt;Shift&lt;/span&gt; + các mũi tên để chọn văn bản.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Lệnh bàn phím</translation>
 <translation id="633394792577263429">Nhấn và giữ &lt;span class='key'&gt;Control&lt;/span&gt; để di chuyển theo từ.</translation>

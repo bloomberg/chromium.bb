@@ -170,6 +170,7 @@
 <translation id="2648074677641340862">‏حدث خطأ في نظام التشغيل أثناء عملية التثبيت. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="5942520288919337908">‏تمت إضافة <ph name="EXTENSION_NAME"/> إلى Chromium.</translation>
 <translation id="549669000822060376">‏الرجاء الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
+<translation id="1240763998429950591">‏تعذر على Chromium التحديث إلى أحدث إصدار، لذلك فقد تفوتك الميزات الجديدة وعمليات إصلاح الأمان. تحتاج إلى تحديث Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">‏لإرسال الكلمة والنص المحيط بها إلى بحث Google وعرض التعريفات والصور ونتائج البحث والتفاصيل الأخرى.</translation>
 <translation id="4559775032954821361">‏انتقل إلى
@@ -207,6 +208,7 @@
 <translation id="2966088006374919794">‏يحتاج Chromium إلى تشغيل تطبيق خارجي للتعامل مع روابط <ph name="SCHEME"/>. والرابط المطلوب هو <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">‏هل تريد من Chromium حفظ كلمة المرور؟</translation>
 <translation id="6485906693002546646">‏أنت تستخدم <ph name="PROFILE_EMAIL"/> لمزامنة عناصرك في Chromium. لتحديث تفضيل المزامنة أو استخدام Chromium بدون حساب Google، يُرجى الانتقال إلى <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">‏تحديث Chromium</translation>
 <translation id="5772805321386874569">‏(<ph name="BEGIN_BUTTON"/>إعادة تشغيل<ph name="END_BUTTON"/> Chromium مطلوبة)</translation>
 <translation id="1688750314291223739">‏يمكنك إعداد المزامنة لحفظ ميزات المتصفح المخصصة على الويب والدخول إليها من Chromium على أي كمبيوتر.</translation>
 <translation id="8610831143142469229">‏اسمح للمتصفح Chromium بالدخول إلى الشبكة من خلال إعدادات الجدار الناري أو

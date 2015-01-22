@@ -173,6 +173,7 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
 <translation id="2648074677641340862">An operating system error occurred during installation. Please download Chromium again.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> has been added to Chromium.</translation>
 <translation id="549669000822060376">Please wait while Chromium installs the latest system updates.</translation>
+<translation id="1240763998429950591">Chromium could not update to the latest version, so you are missing out on new features and security fixes. You need to update Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.</translation>
 <translation id="4559775032954821361">Go to
@@ -212,6 +213,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="2966088006374919794">Chromium needs to launch an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Do you want Chromium to save your password?</translation>
 <translation id="6485906693002546646">You're using <ph name="PROFILE_EMAIL"/> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Update Chromium</translation>
 <translation id="5772805321386874569">(requires Chromium <ph name="BEGIN_BUTTON"/>restart<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Set up Sync to save your personalised browser features to the web and access them from Chromium on any computer.</translation>
 <translation id="8610831143142469229">Allow Chromium to access the network in your firewall or antivirus

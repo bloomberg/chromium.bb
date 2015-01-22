@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Itakda bilang default na scheme</translation>
 <translation id="2179565792157161713">Buksan Ang Mahabang Paglalarawan Sa Bagong Tab</translation>
 <translation id="2471847333270902538">Scheme ng kulay para sa <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Mag-right click sa anumang bagay na may attribute na &quot;longdesc&quot; o &quot;aria-describedat&quot; upang i-access ang mahabang paglalarawan nito.</translation>
+<translation id="786423340267544509">Magdagdag ng border sa mga elementong may mga attribute na aria-describedat o longdesc.</translation>
 <translation id="690628312087070417">Kapag lumaktaw ang caret nang malayo:</translation>
 <translation id="5331422999063554397">Naka-invert na Kulay</translation>
 <translation id="2648340354586434750">Pindutin nang matagal ang &lt;span class='key'&gt;Opsyon&lt;/span&gt; upang lumipat ayon sa mga salita.</translation>
+<translation id="4769065380738716500">Ang mga larawan ay napalitan na ng alt text ng mga ito.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Gamitin ang mga arrow key upang lumipat sa kabuuan ng dokumento. &lt;/p&gt;&lt;p&gt;Mag-click saanman upang ilipat ang cursor sa lokasyong iyon. &lt;/p&gt; &lt;p&gt;   Pindutin ang &lt;span class='key'&gt;Shift&lt;/span&gt; + mga arrow upang pumili ng text.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Mga Command sa Keyboard</translation>
 <translation id="633394792577263429">Pindutin nang matagal ang &lt;span class='key'&gt;Control&lt;/span&gt; upang lumipat ayon sa mga salita.</translation>

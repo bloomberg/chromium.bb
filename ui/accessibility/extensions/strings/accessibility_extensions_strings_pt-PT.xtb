@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Definir como esquema predefinido</translation>
 <translation id="2179565792157161713">Abrir a descrição longa num novo separador</translation>
 <translation id="2471847333270902538">Esquema de cores para <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Clique com o botão direito do rato em qualquer item que tenha o atributo &quot;longdesc&quot; ou &quot;aria-describedat&quot; para aceder à descrição longa.</translation>
+<translation id="786423340267544509">Adicionar limite aos elementos com os atributos &quot;aria-describedat&quot; ou &quot;longdesc&quot;.</translation>
 <translation id="690628312087070417">Quando o cursor salta uma grande distância:</translation>
 <translation id="5331422999063554397">Cor invertida</translation>
 <translation id="2648340354586434750">Mantenha premido &lt;span class='key'&gt;Opção&lt;/span&gt; para mover por palavras.</translation>
+<translation id="4769065380738716500">As imagens foram substituídas pelos respetivos textos alternativos.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Utilize as teclas de seta para se mover ao logo do documento. &lt;/p&gt;&lt;p&gt;Clique em qualquer local para mover o cursor para essa localização. &lt;/p&gt; &lt;p&gt;   Prima &lt;span class='key'&gt;Shift&lt;/span&gt; + setas para selecionar texto.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Comandos do teclado</translation>
 <translation id="633394792577263429">Mantenha premido &lt;span class='key'&gt;Control&lt;/span&gt; para mover por palavras.</translation>

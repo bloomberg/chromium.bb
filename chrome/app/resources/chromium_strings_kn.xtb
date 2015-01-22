@@ -169,6 +169,7 @@
 <translation id="2648074677641340862">ಸ್ಥಾಪಿಸುತ್ತಿರುವಾಗ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಮ್ ದೋಷ ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="5942520288919337908">Chromium ಗೆ <ph name="EXTENSION_NAME"/> ಅನ್ನು ಸೇರಿಸಲಾಗಿದೆ.</translation>
 <translation id="549669000822060376">ದಯವಿಟ್ಟು ಇತ್ತೀಚಿನ ಸಿಸ್ಟಂ ನವೀಕರಣಗಳನ್ನು Chromium ಸ್ಥಾಪಿಸುವಾಗ ಕಾಯಿರಿ.</translation>
+<translation id="1240763998429950591">Chromium ಗೆ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಗೆ ನವೀಕರಣಗೊಳ್ಳಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ, ಈ ಮೂಲಕ ನೀವು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಮತ್ತು ಭದ್ರತೆ ದೋಷ ಪರಿಹಾರಗಳನ್ನು ತಪ್ಪಿಸುತ್ತಿರುವಿರಿ. ನೀವು Chromium ಅನ್ನು ನವೀಕರಿಸಬೇಕಾಗಿದೆ.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">ವ್ಯಾಖ್ಯಾನಗಳು, ಚಿತ್ರಗಳು, ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳು, ಮತ್ತು ಇತರ ವಿವರಗಳನ್ನು ನೀಡುವ ಮೂಲಕ ಒಂದು ಪದ ಮತ್ತು ಅದರ ಸುತ್ತಲಿನ ಸನ್ನಿವೇಶವನ್ನು Google ಹುಡುಕಾಟಕ್ಕೆ ಕಳುಹಿಸುತ್ತದೆ.</translation>
 <translation id="4559775032954821361">ಇದಕ್ಕೆ ಹೋಗಿ
@@ -206,6 +207,7 @@
 <translation id="2966088006374919794"><ph name="SCHEME"/> ಲಿಂಕ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು ಹೆಚ್ಚುವರಿ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಅಗತ್ಯ Chromium ಗಿದೆ. <ph name="PROTOLINK"/> ಲಿಂಕ್‌ನ ವಿನಂತಿಯಾಗಿದೆ.</translation>
 <translation id="2558235863893655150">Chromium ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಉಳಿಸಬೇಕು ಎಂದು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="6485906693002546646">ನಿಮ್ಮ Chromium ವಿಷಯವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ನೀವು <ph name="PROFILE_EMAIL"/> ಅನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ. Google ಖಾತೆ ಇಲ್ಲದೆ ನಿಮ್ಮ ಸಿಂಕ್ ಪ್ರಾಶಸ್ತ್ಯಗಳನ್ನು ನವೀಕರಿಸಲು ಅಥವಾ Chromium ಬಳಸಲು, <ph name="SETTINGS_LINK"/> ಭೇಟಿ ನೀಡಿ.</translation>
+<translation id="705851970750939768">Chromium ನವೀಕರಿಸಿ</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON"/>ಮರುಪ್ರಾರಂಭ<ph name="END_BUTTON"/> ಅಗತ್ಯವಿದೆ)</translation>
 <translation id="1688750314291223739">ವೆಬ್‌ಗೆ ನಿಮ್ಮ ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಬ್ರೌಸರ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಉಳಿಸಲು ಸಿಂಕ್ ಅನ್ನು ಹೊಂದಿಸಿ ಮತ್ತು ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chromium ನಿಂದ ಅವುಗಳನ್ನು ಪ್ರವೇಶಿಸಿ.</translation>
 <translation id="8610831143142469229">ನಿಮ್ಮ ಫೈರ್‌ವಾಲ್ ಮತ್ತು ಆಂಟಿವೈರಸ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನೆಟ್‌ವರ್ಕ್ ಪ್ರವೇಶಿಸಲು

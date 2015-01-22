@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Estableix com a esquema predeterminat</translation>
 <translation id="2179565792157161713">Obre la descripció llarga en una pestanya nova</translation>
 <translation id="2471847333270902538">Esquema de color per a <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Feu clic en qualsevol element amb un atribut &quot;longdesc&quot; o &quot;aria-describedat&quot; per accedir a la seva descripció llarga.</translation>
+<translation id="786423340267544509">Afegeix una vora als elements amb atributs &quot;aria-describedat&quot; o &quot;longdesc&quot;.</translation>
 <translation id="690628312087070417">Quan la marca d'inserció salta una distància gran:</translation>
 <translation id="5331422999063554397">Color invertit</translation>
 <translation id="2648340354586434750">Manteniu premuda la tecla d'&lt;span class='key'&gt;opció&lt;/span&gt; per desplaçar-vos per les paraules.</translation>
+<translation id="4769065380738716500">Les imatges s'han substituït pel seu text alternatiu.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Feu servir les tecles de fletxa per desplaçar-vos pel document. &lt;/p&gt;&lt;p&gt;Feu clic en qualsevol lloc per desplaçar-hi el cursor. &lt;/p&gt; &lt;p&gt;   Premeu &lt;span class='key'&gt;Maj&lt;/span&gt; + les tecles de fletxa per seleccionar el text.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Ordres del teclat</translation>
 <translation id="633394792577263429">Manteniu premuda la tecla &lt;span class='key'&gt;Control&lt;/span&gt; per desplaçar-vos per les paraules.</translation>

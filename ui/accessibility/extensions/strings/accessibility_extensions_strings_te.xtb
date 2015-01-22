@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">డిఫాల్ట్ స్కీమ్‌గా సెట్ చేయి</translation>
 <translation id="2179565792157161713">సుదీర్ఘ వివరణను కొత్త ట్యాబ్‌లో తెరువు</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> కోసం రంగు స్కీమ్:</translation>
+<translation id="381767806621926835">&quot;longdesc&quot; లేదా &quot;aria-describedat&quot; లక్షణం ఉన్న ఏదైనా అంశం యొక్క సుదీర్ఘ వివరణను ప్రాప్యత చేయడానికి దానిపై కుడి క్లిక్ చేయండి.</translation>
+<translation id="786423340267544509">aria-describedat లేదా longdesc లక్షణాలు ఉన్న మూలకాలకు హద్దును జోడించు.</translation>
 <translation id="690628312087070417">కేరెట్ చాలా దూరం జరిగినప్పుడు:</translation>
 <translation id="5331422999063554397">విలోమ రంగు</translation>
 <translation id="2648340354586434750">పదాల వారీగా తరలించడానికి &lt;span class='key'&gt;Option&lt;/span&gt;ని నొక్కి పట్టుకోండి.</translation>
+<translation id="4769065380738716500">చిత్రాలు వాటి alt వచనంతో భర్తీ చేయబడ్డాయి.</translation>
 <translation id="5287723860611749454">&lt;p&gt;పత్రం అంతటా సంచరించడానికి బాణం కీలను ఉపయోగించండి. &lt;/p&gt;&lt;p&gt;కర్సర్ ఉంచాలనుకుంటున్న చోట క్లిక్ చేసి కర్సర్‌ను ఆ స్థానానికి తీసుకురండి. &lt;/p&gt; &lt;p&gt;   వచనాన్ని ఎంచుకోవడానికి &lt;span class='key'&gt;Shift&lt;/span&gt; + బాణాలను నొక్కండి.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">కీబోర్డ్ ఆదేశాలు</translation>
 <translation id="633394792577263429">పదాల వారీగా తరలించడానికి &lt;span class='key'&gt;Control&lt;/span&gt;ను నొక్కి పట్టుకోండి.</translation>

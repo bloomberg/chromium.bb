@@ -170,6 +170,7 @@
 <translation id="2648074677641340862">Došlo je do pogreške operativnog sustava tijekom instalacije. Ponovo preuzmite Chromium.</translation>
 <translation id="5942520288919337908">Proširenje <ph name="EXTENSION_NAME"/> dodano je u Chromium.</translation>
 <translation id="549669000822060376">Pričekajte da Chromium instalira najnovija ažuriranja sustava.</translation>
+<translation id="1240763998429950591">Chromium se nije mogao ažurirati na najnoviju verziju, pa propuštate nove značajke i sigurnosne popravke. Morate ažurirati Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">šalje riječ i njezin okolni kontekst na Google pretraživanje te vraća definicije, slike, rezultate pretraživanja i ostale pojedinosti.</translation>
 <translation id="4559775032954821361">Idite na
@@ -209,6 +210,7 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="2966088006374919794">Chromium mora pokrenuti vanjsku aplikaciju za obradu veza <ph name="SCHEME"/>. Zatražena je veza <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Želite li da Chromium spremi zaporku?</translation>
 <translation id="6485906693002546646">Upotrebljavate <ph name="PROFILE_EMAIL"/> za sinkronizaciju sadržaja u Chromiumu. Za ažuriranje postavki sinkroniziranja ili upotrebu Chromiuma bez Google računa posjetite <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Ažuriraj Chromium</translation>
 <translation id="5772805321386874569">(potrebno je <ph name="BEGIN_BUTTON"/>ponovo pokrenuti<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">Postavite sinkronizaciju da biste spremili svoje prilagođene značajke preglednika na web i pristupali im s preglednika Chromium na bilo kojem računalu.</translation>
 <translation id="8610831143142469229">U postavkama vatrozida ili antivirusnog programa omogućite Chromiumu da pristupa mreži.</translation>

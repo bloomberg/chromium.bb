@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Nastaviť ako predvolenú schému</translation>
 <translation id="2179565792157161713">Otvoriť dlhý popis na novej karte</translation>
 <translation id="2471847333270902538">Farebná schéma pre stránky <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Kliknutím pravým tlačidlom na ľubovoľný prvok s atribútom „longdesc“ alebo „aria-describedat“ získate jeho dlhý popis.</translation>
+<translation id="786423340267544509">Pridať ohraničenie k prvkom s atribútom aria-describedat alebo longdesc.</translation>
 <translation id="690628312087070417">Keď pri prehliadaní Caret preskočíte ďalej:</translation>
 <translation id="5331422999063554397">Invertované farby</translation>
 <translation id="2648340354586434750">Ak sa chcete posúvať po slovách, stlačte kláves &lt;span class='key'&gt;Option&lt;/span&gt;.</translation>
+<translation id="4769065380738716500">Obrázky boli nahradené textom z atribútu alt.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Pomocou klávesov šípok môžete prechádzať dokument. &lt;/p&gt;&lt;p&gt;Kliknutím na ľubovoľné miesto presuniete kurzor na toto miesto. &lt;/p&gt; &lt;p&gt;   Stlačením klávesa &lt;span class='key'&gt;Shift&lt;/span&gt; a šípok vyberiete text.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Príkazy na klávesnici</translation>
 <translation id="633394792577263429">Stlačením klávesa &lt;span class='key'&gt;Control&lt;/span&gt; a jeho podržaním prechádzajte po slovách.</translation>

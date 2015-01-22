@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Зробити схемою за умовчанням</translation>
 <translation id="2179565792157161713">Відкрити докладний опис у новій вкладці</translation>
 <translation id="2471847333270902538">Схема кольорів для веб-сайту <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Натисніть правою кнопкою миші будь-який вміст з атрибутом &quot;longdesc&quot; або &quot;aria-describedat&quot;, щоб перейти до його докладного опису.</translation>
+<translation id="786423340267544509">Додавайте контур до елементів за допомогою атрибутів &quot;aria-describedat&quot; або &quot;longdesc&quot;.</translation>
 <translation id="690628312087070417">Коли курсор переходить на велику відстань:</translation>
 <translation id="5331422999063554397">Інвертований колір</translation>
 <translation id="2648340354586434750">Щоб переходити між словами, утримуйте клавішу &lt;span class='key'&gt;Option&lt;/span&gt;.</translation>
+<translation id="4769065380738716500">Зображення замінено текстом заміщення.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Використовуйте клавіші зі стрілками, щоб переходити в документі. &lt;/p&gt;&lt;p&gt;Натисніть будь-де, щоб перемістити курсор у потрібне місце. &lt;/p&gt; &lt;p&gt;   Щоб виділити текст, натисніть клавішу &lt;span class='key'&gt;Shift&lt;/span&gt; і потрібні клавіші зі стрілками.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Команди клавіатури</translation>
 <translation id="633394792577263429">Щоб переходити між словами, утримуйте клавішу &lt;span class='key'&gt;Control&lt;/span&gt;.</translation>

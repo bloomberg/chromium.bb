@@ -173,6 +173,7 @@
 <translation id="2648074677641340862">Током инсталације је дошло до грешке у оперативном систему. Преузмите Chromium поново.</translation>
 <translation id="5942520288919337908">Додатак <ph name="EXTENSION_NAME"/> је додат у Chromium.</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
+<translation id="1240763998429950591">Chromium није успео да се ажурира на најновију верзију, па пропуштате нове функције и безбедносне исправке. Треба да ажурирате Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">шаље реч и околни контекст Google претрази, а приказује дефиниције, слике, резултате претраге и друге детаље.</translation>
 <translation id="4559775032954821361">Идите у
@@ -210,6 +211,7 @@
 <translation id="2966088006374919794">Chromium мора да покрене спољну апликацију ради обраде <ph name="SCHEME"/> веза. Захтевана веза је <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Да ли желите да Chromium сачува лозинку?</translation>
 <translation id="6485906693002546646">Користите <ph name="PROFILE_EMAIL"/> за синхронизацију Chromium садржаја. Да бисте ажурирали подешавање синхронизације или користили Chromium без Google налога, посетите <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Ажурирај Chromium</translation>
 <translation id="5772805321386874569">(захтева <ph name="BEGIN_BUTTON"/>поновно покретање<ph name="END_BUTTON"/> Chromium-а)</translation>
 <translation id="1688750314291223739">Подесите Синхронизацију како бисте сачували персонализоване функције прегледача на Веб и приступали им из Chromium-а на било ком рачунару.</translation>
 <translation id="8610831143142469229">Дозволите Chromium-у да приступа мрежи у заштитном зиду или антивирусним

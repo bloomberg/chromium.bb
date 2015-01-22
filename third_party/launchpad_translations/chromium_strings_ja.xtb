@@ -169,6 +169,7 @@
 <translation id="2648074677641340862">インストール中にオペレーティング システム エラーが発生しました。Chromium をダウンロードし直してください。</translation>
 <translation id="5942520288919337908">「<ph name="EXTENSION_NAME"/>」を Chromium に追加しました。</translation>
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
+<translation id="1240763998429950591">Chromium を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。Chromium を更新する必要があります。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">機能は、単語とその周囲のコンテキストを Google 検索に送信して、定義や画像、検索結果、その他の詳細を返します。</translation>
 <translation id="4559775032954821361">このオプションを無効にするには:
@@ -208,6 +209,7 @@
 <translation id="2966088006374919794">Chromium では、<ph name="SCHEME"/> リンクを処理する際に外部アプリケーションの起動が必要になります。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
 <translation id="2558235863893655150">Chromium でパスワードを保存しますか？</translation>
 <translation id="6485906693002546646">Chromium データの同期に <ph name="PROFILE_EMAIL"/> を使用しています。同期設定を更新する、または Google アカウントなしで Chromium を使用するには、<ph name="SETTINGS_LINK"/> にアクセスしてください。</translation>
+<translation id="705851970750939768">Chromium を更新</translation>
 <translation id="5772805321386874569">（Chromium を<ph name="BEGIN_BUTTON"/>再起動<ph name="END_BUTTON"/>する必要があります）</translation>
 <translation id="1688750314291223739">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Chromium からでも使用できるようになります。</translation>
 <translation id="8610831143142469229">ファイアウォールやウイルス対策の設定で、Chromium からネットワークへのアクセスを

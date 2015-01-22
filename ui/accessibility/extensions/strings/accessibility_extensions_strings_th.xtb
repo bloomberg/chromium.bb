@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">ตั้งค่าเป็นรูปแบบเริ่มต้น</translation>
 <translation id="2179565792157161713">เปิดคำอธิบายแบบยาวในแท็บใหม่</translation>
 <translation id="2471847333270902538">รูปแบบชุดสีสำหรับ <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">คลิกขวาที่ใดก็ได้ด้วยแอตทริบิวต์ &quot;longdesc&quot; หรือ &quot;aria-describedat&quot; เพื่อเข้าถึงคำอธิบายแบบยาว</translation>
+<translation id="786423340267544509">เพิ่มขอบให้กับองค์ประกอบด้วยแอตทริบิวต์ aria-describedat หรือ longdesc</translation>
 <translation id="690628312087070417">เมื่อเครื่องหมาย caret ข้ามไปยังระยะที่ห่างมาก</translation>
 <translation id="5331422999063554397">สีสลับ</translation>
 <translation id="2648340354586434750">กด&lt;span class='key'&gt;ตัวเลือก&lt;/span&gt;ค้างไว้เพื่อเลื่อนไปทีละคำ</translation>
+<translation id="4769065380738716500">มีการแทนที่รูปภาพด้วยข้อความ alt ของรูปภาพเหล่านั้น</translation>
 <translation id="5287723860611749454">&lt;p&gt;ใช้คีย์ลูกศรเพื่อเลื่อนไปยังส่วนต่างๆ ของเอกสาร &lt;/p&gt;&lt;p&gt;คลิกตำแหน่งหนึ่งๆ เพื่อย้ายเคอร์เซอร์ไปยังตำแหน่งนั้น&lt;/p&gt; &lt;p&gt;   กด &lt;span class='key'&gt;Shift&lt;/span&gt; + ลูกศร เพื่อเลือกข้อความ&lt;/p&gt;</translation>
 <translation id="5558600050691192317">คำสั่งแป้นพิมพ์</translation>
 <translation id="633394792577263429">กด &lt;span class='key'&gt;Control&lt;/span&gt; ค้างไว้เพื่อเลื่อนไปทีละคำ</translation>

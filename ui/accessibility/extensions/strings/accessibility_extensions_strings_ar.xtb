@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">تعيين كمخطط افتراضي</translation>
 <translation id="2179565792157161713">فتح وصف مفصل في علامة تبويب جديدة</translation>
 <translation id="2471847333270902538">نظام ألوان <ph name="SITE"/> :</translation>
+<translation id="381767806621926835">‏انقر بزر الماوس الأيمن على أي شيء يعمل بخاصية &quot;longdesc&quot; أو &quot;aria-describedat&quot; للدخول إلى الوصف المفصل.</translation>
+<translation id="786423340267544509">‏إضافة حد إلى العناصر التي تعمل بسمات aria-describedat أو longdesc.</translation>
 <translation id="690628312087070417">عندما يقفز مؤشر النص لمسافة كبيرة:</translation>
 <translation id="5331422999063554397">لون معكوس</translation>
 <translation id="2648340354586434750">‏اضغط مع الاستمرار على &lt;span class='key'&gt;Option&lt;/span&gt; للتنقل خلال الكلمات.</translation>
+<translation id="4769065380738716500">تم استبدال الصور بواسطة النص البديل</translation>
 <translation id="5287723860611749454">‏&lt;p&gt;استخدام مفاتيح الأسهم للتحرك في جميع أنحاء المستند &lt;/ P&gt; &lt;P&gt; انقر في أي مكان لتحريك المؤشر إلى ذلك الموقع. &lt;/ P&gt; &lt;P&gt; اضغط على &lt;span class='key'&gt;Shift&lt;/span&gt; + الأسهم لتحديد النص.&lt;/ P&gt;</translation>
 <translation id="5558600050691192317">أوامر لوحة المفاتيح</translation>
 <translation id="633394792577263429">‏اضغط مع الاستمرار على &lt;span class='key'&gt;Control&lt;/span&gt; للتنقل خلال الكلمات.</translation>

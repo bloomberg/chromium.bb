@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">እንደ ነባሪ ገጽታ አዘጋጅ</translation>
 <translation id="2179565792157161713">ረዥም ማብራሪያን በአዲስ ትር ክፈት</translation>
 <translation id="2471847333270902538">የቀለም ገጽታ ለ<ph name="SITE"/>፦</translation>
+<translation id="381767806621926835">ረጅም መግለጫውን ለመድረስ የ«longdesc» ወይም የ«aria-describedat» አይነታ ያለው ማንኛውም ነገር በቀኝ ጠቅ ያድርጉ።</translation>
+<translation id="786423340267544509">የaria-describedat ወይም የlongdesc አይነታዎች ባላቸው አባላት ላይ ክፈፍ አክል</translation>
 <translation id="690628312087070417">caret በሰፊ ርቀት በሚዘልበት ጊዜ፦</translation>
 <translation id="5331422999063554397">የተገለበጠ ቀለም</translation>
 <translation id="2648340354586434750">ቃል በቃል ለማንቀሳቀስ &lt;span class='key'&gt;አማራጭ&lt;/span&gt; የሚለውን ይዘው ይቆዩ።</translation>
+<translation id="4769065380738716500">ምስሌች በተለዋጭ ጽሑፋቸው ተተክተዋል።</translation>
 <translation id="5287723860611749454">&lt;p&gt;በሰነዶች መካከል ለመንቀሳቀስ የቀስት ቁልፎችን ይጠቀሙ። &lt;/p&gt;&lt;p&gt;ጠቋሚውን ወደዛ አካባቢ ለማንቀሳቀስ በማናቸውም ቦታ ላይ ጠቅ ያድርጉ። &lt;/p&gt; &lt;p&gt;   ጽሑፍን ለመምረጥ &lt;span class='key'&gt;Shift&lt;/span&gt; + ቀስቶችን ይጫኑ።&lt;/p&gt;</translation>
 <translation id="5558600050691192317">የቁልፍ ሰሌዳ ትዕዛዞች</translation>
 <translation id="633394792577263429">ቃል በቃል ለማንቀሳቀስ &lt;span class='key'&gt;Control&lt;/span&gt;ን  ይዘው ይቆዩ።</translation>

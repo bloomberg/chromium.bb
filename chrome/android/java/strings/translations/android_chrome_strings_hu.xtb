@@ -3,16 +3,23 @@
 <translation id="7998918019931843664">Bezárt lap megnyitása</translation>
 <translation id="4996978546172906250">Megosztás itt:</translation>
 <translation id="6292937202013477045">A támadók megpróbálhatják ellopni a(z) <ph name="DOMAIN_NAME"/> webhelyen lévő adatait (például fotókat, jelszavakat, üzeneteket vagy hitelkártyaadatokat).</translation>
+<translation id="1506061864768559482">Keresőmotor</translation>
 <translation id="346339498574870680">Kép URL-jének másolása</translation>
 <translation id="6657585470893396449">Jelszó</translation>
 <translation id="5578795271662203820">A kép keresése a(z) <ph name="SEARCH_ENGINE"/> keresővel</translation>
+<translation id="7764225426217299476">Cím hozzáadása</translation>
+<translation id="8237438615979997762">A jelen eszközön, valamint az Ön Google-fiókjában tárolt adatok mindkét helyen megmaradnak, azonban az új adatok, illetve a meglévő adatokban végrehajtott módosítások nem lesznek szinkronizálva.</translation>
 <translation id="6831043979455480757">Fordítás</translation>
+<translation id="6504836143156866575">JavaScript-verzió</translation>
 <translation id="869891660844655955">Lejárati dátum</translation>
 <translation id="7644305409888602715">Oldal fordítása <ph name="SOURCE_LANGUAGE"/> nyelvre...</translation>
+<translation id="326254929494722411">Ezen az eszközön még nem hozott létre Google-fiókot</translation>
+<translation id="3895926599014793903">Nagyítás/kicsinyítés kényszerített engedélyezése</translation>
 <translation id="7015922086425404465">Alkalmazás beszerzése a Google Play Áruházból: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Az oldal újratöltése</translation>
 <translation id="5233638681132016545">Új lap</translation>
 <translation id="641643625718530986">Nyomtatás…</translation>
+<translation id="6317634962183824346">Android rendszer szinkronizálása letiltva. Engedélyezze, majd próbálja újra.</translation>
 <translation id="5763382633136178763">Inkognitólapok</translation>
 <translation id="5210365745912300556">Lap bezárása</translation>
 <translation id="7658239707568436148">Mégse</translation>
@@ -22,13 +29,19 @@
 <translation id="6846298663435243399">Betöltés…</translation>
 <translation id="7378627244592794276">Nem</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9133515669113036225">Az eszközhitelesítési adatok visszaállítása</translation>
+<translation id="9019902583201351841">Szülők által kezelt</translation>
+<translation id="7596558890252710462">Operációs rendszer</translation>
 <translation id="3358663646935160692">Ennek a fióknak <ph name="DOMAIN_NAME"/> a kezelője.
 
 Ön jelenleg kezelt fiókkal jelentkezik be, és engedélyezi a rendszergazdának az Ön Chrome-profiljához való hozzáférést. Chrome-adatai ezután véglegesen ehhez a fiókhoz társulnak. A fiók leválasztásával törölheti a helyi Chrome-adatokat.</translation>
+<translation id="666981079809192359">Chrome – Adatvédelmi közlemény</translation>
 <translation id="1966710179511230534">Kérjük, frissítse bejelentkezési adatait.</translation>
+<translation id="3410346880900521918">Ha gyakran látja ezt, próbálja ki ezeket a <ph name="BEGIN_LINK"/>javaslatokat<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Akadályozza meg, hogy ez az oldal további párbeszédablakokat hozzon létre.</translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="5595485650161345191">Cím szerkesztése</translation>
+<translation id="4256782883801055595">Nyílt forráskódú licencek</translation>
 <translation id="8218346974737627104">Bejelentkezés megerősítése</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/> lap</translation>
 <translation id="624558823898732418">A fordítás nyelve: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,17 +50,22 @@
 <translation id="8719023831149562936">Nem lehet átsugározni a jelenlegi lapot</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="3896036286668839683">Tanúsítványmegtekintő</translation>
+<translation id="2321958826496381788">Húzza a csúszkát, amíg kényelmesen nem tudja olvasni a szöveget; legalább ekkorának kell lennie, miután duplán koppint a bekezdésre.</translation>
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="8583805026567836021">Fiókadatok törlése</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
+<translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Minden jog fenntartva.</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="8073388330009372546">Kép megnyitása új lapon</translation>
 <translation id="552553974213252141">Megfelelően kinyerte a szöveget?</translation>
 <translation id="5317780077021120954">Mentés</translation>
+<translation id="1151972924205500581">Jelszó szükséges</translation>
 <translation id="2718352093833049315">Csak Wi-Fi-n</translation>
 <translation id="7029809446516969842">Jelszavak</translation>
 <translation id="2414886740292270097">Sötét</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
+<translation id="4645575059429386691">A szülő kezeli</translation>
+<translation id="8562452229998620586">A mentett jelszavak itt jelennek meg.</translation>
 <translation id="8730621377337864115">Kész</translation>
 <translation id="4170011742729630528">A szolgáltatás nem érhető el, próbálja újra később.</translation>
 <translation id="473775607612524610">Frissítés</translation>
@@ -55,19 +73,27 @@
 <translation id="1807246157184219062">Világos</translation>
 <translation id="7053983685419859001">Letiltás</translation>
 <translation id="8374821112118309944">Frissítenie kell a TalkBack alkalmazást egy újabb verzióra.</translation>
+<translation id="6406506848690869874">Szinkronizálás</translation>
 <translation id="8481940801237642152">A webhellyel való kapcsolata privát, ám valaki a hálózaton módosíthatja az oldal megjelenését.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">A kártyán feltüntetett név</translation>
 <translation id="656628257199996201">Mindig fordítson <ph name="SOURCE_LANGUAGE"/> nyelvről</translation>
+<translation id="2387895666653383613">Szöveg nagyítása</translation>
 <translation id="2748463065602559597">Ön egy biztonságos Google Chrome-oldalt lát.</translation>
+<translation id="5626370437647899551">Google-fiók hozzáadása</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="4543661749405994812">E-mail cím másolása</translation>
 <translation id="5659593005791499971">E-mail</translation>
+<translation id="7987073022710626672">Chrome – Általános Szerződési Feltételek</translation>
+<translation id="5668404140385795438">Webhely nagyításelutasítási kérelmének felülbírálata</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="5684874026226664614">Hoppá! Az oldalt nem sikerült lefordítani.</translation>
+<translation id="6064211167623632605">Végrehajtható fájl útvonala</translation>
 <translation id="10614374240317010">Az alábbi oldalakról soha ne mentsen jelszavakat</translation>
 <translation id="2903493209154104877">Címek</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>
+<translation id="4827948050554950725">Hitelkártya hozzáadása</translation>
+<translation id="7817177303494746697">Blink-verzió</translation>
 <translation id="2532336938189706096">Internetes megtekintés</translation>
 <translation id="6571070086367343653">Hitelkártya szerkesztése</translation>
 <translation id="7080851568148064063">Hozzáadás kezdőképernyőhöz</translation>
@@ -76,25 +102,41 @@
 <translation id="3254409185687681395">Könyvjelző hozzáadása ehhez az oldalhoz</translation>
 <translation id="907015151729920253">Intelligens kártya</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="2600241144430299006">Kártya lejáratának hónapja</translation>
 <translation id="3063601790762993062">Videó mentése</translation>
 <translation id="8106211421800660735">Hitelkártya száma</translation>
 <translation id="6042308850641462728">Hosszabban</translation>
 <translation id="7267430310003164111">Felszólítás az alkalmazás beszerzésére a Google Play Áruházból. Alkalmazás neve: <ph name="APP_NAME"/>. Alkalmazás átlagos értékelése: <ph name="APP_RATING"/>.</translation>
+<translation id="7358682983403815415">Folyamatban van a megnyitott lapok, a könyvjelzők, az előzmények és egyebek szinkronizálása a Google-fiókjával.</translation>
+<translation id="1943432128510653496">Jelszavak mentése</translation>
+<translation id="4113030288477039509">A rendszergazdája kezeli</translation>
+<translation id="9100610230175265781">Összetett jelszó szükséges</translation>
 <translation id="4148957013307229264">Telepítés...</translation>
 <translation id="3992315671621218278">Link mentése</translation>
+<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="5424715742813396254">Mentett név/jelszó vagy kivétel szerkesztése</translation>
 <translation id="2476578072172137802">Webhelybeállítások</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="651048280540227067">Menü figyelmen kívül hagyása</translation>
+<translation id="748127970106343339">Eszközhitelesítési adatok törlésének megerősítése</translation>
 <translation id="3089395242580810162">Megnyitás inkognitólapon</translation>
+<translation id="1583256385106514953">Kártya lejáratának éve</translation>
+<translation id="1082482054625560856">Mentett jelszavak kezelése a <ph name="BEGIN_LINK"/>Google-fiókjában<ph name="END_LINK"/></translation>
+<translation id="2699916814609764774">Profil elérési útja</translation>
 <translation id="6981982820502123353">Kisegítő lehetőségek</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8909135823018751308">Megosztás...</translation>
+<translation id="6575643671698722332">Nem sikerült. Ellenőrizze a hálózatot, és próbálja újra.</translation>
 <translation id="654446541061731451">Válassza ki a sugározni kívánt lapot</translation>
 <translation id="4269820728363426813">Link másolása</translation>
+<translation id="2359808026110333948">Folytatás</translation>
+<translation id="2512222046227390255">Űrlapok automatikus kitöltése</translation>
 <translation id="8261506727792406068">Törlés</translation>
+<translation id="1080790410959514870">Kijelentkezik egy <ph name="DOMAIN_NAME"/> által felügyelt fiókból. Ezzel törli a Chrome-nak az eszközön tárolt adatait, Google-fiókjában azonban továbbra is megmaradnak.</translation>
 <translation id="4510973599275542560">Ne töltse újra</translation>
 <translation id="1206892813135768548">Link szövegének másolása</translation>
 <translation id="9154176715500758432">Maradok ezen az oldalon</translation>
+<translation id="1416550906796893042">Alkalmazás verziószáma</translation>
 <translation id="7063006564040364415">Nem sikerült csatlakozni a szinkronizálószerverhez.</translation>
 <translation id="4271185234001491831">Soha ne fordítsa le a(z) <ph name="LANGUAGE"/> nyelvű szöveget</translation>
 <translation id="6671495933530132209">Kép másolása</translation>
@@ -103,6 +145,7 @@
 <translation id="8941248009481596111">A webhellyel való kapcsolata privát.</translation>
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="5164482624172255778">Szeretné, hogy a Google Chrome a jövőben felajánlja e webhely <ph name="LANGUAGE"/> nyelvű oldalainak fordítását?</translation>
+<translation id="4062305924942672200">Jogi információk</translation>
 <translation id="8528538445849828817">Az oldal nyelve: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Megnyitás</translation>
 <translation id="6512448926095770873">Az oldal elhagyása</translation>
@@ -115,17 +158,29 @@
 <translation id="5138299137310274655">Ez az oldal <ph name="SOURCE_LANGUAGE"/> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
 <translation id="7649070708921625228">Súgó</translation>
 <translation id="969096075394517431">Nyelvek módosítása</translation>
+<translation id="1614564776292091138">Ha a védett tartalom ENGEDÉLYEZVE van, a webhelyek hitelesíthetik az Ön eszközét, hogy megbizonyosodjanak róla, hogy engedélyezett rajta a prémium és védett videók lejátszása.
+
+Ha LE VAN TILTVA, előfordulhat, hogy nem tud majd prémium videókat lejátszani ezen az eszközön.</translation>
+<translation id="8928220460877261598">Bejelentkezett a Chrome-ba.</translation>
 <translation id="5032574515228824816">Parancssor</translation>
 <translation id="6165508094623778733">További információ</translation>
+<translation id="862875433388403934">Az egyéb alkalmazásokban letöltött tartalmakat (filmek, zene stb.) valószínűleg nem lehet majd lejátszani, amíg az egyes alkalmazások új engedélyeket nem kapnak új eszközhitelesítési adatok alapján.
+
+Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le a letöltött tartalmat.</translation>
+<translation id="2913733558842973836">A webhely teljes képernyős nézetben van.
+A kilépéshez húzza le a tetejéről.</translation>
 <translation id="7961015016161918242">Soha</translation>
+<translation id="8109148095642131923">A letöltött elemet nem sikerült hozzáadni a letöltéskezelőhöz.</translation>
 <translation id="497421865427891073">Előrelépés</translation>
 <translation id="4056223980640387499">Szépia</translation>
 <translation id="8310344678080805313">Szabványos lapok</translation>
+<translation id="411254640334432676">A letöltés sikertelen.</translation>
 <translation id="6277522088822131679">Hiba történt az oldal nyomtatásakor. Próbálja újra.</translation>
 <translation id="7634554953375732414">A webhellyel való kapcsolata nem privát.</translation>
 <translation id="6612358246767739896">Védett tartalom</translation>
 <translation id="1742134235943978220">Lefordítva <ph name="TARGET_LANGUAGE"/> nyelvre.</translation>
 <translation id="5916664084637901428">Be</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7437998757836447326">Kijelentkezés a Chrome-ból</translation>
 <translation id="7561196759112975576">Mindig</translation>
 </translationbundle>

@@ -171,6 +171,7 @@
 <translation id="2648074677641340862">स्‍थापनेदरम्‍यान ऑपरेटिंग प्रणाली त्रुटी आली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> Chrome मध्‍ये जोडले गेले आहे.</translation>
 <translation id="549669000822060376">कृपया Chromium नवीनतम सिस्टीम अद्यतने स्थापित करेपर्यंत प्रतीक्षा करा.</translation>
+<translation id="1240763998429950591">Chromium नवीनतम आवृत्तीवर अद्यतनित करू शकत नाही, म्हणून आपण नवीन वैशिष्ट्ये आणि सुरक्षितता निश्चिती गमावत आहात. आपल्याला Chromium अद्यतनित करण्याची आवश्यकता आहे.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">Google शोध, परत करणार्‍या परिभाषा, चित्रे, शोध परिणाम आणि इतर तपशीलांना शब्द आणि त्याच्या आसपासचा संदर्भ पाठविते.</translation>
 <translation id="4559775032954821361">Chromium मेनू &gt;
@@ -208,6 +209,7 @@
 <translation id="2966088006374919794">Chromium ला <ph name="SCHEME"/> दुवे हाताळण्‍यासाठी बाह्य अनुप्रयोग लाँच करणे आवश्‍यक आहे. विनंती केलेला दुवा <ph name="PROTOLINK"/> हा आहे.</translation>
 <translation id="2558235863893655150">Chromium ने आपला संकेतशब्द जतन करावा असे आपण इच्‍छिता?</translation>
 <translation id="6485906693002546646">आपण आपली Chromium सामग्री संकालित करण्यासाठी <ph name="PROFILE_EMAIL"/> वापरत आहात. आपले संकालन प्राधान्य अद्यतनित करण्यासाठी किंवा Google खाते न सोडता Chromium वापरण्यासाठी, <ph name="SETTINGS_LINK"/> ला भेट द्या.</translation>
+<translation id="705851970750939768">Chromium अद्यतनित करा</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON"/>रीस्टार्ट<ph name="END_BUTTON"/> करणे आवश्यक)</translation>
 <translation id="1688750314291223739">वेबवर आपली वैयक्तीकृत केलेली ब्राउझर वैशिष्ट्ये जतन करण्यासाठी समक्रमण सेट करा आणि कोणत्याही संगणकावरील Chromium वरून त्यात प्रवेश करा.</translation>
 <translation id="8610831143142469229">आपल्या फायरवॉल किंवा अँटीव्हायरस सेटिंग्जमधील नेटवर्कवर प्रवेश करण्यास

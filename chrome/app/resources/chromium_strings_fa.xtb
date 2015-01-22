@@ -169,6 +169,7 @@
 <translation id="2648074677641340862">‏یک خطای سیستم عامل در طول نصب روی داد. لطفاً Chromium را دوباره نصب کنید.</translation>
 <translation id="5942520288919337908">‏<ph name="EXTENSION_NAME"/> به Chromium اضافه شده است.</translation>
 <translation id="549669000822060376">‏وقتی Chromium جدیدترین به‌روزرسانی‌های سیستم را نصب می‌کند، لطفاً صبر کنید.</translation>
+<translation id="1240763998429950591">‏Chromium با جدیدترین نسخه به‌روز نشده است، بنابراین رفع اشکال‌های امنیتی و ویژگی‌های جدید را ندارید. باید Chromium را به‌روزرسانی کنید.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">‏کلمه و زمینه اطراف آن را به جستجوی Google ارسال می‌کند و تعریف، تصاویر، نتایج جستجو، و سایر جزئیات را بازمی‌گرداند.</translation>
 <translation id="4559775032954821361">‏به
@@ -209,6 +210,7 @@
 <translation id="2966088006374919794">‏برای کار با پیوندهای <ph name="SCHEME"/>، Chromium باید برنامهٔ کاربردی خارجی را راه‌اندازی کند. پیوند <ph name="PROTOLINK"/> مورد نیاز است.</translation>
 <translation id="2558235863893655150">‏آیا می‌خواهید Chromium گذرواژهٔ شما را ذخیره کند؟</translation>
 <translation id="6485906693002546646">‏شما از <ph name="PROFILE_EMAIL"/> برای همگام‌سازی موارد Chromium خودتان استفاده می‌کنید. برای به‌روزرسانی تنظیمات ترجیحی همگام‌سازی‌تان یا استفاده از Chromium بدون حساب Google، به <ph name="SETTINGS_LINK"/> مراجعه کنید.</translation>
+<translation id="705851970750939768">‏به‌روزرسانی Chromium</translation>
 <translation id="5772805321386874569">‏(Chromium باید <ph name="BEGIN_BUTTON"/>راه‌اندازی مجدد<ph name="END_BUTTON"/> شود)</translation>
 <translation id="1688750314291223739">‏برای ذخیره ویژگی‌های مرورگر سفارشی شده خود در وب و دسترسی به آن‌ها از Chromium از هر رایانه دیگری، همگام‌سازی را راه‌اندازی کنید.</translation>
 <translation id="8610831143142469229">‏در تنظیمات فایروال و ضد ویروس‌تان، به Chromium اجازه دسترسی به شبکه را بدهید.</translation>

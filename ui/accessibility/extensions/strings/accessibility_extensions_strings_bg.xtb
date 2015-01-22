@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Задаване като стандартна схема</translation>
 <translation id="2179565792157161713">Отваряне на дългото описание в нов раздел</translation>
 <translation id="2471847333270902538">Цветова схема за <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Кликнете с десния бутон на мишката върху всеки елемент с атрибут „aria-describedat“ или „longdesc“, за да осъществите достъп до дългото му описание.</translation>
+<translation id="786423340267544509">Добавяне на контури към елементите с атрибути „aria-describedat“ или „longdesc“.</translation>
 <translation id="690628312087070417">Когато курсорът се премести на голямо разстояние:</translation>
 <translation id="5331422999063554397">Негатив</translation>
 <translation id="2648340354586434750">Натиснете и задръжте &lt;span class='key'&gt;Option&lt;/span&gt;, за да се придвижвате дума по дума.</translation>
+<translation id="4769065380738716500">Изображенията бяха заменени с алтернативния текст за тях.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Използвайте клавишите със стрелки, за да се придвижвате в документа. &lt;/p&gt;&lt;p&gt;Кликнете върху произволно място, за да преместите курсора там.&lt;/p&gt; &lt;p&gt;Натиснете &lt;span class='key'&gt;Shift&lt;/span&gt; + клавишите със стрелки, за да изберете текст.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Клавишни команди</translation>
 <translation id="633394792577263429">Натиснете и задръжте &lt;span class='key'&gt;Control&lt;/span&gt;, за да се придвижвате дума по дума.</translation>

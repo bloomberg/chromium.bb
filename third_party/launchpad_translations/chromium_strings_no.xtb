@@ -171,6 +171,7 @@ og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE"/>, 
 <translation id="2648074677641340862">Det oppsto en systemfeil under installering. Last ned Chromium på nytt.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> har blitt lagt til i Chromium.</translation>
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
+<translation id="1240763998429950591">Chromium kunne ikke oppdatere til den nyeste versjonen, så du går glipp av nye funksjoner og sikkerhetsfikser. Du må oppdatere Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">sender et ord og konteksten til Google Søk, og returnerer definisjoner, bilder, søkeresultater og annen informasjon.</translation>
 <translation id="4559775032954821361">Gå til
@@ -208,6 +209,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="2966088006374919794">Chromium må starte et eksternt program for å håndtere <ph name="SCHEME"/>-linker. Den påkrevde linken er <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Vil du at Chrome skal lagre passordet ditt?</translation>
 <translation id="6485906693002546646">Du bruker <ph name="PROFILE_EMAIL"/> for synkronisering av Chromium-tingene dine. For å oppdatere alternativene for synkronisering eller bruke Chromium uten Google-konto, kan du gå til <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Oppdater Chromium</translation>
 <translation id="5772805321386874569">(krever at Chromium <ph name="BEGIN_BUTTON"/>startes på nytt<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Chromium på enhver datamaskin.</translation>
 <translation id="8610831143142469229">Tillat at Chromium bruker nettverket i brannmur- eller antivirusinnstillingene dine.</translation>

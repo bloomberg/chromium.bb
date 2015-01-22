@@ -153,6 +153,7 @@
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
 <translation id="5942520288919337908">“<ph name="EXTENSION_NAME"/>”已添加到 Chromium。</translation>
 <translation id="549669000822060376">Chromium正在安装最新的系统更新，请稍候。</translation>
+<translation id="1240763998429950591">Chromium 无法更新到最新版本，因此其中缺少一些新功能并且未更正某些安全性问题。您需要更新 Chromium。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">向 Google 搜索发送某个字词及其相关上下文，系统将返回相应的定义、图片、搜索结果和其他详细信息。</translation>
 <translation id="4559775032954821361">依次转到 Chromium 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”&gt;“<ph name="PROXIES_TITLE"/>”&gt;“LAN 设置”，然后取消选中“为 LAN 使用代理服务器”复选框。</translation>
@@ -181,6 +182,7 @@
 <translation id="2966088006374919794">Chromium 必须启动外部应用才能处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
 <translation id="2558235863893655150">要让 Chromium 保存您的密码吗？</translation>
 <translation id="6485906693002546646">您在使用<ph name="PROFILE_EMAIL"/>同步自己的Chromium资料和数据。要更新您的同步偏好设置或在不登录Google帐户的情况下使用Chromium，请前往<ph name="SETTINGS_LINK"/>部分。</translation>
+<translation id="705851970750939768">更新 Chromium</translation>
 <translation id="5772805321386874569">（需要<ph name="BEGIN_BUTTON"/>重新启动<ph name="END_BUTTON"/> Chromium）</translation>
 <translation id="1688750314291223739">您可以设置同步以将个性化浏览器功能保存到网上，以便在任意计算机上的 Chromium 中使用这些功能。</translation>
 <translation id="8610831143142469229">对防火墙或防病毒软件进行设置，以允许 Chromium 访问该网络。</translation>

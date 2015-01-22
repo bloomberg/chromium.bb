@@ -6,7 +6,7 @@
 <translation id="6050189528197190982">גווני אפור</translation>
 <translation id="5094574508723441140">ניגודיות מוגברת</translation>
 <translation id="8609925175482059018">‏הקש על ‎&lt;span class='key'&gt;F7&lt;/span&gt;‎ כדי להפעיל דפדוף עם סמן. כדי להשבית, הקש שוב על מקש זה.</translation>
-<translation id="3435896845095436175">אפשר</translation>
+<translation id="3435896845095436175">הפעל</translation>
 <translation id="8480209185614411573">ניגודיות גבוהה</translation>
 <translation id="1588438908519853928">רגיל</translation>
 <translation id="4954450790315188152">כאשר 'דפדוף עם סמן' מופעל:</translation>
@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">הגדר כברירת מחדל של ערכת צבעים</translation>
 <translation id="2179565792157161713">פתיחת תיאור ארוך בכרטיסייה חדשה</translation>
 <translation id="2471847333270902538">ערכת צבעים עבור <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">‏לחץ לחיצה ארוכה על כל פריט עם המאפיין &quot;longdesc&quot; או &quot;aria-describedat&quot; כדי לגשת לתיאור הארוך שלו.</translation>
+<translation id="786423340267544509">‏הוסף גבול לאלמנטים עם מסגרות aria-describedat או longdesc.</translation>
 <translation id="690628312087070417">כאשר הסמן קופץ למרחק רב:</translation>
 <translation id="5331422999063554397">צבע הפוך</translation>
 <translation id="2648340354586434750">‏לחץ לחיצה ארוכה על ‎&lt;span class='key'&gt;‎Option&lt;/span&gt;‎ כדי לעבור לפי מילים.</translation>
+<translation id="4769065380738716500">‏תמונות הוחלפו על-ידי טקסט ה-alt שלהן.</translation>
 <translation id="5287723860611749454">‏&lt;p&gt;השתמש במקשי החצים כדי לדפדף במסמך. ‎&lt;/p&gt;&lt;p&gt;‎לחץ במקום כלשהו כדי להעביר את הסמן לאותו מיקום. ‎&lt;/p&gt; &lt;p&gt;‎   הקש על ‎&lt;span class='key'&gt;Shift&lt;/span&gt;‎ + מקשי החצים כדי לבחור טקסט.‎&lt;/p&gt;‎</translation>
 <translation id="5558600050691192317">פקודות מקלדת</translation>
 <translation id="633394792577263429">‏לחץ לחיצה ארוכה על ‎&lt;span class='key'&gt;Control&lt;/span&gt;‎ כדי לעבור לפי מילים.</translation>

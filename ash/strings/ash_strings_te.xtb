@@ -43,6 +43,7 @@
 <translation id="3891340733213178823">సైన్ అవుట్ చేయడానికి Ctrl+Shift+Qని రెండుసార్లు నొక్కండి.</translation>
 <translation id="5871632337994001636">పరికరాలను నిర్వహించండి...</translation>
 <translation id="785750925697875037">మొబైల్ ఖాతాని వీక్షించండి</translation>
+<translation id="8356164830168736643"><ph name="WINDOW_TITLE"/>ని మూసివేయి</translation>
 <translation id="7864539943188674973">Bluetoothని నిలిపివేయి</translation>
 <translation id="939252827960237676">స్క్రీన్‌షాట్‌ను సేవ్ చేయడంలో విఫలమైంది</translation>
 <translation id="9080206825613744995">మైక్రోఫోన్ ఉపయోగంలో ఉంది.</translation>
@@ -70,6 +71,7 @@
 <translation id="7823564328645135659">మీ సెట్టింగ్‌లను సమకాలీకరించిన తర్వాత Chrome యొక్క భాష &quot;<ph name="FROM_LOCALE"/>&quot; నుండి &quot;<ph name="TO_LOCALE"/>&quot;కి మార్చబడింది.</translation>
 <translation id="3606978283550408104">బ్రెయిలీ డిస్‌ప్లే కనెక్ట్ చేయబడింది.</translation>
 <translation id="8654520615680304441">Wi-Fiని ప్రారంభించు...</translation>
+<translation id="4421231901400348175">రిమోట్ సహాయం విధానంలో మీ స్క్రీన్ నియంత్రణ <ph name="HELPER_NAME"/>కి భాగస్వామ్యం చేయబడుతోంది.</translation>
 <translation id="6650933572246256093">బ్లూటూత్ పరికరం &quot;<ph name="DEVICE_NAME"/>&quot; జత కావడానికి అనుమతి కోరుతోంది. దయచేసి ఆ పరికరంలో ఈ పాస్‌కీని నమోదు చేయండి: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">మీ ఇన్‌పుట్ పద్ధతి <ph name="INPUT_METHOD_ID"/>కు మార్చబడింది.
@@ -145,6 +147,7 @@
 <translation id="5977415296283489383">హెడ్‌ఫోన్</translation>
 <translation id="225680501294068881">పరికరాల కోసం స్కాన్ చేస్తోంది...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
+<translation id="5978382165065462689">రిమోట్ సహాయం విధానంలో మీ స్క్రీన్ నియంత్రణను భాగస్వామ్యం చేస్తోంది.</translation>
 <translation id="737451040872859086">మైక్రోఫోన్ (అంతర్గతం)</translation>
 <translation id="2475982808118771221">ఒక లోపం సంభవించింది</translation>
 <translation id="3783640748446814672">alt</translation>

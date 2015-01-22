@@ -3,16 +3,23 @@
 <translation id="7998918019931843664">Redeschideți fila închisă</translation>
 <translation id="4996978546172906250">Trimiteți prin</translation>
 <translation id="6292937202013477045">Atacatorii ar putea încerca să-ți fure informațiile (de exemplu, fotografii, parole, mesaje și carduri de credit) de pe <ph name="DOMAIN_NAME"/>.</translation>
+<translation id="1506061864768559482">Motor de căutare</translation>
 <translation id="346339498574870680">Copiază adresa URL a imaginii</translation>
 <translation id="6657585470893396449">Parolă</translation>
 <translation id="5578795271662203820">Căutați imaginea cu <ph name="SEARCH_ENGINE"/></translation>
+<translation id="7764225426217299476">Adaugă o adresă</translation>
+<translation id="8237438615979997762">Datele stocate pe acest dispozitiv, precum și datele stocate în Contul Google se vor păstra în ambele locații. Cu toate acestea, datele noi sau modificările datelor nu se vor sincroniza între aceste locații.</translation>
 <translation id="6831043979455480757">Tradu</translation>
+<translation id="6504836143156866575">Versiune JavaScript</translation>
 <translation id="869891660844655955">Dată de expirare</translation>
 <translation id="7644305409888602715">Se traduce pagina în <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="326254929494722411">Nu ai configurat încă un Cont Google pe acest dispozitiv</translation>
+<translation id="3895926599014793903">Forțează activarea zoomului</translation>
 <translation id="7015922086425404465">Descărcați aplicația din Magazin Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Reîncărcați această pagină</translation>
 <translation id="5233638681132016545">Filă nouă</translation>
 <translation id="641643625718530986">Printați...</translation>
+<translation id="6317634962183824346">Sincronizare de sistem Android dezactivată. Reactiveaz-o și încearcă din nou.</translation>
 <translation id="5763382633136178763">File incognito</translation>
 <translation id="5210365745912300556">Închide fila</translation>
 <translation id="7658239707568436148">Anulează</translation>
@@ -22,13 +29,19 @@
 <translation id="6846298663435243399">Se încarcă…</translation>
 <translation id="7378627244592794276">Nu</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9133515669113036225">Resetează datele de conectare de pe dispozitiv</translation>
+<translation id="9019902583201351841">Gestionat de părinții tăi</translation>
+<translation id="7596558890252710462">Sistem de operare</translation>
 <translation id="3358663646935160692">Acest cont este gestionat de <ph name="DOMAIN_NAME"/>.
 
 Urmează să vă conectați cu un cont gestionat și să acordați administratorului control asupra profilului Chrome. Datele din Chrome vor fi asociate definitiv acestui cont. Dacă vă deconectați de la acest cont, datele locale Chrome se vor șterge.</translation>
+<translation id="666981079809192359">Notificare privind confidențialitatea Chrome</translation>
 <translation id="1966710179511230534">Actualizați detaliile de conectare.</translation>
+<translation id="3410346880900521918">Dacă acest mesaj apare frecvent, încearcă aceste <ph name="BEGIN_LINK"/>sugestii<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Restricționați capacitatea acestei pagini de a crea casete de dialog suplimentare</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="5595485650161345191">Editează adresa</translation>
+<translation id="4256782883801055595">Licențe open source</translation>
 <translation id="8218346974737627104">Confirmați conectarea</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, filă</translation>
 <translation id="624558823898732418">Limba traducerii: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,17 +50,22 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="8719023831149562936">Fila actuală nu poate fi transmisă</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="3896036286668839683">Vizualizator de certificate</translation>
+<translation id="2321958826496381788">Trage cursorul până poți citi textul cu ușurință. Textul trebuie să fie cel puțin la fel de mare ca acesta după o atingere dublă pe un paragraf.</translation>
 <translation id="5039804452771397117">Permite</translation>
 <translation id="8583805026567836021">Se șterg datele contului</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
+<translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Toate drepturile rezervate.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="8073388330009372546">Vedeți imaginea în filă nouă</translation>
 <translation id="552553974213252141">Textul a fost extras corect?</translation>
 <translation id="5317780077021120954">Salvează</translation>
+<translation id="1151972924205500581">Trebuie să introduceți o parolă</translation>
 <translation id="2718352093833049315">Numai prin Wi-Fi</translation>
 <translation id="7029809446516969842">Parole</translation>
 <translation id="2414886740292270097">Întunecat</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
+<translation id="4645575059429386691">Gestionat de părintele tău</translation>
+<translation id="8562452229998620586">Parolele salvate vor fi afișate aici.</translation>
 <translation id="8730621377337864115">Terminat</translation>
 <translation id="4170011742729630528">Serviciul nu este disponibil. Încercați din nou mai târziu.</translation>
 <translation id="473775607612524610">Actualizează</translation>
@@ -55,19 +73,27 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="1807246157184219062">Luminos</translation>
 <translation id="7053983685419859001">Blochează</translation>
 <translation id="8374821112118309944">Trebuie să actualizați TalkBack la o versiune mai nouă.</translation>
+<translation id="6406506848690869874">Sincronizare</translation>
 <translation id="8481940801237642152">Conexiunea la acest site este privată, dar cineva din rețea ar putea să schimbe aspectul paginii.</translation>
 <translation id="2593272815202181319">Un singur spațiu</translation>
 <translation id="4807098396393229769">Numele de pe card</translation>
 <translation id="656628257199996201">Tradu întotdeauna din <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="2387895666653383613">Scalarea textului</translation>
 <translation id="2748463065602559597">Acum afișează o pagină Google Chrome securizată.</translation>
+<translation id="5626370437647899551">Adaugă un Cont Google</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="4543661749405994812">Copiază adresa de e-mail</translation>
 <translation id="5659593005791499971">Adresă de e-mail</translation>
+<translation id="7987073022710626672">Termenii și condițiile Chrome</translation>
+<translation id="5668404140385795438">Înlocuiește solicitarea unui site pentru a împiedica mărirea</translation>
 <translation id="8428213095426709021">Setări</translation>
 <translation id="5684874026226664614">Hopa. Această pagină nu a putut fi tradusă.</translation>
+<translation id="6064211167623632605">Calea executabilă</translation>
 <translation id="10614374240317010">Nu se salvează niciodată</translation>
 <translation id="2903493209154104877">Adrese</translation>
 <translation id="8503813439785031346">Nume utilizator</translation>
+<translation id="4827948050554950725">Adaugă un card de credit</translation>
+<translation id="7817177303494746697">Versiune Blink</translation>
 <translation id="2532336938189706096">Vizualizare pe web</translation>
 <translation id="6571070086367343653">Editează cardul de credit</translation>
 <translation id="7080851568148064063">Adaugă pe ecran de pornire</translation>
@@ -76,25 +102,41 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="3254409185687681395">Marcați această pagină</translation>
 <translation id="907015151729920253">Card inteligent</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="2600241144430299006">Luna de expirare a cardului</translation>
 <translation id="3063601790762993062">Salvați videoclipul</translation>
 <translation id="8106211421800660735">Numărul cardului de credit</translation>
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="7267430310003164111">Notificare pentru a descărca aplicația din Magazin Google Play.  Numele aplicației: <ph name="APP_NAME"/>.  Evaluarea medie a aplicației: <ph name="APP_RATING"/>.</translation>
+<translation id="7358682983403815415">Filele deschise, marcajele, istoricul și alte date sunt sincronizate cu Contul Google.</translation>
+<translation id="1943432128510653496">Parole salvate</translation>
+<translation id="4113030288477039509">Gestionat de administratorul tău</translation>
+<translation id="9100610230175265781">Este necesară o expresie de acces</translation>
 <translation id="4148957013307229264">Se instalează...</translation>
 <translation id="3992315671621218278">Salvați linkul</translation>
+<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="5424715742813396254">Editează numele/parola sau excepția salvată</translation>
 <translation id="2476578072172137802">Setări site</translation>
 <translation id="4195643157523330669">Deschide în filă nouă</translation>
 <translation id="651048280540227067">Închide meniul</translation>
+<translation id="748127970106343339">Confirmă ștergerea datelor de conectare de pe dispozitiv</translation>
 <translation id="3089395242580810162">Deschideți într-o filă incognito</translation>
+<translation id="1583256385106514953">Anul de expirare a cardului</translation>
+<translation id="1082482054625560856">Gestionează parolele salvate în <ph name="BEGIN_LINK"/>Contul Google<ph name="END_LINK"/></translation>
+<translation id="2699916814609764774">Calea profilului</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8909135823018751308">Trimiteți…</translation>
+<translation id="6575643671698722332">Nu s-a resetat. Asigură-te că ești online și încearcă din nou.</translation>
 <translation id="654446541061731451">Selectează o filă pentru transmitere</translation>
 <translation id="4269820728363426813">Copiați adresa linkului</translation>
+<translation id="2359808026110333948">Continuă</translation>
+<translation id="2512222046227390255">Completare automată de formulare</translation>
 <translation id="8261506727792406068">Șterge</translation>
+<translation id="1080790410959514870">În prezent, te deconectezi de la un cont gestionat de <ph name="DOMAIN_NAME"/>. Astfel, vor fi șterse datele Chrome stocate pe acest dispozitiv, dar datele vor rămâne în Contul Google.</translation>
 <translation id="4510973599275542560">Nu reîncărcați</translation>
 <translation id="1206892813135768548">Copiați textul linkului</translation>
 <translation id="9154176715500758432">Rămâi pe pagină</translation>
+<translation id="1416550906796893042">Versiunea aplicației</translation>
 <translation id="7063006564040364415">Nu s-a putut stabili conexiunea cu serverul de sincronizare.</translation>
 <translation id="4271185234001491831">Nu traduce niciodată din <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Copiați imaginea</translation>
@@ -103,6 +145,7 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="8941248009481596111">Conexiunea la acest site este privată.</translation>
 <translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
 <translation id="5164482624172255778">Doriți ca data viitoare Google Chrome să propună traducerea paginilor în limba <ph name="LANGUAGE"/> de pe acest site?</translation>
+<translation id="4062305924942672200">Informații juridice</translation>
 <translation id="8528538445849828817">Limba paginii: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Deschide</translation>
 <translation id="6512448926095770873">Ieși de pe această pagină</translation>
@@ -115,17 +158,29 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="5138299137310274655">Această pagină este în <ph name="SOURCE_LANGUAGE"/>. Vrei să fie tradusă în <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="969096075394517431">Schimbați limbile</translation>
+<translation id="1614564776292091138">Când conținutul protejat este ACTIVAT, site-urile îți vor putea autentifica dispozitivul pentru a se asigura că acesta este autorizat să redea videoclipuri premium protejate.
+
+Când conținutul protejat este DEZACTIVAT, nu vei putea să redai videoclipuri premium pe acest dispozitiv.</translation>
+<translation id="8928220460877261598">Sunteți conectat(ă) la Chrome.</translation>
 <translation id="5032574515228824816">Solicitare</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
+<translation id="862875433388403934">Conținutul (filme, muzică etc.) descărcat în alte aplicații nu va mai fi redat decât după ce aplicațiile obțin din nou licențe pe baza unor date de conectare noi pe dispozitiv.
+
+Pentru licențe noi, conectează-te la internet și redă conținutul descărcat.</translation>
+<translation id="2913733558842973836">Acest site a intrat în modul Ecran complet.
+Trage din partea de sus pentru a ieși.</translation>
 <translation id="7961015016161918242">Niciodată</translation>
+<translation id="8109148095642131923">Articolul descărcat nu a fost adăugat la managerul de descărcări.</translation>
 <translation id="497421865427891073">Înainte</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">File standard</translation>
+<translation id="411254640334432676">Nu s-a descărcat.</translation>
 <translation id="6277522088822131679">A apărut o problemă la printarea paginii. Încercați din nou.</translation>
 <translation id="7634554953375732414">Conexiunea la acest site nu este privată.</translation>
 <translation id="6612358246767739896">Conținut protejat</translation>
 <translation id="1742134235943978220">Tradusă în <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5916664084637901428">Activat</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7437998757836447326">Deconectează-te de la Chrome</translation>
 <translation id="7561196759112975576">Întotdeauna</translation>
 </translationbundle>

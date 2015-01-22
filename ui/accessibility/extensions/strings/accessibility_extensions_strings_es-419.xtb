@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Establecer como combinación predeterminada</translation>
 <translation id="2179565792157161713">Abrir descripción larga en nueva pestaña</translation>
 <translation id="2471847333270902538">Combinación de colores para <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Haz clic con el botón secundario en cualquier elemento con un atributo &quot;longdesc&quot; o &quot;aria-describedat&quot; para acceder a una descripción larga.</translation>
+<translation id="786423340267544509">Agregar límite a elementos con atributos aria-describedat o longdesc</translation>
 <translation id="690628312087070417">Cuando el cursor de texto avanza a una parte alejada:</translation>
 <translation id="5331422999063554397">Color invertido</translation>
 <translation id="2648340354586434750">Mantén presionado &lt;span class='key'&gt;Opción&lt;/span&gt; para moverte por palabra.</translation>
+<translation id="4769065380738716500">Las imágenes se reemplazaron por su texto &quot;alt&quot;.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Usa las teclas de flecha para desplazarte por el documento. &lt;/p&gt;&lt;p&gt;Haz clic en cualquier lugar para mover el cursor a esa ubicación. &lt;/p&gt; &lt;p&gt;   Presiona &lt;span class='key'&gt;Shift&lt;/span&gt; + las flechas para seleccionar el texto.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Comandos de teclado</translation>
 <translation id="633394792577263429">Mantén presionado &lt;span class='key'&gt;Control&lt;/span&gt; para moverte por palabra.</translation>

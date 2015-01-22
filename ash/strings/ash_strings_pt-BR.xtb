@@ -43,6 +43,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3891340733213178823">Pressione Ctrl+Shift+Q duas vezes para sair.</translation>
 <translation id="5871632337994001636">Gerenciar dispositivos...</translation>
 <translation id="785750925697875037">Exibir conta de celular</translation>
+<translation id="8356164830168736643">Fechar <ph name="WINDOW_TITLE"/></translation>
 <translation id="7864539943188674973">Desativar bluetooth</translation>
 <translation id="939252827960237676">Falha ao salvar a captura de tela</translation>
 <translation id="9080206825613744995">O microfone está sendo usado.</translation>
@@ -70,6 +71,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="7823564328645135659">O idioma foi alterado de &quot;<ph name="FROM_LOCALE"/>&quot; para &quot;<ph name="TO_LOCALE"/>&quot; após a sincronização de suas configurações.</translation>
 <translation id="3606978283550408104">Display em braille conectado.</translation>
 <translation id="8654520615680304441">Ativar Wi-Fi...</translation>
+<translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME"/> via Assistência remota.</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; deseja permissão para realizar o pareamento. Digite esta senha no dispositivo: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Seu método de entrada mudou para <ph name="INPUT_METHOD_ID"/>.
@@ -145,6 +147,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="5977415296283489383">Fone de ouvido</translation>
 <translation id="225680501294068881">Procurando dispositivos...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
+<translation id="5978382165065462689">Compartilhando o controle de sua tela por meio da Assistência remota.</translation>
 <translation id="737451040872859086">Microfone (interno)</translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
 <translation id="3783640748446814672">alt</translation>

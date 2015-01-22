@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Määra vaikeskeemiks</translation>
 <translation id="2179565792157161713">Ava pikk kirjeldus uuel vahelehel</translation>
 <translation id="2471847333270902538">Saidi <ph name="SITE"/> värviskeem:</translation>
+<translation id="381767806621926835">Paremklõpsake elemendil, mille atribuut on „longdesc” või „aria-describedat”, et saada juurdepääs selle pikale kirjeldusele.</translation>
+<translation id="786423340267544509">Lisa ääris elementidele, mis kasutavad atribuute aria-describedat või longdesc.</translation>
 <translation id="690628312087070417">Kui sisestusmärk liigub edasi suure vahemaaga:</translation>
 <translation id="5331422999063554397">Vahetatud värv</translation>
 <translation id="2648340354586434750">Sõnahaaval liikumiseks hoidke all &lt;span class='key'&gt;valikuklahvi&lt;/span&gt;.</translation>
+<translation id="4769065380738716500">Kujutised on asendatud alt-tekstiga.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Kogu dokumendis liikumiseks kasutage nooleklahve. &lt;/p&gt;&lt;p&gt;Kursori liigutamiseks soovitud kohta klõpsake sellel kohal. &lt;/p&gt; &lt;p&gt;   Teksti valimiseks vajutage &lt;span class='key'&gt;tõstuklahvi&lt;/span&gt; ja nooli.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Klaviatuuri käsud</translation>
 <translation id="633394792577263429">Sõnahaaval liikumiseks hoidke all &lt;span class='key'&gt;juhtklahvi&lt;/span&gt;.</translation>

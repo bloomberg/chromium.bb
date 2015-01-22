@@ -167,6 +167,7 @@
 <translation id="2648074677641340862">ఇన్‌స్టాలేషన్ సమయంలో ఆపరేటింగ్ సిస్టమ్ లోపం సంభవించింది. దయచేసి Chromiumని మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="5942520288919337908">Chromiumకు <ph name="EXTENSION_NAME"/> జోడించబడింది.</translation>
 <translation id="549669000822060376">దయచేసి Chromium తాజా సిస్టమ్ నవీకరణలను ఇన్‌స్టాల్ చేస్తున్నప్పుడు వేచి ఉండండి.</translation>
+<translation id="1240763998429950591">Chromium తాజా సంస్కరణకు నవీకరించబడలేదు, కావున మీరు కొత్త లక్షణాలను మరియు భద్రతా పరిష్కారాలను కోల్పోతున్నారు. మీరు Chromiumని నవీకరించాలి.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">పదాన్ని మరియు దాని చుట్టూ ఉన్న సందర్భాన్నిGoogle శోధనకు పంపుతుంది, అప్పుడు నిర్వచనాలు, చిత్రాలు, శోధన ఫలితాలు మరియు ఇతర వివరాలు అందించబడతాయి.</translation>
 <translation id="4559775032954821361">Chromium మెను &gt;
@@ -204,6 +205,7 @@
 <translation id="2966088006374919794"><ph name="SCHEME"/> లింక్‌లను నిర్వహించడానికి Chromium బాహ్య అనువర్తనాన్ని ప్రారంభించాలి. అభ్యర్థించిన లింక్ <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">మీరు మీ పాస్‌వర్డ్‌ని Chromium సేవ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="6485906693002546646">మీరు మీ Chromium అంశాలను సమకాలీకరించడానికి <ph name="PROFILE_EMAIL"/>ని ఉపయోగిస్తున్నారు. మీ సమకాలీకరణ ప్రాధాన్యతను నవీకరించడానికి లేదా Google ఖాతా లేకుండా Chromiumని ఉపయోగించడానికి, <ph name="SETTINGS_LINK"/>ను సందర్శించండి.</translation>
+<translation id="705851970750939768">Chromiumని నవీకరించు</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON"/>పునఃప్రారంభం<ph name="END_BUTTON"/> అవసరం)</translation>
 <translation id="1688750314291223739">వెబ్‌కు మీ వ్యక్తిగతీకరించిన బ్రౌజర్ లక్షణాలను సేవ్ చేయడానికి సమకాలీకణని సెటప్ చేయండి మరియు వాటిని ఏదైనా కంప్యూటర్‌లోని Chromium నుండి ప్రాప్యత చేయండి.</translation>
 <translation id="8610831143142469229">మీ ఫైర్‌వాల్ లేదా యాంటీవైరస్ సెట్టింగ్‌ల్లో నెట్‌వర్క్‌ను ప్రాప్యత చేయడానికి

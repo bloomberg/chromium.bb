@@ -170,6 +170,7 @@
 <translation id="2648074677641340862">Der opstod en fejl i operativsystemet under installationen. Download Chromium igen.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> er føjet til Chromium.</translation>
 <translation id="549669000822060376">Vent, mens Chromium installerer de nyeste systemopdateringer.</translation>
+<translation id="1240763998429950591">Chromium kan ikke opdatere til den nyeste version, så du går glip af nye funktioner og sikkerhedsrettelser. Du skal opdatere Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">sender et ord og ordets kontekst til Google Søgning, der returnerer definitioner, billeder, søgeresultater og andre detaljer.</translation>
 <translation id="4559775032954821361">Gå til
@@ -209,6 +210,7 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="2966088006374919794">Chromium skal starte en ekstern applikation for at håndtere <ph name="SCHEME"/>-links. Det link, der er anmodet om, er <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Skal Chromium gemme din adgangskode?</translation>
 <translation id="6485906693002546646">Du bruger <ph name="PROFILE_EMAIL"/> til at synkronisere dine Chromium-ting med. Gå til <ph name="SETTINGS_LINK"/>, hvis du vil opdatere dine synkroniseringspræference eller bruge Chromium uden en Google-konto.</translation>
+<translation id="705851970750939768">Opdater Chromium</translation>
 <translation id="5772805321386874569">(kræver en <ph name="BEGIN_BUTTON"/>genstart<ph name="END_BUTTON"/> af Chromium)</translation>
 <translation id="1688750314291223739">Konfigurer Synkronisering for at gemme dine personlige browserfunktioner på nettet, og få adgang til dem fra Chromium på en computer.</translation>
 <translation id="8610831143142469229">Tillad, at Chromium får adgang til netværket i dine indstillinger for firewall eller

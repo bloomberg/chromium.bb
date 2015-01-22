@@ -3,16 +3,23 @@
 <translation id="7998918019931843664">Gesloten tabblad opnieuw openen</translation>
 <translation id="4996978546172906250">Delen via</translation>
 <translation id="6292937202013477045">Aanvallers kunnen mogelijk informatie (bijvoorbeeld foto's, wachtwoorden, berichten en creditcarddetails) van je <ph name="DOMAIN_NAME"/> stelen.</translation>
+<translation id="1506061864768559482">Zoekmachine</translation>
 <translation id="346339498574870680">Afbeeldings-URL kopiëren</translation>
 <translation id="6657585470893396449">Wachtwoord</translation>
 <translation id="5578795271662203820">Zoeken op <ph name="SEARCH_ENGINE"/> naar afbeelding</translation>
+<translation id="7764225426217299476">Adres toevoegen</translation>
+<translation id="8237438615979997762">De gegevens die op dit apparaat zijn opgeslagen en de gegevens die in je Google-account zijn opgeslagen, blijven op die plaatsen staan. Nieuwe gegevens of wijzigingen die je aanbrengt, worden echter niet gesynchroniseerd.</translation>
 <translation id="6831043979455480757">Vertalen</translation>
+<translation id="6504836143156866575">JavaScript-versie</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
 <translation id="7644305409888602715">Pagina vertalen naar het <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="326254929494722411">Je hebt nog geen Google-account ingesteld op dit apparaat</translation>
+<translation id="3895926599014793903">Zoom inschakelen forceren</translation>
 <translation id="7015922086425404465">Download de app uit de Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Deze pagina opnieuw laden</translation>
 <translation id="5233638681132016545">Nieuw tabblad</translation>
 <translation id="641643625718530986">Afdrukken…</translation>
+<translation id="6317634962183824346">Android-systeemsynchronisatie uit. Schakel dit weer in en probeer het opnieuw.</translation>
 <translation id="5763382633136178763">Incognitotabbladen</translation>
 <translation id="5210365745912300556">Tabblad sluiten</translation>
 <translation id="7658239707568436148">Annuleren</translation>
@@ -22,13 +29,19 @@
 <translation id="6846298663435243399">Laden…</translation>
 <translation id="7378627244592794276">Nee</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9133515669113036225">Apparaatinloggegevens opnieuw instellen</translation>
+<translation id="9019902583201351841">Beheerd door je ouders</translation>
+<translation id="7596558890252710462">Besturingssysteem</translation>
 <translation id="3358663646935160692">Dit account wordt beheerd door <ph name="DOMAIN_NAME"/>.
 
 Je logt in met een beheerd account en geeft de beheerder controle over je Chrome-profiel. Je Chrome-gegevens worden permanent gekoppeld aan dit account. Als je dit account loskoppelt, worden de lokale Chrome-gegevens verwijderd.</translation>
+<translation id="666981079809192359">Privacybeleid van Chrome</translation>
 <translation id="1966710179511230534">Update je inloggegevens.</translation>
+<translation id="3410346880900521918">Als je deze melding vaker ziet, probeer je deze <ph name="BEGIN_LINK"/>suggesties<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Voorkomen dat deze pagina extra dialoogvensters weergeeft</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="5595485650161345191">Adres bewerken</translation>
+<translation id="4256782883801055595">Open-sourcelicenties</translation>
 <translation id="8218346974737627104">Inloggen bevestigen</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, tabblad</translation>
 <translation id="624558823898732418">Doeltaal: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,17 +50,22 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="8719023831149562936">Kan huidig tabblad niet beamen</translation>
 <translation id="4378154925671717803">Telefoon</translation>
 <translation id="3896036286668839683">Certificaatweergave</translation>
+<translation id="2321958826496381788">Sleep de schuifknop tot je deze tekst prettig kunt lezen. De tekst moet minimaal deze grootte hebben nadat je op een alinea hebt dubbelgetikt.</translation>
 <translation id="5039804452771397117">Toestaan</translation>
 <translation id="8583805026567836021">Accountgegevens wissen</translation>
 <translation id="5860033963881614850">Uit</translation>
+<translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="8073388330009372546">Openen op nieuw tabblad</translation>
 <translation id="552553974213252141">Is de tekst correct geëxtraheerd?</translation>
 <translation id="5317780077021120954">Opslaan</translation>
+<translation id="1151972924205500581">Wachtwoord vereist</translation>
 <translation id="2718352093833049315">Alleen via wifi</translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>
 <translation id="2414886740292270097">Donker</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
+<translation id="4645575059429386691">Beheerd door je ouder</translation>
+<translation id="8562452229998620586">Opgeslagen wachtwoorden worden hier weergegeven.</translation>
 <translation id="8730621377337864115">Gereed</translation>
 <translation id="4170011742729630528">De service is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="473775607612524610">Updaten</translation>
@@ -55,19 +73,27 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="1807246157184219062">Licht</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
 <translation id="8374821112118309944">Je moet TalkBack bijwerken naar een nieuwere versie.</translation>
+<translation id="6406506848690869874">Synchronisatie</translation>
 <translation id="8481940801237642152">Je verbinding met deze site is privé, maar iemand op het netwerk kan mogelijk het uiterlijk van de pagina wijzigen.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Naam op kaart</translation>
 <translation id="656628257199996201">Altijd <ph name="SOURCE_LANGUAGE"/> vertalen</translation>
+<translation id="2387895666653383613">Tekstschaal</translation>
 <translation id="2748463065602559597">Je bekijkt een veilige Google Chrome-pagina.</translation>
+<translation id="5626370437647899551">Google-account toevoegen</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="4543661749405994812">E-mailadres kopiëren</translation>
 <translation id="5659593005791499971">E-mailadres</translation>
+<translation id="7987073022710626672">Servicevoorwaarden van Chrome</translation>
+<translation id="5668404140385795438">Negeer verzoek van website om inzoomen te voorkomen</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="5684874026226664614">Deze pagina kan niet worden vertaald.</translation>
+<translation id="6064211167623632605">Uitvoerbaar pad</translation>
 <translation id="10614374240317010">Nooit opgeslagen</translation>
 <translation id="2903493209154104877">Adressen</translation>
 <translation id="8503813439785031346">Gebruikersnaam</translation>
+<translation id="4827948050554950725">Een creditcard toevoegen</translation>
+<translation id="7817177303494746697">Blink-versie</translation>
 <translation id="2532336938189706096">Webweergave</translation>
 <translation id="6571070086367343653">Creditcard bewerken</translation>
 <translation id="7080851568148064063">Toevoegen aan startscherm</translation>
@@ -76,25 +102,41 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="3254409185687681395">Bladwijzer instellen voor deze pagina</translation>
 <translation id="907015151729920253">Smartcard</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="2600241144430299006">Vervalmaand van creditcard</translation>
 <translation id="3063601790762993062">Video opslaan</translation>
 <translation id="8106211421800660735">Creditcardnummer</translation>
 <translation id="6042308850641462728">Meer</translation>
 <translation id="7267430310003164111">Melding om de app te downloaden via de Google Play Store. Appnaam: <ph name="APP_NAME"/>.  gemiddeld waarderingscijfer van app: <ph name="APP_RATING"/>.</translation>
+<translation id="7358682983403815415">Je geopende tabbladen, bladwijzers, geschiedenis en meer worden gesynchroniseerd met je Google-account.</translation>
+<translation id="1943432128510653496">Wachtwoorden opslaan</translation>
+<translation id="4113030288477039509">Beheerd door je beheerder</translation>
+<translation id="9100610230175265781">Wachtwoordzin vereist</translation>
 <translation id="4148957013307229264">Installeren...</translation>
 <translation id="3992315671621218278">Link opslaan</translation>
+<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="5424715742813396254">Opgeslagen naam/wachtwoord of uitzondering bewerken</translation>
 <translation id="2476578072172137802">Site instellingen</translation>
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
 <translation id="651048280540227067">Het menu sluiten</translation>
+<translation id="748127970106343339">Verwijderen van apparaatinloggegevens bevestigen</translation>
 <translation id="3089395242580810162">Openen op incognitotabblad</translation>
+<translation id="1583256385106514953">Vervaljaar van creditcard</translation>
+<translation id="1082482054625560856">Opgeslagen wachtwoorden beheren in je <ph name="BEGIN_LINK"/>Google-account<ph name="END_LINK"/></translation>
+<translation id="2699916814609764774">Profielpad</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8909135823018751308">Delen…</translation>
+<translation id="6575643671698722332">Herstel mislukt. Kijk of apparaat online is en probeer opnieuw.</translation>
 <translation id="654446541061731451">Selecteer een tabblad om te beamen</translation>
 <translation id="4269820728363426813">Linkadres kopiëren</translation>
+<translation id="2359808026110333948">Doorgaan</translation>
+<translation id="2512222046227390255">Formulieren automatisch aanvullen</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
+<translation id="1080790410959514870">Je logt uit van een account dat wordt beheerd door <ph name="DOMAIN_NAME"/>. Hiermee worden de Chrome-gegevens verwijderd die zijn opgeslagen op dit apparaat, maar de gegevens blijven bewaard in je Google-account.</translation>
 <translation id="4510973599275542560">Niet opnieuw laden</translation>
 <translation id="1206892813135768548">Linktekst kopiëren</translation>
 <translation id="9154176715500758432">Op deze pagina blijven</translation>
+<translation id="1416550906796893042">Appversie</translation>
 <translation id="7063006564040364415">Kan geen verbinding maken met synchronisatieserver.</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE"/> nooit vertalen</translation>
 <translation id="6671495933530132209">Afbeelding kopiëren</translation>
@@ -103,6 +145,7 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="8941248009481596111">Je verbinding met deze site is privé.</translation>
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
 <translation id="5164482624172255778">Wil je dat Google Chrome de volgende keer aanbiedt om pagina's in het <ph name="LANGUAGE"/> op deze site te vertalen?</translation>
+<translation id="4062305924942672200">Juridische informatie</translation>
 <translation id="8528538445849828817">Brontaal: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Openen</translation>
 <translation id="6512448926095770873">Deze pagina verlaten</translation>
@@ -115,17 +158,29 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="5138299137310274655">Deze pagina is in het <ph name="SOURCE_LANGUAGE"/>. Vertalen naar het <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="969096075394517431">Talen wijzigen</translation>
+<translation id="1614564776292091138">Als beveiligde inhoud is ingeschakeld, kunnen websites je apparaat verifiëren om te controleren of het apparaat premium, beschermde video's mag afspelen.
+
+Als dit is uitgeschakeld, kun je mogelijk geen premium video's afspelen op dit apparaat.</translation>
+<translation id="8928220460877261598">Je bent nu ingelogd bij Chrome.</translation>
 <translation id="5032574515228824816">Prompt</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
+<translation id="862875433388403934">Inhoud (films, muziek, enzovoort) die is gedownload in andere apps kan mogelijk niet langer worden afgespeeld, totdat die apps opnieuw licenties verkrijgen op basis van nieuwe apparaatinloggegevens.
+
+Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenties te krijgen.</translation>
+<translation id="2913733558842973836">Deze site is geopend op volledig scherm.
+Sleep vanaf de bovenkant om te sluiten.</translation>
 <translation id="7961015016161918242">Nooit</translation>
+<translation id="8109148095642131923">Gedownload item toevoegen aan de downloadmanager is mislukt.</translation>
 <translation id="497421865427891073">Naar voren gaan</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">Standaardtabbladen</translation>
+<translation id="411254640334432676">Downloaden mislukt.</translation>
 <translation id="6277522088822131679">Er is een fout opgetreden bij het afdrukken van de pagina. Probeer het opnieuw.</translation>
 <translation id="7634554953375732414">Je verbinding met deze site is niet privé.</translation>
 <translation id="6612358246767739896">Beveiligde inhoud</translation>
 <translation id="1742134235943978220">Vertaald naar het <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5916664084637901428">Aan</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7437998757836447326">Uitloggen bij Chrome</translation>
 <translation id="7561196759112975576">Altijd</translation>
 </translationbundle>

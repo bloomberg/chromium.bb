@@ -166,6 +166,7 @@
 <translation id="2648074677641340862">நிறுவலின்போது இயக்க முறைமை பிழை ஏற்பட்டது. Chromium ஐ மீண்டும் பதிவிறக்கம் செய்க.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/>, Chrome இல் சேர்க்கப்பட்டது.</translation>
 <translation id="549669000822060376">சமீபத்திய முறைமை புதுப்பிப்புகளை Chromium நிறுவும் வரை காத்திருக்கவும்.</translation>
+<translation id="1240763998429950591">சமீபத்திய பதிப்பிற்கு Chromium புதுப்பிக்கப்படவில்லை, எனவே புதிய அம்சங்கள் மற்றும் பாதுகாப்பு திருத்தங்களைத் தவறவிடலாம். Chromiumஐப் புதுப்பிக்கவும்.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">Google தேடலுக்கு வார்த்தையையும் அதனுடன் தொடர்புடைய சூழலையும் அனுப்பி, விளக்கங்கள், படங்கள், தேடல் முடிவுகள் மற்றும் பிற விவரங்களை வழங்குகிறது.</translation>
 <translation id="4559775032954821361">Chromium மெனு &gt;
@@ -203,6 +204,7 @@
 <translation id="2966088006374919794"><ph name="SCHEME"/> இணைப்புகளைக் கையாள ஒரு வெளிப்புறப் பயன்பாட்டைத் தொடங்குவதற்கு Chromium தேவை. கோரப்பட்ட இணைப்பு <ph name="PROTOLINK"/> ஆகும்.</translation>
 <translation id="2558235863893655150">Chromium உங்கள் கடவுச்சொல்லைச் சேமிக்க வேண்டுமா?</translation>
 <translation id="6485906693002546646">உங்கள் Chromium விஷயங்களை ஒத்திசைக்க, <ph name="PROFILE_EMAIL"/> ஐப் பயன்படுத்துகிறீர்கள். உங்கள் ஒத்திசைவு விருப்பத்தேர்வைப் புதுப்பிக்க அல்லது Google கணக்கு இல்லாமல் Chromium ஐப் பயன்படுத்த, <ph name="SETTINGS_LINK"/> ஐப் பார்வையிடவும்.</translation>
+<translation id="705851970750939768">Chromiumஐப் புதுப்பி</translation>
 <translation id="5772805321386874569">(Chromium ஐ <ph name="BEGIN_BUTTON"/>மறுதொடக்கம்<ph name="END_BUTTON"/> செய்வது அவசியமாகும்)</translation>
 <translation id="1688750314291223739">உங்கள் தனிப்பயனாக்கப்பட்ட உலாவி அம்சங்களை வலையில் சேமிக்க, ஒத்திசைவை அமைத்து, எந்தக் கணினியில் உள்ள Chromium இலிருந்தும் அவற்றை அணுகலாம்.</translation>
 <translation id="8610831143142469229">உங்கள் தீச்சுவர் அல்லது வைரஸ் தடுப்பு அமைப்புகளில் பிணையத்தை அணுக Chromium ஐ அனுமதிக்கவும்.</translation>

@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Beállítás alapértelmezett sémaként</translation>
 <translation id="2179565792157161713">Hosszú leírás megnyitása új lapon</translation>
 <translation id="2471847333270902538">Színséma a(z) <ph name="SITE"/> webhelyhez:</translation>
+<translation id="381767806621926835">Kattintson jobb gombbal bármelyik „longdesc” vagy az „aria-describedat” attribútumot tartalmazó elemnél a hosszú leírás eléréséhez.</translation>
+<translation id="786423340267544509">Szegély hozzáadása az aria-describedat és a longdesc attribútumokkal rendelkező elemekhez.</translation>
 <translation id="690628312087070417">Amikor a kurzor messzire ugrik:</translation>
 <translation id="5331422999063554397">Inverz szín</translation>
 <translation id="2648340354586434750">A szavanként történő mozgáshoz tartsa lenyomva az &lt;span class='key'&gt;Option&lt;/span&gt; billentyűt.</translation>
+<translation id="4769065380738716500">A képeket lecserélte a rendszer az ALT szövegükre.</translation>
 <translation id="5287723860611749454">&lt;p&gt;A nyílbillentyűkkel mozoghat a dokumentumban. &lt;/p&gt;&lt;p&gt;Kattintson bárhova a kurzor adott helyre viteléhez. &lt;/p&gt; &lt;p&gt;   A &lt;span class='key'&gt;Shift&lt;/span&gt; + nyílbillentyűk megnyomásával jelölhet ki szöveget.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Billentyűparancsok</translation>
 <translation id="633394792577263429">A szavanként történő mozgáshoz tartsa lenyomva a &lt;span class='key'&gt;Control&lt;/span&gt; billentyűt.</translation>

@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">സ്ഥിര സ്‌കീമായി സജ്ജീകരിക്കുക</translation>
 <translation id="2179565792157161713">പുതിയ ടാബിൽ ദൈർഘ്യമുള്ള വിവരണം തുറക്കുക</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> എന്നതിനായുള്ള വർണ്ണ സ്‌കീം:</translation>
+<translation id="381767806621926835">ഏതിന്റെയെങ്കിലും ദൈഘ്യമുള്ള വിവരണത്തിലേക്ക് ആക്‌സസ്സുചെയ്യുന്നതിന് &quot;aria-describedat&quot; അല്ലെങ്കിൽ &quot;longdesc&quot; എന്ന ആട്രി‌ബ്യൂട്ടിനൊപ്പം അതിൽ വലത് ക്ലിക്കുചെയ്യുക.</translation>
+<translation id="786423340267544509">&quot;aria-describedat&quot; അല്ലെങ്കിൽ &quot;longdesc&quot; എന്ന ആട്രി‌ബ്യൂട്ടിനൊപ്പം ഘടകങ്ങളിലേക്ക് ബോർഡർ ചേർക്കുക.</translation>
 <translation id="690628312087070417">ഒരു വലിയ അകലത്തിൽ കാരറ്റ് നീങ്ങുമ്പോൾ:</translation>
 <translation id="5331422999063554397">വിപരീത വർണ്ണം</translation>
 <translation id="2648340354586434750">വാക്കുകൾ പ്രകാരം നീക്കുന്നതിന് &lt;span class='key'&gt;ഓപ്‌ഷൻ&lt;/span&gt; അമർത്തിപ്പിടിക്കുക.</translation>
+<translation id="4769065380738716500">അവരുടെ alt ടെക്‌സ്റ്റ് ഉപയോഗിച്ചുകൊണ്ട് ചിത്രങ്ങൾ മാറ്റിസ്ഥാപിച്ചു.</translation>
 <translation id="5287723860611749454">&lt;p&gt;പ്രമാണത്തിലുടനീളം നീക്കുന്നതിന് അമ്പടയാള കീകൾ ഉപയോഗിക്കുക. &lt;/p&gt;&lt;p&gt; ഒരു ലൊക്കേഷനിലേക്ക് കഴ്‌സർ നീക്കുന്നതിന് അവിടെ ക്ലിക്കുചെയ്യുക. &lt;/p&gt; &lt;p&gt; ടെക്‌സ്റ്റ് തിരഞ്ഞെടുക്കുന്നതിന് &lt;span class='key'&gt;Shift&lt;/span&gt; + അമ്പടയാള കീകൾ അമർത്തുക.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">കീബോർഡ് കമാൻഡുകൾ</translation>
 <translation id="633394792577263429">വാക്കുകൾ പ്രകാരം നീക്കുന്നതിന് &lt;span class='key'&gt;Control&lt;/span&gt; അമർത്തിപ്പിടിക്കുക.</translation>

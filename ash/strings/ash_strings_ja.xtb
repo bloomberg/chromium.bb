@@ -43,6 +43,7 @@
 <translation id="3891340733213178823">ログアウトするには、Ctrl+Shift+Q を 2 回押します。</translation>
 <translation id="5871632337994001636">デバイスを管理...</translation>
 <translation id="785750925697875037">モバイル アカウントを表示</translation>
+<translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> を閉じる</translation>
 <translation id="7864539943188674973">Bluetooth を無効にする</translation>
 <translation id="939252827960237676">スクリーンショットを保存できませんでした</translation>
 <translation id="9080206825613744995">マイクは使用中です。</translation>
@@ -70,6 +71,7 @@
 <translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE"/>」から「<ph name="TO_LOCALE"/>」に変更されました。</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
 <translation id="8654520615680304441">Wi-Fi をオンにする...</translation>
+<translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME"/> と画面の制御を共有しています。</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">入力方法を <ph name="INPUT_METHOD_ID"/> に変更しました。
@@ -145,6 +147,7 @@
 <translation id="5977415296283489383">ヘッドホン</translation>
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> (<ph name="SHORT_WEEKDAY"/>)</translation>
+<translation id="5978382165065462689">リモート サポート経由で画面の制御を共有しています。</translation>
 <translation id="737451040872859086">マイク（内蔵）</translation>
 <translation id="2475982808118771221">エラーが発生しました</translation>
 <translation id="3783640748446814672">alt</translation>

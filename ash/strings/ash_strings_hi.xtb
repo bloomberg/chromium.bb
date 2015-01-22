@@ -43,6 +43,7 @@
 <translation id="3891340733213178823">प्रस्थान करने के लिए दो बार Ctrl+Shift+Q दबाएं.</translation>
 <translation id="5871632337994001636">डिवाइस को प्रबंधित करें...</translation>
 <translation id="785750925697875037">मोबाइल खाते देखें</translation>
+<translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> बंद करें</translation>
 <translation id="7864539943188674973">ब्लूटूथ अक्षम करें</translation>
 <translation id="939252827960237676">स्क्रीनशॉट सहेजने में विफल</translation>
 <translation id="9080206825613744995">माइक्रोफ़ोन का उपयोग हो रहा है.</translation>
@@ -70,6 +71,7 @@
 <translation id="7823564328645135659">आपकी सेटिंग समन्वयित करने के बाद भाषा को &quot;<ph name="FROM_LOCALE"/>&quot; से &quot;<ph name="TO_LOCALE"/>&quot; में बदल दिया गया है.</translation>
 <translation id="3606978283550408104">ब्रेल डिस्प्ले कनेक्ट हो गया.</translation>
 <translation id="8654520615680304441">वाई-फ़ाई  चालू करें...</translation>
+<translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME"/> से साझा किया जा रहा है.</translation>
 <translation id="6650933572246256093">ब्लूटूथ डिवाइस &quot;<ph name="DEVICE_NAME"/>&quot; युग्मित करने की अनुमति चाहता है. कृपया डिवाइस पर यह पासकुंजी डालें: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">आपकी इनपुट विधि <ph name="INPUT_METHOD_ID"/> में बदल गई है.
@@ -145,6 +147,7 @@
 <translation id="5977415296283489383">हेडफ़ोन</translation>
 <translation id="225680501294068881">डिवाइस स्कैन किए जा रहे हैं...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
+<translation id="5978382165065462689">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायका के द्वारा साझा किया जा रहा है.</translation>
 <translation id="737451040872859086">माइक्रोफ़ोन (आंतरिक)</translation>
 <translation id="2475982808118771221">कोई त्रुटि आई</translation>
 <translation id="3783640748446814672">alt</translation>

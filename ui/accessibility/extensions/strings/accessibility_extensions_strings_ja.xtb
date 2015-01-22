@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">既定の配色として設定</translation>
 <translation id="2179565792157161713">詳しい説明を新しいタブで開く</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> の配色:</translation>
+<translation id="381767806621926835">「longdesc」または「aria-describedat」属性が指定された要素を右クリックすると、詳しい説明が表示されます。</translation>
+<translation id="786423340267544509">aria-describedat または longdesc 属性が指定された要素を枠線付きで表示する</translation>
 <translation id="690628312087070417">カーソルが離れた場所に移動した場合:</translation>
 <translation id="5331422999063554397">反転色</translation>
 <translation id="2648340354586434750">単語単位で移動するには &lt;span class='key'&gt;Option&lt;/span&gt; キーを押したままにします。</translation>
+<translation id="4769065380738716500">画像の代わりに代替（alt）テキストを表示しています。</translation>
 <translation id="5287723860611749454">&lt;p&gt;矢印キーを使ってドキュメント全体を移動できます。&lt;/p&gt;&lt;p&gt;クリックした場所にカーソルを移動することもできます。&lt;/p&gt; &lt;p&gt;テキストを選択するには &lt;span class='key'&gt;Shift&lt;/span&gt; キーを押しながら矢印キーを使用します。&lt;/p&gt;</translation>
 <translation id="5558600050691192317">キーボード コマンド</translation>
 <translation id="633394792577263429">単語単位で移動するには &lt;span class='key'&gt;Control&lt;/span&gt; キーを押したままにします。</translation>

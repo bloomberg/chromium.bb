@@ -169,6 +169,7 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
 <translation id="2648074677641340862">Ocorreu um erro no sistema operacional durante a instalação. Faça o download do Chromium novamente.</translation>
 <translation id="5942520288919337908">A extensão <ph name="EXTENSION_NAME"/> foi adicionada ao Chromium.</translation>
 <translation id="549669000822060376">Aguarde enquanto o Chromium instala as últimas atualizações do sistema.</translation>
+<translation id="1240763998429950591">Não foi possível atualizar o Chromium para a versão mais recente, por isso você está perdendo novos recursos e correções de segurança. Você precisa atualizar o Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">envia uma palavra e o contexto relacionado para a Pesquisa Google, retornando definições, imagens, resultados de pesquisa e outros detalhes.</translation>
 <translation id="4559775032954821361">Vá para
@@ -206,6 +207,7 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
 <translation id="2966088006374919794">O Chromium precisa iniciar um aplicativo externo para lidar com os links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Você deseja que o Chromium salve sua senha?</translation>
 <translation id="6485906693002546646">Você está usando <ph name="PROFILE_EMAIL"/> para sincronizar suas informações do Chromium. Para atualizar suas preferências de sincronização ou usar o Chromium sem uma Conta do Google, vá para <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="5772805321386874569">(requer a <ph name="BEGIN_BUTTON"/>reinicialização<ph name="END_BUTTON"/> do Chromium)</translation>
 <translation id="1688750314291223739">Configure a sincronização para salvar suas características de navegador personalizadas na web e acessá-las do Chromium em qualquer computador.</translation>
 <translation id="8610831143142469229">Permitir que o Chromium acesse a rede em suas configurações de

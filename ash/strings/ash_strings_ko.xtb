@@ -43,6 +43,7 @@
 <translation id="3891340733213178823">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="5871632337994001636">기기 관리...</translation>
 <translation id="785750925697875037">모바일 계정 표시</translation>
+<translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> 닫기</translation>
 <translation id="7864539943188674973">블루투스 사용 안 함</translation>
 <translation id="939252827960237676">캡처화면을 저장하지 못했습니다.</translation>
 <translation id="9080206825613744995">마이크가 사용 중입니다.</translation>
@@ -70,6 +71,7 @@
 <translation id="7823564328645135659">설정을 동기화한 뒤 Chrome의 언어가 '<ph name="FROM_LOCALE"/>'에서 '<ph name="TO_LOCALE"/>'(으)로 변경되었습니다.</translation>
 <translation id="3606978283550408104">점자 디스플레이가 연결되었습니다.</translation>
 <translation id="8654520615680304441">Wi-Fi 사용...</translation>
+<translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME"/>와(과) 화면 제어 공유</translation>
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME"/>'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">입력 방법이 <ph name="INPUT_METHOD_ID"/>(으)로 변경되었습니다.
@@ -145,6 +147,7 @@
 <translation id="5977415296283489383">헤드폰</translation>
 <translation id="225680501294068881">기기 검색 중...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> <ph name="SHORT_WEEKDAY"/></translation>
+<translation id="5978382165065462689">원격 지원을 통해 화면 제어 공유</translation>
 <translation id="737451040872859086">마이크(내부)</translation>
 <translation id="2475982808118771221">오류가 발생했습니다.</translation>
 <translation id="3783640748446814672">alt</translation>

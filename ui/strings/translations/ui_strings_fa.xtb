@@ -18,6 +18,7 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> secs</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> hours left</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="598033046487663418">همه برنامه‌ها</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> بایت</translation>
@@ -122,6 +123,7 @@
 <translation id="8677655579646609597"><ph name="QUANTITY"/> کیلوبایت/ثانیه</translation>
 <translation id="8394908167088220973">پخش/توقف موقت رسانه</translation>
 <translation id="2148716181193084225">امروز</translation>
+<translation id="5120799197269191491">جستجو+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7960078400008666149">یک ساعت مزاحم نشوید</translation>
 <translation id="4373894838514502496"><ph name="NUMBER_FEW"/> mins ago</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> days</translation>

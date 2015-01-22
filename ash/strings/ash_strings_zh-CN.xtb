@@ -43,6 +43,7 @@
 <translation id="3891340733213178823">连按两次Ctrl+Shift+Q即可退出。</translation>
 <translation id="5871632337994001636">管理设备…</translation>
 <translation id="785750925697875037">查看移动帐户</translation>
+<translation id="8356164830168736643">关闭“<ph name="WINDOW_TITLE"/>”</translation>
 <translation id="7864539943188674973">停用蓝牙</translation>
 <translation id="939252827960237676">无法保存屏幕截图</translation>
 <translation id="9080206825613744995">麦克风目前处于使用状态。</translation>
@@ -70,6 +71,7 @@
 <translation id="7823564328645135659">同步了您的设置后，该语言已由“<ph name="FROM_LOCALE"/>”更改为“<ph name="TO_LOCALE"/>”。</translation>
 <translation id="3606978283550408104">已连接盲文显示屏。</translation>
 <translation id="8654520615680304441">启用 Wi-Fi...</translation>
+<translation id="4421231901400348175">正在通过远程协助与<ph name="HELPER_NAME"/>共享您屏幕的控制权限。</translation>
 <translation id="6650933572246256093">蓝牙设备“<ph name="DEVICE_NAME"/>”需要配对许可。请在该设备上输入以下配对密钥：<ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">您的输入法已更改为“<ph name="INPUT_METHOD_ID"/>”。
@@ -140,11 +142,12 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>不支持<ph name="SPECIFIED_RESOLUTION"/>。分辨率已改为<ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">启用移动数据</translation>
 <translation id="68610848741840742">ChromeVox（语音反馈）</translation>
-<translation id="6981982820502123353">辅助功能</translation>
+<translation id="6981982820502123353">无障碍</translation>
 <translation id="6585808820553845416">会话将在<ph name="SESSION_TIME_REMAINING"/>后结束。</translation>
 <translation id="5977415296283489383">耳机</translation>
 <translation id="225680501294068881">正在查找设备...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
+<translation id="5978382165065462689">正在通过远程协助共享您屏幕的控制权限。</translation>
 <translation id="737451040872859086">麦克风（内部）</translation>
 <translation id="2475982808118771221">出现错误</translation>
 <translation id="3783640748446814672">alt</translation>

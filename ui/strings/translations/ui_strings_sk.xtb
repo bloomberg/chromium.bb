@@ -18,6 +18,7 @@
 <translation id="7121570032414343252">Počet sekúnd: <ph name="NUMBER_TWO"/></translation>
 <translation id="7511635910912978956">Počet zvyšných hodín: <ph name="NUMBER_FEW"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="598033046487663418">Všetky aplikácie</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
@@ -122,6 +123,7 @@
 <translation id="8677655579646609597"><ph name="QUANTITY"/> kB/s</translation>
 <translation id="8394908167088220973">Média – prehrať / pozastaviť</translation>
 <translation id="2148716181193084225">Dnes</translation>
+<translation id="5120799197269191491">Hľadať+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7960078400008666149">Nerušiť jednu hodinu</translation>
 <translation id="4373894838514502496">Pred <ph name="NUMBER_FEW"/> min</translation>
 <translation id="4115153316875436289">Počet dní: <ph name="NUMBER_TWO"/></translation>

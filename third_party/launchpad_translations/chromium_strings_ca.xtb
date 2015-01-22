@@ -170,6 +170,7 @@
 <translation id="2648074677641340862">S'ha produït un error en el sistema operatiu durant la instal·lació. Torneu a baixar Chromium.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> s'ha afegit a Chromium.</translation>
 <translation id="549669000822060376">Espereu mentre Chromium instal·la les darreres actualitzacions del sistema.</translation>
+<translation id="1240763998429950591">Chromium no ha pogut actualitzar-se a la darrera versió, així que no podeu gaudir de les funcions noves ni de les correccions de seguretat. Heu d'actualitzar Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">Envia una paraula i el context que l'envolta a Cerca de Google i, a continuació, s'ofereixen definicions, imatges, resultats de la cerca i altres detalls.</translation>
 <translation id="4559775032954821361">Aneu al
@@ -209,6 +210,7 @@
 <translation id="2966088006374919794">Chromium necessita iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç sol·licitat és <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Voleu que Chromium desi la vostra contrasenya?</translation>
 <translation id="6485906693002546646">Utilitzeu <ph name="PROFILE_EMAIL"/> per sincronitzar el contingut de Chromium. Per modificar la preferència de sincronització o per utilitzar Chromium sense cap compte de Google, dirigiu-vos a <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Actualitza Chromium</translation>
 <translation id="5772805321386874569">(cal <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol equip mitjançant Chromium.</translation>
 <translation id="8610831143142469229">Configureu el tallafoc o l'antivirus per permetre que Chrome accedeixi a la xarxa.</translation>

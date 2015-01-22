@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Подеси као подразумевану шему</translation>
 <translation id="2179565792157161713">Отвори пун опис на новој картици</translation>
 <translation id="2471847333270902538">Шема боја за <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">Кликните десним тастером на било шта са атрибутима „longdesc“ или „aria-describedat“ да бисте приступили дужем опису те ставке.</translation>
+<translation id="786423340267544509">Додај оквир елементима са атрибутима aria-describedat или longdesc.</translation>
 <translation id="690628312087070417">Када курсор пређе велику област на страници:</translation>
 <translation id="5331422999063554397">Обрнуте боје</translation>
 <translation id="2648340354586434750">Држите тастер &lt;span class='key'&gt;Option&lt;/span&gt; да бисте прелазили са једне речи на другу.</translation>
+<translation id="4769065380738716500">Слике су замењене „alt“ текстом.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Померајте се по документу помоћу тастера са стрелицама. &lt;/p&gt;&lt;p&gt;Кликните било где да бисте померили курсор на то место. &lt;/p&gt; &lt;p&gt;   Притисните &lt;span class='key'&gt;Shift&lt;/span&gt; + стрелице да бисте изабрали текст.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Тастерске команде</translation>
 <translation id="633394792577263429">Држите &lt;span class='key'&gt;Ctrl&lt;/span&gt; да бисте се померали са једне речи на другу.</translation>

@@ -170,6 +170,7 @@
 <translation id="2648074677641340862">Ralat sistem pengendalian berlaku semasa pemasangan. Sila muat turun Chromium semula.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> telah ditambahkan pada Chromium.</translation>
 <translation id="549669000822060376">Sila tunggu sementara Chromium memasang kemas kini sistem terkini.</translation>
+<translation id="1240763998429950591">Chromium tidak dapat mengemas kini kepada versi terkini, maka anda terlepas ciri baharu dan tampalan keselamatan. Anda perlu mengemas kini Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">menghantar perkataan dan konteks sekitarnya kepada Carian Google, mengembalikan takrif, gambar, hasil carian dan butiran lain.</translation>
 <translation id="4559775032954821361">Pergi ke
@@ -209,6 +210,7 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="2966088006374919794">Chromium perlu melancarkan aplikasi luaran untuk mengendalikan pautan <ph name="SCHEME"/>. Pautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Adakah anda mahu Chromium menyimpan kata laluan anda?</translation>
 <translation id="6485906693002546646">Anda menggunakan <ph name="PROFILE_EMAIL"/> untuk menyegerakkan bahan digital chromium anda. Untuk mengemas kini pilihan penyegerakan anda atau menggunakan Chromium tanpa akaun Google, lawati <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Kemas kini Chromium</translation>
 <translation id="5772805321386874569">(memerlukan Chromium <ph name="BEGIN_BUTTON"/>dimulakan semula<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Sediakan Penyegerakan untuk menyimpan ciri penyemak imbas yang diperibadikan di web dan aksesnya dari Chromium pada mana-mana komputer.</translation>
 <translation id="8610831143142469229">Benarkan Chromium mengakses rangkaian dalam tetapan firewall atau antivirus

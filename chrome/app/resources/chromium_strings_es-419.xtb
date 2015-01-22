@@ -168,6 +168,7 @@
 <translation id="2648074677641340862">Se produjo un error del sistema operativo durante la instalación. Descarga Chromium nuevamente.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> se agregó a Chromium.</translation>
 <translation id="549669000822060376">Espera mientras Chromium instala las últimas actualizaciones del sistema.</translation>
+<translation id="1240763998429950591">Chromium no se pudo actualizar a la última versión, por lo que te estás perdiendo las nuevas características y correcciones de seguridad. Debes actualizar Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">envía una palabra y el contexto circundante a la Búsqueda de Google y muestra definiciones, imágenes, resultados de búsqueda y otros detalles.</translation>
 <translation id="4559775032954821361">Accede
@@ -205,6 +206,7 @@
 <translation id="2966088006374919794">Chromium necesita iniciar una aplicación externa para utilizar vínculos <ph name="SCHEME"/>. El vínculo solicitado es <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">¿Quieres que Chromium guarde tu contraseña?</translation>
 <translation id="6485906693002546646">Estás utilizando <ph name="PROFILE_EMAIL"/> para sincronizar los datos de Chromium. Si quieres actualizar las preferencias de sincronización o utilizar Chromium sin una cuenta de Google, accede a <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Actualizar Chromium</translation>
 <translation id="5772805321386874569">(Es necesario <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> Chromium).</translation>
 <translation id="1688750314291223739">Configura la sincronización para guardar tus funciones personalizadas del navegador en la Web y para acceder a ellas con Chromium desde cualquier equipo.</translation>
 <translation id="8610831143142469229">Permite que Chromium acceda a la red en tu configuración de antivirus o                de firewall.</translation>

@@ -18,6 +18,7 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> сек</translation>
 <translation id="7511635910912978956">Остават <ph name="NUMBER_FEW"/> часа</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="598033046487663418">Всички приложения</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> Б</translation>
@@ -122,6 +123,7 @@
 <translation id="8677655579646609597"><ph name="QUANTITY"/> КБ/сек</translation>
 <translation id="8394908167088220973">Мултимедия, пускане/пауза</translation>
 <translation id="2148716181193084225">Днес</translation>
+<translation id="5120799197269191491">Търсене+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7960078400008666149">Не безпокойте за един час</translation>
 <translation id="4373894838514502496">преди <ph name="NUMBER_FEW"/> мин</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> дни</translation>

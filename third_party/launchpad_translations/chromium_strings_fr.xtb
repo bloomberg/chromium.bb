@@ -171,6 +171,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2648074677641340862">Une erreur du système d'exploitation s'est produite pendant l'installation. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="5942520288919337908">L'extension &quot;<ph name="EXTENSION_NAME"/>&quot; a été ajoutée à Chromium.</translation>
 <translation id="549669000822060376">Veuillez patienter pendant que Chromium installe les dernières mises à jour du système.</translation>
+<translation id="1240763998429950591">Chromium n'a pas pu être mis à jour. Vous ne disposez donc pas des nouvelles fonctionnalités et des correctifs de sécurité. Vous devez mettre à jour Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des photos, des résultats de recherche et d'autres détails.</translation>
 <translation id="4559775032954821361">Accédez au
@@ -210,6 +211,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="2966088006374919794">Chromium nécessite le lancement d'une application externe pour gérer les liens <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Souhaitez-vous que Chromium enregistre votre mot de passe ?</translation>
 <translation id="6485906693002546646">Vous utilisez le compte <ph name="PROFILE_EMAIL"/> pour synchroniser votre contenu dans Chromium. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chromium sans compte Google, accédez à la page <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Mettre à jour Chromium</translation>
 <translation id="5772805321386874569">(nécessite le <ph name="BEGIN_BUTTON"/>redémarrage<ph name="END_BUTTON"/> de Chromium)</translation>
 <translation id="1688750314291223739">Configurez la synchronisation pour enregistrer sur le Web les fonctionnalités personnalisées de votre navigateur et y accéder à partir de Chromium sur n'importe quel ordinateur.</translation>
 <translation id="8610831143142469229">Autoriser Chromium à accéder au réseau depuis les paramètres du pare-feu ou

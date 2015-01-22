@@ -168,6 +168,7 @@
 <translation id="2648074677641340862">Podczas instalacji wystąpił błąd systemu operacyjnego. Pobierz Chromium ponownie.</translation>
 <translation id="5942520288919337908">Rozszerzenie <ph name="EXTENSION_NAME"/> zostało dodane do Chromium.</translation>
 <translation id="549669000822060376">Poczekaj, aż Chromium zainstaluje najnowsze aktualizacje systemu.</translation>
+<translation id="1240763998429950591">Chromium nie mógł zaktualizować się do najnowszej wersji, więc nie masz dostępu do najnowszych funkcji i poprawek zabezpieczeń. Musisz zaktualizować Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">przesyła słowo i jego kontekst do wyszukiwarki Google, by wyświetlić definicje, zdjęcia, wyniki wyszukiwania i inne szczegółowe informacje.</translation>
 <translation id="4559775032954821361">Wybierz
@@ -207,6 +208,7 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="2966088006374919794">Chromium musi uruchomić zewnętrzną aplikację do obsługi linków <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Czy chcesz, by Chromium zapisał hasło?</translation>
 <translation id="6485906693002546646">Używasz adresu <ph name="PROFILE_EMAIL"/> do synchronizowania danych w Chromium. Aby zaktualizować ustawienia synchronizacji lub używać Chromium bez konta Google, wejdź na stronę <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Zaktualizuj Chromium</translation>
 <translation id="5772805321386874569">(wymaga <ph name="BEGIN_BUTTON"/>ponownego uruchomienia<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Chromium na każdym komputerze.</translation>
 <translation id="8610831143142469229">Zezwalaj Chromium na korzystanie z sieci w ustawieniach zapory sieciowej

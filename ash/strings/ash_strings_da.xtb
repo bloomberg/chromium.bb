@@ -43,6 +43,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="3891340733213178823">Tryk på Ctrl+Shift+Q to gange for at logge ud.</translation>
 <translation id="5871632337994001636">Administrer enheder...</translation>
 <translation id="785750925697875037">Vis mobilkonto</translation>
+<translation id="8356164830168736643">Luk <ph name="WINDOW_TITLE"/></translation>
 <translation id="7864539943188674973">Deaktiver Bluetooth</translation>
 <translation id="939252827960237676">Skærmbilledet kunne ikke gemmes</translation>
 <translation id="9080206825613744995">Mikrofonen er i brug.</translation>
@@ -70,6 +71,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
 <translation id="8654520615680304441">Slå Wi-Fi til...</translation>
+<translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME"/> via Fjernsupport.</translation>
 <translation id="6650933572246256093">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast din adgangsnøgle på enheden: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
@@ -130,7 +132,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="3433830597744061105">Administrer konti</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>
-<translation id="7052914147756339792">Angiv baggrundsbillede...</translation>
+<translation id="7052914147756339792">Vælg baggrund...</translation>
 <translation id="2532589005999780174">Tilstanden Høj kontrast</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Resterende tid, indtil batteriet er fuldt opladet, <ph name="TIME_REMAINING"/></translation>
@@ -145,6 +147,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="5977415296283489383">Hovedtelefon</translation>
 <translation id="225680501294068881">Scanner efter enheder...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> d. <ph name="DATE"/></translation>
+<translation id="5978382165065462689">Skærmdeling via Fjernsupport.</translation>
 <translation id="737451040872859086">Mikrofon (indbygget)</translation>
 <translation id="2475982808118771221">Der opstod en fejl</translation>
 <translation id="3783640748446814672">alt</translation>

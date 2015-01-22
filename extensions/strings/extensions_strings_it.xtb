@@ -1,20 +1,25 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="it">
 <translation id="4542520061254486227">Lettura dei dati su <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
+<translation id="3983586614702900908">dispositivi di un fornitore sconosciuto</translation>
 <translation id="3624204664103857160">Impossibile caricare la pagina di avvio &quot;<ph name="PAGE"/>&quot;.</translation>
 <translation id="8804398419035066391">Comunicare con siti web interoperativi</translation>
 <translation id="7809034755304591547">L'estensione <ph name="EXTENSION_NAME"/> (ID &quot;<ph name="EXTENSION_ID"/>&quot;) è stata bloccata dall'amministratore.</translation>
 <translation id="1005274289863221750">Utilizzo del microfono e della fotocamera</translation>
 <translation id="2857834222104759979">File manifest non valido.</translation>
 <translation id="6384275966486438344">Modifica delle impostazioni di ricerca per: <ph name="SEARCH_HOST"/></translation>
+<translation id="8658591203505835552">Seleziona un dispositivo USB</translation>
 <translation id="1445572445564823378">Questa estensione sta rallentando <ph name="PRODUCT_NAME"/>. È necessario disabilitarla per ripristinare le prestazioni di <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="1033780634303702874">Accesso ai dispositivi seriali</translation>
 <translation id="288042212351694283">Accesso ai tuoi dispositivi Universal 2nd Factor</translation>
+<translation id="4115165561519362854">L'amministratore di questo computer richiede che <ph name="EXTENSION_NAME"/> abbia almeno la versione <ph name="EXTENSION_VERSION"/>. L'attivazione potrà essere completata solo dopo che è stato eseguito l'aggiornamento a questa versione o a una versione successiva.</translation>
 <translation id="5971037678316050792">Controllo dello stato e dell'accoppiamento dell'adattatore Bluetooth</translation>
 <translation id="677806580227005219">Gestore MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Accedere a informazioni sui dispositivi Bluetooth accoppiati con il sistema e rilevare dispositivi Bluetooth nelle vicinanze.</translation>
+<translation id="8749863574775030885">Accedi a dispositivi USB di fornitori sconosciuti</translation>
 <translation id="5911798608827489036">Scambio di dati con qualsiasi computer sulla rete locale o su Internet</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> di <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Impossibile caricare lo script in background &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
+<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Inviare e ricevere messaggi a/da dispositivi Bluetooth.</translation>
 <translation id="5678955352098267522">Lettura dei dati su <ph name="WEBSITE_1"/></translation>
 <translation id="8597109877291678953">Scambio di dati con il computer denominato <ph name="HOSTNAME"/></translation>
@@ -25,24 +30,26 @@
 <translation id="149347756975725155">Impossibile caricare l'icona estensione &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Questa estensione non è riuscita a modificare l'intestazione della richiesta &quot;<ph name="HEADER_NAME"/>&quot; di una richiesta di rete perché la modifica era in conflitto con un'altra estensione (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Prodotto <ph name="PRODUCT_ID"/></translation>
+<translation id="4776856853352853275">Seleziona dispositivi USB</translation>
 <translation id="4233778200880751280">Impossibile caricare la pagina di informazioni &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Impossibile caricare la pagina delle opzioni &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
 <translation id="6344170822609224263">Accesso all'elenco di connessioni di rete</translation>
-<translation id="2616366145935564096">Lettura e modifica dei dati su <ph name="WEBSITE_1"/></translation>
+<translation id="7039326228527141150">Accedi a dispositivi USB di <ph name="VENDOR_NAME"/></translation>
+<translation id="2616366145935564096">Leggere e modificare i tuoi dati su <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Scambio di dati con i computer denominati: <ph name="HOSTNAMES"/></translation>
 <translation id="4444304522807523469">Accesso a scanner di documenti aggiunti tramite USB o sulla rete locale</translation>
-<translation id="6408118934673775994">Lettura e modifica dei dati su <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
+<translation id="6408118934673775994">Leggere e modificare i tuoi dati su <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Scambio di dati con qualsiasi computer nel dominio <ph name="DOMAIN"/></translation>
-<translation id="3502064055007747926">Accesso ai dispositivi di immissione</translation>
 <translation id="8670869118777164560">Questa estensione non è riuscita a reindirizzare una richiesta di rete a <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> perché un'altra estensione (<ph name="EXTENSION_NAME"/>) l'ha reindirizzata a <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">L'estensione si è ricaricata automaticamente troppo spesso.</translation>
 <translation id="8047248493720652249">Questa estensione non è riuscita a denominare il download &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; perché un'altra estensione (<ph name="EXTENSION_NAME"/>) ha determinato un nome di file diverso &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
+<translation id="452039078290142656">dispositivi sconosciuti di <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Scambio di dati con qualsiasi computer nei domini: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Visualizzazione web: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">tutti i siti <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Cambio della pagina iniziale con: <ph name="HOME_PAGE"/></translation>
 <translation id="27822970480436970">Questa estensione non è riuscita a modificare una richiesta di rete perché la modifica era in conflitto con un'altra estensione.</translation>
-<translation id="2241053333139545397">Lettura e modifica dei dati su una serie di siti web</translation>
+<translation id="2241053333139545397">Leggere e modificare i tuoi dati su una serie di siti web</translation>
 <translation id="8602184400052594090">File manifest mancante o illeggibile.</translation>
 <translation id="4883436287898674711">Tutti i siti <ph name="WEBSITE_1"/></translation>
 <translation id="9111791539553342076">Questa estensione non è riuscita a modificare l'intestazione della risposta &quot;<ph name="HEADER_NAME"/>&quot; di una richiesta di rete perché la modifica era in conflitto con un'altra estensione (<ph name="EXTENSION_NAME"/>).</translation>
@@ -55,12 +62,16 @@
 <translation id="7217838517480956708">L'amministratore di questo computer richiede che l'estensione <ph name="EXTENSION_NAME"/> sia installata. Non è possibile rimuovere o modificare l'estensione.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> di <ph name="VENDOR_NAME"/> (numero di serie: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Cambio della pagina iniziale con: <ph name="START_PAGE"/></translation>
-<translation id="6698810901424468597">Lettura e modifica dei dati su <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
+<translation id="1036511912703768636">Accedi a tutti questi dispositivi USB</translation>
+<translation id="2677911863018634147">L'applicazione &quot;<ph name="APP_NAME"/>&quot; richiede accesso a uno o più dispositivi.</translation>
+<translation id="6698810901424468597">Leggere e modificare i tuoi dati su <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
 <translation id="5544884907028850012">Fornitore <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Accesso al traffico di rete</translation>
 <translation id="5972529113578162692">L'amministratore di questo computer richiede che l'estensione <ph name="EXTENSION_NAME"/> sia installata. Non è possibile disinstallarla.</translation>
 <translation id="7131040479572660648">Lettura dei dati su <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
+<translation id="2087653731648927289">Accdi a tutti i dispositivi <ph name="PRODUCT_NAME_AND_VENDOR"/> tramite USB</translation>
 <translation id="1803557475693955505">Impossibile caricare la pagina di sfondo &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="5751530153776468604">L'applicazione &quot;<ph name="APP_NAME"/>&quot; richiede accesso a un dispositivo.</translation>
 <translation id="7972881773422714442">Opzioni: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="344630545793878684">Lettura dei dati su una serie di siti web</translation>
 </translationbundle>

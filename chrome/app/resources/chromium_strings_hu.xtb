@@ -169,6 +169,7 @@
 <translation id="2648074677641340862">Az operációs rendszer hibát jelzett a telepítés során. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="5942520288919337908">A(z) <ph name="EXTENSION_NAME"/> hozzá lett adva a Chromiumhoz.</translation>
 <translation id="549669000822060376">Kérjük, várjon, amíg a Chromium telepíti a legutóbbi rendszerfrissítéseket.</translation>
+<translation id="1240763998429950591">A Chromium nem tudott frissülni a legújabb verzióra, így Ön lemarad az új szolgáltatásokról és biztonsági javításokról. Frissítenie kell a Chromiumot.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">a szót és annak szövegkörnyezetét elküldi a Google Keresésbe, amely definíciókat, képeket, keresési eredményeket és egyéb részleteket küld vissza.</translation>
 <translation id="4559775032954821361">Lépjen ide:
@@ -204,6 +205,7 @@
 <translation id="2966088006374919794">A Chromiumnak külső alkalmazást kell indítania a(z) <ph name="SCHEME"/> linkek kezeléséhez. A kért link: <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Szeretné, hogy a Chromium mentse a jelszavát?</translation>
 <translation id="6485906693002546646">Chromiumos dolgainak szinkronizálásához a(z) <ph name="PROFILE_EMAIL"/> fiókot használja. Szinkronizálási beállításainak frissítéséhez, illetve a Chromium Google-fiók nélküli használatához keresse fel a <ph name="SETTINGS_LINK"/> linket.</translation>
+<translation id="705851970750939768">A Chromium frissítése</translation>
 <translation id="5772805321386874569">(a Chromium <ph name="BEGIN_BUTTON"/>újraindítását<ph name="END_BUTTON"/> igényli)</translation>
 <translation id="1688750314291223739">A szinkronizálás beállításával személyre szabott beállításait az interneten tárolhatja, így azok elérhetők a Chromiumból bármelyik számítógépen.</translation>
 <translation id="8610831143142469229">A hálózat elérésének engedélyezése a Chromium számára a

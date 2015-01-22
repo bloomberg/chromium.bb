@@ -43,6 +43,7 @@
 <translation id="3891340733213178823">Jei norite atsijungti, du kartus paspauskite „Ctrl“ + „Shift“ + Q.</translation>
 <translation id="5871632337994001636">Valdyti įrenginius...</translation>
 <translation id="785750925697875037">Žiūrėti paskyrą mobiliesiems</translation>
+<translation id="8356164830168736643">Uždaryti „<ph name="WINDOW_TITLE"/>“</translation>
 <translation id="7864539943188674973">Neleisti „Bluetooth“</translation>
 <translation id="939252827960237676">Išsaugant ekrano kopiją įvyko klaida</translation>
 <translation id="9080206825613744995">Mikrofonas naudojamas.</translation>
@@ -70,6 +71,7 @@
 <translation id="7823564328645135659">Po nustatymų sinchronizavimo kalba pakeista iš <ph name="FROM_LOCALE"/> į <ph name="TO_LOCALE"/>.</translation>
 <translation id="3606978283550408104">Brailio ekranas prijungtas.</translation>
 <translation id="8654520615680304441">Įjungti „Wi-Fi“...</translation>
+<translation id="4421231901400348175"><ph name="HELPER_NAME"/> gali valdyti jūsų ekraną naudodamas (-a) Nuotolinę pagalbą.</translation>
 <translation id="6650933572246256093">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME"/>“ prašo leidimo susieti. Šiame įrenginyje įveskite šį slaptąjį raktą: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Įvesties metodas pakeistas į <ph name="INPUT_METHOD_ID"/>.
@@ -145,6 +147,7 @@
 <translation id="5977415296283489383">Ausinės</translation>
 <translation id="225680501294068881">Ieškoma įrenginių...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/>, <ph name="SHORT_WEEKDAY"/></translation>
+<translation id="5978382165065462689">Leidžiama valdyti jūsų ekraną naudojant Nuotolinę pagalbą.</translation>
 <translation id="737451040872859086">Mikrofonas (vidinis)</translation>
 <translation id="2475982808118771221">Įvyko klaida</translation>
 <translation id="3783640748446814672">alt</translation>

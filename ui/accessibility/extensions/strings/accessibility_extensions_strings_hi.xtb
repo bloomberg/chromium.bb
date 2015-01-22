@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">डिफ़ॉल्‍ट योजना के रूप में सेट करें</translation>
 <translation id="2179565792157161713">लंबे वर्णन को नए टैब में खोलें</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> की रंग योजना:</translation>
+<translation id="381767806621926835">&quot;longdesc&quot; या &quot;aria-describedat&quot; विशेषता वाली किसी भी चीज़ का बड़ा वर्णन ऐक्‍सेस करने के लिए उस पर राइट क्‍लिक करें.</translation>
+<translation id="786423340267544509">aria-describedat या longdesc attributes वाले तत्‍वों में बॉर्डर जोड़ें.</translation>
 <translation id="690628312087070417">जब कैरेट बड़ी दूरी से जम्‍प करता है:</translation>
 <translation id="5331422999063554397">विपरीत रंग</translation>
 <translation id="2648340354586434750">शब्‍दों के द्वारा जाने के लिए &lt;span class='key'&gt;Option&lt;/span&gt; को दबाए रखें.</translation>
+<translation id="4769065380738716500">चित्रों को उनके वैकल्‍पिक लेख से बदल दिया गया है.</translation>
 <translation id="5287723860611749454">&lt;p&gt;संपूर्ण दस्‍तावेज़ में जाने के लिए तीर कुंजियों का उपयोग करें. &lt;/p&gt;&lt;p&gt;कर्सर को किसी भी स्‍थान पर ले जाने के लिए वहां क्‍लिक करें. &lt;/p&gt; &lt;p&gt;   लेख चुनने के लिए &lt;span class='key'&gt;Shift&lt;/span&gt; + तीरों को दबाएं.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">कीबोर्ड के कमांड</translation>
 <translation id="633394792577263429">शब्‍दों के द्वारा जाने के लिए &lt;span class='key'&gt;Control&lt;/span&gt; दबाए रखें.</translation>

@@ -43,6 +43,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="3891340733213178823">Druk twee keer op Ctrl+Shift+Q om uit te loggen.</translation>
 <translation id="5871632337994001636">Apparaten beheren...</translation>
 <translation id="785750925697875037">Mobiel account weergeven</translation>
+<translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> sluiten</translation>
 <translation id="7864539943188674973">Bluetooth uitschakelen</translation>
 <translation id="939252827960237676">Kan screenshot niet opslaan</translation>
 <translation id="9080206825613744995">Microfoon wordt gebruikt.</translation>
@@ -70,6 +71,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="7823564328645135659">Na het synchroniseren met je instellingen, is de taal gewijzigd van '<ph name="FROM_LOCALE"/>' in '<ph name="TO_LOCALE"/>'.</translation>
 <translation id="3606978283550408104">Braillescherm gekoppeld.</translation>
 <translation id="8654520615680304441">Wifi inschakelen...</translation>
+<translation id="4421231901400348175">De controle over je scherm wordt gedeeld met <ph name="HELPER_NAME"/> via externe ondersteuning.</translation>
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME"/>' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Je invoermethode is gewijzigd in <ph name="INPUT_METHOD_ID"/>.
@@ -145,6 +147,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="5977415296283489383">Hoofdtelefoon</translation>
 <translation id="225680501294068881">Scannen naar apparaten...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
+<translation id="5978382165065462689">De controle over je scherm delen via externe ondersteuning.</translation>
 <translation id="737451040872859086">Microfoon (intern)</translation>
 <translation id="2475982808118771221">Er is een fout opgetreden</translation>
 <translation id="3783640748446814672">alt</translation>

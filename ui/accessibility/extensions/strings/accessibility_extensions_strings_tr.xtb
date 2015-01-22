@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">Varsayılan düzen olarak belirle</translation>
 <translation id="2179565792157161713">Uzun Açıklamayı Yeni Sekmede Aç</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> için renk düzeni:</translation>
+<translation id="381767806621926835">&quot;longdesc&quot; veya &quot;aria-describedat&quot; özelliği olan herhangi bir şeyi sağ tıklayıp uzun açıklamasına erişin.</translation>
+<translation id="786423340267544509">aria-describedat veya longdesc özelliği olan öğelere sınır ekleyin.</translation>
 <translation id="690628312087070417">Klavye imleci uzun mesafe atlarsa:</translation>
 <translation id="5331422999063554397">Ters Renk</translation>
 <translation id="2648340354586434750">Kelime kelime hareket etmek için &lt;span class='key'&gt;Seçenek&lt;/span&gt; tuşunu basılı tutun.</translation>
+<translation id="4769065380738716500">Resimler, alternatif metinleriyle değiştirildi.</translation>
 <translation id="5287723860611749454">&lt;p&gt;Doküman içinde hareket etmek için ok tuşlarını kullanın.&lt;/p&gt;&lt;p&gt;İmleci belli bir konuma götürmek için ilgili konumu tıklayın.&lt;/p&gt; &lt;p&gt; Metni seçmek için &lt;span class='key'&gt;ÜstKrktr&lt;/span&gt; + ok tuşlarına basın.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Klavye komutları</translation>
 <translation id="633394792577263429">Kelime kelime hareket etmek için &lt;span class='key'&gt;Control&lt;/span&gt; tuşunu basılı tutun.</translation>

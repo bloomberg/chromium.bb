@@ -3,16 +3,23 @@
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
 <translation id="4996978546172906250">แชร์ผ่าน</translation>
 <translation id="6292937202013477045">ผู้บุกรุกอาจพยายามขโมยข้อมูลของคุณ (เช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) จาก <ph name="DOMAIN_NAME"/></translation>
+<translation id="1506061864768559482">เครื่องมือค้นหา</translation>
 <translation id="346339498574870680">คัดลอก URL รูปภาพ</translation>
 <translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="5578795271662203820">ค้นหาภาพนี้ใน <ph name="SEARCH_ENGINE"/></translation>
+<translation id="7764225426217299476">เพิ่มที่อยู่</translation>
+<translation id="8237438615979997762">ข้อมูลที่จัดเก็บไว้ในอุปกรณ์นี้และข้อมูลที่จัดเก็บในบัญชี Google ของคุณจะยังคงอยู่ทั้ง 2 ที่ แต่จะไม่มีการซิงค์ข้อมูลใหม่หรือการเปลี่ยนแปลงที่คุณทำระหว่างที่เก็บข้อมูลทั้ง 2 แห่งนี้</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
+<translation id="6504836143156866575">เวอร์ชัน JavaScript</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
 <translation id="7644305409888602715">กำลังแปลหน้านี้เป็น <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="326254929494722411">คุณยังไม่ได้ตั้งค่าบัญชี Google ในอุปกรณ์นี้</translation>
+<translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
 <translation id="7015922086425404465">รับแอปจาก Google Play สโตร์: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">โหลดหน้าเว็บนี้ซ้ำ</translation>
 <translation id="5233638681132016545">แท็บใหม่</translation>
 <translation id="641643625718530986">พิมพ์…</translation>
+<translation id="6317634962183824346">ปิดการซิงค์ระบบ Android อยู่ โปรดเปิดใหม่แล้วลองอีกครั้ง</translation>
 <translation id="5763382633136178763">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="5210365745912300556">ปิดแท็บ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
@@ -22,13 +29,19 @@
 <translation id="6846298663435243399">กำลังโหลด…</translation>
 <translation id="7378627244592794276">ไม่</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9133515669113036225">รีเซ็ตข้อมูลรับรองของอุปกรณ์</translation>
+<translation id="9019902583201351841">มีการจัดการโดยผู้ปกครอง</translation>
+<translation id="7596558890252710462">ระบบปฏิบัติการ</translation>
 <translation id="3358663646935160692">ผู้จัดการบัญชีนี้คือ <ph name="DOMAIN_NAME"/>
 
 คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่มีผู้อื่นเป็นผู้จัดการ และคุณอนุญาตให้ผู้ดูแลระบบควบคุมโปรไฟล์ Chrome ของคุณได้ ข้อมูล Chrome ของคุณจะเชื่อมโยงกับบัญชีนี้อย่างถาวร การยกเลิกการเชื่อมต่อกับบัญชีนี้จะเป็นการนำออกข้อมูล Chrome ในเครื่อง</translation>
+<translation id="666981079809192359">ประกาศเกี่ยวกับนโยบายส่วนบุคคลของ Chrome</translation>
 <translation id="1966710179511230534">โปรดอัปเดตรายละเอียดการลงชื่อเข้าใช้ของคุณ</translation>
+<translation id="3410346880900521918">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK"/>คำแนะนำ<ph name="END_LINK"/>เหล่านี้</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
 <translation id="1426410128494586442">ใช่</translation>
 <translation id="5595485650161345191">แก้ไขที่อยู่</translation>
+<translation id="4256782883801055595">ใบอนุญาตโอเพนซอร์ส</translation>
 <translation id="8218346974737627104">ยืนยันการลงชื่อเข้าใช้</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/> เป็นแท็บ</translation>
 <translation id="624558823898732418">ภาษาที่แปล: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,17 +50,22 @@
 <translation id="8719023831149562936">ไม่สามารถบีมแท็บปัจจุบัน</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="3896036286668839683">เครื่องมือดูใบรับรอง</translation>
+<translation id="2321958826496381788">ลากแถบเลื่อนจนกว่าคุณจะสามารถอ่านได้อย่างสะดวก ข้อความควรมีขนาดเท่านี้เป็นอย่างน้อยหลังจากแตะ 2 ครั้งบนย่อหน้า</translation>
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="8583805026567836021">กำลังล้างข้อมูลบัญชี</translation>
 <translation id="5860033963881614850">ปิด</translation>
+<translation id="2960796085439532066">ลิขสิทธิ์ <ph name="YEAR"/> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="4250680216510889253">ไม่มี</translation>
 <translation id="8073388330009372546">เปิดภาพในแท็บใหม่</translation>
 <translation id="552553974213252141">ดึงข้อความออกมาถูกต้องไหม</translation>
 <translation id="5317780077021120954">บันทึก</translation>
+<translation id="1151972924205500581">ต้องมีรหัสผ่าน</translation>
 <translation id="2718352093833049315">Wi-Fi เท่านั้น</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
 <translation id="2414886740292270097">มืด</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
+<translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
+<translation id="8562452229998620586">รหัสผ่านที่บันทึกไว้จะแสดงที่นี่</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="473775607612524610">การอัปเดต</translation>
@@ -55,19 +73,27 @@
 <translation id="1807246157184219062">สว่าง</translation>
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>
+<translation id="6406506848690869874">การซิงค์ข้อมูล</translation>
 <translation id="8481940801237642152">การเชื่อมต่อกับไซต์นี้เป็นแบบส่วนตัว แต่คนอื่นในเครือข่ายอาจเปลี่ยนลักษณะของหน้าได้</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">ชื่อบนบัตร</translation>
 <translation id="656628257199996201">แปลภาษา<ph name="SOURCE_LANGUAGE"/>เสมอ</translation>
+<translation id="2387895666653383613">อัตราส่วนข้อความ</translation>
 <translation id="2748463065602559597">คุณกำลังดูหน้าเว็บ Google Chrome ที่ปลอดภัย</translation>
+<translation id="5626370437647899551">เพิ่มบัญชี Google</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
 <translation id="4543661749405994812">คัดลอกที่อยู่อีเมล</translation>
 <translation id="5659593005791499971">อีเมล</translation>
+<translation id="7987073022710626672">ข้อกำหนดในการให้บริการของ Chrome</translation>
+<translation id="5668404140385795438">แทนที่คำขอของเว็บไซต์เพื่อป้องกันการซูมเข้า</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
+<translation id="6064211167623632605">เส้นทางปฏิบัติการ</translation>
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
 <translation id="2903493209154104877">ที่อยู่</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>
+<translation id="4827948050554950725">เพิ่มบัตรเครดิต</translation>
+<translation id="7817177303494746697">เวอร์ชัน Blink</translation>
 <translation id="2532336938189706096">มุมมองเว็บ</translation>
 <translation id="6571070086367343653">แก้ไขบัตรเครดิต</translation>
 <translation id="7080851568148064063">เพิ่มไปยังหน้าจอหลัก</translation>
@@ -76,25 +102,41 @@
 <translation id="3254409185687681395">บุ๊กมาร์กหน้านี้</translation>
 <translation id="907015151729920253">สมาร์ทการ์ด</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="2600241144430299006">เดือนที่บัตรหมดอายุ</translation>
 <translation id="3063601790762993062">บันทึกวิดีโอ</translation>
 <translation id="8106211421800660735">หมายเลขบัตรเครดิต</translation>
 <translation id="6042308850641462728">เพิ่มเติม</translation>
 <translation id="7267430310003164111">ข้อความเตือนให้รับแอปจาก Google Play สโตร์  ชื่อแอป: <ph name="APP_NAME"/>  คะแนนเฉลี่ยของแอป: <ph name="APP_RATING"/></translation>
+<translation id="7358682983403815415">กำลังซิงค์แท็บที่เปิด บุ๊กมาร์ก ประวัติการเข้าชม และอื่นๆ ของคุณกับบัญชี Google</translation>
+<translation id="1943432128510653496">บันทึกรหัสผ่าน</translation>
+<translation id="4113030288477039509">มีการจัดการโดยผู้ดูแลระบบ</translation>
+<translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
 <translation id="4148957013307229264">กำลังติดตั้ง...</translation>
 <translation id="3992315671621218278">บันทึกลิงก์</translation>
+<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="5424715742813396254">แก้ไขชื่อ/รหัสผ่านหรือข้อยกเว้นที่บันทึกไว้</translation>
 <translation id="2476578072172137802">การตั้งค่าไซต์</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="651048280540227067">ปิดเมนู</translation>
+<translation id="748127970106343339">ยืนยันการลบข้อมูลรับรองของอุปกรณ์</translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
+<translation id="1583256385106514953">ปีที่บัตรหมดอายุ</translation>
+<translation id="1082482054625560856">จัดการรหัสผ่านที่บันทึกไว้ใน<ph name="BEGIN_LINK"/>บัญชี Google<ph name="END_LINK"/></translation>
+<translation id="2699916814609764774">เส้นทางโปรไฟล์</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8909135823018751308">แชร์…</translation>
+<translation id="6575643671698722332">การรีเซ็ตล้มเหลว ตรวจสอบว่าอุปกรณ์ของคุณออนไลน์และลองอีกครั้ง</translation>
 <translation id="654446541061731451">เลือกแท็บที่จะบีม</translation>
 <translation id="4269820728363426813">คัดลอกที่อยู่ลิงก์</translation>
+<translation id="2359808026110333948">ดำเนินการต่อ</translation>
+<translation id="2512222046227390255">ป้อนฟอร์มอัตโนมัติ</translation>
 <translation id="8261506727792406068">ลบ</translation>
+<translation id="1080790410959514870">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="DOMAIN_NAME"/> การออกจากระบบจะลบข้อมูล Chrome ที่จัดเก็บในอุปกรณ์นี้ แต่ข้อมูลดังกล่าวจะยังคงอยู่ในบัญชี Google ของคุณ</translation>
 <translation id="4510973599275542560">อย่าโหลดซ้ำ</translation>
 <translation id="1206892813135768548">คัดลอกข้อความลิงก์</translation>
 <translation id="9154176715500758432">อยู่ในหน้านี้</translation>
+<translation id="1416550906796893042">เวอร์ชันของแอปพลิเคชัน</translation>
 <translation id="7063006564040364415">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์การซิงค์</translation>
 <translation id="4271185234001491831">ไม่ต้องแปลภาษา<ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">คัดลอกรูปภาพ</translation>
@@ -103,6 +145,7 @@
 <translation id="8941248009481596111">การเชื่อมต่อกับไซต์นี้เป็นแบบส่วนตัว</translation>
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
 <translation id="5164482624172255778">คุณต้องการให้ Google Chrome เสนอการแปลหน้าเว็บภาษา<ph name="LANGUAGE"/>จากไซต์นี้ในครั้งต่อไปไหม</translation>
+<translation id="4062305924942672200">ข้อมูลทางกฎหมาย</translation>
 <translation id="8528538445849828817">ภาษาหน้าเว็บ: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="6512448926095770873">ออกจากหน้านี้</translation>
@@ -115,17 +158,29 @@
 <translation id="5138299137310274655">หน้านี้อยู่ในภาษา<ph name="SOURCE_LANGUAGE"/> ต้องการแปลเป็นภาษา<ph name="TARGET_LANGUAGE"/>ไหม</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="969096075394517431">เปลี่ยนภาษา</translation>
+<translation id="1614564776292091138">เมื่อเนื้อหาที่ได้รับความคุ้มครองเปิดใช้งานอยู่ เว็บไซต์จะสามารถตรวจสอบสิทธิ์อุปกรณ์ของคุณเพื่อให้แน่ใจว่าเป็นอุปกรณ์ที่ได้รับอนุญาตให้เล่นวิดีโอพรีเมียมที่ได้รับการคุ้มครอง
+
+หากปิดอยู่ คุณอาจไม่สามารถเล่นวิดีโอพรีเมียมบนอุปกรณ์นี้ได้</translation>
+<translation id="8928220460877261598">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว</translation>
 <translation id="5032574515228824816">หน้าต่างแจ้งเตือน</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
+<translation id="862875433388403934">เนื้อหา (ภาพยนตร์ เพลง ฯลฯ) ที่ดาวน์โหลดในแอปพลิเคชันอื่นๆ อาจไม่สามารถเล่นได้อีกต่อไปจนกว่าแอปพลิเคชันเหล่านั้นจะได้รับใบอนุญาตอีกครั้งโดยขึ้นอยู่กับข้อมูลรับรองของอุปกรณ์ใหม่
+
+ในการรับใบอนุญาตใหม่ ให้เชื่อมต่ออินเทอร์เน็ตและเล่นเนื้อหาที่ดาวน์โหลดไว้ของคุณ</translation>
+<translation id="2913733558842973836">ไซต์นี้ได้เข้าสู่การแสดงเต็มหน้าจอ
+ให้ลากจากด้านบนสุดเพื่อออก</translation>
 <translation id="7961015016161918242">ไม่เคย</translation>
+<translation id="8109148095642131923">ไม่สามารถพิ่มรายการที่ดาวน์โหลดไปยัง Download Manager</translation>
 <translation id="497421865427891073">ไปข้างหน้า</translation>
 <translation id="4056223980640387499">ซีเปีย</translation>
 <translation id="8310344678080805313">แท็บมาตรฐาน</translation>
+<translation id="411254640334432676">การดาวน์โหลดล้มเหลว</translation>
 <translation id="6277522088822131679">เกิดปัญหาในการพิมพ์หน้านี้ โปรดลองอีกครั้ง</translation>
 <translation id="7634554953375732414">การเชื่อมต่อกับไซต์นี้ไม่ได้เป็นส่วนตัว</translation>
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="1742134235943978220">แปลเป็นภาษา<ph name="TARGET_LANGUAGE"/>แล้ว</translation>
 <translation id="5916664084637901428">เปิด</translation>
 <translation id="6965382102122355670">ตกลง</translation>
+<translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
 <translation id="7561196759112975576">ทุกครั้ง</translation>
 </translationbundle>

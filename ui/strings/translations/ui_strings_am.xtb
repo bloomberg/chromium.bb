@@ -18,6 +18,7 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> ሴኮንድ</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ሰዓቶች ይቀራሉ</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="598033046487663418">ሁሉም መተግበሪያዎች</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> ባ</translation>
@@ -122,6 +123,7 @@
 <translation id="8677655579646609597"><ph name="QUANTITY"/> ኪባ/ሰ</translation>
 <translation id="8394908167088220973">ሚዲያ አጫውት/ለአፍታ አቁም</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
+<translation id="5120799197269191491">ፈልግ+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7960078400008666149">ለአንድ ሰዓት አትረብሽ</translation>
 <translation id="4373894838514502496">ከ<ph name="NUMBER_FEW"/> ደቂቃ በፊት</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> ቀኖች</translation>

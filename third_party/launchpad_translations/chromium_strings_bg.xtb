@@ -169,6 +169,7 @@
 <translation id="2648074677641340862">По време на инсталирането възникна грешка в операционната система. Моля, изтеглете отново Chromium.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> е добавено към Chromium.</translation>
 <translation id="549669000822060376">Моля, изчакайте, докато Chromium инсталира най-новите системни актуализации.</translation>
+<translation id="1240763998429950591">Chromium не можа да се актуализира до най-новата версия, поради което ви липсват нови функции и поправки за сигурност. Трябва да актуализирате Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">изпраща дума и текста около нея до Google Търсене, извеждайки определения, снимки, резултати от търсенето и други подробности.</translation>
 <translation id="4559775032954821361">Отворете
@@ -206,6 +207,7 @@
 <translation id="2966088006374919794">Chromium трябва да стартира външно приложение, за да обработва връзки от тип <ph name="SCHEME"/>. Заявената връзка е <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Искате ли Chromium да запази паролата ви?</translation>
 <translation id="6485906693002546646">Използвате <ph name="PROFILE_EMAIL"/> за синхронизиране на нещата си в Chromium. За да актуализирате съответното предпочитание или да ползвате браузъра без профил в Google, посетете <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Актуализиране на Chromium</translation>
 <translation id="5772805321386874569">(изисква <ph name="BEGIN_BUTTON"/>рестартиране<ph name="END_BUTTON"/> на Chromium)</translation>
 <translation id="1688750314291223739">Настройте синхронизирането, за да запазите онлайн персонализираните функции на браузъра си и да осъществявате достъп до тях от Chromium на всеки компютър.</translation>
 <translation id="8610831143142469229">Разрешете достъпа на Chromium до мрежата от настройките на защитната стена

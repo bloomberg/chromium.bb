@@ -171,6 +171,7 @@
 <translation id="2648074677641340862">Під час встановлення сталася помилка операційної системи. Завантажте Chromium ще раз.</translation>
 <translation id="5942520288919337908">Розширення <ph name="EXTENSION_NAME"/> додано в Chromium.</translation>
 <translation id="549669000822060376">Зачекайте, доки Chromium установить найновіші оновлення системи.</translation>
+<translation id="1240763998429950591">Не вдалось оновити Chromium до останньої версії. Щоб скористатися новими функціями та застосувати виправлення системи безпеки, потрібно оновити Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">надсилає в Пошук Google слово та його навколишній контекст і повертає визначення, зображення, результати пошуку й іншу інформацію.</translation>
 <translation id="4559775032954821361">Перейдіть у
@@ -210,6 +211,7 @@
 <translation id="2966088006374919794">Chromium потребує запуску зовнішньої програми обробки посилань типу <ph name="SCHEME"/>. Потрібний тип посилання: <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Хочете, щоб Chromium зберігав ваш пароль?</translation>
 <translation id="6485906693002546646">Ви синхронізуєте дані Chromium через обліковий запис <ph name="PROFILE_EMAIL"/>. Щоб оновити параметри синхронізації або використовувати Chromium без облікового запису Google, перейдіть на сторінку <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Оновити Chromium</translation>
 <translation id="5772805321386874569">(потрібно <ph name="BEGIN_BUTTON"/>перезапустити<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">Налаштуйте синхронізацію, щоб зберегти свої персоналізовані функції веб-переглядача в Інтернеті й мати до них доступ із Chromium на будь-якому комп’ютері.</translation>
 <translation id="8610831143142469229">Надайте Chromium доступ до мережі в налаштуваннях свого брандмауера чи

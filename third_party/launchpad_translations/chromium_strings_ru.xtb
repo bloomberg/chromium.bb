@@ -158,6 +158,7 @@
 <translation id="2648074677641340862">В процессе установки произошла ошибка в операционной системе. Скачайте Chromium ещё раз.</translation>
 <translation id="5942520288919337908">Расширение <ph name="EXTENSION_NAME"/> добавлено в Chromium.</translation>
 <translation id="549669000822060376">Подождите, пока Chromium устанавливает последние обновления системы</translation>
+<translation id="1240763998429950591">Не удалось установить последнюю версию Chromium, в которой добавлены новые функции и обновления для системы безопасности. Обновите программу.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">отправляет слово и окружающий его контекст в Google Поиск; возвращает определения, фотографии, картинки и другие результаты поиска.</translation>
 <translation id="4559775032954821361">Выберите
@@ -197,6 +198,7 @@
 <translation id="2966088006374919794">Chromium требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME"/>. Запрашиваемая ссылка: <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Сохранить пароль в Chromium?</translation>
 <translation id="6485906693002546646">Для синхронизации данных Chromium используется аккаунт <ph name="PROFILE_EMAIL"/>. Изменить параметры синхронизации или отключить аккаунт можно в <ph name="SETTINGS_LINK"/>.</translation>
+<translation id="705851970750939768">Обновить Chromium</translation>
 <translation id="5772805321386874569">(необходимо <ph name="BEGIN_BUTTON"/>перезапустить<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">Настройте синхронизацию, чтобы сохранить в облаке персонализированные функции браузера и получить к ним доступ из Chromium с любого компьютера.</translation>
 <translation id="8610831143142469229">Разрешите доступ к сети для Chromium в настройках брандмауэра и антивирусного ПО.</translation>

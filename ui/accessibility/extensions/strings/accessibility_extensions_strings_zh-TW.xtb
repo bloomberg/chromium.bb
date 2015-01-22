@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">設為預設配置</translation>
 <translation id="2179565792157161713">在新分頁中開啟詳細說明</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> 的色彩配置：</translation>
+<translation id="381767806621926835">對任何含有「longdesc」或「aria-describedat」屬性的元素按一下滑鼠右鍵，即可查看其完整說明。</translation>
+<translation id="786423340267544509">為含有 aria-describedat 或 longdesc 屬性的元素加上框線。</translation>
 <translation id="690628312087070417">當插入點跳躍距離極大時：</translation>
 <translation id="5331422999063554397">反轉色彩</translation>
 <translation id="2648340354586434750">按住 &lt;span class='key'&gt;Option&lt;/span&gt; 鍵可逐字移動。</translation>
+<translation id="4769065380738716500">圖片已被 alt 文字取代。</translation>
 <translation id="5287723860611749454">&lt;p&gt;使用方向鍵可在整份文件中來回移動。&lt;/p&gt;&lt;p&gt;按一下任何位置，游標即會移至點選的位置。&lt;/p&gt; &lt;p&gt;   按下 &lt;span class='key'&gt;Shift&lt;/span&gt; 鍵 + 方向鍵可選取文字。&lt;/p&gt;</translation>
 <translation id="5558600050691192317">鍵盤指令</translation>
 <translation id="633394792577263429">按住 &lt;span class='key'&gt;Control&lt;/span&gt; 鍵可逐字移動。</translation>

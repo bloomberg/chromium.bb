@@ -15,9 +15,12 @@
 <translation id="3622586652998721735">تنظیم به عنوان طرح پیش‌فرض</translation>
 <translation id="2179565792157161713">باز کردن «توضیح طولانی» در «برگه جدید»</translation>
 <translation id="2471847333270902538">طرح رنگ برای <ph name="SITE"/>:</translation>
+<translation id="381767806621926835">‏روی هر موردی با ویژگی «longdesc» یا «aria-describedat» کلیک راست کنید تا به شرح کامل آن دسترسی پیدا کنید.</translation>
+<translation id="786423340267544509">‏به عناصر دارای ویژگی «aria-describedat» یا «longdesc» حد ومرز اضافه کنید.</translation>
 <translation id="690628312087070417">زمانی که هشتک یک فاصله زیاد را رد می‌کند:</translation>
 <translation id="5331422999063554397">رنگ معکوس</translation>
 <translation id="2648340354586434750">‏برای جابه‌جایی کلمه به کلمه، &lt;span class='key'&gt;Option (گزینه)&lt;/span&gt; s را پایین نگه دارید.</translation>
+<translation id="4769065380738716500">‏نوشتار «alt» جایگزین تصاویر مربوطه شد.</translation>
 <translation id="5287723860611749454">‏&lt;p&gt;برای جابه‌جایی در داخل سند از کلیدهای پیکان استفاده کنید. &lt;/p&gt;&lt;p&gt;برای بردن نشانگر به هر مکانی، روی آن مکان کلیک کنید. &lt;/p&gt; &lt;p&gt;&lt;span class='key'&gt;Shift (کلید تبدیل)&lt;/span&gt; + پیکان‌ها را برای انتخاب نوشتار فشار دهید.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">دستورات صفحه‌کلید</translation>
 <translation id="633394792577263429">‏برای جابه‌جایی کلمه به کلمه، &lt;span class='key'&gt;Control (کنترل)&lt;/span&gt; را پایین نگه دارید.</translation>

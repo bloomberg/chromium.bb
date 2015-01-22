@@ -3,16 +3,23 @@
 <translation id="7998918019931843664">Знову відкрити закриту вкладку</translation>
 <translation id="4996978546172906250">Надіслати через</translation>
 <translation id="6292937202013477045">Зловмисники можуть намагатися викрасти ваші дані з домену <ph name="DOMAIN_NAME"/> (зокрема фотографії, паролі, повідомлення й дані кредитних карток).</translation>
+<translation id="1506061864768559482">Пошукова система</translation>
 <translation id="346339498574870680">Копіювати URL зображення</translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE"/></translation>
+<translation id="7764225426217299476">Додати адресу</translation>
+<translation id="8237438615979997762">Дані, які зберігаються на цьому пристрої й у вашому обліковому записі Google, залишаться в обох місцях. Однак нові або змінені дані не синхронізуватимуться.</translation>
 <translation id="6831043979455480757">Перекласти</translation>
+<translation id="6504836143156866575">Версія JavaScript</translation>
 <translation id="869891660844655955">Діє до</translation>
 <translation id="7644305409888602715">Виконується переклад сторінки такою мовою: <ph name="SOURCE_LANGUAGE"/>…</translation>
+<translation id="326254929494722411">Ви ще не налаштували обліковий запис Google на цьому пристрої</translation>
+<translation id="3895926599014793903">Примусово ввімкнути масштабування</translation>
 <translation id="7015922086425404465">Завантажити додаток із Google Play Маркету: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
 <translation id="5233638681132016545">Нова вкладка</translation>
 <translation id="641643625718530986">Друк…</translation>
+<translation id="6317634962183824346">Синхронізацію системи Android вимкнено. Увімкніть і повторіть спробу.</translation>
 <translation id="5763382633136178763">Анонімні вкладки</translation>
 <translation id="5210365745912300556">Закрити вкладку</translation>
 <translation id="7658239707568436148">Скасувати</translation>
@@ -22,13 +29,19 @@
 <translation id="6846298663435243399">Завантаження…</translation>
 <translation id="7378627244592794276">Ні</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9133515669113036225">Скинути облікові дані пристрою</translation>
+<translation id="9019902583201351841">Керується батьками</translation>
+<translation id="7596558890252710462">Операційна система</translation>
 <translation id="3358663646935160692">Цим обліковим записом керує домен <ph name="DOMAIN_NAME"/>.
 
 Ви входите в керований обліковий запис і дозволяєте його адміністратору керувати вашим профілем Chrome. Ваші дані Chrome буде назавжди пов’язано з цим обліковим записом. Відключення від цього облікового запису видалить усі локальні дані Chrome.</translation>
+<translation id="666981079809192359">Примітка про конфіденційність Chrome</translation>
 <translation id="1966710179511230534">Оновіть свої дані для входу.</translation>
+<translation id="3410346880900521918">Якщо ви бачите це часто, спробуйте ці <ph name="BEGIN_LINK"/>пропозиції<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
 <translation id="1426410128494586442">так</translation>
 <translation id="5595485650161345191">Редагувати адресу</translation>
+<translation id="4256782883801055595">Ліцензії ПЗ з відкритим кодом</translation>
 <translation id="8218346974737627104">Підтвердити вхід</translation>
 <translation id="8853345339104747198">Вкладка &quot;<ph name="TAB_TITLE"/>&quot;</translation>
 <translation id="624558823898732418">Мова перекладу: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,17 +50,22 @@
 <translation id="8719023831149562936">Неможливо передати дані поточної вкладки</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="3896036286668839683">Перегляд сертифікатів</translation>
+<translation id="2321958826496381788">Перетягуйте повзунок, доки розмір тексту не стане зручним для читання. Якщо двічі торкнутись абзацу, розмір тексту має стати принаймні таким, як цей.</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="8583805026567836021">Очищення даних облікового запису</translation>
 <translation id="5860033963881614850">Вимк.</translation>
+<translation id="2960796085439532066">Авторське право <ph name="YEAR"/> Google Inc. Усі права захищено.</translation>
 <translation id="4250680216510889253">ні</translation>
 <translation id="8073388330009372546">Відкрити в новій вкладці</translation>
 <translation id="552553974213252141">Текст отримано правильно?</translation>
 <translation id="5317780077021120954">Зберегти</translation>
+<translation id="1151972924205500581">Потрібен пароль</translation>
 <translation id="2718352093833049315">Лише у Wi-Fi</translation>
 <translation id="7029809446516969842">Паролі</translation>
 <translation id="2414886740292270097">Темна</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
+<translation id="4645575059429386691">Керується одним із батьків</translation>
+<translation id="8562452229998620586">Тут відображатимуться збережені паролі.</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
 <translation id="473775607612524610">Оновити</translation>
@@ -55,19 +73,27 @@
 <translation id="1807246157184219062">Світла</translation>
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="8374821112118309944">Потрібно оновити додаток TalkBack до новішої версії.</translation>
+<translation id="6406506848690869874">Синхронізація</translation>
 <translation id="8481940801237642152">Ваше з’єднання з сайтом приватне, але хтось у мережі може змінювати вигляд сторінки.</translation>
 <translation id="2593272815202181319">Однакової ширини</translation>
 <translation id="4807098396393229769">Ім'я на картці</translation>
 <translation id="656628257199996201">Завжди перекладати з такої мови: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="2387895666653383613">Масштаб тексту</translation>
 <translation id="2748463065602559597">Ви переглядаєте безпечну сторінку Google Chrome.</translation>
+<translation id="5626370437647899551">Додати обліковий запис Google</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
 <translation id="4543661749405994812">Копіювати електронну адресу</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
+<translation id="7987073022710626672">Умови використання Google Chrome</translation>
+<translation id="5668404140385795438">Відхиляти запит веб-сайту, щоб забороняти масштабування</translation>
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="5684874026226664614">На жаль, цю сторінку неможливо перекласти.</translation>
+<translation id="6064211167623632605">Виконуваний шлях</translation>
 <translation id="10614374240317010">Ніколи не зберігалося</translation>
 <translation id="2903493209154104877">Адреси</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
+<translation id="4827948050554950725">Додати кредитну картку</translation>
+<translation id="7817177303494746697">Версія Blink</translation>
 <translation id="2532336938189706096">Веб-версія</translation>
 <translation id="6571070086367343653">Редагувати дані кредитної картки</translation>
 <translation id="7080851568148064063">Додати на головний екран</translation>
@@ -76,25 +102,41 @@
 <translation id="3254409185687681395">Додати цю сторінку до закладок</translation>
 <translation id="907015151729920253">Смарт-карта</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="2600241144430299006">Місяць закінчення терміну дії картки</translation>
 <translation id="3063601790762993062">Зберегти відео</translation>
 <translation id="8106211421800660735">Номер кредитної картки</translation>
 <translation id="6042308850641462728">Більше</translation>
 <translation id="7267430310003164111">Підказка щодо завантаження додатка з Google Play Маркету. Назва додатка: <ph name="APP_NAME"/>. Середній рейтинг додатка: <ph name="APP_RATING"/>.</translation>
+<translation id="7358682983403815415">Відкриті вкладки, закладки, історія тощо синхронізуються з вашим обліковим записом Google.</translation>
+<translation id="1943432128510653496">Зберігання паролів</translation>
+<translation id="4113030288477039509">Керується адміністратором</translation>
+<translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>
 <translation id="4148957013307229264">Встановлення...</translation>
 <translation id="3992315671621218278">Зберегти посилання</translation>
+<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
+<translation id="5424715742813396254">Редагувати збережене ім’я/пароль або виняток</translation>
 <translation id="2476578072172137802">Налаштування сайту</translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="651048280540227067">Закрити меню</translation>
+<translation id="748127970106343339">Підтвердити видалення облікових даних пристрою</translation>
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
+<translation id="1583256385106514953">Рік закінчення терміну дії картки</translation>
+<translation id="1082482054625560856">Керувати збереженими паролями в <ph name="BEGIN_LINK"/>обліковому записі Google<ph name="END_LINK"/></translation>
+<translation id="2699916814609764774">Шлях до профілю</translation>
 <translation id="6981982820502123353">Доступність</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8909135823018751308">Надіслати…</translation>
+<translation id="6575643671698722332">Помилка скидання. Перевірте, чи пристрій онлайн і спробуйте ще.</translation>
 <translation id="654446541061731451">Виберіть вкладку для передавання даних</translation>
 <translation id="4269820728363426813">Копіювати адресу посилання</translation>
+<translation id="2359808026110333948">Продовжити</translation>
+<translation id="2512222046227390255">Автозаповнення форм</translation>
 <translation id="8261506727792406068">Видалити</translation>
+<translation id="1080790410959514870">Ви виходите з облікового запису, яким керує домен <ph name="DOMAIN_NAME"/>. Дані Chrome, які зберігаються на цьому пристрої, буде видалено, але вони залишаться у вашому обліковому записі Google.</translation>
 <translation id="4510973599275542560">Не оновлювати</translation>
 <translation id="1206892813135768548">Копіювати текст посилання</translation>
 <translation id="9154176715500758432">Залишатися на цій сторінці</translation>
+<translation id="1416550906796893042">Версія додатка</translation>
 <translation id="7063006564040364415">Не вдалося з’єднатись із сервером синхронізації.</translation>
 <translation id="4271185234001491831">Ніколи не перекладати з такої мови: <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Копіювати зображення</translation>
@@ -103,6 +145,7 @@
 <translation id="8941248009481596111">Ваше з’єднання з цим сайтом конфіденційне.</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="5164482624172255778">Хочете, щоб Google Chrome наступного разу пропонував перекласти сторінки цього сайту, написані такою мовою: <ph name="LANGUAGE"/>?</translation>
+<translation id="4062305924942672200">Правова інформація</translation>
 <translation id="8528538445849828817">Мова сторінки: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="6512448926095770873">Залишити цю сторінку</translation>
@@ -115,17 +158,29 @@
 <translation id="5138299137310274655">Мова цієї сторінки: <ph name="SOURCE_LANGUAGE"/>. Перекласти її такою мовою: <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="969096075394517431">Змінити мови</translation>
+<translation id="1614564776292091138">Якщо для захищеного вмісту встановлено статус УВІМКНЕНО, веб-сайти з таким вмістом зможуть автентифікувати ваш пристрій, щоб переконатися, що він має право відтворювати платні захищені відео.
+
+Якщо встановлено статус ВИМКНЕНО, ви не зможете відтворювати платні відео на цьому пристрої.</translation>
+<translation id="8928220460877261598">Тепер ви ввійшли в Chrome.</translation>
 <translation id="5032574515228824816">Підказка</translation>
 <translation id="6165508094623778733">Докладніше</translation>
+<translation id="862875433388403934">Завантажений в інші додатки вміст (фільми, музика тощо) може не відтворюватися, доки ці додатки самі не отримають ліцензії на основі нових облікових даних пристрою.
+
+Щоб отримати нові ліцензії, під’єднайте пристрій до Інтернету та відтворіть завантажений вміст.</translation>
+<translation id="2913733558842973836">Цей сайт розгорнуто на весь екран.
+Потягніть згори, щоб вийти з повноекранного режиму.</translation>
 <translation id="7961015016161918242">Ніколи</translation>
+<translation id="8109148095642131923">Не вдалося додати завантажений елемент у диспетчер завантажень.</translation>
 <translation id="497421865427891073">Перейти вперед</translation>
 <translation id="4056223980640387499">Сепія</translation>
 <translation id="8310344678080805313">Стандартні вкладки</translation>
+<translation id="411254640334432676">Не завантажено.</translation>
 <translation id="6277522088822131679">Виникла проблема з друком цієї сторінки. Повторіть спробу.</translation>
 <translation id="7634554953375732414">Ваше з’єднання з цим сайтом не конфіденційне.</translation>
 <translation id="6612358246767739896">Захищений вміст</translation>
 <translation id="1742134235943978220">Перекладено такою мовою: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5916664084637901428">Увімкнути</translation>
 <translation id="6965382102122355670">ОК</translation>
+<translation id="7437998757836447326">Вихід із Chrome</translation>
 <translation id="7561196759112975576">Завжди</translation>
 </translationbundle>
