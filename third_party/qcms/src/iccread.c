@@ -365,25 +365,25 @@ static bool read_tag_descType(qcms_profile *profile, struct mem_source *src, str
 		uint32_t offset = tag->offset;
 		uint32_t type = read_u32(src, offset);
 		uint32_t length = read_u32(src, offset+8);
-		uint32_t i, description;
+		uint32_t i, description_offset;
 		bool mluc = false;
 		if (length && type == MLUC_TYPE) {
 			length = read_u32(src, offset+20);
 			if (!length || (length & 1) || (read_u32(src, offset+12) != 12))
 				goto invalid_desc_tag;
-			description = offset + read_u32(src, offset+24);
+			description_offset = offset + read_u32(src, offset+24);
 			if (!src->valid)
 				goto invalid_desc_tag;
 			mluc = true;
 		} else if (length && type == DESC_TYPE) {
-			description = offset + 12;
+			description_offset = offset + 12;
 		} else {
 			goto invalid_desc_tag;
 		}
 		if (length >= limit)
 			length = limit - 1;
 		for (i = 0; i < length; ++i) {
-			uint8_t value = read_u8(src, description+i);
+			uint8_t value = read_u8(src, description_offset + i);
 			if (!src->valid)
 				goto invalid_desc_tag;
 			if (mluc && !value)
