@@ -1,0 +1,15 @@
+{
+  "name": "chrome.usb.onDeviceRemoved",
+  "version": "0.1",
+  "description": "browser test for chrome.usb.onDeviceRemoved event",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "usb",
+    // This is a test device emulated by the mocks enabled for the test.
+    { "usbDevices": [{ "vendorId": 0, "productId": 0 }]}
+  ]
+}

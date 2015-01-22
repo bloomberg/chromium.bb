@@ -8,6 +8,7 @@
 #include "device/usb/usb_service.h"
 #include "extensions/browser/api/usb/usb_api.h"
 #include "extensions/shell/test/shell_apitest.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -126,6 +127,16 @@ class MockUsbService : public UsbService {
  public:
   explicit MockUsbService(scoped_refptr<UsbDevice> device) : device_(device) {}
 
+  // Public wrapper around the protected base class method.
+  void NotifyDeviceAdded(scoped_refptr<UsbDevice> device) {
+    UsbService::NotifyDeviceAdded(device);
+  }
+
+  // Public wrapper around the protected base class method.
+  void NotifyDeviceRemoved(scoped_refptr<UsbDevice> device) {
+    UsbService::NotifyDeviceRemoved(device);
+  }
+
  protected:
   scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
     EXPECT_EQ(unique_id, 0U);
@@ -144,8 +155,12 @@ class UsbApiTest : public ShellApiTest {
  public:
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
-    mock_device_handle_ = new MockUsbDeviceHandle();
+
     mock_device_ = new MockUsbDevice(0, 0, 0);
+    EXPECT_CALL(*mock_device_.get(), GetSerialNumber(_))
+        .WillRepeatedly(Return(false));
+
+    mock_device_handle_ = new MockUsbDeviceHandle();
     mock_device_handle_->set_device(mock_device_.get());
     EXPECT_CALL(*mock_device_.get(), RequestUsbAccess(_, _))
         .WillRepeatedly(Invoke(RequestUsbAccess));
@@ -160,22 +175,26 @@ class UsbApiTest : public ShellApiTest {
   }
 
   void SetUpService() {
-    UsbService::SetInstanceForTest(new MockUsbService(mock_device_));
+    mock_service_ = new MockUsbService(mock_device_);
+    UsbService::SetInstanceForTest(mock_service_);
   }
 
-  void TearDownOnMainThread() override {
-    UsbService* service = NULL;
-    base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&UsbService::SetInstanceForTest, service),
-        run_loop.QuitClosure());
-    run_loop.Run();
+  void AddTestDevices() {
+    scoped_refptr<MockUsbDevice> device(new MockUsbDevice(0x18D1, 0x58F0, 1));
+    EXPECT_CALL(*device.get(), GetSerialNumber(_))
+        .WillRepeatedly(Return(false));
+    mock_service_->NotifyDeviceAdded(device);
+
+    device = new MockUsbDevice(0x18D1, 0x58F1, 2);
+    EXPECT_CALL(*device.get(), GetSerialNumber(_))
+        .WillRepeatedly(Return(false));
+    mock_service_->NotifyDeviceAdded(device);
   }
 
  protected:
   scoped_refptr<MockUsbDeviceHandle> mock_device_handle_;
   scoped_refptr<MockUsbDevice> mock_device_;
+  MockUsbService* mock_service_;
 };
 
 }  // namespace
@@ -261,6 +280,45 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
 IN_PROC_BROWSER_TEST_F(UsbApiTest, InvalidLengthTransfer) {
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
   ASSERT_TRUE(RunAppTest("api_test/usb/invalid_length_transfer"));
+}
+
+IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceAdded) {
+  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener result_listener("success", false);
+  result_listener.set_failure_message("failure");
+
+  ASSERT_TRUE(LoadApp("api_test/usb/add_event"));
+  ASSERT_TRUE(load_listener.WaitUntilSatisfied());
+
+  base::RunLoop run_loop;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&UsbApiTest::AddTestDevices, base::Unretained(this)),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
+  ASSERT_EQ("success", result_listener.message());
+}
+
+IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceRemoved) {
+  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener result_listener("success", false);
+  result_listener.set_failure_message("failure");
+
+  ASSERT_TRUE(LoadApp("api_test/usb/remove_event"));
+  ASSERT_TRUE(load_listener.WaitUntilSatisfied());
+
+  base::RunLoop run_loop;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&MockUsbService::NotifyDeviceRemoved,
+                 base::Unretained(mock_service_), mock_device_),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
+  ASSERT_EQ("success", result_listener.message());
 }
 
 }  // namespace extensions

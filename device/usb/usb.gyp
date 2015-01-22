@@ -34,8 +34,10 @@
         'usb_error.h',
         'usb_ids.cc',
         'usb_ids.h',
+        'usb_service.cc',
         'usb_service.h',
         'usb_service_impl.cc',
+        'usb_service_impl.h',
       ],
       'actions': [
         {

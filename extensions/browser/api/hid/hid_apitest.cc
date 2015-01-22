@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceRemoved) {
   ASSERT_TRUE(LoadApp("api_test/hid/remove_event"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
-  // Device C was not returned by chrome.usb.getDevices, the app will not get
+  // Device C was not returned by chrome.hid.getDevices, the app will not get
   // a notification.
   hid_service_->RemoveDevice("C");
   // Device A was returned, the app will get a notification.

@@ -55,8 +55,6 @@ class UsbService : public base::NonThreadSafe {
   void RemoveObserver(Observer* observer);
 
  protected:
-  friend struct base::DefaultDeleter<UsbService>;
-
   UsbService();
   virtual ~UsbService();
 
@@ -64,6 +62,9 @@ class UsbService : public base::NonThreadSafe {
   void NotifyDeviceRemoved(scoped_refptr<UsbDevice> device);
 
   ObserverList<Observer, true> observer_list_;
+
+ private:
+  class Destroyer;
 
   DISALLOW_COPY_AND_ASSIGN(UsbService);
 };

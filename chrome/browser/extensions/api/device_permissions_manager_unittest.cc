@@ -123,20 +123,18 @@ class DevicePermissionsManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     testing::Test::SetUp();
-    env_.reset(new TestExtensionEnvironment());
-    env_->GetExtensionPrefs();  // Force creation before adding extensions.
-    extension_ =
-        env_->MakeExtension(*base::test::ParseJson(
-                                "{"
-                                "  \"app\": {"
-                                "    \"background\": {"
-                                "      \"scripts\": [\"background.js\"]"
-                                "    }"
-                                "  },"
-                                "  \"permissions\": ["
-                                "    \"usb\""
-                                "  ]"
-                                "}"));
+    env_.GetExtensionPrefs();  // Force creation before adding extensions.
+    extension_ = env_.MakeExtension(*base::test::ParseJson(
+                                        "{"
+                                        "  \"app\": {"
+                                        "    \"background\": {"
+                                        "      \"scripts\": [\"background.js\"]"
+                                        "    }"
+                                        "  },"
+                                        "  \"permissions\": ["
+                                        "    \"usb\""
+                                        "  ]"
+                                        "}"));
     device0_ = new MockUsbDevice("ABCDE");
     device1_ = new MockUsbDevice("");
     device2_ = new MockUsbDevice("12345");
@@ -145,12 +143,7 @@ class DevicePermissionsManagerTest : public testing::Test {
     UsbService::SetInstanceForTest(usb_service_);
   }
 
-  void TearDown() override {
-    env_.reset(nullptr);
-    UsbService::SetInstanceForTest(nullptr);
-  }
-
-  scoped_ptr<extensions::TestExtensionEnvironment> env_;
+  extensions::TestExtensionEnvironment env_;
   const extensions::Extension* extension_;
   MockUsbService* usb_service_;
   scoped_refptr<MockUsbDevice> device0_;
@@ -161,7 +154,7 @@ class DevicePermissionsManagerTest : public testing::Test {
 
 TEST_F(DevicePermissionsManagerTest, AllowAndClearDevices) {
   DevicePermissionsManager* manager =
-      DevicePermissionsManager::Get(env_->profile());
+      DevicePermissionsManager::Get(env_.profile());
   AllowUsbDevice(manager, extension_, device0_);
   AllowUsbDevice(manager, extension_, device1_);
 
@@ -205,7 +198,7 @@ TEST_F(DevicePermissionsManagerTest, AllowAndClearDevices) {
 
 TEST_F(DevicePermissionsManagerTest, SuspendExtension) {
   DevicePermissionsManager* manager =
-      DevicePermissionsManager::Get(env_->profile());
+      DevicePermissionsManager::Get(env_.profile());
   AllowUsbDevice(manager, extension_, device0_);
   AllowUsbDevice(manager, extension_, device1_);
 
@@ -232,7 +225,7 @@ TEST_F(DevicePermissionsManagerTest, SuspendExtension) {
 
 TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
   DevicePermissionsManager* manager =
-      DevicePermissionsManager::Get(env_->profile());
+      DevicePermissionsManager::Get(env_.profile());
   AllowUsbDevice(manager, extension_, device0_);
   AllowUsbDevice(manager, extension_, device1_);
 
@@ -260,7 +253,7 @@ TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
 
 TEST_F(DevicePermissionsManagerTest, RevokeAndRegrantAccess) {
   DevicePermissionsManager* manager =
-      DevicePermissionsManager::Get(env_->profile());
+      DevicePermissionsManager::Get(env_.profile());
   AllowUsbDevice(manager, extension_, device0_);
   AllowUsbDevice(manager, extension_, device1_);
 
@@ -296,7 +289,7 @@ TEST_F(DevicePermissionsManagerTest, RevokeAndRegrantAccess) {
 
 TEST_F(DevicePermissionsManagerTest, UpdateLastUsed) {
   DevicePermissionsManager* manager =
-      DevicePermissionsManager::Get(env_->profile());
+      DevicePermissionsManager::Get(env_.profile());
   AllowUsbDevice(manager, extension_, device0_);
 
   scoped_ptr<DevicePermissions> device_permissions =
@@ -321,11 +314,11 @@ TEST_F(DevicePermissionsManagerTest, LoadPrefs) {
       "    \"vendor_id\": 0"
       "  }"
       "]");
-  env_->GetExtensionPrefs()->UpdateExtensionPref(extension_->id(), "devices",
-                                                 prefs_value.release());
+  env_.GetExtensionPrefs()->UpdateExtensionPref(extension_->id(), "devices",
+                                                prefs_value.release());
 
   DevicePermissionsManager* manager =
-      DevicePermissionsManager::Get(env_->profile());
+      DevicePermissionsManager::Get(env_.profile());
   scoped_ptr<DevicePermissions> device_permissions =
       manager->GetForExtension(extension_->id());
   ASSERT_TRUE(FindEntry(device_permissions.get(), device0_).get());
