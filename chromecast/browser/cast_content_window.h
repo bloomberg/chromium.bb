@@ -11,7 +11,10 @@
 
 namespace aura {
 class WindowTreeHost;
-}
+namespace test {
+class TestFocusClient;
+} // namespace test
+} // namespace aura
 
 namespace content {
 class BrowserContext;
@@ -45,6 +48,7 @@ class CastContentWindow : public content::WebContentsObserver {
  private:
 #if defined(USE_AURA)
   scoped_ptr<aura::WindowTreeHost> window_tree_host_;
+  scoped_ptr<aura::test::TestFocusClient> focus_client_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(CastContentWindow);
