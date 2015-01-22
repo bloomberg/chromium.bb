@@ -1512,8 +1512,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // When restoring the tabs, the title will no longer be populated, so request it from the
         // ContentViewCore or NativePage (if present).
         String title = "";
-        if (mNativePage != null) title = mNativePage.getTitle();
-        if (getWebContents() != null) title = getWebContents().getTitle();
+        if (mNativePage != null) {
+            title = mNativePage.getTitle();
+        } else if (getWebContents() != null) {
+            title = getWebContents().getTitle();
+        }
         updateTitle(title);
     }
 
