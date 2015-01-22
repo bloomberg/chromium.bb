@@ -21,6 +21,8 @@ class URLRequestContextGetter;
 
 namespace password_manager {
 
+class TestAffiliationFetcherFactory;
+
 // Fetches authoritative information regarding which facets are affiliated with
 // each other, that is, which facets belong to the same logical application.
 // See affiliation_utils.h for a definition of what this means.
@@ -38,6 +40,13 @@ class AffiliationFetcher : net::URLFetcherDelegate {
       net::URLRequestContextGetter* request_context_getter,
       const std::vector<FacetURI>& facet_uris,
       AffiliationFetcherDelegate* delegate);
+
+  // Sets the |factory| to be used by Create() to construct AffiliationFetcher
+  // instances. To be used only for testing.
+  //
+  // The caller must ensure that the |factory| outlives all potential Create()
+  // calls. The caller may pass in NULL to resume using the default factory.
+  static void SetFactoryForTesting(TestAffiliationFetcherFactory* factory);
 
   // Actually starts the request, and will call the delegate with the results on
   // the same thread when done. If |this| is destroyed before completion, the

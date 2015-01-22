@@ -6,6 +6,7 @@
 
 #include "components/password_manager/core/browser/affiliation_api.pb.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
+#include "components/password_manager/core/browser/test_affiliation_fetcher_factory.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -15,6 +16,8 @@
 #include "url/gurl.h"
 
 namespace password_manager {
+
+static TestAffiliationFetcherFactory* g_testing_factory = nullptr;
 
 AffiliationFetcher::AffiliationFetcher(
     net::URLRequestContextGetter* request_context_getter,
@@ -36,7 +39,17 @@ AffiliationFetcher* AffiliationFetcher::Create(
     net::URLRequestContextGetter* context_getter,
     const std::vector<FacetURI>& facet_uris,
     AffiliationFetcherDelegate* delegate) {
+  if (g_testing_factory) {
+    return g_testing_factory->CreateInstance(context_getter, facet_uris,
+                                             delegate);
+  }
   return new AffiliationFetcher(context_getter, facet_uris, delegate);
+}
+
+// static
+void AffiliationFetcher::SetFactoryForTesting(
+    TestAffiliationFetcherFactory* factory) {
+  g_testing_factory = factory;
 }
 
 void AffiliationFetcher::StartRequest() {

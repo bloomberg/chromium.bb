@@ -81,6 +81,7 @@
         'password_manager/core/browser/password_store_sync.h',
         'password_manager/core/browser/psl_matching_helper.cc',
         'password_manager/core/browser/psl_matching_helper.h',
+        'password_manager/core/browser/test_affiliation_fetcher_factory.h',
         'password_manager/core/browser/webdata/logins_table.cc',
         'password_manager/core/browser/webdata/logins_table.h',
         'password_manager/core/browser/webdata/logins_table_win.cc',
@@ -155,6 +156,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'password_manager/core/browser/fake_affiliation_fetcher.cc',
+        'password_manager/core/browser/fake_affiliation_fetcher.h',
         'password_manager/core/browser/mock_password_store.cc',
         'password_manager/core/browser/mock_password_store.h',
         'password_manager/core/browser/password_form_data.cc',
