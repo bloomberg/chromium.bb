@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
@@ -798,7 +799,7 @@ class CONTENT_EXPORT RenderFrameImpl
   UserMediaClientImpl* web_user_media_client_;
 
   // EncryptedMediaClient attached to this frame; lazily initialized.
-  media::WebEncryptedMediaClientImpl* web_encrypted_media_client_;
+  scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
 
   // MidiClient attached to this frame; lazily initialized.
   MidiDispatcher* midi_dispatcher_;

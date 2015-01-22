@@ -636,7 +636,6 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       handling_select_range_(false),
       notification_permission_dispatcher_(NULL),
       web_user_media_client_(NULL),
-      web_encrypted_media_client_(NULL),
       midi_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
@@ -3343,10 +3342,10 @@ blink::WebEncryptedMediaClient* RenderFrameImpl::encryptedMediaClient() {
 #else
     scoped_ptr<media::CdmFactory> cdm_factory(new RenderCdmFactory());
 #endif
-    web_encrypted_media_client_ =
-        new media::WebEncryptedMediaClientImpl(cdm_factory.Pass());
+    web_encrypted_media_client_.reset(
+        new media::WebEncryptedMediaClientImpl(cdm_factory.Pass()));
   }
-  return web_encrypted_media_client_;
+  return web_encrypted_media_client_.get();
 }
 
 blink::WebMIDIClient* RenderFrameImpl::webMIDIClient() {
