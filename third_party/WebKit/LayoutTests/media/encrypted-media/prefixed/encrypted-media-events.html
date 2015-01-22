@@ -11,9 +11,6 @@
         <script src=../../video-test.js></script>
         <script>
             // First, try explicitly creating those events with specific IDL.
-            var messageEvent = document.createEvent("MediaKeyMessageEvent");
-            testExpected("messageEvent", null, "!=");
-            testExpected("messageEvent instanceof window.MediaKeyMessageEvent", true);
             var keyNeededEvent = document.createEvent("MediaKeyEvent");
             testExpected("keyNeededEvent", null, "!=");
             testExpected("keyNeededEvent instanceof window.MediaKeyEvent", true);

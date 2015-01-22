@@ -1,7 +1,5 @@
 Test all the key-related events.
 
-EXPECTED (messageEvent != 'null') OK
-EXPECTED (messageEvent instanceof window.MediaKeyMessageEvent == 'true') OK
 EXPECTED (keyNeededEvent != 'null') OK
 EXPECTED (keyNeededEvent instanceof window.MediaKeyEvent == 'true') OK
 
