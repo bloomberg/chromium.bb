@@ -196,7 +196,7 @@ function onChooseDesktopMediaPort(port) {
 
 // A port for continuously reporting relevant CPU usage information to the page.
 function onProcessCpu(port) {
-  var tabPid;
+  var tabPid = port.sender.guestProcessId || undefined;
   function processListener(processes) {
     if (tabPid == undefined) {
       // getProcessIdForTab sometimes fails, and does not call the callback.
