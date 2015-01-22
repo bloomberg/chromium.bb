@@ -58,7 +58,6 @@ public:
     // not ready for state change notifications.
     virtual void proxyReadyChanged() { }
 
-    virtual WebURL scope() const { return WebURL(); }
     virtual WebURL url() const { return WebURL(); }
     virtual WebServiceWorkerState state() const { return WebServiceWorkerStateUnknown; }
 
