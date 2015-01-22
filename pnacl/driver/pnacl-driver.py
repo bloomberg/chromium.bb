@@ -162,7 +162,7 @@ EXTRA_ENV = {
   'CC' : '${IS_CXX ? ${CLANGXX} : ${CLANG}}',
   'RUN_CC': '${CC} ${emit_llvm_flag} ${mode} ${CC_FLAGS} ' +
             '${@AddPrefix:-isystem :ISYSTEM} ' +
-            '-x${typespec} "${infile}" -o ${output}',
+            '-x${typespec} ${infile} -o ${output}',
 }
 
 def AddLLVMPassDisableFlag(*args):

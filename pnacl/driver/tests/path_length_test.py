@@ -14,6 +14,7 @@ import driver_log
 from driver_env import env
 import driver_test_utils
 import driver_tools
+import filetype
 
 import cStringIO
 import os
@@ -49,6 +50,17 @@ class TestPathNames(driver_test_utils.DriverTesterCommon):
     self.assertRaises(exc, func, *args)
     driver_log.Log.ResetStreams()
     return capture_out.getvalue()
+
+  def test_PathWithSpaces(self):
+    '''Test that the driver correctly handles paths containing spaces'''
+    if not driver_test_utils.CanRunHost():
+      return
+
+    name = os.path.join(self.LongTempDir, 'a file')
+    self.WriteCFile(name + '.c')
+    driver_tools.RunDriver('pnacl-clang',
+                           [name + '.c', '-c', '-o', name + '.o'])
+    self.assertEqual('po', filetype.FileType(name + '.o'))
 
   def test_InputPathTooLong(self):
     '''Test that clang and ld reject input paths that are too long
