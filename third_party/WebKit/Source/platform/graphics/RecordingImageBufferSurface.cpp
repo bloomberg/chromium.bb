@@ -20,6 +20,7 @@ RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, Pa
     : ImageBufferSurface(size, opacityMode)
     , m_imageBuffer(0)
     , m_frameWasCleared(true)
+    , m_didRecordDrawCommandsInCurrentFrame(false)
     , m_fallbackFactory(fallbackFactory)
 {
     initializeCurrentFrame();
@@ -35,9 +36,8 @@ bool RecordingImageBufferSurface::initializeCurrentFrame()
     m_currentFrame->beginRecording(size().width(), size().height(), &rTreeFactory);
     if (m_imageBuffer) {
         m_imageBuffer->resetCanvas(m_currentFrame->getRecordingCanvas());
-        m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
     }
-
+    m_didRecordDrawCommandsInCurrentFrame = false;
     return true;
 }
 
@@ -45,12 +45,12 @@ void RecordingImageBufferSurface::setImageBuffer(ImageBuffer* imageBuffer)
 {
     m_imageBuffer = imageBuffer;
     if (m_currentFrame && m_imageBuffer) {
-        m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
+        m_imageBuffer->context()->setClient(this);
         m_imageBuffer->resetCanvas(m_currentFrame->getRecordingCanvas());
     }
     if (m_fallbackSurface) {
         m_fallbackSurface->setImageBuffer(imageBuffer);
-        m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingDisabled);
+        m_imageBuffer->context()->setClient(0);
     }
 }
 
@@ -84,7 +84,7 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
     }
 
     if (m_imageBuffer) {
-        m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingDisabled);
+        m_imageBuffer->context()->setClient(0);
         m_imageBuffer->resetCanvas(m_fallbackSurface->canvas());
         m_imageBuffer->context()->setAccelerated(m_fallbackSurface->isAccelerated());
     }
@@ -135,13 +135,20 @@ void RecordingImageBufferSurface::finalizeFrame(const FloatRect &dirtyRect)
         fallBackToRasterCanvas();
 }
 
-void RecordingImageBufferSurface::didClearCanvas()
+void RecordingImageBufferSurface::willOverwriteCanvas()
 {
-    if (m_fallbackSurface) {
-        m_fallbackSurface->didClearCanvas();
-        return;
-    }
     m_frameWasCleared = true;
+    m_previousFrame.clear();
+    if (m_didRecordDrawCommandsInCurrentFrame) {
+        // Discard previous draw commands
+        m_currentFrame->endRecording();
+        initializeCurrentFrame();
+    }
+}
+
+void RecordingImageBufferSurface::didDraw()
+{
+    m_didRecordDrawCommandsInCurrentFrame = true;
 }
 
 bool RecordingImageBufferSurface::finalizeFrameInternal()
@@ -157,8 +164,7 @@ bool RecordingImageBufferSurface::finalizeFrameInternal()
         return m_currentFrame;
     }
 
-    IntRect canvasRect(IntPoint(0, 0), size());
-    if (!m_frameWasCleared && !m_imageBuffer->context()->opaqueRegion().asRect().contains(canvasRect)) {
+    if (!m_frameWasCleared) {
         return false;
     }
 

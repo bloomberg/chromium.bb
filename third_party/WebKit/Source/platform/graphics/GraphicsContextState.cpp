@@ -20,6 +20,7 @@ GraphicsContextState::GraphicsContextState()
     , m_saveCount(0)
     , m_shouldAntialias(true)
     , m_shouldClampToSourceRect(true)
+    , m_hasComplexClip(false)
 {
     m_strokePaint.setStyle(SkPaint::kStroke_Style);
     m_strokePaint.setStrokeWidth(SkFloatToScalar(m_strokeData.thickness()));
@@ -54,7 +55,8 @@ GraphicsContextState::GraphicsContextState(const GraphicsContextState& other)
     , m_interpolationQuality(other.m_interpolationQuality)
     , m_saveCount(0)
     , m_shouldAntialias(other.m_shouldAntialias)
-    , m_shouldClampToSourceRect(other.m_shouldClampToSourceRect) { }
+    , m_shouldClampToSourceRect(other.m_shouldClampToSourceRect)
+    , m_hasComplexClip(other.m_hasComplexClip) { }
 
 void GraphicsContextState::copy(const GraphicsContextState& source)
 {
@@ -257,6 +259,16 @@ void GraphicsContextState::setShouldAntialias(bool shouldAntialias)
     m_shouldAntialias = shouldAntialias;
     m_strokePaint.setAntiAlias(shouldAntialias);
     m_fillPaint.setAntiAlias(shouldAntialias);
+}
+
+bool GraphicsContextState::hasComplexClip() const
+{
+    return m_hasComplexClip;
+}
+
+void GraphicsContextState::setHasComplexClip()
+{
+    m_hasComplexClip = true;
 }
 
 

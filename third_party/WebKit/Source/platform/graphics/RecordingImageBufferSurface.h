@@ -5,6 +5,8 @@
 #ifndef RecordingImageBufferSurface_h
 #define RecordingImageBufferSurface_h
 
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsContextClient.h"
 #include "platform/graphics/ImageBufferSurface.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -26,7 +28,7 @@ public:
     virtual ~RecordingImageBufferFallbackSurfaceFactory() { }
 };
 
-class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
+class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface, public GraphicsContextClient {
     WTF_MAKE_NONCOPYABLE(RecordingImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
 public:
     RecordingImageBufferSurface(const IntSize&, PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory, OpacityMode = NonOpaque);
@@ -36,11 +38,11 @@ public:
     virtual SkCanvas* canvas() const override;
     virtual PassRefPtr<SkPicture> getPicture() override;
     virtual void willDrawVideo() override;
+    virtual void didDraw() override;
     virtual bool isValid() const override { return true; }
     virtual bool isRecording() const override { return !m_fallbackSurface; }
     virtual void willAccessPixels() override;
     virtual void finalizeFrame(const FloatRect&) override;
-    virtual void didClearCanvas() override;
     virtual void setImageBuffer(ImageBuffer*) override;
     virtual PassRefPtr<SkImage> newImageSnapshot() const override;
     virtual bool needsClipTracking() const override { return !m_fallbackSurface; }
@@ -58,6 +60,8 @@ public:
     virtual void updateCachedBitmapIfNeeded() override;
     virtual void setIsHidden(bool) override;
 
+    // Implementation of GraphicsContextClient
+    virtual void willOverwriteCanvas() override;
 private:
     friend class ::RecordingImageBufferSurfaceTest; // for unit testing
     void fallBackToRasterCanvas();
@@ -70,6 +74,7 @@ private:
     ImageBuffer* m_imageBuffer;
     int m_initialSaveCount;
     bool m_frameWasCleared;
+    bool m_didRecordDrawCommandsInCurrentFrame;
     OwnPtr<RecordingImageBufferFallbackSurfaceFactory> m_fallbackFactory;
 };
 
