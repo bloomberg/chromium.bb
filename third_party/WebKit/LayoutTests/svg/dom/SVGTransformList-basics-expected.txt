@@ -69,6 +69,12 @@ PASS circle1.transform.baseVal.replaceItem(30, 0) threw exception TypeError: Fai
 PASS circle1.transform.baseVal.replaceItem('aString', 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.replaceItem(circle1, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.replaceItem(null, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+
+Test uncommon values for indexed setter
+PASS circle1.transform.baseVal[0] = 30 threw exception TypeError: Failed to set an indexed property on 'SVGTransformList': The provided value is not of type 'SVGTransform'..
+PASS circle1.transform.baseVal[0] = 'aString' threw exception TypeError: Failed to set an indexed property on 'SVGTransformList': The provided value is not of type 'SVGTransform'..
+PASS circle1.transform.baseVal[0] = circle1 threw exception TypeError: Failed to set an indexed property on 'SVGTransformList': The provided value is not of type 'SVGTransform'..
+PASS circle1.transform.baseVal[0] = null threw exception TypeError: Failed to set an indexed property on 'SVGTransformList': The provided value is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.replaceItem(circle1.transform.baseVal.getItem(0), 0) is circle1.transform.baseVal.getItem(0)
 PASS circle1.transform.baseVal.numberOfItems is 4
 PASS dumpTransform(circle1.transform.baseVal.getItem(0)) is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"

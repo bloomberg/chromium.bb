@@ -85,6 +85,12 @@ PASS poly1.points.replaceItem('aString', 0) threw exception TypeError: Failed to
 PASS poly1.points.replaceItem(poly1, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'..
 PASS poly1.points.replaceItem(1, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'..
 
+Test uncommon values for indexed setter
+PASS poly1.points[0] = 30 threw exception TypeError: Failed to set an indexed property on 'SVGPointList': The provided value is not of type 'SVGPoint'..
+PASS poly1.points[0] = 'aString' threw exception TypeError: Failed to set an indexed property on 'SVGPointList': The provided value is not of type 'SVGPoint'..
+PASS poly1.points[0] = poly1 threw exception TypeError: Failed to set an indexed property on 'SVGPointList': The provided value is not of type 'SVGPoint'..
+PASS poly1.points[0] = null threw exception TypeError: Failed to set an indexed property on 'SVGPointList': The provided value is not of type 'SVGPoint'..
+
 Test uncommon arguments for replaceItem() and xml-dom synchronization
 PASS poly1.points.numberOfItems is 4
 PASS dumpPoint(poly1.points.getItem(0)) is "x=0 y=0"

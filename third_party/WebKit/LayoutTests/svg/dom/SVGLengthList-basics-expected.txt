@@ -86,6 +86,12 @@ PASS text1.x.baseVal.replaceItem(30, 0) threw exception TypeError: Failed to exe
 PASS text1.x.baseVal.replaceItem('aString', 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGLengthList': parameter 1 is not of type 'SVGLength'..
 PASS text1.x.baseVal.replaceItem(text1, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGLengthList': parameter 1 is not of type 'SVGLength'..
 PASS text1.x.baseVal.replaceItem(null, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGLengthList': parameter 1 is not of type 'SVGLength'..
+
+Test uncommon values for indexed setter
+PASS text1.x.baseVal[0] = 30 threw exception TypeError: Failed to set an indexed property on 'SVGLengthList': The provided value is not of type 'SVGLength'..
+PASS text1.x.baseVal[0] = 'aString' threw exception TypeError: Failed to set an indexed property on 'SVGLengthList': The provided value is not of type 'SVGLength'..
+PASS text1.x.baseVal[0] = text1 threw exception TypeError: Failed to set an indexed property on 'SVGLengthList': The provided value is not of type 'SVGLength'..
+PASS text1.x.baseVal[0] = null threw exception TypeError: Failed to set an indexed property on 'SVGLengthList': The provided value is not of type 'SVGLength'..
 PASS text1.x.baseVal.replaceItem(text1.x.baseVal.getItem(0), 0) is text1.x.baseVal.getItem(0)
 PASS text1.x.baseVal.numberOfItems is 4
 PASS text1.x.baseVal.getItem(0).value is 1

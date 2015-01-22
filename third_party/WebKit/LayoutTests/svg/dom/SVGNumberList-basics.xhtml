@@ -100,6 +100,13 @@
     shouldThrow("text1.rotate.baseVal.replaceItem(text1, 0)");
     shouldThrow("text1.rotate.baseVal.replaceItem(null, 0)");
 
+    debug("");
+    debug("Test uncommon values for indexed setter");
+    shouldThrow("text1.rotate.baseVal[0] = 30");
+    shouldThrow("text1.rotate.baseVal[0] = 'aString'");
+    shouldThrow("text1.rotate.baseVal[0] = text1");
+    shouldThrow("text1.rotate.baseVal[0] = null");
+
     shouldBe("text1.rotate.baseVal.replaceItem(text1.rotate.baseVal.getItem(0), 0)", "text1.rotate.baseVal.getItem(0)");
     shouldBe("text1.rotate.baseVal.numberOfItems", "4");
     shouldBe("text1.rotate.baseVal.getItem(0).value", "1");

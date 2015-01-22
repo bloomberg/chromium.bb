@@ -123,6 +123,13 @@
     shouldThrow("poly1.points.replaceItem(1, 0)");
 
     debug("");
+    debug("Test uncommon values for indexed setter");
+    shouldThrow("poly1.points[0] = 30");
+    shouldThrow("poly1.points[0] = 'aString'");
+    shouldThrow("poly1.points[0] = poly1");
+    shouldThrow("poly1.points[0] = null");
+
+    debug("");
     debug("Test uncommon arguments for replaceItem() and xml-dom synchronization");
     shouldBe("poly1.points.numberOfItems", "4");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(0))", "x=0 y=0");

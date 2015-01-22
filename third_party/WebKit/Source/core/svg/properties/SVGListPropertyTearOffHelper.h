@@ -106,10 +106,7 @@ public:
             return nullptr;
         }
 
-        if (!item) {
-            exceptionState.throwTypeError("Lists must be initialized with a valid item.");
-            return nullptr;
-        }
+        ASSERT(item);
 
         RefPtrWillBeRawPtr<ItemPropertyType> value = toDerived()->target()->initialize(getValueForInsertionFromTearOff(item));
         toDerived()->commitChange();
@@ -132,10 +129,7 @@ public:
             return nullptr;
         }
 
-        if (!item) {
-            exceptionState.throwTypeError("An invalid item cannot be inserted to a list.");
-            return nullptr;
-        }
+        ASSERT(item);
 
         RefPtrWillBeRawPtr<ItemPropertyType> value = toDerived()->target()->insertItemBefore(getValueForInsertionFromTearOff(item), index);
         toDerived()->commitChange();
@@ -152,10 +146,7 @@ public:
             return nullptr;
         }
 
-        if (!item) {
-            exceptionState.throwTypeError("An invalid item cannot be replaced with an existing list item.");
-            return nullptr;
-        }
+        ASSERT(item);
 
         RefPtrWillBeRawPtr<ItemPropertyType> value = toDerived()->target()->replaceItem(getValueForInsertionFromTearOff(item), index, exceptionState);
         toDerived()->commitChange();
@@ -186,10 +177,7 @@ public:
             return nullptr;
         }
 
-        if (!item) {
-            exceptionState.throwTypeError("An invalid item cannot be appended to a list.");
-            return nullptr;
-        }
+        ASSERT(item);
 
         RefPtrWillBeRawPtr<ItemPropertyType> value = toDerived()->target()->appendItem(getValueForInsertionFromTearOff(item));
         toDerived()->commitChange();

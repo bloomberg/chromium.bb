@@ -123,6 +123,13 @@
     shouldThrow("circle1.transform.baseVal.replaceItem(circle1, 0)");
     shouldThrow("circle1.transform.baseVal.replaceItem(null, 0)");
 
+    debug("");
+    debug("Test uncommon values for indexed setter");
+    shouldThrow("circle1.transform.baseVal[0] = 30");
+    shouldThrow("circle1.transform.baseVal[0] = 'aString'");
+    shouldThrow("circle1.transform.baseVal[0] = circle1");
+    shouldThrow("circle1.transform.baseVal[0] = null");
+
     shouldBe("circle1.transform.baseVal.replaceItem(circle1.transform.baseVal.getItem(0), 0)", "circle1.transform.baseVal.getItem(0)");
     shouldBe("circle1.transform.baseVal.numberOfItems", "4");
     shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
