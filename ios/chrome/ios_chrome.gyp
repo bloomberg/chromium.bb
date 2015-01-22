@@ -37,7 +37,10 @@
       'link_settings': {
         'libraries': [
           '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
+          '$(SDKROOT)/System/Library/Frameworks/CoreGraphics.framework',
+          '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
           '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+          '$(SDKROOT)/System/Library/Frameworks/UIKit.framework',
         ],
       },
       'sources': [
@@ -86,6 +89,8 @@
         'browser/translate/translate_service_ios.h',
         'browser/ui/animation_util.h',
         'browser/ui/animation_util.mm',
+        'browser/ui/image_util.h',
+        'browser/ui/image_util.mm',
         'browser/ui/reversed_animation.h',
         'browser/ui/reversed_animation.mm',
         'browser/ui/snapshots_util.h',
