@@ -40,6 +40,9 @@ from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
 
+# For crostools access.
+sys.path.insert(0, constants.SOURCE_ROOT)
+
 AUTOTEST_DIR = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
                             'autotest', 'files')
 sys.path.insert(0, AUTOTEST_DIR)
