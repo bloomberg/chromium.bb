@@ -61,6 +61,12 @@ PACKAGE_INFO = {
         '/data/local/chrome-command-line',
         'chrome_devtools_remote',
         None),
+    'chrome_work': PackageInfo(
+        'com.chrome.work',
+        'com.google.android.apps.chrome.Main',
+        '/data/local/chrome-command-line',
+        'chrome_devtools_remote',
+        None),
     'legacy_browser': PackageInfo(
         'com.google.android.browser',
         'com.android.browser.BrowserActivity',

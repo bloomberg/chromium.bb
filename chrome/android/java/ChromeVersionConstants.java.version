@@ -14,5 +14,6 @@ class ChromeVersionConstants {
     static final int CHANNEL_DEV = 2;
     static final int CHANNEL_BETA = 3;
     static final int CHANNEL_STABLE = 4;
+    static final int CHANNEL_WORK = 5;
     static final int CHANNEL = CHANNEL_@CHANNEL@;
 }

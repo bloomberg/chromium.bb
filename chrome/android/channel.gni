@@ -3,12 +3,12 @@
 # found in the LICENSE file.
 
 declare_args() {
-  # The channel to build on Android: stable, beta, dev, canary, or default.
-  # "default" should be used on non-official builds.
+  # The channel to build on Android: stable, beta, dev, canary, work, or
+  # default. "default" should be used on non-official builds.
   android_channel = "default"
 }
 
 assert(android_channel == "default" || android_channel == "canary" ||
            android_channel == "dev" || android_channel == "beta" ||
-           android_channel == "stable",
+           android_channel == "stable" || android_channel == "work",
        "Invalid channel: " + android_channel)

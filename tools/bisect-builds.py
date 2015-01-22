@@ -98,6 +98,7 @@ ANDROID_CHROME_PACKAGE_NAME = {
   'ChromeCanary.apk': 'com.chrome.canary',
   'ChromeDev.apk': 'com.google.android.apps.chrome_dev',
   'ChromeStable.apk': 'com.android.chrome',
+  'ChromeWork.apk': 'com.chrome.work',
 }
 
 ###############################################################################

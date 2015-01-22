@@ -42,7 +42,8 @@ public class ChromeVersionInfo {
      * @return Whether this build is a stable build.
      */
     public static boolean isStableBuild() {
-        return ChromeVersionConstants.CHANNEL == ChromeVersionConstants.CHANNEL_STABLE;
+        return ChromeVersionConstants.CHANNEL == ChromeVersionConstants.CHANNEL_STABLE
+                   ||  ChromeVersionConstants.CHANNEL == ChromeVersionConstants.CHANNEL_WORK;
     }
 
     /**

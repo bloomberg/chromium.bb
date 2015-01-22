@@ -51,6 +51,11 @@ const BrowserDescriptor kBrowserDescriptors[] = {
     kChromeDefaultName
   },
   {
+    "com.chrome.work",
+    kChromeDefaultSocket,
+    "Work Chrome"
+  },
+  {
     "com.chrome.beta",
     kChromeDefaultSocket,
     "Chrome Beta"
