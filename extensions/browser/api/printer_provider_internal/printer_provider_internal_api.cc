@@ -5,6 +5,7 @@
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
 
 #include "base/lazy_instance.h"
+#include "base/values.h"
 #include "extensions/common/api/printer_provider.h"
 #include "extensions/common/api/printer_provider_internal.h"
 
@@ -41,6 +42,14 @@ void PrinterProviderInternalAPI::AddObserver(
 void PrinterProviderInternalAPI::RemoveObserver(
     PrinterProviderInternalAPIObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void PrinterProviderInternalAPI::NotifyGetCapabilityResult(
+    const Extension* extension,
+    int request_id,
+    const base::DictionaryValue& capability) {
+  FOR_EACH_OBSERVER(PrinterProviderInternalAPIObserver, observers_,
+                    OnGetCapabilityResult(extension, request_id, capability));
 }
 
 void PrinterProviderInternalAPI::NotifyPrintResult(
@@ -85,6 +94,17 @@ PrinterProviderInternalReportPrinterCapabilityFunction::Run() {
       internal_api::ReportPrinterCapability::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  if (params->capability) {
+    PrinterProviderInternalAPI::GetFactoryInstance()
+        ->Get(browser_context())
+        ->NotifyGetCapabilityResult(extension(), params->request_id,
+                                    params->capability->additional_properties);
+  } else {
+    PrinterProviderInternalAPI::GetFactoryInstance()
+        ->Get(browser_context())
+        ->NotifyGetCapabilityResult(extension(), params->request_id,
+                                    base::DictionaryValue());
+  }
   return RespondNow(NoArguments());
 }
 

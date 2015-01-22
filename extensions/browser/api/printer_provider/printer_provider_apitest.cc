@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/run_loop.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/common/extension.h"
@@ -25,6 +26,17 @@ void RecordPrintErrorAndRunCallback(PrinterProviderAPI::PrintError* result,
     callback.Run();
 }
 
+// Callback for PrinterProviderAPI::DispatchGetCapabilityRequested calls.
+// It saves reported |value| as JSON string to |*result| and runs |callback|.
+void RecordDictAndRunCallback(std::string* result,
+                              const base::Closure& callback,
+                              const base::DictionaryValue& value) {
+  JSONStringValueSerializer serializer(result);
+  EXPECT_TRUE(serializer.Serialize(value));
+  if (!callback.is_null())
+    callback.Run();
+}
+
 // Tests for chrome.printerProvider API.
 class PrinterProviderApiTest : public extensions::ShellApiTest {
  public:
@@ -42,6 +54,14 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
     PrinterProviderAPI::GetFactoryInstance()
         ->Get(browser_context())
         ->DispatchPrintRequested(extension_id, job, callback);
+  }
+
+  void StartCapabilityRequest(
+      const std::string& extension_id,
+      const PrinterProviderAPI::GetCapabilityCallback& callback) {
+    PrinterProviderAPI::GetFactoryInstance()
+        ->Get(browser_context())
+        ->DispatchGetCapabilityRequested(extension_id, "printer_id", callback);
   }
 
   // Loads chrome.printerProvider test app and initializes is for test
@@ -100,6 +120,33 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
     EXPECT_EQ(expected_result, print_result);
   }
 
+  // Runs a test for chrome.printerProvider.onGetCapabilityRequested
+  // event.
+  // |test_param|: The test that should be run.
+  // |expected_result|: The printer capability the app is expected to report.
+  void RunPrinterCapabilitiesRequestTest(const std::string& test_param,
+                                         const std::string& expected_result) {
+    extensions::ResultCatcher catcher;
+
+    std::string extension_id;
+    InitializePrinterProviderTestApp(
+        "api_test/printer_provider/request_capability", test_param,
+        &extension_id);
+    if (extension_id.empty())
+      return;
+
+    base::RunLoop run_loop;
+    std::string result;
+    StartCapabilityRequest(
+        extension_id,
+        base::Bind(&RecordDictAndRunCallback, &result, run_loop.QuitClosure()));
+
+    ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+    run_loop.Run();
+    EXPECT_EQ(expected_result, result);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PrinterProviderApiTest);
 };
@@ -126,6 +173,27 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
                        PrintRequestInvalidCallbackParam) {
   RunPrintRequestTestApp("INVALID_VALUE",
                          PrinterProviderAPI::PRINT_ERROR_FAILED);
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetCapabilitySuccess) {
+  RunPrinterCapabilitiesRequestTest("OK", "{\"capability\":\"value\"}");
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetCapabilityAsyncSuccess) {
+  RunPrinterCapabilitiesRequestTest("ASYNC_RESPONSE",
+                                    "{\"capability\":\"value\"}");
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, EmptyCapability) {
+  RunPrinterCapabilitiesRequestTest("EMPTY", "{}");
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, NoCapabilityEventListener) {
+  RunPrinterCapabilitiesRequestTest("NO_LISTENER", "{}");
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, CapabilityInvalidValue) {
+  RunPrinterCapabilitiesRequestTest("INVALID_VALUE", "{}");
 }
 
 }  // namespace

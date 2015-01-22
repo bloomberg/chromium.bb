@@ -12,6 +12,10 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/printer_provider_internal.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -37,7 +41,15 @@ class PrinterProviderInternalAPI : public BrowserContextKeyedAPI {
 
  private:
   friend class BrowserContextKeyedAPIFactory<PrinterProviderInternalAPI>;
+  friend class PrinterProviderInternalReportPrinterCapabilityFunction;
   friend class PrinterProviderInternalReportPrintResultFunction;
+
+  // Notifies observers that a printerProvider.onGetCapabilityRequested callback
+  // has been called. Called from
+  // |PrinterProviderInternalReportPrinterCapabilityFunction|.
+  void NotifyGetCapabilityResult(const Extension* extension,
+                                 int request_id,
+                                 const base::DictionaryValue& capability);
 
   // Notifies observers that a printerProvider.onPrintRequested callback has
   // been called. Called from

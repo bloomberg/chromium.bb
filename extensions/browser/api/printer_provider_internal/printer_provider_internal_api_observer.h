@@ -7,6 +7,10 @@
 
 #include "extensions/common/api/printer_provider_internal.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace extensions {
 
 class Extension;
@@ -14,6 +18,15 @@ class Extension;
 // Interface for observing chrome.printerProviderInternal API function calls.
 class PrinterProviderInternalAPIObserver {
  public:
+  // Used by chrome.printerProviderInternal API to report
+  // chrome.printerProvider.onGetCapabilityRequested result returned by the
+  // extension |extensiod|.
+  // |request_id| is the request id passed to the original
+  // chrome.printerProvider.onGetCapabilityRequested event.
+  virtual void OnGetCapabilityResult(const Extension* extension,
+                                     int request_id,
+                                     const base::DictionaryValue& result) = 0;
+
   // Used by chrome.printerProviderInternal API to report
   // chrome.printerProvider.onPrintRequested result returned by the extension
   // |extension|.

@@ -65,6 +65,32 @@ PrinterProviderAPI::PrinterProviderAPI(content::BrowserContext* browser_context)
 PrinterProviderAPI::~PrinterProviderAPI() {
 }
 
+void PrinterProviderAPI::DispatchGetCapabilityRequested(
+    const std::string& extension_id,
+    const std::string& printer_id,
+    const PrinterProviderAPI::GetCapabilityCallback& callback) {
+  EventRouter* event_router = EventRouter::Get(browser_context_);
+  if (!event_router->ExtensionHasEventListener(
+          extension_id,
+          core_api::printer_provider::OnGetCapabilityRequested::kEventName)) {
+    callback.Run(base::DictionaryValue());
+    return;
+  }
+
+  int request_id = pending_capability_requests_[extension_id].Add(callback);
+
+  scoped_ptr<base::ListValue> internal_args(new base::ListValue);
+  // Request id is not part of the public API, but it will be massaged out in
+  // custom bindings.
+  internal_args->AppendInteger(request_id);
+  internal_args->AppendString(printer_id);
+  scoped_ptr<Event> event(new Event(
+      core_api::printer_provider::OnGetCapabilityRequested::kEventName,
+      internal_args.Pass()));
+
+  event_router->DispatchEventToExtension(extension_id, event.Pass());
+}
+
 void PrinterProviderAPI::DispatchPrintRequested(
     const std::string& extension_id,
     const PrinterProviderAPI::PrintJob& job,
@@ -97,6 +123,34 @@ void PrinterProviderAPI::DispatchPrintRequested(
   event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
+PrinterProviderAPI::PendingGetCapabilityRequests::PendingGetCapabilityRequests()
+    : last_request_id_(0) {
+}
+
+PrinterProviderAPI::PendingGetCapabilityRequests::
+    ~PendingGetCapabilityRequests() {
+}
+
+int PrinterProviderAPI::PendingGetCapabilityRequests::Add(
+    const PrinterProviderAPI::GetCapabilityCallback& callback) {
+  pending_requests_[++last_request_id_] = callback;
+  return last_request_id_;
+}
+
+bool PrinterProviderAPI::PendingGetCapabilityRequests::Complete(
+    int request_id,
+    const base::DictionaryValue& response) {
+  auto it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end())
+    return false;
+
+  GetCapabilityCallback callback = it->second;
+  pending_requests_.erase(it);
+
+  callback.Run(response);
+  return true;
+}
+
 PrinterProviderAPI::PendingPrintRequests::PendingPrintRequests()
     : last_request_id_(0) {
 }
@@ -106,7 +160,7 @@ PrinterProviderAPI::PendingPrintRequests::~PendingPrintRequests() {
 
 int PrinterProviderAPI::PendingPrintRequests::Add(
     const PrinterProviderAPI::PrintCallback& callback) {
-  pending_requests_.insert(std::make_pair(++last_request_id_, callback));
+  pending_requests_[++last_request_id_] = callback;
   return last_request_id_;
 }
 
@@ -121,6 +175,13 @@ bool PrinterProviderAPI::PendingPrintRequests::Complete(int request_id,
 
   callback.Run(response);
   return true;
+}
+
+void PrinterProviderAPI::OnGetCapabilityResult(
+    const Extension* extension,
+    int request_id,
+    const base::DictionaryValue& result) {
+  pending_capability_requests_[extension->id()].Complete(request_id, result);
 }
 
 void PrinterProviderAPI::OnPrintResult(
