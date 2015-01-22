@@ -213,5 +213,22 @@
         },
       ],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'courgette_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'courgette_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'courgette_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }

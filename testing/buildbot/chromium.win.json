@@ -42,7 +42,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "courgette_unittests",
+      {
+        "test": "courgette_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "crypto_unittests",
       "events_unittests",
       "extensions_unittests",
@@ -162,7 +167,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "courgette_unittests",
+      {
+        "test": "courgette_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "crypto_unittests",
       "extensions_unittests",
       "events_unittests",
@@ -293,7 +303,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "courgette_unittests",
+      {
+        "test": "courgette_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "crypto_unittests",
       "device_unittests",
       "events_unittests",
@@ -431,7 +446,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "courgette_unittests",
+      {
+        "test": "courgette_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "crypto_unittests",
       "device_unittests",
       "events_unittests",
@@ -567,7 +587,12 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "courgette_unittests",
+      {
+        "test": "courgette_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "crypto_unittests",
       "events_unittests",
       "extensions_unittests",
