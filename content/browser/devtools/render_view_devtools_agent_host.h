@@ -105,8 +105,10 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void OnSwapCompositorFrame(const IPC::Message& message);
   bool OnSetTouchEventEmulationEnabled(const IPC::Message& message);
 
-  void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
+  void OnDispatchOnInspectorFrontend(const std::string& message,
+                                     uint32 total_size);
   void DispatchOnInspectorFrontend(const std::string& message);
+  void OnSaveAgentRuntimeState(const std::string& state);
 
   void ClientDetachedFromRenderer();
 
@@ -125,6 +127,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 #if defined(OS_ANDROID)
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;
 #endif
+  std::string state_;
   NotificationRegistrar registrar_;
   bool reattaching_;
 

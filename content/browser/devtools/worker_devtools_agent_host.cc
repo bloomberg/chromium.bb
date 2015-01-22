@@ -4,8 +4,8 @@
 
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
-#include "content/browser/devtools/ipc_devtools_agent_host.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -60,6 +60,8 @@ bool WorkerDevToolsAgentHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(WorkerDevToolsAgentHost, msg)
   IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
                       OnDispatchOnInspectorFrontend)
+  IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
+                      OnSaveAgentRuntimeState)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -73,7 +75,7 @@ void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
     DCHECK(IsAttached());
     state_ = WORKER_INSPECTED;
     AttachToWorker();
-    Reattach();
+    Reattach(saved_agent_state_);
   }
 }
 
@@ -131,11 +133,17 @@ void WorkerDevToolsAgentHost::WorkerCreated() {
 }
 
 void WorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
-    const DevToolsMessageChunk& message) {
+    const std::string& message,
+    uint32 total_size) {
   if (!IsAttached())
     return;
 
-  ProcessChunkedMessageFromAgent(message);
+  ProcessChunkedMessageFromAgent(message, total_size);
+}
+
+void WorkerDevToolsAgentHost::OnSaveAgentRuntimeState(
+    const std::string& state) {
+  saved_agent_state_ = state;
 }
 
 }  // namespace content

@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
 
+#include "content/common/devtools_messages.h"
+
 namespace content {
 
 void IPCDevToolsAgentHost::Attach() {
@@ -34,35 +36,31 @@ IPCDevToolsAgentHost::IPCDevToolsAgentHost()
 IPCDevToolsAgentHost::~IPCDevToolsAgentHost() {
 }
 
-void IPCDevToolsAgentHost::Reattach() {
+void IPCDevToolsAgentHost::Reattach(const std::string& saved_agent_state) {
   SendMessageToAgent(new DevToolsAgentMsg_Reattach(
-      MSG_ROUTING_NONE, GetId(), state_cookie_));
+      MSG_ROUTING_NONE, GetId(), saved_agent_state));
   OnClientAttached();
 }
 
 void IPCDevToolsAgentHost::ProcessChunkedMessageFromAgent(
-    const DevToolsMessageChunk& chunk) {
-  if (chunk.is_last && !chunk.post_state.empty())
-    state_cookie_ = chunk.post_state;
-
-  if (chunk.is_first && chunk.is_last) {
-    CHECK(message_buffer_size_ == 0);
-    SendMessageToClient(chunk.data);
+    const std::string& message, uint32 total_size) {
+  if (total_size && total_size == message.length()) {
+    DCHECK(message_buffer_size_ == 0);
+    SendMessageToClient(message);
     return;
   }
 
-  if (chunk.is_first) {
+  if (total_size) {
+    DCHECK(message_buffer_size_ == 0);
     message_buffer_ = std::string();
-    message_buffer_.reserve(chunk.message_size);
-    message_buffer_size_ = chunk.message_size;
+    message_buffer_.reserve(total_size);
+    message_buffer_size_ = total_size;
   }
 
-  CHECK(message_buffer_.size() + chunk.data.size() <=
-      message_buffer_size_);
-  message_buffer_.append(chunk.data);
+  message_buffer_.append(message);
 
-  if (chunk.is_last) {
-    CHECK(message_buffer_.size() == message_buffer_size_);
+  if (message_buffer_.size() >= message_buffer_size_) {
+    DCHECK(message_buffer_.size() == message_buffer_size_);
     SendMessageToClient(message_buffer_);
     message_buffer_ = std::string();
     message_buffer_size_ = 0;
