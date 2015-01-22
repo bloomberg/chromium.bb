@@ -6,8 +6,6 @@
 
 #include <set>
 
-#include "base/containers/scoped_ptr_hash_map.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/nacl/renderer/nexe_load_manager.h"
@@ -379,21 +377,6 @@ void GrabUrlAndPnaclOptions(const Json::Value& url_spec,
 }
 
 }  // namespace
-
-typedef base::ScopedPtrHashMap<PP_Instance, nacl::JsonManifest> JsonManifestMap;
-base::LazyInstance<JsonManifestMap> g_manifest_map = LAZY_INSTANCE_INITIALIZER;
-
-void AddJsonManifest(PP_Instance instance, scoped_ptr<JsonManifest> manifest) {
-  g_manifest_map.Get().add(instance, manifest.Pass());
-}
-
-JsonManifest* GetJsonManifest(PP_Instance instance) {
-  return g_manifest_map.Get().get(instance);
-}
-
-void DeleteJsonManifest(PP_Instance instance) {
-  g_manifest_map.Get().erase(instance);
-}
 
 JsonManifest::JsonManifest(const std::string& manifest_base_url,
                            const std::string& sandbox_isa,

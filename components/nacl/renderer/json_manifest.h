@@ -8,24 +8,13 @@
 #include <set>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_array_output.h"
-#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "third_party/jsoncpp/source/include/json/value.h"
 
 namespace nacl {
 class JsonManifest;
 class NexeLoadManager;
-
-// There is at most one JsonManifest per PP_Instance. This adds a one-to-one
-// mapping.
-void AddJsonManifest(PP_Instance instance, scoped_ptr<JsonManifest> manifest);
-
-// Returns a non-owning pointer to the JsonManifest for the given instance.
-// Returns NULL if no such JsonManifest exists.
-JsonManifest* GetJsonManifest(PP_Instance instance);
-void DeleteJsonManifest(PP_Instance instance);
 
 class JsonManifest {
  public:
