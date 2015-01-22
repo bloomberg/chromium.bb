@@ -102,8 +102,26 @@ def _GetSymbolInfosFromBinary(binary_filename):
     p.wait()
 
 
+def _StripPrefix(line):
+  """Get the symbol from a line with a linker section name.
+
+  Args:
+    line: a line from an orderfile, usually in the form:
+          .text.SymbolName
+
+  Returns:
+    The symbol, SymbolName in the example above.
+  """
+  line = line.rstrip('\n')
+  for prefix in _PREFIXES:
+    if line.startswith(prefix):
+      return line[len(prefix):]
+  return line  # Unprefixed case
+
+
 def _GetSymbolsFromStream(lines):
   """Get the symbols from an iterable of lines.
+     Filters out wildcards and lines which do not correspond to symbols.
 
   Args:
     lines: iterable of lines from an orderfile.
@@ -113,16 +131,15 @@ def _GetSymbolsFromStream(lines):
   """
   # TODO(lizeb): Retain the prefixes later in the processing stages.
   symbols = []
+  unique_symbols = set()
   for line in lines:
-    line = line.rstrip('\n')
-    for prefix in _PREFIXES:
-      if line.startswith(prefix):
-        line = line[len(prefix):]
-        break
+    line = _StripPrefix(line)
     name = _RemoveClone(line)
-    if name == '':
+    if name == '' or name == '*' or name == '.text':
       continue
-    symbols.append(line)
+    if not line in unique_symbols:
+      symbols.append(line)
+      unique_symbols.add(line)
   return symbols
 
 
@@ -191,8 +208,13 @@ def _ExpandSymbolsWithDupsFromSameOffset(symbol_infos, offset_to_symbol_infos):
 
 def _PrintSymbolsWithPrefixes(symbol_names, output_file):
   """For each symbol, outputs it to output_file with the prefixes."""
+  unique_outputs = set()
   for name in symbol_names:
-    output_file.write('\n'.join(prefix + name for prefix in _PREFIXES) + '\n')
+    for prefix in _PREFIXES:
+      linker_section = prefix + name
+      if not linker_section in unique_outputs:
+        output_file.write(linker_section + '\n')
+        unique_outputs.add(linker_section)
 
 
 def main(argv):

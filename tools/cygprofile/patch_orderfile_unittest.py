@@ -66,7 +66,10 @@ class TestPatchOrderFile(unittest.TestCase):
   def testGetSymbolsFromStream(self):
     lines = [".text.startup.",
              ".text.with.a.prefix",
-             "_ZN2v88internal33HEnvironmentLivenessAnalysisPhase3RunEv"]
+             "",
+             "_ZN2v88internal33HEnvironmentLivenessAnalysisPhase3RunEv",
+             ".text",
+             ".text.*"]
     names = patch_orderfile._GetSymbolsFromStream(lines)
     self.assertEquals(len(names), 2)
     self.assertEquals(
@@ -101,9 +104,9 @@ class TestPatchOrderFile(unittest.TestCase):
   def testPrintSymbolWithPrefixes(self):
     class FakeOutputFile(object):
       def __init__(self):
-        self.output = []
+        self.output = ''
       def write(self, s):
-        self.output.append(s)
+        self.output = self.output + s
     test_symbol = "dummySymbol"
     symbol_names = [test_symbol]
     fake_output = FakeOutputFile()
@@ -113,7 +116,7 @@ class TestPatchOrderFile(unittest.TestCase):
 .text.unlikely.dummySymbol
 .text.dummySymbol
 """
-    self.assertEquals("\n".join(fake_output.output), expected_output)
+    self.assertEquals(fake_output.output, expected_output)
 
 
 if __name__ == "__main__":
