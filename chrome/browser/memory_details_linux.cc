@@ -189,7 +189,7 @@ void MemoryDetails::CollectProcessData(
       // We found a process whose type is different from its parent's type.
       // That means it is the root process of the browser.
       browsers_found.insert(current_process.pid);
-      break;
+      continue;
     }
   }
 
