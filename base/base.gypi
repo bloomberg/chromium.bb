@@ -72,6 +72,8 @@
           'android/path_service_android.h',
           'android/path_utils.cc',
           'android/path_utils.h',
+          'android/record_histogram.cc',
+          'android/record_histogram.h',
           'android/sys_utils.cc',
           'android/sys_utils.h',
           'android/thread_utils.h',

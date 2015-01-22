@@ -20,6 +20,7 @@
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/android/path_service_android.h"
 #include "base/android/path_utils.h"
+#include "base/android/record_histogram.h"
 #include "base/android/sys_utils.h"
 #include "base/android/thread_utils.h"
 #include "base/android/trace_event_binding.h"
@@ -32,28 +33,29 @@ namespace base {
 namespace android {
 
 static RegistrationMethod kBaseRegisteredMethods[] = {
-  { "ApplicationStatusListener",
-      base::android::ApplicationStatusListener::RegisterBindings },
-  { "BuildInfo", base::android::BuildInfo::RegisterBindings },
-  { "CommandLine", base::android::RegisterCommandLine },
-  { "ContentUriUtils", base::RegisterContentUriUtils },
-  { "CpuFeatures", base::android::RegisterCpuFeatures },
-  { "EventLog", base::android::RegisterEventLog },
-  { "FieldTrialList", base::android::RegisterFieldTrialList },
-  { "ImportantFileWriterAndroid",
-    base::android::RegisterImportantFileWriterAndroid },
-  { "JNIUtils", base::android::RegisterJNIUtils },
-  { "LocaleUtils", base::android::RegisterLocaleUtils },
-  { "MemoryPressureListenerAndroid",
-      base::android::MemoryPressureListenerAndroid::Register },
-  { "JavaHandlerThread", base::android::JavaHandlerThread::RegisterBindings },
-  { "PathService", base::android::RegisterPathService },
-  { "PathUtils", base::android::RegisterPathUtils },
-  { "SystemMessageHandler", base::MessagePumpForUI::RegisterBindings },
-  { "SysUtils", base::android::SysUtils::Register },
-  { "PowerMonitor", base::RegisterPowerMonitor },
-  { "ThreadUtils", base::RegisterThreadUtils },
-  { "TraceEvent", base::android::RegisterTraceEvent },
+    {"ApplicationStatusListener",
+     base::android::ApplicationStatusListener::RegisterBindings},
+    {"BuildInfo", base::android::BuildInfo::RegisterBindings},
+    {"CommandLine", base::android::RegisterCommandLine},
+    {"ContentUriUtils", base::RegisterContentUriUtils},
+    {"CpuFeatures", base::android::RegisterCpuFeatures},
+    {"EventLog", base::android::RegisterEventLog},
+    {"FieldTrialList", base::android::RegisterFieldTrialList},
+    {"ImportantFileWriterAndroid",
+     base::android::RegisterImportantFileWriterAndroid},
+    {"JNIUtils", base::android::RegisterJNIUtils},
+    {"LocaleUtils", base::android::RegisterLocaleUtils},
+    {"MemoryPressureListenerAndroid",
+     base::android::MemoryPressureListenerAndroid::Register},
+    {"JavaHandlerThread", base::android::JavaHandlerThread::RegisterBindings},
+    {"PathService", base::android::RegisterPathService},
+    {"PathUtils", base::android::RegisterPathUtils},
+    {"PowerMonitor", base::RegisterPowerMonitor},
+    {"RecordHistogram", base::android::RegisterRecordHistogram},
+    {"SystemMessageHandler", base::MessagePumpForUI::RegisterBindings},
+    {"SysUtils", base::android::SysUtils::Register},
+    {"ThreadUtils", base::RegisterThreadUtils},
+    {"TraceEvent", base::android::RegisterTraceEvent},
 };
 
 bool RegisterJni(JNIEnv* env) {
