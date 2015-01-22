@@ -17,6 +17,10 @@ class ChromePrintWebViewHelperDelegate
 
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
 
+  bool IsOutOfProcessPdfEnabled() override;
+
+  bool IsPrintPreviewEnabled() override;
+
 };  // class ChromePrintWebViewHelperDelegate
 
 #endif  // CHROME_RENDERER_PRINTING_CHROME_PRINT_WEB_VIEW_HELPER_DELEGATE_H_

@@ -79,11 +79,14 @@ class PrintWebViewHelper
     // Returns the element to be printed. Returns a null WebElement if
     // a pdf plugin element can't be extracted from the frame.
     virtual blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) = 0;
+
+    // Used to know whether the content to print could be nested in an iframe.
+    virtual bool IsOutOfProcessPdfEnabled() = 0;
+
+    virtual bool IsPrintPreviewEnabled() = 0;
   };
 
   PrintWebViewHelper(content::RenderView* render_view,
-                     bool out_of_process_pdf_enabled,
-                     bool print_preview_disabled,
                      scoped_ptr<Delegate> delegate);
   ~PrintWebViewHelper() override;
 
@@ -344,9 +347,6 @@ class PrintWebViewHelper
 
   // True, when printing from print preview.
   bool print_for_preview_;
-
-  // Whether the content to print could be nested in an iframe.
-  const bool out_of_process_pdf_enabled_;
 
   // Used to check the prerendering status.
   const scoped_ptr<Delegate> delegate_;

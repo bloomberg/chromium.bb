@@ -502,7 +502,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
 #if defined(ENABLE_EXTENSIONS)
   new extensions::ExtensionHelper(render_view, extension_dispatcher_.get());
@@ -512,8 +511,6 @@ void ChromeContentRendererClient::RenderViewCreated(
 #if defined(ENABLE_PRINTING)
   new printing::PrintWebViewHelper(
       render_view,
-      switches::OutOfProcessPdfEnabled(),
-      command_line->HasSwitch(switches::kDisablePrintPreview),
       scoped_ptr<printing::PrintWebViewHelper::Delegate>(
           new ChromePrintWebViewHelperDelegate()));
 #endif
@@ -525,6 +522,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   safe_browsing::MalwareDOMDetails::Create(render_view);
 #endif
 
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantProcess))
     new SearchBox(render_view);
 

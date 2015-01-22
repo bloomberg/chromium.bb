@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/printing/chrome_print_web_view_helper_delegate.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/public/renderer/render_view.h"
@@ -47,4 +49,13 @@ blink::WebElement ChromePrintWebViewHelperDelegate::GetPdfElement(
   }
 #endif  // defined(ENABLE_EXTENSIONS)
   return blink::WebElement();
+}
+
+bool ChromePrintWebViewHelperDelegate::IsOutOfProcessPdfEnabled() {
+  return switches::OutOfProcessPdfEnabled();
+}
+
+bool ChromePrintWebViewHelperDelegate::IsPrintPreviewEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return !command_line->HasSwitch(switches::kDisablePrintPreview);
 }

@@ -769,8 +769,6 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
 
 PrintWebViewHelper::PrintWebViewHelper(
     content::RenderView* render_view,
-    bool out_of_process_pdf_enabled,
-    bool print_preview_disabled,
     scoped_ptr<Delegate> delegate)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<PrintWebViewHelper>(render_view),
@@ -780,13 +778,12 @@ PrintWebViewHelper::PrintWebViewHelper(
       is_scripted_printing_blocked_(false),
       notify_browser_of_print_failure_(true),
       print_for_preview_(false),
-      out_of_process_pdf_enabled_(out_of_process_pdf_enabled),
       delegate_(delegate.Pass()),
       print_node_in_progress_(false),
       is_loading_(false),
       is_scripted_preview_delayed_(false),
       weak_ptr_factory_(this) {
-  if (print_preview_disabled)
+  if (!delegate_->IsPrintPreviewEnabled())
     DisablePreview();
 }
 
@@ -884,7 +881,8 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   // the element with ID "pdf-viewer" if it isn't an iframe.
   blink::WebLocalFrame* plugin_frame = pdf_element.document().frame();
   blink::WebElement plugin_element = pdf_element;
-  if (out_of_process_pdf_enabled_ && pdf_element.hasHTMLTagName("iframe")) {
+  if (delegate_->IsOutOfProcessPdfEnabled() &&
+        pdf_element.hasHTMLTagName("iframe")) {
     plugin_frame = blink::WebLocalFrame::fromFrameOwnerElement(pdf_element);
     plugin_element = delegate_->GetPdfElement(plugin_frame);
     if (plugin_element.isNull()) {
