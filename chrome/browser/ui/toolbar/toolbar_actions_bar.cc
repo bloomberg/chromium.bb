@@ -30,20 +30,12 @@ namespace {
 
 using WeakToolbarActions = std::vector<ToolbarActionViewController*>;
 
-#if defined(OS_MACOSX)
-const int kItemSpacing = 2;
-const int kLeftPadding = kItemSpacing + 1;
-const int kRightPadding = 0;
-const int kOverflowLeftPadding = kItemSpacing;
-const int kOverflowRightPadding = kItemSpacing;
-#else
 // Matches ToolbarView::kStandardSpacing;
 const int kLeftPadding = 3;
 const int kRightPadding = kLeftPadding;
 const int kItemSpacing = kLeftPadding;
 const int kOverflowLeftPadding = kItemSpacing;
 const int kOverflowRightPadding = kItemSpacing;
-#endif
 
 enum DimensionType { WIDTH, HEIGHT };
 

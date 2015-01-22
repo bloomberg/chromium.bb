@@ -277,6 +277,8 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   [self showOptionalHomeButton];
   [self installWrenchMenu];
 
+  [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
+
   // Create the controllers for the back/forward menus.
   backMenuController_.reset([[BackForwardMenuController alloc]
           initWithBrowser:browser_

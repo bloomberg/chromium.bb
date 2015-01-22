@@ -47,7 +47,7 @@
 					<object class="NSCustomView" id="421615633">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">-2147483383</int>
-						<string key="NSFrame">{{572, -1}, {2, 35}}</string>
+						<string key="NSFrame">{{572, -1}, {0, 35}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="602421009"/>
@@ -197,7 +197,7 @@
 					<object class="NSButton" id="602421009">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">265</int>
-						<string key="NSFrame">{{576, 4}, {29, 29}}</string>
+						<string key="NSFrame">{{572, 4}, {29, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView"/>
@@ -218,7 +218,7 @@
 						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 					</object>
 				</object>
-				<string key="NSFrameSize">{608, 35}</string>
+				<string key="NSFrameSize">{604, 35}</string>
 				<reference key="NSSuperview"/>
 				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="634265909"/>

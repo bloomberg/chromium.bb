@@ -551,6 +551,7 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
                       object:self];
   }
   [self redraw];
+  [self updateGrippyCursors];
 }
 
 - (BOOL)updateContainerVisibility {
@@ -747,7 +748,8 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
 }
 
 - (void)updateChevronPositionInFrame:(NSRect)frame {
-  CGFloat xPos = NSWidth(frame) - kChevronWidth;
+  CGFloat xPos = NSWidth(frame) - kChevronWidth -
+      toolbarActionsBar_->platform_settings().right_padding;
   NSRect buttonFrame = NSMakeRect(xPos,
                                   kBrowserActionOriginYOffset,
                                   kChevronWidth,
