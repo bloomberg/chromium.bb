@@ -9,15 +9,24 @@
 
 namespace guestview {
 
-// Sizing Attributes.
+// Sizing attributes/parameters.
 extern const char kAttributeAutoSize[];
 extern const char kAttributeMaxHeight[];
 extern const char kAttributeMaxWidth[];
 extern const char kAttributeMinHeight[];
 extern const char kAttributeMinWidth[];
+extern const char kElementWidth[];
+extern const char kElementHeight[];
+
+// Events.
+extern const char kEventResize[];
 
 // Parameters/properties on events.
 extern const char kIsTopLevel[];
+extern const char kNewWidth[];
+extern const char kNewHeight[];
+extern const char kOldWidth[];
+extern const char kOldHeight[];
 extern const char kReason[];
 extern const char kUrl[];
 extern const char kUserGesture[];

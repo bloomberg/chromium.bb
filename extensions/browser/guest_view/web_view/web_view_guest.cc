@@ -315,7 +315,7 @@ void WebViewGuest::AttachWebViewHelpers(WebContents* contents) {
 
 void WebViewGuest::DidStopLoading() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventLoadStop, args.Pass()));
 }
 
@@ -372,7 +372,7 @@ void WebViewGuest::GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
   args->SetInteger(webview::kOldWidth, old_size.width());
   args->SetInteger(webview::kNewHeight, new_size.height());
   args->SetInteger(webview::kNewWidth, new_size.width());
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventSizeChanged, args.Pass()));
 }
 
@@ -400,14 +400,14 @@ bool WebViewGuest::AddMessageToConsole(WebContents* source,
   args->SetString(webview::kMessage, message);
   args->SetInteger(webview::kLine, line_no);
   args->SetString(webview::kSourceId, source_id);
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventConsoleMessage, args.Pass()));
   return true;
 }
 
 void WebViewGuest::CloseContents(WebContents* source) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventClose, args.Pass()));
 }
 
@@ -455,7 +455,7 @@ void WebViewGuest::LoadProgressChanged(content::WebContents* source,
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, web_contents()->GetURL().spec());
   args->SetDouble(webview::kProgress, progress);
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventLoadProgress, args.Pass()));
 }
 
@@ -466,7 +466,7 @@ void WebViewGuest::LoadAbort(bool is_top_level,
   args->SetBoolean(guestview::kIsTopLevel, is_top_level);
   args->SetString(guestview::kUrl, url.possibly_invalid_spec());
   args->SetString(guestview::kReason, error_type);
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventLoadAbort, args.Pass()));
 }
 
@@ -529,7 +529,7 @@ void WebViewGuest::RendererResponsive(content::WebContents* source) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
                    web_contents()->GetRenderProcessHost()->GetID());
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventResponsive, args.Pass()));
 }
 
@@ -537,7 +537,7 @@ void WebViewGuest::RendererUnresponsive(content::WebContents* source) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
                    web_contents()->GetRenderProcessHost()->GetID());
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventUnresponsive, args.Pass()));
 }
 
@@ -679,7 +679,7 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
                    web_contents()->GetController().GetEntryCount());
   args->SetInteger(webview::kInternalProcessId,
                    web_contents()->GetRenderProcessHost()->GetID());
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventLoadCommit, args.Pass()));
 
   find_helper_.CancelAllFindSessions();
@@ -714,7 +714,7 @@ void WebViewGuest::DidStartProvisionalLoadForFrame(
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, validated_url.spec());
   args->SetBoolean(guestview::kIsTopLevel, !render_frame_host->GetParent());
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventLoadStart, args.Pass()));
 }
 
@@ -742,7 +742,7 @@ void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
   args->SetInteger(webview::kProcessId,
                    web_contents()->GetRenderProcessHost()->GetID());
   args->SetString(webview::kReason, TerminationStatusToString(status));
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventExit, args.Pass()));
 }
 
@@ -759,13 +759,13 @@ void WebViewGuest::ReportFrameNameChange(const std::string& name) {
   name_ = name;
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(webview::kName, name);
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventFrameNameChanged, args.Pass()));
 }
 
 void WebViewGuest::LoadHandlerCalled() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventContentLoad, args.Pass()));
 }
 
@@ -776,7 +776,7 @@ void WebViewGuest::LoadRedirect(const GURL& old_url,
   args->SetBoolean(guestview::kIsTopLevel, is_top_level);
   args->SetString(webview::kNewURL, new_url.spec());
   args->SetString(webview::kOldURL, old_url.spec());
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventLoadRedirect, args.Pass()));
 }
 
@@ -1037,7 +1037,7 @@ void WebViewGuest::SetZoom(double zoom_factor) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
   args->SetDouble(webview::kNewZoomFactor, zoom_factor);
-  DispatchEventToEmbedder(
+  DispatchEventToView(
       new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
   current_zoom_factor_ = zoom_factor;
 }

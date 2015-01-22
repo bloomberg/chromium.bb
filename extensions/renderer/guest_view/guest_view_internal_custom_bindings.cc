@@ -32,6 +32,11 @@ GuestViewInternalCustomBindings::GuestViewInternalCustomBindings(
       "RegisterDestructionCallback",
       base::Bind(&GuestViewInternalCustomBindings::RegisterDestructionCallback,
                  base::Unretained(this)));
+  RouteFunction(
+      "RegisterElementResizeCallback",
+      base::Bind(
+          &GuestViewInternalCustomBindings::RegisterElementResizeCallback,
+          base::Unretained(this)));
 }
 
 void GuestViewInternalCustomBindings::AttachGuest(
@@ -131,6 +136,29 @@ void GuestViewInternalCustomBindings::RegisterDestructionCallback(
 
   guest_view_container->RegisterDestructionCallback(args[1].As<v8::Function>(),
                                                     args.GetIsolate());
+
+  args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
+}
+
+void GuestViewInternalCustomBindings::RegisterElementResizeCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // There are two parameters.
+  CHECK(args.Length() == 2);
+  // Element Instance ID.
+  CHECK(args[0]->IsInt32());
+  // Callback function.
+  CHECK(args[1]->IsFunction());
+
+  int element_instance_id = args[0]->Int32Value();
+  // An element instance ID uniquely identifies a ExtensionsGuestViewContainer
+  // within a RenderView.
+  ExtensionsGuestViewContainer* guest_view_container =
+      ExtensionsGuestViewContainer::FromID(element_instance_id);
+  if (!guest_view_container)
+    return;
+
+  guest_view_container->RegisterElementResizeCallback(
+      args[1].As<v8::Function>(), args.GetIsolate());
 
   args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
 }

@@ -798,10 +798,11 @@ IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AttachGuest,
                      base::DictionaryValue /* attach_params */)
 
 // Tells the browser to create a mime handler guest view for a plugin.
-IPC_MESSAGE_CONTROL3(ExtensionHostMsg_CreateMimeHandlerViewGuest,
+IPC_MESSAGE_CONTROL4(ExtensionHostMsg_CreateMimeHandlerViewGuest,
                      int /* render_frame_id */,
                      std::string /* view_id */,
-                     int /* element_instance_id */)
+                     int /* element_instance_id */,
+                     gfx::Size /* element_size */)
 
 // Sent when a query selector request is made from the automation API.
 // acc_obj_id is the accessibility tree ID of the starting element.

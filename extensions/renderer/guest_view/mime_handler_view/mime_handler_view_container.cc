@@ -6,6 +6,7 @@
 
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "gin/arguments.h"
@@ -118,14 +119,19 @@ void MimeHandlerViewContainer::DidReceiveData(const char* data,
 bool MimeHandlerViewContainer::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewContainer, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_CreateMimeHandlerViewGuestACK,
-                        OnCreateMimeHandlerViewGuestACK)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_GuestAttached, OnGuestAttached)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_MimeHandlerViewGuestOnLoadCompleted,
-                        OnMimeHandlerViewGuestOnLoadCompleted)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_CreateMimeHandlerViewGuestACK,
+                      OnCreateMimeHandlerViewGuestACK)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_GuestAttached, OnGuestAttached)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_MimeHandlerViewGuestOnLoadCompleted,
+                      OnMimeHandlerViewGuestOnLoadCompleted)
+  IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled;
+      return handled;
+}
+
+void MimeHandlerViewContainer::DidResizeElement(const gfx::Size& old_size,
+                                                const gfx::Size& new_size) {
+  element_size_ = new_size;
 }
 
 v8::Local<v8::Object> MimeHandlerViewContainer::V8ScriptableObject(
@@ -242,7 +248,9 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
     return;
 
   render_frame()->Send(new ExtensionHostMsg_CreateMimeHandlerViewGuest(
-      render_frame()->GetRoutingID(), view_id_, element_instance_id()));
+      render_frame()->GetRoutingID(),
+      view_id_, element_instance_id(),
+      element_size_));
 }
 
 }  // namespace extensions

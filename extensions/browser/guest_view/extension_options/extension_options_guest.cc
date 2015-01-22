@@ -134,7 +134,7 @@ void ExtensionOptionsGuest::DidInitialize(
 
 void ExtensionOptionsGuest::DidStopLoading() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
+  DispatchEventToView(new GuestViewBase::Event(
       extension_options_internal::OnLoad::kEventName, args.Pass()));
 }
 
@@ -154,7 +154,7 @@ void ExtensionOptionsGuest::GuestSizeChangedDueToAutoSize(
   options.old_height = old_size.height();
   options.new_width = new_size.width();
   options.new_height = new_size.height();
-  DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
+  DispatchEventToView(new GuestViewBase::Event(
       extension_options_internal::OnSizeChanged::kEventName,
       options.ToValue()));
 }
@@ -163,7 +163,7 @@ void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
   extension_options_internal::PreferredSizeChangedOptions options;
   options.width = pref_size.width();
   options.height = pref_size.height();
-  DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
+  DispatchEventToView(new GuestViewBase::Event(
       extension_options_internal::OnPreferredSizeChanged::kEventName,
       options.ToValue()));
 }
@@ -203,7 +203,7 @@ content::WebContents* ExtensionOptionsGuest::OpenURLFromTab(
 }
 
 void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {
-  DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
+  DispatchEventToView(new GuestViewBase::Event(
       extension_options_internal::OnClose::kEventName,
       make_scoped_ptr(new base::DictionaryValue())));
 }

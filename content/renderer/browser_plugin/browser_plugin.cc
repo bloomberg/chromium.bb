@@ -446,8 +446,10 @@ void BrowserPlugin::updateGeometry(
   int old_height = height();
   plugin_rect_ = window_rect;
   if (!ready_) {
-    if (delegate_)
+    if (delegate_) {
+      delegate_->DidResizeElement(gfx::Size(), plugin_size());
       delegate_->Ready();
+    }
     ready_ = true;
   }
   if (!attached())
@@ -466,6 +468,11 @@ void BrowserPlugin::updateGeometry(
       render_view_routing_id_,
       browser_plugin_instance_id_,
       params));
+
+  if (delegate_) {
+    delegate_->DidResizeElement(
+        gfx::Size(old_width, old_height), plugin_size());
+  }
 }
 
 void BrowserPlugin::PopulateResizeGuestParameters(

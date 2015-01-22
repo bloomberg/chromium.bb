@@ -52,7 +52,7 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
       MenuModelToValue(pending_menu_->menu_model());
   args->Set(webview::kContextMenuItems, items.release());
   args->SetInteger(webview::kRequestId, request_id);
-  web_view_guest()->DispatchEventToEmbedder(
+  web_view_guest()->DispatchEventToView(
       new GuestViewBase::Event(webview::kEventContextMenu, args.Pass()));
   return true;
 }

@@ -147,7 +147,8 @@ ExtensionsGuestViewContainer::ExtensionsGuestViewContainer(
     content::RenderFrame* render_frame)
     : GuestViewContainer(render_frame),
       ready_(false),
-      destruction_isolate_(nullptr) {
+      destruction_isolate_(nullptr),
+      element_resize_isolate_(nullptr) {
 }
 
 ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
@@ -168,7 +169,7 @@ ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
   v8::Context::Scope context_scope(context);
   blink::WebScopedMicrotaskSuppression suppression;
 
-  callback->Call(context->Global(), 0, nullptr);
+  callback->Call(context->Global(), 0 /* argc */, nullptr);
 }
 
 ExtensionsGuestViewContainer* ExtensionsGuestViewContainer::FromID(
@@ -189,6 +190,18 @@ void ExtensionsGuestViewContainer::RegisterDestructionCallback(
     v8::Isolate* isolate) {
   destruction_callback_.reset(callback);
   destruction_isolate_ = isolate;
+}
+
+void ExtensionsGuestViewContainer::RegisterElementResizeCallback(
+    v8::Handle<v8::Function> callback,
+    v8::Isolate* isolate) {
+  element_resize_callback_.reset(callback);
+  element_resize_isolate_ = isolate;
+}
+
+void ExtensionsGuestViewContainer::DidResizeElement(const gfx::Size& old_size,
+                                                    const gfx::Size& new_size) {
+  // TODO(paulmeyer): Call the |element_resize_callback_| callback here.
 }
 
 bool ExtensionsGuestViewContainer::OnMessageReceived(

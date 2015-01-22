@@ -7,6 +7,7 @@
 
 var DocumentNatives = requireNative('document_natives');
 var GuestView = require('guestView').GuestView;
+var GuestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
 
 function GuestViewContainer(element, viewType) {
@@ -98,6 +99,10 @@ GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
     privates(this).browserPluginElement.removeAttribute('internalinstanceid');
     this.internalInstanceId = parseInt(newValue);
 
+    // Track when the element resizes using the element resize callback.
+    GuestViewInternalNatives.RegisterElementResizeCallback(
+        this.internalInstanceId, this.onElementResize.bind(this));
+
     if (!this.guest.getId()) {
       return;
     }
@@ -114,6 +119,8 @@ GuestViewContainer.prototype.onElementAttached = function() {};
 GuestViewContainer.prototype.onElementDetached = function() {
   this.guest.destroy();
 };
+GuestViewContainer.prototype.onElementResize = function(oldWidth, oldHeight,
+                                                        newWidth, newHeight) {};
 
 // Registers the browser plugin <object> custom element. |viewType| is the
 // name of the specific guestview container (e.g. 'webview').

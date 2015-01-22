@@ -25,6 +25,10 @@ class BrowserContext;
 class WebContents;
 }
 
+namespace gfx {
+class Size;
+}
+
 namespace extensions {
 
 class InfoMap;
@@ -66,7 +70,8 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
                               const base::DictionaryValue& attach_params);
   void OnExtensionCreateMimeHandlerViewGuest(int render_frame_id,
                                              const std::string& view_id,
-                                             int element_instance_id);
+                                             int element_instance_id,
+                                             const gfx::Size& element_size);
   void OnExtensionRemoveLazyListener(const std::string& extension_id,
                                      const std::string& event_name);
   void OnExtensionAddFilteredListener(const std::string& extension_id,
@@ -93,6 +98,7 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   void MimeHandlerViewGuestCreatedCallback(int element_instance_id,
                                            int embedder_render_process_id,
                                            int embedder_render_frame_id,
+                                           const gfx::Size& element_size,
                                            content::WebContents* web_contents);
 
   const int render_process_id_;

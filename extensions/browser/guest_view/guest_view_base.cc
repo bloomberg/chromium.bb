@@ -225,6 +225,20 @@ void GuestViewBase::InitWithWebContents(
   DidInitialize(create_params);
 }
 
+void GuestViewBase::DispatchOnResizeEvent(const gfx::Size& old_size,
+                                          const gfx::Size& new_size) {
+  if (new_size == old_size)
+    return;
+
+  // Dispatch the onResize event.
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetInteger(guestview::kOldWidth, old_size.width());
+  args->SetInteger(guestview::kOldHeight, old_size.height());
+  args->SetInteger(guestview::kNewWidth, new_size.width());
+  args->SetInteger(guestview::kNewHeight, new_size.height());
+  DispatchEventToGuestProxy(new Event(guestview::kEventResize, args.Pass()));
+}
+
 void GuestViewBase::SetAutoSize(bool enabled,
                                 const gfx::Size& min_size,
                                 const gfx::Size& max_size) {
@@ -248,8 +262,9 @@ void GuestViewBase::SetAutoSize(bool enabled,
     rvh->EnableAutoResize(min_auto_size_, max_auto_size_);
   } else {
     rvh->DisableAutoResize(element_size_);
-    guest_size_ = element_size_;
+    DispatchOnResizeEvent(guest_size_, element_size_);
     GuestSizeChangedDueToAutoSize(guest_size_, element_size_);
+    guest_size_ = element_size_;
   }
 }
 
@@ -360,8 +375,10 @@ void GuestViewBase::ElementSizeChanged(const gfx::Size& size) {
   element_size_ = size;
 
   // Only resize if needed.
-  if (!size.IsEmpty())
+  if (!size.IsEmpty()) {
     guest_sizer_->SizeContents(size);
+    guest_size_ = size;
+  }
 }
 
 WebContents* GuestViewBase::GetOwnerWebContents() const {
@@ -370,6 +387,7 @@ WebContents* GuestViewBase::GetOwnerWebContents() const {
 
 void GuestViewBase::GuestSizeChanged(const gfx::Size& old_size,
                                      const gfx::Size& new_size) {
+  DispatchOnResizeEvent(old_size, new_size);
   if (!auto_size_enabled_)
     return;
   guest_size_ = new_size;
@@ -573,17 +591,25 @@ void GuestViewBase::OnZoomChanged(
   guest_zoom_controller->SetZoomLevel(data.new_zoom_level);
 }
 
-void GuestViewBase::DispatchEventToEmbedder(Event* event) {
-  scoped_ptr<Event> event_ptr(event);
+void GuestViewBase::DispatchEventToGuestProxy(Event* event) {
+  DispatchEvent(event, guest_instance_id_);
+}
 
+void GuestViewBase::DispatchEventToView(Event* event) {
   if (!attached() &&
       (!CanRunInDetachedState() || !can_owner_receive_events())) {
-    pending_events_.push_back(linked_ptr<Event>(event_ptr.release()));
+    pending_events_.push_back(linked_ptr<Event>(event));
     return;
   }
 
+  DispatchEvent(event, view_instance_id_);
+}
+
+void GuestViewBase::DispatchEvent(Event* event, int instance_id) {
+  scoped_ptr<Event> event_ptr(event);
+
   EventFilteringInfo info;
-  info.SetInstanceID(view_instance_id_);
+  info.SetInstanceID(instance_id);
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(event->GetArguments().release());
 
@@ -603,7 +629,7 @@ void GuestViewBase::SendQueuedEvents() {
   while (!pending_events_.empty()) {
     linked_ptr<Event> event_ptr = pending_events_.front();
     pending_events_.pop_front();
-    DispatchEventToEmbedder(event_ptr.release());
+    DispatchEvent(event_ptr.release(), view_instance_id_);
   }
 }
 

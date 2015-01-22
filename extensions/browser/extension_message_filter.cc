@@ -178,7 +178,8 @@ void ExtensionMessageFilter::OnExtensionAttachGuest(
 void ExtensionMessageFilter::OnExtensionCreateMimeHandlerViewGuest(
     int render_frame_id,
     const std::string& view_id,
-    int element_instance_id) {
+    int element_instance_id,
+    const gfx::Size& element_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GuestViewManager* manager =
       GuestViewManager::FromBrowserContext(browser_context_);
@@ -192,11 +193,18 @@ void ExtensionMessageFilter::OnExtensionCreateMimeHandlerViewGuest(
   if (!embedder_web_contents)
     return;
 
-  GuestViewManager::WebContentsCreatedCallback callback = base::Bind(
-      &ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback, this,
-      element_instance_id, render_process_id_, render_frame_id);
+  GuestViewManager::WebContentsCreatedCallback callback =
+      base::Bind(&ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback,
+                 this,
+                 element_instance_id,
+                 render_process_id_,
+                 render_frame_id,
+                 element_size);
+
   base::DictionaryValue create_params;
   create_params.SetString(mime_handler_view::kViewId, view_id);
+  create_params.SetInteger(guestview::kElementWidth, element_size.width());
+  create_params.SetInteger(guestview::kElementHeight, element_size.height());
   manager->CreateGuest(MimeHandlerViewGuest::Type,
                        embedder_web_contents,
                        create_params,
@@ -287,6 +295,7 @@ void ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback(
     int element_instance_id,
     int embedder_render_process_id,
     int embedder_render_frame_id,
+    const gfx::Size& element_size,
     content::WebContents* web_contents) {
   GuestViewManager* manager =
       GuestViewManager::FromBrowserContext(browser_context_);
@@ -305,6 +314,8 @@ void ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback(
     return;
 
   base::DictionaryValue attach_params;
+  attach_params.SetInteger(guestview::kElementWidth, element_size.width());
+  attach_params.SetInteger(guestview::kElementHeight, element_size.height());
   manager->AttachGuest(embedder_render_process_id,
                        rfh->GetRenderViewHost()->GetRoutingID(),
                        element_instance_id,

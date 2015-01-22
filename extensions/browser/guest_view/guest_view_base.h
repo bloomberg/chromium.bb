@@ -269,8 +269,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void OnZoomChanged(
       const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
 
-  // Dispatches an event |event_name| to the embedder with the |event| fields.
-  void DispatchEventToEmbedder(Event* event);
+  // Dispatches an event to the guest proxy.
+  void DispatchEventToGuestProxy(Event* event);
+
+  // Dispatches an event to the view.
+  void DispatchEventToView(Event* event);
 
  protected:
   GuestViewBase(content::WebContents* owner_web_contents,
@@ -283,11 +286,17 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   class OpenerLifetimeObserver;
 
+  void DispatchEvent(Event* event, int instance_id);
+
   void SendQueuedEvents();
 
   void CompleteInit(scoped_ptr<base::DictionaryValue> create_params,
                     const WebContentsCreatedCallback& callback,
                     content::WebContents* guest_web_contents);
+
+  // Dispatches the onResize event to the embedder.
+  void DispatchOnResizeEvent(const gfx::Size& old_size,
+                             const gfx::Size& new_size);
 
   void SetUpAutoSize(const base::DictionaryValue& params);
 

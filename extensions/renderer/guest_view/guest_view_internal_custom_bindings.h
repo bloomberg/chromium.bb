@@ -45,6 +45,12 @@ class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
   // RegisterDestructionCallback takes in a single paramater, |callback|.
   void RegisterDestructionCallback(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // RegisterElementResizeCallback registers a JavaScript callback function to
+  // be called when the element is resized. RegisterElementResizeCallback takes
+  // a single parameter, |callback|.
+  void RegisterElementResizeCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 }  // namespace extensions

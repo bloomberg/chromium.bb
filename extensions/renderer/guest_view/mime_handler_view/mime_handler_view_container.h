@@ -11,6 +11,7 @@
 #include "extensions/renderer/scoped_persistent.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 
@@ -44,6 +45,8 @@ class MimeHandlerViewContainer : public GuestViewContainer,
   void Ready() override;
   void DidFinishLoading() override;
   void DidReceiveData(const char* data, int data_length) override;
+  void DidResizeElement(const gfx::Size& old_size,
+                        const gfx::Size& new_size) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate*) override;
 
@@ -99,6 +102,9 @@ class MimeHandlerViewContainer : public GuestViewContainer,
   // True if the guest page has fully loaded and its JavaScript onload function
   // has been called.
   bool guest_loaded_;
+
+  // The size of the element.
+  gfx::Size element_size_;
 
   base::WeakPtrFactory<MimeHandlerViewContainer> weak_factory_;
 

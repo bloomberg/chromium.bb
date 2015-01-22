@@ -13,6 +13,10 @@
 #include "extensions/renderer/guest_view/guest_view_container.h"
 #include "extensions/renderer/scoped_persistent.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace extensions {
 
 class ExtensionsGuestViewContainer : public GuestViewContainer {
@@ -82,11 +86,15 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
   void IssueRequest(linked_ptr<Request> request);
   void RegisterDestructionCallback(v8::Handle<v8::Function> callback,
                                    v8::Isolate* isolate);
+  void RegisterElementResizeCallback(v8::Handle<v8::Function> callback,
+                                     v8::Isolate* isolate);
 
   // BrowserPluginDelegate implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void SetElementInstanceID(int element_instance_id) override;
   void Ready() override;
+  void DidResizeElement(const gfx::Size& old_size,
+                        const gfx::Size& new_size) override;
 
  private:
   void OnHandleCallback(const IPC::Message& message);
@@ -102,6 +110,9 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
 
   ScopedPersistent<v8::Function> destruction_callback_;
   v8::Isolate* destruction_isolate_;
+
+  ScopedPersistent<v8::Function> element_resize_callback_;
+  v8::Isolate* element_resize_isolate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsGuestViewContainer);
 };
