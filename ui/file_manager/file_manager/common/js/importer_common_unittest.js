@@ -43,8 +43,8 @@ function setUp() {
           'sd-fs',
           'Some SD Card');
   volumeManager = new MockVolumeManager();
-  volumeManager.volumeInfoList.push(cameraVolume);
-  volumeManager.volumeInfoList.push(sdVolume);
+  volumeManager.volumeInfoList.add(cameraVolume);
+  volumeManager.volumeInfoList.add(sdVolume);
   driveVolume = volumeManager.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.DRIVE);
   cameraFileEntry = createFileEntry(cameraVolume, '/DCIM/poodles.jpg');

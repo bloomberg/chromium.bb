@@ -71,7 +71,7 @@ function testCreateDirectoryTree(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManager();
+  var volumeManager = new MockVolumeManagerWrapper();
   var metadataCache = new MockMetadataCache();
 
   // Set entry which is returned by
@@ -121,7 +121,7 @@ function testUpdateSubElementsFromList() {
 
   // Creates mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManager();
+  var volumeManager = new MockVolumeManagerWrapper();
   var metadataCache = new MockMetadataCache();
 
   // Sets entry which is returned by
@@ -142,7 +142,7 @@ function testUpdateSubElementsFromList() {
   ], getDirectoryTreeItemLabelsAsAList(directoryTree));
 
   // Mounts a removable volume.
-  var removableVolume = MockVolumeManager.createMockVolumeInfo(
+  var removableVolume = MockVolumeManagerWrapper.createMockVolumeInfo(
       VolumeManagerCommon.VolumeType.REMOVABLE,
       'removable',
       str('REMOVABLE_DIRECTORY_LABEL'));
@@ -163,7 +163,7 @@ function testUpdateSubElementsFromList() {
   ], getDirectoryTreeItemLabelsAsAList(directoryTree));
 
   // Mounts an archive volume before the removable directory.
-  var archiveVolume = MockVolumeManager.createMockVolumeInfo(
+  var archiveVolume = MockVolumeManagerWrapper.createMockVolumeInfo(
       VolumeManagerCommon.VolumeType.ARCHIVE,
       'archive',
       str('ARCHIVE_DIRECTORY_LABEL'));

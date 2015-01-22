@@ -58,11 +58,11 @@ function FileBrowserBackground() {
    * @private {!DeviceHandler}
    */
   this.deviceHandler_ = new DeviceHandler();
+
+  // Handle device navigation requests.
   this.deviceHandler_.addEventListener(
       DeviceHandler.VOLUME_NAVIGATION_REQUESTED,
-      function(event) {
-        this.navigateToVolume_(event.devicePath, event.filePath);
-      }.bind(this));
+      this.handleViewEvent_.bind(this));
 
   /**
    * Drive sync handler.
@@ -205,60 +205,84 @@ FileBrowserBackground.prototype.canClose = function() {
 };
 
 /**
- * Opens the root directory of the volume in Files.app.
- * @param {string} devicePath Device path to a volume to be opened.
+ * Opens the volume root (or opt directoryPath) in main UI.
+ *
+ * @param {!Event} event An event with the volumeId or
+ *     devicePath.
+ * @private
+ */
+FileBrowserBackground.prototype.handleViewEvent_ =
+    function(event) {
+  VolumeManager.getInstance()
+      .then(
+          /**
+           * Retrieves the root file entry of the volume on the requested
+           * device.
+           * @param {!VolumeManager} volumeManager
+           */
+          function(volumeManager) {
+            if (event.devicePath) {
+              var volume = volumeManager.volumeInfoList.findByDevicePath(
+                  event.devicePath);
+              if (volume) {
+                this.navigateToVolume_(volume);
+              } else {
+                console.error('Got view event with invalid volume id.');
+              }
+            } else if (event.volumeId) {
+              volumeManager.volumeInfoList.whenVolumeInfoReady(event.volumeId)
+                  .then(
+                      function(volume) {
+                        this.navigateToVolume_(volume, event.filePath);
+                      }.bind(this))
+                  .catch(
+                      function(e) {
+                        console.error(
+                            'Unable to find volume for id: ' + event.volumeId +
+                            '. Error: ' + e.message);
+                      });
+            } else {
+              console.error('Got view event with no actionable destination.');
+            }
+          }.bind(this));
+};
+
+/**
+ * Opens the volume root (or opt directoryPath) in main UI.
+ *
+ * @param {!VolumeInfo} volume
  * @param {string=} opt_directoryPath Optional directory path to be opened.
  * @private
  */
 FileBrowserBackground.prototype.navigateToVolume_ =
-    function(devicePath, opt_directoryPath) {
-  /**
-   * Retrieves the root file entry of the volume on the requested device.
-   * @param {!VolumeManager} volumeManager
-   * @return {!Promise<!DirectoryEntry>}
-   */
-  var getDeviceRoot = function(volumeManager) {
-    var volume = volumeManager.volumeInfoList.findByDevicePath(devicePath);
-    if (volume) {
-      // TODO(kenobi): Remove this cast once typing is fixed on
-      //     VolumeInfo#resolveDisplayRoot.
-      return /** @type {!Promise<!DirectoryEntry>} */ (
-          volume.resolveDisplayRoot());
-    } else {
-      return Promise.reject('Volume having the device path: ' +
-          devicePath + ' is not found.');
-    }
-  };
-
-  /**
-   * If a path was specified, retrieve that directory entry; otherwise just
-   * return the unmodified root entry.
-   * @param {!DirectoryEntry} entry
-   * @return {!Promise<!DirectoryEntry>}
-   */
-  var maybeNavigateToPath = function(entry) {
-    if (opt_directoryPath) {
-      return new Promise(
-          entry.getDirectory.bind(entry, opt_directoryPath, {create:false}));
-    } else {
-      return Promise.resolve(entry);
-    }
-  };
-
-  VolumeManager.getInstance()
-      .then(getDeviceRoot)
-      .then(maybeNavigateToPath)
+    function(volume, opt_directoryPath) {
+  volume.resolveDisplayRoot()
       .then(
-          /** @param {!DirectoryEntry} entry */
-          function(entry) {
+          /**
+           * If a path was specified, retrieve that directory entry,
+           * otherwise just return the unmodified root entry.
+           * @param {DirectoryEntry} root
+           * @return {!Promise<DirectoryEntry>}
+           */
+          function(root) {
+            if (opt_directoryPath) {
+              return new Promise(
+                  root.getDirectory.bind(
+                      root, opt_directoryPath, {create: false}));
+            } else {
+              return Promise.resolve(root);
+            }
+          })
+      .then(
+          /**
+           * Launches app opened on {@code directory}.
+           * @param {DirectoryEntry} directory
+           */
+          function(directory) {
             launchFileManager(
-                {currentDirectoryURL: entry.toURL()},
+                {currentDirectoryURL: directory.toURL()},
                 /* App ID */ undefined,
                 LaunchType.FOCUS_SAME_OR_CREATE);
-          })
-      .catch(
-          function(error) {
-            console.error(error.stack || error);
           });
 };
 

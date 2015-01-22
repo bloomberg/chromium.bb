@@ -14,80 +14,44 @@ var chrome;
  */
 var timeoutCallbacks;
 
+/** @type {!MockVolumeManager} */
+var volumeManager;
+
+/** @type {DeviceHandler} */
+var handler;
+
+// Set up string assets.
+loadTimeData.data = {
+  REMOVABLE_DEVICE_DETECTION_TITLE: 'Device detected',
+  REMOVABLE_DEVICE_NAVIGATION_MESSAGE: 'DEVICE_NAVIGATION',
+  REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL: '',
+  REMOVABLE_DEVICE_IMPORT_MESSAGE: 'DEVICE_IMPORT',
+  REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL: '',
+  DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
+  DEVICE_UNSUPPORTED_MESSAGE: 'DEVICE_UNSUPPORTED: $1',
+  DEVICE_HARD_UNPLUGGED_TITLE: 'DEVICE_HARD_UNPLUGGED_TITLE',
+  DEVICE_HARD_UNPLUGGED_MESSAGE: 'DEVICE_HARD_UNPLUGGED_MESSAGE',
+  MULTIPART_DEVICE_UNSUPPORTED_MESSAGE: 'MULTIPART_DEVICE_UNSUPPORTED: $1',
+  EXTERNAL_STORAGE_DISABLED_MESSAGE: 'EXTERNAL_STORAGE_DISABLED',
+  FORMATTING_OF_DEVICE_PENDING_TITLE: 'FORMATTING_OF_DEVICE_PENDING_TITLE',
+  FORMATTING_OF_DEVICE_PENDING_MESSAGE: 'FORMATTING_OF_DEVICE_PENDING',
+  FORMATTING_OF_DEVICE_FINISHED_TITLE: 'FORMATTING_OF_DEVICE_FINISHED_TITLE',
+  FORMATTING_FINISHED_SUCCESS_MESSAGE: 'FORMATTING_FINISHED_SUCCESS',
+  FORMATTING_OF_DEVICE_FAILED_TITLE: 'FORMATTING_OF_DEVICE_FAILED_TITLE',
+  FORMATTING_FINISHED_FAILURE_MESSAGE: 'FORMATTING_FINISHED_FAILURE'
+};
+
 // Set up the test components.
 function setUp() {
-  // Set up string assets.
-  loadTimeData.data = {
-    REMOVABLE_DEVICE_DETECTION_TITLE: 'Device detected',
-    REMOVABLE_DEVICE_NAVIGATION_MESSAGE: 'DEVICE_NAVIGATION',
-    REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL: '',
-    REMOVABLE_DEVICE_IMPORT_MESSAGE: 'DEVICE_IMPORT',
-    REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL: '',
-    DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
-    DEVICE_UNSUPPORTED_MESSAGE: 'DEVICE_UNSUPPORTED: $1',
-    DEVICE_HARD_UNPLUGGED_TITLE: 'DEVICE_HARD_UNPLUGGED_TITLE',
-    DEVICE_HARD_UNPLUGGED_MESSAGE: 'DEVICE_HARD_UNPLUGGED_MESSAGE',
-    MULTIPART_DEVICE_UNSUPPORTED_MESSAGE: 'MULTIPART_DEVICE_UNSUPPORTED: $1',
-    EXTERNAL_STORAGE_DISABLED_MESSAGE: 'EXTERNAL_STORAGE_DISABLED',
-    FORMATTING_OF_DEVICE_PENDING_TITLE: 'FORMATTING_OF_DEVICE_PENDING_TITLE',
-    FORMATTING_OF_DEVICE_PENDING_MESSAGE: 'FORMATTING_OF_DEVICE_PENDING',
-    FORMATTING_OF_DEVICE_FINISHED_TITLE: 'FORMATTING_OF_DEVICE_FINISHED_TITLE',
-    FORMATTING_FINISHED_SUCCESS_MESSAGE: 'FORMATTING_FINISHED_SUCCESS',
-    FORMATTING_OF_DEVICE_FAILED_TITLE: 'FORMATTING_OF_DEVICE_FAILED_TITLE',
-    FORMATTING_FINISHED_FAILURE_MESSAGE: 'FORMATTING_FINISHED_FAILURE'
-  };
+  volumeManager = new MockVolumeManager();
+  MockVolumeManager.installMockSingleton(volumeManager);
 
-  // Make dummy APIs.
-  chrome = {
-    commandLinePrivate: {
-      hasSwitch: function(switchName, callback) {
-        if (switchName === 'enable-cloud-backup') {
-          callback(chrome.commandLinePrivate.cloudBackupEnabled);
-        }
-      },
-      cloudBackupEnabled: false
-    },
-    fileManagerPrivate: {
-      onDeviceChanged: {
-        addListener: function(listener) {
-          this.dispatch = listener;
-        }
-      },
-      onMountCompleted: {
-        addListener: function(listener) {
-          this.dispatch = listener;
-        }
-      }
-    },
-    notifications: {
-      create: function(id, params, callback) {
-        this.items[id] = params;
-        callback();
-      },
-      clear: function(id, callback) { delete this.items[id]; callback(); },
-      items: {},
-      onButtonClicked: {
-        addListener: function(listener) {
-          this.dispatch = listener;
-        }
-      },
-      getAll: function(callback) {
-        callback([]);
-      }
-    },
-    runtime: {
-      getURL: function(path) { return path; },
-      onStartup: {
-        addListener: function() {}
-      }
-    }
-  };
+  setupChromeApis();
+
+  handler = new DeviceHandler();
 }
 
-function testGoodDevice() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
+function testGoodDevice(callback) {
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
@@ -99,94 +63,125 @@ function testGoodDevice() {
     },
     shouldNotify: true
   });
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals(
-      'DEVICE_NAVIGATION',
-      chrome.notifications.items['deviceNavigation:/device/path'].message);
+
+  var promise = chrome.notifications.resolver.promise.then(
+      function(notifications) {
+          assertEquals(1, Object.keys(notifications).length);
+          assertEquals(
+              'DEVICE_NAVIGATION',
+              notifications['deviceNavigation:/device/path'].message);
+      });
+
+  reportPromise(promise, callback);
 }
 
-function testMediaDeviceWithImportEnabled(testCallback) {
+function testRemovableMediaDeviceWithImportEnabled(callback) {
+  setupFileSystem(
+      VolumeManagerCommon.VolumeType.REMOVABLE,
+      'blabbity',
+      [
+        '/DCIM/',
+        '/DCIM/grandma.jpg'
+      ]);
+
   // "Enable" cloud backup, then make a device handler.
   chrome.commandLinePrivate.cloudBackupEnabled = true;
-  var handler = new DeviceHandler();
+  var resolver = new importer.Resolver();
 
-  importer.importEnabled()
-      .then(
-          function(ignored) {
-            chrome.fileManagerPrivate.onMountCompleted.dispatch({
-              eventType: 'mount',
-              status: 'success',
-              volumeMetadata: {
-                isParentDevice: true,
-                deviceType: 'usb',
-                devicePath: '/device/path',
-                deviceLabel: 'label',
-                hasMedia: true
-              },
-              shouldNotify: true
-            });
-            assertEquals(1, Object.keys(chrome.notifications.items).length);
-            assertTrue(
-                'deviceImport:/device/path' in chrome.notifications.items,
-                'Import notification not found in the notifications queue.');
-            assertEquals(
-                'DEVICE_IMPORT',
-                chrome.notifications.items[
-                    'deviceImport:/device/path'].message,
-                'Import notification did not have the right message.');
+  // Handle media device navigation requests.
+  handler.addEventListener(
+      DeviceHandler.VOLUME_NAVIGATION_REQUESTED,
+      function(event) {
+        resolver.resolve(event);
+      });
 
-            testCallback(/* was error */ false);
-          })
-      .catch(
-          function(error) {
-            console.error('TEST FAILED: ' + error);
-            testCallback(/* was error */ true);
-          });
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
+      eventType: 'mount',
+      status: 'success',
+      volumeMetadata: {
+        volumeId: 'blabbity',
+        deviceType: 'usb'
+      },
+      shouldNotify: true
+    });
+   resolver.promise.then(
+      function(event) {
+        assertEquals('blabbity', event.volumeId);
+      });
+
+  reportPromise(resolver.promise, callback);
 }
 
-function testMediaDeviceWithImportDisabled(testCallback) {
-  // "Disable" cloud backup, then make a device handler.
+function testMtpMediaDeviceWithImportEnabled(callback) {
+  setupFileSystem(
+      VolumeManagerCommon.VolumeType.MTP,
+      'blabbity',
+      [
+        '/dcim/',
+        '/dcim/grandpa.jpg'
+      ]);
+
+  // "Enable" cloud backup, then make a device handler.
+  chrome.commandLinePrivate.cloudBackupEnabled = true;
+  var resolver = new importer.Resolver();
+
+  // Handle media device navigation requests.
+  handler.addEventListener(
+      DeviceHandler.VOLUME_NAVIGATION_REQUESTED,
+      function(event) {
+        resolver.resolve(event);
+      });
+
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
+      eventType: 'mount',
+      status: 'success',
+      volumeMetadata: {
+        volumeId: 'blabbity',
+        deviceType: 'mtp'
+      },
+      shouldNotify: true
+    });
+    resolver.promise.then(
+        function(event) {
+          assertEquals('blabbity', event.volumeId);
+        });
+
+  reportPromise(resolver.promise, callback);
+}
+
+function testMediaDeviceWithImportDisabled(callback) {
   chrome.commandLinePrivate.cloudBackupEnabled = false;
-  var handler = new DeviceHandler();
 
-  importer.importEnabled()
-      .then(
-          function(ignored) {
-            chrome.fileManagerPrivate.onMountCompleted.dispatch({
-              eventType: 'mount',
-              status: 'success',
-              volumeMetadata: {
-                isParentDevice: true,
-                deviceType: 'usb',
-                devicePath: '/device/path',
-                deviceLabel: 'label',
-                hasMedia: true
-              },
-              shouldNotify: true
-            });
-            assertEquals(1, Object.keys(chrome.notifications.items).length);
-            assertFalse(
-                'deviceImport:/device/path' in chrome.notifications.items,
-                'Unexpected import notification found in notifications queue.');
-            assertEquals(
-                'DEVICE_NAVIGATION',
-                chrome.notifications.items[
-                    'deviceNavigation:/device/path'].message,
-                'Device notification did not have the right message.');
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
+    eventType: 'mount',
+    status: 'success',
+    volumeMetadata: {
+      isParentDevice: true,
+      deviceType: 'usb',
+      devicePath: '/device/path',
+      deviceLabel: 'label',
+      hasMedia: true
+    },
+    shouldNotify: true
+  });
 
-            testCallback(/* was error */ false);
-          })
-      .catch(
-          function(error) {
-            console.error('TEST FAILED: ' + error);
-            testCallback(/* was error */ true);
-          });
+  var promise = chrome.notifications.resolver.promise.then(
+      function(notifications) {
+        assertEquals(1, Object.keys(notifications).length);
+        assertFalse(
+            'deviceImport:/device/path' in notifications,
+            'Unexpected import notification found in notifications queue.');
+        assertEquals(
+            'DEVICE_NAVIGATION',
+            notifications[
+                'deviceNavigation:/device/path'].message,
+            'Device notification did not have the right message.');
+      });
+
+  reportPromise(promise, callback);
 }
 
 function testGoodDeviceNotNavigated() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
@@ -198,13 +193,12 @@ function testGoodDeviceNotNavigated() {
     },
     shouldNotify: false
   });
+
   assertEquals(0, Object.keys(chrome.notifications.items).length);
+  assertFalse(chrome.notifications.resolver.settled);
 }
 
-function testGoodDeviceWithBadParent() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
+function testGoodDeviceWithBadParent(callback) {
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
@@ -216,49 +210,57 @@ function testGoodDeviceWithBadParent() {
     },
     shouldNotify: true
   });
-  assertFalse(!!chrome.notifications.items['device:/device/path']);
-  assertEquals(
-      'DEVICE_UNKNOWN: label',
-      chrome.notifications.items['deviceFail:/device/path'].message);
 
-  chrome.fileManagerPrivate.onMountCompleted.dispatch({
-    eventType: 'mount',
-    status: 'success',
-    volumeMetadata: {
-      isParentDevice: false,
-      deviceType: 'usb',
-      devicePath: '/device/path',
-      deviceLabel: 'label'
-    },
-    shouldNotify: true
-  });
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals(
-      'DEVICE_NAVIGATION',
-      chrome.notifications.items['deviceNavigation:/device/path'].message);
+  var promise = chrome.notifications.resolver.promise.then(
+      function(notifications) {
+        assertFalse(!!notifications['device:/device/path']);
+        assertEquals(
+            'DEVICE_UNKNOWN: label',
+            notifications['deviceFail:/device/path'].message);
+      });
 
-  chrome.fileManagerPrivate.onMountCompleted.dispatch({
-    eventType: 'mount',
-    status: 'success',
-    volumeMetadata: {
-      isParentDevice: false,
-      deviceType: 'usb',
-      devicePath: '/device/path',
-      deviceLabel: 'label'
-    },
-    shouldNotify: true
-  });
-  // Should do nothing this time.
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals(
-      'DEVICE_NAVIGATION',
-      chrome.notifications.items['deviceNavigation:/device/path'].message);
+  reportPromise(promise, callback);
 }
 
-function testUnsupportedDevice() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
+function testGoodDeviceWithBadParent_DuplicateMount(callback) {
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
+    eventType: 'mount',
+    status: 'success',
+    volumeMetadata: {
+      isParentDevice: false,
+      deviceType: 'usb',
+      devicePath: '/device/path',
+      deviceLabel: 'label'
+    },
+    shouldNotify: true
+  });
 
+  // Mounting the same device repeatedly should produce only
+  // a single notification.
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
+    eventType: 'mount',
+    status: 'success',
+    volumeMetadata: {
+      isParentDevice: false,
+      deviceType: 'usb',
+      devicePath: '/device/path',
+      deviceLabel: 'label'
+    },
+    shouldNotify: true
+  });
+
+  var promise = chrome.notifications.resolver.promise.then(
+      function(notifications) {
+        assertEquals(1, Object.keys(notifications).length);
+        assertEquals(
+            'DEVICE_NAVIGATION',
+            notifications['deviceNavigation:/device/path'].message);
+      });
+
+  reportPromise(promise, callback);
+}
+
+function testUnsupportedDevice(callback) {
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_unsupported_filesystem',
@@ -270,16 +272,18 @@ function testUnsupportedDevice() {
     },
     shouldNotify: true
   });
-  assertFalse(!!chrome.notifications.items['device:/device/path']);
-  assertEquals(
-      'DEVICE_UNSUPPORTED: label',
-      chrome.notifications.items['deviceFail:/device/path'].message);
+  var promise = chrome.notifications.resolver.promise.then(
+      function(notifications) {
+        assertFalse(!!chrome.notifications.items['device:/device/path']);
+        assertEquals(
+            'DEVICE_UNSUPPORTED: label',
+            chrome.notifications.items['deviceFail:/device/path'].message);
+      });
+
+  reportPromise(promise, callback);
 }
 
-function testUnsupportedWithUnknownParent() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
+function testUnsupportedWithUnknownParentReplacesNotification() {
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
@@ -291,6 +295,7 @@ function testUnsupportedWithUnknownParent() {
     },
     shouldNotify: true
   });
+
   assertEquals(
       'DEVICE_UNKNOWN: label',
       chrome.notifications.items['deviceFail:/device/path'].message);
@@ -306,16 +311,14 @@ function testUnsupportedWithUnknownParent() {
     },
     shouldNotify: true
   });
+
   assertEquals(1, Object.keys(chrome.notifications.items).length);
   assertEquals(
       'DEVICE_UNSUPPORTED: label',
       chrome.notifications.items['deviceFail:/device/path'].message);
 }
 
-function testMountPartialSuccess() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
+function testMountPartialSuccess(callback) {
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
@@ -327,32 +330,40 @@ function testMountPartialSuccess() {
     },
     shouldNotify: true
   });
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals(
-      'DEVICE_NAVIGATION',
-      chrome.notifications.items['deviceNavigation:/device/path'].message);
 
-  chrome.fileManagerPrivate.onMountCompleted.dispatch({
-    eventType: 'mount',
-    status: 'error_unsupported_filesystem',
-    volumeMetadata: {
-      isParentDevice: false,
-      deviceType: 'usb',
-      devicePath: '/device/path',
-      deviceLabel: 'label'
-    },
-    shouldNotify: true
-  });
-  assertEquals(2, Object.keys(chrome.notifications.items).length);
-  assertEquals(
-      'MULTIPART_DEVICE_UNSUPPORTED: label',
-      chrome.notifications.items['deviceFail:/device/path'].message);
+  var promise = chrome.notifications.resolver.promise.then(
+      function(notifications) {
+        assertEquals(1, Object.keys(notifications).length);
+        assertEquals(
+            'DEVICE_NAVIGATION',
+            notifications['deviceNavigation:/device/path'].message);
+      }).then(
+          function() {
+            chrome.fileManagerPrivate.onMountCompleted.dispatch({
+              eventType: 'mount',
+              status: 'error_unsupported_filesystem',
+              volumeMetadata: {
+                isParentDevice: false,
+                deviceType: 'usb',
+                devicePath: '/device/path',
+                deviceLabel: 'label'
+              },
+              shouldNotify: true
+            });
+          }).then(
+              function() {
+                var notifications = chrome.notifications.items;
+                assertEquals(
+                    2, Object.keys(notifications).length);
+                assertEquals(
+                    'MULTIPART_DEVICE_UNSUPPORTED: label',
+                    notifications['deviceFail:/device/path'].message);
+              });
+
+  reportPromise(promise, callback);
 }
 
-function testUnknown() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
+function testUnknown(callback) {
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_unknown',
@@ -364,16 +375,19 @@ function testUnknown() {
     },
     shouldNotify: true
   });
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals(
-      'DEVICE_UNKNOWN: label',
-      chrome.notifications.items['deviceFail:/device/path'].message);
+
+  var promise = chrome.notifications.resolver.promise.then(
+      function(notifications) {
+        assertEquals(1, Object.keys(notifications).length);
+        assertEquals(
+            'DEVICE_UNKNOWN: label',
+            notifications['deviceFail:/device/path'].message);
+      });
+
+  reportPromise(promise, callback);
 }
 
-function testNonASCIILabel() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
+function testNonASCIILabel(callback) {
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
@@ -386,16 +400,19 @@ function testNonASCIILabel() {
     },
     shouldNotify: true
   });
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals(
-      'DEVICE_UNKNOWN: \u30E9\u30D9\u30EB',
-      chrome.notifications.items['deviceFail:/device/path'].message);
+
+  var promise = chrome.notifications.resolver.promise.then(
+      function(notifications) {
+        assertEquals(1, Object.keys(notifications).length);
+        assertEquals(
+            'DEVICE_UNKNOWN: \u30E9\u30D9\u30EB',
+            notifications['deviceFail:/device/path'].message);
+      });
+
+  reportPromise(promise, callback);
 }
 
 function testMulitpleFail() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
   // The first parent error.
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
@@ -467,9 +484,6 @@ function testMulitpleFail() {
 }
 
 function testDisabledDevice() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'disabled',
     devicePath: '/device/path'
@@ -486,9 +500,6 @@ function testDisabledDevice() {
 }
 
 function testFormatSucceeded() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'format_start',
     devicePath: '/device/path'
@@ -508,9 +519,6 @@ function testFormatSucceeded() {
 }
 
 function testFormatFailed() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'format_start',
     devicePath: '/device/path'
@@ -529,9 +537,6 @@ function testFormatFailed() {
 }
 
 function testDeviceHardUnplugged() {
-  // Make a device handler.
-  var handler = new DeviceHandler();
-
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'hard_unplugged',
     devicePath: '/device/path'
@@ -540,4 +545,71 @@ function testDeviceHardUnplugged() {
   assertEquals('DEVICE_HARD_UNPLUGGED_MESSAGE',
                chrome.notifications.items[
                    'hardUnplugged:/device/path'].message);
+}
+
+/**
+ * @param {!VolumeManagerCommon.VolumeType} volumeType
+ * @param {string} volumeId
+ * @param {!Array.<string>} fileNames
+ * @return {!VolumeInfo}
+ */
+function setupFileSystem(volumeType, volumeId, fileNames) {
+  var volumeInfo = volumeManager.createVolumeInfo(
+      volumeType, volumeId, 'A volume known as ' + volumeId);
+  assertTrue(!!volumeInfo);
+  volumeInfo.fileSystem.populate(fileNames);
+  return volumeInfo;
+}
+
+function setupChromeApis() {
+  // Make dummy APIs.
+  chrome = {
+    commandLinePrivate: {
+      hasSwitch: function(switchName, callback) {
+        if (switchName === 'enable-cloud-backup') {
+          callback(chrome.commandLinePrivate.cloudBackupEnabled);
+        }
+      },
+      cloudBackupEnabled: false
+    },
+    fileManagerPrivate: {
+      onDeviceChanged: {
+        addListener: function(listener) {
+          this.dispatch = listener;
+        }
+      },
+      onMountCompleted: {
+        addListener: function(listener) {
+          this.dispatch = listener;
+        }
+      }
+    },
+    notifications: {
+      resolver: new importer.Resolver(),
+      create: function(id, params, callback) {
+        this.promise = this.resolver.promise;
+        this.items[id] = params;
+        if (!this.resolver.settled) {
+          this.resolver.resolve(this.items);
+        }
+        callback();
+      },
+      clear: function(id, callback) { delete this.items[id]; callback(); },
+      items: {},
+      onButtonClicked: {
+        addListener: function(listener) {
+          this.dispatch = listener;
+        }
+      },
+      getAll: function(callback) {
+        callback([]);
+      }
+    },
+    runtime: {
+      getURL: function(path) { return path; },
+      onStartup: {
+        addListener: function() {}
+      }
+    }
+  };
 }

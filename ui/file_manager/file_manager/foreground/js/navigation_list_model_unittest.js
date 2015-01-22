@@ -14,7 +14,7 @@ function setUp() {
 }
 
 function testModel() {
-  var volumeManager = new MockVolumeManager();
+  var volumeManager = new MockVolumeManagerWrapper();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry('drive', '/root/shortcut')]);
   var model = new NavigationListModel(volumeManager, shortcutListModel);
@@ -26,7 +26,7 @@ function testModel() {
 }
 
 function testAddAndRemoveShortcuts() {
-  var volumeManager = new MockVolumeManager();
+  var volumeManager = new MockVolumeManagerWrapper();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry('drive', '/root/shortcut')]);
   var model = new NavigationListModel(volumeManager, shortcutListModel);
@@ -58,7 +58,7 @@ function testAddAndRemoveShortcuts() {
 }
 
 function testAddAndRemoveVolumes() {
-  var volumeManager = new MockVolumeManager();
+  var volumeManager = new MockVolumeManagerWrapper();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry('drive', '/root/shortcut')]);
   var model = new NavigationListModel(volumeManager, shortcutListModel);
@@ -66,8 +66,9 @@ function testAddAndRemoveVolumes() {
   assertEquals(3, model.length);
 
   // Removable volume 'hoge' is mounted.
-  volumeManager.volumeInfoList.push(MockVolumeManager.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:hoge'));
+  volumeManager.volumeInfoList.push(
+      MockVolumeManagerWrapper.createMockVolumeInfo(
+          VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:hoge'));
   assertEquals(4, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
   assertEquals('downloads', model.item(1).volumeInfo.volumeId);
@@ -75,8 +76,9 @@ function testAddAndRemoveVolumes() {
   assertEquals('/root/shortcut', model.item(3).entry.fullPath);
 
   // Removable volume 'fuga' is mounted.
-  volumeManager.volumeInfoList.push(MockVolumeManager.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:fuga'));
+  volumeManager.volumeInfoList.push(
+      MockVolumeManagerWrapper.createMockVolumeInfo(
+          VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:fuga'));
   assertEquals(5, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
   assertEquals('downloads', model.item(1).volumeInfo.volumeId);

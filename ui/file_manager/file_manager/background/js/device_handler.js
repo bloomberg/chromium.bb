@@ -22,24 +22,6 @@ function DeviceHandler() {
       this.onMountCompleted_.bind(this));
   chrome.notifications.onButtonClicked.addListener(
       this.onNotificationButtonClicked_.bind(this));
-
-  /**
-   * Controls the popup of a new media import notification when media volumes
-   * are mounted.
-   * @private {boolean}
-   */
-  this.mediaImportEnabled_ = false;
-
-  // Use the command line switch to enable this new feature.
-  importer.importEnabled()
-      .then(
-          /**
-           * @param {boolean} enabled
-           * @this {DeviceHandler}
-           */
-          function(enabled) {
-            this.mediaImportEnabled_ = enabled;
-          }.bind(this));
 }
 
 DeviceHandler.prototype = {
@@ -323,25 +305,17 @@ Object.freeze(DeviceHandler.MountStatus);
  * @private
  */
 DeviceHandler.prototype.onMountCompleted_ = function(event) {
-  // If this is remounting, which happens when resuming ChromeOS, the device has
-  // already inserted to the computer. So we suppress the notification.
   var volume = event.volumeMetadata;
+
+  if (event.status === 'success' && event.shouldNotify) {
+    if (event.eventType === 'mount')
+      this.onMount_(event);
+    else if (event.eventType === 'unmount')
+      this.onUnmount_(event);
+  }
+
   if (!volume.deviceType || !volume.devicePath || !event.shouldNotify)
     return;
-
-  // If the current volume status is succeed and it should be handled in
-  // Files.app, show the notification to navigate the volume.
-  if (event.eventType === 'mount' && event.status === 'success') {
-    if (this.mediaImportEnabled_ && volume.hasMedia) {
-      DeviceHandler.Notification.DEVICE_IMPORT.show(
-          volume.devicePath);
-    } else {
-      DeviceHandler.Notification.DEVICE_NAVIGATION.show(
-          volume.devicePath);
-    }
-  } else if (event.eventType === 'unmount') {
-    DeviceHandler.Notification.DEVICE_NAVIGATION.hide(volume.devicePath);
-  }
 
   var getFirstStatus = function(event) {
     if (event.status === 'success')
@@ -369,7 +343,8 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
     // unmountable)
     case DeviceHandler.MountStatus.ONLY_PARENT_ERROR:
       if (!volume.isParentDevice)
-        DeviceHandler.Notification.DEVICE_FAIL.hide(volume.devicePath);
+        DeviceHandler.Notification.DEVICE_FAIL.hide(
+            /** @type {string} */ (volume.devicePath));
       this.mountStatus_[volume.devicePath] = getFirstStatus(event);
       break;
     // We have a multi-partition device for which at least one mount
@@ -400,7 +375,7 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
           strf('MULTIPART_DEVICE_UNSUPPORTED_MESSAGE', volume.deviceLabel) :
           str('MULTIPART_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE');
       DeviceHandler.Notification.DEVICE_FAIL.show(
-          volume.devicePath,
+          /** @type {string} */ (volume.devicePath),
           message);
       break;
     case DeviceHandler.MountStatus.CHILD_ERROR:
@@ -410,17 +385,109 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
             strf('DEVICE_UNSUPPORTED_MESSAGE', volume.deviceLabel) :
             str('DEVICE_UNSUPPORTED_DEFAULT_MESSAGE');
         DeviceHandler.Notification.DEVICE_FAIL.show(
-            volume.devicePath,
+            /** @type {string} */ (volume.devicePath),
             message);
       } else {
         message = volume.deviceLabel ?
             strf('DEVICE_UNKNOWN_MESSAGE', volume.deviceLabel) :
             str('DEVICE_UNKNOWN_DEFAULT_MESSAGE');
         DeviceHandler.Notification.DEVICE_FAIL_UNKNOWN.show(
-            volume.devicePath,
+            /** @type {string} */ (volume.devicePath),
             message);
       }
   }
+};
+
+/**
+ * Handles mount events.
+ * @param {MountCompletedEvent} event
+ * @private
+ */
+DeviceHandler.prototype.onMount_ = function(event) {
+  // If this is remounting, which happens when resuming Chrome OS, the device
+  // has already inserted to the computer. So we suppress the notification.
+  var metadata = event.volumeMetadata;
+
+  VolumeManager.getInstance()
+      .then(
+          /**
+           * @param {!VolumeManager} volumeManager
+           * @return {!Promise<!VolumeInfo>}
+           */
+          function(volumeManager) {
+            if (!metadata.volumeId) {
+              return Promise.reject('No volume id associated with event.');
+            }
+            return volumeManager.volumeInfoList.whenVolumeInfoReady(
+                metadata.volumeId);
+          })
+      .then(
+          /**
+           * @param {!VolumeInfo} volumeInfo
+           * @return {Promise<DirectoryEntry>} The root directory
+           *     of the volume.
+           */
+          function(volumeInfo) {
+            return importer.importEnabled()
+                .then(
+                    /** @param {boolean} enabled */
+                    function(enabled) {
+                      if (enabled && importer.isEligibleVolume(volumeInfo)) {
+                        return volumeInfo.resolveDisplayRoot();
+                      }
+                      return Promise.reject('Cloud import disabled.');
+                    });
+          })
+      .then(
+          /**
+           * @param {!DirectoryEntry} root
+           * @return {!Promise<!Array.<DirectoryEntry>>}
+           */
+          function(root) {
+            return Promise.all([
+                new Promise(
+                  root.getDirectory.bind(root, 'DCIM', {create: false}))
+                .catch(
+                    function() {
+                      return null;
+                    }),
+                new Promise(
+                  root.getDirectory.bind(root, 'dcim', {create: false}))
+                .catch(
+                    function() {
+                      return null;
+                    })]);
+
+          })
+      .then(
+          /**
+           * @param {!Array.<DirectoryEntry>} results, where index 0 is for
+           *     'DCIM' and 1 is for 'dcim'.
+           */
+          function(results) {
+            if (!!results[0] && results[0].isDirectory) {
+              // It's a "DCIM"!
+              this.openMediaDirectory_(metadata.volumeId, results[0].fullPath);
+              return Promise.resolve();
+            } else if(!!results[1] && results[1].isDirectory) {
+              // It's a "dcim"!
+              this.openMediaDirectory_(metadata.volumeId, results[1].fullPath);
+              return Promise.resolve();
+            }
+            return Promise.reject('Unable to local DCIM or dcim directory.');
+          }.bind(this))
+      .catch(
+        function(error) {
+          if (metadata.deviceType && metadata.devicePath) {
+              DeviceHandler.Notification.DEVICE_NAVIGATION.show(
+                  /** @type {string} */ (metadata.devicePath));
+          }
+        });
+};
+
+DeviceHandler.prototype.onUnmount_ = function(event) {
+  DeviceHandler.Notification.DEVICE_NAVIGATION.hide(
+      /** @type {string} */ (event.devicePath));
 };
 
 /**
@@ -437,11 +504,18 @@ DeviceHandler.prototype.onNotificationButtonClicked_ = function(id) {
     var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
     event.devicePath = devicePath;
     this.dispatchEvent(event);
-  } else if (type === 'deviceImport') {
-    chrome.notifications.clear(id, function() {});
-    var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
-    event.devicePath = devicePath;
-    event.filePath = 'DCIM';
-    this.dispatchEvent(event);
   }
+};
+
+/**
+ * Handles notification button click.
+ * @param {string} volumeId
+ * @param {string} path
+ * @private
+ */
+DeviceHandler.prototype.openMediaDirectory_ = function(volumeId, path) {
+  var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
+  event.volumeId = volumeId;
+  event.filePath = path;
+  this.dispatchEvent(event);
 };
