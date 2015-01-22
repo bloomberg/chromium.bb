@@ -201,7 +201,7 @@ size_t FakePictureLayerImpl::CountTilesRequired(
   if (visible_rect_for_tile_priority_.IsEmpty())
     return 0;
 
-  gfx::Rect rect = GetViewportForTilePriorityInContentSpace();
+  gfx::Rect rect = viewport_rect_for_tile_priority_in_content_space_;
   rect.Intersect(visible_rect_for_tile_priority_);
 
   size_t count = 0;

@@ -428,7 +428,7 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
 
   // Verify the viewport rect for tile priority is used in picture layer tiling.
   EXPECT_EQ(viewport_rect_for_tile_priority_in_view_space,
-            active_layer_->GetViewportForTilePriorityInContentSpace());
+            active_layer_->viewport_rect_for_tile_priority_in_content_space());
   PictureLayerTilingSet* tilings = active_layer_->tilings();
   for (size_t i = 0; i < tilings->num_tilings(); i++) {
     PictureLayerTiling* tiling = tilings->tiling_at(i);
@@ -470,7 +470,7 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
           screen_to_view, viewport_rect_for_tile_priority));
 
   EXPECT_EQ(viewport_rect_for_tile_priority_in_view_space,
-            active_layer_->GetViewportForTilePriorityInContentSpace());
+            active_layer_->viewport_rect_for_tile_priority_in_content_space());
   tilings = active_layer_->tilings();
   for (size_t i = 0; i < tilings->num_tilings(); i++) {
     PictureLayerTiling* tiling = tilings->tiling_at(i);
@@ -562,6 +562,61 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
                                   active_layer_->screen_space_transform());
   EXPECT_EQ(viewport, active_layer_->visible_rect_for_tile_priority());
+}
+
+TEST_F(PictureLayerImplTest, ViewportRectForTilePriorityIsCached) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 400);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupTreesWithInvalidation(pending_pile, active_pile, Region());
+
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+
+  time_ticks += base::TimeDelta::FromMilliseconds(200);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+
+  bool resourceless_software_draw = false;
+  gfx::Rect viewport = gfx::Rect(layer_bounds);
+  gfx::Rect viewport_rect_for_tile_priority(0, 0, 100, 100);
+  gfx::Transform transform, transform_for_tile_priority;
+
+  host_impl_.SetExternalDrawConstraints(
+      transform, viewport, viewport, viewport_rect_for_tile_priority,
+      transform_for_tile_priority, resourceless_software_draw);
+  host_impl_.active_tree()->UpdateDrawProperties();
+
+  EXPECT_EQ(viewport_rect_for_tile_priority,
+            active_layer_->viewport_rect_for_tile_priority_in_content_space());
+
+  time_ticks += base::TimeDelta::FromMilliseconds(200);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+
+  gfx::Rect another_viewport_rect_for_tile_priority(11, 11, 50, 50);
+  host_impl_.SetExternalDrawConstraints(
+      transform, viewport, viewport, another_viewport_rect_for_tile_priority,
+      transform_for_tile_priority, resourceless_software_draw);
+
+  // Didn't call UpdateDrawProperties yet. The viewport rect for tile priority
+  // should remain to be the previously cached value.
+  EXPECT_EQ(viewport_rect_for_tile_priority,
+            active_layer_->viewport_rect_for_tile_priority_in_content_space());
+  host_impl_.active_tree()->UpdateDrawProperties();
+
+  // Now the UpdateDrawProperties is called. The viewport rect for tile
+  // priority should be the latest value.
+  EXPECT_EQ(another_viewport_rect_for_tile_priority,
+            active_layer_->viewport_rect_for_tile_priority_in_content_space());
 }
 
 TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
@@ -1681,7 +1736,7 @@ TEST_F(NoLowResPictureLayerImplTest,
   // Intersect the two rects. Any tile outside should not be required for
   // activation.
   gfx::Rect viewport_for_tile_priority =
-      pending_layer_->GetViewportForTilePriorityInContentSpace();
+      pending_layer_->viewport_rect_for_tile_priority_in_content_space();
   viewport_for_tile_priority.Intersect(pending_layer_->visible_content_rect());
 
   int num_inside = 0;
