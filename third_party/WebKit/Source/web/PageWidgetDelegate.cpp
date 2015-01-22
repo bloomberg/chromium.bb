@@ -40,6 +40,9 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/Logging.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/web/WebInputEvent.h"
 #include "web/PageOverlayList.h"
 #include "web/WebInputEventConversion.h"
@@ -65,23 +68,39 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
 {
     if (rect.isEmpty())
         return;
-    GraphicsContext gc(canvas, nullptr);
-    gc.setCertainlyOpaque(background == Opaque);
+
+    OwnPtr<GraphicsContext> graphicsContext;
+    OwnPtr<DisplayItemList> displayItemList;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        displayItemList = DisplayItemList::create();
+        graphicsContext = adoptPtr(new GraphicsContext(nullptr, displayItemList.get()));
+    } else {
+        graphicsContext = adoptPtr(new GraphicsContext(canvas, nullptr));
+    }
+
+    // FIXME: opaqueness and device scale factor settings are layering violations and should not
+    // be used within Blink paint code.
+    graphicsContext->setCertainlyOpaque(background == Opaque);
     float scaleFactor = page.deviceScaleFactor();
-    gc.scale(scaleFactor, scaleFactor);
-    gc.setDeviceScaleFactor(scaleFactor);
+    graphicsContext->scale(scaleFactor, scaleFactor);
+    graphicsContext->setDeviceScaleFactor(scaleFactor);
     IntRect dirtyRect(rect);
-    gc.save(); // Needed to save the canvas, not the GraphicsContext.
     FrameView* view = root.view();
     if (view) {
-        gc.clip(dirtyRect);
-        view->paint(&gc, dirtyRect);
+        ClipRecorder clipRecorder(root.displayItemClient(), graphicsContext.get(), DisplayItem::PageWidgetDelegateClip, dirtyRect);
+
+        view->paint(graphicsContext.get(), dirtyRect);
         if (overlays)
-            overlays->paintWebFrame(gc);
+            overlays->paintWebFrame(*graphicsContext);
     } else {
-        gc.fillRect(dirtyRect, Color::white);
+        DrawingRecorder drawingRecorder(graphicsContext.get(), root.displayItemClient(), DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
+        graphicsContext->fillRect(dirtyRect, Color::white);
     }
-    gc.restore();
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        GraphicsContext canvasGraphicsContext(canvas, nullptr);
+        displayItemList->replay(&canvasGraphicsContext);
+    }
 }
 
 bool PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* root)

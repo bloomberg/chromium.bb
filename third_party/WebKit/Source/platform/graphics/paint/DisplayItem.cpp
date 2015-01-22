@@ -73,6 +73,9 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case VideoBitmap: return "VideoBitmap";
     case ImageBitmap: return "ImageBitmap";
     case DragImage: return "DragImage";
+    case LinkHighlight: return "LinkHighlight";
+    case PageWidgetDelegateClip: return "PageWidgetDelegateClip";
+    case PageWidgetDelegateBackgroundFallback: return "PageWidgetDelegateBackgroundFallback";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";

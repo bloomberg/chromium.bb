@@ -41,6 +41,7 @@
 #include "core/rendering/style/ShadowData.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimationCurve.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -255,9 +256,13 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect,
     }
 
     IntRect clipRect(IntPoint(webClipRect.x, webClipRect.y), IntSize(webClipRect.width, webClipRect.height));
-    graphicsContext->clip(clipRect);
-    graphicsContext->setFillColor(m_node->renderer()->style()->tapHighlightColor());
-    graphicsContext->fillPath(m_path);
+    {
+        DrawingRecorder drawingRecorder(graphicsContext.get(), displayItemClient(), DisplayItem::LinkHighlight, clipRect);
+
+        graphicsContext->clip(clipRect);
+        graphicsContext->setFillColor(m_node->renderer()->style()->tapHighlightColor());
+        graphicsContext->fillPath(m_path);
+    }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         GraphicsContext canvasGraphicsContext(canvas, nullptr, disabledMode);

@@ -168,6 +168,7 @@ namespace blink {
         void unregisterPluginElement(HTMLPlugInElement*);
         void clearWeakMembers(Visitor*);
 #endif
+        DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
 
     // ========
 
@@ -175,8 +176,6 @@ namespace blink {
         LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
         String localLayerTreeAsText(unsigned flags) const;
-
-        DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
 
         void detachView();
 
