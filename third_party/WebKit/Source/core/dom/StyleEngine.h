@@ -121,6 +121,8 @@ public:
     unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
     bool usesSiblingRules() const { return m_usesSiblingRules; }
     bool usesFirstLineRules() const { return m_usesFirstLineRules; }
+    bool usesWindowInactiveSelector() const { return m_usesWindowInactiveSelector; }
+
     bool usesFirstLetterRules() const { return m_usesFirstLetterRules; }
     void setUsesFirstLetterRules(bool b) { m_usesFirstLetterRules = b; }
     bool usesRemUnits() const { return m_usesRemUnits; }
@@ -282,6 +284,7 @@ private:
 
     bool m_usesSiblingRules;
     bool m_usesFirstLineRules;
+    bool m_usesWindowInactiveSelector;
     bool m_usesFirstLetterRules;
     bool m_usesRemUnits;
     unsigned m_maxDirectAdjacentSelectors;

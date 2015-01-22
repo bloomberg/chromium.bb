@@ -340,15 +340,18 @@ void FrameView::recalculateCustomScrollbarStyle()
 
 void FrameView::invalidateAllCustomScrollbarsOnActiveChanged()
 {
+    bool usesWindowInactiveSelector = m_frame->document()->styleEngine()->usesWindowInactiveSelector();
+
     const ChildrenWidgetSet* viewChildren = children();
     for (const RefPtrWillBeMember<Widget>& child : *viewChildren) {
         Widget* widget = child.get();
         if (widget->isFrameView())
             toFrameView(widget)->invalidateAllCustomScrollbarsOnActiveChanged();
-        else if (widget->isScrollbar() && toScrollbar(widget)->isCustomScrollbar())
+        else if (usesWindowInactiveSelector && widget->isScrollbar() && toScrollbar(widget)->isCustomScrollbar())
             toScrollbar(widget)->styleChanged();
     }
-    recalculateCustomScrollbarStyle();
+    if (usesWindowInactiveSelector)
+        recalculateCustomScrollbarStyle();
 }
 
 void FrameView::recalculateScrollbarOverlayStyle()

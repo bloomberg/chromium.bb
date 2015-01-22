@@ -61,6 +61,7 @@ public:
 
     bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
     bool usesFirstLineRules() const { return m_metadata.usesFirstLineRules; }
+    bool usesWindowInactiveSelector() const { return m_metadata.usesWindowInactiveSelector; }
 
     unsigned maxDirectAdjacentSelectors() const { return m_metadata.maxDirectAdjacentSelectors; }
     void setMaxDirectAdjacentSelectors(unsigned value)  { m_metadata.maxDirectAdjacentSelectors = std::max(value, m_metadata.maxDirectAdjacentSelectors); }
@@ -108,6 +109,7 @@ private:
     struct FeatureMetadata {
         FeatureMetadata()
             : usesFirstLineRules(false)
+            , usesWindowInactiveSelector(false)
             , foundSiblingSelector(false)
             , maxDirectAdjacentSelectors(0)
         { }
@@ -115,6 +117,7 @@ private:
         void clear();
 
         bool usesFirstLineRules;
+        bool usesWindowInactiveSelector;
         bool foundSiblingSelector;
         unsigned maxDirectAdjacentSelectors;
     };
