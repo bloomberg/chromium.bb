@@ -186,7 +186,7 @@ PNACL_TOOLCHAIN_TRYBOTS = [
 TOOLCHAIN_BUILD_TRYBOTS = [
     'nacl-toolchain-precise64-newlib-arm',
     'nacl-toolchain-mac-newlib-arm',
-    ]
+    ] + PNACL_TOOLCHAIN_TRYBOTS
 
 
 def GetPreferredTryMasters(_, change):
@@ -223,5 +223,5 @@ def GetPreferredTryMasters(_, change):
     trybots += DEFAULT_TRYBOTS
 
   return {
-    'tryserver.nacl': { t: set(['defaulttests']) for t in trybots },
+    'tryserver.nacl': { t: set(['defaulttests']) for t in set(trybots) },
   }
