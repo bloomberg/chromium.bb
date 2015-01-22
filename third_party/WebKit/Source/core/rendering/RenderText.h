@@ -62,7 +62,8 @@ public:
     String plainText() const;
 
     InlineTextBox* createInlineTextBox(int start, unsigned short length);
-    void dirtyLineBoxes(bool fullLayout);
+    void dirtyOrDeleteLineBoxesIfNeeded(bool fullLayout);
+    void dirtyLineBoxes();
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override final;
     void absoluteRectsForRange(Vector<IntRect>&, unsigned startOffset = 0, unsigned endOffset = INT_MAX, bool useSelectionHeight = false, bool* wasFixed = 0);
