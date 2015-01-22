@@ -2579,7 +2579,7 @@ struct kernel_statfs {
     #define LSS_BODY(type,name,r7,...)                                        \
           register unsigned long __v0 __asm__("$2") = __NR_##name;            \
           __asm__ __volatile__ ("syscall\n"                                   \
-                                : "+r"(__v0), r7 (__r7)                       \
+                                : "=r"(__v0), r7 (__r7)                       \
                                 : "0"(__v0), ##__VA_ARGS__                    \
                                 : LSS_SYSCALL_CLOBBERS);                      \
           LSS_RETURN(type, __v0, __r7)
@@ -3742,7 +3742,7 @@ struct kernel_statfs {
       register unsigned long __v1 __asm__("$3");
       register unsigned long __r7 __asm__("$7");
       __asm__ __volatile__ ("syscall\n"
-                            : "+r"(__v0), "=r"(__v1), "=r" (__r7)
+                            : "=r"(__v0), "=r"(__v1), "=r" (__r7)
                             : "0"(__v0)
                             : "$8", "$9", "$10", "$11", "$12",
                               "$13", "$14", "$15", "$24", "$25", "memory");
