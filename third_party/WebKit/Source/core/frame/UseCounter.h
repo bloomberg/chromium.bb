@@ -605,6 +605,8 @@ public:
         MixedContentFormPresent = 665,
         GetUserMediaInsecureOrigin = 666,
         GetUserMediaSecureOrigin = 667,
+        // The above items are available in M41 branch.
+
         DeviceMotionInsecureOrigin = 668,
         DeviceMotionSecureOrigin = 669,
         DeviceOrientationInsecureOrigin = 670,
