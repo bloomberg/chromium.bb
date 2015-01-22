@@ -55,7 +55,7 @@ define i32 @_start() {
     split_out = out.splitlines()
     count = 0
     for line in split_out:
-      if re.search('Running: .*opt ', line):
+      if re.search('Running: .*opt( |\.exe)', line):
         count += 1
     self.assertEqual(num_runs, count)
 

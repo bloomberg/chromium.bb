@@ -20,11 +20,6 @@ def CanRunHost():
   # does not work on some bots (e.g., the ARM bots).
   if platform.machine().startswith('arm'):
     return False
-  # We also cannot run some of the Windows binaries directly, since
-  # they depend on cygwin DLLs and the cygwin DLLs are only in the
-  # path for the installed drivers bin and not for the binaries.
-  if sys.platform == 'win32':
-    return False
   return True
 
 def SetupNaClDir(env):

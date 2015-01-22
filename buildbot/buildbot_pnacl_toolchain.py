@@ -129,20 +129,6 @@ if args.buildbot or args.trybot:
   if host_os != 'linux' or pynacl.platform.IsArch64Bit():
     packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
 
-if host_os != 'win':
-  # We need to run the LLVM regression tests after the first toolchain_build
-  # run, while the LLVM build directory is still there. Otherwise it gets
-  # deleted on the next toolchain_build run.
-  # TODO(dschuff): Fix windows regression test runner (upstream in the LLVM
-  # codebase or locally in the way we build LLVM) ASAP
-  with buildbot_lib.Step('LLVM Regression', status,
-                         halt_on_fail=False):
-    llvm_test = [sys.executable,
-                 os.path.join(NACL_DIR, 'pnacl', 'scripts', 'llvm-test.py'),
-                 '--llvm-regression',
-                 '--verbose']
-    buildbot_lib.Command(context, llvm_test)
-
 # Since windows bots don't build target libraries or run tests yet, Run a basic
 # sanity check that tests the host components (LLVM, binutils, gold plugin).
 # Then exit, since the rest of this file is just test running.
@@ -156,17 +142,42 @@ if host_os == 'win':
         [sys.executable,
         os.path.join('tests', 'gold_plugin', 'gold_plugin_test.py'),
         '--toolchaindir', toolchain_install_dir])
-  sys.exit(0)
+else:
+  # We need to run the LLVM regression tests after the first toolchain_build
+  # run, while the LLVM build directory is still there. Otherwise it gets
+  # deleted on the next toolchain_build run.
+  # TODO(dschuff): Fix windows regression test runner (upstream in the LLVM
+  # codebase or locally in the way we build LLVM) ASAP
+  with buildbot_lib.Step('LLVM Regression', status,
+                         halt_on_fail=False):
+    llvm_test = [sys.executable,
+                 os.path.join(NACL_DIR, 'pnacl', 'scripts', 'llvm-test.py'),
+                 '--llvm-regression',
+                 '--verbose']
+    buildbot_lib.Command(context, llvm_test)
+
+
+  sys.stdout.flush()
+  # Now build all the packages (including the non-canonical ones) and extract
+  # them for local testing.
+  RunWithLog(ToolchainBuildCmd())
+  packages.ExtractPackages(TEMP_PACKAGES_FILE, overlay_packages=False)
+
+  sys.stdout.flush()
+
+for arch in ['x86-32', 'x86-64', 'arm']:
+  with buildbot_lib.Step('driver tests ' + arch, status, halt_on_fail=False):
+    buildbot_lib.Command(
+      context,
+      [sys.executable,
+       os.path.join('pnacl', 'driver', 'tests', 'driver_tests.py'),
+       '--platform=' + arch])
+
+if host_os == 'win':
+  sys.exit(status.ReturnValue())
+
 
 sys.stdout.flush()
-# Now build all the packages (including the non-canonical ones) and extract
-# them for local testing.
-RunWithLog(ToolchainBuildCmd())
-packages.ExtractPackages(TEMP_PACKAGES_FILE, overlay_packages=False)
-
-sys.stdout.flush()
-
-
 
 # On Linux we build all toolchain components (driven from this script), and then
 # call buildbot_pnacl.sh which builds the sandboxed translator and runs tests

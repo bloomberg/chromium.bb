@@ -191,13 +191,6 @@ gyp-mips32-build() {
   make -C .. -k -j8 V=1 BUILDTYPE=${gypmode}
 }
 
-driver-tests() {
-  local arch=$1
-  echo "@@@BUILD_STEP driver_tests ${arch}@@@"
-  ${DRIVER_TESTS} --platform="${arch}" || handle-error
-}
-
-
 # QEMU upload bot runs this function, and the hardware download bot runs
 # mode-buildbot-arm-hw
 mode-buildbot-arm() {
@@ -278,10 +271,6 @@ mode-buildbot-arm-hw-try() {
 
 # These 2 functions are also suitable for local TC sanity testing.
 tc-tests-all() {
-  for arch in x86-32 x86-64 arm; do
-    driver-tests "${arch}"
-  done
-
   # All the SCons tests (the same ones run by the main waterfall bot)
   for arch in 32 64 arm; do
     buildbot/buildbot_pnacl.py opt "${arch}" pnacl || handle-error
@@ -306,8 +295,6 @@ tc-tests-all() {
 
 tc-tests-fast() {
   local arch="$1"
-
-  driver-tests "${arch}"
 
   buildbot/buildbot_pnacl.py opt 32 pnacl
 }

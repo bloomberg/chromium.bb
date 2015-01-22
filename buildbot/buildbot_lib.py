@@ -501,6 +501,7 @@ class Step(object):
 
   # Called on entry to a 'with' block.
   def __enter__(self):
+    sys.stdout.flush()
     print
     print '@@@BUILD_STEP %s@@@' % self.name
     self.status.ReportBegin(self.name)
@@ -514,6 +515,7 @@ class Step(object):
   # step to be printed and also allows the build to continue of the failure of
   # a given step doesn't halt the build.
   def __exit__(self, type, exception, trace):
+    sys.stdout.flush()
     if exception is None:
       # If exception is None, no exception occurred.
       step_failed = False
@@ -536,10 +538,12 @@ class Step(object):
       if self.halt_on_fail:
         print
         print 'Entire build halted because %s failed.' % self.name
+        sys.stdout.flush()
         raise StopBuild()
     else:
       self.status.ReportPass(self.name)
 
+    sys.stdout.flush()
     # Suppress any exception that occurred.
     return True
 
