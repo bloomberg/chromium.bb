@@ -182,8 +182,9 @@ content::WebContents* RemoteDesktopBrowserTest::LaunchChromotingApp(
   observer.set_ignore_url_parameters(true);
 
   // If the app should be started in deferred mode, ensure that a "source" URL
-  // parameter; if not, ensure that no such parameter is present. The value of
-  // the parameter is determined by the AppLaunchParams ("test", in this case).
+  // parameter is present; if not, ensure that no such parameter is present.
+  // The value of the parameter is determined by the AppLaunchParams ("test",
+  // in this case).
   extensions::FeatureSwitch::ScopedOverride override_trace_app_source(
       extensions::FeatureSwitch::trace_app_source(),
       defer_start);
@@ -246,14 +247,12 @@ void RemoteDesktopBrowserTest::Authorize() {
   ASSERT_EQ(Chromoting_Main_URL(), GetCurrentURL());
   ASSERT_FALSE(IsAuthenticated());
 
-  // The second observer monitors the loading of the Google login page.
-  // Unfortunately we cannot specify a source in this observer because
-  // we can't get a handle of the new window until the first observer
-  // has finished waiting. But we will assert that the source of the
-  // load stop event is indeed the newly created browser window.
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
+  // We cannot simply wait for any page load because the first page
+  // loaded will be chrome://chrome-signin in a packaged app. We need to wait
+  // for the Google login page to be loaded (inside an embedded iframe).
+  GURL google_login("https://accounts.google.com/ServiceLogin");
+  PageLoadNotificationObserver observer(google_login);
+  observer.set_ignore_url_parameters(true);
 
   ClickOnControl("auth-button");
 
@@ -262,10 +261,21 @@ void RemoteDesktopBrowserTest::Authorize() {
   content::NavigationController* controller =
       content::Source<content::NavigationController>(observer.source()).ptr();
 
-  web_contents_stack_.push_back(controller->GetWebContents());
+  content::WebContents* web_contents = controller->GetWebContents();
+  _ASSERT_TRUE(web_contents);
+
+  if (web_contents != active_web_contents()) {
+    // Pushing the WebContents hosting the Google login page onto the stack.
+    // If this is a packaged app the Google login page will be loaded in an
+    // iframe embedded in the chrome://chrome-signin page. But we can ignore
+    // that WebContents because we never need to interact with it directly.
+    LOG(INFO) << "Pushing onto the stack: " << web_contents->GetURL();
+    web_contents_stack_.push_back(web_contents);
+  }
 
   // Verify the active tab is at the "Google Accounts" login page.
   EXPECT_EQ("accounts.google.com", GetCurrentURL().host());
+
   EXPECT_TRUE(HtmlElementExists("Email"));
   EXPECT_TRUE(HtmlElementExists("Passwd"));
 }
@@ -274,8 +284,9 @@ void RemoteDesktopBrowserTest::Authenticate() {
   // The chromoting extension should be installed.
   ASSERT_TRUE(extension_);
 
-  // The active tab should have the "Google Accounts" login page loaded.
+  // The active WebContents should have the "Google Accounts" login page loaded.
   ASSERT_EQ("accounts.google.com", GetCurrentURL().host());
+
   ASSERT_TRUE(HtmlElementExists("Email"));
   ASSERT_TRUE(HtmlElementExists("Passwd"));
 

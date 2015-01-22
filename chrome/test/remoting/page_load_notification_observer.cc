@@ -24,7 +24,7 @@ PageLoadNotificationObserver::~PageLoadNotificationObserver() {}
 bool PageLoadNotificationObserver::IsTargetLoaded() {
   content::NavigationController* controller =
       content::Source<content::NavigationController>(source()).ptr();
-  GURL current_url =  controller->GetWebContents()->GetURL();
+  GURL current_url = controller->GetWebContents()->GetURL();
   if (ignore_url_parameters_) {
     GURL::Replacements strip_query;
     strip_query.ClearQuery();
