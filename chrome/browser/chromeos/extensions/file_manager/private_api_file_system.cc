@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/drive/drive_api_util.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
@@ -747,8 +748,41 @@ void FileManagerPrivateComputeChecksumFunction::Respond(
 }
 
 bool FileManagerPrivateSearchFilesByHashesFunction::RunAsync() {
+  using api::file_manager_private::SearchFilesByHashes::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // TODO(hirono): Check the volume ID and fail the function for volumes other
+  // than Drive.
+
+  drive::EventLogger* const logger =
+      file_manager::util::GetLogger(GetProfile());
+  if (logger) {
+    logger->Log(logging::LOG_INFO,
+                "%s[%d] called. (volume id: %s, number of hashes: %zd)",
+                name().c_str(), request_id(), params->volume_id.c_str(),
+                params->hash_list.size());
+  }
+  set_log_on_completion(true);
+
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (!file_system) {
+    // |file_system| is NULL if Drive is disabled.
+    return false;
+  }
+
+  file_system->SearchByHashes(
+      params->hash_list,
+      base::Bind(
+          &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes,
+          this));
+  return true;
+}
+
+void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
+    const std::vector<drive::HashAndFilePath>& results) {
   NOTIMPLEMENTED();
-  return false;
 }
 
 }  // namespace extensions

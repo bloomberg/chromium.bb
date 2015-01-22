@@ -185,6 +185,11 @@ void FakeFileSystem::SearchMetadata(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeFileSystem::SearchByHashes(const std::vector<std::string>& hashes,
+                                    const SearchByHashesCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeFileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

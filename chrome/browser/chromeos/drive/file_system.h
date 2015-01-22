@@ -83,6 +83,8 @@ class FileSystem : public FileSystemInterface,
                               int options,
                               int at_most_num_matches,
                               const SearchMetadataCallback& callback) override;
+  virtual void SearchByHashes(const std::vector<std::string>& hashes,
+                              const SearchByHashesCallback& callback) override;
   virtual void TransferFileFromLocalToRemote(
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,

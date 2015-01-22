@@ -32,6 +32,12 @@ struct SearchResultInfo {
   bool is_directory;
 };
 
+// File path and its MD5 hash obtained from drive API.
+struct HashAndFilePath {
+  std::string hash;
+  base::FilePath path;
+};
+
 // Struct to represent a search result for SearchMetadata().
 struct MetadataSearchResult {
   MetadataSearchResult(const base::FilePath& in_path,
@@ -95,6 +101,11 @@ typedef base::Callback<void(
 typedef base::Callback<void(
     FileError error,
     scoped_ptr<MetadataSearchResultVector> result)> SearchMetadataCallback;
+
+// Callback for SearchByHashesCallback. On success, vector contains hash and
+// corresponding files. The vector can include multiple entries for one hash.
+typedef base::Callback<void(const std::vector<HashAndFilePath>&)>
+    SearchByHashesCallback;
 
 // Used to open files from the file system. |file_path| is the path on the local
 // file system for the opened file.
@@ -381,6 +392,13 @@ class FileSystemInterface {
                               int options,
                               int at_most_num_matches,
                               const SearchMetadataCallback& callback) = 0;
+
+  // Searches the local resource metadata, and returns the entries that have the
+  // given |hashes|. The list of resource entries are passed to |callback|. The
+  // item of the list can be null if the corresponding file is not found.
+  // |callback| must not be null.
+  virtual void SearchByHashes(const std::vector<std::string>& hashes,
+                              const SearchByHashesCallback& callback) = 0;
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.

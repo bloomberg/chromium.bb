@@ -30,6 +30,10 @@ typedef std::vector<EntryDefinition> EntryDefinitionList;
 }  // namespace util
 }  // namespace file_manager
 
+namespace drive {
+struct HashAndFilePath;
+}  // namespace drive
+
 namespace extensions {
 
 // Implements the chrome.fileManagerPrivate.requestFileSystem method.
@@ -254,6 +258,9 @@ class FileManagerPrivateSearchFilesByHashesFunction
 
  protected:
   ~FileManagerPrivateSearchFilesByHashesFunction() override {}
+
+ private:
+  void OnSearchByHashes(const std::vector<drive::HashAndFilePath>& results);
 
   bool RunAsync() override;
 };

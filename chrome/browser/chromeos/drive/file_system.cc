@@ -781,6 +781,12 @@ void FileSystem::SearchMetadata(const std::string& query,
                                   callback);
 }
 
+void FileSystem::SearchByHashes(const std::vector<std::string>& hashes,
+                                const SearchByHashesCallback& callback) {
+  DCHECK(!callback.is_null());
+  NOTIMPLEMENTED();
+}
+
 void FileSystem::OnFileChangedByOperation(const FileChange& changed_files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

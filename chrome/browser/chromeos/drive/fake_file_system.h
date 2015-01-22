@@ -105,6 +105,8 @@ class FakeFileSystem : public FileSystemInterface {
                               int options,
                               int at_most_num_matches,
                               const SearchMetadataCallback& callback) override;
+  virtual void SearchByHashes(const std::vector<std::string>& hashes,
+                              const SearchByHashesCallback& callback) override;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) override;
   virtual void GetShareUrl(
