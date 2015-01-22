@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
         RenderSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#000000]}] [cx=0.25] [cy=0.25] [r=0.20]
         RenderSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#000000]}] [cx=0.25] [cy=0.75] [r=0.20]
     RenderSVGRect {rect} at (4,65) size 41x90 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=60.00] [width=100.00] [height=100.00]
-      [clipPath="circleClipPath"] RenderSVGResourceClipper {clipPath} at (5.00,65) size 40x90
+      [clipPath="circleClipPath"] RenderSVGResourceClipper {clipPath} at (5,65) size 40x90
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
       RenderSVGResourcePattern {pattern} [id="Pattern"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
         RenderSVGEllipse {circle} at (5,5) size 40x40 [fill={[type=LINEAR-GRADIENT] [id="blackGradient"]}] [cx=25.00] [cy=25.00] [r=20.00]
