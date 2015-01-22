@@ -798,10 +798,6 @@
     ],
     # Everything but Android and iOS.
     'chrome_browser_non_mobile_sources': [
-      'browser/accessibility/accessibility_events.cc',
-      'browser/accessibility/accessibility_events.h',
-      'browser/accessibility/accessibility_extension_api_constants.cc',
-      'browser/accessibility/accessibility_extension_api_constants.h',
       'browser/accessibility/ax_tree_id_registry.cc',
       'browser/accessibility/ax_tree_id_registry.h',
       'browser/accessibility/invert_bubble_prefs.cc',

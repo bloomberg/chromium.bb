@@ -10,7 +10,6 @@
 #include "ash/media_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"

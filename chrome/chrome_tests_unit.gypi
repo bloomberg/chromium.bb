@@ -1312,7 +1312,6 @@
     ],
     'chrome_unit_tests_views_sources': [
       'browser/ui/views/accelerator_table_unittest.cc',
-      'browser/ui/views/accessibility/accessibility_event_router_views_unittest.cc',
       # Views implies app list is enabled (only disabled on mobile).
       'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
       'browser/ui/views/app_list/win/app_list_win_unittest.cc',

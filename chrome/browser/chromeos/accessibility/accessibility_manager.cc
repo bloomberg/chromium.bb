@@ -528,9 +528,6 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
 
   spoken_feedback_enabled_ = enabled;
 
-  ExtensionAccessibilityEventRouter::GetInstance()->
-      SetAccessibilityEnabled(enabled);
-
   AccessibilityStatusEventDetails details(
       ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
       enabled,
@@ -1091,11 +1088,20 @@ void AccessibilityManager::PostLoadChromeVox(Profile* profile) {
   if (system_sounds_enabled_)
     ash::PlaySystemSoundAlways(SOUND_SPOKEN_FEEDBACK_ENABLED);
 
-  ExtensionAccessibilityEventRouter::GetInstance()->
-      OnChromeVoxLoadStateChanged(profile_,
-          IsSpokenFeedbackEnabled(),
-          chrome_vox_loaded_on_lock_screen_ ||
-              should_speak_chrome_vox_announcements_on_user_screen_);
+  if (chrome_vox_loaded_on_lock_screen_ ||
+      should_speak_chrome_vox_announcements_on_user_screen_) {
+    extensions::ExtensionSystem* system =
+        extensions::ExtensionSystem::Get(profile);
+    CHECK(system);
+
+    scoped_ptr<base::ListValue> event_args(new base::ListValue());
+    scoped_ptr<extensions::Event> event(
+        new extensions::Event(extensions::api::accessibility_private::
+                                  OnIntroduceChromeVox::kEventName,
+                              event_args.Pass()));
+    system->event_router()->DispatchEventWithLazyListener(
+        extension_misc::kChromeVoxExtensionId, event.Pass());
+  }
 
   should_speak_chrome_vox_announcements_on_user_screen_ =
       chrome_vox_loaded_on_lock_screen_;

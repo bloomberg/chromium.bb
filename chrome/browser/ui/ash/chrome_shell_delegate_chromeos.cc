@@ -11,7 +11,6 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -172,20 +171,11 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     if (profile) {
       switch (alert) {
         case ui::A11Y_ALERT_WINDOW_NEEDED: {
-          AccessibilityAlertInfo event(
-              profile, l10n_util::GetStringUTF8(IDS_A11Y_ALERT_WINDOW_NEEDED));
-          SendControlAccessibilityNotification(
-              ui::AX_EVENT_ALERT, &event);
           AutomationManagerAsh::GetInstance()->HandleAlert(
               profile, l10n_util::GetStringUTF8(IDS_A11Y_ALERT_WINDOW_NEEDED));
           break;
         }
         case ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED: {
-          AccessibilityAlertInfo event(
-              profile, l10n_util::GetStringUTF8(
-                  IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED));
-          SendControlAccessibilityNotification(
-              ui::AX_EVENT_ALERT, &event);
           AutomationManagerAsh::GetInstance()->HandleAlert(
               profile, l10n_util::GetStringUTF8(
                            IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED));

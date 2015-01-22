@@ -49,7 +49,6 @@
       'app/chrome_dll.rc',
       'app/chrome_dll_resource.h',
       'app/chrome_version.rc.version',
-      'browser/accessibility/accessibility_extension_apitest.cc',
       'browser/accessibility/browser_accessibility_state_browsertest.cc',
       'browser/app_controller_mac_browsertest.mm',
       'browser/apps/app_browsertest.cc',

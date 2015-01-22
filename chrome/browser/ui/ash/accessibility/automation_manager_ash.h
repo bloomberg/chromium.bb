@@ -75,6 +75,8 @@ class AutomationManagerAsh : public extensions::AutomationActionAdapter {
   scoped_ptr<ui::AXTreeSerializer<views::AXAuraObjWrapper*> >
       current_tree_serializer_;
 
+  std::string pending_alert_text_;
+
   DISALLOW_COPY_AND_ASSIGN(AutomationManagerAsh);
 };
 

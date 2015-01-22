@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -1053,10 +1052,6 @@ void ExistingUserController::ShowGaiaPasswordChanged(
 
 void ExistingUserController::SendAccessibilityAlert(
     const std::string& alert_text) {
-  AccessibilityAlertInfo event(ProfileHelper::GetSigninProfile(), alert_text);
-  SendControlAccessibilityNotification(
-      ui::AX_EVENT_VALUE_CHANGED, &event);
-
   AutomationManagerAsh::GetInstance()->HandleAlert(
       ProfileHelper::GetSigninProfile(), alert_text);
 }

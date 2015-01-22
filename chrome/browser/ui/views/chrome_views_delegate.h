@@ -27,11 +27,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
                                ui::WindowShowState* show_state) const override;
   void NotifyAccessibilityEvent(views::View* view,
                                 ui::AXEvent event_type) override;
-  void NotifyMenuItemFocused(const base::string16& menu_name,
-                             const base::string16& menu_item_name,
-                             int item_index,
-                             int item_count,
-                             bool has_submenu) override;
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const override;
   virtual HICON GetSmallWindowIcon() const override;

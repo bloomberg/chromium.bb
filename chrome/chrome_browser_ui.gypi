@@ -1824,8 +1824,6 @@
       'browser/ui/app_list/app_list_service_views.h',
       'browser/ui/app_list/app_list_shower_views.cc',
       'browser/ui/app_list/app_list_shower_views.h',
-      'browser/ui/views/accessibility/accessibility_event_router_views.cc',
-      'browser/ui/views/accessibility/accessibility_event_router_views.h',
       'browser/ui/views/chrome_browser_main_extra_parts_views.cc',
       'browser/ui/views/chrome_browser_main_extra_parts_views.h',
       'browser/ui/views/chrome_constrained_window_views_client.cc',

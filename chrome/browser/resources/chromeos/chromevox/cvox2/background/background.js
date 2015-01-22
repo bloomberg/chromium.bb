@@ -32,10 +32,6 @@ var AutomationNode = chrome.automation.AutomationNode;
 var Dir = AutomationUtil.Dir;
 var EventType = chrome.automation.EventType;
 
-/** Classic Chrome accessibility API. */
-global.accessibility =
-    chrome.accessibilityPrivate || chrome.experimental.accessibility;
-
 /**
  * ChromeVox2 background page.
  * @constructor
@@ -69,9 +65,6 @@ Background = function() {
    * @private
    */
   this.active_ = false;
-
-  // Only needed with unmerged ChromeVox classic loaded before.
-  global.accessibility.setAccessibilityEnabled(false);
 
   // Manually bind all functions to |this|.
   for (var func in this) {

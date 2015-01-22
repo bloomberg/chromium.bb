@@ -31,6 +31,10 @@ void AutomationManagerAsh::Enable(BrowserContext* context) {
     current_tree_.reset(new AXTreeSourceAsh());
   ResetSerializer();
   SendEvent(context, current_tree_->GetRoot(), ui::AX_EVENT_LOAD_COMPLETE);
+  if (!pending_alert_text_.empty()) {
+    HandleAlert(context, pending_alert_text_);
+    pending_alert_text_.clear();
+  }
 }
 
 void AutomationManagerAsh::Disable() {
@@ -61,8 +65,10 @@ void AutomationManagerAsh::HandleEvent(BrowserContext* context,
 
 void AutomationManagerAsh::HandleAlert(content::BrowserContext* context,
                                        const std::string& text) {
-  if (!enabled_)
+  if (!enabled_) {
+    pending_alert_text_ = text;
     return;
+  }
 
   views::AXAuraObjWrapper* obj =
       static_cast<AXRootObjWrapper*>(current_tree_->GetRoot())
