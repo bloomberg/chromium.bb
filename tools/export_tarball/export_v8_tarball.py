@@ -104,9 +104,18 @@ def main(argv):
   v8_version = GetV8Version(v8_directory)
   print 'Packaging V8 version %s...' % v8_version
 
-  subprocess.check_call(["make", "dependencies"], cwd=v8_directory)
+  # TODO(phajdan.jr): Check if this script still does what it should. The old
+  # "make dependencies" is deprecated - gclient sync should be used instead
+  # in a stand-alond v8 checkout.
 
   output_basename = 'v8-%s' % v8_version
+
+  # This command is from src/DEPS; please keep it in sync.
+  if subprocess.call(['python', 'v8/build/generate_version.py'],
+                     cwd=GetSourceDirectory()) != 0:
+    print ('Could not run v8/build/generate_version.py '
+           'to update v8/src/version_gen.cc.')
+    return 1
 
   # Package full tarball.
   output_fullname = os.path.join(args[0], output_basename + '.tar.bz2')
