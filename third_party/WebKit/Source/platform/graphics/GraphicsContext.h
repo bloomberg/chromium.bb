@@ -360,8 +360,8 @@ public:
     // which is not the final transform used to place content on screen. It cannot be relied upon
     // for testing where a point will appear on screen or how large it will be.
     AffineTransform getCTM() const;
-    void concatCTM(const AffineTransform& affine) { concat(affineTransformToSkMatrix(affine)); }
-    void setCTM(const AffineTransform& affine) { setMatrix(affineTransformToSkMatrix(affine)); }
+    void concatCTM(const AffineTransform&);
+    void setCTM(const AffineTransform&);
     void setMatrix(const SkMatrix&);
 
     void scale(float x, float y);

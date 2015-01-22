@@ -1634,6 +1634,16 @@ AffineTransform GraphicsContext::getCTM() const
                            SkScalarToDouble(m.getTranslateY()));
 }
 
+void GraphicsContext::concatCTM(const AffineTransform& affine)
+{
+    concat(affineTransformToSkMatrix(affine));
+}
+
+void GraphicsContext::setCTM(const AffineTransform& affine)
+{
+    setMatrix(affineTransformToSkMatrix(affine));
+}
+
 void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, CompositeOperator op)
 {
     if (contextDisabled())
