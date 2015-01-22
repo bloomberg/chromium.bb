@@ -26,4 +26,10 @@ public interface TabModelSelectorObserver {
      * @param oldModel The previously selected tab model.
      */
     void onTabModelSelected(TabModel newModel, TabModel oldModel);
+
+    /**
+     * Called when the tab state has been initialized and the current tab count and tab model states
+     * are reliable.
+     */
+    void onTabStateInitialized();
 }

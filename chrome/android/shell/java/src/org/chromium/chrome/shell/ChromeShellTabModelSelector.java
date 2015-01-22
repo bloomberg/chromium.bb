@@ -78,6 +78,7 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
         };
         TabModel tabModel = new ChromeShellTabModel(mOrderController, tabModelDelegate);
         initialize(false, tabModel, EmptyTabModel.getInstance());
+        markTabStateInitialized();
     }
 
     @Override

@@ -153,4 +153,9 @@ public interface TabModelSelector {
      * @param delegate The delegate to be used.
      */
     void setCloseAllTabsDelegate(CloseAllTabsDelegate delegate);
+
+    /**
+     * @return Whether the tab state for this {@link TabModelSelector} has been initialized.
+     */
+    boolean isTabStateInitialized();
 }
