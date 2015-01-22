@@ -108,8 +108,7 @@ HTMLDocument::HTMLDocument(
       root_(nullptr),
       view_manager_client_factory_(shell_, this),
       compositor_thread_(compositor_thread),
-      web_media_player_factory_(web_media_player_factory),
-      web_encrypted_media_client_(nullptr) {
+      web_media_player_factory_(web_media_player_factory) {
   exported_services_.AddService(this);
   exported_services_.AddService(&view_manager_client_factory_);
   WeakBindToPipe(&exported_services_, services.PassMessagePipe());
@@ -278,10 +277,10 @@ void HTMLDocument::didNavigateWithinPage(
 
 blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {
   if (!web_encrypted_media_client_) {
-    web_encrypted_media_client_ = new media::WebEncryptedMediaClientImpl(
-        make_scoped_ptr(new media::DefaultCdmFactory()));
+    web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
+        make_scoped_ptr(new media::DefaultCdmFactory())));
   }
-  return web_encrypted_media_client_;
+  return web_encrypted_media_client_.get();
 }
 
 void HTMLDocument::OnViewBoundsChanged(View* view,

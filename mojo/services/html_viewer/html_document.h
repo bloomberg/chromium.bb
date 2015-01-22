@@ -142,7 +142,7 @@ class HTMLDocument : public blink::WebViewClient,
   WebMediaPlayerFactory* web_media_player_factory_;
 
   // EncryptedMediaClient attached to this frame; lazily initialized.
-  media::WebEncryptedMediaClientImpl* web_encrypted_media_client_;
+  scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
 
   // HTMLDocument owns these pointers.
   std::set<AxProviderImpl*> ax_provider_impls_;
