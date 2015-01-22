@@ -167,7 +167,7 @@ class PathContext(object):
     #   _listing_platform_dir = Directory that holds revisions. Ends with a '/'.
     #   _archive_extract_dir = Uncompressed directory in the archive_name file.
     #   _binary_name = The name of the executable to run.
-    if self.platform in ('linux', 'linux64', 'linux-arm'):
+    if self.platform in ('linux', 'linux64', 'linux-arm', 'chromeos'):
       self._binary_name = 'chrome'
     elif self.platform in ('mac', 'mac64'):
       self.archive_name = 'chrome-mac.zip'
@@ -217,7 +217,7 @@ class PathContext(object):
         self._listing_platform_dir = 'x86_64/'
         self.archive_name = self.android_apk
     else:
-      if self.platform in ('linux', 'linux64', 'linux-arm'):
+      if self.platform in ('linux', 'linux64', 'linux-arm', 'chromeos'):
         self.archive_name = 'chrome-linux.zip'
         self._archive_extract_dir = 'chrome-linux'
         if self.platform == 'linux':
@@ -226,6 +226,8 @@ class PathContext(object):
           self._listing_platform_dir = 'Linux_x64/'
         elif self.platform == 'linux-arm':
           self._listing_platform_dir = 'Linux_ARM_Cross-Compile/'
+        elif self.platform == 'chromeos':
+          self._listing_platform_dir = 'Linux_ChromiumOS_Full/'
       elif self.platform == 'mac':
         self._listing_platform_dir = 'Mac/'
         self._binary_name = 'Chromium.app/Contents/MacOS/Chromium'
@@ -728,6 +730,16 @@ def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
   cwd = os.getcwd()
   tempdir = tempfile.mkdtemp(prefix='bisect_tmp')
   UnzipFilenameToDir(zip_file, tempdir)
+
+  # Hack: Chrome OS archives are missing icudtl.dat; try to copy it from
+  # the local directory.
+  if context.platform == 'chromeos':
+    icudtl_path = 'third_party/icu/source/data/in/icudtl.dat'
+    if not os.access(icudtl_path, os.F_OK):
+      print 'Couldn\'t find: ' + icudtl_path
+      sys.exit()
+    os.system('cp %s %s/chrome-linux/' % (icudtl_path, tempdir))
+
   os.chdir(tempdir)
 
   # Run the build as many times as specified.
@@ -1171,8 +1183,8 @@ def main():
   parser = optparse.OptionParser(usage=usage)
   # Strangely, the default help output doesn't include the choice list.
   choices = ['mac', 'mac64', 'win', 'win64', 'linux', 'linux64', 'linux-arm',
-             'android-arm', 'android-arm-64', 'android-x86', 'android-x86-64']
-            # linux-chromiumos lacks a continuous archive http://crbug.com/78158
+             'android-arm', 'android-arm-64', 'android-x86', 'android-x86-64',
+             'chromeos']
   apk_choices = ['Chrome.apk', 'ChromeBeta.apk', 'ChromeCanary.apk',
                  'ChromeDev.apk', 'ChromeStable.apk']
   parser.add_option('-a', '--archive',
