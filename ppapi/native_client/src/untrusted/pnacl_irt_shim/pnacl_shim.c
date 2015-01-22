@@ -3615,11 +3615,6 @@ static int32_t Pnacl_M25_PPB_NaCl_Private_UrandomFD(void) {
   return iface->UrandomFD();
 }
 
-static PP_Bool Pnacl_M25_PPB_NaCl_Private_Are3DInterfacesDisabled(void) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->Are3DInterfacesDisabled();
-}
-
 static int32_t Pnacl_M25_PPB_NaCl_Private_BrokerDuplicateHandle(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->BrokerDuplicateHandle(source_handle, process_id, target_handle, desired_access, options);
@@ -3638,11 +3633,6 @@ static PP_FileHandle Pnacl_M25_PPB_NaCl_Private_CreateTemporaryFile(PP_Instance 
 static int32_t Pnacl_M25_PPB_NaCl_Private_GetNumberOfProcessors(void) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->GetNumberOfProcessors();
-}
-
-static PP_Bool Pnacl_M25_PPB_NaCl_Private_IsNonSFIModeEnabled(void) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->IsNonSFIModeEnabled();
 }
 
 static void Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished(PP_Instance instance, PP_Bool success, int32_t opt_level, int64_t pexe_size, int64_t compile_time_us) {
@@ -3665,11 +3655,6 @@ static void Pnacl_M25_PPB_NaCl_Private_ReportLoadError(PP_Instance instance, PP_
   iface->ReportLoadError(instance, error, error_message);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_ReportLoadAbort(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->ReportLoadAbort(instance);
-}
-
 static void Pnacl_M25_PPB_NaCl_Private_InstanceCreated(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->InstanceCreated(instance);
@@ -3680,24 +3665,9 @@ static void Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed(PP_Instance instance) {
   iface->InstanceDestroyed(instance);
 }
 
-static PP_Bool Pnacl_M25_PPB_NaCl_Private_NaClDebugEnabledForURL(const char* alleged_nmf_url) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->NaClDebugEnabledForURL(alleged_nmf_url);
-}
-
 static const char* Pnacl_M25_PPB_NaCl_Private_GetSandboxArch(void) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->GetSandboxArch();
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_LogToConsole(PP_Instance instance, const char* message) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->LogToConsole(instance, message);
-}
-
-static PP_NaClReadyState Pnacl_M25_PPB_NaCl_Private_GetNaClReadyState(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->GetNaClReadyState(instance);
 }
 
 static void Pnacl_M25_PPB_NaCl_Private_Vlog(const char* message) {
@@ -3708,11 +3678,6 @@ static void Pnacl_M25_PPB_NaCl_Private_Vlog(const char* message) {
 static void Pnacl_M25_PPB_NaCl_Private_InitializePlugin(PP_Instance instance, uint32_t argc, const char* argn[], const char* argv[]) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->InitializePlugin(instance, argc, argn, argv);
-}
-
-static int64_t Pnacl_M25_PPB_NaCl_Private_GetNexeSize(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->GetNexeSize(instance);
 }
 
 static void Pnacl_M25_PPB_NaCl_Private_RequestNaClManifest(PP_Instance instance, struct PP_CompletionCallback* callback) {
@@ -5640,26 +5605,19 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .LaunchSelLdr = (void (*)(PP_Instance instance, PP_Bool main_service_runtime, const char* alleged_url, const struct PP_NaClFileInfo* nexe_file_info, PP_Bool uses_nonsfi_mode, PP_Bool enable_ppapi_dev, PP_NaClAppProcessType process_type, void* imc_handle, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_LaunchSelLdr,
     .StartPpapiProxy = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_StartPpapiProxy,
     .UrandomFD = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_UrandomFD,
-    .Are3DInterfacesDisabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_Are3DInterfacesDisabled,
     .BrokerDuplicateHandle = (int32_t (*)(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options))&Pnacl_M25_PPB_NaCl_Private_BrokerDuplicateHandle,
     .GetReadExecPnaclFd = (void (*)(const char* url, struct PP_NaClFileInfo* out_file_info))&Pnacl_M25_PPB_NaCl_Private_GetReadExecPnaclFd,
     .CreateTemporaryFile = (PP_FileHandle (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_CreateTemporaryFile,
     .GetNumberOfProcessors = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetNumberOfProcessors,
-    .IsNonSFIModeEnabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_IsNonSFIModeEnabled,
     .ReportTranslationFinished = (void (*)(PP_Instance instance, PP_Bool success, int32_t opt_level, int64_t pexe_size, int64_t compile_time_us))&Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished,
     .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent,
     .ReportLoadSuccess = (void (*)(PP_Instance instance, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess,
     .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
-    .ReportLoadAbort = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_ReportLoadAbort,
     .InstanceCreated = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceCreated,
     .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed,
-    .NaClDebugEnabledForURL = (PP_Bool (*)(const char* alleged_nmf_url))&Pnacl_M25_PPB_NaCl_Private_NaClDebugEnabledForURL,
     .GetSandboxArch = (const char* (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetSandboxArch,
-    .LogToConsole = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_LogToConsole,
-    .GetNaClReadyState = (PP_NaClReadyState (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetNaClReadyState,
     .Vlog = (void (*)(const char* message))&Pnacl_M25_PPB_NaCl_Private_Vlog,
     .InitializePlugin = (void (*)(PP_Instance instance, uint32_t argc, const char* argn[], const char* argv[]))&Pnacl_M25_PPB_NaCl_Private_InitializePlugin,
-    .GetNexeSize = (int64_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetNexeSize,
     .RequestNaClManifest = (void (*)(PP_Instance instance, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_RequestNaClManifest,
     .GetManifestBaseURL = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetManifestBaseURL,
     .ProcessNaClManifest = (void (*)(PP_Instance instance, const char* program_url))&Pnacl_M25_PPB_NaCl_Private_ProcessNaClManifest,

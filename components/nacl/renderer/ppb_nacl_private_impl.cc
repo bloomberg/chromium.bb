@@ -504,11 +504,6 @@ int UrandomFD(void) {
 #endif
 }
 
-PP_Bool Are3DInterfacesDisabled() {
-  return PP_FromBool(base::CommandLine::ForCurrentProcess()->HasSwitch(
-                         switches::kDisable3DAPIs));
-}
-
 int32_t BrokerDuplicateHandle(PP_FileHandle source_handle,
                               uint32_t process_id,
                               PP_FileHandle* target_handle,
@@ -594,10 +589,6 @@ int32_t GetNumberOfProcessors() {
   int32_t num_processors = 1;
   return sender->Send(new NaClHostMsg_NaClGetNumProcessors(&num_processors)) ?
       num_processors : 1;
-}
-
-PP_Bool PPIsNonSFIModeEnabled() {
-  return PP_FromBool(IsNonSFIModeEnabled());
 }
 
 void GetNexeFd(PP_Instance instance,
@@ -754,12 +745,6 @@ void ReportLoadError(PP_Instance instance,
     load_manager->ReportLoadError(error, error_message);
 }
 
-void ReportLoadAbort(PP_Instance instance) {
-  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
-  if (load_manager)
-    load_manager->ReportLoadAbort();
-}
-
 void InstanceCreated(PP_Instance instance) {
   NexeLoadManager::Create(instance);
 }
@@ -782,21 +767,6 @@ PP_Bool NaClDebugEnabledForURL(const char* alleged_nmf_url) {
       should_debug);
 }
 
-void LogToConsole(PP_Instance instance, const char* message) {
-  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    load_manager->LogToConsole(std::string(message));
-}
-
-PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
-  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    return load_manager->nacl_ready_state();
-  return PP_NACL_READY_STATE_UNSENT;
-}
-
 void Vlog(const char* message) {
   VLOG(1) << message;
 }
@@ -809,14 +779,6 @@ void InitializePlugin(PP_Instance instance,
   DCHECK(load_manager);
   if (load_manager)
     load_manager->InitializePlugin(argc, argn, argv);
-}
-
-int64_t GetNexeSize(PP_Instance instance) {
-  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    return load_manager->nexe_size();
-  return 0;
 }
 
 void DownloadManifestToBuffer(PP_Instance instance,
@@ -1661,26 +1623,19 @@ const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
   &UrandomFD,
-  &Are3DInterfacesDisabled,
   &BrokerDuplicateHandle,
   &GetReadExecPnaclFd,
   &CreateTemporaryFile,
   &GetNumberOfProcessors,
-  &PPIsNonSFIModeEnabled,
   &ReportTranslationFinished,
   &DispatchEvent,
   &ReportLoadSuccess,
   &ReportLoadError,
-  &ReportLoadAbort,
   &InstanceCreated,
   &InstanceDestroyed,
-  &NaClDebugEnabledForURL,
   &GetSandboxArch,
-  &LogToConsole,
-  &GetNaClReadyState,
   &Vlog,
   &InitializePlugin,
-  &GetNexeSize,
   &RequestNaClManifest,
   &GetManifestBaseURL,
   &ProcessNaClManifest,

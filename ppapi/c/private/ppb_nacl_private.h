@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Oct  1 15:54:15 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Jan 21 14:48:24 2015. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -236,11 +236,6 @@ struct PPB_NaCl_Private_1_0 {
    * /dev/urandom.  On non-POSIX systems, this function returns 0.
    */
   int32_t (*UrandomFD)(void);
-  /* Whether the Pepper 3D interfaces should be disabled in the NaCl PPAPI
-   * proxy. This is so paranoid admins can effectively prevent untrusted shader
-   * code to be processed by the graphics stack.
-   */
-  PP_Bool (*Are3DInterfacesDisabled)(void);
   /* This is Windows-specific.  This is a replacement for DuplicateHandle() for
    * use inside the Windows sandbox.  Note that we provide this via dependency
    * injection only to avoid the linkage problems that occur because the NaCl
@@ -264,8 +259,6 @@ struct PPB_NaCl_Private_1_0 {
   PP_FileHandle (*CreateTemporaryFile)(PP_Instance instance);
   /* Return the number of processors in the system as reported by the OS */
   int32_t (*GetNumberOfProcessors)(void);
-  /* Return whether the non-SFI mode is enabled. */
-  PP_Bool (*IsNonSFIModeEnabled)(void);
   /* Report to the browser that translation of the pexe for |instance|
    * has finished, or aborted with an error. If |success| is true, the
    * browser may then store the translation in the cache. The renderer
@@ -297,24 +290,14 @@ struct PPB_NaCl_Private_1_0 {
   void (*ReportLoadError)(PP_Instance instance,
                           PP_NaClError error,
                           const char* error_message);
-  /* Reports that loading a nexe was aborted. */
-  void (*ReportLoadAbort)(PP_Instance instance);
   /* Performs internal setup when an instance is created. */
   void (*InstanceCreated)(PP_Instance instance);
   /* Performs internal cleanup when an instance is destroyed. */
   void (*InstanceDestroyed)(PP_Instance instance);
-  /* Return true if the NaCl debug stub is enabled and the app loaded from
-   * alleged_nmf_url will be attached to a debugger.
-   */
-  PP_Bool (*NaClDebugEnabledForURL)(const char* alleged_nmf_url);
   /* Returns the kind of SFI sandbox implemented by NaCl on this
    * platform.
    */
   const char* (*GetSandboxArch)(void);
-  /* Logs the message to the console. */
-  void (*LogToConsole)(PP_Instance instance, const char* message);
-  /* Returns the NaCl readiness status for this instance. */
-  PP_NaClReadyState (*GetNaClReadyState)(PP_Instance instance);
   /* Logs the message via VLOG. */
   void (*Vlog)(const char* message);
   /* Initializes internal state for a NaCl plugin. */
@@ -322,8 +305,6 @@ struct PPB_NaCl_Private_1_0 {
                            uint32_t argc,
                            const char* argn[],
                            const char* argv[]);
-  /* Returns the size of the nexe. */
-  int64_t (*GetNexeSize)(PP_Instance instance);
   /* Requests the NaCl manifest specified in the plugin arguments. */
   void (*RequestNaClManifest)(PP_Instance instance,
                               struct PP_CompletionCallback callback);

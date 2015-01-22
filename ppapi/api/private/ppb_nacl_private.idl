@@ -196,12 +196,6 @@ interface PPB_NaCl_Private {
    */
   int32_t UrandomFD();
 
-  /* Whether the Pepper 3D interfaces should be disabled in the NaCl PPAPI
-   * proxy. This is so paranoid admins can effectively prevent untrusted shader
-   * code to be processed by the graphics stack.
-   */
-  PP_Bool Are3DInterfacesDisabled();
-
   /* This is Windows-specific.  This is a replacement for DuplicateHandle() for
    * use inside the Windows sandbox.  Note that we provide this via dependency
    * injection only to avoid the linkage problems that occur because the NaCl
@@ -228,9 +222,6 @@ interface PPB_NaCl_Private {
 
   /* Return the number of processors in the system as reported by the OS */
   int32_t GetNumberOfProcessors();
-
-  /* Return whether the non-SFI mode is enabled. */
-  PP_Bool IsNonSFIModeEnabled();
 
   /* Report to the browser that translation of the pexe for |instance|
    * has finished, or aborted with an error. If |success| is true, the
@@ -267,31 +258,16 @@ interface PPB_NaCl_Private {
                        [in] PP_NaClError error,
                        [in] str_t error_message);
 
-  /* Reports that loading a nexe was aborted. */
-  void ReportLoadAbort([in] PP_Instance instance);
-
   /* Performs internal setup when an instance is created. */
   void InstanceCreated([in] PP_Instance instance);
 
   /* Performs internal cleanup when an instance is destroyed. */
   void InstanceDestroyed([in] PP_Instance instance);
 
-  /* Return true if the NaCl debug stub is enabled and the app loaded from
-   * alleged_nmf_url will be attached to a debugger.
-   */
-  PP_Bool NaClDebugEnabledForURL([in] str_t alleged_nmf_url);
-
   /* Returns the kind of SFI sandbox implemented by NaCl on this
    * platform.
    */
   str_t GetSandboxArch();
-
-  /* Logs the message to the console. */
-  void LogToConsole([in] PP_Instance instance,
-                    [in] str_t message);
-
-  /* Returns the NaCl readiness status for this instance. */
-  PP_NaClReadyState GetNaClReadyState([in] PP_Instance instance);
 
   /* Logs the message via VLOG. */
   void Vlog([in] str_t message);
@@ -301,9 +277,6 @@ interface PPB_NaCl_Private {
                         [in] uint32_t argc,
                         [in, size_as=argc] str_t[] argn,
                         [in, size_as=argv] str_t[] argv);
-
-  /* Returns the size of the nexe. */
-  int64_t GetNexeSize([in] PP_Instance instance);
 
   /* Requests the NaCl manifest specified in the plugin arguments. */
   void RequestNaClManifest([in] PP_Instance instance,
