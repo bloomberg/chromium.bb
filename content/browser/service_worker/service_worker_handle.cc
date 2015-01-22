@@ -42,33 +42,25 @@ scoped_ptr<ServiceWorkerHandle> ServiceWorkerHandle::Create(
     ServiceWorkerVersion* version) {
   if (!context || !provider_host || !version)
     return scoped_ptr<ServiceWorkerHandle>();
-  ServiceWorkerRegistration* registration =
-      context->GetLiveRegistration(version->registration_id());
+  DCHECK(context->GetLiveRegistration(version->registration_id()));
   return make_scoped_ptr(new ServiceWorkerHandle(
-      context, provider_host, registration, version));
+      context, provider_host, version));
 }
 
 ServiceWorkerHandle::ServiceWorkerHandle(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version)
     : context_(context),
       provider_host_(provider_host),
       handle_id_(context.get() ? context->GetNewServiceWorkerHandleId() : -1),
       ref_count_(1),
-      registration_(registration),
       version_(version) {
   version_->AddListener(this);
 }
 
 ServiceWorkerHandle::~ServiceWorkerHandle() {
   version_->RemoveListener(this);
-  // TODO(kinuko): At this point we can discard the registration if
-  // all documents/handles that have a reference to the registration is
-  // closed or freed up, but could also keep it alive in cache
-  // (e.g. in context_) for a while with some timer so that we don't
-  // need to re-load the same registration from disk over and over.
 }
 
 void ServiceWorkerHandle::OnVersionStateChanged(ServiceWorkerVersion* version) {
