@@ -73,7 +73,7 @@ class DriWindowDelegateImplTest : public testing::Test {
 void DriWindowDelegateImplTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   dri_.reset(new ui::MockDriWrapper(3));
-  buffer_generator_.reset(new ui::DriBufferGenerator(dri_.get()));
+  buffer_generator_.reset(new ui::DriBufferGenerator());
   screen_manager_.reset(
       new MockScreenManager(dri_.get(), buffer_generator_.get()));
   window_delegate_manager_.reset(new ui::DriWindowDelegateManager());

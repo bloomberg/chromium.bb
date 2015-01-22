@@ -243,7 +243,7 @@ bool ScreenManager::ModesetDisplayController(
   controller->set_origin(origin);
   // Create a surface suitable for the current controller.
   scoped_refptr<ScanoutBuffer> buffer =
-      buffer_generator_->Create(gfx::Size(mode.hdisplay, mode.vdisplay));
+      buffer_generator_->Create(dri_, gfx::Size(mode.hdisplay, mode.vdisplay));
 
   if (!buffer.get()) {
     LOG(ERROR) << "Failed to create scanout buffer";

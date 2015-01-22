@@ -52,9 +52,8 @@ const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
 class GbmBufferGenerator : public ScanoutBufferGenerator {
  public:
   GbmBufferGenerator(DriWrapper* dri)
-      : dri_(dri),
-        glapi_lib_(dlopen("libglapi.so.0", RTLD_LAZY | RTLD_GLOBAL)),
-        device_(gbm_create_device(dri_->get_fd())) {
+      : glapi_lib_(dlopen("libglapi.so.0", RTLD_LAZY | RTLD_GLOBAL)),
+        device_(gbm_create_device(dri->get_fd())) {
     if (!device_)
       LOG(FATAL) << "Unable to initialize gbm for " << kDefaultGraphicsCardPath;
   }
@@ -66,14 +65,13 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
 
   gbm_device* device() const { return device_; }
 
-  scoped_refptr<ScanoutBuffer> Create(const gfx::Size& size) override {
-    return GbmBuffer::CreateBuffer(dri_, device_,
-                                   SurfaceFactoryOzone::RGBA_8888, size, true);
+  scoped_refptr<ScanoutBuffer> Create(DriWrapper* drm,
+                                      const gfx::Size& size) override {
+    return GbmBuffer::CreateBuffer(drm, device_, SurfaceFactoryOzone::RGBA_8888,
+                                   size, true);
   }
 
  protected:
-  DriWrapper* dri_;  // Not owned.
-
   // HACK: gbm drivers have broken linkage
   void* glapi_lib_;
 

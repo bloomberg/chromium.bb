@@ -12,6 +12,8 @@
 
 namespace ui {
 
+class DriWrapper;
+
 // Abstraction for a DRM buffer that can be scanned-out of.
 class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
  public:
@@ -34,7 +36,8 @@ class ScanoutBufferGenerator {
  public:
   virtual ~ScanoutBufferGenerator() {}
 
-  virtual scoped_refptr<ScanoutBuffer> Create(const gfx::Size& size) = 0;
+  virtual scoped_refptr<ScanoutBuffer> Create(DriWrapper* drm,
+                                              const gfx::Size& size) = 0;
 };
 
 }  // namespace ui

@@ -95,12 +95,14 @@ gfx::Size DriBuffer::GetSize() const {
   return gfx::Size(surface_->width(), surface_->height());
 }
 
-DriBufferGenerator::DriBufferGenerator(DriWrapper* dri) : dri_(dri) {}
+DriBufferGenerator::DriBufferGenerator() {
+}
 
 DriBufferGenerator::~DriBufferGenerator() {}
 
-scoped_refptr<ScanoutBuffer> DriBufferGenerator::Create(const gfx::Size& size) {
-  scoped_refptr<DriBuffer> buffer(new DriBuffer(dri_));
+scoped_refptr<ScanoutBuffer> DriBufferGenerator::Create(DriWrapper* drm,
+                                                        const gfx::Size& size) {
+  scoped_refptr<DriBuffer> buffer(new DriBuffer(drm));
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
   if (!buffer->Initialize(info))
     return NULL;

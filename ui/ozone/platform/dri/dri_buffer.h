@@ -55,15 +55,14 @@ class DriBuffer : public ScanoutBuffer {
 
 class DriBufferGenerator : public ScanoutBufferGenerator {
  public:
-  DriBufferGenerator(DriWrapper* dri);
+  DriBufferGenerator();
   ~DriBufferGenerator() override;
 
   // ScanoutBufferGenerator:
-  scoped_refptr<ScanoutBuffer> Create(const gfx::Size& size) override;
+  scoped_refptr<ScanoutBuffer> Create(DriWrapper* drm,
+                                      const gfx::Size& size) override;
 
  private:
-  DriWrapper* dri_;  // Not owned.
-
   DISALLOW_COPY_AND_ASSIGN(DriBufferGenerator);
 };
 
