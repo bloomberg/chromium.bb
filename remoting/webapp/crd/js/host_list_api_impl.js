@@ -113,7 +113,7 @@ remoting.HostListApiImpl.prototype.parseHostListResponse_ =
       onDone(hosts);
     }
   } else {
-    onError(remoting.Error.fromHttpError(xhr.status));
+    onError(remoting.Error.fromHttpStatus(xhr.status));
   }
 };
 

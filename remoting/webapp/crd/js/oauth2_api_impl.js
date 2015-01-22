@@ -89,7 +89,7 @@ remoting.OAuth2ApiImpl.prototype.refreshAccessToken = function(
     } else {
       console.error('Failed to refresh token. Status: ' + xhr.status +
                     ' response: ' + xhr.responseText);
-      onError(remoting.Error.fromHttpError(xhr.status));
+      onError(remoting.Error.fromHttpStatus(xhr.status));
     }
   };
 
@@ -136,7 +136,7 @@ remoting.OAuth2ApiImpl.prototype.exchangeCodeForTokens = function(
     } else {
       console.error('Failed to exchange code for token. Status: ' + xhr.status +
                     ' response: ' + xhr.responseText);
-      onError(remoting.Error.fromHttpError(xhr.status));
+      onError(remoting.Error.fromHttpStatus(xhr.status));
     }
   };
 
@@ -174,7 +174,7 @@ remoting.OAuth2ApiImpl.prototype.getEmail = function(onDone, onError, token) {
     } else {
       console.error('Failed to get email. Status: ' + xhr.status +
                     ' response: ' + xhr.responseText);
-      onError(remoting.Error.fromHttpError(xhr.status));
+      onError(remoting.Error.fromHttpStatus(xhr.status));
     }
   };
   var headers = { 'Authorization': 'OAuth ' + token };
@@ -207,7 +207,7 @@ remoting.OAuth2ApiImpl.prototype.getUserInfo =
     } else {
       console.error('Failed to get user info. Status: ' + xhr.status +
                     ' response: ' + xhr.responseText);
-      onError(remoting.Error.fromHttpError(xhr.status));
+      onError(remoting.Error.fromHttpStatus(xhr.status));
     }
   };
   var headers = { 'Authorization': 'OAuth ' + token };

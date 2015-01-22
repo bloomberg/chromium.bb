@@ -36,21 +36,21 @@ remoting.Error = {
 };
 
 /**
- * @param {number} httpError An HTTP error code.
+ * @param {number} httpStatus An HTTP status code.
  * @return {remoting.Error} The remoting.Error enum corresponding to the
- *     specified HTTP error code.
+ *     specified HTTP status code.
  */
-remoting.Error.fromHttpError = function(httpError) {
-  if (httpError == 0) {
+remoting.Error.fromHttpStatus = function(httpStatus) {
+  if (httpStatus == 0) {
     return remoting.Error.NETWORK_FAILURE;
-  } else if (httpError == 200) {
+  } else if (httpStatus >= 200 && httpStatus < 300) {
     return remoting.Error.NONE;
-  } else if (httpError == 400 || httpError == 401) {
+  } else if (httpStatus == 400 || httpStatus == 401) {
     return remoting.Error.AUTHENTICATION_FAILED;
-  } else if (httpError >= 500 && httpError < 600) {
+  } else if (httpStatus >= 500 && httpStatus < 600) {
     return remoting.Error.SERVICE_UNAVAILABLE;
   } else {
-    console.warn('Unexpected HTTP error code: ' + httpError);
+    console.warn('Unexpected HTTP error code: ' + httpStatus);
     // Return AUTHENTICATION_FAILED by default, so that the user can try to
     // recover from an unexpected failure by signing in again.
     // TODO(jamiewalch): Return UNEXPECTED here and let calling code treat that

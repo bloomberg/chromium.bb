@@ -165,7 +165,7 @@ remoting.AppRemoting.prototype.init = function(connector) {
       }
     } else {
       console.error('Invalid "runApplication" response from server.');
-      // TODO(garykac) Start using remoting.Error.fromHttpError once it has
+      // TODO(garykac) Start using remoting.Error.fromHttpStatus once it has
       // been updated to properly report 'unknown' errors (rather than
       // reporting them as AUTHENTICATION_FAILED).
       if (xhr.status == 0) {
