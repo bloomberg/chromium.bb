@@ -1184,8 +1184,8 @@ def property_setter(interface, setter):
         has_extended_attribute_value(setter, 'TypeChecking', 'Unrestricted'))
     return {
         'has_type_checking_interface':
-            # FIXME: check interface's [TypeChecking] attribute too.
-            has_extended_attribute_value(setter, 'TypeChecking', 'Interface') and
+            (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
+             has_extended_attribute_value(setter, 'TypeChecking', 'Interface')) and
             idl_type.is_wrapper_type,
         'idl_type': idl_type.base_type,
         'is_custom': 'Custom' in extended_attributes,
