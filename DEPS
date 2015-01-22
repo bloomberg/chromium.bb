@@ -20,7 +20,7 @@ vars = {
   # in the build that goes into Chromium.  But we might as well update it too.)
   # You should now use the roll-dep script in depot_tools to do this update.
   "gtest_rev": "74de57c951aedebc5dfe26a27604353432392b98", # from svn revision 643
-  "gyp_rev": "0ff4e1aa19641cda58e3ed98399e0d96e6ccd7c2", # from svn revision 1927
+  "gyp_rev": "adb7d24b9fc166f01ab2da50478556b518a9218f", # from svn revision 2027
   "lss_rev": "2f724fced658cd6182096c615efdf3767b7c57fe", # from svn revision 26
   "breakpad_rev": "fe34e3f9fef1eb425b25a79f0da84e2f277d433b", # from svn revision 1338
   "android_tools_rev": "ea50cccc11657404ce22cf928062ed1a3927eb39",
