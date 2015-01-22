@@ -189,10 +189,6 @@ void RunTest_RepeatingTimer_Cancel(base::MessageLoop::Type message_loop_type,
 
 class DelayTimerTarget {
  public:
-  DelayTimerTarget()
-      : signaled_(false) {
-  }
-
   bool signaled() const { return signaled_; }
 
   void Signal() {
@@ -201,7 +197,7 @@ class DelayTimerTarget {
   }
 
  private:
-  bool signaled_;
+  bool signaled_ = false;
 };
 
 void RunTest_DelayTimer_NoCall(base::MessageLoop::Type message_loop_type) {

@@ -173,6 +173,23 @@ Local types, types without linkage and unnamed types as template arguments</a></
 </tr>
 
 <tr>
+<td>Non-Static Class Member Initializers</td>
+<td>
+<code>
+class C {<br />
+  <i>type</i> <i>var</i> = <i>value</i>;<br/>
+  C()  // copy-initializes <i>var</i><br/>
+</code>
+<td>Allows non-static class members to be initialized at their definitions (outside constructors)</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/data_members">
+Non-static data members</a></td>
+<td><a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Initialization">Google
+Style Guide</a>.
+<a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/zqB-DySA4V0">Discussion thread</a>
+</td>
+</tr>
+
+<tr>
 <td>Null Pointer Constant</td>
 <td><code>nullptr</code></td>
 <td>Declares a type-safe null pointer</td>
@@ -431,20 +448,6 @@ std::exception</a></td>
 <td>Allows better versioning of namespaces</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/namespace">Namespaces</a></td>
 <td>Unclear how it will work with components</td>
-</tr>
-
-<tr>
-<td>Non-Static Class Member Initializers</td>
-<td>
-<code>
-class C {<br />
-  <i>type</i> <i>var</i> = <i>value</i>;<br/>
-  C()  // copy-initializes <i>var</i><br/>
-</code>
-<td>Allows non-static class members to be initialized at their definitions (outside constructors)</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/data_members">
-Non-static data members</a></td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/zqB-DySA4V0">Discussion thread</a></td>
 </tr>
 
 <tr>
