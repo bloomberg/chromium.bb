@@ -78,6 +78,7 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
  protected:
   scoped_ptr<WebSocketStream> CreateAndInitializeStream(
       const std::string& socket_url,
+      const std::string& socket_host,
       const std::string& socket_path,
       const std::vector<std::string>& sub_protocols,
       const std::string& origin,
@@ -89,8 +90,8 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
 
     scoped_ptr<ClientSocketHandle> socket_handle =
         socket_handle_factory_.CreateClientSocketHandle(
-            WebSocketStandardRequest(
-                socket_path, origin, extra_request_headers),
+            WebSocketStandardRequest(socket_path, socket_host, origin,
+                                     extra_request_headers),
             WebSocketStandardResponse(extra_response_headers));
 
     scoped_ptr<WebSocketHandshakeStreamBase> handshake(
@@ -144,10 +145,9 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
 
 // Confirm that the basic case works as expected.
 TEST_F(WebSocketHandshakeStreamCreateHelperTest, BasicStream) {
-  scoped_ptr<WebSocketStream> stream =
-      CreateAndInitializeStream("ws://localhost/", "/",
-                                std::vector<std::string>(), "http://localhost/",
-                                "", "");
+  scoped_ptr<WebSocketStream> stream = CreateAndInitializeStream(
+      "ws://localhost/", "localhost", "/", std::vector<std::string>(),
+      "http://localhost/", "", "");
   EXPECT_EQ("", stream->GetExtensions());
   EXPECT_EQ("", stream->GetSubProtocol());
 }
@@ -157,13 +157,10 @@ TEST_F(WebSocketHandshakeStreamCreateHelperTest, SubProtocols) {
   std::vector<std::string> sub_protocols;
   sub_protocols.push_back("chat");
   sub_protocols.push_back("superchat");
-  scoped_ptr<WebSocketStream> stream =
-      CreateAndInitializeStream("ws://localhost/",
-                                "/",
-                                sub_protocols,
-                                "http://localhost/",
-                                "Sec-WebSocket-Protocol: chat, superchat\r\n",
-                                "Sec-WebSocket-Protocol: superchat\r\n");
+  scoped_ptr<WebSocketStream> stream = CreateAndInitializeStream(
+      "ws://localhost/", "localhost", "/", sub_protocols, "http://localhost/",
+      "Sec-WebSocket-Protocol: chat, superchat\r\n",
+      "Sec-WebSocket-Protocol: superchat\r\n");
   EXPECT_EQ("superchat", stream->GetSubProtocol());
 }
 
@@ -171,11 +168,8 @@ TEST_F(WebSocketHandshakeStreamCreateHelperTest, SubProtocols) {
 // websocket_stream_test.cc.
 TEST_F(WebSocketHandshakeStreamCreateHelperTest, Extensions) {
   scoped_ptr<WebSocketStream> stream = CreateAndInitializeStream(
-      "ws://localhost/",
-      "/",
-      std::vector<std::string>(),
-      "http://localhost/",
-      "",
+      "ws://localhost/", "localhost", "/", std::vector<std::string>(),
+      "http://localhost/", "",
       "Sec-WebSocket-Extensions: permessage-deflate\r\n");
   EXPECT_EQ("permessage-deflate", stream->GetExtensions());
 }
@@ -184,11 +178,8 @@ TEST_F(WebSocketHandshakeStreamCreateHelperTest, Extensions) {
 // websocket_stream_test.cc.
 TEST_F(WebSocketHandshakeStreamCreateHelperTest, ExtensionParameters) {
   scoped_ptr<WebSocketStream> stream = CreateAndInitializeStream(
-      "ws://localhost/",
-      "/",
-      std::vector<std::string>(),
-      "http://localhost/",
-      "",
+      "ws://localhost/", "localhost", "/", std::vector<std::string>(),
+      "http://localhost/", "",
       "Sec-WebSocket-Extensions: permessage-deflate;"
       " client_max_window_bits=14; server_max_window_bits=14;"
       " server_no_context_takeover; client_no_context_takeover\r\n");

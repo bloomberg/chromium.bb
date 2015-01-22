@@ -110,6 +110,7 @@ class WebSocketStreamCreateTest : public ::testing::Test {
 
   void CreateAndConnectCustomResponse(
       const std::string& socket_url,
+      const std::string& socket_host,
       const std::string& socket_path,
       const std::vector<std::string>& sub_protocols,
       const std::string& origin,
@@ -117,29 +118,27 @@ class WebSocketStreamCreateTest : public ::testing::Test {
       const std::string& response_body,
       scoped_ptr<base::Timer> timer = scoped_ptr<base::Timer>()) {
     url_request_context_host_.SetExpectations(
-        WebSocketStandardRequest(socket_path, origin, extra_request_headers),
+        WebSocketStandardRequest(socket_path, socket_host, origin,
+                                 extra_request_headers),
         response_body);
     CreateAndConnectStream(socket_url, sub_protocols, origin, timer.Pass());
   }
 
   // |extra_request_headers| and |extra_response_headers| must end in "\r\n" or
   // errors like "Unable to perform synchronous IO while stopped" will occur.
-  void CreateAndConnectStandard(const std::string& socket_url,
-                                const std::string& socket_path,
-                                const std::vector<std::string>& sub_protocols,
-                                const std::string& origin,
-                                const std::string& extra_request_headers,
-                                const std::string& extra_response_headers,
-                                scoped_ptr<base::Timer> timer =
-                                scoped_ptr<base::Timer>()) {
+  void CreateAndConnectStandard(
+      const std::string& socket_url,
+      const std::string& socket_host,
+      const std::string& socket_path,
+      const std::vector<std::string>& sub_protocols,
+      const std::string& origin,
+      const std::string& extra_request_headers,
+      const std::string& extra_response_headers,
+      scoped_ptr<base::Timer> timer = scoped_ptr<base::Timer>()) {
     CreateAndConnectCustomResponse(
-        socket_url,
-        socket_path,
-        sub_protocols,
-        origin,
+        socket_url, socket_host, socket_path, sub_protocols, origin,
         extra_request_headers,
-        WebSocketStandardResponse(extra_response_headers),
-        timer.Pass());
+        WebSocketStandardResponse(extra_response_headers), timer.Pass());
   }
 
   void CreateAndConnectRawExpectations(
@@ -261,11 +260,8 @@ class WebSocketStreamCreateExtensionTest : public WebSocketStreamCreateTest {
   void CreateAndConnectWithExtensions(
       const std::string& extensions_header_value) {
     CreateAndConnectStandard(
-        "ws://localhost/testing_path",
-        "/testing_path",
-        NoSubProtocols(),
-        "http://localhost",
-        "",
+        "ws://localhost/testing_path", "localhost", "/testing_path",
+        NoSubProtocols(), "http://localhost", "",
         "Sec-WebSocket-Extensions: " + extensions_header_value + "\r\n");
     RunUntilIdle();
   }
@@ -280,7 +276,8 @@ class CommonAuthTestHelper {
 
   scoped_ptr<DeterministicSocketData> BuildSocketData1(
       const std::string& response) {
-    request1_ = WebSocketStandardRequest("/", "http://localhost", "");
+    request1_ =
+        WebSocketStandardRequest("/", "localhost", "http://localhost", "");
     writes1_[0] = MockWrite(SYNCHRONOUS, 0, request1_.c_str());
     response1_ = response;
     reads1_[0] = MockRead(SYNCHRONOUS, 1, response1_.c_str());
@@ -421,8 +418,8 @@ class WebSocketStreamCreateUMATest : public ::testing::Test {
 
 // Confirm that the basic case works as expected.
 TEST_F(WebSocketStreamCreateTest, SimpleSuccess) {
-  CreateAndConnectStandard(
-      "ws://localhost/", "/", NoSubProtocols(), "http://localhost", "", "");
+  CreateAndConnectStandard("ws://localhost/", "localhost", "/",
+                           NoSubProtocols(), "http://localhost", "", "");
   EXPECT_FALSE(request_info_);
   EXPECT_FALSE(response_info_);
   RunUntilIdle();
@@ -443,13 +440,9 @@ TEST_F(WebSocketStreamCreateTest, HandshakeInfo) {
       "hoge: piyo\r\n"
       "\r\n";
 
-  CreateAndConnectCustomResponse(
-      "ws://localhost/",
-      "/",
-      NoSubProtocols(),
-      "http://localhost",
-      "",
-      kResponse);
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
+                                 kResponse);
   EXPECT_FALSE(request_info_);
   EXPECT_FALSE(response_info_);
   RunUntilIdle();
@@ -501,20 +494,17 @@ TEST_F(WebSocketStreamCreateTest, HandshakeInfo) {
 
 // Confirm that the stream isn't established until the message loop runs.
 TEST_F(WebSocketStreamCreateTest, NeedsToRunLoop) {
-  CreateAndConnectStandard(
-      "ws://localhost/", "/", NoSubProtocols(), "http://localhost", "", "");
+  CreateAndConnectStandard("ws://localhost/", "localhost", "/",
+                           NoSubProtocols(), "http://localhost", "", "");
   EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
 }
 
 // Check the path is used.
 TEST_F(WebSocketStreamCreateTest, PathIsUsed) {
-  CreateAndConnectStandard("ws://localhost/testing_path",
-                           "/testing_path",
-                           NoSubProtocols(),
-                           "http://localhost",
-                           "",
-                           "");
+  CreateAndConnectStandard("ws://localhost/testing_path", "localhost",
+                           "/testing_path", NoSubProtocols(),
+                           "http://localhost", "", "");
   RunUntilIdle();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
@@ -522,12 +512,9 @@ TEST_F(WebSocketStreamCreateTest, PathIsUsed) {
 
 // Check that the origin is used.
 TEST_F(WebSocketStreamCreateTest, OriginIsUsed) {
-  CreateAndConnectStandard("ws://localhost/testing_path",
-                           "/testing_path",
-                           NoSubProtocols(),
-                           "http://google.com",
-                           "",
-                           "");
+  CreateAndConnectStandard("ws://localhost/testing_path", "localhost",
+                           "/testing_path", NoSubProtocols(),
+                           "http://google.com", "", "");
   RunUntilIdle();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
@@ -538,10 +525,8 @@ TEST_F(WebSocketStreamCreateTest, SubProtocolIsUsed) {
   std::vector<std::string> sub_protocols;
   sub_protocols.push_back("chatv11.chromium.org");
   sub_protocols.push_back("chatv20.chromium.org");
-  CreateAndConnectStandard("ws://localhost/testing_path",
-                           "/testing_path",
-                           sub_protocols,
-                           "http://google.com",
+  CreateAndConnectStandard("ws://localhost/testing_path", "localhost",
+                           "/testing_path", sub_protocols, "http://google.com",
                            "Sec-WebSocket-Protocol: chatv11.chromium.org, "
                            "chatv20.chromium.org\r\n",
                            "Sec-WebSocket-Protocol: chatv20.chromium.org\r\n");
@@ -553,11 +538,9 @@ TEST_F(WebSocketStreamCreateTest, SubProtocolIsUsed) {
 
 // Unsolicited sub-protocols are rejected.
 TEST_F(WebSocketStreamCreateTest, UnsolicitedSubProtocol) {
-  CreateAndConnectStandard("ws://localhost/testing_path",
-                           "/testing_path",
-                           NoSubProtocols(),
-                           "http://google.com",
-                           "",
+  CreateAndConnectStandard("ws://localhost/testing_path", "localhost",
+                           "/testing_path", NoSubProtocols(),
+                           "http://google.com", "",
                            "Sec-WebSocket-Protocol: chatv20.chromium.org\r\n");
   RunUntilIdle();
   EXPECT_FALSE(stream_);
@@ -572,12 +555,9 @@ TEST_F(WebSocketStreamCreateTest, UnsolicitedSubProtocol) {
 TEST_F(WebSocketStreamCreateTest, UnacceptedSubProtocol) {
   std::vector<std::string> sub_protocols;
   sub_protocols.push_back("chat.example.com");
-  CreateAndConnectStandard("ws://localhost/testing_path",
-                           "/testing_path",
-                           sub_protocols,
-                           "http://localhost",
-                           "Sec-WebSocket-Protocol: chat.example.com\r\n",
-                           "");
+  CreateAndConnectStandard("ws://localhost/testing_path", "localhost",
+                           "/testing_path", sub_protocols, "http://localhost",
+                           "Sec-WebSocket-Protocol: chat.example.com\r\n", "");
   RunUntilIdle();
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(has_failed());
@@ -592,10 +572,8 @@ TEST_F(WebSocketStreamCreateTest, MultipleSubProtocolsInResponse) {
   std::vector<std::string> sub_protocols;
   sub_protocols.push_back("chatv11.chromium.org");
   sub_protocols.push_back("chatv20.chromium.org");
-  CreateAndConnectStandard("ws://localhost/testing_path",
-                           "/testing_path",
-                           sub_protocols,
-                           "http://google.com",
+  CreateAndConnectStandard("ws://localhost/testing_path", "localhost",
+                           "/testing_path", sub_protocols, "http://google.com",
                            "Sec-WebSocket-Protocol: chatv11.chromium.org, "
                            "chatv20.chromium.org\r\n",
                            "Sec-WebSocket-Protocol: chatv11.chromium.org, "
@@ -614,10 +592,8 @@ TEST_F(WebSocketStreamCreateTest, UnmatchedSubProtocolInResponse) {
   std::vector<std::string> sub_protocols;
   sub_protocols.push_back("chatv11.chromium.org");
   sub_protocols.push_back("chatv20.chromium.org");
-  CreateAndConnectStandard("ws://localhost/testing_path",
-                           "/testing_path",
-                           sub_protocols,
-                           "http://google.com",
+  CreateAndConnectStandard("ws://localhost/testing_path", "localhost",
+                           "/testing_path", sub_protocols, "http://google.com",
                            "Sec-WebSocket-Protocol: chatv11.chromium.org, "
                            "chatv20.chromium.org\r\n",
                            "Sec-WebSocket-Protocol: chatv21.chromium.org\r\n");
@@ -651,11 +627,8 @@ TEST_F(WebSocketStreamCreateExtensionTest, PerMessageDeflateParamsSuccess) {
 // permessage-deflate enabled.
 TEST_F(WebSocketStreamCreateExtensionTest, PerMessageDeflateInflates) {
   CreateAndConnectCustomResponse(
-      "ws://localhost/testing_path",
-      "/testing_path",
-      NoSubProtocols(),
-      "http://localhost",
-      "",
+      "ws://localhost/testing_path", "localhost", "/testing_path",
+      NoSubProtocols(), "http://localhost", "",
       WebSocketStandardResponse(
           "Sec-WebSocket-Extensions: permessage-deflate\r\n") +
           std::string(
@@ -837,12 +810,8 @@ TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueStartsWithPlus) {
 // Additional Sec-WebSocket-Accept headers should be rejected.
 TEST_F(WebSocketStreamCreateTest, DoubleAccept) {
   CreateAndConnectStandard(
-      "ws://localhost/",
-      "/",
-      NoSubProtocols(),
-      "http://localhost",
-      "",
-      "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n");
+      "ws://localhost/", "localhost", "/", NoSubProtocols(), "http://localhost",
+      "", "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n");
   RunUntilIdle();
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(has_failed());
@@ -860,11 +829,8 @@ TEST_F(WebSocketStreamCreateTest, InvalidStatusCode) {
       "Connection: Upgrade\r\n"
       "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
       "\r\n";
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kInvalidStatusCodeResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
@@ -883,11 +849,8 @@ TEST_F(WebSocketStreamCreateTest, RedirectsRejected) {
       "Location: ws://localhost/other\r\n"
       "\r\n"
       "<title>Moved</title><h1>Moved</h1>";
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kRedirectResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
@@ -907,11 +870,8 @@ TEST_F(WebSocketStreamCreateTest, MalformedResponse) {
       "Connection: Upgrade\r\n"
       "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
       "\r\n";
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kMalformedResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
@@ -926,11 +886,8 @@ TEST_F(WebSocketStreamCreateTest, MissingUpgradeHeader) {
       "Connection: Upgrade\r\n"
       "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
       "\r\n";
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kMissingUpgradeResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
@@ -940,12 +897,9 @@ TEST_F(WebSocketStreamCreateTest, MissingUpgradeHeader) {
 
 // There must only be one upgrade header.
 TEST_F(WebSocketStreamCreateTest, DoubleUpgradeHeader) {
-  CreateAndConnectStandard(
-      "ws://localhost/",
-      "/",
-      NoSubProtocols(),
-      "http://localhost",
-      "", "Upgrade: HTTP/2.0\r\n");
+  CreateAndConnectStandard("ws://localhost/", "localhost", "/",
+                           NoSubProtocols(), "http://localhost", "",
+                           "Upgrade: HTTP/2.0\r\n");
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
@@ -961,11 +915,8 @@ TEST_F(WebSocketStreamCreateTest, IncorrectUpgradeHeader) {
       "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
       "Upgrade: hogefuga\r\n"
       "\r\n";
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kMissingUpgradeResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
@@ -981,11 +932,8 @@ TEST_F(WebSocketStreamCreateTest, MissingConnectionHeader) {
       "Upgrade: websocket\r\n"
       "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
       "\r\n";
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kMissingConnectionResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
@@ -1002,11 +950,8 @@ TEST_F(WebSocketStreamCreateTest, IncorrectConnectionHeader) {
       "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
       "Connection: hogefuga\r\n"
       "\r\n";
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kMissingConnectionResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
@@ -1023,11 +968,8 @@ TEST_F(WebSocketStreamCreateTest, AdditionalTokenInConnectionHeader) {
       "Connection: Upgrade, Keep-Alive\r\n"
       "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
       "\r\n";
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kAdditionalConnectionTokenResponse);
   RunUntilIdle();
   EXPECT_FALSE(has_failed());
@@ -1041,11 +983,8 @@ TEST_F(WebSocketStreamCreateTest, MissingSecWebSocketAccept) {
       "Upgrade: websocket\r\n"
       "Connection: Upgrade\r\n"
       "\r\n";
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kMissingAcceptResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
@@ -1062,11 +1001,8 @@ TEST_F(WebSocketStreamCreateTest, WrongSecWebSocketAccept) {
       "Connection: Upgrade\r\n"
       "Sec-WebSocket-Accept: x/byyPZ2tOFvJCGkkugcKvqhhPk=\r\n"
       "\r\n";
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kIncorrectAcceptResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
@@ -1077,8 +1013,8 @@ TEST_F(WebSocketStreamCreateTest, WrongSecWebSocketAccept) {
 
 // Cancellation works.
 TEST_F(WebSocketStreamCreateTest, Cancellation) {
-  CreateAndConnectStandard(
-      "ws://localhost/", "/", NoSubProtocols(), "http://localhost", "", "");
+  CreateAndConnectStandard("ws://localhost/", "localhost", "/",
+                           NoSubProtocols(), "http://localhost", "", "");
   stream_request_.reset();
   RunUntilIdle();
   EXPECT_FALSE(has_failed());
@@ -1144,12 +1080,8 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnSuccess) {
   scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
 
-  CreateAndConnectStandard("ws://localhost/",
-                           "/",
-                           NoSubProtocols(),
-                           "http://localhost",
-                           "",
-                           "",
+  CreateAndConnectStandard("ws://localhost/", "localhost", "/",
+                           NoSubProtocols(), "http://localhost", "", "",
                            timer.Pass());
   ASSERT_TRUE(weak_timer);
   EXPECT_TRUE(weak_timer->IsRunning());
@@ -1223,7 +1155,8 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringWrite) {
 
 // Cancellation during read of the response headers works.
 TEST_F(WebSocketStreamCreateTest, CancellationDuringRead) {
-  std::string request = WebSocketStandardRequest("/", "http://localhost", "");
+  std::string request =
+      WebSocketStandardRequest("/", "localhost", "http://localhost", "");
   MockWrite writes[] = {MockWrite(ASYNC, 0, request.c_str())};
   MockRead reads[] = {
     MockRead(ASYNC, 1, "HTTP/1.1 101 Switching Protocols\r\nUpgr"),
@@ -1255,8 +1188,9 @@ TEST_F(WebSocketStreamCreateTest, VeryLargeResponseHeaders) {
     set_cookie_headers +=
         base::StringPrintf("Set-Cookie: WK-websocket-test-flood-%d=1\r\n", i);
   }
-  CreateAndConnectStandard("ws://localhost/", "/", NoSubProtocols(),
-                           "http://localhost", "", set_cookie_headers);
+  CreateAndConnectStandard("ws://localhost/", "localhost", "/",
+                           NoSubProtocols(), "http://localhost", "",
+                           set_cookie_headers);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
   EXPECT_FALSE(response_info_);
@@ -1266,7 +1200,8 @@ TEST_F(WebSocketStreamCreateTest, VeryLargeResponseHeaders) {
 // log the console message "Connection closed before receiving a handshake
 // response".
 TEST_F(WebSocketStreamCreateTest, NoResponse) {
-  std::string request = WebSocketStandardRequest("/", "http://localhost", "");
+  std::string request =
+      WebSocketStandardRequest("/", "localhost", "http://localhost", "");
   MockWrite writes[] = {MockWrite(ASYNC, request.data(), request.size(), 0)};
   MockRead reads[] = {MockRead(ASYNC, 0, 1)};
   scoped_ptr<DeterministicSocketData> socket_data(
@@ -1314,8 +1249,8 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
   ssl_data.reset(new SSLSocketDataProvider(ASYNC, OK));
   ssl_data_.push_back(ssl_data.release());
   url_request_context_host_.AddRawExpectations(BuildNullSocketData());
-  CreateAndConnectStandard(
-      "wss://localhost/", "/", NoSubProtocols(), "http://localhost", "", "");
+  CreateAndConnectStandard("wss://localhost/", "localhost", "/",
+                           NoSubProtocols(), "http://localhost", "", "");
   RunUntilIdle();
   ASSERT_TRUE(ssl_error_callbacks_);
   ssl_error_callbacks_->ContinueSSLRequest();
@@ -1327,11 +1262,8 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
 // If the server requests authorisation, but we have no credentials, the
 // connection should fail cleanly.
 TEST_F(WebSocketStreamCreateBasicAuthTest, FailureNoCredentials) {
-  CreateAndConnectCustomResponse("ws://localhost/",
-                                 "/",
-                                 NoSubProtocols(),
-                                 "http://localhost",
-                                 "",
+  CreateAndConnectCustomResponse("ws://localhost/", "localhost", "/",
+                                 NoSubProtocols(), "http://localhost", "",
                                  kUnauthorizedResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
@@ -1384,12 +1316,9 @@ TEST_F(WebSocketStreamCreateUMATest, Incomplete) {
 
   {
     StreamCreation creation;
-    creation.CreateAndConnectStandard("ws://localhost/",
-                                      "/",
+    creation.CreateAndConnectStandard("ws://localhost/", "localhost", "/",
                                       creation.NoSubProtocols(),
-                                      "http://localhost",
-                                      "",
-                                      "");
+                                      "http://localhost", "", "");
   }
 
   scoped_ptr<base::HistogramSamples> samples(GetSamples(name));
@@ -1408,12 +1337,9 @@ TEST_F(WebSocketStreamCreateUMATest, Connected) {
 
   {
     StreamCreation creation;
-    creation.CreateAndConnectStandard("ws://localhost/",
-                                      "/",
+    creation.CreateAndConnectStandard("ws://localhost/", "localhost", "/",
                                       creation.NoSubProtocols(),
-                                      "http://localhost",
-                                      "",
-                                      "");
+                                      "http://localhost", "", "");
     creation.RunUntilIdle();
   }
 
@@ -1439,12 +1365,9 @@ TEST_F(WebSocketStreamCreateUMATest, Failed) {
         "Connection: Upgrade\r\n"
         "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
         "\r\n";
-    creation.CreateAndConnectCustomResponse("ws://localhost/",
-                                            "/",
-                                            creation.NoSubProtocols(),
-                                            "http://localhost",
-                                            "",
-                                            kInvalidStatusCodeResponse);
+    creation.CreateAndConnectCustomResponse(
+        "ws://localhost/", "localhost", "/", creation.NoSubProtocols(),
+        "http://localhost", "", kInvalidStatusCodeResponse);
     creation.RunUntilIdle();
   }
 

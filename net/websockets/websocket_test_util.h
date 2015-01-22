@@ -58,6 +58,7 @@ NET_EXPORT_PRIVATE extern scoped_ptr<WebSocketStreamRequest>
 // "dGhlIHNhbXBsZSBub25jZQ==". Each header in |extra_headers| must be terminated
 // with "\r\n".
 extern std::string WebSocketStandardRequest(const std::string& path,
+                                            const std::string& host,
                                             const std::string& origin,
                                             const std::string& extra_headers);
 
