@@ -2826,7 +2826,7 @@ TEST_F(AutofillManagerTest, AccessAddressBookPrompt) {
       autofill_manager_->ShouldShowAccessAddressBookSuggestion(form, field));
 
   field.should_autocomplete = false;
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       autofill_manager_->ShouldShowAccessAddressBookSuggestion(form, field));
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)

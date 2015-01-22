@@ -1108,7 +1108,7 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
 
 AutofillField* AutofillManager::GetAutofillField(const FormData& form,
                                                  const FormFieldData& field) {
-  if (!personal_data_ || !field.should_autocomplete)
+  if (!personal_data_)
     return NULL;
 
   FormStructure* form_structure = NULL;
