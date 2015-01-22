@@ -595,13 +595,6 @@ hooks = [
                '-s', 'src/third_party/WebKit',
                '-o', 'src/build/util/LASTCHANGE.blink'],
   },
-  {
-    # Generate V8 version. This is also run by export_tarball.py in
-    # src/tools/export_tarball - please keep them in sync.
-    'name': 'generate_v8_version',
-    'pattern': '.',
-    'action': ['python', 'src/v8/build/generate_version.py'],
-  },
   # Pull GN binaries. This needs to be before running GYP below.
   {
     'name': 'gn_win',

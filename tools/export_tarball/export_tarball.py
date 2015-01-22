@@ -146,7 +146,7 @@ def main(argv):
     print 'Cannot find the src directory ' + GetSourceDirectory()
     return 1
 
-  # These three commands are from src/DEPS; please keep them in sync.
+  # These two commands are from src/DEPS; please keep them in sync.
   if subprocess.call(['python', 'build/util/lastchange.py', '-o',
                       'build/util/LASTCHANGE'], cwd=GetSourceDirectory()) != 0:
     print 'Could not run build/util/lastchange.py to update LASTCHANGE.'
@@ -156,11 +156,6 @@ def main(argv):
                       'build/util/LASTCHANGE.blink'],
                      cwd=GetSourceDirectory()) != 0:
     print 'Could not run build/util/lastchange.py to update LASTCHANGE.blink.'
-    return 1
-  if subprocess.call(['python', 'v8/build/generate_version.py'],
-                     cwd=GetSourceDirectory()) != 0:
-    print ('Could not run v8/build/generate_version.py '
-           'to update v8/src/version_gen.cc.')
     return 1
 
   output_fullname = args[0] + '.tar'
