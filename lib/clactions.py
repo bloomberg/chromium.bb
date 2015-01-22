@@ -124,6 +124,32 @@ def BoolToChangeSource(internal):
           else constants.CHANGE_SOURCE_EXTERNAL)
 
 
+def GetCLPreCQStatusAndTime(change, action_history):
+  """Get the pre-cq status and timestamp for |change| from |action_history|.
+
+  Args:
+    change: GerritPatch instance to get the pre-CQ status for.
+    action_history: A list of CLAction instances, which may include actions
+                    for other changes.
+
+  Returns:
+    A (status, timestamp) tuple where |status| is a valid pre-cq status
+    string and |timestamp| is a datetime object for when the status was
+    set. Or (None, None) if there is no pre-cq status.
+  """
+  actions_for_patch = ActionsForPatch(change, action_history)
+  actions_for_patch = [
+      a for a in actions_for_patch if a.action in _PRECQ_ACTION_TO_STATUS or
+      a.action == constants.CL_ACTION_PRE_CQ_RESET]
+
+  if (not actions_for_patch or
+      actions_for_patch[-1].action == constants.CL_ACTION_PRE_CQ_RESET):
+    return None, None
+
+  return (TranslatePreCQActionToStatus(actions_for_patch[-1].action),
+          actions_for_patch[-1].timestamp)
+
+
 def GetCLPreCQStatus(change, action_history):
   """Get the pre-cq status for |change| based on |action_history|.
 
@@ -135,17 +161,7 @@ def GetCLPreCQStatus(change, action_history):
   Returns:
     The status, as a string, or None if there is no recorded pre-cq status.
   """
-  actions_for_patch = ActionsForPatch(change, action_history)
-  actions_for_patch = [
-      a for a in actions_for_patch if a.action in _PRECQ_ACTION_TO_STATUS or
-      a.action == constants.CL_ACTION_PRE_CQ_RESET]
-
-  if (not actions_for_patch or
-      actions_for_patch[-1].action == constants.CL_ACTION_PRE_CQ_RESET):
-    return None
-
-  return TranslatePreCQActionToStatus(actions_for_patch[-1].action)
-
+  return GetCLPreCQStatusAndTime(change, action_history)[0]
 
 def ActionsForPatch(change, action_history):
   """Filters a CL action list to only those for a given patch.

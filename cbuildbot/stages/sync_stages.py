@@ -56,7 +56,13 @@ PRECQ_INFLIGHT_TIMEOUT_MSG = (
     'change is not at fault you may mark your change as ready '
     'again. If this problem occurs multiple times please notify '
     'the sheriff and file a bug.')
-
+PRECQ_EXPIRY_MSG = (
+    'The pre-cq verification for this change expired after %s minutes. No '
+    'action is required on your part.'
+    '\n\n'
+    'In order to protect the CQ from picking up stale changes, the pre-cq '
+    'status for changes are cleared after a generous timeout. This change '
+    'will be re-tested by the pre-cq before the CQ picks it up.')
 
 class PatchChangesStage(generic_stages.BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
@@ -908,6 +914,11 @@ class PreCQLauncherStage(SyncStage):
   # will start again from scratch in the next run.
   INFLIGHT_TIMEOUT = 120
 
+  # The number of minutes we allow before expiring a pre-cq PASSED or
+  # FULLY_VERIFIED status. After this timeout is hit, a CL's status will be
+  # reset to None. This prevents very stale CLs from entering the CQ.
+  STATUS_EXPIRY_TIMEOUT = 60 * 24 * 7
+
   # The maximum number of patches we will allow in a given trybot run. This is
   # needed because our trybot infrastructure can only handle so many patches at
   # once.
@@ -1111,6 +1122,31 @@ class PreCQLauncherStage(SyncStage):
           change, action_string)
       db.InsertCLActions(build_id, [action])
 
+  def _ProcessExpiry(self, change, status, timestamp, pool, current_time):
+    """Enforce expiry of a PASSED or FULLY_VERIFIED status.
+
+    Args:
+      change: GerritPatch instance to process.
+      status: |change|'s pre-cq status.
+      timestamp: datetime.datetime for when |status| was achieved.
+      pool: The current validation pool.
+      current_time: datetime.datetime for current database time.
+    """
+    if not timestamp:
+      return
+    timed_out = self._HasTimedOut(timestamp, current_time,
+                                  self.STATUS_EXPIRY_TIMEOUT)
+    verified = status in (constants.CL_STATUS_PASSED,
+                          constants.CL_STATUS_FULLY_VERIFIED)
+    if timed_out and verified:
+      msg = PRECQ_EXPIRY_MSG % self.STATUS_EXPIRY_TIMEOUT
+      build_id, db = self._run.GetCIDBHandle()
+      if db:
+        pool.SendNotification(change, '%(details)s', details=msg)
+        action = clactions.CLAction.FromGerritPatchAndAction(
+            change, constants.CL_ACTION_PRE_CQ_RESET)
+        db.InsertCLActions(build_id, [action])
+
   def _ProcessTimeouts(self, change, progress_map, pool, current_time):
     """Enforce per-config launch and inflight timeouts.
 
@@ -1200,9 +1236,10 @@ class PreCQLauncherStage(SyncStage):
     for change in changes:
       self._ProcessRequeuedAndSpeculative(change, action_history)
 
-
-    status_map = {c: clactions.GetCLPreCQStatus(c, action_history)
-                  for c in changes}
+    status_and_timestamp_map = {
+        c: clactions.GetCLPreCQStatusAndTime(c, action_history)
+        for c in changes}
+    status_map = {c: v[0] for c, v in status_and_timestamp_map.items()}
 
     # Filter out failed speculative changes.
     changes = [c for c in changes if status_map[c] != constants.CL_STATUS_FAILED
@@ -1233,7 +1270,6 @@ class PreCQLauncherStage(SyncStage):
     will_submit = set()
     # Changes that will be passed.
     will_pass = set()
-
 
     for change in inflight:
       if status_map[change] != constants.CL_STATUS_INFLIGHT:
@@ -1278,6 +1314,10 @@ class PreCQLauncherStage(SyncStage):
 
     # Mark passed changes as passed
     self.UpdateChangeStatuses(will_pass, constants.CL_STATUS_PASSED)
+
+    # Expire any very stale passed or fully verified changes.
+    for c, v in status_and_timestamp_map.items():
+      self._ProcessExpiry(c, v[0], v[1], pool, current_db_time)
 
     # Submit changes that are ready to submit, if we can.
     if tree_status.IsTreeOpen():

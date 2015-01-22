@@ -700,6 +700,15 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
         self.assertTrue(
             len([x for x in actions if x.action == action_type]) <= 1)
 
+    # Fake a long time elapsing, see that passed or fully verified changes
+    # (changes 1 and 2 in this test) get status expired back to None.
+    fake_time = self.fake_db.GetTime() + datetime.timedelta(
+        minutes=sync_stages.PreCQLauncherStage.STATUS_EXPIRY_TIMEOUT + 1)
+    self.fake_db.SetTime(fake_time)
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+    for c in changes[1:2]:
+      self.assertEqual(self._GetPreCQStatus(c), None)
+
   def testSpeculativePreCQ(self):
     changes = self._PrepareChangesWithPendingVerifications(
         [constants.PRE_CQ_DEFAULT_CONFIGS] * 2)
