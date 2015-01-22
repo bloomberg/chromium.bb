@@ -47,27 +47,20 @@ namespace blink {
 template<typename T> class HeapTerminatedArray;
 
 // Template to determine if a class is a GarbageCollectedMixin by checking if it
-// has adjustAndMark and isAlive. We can't check directly if the class is a
-// GarbageCollectedMixin because casting to it is potentially ambiguous.
+// has IsGarbageCollectedMixinMarker
 template<typename T>
 struct IsGarbageCollectedMixin {
-    using TrueType = char;
-    struct FalseType {
-        char dummy[2];
+private:
+    typedef char YesType;
+    struct NoType {
+        char padding[8];
     };
 
-#if COMPILER(MSVC)
-    template<typename U> static TrueType hasAdjustAndMark(char[&U::adjustAndMark != 0]);
-    template<typename U> static TrueType hasIsHeapObjectAlive(char[&U::isHeapObjectAlive != 0]);
-#else
-    template<size_t> struct F;
-    template<typename U> static TrueType hasAdjustAndMark(F<sizeof(&U::adjustAndMark)>*);
-    template<typename U> static TrueType hasIsHeapObjectAlive(F<sizeof(&U::isHeapObjectAlive)>*);
-#endif
-    template<typename U> static FalseType hasIsHeapObjectAlive(...);
-    template<typename U> static FalseType hasAdjustAndMark(...);
+    template <typename U> static YesType checkMarker(typename U::IsGarbageCollectedMixinMarker*);
+    template <typename U> static NoType checkMarker(...);
 
-    static bool const value = (sizeof(TrueType) == sizeof(hasAdjustAndMark<T>(0))) && (sizeof(TrueType) == sizeof(hasIsHeapObjectAlive<T>(0)));
+public:
+    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
 };
 
 template <typename T>

@@ -54,6 +54,8 @@ public:
 
     inline bool canTraceEagerly() { return Visitor::canTraceEagerly(); }
 
+    using Impl::isMarked;
+
     Visitor* getUninlined() { return m_visitor; }
 
 protected:
@@ -118,6 +120,12 @@ struct TraceCompatibilityAdaptor<T, true> {
         self->trace(visitor);
     }
 };
+
+#if ENABLE(INLINED_TRACE)
+inline void GarbageCollectedMixin::trace(InlinedGlobalMarkingVisitor)
+{
+}
+#endif
 
 } // namespace blink
 
