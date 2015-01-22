@@ -20,6 +20,16 @@ import time
 # Number of IPC messages per ipcdump
 NUM_IPC_MESSAGES = 1500
 
+def platform():
+  if sys.platform.startswith('win'):
+    return 'WINDOWS'
+  if sys.platform.startswith('linux'):
+    return 'LINUX'
+  if sys.platform == 'darwin':
+    return 'MAC'
+
+  assert False, 'Unknown platform'
+
 def random_id(size=16, chars=string.ascii_lowercase):
   return ''.join(random.choice(chars) for x in range(size))
 
@@ -39,8 +49,11 @@ class GenerationalFuzzer:
 
   def get_paths(self):
     app_path_key = 'APP_PATH'
-    self.util_binary = 'ipc_message_util'
     self.generate_binary = 'ipc_fuzzer_generate'
+    self.util_binary = 'ipc_message_util'
+    if platform() == 'WINDOWS':
+      self.generate_binary += '.exe'
+      self.util_binary += '.exe'
 
     if app_path_key not in os.environ:
       sys.exit('Env var %s should be set to chrome path' % app_path_key)

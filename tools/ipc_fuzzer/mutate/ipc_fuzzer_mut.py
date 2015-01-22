@@ -23,6 +23,16 @@ import time
 # Number of ipcdumps to concatenate
 NUM_IPCDUMPS = 50
 
+def platform():
+  if sys.platform.startswith('win'):
+    return 'WINDOWS'
+  if sys.platform.startswith('linux'):
+    return 'LINUX'
+  if sys.platform == 'darwin':
+    return 'MAC'
+
+  assert False, 'Unknown platform'
+
 def create_temp_file():
   temp_file = tempfile.NamedTemporaryFile(delete=False)
   temp_file.close()
@@ -47,8 +57,11 @@ class MutationalFuzzer:
 
   def get_paths(self):
     app_path_key = 'APP_PATH'
-    self.util_binary = 'ipc_message_util'
     self.mutate_binary = 'ipc_fuzzer_mutate'
+    self.util_binary = 'ipc_message_util'
+    if platform() == 'WINDOWS':
+      self.mutate_binary += '.exe'
+      self.util_binary += '.exe'
 
     if app_path_key not in os.environ:
       sys.exit('Env var %s should be set to chrome path' % app_path_key)
