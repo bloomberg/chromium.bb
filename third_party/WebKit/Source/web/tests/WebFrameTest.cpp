@@ -5721,7 +5721,7 @@ public:
     int willSendRequestCallCount() const { return m_willSendRequestCallCount; }
     int childFrameCreationCount() const { return m_childFrameCreationCount; }
 
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString&)
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString&, WebSandboxFlags)
     {
         ASSERT(m_childClient);
         m_childFrameCreationCount++;
@@ -6092,7 +6092,7 @@ class FailCreateChildFrame : public FrameTestHelpers::TestWebFrameClient {
 public:
     FailCreateChildFrame() : m_callCount(0) { }
 
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) override
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName, WebSandboxFlags sandboxFlags) override
     {
         ++m_callCount;
         return 0;

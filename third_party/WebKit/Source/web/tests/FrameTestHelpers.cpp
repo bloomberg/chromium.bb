@@ -305,7 +305,7 @@ TestWebFrameClient::TestWebFrameClient() : m_loadsInProgress(0)
 {
 }
 
-WebFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, const WebString& frameName)
+WebFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, const WebString& frameName, WebSandboxFlags sandboxFlags)
 {
     WebFrame* frame = WebLocalFrame::create(this);
     parent->appendChild(frame);

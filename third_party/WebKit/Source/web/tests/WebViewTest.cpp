@@ -1687,7 +1687,7 @@ TEST_F(WebViewTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone)
 class CreateChildCounterFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     CreateChildCounterFrameClient() : m_count(0) { }
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) override;
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName, WebSandboxFlags) override;
 
     int count() const { return m_count; }
 
@@ -1695,10 +1695,10 @@ private:
     int m_count;
 };
 
-WebFrame* CreateChildCounterFrameClient::createChildFrame(WebLocalFrame* parent, const WebString& frameName)
+WebFrame* CreateChildCounterFrameClient::createChildFrame(WebLocalFrame* parent, const WebString& frameName, WebSandboxFlags sandboxFlags)
 {
     ++m_count;
-    return TestWebFrameClient::createChildFrame(parent, frameName);
+    return TestWebFrameClient::createChildFrame(parent, frameName, sandboxFlags);
 }
 
 TEST_F(WebViewTest, AddFrameInCloseUnload)

@@ -1378,9 +1378,11 @@ void FrameLoader::dispatchDidClearWindowObjectInMainWorld()
 SandboxFlags FrameLoader::effectiveSandboxFlags() const
 {
     SandboxFlags flags = m_forcedSandboxFlags;
-    // FIXME: We need a way to propagate sandbox flags to out-of-process frames.
     if (FrameOwner* frameOwner = m_frame->owner())
         flags |= frameOwner->sandboxFlags();
+    // Frames need to inherit the sandbox flags of their parent frame.
+    if (Frame* parentFrame = m_frame->tree().parent())
+        flags |= parentFrame->securityContext()->sandboxFlags();
     return flags;
 }
 

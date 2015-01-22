@@ -100,7 +100,7 @@ class TestWebFrameClient : public WebFrameClient {
 public:
     TestWebFrameClient();
 
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) override;
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName, WebSandboxFlags) override;
     virtual void frameDetached(WebFrame*) override;
     virtual void didStartLoading(bool) override;
     virtual void didStopLoading() override;

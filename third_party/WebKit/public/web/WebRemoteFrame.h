@@ -17,8 +17,6 @@ class WebRemoteFrame : public WebFrame {
 public:
     BLINK_EXPORT static WebRemoteFrame* create(WebRemoteFrameClient*);
 
-    // FIXME(alexmos): This will go away once the Chromium side is updated to pass sandbox flags.
-    virtual WebLocalFrame* createLocalChild(const WebString& name, WebFrameClient*) = 0;
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebSandboxFlags, WebFrameClient*) = 0;
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebRemoteFrameClient*) = 0;
 

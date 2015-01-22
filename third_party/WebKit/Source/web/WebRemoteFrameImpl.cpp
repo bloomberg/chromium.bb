@@ -798,12 +798,6 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
     return WebString();
 }
 
-// FIXME(alexmos): This will go away once the Chromium side is updated to pass sandbox flags.
-WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebFrameClient* client)
-{
-    return createLocalChild(name, WebSandboxFlags::None, client);
-}
-
 WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client)
 {
     WebLocalFrameImpl* child = toWebLocalFrameImpl(WebLocalFrame::create(client));

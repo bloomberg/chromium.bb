@@ -186,11 +186,6 @@ void HTMLFrameOwnerElement::setSandboxFlags(SandboxFlags flags)
     m_sandboxFlags = flags;
 }
 
-SandboxFlags HTMLFrameOwnerElement::sandboxFlags() const
-{
-    return m_sandboxFlags | document().sandboxFlags();
-}
-
 bool HTMLFrameOwnerElement::isKeyboardFocusable() const
 {
     return m_contentFrame && HTMLElement::isKeyboardFocusable();

@@ -77,6 +77,11 @@ public:
         void performDeferredWidgetTreeOperations();
     };
 
+    // FrameOwner overrides:
+    virtual bool isLocal() const { return true; }
+    virtual void dispatchLoad() override;
+    virtual SandboxFlags sandboxFlags() const override { return m_sandboxFlags; }
+
     virtual void trace(Visitor*) override;
 
 protected:
@@ -88,11 +93,6 @@ protected:
 private:
     virtual bool isKeyboardFocusable() const override;
     virtual bool isFrameOwnerElement() const override final { return true; }
-
-    // FrameOwner overrides:
-    virtual bool isLocal() const { return true; }
-    virtual SandboxFlags sandboxFlags() const override;
-    virtual void dispatchLoad() override;
 
     RawPtrWillBeMember<Frame> m_contentFrame;
     RefPtrWillBeMember<Widget> m_widget;
