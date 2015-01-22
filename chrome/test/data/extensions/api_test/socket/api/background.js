@@ -338,6 +338,34 @@ var testPendingCallback = function() {
   }
 }
 
+// See http://crbug.com/418229.
+var testUsingTCPSocketOnUDPMethods = function() {
+  if (protocol == "udp") {
+    socket.create("tcp", function(createInfo) {
+      socket.recvFrom(createInfo.socketId, 256, function(recvFromInfo) {
+        chrome.test.assertTrue(recvFromInfo.resultCode < 0);
+        chrome.test.succeed();
+      });
+    });
+
+    function onSendToComplete(writeInfo) {
+      chrome.test.assertTrue(writeInfo.bytesWritten < 0);
+      chrome.test.succeed();
+    }
+
+    string2ArrayBuffer(request, function(arrayBuffer) {
+      socket.create("tcp", function(createInfo) {
+          socket.sendTo(createInfo.socketId, arrayBuffer, address, port,
+                        onSendToComplete);
+      });
+    });
+  } else {
+    // We only run this test when the protocol is UDP to
+    // avoid running it multiple times unnecessarily.
+    chrome.test.succeed();
+  }
+};
+
 var onMessageReply = function(message) {
   var parts = message.split(":");
   var test_type = parts[0];
@@ -352,8 +380,11 @@ var onMessageReply = function(message) {
     chrome.test.runTests([ testMulticast ]);
   } else {
     protocol = test_type;
-    chrome.test.runTests(
-        [testSocketCreation, testSending, testPendingCallback]);
+    chrome.test.runTests([
+        testSocketCreation,
+        testSending,
+        testPendingCallback,
+        testUsingTCPSocketOnUDPMethods]);
   }
 };
 

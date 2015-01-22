@@ -479,7 +479,7 @@ bool SocketRecvFromFunction::Prepare() {
 
 void SocketRecvFromFunction::AsyncWorkStart() {
   Socket* socket = GetSocket(params_->socket_id);
-  if (!socket) {
+  if (!socket || socket->GetSocketType() != Socket::TYPE_UDP) {
     error_ = kSocketNotFoundError;
     OnCompleted(-1, NULL, std::string(), 0);
     return;
