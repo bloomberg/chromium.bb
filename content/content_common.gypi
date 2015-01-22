@@ -805,8 +805,13 @@
       ],
     }],
     ['chromeos==1 and use_v4l2_codec==1', {
+      'direct_dependent_settings': {
+        'defines': [
+          'USE_V4L2_CODEC'
+        ],
+      },
       'defines': [
-        'USE_V4L2_CODEC',
+        'USE_V4L2_CODEC'
       ],
     }],
     ['chromeos==1 and (target_arch=="arm" or (use_ozone==1 and use_v4l2_codec==1))', {
