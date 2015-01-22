@@ -753,7 +753,8 @@ def Start(http_port):
     for k, v in _persistent_storage.LoadSettings(backend.name).iteritems():
       backend.settings[k] = v
 
-  httpd = wsgiref.simple_server.make_server('', http_port, _HttpRequestHandler)
+  httpd = wsgiref.simple_server.make_server(
+      '127.0.0.1', http_port, _HttpRequestHandler)
   try:
     httpd.serve_forever()
   except KeyboardInterrupt:
