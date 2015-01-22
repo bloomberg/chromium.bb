@@ -255,7 +255,6 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       cursor_(PP_CURSORTYPE_POINTER),
       zoom_(1.0),
       device_scale_(1.0),
-      printing_enabled_(true),
       full_(false),
       paint_manager_(this, this, true),
       first_paint_(true),
@@ -268,7 +267,8 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       recently_sent_find_update_(false),
       received_viewport_message_(false),
       did_call_start_loading_(false),
-      stop_scrolling_(false) {
+      stop_scrolling_(false),
+      delay_print_(false) {
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
   form_factory_.Initialize(this);
@@ -970,9 +970,13 @@ void OutOfProcessInstance::Email(const std::string& to,
 }
 
 void OutOfProcessInstance::Print() {
-  if (!printing_enabled_ ||
-      (!engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
-       !engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY))) {
+  if (document_load_state_ == LOAD_STATE_LOADING) {
+    delay_print_ = true;
+    return;
+  }
+
+  if (!engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
+      !engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
     return;
   }
 
@@ -1088,38 +1092,35 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
                                  pp::Var(named_destinations));
   PostMessage(named_destinations_message);
 
+  pp::VarDictionary bookmarks_message;
+  bookmarks_message.Set(pp::Var(kType), pp::Var(kJSBookmarksType));
+  bookmarks_message.Set(pp::Var(kJSBookmarks), engine_->GetBookmarks());
+  PostMessage(bookmarks_message);
+
   pp::VarDictionary progress_message;
   progress_message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
   progress_message.Set(pp::Var(kJSProgressPercentage), pp::Var(100));
   PostMessage(progress_message);
 
-  pp::VarDictionary bookmarksMessage;
-  bookmarksMessage.Set(pp::Var(kType), pp::Var(kJSBookmarksType));
-  bookmarksMessage.Set(pp::Var(kJSBookmarks), engine_->GetBookmarks());
-  PostMessage(bookmarksMessage);
+  if (full_) {
+    if (did_call_start_loading_) {
+      pp::PDF::DidStopLoading(this);
+      did_call_start_loading_ = false;
+    }
 
-  if (!full_)
-    return;
+    int content_restrictions =
+        CONTENT_RESTRICTION_CUT | CONTENT_RESTRICTION_PASTE;
+    if (!engine_->HasPermission(PDFEngine::PERMISSION_COPY))
+      content_restrictions |= CONTENT_RESTRICTION_COPY;
 
-  if (did_call_start_loading_) {
-    pp::PDF::DidStopLoading(this);
-    did_call_start_loading_ = false;
+    pp::PDF::SetContentRestriction(this, content_restrictions);
+
+    uma_.HistogramCustomCounts("PDF.PageCount", page_count,
+                               1, 1000000, 50);
   }
 
-  int content_restrictions =
-      CONTENT_RESTRICTION_CUT | CONTENT_RESTRICTION_PASTE;
-  if (!engine_->HasPermission(PDFEngine::PERMISSION_COPY))
-    content_restrictions |= CONTENT_RESTRICTION_COPY;
-
-  if (!engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
-      !engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
-    printing_enabled_ = false;
-  }
-
-  pp::PDF::SetContentRestriction(this, content_restrictions);
-
-  uma_.HistogramCustomCounts("PDF.PageCount", page_count,
-                             1, 1000000, 50);
+  if (delay_print_)
+    Print();
 }
 
 void OutOfProcessInstance::RotateClockwise() {

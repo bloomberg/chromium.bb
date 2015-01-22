@@ -236,7 +236,6 @@ class OutOfProcessInstance : public pp::Instance,
   double zoom_;  // Current zoom factor.
 
   float device_scale_;  // Current device scale factor.
-  bool printing_enabled_;
   // True if the plugin is full-page.
   bool full_;
 
@@ -339,6 +338,10 @@ class OutOfProcessInstance : public pp::Instance,
   // messages. This will be true when the extension page is in the process of
   // zooming the plugin so that flickering doesn't occur while zooming.
   bool stop_scrolling_;
+
+  // If a print command comes in before the document has loaded, we set
+  // |delay_print_| to true and print after the document has loaded.
+  bool delay_print_;
 
   // The callback for receiving the password from the page.
   scoped_ptr<pp::CompletionCallbackWithOutput<pp::Var> > password_callback_;
