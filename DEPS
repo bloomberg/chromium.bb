@@ -720,6 +720,18 @@ hooks = [
     ],
   },
   {
+    'name': 'kasko',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/get_syzygy_binaries.py',
+               '--output-dir=src/third_party/kasko',
+               '--revision=f0332d538f3eb84c2a55a3d0506a4a0b58d1c09e',
+               '--resource=kasko.zip',
+               '--resource=kasko_symbols.zip',
+               '--overwrite',
+    ],
+  },
+  {
     'name': 'apache_win32',
     'pattern': '\\.sha1',
     'action': [ 'download_from_google_storage',

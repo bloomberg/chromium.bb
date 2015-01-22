@@ -2793,6 +2793,9 @@
             'MEMORY_TOOL_REPLACES_ALLOCATOR',
             'MEMORY_SANITIZER_INITIAL_SIZE',
         ],
+        'include_dirs': [
+          '<(DEPTH)/third_party/kasko/include',
+        ],
       }],
       ['OS=="win"', {
         'defines': [

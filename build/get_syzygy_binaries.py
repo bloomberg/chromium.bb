@@ -262,7 +262,12 @@ def _InstallBinaries(options, deleted={}):
   contents = {}
   state = { 'revision': options.revision, 'contents': contents }
   archive_url = _SYZYGY_ARCHIVE_URL % { 'revision': options.revision }
-  for (base, name, subdir, filt) in _RESOURCES:
+  if options.resources:
+    resources = [(resource, resource, '', None)
+                 for resource in options.resources]
+  else:
+    resources = _RESOURCES
+  for (base, name, subdir, filt) in resources:
     # Create the output directory if it doesn't exist.
     fulldir = os.path.join(options.output_dir, subdir)
     if os.path.isfile(fulldir):
@@ -321,6 +326,8 @@ def _ParseCommandLine():
       help='The SVN revision or GIT hash associated with the required version.')
   option_parser.add_option('--revision-file', type='string',
       help='A text file containing an SVN revision or GIT hash.')
+  option_parser.add_option('--resource', type='string', action='append',
+      dest='resources', help='A resource to be downloaded.')
   option_parser.add_option('--verbose', dest='log_level', action='store_const',
       default=logging.INFO, const=logging.DEBUG,
       help='Enables verbose logging.')
