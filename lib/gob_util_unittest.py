@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import httplib
 import mock
+import tempfile
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
@@ -71,6 +72,21 @@ class GobTest(cros_test_lib.MockTestCase):
 
       m.return_value = FakeHTTPConnection(body=utf8_data, status=502)
       self.assertRaises(gob_util.InternalGOBError, gob_util.FetchUrl, '', '')
+
+
+class GetCookieTests(cros_test_lib.TestCase):
+  """Unittests for GetCookies()"""
+
+  def testSimple(self):
+    f = tempfile.NamedTemporaryFile()
+    f.write('.googlesource.com\tTRUE\t/f\tTRUE\t2147483647\to\tfoo=bar')
+    f.flush()
+    cookies = gob_util.GetCookies('foo.googlesource.com', '/foo', [f.name])
+    self.assertEqual(cookies, {'o': 'foo=bar'})
+    cookies = gob_util.GetCookies('google.com', '/foo', [f.name])
+    self.assertEqual(cookies, {})
+    cookies = gob_util.GetCookies('foo.googlesource.com', '/', [f.name])
+    self.assertEqual(cookies, {})
 
 
 @cros_test_lib.NetworkTest()

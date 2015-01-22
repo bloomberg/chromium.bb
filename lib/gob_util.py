@@ -61,7 +61,7 @@ def _QueryString(param_dict, first_param=None):
   return '+'.join(q)
 
 
-def GetCookies(host, _path):
+def GetCookies(host, path, cookie_paths=None):
   """Returns cookies that should be set on a request.
 
   Used by CreateHttpConn for any requests that do not already specify a Cookie
@@ -69,25 +69,27 @@ def GetCookies(host, _path):
 
   Args:
     host: The hostname of the Gerrit service.
-    _path: The path on the Gerrit service, already including /a/ if applicable.
+    path: The path on the Gerrit service, already including /a/ if applicable.
+    cookie_paths: Files to look in for cookies. Defaults to looking in the
+      standard places where GoB places cookies.
 
   Returns:
     A dict of cookie name to value, with no URL encoding applied.
   """
-  def _IsDomain(x, domain):
-    return x.partition('.')[2] == domain.strip('.')
-
-  # Set cookie file for http authentication
-  cookie_path = constants.GOB_COOKIE_PATH
-  if os.path.isfile(constants.GOB_COOKIE_PATH):
-    jar = cookielib.MozillaCookieJar(cookie_path)
-    jar.load()
-    # Skip checking whether |_path| is a subpath of the path specified
-    # in the cookie because we don't support the granularity.
-    return dict((x.name, urllib.unquote(x.value)) for x in jar
-                if _IsDomain(host, x.domain) and x.path == '/')
-  else:
-    return {}
+  cookies = {}
+  if cookie_paths is None:
+    cookie_paths = (constants.GOB_COOKIE_PATH, constants.GITCOOKIES_PATH)
+  for cookie_path in cookie_paths:
+    if os.path.isfile(cookie_path):
+      with open(cookie_path) as f:
+        for line in f:
+          fields = line.strip().split('\t')
+          if line.strip().startswith('#') or len(fields) != 7:
+            continue
+          domain, xpath, key, value = fields[0], fields[2], fields[5], fields[6]
+          if cookielib.domain_match(host, domain) and path.startswith(xpath):
+            cookies[key] = value
+  return cookies
 
 
 def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
@@ -99,12 +101,11 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     headers.setdefault('Authorization', 'Basic %s' % (
         base64.b64encode('%s:%s' % (auth[0], auth[2]))))
   else:
-    LOGGER.debug('No authorization found')
+    LOGGER.debug('No netrc file found')
 
   if 'Cookie' not in headers:
-    cookies = GetCookies(host, path)
-    headers['Cookie'] = '; '.join('%s=%s' % (urllib.quote(n), urllib.quote(v))
-                                  for n, v in cookies.iteritems())
+    cookies = GetCookies(host, '/a/%s' % path)
+    headers['Cookie'] = '; '.join('%s=%s' % (n, v) for n, v in cookies.items())
 
   if body:
     body = json.JSONEncoder().encode(body)
