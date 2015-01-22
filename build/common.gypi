@@ -2854,6 +2854,10 @@
                   '/wd28301', # Inconsistent SAL annotations
                   '/wd6340',  # Sign mismatch in function parameter
                   '/wd28182', # Dereferencing NULL pointer
+                  # C6285 is ~16% of raw warnings and has low value
+                  '/wd6285',  # non-zero constant || non-zero constant
+                  # C6334 is ~80% of raw warnings and has low value
+                  '/wd6334',  # sizeof applied to an expression with an operator
                 ],
               },
             },
