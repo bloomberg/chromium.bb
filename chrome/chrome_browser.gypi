@@ -1454,6 +1454,10 @@
       'browser/password_manager/native_backend_gnome_x.cc',
       'browser/password_manager/native_backend_gnome_x.h',
     ],
+    'chrome_browser_libsecret_sources': [
+       'browser/password_manager/native_backend_libsecret.cc',
+       'browser/password_manager/native_backend_libsecret.h',
+    ], 
     'chrome_browser_google_sources': [
       'browser/google/chrome_google_url_tracker_client.cc',
       'browser/google/chrome_google_url_tracker_client.h',
@@ -3255,6 +3259,12 @@
           'sources': [ '<@(chrome_browser_gnome_keyring_sources)' ],
           'dependencies': [
             '../build/linux/system.gyp:gnome_keyring',
+          ],
+        }],
+        ['OS=="linux" and chromeos!=1', {
+          'sources': [ '<@(chrome_browser_libsecret_sources)' ],
+          'defines': [
+            'USE_LIBSECRET',
           ],
         }],
         ['use_aura==1', {

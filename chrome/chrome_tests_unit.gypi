@@ -2359,6 +2359,11 @@
             '../build/linux/system.gyp:gnome_keyring_direct',
           ],
         }],
+        ['OS=="linux" and chromeos!=1', {
+          'sources': [
+            'browser/password_manager/native_backend_libsecret_unittest.cc',
+           ],
+        }],
         ['OS=="linux" and use_aura==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',

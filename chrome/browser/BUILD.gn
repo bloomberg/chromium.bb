@@ -464,6 +464,12 @@ static_library("browser") {
                            "//chrome")
     configs += [ ":gnome_keyring" ]
   }
+  if (is_desktop_linux) {
+    sources += rebase_path(gypi_values.chrome_browser_libsecret_sources,
+                           ".",
+                           "//chrome")
+    defines += [ "USE_LIBSECRET" ]
+  }
   if (use_aura) {
     sources +=
         rebase_path(gypi_values.chrome_browser_aura_sources, ".", "//chrome")

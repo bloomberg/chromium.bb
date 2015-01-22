@@ -39,6 +39,9 @@
 #if defined(USE_GNOME_KEYRING)
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 #endif
+#if defined(USE_LIBSECRET)
+#include "chrome/browser/password_manager/native_backend_libsecret.h"
+#endif
 #include "chrome/browser/password_manager/native_backend_kwallet_x.h"
 #include "chrome/browser/password_manager/password_store_x.h"
 #endif
@@ -216,14 +219,24 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
   } else if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_GNOME ||
              desktop_env == base::nix::DESKTOP_ENVIRONMENT_UNITY ||
              desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
-#if defined(USE_GNOME_KEYRING)
-    VLOG(1) << "Trying GNOME keyring for password storage.";
-    backend.reset(new NativeBackendGnome(id));
+#if defined(USE_LIBSECRET)
+    VLOG(1) << "Trying libsecret for password storage.";
+    backend.reset(new NativeBackendLibsecret(id));
     if (backend->Init())
-      VLOG(1) << "Using GNOME keyring for password storage.";
+      VLOG(1) << "Using libsecret keyring for password storage.";
     else
       backend.reset();
+#endif  // defined(USE_LIBSECRET)
+    if (!backend.get()) {
+#if defined(USE_GNOME_KEYRING)
+      VLOG(1) << "Trying GNOME keyring for password storage.";
+      backend.reset(new NativeBackendGnome(id));
+      if (backend->Init())
+        VLOG(1) << "Using GNOME keyring for password storage.";
+      else
+        backend.reset();
 #endif  // defined(USE_GNOME_KEYRING)
+    }
   }
 
   if (!backend.get()) {
