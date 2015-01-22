@@ -65,6 +65,7 @@ public:
     virtual SkCanvas* canvas() const = 0;
     virtual const SkBitmap& bitmap();
     virtual void willAccessPixels() { }
+    virtual void didDraw() { }
     virtual bool isValid() const = 0;
     virtual bool restore() { return false; };
     virtual WebLayer* layer() const { return 0; };
@@ -81,7 +82,6 @@ public:
     virtual void setIsHidden(bool) { }
     virtual void setImageBuffer(ImageBuffer*) { }
     virtual PassRefPtr<SkPicture> getPicture();
-    virtual void didClearCanvas() { }
     virtual void finalizeFrame(const FloatRect &dirtyRect) { }
     virtual void willDrawVideo() { }
     virtual PassRefPtr<SkImage> newImageSnapshot() const;

@@ -31,6 +31,7 @@
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/WebRect.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 
 namespace blink {
 
