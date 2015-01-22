@@ -49,7 +49,7 @@ class SyncClientTestDriveService : public ::drive::FakeDriveService {
   SyncClientTestDriveService() : download_file_count_(0) {}
 
   // FakeDriveService override:
-  virtual google_apis::CancelCallback DownloadFile(
+  google_apis::CancelCallback DownloadFile(
       const base::FilePath& local_cache_path,
       const std::string& resource_id,
       const google_apis::DownloadActionCallback& download_action_callback,
@@ -100,7 +100,7 @@ class SyncClientTestDriveService : public ::drive::FakeDriveService {
 
 class SyncClientTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     pref_service_.reset(new TestingPrefServiceSimple);

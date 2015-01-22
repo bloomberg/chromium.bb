@@ -59,13 +59,14 @@ class LocalReaderProxy : public ReaderProxy {
   // smaller than the remaining data size in the |file_reader|.
   LocalReaderProxy(
       scoped_ptr<util::LocalFileReader> file_reader, int64 length);
-  virtual ~LocalReaderProxy();
+  ~LocalReaderProxy() override;
 
   // ReaderProxy overrides.
-  virtual int Read(net::IOBuffer* buffer, int buffer_length,
-                   const net::CompletionCallback& callback) override;
-  virtual void OnGetContent(scoped_ptr<std::string> data) override;
-  virtual void OnCompleted(FileError error) override;
+  int Read(net::IOBuffer* buffer,
+           int buffer_length,
+           const net::CompletionCallback& callback) override;
+  void OnGetContent(scoped_ptr<std::string> data) override;
+  void OnCompleted(FileError error) override;
 
  private:
   scoped_ptr<util::LocalFileReader> file_reader_;
@@ -93,13 +94,14 @@ class NetworkReaderProxy : public ReaderProxy {
   NetworkReaderProxy(
       int64 offset, int64 content_length, int64 full_content_length,
       const base::Closure& job_canceller);
-  virtual ~NetworkReaderProxy();
+  ~NetworkReaderProxy() override;
 
   // ReaderProxy overrides.
-  virtual int Read(net::IOBuffer* buffer, int buffer_length,
-                   const net::CompletionCallback& callback) override;
-  virtual void OnGetContent(scoped_ptr<std::string> data) override;
-  virtual void OnCompleted(FileError error) override;
+  int Read(net::IOBuffer* buffer,
+           int buffer_length,
+           const net::CompletionCallback& callback) override;
+  void OnGetContent(scoped_ptr<std::string> data) override;
+  void OnCompleted(FileError error) override;
 
  private:
   // The data received from the server, but not yet read.

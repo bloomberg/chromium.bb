@@ -18,7 +18,7 @@ namespace test_util {
 
 class FakeFileSystemTest : public ::testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Initialize FakeDriveService.
     fake_drive_service_.reset(new FakeDriveService);
     ASSERT_TRUE(SetUpTestEntries(fake_drive_service_.get()));

@@ -58,15 +58,14 @@ void AsyncInitializationCallback(
 class MockDirectoryChangeObserver : public FileSystemObserver {
  public:
   MockDirectoryChangeObserver() {}
-  virtual ~MockDirectoryChangeObserver() {}
+  ~MockDirectoryChangeObserver() override {}
 
   // FileSystemObserver overrides.
-  virtual void OnDirectoryChanged(
-      const base::FilePath& directory_path) override {
+  void OnDirectoryChanged(const base::FilePath& directory_path) override {
     changed_directories_.push_back(directory_path);
   }
 
-  virtual void OnFileChanged(const FileChange& new_file_change) override {
+  void OnFileChanged(const FileChange& new_file_change) override {
     changed_files_.Apply(new_file_change);
   }
 
@@ -86,7 +85,7 @@ class MockDirectoryChangeObserver : public FileSystemObserver {
 
 class FileSystemTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());

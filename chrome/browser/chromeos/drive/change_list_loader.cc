@@ -45,10 +45,9 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
         weak_ptr_factory_(this) {
   }
 
-  virtual ~FullFeedFetcher() {
-  }
+  ~FullFeedFetcher() override {}
 
-  virtual void Run(const FeedFetcherCallback& callback) override {
+  void Run(const FeedFetcherCallback& callback) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
 
@@ -111,10 +110,9 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
         weak_ptr_factory_(this) {
   }
 
-  virtual ~DeltaFeedFetcher() {
-  }
+  ~DeltaFeedFetcher() override {}
 
-  virtual void Run(const FeedFetcherCallback& callback) override {
+  void Run(const FeedFetcherCallback& callback) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
 

@@ -24,7 +24,7 @@ namespace file_system {
 
 class OpenFileOperationTest : public OperationTestBase {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     OperationTestBase::SetUp();
 
     operation_.reset(new OpenFileOperation(

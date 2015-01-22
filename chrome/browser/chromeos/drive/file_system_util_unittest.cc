@@ -39,9 +39,7 @@ class ProfileRelatedFileSystemUtilTest : public testing::Test {
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {
   }
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(testing_profile_manager_.SetUp());
-  }
+  void SetUp() override { ASSERT_TRUE(testing_profile_manager_.SetUp()); }
 
   TestingProfileManager& testing_profile_manager() {
     return testing_profile_manager_;

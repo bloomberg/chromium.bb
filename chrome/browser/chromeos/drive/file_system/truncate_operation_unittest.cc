@@ -18,7 +18,7 @@ namespace file_system {
 
 class TruncateOperationTest : public OperationTestBase {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     OperationTestBase::SetUp();
 
     operation_.reset(new TruncateOperation(

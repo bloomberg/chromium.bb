@@ -63,9 +63,7 @@ class FileWriteWatcherTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   base::FilePath GetTempPath(const std::string& name) {
     return temp_dir_.path().Append(name);

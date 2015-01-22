@@ -28,7 +28,7 @@ class ResourceEntry;
 class DownloadHandler : public AllDownloadItemNotifier::Observer {
  public:
   explicit DownloadHandler(FileSystemInterface* file_system);
-  virtual ~DownloadHandler();
+  ~DownloadHandler() override;
 
   // Utility method to get DownloadHandler with profile.
   static DownloadHandler* GetForProfile(Profile* profile);
@@ -75,10 +75,10 @@ class DownloadHandler : public AllDownloadItemNotifier::Observer {
 
  private:
   // AllDownloadItemNotifier::Observer overrides:
-  virtual void OnDownloadCreated(content::DownloadManager* manager,
-                                 content::DownloadItem* download) override;
-  virtual void OnDownloadUpdated(content::DownloadManager* manager,
-                                 content::DownloadItem* download) override;
+  void OnDownloadCreated(content::DownloadManager* manager,
+                         content::DownloadItem* download) override;
+  void OnDownloadUpdated(content::DownloadManager* manager,
+                         content::DownloadItem* download) override;
 
   // Removes the download.
   void RemoveDownload(void* manager_id, int id);

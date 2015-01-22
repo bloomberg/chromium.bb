@@ -66,14 +66,14 @@ class JobScheduler
                EventLogger* logger,
                DriveServiceInterface* drive_service,
                base::SequencedTaskRunner* blocking_task_runner);
-  virtual ~JobScheduler();
+  ~JobScheduler() override;
 
   // JobListInterface overrides.
-  virtual std::vector<JobInfo> GetJobInfoList() override;
-  virtual void AddObserver(JobListObserver* observer) override;
-  virtual void RemoveObserver(JobListObserver* observer) override;
-  virtual void CancelJob(JobID job_id) override;
-  virtual void CancelAllJobs() override;
+  std::vector<JobInfo> GetJobInfoList() override;
+  void AddObserver(JobListObserver* observer) override;
+  void RemoveObserver(JobListObserver* observer) override;
+  void CancelJob(JobID job_id) override;
+  void CancelAllJobs() override;
 
   // Adds a GetAppList operation to the queue.
   // |callback| must not be null.
@@ -341,7 +341,7 @@ class JobScheduler
   void UpdateProgress(JobID job_id, int64 progress, int64 total);
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver override.
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Get the type of queue the specified job should be put in.

@@ -17,7 +17,7 @@ namespace drive {
 class FakeFreeDiskSpaceGetter : public internal::FreeDiskSpaceGetterInterface {
  public:
   FakeFreeDiskSpaceGetter();
-  virtual ~FakeFreeDiskSpaceGetter();
+  ~FakeFreeDiskSpaceGetter() override;
 
   void set_default_value(int64 value) { default_value_ = value; }
 
@@ -30,7 +30,7 @@ class FakeFreeDiskSpaceGetter : public internal::FreeDiskSpaceGetterInterface {
   void PushFakeValue(int64 value);
 
   // FreeDiskSpaceGetterInterface overrides.
-  virtual int64 AmountOfFreeDiskSpace() override;
+  int64 AmountOfFreeDiskSpace() override;
 
  private:
   std::list<int64> fake_values_;

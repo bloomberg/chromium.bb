@@ -71,15 +71,15 @@ class JobListLogger : public JobListObserver {
   }
 
   // JobListObserver overrides.
-  virtual void OnJobAdded(const JobInfo& info) override {
+  void OnJobAdded(const JobInfo& info) override {
     events.push_back(EventLog(ADDED, info));
   }
 
-  virtual void OnJobUpdated(const JobInfo& info) override {
+  void OnJobUpdated(const JobInfo& info) override {
     events.push_back(EventLog(UPDATED, info));
   }
 
-  virtual void OnJobDone(const JobInfo& info, FileError error) override {
+  void OnJobDone(const JobInfo& info, FileError error) override {
     events.push_back(EventLog(DONE, info));
   }
 
@@ -101,7 +101,7 @@ class CancelTestableFakeDriveService : public FakeDriveService {
     upload_new_file_cancelable_ = cancelable;
   }
 
-  virtual google_apis::CancelCallback InitiateUploadNewFile(
+  google_apis::CancelCallback InitiateUploadNewFile(
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
@@ -132,7 +132,7 @@ class JobSchedulerTest : public testing::Test {
     test_util::RegisterDrivePrefs(pref_service_->registry());
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     fake_network_change_notifier_.reset(
         new test_util::FakeNetworkChangeNotifier);
 

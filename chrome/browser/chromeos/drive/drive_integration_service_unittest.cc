@@ -24,9 +24,7 @@ class DriveIntegrationServiceTest : public testing::Test {
   DriveIntegrationServiceTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(profile_manager_.SetUp());
-  }
+  void SetUp() override { ASSERT_TRUE(profile_manager_.SetUp()); }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;

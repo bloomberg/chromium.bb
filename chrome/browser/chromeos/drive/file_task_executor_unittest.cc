@@ -32,15 +32,15 @@ class TestDelegate : public FileTaskExecutorDelegate {
   }
 
   // FileTaskExecutorDelegate overrides.
-  virtual FileSystemInterface* GetFileSystem() override {
+  FileSystemInterface* GetFileSystem() override {
     return fake_file_system_.get();
   }
 
-  virtual DriveServiceInterface* GetDriveService() override {
+  DriveServiceInterface* GetDriveService() override {
     return fake_drive_service_.get();
   }
 
-  virtual void OpenBrowserWindow(const GURL& open_link) override {
+  void OpenBrowserWindow(const GURL& open_link) override {
     opend_urls_->insert(open_link.spec());
   }
 
