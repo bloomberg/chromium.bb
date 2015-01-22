@@ -199,9 +199,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       make_scoped_ptr(new breakpad::CrashDumpManager(crash_dumps_dir)));
 #endif
 
-  if (!PlatformClientAuth::Initialize()) {
+  if (!PlatformClientAuth::Initialize())
     LOG(ERROR) << "PlatformClientAuth::Initialize failed.";
-  }
 
   cast_browser_process_->SetRemoteDebuggingServer(
       make_scoped_ptr(new RemoteDebuggingServer()));
@@ -215,10 +214,12 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->metrics_service_client()
       ->Initialize(cast_browser_process_->cast_service());
 
-  // Initializing network delegates must happen after Cast service is created.
-  url_request_context_factory_->InitializeNetworkDelegates();
-
   cast_browser_process_->cast_service()->Initialize();
+
+  // Initializing network delegates must happen after cast service is
+  // initialized because CastNetworkDelegate may use components initialized by
+  // cast service.
+  url_request_context_factory_->InitializeNetworkDelegates();
 }
 
 bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
