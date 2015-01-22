@@ -320,9 +320,6 @@ namespace easyUnlockPrivate {
     // service.
     static void getUserInfo(GetUserInfoCallback callback);
 
-    // Gets the user's profile image as a bitmap.
-    static void getUserImage(DataCallback callback);
-
     // Gets the connection info for the Bluetooth device identified by
     // deviceAddress.
     static void getConnectionInfo(DOMString deviceAddress,

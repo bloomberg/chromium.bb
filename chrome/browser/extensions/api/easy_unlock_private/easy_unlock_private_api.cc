@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/chromeos_utils.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
-#include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
@@ -690,37 +689,6 @@ bool EasyUnlockPrivateGetUserInfoFunction::RunSync() {
                            service->GetRemoteDevices() != NULL;
   }
   results_ = easy_unlock_private::GetUserInfo::Results::Create(users);
-  return true;
-}
-
-EasyUnlockPrivateGetUserImageFunction::EasyUnlockPrivateGetUserImageFunction() {
-}
-
-EasyUnlockPrivateGetUserImageFunction::
-    ~EasyUnlockPrivateGetUserImageFunction() {
-}
-
-bool EasyUnlockPrivateGetUserImageFunction::RunSync() {
-#if defined(OS_CHROMEOS)
-  EasyUnlockService* service =
-      EasyUnlockService::Get(Profile::FromBrowserContext(browser_context()));
-  const std::vector<ui::ScaleFactor>& supported_scale_factors =
-      ui::GetSupportedScaleFactors();
-
-  base::RefCountedMemory* user_image =
-      chromeos::options::UserImageSource::GetUserImage(
-          service->GetUserEmail(), supported_scale_factors.back());
-
-  results_ =
-      easy_unlock_private::GetUserImage::Results::Create(std::vector<char>(
-          user_image->front(), user_image->front() + user_image->size()));
-#else
-  // TODO(tengs): Find a way to get the profile picture for non-ChromeOS
-  // devices.
-  results_ =
-      easy_unlock_private::GetUserImage::Results::Create(std::vector<char>());
-  SetError("Not supported on non-ChromeOS platforms.");
-#endif
   return true;
 }
 

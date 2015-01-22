@@ -334,21 +334,6 @@ class EasyUnlockPrivateGetUserInfoFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetUserInfoFunction);
 };
 
-class EasyUnlockPrivateGetUserImageFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.getUserImage",
-                             EASYUNLOCKPRIVATE_GETUSERIMAGE)
-  EasyUnlockPrivateGetUserImageFunction();
-
- private:
-  ~EasyUnlockPrivateGetUserImageFunction() override;
-
-  // SyncExtensionFunction:
-  bool RunSync() override;
-
-  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetUserImageFunction);
-};
-
 class EasyUnlockPrivateGetConnectionInfoFunction
     : public core_api::BluetoothExtensionFunction {
  public:
