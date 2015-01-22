@@ -213,6 +213,10 @@ const char kLoginProfile[] = "login-profile";
 // Specifies the user which is already logged in.
 const char kLoginUser[] = "login-user";
 
+// The memory pressure thresholds selection which is used to decide when a
+// memory pressure event needs to get fired.
+const char kMemoryPressureThresholds[] = "memory-pressure-thresholds";
+
 // Enables natural scroll by default.
 const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 
@@ -290,6 +294,29 @@ const char kEnableCaptivePortalBypassProxy[] =
 
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
+}
+
+base::MemoryPressureObserverChromeOS::MemoryPressureThresholds
+GetMemoryPressureThresholds() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kMemoryPressureThresholds)) {
+    return base::MemoryPressureObserverChromeOS::THRESHOLD_DEFAULT;
+  }
+  const std::string option =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kMemoryPressureThresholds);
+  if (option == "1") {
+    return base::MemoryPressureObserverChromeOS::THRESHOLD_CONSERVATIVE;
+  }
+  if (option == "2") {
+    return base::MemoryPressureObserverChromeOS::
+        THRESHOLD_AGGRESSIVE_CACHE_DISCARD;
+  }
+  if (option == "3") {
+    return base::MemoryPressureObserverChromeOS::
+        THRESHOLD_AGGRESSIVE_TAB_DISCARD;
+  }
+  return base::MemoryPressureObserverChromeOS::THRESHOLD_AGGRESSIVE;
 }
 
 }  // namespace switches

@@ -50408,6 +50408,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="121858954" label="enable-supervised-user-safesites"/>
   <int value="125934378" label="enable-password-link"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
+  <int value="180074362" label="memory-pressure-thresholds"/>
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
   <int value="270267831" label="enable-scripts-require-action"/>
   <int value="278756320" label="disable-app-list-app-info"/>

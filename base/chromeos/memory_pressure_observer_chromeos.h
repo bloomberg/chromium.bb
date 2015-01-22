@@ -27,7 +27,27 @@ class BASE_EXPORT MemoryPressureObserverChromeOS {
  public:
   using GetUsedMemoryInPercentCallback = int (*)();
 
-  MemoryPressureObserverChromeOS();
+  // There are two memory pressure events:
+  // MODERATE - which will mainly release caches.
+  // CRITICAL - which will discard tabs.
+  // The |MemoryPressureThresholds| enum selects the strategy of firing these
+  // events: A conservative strategy will keep as much content in memory as
+  // possible (causing the system to swap to zram) and an aggressive strategy
+  // will release memory earlier to avoid swapping.
+  enum MemoryPressureThresholds {
+    // Use the system default.
+    THRESHOLD_DEFAULT = 0,
+    // Try to keep as much content in memory as possible.
+    THRESHOLD_CONSERVATIVE = 1,
+    // Discard caches earlier, allowing to keep more tabs in memory.
+    THRESHOLD_AGGRESSIVE_CACHE_DISCARD = 2,
+    // Discard tabs earlier, allowing the system to get faster.
+    THRESHOLD_AGGRESSIVE_TAB_DISCARD = 3,
+    // Discard caches and tabs earlier to allow the system to be faster.
+    THRESHOLD_AGGRESSIVE = 4
+  };
+
+  explicit MemoryPressureObserverChromeOS(MemoryPressureThresholds thresholds);
   virtual ~MemoryPressureObserverChromeOS();
 
   // Redo the memory pressure calculation soon and call again if a critical
@@ -70,6 +90,10 @@ class BASE_EXPORT MemoryPressureObserverChromeOS {
   // To slow down the amount of moderate pressure event calls, this counter
   // gets used to count the number of events since the last event occured.
   int moderate_pressure_repeat_count_;
+
+  // The thresholds for moderate and critical pressure.
+  const int moderate_pressure_threshold_percent_;
+  const int critical_pressure_threshold_percent_;
 
   base::WeakPtrFactory<MemoryPressureObserverChromeOS> weak_ptr_factory_;
 

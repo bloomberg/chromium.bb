@@ -284,6 +284,20 @@ const Experiment::Choice kEnableGpuRasterizationChoices[] = {
     switches::kForceGpuRasterization, "" },
 };
 
+#if defined(OS_CHROMEOS)
+const Experiment::Choice kMemoryPressureThresholdChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_CONSERVATIVE_THRESHOLDS,
+    chromeos::switches::kMemoryPressureThresholds, "1" },
+  { IDS_FLAGS_AGGRESSIVE_CACHE_DISCARD_THRESHOLDS,
+    chromeos::switches::kMemoryPressureThresholds, "2" },
+  { IDS_FLAGS_AGGRESSIVE_TAB_DISCARD_THRESHOLDS,
+    chromeos::switches::kMemoryPressureThresholds, "3" },
+  { IDS_FLAGS_AGGRESSIVE_THRESHOLDS,
+    chromeos::switches::kMemoryPressureThresholds, "4" },
+};
+#endif
+
 // We're using independent flags here (as opposed to a common flag with
 // different values) to be able to enable/disable the entire experience
 // associated with this feature server-side from the FieldTrial (the complete
@@ -2001,6 +2015,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_MEMORY_PRESSURE_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableMemoryPressureSystemChromeOS)
+  },
+  {
+    "memory-pressure-thresholds",
+    IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_NAME,
+    IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_DESCRIPTION,
+    kOsCrOS,
+    MULTI_VALUE_TYPE(kMemoryPressureThresholdChoices)
   },
   {
     "wake-on-packets",

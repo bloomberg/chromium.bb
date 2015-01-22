@@ -42,7 +42,10 @@ bool WasOnMemoryPressureCalled() {
 
 class TestMemoryPressureObserver : public MemoryPressureObserverChromeOS {
  public:
-  TestMemoryPressureObserver() : memory_in_percent_override_(0) {
+  TestMemoryPressureObserver() :
+    MemoryPressureObserverChromeOS(
+        MemoryPressureObserverChromeOS::THRESHOLD_DEFAULT),
+    memory_in_percent_override_(0) {
     // Disable any timers which are going on and set a special memory reporting
     // function.
     StopObserving();

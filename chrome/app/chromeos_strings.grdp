@@ -1129,6 +1129,24 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_DISABLE_MEMORY_PRESSURE_DESCRIPTION" desc="Description for the flag to disable memory pressure handling on ChromeOS.">
     Disable enhanced memory pressure handling on ChromeOS.
   </message>
+  <message name="IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_NAME" desc="Name for the flag which specifies which memory pressure strategy should be used on ChromeOS.">
+    Memory discard strategy for advanced pressure handling
+  </message>
+  <message name="IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_DESCRIPTION" desc="Description for the flag which specifies which memory pressure strategy should be used on ChromeOS.">
+    Memory discarding strategy to use
+  </message>
+  <message name="IDS_FLAGS_CONSERVATIVE_THRESHOLDS" desc="The value of the Memory pressure for ChromeOS which requests conservative thresholds.">
+    Conservative memory pressure release strategy
+  </message>
+  <message name="IDS_FLAGS_AGGRESSIVE_CACHE_DISCARD_THRESHOLDS" desc="The value of the Memory pressure thresholds for ChromeOS which use an aggressive cache release strategy.">
+    Aggressive cache release strategy
+  </message>
+  <message name="IDS_FLAGS_AGGRESSIVE_TAB_DISCARD_THRESHOLDS" desc="The value of the Memory pressure thresholds for ChromeOS which uses an aggressive tab release strategy.">
+    Aggressive tab release strategy
+  </message>
+  <message name="IDS_FLAGS_AGGRESSIVE_THRESHOLDS" desc="The value of the Memory pressure thresholds for ChromeOS which use an aggressive release strategy.">
+    Aggressive tab and cache release strategy
+  </message>
   <message name="IDS_FLAGS_WAKE_ON_PACKETS_NAME" desc="Name for the flag to enable wake on packets.">
     Wake On Packets
   </message>
