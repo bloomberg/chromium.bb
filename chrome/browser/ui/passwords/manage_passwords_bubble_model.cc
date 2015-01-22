@@ -326,6 +326,10 @@ void ManagePasswordsBubbleModel::OnChooseCredentials(
   state_ = password_manager::ui::INACTIVE_STATE;
 }
 
+Profile* ManagePasswordsBubbleModel::GetProfile() const {
+  return GetProfileFromWebContents(web_contents());
+}
+
 // static
 int ManagePasswordsBubbleModel::UsernameFieldWidth() {
   return GetFieldWidth(USERNAME_FIELD);

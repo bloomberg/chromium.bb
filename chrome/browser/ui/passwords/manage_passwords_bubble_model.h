@@ -15,6 +15,7 @@
 
 class ManagePasswordsIconController;
 class ManagePasswordsUIController;
+class Profile;
 
 namespace content {
 class WebContents;
@@ -105,6 +106,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   const gfx::Range& save_confirmation_link_range() const {
     return save_confirmation_link_range_;
   }
+
+  Profile* GetProfile() const;
 
 #if defined(UNIT_TEST)
   // Gets and sets the reason the bubble was displayed.

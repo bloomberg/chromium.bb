@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -208,8 +209,11 @@ ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
   AddTitleRow(layout, parent_->model());
 
   const auto& pending_credentials = parent_->model()->pending_credentials();
+  net::URLRequestContextGetter* request_context =
+      parent_->model()->GetProfile()->GetRequestContext();
   for (autofill::PasswordForm* form : pending_credentials) {
-    CredentialsItemView* credential_view = new CredentialsItemView(this, *form);
+    CredentialsItemView* credential_view =
+        new CredentialsItemView(this, *form, request_context);
     // Add the title to the layout with appropriate padding.
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(credential_view);

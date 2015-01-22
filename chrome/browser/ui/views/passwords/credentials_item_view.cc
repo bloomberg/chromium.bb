@@ -4,14 +4,13 @@
 
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "grit/theme_resources.h"
+#include "net/base/load_flags.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -29,6 +28,21 @@ gfx::Size GetTextLabelsSize(const views::Label* full_name_label,
                                          gfx::Size();
   return gfx::Size(std::max(full_name.width(), username.width()),
                    full_name.height() + username.height());
+}
+
+// Crops and scales |image| to kIconSize
+gfx::ImageSkia ScaleImage(gfx::ImageSkia skia_image) {
+  gfx::Size size = skia_image.size();
+  if (size.height() != size.width()) {
+    gfx::Rect target(size);
+    int side = std::min(size.height(), size.width());
+    target.ClampToCenteredSize(gfx::Size(side, side));
+    skia_image = gfx::ImageSkiaOperations::ExtractSubset(skia_image, target);
+  }
+  return gfx::ImageSkiaOperations::CreateResizedImage(
+      skia_image,
+      skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(kIconSize, kIconSize));
 }
 
 class CircularImageView : public views::ImageView {
@@ -56,23 +70,76 @@ void CircularImageView::OnPaint(gfx::Canvas* canvas) {
 
 }  // namespace
 
-CredentialsItemView::CredentialsItemView(views::ButtonListener* button_listener,
-                                         const autofill::PasswordForm& form)
+// Helper class to download the avatar. It deletes itself once the request is
+// done.
+class CredentialsItemView::AvatarFetcher
+    : public chrome::BitmapFetcherDelegate {
+ public:
+  AvatarFetcher(const GURL& url,
+                const base::WeakPtr<CredentialsItemView>& delegate);
+
+  void Start(net::URLRequestContextGetter* request_context);
+
+ private:
+  ~AvatarFetcher() override;
+
+  // chrome::BitmapFetcherDelegate:
+  void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
+
+  chrome::BitmapFetcher fetcher_;
+  base::WeakPtr<CredentialsItemView> delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(AvatarFetcher);
+};
+
+CredentialsItemView::AvatarFetcher::AvatarFetcher(
+    const GURL& url,
+    const base::WeakPtr<CredentialsItemView>& delegate)
+    : fetcher_(url, this),
+      delegate_(delegate) {
+}
+
+CredentialsItemView::AvatarFetcher::~AvatarFetcher() = default;
+
+void CredentialsItemView::AvatarFetcher::Start(
+    net::URLRequestContextGetter* request_context) {
+  fetcher_.Start(request_context, std::string(),
+                 net::URLRequest::NEVER_CLEAR_REFERRER,
+                 net::LOAD_DO_NOT_SEND_COOKIES |
+                 net::LOAD_DO_NOT_SAVE_COOKIES |
+                 net::LOAD_MAYBE_USER_GESTURE);
+}
+
+void CredentialsItemView::AvatarFetcher::OnFetchComplete(
+    const GURL /*url*/, const SkBitmap* bitmap) {
+  if (bitmap && delegate_)
+    delegate_->UpdateAvatar(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
+
+  delete this;
+}
+
+CredentialsItemView::CredentialsItemView(
+    views::ButtonListener* button_listener,
+    const autofill::PasswordForm& form,
+    net::URLRequestContextGetter* request_context)
     : LabelButton(button_listener, base::string16()),
-      form_(form) {
+      form_(form),
+      weak_ptr_factory_(this) {
   set_notify_enter_exit_on_child(true);
   // Create an image-view for the avatar. Make sure it ignores events so that
   // the parent can receive the events instead.
   image_view_ = new CircularImageView;
   image_view_->set_interactive(false);
-
-  // TODO(vasilii): temporary code below shows the built-in profile icon instead
-  // of avatar.
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  const gfx::Image& image = cache.GetAvatarIconOfProfileAtIndex(0);
-  image_view_->SetImage(profiles::GetSizedAvatarIcon(
-      image, true, kIconSize, kIconSize).ToImageSkia());
+  gfx::Image image =
+      ResourceBundle::GetSharedInstance().GetImageNamed(IDR_PROFILE_AVATAR_26);
+  image_view_->SetImageSize(gfx::Size(kIconSize, kIconSize));
+  image_view_->SetImage(image.ToImageSkia());
+  if (form_.avatar_url.is_valid()) {
+    // Fetch the actual avatar.
+    AvatarFetcher* fetcher = new AvatarFetcher(form_.avatar_url,
+                                               weak_ptr_factory_.GetWeakPtr());
+    fetcher->Start(request_context);
+  }
   AddChildView(image_view_);
 
   // Add a label to show the full name.
@@ -134,4 +201,8 @@ void CredentialsItemView::Layout() {
     label_origin.Offset(0, full_name_size.height());
     username_label_->SetBoundsRect(gfx::Rect(label_origin, username_size));
   }
+}
+
+void CredentialsItemView::UpdateAvatar(const gfx::ImageSkia& image) {
+  image_view_->SetImage(ScaleImage(image));
 }

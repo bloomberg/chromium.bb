@@ -9,6 +9,8 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/content/common/credential_manager_types.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ManagePasswordsUIController;
@@ -20,6 +22,7 @@ class ManagePasswordsIcon;
 class ManagePasswordsTest : public InProcessBrowserTest {
  public:
   ManagePasswordsTest() = default;
+  ~ManagePasswordsTest() = default;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
@@ -42,11 +45,18 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   // Put the controller, icon, and bubble into a blacklisted state.
   void SetupBlackistedPassword();
 
+  // Put the controller, icon, and bubble into a choosing credential state.
+  void SetupChooseCredentials(
+      ScopedVector<autofill::PasswordForm> local_credentials,
+      ScopedVector<autofill::PasswordForm> federated_credentials);
+
   // Get samples for |histogram|.
   base::HistogramSamples* GetSamples(const char* histogram);
 
   autofill::PasswordForm* test_form() { return &test_form_; }
 
+  MOCK_METHOD1(OnChooseCredential,
+               void(const password_manager::CredentialInfo&));
  private:
   // Get the UI controller for the current WebContents.
   ManagePasswordsUIController* GetController();

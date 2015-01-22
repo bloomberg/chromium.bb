@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
@@ -77,6 +78,19 @@ void ManagePasswordsTest::SetupBlackistedPassword() {
   autofill::PasswordFormMap map;
   map[kTestUsername] = test_form();
   GetController()->OnBlacklistBlockedAutofill(map);
+  GetController()->UpdateIconAndBubbleState(view());
+}
+
+void ManagePasswordsTest::SetupChooseCredentials(
+    ScopedVector<autofill::PasswordForm> local_credentials,
+    ScopedVector<autofill::PasswordForm> federated_credentials) {
+  base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
+  autofill::PasswordFormMap map;
+  map[kTestUsername] = test_form();
+  GetController()->OnChooseCredentials(
+      local_credentials.Pass(),
+      federated_credentials.Pass(),
+      base::Bind(&ManagePasswordsTest::OnChooseCredential, this));
   GetController()->UpdateIconAndBubbleState(view());
 }
 
