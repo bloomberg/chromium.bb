@@ -232,20 +232,6 @@ bool PSInstance::ProcessProperties() {
   // Enable NaCl IO to map STDIN, STDOUT, and STDERR
   nacl_io_init_ppapi(PSGetInstanceId(), PSGetInterface);
 
-  // Set default values
-  setenv("PS_STDIN", "/dev/stdin", 0);
-  setenv("PS_STDOUT", "/dev/stdout", 0);
-  setenv("PS_STDERR", "/dev/console3", 0);
-
-  int fd0 = open(getenv("PS_STDIN"), O_RDONLY);
-  dup2(fd0, 0);
-
-  int fd1 = open(getenv("PS_STDOUT"), O_WRONLY);
-  dup2(fd1, 1);
-
-  int fd2 = open(getenv("PS_STDERR"), O_WRONLY);
-  dup2(fd2, 2);
-
   tty_prefix_ = getenv("PS_TTY_PREFIX");
   if (tty_prefix_) {
     tty_fd_ = open("/dev/tty", O_WRONLY);
@@ -261,18 +247,18 @@ bool PSInstance::ProcessProperties() {
         char* end = tty_rows;
         int rows = strtol(tty_rows, &end, 10);
         if (*end != '\0' || rows < 0) {
-          Error("Invalid value for PS_TTY_ROWS: %s", tty_rows);
+          Error("Invalid value for PS_TTY_ROWS: %s\n", tty_rows);
         } else {
           end = tty_cols;
           int cols = strtol(tty_cols, &end, 10);
           if (*end != '\0' || cols < 0)
-            Error("Invalid value for PS_TTY_COLS: %s", tty_cols);
+            Error("Invalid value for PS_TTY_COLS: %s\n", tty_cols);
           else
             HandleResize(cols, rows);
         }
       }
       else if (tty_rows || tty_cols) {
-        Error("PS_TTY_ROWS and PS_TTY_COLS must be set together");
+        Error("PS_TTY_ROWS and PS_TTY_COLS must be set together\n");
       }
 
       tioc_nacl_output handler;
@@ -283,6 +269,20 @@ bool PSInstance::ProcessProperties() {
       Error("Failed to open /dev/tty.\n");
     }
   }
+
+  // Set default values
+  setenv("PS_STDIN", "/dev/stdin", 0);
+  setenv("PS_STDOUT", "/dev/stdout", 0);
+  setenv("PS_STDERR", "/dev/console3", 0);
+
+  int fd0 = open(getenv("PS_STDIN"), O_RDONLY);
+  dup2(fd0, 0);
+
+  int fd1 = open(getenv("PS_STDOUT"), O_WRONLY);
+  dup2(fd1, 1);
+
+  int fd2 = open(getenv("PS_STDERR"), O_WRONLY);
+  dup2(fd2, 2);
 
   RegisterMessageHandler("jspipe1", MessageHandlerInputStatic, this);
   RegisterMessageHandler("jspipe2", MessageHandlerInputStatic, this);
@@ -493,7 +493,7 @@ void PSInstance::MessageHandlerResizeStatic(const pp::Var& key,
 void PSInstance::RegisterMessageHandler(std::string message_name,
                                         MessageHandler_t handler,
                                         void* user_data) {
-  Trace("registering msg handler: %s", message_name.c_str());
+  Trace("registering msg handler: %s\n", message_name.c_str());
   if (handler == NULL) {
     message_handlers_.erase(message_name);
     return;
@@ -516,7 +516,7 @@ void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
     pp::VarArray keys = dictionary.GetKeys();
     if (keys.GetLength() == 1) {
       pp::Var key = keys.Get(0);
-      Trace("calling handler for: %s", key.AsString().c_str());
+      Trace("calling handler for: %s\n", key.AsString().c_str());
       MessageHandlerMap::iterator iter = message_handlers_.find(key.AsString());
       if (iter != message_handlers_.end()) {
         MessageHandler_t handler = iter->second.handler;
