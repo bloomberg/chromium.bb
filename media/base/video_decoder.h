@@ -55,6 +55,12 @@ class MEDIA_EXPORT VideoDecoder {
   // |status_cb| upon completion. |output_cb| is called for each output frame
   // decoded by Decode().
   //
+  // If |low_delay| is true then the decoder is not allowed to queue frames,
+  // except for out-of-order frames, i.e. if the next frame can be returned it
+  // must be returned without waiting for Decode() to be called again.
+  // Initialization should fail if |low_delay| is true and the decoder cannot
+  // satisfy the requirements above.
+  //
   // Note:
   // 1) The VideoDecoder will be reinitialized if it was initialized before.
   //    Upon reinitialization, all internal buffered frames will be dropped.
