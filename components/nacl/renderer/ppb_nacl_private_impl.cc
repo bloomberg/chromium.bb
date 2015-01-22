@@ -102,11 +102,16 @@ struct InstanceInfo {
 
 class NaClPluginInstance {
  public:
-  NaClPluginInstance(PP_Instance instance): nexe_load_manager(instance) {}
+  NaClPluginInstance(PP_Instance instance):
+      nexe_load_manager(instance), pexe_size(0) {}
 
   NexeLoadManager nexe_load_manager;
   scoped_ptr<JsonManifest> json_manifest;
   scoped_ptr<InstanceInfo> instance_info;
+
+  // When translation is complete, this records the size of the pexe in
+  // bytes so that it can be reported in a later load event.
+  uint64_t pexe_size;
 };
 
 typedef base::ScopedPtrHashMap<PP_Instance, NaClPluginInstance> InstanceMap;
@@ -193,16 +198,19 @@ PP_Bool StartPpapiProxy(PP_Instance instance);
 // management.
 class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
  public:
-  ManifestServiceProxy(PP_Instance pp_instance, bool is_helper_process)
-      : pp_instance_(pp_instance), is_helper_process_(is_helper_process) {}
+  ManifestServiceProxy(PP_Instance pp_instance, NaClAppProcessType process_type)
+      : pp_instance_(pp_instance), process_type_(process_type) {}
 
   ~ManifestServiceProxy() override {}
 
   void StartupInitializationComplete() override {
     if (StartPpapiProxy(pp_instance_) == PP_TRUE) {
+      NaClPluginInstance* nacl_plugin_instance =
+          GetNaClPluginInstance(pp_instance_);
       JsonManifest* manifest = GetJsonManifest(pp_instance_);
-      NexeLoadManager* load_manager = GetNexeLoadManager(pp_instance_);
-      if (load_manager && manifest) {
+      if (nacl_plugin_instance && manifest) {
+        NexeLoadManager* load_manager =
+            &nacl_plugin_instance->nexe_load_manager;
         std::string full_url;
         PP_PNaClOptions pnacl_options;
         bool uses_nonsfi_mode;
@@ -211,8 +219,10 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
                                     &pnacl_options,
                                     &uses_nonsfi_mode,
                                     &error_info)) {
-          int64_t nexe_size = load_manager->nexe_size();
-          load_manager->ReportLoadSuccess(full_url, nexe_size, nexe_size);
+          int64_t exe_size = nacl_plugin_instance->pexe_size;
+          if (exe_size == 0)
+            exe_size = load_manager->nexe_size();
+          load_manager->ReportLoadSuccess(full_url, exe_size, exe_size);
         }
       }
     }
@@ -224,6 +234,18 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     DCHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
                BelongsToCurrentThread());
 
+    // For security hardening, disable open_resource() when it is isn't
+    // needed.  PNaCl pexes can't use open_resource(), but general nexes
+    // and the PNaCl translator nexes may use it.
+    if (process_type_ != kNativeNaClProcessType &&
+        process_type_ != kPNaClTranslatorProcessType) {
+      // Return an error.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, base::Passed(base::File()), 0, 0));
+      return;
+    }
+
     std::string url;
     // TODO(teravest): Clean up pnacl_options logic in JsonManifest so we don't
     // have to initialize it like this here.
@@ -231,7 +253,8 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     pnacl_options.translate = PP_FALSE;
     pnacl_options.is_debug = PP_FALSE;
     pnacl_options.opt_level = 2;
-    if (!ManifestResolveKey(pp_instance_, is_helper_process_, key, &url,
+    bool is_helper_process = process_type_ == kPNaClTranslatorProcessType;
+    if (!ManifestResolveKey(pp_instance_, is_helper_process, key, &url,
                             &pnacl_options)) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
@@ -265,7 +288,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
   }
 
   PP_Instance pp_instance_;
-  bool is_helper_process_;
+  NaClAppProcessType process_type_;
   DISALLOW_COPY_AND_ASSIGN(ManifestServiceProxy);
 };
 
@@ -342,11 +365,10 @@ void LaunchSelLdr(PP_Instance instance,
   CHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
             BelongsToCurrentThread());
   NaClAppProcessType process_type = PP_ToNaClAppProcessType(pp_process_type);
-  bool is_helper_process = process_type == kPNaClTranslatorProcessType;
   // Create the manifest service proxy here, so on error case, it will be
   // destructed (without passing it to ManifestServiceChannel).
   scoped_ptr<ManifestServiceChannel::Delegate> manifest_service_proxy(
-      new ManifestServiceProxy(instance, is_helper_process));
+      new ManifestServiceProxy(instance, process_type));
 
   FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
@@ -462,13 +484,7 @@ void LaunchSelLdr(PP_Instance instance,
   }
 
   // Create the manifest service handle as well.
-  // For security hardening, disable the IPCs for open_resource() when they
-  // aren't needed.  PNaCl pexes can't use open_resource(), but general nexes
-  // and the PNaCl translator nexes may use it.
-  if (load_manager &&
-      (process_type == kNativeNaClProcessType ||
-       process_type == kPNaClTranslatorProcessType) &&
-      IsValidChannelHandle(launch_result.manifest_service_ipc_channel_handle)) {
+  if (IsValidChannelHandle(launch_result.manifest_service_ipc_channel_handle)) {
     scoped_ptr<ManifestServiceChannel> manifest_service_channel(
         new ManifestServiceChannel(
             launch_result.manifest_service_ipc_channel_handle,
@@ -477,11 +493,6 @@ void LaunchSelLdr(PP_Instance instance,
             content::RenderThread::Get()->GetShutdownEvent()));
     load_manager->set_manifest_service_channel(
         manifest_service_channel.Pass());
-  } else {
-    // The manifest service is not used for some cases like PNaCl pexes.
-    // In that case, the socket will not be created, and thus this
-    // condition needs to be handled as success.
-    PostPPCompletionCallback(callback, PP_OK);
   }
 }
 
@@ -694,6 +705,12 @@ void ReportTranslationFinished(PP_Instance instance,
   if (g_pnacl_resource_host.Get().get() == NULL)
     return;
   g_pnacl_resource_host.Get()->ReportTranslationFinished(instance, success);
+
+  // Record the pexe size for reporting in a later load event.
+  NaClPluginInstance* nacl_plugin_instance = GetNaClPluginInstance(instance);
+  if (nacl_plugin_instance) {
+    nacl_plugin_instance->pexe_size = pexe_size;
+  }
 }
 
 PP_FileHandle OpenNaClExecutable(PP_Instance instance,
@@ -1665,7 +1682,6 @@ void StreamPexe(PP_Instance instance,
 
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
-  &StartPpapiProxy,
   &UrandomFD,
   &BrokerDuplicateHandle,
   &GetReadExecPnaclFd,

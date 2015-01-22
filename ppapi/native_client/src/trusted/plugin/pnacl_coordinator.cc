@@ -433,12 +433,6 @@ pp::CompletionCallback PnaclCoordinator::GetCompileProgressCallback(
                                        bytes_compiled);
 }
 
-void PnaclCoordinator::GetCurrentProgress(int64_t* bytes_loaded,
-                                          int64_t* bytes_total) {
-  *bytes_loaded = pexe_bytes_compiled_;
-  *bytes_total = expected_pexe_size_;
-}
-
 void PnaclCoordinator::RunTranslate(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::RunTranslate (pp_error=%"
                  NACL_PRId32 ")\n", pp_error));

@@ -3605,11 +3605,6 @@ static void Pnacl_M25_PPB_NaCl_Private_LaunchSelLdr(PP_Instance instance, PP_Boo
   iface->LaunchSelLdr(instance, main_service_runtime, alleged_url, nexe_file_info, uses_nonsfi_mode, enable_ppapi_dev, process_type, imc_handle, *callback);
 }
 
-static PP_Bool Pnacl_M25_PPB_NaCl_Private_StartPpapiProxy(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->StartPpapiProxy(instance);
-}
-
 static int32_t Pnacl_M25_PPB_NaCl_Private_UrandomFD(void) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->UrandomFD();
@@ -5603,7 +5598,6 @@ static const struct PPB_IsolatedFileSystem_Private_0_2 Pnacl_Wrappers_PPB_Isolat
 
 static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .LaunchSelLdr = (void (*)(PP_Instance instance, PP_Bool main_service_runtime, const char* alleged_url, const struct PP_NaClFileInfo* nexe_file_info, PP_Bool uses_nonsfi_mode, PP_Bool enable_ppapi_dev, PP_NaClAppProcessType process_type, void* imc_handle, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_LaunchSelLdr,
-    .StartPpapiProxy = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_StartPpapiProxy,
     .UrandomFD = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_UrandomFD,
     .BrokerDuplicateHandle = (int32_t (*)(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options))&Pnacl_M25_PPB_NaCl_Private_BrokerDuplicateHandle,
     .GetReadExecPnaclFd = (void (*)(const char* url, struct PP_NaClFileInfo* out_file_info))&Pnacl_M25_PPB_NaCl_Private_GetReadExecPnaclFd,

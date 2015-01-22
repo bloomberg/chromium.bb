@@ -170,10 +170,6 @@ void Plugin::StartNexe(int32_t pp_error, ServiceRuntime* service_runtime) {
   service_runtime->StartNexe();
 }
 
-bool Plugin::LoadNaClModuleContinuationIntern() {
-  return PP_ToBool(nacl_interface_->StartPpapiProxy(pp_instance()));
-}
-
 NaClSubprocess* Plugin::LoadHelperNaClModule(const std::string& helper_url,
                                              PP_NaClFileInfo file_info,
                                              ErrorInfo* error_info) {
@@ -332,26 +328,8 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
       info,
       false, /* uses_nonsfi_mode */
       PP_PNACL_PROCESS_TYPE,
-      callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation));
-}
-
-// This is the only code path that responds to the
-// "init_done"/StartupInitializationComplete() SRPC call, which now has an
-// effect for PNaCl only.
-// TODO(mseaborn): Switch to doing this ReportLoadSuccess() call via the
-// Chrome-IPC-based StartupInitializationComplete() handler in
-// ppb_nacl_private_impl.cc, to match the non-PNaCl cases.
-void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
-  NaClLog(4, "Entered BitcodeDidTranslateContinuation\n");
-  UNREFERENCED_PARAMETER(pp_error);
-  if (LoadNaClModuleContinuationIntern()) {
-    int64_t loaded;
-    int64_t total;
-    // TODO(teravest): Tighten this up so we can get rid of
-    // GetCurrentProgress(). loaded should always equal total.
-    pnacl_coordinator_->GetCurrentProgress(&loaded, &total);
-    nacl_interface_->ReportLoadSuccess(pp_instance(), loaded, total);
-  }
+      // No-op callback.
+      pp::CompletionCallback());
 }
 
 void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {

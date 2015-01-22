@@ -88,10 +88,6 @@ class Plugin : public pp::Instance {
                       PP_NaClAppProcessType process_type,
                       const pp::CompletionCallback& init_done_cb);
 
-  // Finish hooking interfaces up, after low-level initialization is
-  // complete.
-  bool LoadNaClModuleContinuationIntern();
-
   // Continuation for starting SRPC/JSProxy services as appropriate.
   // This is invoked as a callback when the NaCl module makes the
   // init_done reverse RPC to tell us that low-level initialization
@@ -163,7 +159,6 @@ class Plugin : public pp::Instance {
   // is successful, the file descriptor is opened and can be passed to sel_ldr
   // with the sandbox on.
   void BitcodeDidTranslate(int32_t pp_error);
-  void BitcodeDidTranslateContinuation(int32_t pp_error);
 
   // NaCl ISA selection manifest file support.  The manifest file is specified
   // using the "nacl" attribute in the <embed> tag.  First, the manifest URL (or

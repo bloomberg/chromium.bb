@@ -70,9 +70,6 @@ class PnaclCoordinator {
   // have been compiled.
   pp::CompletionCallback GetCompileProgressCallback(int64_t bytes_compiled);
 
-  // Get the last known load progress.
-  void GetCurrentProgress(int64_t* bytes_loaded, int64_t* bytes_total);
-
   // Return true if we should delay the progress event reporting.
   // This delay approximates:
   // - the size of the buffer of bytes sent but not-yet-compiled by LLC.

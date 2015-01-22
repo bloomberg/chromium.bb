@@ -186,11 +186,6 @@ interface PPB_NaCl_Private {
                     [out] mem_t imc_handle,
                     [in] PP_CompletionCallback callback);
 
-  /* This function starts the IPC proxy so the nexe can communicate with the
-   * browser.
-   */
-  PP_Bool StartPpapiProxy(PP_Instance instance);
-
   /* On POSIX systems, this function returns the file descriptor of
    * /dev/urandom.  On non-POSIX systems, this function returns 0.
    */

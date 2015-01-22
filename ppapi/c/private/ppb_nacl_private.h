@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Jan 21 14:48:24 2015. */
+/* From private/ppb_nacl_private.idl modified Thu Jan 22 07:26:18 2015. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -228,10 +228,6 @@ struct PPB_NaCl_Private_1_0 {
                        PP_NaClAppProcessType process_type,
                        void* imc_handle,
                        struct PP_CompletionCallback callback);
-  /* This function starts the IPC proxy so the nexe can communicate with the
-   * browser.
-   */
-  PP_Bool (*StartPpapiProxy)(PP_Instance instance);
   /* On POSIX systems, this function returns the file descriptor of
    * /dev/urandom.  On non-POSIX systems, this function returns 0.
    */
