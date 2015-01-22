@@ -34,6 +34,8 @@
         'bluetooth_adapter_win.h',
         'bluetooth_audio_sink.cc',
         'bluetooth_audio_sink.h',
+        'bluetooth_audio_sink_chromeos.cc',
+        'bluetooth_audio_sink_chromeos.h',
         'bluetooth_channel_mac.mm',
         'bluetooth_channel_mac.h',
         'bluetooth_device.cc',
