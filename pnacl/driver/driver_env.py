@@ -23,7 +23,8 @@ INITIAL_ENV = {
   'BASE_NACL'       : '${@FindBaseNaCl}',      # Absolute path of native_client/
   'BASE_TOOLCHAIN'  : '${@FindBaseToolchain}', # Absolute path to toolchain/OS_ARCH/
   'BASE'            : '${@FindBasePNaCl}',     # Absolute path to PNaCl
-  'BUILD_OS'        : '${@GetBuildOS}',        # "linux", "darwin" or "windows"
+  'BUILD_OS'        : '${@GetBuildOS}',        # "linux", "nacl", "darwin"
+                                               # or "windows"
   'BUILD_ARCH'      : '${@GetBuildArch}',      # "x86_64" or "i686" or "i386"
 
   # Directories
@@ -100,21 +101,25 @@ INITIAL_ENV = {
   'SO_EXT'          : '${SO_EXT_%BUILD_OS%}',
   'SO_EXT_darwin'   : '.dylib',
   'SO_EXT_linux'    : '.so',
+  'SO_EXT_nacl'     : '.so',
   'SO_EXT_windows'  : '.dll',
 
   'SO_DIR'          : '${SO_DIR_%BUILD_OS%}',
   'SO_DIR_darwin'   : 'lib',
   'SO_DIR_linux'    : 'lib',
+  'SO_DIR_nacl'     : 'lib',
   'SO_DIR_windows'  : 'bin',  # On Windows, DLLs are placed in bin/
                               # because the dynamic loader searches %PATH%
 
   'EXEC_EXT'        : '${EXEC_EXT_%BUILD_OS%}',
   'EXEC_EXT_darwin' : '',
   'EXEC_EXT_linux'  : '',
+  'EXEC_EXT_nacl'   : '',
   'EXEC_EXT_windows': '.exe',
 
   'SCONS_OS'            : '${SCONS_OS_%BUILD_OS%}',
   'SCONS_OS_linux'      : 'linux',
+  'SCONS_OS_nacl'       : 'nacl',
   'SCONS_OS_darwin'     : 'mac',
   'SCONS_OS_windows'    : 'win',
 
