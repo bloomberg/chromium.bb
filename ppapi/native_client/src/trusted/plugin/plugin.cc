@@ -83,7 +83,8 @@ bool Plugin::LoadHelperNaClModuleInternal(NaClSubprocess* subprocess,
     PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule "
                    "WaitForSelLdrStart timed out!\n"));
     service_runtime->Shutdown();
-    delete service_runtime;
+    // Don't delete service_runtime here; it could still be used by the pending
+    // SignalStartSelLdrDone callback.
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule (service_runtime_started=%d)\n",
@@ -122,8 +123,12 @@ void Plugin::StartSelLdrOnMainThread(int32_t pp_error,
 void Plugin::SignalStartSelLdrDone(int32_t pp_error,
                                    bool* started,
                                    ServiceRuntime* service_runtime) {
-  *started = (pp_error == PP_OK);
-  service_runtime->SignalStartSelLdrDone();
+  if (service_runtime->SelLdrWaitTimedOut()) {
+    delete service_runtime;
+  } else {
+    *started = (pp_error == PP_OK);
+    service_runtime->SignalStartSelLdrDone();
+  }
 }
 
 void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,

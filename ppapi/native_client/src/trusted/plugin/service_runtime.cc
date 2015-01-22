@@ -249,6 +249,7 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       rev_interface_(new PluginReverseInterface(anchor_, pp_instance, this,
                                                 init_done_cb)),
       start_sel_ldr_done_(false),
+      sel_ldr_wait_timed_out_(false),
       start_nexe_done_(false),
       nexe_started_ok_(false),
       bootstrap_channel_(NACL_INVALID_HANDLE) {
@@ -427,6 +428,8 @@ bool ServiceRuntime::WaitForSelLdrStart() {
     int64_t now = NaClGetTimeOfDayMicroseconds();
     left_to_wait = deadline - now;
   }
+  if (left_to_wait <= 0)
+    sel_ldr_wait_timed_out_ = true;
   return start_sel_ldr_done_;
 }
 
@@ -434,6 +437,11 @@ void ServiceRuntime::SignalStartSelLdrDone() {
   nacl::MutexLocker take(&mu_);
   start_sel_ldr_done_ = true;
   NaClXCondVarSignal(&cond_);
+}
+
+bool ServiceRuntime::SelLdrWaitTimedOut() {
+  nacl::MutexLocker take(&mu_);
+  return sel_ldr_wait_timed_out_;
 }
 
 bool ServiceRuntime::WaitForNexeStart() {

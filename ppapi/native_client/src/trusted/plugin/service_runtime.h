@@ -147,6 +147,9 @@ class ServiceRuntime {
   // actually start. Returns |true| is the nexe started successfully.
   bool WaitForNexeStart();
 
+  // Returns |true| if WaitForSelLdrStart() timed out.
+  bool SelLdrWaitTimedOut();
+
   // Signal to waiting threads that LoadNexeAndStart is complete (either
   // successfully or unsuccessfully).
   void SignalNexeStarted(bool ok);
@@ -192,6 +195,7 @@ class ServiceRuntime {
   NaClMutex mu_;
   NaClCondVar cond_;
   bool start_sel_ldr_done_;
+  bool sel_ldr_wait_timed_out_;
   bool start_nexe_done_;
   bool nexe_started_ok_;
 
