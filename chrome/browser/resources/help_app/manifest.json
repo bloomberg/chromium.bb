@@ -27,8 +27,5 @@
   "permissions": [
     "storage"
   ],
-  "web_accessible_resources": [
-    "embedded_device_content/*"
-  ],
   "incognito": "split"
 }
