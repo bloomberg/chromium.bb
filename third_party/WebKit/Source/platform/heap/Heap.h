@@ -864,10 +864,6 @@ public:
     static bool willObjectBeLazilySwept(const T* objectPointer)
     {
         static_assert(IsGarbageCollectedType<T>::value, "only objects deriving from GarbageCollected can be used.");
-#if ENABLE(ASSERT)
-        ASSERT(objectPointer);
-        HeapObjectHeader::fromPayload(objectPointer)->checkHeader();
-#endif
 #if ENABLE(OILPAN)
         BaseHeapPage* page = pageFromObject(objectPointer);
         if (page->hasBeenSwept())
