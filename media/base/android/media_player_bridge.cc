@@ -105,21 +105,6 @@ void MediaPlayerBridge::CreateJavaMediaPlayerBridge() {
   AttachListener(j_media_player_bridge_.obj());
 }
 
-void MediaPlayerBridge::SetJavaMediaPlayerBridge(
-    jobject j_media_player_bridge) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  CHECK(env);
-
-  j_media_player_bridge_.Reset(env, j_media_player_bridge);
-}
-
-base::android::ScopedJavaLocalRef<jobject> MediaPlayerBridge::
-    GetJavaMediaPlayerBridge() {
-  base::android::ScopedJavaLocalRef<jobject> j_bridge(
-      j_media_player_bridge_);
-  return j_bridge;
-}
-
 void MediaPlayerBridge::SetDuration(base::TimeDelta duration) {
   duration_ = duration;
 }

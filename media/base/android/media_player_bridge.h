@@ -77,8 +77,6 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   void OnDidSetDataUriDataSource(JNIEnv* env, jobject obj, jboolean success);
 
  protected:
-  void SetJavaMediaPlayerBridge(jobject j_media_player_bridge);
-  base::android::ScopedJavaLocalRef<jobject> GetJavaMediaPlayerBridge();
   void SetDuration(base::TimeDelta time);
 
   virtual void PendingSeekInternal(const base::TimeDelta& time);
