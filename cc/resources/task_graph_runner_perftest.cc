@@ -51,12 +51,6 @@ class TaskGraphRunnerPerfTest : public testing::Test {
   }
   void TearDown() override { task_graph_runner_ = nullptr; }
 
-  void AfterTest(const std::string& test_name) {
-    // Format matches chrome/test/perf/perf_test.h:PrintResult
-    printf(
-        "*RESULT %s: %.2f runs/s\n", test_name.c_str(), timer_.LapsPerSecond());
-  }
-
   void RunBuildTaskGraphTest(const std::string& test_name,
                              int num_top_level_tasks,
                              int num_tasks,
