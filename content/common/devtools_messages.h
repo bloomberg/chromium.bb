@@ -54,14 +54,24 @@
 
 // These are messages sent from DevToolsAgent to DevToolsClient through the
 // browser.
-// WebKit-level transport.
+
+// Agent -> Client message chunk.
+//   |is_first| marks the first chunk, comes with the |message_size| for
+//   total message size.
+//   |is_last| marks the last chunk. |call_id| and |post_state| are optional
+//    parameters passed with the last chunk of the protocol response.
+IPC_STRUCT_BEGIN(DevToolsMessageChunk)
+  IPC_STRUCT_MEMBER(bool, is_first)
+  IPC_STRUCT_MEMBER(bool, is_last)
+  IPC_STRUCT_MEMBER(int, message_size)
+  IPC_STRUCT_MEMBER(int, call_id)
+  IPC_STRUCT_MEMBER(std::string, data)
+  IPC_STRUCT_MEMBER(std::string, post_state)
+IPC_STRUCT_END()
 
 // Sends response from the agent to the client. Supports chunked encoding.
-// First (the only) chunk arrives with the |total_size| != 0,
-// remaining chunks arrive with |total_size| == 0.
-IPC_MESSAGE_ROUTED2(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                    std::string /* message */,
-                    uint32 /* total_size */)
+IPC_MESSAGE_ROUTED1(DevToolsClientMsg_DispatchOnInspectorFrontend,
+                    DevToolsMessageChunk /* message */)
 
 //-----------------------------------------------------------------------------
 // These are messages sent from DevToolsClient to DevToolsAgent through the
@@ -110,11 +120,6 @@ IPC_MESSAGE_ROUTED0(DevToolsMsg_SetupDevToolsClient)
 // Transport from Inspector frontend to frontend host.
 IPC_MESSAGE_ROUTED1(DevToolsHostMsg_DispatchOnEmbedder,
                     std::string /* message */)
-
-// Updates agent runtime state stored in devtools manager in order to support
-// cross-navigation instrumentation.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_SaveAgentRuntimeState,
-                    std::string /* state */)
 
 //-----------------------------------------------------------------------------
 // These are messages sent from the GPU process to the inspected renderer.

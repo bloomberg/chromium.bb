@@ -44,26 +44,35 @@ bool SharedWorkerDevToolsAgent::OnMessageReceived(const IPC::Message& message) {
 }
 
 void SharedWorkerDevToolsAgent::SendDevToolsMessage(
-    const blink::WebString& message) {
-  std::string msg(message.utf8());
+    int call_id,
+    const blink::WebString& msg,
+    const blink::WebString& state) {
+  std::string message = msg.utf8();
+  std::string post_state = state.utf8();
+  DevToolsMessageChunk chunk;
+  chunk.message_size = message.size();
+  chunk.is_first = true;
+
   if (message.length() < kMaxMessageChunkSize) {
+    chunk.data.swap(message);
+    chunk.call_id = call_id;
+    chunk.post_state = post_state;
+    chunk.is_last = true;
     Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-        route_id_, msg, msg.size()));
+        route_id_, chunk));
     return;
   }
 
-  for (size_t pos = 0; pos < msg.length(); pos += kMaxMessageChunkSize) {
+  for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
+    chunk.is_last = pos + kMaxMessageChunkSize >= message.length();
+    chunk.call_id = chunk.is_last ? call_id : 0;
+    chunk.post_state = chunk.is_last ? post_state : std::string();
+    chunk.data = message.substr(pos, kMaxMessageChunkSize);
     Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-        route_id_,
-        msg.substr(pos, kMaxMessageChunkSize),
-        pos ? 0 : msg.size()));
+        route_id_, chunk));
+    chunk.is_first = false;
+    chunk.message_size = 0;
   }
-}
-
-void SharedWorkerDevToolsAgent::SaveDevToolsAgentState(
-    const blink::WebString& state) {
-  Send(new DevToolsHostMsg_SaveAgentRuntimeState(route_id_,
-                                                 state.utf8()));
 }
 
 void SharedWorkerDevToolsAgent::OnAttach(const std::string& host_id) {

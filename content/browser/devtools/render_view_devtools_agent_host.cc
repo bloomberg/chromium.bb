@@ -23,7 +23,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -354,8 +353,6 @@ bool RenderViewDevToolsAgentHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(RenderViewDevToolsAgentHost, message)
     IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
                         OnDispatchOnInspectorFrontend)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
-                        OnSaveAgentRuntimeState)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -477,7 +474,7 @@ bool RenderViewDevToolsAgentHost::Close() {
 void RenderViewDevToolsAgentHost::ConnectRenderFrameHost(RenderFrameHost* rfh) {
   SetRenderFrameHost(rfh);
   if (IsAttached())
-    Reattach(state_);
+    Reattach();
 }
 
 void RenderViewDevToolsAgentHost::DisconnectRenderFrameHost() {
@@ -504,19 +501,11 @@ void RenderViewDevToolsAgentHost::SynchronousSwapCompositorFrame(
   page_handler_->OnSwapCompositorFrame(frame_metadata);
 }
 
-void RenderViewDevToolsAgentHost::OnSaveAgentRuntimeState(
-    const std::string& state) {
-  if (!render_frame_host_)
-    return;
-  state_ = state;
-}
-
 void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
-    const std::string& message,
-    uint32 total_size) {
+    const DevToolsMessageChunk& message) {
   if (!IsAttached() || !render_frame_host_)
     return;
-  ProcessChunkedMessageFromAgent(message, total_size);
+  ProcessChunkedMessageFromAgent(message);
 }
 
 void RenderViewDevToolsAgentHost::DispatchOnInspectorFrontend(

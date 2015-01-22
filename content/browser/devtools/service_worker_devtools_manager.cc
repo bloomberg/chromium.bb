@@ -9,7 +9,6 @@
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
-#include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/worker_service.h"

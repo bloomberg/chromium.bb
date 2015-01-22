@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_IPC_DEVTOOLS_AGENT_HOST_H_
 
 #include "content/browser/devtools/devtools_agent_host_impl.h"
+#include "content/common/devtools_messages.h"
 
 namespace IPC {
 class Message;
@@ -25,9 +26,8 @@ class CONTENT_EXPORT IPCDevToolsAgentHost : public DevToolsAgentHostImpl {
   IPCDevToolsAgentHost();
   ~IPCDevToolsAgentHost() override;
 
-  void Reattach(const std::string& saved_agent_state);
-  void ProcessChunkedMessageFromAgent(const std::string& message,
-                                      uint32 total_size);
+  void Reattach();
+  void ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
 
   virtual void SendMessageToAgent(IPC::Message* msg) = 0;
   virtual void OnClientAttached() = 0;
@@ -36,6 +36,7 @@ class CONTENT_EXPORT IPCDevToolsAgentHost : public DevToolsAgentHostImpl {
  private:
   std::string message_buffer_;
   uint32 message_buffer_size_;
+  std::string state_cookie_;
 };
 
 }  // namespace content

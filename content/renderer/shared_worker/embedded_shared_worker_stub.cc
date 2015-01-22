@@ -171,14 +171,11 @@ blink::WebWorkerPermissionClientProxy*
       ChildThread::current()->thread_safe_sender());
 }
 
-void EmbeddedSharedWorkerStub::dispatchDevToolsMessage(
-      const blink::WebString& message) {
-  worker_devtools_agent_->SendDevToolsMessage(message);
-}
-
-void EmbeddedSharedWorkerStub::saveDevToolsAgentState(
-      const blink::WebString& state) {
-  worker_devtools_agent_->SaveDevToolsAgentState(state);
+void EmbeddedSharedWorkerStub::sendDevToolsMessage(
+    int call_id,
+    const blink::WebString& message,
+    const blink::WebString& state) {
+  worker_devtools_agent_->SendDevToolsMessage(call_id, message, state);
 }
 
 void EmbeddedSharedWorkerStub::Shutdown() {

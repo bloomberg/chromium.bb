@@ -118,21 +118,12 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DevToolsAgent::sendMessageToInspectorFrontend(
-    const blink::WebString& message) {
-  std::string msg(message.utf8());
-  if (msg.length() < kMaxMessageChunkSize) {
-    Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-        routing_id(), msg, msg.size()));
-    return;
-  }
-
-  for (size_t pos = 0; pos < msg.length(); pos += kMaxMessageChunkSize) {
-    Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-        routing_id(),
-        msg.substr(pos, kMaxMessageChunkSize),
-        pos ? 0 : msg.size()));
-  }
+void DevToolsAgent::sendProtocolMessage(
+    int call_id,
+    const blink::WebString& message,
+    const blink::WebString& state_cookie) {
+  SendChunkedProtocolMessage(
+      this, routing_id(), call_id, message.utf8(), state_cookie.utf8());
 }
 
 long DevToolsAgent::processId() {
@@ -141,11 +132,6 @@ long DevToolsAgent::processId() {
 
 int DevToolsAgent::debuggerId() {
   return routing_id();
-}
-
-void DevToolsAgent::saveAgentRuntimeState(
-    const blink::WebString& state) {
-  Send(new DevToolsHostMsg_SaveAgentRuntimeState(routing_id(), state.utf8()));
 }
 
 blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
@@ -273,6 +259,39 @@ DevToolsAgent* DevToolsAgent::FromRoutingId(int routing_id) {
     return it->second;
   }
   return NULL;
+}
+
+// static
+void DevToolsAgent::SendChunkedProtocolMessage(
+    IPC::Sender* sender,
+    int routing_id,
+    int call_id,
+    const std::string& message,
+    const std::string& post_state) {
+  DevToolsMessageChunk chunk;
+  chunk.message_size = message.size();
+  chunk.is_first = true;
+
+  if (message.length() < kMaxMessageChunkSize) {
+    chunk.data = message;
+    chunk.call_id = call_id;
+    chunk.post_state = post_state;
+    chunk.is_last = true;
+    sender->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
+                     routing_id, chunk));
+    return;
+  }
+
+  for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
+    chunk.is_last = pos + kMaxMessageChunkSize >= message.length();
+    chunk.call_id = chunk.is_last ? call_id : 0;
+    chunk.post_state = chunk.is_last ? post_state : std::string();
+    chunk.data = message.substr(pos, kMaxMessageChunkSize);
+    sender->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
+                     routing_id, chunk));
+    chunk.is_first = false;
+    chunk.message_size = 0;
+  }
 }
 
 void DevToolsAgent::OnAttach(const std::string& host_id) {
