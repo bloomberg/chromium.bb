@@ -1559,6 +1559,9 @@ void EventSender::SetTouchCancelable(bool cancelable) {
 }
 
 void EventSender::DumpFilenameBeingDragged() {
+  if (current_drag_data_.isNull())
+    return;
+
   WebString filename;
   WebVector<WebDragData::Item> items = current_drag_data_.items();
   for (size_t i = 0; i < items.size(); ++i) {
