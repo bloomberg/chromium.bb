@@ -111,7 +111,6 @@ class PRINTING_EXPORT PrintBackend
 
   // Allocate a print backend. If |print_backend_settings| is NULL, default
   // settings will be used.
-  // Return NULL if no print backend available.
   static scoped_refptr<PrintBackend> CreateInstance(
       const base::DictionaryValue* print_backend_settings);
 

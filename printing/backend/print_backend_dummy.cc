@@ -13,10 +13,49 @@
 
 namespace printing {
 
+class DummyPrintBackend : public PrintBackend {
+ public:
+  DummyPrintBackend() {
+  }
+
+  bool EnumeratePrinters(PrinterList* printer_list) override {
+    return false;
+  }
+
+  std::string GetDefaultPrinterName() override {
+    return std::string();
+  }
+
+  bool GetPrinterSemanticCapsAndDefaults(
+      const std::string& printer_name,
+      PrinterSemanticCapsAndDefaults* printer_info) override {
+    return false;
+  }
+
+  bool GetPrinterCapsAndDefaults(
+      const std::string& printer_name,
+      PrinterCapsAndDefaults* printer_info) override {
+    return false;
+  }
+
+  std::string GetPrinterDriverInfo(
+      const std::string& printer_name) override {
+    return std::string();
+  }
+
+  bool IsValidPrinter(const std::string& printer_name) override {
+    return false;
+  }
+
+ private:
+  ~DummyPrintBackend() {}
+
+  DISALLOW_COPY_AND_ASSIGN(DummyPrintBackend);
+};
+
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
     const base::DictionaryValue* print_backend_settings) {
-  NOTREACHED();
-  return NULL;
+  return new DummyPrintBackend();
 }
 
 }  // namespace printing
