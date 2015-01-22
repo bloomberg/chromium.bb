@@ -217,7 +217,7 @@ InputHandlerProxy::HandleInputEventWithLatencyInfo(
   if (uma_latency_reporting_enabled_)
     ReportInputEventLatencyUma(event, *latency_info);
 
-  TRACE_EVENT_FLOW_STEP0("input",
+  TRACE_EVENT_FLOW_STEP0("input,benchmark",
                          "LatencyInfo.Flow",
                          TRACE_ID_DONT_MANGLE(latency_info->trace_id),
                          "HandleInputEventImpl");
@@ -231,7 +231,7 @@ InputHandlerProxy::HandleInputEventWithLatencyInfo(
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     const WebInputEvent& event) {
   DCHECK(input_handler_);
-  TRACE_EVENT1("input", "InputHandlerProxy::HandleInputEvent",
+  TRACE_EVENT1("input,benchmark", "InputHandlerProxy::HandleInputEvent",
                "type", WebInputEventTraits::GetName(event.type));
 
   client_->DidReceiveInputEvent(event.type);

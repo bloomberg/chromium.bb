@@ -484,14 +484,15 @@ void SingleThreadProxy::DidSwapBuffersOnImplThread() {
 }
 
 void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::DidSwapBuffersCompleteOnImplThread");
+  TRACE_EVENT0("cc,benchmark",
+               "SingleThreadProxy::DidSwapBuffersCompleteOnImplThread");
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->DidSwapBuffersComplete();
   layer_tree_host_->DidCompleteSwapBuffers();
 }
 
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
-  TRACE_EVENT0("cc", "SingleThreadProxy::CompositeImmediately");
+  TRACE_EVENT0("cc,benchmark", "SingleThreadProxy::CompositeImmediately");
   DCHECK(Proxy::IsMainThread());
   base::AutoReset<bool> inside_composite(&inside_synchronous_composite_, true);
 
