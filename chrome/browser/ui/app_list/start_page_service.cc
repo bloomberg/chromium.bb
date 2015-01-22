@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -447,6 +448,22 @@ void StartPageService::Shutdown() {
   network_change_observer_.reset();
 }
 
+void StartPageService::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& /*details*/,
+    const content::FrameNavigateParams& /*params*/) {
+  // Set the zoom level in DidNavigateMainFrame, as this is the earliest point
+  // at which it can be done and not be affected by the ZoomController's
+  // DidNavigateMainFrame handler.
+  //
+  // Use a temporary zoom level for this web contents (aka isolated zoom
+  // mode) so changes to its zoom aren't reflected in any preferences.
+  ui_zoom::ZoomController::FromWebContents(contents_.get())
+      ->SetZoomMode(ui_zoom::ZoomController::ZOOM_MODE_ISOLATED);
+  // Set to have a zoom level of 0, which corresponds to 100%, so the
+  // contents aren't affected by the browser's default zoom level.
+  ui_zoom::ZoomController::FromWebContents(contents_.get())->SetZoomLevel(0);
+}
+
 void StartPageService::WebUILoaded() {
   // There's a race condition between the WebUI loading, and calling its JS
   // functions. Specifically, calling LoadContents() doesn't mean that the page
@@ -464,6 +481,12 @@ void StartPageService::LoadContents() {
       content::WebContents::CreateParams(profile_)));
   contents_delegate_.reset(new StartPageWebContentsDelegate());
   contents_->SetDelegate(contents_delegate_.get());
+
+  // The ZoomController needs to be created before the web contents is observed
+  // by this object. Otherwise it will react to DidNavigateMainFrame after this
+  // object does, resetting the zoom mode in the process.
+  ui_zoom::ZoomController::CreateForWebContents(contents_.get());
+  Observe(contents_.get());
 
   contents_->GetController().LoadURL(
       GURL(chrome::kChromeUIAppListStartPageURL),
