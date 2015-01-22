@@ -200,6 +200,7 @@
           ],
         }, {
           'sources': [
+            'browser/cast_content_browser_client_simple.cc',
             'browser/cast_network_delegate_simple.cc',
             'browser/devtools/remote_debugging_server_simple.cc',
             'browser/media/cast_browser_cdm_factory_simple.cc',

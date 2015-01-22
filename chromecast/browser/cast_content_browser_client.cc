@@ -135,6 +135,8 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     if (browser_command_line->HasSwitch(switches::kEnableCmaMediaPipeline))
       command_line->AppendSwitch(switches::kEnableCmaMediaPipeline);
   }
+
+  PlatformAppendExtraCommandLineSwitches(command_line);
 }
 
 content::AccessTokenStore* CastContentBrowserClient::CreateAccessTokenStore() {

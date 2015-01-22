@@ -21,6 +21,8 @@ namespace shell {
 class CastBrowserMainParts;
 class URLRequestContextFactory;
 
+void PlatformAppendExtraCommandLineSwitches(base::CommandLine* command_line);
+
 class CastContentBrowserClient: public content::ContentBrowserClient {
  public:
   CastContentBrowserClient();
