@@ -25,6 +25,11 @@ ReplayProcess::ReplayProcess()
 
 ReplayProcess::~ReplayProcess() {
   channel_.reset();
+
+  // Signal this event before shutting down the service process. That way all
+  // background threads can cleanup.
+  shutdown_event_.Signal();
+  io_thread_.Stop();
 }
 
 bool ReplayProcess::Initialize(int argc, const char** argv) {
@@ -37,16 +42,22 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
     return false;
   }
 
-  // Log to default destination.
+  // Log to both stderr and file destinations.
   logging::SetMinLogLevel(logging::LOG_ERROR);
-  logging::InitLogging(logging::LoggingSettings());
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_ALL;
+  settings.log_file = FILE_PATH_LITERAL("ipc_replay.log");
+  logging::InitLogging(settings);
 
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
+#if defined(OS_POSIX)
   base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
   g_fds->Set(kPrimaryIPCChannel,
              kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
+#endif
+
   return true;
 }
 

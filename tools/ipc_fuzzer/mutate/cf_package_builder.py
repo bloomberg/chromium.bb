@@ -15,12 +15,30 @@ import shutil
 import sys
 import tempfile
 
+FUZZER_LIST = [
+  'ipc_fuzzer_mut',
+  'ipc_fuzzer_gen',
+]
+
+def GetPlatform():
+  platform = None
+  if sys.platform.startswith('win'):
+    platform = 'WINDOWS'
+  elif sys.platform.startswith('linux'):
+    platform = 'LINUX'
+  elif sys.platform == 'darwin':
+    platform = 'MAC'
+
+  assert platform is not None
+  return platform
+
 class CFPackageBuilder:
   def __init__(self):
-    self.fuzzer_list = [
-      'ipc_fuzzer_mut',
-      'ipc_fuzzer_gen',
-    ]
+    self.platform = GetPlatform()
+    if self.platform == 'WINDOWS':
+      self.fuzzer_list = [i + '.exe' for i in FUZZER_LIST]
+    else:
+      self.fuzzer_list = FUZZER_LIST
 
   def parse_args(self):
     desc = 'Builder of IPC fuzzer packages for ClusterFuzz'

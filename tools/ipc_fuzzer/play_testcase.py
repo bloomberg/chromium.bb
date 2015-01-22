@@ -17,6 +17,24 @@ import platform
 import subprocess
 import sys
 
+CHROME_BINARY_FOR_PLATFORM_DICT = {
+  'LINUX': 'chrome',
+  'MAC': 'Chromium.app/Contents/MacOS/Chromium',
+  'WINDOWS': 'chrome.exe',
+}
+
+def GetPlatform():
+  platform = None
+  if sys.platform.startswith('win'):
+    platform = 'WINDOWS'
+  elif sys.platform.startswith('linux'):
+    platform = 'LINUX'
+  elif sys.platform == 'darwin':
+    platform = 'MAC'
+
+  assert platform is not None
+  return platform
+
 def main():
   desc = 'Wrapper to run chrome with child processes replaced by IPC fuzzers'
   parser = argparse.ArgumentParser(description=desc)
@@ -34,8 +52,11 @@ def main():
                       help='any additional arguments are passed to chrome')
   args = parser.parse_args()
 
-  chrome_binary = 'chrome'
+  platform = GetPlatform()
+  chrome_binary = CHROME_BINARY_FOR_PLATFORM_DICT[platform]
   fuzzer_binary = 'ipc_fuzzer_replay'
+  if platform == 'WINDOWS':
+    fuzzer_binary += '.exe'
 
   script_path = os.path.realpath(__file__)
   ipc_fuzzer_dir = os.path.dirname(script_path)

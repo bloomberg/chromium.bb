@@ -720,7 +720,8 @@
                 '../skia/skia.gyp:filter_fuzz_stub',
               ],
             }],
-            ['enable_ipc_fuzzer==1 and OS=="linux" and component!="shared_library"', {
+            ['enable_ipc_fuzzer==1 and component!="shared_library" and '
+                 '(OS=="linux" or OS=="win")', {
               'dependencies': [
                 '../tools/ipc_fuzzer/ipc_fuzzer.gyp:*',
               ],
