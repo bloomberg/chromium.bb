@@ -22,18 +22,14 @@ class SpdyHeadersHandlerInterface {
   // A callback method which notifies when the parser starts handling a new
   // SPDY headers block, this method also notifies on the number of headers in
   // the block.
-  virtual void OnHeaderBlock(SpdyStreamId stream_id,
-                             uint32_t num_of_headers) = 0;
+  virtual void OnHeaderBlock(uint32_t num_of_headers) = 0;
 
   // A callback method which notifies on a SPDY header key value pair.
-  virtual void OnHeader(SpdyStreamId stream_id,
-                        base::StringPiece key,
-                        base::StringPiece value) = 0;
+  virtual void OnHeader(base::StringPiece key, base::StringPiece value) = 0;
 
   // A callback method which notifies when the parser finishes handling a SPDY
   // headers block. Also notifies on the total number of bytes in this block.
-  virtual void OnHeaderBlockEnd(SpdyStreamId stream_id,
-                                size_t header_bytes_parsed) = 0;
+  virtual void OnHeaderBlockEnd(size_t header_bytes_parsed) = 0;
 };
 
 namespace test {
@@ -75,6 +71,8 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
     HEADER_BLOCK_TOO_LARGE,
     // Set when a header key or value exceeds |kMaximumFieldLength|.
     HEADER_FIELD_TOO_LARGE,
+    // Set when the parser is given an unexpected stream ID.
+    UNEXPECTED_STREAM_ID,
   };
   ParserError get_error() const { return error_; }
 
