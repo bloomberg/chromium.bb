@@ -745,7 +745,6 @@ class BASE_EXPORT TraceLog {
   // This lock protects accesses to thread_names_, thread_event_start_times_
   // and thread_colors_.
   Lock thread_info_lock_;
-  int locked_line_;
   Mode mode_;
   int num_traces_recorded_;
   scoped_ptr<TraceBuffer> logged_events_;

@@ -12,8 +12,9 @@ namespace base {
 // Names of codepages (charsets) understood by icu.
 BASE_I18N_EXPORT extern const char kCodepageLatin1[];  // a.k.a. ISO 8859-1
 BASE_I18N_EXPORT extern const char kCodepageUTF8[];
-BASE_I18N_EXPORT extern const char kCodepageUTF16BE[];
-BASE_I18N_EXPORT extern const char kCodepageUTF16LE[];
+
+// The other possible options are UTF-16BE and UTF-16LE, but they are unused in
+// Chromium as of this writing.
 
 }  // namespace base
 

@@ -8,8 +8,6 @@ namespace base {
 
 const char kCodepageLatin1[] = "ISO-8859-1";
 const char kCodepageUTF8[] = "UTF-8";
-const char kCodepageUTF16BE[] = "UTF-16BE";
-const char kCodepageUTF16LE[] = "UTF-16LE";
 
 }  // namespace base
 

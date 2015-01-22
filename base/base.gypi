@@ -929,7 +929,6 @@
               '<(DEPTH)/third_party/wtl/include',
             ],
             'sources!': [
-              'event_recorder_stubs.cc',
               'files/file_path_watcher_fsevents.cc',
               'files/file_path_watcher_fsevents.h',
               'files/file_path_watcher_kqueue.cc',

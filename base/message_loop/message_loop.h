@@ -106,7 +106,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
     TYPE_IO,
 #if defined(OS_ANDROID)
     TYPE_JAVA,
-#endif // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
   };
 
   // Normally, it is not necessary to instantiate a MessageLoop.  Instead, it
@@ -452,6 +452,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // this queue is only accessed (push/pop) by our current thread.
   TaskQueue work_queue_;
 
+#if defined(OS_WIN)
   // How many high resolution tasks are in the pending task queue. This value
   // increases by N every time we call ReloadWorkQueue() and decreases by 1
   // every time we call RunTask() if the task needs a high resolution timer.
@@ -459,6 +460,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Tracks if we have requested high resolution timers. Its only use is to
   // turn off the high resolution timer upon loop destruction.
   bool in_high_res_mode_;
+#endif
 
   // Contains delayed tasks, sorted by their 'delayed_run_time' property.
   DelayedTaskQueue delayed_work_queue_;
@@ -639,8 +641,8 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
   bool WatchFileDescriptor(int fd,
                            bool persistent,
                            Mode mode,
-                           FileDescriptorWatcher *controller,
-                           Watcher *delegate);
+                           FileDescriptorWatcher* controller,
+                           Watcher* delegate);
 #endif  // defined(OS_IOS) || defined(OS_POSIX)
 #endif  // !defined(OS_NACL_SFI)
 };

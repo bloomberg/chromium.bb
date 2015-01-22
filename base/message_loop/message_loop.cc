@@ -117,8 +117,10 @@ MessageLoop::DestructionObserver::~DestructionObserver() {
 
 MessageLoop::MessageLoop(Type type)
     : type_(type),
+#if defined(OS_WIN)
       pending_high_res_tasks_(0),
       in_high_res_mode_(false),
+#endif
       nestable_tasks_allowed_(true),
 #if defined(OS_WIN)
       os_modal_loop_(false),
@@ -133,8 +135,10 @@ MessageLoop::MessageLoop(Type type)
 MessageLoop::MessageLoop(scoped_ptr<MessagePump> pump)
     : pump_(pump.Pass()),
       type_(TYPE_CUSTOM),
+#if defined(OS_WIN)
       pending_high_res_tasks_(0),
       in_high_res_mode_(false),
+#endif
       nestable_tasks_allowed_(true),
 #if defined(OS_WIN)
       os_modal_loop_(false),
@@ -422,10 +426,13 @@ bool MessageLoop::ProcessNextDelayedNonNestableTask() {
 void MessageLoop::RunTask(const PendingTask& pending_task) {
   DCHECK(nestable_tasks_allowed_);
 
+#if defined(OS_WIN)
   if (pending_task.is_high_res) {
     pending_high_res_tasks_--;
-    CHECK(pending_high_res_tasks_ >= 0);
+    CHECK_GE(pending_high_res_tasks_, 0);
   }
+#endif
+
   // Execute the task and assume the worst: It is probably not reentrant.
   nestable_tasks_allowed_ = false;
 
@@ -495,8 +502,12 @@ void MessageLoop::ReloadWorkQueue() {
   // load. That reduces the number of locks-per-task significantly when our
   // queues get large.
   if (work_queue_.empty()) {
+#if defined(OS_WIN)
     pending_high_res_tasks_ +=
         incoming_task_queue_->ReloadWorkQueue(&work_queue_);
+#else
+    incoming_task_queue_->ReloadWorkQueue(&work_queue_);
+#endif
   }
 }
 
@@ -692,8 +703,8 @@ bool MessageLoopForIO::WaitForIOCompletion(DWORD timeout, IOHandler* filter) {
 bool MessageLoopForIO::WatchFileDescriptor(int fd,
                                            bool persistent,
                                            Mode mode,
-                                           FileDescriptorWatcher *controller,
-                                           Watcher *delegate) {
+                                           FileDescriptorWatcher* controller,
+                                           Watcher* delegate) {
   return ToPumpIO(pump_.get())->WatchFileDescriptor(
       fd,
       persistent,
