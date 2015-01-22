@@ -123,7 +123,7 @@ class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
   paths when dealing with the storage server and archives."""
   def __init__(self, base_url, platform, good_revision, bad_revision,
-               is_official, is_asan, use_local_repo, flash_path = None,
+               is_official, is_asan, use_local_cache, flash_path = None,
                pdf_path = None, android_apk = None):
     super(PathContext, self).__init__()
     # Store off the input parameters.
@@ -146,11 +146,19 @@ class PathContext(object):
     # The name of the ZIP file in a revision directory on the server.
     self.archive_name = None
 
-    # If the script is run from a local Chromium checkout,
-    # "--use-local-repo" option can be used to make the script run faster.
-    # It uses "git svn find-rev <SHA1>" command to convert git hash to svn
-    # revision number.
-    self.use_local_repo = use_local_repo
+    # Whether to cache and use the list of known revisions in a local file to
+    # speed up the initialization of the script at the next run.
+    self.use_local_cache = use_local_cache
+
+    # Locate the local checkout to speed up the script by using locally stored
+    # metadata.
+    abs_file_path = os.path.abspath(os.path.realpath(__file__))
+    local_src_path = os.path.join(os.path.dirname(abs_file_path), '..')
+    if abs_file_path.endswith(os.path.join('tools', 'bisect-builds.py')) and\
+        os.path.exists(os.path.join(local_src_path, '.git')):
+      self.local_src_path = os.path.normpath(local_src_path)
+    else:
+      self.local_src_path = None
 
     # If the script is being used for android builds.
     self.android = self.platform.startswith('android')
@@ -286,9 +294,16 @@ class PathContext(object):
       extract_dir = self._archive_extract_dir
     return os.path.join(extract_dir, self._binary_name)
 
-  def ParseDirectoryIndex(self):
+  def ParseDirectoryIndex(self, last_known_rev):
     """Parses the Google Storage directory listing into a list of revision
     numbers."""
+
+    def _GetMarkerForRev(revision):
+      if self.is_asan:
+        return '%s-%s/%s-%d.zip' % (
+            self.GetASANPlatformDir(), self.build_type,
+            self.GetASANBaseName(), revision)
+      return '%s%d' % (self._listing_platform_dir, revision)
 
     def _FetchAndParse(url):
       """Fetches a URL and returns a 2-Tuple of ([revisions], next-marker). If
@@ -339,9 +354,17 @@ class PathContext(object):
           revnum = prefix.text[prefix_len:-1]
           try:
             if not revnum.isdigit():
-              git_hash = revnum
-              revnum = self.GetSVNRevisionFromGitHash(git_hash)
-              githash_svn_dict[revnum] = git_hash
+              # During the svn-git migration, some items were stored by hash.
+              # These items may appear anywhere in the list of items.
+              # If |last_known_rev| is set, assume that the full list has been
+              # retrieved before (including the hashes), so we can safely skip
+              # all git hashes and focus on the numeric revision numbers.
+              if last_known_rev:
+                revnum = None
+              else:
+                git_hash = revnum
+                revnum = self.GetSVNRevisionFromGitHash(git_hash)
+                githash_svn_dict[revnum] = git_hash
             if revnum is not None:
               revnum = int(revnum)
               revisions.append(revnum)
@@ -350,15 +373,33 @@ class PathContext(object):
       return (revisions, next_marker, githash_svn_dict)
 
     # Fetch the first list of revisions.
-    (revisions, next_marker, self.githash_svn_dict) = _FetchAndParse(
-        self.GetListingURL())
+    if last_known_rev:
+      revisions = []
+      # Optimization: Start paging at the last known revision (local cache).
+      next_marker = _GetMarkerForRev(last_known_rev)
+      # Optimization: Stop paging at the last known revision (remote).
+      last_change_rev = GetChromiumRevision(self, self.GetLastChangeURL())
+      if last_known_rev == last_change_rev:
+        return []
+    else:
+      (revisions, next_marker, new_dict) = _FetchAndParse(self.GetListingURL())
+      self.githash_svn_dict.update(new_dict)
+      last_change_rev = None
+
     # If the result list was truncated, refetch with the next marker. Do this
     # until an entire directory listing is done.
     while next_marker:
+      sys.stdout.write('\rFetching revisions at marker %s' % next_marker)
+      sys.stdout.flush()
+
       next_url = self.GetListingURL(next_marker)
       (new_revisions, next_marker, new_dict) = _FetchAndParse(next_url)
       revisions.extend(new_revisions)
       self.githash_svn_dict.update(new_dict)
+      if last_change_rev and last_change_rev in new_revisions:
+        break
+    sys.stdout.write('\r')
+    sys.stdout.flush()
     return revisions
 
   def _GetSVNRevisionFromGitHashWithoutGitCheckout(self, git_sha1, depot):
@@ -391,35 +432,35 @@ class PathContext(object):
   def _GetSVNRevisionFromGitHashFromGitCheckout(self, git_sha1, depot):
     def _RunGit(command, path):
       command = ['git'] + command
-      if path:
-        original_path = os.getcwd()
-        os.chdir(path)
       shell = sys.platform.startswith('win')
       proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
+                              stderr=subprocess.PIPE, cwd=path)
       (output, _) = proc.communicate()
-
-      if path:
-        os.chdir(original_path)
       return (output, proc.returncode)
 
-    path = None
+    path = self.local_src_path
     if depot == 'blink':
-      path = os.path.join(os.getcwd(), 'third_party', 'WebKit')
-    if os.path.basename(os.getcwd()) == 'src':
+      path = os.path.join(self.local_src_path, 'third_party', 'WebKit')
+    revision = None
+    try:
       command = ['svn', 'find-rev', git_sha1]
       (git_output, return_code) = _RunGit(command, path)
       if not return_code:
-        return git_output.strip('\n')
-      raise ValueError
-    else:
-      print ('Script should be run from src folder. ' +
-             'Eg: python tools/bisect-builds.py -g 280588 -b 280590' +
-             '--archive linux64 --use-local-repo')
-      sys.exit(1)
+        revision = git_output.strip('\n')
+    except ValueError:
+      pass
+    if not revision:
+      command = ['log', '-n1', '--format=%s', git_sha1]
+      (git_output, return_code) = _RunGit(command, path)
+      if not return_code:
+        revision = re.match('SVN changes up to revision ([0-9]+)', git_output)
+        revision = revision.group(1) if revision else None
+    if revision:
+      return revision
+    raise ValueError
 
   def GetSVNRevisionFromGitHash(self, git_sha1, depot='chromium'):
-    if not self.use_local_repo:
+    if not self.local_src_path:
       return self._GetSVNRevisionFromGitHashWithoutGitCheckout(git_sha1, depot)
     else:
       return self._GetSVNRevisionFromGitHashFromGitCheckout(git_sha1, depot)
@@ -427,13 +468,56 @@ class PathContext(object):
   def GetRevList(self):
     """Gets the list of revision numbers between self.good_revision and
     self.bad_revision."""
+
+    cache = {}
+    # The cache is stored in the same directory as bisect-builds.py
+    cache_filename = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        '.bisect-builds-cache.json')
+    cache_dict_key = self.GetListingURL()
+
+    def _LoadBucketFromCache():
+      if self.use_local_cache:
+        try:
+          with open(cache_filename) as cache_file:
+            cache = json.load(cache_file)
+            revisions = cache.get(cache_dict_key, [])
+            githash_svn_dict = cache.get('githash_svn_dict', {})
+            if revisions:
+              print 'Loaded revisions %d-%d from %s' % (revisions[0],
+                  revisions[-1], cache_filename)
+            return (revisions, githash_svn_dict)
+        except (EnvironmentError, ValueError):
+          pass
+      return ([], {})
+
+    def _SaveBucketToCache():
+      """Save the list of revisions and the git-svn mappings to a file.
+      The list of revisions is assumed to be sorted."""
+      if self.use_local_cache:
+        cache[cache_dict_key] = revlist_all
+        cache['githash_svn_dict'] = self.githash_svn_dict
+        try:
+          with open(cache_filename, 'w') as cache_file:
+            json.dump(cache, cache_file)
+          print 'Saved revisions %d-%d to %s' % (
+              revlist_all[0], revlist_all[-1], cache_filename)
+        except EnvironmentError:
+          pass
+
     # Download the revlist and filter for just the range between good and bad.
     minrev = min(self.good_revision, self.bad_revision)
     maxrev = max(self.good_revision, self.bad_revision)
-    revlist_all = map(int, self.ParseDirectoryIndex())
+
+    (revlist_all, self.githash_svn_dict) = _LoadBucketFromCache()
+    last_known_rev = revlist_all[-1] if revlist_all else 0
+    if last_known_rev < maxrev:
+      revlist_all.extend(map(int, self.ParseDirectoryIndex(last_known_rev)))
+      revlist_all = list(set(revlist_all))
+      revlist_all.sort()
+      _SaveBucketToCache()
 
     revlist = [x for x in revlist_all if x >= int(minrev) and x <= int(maxrev)]
-    revlist.sort()
 
     # Set good and bad revisions to be legit revisions.
     if revlist:
@@ -812,8 +896,8 @@ def Bisect(context,
   cwd = os.getcwd()
 
   print 'Downloading list of known revisions...',
-  if not context.use_local_repo and not context.is_official:
-    print '(use --use-local-repo for speed if you have a local checkout)'
+  if not context.use_local_cache and not context.is_official:
+    print '(use --use-local-cache to cache and re-use the list of revisions)'
   else:
     print
   _GetDownloadPath = lambda rev: os.path.join(cwd,
@@ -1154,13 +1238,13 @@ def main():
                     action='store_true',
                     default=False,
                     help='Allow the script to bisect ASAN builds')
-  parser.add_option('--use-local-repo',
-                    dest='use_local_repo',
+  parser.add_option('--use-local-cache',
+                    dest='use_local_cache',
                     action='store_true',
                     default=False,
-                    help='Allow the script to convert git SHA1 to SVN '
-                         'revision using "git svn find-rev <SHA1>" '
-                         'command from a Chromium checkout.')
+                    help='Use a local file in the current directory to cache '
+                         'a list of known revisions to speed up the '
+                         'initialization of this script.')
   parser.add_option('--adb-path',
                     dest='adb_path',
                     help='Absolute path to adb. If you do not have adb in your '
@@ -1199,7 +1283,7 @@ def main():
 
   # Create the context. Initialize 0 for the revisions as they are set below.
   context = PathContext(base_url, opts.archive, opts.good, opts.bad,
-                        opts.official_builds, opts.asan, opts.use_local_repo,
+                        opts.official_builds, opts.asan, opts.use_local_cache,
                         opts.flash_path, opts.pdf_path, opts.apk)
 
   # TODO(mikecase): Add support to bisect on nonofficial builds for Android.
