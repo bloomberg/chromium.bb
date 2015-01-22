@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "jni/PersonalDataManager_jni.h"
 
@@ -354,13 +355,12 @@ static jboolean IsWalletImportFeatureAvailable(JNIEnv* env, jclass clazz) {
 
 // Returns whether the Wallet import feature is enabled.
 static jboolean IsWalletImportEnabled(JNIEnv* env, jclass clazz) {
-  // TODO(estade): there is no pref yet, so just pretend yes.
-  return true;
+  return GetPrefs()->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled);
 }
 
 // Enables or disables the Wallet import feature.
 static void SetWalletImportEnabled(JNIEnv* env, jclass clazz, jboolean enable) {
-  // TODO(estade): there is no pref yet, so no-op.
+  GetPrefs()->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled, enable);
 }
 
 // Returns an ISO 3166-1-alpha-2 country code for a |jcountry_name| using

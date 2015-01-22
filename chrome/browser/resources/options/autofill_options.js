@@ -89,8 +89,10 @@ cr.define('options', function() {
         return true;  // Always follow the href
       };
 
-      $('autofill-wallet-card-area').hidden =
-          !loadTimeData.getBoolean('enableAutofillWalletIntegration');
+      var enableWalletIntegration =
+          loadTimeData.getBoolean('enableAutofillWalletIntegration');
+      $('autofill-wallet-remask-cards-area').hidden = !enableWalletIntegration;
+      $('autofill-wallet-setting-area').hidden = !enableWalletIntegration;
       // TODO(estade): there should probably be some indication of success.
       $('remask-server-cards-link').onclick = function(event) {
         chrome.send('remaskServerCards');

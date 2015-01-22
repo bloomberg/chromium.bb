@@ -676,7 +676,8 @@ const std::vector<CreditCard*>& PersonalDataManager::GetCreditCards() const {
   credit_cards_.insert(credit_cards_.end(), local_credit_cards_.begin(),
                        local_credit_cards_.end());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWalletCardImport)) {
+          switches::kEnableWalletCardImport) &&
+      pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
     credit_cards_.insert(credit_cards_.end(), server_credit_cards_.begin(),
                          server_credit_cards_.end());
   }

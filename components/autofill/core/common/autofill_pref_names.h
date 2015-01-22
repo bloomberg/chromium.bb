@@ -17,6 +17,7 @@ extern const char kAutofillMacAddressBookShowedCount[];
 extern const char kAutofillNegativeUploadRate[];
 extern const char kAutofillPositiveUploadRate[];
 extern const char kAutofillUseMacAddressBook[];
+extern const char kAutofillWalletImportEnabled[];
 
 }  // namespace prefs
 }  // namespace autofill

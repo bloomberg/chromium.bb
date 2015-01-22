@@ -38,5 +38,8 @@ const char kAutofillPositiveUploadRate[] = "autofill.positive_upload_rate";
 // true, then kAutofillMacAddressBookQueried is expected to also be true.
 const char kAutofillUseMacAddressBook[] = "autofill.use_mac_address_book";
 
+// Boolean that's true when Wallet card and address import is enabled.
+const char kAutofillWalletImportEnabled[] = "autofill.wallet_import_enabled";
+
 }  // namespace prefs
 }  // namespace autofill

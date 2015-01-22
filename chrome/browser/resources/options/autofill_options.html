@@ -12,6 +12,27 @@
       </label>
     </div>
 </if>
+    <!-- TODO(estade): This section shouldn't show if you're not signed into
+         sync. Or perhaps it should show with a link to go sign in with sync?
+      -->
+    <div id="autofill-wallet-setting-area" class="settings-row" hidden>
+      <div class="checkbox">
+        <label>
+          <input pref="autofill.wallet_import_enabled" type="checkbox">
+          <span>
+            Include
+              <a target="_blank" i18n-values="href:manageWalletAddressesUrl">
+                  addresses</a>
+            and
+              <a target="_blank"
+                  i18n-values="href:manageWalletPaymentMethodsUrl">cards</a>
+            stored in your Google Wallet
+            <!-- A reminder not to launch this UI. -->
+            <span style="font-size: 80%">translate me!</span>
+          </span>
+      </div>
+    </div>
+
     <h3 i18n-content="autofillAddresses"></h3>
     <div class="settings-list">
       <list id="address-list"></list>
@@ -20,6 +41,7 @@
         </button>
       </div>
     </div>
+
     <h3 i18n-content="autofillCreditCards"></h3>
     <div class="settings-list">
       <list id="creditcard-list"></list>
@@ -28,29 +50,20 @@
             i18n-content="autofillAddCreditCard"></button>
       </div>
     </div>
-    <!-- TODO(estade): This section shouldn't show if you're not signed into
-         sync. -->
-    <div id="autofill-wallet-card-area" class="settings-row" hidden>
+
+    <!-- TODO(estade): what do we do with this section when the pref is unset?
+      -->
+    <div id="autofill-wallet-remask-cards-area">
+      <span class="settings-row">Credit cards from Wallet require authentication
+          once and then remain unlocked.
+      </span>
+      <a id="remask-server-cards-link"
+          is="action-link">Reset authenticated cards</a>
       <!-- A reminder not to launch this UI. -->
-      <span>Warning, these strings are not translated!</span>
-      <div>
-        Chrome will also suggest
-        <a target="_blank" i18n-values="href:manageWalletAddressesUrl">
-          addresses</a>
-        and
-        <a target="_blank" i18n-values="href:manageWalletPaymentMethodsUrl">
-          cards</a>
-        stored in your Wallet.
-      </div>
-      <div>
-        <span>Credit cards from Wallet require authentication once and
-            then remain unlocked.
-        </span>
-        <a id="remask-server-cards-link"
-            is="action-link">Reset authenticated cards</a>
-      </div>
+      <span style="font-size: 80%">translate me!</span>
     </div>
   </div>
+
   <div class="action-area">
     <a id="autofill-help" target="_blank" i18n-values="href:helpUrl"
         i18n-content="helpButton">
