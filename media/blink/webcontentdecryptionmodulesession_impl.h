@@ -31,6 +31,7 @@ class WebContentDecryptionModuleSessionImpl
   // blink::WebContentDecryptionModuleSession implementation.
   virtual void setClientInterface(Client* client);
   virtual blink::WebString sessionId() const;
+
   // TODO(jrummell): Remove the next 3 methods once blink updated.
   virtual void initializeNewSession(const blink::WebString& mime_type,
                                     const uint8* init_data,
@@ -57,7 +58,8 @@ class WebContentDecryptionModuleSessionImpl
   // Callbacks.
   void OnSessionMessage(MediaKeys::MessageType message_type,
                         const std::vector<uint8>& message);
-  void OnSessionKeysChange(bool has_additional_usable_key);
+  void OnSessionKeysChange(bool has_additional_usable_key,
+                           CdmKeysInfo keys_info);
   void OnSessionExpirationUpdate(const base::Time& new_expiry_time);
   void OnSessionClosed();
 

@@ -137,7 +137,7 @@ void CdmSessionAdapter::OnSessionKeysChange(const std::string& web_session_id,
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
                              << web_session_id;
   if (session)
-    session->OnSessionKeysChange(has_additional_usable_key);
+    session->OnSessionKeysChange(has_additional_usable_key, keys_info.Pass());
 }
 
 void CdmSessionAdapter::OnSessionExpirationUpdate(

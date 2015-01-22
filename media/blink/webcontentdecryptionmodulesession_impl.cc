@@ -10,13 +10,17 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_keys.h"
 #include "media/blink/cdm_result_promise.h"
 #include "media/blink/cdm_session_adapter.h"
 #include "media/blink/new_session_cdm_result_promise.h"
+#include "third_party/WebKit/public/platform/WebData.h"
+#include "third_party/WebKit/public/platform/WebEncryptedMediaKeyInformation.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace media {
 
@@ -46,6 +50,24 @@ convertMessageType(MediaKeys::MessageType message_type) {
   NOTREACHED();
   return blink::WebContentDecryptionModuleSession::Client::MessageType::
       LicenseRequest;
+}
+
+static blink::WebEncryptedMediaKeyInformation::KeyStatus convertStatus(
+    media::CdmKeyInformation::KeyStatus status) {
+  switch (status) {
+    case media::CdmKeyInformation::USABLE:
+      return blink::WebEncryptedMediaKeyInformation::KeyStatus::Usable;
+    case media::CdmKeyInformation::INTERNAL_ERROR:
+      return blink::WebEncryptedMediaKeyInformation::KeyStatus::InternalError;
+    case media::CdmKeyInformation::EXPIRED:
+      return blink::WebEncryptedMediaKeyInformation::KeyStatus::Expired;
+    case media::CdmKeyInformation::OUTPUT_NOT_ALLOWED:
+      return blink::WebEncryptedMediaKeyInformation::KeyStatus::
+          OutputNotAllowed;
+  }
+
+  NOTREACHED();
+  return blink::WebEncryptedMediaKeyInformation::KeyStatus::InternalError;
 }
 
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
@@ -192,8 +214,20 @@ void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(
-    bool has_additional_usable_key) {
-  // TODO(jrummell): Update this once Blink client supports this.
+    bool has_additional_usable_key,
+    CdmKeysInfo keys_info) {
+  blink::WebVector<blink::WebEncryptedMediaKeyInformation> keys(
+      keys_info.size());
+  for (size_t i = 0; i < keys_info.size(); ++i) {
+    const auto& key_info = keys_info[i];
+    keys[i].setId(blink::WebData(reinterpret_cast<char*>(&key_info->key_id[0]),
+                                 key_info->key_id.size()));
+    keys[i].setStatus(convertStatus(key_info->status));
+    keys[i].setSystemCode(key_info->system_code);
+  }
+
+  // Now send the event to blink.
+  client_->keysStatusesChange(keys, has_additional_usable_key);
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionExpirationUpdate(
