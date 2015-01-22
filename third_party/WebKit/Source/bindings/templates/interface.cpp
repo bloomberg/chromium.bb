@@ -61,7 +61,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
     {% if setter.has_type_checking_interface %}
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
-    if (!isUndefinedOrNull(v8Value) && !V8{{setter.idl_type}}::hasInstance(v8Value, info.GetIsolate())) {
+    if (!propertyValue{% if setter.is_nullable %} && !isUndefinedOrNull(v8Value){% endif %}) {
         exceptionState.throwTypeError("The provided value is not of type '{{setter.idl_type}}'.");
         exceptionState.throwIfNeeded();
         return;
@@ -232,6 +232,15 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
     {# v8_value_to_local_cpp_value('DOMString', 'nameString', 'propertyName') #}
     TOSTRING_VOID(V8StringResource<>, propertyName, nameString);
     {{setter.v8_value_to_local_cpp_value}};
+    {% if setter.has_type_checking_interface %}
+    {# Type checking for interface types (if interface not implemented, throw
+       TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
+    if (!propertyValue{% if setter.is_nullable %} && !isUndefinedOrNull(v8Value){% endif %}) {
+        exceptionState.throwTypeError("The provided value is not of type '{{setter.idl_type}}'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    {% endif %}
     {% set setter_name = setter.name or 'anonymousNamedSetter' %}
     {% set setter_arguments =
            ['propertyName', 'propertyValue', 'exceptionState']

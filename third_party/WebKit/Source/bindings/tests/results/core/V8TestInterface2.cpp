@@ -73,17 +73,22 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
-    V8StringResource<> value;
+    TestInterfaceEmpty* value;
     {
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(index, toUInt32(info[0], exceptionState), exceptionState);
-        TOSTRING_VOID_INTERNAL(value, info[1]);
+        value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+        if (!value) {
+            exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
     }
-    String result = impl->setItem(index, value, exceptionState);
+    RefPtr<TestInterfaceEmpty> result = impl->setItem(index, value, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValueString(info, result, info.GetIsolate());
+    v8SetReturnValue(info, result.release());
 }
 
 static void setItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -159,17 +164,22 @@ static void setNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     V8StringResource<> name;
-    V8StringResource<> value;
+    TestInterfaceEmpty* value;
     {
         TOSTRING_VOID_INTERNAL(name, info[0]);
-        TOSTRING_VOID_INTERNAL(value, info[1]);
+        value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+        if (!value && !isUndefinedOrNull(info[1])) {
+            exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
     }
-    String result = impl->setNamedItem(name, value, exceptionState);
+    RefPtr<TestInterfaceEmpty> result = impl->setNamedItem(name, value, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValueString(info, result, info.GetIsolate());
+    v8SetReturnValue(info, result.release());
 }
 
 static void setNamedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -343,8 +353,13 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
+    TestInterfaceEmpty* propertyValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     ExceptionState exceptionState(ExceptionState::IndexedSetterContext, "TestInterface2", info.Holder(), info.GetIsolate());
+    if (!propertyValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     bool result = impl->setItem(index, propertyValue, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -421,7 +436,12 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
     ExceptionState exceptionState(ExceptionState::SetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     TOSTRING_VOID(V8StringResource<>, propertyName, nameString);
-    TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
+    TestInterfaceEmpty* propertyValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!propertyValue && !isUndefinedOrNull(v8Value)) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     bool result = impl->setNamedItem(propertyName, propertyValue, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
