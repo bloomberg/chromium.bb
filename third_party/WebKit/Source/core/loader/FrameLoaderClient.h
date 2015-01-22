@@ -227,6 +227,17 @@ namespace blink {
         virtual unsigned backForwardLength() { return 0; }
 
         virtual bool isFrameLoaderClientImpl() const { return false; }
+
+        // Called when an element preventing the sudden termination of the frame
+        // is added or removed. |variation| is the number of elements added, or
+        // removed if it is negative. |type| is the type of element
+        // (BeforeUnload handler, Unload handler).
+        enum SuddenTerminationDisablerType {
+            BeforeUnloadHandler,
+            UnloadHandler,
+        };
+        virtual void suddenTerminationDisablerChanged(int variation, SuddenTerminationDisablerType) { }
+
     };
 
 } // namespace blink

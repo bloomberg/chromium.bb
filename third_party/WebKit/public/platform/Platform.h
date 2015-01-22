@@ -397,7 +397,9 @@ public:
 
     // Sudden Termination --------------------------------------------------
 
-    // Disable/Enable sudden termination.
+    // Disable/Enable sudden termination on a process level. When possible, it
+    // is preferable to disable sudden termination on a per-frame level via
+    // WebFrameClient::suddenTerminationDisablerChanged.
     virtual void suddenTerminationChanged(bool enabled) { }
 
 

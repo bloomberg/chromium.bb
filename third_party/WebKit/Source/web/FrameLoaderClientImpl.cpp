@@ -929,4 +929,12 @@ unsigned FrameLoaderClientImpl::backForwardLength()
     return webview->client()->historyBackListCount() + 1 + webview->client()->historyForwardListCount();
 }
 
+void FrameLoaderClientImpl::suddenTerminationDisablerChanged(int variation, SuddenTerminationDisablerType type)
+{
+    if (m_webFrame->client()) {
+        m_webFrame->client()->suddenTerminationDisablerChanged(
+            variation, static_cast<WebFrameClient::SuddenTerminationDisablerType>(type));
+    }
+}
+
 } // namespace blink

@@ -611,6 +611,19 @@ public:
     virtual bool enterFullscreen() { return false; }
     virtual bool exitFullscreen() { return false; }
 
+
+    // Sudden termination --------------------------------------------------
+
+    // Called when an element preventing the sudden termination of the frame is
+    // added or removed. |variation| is the number of elements added, removed if
+    // it is negative. |type| is the type of element (BeforeUnload handler,
+    // Unload handler).
+    enum SuddenTerminationDisablerType {
+        BeforeUnloadHandler,
+        UnloadHandler,
+    };
+    virtual void suddenTerminationDisablerChanged(int variation, SuddenTerminationDisablerType) { }
+
 protected:
     virtual ~WebFrameClient() { }
 };

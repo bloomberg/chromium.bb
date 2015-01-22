@@ -46,6 +46,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
@@ -113,6 +114,7 @@
 #include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebFontDescription.h"
 #include "public/web/WebFormElement.h"
+#include "public/web/WebFrameClient.h"
 #include "public/web/WebGeolocationError.h"
 #include "public/web/WebGeolocationPosition.h"
 #include "public/web/WebHistoryCommitType.h"
@@ -685,4 +687,7 @@ STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::AutomaticFeatures, SandboxAutomatic
 STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::PointerLock, SandboxPointerLock);
 STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::DocumentDomain, SandboxDocumentDomain);
 STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::OrientationLock, SandboxOrientationLock);
+
+STATIC_ASSERT_MATCHING_ENUM(FrameLoaderClient::BeforeUnloadHandler, WebFrameClient::BeforeUnloadHandler);
+STATIC_ASSERT_MATCHING_ENUM(FrameLoaderClient::UnloadHandler, WebFrameClient::UnloadHandler);
 } // namespace blink

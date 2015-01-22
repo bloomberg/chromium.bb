@@ -231,6 +231,10 @@ static void addUnloadEventListener(LocalDOMWindow* domWindow)
     if (set.isEmpty())
         disableSuddenTermination();
     set.add(domWindow);
+    if (domWindow->frame()) {
+        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+            1, FrameLoaderClient::UnloadHandler);
+    }
 }
 
 static void removeUnloadEventListener(LocalDOMWindow* domWindow)
@@ -242,6 +246,10 @@ static void removeUnloadEventListener(LocalDOMWindow* domWindow)
     set.remove(it);
     if (set.isEmpty())
         enableSuddenTermination();
+    if (domWindow->frame()) {
+        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+            -1, FrameLoaderClient::UnloadHandler);
+    }
 }
 
 static void removeAllUnloadEventListeners(LocalDOMWindow* domWindow)
@@ -250,9 +258,14 @@ static void removeAllUnloadEventListeners(LocalDOMWindow* domWindow)
     DOMWindowSet::iterator it = set.find(domWindow);
     if (it == set.end())
         return;
+    int numHandlers = set.count(domWindow);
     set.removeAll(it);
     if (set.isEmpty())
         enableSuddenTermination();
+    if (domWindow->frame()) {
+        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+            -numHandlers, FrameLoaderClient::UnloadHandler);
+    }
 }
 
 static void addBeforeUnloadEventListener(LocalDOMWindow* domWindow)
@@ -261,6 +274,10 @@ static void addBeforeUnloadEventListener(LocalDOMWindow* domWindow)
     if (set.isEmpty())
         disableSuddenTermination();
     set.add(domWindow);
+    if (domWindow->frame()) {
+        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+            1, FrameLoaderClient::BeforeUnloadHandler);
+    }
 }
 
 static void removeBeforeUnloadEventListener(LocalDOMWindow* domWindow)
@@ -272,6 +289,10 @@ static void removeBeforeUnloadEventListener(LocalDOMWindow* domWindow)
     set.remove(it);
     if (set.isEmpty())
         enableSuddenTermination();
+    if (domWindow->frame()) {
+        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+            -1, FrameLoaderClient::BeforeUnloadHandler);
+    }
 }
 
 static void removeAllBeforeUnloadEventListeners(LocalDOMWindow* domWindow)
@@ -280,9 +301,14 @@ static void removeAllBeforeUnloadEventListeners(LocalDOMWindow* domWindow)
     DOMWindowSet::iterator it = set.find(domWindow);
     if (it == set.end())
         return;
+    int numHandlers = set.count(domWindow);
     set.removeAll(it);
     if (set.isEmpty())
         enableSuddenTermination();
+    if (domWindow->frame()) {
+        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
+            -numHandlers, FrameLoaderClient::BeforeUnloadHandler);
+    }
 }
 
 static bool allowsBeforeUnloadListeners(LocalDOMWindow* window)
