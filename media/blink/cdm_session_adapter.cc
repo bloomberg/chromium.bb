@@ -56,19 +56,19 @@ WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::CreateSession() {
 }
 
 bool CdmSessionAdapter::RegisterSession(
-    const std::string& web_session_id,
+    const std::string& session_id,
     base::WeakPtr<WebContentDecryptionModuleSessionImpl> session) {
   // If this session ID is already registered, don't register it again.
-  if (ContainsKey(sessions_, web_session_id))
+  if (ContainsKey(sessions_, session_id))
     return false;
 
-  sessions_[web_session_id] = session;
+  sessions_[session_id] = session;
   return true;
 }
 
-void CdmSessionAdapter::UnregisterSession(const std::string& web_session_id) {
-  DCHECK(ContainsKey(sessions_, web_session_id));
-  sessions_.erase(web_session_id);
+void CdmSessionAdapter::UnregisterSession(const std::string& session_id) {
+  DCHECK(ContainsKey(sessions_, session_id));
+  sessions_.erase(session_id);
 }
 
 void CdmSessionAdapter::InitializeNewSession(
@@ -83,30 +83,27 @@ void CdmSessionAdapter::InitializeNewSession(
 }
 
 void CdmSessionAdapter::LoadSession(MediaKeys::SessionType session_type,
-                                    const std::string& web_session_id,
+                                    const std::string& session_id,
                                     scoped_ptr<NewSessionCdmPromise> promise) {
-  media_keys_->LoadSession(session_type, web_session_id, promise.Pass());
+  media_keys_->LoadSession(session_type, session_id, promise.Pass());
 }
 
-void CdmSessionAdapter::UpdateSession(
-    const std::string& web_session_id,
-    const uint8* response,
-    int response_length,
-    scoped_ptr<SimpleCdmPromise> promise) {
-  media_keys_->UpdateSession(
-      web_session_id, response, response_length, promise.Pass());
+void CdmSessionAdapter::UpdateSession(const std::string& session_id,
+                                      const uint8* response,
+                                      int response_length,
+                                      scoped_ptr<SimpleCdmPromise> promise) {
+  media_keys_->UpdateSession(session_id, response, response_length,
+                             promise.Pass());
 }
 
-void CdmSessionAdapter::CloseSession(
-    const std::string& web_session_id,
-    scoped_ptr<SimpleCdmPromise> promise) {
-  media_keys_->CloseSession(web_session_id, promise.Pass());
+void CdmSessionAdapter::CloseSession(const std::string& session_id,
+                                     scoped_ptr<SimpleCdmPromise> promise) {
+  media_keys_->CloseSession(session_id, promise.Pass());
 }
 
-void CdmSessionAdapter::RemoveSession(
-    const std::string& web_session_id,
-    scoped_ptr<SimpleCdmPromise> promise) {
-  media_keys_->RemoveSession(web_session_id, promise.Pass());
+void CdmSessionAdapter::RemoveSession(const std::string& session_id,
+                                      scoped_ptr<SimpleCdmPromise> promise) {
+  media_keys_->RemoveSession(session_id, promise.Pass());
 }
 
 CdmContext* CdmSessionAdapter::GetCdmContext() {
@@ -118,61 +115,60 @@ const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
 }
 
 void CdmSessionAdapter::OnSessionMessage(
-    const std::string& web_session_id,
+    const std::string& session_id,
     MediaKeys::MessageType message_type,
     const std::vector<uint8>& message,
     const GURL& /* legacy_destination_url */) {
-  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
+  WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << web_session_id;
+                             << session_id;
   if (session)
     session->OnSessionMessage(message_type, message);
 }
 
-void CdmSessionAdapter::OnSessionKeysChange(const std::string& web_session_id,
+void CdmSessionAdapter::OnSessionKeysChange(const std::string& session_id,
                                             bool has_additional_usable_key,
                                             CdmKeysInfo keys_info) {
   // TODO(jrummell): Pass |keys_info| on.
-  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
+  WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << web_session_id;
+                             << session_id;
   if (session)
     session->OnSessionKeysChange(has_additional_usable_key, keys_info.Pass());
 }
 
 void CdmSessionAdapter::OnSessionExpirationUpdate(
-    const std::string& web_session_id,
+    const std::string& session_id,
     const base::Time& new_expiry_time) {
-  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
+  WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << web_session_id;
+                             << session_id;
   if (session)
     session->OnSessionExpirationUpdate(new_expiry_time);
 }
 
-void CdmSessionAdapter::OnSessionClosed(const std::string& web_session_id) {
-  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
+void CdmSessionAdapter::OnSessionClosed(const std::string& session_id) {
+  WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << web_session_id;
+                             << session_id;
   if (session)
     session->OnSessionClosed();
 }
 
-void CdmSessionAdapter::OnSessionError(
-    const std::string& web_session_id,
-    MediaKeys::Exception exception_code,
-    uint32 system_code,
-    const std::string& error_message) {
+void CdmSessionAdapter::OnSessionError(const std::string& session_id,
+                                       MediaKeys::Exception exception_code,
+                                       uint32 system_code,
+                                       const std::string& error_message) {
   // Error events not used by unprefixed EME.
   // TODO(jrummell): Remove when prefixed EME removed.
 }
 
 WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::GetSession(
-    const std::string& web_session_id) {
+    const std::string& session_id) {
   // Since session objects may get garbage collected, it is possible that there
   // are events coming back from the CDM and the session has been unregistered.
   // We can not tell if the CDM is firing events at sessions that never existed.
-  SessionMap::iterator session = sessions_.find(web_session_id);
+  SessionMap::iterator session = sessions_.find(session_id);
   return (session != sessions_.end()) ? session->second.get() : NULL;
 }
 

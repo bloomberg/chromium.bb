@@ -68,15 +68,15 @@ class ContentDecryptorDelegate {
       int init_data_length,
       scoped_ptr<media::NewSessionCdmPromise> promise);
   void LoadSession(media::MediaKeys::SessionType session_type,
-                   const std::string& web_session_id,
+                   const std::string& session_id,
                    scoped_ptr<media::NewSessionCdmPromise> promise);
-  void UpdateSession(const std::string& web_session_id,
+  void UpdateSession(const std::string& session_id,
                      const uint8* response,
                      int response_length,
                      scoped_ptr<media::SimpleCdmPromise> promise);
-  void CloseSession(const std::string& web_session_id,
+  void CloseSession(const std::string& session_id,
                     scoped_ptr<media::SimpleCdmPromise> promise);
-  void RemoveSession(const std::string& web_session_id,
+  void RemoveSession(const std::string& session_id,
                      scoped_ptr<media::SimpleCdmPromise> promise);
   bool Decrypt(media::Decryptor::StreamType stream_type,
                const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
@@ -102,23 +102,22 @@ class ContentDecryptorDelegate {
 
   // PPB_ContentDecryptor_Private dispatching methods.
   void OnPromiseResolved(uint32 promise_id);
-  void OnPromiseResolvedWithSession(uint32 promise_id, PP_Var web_session_id);
+  void OnPromiseResolvedWithSession(uint32 promise_id, PP_Var session_id);
   void OnPromiseRejected(uint32 promise_id,
                          PP_CdmExceptionCode exception_code,
                          uint32 system_code,
                          PP_Var error_description);
-  void OnSessionMessage(PP_Var web_session_id,
+  void OnSessionMessage(PP_Var session_id,
                         PP_CdmMessageType message_type,
                         PP_Var message,
                         PP_Var legacy_destination_url);
-  void OnSessionKeysChange(PP_Var web_session_id,
+  void OnSessionKeysChange(PP_Var session_id,
                            PP_Bool has_additional_usable_key,
                            uint32_t key_count,
                            const struct PP_KeyInformation key_information[]);
-  void OnSessionExpirationChange(PP_Var web_session_id,
-                                 PP_Time new_expiry_time);
-  void OnSessionClosed(PP_Var web_session_id);
-  void OnSessionError(PP_Var web_session_id,
+  void OnSessionExpirationChange(PP_Var session_id, PP_Time new_expiry_time);
+  void OnSessionClosed(PP_Var session_id);
+  void OnSessionError(PP_Var session_id,
                       PP_CdmExceptionCode exception_code,
                       uint32 system_code,
                       PP_Var error_description);

@@ -124,29 +124,29 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   void PromiseResolved(PP_Instance instance, uint32 promise_id) override;
   void PromiseResolvedWithSession(PP_Instance instance,
                                   uint32 promise_id,
-                                  PP_Var web_session_id_var) override;
+                                  PP_Var session_id_var) override;
   void PromiseRejected(PP_Instance instance,
                        uint32 promise_id,
                        PP_CdmExceptionCode exception_code,
                        uint32 system_code,
                        PP_Var error_description_var) override;
   void SessionMessage(PP_Instance instance,
-                      PP_Var web_session_id_var,
+                      PP_Var session_id_var,
                       PP_CdmMessageType message_type,
                       PP_Var message_var,
                       PP_Var legacy_destination_url_var) override;
   void SessionKeysChange(
       PP_Instance instance,
-      PP_Var web_session_id_var,
+      PP_Var session_id_var,
       PP_Bool has_additional_usable_key,
       uint32_t key_count,
       const struct PP_KeyInformation key_information[]) override;
   void SessionExpirationChange(PP_Instance instance,
-                               PP_Var web_session_id_var,
+                               PP_Var session_id_var,
                                PP_Time new_expiry_time) override;
-  void SessionClosed(PP_Instance instance, PP_Var web_session_id_var) override;
+  void SessionClosed(PP_Instance instance, PP_Var session_id_var) override;
   void SessionError(PP_Instance instance,
-                    PP_Var web_session_id_var,
+                    PP_Var session_id_var,
                     PP_CdmExceptionCode exception_code,
                     uint32 system_code,
                     PP_Var error_description_var) override;
@@ -254,7 +254,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void OnHostMsgPromiseResolvedWithSession(
       PP_Instance instance,
       uint32_t promise_id,
-      SerializedVarReceiveInput web_session_id);
+      SerializedVarReceiveInput session_id);
   virtual void OnHostMsgPromiseRejected(
       PP_Instance instance,
       uint32_t promise_id,
@@ -263,24 +263,24 @@ class PPB_Instance_Proxy : public InterfaceProxy,
       SerializedVarReceiveInput error_description);
   virtual void OnHostMsgSessionMessage(
       PP_Instance instance,
-      SerializedVarReceiveInput web_session_id,
+      SerializedVarReceiveInput session_id,
       PP_CdmMessageType message_type,
       SerializedVarReceiveInput message,
       SerializedVarReceiveInput legacy_destination_url);
   virtual void OnHostMsgSessionKeysChange(
       PP_Instance instance,
-      const std::string& web_session_id,
+      const std::string& session_id,
       PP_Bool has_additional_usable_key,
       const std::vector<PP_KeyInformation>& key_information);
   virtual void OnHostMsgSessionExpirationChange(
       PP_Instance instance,
-      const std::string& web_session_id,
+      const std::string& session_id,
       PP_Time new_expiry_time);
   virtual void OnHostMsgSessionClosed(PP_Instance instance,
-                                      SerializedVarReceiveInput web_session_id);
+                                      SerializedVarReceiveInput session_id);
   virtual void OnHostMsgSessionError(
       PP_Instance instance,
-      SerializedVarReceiveInput web_session_id,
+      SerializedVarReceiveInput session_id,
       PP_CdmExceptionCode exception_code,
       uint32_t system_code,
       SerializedVarReceiveInput error_description);

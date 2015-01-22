@@ -575,12 +575,10 @@ void PPB_Instance_Proxy::PromiseResolved(PP_Instance instance,
 
 void PPB_Instance_Proxy::PromiseResolvedWithSession(PP_Instance instance,
                                                     uint32 promise_id,
-                                                    PP_Var web_session_id_var) {
+                                                    PP_Var session_id_var) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_PromiseResolvedWithSession(
-      API_ID_PPB_INSTANCE,
-      instance,
-      promise_id,
-      SerializedVarSendInput(dispatcher(), web_session_id_var)));
+      API_ID_PPB_INSTANCE, instance, promise_id,
+      SerializedVarSendInput(dispatcher(), session_id_var)));
 }
 
 void PPB_Instance_Proxy::PromiseRejected(PP_Instance instance,
@@ -598,26 +596,26 @@ void PPB_Instance_Proxy::PromiseRejected(PP_Instance instance,
 }
 
 void PPB_Instance_Proxy::SessionMessage(PP_Instance instance,
-                                        PP_Var web_session_id_var,
+                                        PP_Var session_id_var,
                                         PP_CdmMessageType message_type,
                                         PP_Var message_var,
                                         PP_Var legacy_destination_url_var) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_SessionMessage(
       API_ID_PPB_INSTANCE, instance,
-      SerializedVarSendInput(dispatcher(), web_session_id_var), message_type,
+      SerializedVarSendInput(dispatcher(), session_id_var), message_type,
       SerializedVarSendInput(dispatcher(), message_var),
       SerializedVarSendInput(dispatcher(), legacy_destination_url_var)));
 }
 
 void PPB_Instance_Proxy::SessionKeysChange(
     PP_Instance instance,
-    PP_Var web_session_id_var,
+    PP_Var session_id_var,
     PP_Bool has_additional_usable_key,
     uint32_t key_count,
     const struct PP_KeyInformation key_information[]) {
-  StringVar* session_id = StringVar::FromPPVar(web_session_id_var);
+  StringVar* session_id = StringVar::FromPPVar(session_id_var);
   if (!session_id ||
-      session_id->value().length() > media::limits::kMaxWebSessionIdLength) {
+      session_id->value().length() > media::limits::kMaxSessionIdLength) {
     NOTREACHED();
     return;
   }
@@ -635,11 +633,11 @@ void PPB_Instance_Proxy::SessionKeysChange(
 }
 
 void PPB_Instance_Proxy::SessionExpirationChange(PP_Instance instance,
-                                                 PP_Var web_session_id_var,
+                                                 PP_Var session_id_var,
                                                  PP_Time new_expiry_time) {
-  StringVar* session_id = StringVar::FromPPVar(web_session_id_var);
+  StringVar* session_id = StringVar::FromPPVar(session_id_var);
   if (!session_id ||
-      session_id->value().length() > media::limits::kMaxWebSessionIdLength) {
+      session_id->value().length() > media::limits::kMaxSessionIdLength) {
     NOTREACHED();
     return;
   }
@@ -649,23 +647,20 @@ void PPB_Instance_Proxy::SessionExpirationChange(PP_Instance instance,
 }
 
 void PPB_Instance_Proxy::SessionClosed(PP_Instance instance,
-                                       PP_Var web_session_id_var) {
+                                       PP_Var session_id_var) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_SessionClosed(
-      API_ID_PPB_INSTANCE,
-      instance,
-      SerializedVarSendInput(dispatcher(), web_session_id_var)));
+      API_ID_PPB_INSTANCE, instance,
+      SerializedVarSendInput(dispatcher(), session_id_var)));
 }
 
 void PPB_Instance_Proxy::SessionError(PP_Instance instance,
-                                      PP_Var web_session_id_var,
+                                      PP_Var session_id_var,
                                       PP_CdmExceptionCode exception_code,
                                       uint32 system_code,
                                       PP_Var error_description_var) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_SessionError(
-      API_ID_PPB_INSTANCE,
-      instance,
-      SerializedVarSendInput(dispatcher(), web_session_id_var),
-      exception_code,
+      API_ID_PPB_INSTANCE, instance,
+      SerializedVarSendInput(dispatcher(), session_id_var), exception_code,
       system_code,
       SerializedVarSendInput(dispatcher(), error_description_var)));
 }
@@ -1244,13 +1239,13 @@ void PPB_Instance_Proxy::OnHostMsgPromiseResolved(PP_Instance instance,
 void PPB_Instance_Proxy::OnHostMsgPromiseResolvedWithSession(
     PP_Instance instance,
     uint32_t promise_id,
-    SerializedVarReceiveInput web_session_id) {
+    SerializedVarReceiveInput session_id) {
   if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
-    enter.functions()->PromiseResolvedWithSession(
-        instance, promise_id, web_session_id.Get(dispatcher()));
+    enter.functions()->PromiseResolvedWithSession(instance, promise_id,
+                                                  session_id.Get(dispatcher()));
   }
 }
 
@@ -1274,7 +1269,7 @@ void PPB_Instance_Proxy::OnHostMsgPromiseRejected(
 
 void PPB_Instance_Proxy::OnHostMsgSessionMessage(
     PP_Instance instance,
-    SerializedVarReceiveInput web_session_id,
+    SerializedVarReceiveInput session_id,
     PP_CdmMessageType message_type,
     SerializedVarReceiveInput message,
     SerializedVarReceiveInput legacy_destination_url) {
@@ -1282,15 +1277,15 @@ void PPB_Instance_Proxy::OnHostMsgSessionMessage(
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
-    enter.functions()->SessionMessage(
-        instance, web_session_id.Get(dispatcher()), message_type,
-        message.Get(dispatcher()), legacy_destination_url.Get(dispatcher()));
+    enter.functions()->SessionMessage(instance, session_id.Get(dispatcher()),
+                                      message_type, message.Get(dispatcher()),
+                                      legacy_destination_url.Get(dispatcher()));
   }
 }
 
 void PPB_Instance_Proxy::OnHostMsgSessionKeysChange(
     PP_Instance instance,
-    const std::string& web_session_id,
+    const std::string& session_id,
     PP_Bool has_additional_usable_key,
     const std::vector<PP_KeyInformation>& key_information) {
   if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
@@ -1303,44 +1298,43 @@ void PPB_Instance_Proxy::OnHostMsgSessionKeysChange(
 
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
-    ScopedPPVar web_session_id_var(ScopedPPVar::PassRef(),
-                                   StringVar::StringToPPVar(web_session_id));
+    ScopedPPVar session_id_var(ScopedPPVar::PassRef(),
+                               StringVar::StringToPPVar(session_id));
     enter.functions()->SessionKeysChange(
-        instance, web_session_id_var.get(), has_additional_usable_key,
+        instance, session_id_var.get(), has_additional_usable_key,
         key_information.size(), vector_as_array(&key_information));
   }
 }
 
 void PPB_Instance_Proxy::OnHostMsgSessionExpirationChange(
     PP_Instance instance,
-    const std::string& web_session_id,
+    const std::string& session_id,
     PP_Time new_expiry_time) {
   if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
-    ScopedPPVar web_session_id_var(ScopedPPVar::PassRef(),
-                                   StringVar::StringToPPVar(web_session_id));
-    enter.functions()->SessionExpirationChange(
-        instance, web_session_id_var.get(), new_expiry_time);
+    ScopedPPVar session_id_var(ScopedPPVar::PassRef(),
+                               StringVar::StringToPPVar(session_id));
+    enter.functions()->SessionExpirationChange(instance, session_id_var.get(),
+                                               new_expiry_time);
   }
 }
 
 void PPB_Instance_Proxy::OnHostMsgSessionClosed(
     PP_Instance instance,
-    SerializedVarReceiveInput web_session_id) {
+    SerializedVarReceiveInput session_id) {
   if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
-    enter.functions()->SessionClosed(instance,
-                                     web_session_id.Get(dispatcher()));
+    enter.functions()->SessionClosed(instance, session_id.Get(dispatcher()));
   }
 }
 
 void PPB_Instance_Proxy::OnHostMsgSessionError(
     PP_Instance instance,
-    SerializedVarReceiveInput web_session_id,
+    SerializedVarReceiveInput session_id,
     PP_CdmExceptionCode exception_code,
     uint32_t system_code,
     SerializedVarReceiveInput error_description) {
@@ -1348,10 +1342,8 @@ void PPB_Instance_Proxy::OnHostMsgSessionError(
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
-    enter.functions()->SessionError(instance,
-                                    web_session_id.Get(dispatcher()),
-                                    exception_code,
-                                    system_code,
+    enter.functions()->SessionError(instance, session_id.Get(dispatcher()),
+                                    exception_code, system_code,
                                     error_description.Get(dispatcher()));
   }
 }

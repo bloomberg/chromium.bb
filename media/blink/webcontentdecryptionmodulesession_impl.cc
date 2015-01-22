@@ -77,8 +77,8 @@ WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
 
 WebContentDecryptionModuleSessionImpl::
     ~WebContentDecryptionModuleSessionImpl() {
-  if (!web_session_id_.empty())
-    adapter_->UnregisterSession(web_session_id_);
+  if (!session_id_.empty())
+    adapter_->UnregisterSession(session_id_);
 }
 
 void WebContentDecryptionModuleSessionImpl::setClientInterface(Client* client) {
@@ -86,7 +86,7 @@ void WebContentDecryptionModuleSessionImpl::setClientInterface(Client* client) {
 }
 
 blink::WebString WebContentDecryptionModuleSessionImpl::sessionId() const {
-  return blink::WebString::fromUTF8(web_session_id_);
+  return blink::WebString::fromUTF8(session_id_);
 }
 
 void WebContentDecryptionModuleSessionImpl::initializeNewSession(
@@ -114,7 +114,7 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     size_t init_data_length,
     const blink::WebString& session_type,
     blink::WebContentDecryptionModuleResult result) {
-  DCHECK(web_session_id_.empty());
+  DCHECK(session_id_.empty());
 
   // TODO(ddorwin): Guard against this in supported types check and remove this.
   // Chromium only supports ASCII MIME types.
@@ -158,7 +158,7 @@ void WebContentDecryptionModuleSessionImpl::load(
     const blink::WebString& session_id,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!session_id.isEmpty());
-  DCHECK(web_session_id_.empty());
+  DCHECK(session_id_.empty());
 
   // TODO(jrummell): Now that there are 2 types of persistent sessions, the
   // session type should be passed from blink. Type should also be passed in the
@@ -177,8 +177,8 @@ void WebContentDecryptionModuleSessionImpl::update(
     size_t response_length,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(response);
-  DCHECK(!web_session_id_.empty());
-  adapter_->UpdateSession(web_session_id_, response,
+  DCHECK(!session_id_.empty());
+  adapter_->UpdateSession(session_id_, response,
                           base::saturated_cast<int>(response_length),
                           scoped_ptr<SimpleCdmPromise>(
                               new CdmResultPromise<>(result, std::string())));
@@ -186,16 +186,16 @@ void WebContentDecryptionModuleSessionImpl::update(
 
 void WebContentDecryptionModuleSessionImpl::close(
     blink::WebContentDecryptionModuleResult result) {
-  DCHECK(!web_session_id_.empty());
-  adapter_->CloseSession(web_session_id_,
+  DCHECK(!session_id_.empty());
+  adapter_->CloseSession(session_id_,
                          scoped_ptr<SimpleCdmPromise>(
                              new CdmResultPromise<>(result, std::string())));
 }
 
 void WebContentDecryptionModuleSessionImpl::remove(
     blink::WebContentDecryptionModuleResult result) {
-  DCHECK(!web_session_id_.empty());
-  adapter_->RemoveSession(web_session_id_,
+  DCHECK(!session_id_.empty());
+  adapter_->RemoveSession(session_id_,
                           scoped_ptr<SimpleCdmPromise>(
                               new CdmResultPromise<>(result, std::string())));
 }
@@ -245,15 +245,14 @@ void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
 
 blink::WebContentDecryptionModuleResult::SessionStatus
 WebContentDecryptionModuleSessionImpl::OnSessionInitialized(
-    const std::string& web_session_id) {
+    const std::string& session_id) {
   // CDM will return NULL if the session to be loaded can't be found.
-  if (web_session_id.empty())
+  if (session_id.empty())
     return blink::WebContentDecryptionModuleResult::SessionNotFound;
 
-  DCHECK(web_session_id_.empty()) << "Session ID may not be changed once set.";
-  web_session_id_ = web_session_id;
-  return adapter_->RegisterSession(web_session_id_,
-                                   weak_ptr_factory_.GetWeakPtr())
+  DCHECK(session_id_.empty()) << "Session ID may not be changed once set.";
+  session_id_ = session_id;
+  return adapter_->RegisterSession(session_id_, weak_ptr_factory_.GetWeakPtr())
              ? blink::WebContentDecryptionModuleResult::NewSession
              : blink::WebContentDecryptionModuleResult::SessionAlreadyExists;
 }

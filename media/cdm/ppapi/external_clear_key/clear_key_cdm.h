@@ -43,19 +43,19 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
                                                uint32 init_data_size) override;
   virtual void LoadSession(uint32 promise_id,
                            cdm::SessionType session_type,
-                           const char* web_session_id,
-                           uint32_t web_session_id_length) override;
+                           const char* session_id,
+                           uint32_t session_id_length) override;
   virtual void UpdateSession(uint32 promise_id,
-                             const char* web_session_id,
-                             uint32_t web_session_id_length,
+                             const char* session_id,
+                             uint32_t session_id_length,
                              const uint8* response,
                              uint32 response_size) override;
   virtual void CloseSession(uint32 promise_id,
-                            const char* web_session_id,
-                            uint32_t web_session_id_length) override;
+                            const char* session_id,
+                            uint32_t session_id_length) override;
   virtual void RemoveSession(uint32 promise_id,
-                             const char* web_session_id,
-                             uint32_t web_session_id_length) override;
+                             const char* session_id,
+                             uint32_t session_id_length) override;
   virtual void SetServerCertificate(
       uint32 promise_id,
       const uint8_t* server_certificate_data,
@@ -90,19 +90,19 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnLoadSessionUpdated();
 
   // ContentDecryptionModule callbacks.
-  void OnSessionMessage(const std::string& web_session_id,
+  void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
                         const std::vector<uint8>& message,
                         const GURL& legacy_destination_url);
-  void OnSessionKeysChange(const std::string& web_session_id,
+  void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info);
-  void OnSessionClosed(const std::string& web_session_id);
+  void OnSessionClosed(const std::string& session_id);
 
   // Handle the success/failure of a promise. These methods are responsible for
   // calling |host_| to resolve or reject the promise.
-  void OnSessionCreated(uint32 promise_id, const std::string& web_session_id);
-  void OnSessionLoaded(uint32 promise_id, const std::string& web_session_id);
+  void OnSessionCreated(uint32 promise_id, const std::string& session_id);
+  void OnSessionLoaded(uint32 promise_id, const std::string& session_id);
   void OnPromiseResolved(uint32 promise_id);
   void OnPromiseFailed(uint32 promise_id,
                        MediaKeys::Exception exception_code,
@@ -144,7 +144,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnFileIOTestComplete(bool success);
 
   // Keep track of the last session created.
-  void SetSessionId(const std::string& web_session_id);
+  void SetSessionId(const std::string& session_id);
 
   AesDecryptor decryptor_;
 
@@ -159,7 +159,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // UpdateSession() will be called to create a session with known keys.
   // |session_id_for_emulated_loadsession_| is used to keep track of the
   // session_id allocated by aes_decryptor, as the session_id will be returned
-  // as |kLoadableWebSessionId|. Future requests for this simulated session
+  // as |kLoadableSessionId|. Future requests for this simulated session
   // need to use |session_id_for_emulated_loadsession_| for all calls
   // to aes_decryptor.
   // |promise_id_for_emulated_loadsession_| is used to keep track of the

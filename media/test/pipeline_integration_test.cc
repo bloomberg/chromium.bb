@@ -146,19 +146,19 @@ class FakeEncryptedMedia {
    public:
     virtual ~AppBase() {}
 
-    virtual void OnSessionMessage(const std::string& web_session_id,
+    virtual void OnSessionMessage(const std::string& session_id,
                                   MediaKeys::MessageType message_type,
                                   const std::vector<uint8>& message,
                                   const GURL& legacy_destination_url) = 0;
 
-    virtual void OnSessionClosed(const std::string& web_session_id) = 0;
+    virtual void OnSessionClosed(const std::string& session_id) = 0;
 
-    virtual void OnSessionKeysChange(const std::string& web_session_id,
+    virtual void OnSessionKeysChange(const std::string& session_id,
                                      bool has_additional_usable_key,
                                      CdmKeysInfo keys_info) = 0;
 
     // Errors are not expected unless overridden.
-    virtual void OnSessionError(const std::string& web_session_id,
+    virtual void OnSessionError(const std::string& session_id,
                                 const std::string& error_name,
                                 uint32 system_code,
                                 const std::string& error_message) {
@@ -183,31 +183,30 @@ class FakeEncryptedMedia {
   CdmContext* GetCdmContext() { return &cdm_context_; }
 
   // Callbacks for firing session events. Delegate to |app_|.
-  void OnSessionMessage(const std::string& web_session_id,
+  void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
                         const std::vector<uint8>& message,
                         const GURL& legacy_destination_url) {
-    app_->OnSessionMessage(web_session_id, message_type, message,
+    app_->OnSessionMessage(session_id, message_type, message,
                            legacy_destination_url);
   }
 
-  void OnSessionClosed(const std::string& web_session_id) {
-    app_->OnSessionClosed(web_session_id);
+  void OnSessionClosed(const std::string& session_id) {
+    app_->OnSessionClosed(session_id);
   }
 
-  void OnSessionKeysChange(const std::string& web_session_id,
+  void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info) {
-    app_->OnSessionKeysChange(web_session_id, has_additional_usable_key,
+    app_->OnSessionKeysChange(session_id, has_additional_usable_key,
                               keys_info.Pass());
   }
 
-  void OnSessionError(const std::string& web_session_id,
+  void OnSessionError(const std::string& session_id,
                       const std::string& error_name,
                       uint32 system_code,
                       const std::string& error_message) {
-    app_->OnSessionError(
-        web_session_id, error_name, system_code, error_message);
+    app_->OnSessionError(session_id, error_name, system_code, error_message);
   }
 
   void OnEncryptedMediaInitData(const std::string& init_data_type,
@@ -243,10 +242,10 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   KeyProvidingApp() {}
 
   void OnResolveWithSession(PromiseResult expected,
-                            const std::string& web_session_id) {
+                            const std::string& session_id) {
     EXPECT_EQ(expected, RESOLVED);
-    EXPECT_GT(web_session_id.length(), 0ul);
-    current_session_id_ = web_session_id;
+    EXPECT_GT(session_id.length(), 0ul);
+    current_session_id_ = session_id;
   }
 
   void OnResolve(PromiseResult expected) {
@@ -281,23 +280,23 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     return promise.Pass();
   }
 
-  void OnSessionMessage(const std::string& web_session_id,
+  void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
                         const std::vector<uint8>& message,
                         const GURL& legacy_destination_url) override {
-    EXPECT_FALSE(web_session_id.empty());
+    EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
-    EXPECT_EQ(current_session_id_, web_session_id);
+    EXPECT_EQ(current_session_id_, session_id);
   }
 
-  void OnSessionClosed(const std::string& web_session_id) override {
-    EXPECT_EQ(current_session_id_, web_session_id);
+  void OnSessionClosed(const std::string& session_id) override {
+    EXPECT_EQ(current_session_id_, session_id);
   }
 
-  void OnSessionKeysChange(const std::string& web_session_id,
+  void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info) override {
-    EXPECT_EQ(current_session_id_, web_session_id);
+    EXPECT_EQ(current_session_id_, session_id);
     EXPECT_EQ(has_additional_usable_key, true);
   }
 
@@ -408,24 +407,24 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
 // Ignores needkey and does not perform a license request
 class NoResponseApp : public FakeEncryptedMedia::AppBase {
  public:
-  void OnSessionMessage(const std::string& web_session_id,
+  void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
                         const std::vector<uint8>& message,
                         const GURL& legacy_destination_url) override {
-    EXPECT_FALSE(web_session_id.empty());
+    EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
     FAIL() << "Unexpected Message";
   }
 
-  void OnSessionClosed(const std::string& web_session_id) override {
-    EXPECT_FALSE(web_session_id.empty());
+  void OnSessionClosed(const std::string& session_id) override {
+    EXPECT_FALSE(session_id.empty());
     FAIL() << "Unexpected Closed";
   }
 
-  void OnSessionKeysChange(const std::string& web_session_id,
+  void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info) override {
-    EXPECT_FALSE(web_session_id.empty());
+    EXPECT_FALSE(session_id.empty());
     EXPECT_EQ(has_additional_usable_key, true);
   }
 

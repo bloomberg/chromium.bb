@@ -16,7 +16,7 @@
 namespace media {
 
 typedef base::Callback<blink::WebContentDecryptionModuleResult::SessionStatus(
-    const std::string& web_session_id)> SessionInitializedCB;
+    const std::string& session_id)> SessionInitializedCB;
 
 // Special class for resolving a new session promise. Resolving a new session
 // promise returns the session ID (as a string), but the blink promise needs
@@ -32,7 +32,7 @@ class MEDIA_EXPORT NewSessionCdmResultPromise
   ~NewSessionCdmResultPromise() override;
 
   // CdmPromiseTemplate<T> implementation.
-  void resolve(const std::string& web_session_id) override;
+  void resolve(const std::string& session_id) override;
   void reject(MediaKeys::Exception exception_code,
               uint32 system_code,
               const std::string& error_message) override;

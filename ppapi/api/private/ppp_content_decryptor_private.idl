@@ -51,7 +51,7 @@ interface PPP_ContentDecryptor_Private {
    * <code>init_data</code>. <code>init_data</code> is a data buffer
    * containing data for use in generating the request.
    *
-   * Note: <code>CreateSessionAndGenerateRequest()</code> must create a web
+   * Note: <code>CreateSessionAndGenerateRequest()</code> must create a
    * session ID and provide it to the browser via <code>SessionCreated()</code>
    * on the <code>PPB_ContentDecryptor_Private</code> interface.
    *
@@ -76,10 +76,10 @@ interface PPP_ContentDecryptor_Private {
       [in] PP_Var init_data);
 
   /**
-   * Loads a session whose web session ID is <code>web_session_id</code>.
+   * Loads a session whose session ID is <code>session_id</code>.
    *
    * Note: After the session is successfully loaded, the CDM must call
-   * <code>SessionCreated()</code> with <code>web_session_id</code> on the
+   * <code>SessionCreated()</code> with <code>session_id</code> on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
    *
    * @param[in] promise_id A reference for the promise that gets resolved or
@@ -88,15 +88,15 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] session_type A <code>PP_SessionType</code> that indicates the
    * type of session to be loaded.
    *
-   * @param[in] web_session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the web session ID of the session
+   * @param[in] session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session ID of the session
    * to load.
    */
   void LoadSession(
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
       [in] PP_SessionType session_type,
-      [in] PP_Var web_session_id);
+      [in] PP_Var session_id);
 
   /**
    * Provides a license or other message to the decryptor.
@@ -113,8 +113,8 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] promise_id A reference for the promise that gets resolved or
    * rejected depending upon the success or failure of updating the session.
    *
-   * @param[in] web_session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the web session ID of the session
+   * @param[in] session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session ID of the session
    * to be updated.
    *
    * @param[in] response A <code>PP_Var</code> of type
@@ -124,7 +124,7 @@ interface PPP_ContentDecryptor_Private {
   void UpdateSession(
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
-      [in] PP_Var web_session_id,
+      [in] PP_Var session_id,
       [in] PP_Var response);
 
   /**
@@ -133,15 +133,15 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] promise_id A reference for the promise that gets resolved or
    * rejected depending upon the success or failure of closing the session.
    *
-   * @param[in] web_session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the web session ID of the session
+   * @param[in] session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session ID of the session
    * to be closed.
    *
    */
   void CloseSession(
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
-      [in] PP_Var web_session_id);
+      [in] PP_Var session_id);
 
   /**
    * Remove stored data associated with this session.
@@ -150,15 +150,15 @@ interface PPP_ContentDecryptor_Private {
    * rejected depending upon the success or failure of removing the session
    * data.
    *
-   * @param[in] web_session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the web session ID of the session
+   * @param[in] session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session ID of the session
    * to be removed.
    *
    */
   void RemoveSession(
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
-      [in] PP_Var web_session_id);
+      [in] PP_Var session_id);
 
   /**
    * Decrypts the block and returns the unencrypted block via

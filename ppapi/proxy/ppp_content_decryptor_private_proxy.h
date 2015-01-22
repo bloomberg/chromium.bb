@@ -45,17 +45,17 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
   void OnMsgLoadSession(PP_Instance instance,
                         uint32_t promise_id,
                         PP_SessionType session_type,
-                        SerializedVarReceiveInput web_session_id);
+                        SerializedVarReceiveInput session_id);
   void OnMsgUpdateSession(PP_Instance instance,
                           uint32_t promise_id,
-                          SerializedVarReceiveInput web_session_id,
+                          SerializedVarReceiveInput session_id,
                           SerializedVarReceiveInput response);
   void OnMsgCloseSession(PP_Instance instance,
                          uint32_t promise_id,
-                         const std::string& web_session_id);
+                         const std::string& session_id);
   void OnMsgRemoveSession(PP_Instance instance,
                           uint32_t promise_id,
-                          const std::string& web_session_id);
+                          const std::string& session_id);
   void OnMsgDecrypt(PP_Instance instance,
                     const PPPDecryptor_Buffer& encrypted_buffer,
                     const std::string& serialized_encrypted_block_info);

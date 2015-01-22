@@ -127,17 +127,16 @@ void ProxyDecryptor::AddKey(const uint8* key,
                             int key_length,
                             const uint8* init_data,
                             int init_data_length,
-                            const std::string& web_session_id) {
+                            const std::string& session_id) {
   DVLOG(1) << "AddKey()";
 
   // In the prefixed API, the session parameter provided to addKey() is
   // optional, so use the single existing session if it exists.
-  // TODO(jrummell): remove when the prefixed API is removed.
-  std::string session_id(web_session_id);
-  if (session_id.empty()) {
+  std::string new_session_id(session_id);
+  if (new_session_id.empty()) {
     if (active_sessions_.size() == 1) {
       base::hash_map<std::string, bool>::iterator it = active_sessions_.begin();
-      session_id = it->first;
+      new_session_id = it->first;
     } else {
       OnSessionError(std::string(),
                      MediaKeys::NOT_SUPPORTED_ERROR,
@@ -149,11 +148,9 @@ void ProxyDecryptor::AddKey(const uint8* key,
 
   scoped_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
       base::Bind(&ProxyDecryptor::GenerateKeyAdded,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 web_session_id),
+                 weak_ptr_factory_.GetWeakPtr(), session_id),
       base::Bind(&ProxyDecryptor::OnSessionError,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 web_session_id)));
+                 weak_ptr_factory_.GetWeakPtr(), session_id)));
 
   // EME WD spec only supports a single array passed to the CDM. For
   // Clear Key using v0.1b, both arrays are used (|init_data| is key_id).
@@ -171,27 +168,24 @@ void ProxyDecryptor::AddKey(const uint8* key,
     std::string jwk =
         GenerateJWKSet(key, key_length, init_data, init_data_length);
     DCHECK(!jwk.empty());
-    media_keys_->UpdateSession(session_id,
+    media_keys_->UpdateSession(new_session_id,
                                reinterpret_cast<const uint8*>(jwk.data()),
-                               jwk.size(),
-                               promise.Pass());
+                               jwk.size(), promise.Pass());
     return;
   }
 
-  media_keys_->UpdateSession(session_id, key, key_length, promise.Pass());
+  media_keys_->UpdateSession(new_session_id, key, key_length, promise.Pass());
 }
 
-void ProxyDecryptor::CancelKeyRequest(const std::string& web_session_id) {
+void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
   DVLOG(1) << "CancelKeyRequest()";
 
   scoped_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
       base::Bind(&ProxyDecryptor::OnSessionClosed,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 web_session_id),
+                 weak_ptr_factory_.GetWeakPtr(), session_id),
       base::Bind(&ProxyDecryptor::OnSessionError,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 web_session_id)));
-  media_keys_->RemoveSession(web_session_id, promise.Pass());
+                 weak_ptr_factory_.GetWeakPtr(), session_id)));
+  media_keys_->RemoveSession(session_id, promise.Pass());
 }
 
 scoped_ptr<MediaKeys> ProxyDecryptor::CreateMediaKeys(
@@ -209,7 +203,7 @@ scoped_ptr<MediaKeys> ProxyDecryptor::CreateMediaKeys(
       base::Bind(&ProxyDecryptor::OnSessionExpirationUpdate, weak_this));
 }
 
-void ProxyDecryptor::OnSessionMessage(const std::string& web_session_id,
+void ProxyDecryptor::OnSessionMessage(const std::string& session_id,
                                       MediaKeys::MessageType message_type,
                                       const std::vector<uint8>& message,
                                       const GURL& legacy_destination_url) {
@@ -220,34 +214,34 @@ void ProxyDecryptor::OnSessionMessage(const std::string& web_session_id,
   if (is_clear_key_) {
     std::vector<uint8> key;
     if (ExtractFirstKeyIdFromLicenseRequest(message, &key)) {
-      key_message_cb_.Run(web_session_id, key, legacy_destination_url);
+      key_message_cb_.Run(session_id, key, legacy_destination_url);
       return;
     }
   }
 
-  key_message_cb_.Run(web_session_id, message, legacy_destination_url);
+  key_message_cb_.Run(session_id, message, legacy_destination_url);
 }
 
-void ProxyDecryptor::OnSessionKeysChange(const std::string& web_session_id,
+void ProxyDecryptor::OnSessionKeysChange(const std::string& session_id,
                                          bool has_additional_usable_key,
                                          CdmKeysInfo keys_info) {
   // EME v0.1b doesn't support this event.
 }
 
 void ProxyDecryptor::OnSessionExpirationUpdate(
-    const std::string& web_session_id,
+    const std::string& session_id,
     const base::Time& new_expiry_time) {
   // EME v0.1b doesn't support this event.
 }
 
-void ProxyDecryptor::GenerateKeyAdded(const std::string& web_session_id) {
+void ProxyDecryptor::GenerateKeyAdded(const std::string& session_id) {
   // EME WD doesn't support this event, but it is needed for EME v0.1b.
-  key_added_cb_.Run(web_session_id);
+  key_added_cb_.Run(session_id);
 }
 
-void ProxyDecryptor::OnSessionClosed(const std::string& web_session_id) {
+void ProxyDecryptor::OnSessionClosed(const std::string& session_id) {
   base::hash_map<std::string, bool>::iterator it =
-      active_sessions_.find(web_session_id);
+      active_sessions_.find(session_id);
 
   // Latest EME spec separates closing a session ("allows an application to
   // indicate that it no longer needs the session") and actually closing the
@@ -262,14 +256,14 @@ void ProxyDecryptor::OnSessionClosed(const std::string& web_session_id) {
     return;
 
   if (it->second) {
-    OnSessionError(web_session_id, MediaKeys::NOT_SUPPORTED_ERROR,
+    OnSessionError(session_id, MediaKeys::NOT_SUPPORTED_ERROR,
                    kSessionClosedSystemCode,
                    "Do not close persistent sessions.");
   }
   active_sessions_.erase(it);
 }
 
-void ProxyDecryptor::OnSessionError(const std::string& web_session_id,
+void ProxyDecryptor::OnSessionError(const std::string& session_id,
                                     MediaKeys::Exception exception_code,
                                     uint32 system_code,
                                     const std::string& error_message) {
@@ -290,19 +284,19 @@ void ProxyDecryptor::OnSessionError(const std::string& web_session_id,
       error_code = MediaKeys::kUnknownError;
       break;
   }
-  key_error_cb_.Run(web_session_id, error_code, system_code);
+  key_error_cb_.Run(session_id, error_code, system_code);
 }
 
 void ProxyDecryptor::SetSessionId(SessionCreationType session_type,
-                                  const std::string& web_session_id) {
+                                  const std::string& session_id) {
   // Loaded sessions are considered persistent.
   bool is_persistent =
       session_type == PersistentSession || session_type == LoadSession;
-  active_sessions_.insert(std::make_pair(web_session_id, is_persistent));
+  active_sessions_.insert(std::make_pair(session_id, is_persistent));
 
   // For LoadSession(), generate the KeyAdded event.
   if (session_type == LoadSession)
-    GenerateKeyAdded(web_session_id);
+    GenerateKeyAdded(session_id);
 }
 
 }  // namespace media

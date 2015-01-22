@@ -165,30 +165,29 @@ class PPB_Instance_API {
   virtual void PromiseResolved(PP_Instance instance, uint32 promise_id) = 0;
   virtual void PromiseResolvedWithSession(PP_Instance instance,
                                           uint32 promise_id,
-                                          PP_Var web_session_id_var) = 0;
+                                          PP_Var session_id_var) = 0;
   virtual void PromiseRejected(PP_Instance instance,
                                uint32 promise_id,
                                PP_CdmExceptionCode exception_code,
                                uint32 system_code,
                                PP_Var error_description_var) = 0;
   virtual void SessionMessage(PP_Instance instance,
-                              PP_Var web_session_id_var,
+                              PP_Var session_id_var,
                               PP_CdmMessageType message_type,
                               PP_Var message_var,
                               PP_Var legacy_destination_url_var) = 0;
   virtual void SessionKeysChange(
       PP_Instance instance,
-      PP_Var web_session_id_var,
+      PP_Var session_id_var,
       PP_Bool has_additional_usable_key,
       uint32_t key_count,
       const struct PP_KeyInformation key_information[]) = 0;
   virtual void SessionExpirationChange(PP_Instance instance,
-                                       PP_Var web_session_id_var,
+                                       PP_Var session_id_var,
                                        PP_Time new_expiry_time) = 0;
-  virtual void SessionClosed(PP_Instance instance,
-                             PP_Var web_session_id_var) = 0;
+  virtual void SessionClosed(PP_Instance instance, PP_Var session_id_var) = 0;
   virtual void SessionError(PP_Instance instance,
-                            PP_Var web_session_id_var,
+                            PP_Var session_id_var,
                             PP_CdmExceptionCode exception_code,
                             uint32 system_code,
                             PP_Var error_description_var) = 0;

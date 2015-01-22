@@ -172,7 +172,7 @@ void RendererCdmManager::OnPromiseResolvedWithSession(
     int cdm_id,
     uint32_t promise_id,
     const std::string& session_id) {
-  if (session_id.length() > media::limits::kMaxWebSessionIdLength) {
+  if (session_id.length() > media::limits::kMaxSessionIdLength) {
     NOTREACHED();
     OnPromiseRejected(cdm_id, promise_id, MediaKeys::INVALID_ACCESS_ERROR, 0,
                       "Session ID is too long");

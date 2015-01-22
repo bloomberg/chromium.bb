@@ -32,7 +32,7 @@ class CdmFactory;
 class MEDIA_EXPORT ProxyDecryptor {
  public:
   // These are similar to the callbacks in media_keys.h, but pass back the
-  // web session ID rather than the internal session ID.
+  // session ID rather than the internal session ID.
   typedef base::Callback<void(const std::string& session_id)> KeyAddedCB;
   typedef base::Callback<void(const std::string& session_id,
                               MediaKeys::KeyError error_code,
@@ -71,18 +71,18 @@ class MEDIA_EXPORT ProxyDecryptor {
       const GURL& security_origin);
 
   // Callbacks for firing session events.
-  void OnSessionMessage(const std::string& web_session_id,
+  void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
                         const std::vector<uint8>& message,
                         const GURL& legacy_destination_url);
-  void OnSessionKeysChange(const std::string& web_session_id,
+  void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info);
-  void OnSessionExpirationUpdate(const std::string& web_session_id,
+  void OnSessionExpirationUpdate(const std::string& session_id,
                                  const base::Time& new_expiry_time);
-  void GenerateKeyAdded(const std::string& web_session_id);
-  void OnSessionClosed(const std::string& web_session_id);
-  void OnSessionError(const std::string& web_session_id,
+  void GenerateKeyAdded(const std::string& session_id);
+  void OnSessionClosed(const std::string& session_id);
+  void OnSessionError(const std::string& session_id,
                       MediaKeys::Exception exception_code,
                       uint32 system_code,
                       const std::string& error_message);
@@ -95,7 +95,7 @@ class MEDIA_EXPORT ProxyDecryptor {
 
   // Called when a session is actually created or loaded.
   void SetSessionId(SessionCreationType session_type,
-                    const std::string& web_session_id);
+                    const std::string& session_id);
 
   // The real MediaKeys that manages key operations for the ProxyDecryptor.
   scoped_ptr<MediaKeys> media_keys_;

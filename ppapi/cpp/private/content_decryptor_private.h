@@ -44,14 +44,14 @@ class ContentDecryptor_Private {
       pp::VarArrayBuffer init_data) = 0;
   virtual void LoadSession(uint32_t promise_id,
                            PP_SessionType session_type,
-                           const std::string& web_session_id) = 0;
+                           const std::string& session_id) = 0;
   virtual void UpdateSession(uint32_t promise_id,
-                             const std::string& web_session_id,
+                             const std::string& session_id,
                              pp::VarArrayBuffer response) = 0;
   virtual void CloseSession(uint32_t promise_id,
-                            const std::string& web_session_id) = 0;
+                            const std::string& session_id) = 0;
   virtual void RemoveSession(uint32_t promise_id,
-                             const std::string& web_session_id) = 0;
+                             const std::string& session_id) = 0;
   virtual void Decrypt(pp::Buffer_Dev encrypted_buffer,
                        const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
   virtual void InitializeAudioDecoder(
@@ -74,22 +74,22 @@ class ContentDecryptor_Private {
   // to the browser.
   void PromiseResolved(uint32_t promise_id);
   void PromiseResolvedWithSession(uint32_t promise_id,
-                                  const std::string& web_session_id);
+                                  const std::string& session_id);
   void PromiseRejected(uint32_t promise_id,
                        PP_CdmExceptionCode exception_code,
                        uint32_t system_code,
                        const std::string& error_description);
-  void SessionMessage(const std::string& web_session_id,
+  void SessionMessage(const std::string& session_id,
                       PP_CdmMessageType message_type,
                       pp::VarArrayBuffer message,
                       const std::string& legacy_destination_url);
-  void SessionKeysChange(const std::string& web_session_id,
+  void SessionKeysChange(const std::string& session_id,
                          bool has_additional_usable_key,
                          const std::vector<PP_KeyInformation>& key_information);
-  void SessionExpirationChange(const std::string& web_session_id,
+  void SessionExpirationChange(const std::string& session_id,
                                PP_Time new_expiry_time);
-  void SessionClosed(const std::string& web_session_id);
-  void SessionError(const std::string& web_session_id,
+  void SessionClosed(const std::string& session_id);
+  void SessionError(const std::string& session_id,
                     PP_CdmExceptionCode exception_code,
                     uint32_t system_code,
                     const std::string& error_description);

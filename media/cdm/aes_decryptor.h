@@ -46,15 +46,15 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
       int init_data_length,
       scoped_ptr<NewSessionCdmPromise> promise) override;
   void LoadSession(SessionType session_type,
-                   const std::string& web_session_id,
+                   const std::string& session_id,
                    scoped_ptr<NewSessionCdmPromise> promise) override;
-  void UpdateSession(const std::string& web_session_id,
+  void UpdateSession(const std::string& session_id,
                      const uint8* response,
                      int response_length,
                      scoped_ptr<SimpleCdmPromise> promise) override;
-  void CloseSession(const std::string& web_session_id,
+  void CloseSession(const std::string& session_id,
                     scoped_ptr<SimpleCdmPromise> promise) override;
-  void RemoveSession(const std::string& web_session_id,
+  void RemoveSession(const std::string& session_id,
                      scoped_ptr<SimpleCdmPromise> promise) override;
   CdmContext* GetCdmContext() override;
 
@@ -118,7 +118,7 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
 
   // Creates a DecryptionKey using |key_string| and associates it with |key_id|.
   // Returns true if successful.
-  bool AddDecryptionKey(const std::string& web_session_id,
+  bool AddDecryptionKey(const std::string& session_id,
                         const std::string& key_id,
                         const std::string& key_string);
 
@@ -126,8 +126,8 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
   // the key. Returns NULL if no key is associated with |key_id|.
   DecryptionKey* GetKey(const std::string& key_id) const;
 
-  // Deletes all keys associated with |web_session_id|.
-  void DeleteKeysForSession(const std::string& web_session_id);
+  // Deletes all keys associated with |session_id|.
+  void DeleteKeysForSession(const std::string& session_id);
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
@@ -143,9 +143,9 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
   // Keeps track of current valid sessions.
   std::set<std::string> valid_sessions_;
 
-  // Make web session ID unique per renderer by making it static. Web session
+  // Make session ID unique per renderer by making it static. Session
   // IDs seen by the app will be "1", "2", etc.
-  static uint32 next_web_session_id_;
+  static uint32 next_session_id_;
 
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;

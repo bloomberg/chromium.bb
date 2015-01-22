@@ -22,11 +22,11 @@ NewSessionCdmResultPromise::NewSessionCdmResultPromise(
 NewSessionCdmResultPromise::~NewSessionCdmResultPromise() {
 }
 
-void NewSessionCdmResultPromise::resolve(const std::string& web_session_id) {
+void NewSessionCdmResultPromise::resolve(const std::string& session_id) {
   MarkPromiseSettled();
   ReportCdmResultUMA(uma_name_, SUCCESS);
   blink::WebContentDecryptionModuleResult::SessionStatus status =
-      new_session_created_cb_.Run(web_session_id);
+      new_session_created_cb_.Run(session_id);
   web_cdm_result_.completeWithSession(status);
 }
 

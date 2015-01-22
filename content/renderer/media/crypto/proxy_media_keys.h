@@ -49,15 +49,15 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
       int init_data_length,
       scoped_ptr<media::NewSessionCdmPromise> promise) override;
   void LoadSession(SessionType session_type,
-                   const std::string& web_session_id,
+                   const std::string& session_id,
                    scoped_ptr<media::NewSessionCdmPromise> promise) override;
-  void UpdateSession(const std::string& web_session_id,
+  void UpdateSession(const std::string& session_id,
                      const uint8* response,
                      int response_length,
                      scoped_ptr<media::SimpleCdmPromise> promise) override;
-  void CloseSession(const std::string& web_session_id,
+  void CloseSession(const std::string& session_id,
                     scoped_ptr<media::SimpleCdmPromise> promise) override;
-  void RemoveSession(const std::string& web_session_id,
+  void RemoveSession(const std::string& session_id,
                      scoped_ptr<media::SimpleCdmPromise> promise) override;
   media::CdmContext* GetCdmContext() override;
 

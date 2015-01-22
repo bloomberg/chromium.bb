@@ -53,19 +53,19 @@ class CdmWrapper {
                                                uint32_t init_data_size) = 0;
   virtual void LoadSession(uint32_t promise_id,
                            cdm::SessionType session_type,
-                           const char* web_session_id,
-                           uint32_t web_session_id_size) = 0;
+                           const char* session_id,
+                           uint32_t session_id_size) = 0;
   virtual void UpdateSession(uint32_t promise_id,
-                             const char* web_session_id,
-                             uint32_t web_session_id_size,
+                             const char* session_id,
+                             uint32_t session_id_size,
                              const uint8_t* response,
                              uint32_t response_size) = 0;
   virtual void CloseSession(uint32_t promise_id,
-                            const char* web_session_id,
-                            uint32_t web_session_id_size) = 0;
+                            const char* session_id,
+                            uint32_t session_id_size) = 0;
   virtual void RemoveSession(uint32_t promise_id,
-                             const char* web_session_id,
-                             uint32_t web_session_id_size) = 0;
+                             const char* session_id,
+                             uint32_t session_id_size) = 0;
   virtual void TimerExpired(void* context) = 0;
   virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
                               cdm::DecryptedBlock* decrypted_buffer) = 0;
@@ -141,34 +141,30 @@ class CdmWrapperImpl : public CdmWrapper {
 
   virtual void LoadSession(uint32_t promise_id,
                            cdm::SessionType session_type,
-                           const char* web_session_id,
-                           uint32_t web_session_id_size) override {
-    cdm_->LoadSession(promise_id, session_type, web_session_id,
-                      web_session_id_size);
+                           const char* session_id,
+                           uint32_t session_id_size) override {
+    cdm_->LoadSession(promise_id, session_type, session_id, session_id_size);
   }
 
   virtual void UpdateSession(uint32_t promise_id,
-                             const char* web_session_id,
-                             uint32_t web_session_id_size,
+                             const char* session_id,
+                             uint32_t session_id_size,
                              const uint8_t* response,
                              uint32_t response_size) override {
-    cdm_->UpdateSession(promise_id,
-                        web_session_id,
-                        web_session_id_size,
-                        response,
+    cdm_->UpdateSession(promise_id, session_id, session_id_size, response,
                         response_size);
   }
 
   virtual void CloseSession(uint32_t promise_id,
-                            const char* web_session_id,
-                            uint32_t web_session_id_size) override {
-    cdm_->CloseSession(promise_id, web_session_id, web_session_id_size);
+                            const char* session_id,
+                            uint32_t session_id_size) override {
+    cdm_->CloseSession(promise_id, session_id, session_id_size);
   }
 
   virtual void RemoveSession(uint32_t promise_id,
-                             const char* web_session_id,
-                             uint32_t web_session_id_size) override {
-    cdm_->RemoveSession(promise_id, web_session_id, web_session_id_size);
+                             const char* session_id,
+                             uint32_t session_id_size) override {
+    cdm_->RemoveSession(promise_id, session_id, session_id_size);
   }
 
   virtual void TimerExpired(void* context) override {
@@ -252,9 +248,9 @@ template <>
 void CdmWrapperImpl<cdm::ContentDecryptionModule_6>::LoadSession(
     uint32_t promise_id,
     cdm::SessionType session_type,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  cdm_->LoadSession(promise_id, web_session_id, web_session_id_size);
+    const char* session_id,
+    uint32_t session_id_size) {
+  cdm_->LoadSession(promise_id, session_id, session_id_size);
 }
 
 template <>
