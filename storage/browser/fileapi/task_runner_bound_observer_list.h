@@ -64,9 +64,9 @@ class TaskRunnerBoundObserverList {
   // If we're already on the runner this just dispatches the method.
   template <class Method, class Params>
   void Notify(Method method, const Params& params) const {
-    COMPILE_ASSERT(
+    static_assert(
         (base::internal::ParamsUseScopedRefptrCorrectly<Params>::value),
-        badunboundmethodparams);
+        "bad unbound method params");
     for (typename ObserversListMap::const_iterator it = observers_.begin();
          it != observers_.end(); ++it) {
       if (!it->second.get() || it->second->RunsTasksOnCurrentThread()) {
