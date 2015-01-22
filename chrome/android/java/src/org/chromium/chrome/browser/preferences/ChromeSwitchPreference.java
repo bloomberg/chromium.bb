@@ -7,13 +7,13 @@ package org.chromium.chrome.browser.preferences;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.preference.SwitchPreference;
-import android.support.v7.widget.SwitchCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.ChromeSwitchCompat;
 
 /**
  * A super-powered SwitchPreference designed especially for Chrome. Special features:
@@ -50,7 +50,7 @@ public class ChromeSwitchPreference extends SwitchPreference {
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
-        SwitchCompat switchView = (SwitchCompat) view.findViewById(R.id.switch_widget);
+        ChromeSwitchCompat switchView = (ChromeSwitchCompat) view.findViewById(R.id.switch_widget);
         switchView.setChecked(isChecked());
 
         TextView title = (TextView) view.findViewById(android.R.id.title);

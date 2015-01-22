@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.preferences;
 
 import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -23,6 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.widget.ChromeSwitchCompat;
 import org.chromium.ui.UiUtils;
 
 /**
@@ -30,7 +30,7 @@ import org.chromium.ui.UiUtils;
  */
 public class HomepagePreferences extends Fragment {
     private HomepageManager mHomepageManager;
-    private SwitchCompat mHomepageSwitch;
+    private ChromeSwitchCompat mHomepageSwitch;
     private TextView mHomepageSwitchLabel;
     private String mCustomUriCache;
     private EditText mCustomUriEditText;
@@ -63,7 +63,7 @@ public class HomepagePreferences extends Fragment {
     }
 
     private void initHomepageSwitch(View rootView) {
-        mHomepageSwitch = (SwitchCompat) rootView.findViewById(R.id.homepage_switch);
+        mHomepageSwitch = (ChromeSwitchCompat) rootView.findViewById(R.id.homepage_switch);
         mHomepageSwitchLabel = (TextView) rootView.findViewById(R.id.homepage_switch_label);
 
         boolean isHomepageEnabled = mHomepageManager.getPrefHomepageEnabled();
