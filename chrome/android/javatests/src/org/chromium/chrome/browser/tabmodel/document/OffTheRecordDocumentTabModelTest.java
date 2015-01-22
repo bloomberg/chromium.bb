@@ -63,8 +63,8 @@ public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
             }
 
             @Override
-            public int getOffTheRecordTabCount() {
-                return mModel == null ? 0 : mModel.getCount();
+            public boolean doOffTheRecordTabsExist() {
+                return mModel == null ? false : (mModel.getCount() > 0);
             }
 
         };

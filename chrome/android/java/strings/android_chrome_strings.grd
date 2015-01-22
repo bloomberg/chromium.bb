@@ -1010,6 +1010,11 @@ Drag from top to exit.
       <message name="IDS_OMA_DOWNLOAD_DESCRIPTION_LABEL" desc="A text label to display the description of the OMA download.">
         Description:
       </message>
+      
+      <!-- Document mode strings -->
+      <message name="IDS_CLOSE_ALL_INCOGNITO_NOTIFICATION" desc="Message on the notification that closes all incognito tabs in document mode">
+        Close all incognito tabs
+      </message>
     </messages>
   </release>
 </grit>

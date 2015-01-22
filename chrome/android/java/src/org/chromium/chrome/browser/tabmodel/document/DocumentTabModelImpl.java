@@ -408,7 +408,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         for (int i = 0; i < mEntryMap.size(); i++) {
             int tabId = mEntryMap.keyAt(i);
             if (isTabIdInEntryList(current, tabId)
-                    || isTabAssociatedWithNonDestroyedActivity(tabId)) {
+                    || mActivityDelegate.isTabAssociatedWithNonDestroyedActivity(
+                            isIncognito(), tabId)) {
                 continue;
             }
 
@@ -914,27 +915,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     private static boolean isTabIdInEntryList(List<Entry> entries, int tabId) {
         for (int i = 0; i < entries.size(); i++) {
             if (entries.get(i).tabId == tabId) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Check if the Tab is associated with an Activity that hasn't been destroyed.
-     * This catches situations where a DocumentActivity is no longer listed in Android's Recents
-     * list, but is not dead yet.
-     * @param tabId ID of the Tab to find.
-     * @return Whether the tab is still alive.
-     */
-    private boolean isTabAssociatedWithNonDestroyedActivity(int tabId) {
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (WeakReference<Activity> ref : activities) {
-            Activity activity = ref.get();
-            if (activity != null
-                    && mActivityDelegate.isValidActivity(isIncognito(), activity.getIntent())
-                    && ActivityDelegate.getTabIdFromIntent(activity.getIntent()) == tabId
-                    && !activity.isDestroyed()) {
-                return true;
-            }
         }
         return false;
     }

@@ -27,8 +27,8 @@ public class OffTheRecordTabModel implements TabModel {
         /** Creates a fully working TabModel to delegate calls to. */
         TabModel createTabModel();
 
-        /** @return The number of existing OffTheRecord Tabs. */
-        int getOffTheRecordTabCount();
+        /** @return Whether OffTheRecord Tabs exist. */
+        boolean doOffTheRecordTabsExist();
     }
 
     private final OffTheRecordTabModelDelegate mDelegate;
@@ -77,7 +77,7 @@ public class OffTheRecordTabModel implements TabModel {
 
         // Only delete the incognito profile if there are no incognito tabs open in any tab
         // model selector as the profile is shared between them.
-        if (profile != null && mDelegate.getOffTheRecordTabCount() == 0) {
+        if (profile != null && !mDelegate.doOffTheRecordTabsExist()) {
             profile.destroyWhenAppropriate();
         }
 

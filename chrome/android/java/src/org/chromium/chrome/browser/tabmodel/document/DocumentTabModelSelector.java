@@ -96,10 +96,10 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
             }
 
             @Override
-            public int getOffTheRecordTabCount() {
+            public boolean doOffTheRecordTabsExist() {
                 // TODO(dfalcantara): Devices in document mode do not trigger the TabWindowManager.
                 //                    Revisit this when we have a Samsung L multi-instance device.
-                return mIncognitoTabModel.getCount();
+                return mIncognitoTabModel.getCount() > 0;
             }
         }, mActivityDelegate);
         initializeTabIdCounter();

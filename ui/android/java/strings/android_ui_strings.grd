@@ -247,7 +247,6 @@
       <message desc="Hint text for an input field containing the user's credit card CVC (card verification code)." name="IDS_CARD_UNMASK_INPUT_HINT">
         CVC
       </message>
-
     </messages>
   </release>
 </grit>
