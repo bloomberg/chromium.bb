@@ -206,9 +206,7 @@ float FakeFloatTransition::GetValue(base::TimeDelta time) const {
 }
 
 FakeLayerAnimationValueObserver::FakeLayerAnimationValueObserver()
-    : opacity_(0.0f),
-      animation_waiting_for_deletion_(false),
-      scroll_offset_animation_removed_(false) {
+    : opacity_(0.0f), animation_waiting_for_deletion_(false) {
 }
 
 FakeLayerAnimationValueObserver::~FakeLayerAnimationValueObserver() {}
@@ -234,10 +232,6 @@ void FakeLayerAnimationValueObserver::OnScrollOffsetAnimated(
 
 void FakeLayerAnimationValueObserver::OnAnimationWaitingForDeletion() {
   animation_waiting_for_deletion_ = true;
-}
-
-void FakeLayerAnimationValueObserver::OnScrollOffsetAnimationRemoved() {
-  scroll_offset_animation_removed_ = true;
 }
 
 bool FakeLayerAnimationValueObserver::IsActive() const {

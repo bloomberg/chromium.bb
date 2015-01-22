@@ -27,7 +27,8 @@ LayerAnimationController::LayerAnimationController(int id)
       is_active_(false),
       value_provider_(nullptr),
       layer_animation_delegate_(nullptr),
-      needs_to_start_animations_(false) {
+      needs_to_start_animations_(false),
+      scroll_offset_animation_was_interrupted_(false) {
 }
 
 LayerAnimationController::~LayerAnimationController() {
@@ -65,7 +66,7 @@ void LayerAnimationController::RemoveAnimation(int animation_id) {
       animations_.remove_if(HasAnimationId(animation_id));
   for (auto it = animations_to_remove; it != animations_.end(); ++it) {
     if ((*it)->target_property() == Animation::ScrollOffset) {
-      NotifyObserversScrollOffsetAnimationRemoved();
+      scroll_offset_animation_was_interrupted_ = true;
       break;
     }
   }
@@ -93,7 +94,7 @@ void LayerAnimationController::RemoveAnimation(
       HasAnimationIdAndProperty(animation_id, target_property));
   if (target_property == Animation::ScrollOffset &&
       animations_to_remove != animations_.end())
-    NotifyObserversScrollOffsetAnimationRemoved();
+    scroll_offset_animation_was_interrupted_ = true;
 
   animations_.erase(animations_to_remove, animations_.end());
   UpdateActivation(NormalActivation);
@@ -256,6 +257,7 @@ void LayerAnimationController::ActivateAnimations() {
                                   animations_.end(),
                                   AffectsNoObservers()),
                     animations_.end());
+  scroll_offset_animation_was_interrupted_ = false;
   UpdateActivation(NormalActivation);
 }
 
@@ -628,13 +630,16 @@ void LayerAnimationController::RemoveAnimationsCompletedOnMainThread(
 }
 
 void LayerAnimationController::PushPropertiesToImplThread(
-    LayerAnimationController* controller_impl) const {
+    LayerAnimationController* controller_impl) {
   for (size_t i = 0; i < animations_.size(); ++i) {
     Animation* current_impl =
         controller_impl->GetAnimationById(animations_[i]->id());
     if (current_impl)
       animations_[i]->PushPropertiesTo(current_impl);
   }
+  controller_impl->scroll_offset_animation_was_interrupted_ =
+      scroll_offset_animation_was_interrupted_;
+  scroll_offset_animation_was_interrupted_ = false;
 }
 
 void LayerAnimationController::StartAnimations(base::TimeTicks monotonic_time) {
@@ -1032,11 +1037,6 @@ void LayerAnimationController::NotifyObserversAnimationWaitingForDeletion() {
   FOR_EACH_OBSERVER(LayerAnimationValueObserver,
                     value_observers_,
                     OnAnimationWaitingForDeletion());
-}
-
-void LayerAnimationController::NotifyObserversScrollOffsetAnimationRemoved() {
-  FOR_EACH_OBSERVER(LayerAnimationValueObserver, value_observers_,
-                    OnScrollOffsetAnimationRemoved());
 }
 
 bool LayerAnimationController::HasValueObserver() {

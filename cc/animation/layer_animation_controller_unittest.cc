@@ -833,11 +833,21 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionOnImplOnly) {
   EXPECT_FALSE(event);
 }
 
-TEST(LayerAnimationControllerTest, ScrollOffsetRemovalNotifiesObserver) {
+TEST(LayerAnimationControllerTest, ScrollOffsetRemovalClearsScrollDelta) {
+  FakeLayerAnimationValueObserver dummy_impl;
+  FakeLayerAnimationValueProvider dummy_provider_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  controller_impl->set_value_provider(&dummy_provider_impl);
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
   FakeLayerAnimationValueObserver dummy;
+  FakeLayerAnimationValueProvider dummy_provider;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
+  controller->set_value_provider(&dummy_provider);
 
   // First test the 1-argument version of RemoveAnimation.
   gfx::ScrollOffset target_value(300.f, 200.f);
@@ -848,34 +858,79 @@ TEST(LayerAnimationControllerTest, ScrollOffsetRemovalNotifiesObserver) {
   int animation_id = 1;
   scoped_ptr<Animation> animation(Animation::Create(
       curve.Pass(), animation_id, 0, Animation::ScrollOffset));
+  animation->set_needs_synchronized_start_time(true);
   controller->AddAnimation(animation.Pass());
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
+  EXPECT_FALSE(controller_impl->scroll_offset_animation_was_interrupted());
 
   controller->RemoveAnimation(animation_id);
-  EXPECT_TRUE(dummy.scroll_offset_animation_removed());
+  EXPECT_TRUE(controller->scroll_offset_animation_was_interrupted());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_TRUE(controller_impl->scroll_offset_animation_was_interrupted());
+  EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
+
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller_impl->scroll_offset_animation_was_interrupted());
 
   // Now, test the 2-argument version of RemoveAnimation.
-  dummy.reset_scroll_offset_animation_removed();
   curve = ScrollOffsetAnimationCurve::Create(
       target_value, EaseInOutTimingFunction::Create().Pass());
   animation =
       Animation::Create(curve.Pass(), animation_id, 0, Animation::ScrollOffset);
+  animation->set_needs_synchronized_start_time(true);
   controller->AddAnimation(animation.Pass());
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
+  EXPECT_FALSE(controller_impl->scroll_offset_animation_was_interrupted());
 
-  controller->RemoveAnimation(animation_id, Animation::ScrollOffset);
-  EXPECT_TRUE(dummy.scroll_offset_animation_removed());
-
-  // Check that removing non-scroll-offset animations does not cause the
-  // observer to get notified.
-  dummy.reset_scroll_offset_animation_removed();
-  animation_id = AddAnimatedTransformToController(controller.get(), 1.0, 1, 2);
   controller->RemoveAnimation(animation_id);
-  EXPECT_FALSE(dummy.scroll_offset_animation_removed());
+  EXPECT_TRUE(controller->scroll_offset_animation_was_interrupted());
 
-  dummy.reset_scroll_offset_animation_removed();
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_TRUE(controller_impl->scroll_offset_animation_was_interrupted());
+  EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
+
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller_impl->scroll_offset_animation_was_interrupted());
+
+  // Check that removing non-scroll-offset animations does not cause
+  // scroll_offset_animation_was_interrupted() to get set.
+  animation_id = AddAnimatedTransformToController(controller.get(), 1.0, 1, 2);
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
+  EXPECT_FALSE(controller_impl->scroll_offset_animation_was_interrupted());
+
+  controller->RemoveAnimation(animation_id);
+  EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_FALSE(controller_impl->scroll_offset_animation_was_interrupted());
+  EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
+
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller_impl->scroll_offset_animation_was_interrupted());
+
   animation_id =
       AddAnimatedFilterToController(controller.get(), 1.0, 0.1f, 0.2f);
-  controller->RemoveAnimation(animation_id, Animation::Filter);
-  EXPECT_FALSE(dummy.scroll_offset_animation_removed());
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
+  EXPECT_FALSE(controller_impl->scroll_offset_animation_was_interrupted());
+
+  controller->RemoveAnimation(animation_id);
+  EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_FALSE(controller_impl->scroll_offset_animation_was_interrupted());
+  EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
+
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller_impl->scroll_offset_animation_was_interrupted());
 }
 
 class FakeAnimationDelegate : public AnimationDelegate {

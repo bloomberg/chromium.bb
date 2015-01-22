@@ -71,7 +71,6 @@ Layer::Layer()
       force_render_surface_(false),
       transform_is_invertible_(true),
       has_render_surface_(false),
-      clear_impl_scroll_delta_(false),
       background_color_(0),
       opacity_(1.f),
       blend_mode_(SkXfermode::kSrcOver_Mode),
@@ -971,10 +970,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // in LayerImpl::ApplyScrollDeltasSinceBeginMainFrame in a separate tree walk.
   if (layer->layer_tree_impl()->settings().impl_side_painting) {
     layer->SetScrollOffset(scroll_offset_);
-    if (clear_impl_scroll_delta_)
-      layer->ClearScrollDeltaAtActivation();
   } else {
-    if (clear_impl_scroll_delta_) {
+    if (layer_animation_controller_
+            ->scroll_offset_animation_was_interrupted()) {
       layer->SetScrollOffsetAndDelta(scroll_offset_, gfx::Vector2dF());
     } else {
       layer->SetScrollOffsetAndDelta(
@@ -982,7 +980,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     }
     layer->SetSentScrollDelta(gfx::Vector2dF());
   }
-  clear_impl_scroll_delta_ = false;
 
   // Wrap the copy_requests_ in a PostTask to the main thread.
   ScopedPtrVector<CopyOutputRequest> main_thread_copy_requests;
@@ -1150,10 +1147,6 @@ void Layer::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
 void Layer::OnAnimationWaitingForDeletion() {
   // Animations are only deleted during PushProperties.
   SetNeedsPushProperties();
-}
-
-void Layer::OnScrollOffsetAnimationRemoved() {
-  clear_impl_scroll_delta_ = true;
 }
 
 bool Layer::IsActive() const {
