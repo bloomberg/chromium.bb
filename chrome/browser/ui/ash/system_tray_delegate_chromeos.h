@@ -21,6 +21,7 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -57,7 +58,8 @@ class SystemTrayDelegateChromeOS
       public chrome::BrowserListObserver,
       public extensions::AppWindowRegistry::Observer,
       public user_manager::UserManager::UserSessionStateObserver,
-      public SupervisedUserServiceObserver {
+      public SupervisedUserServiceObserver,
+      public ShutdownPolicyHandler::Delegate  {
  public:
   SystemTrayDelegateChromeOS();
 
@@ -132,6 +134,12 @@ class SystemTrayDelegateChromeOS
       ash::CustodianInfoTrayObserver* observer) override;
   void RemoveCustodianInfoTrayObserver(
       ash::CustodianInfoTrayObserver* observer) override;
+  void AddShutdownPolicyObserver(
+      ash::ShutdownPolicyObserver* observer) override;
+  void RemoveShutdownPolicyObserver(
+      ash::ShutdownPolicyObserver* observer) override;
+  void ShouldRebootOnShutdown(
+      const ash::RebootOnShutdownCallback& callback) override;
 
   // Overridden from user_manager::UserManager::UserSessionStateObserver:
   void UserAddedToSession(const user_manager::User* active_user) override;
@@ -252,6 +260,9 @@ class SystemTrayDelegateChromeOS
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
 
+  // Overridden from ShutdownPolicyObserver::Delegate.
+  void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
+
   // helper methods used by GetSupervisedUserMessage.
   const base::string16 GetLegacySupervisedUserMessage() const;
   const base::string16 GetChildUserMessage() const;
@@ -278,9 +289,12 @@ class SystemTrayDelegateChromeOS
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
   base::ScopedPtrHashMap<std::string, ash::tray::UserAccountsDelegate>
       accounts_delegates_;
+  scoped_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
 
   ObserverList<ash::CustodianInfoTrayObserver>
       custodian_info_changed_observers_;
+
+  ObserverList<ash::ShutdownPolicyObserver> shutdown_policy_observers_;
 
   base::WeakPtrFactory<SystemTrayDelegateChromeOS> weak_ptr_factory_;
 

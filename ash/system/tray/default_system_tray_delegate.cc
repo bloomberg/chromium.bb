@@ -269,4 +269,16 @@ void DefaultSystemTrayDelegate::RemoveCustodianInfoTrayObserver(
     CustodianInfoTrayObserver* observer) {
 }
 
+void DefaultSystemTrayDelegate::AddShutdownPolicyObserver(
+    ShutdownPolicyObserver* observer) {
+}
+
+void DefaultSystemTrayDelegate::RemoveShutdownPolicyObserver(
+    ShutdownPolicyObserver* observer) {
+}
+
+void DefaultSystemTrayDelegate::ShouldRebootOnShutdown(
+    const RebootOnShutdownCallback& callback) {
+}
+
 }  // namespace ash

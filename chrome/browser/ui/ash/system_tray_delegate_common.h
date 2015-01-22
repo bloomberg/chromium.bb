@@ -93,6 +93,12 @@ class SystemTrayDelegateCommon : public ash::SystemTrayDelegate,
       ash::CustodianInfoTrayObserver* observer) override;
   void RemoveCustodianInfoTrayObserver(
       ash::CustodianInfoTrayObserver* observer) override;
+  void AddShutdownPolicyObserver(
+      ash::ShutdownPolicyObserver* observer) override;
+  void RemoveShutdownPolicyObserver(
+      ash::ShutdownPolicyObserver* observer) override;
+  void ShouldRebootOnShutdown(
+      const ash::RebootOnShutdownCallback& callback) override;
 
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier();

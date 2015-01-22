@@ -1028,8 +1028,7 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleShutdownSystem() {
-  ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown(
-      ash::LockStateController::POWER_OFF);
+  ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
 }
 
 void SigninScreenHandler::HandleLoadWallpaper(const std::string& email) {

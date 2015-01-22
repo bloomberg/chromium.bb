@@ -83,6 +83,10 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
       CustodianInfoTrayObserver* observer) override;
   void RemoveCustodianInfoTrayObserver(
       CustodianInfoTrayObserver* observer) override;
+  void AddShutdownPolicyObserver(ShutdownPolicyObserver* observer) override;
+  void RemoveShutdownPolicyObserver(ShutdownPolicyObserver* observer) override;
+  void ShouldRebootOnShutdown(
+      const RebootOnShutdownCallback& callback) override;
 
  private:
   bool bluetooth_enabled_;

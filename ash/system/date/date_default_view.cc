@@ -30,10 +30,11 @@ const int kPaddingVertical = 19;
 namespace ash {
 
 DateDefaultView::DateDefaultView(ash::user::LoginStatus login)
-    : help_(NULL),
-      shutdown_(NULL),
-      lock_(NULL),
-      date_view_(NULL) {
+    : help_button_(NULL),
+      shutdown_button_(NULL),
+      lock_button_(NULL),
+      date_view_(NULL),
+      weak_factory_(this) {
   SetLayoutManager(new views::FillLayout);
 
   date_view_ = new tray::DateView();
@@ -53,46 +54,52 @@ DateDefaultView::DateDefaultView(ash::user::LoginStatus login)
 
   date_view_->SetAction(TrayDate::SHOW_DATE_SETTINGS);
 
-  help_ = new TrayPopupHeaderButton(this,
-                                    IDR_AURA_UBER_TRAY_HELP,
-                                    IDR_AURA_UBER_TRAY_HELP,
-                                    IDR_AURA_UBER_TRAY_HELP_HOVER,
-                                    IDR_AURA_UBER_TRAY_HELP_HOVER,
-                                    IDS_ASH_STATUS_TRAY_HELP);
-  help_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
-  view->AddButton(help_);
+  help_button_ = new TrayPopupHeaderButton(
+      this, IDR_AURA_UBER_TRAY_HELP, IDR_AURA_UBER_TRAY_HELP,
+      IDR_AURA_UBER_TRAY_HELP_HOVER, IDR_AURA_UBER_TRAY_HELP_HOVER,
+      IDS_ASH_STATUS_TRAY_HELP);
+  help_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
+  view->AddButton(help_button_);
 
 #if !defined(OS_WIN)
   if (login != ash::user::LOGGED_IN_LOCKED) {
-    shutdown_ = new TrayPopupHeaderButton(this,
-                                          IDR_AURA_UBER_TRAY_SHUTDOWN,
-                                          IDR_AURA_UBER_TRAY_SHUTDOWN,
-                                          IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
-                                          IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
-                                          IDS_ASH_STATUS_TRAY_SHUTDOWN);
-    shutdown_->SetTooltipText(
+    shutdown_button_ = new TrayPopupHeaderButton(
+        this, IDR_AURA_UBER_TRAY_SHUTDOWN, IDR_AURA_UBER_TRAY_SHUTDOWN,
+        IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER, IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
+        IDS_ASH_STATUS_TRAY_SHUTDOWN);
+    shutdown_button_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SHUTDOWN));
-    view->AddButton(shutdown_);
+    view->AddButton(shutdown_button_);
   }
 
   if (ash::Shell::GetInstance()->session_state_delegate()->CanLockScreen()) {
-    lock_ = new TrayPopupHeaderButton(this,
-                                      IDR_AURA_UBER_TRAY_LOCKSCREEN,
-                                      IDR_AURA_UBER_TRAY_LOCKSCREEN,
-                                      IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
-                                      IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
-                                      IDS_ASH_STATUS_TRAY_LOCK);
-    lock_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCK));
-    view->AddButton(lock_);
+    lock_button_ = new TrayPopupHeaderButton(
+        this, IDR_AURA_UBER_TRAY_LOCKSCREEN, IDR_AURA_UBER_TRAY_LOCKSCREEN,
+        IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
+        IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER, IDS_ASH_STATUS_TRAY_LOCK);
+    lock_button_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCK));
+    view->AddButton(lock_button_);
   }
+  SystemTrayDelegate* system_tray_delegate =
+      Shell::GetInstance()->system_tray_delegate();
+  system_tray_delegate->AddShutdownPolicyObserver(this);
+  system_tray_delegate->ShouldRebootOnShutdown(base::Bind(
+      &DateDefaultView::OnShutdownPolicyChanged, weak_factory_.GetWeakPtr()));
 #endif  // !defined(OS_WIN)
 }
 
 DateDefaultView::~DateDefaultView() {
+  // We need the check as on shell destruction, the delegate is destroyed first.
+  SystemTrayDelegate* system_tray_delegate =
+      Shell::GetInstance()->system_tray_delegate();
+  if (system_tray_delegate)
+    system_tray_delegate->RemoveShutdownPolicyObserver(this);
 }
 
 views::View* DateDefaultView::GetHelpButtonView() {
-  return help_;
+  return help_button_;
 }
 
 tray::DateView* DateDefaultView::GetDateView() {
@@ -107,19 +114,27 @@ void DateDefaultView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   ash::Shell* shell = ash::Shell::GetInstance();
   ash::SystemTrayDelegate* tray_delegate = shell->system_tray_delegate();
-  if (sender == help_) {
+  if (sender == help_button_) {
     shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_HELP);
     tray_delegate->ShowHelp();
-  } else if (sender == shutdown_) {
+  } else if (sender == shutdown_button_) {
     shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_SHUT_DOWN);
-    ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown(
-        ash::LockStateController::POWER_OFF);
-  } else if (sender == lock_) {
+    ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
+  } else if (sender == lock_button_) {
     shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_LOCK_SCREEN);
     tray_delegate->RequestLockScreen();
   } else {
     NOTREACHED();
   }
+}
+
+void DateDefaultView::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
+  if (!shutdown_button_)
+    return;
+
+  shutdown_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      reboot_on_shutdown ? IDS_ASH_STATUS_TRAY_REBOOT
+                         : IDS_ASH_STATUS_TRAY_SHUTDOWN));
 }
 
 }  // namespace ash

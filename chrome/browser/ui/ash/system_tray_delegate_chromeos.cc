@@ -19,6 +19,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/chromeos/session/logout_button_observer.h"
+#include "ash/system/chromeos/shutdown_policy_observer.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/system_tray.h"
@@ -232,6 +233,8 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
                  base::Unretained(this)));
 
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
+  shutdown_policy_handler_.reset(
+      new ShutdownPolicyHandler(CrosSettings::Get(), this));
 }
 
 void SystemTrayDelegateChromeOS::Initialize() {
@@ -837,6 +840,21 @@ void SystemTrayDelegateChromeOS::RemoveCustodianInfoTrayObserver(
   custodian_info_changed_observers_.RemoveObserver(observer);
 }
 
+void SystemTrayDelegateChromeOS::AddShutdownPolicyObserver(
+    ash::ShutdownPolicyObserver* observer) {
+  shutdown_policy_observers_.AddObserver(observer);
+}
+
+void SystemTrayDelegateChromeOS::RemoveShutdownPolicyObserver(
+    ash::ShutdownPolicyObserver* observer) {
+  shutdown_policy_observers_.RemoveObserver(observer);
+}
+
+void SystemTrayDelegateChromeOS::ShouldRebootOnShutdown(
+    const ash::RebootOnShutdownCallback& callback) {
+  shutdown_policy_handler_->CheckIfRebootOnShutdown(callback);
+}
+
 void SystemTrayDelegateChromeOS::UserAddedToSession(
     const user_manager::User* active_user) {
 }
@@ -1320,6 +1338,13 @@ void SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged(
     accessibility_subscription_.reset();
   else
     OnAccessibilityModeChanged(details.notify);
+}
+
+void SystemTrayDelegateChromeOS::OnShutdownPolicyChanged(
+    bool reboot_on_shutdown) {
+  // Notify all observers.
+  FOR_EACH_OBSERVER(ash::ShutdownPolicyObserver, shutdown_policy_observers_,
+                    OnShutdownPolicyChanged(reboot_on_shutdown));
 }
 
 const base::string16

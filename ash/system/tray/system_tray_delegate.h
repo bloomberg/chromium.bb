@@ -25,6 +25,7 @@ class TimeTicks;
 namespace ash {
 
 class CustodianInfoTrayObserver;
+class ShutdownPolicyObserver;
 
 struct ASH_EXPORT NetworkIconInfo {
   NetworkIconInfo();
@@ -53,7 +54,7 @@ struct ASH_EXPORT BluetoothDeviceInfo {
   bool paired;
 };
 
-typedef std::vector<BluetoothDeviceInfo> BluetoothDeviceList;
+using BluetoothDeviceList = std::vector<BluetoothDeviceInfo>;
 
 struct ASH_EXPORT IMEPropertyInfo {
   IMEPropertyInfo();
@@ -64,7 +65,7 @@ struct ASH_EXPORT IMEPropertyInfo {
   base::string16 name;
 };
 
-typedef std::vector<IMEPropertyInfo> IMEPropertyInfoList;
+using IMEPropertyInfoList = std::vector<IMEPropertyInfo>;
 
 struct ASH_EXPORT IMEInfo {
   IMEInfo();
@@ -94,9 +95,11 @@ struct ASH_EXPORT UpdateInfo {
   bool factory_reset_required;
 };
 
-typedef std::vector<IMEInfo> IMEInfoList;
+using IMEInfoList = std::vector<IMEInfo>;
 
 class VolumeControlDelegate;
+
+using RebootOnShutdownCallback = base::Callback<void(bool)>;
 
 namespace tray {
 class UserAccountsDelegate;
@@ -300,6 +303,20 @@ class ASH_EXPORT SystemTrayDelegate {
 
   virtual void RemoveCustodianInfoTrayObserver(
       CustodianInfoTrayObserver* observer) = 0;
+
+  // Adds an observer whose |OnShutdownPolicyChanged| function is called when
+  // the |DeviceRebootOnShutdown| policy changes. If this policy is set to
+  // true, a device cannot be shut down anymore but only rebooted.
+  virtual void AddShutdownPolicyObserver(ShutdownPolicyObserver* observer) = 0;
+
+  virtual void RemoveShutdownPolicyObserver(
+      ShutdownPolicyObserver* observer) = 0;
+
+  // Determines whether the device is automatically rebooted when shut down as
+  // specified by the device policy |DeviceRebootOnShutdown|. This function
+  // asynchronously calls |callback| once a trusted policy becomes available.
+  virtual void ShouldRebootOnShutdown(
+      const RebootOnShutdownCallback& callback) = 0;
 };
 
 }  // namespace ash

@@ -167,7 +167,7 @@ void LockStateController::OnStartingLock() {
   StartImmediatePreLockAnimation(false /* request_lock_on_completion */);
 }
 
-void LockStateController::RequestShutdown(ShutdownMode mode) {
+void LockStateController::RequestShutdown() {
   if (shutting_down_)
     return;
 
@@ -181,7 +181,7 @@ void LockStateController::RequestShutdown(ShutdownMode mode) {
       SessionStateAnimator::ROOT_CONTAINER,
       SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS,
       SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
-  StartRealShutdownTimer(true, mode);
+  StartRealShutdownTimer(true);
 }
 
 void LockStateController::OnLockScreenHide(
@@ -271,11 +271,10 @@ void LockStateController::OnPreShutdownAnimationTimeout() {
   Shell* shell = ash::Shell::GetInstance();
   shell->cursor_manager()->HideCursor();
 
-  StartRealShutdownTimer(false, POWER_OFF);
+  StartRealShutdownTimer(false);
 }
 
-void LockStateController::StartRealShutdownTimer(bool with_animation_time,
-                                                 ShutdownMode shutdown_mode) {
+void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
   base::TimeDelta duration =
       base::TimeDelta::FromMilliseconds(kShutdownRequestDelayMs);
   if (with_animation_time) {
@@ -295,10 +294,10 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time,
 
   real_shutdown_timer_.Start(
       FROM_HERE, duration, base::Bind(&LockStateController::OnRealPowerTimeout,
-                                      base::Unretained(this), shutdown_mode));
+                                      base::Unretained(this)));
 }
 
-void LockStateController::OnRealPowerTimeout(ShutdownMode shutdown_mode) {
+void LockStateController::OnRealPowerTimeout() {
   VLOG(1) << "OnRealPowerTimeout";
   DCHECK(shutting_down_);
 #if defined(OS_CHROMEOS)
@@ -310,15 +309,9 @@ void LockStateController::OnRealPowerTimeout(ShutdownMode shutdown_mode) {
     }
   }
 #endif
-  if (shutdown_mode == POWER_OFF) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
-    delegate_->RequestShutdown();
-    return;
-  }
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      UMA_ACCEL_RESTART_POWER_BUTTON);
-  delegate_->RequestRestart();
+      UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
+  delegate_->RequestShutdown();
 }
 
 void LockStateController::StartCancellableShutdownAnimation() {

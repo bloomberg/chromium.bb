@@ -268,6 +268,18 @@ void SystemTrayDelegateCommon::RemoveCustodianInfoTrayObserver(
     ash::CustodianInfoTrayObserver* observer) {
 }
 
+void SystemTrayDelegateCommon::AddShutdownPolicyObserver(
+    ash::ShutdownPolicyObserver* observer) {
+}
+
+void SystemTrayDelegateCommon::RemoveShutdownPolicyObserver(
+    ash::ShutdownPolicyObserver* observer) {
+}
+
+void SystemTrayDelegateCommon::ShouldRebootOnShutdown(
+    const ash::RebootOnShutdownCallback& callback) {
+}
+
 ash::SystemTrayNotifier* SystemTrayDelegateCommon::GetSystemTrayNotifier() {
   return ash::Shell::GetInstance()->system_tray_notifier();
 }
