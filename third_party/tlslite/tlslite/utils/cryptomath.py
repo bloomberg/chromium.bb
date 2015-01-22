@@ -1,6 +1,7 @@
 # Authors: 
 #   Trevor Perrin
 #   Martin von Loewis - python 3 port
+#   Yngve Pettersen (ported by Paul Sokolovsky) - TLS 1.2
 #
 # See the LICENSE file for legal information regarding use of this file.
 
@@ -82,6 +83,10 @@ def HMAC_SHA1(k, b):
     b = compatHMAC(b)
     return bytearray(hmac.new(k, b, hashlib.sha1).digest())
 
+def HMAC_SHA256(k, b):
+    k = compatHMAC(k)
+    b = compatHMAC(b)
+    return bytearray(hmac.new(k, b, hashlib.sha256).digest())
 
 # **************************************************************************
 # Converter Functions
@@ -94,9 +99,7 @@ def bytesToNumber(b):
         byte = b[count]
         total += multiplier * byte
         multiplier *= 256
-    # Force-cast to long to appease PyCrypto.
-    # https://github.com/trevp/tlslite/issues/15
-    return long(total)
+    return total
 
 def numberToByteArray(n, howManyBytes=None):
     """Convert an integer into a bytearray, zero-pad to howManyBytes.
@@ -218,7 +221,7 @@ else:
 #Pre-calculate a sieve of the ~100 primes < 1000:
 def makeSieve(n):
     sieve = list(range(n))
-    for count in range(2, int(math.sqrt(n))):
+    for count in range(2, int(math.sqrt(n))+1):
         if sieve[count] == 0:
             continue
         x = sieve[count] * 2

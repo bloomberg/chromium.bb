@@ -1,5 +1,5 @@
 
-tlslite version 0.4.6                                            Mar 20 2013
+tlslite version 0.4.8                                            Nov 12 2014
 Trevor Perrin <tlslite at trevp.net>
 http://trevp.net/tlslite/
 ============================================================================
@@ -38,14 +38,14 @@ improvements to tlslite, also see 'tlslite-dev@googlegroups.com'.
 ============================
 TLS Lite is written (mostly) by Trevor Perrin. It includes code from Bram
 Cohen, Google, Kees Bos, Sam Rushing, Dimitris Moraitis, Marcelo Fernandez,
-Martin von Loewis, and Dave Baggett.
+Martin von Loewis, Dave Baggett, and Yngve N. Pettersen (ported by Paul 
+Sokolovsky).
 
 All code in TLS Lite has either been dedicated to the public domain by its
 authors, or placed under a BSD-style license. See the LICENSE file for
 details.
 
 Thanks to Edward Loper for Epydoc, which generated the API docs.
-
 
 3 Installation
 ===============
@@ -287,11 +287,10 @@ and ignore the other certificates.
 
 TACK objects return the (validated) TACK ID via getTACKID().
 
-To save yourself the trouble of inspecting certificates and/or TACKs after the
-handshake, you can pass a Checker object into the handshake function. The
-checker will be called if the handshake completes successfully. If the other
-party isn't approved by the checker, a subclass of TLSAuthenticationError will
-be raised.
+To save yourself the trouble of inspecting certificates after the handshake,
+you can pass a Checker object into the handshake function. The checker will be
+called if the handshake completes successfully. If the other party isn't
+approved by the checker, a subclass of TLSAuthenticationError will be raised.
 
 If the handshake fails for any reason, including a Checker error, an exception
 will be raised and the socket will be closed. If the socket timed out or was
@@ -450,13 +449,27 @@ may not work with all asyncore.dispatcher subclasses.
 TLS Lite is beta-quality code. It hasn't received much security analysis. Use
 at your own risk.
 
+TLS Lite does NOT verify certificates by default.
+
+TLS Lite's pure-python ciphers are probably vulnerable to timing attacks.
+
 TLS Lite is probably vulnerable to the "Lucky 13" timing attack if AES or 3DES
-are used.  Thus, TLS Lite prefers the RC4 cipher.
+are used, or the weak cipher RC4 otherwise.  This unhappy situation will remain
+until TLS Lite implements authenticated-encryption ciphersuites (like GCM), or
+RFC 7366.
 
 
 12 History
 ===========
-0.4.6 - 3/20/2013
+0.4.8 - 11/12/2014
+ - Added more acknowledgements and security considerations
+0.4.7 - 11/12/2014
+ - Added TLS 1.2 support (Yngve Pettersen and Paul Sokolovsky)
+ - Don't offer SSLv3 by default (e.g. POODLE)
+ - Fixed bug with PyCrypto_RSA integration
+ - Fixed harmless bug that added non-prime into sieves list
+ - Added "make test" and "make test-dev" targets (Hubert Kario)
+0.4.5 - 3/20/2013
  - **API CHANGE**: TLSClosedConnectionError instead of ValueError when writing
    to a closed connection.  This inherits from socket.error, so should 
    interact better with SocketServer (see http://bugs.python.org/issue14574)
@@ -466,9 +479,6 @@ are used.  Thus, TLS Lite prefers the RC4 cipher.
  - Added TLSConnection.unread() function 
  - Switched to New-style classes (inherit from 'object')
  - Minor cleanups
- 
-0.4.5 - (release engineering problem, skipped!) 
-
 0.4.4 - 2/25/2013
  - Added Python 3 support (Martin von Loewis)
  - Added NPN client support (Marcelo Fernandez)

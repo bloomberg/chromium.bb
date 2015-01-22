@@ -193,6 +193,8 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
             }[cert_type])
 
     self.ssl_handshake_settings = tlslite.api.HandshakeSettings()
+    # Enable SSLv3 for testing purposes.
+    self.ssl_handshake_settings.minVersion = (3, 0)
     if ssl_bulk_ciphers is not None:
       self.ssl_handshake_settings.cipherNames = ssl_bulk_ciphers
     if ssl_key_exchanges is not None:

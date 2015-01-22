@@ -1,8 +1,29 @@
 diff --git a/third_party/tlslite/tlslite/constants.py b/third_party/tlslite/tlslite/constants.py
-index 52c20ac..feca423 100644
+index 1a1ace9..d2d50c5 100644
 --- a/third_party/tlslite/tlslite/constants.py
 +++ b/third_party/tlslite/tlslite/constants.py
-@@ -143,6 +143,10 @@ class CipherSuite:
+@@ -54,6 +54,20 @@ class ExtensionType:    # RFC 6066 / 4366
+     tack = 0xF300
+     supports_npn = 13172
+     channel_id = 30032
++
++class HashAlgorithm:
++    none = 0
++    md5 = 1
++    sha1 = 2
++    sha224 = 3
++    sha256 = 4
++    sha384 = 5
++
++class SignatureAlgorithm:
++    anonymous = 0
++    rsa = 1
++    dsa = 2
++    ecdsa = 3
+     
+ class NameType:
+     host_name = 0
+@@ -144,30 +158,42 @@ class CipherSuite:
      
      TLS_RSA_WITH_RC4_128_MD5 = 0x0004
  
@@ -13,7 +34,13 @@ index 52c20ac..feca423 100644
      TLS_DH_ANON_WITH_AES_128_CBC_SHA = 0x0034
      TLS_DH_ANON_WITH_AES_256_CBC_SHA = 0x003A
  
-@@ -150,17 +154,20 @@ class CipherSuite:
+     TLS_RSA_WITH_AES_128_CBC_SHA256 = 0x003C
+     TLS_RSA_WITH_AES_256_CBC_SHA256 = 0x003D
+ 
++    TLS_DHE_RSA_WITH_AES_128_CBC_SHA256 = 0x0067
++    TLS_DHE_RSA_WITH_AES_256_CBC_SHA256 = 0x006B
++
+     tripleDESSuites = []
      tripleDESSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
      tripleDESSuites.append(TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA)
      tripleDESSuites.append(TLS_RSA_WITH_3DES_EDE_CBC_SHA)
@@ -25,16 +52,21 @@ index 52c20ac..feca423 100644
      aes128Suites.append(TLS_RSA_WITH_AES_128_CBC_SHA)
 +    aes128Suites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA)
      aes128Suites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
+     aes128Suites.append(TLS_RSA_WITH_AES_128_CBC_SHA256)
++    aes128Suites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA256)
  
      aes256Suites = []
      aes256Suites.append(TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
      aes256Suites.append(TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA)
      aes256Suites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
-+    aes256Suites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA)
      aes256Suites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
++    aes256Suites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA)
+     aes256Suites.append(TLS_RSA_WITH_AES_256_CBC_SHA256)
++    aes256Suites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA256)
  
      rc4Suites = []
-@@ -178,6 +185,9 @@ class CipherSuite:
+     rc4Suites.append(TLS_RSA_WITH_RC4_128_SHA)
+@@ -184,12 +210,18 @@ class CipherSuite:
      shaSuites.append(TLS_RSA_WITH_AES_128_CBC_SHA)
      shaSuites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
      shaSuites.append(TLS_RSA_WITH_RC4_128_SHA)
@@ -44,7 +76,16 @@ index 52c20ac..feca423 100644
      shaSuites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
      shaSuites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
      
-@@ -188,6 +198,7 @@ class CipherSuite:
+     sha256Suites = []
+     sha256Suites.append(TLS_RSA_WITH_AES_128_CBC_SHA256)
+     sha256Suites.append(TLS_RSA_WITH_AES_256_CBC_SHA256)
++    sha256Suites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA256)
++    sha256Suites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA256)
++
+ 
+     md5Suites = []
+     md5Suites.append(TLS_RSA_WITH_RC4_128_MD5)
+@@ -198,6 +230,7 @@ class CipherSuite:
      def _filterSuites(suites, settings):
          macNames = settings.macNames
          cipherNames = settings.cipherNames
@@ -52,7 +93,7 @@ index 52c20ac..feca423 100644
          macSuites = []
          if "sha" in macNames:
              macSuites += CipherSuite.shaSuites
-@@ -204,7 +215,20 @@ class CipherSuite:
+@@ -216,7 +249,20 @@ class CipherSuite:
          if "rc4" in cipherNames:
              cipherSuites += CipherSuite.rc4Suites
  
@@ -73,9 +114,9 @@ index 52c20ac..feca423 100644
 +                s in cipherSuites and s in keyExchangeSuites]
  
      srpSuites = []
-     srpSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
-@@ -236,12 +260,22 @@ class CipherSuite:
-     certSuites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
+     srpSuites.append(TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
+@@ -250,12 +296,24 @@ class CipherSuite:
+     certSuites.append(TLS_RSA_WITH_3DES_EDE_CBC_SHA)
      certSuites.append(TLS_RSA_WITH_RC4_128_SHA)
      certSuites.append(TLS_RSA_WITH_RC4_128_MD5)
 -    certAllSuites = srpCertSuites + certSuites
@@ -85,9 +126,11 @@ index 52c20ac..feca423 100644
          return CipherSuite._filterSuites(CipherSuite.certSuites, settings)
  
 +    dheCertSuites = []
-+    dheCertSuites.append(TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA)
-+    dheCertSuites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA)
++    dheCertSuites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA256)
++    dheCertSuites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA256)
 +    dheCertSuites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA)
++    dheCertSuites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA)
++    dheCertSuites.append(TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA)
 +
 +    @staticmethod
 +    def getDheCertSuites(settings):
@@ -96,9 +139,9 @@ index 52c20ac..feca423 100644
 +    certAllSuites = srpCertSuites + certSuites + dheCertSuites
 +
      anonSuites = []
-     anonSuites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
      anonSuites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
-@@ -250,6 +284,8 @@ class CipherSuite:
+     anonSuites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
+@@ -264,6 +322,8 @@ class CipherSuite:
      def getAnonSuites(settings):
          return CipherSuite._filterSuites(CipherSuite.anonSuites, settings)
  
@@ -108,29 +151,29 @@ index 52c20ac..feca423 100644
      def canonicalCipherName(ciphersuite):
          "Return the canonical name of the cipher whose number is provided."
 diff --git a/third_party/tlslite/tlslite/handshakesettings.py b/third_party/tlslite/tlslite/handshakesettings.py
-index 7a38ee2..e0bc0e6 100644
+index ee37c30..7998e2e 100644
 --- a/third_party/tlslite/tlslite/handshakesettings.py
 +++ b/third_party/tlslite/tlslite/handshakesettings.py
-@@ -13,7 +13,9 @@ from .utils import cipherfactory
+@@ -14,7 +14,9 @@ from .utils import cipherfactory
  # RC4 is preferred as faster in Python, works in SSL3, and immune to CBC
  # issues such as timing attacks
  CIPHER_NAMES = ["rc4", "aes256", "aes128", "3des"]
--MAC_NAMES = ["sha"] # "md5" is allowed
-+MAC_NAMES = ["sha"] # Don't allow "md5" by default.
-+ALL_MAC_NAMES = ["sha", "md5"]
+-MAC_NAMES = ["sha", "sha256"] # "md5" is allowed
++MAC_NAMES = ["sha", "sha256"] # Don't allow "md5" by default.
++ALL_MAC_NAMES = ["sha", "sha256", "md5"]
 +KEY_EXCHANGE_NAMES = ["rsa", "dhe_rsa", "srp_sha", "srp_sha_rsa", "dh_anon"]
  CIPHER_IMPLEMENTATIONS = ["openssl", "pycrypto", "python"]
  CERTIFICATE_TYPES = ["x509"]
  
-@@ -102,6 +104,7 @@ class HandshakeSettings(object):
+@@ -101,6 +103,7 @@ class HandshakeSettings(object):
          self.maxKeySize = 8193
          self.cipherNames = CIPHER_NAMES
          self.macNames = MAC_NAMES
 +        self.keyExchangeNames = KEY_EXCHANGE_NAMES
          self.cipherImplementations = CIPHER_IMPLEMENTATIONS
          self.certificateTypes = CERTIFICATE_TYPES
-         self.minVersion = (3,0)
-@@ -116,6 +119,7 @@ class HandshakeSettings(object):
+         self.minVersion = (3,1)
+@@ -115,6 +118,7 @@ class HandshakeSettings(object):
          other.maxKeySize = self.maxKeySize
          other.cipherNames = self.cipherNames
          other.macNames = self.macNames
@@ -138,7 +181,7 @@ index 7a38ee2..e0bc0e6 100644
          other.cipherImplementations = self.cipherImplementations
          other.certificateTypes = self.certificateTypes
          other.minVersion = self.minVersion
-@@ -148,6 +152,12 @@ class HandshakeSettings(object):
+@@ -147,6 +151,12 @@ class HandshakeSettings(object):
          for s in other.cipherNames:
              if s not in CIPHER_NAMES:
                  raise ValueError("Unknown cipher name: '%s'" % s)
@@ -152,10 +195,22 @@ index 7a38ee2..e0bc0e6 100644
              if s not in CIPHER_IMPLEMENTATIONS:
                  raise ValueError("Unknown cipher implementation: '%s'" % s)
 diff --git a/third_party/tlslite/tlslite/messages.py b/third_party/tlslite/tlslite/messages.py
-index 532d86b..550b387 100644
+index 9a8e5f6..8b77ee6 100644
 --- a/third_party/tlslite/tlslite/messages.py
 +++ b/third_party/tlslite/tlslite/messages.py
-@@ -533,31 +533,31 @@ class ServerKeyExchange(HandshakeMsg):
+@@ -500,9 +500,10 @@ class CertificateRequest(HandshakeMsg):
+         return self.postWrite(w)
+ 
+ class ServerKeyExchange(HandshakeMsg):
+-    def __init__(self, cipherSuite):
++    def __init__(self, cipherSuite, version):
+         HandshakeMsg.__init__(self, HandshakeType.server_key_exchange)
+         self.cipherSuite = cipherSuite
++        self.version = version
+         self.srp_N = 0
+         self.srp_g = 0
+         self.srp_s = bytearray(0)
+@@ -542,31 +543,38 @@ class ServerKeyExchange(HandshakeMsg):
          p.stopLengthCheck()
          return self
  
@@ -184,6 +239,10 @@ index 532d86b..550b387 100644
 +        w = Writer()
 +        w.bytes += self.write_params()
 +        if self.cipherSuite in CipherSuite.certAllSuites:
++            if self.version >= (3,3):
++                # TODO: Signature algorithm negotiation not supported.
++                w.add(HashAlgorithm.sha1, 1)
++                w.add(SignatureAlgorithm.rsa, 1)
 +            w.addVarSeq(self.signature, 1, 2)
          return self.postWrite(w)
  
@@ -196,11 +255,14 @@ index 532d86b..550b387 100644
 -        finally:
 -            self.cipherSuite = oldCipherSuite
 +        bytes = clientRandom + serverRandom + self.write_params()
++        if self.version >= (3,3):
++            # TODO: Signature algorithm negotiation not supported.
++            return SHA1(bytes)
 +        return MD5(bytes) + SHA1(bytes)
  
  class ServerHelloDone(HandshakeMsg):
      def __init__(self):
-@@ -607,7 +607,7 @@ class ClientKeyExchange(HandshakeMsg):
+@@ -616,7 +624,7 @@ class ClientKeyExchange(HandshakeMsg):
                      p.getFixBytes(len(p.bytes)-p.index)
              else:
                  raise AssertionError()
@@ -210,12 +272,14 @@ index 532d86b..550b387 100644
          else:
              raise AssertionError()
 diff --git a/third_party/tlslite/tlslite/tlsconnection.py b/third_party/tlslite/tlslite/tlsconnection.py
-index 20cd85b..e6f7820 100644
+index 5d508ed..f6d13d4 100644
 --- a/third_party/tlslite/tlslite/tlsconnection.py
 +++ b/third_party/tlslite/tlslite/tlsconnection.py
-@@ -23,6 +23,103 @@ from .mathtls import *
+@@ -23,7 +23,109 @@ from .messages import *
+ from .mathtls import *
  from .handshakesettings import HandshakeSettings
  from .utils.tackwrapper import *
++from .utils.rsakey import RSAKey
  
 +class KeyExchange(object):
 +    def __init__(self, cipherSuite, clientHello, serverHello, privateKey):
@@ -296,11 +360,15 @@ index 20cd85b..e6f7820 100644
 +        self.dh_Xs = bytesToNumber(getRandomBytes(self.strength * 2 / 8))
 +        dh_Ys = powMod(self.dh_g, self.dh_Xs, self.dh_p)
 +
-+        serverKeyExchange = ServerKeyExchange(self.cipherSuite)
++        version = self.serverHello.server_version
++        serverKeyExchange = ServerKeyExchange(self.cipherSuite, version)
 +        serverKeyExchange.createDH(self.dh_p, self.dh_g, dh_Ys)
-+        serverKeyExchange.signature = self.privateKey.sign(
-+            serverKeyExchange.hash(self.clientHello.random,
-+                                   self.serverHello.random))
++        hashBytes = serverKeyExchange.hash(self.clientHello.random,
++                                           self.serverHello.random)
++        if version >= (3,3):
++            # TODO: Signature algorithm negotiation not supported.
++            hashBytes = RSAKey.addPKCS1SHA1Prefix(hashBytes)
++        serverKeyExchange.signature = self.privateKey.sign(hashBytes)
 +        return serverKeyExchange
 +
 +    def processClientKeyExchange(self, clientKeyExchange):
@@ -317,16 +385,16 @@ index 20cd85b..e6f7820 100644
  
  class TLSConnection(TLSRecordLayer):
      """
-@@ -500,6 +597,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -500,6 +602,8 @@ class TLSConnection(TLSRecordLayer):
+         if srpParams:
              cipherSuites += CipherSuite.getSrpAllSuites(settings)
          elif certParams:
-             cipherSuites += CipherSuite.getCertSuites(settings)
 +            # TODO: Client DHE_RSA not supported.
 +            # cipherSuites += CipherSuite.getDheCertSuites(settings)
+             cipherSuites += CipherSuite.getCertSuites(settings)
          elif anonParams:
              cipherSuites += CipherSuite.getAnonSuites(settings)
-         else:
-@@ -1204,10 +1303,23 @@ class TLSConnection(TLSRecordLayer):
+@@ -1207,10 +1311,23 @@ class TLSConnection(TLSRecordLayer):
                  else: break
              premasterSecret = result
  
@@ -353,15 +421,24 @@ index 20cd85b..e6f7820 100644
                                          reqCert, reqCAs, cipherSuite,
                                          settings, ocspResponse):
                  if result in (0,1): yield result
-@@ -1268,6 +1380,7 @@ class TLSConnection(TLSRecordLayer):
+@@ -1270,6 +1387,7 @@ class TLSConnection(TLSRecordLayer):
+                     CipherSuite.getSrpCertSuites(settings)
              cipherSuites += CipherSuite.getSrpSuites(settings)
          elif certChain:
-             cipherSuites += CipherSuite.getCertSuites(settings)
 +            cipherSuites += CipherSuite.getDheCertSuites(settings)
+             cipherSuites += CipherSuite.getCertSuites(settings)
          elif anon:
              cipherSuites += CipherSuite.getAnonSuites(settings)
-         else:
-@@ -1483,11 +1596,11 @@ class TLSConnection(TLSRecordLayer):
+@@ -1440,7 +1558,7 @@ class TLSConnection(TLSRecordLayer):
+         B = (powMod(g, b, N) + (k*v)) % N
+ 
+         #Create ServerKeyExchange, signing it if necessary
+-        serverKeyExchange = ServerKeyExchange(cipherSuite)
++        serverKeyExchange = ServerKeyExchange(cipherSuite, self.version)
+         serverKeyExchange.createSRP(N, g, s, B)
+         if cipherSuite in CipherSuite.srpCertSuites:
+             hashBytes = serverKeyExchange.hash(clientHello.random,
+@@ -1488,11 +1606,11 @@ class TLSConnection(TLSRecordLayer):
  
  
      def _serverCertKeyExchange(self, clientHello, serverHello, 
@@ -376,7 +453,7 @@ index 20cd85b..e6f7820 100644
          msgs = []
  
          # If we verify a client cert chain, return it
-@@ -1497,6 +1610,9 @@ class TLSConnection(TLSRecordLayer):
+@@ -1502,6 +1620,9 @@ class TLSConnection(TLSRecordLayer):
          msgs.append(Certificate(CertificateType.x509).create(serverCertChain))
          if serverHello.status_request:
              msgs.append(CertificateStatus().create(ocspResponse))
@@ -386,7 +463,7 @@ index 20cd85b..e6f7820 100644
          if reqCert and reqCAs:
              msgs.append(CertificateRequest().create(\
                  [ClientCertificateType.rsa_sign], reqCAs))
-@@ -1555,21 +1671,13 @@ class TLSConnection(TLSRecordLayer):
+@@ -1560,21 +1681,13 @@ class TLSConnection(TLSRecordLayer):
              else: break
          clientKeyExchange = result
  
@@ -415,3 +492,70 @@ index 20cd85b..e6f7820 100644
  
          #Get and check CertificateVerify, if relevant
          if clientCertChain:
+@@ -1622,7 +1735,7 @@ class TLSConnection(TLSRecordLayer):
+         dh_Ys = powMod(dh_g, dh_Xs, dh_p)
+ 
+         #Create ServerKeyExchange
+-        serverKeyExchange = ServerKeyExchange(cipherSuite)
++        serverKeyExchange = ServerKeyExchange(cipherSuite, self.version)
+         serverKeyExchange.createDH(dh_p, dh_g, dh_Ys)
+         
+         #Send ServerHello[, Certificate], ServerKeyExchange,
+diff --git a/third_party/tlslite/tlslite/tlsrecordlayer.py b/third_party/tlslite/tlslite/tlsrecordlayer.py
+index 01ff3e9..6ef3895 100644
+--- a/third_party/tlslite/tlslite/tlsrecordlayer.py
++++ b/third_party/tlslite/tlslite/tlsrecordlayer.py
+@@ -796,7 +796,8 @@ class TLSRecordLayer(object):
+                 elif subType == HandshakeType.certificate_verify:
+                     yield CertificateVerify().parse(p)
+                 elif subType == HandshakeType.server_key_exchange:
+-                    yield ServerKeyExchange(constructorType).parse(p)
++                    yield ServerKeyExchange(constructorType,
++                                            self.version).parse(p)
+                 elif subType == HandshakeType.server_hello_done:
+                     yield ServerHelloDone().parse(p)
+                 elif subType == HandshakeType.client_key_exchange:
+diff --git a/third_party/tlslite/tlslite/utils/rsakey.py b/third_party/tlslite/tlslite/utils/rsakey.py
+index 3f2100e..fb022cc 100644
+--- a/third_party/tlslite/tlslite/utils/rsakey.py
++++ b/third_party/tlslite/tlslite/utils/rsakey.py
+@@ -60,7 +60,7 @@ class RSAKey(object):
+         @return: A PKCS1-SHA1 signature on the passed-in data.
+         """
+         hashBytes = SHA1(bytearray(bytes))
+-        prefixedHashBytes = self._addPKCS1SHA1Prefix(hashBytes)
++        prefixedHashBytes = self.addPKCS1SHA1Prefix(hashBytes)
+         sigBytes = self.sign(prefixedHashBytes)
+         return sigBytes
+ 
+@@ -81,8 +81,8 @@ class RSAKey(object):
+         hashBytes = SHA1(bytearray(bytes))
+         
+         # Try it with/without the embedded NULL
+-        prefixedHashBytes1 = self._addPKCS1SHA1Prefix(hashBytes, False)
+-        prefixedHashBytes2 = self._addPKCS1SHA1Prefix(hashBytes, True)
++        prefixedHashBytes1 = self.addPKCS1SHA1Prefix(hashBytes, False)
++        prefixedHashBytes2 = self.addPKCS1SHA1Prefix(hashBytes, True)
+         result1 = self.verify(sigBytes, prefixedHashBytes1)
+         result2 = self.verify(sigBytes, prefixedHashBytes2)
+         return (result1 or result2)
+@@ -221,7 +221,8 @@ class RSAKey(object):
+     # Helper Functions for RSA Keys
+     # **************************************************************************
+ 
+-    def _addPKCS1SHA1Prefix(self, bytes, withNULL=True):
++    @staticmethod
++    def addPKCS1SHA1Prefix(bytes, withNULL=True):
+         # There is a long history of confusion over whether the SHA1 
+         # algorithmIdentifier should be encoded with a NULL parameter or 
+         # with the parameter omitted.  While the original intention was 
+@@ -229,8 +230,7 @@ class RSAKey(object):
+         # specifies the NULL should be included, and this behavior is also
+         # mandated in recent versions of PKCS #1, and is what tlslite has
+         # always implemented.  Anyways, verification code should probably 
+-        # accept both.  However, nothing uses this code yet, so this is 
+-        # all fairly moot.
++        # accept both.
+         if not withNULL:
+             prefixBytes = bytearray(\
+             [0x30,0x1f,0x30,0x07,0x06,0x05,0x2b,0x0e,0x03,0x02,0x1a,0x04,0x14])            

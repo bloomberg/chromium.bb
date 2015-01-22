@@ -2,6 +2,7 @@
 #   Trevor Perrin
 #   Google (adapted by Sam Rushing) - NPN support
 #   Martin von Loewis - python 3 port
+#   Yngve Pettersen (ported by Paul Sokolovsky) - TLS 1.2
 #
 # See the LICENSE file for legal information regarding use of this file.
 
@@ -116,6 +117,7 @@ class TLSRecordLayer(object):
         #Handshake digests
         self._handshake_md5 = hashlib.md5()
         self._handshake_sha = hashlib.sha1()
+        self._handshake_sha256 = hashlib.sha256()
 
         #TLS Protocol Version
         self.version = (0,0) #read-only
@@ -376,7 +378,7 @@ class TLSRecordLayer(object):
 
         @rtype: str
         @return: The name of the TLS version used with this connection.
-        Either None, 'SSL 3.0', 'TLS 1.0', or 'TLS 1.1'.
+        Either None, 'SSL 3.0', 'TLS 1.0', 'TLS 1.1', or 'TLS 1.2'.
         """
         if self.version == (3,0):
             return "SSL 3.0"
@@ -384,6 +386,8 @@ class TLSRecordLayer(object):
             return "TLS 1.0"
         elif self.version == (3,2):
             return "TLS 1.1"
+        elif self.version == (3,3):
+            return "TLS 1.2"
         else:
             return None
         
@@ -565,6 +569,7 @@ class TLSRecordLayer(object):
         if contentType == ContentType.handshake:
             self._handshake_md5.update(compat26Str(b))
             self._handshake_sha.update(compat26Str(b))
+            self._handshake_sha256.update(compat26Str(b))
 
         #Calculate MAC
         if self._writeState.macContext:
@@ -575,7 +580,7 @@ class TLSRecordLayer(object):
             if self.version == (3,0):
                 mac.update( compatHMAC( bytearray([len(b)//256] )))
                 mac.update( compatHMAC( bytearray([len(b)%256] )))
-            elif self.version in ((3,1), (3,2)):
+            elif self.version in ((3,1), (3,2), (3,3)):
                 mac.update(compatHMAC( bytearray([self.version[0]] )))
                 mac.update(compatHMAC( bytearray([self.version[1]] )))
                 mac.update( compatHMAC( bytearray([len(b)//256] )))
@@ -593,10 +598,10 @@ class TLSRecordLayer(object):
             if self._writeState.encContext.isBlockCipher:
 
                 #Add TLS 1.1 fixed block
-                if self.version == (3,2):
+                if self.version >= (3,2):
                     b = self.fixedIVBlock + b
 
-                #Add padding: b = b + (macBytes + paddingBytes)
+                #Add padding: b = b+ (macBytes + paddingBytes)
                 currentLength = len(b) + len(macBytes)
                 blockLength = self._writeState.encContext.block_size
                 paddingLength = blockLength - 1 - (currentLength % blockLength)
@@ -787,6 +792,7 @@ class TLSRecordLayer(object):
                 #Update handshake hashes
                 self._handshake_md5.update(compat26Str(p.bytes))
                 self._handshake_sha.update(compat26Str(p.bytes))
+                self._handshake_sha256.update(compat26Str(p.bytes))
 
                 #Parse based on handshake type
                 if subType == HandshakeType.client_hello:
@@ -796,11 +802,12 @@ class TLSRecordLayer(object):
                 elif subType == HandshakeType.certificate:
                     yield Certificate(constructorType).parse(p)
                 elif subType == HandshakeType.certificate_request:
-                    yield CertificateRequest().parse(p)
+                    yield CertificateRequest(self.version).parse(p)
                 elif subType == HandshakeType.certificate_verify:
-                    yield CertificateVerify().parse(p)
+                    yield CertificateVerify(self.version).parse(p)
                 elif subType == HandshakeType.server_key_exchange:
-                    yield ServerKeyExchange(constructorType).parse(p)
+                    yield ServerKeyExchange(constructorType,
+                                            self.version).parse(p)
                 elif subType == HandshakeType.server_hello_done:
                     yield ServerHelloDone().parse(p)
                 elif subType == HandshakeType.client_key_exchange:
@@ -970,7 +977,7 @@ class TLSRecordLayer(object):
                             "Encrypted data not a multiple of blocksize"):
                         yield result
                 b = self._readState.encContext.decrypt(b)
-                if self.version == (3,2): #For TLS 1.1, remove explicit IV
+                if self.version >= (3,2): #For TLS 1.1, remove explicit IV
                     b = b[self._readState.encContext.block_size : ]
 
                 #Check padding
@@ -982,7 +989,7 @@ class TLSRecordLayer(object):
                 else:
                     if self.version == (3,0):
                         totalPaddingLength = paddingLength+1
-                    elif self.version in ((3,1), (3,2)):
+                    elif self.version in ((3,1), (3,2), (3,3)):
                         totalPaddingLength = paddingLength+1
                         paddingBytes = b[-totalPaddingLength:-1]
                         for byte in paddingBytes:
@@ -1019,7 +1026,7 @@ class TLSRecordLayer(object):
                 if self.version == (3,0):
                     mac.update( compatHMAC(bytearray( [len(b)//256] ) ))
                     mac.update( compatHMAC(bytearray( [len(b)%256] ) ))
-                elif self.version in ((3,1), (3,2)):
+                elif self.version in ((3,1), (3,2), (3,3)):
                     mac.update(compatHMAC(bytearray( [self.version[0]] ) ))
                     mac.update(compatHMAC(bytearray( [self.version[1]] ) ))
                     mac.update(compatHMAC(bytearray( [len(b)//256] ) ))
@@ -1046,6 +1053,7 @@ class TLSRecordLayer(object):
         self._client = client
         self._handshake_md5 = hashlib.md5()
         self._handshake_sha = hashlib.sha1()
+        self._handshake_sha256 = hashlib.sha256()
         self._handshakeBuffer = []
         self.allegedSrpUsername = None
         self._refCount = 1
@@ -1078,13 +1086,16 @@ class TLSRecordLayer(object):
         if cipherSuite in CipherSuite.shaSuites:
             macLength = 20
             digestmod = hashlib.sha1        
+        elif cipherSuite in CipherSuite.sha256Suites:
+            macLength = 32
+            digestmod = hashlib.sha256
         elif cipherSuite in CipherSuite.md5Suites:
             macLength = 16
             digestmod = hashlib.md5
 
         if self.version == (3,0):
             createMACFunc = createMAC_SSL
-        elif self.version in ((3,1), (3,2)):
+        elif self.version in ((3,1), (3,2), (3,3)):
             createMACFunc = createHMAC
 
         outputLength = (macLength*2) + (keyLength*2) + (ivLength*2)
@@ -1096,6 +1107,11 @@ class TLSRecordLayer(object):
                                outputLength)
         elif self.version in ((3,1), (3,2)):
             keyBlock = PRF(masterSecret,
+                           b"key expansion",
+                           serverRandom + clientRandom,
+                           outputLength)
+        elif self.version == (3,3):
+            keyBlock = PRF_1_2(masterSecret,
                            b"key expansion",
                            serverRandom + clientRandom,
                            outputLength)
@@ -1131,7 +1147,7 @@ class TLSRecordLayer(object):
             self._pendingWriteState = serverPendingState
             self._pendingReadState = clientPendingState
 
-        if self.version == (3,2) and ivLength:
+        if self.version >= (3,2) and ivLength:
             #Choose fixedIVBlock for TLS 1.1 (this is encrypted with the CBC
             #residue to create the IV for each sent block)
             self.fixedIVBlock = getRandomBytes(ivLength)

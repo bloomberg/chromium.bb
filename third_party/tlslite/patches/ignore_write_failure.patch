@@ -1,8 +1,8 @@
 diff --git a/third_party/tlslite/tlslite/tlsrecordlayer.py b/third_party/tlslite/tlslite/tlsrecordlayer.py
-index 8b92221..370dc9a 100644
+index 6ef3895..3584726 100644
 --- a/third_party/tlslite/tlslite/tlsrecordlayer.py
 +++ b/third_party/tlslite/tlslite/tlsrecordlayer.py
-@@ -286,7 +286,9 @@ class TLSRecordLayer(object):
+@@ -288,7 +288,9 @@ class TLSRecordLayer(object):
          except GeneratorExit:
              raise
          except Exception:

@@ -1,8 +1,8 @@
 diff --git a/third_party/tlslite/tlslite/constants.py b/third_party/tlslite/tlslite/constants.py
-index d52e596..79ad145 100755
+index 4165de0..6429c66 100644
 --- a/third_party/tlslite/tlslite/constants.py
 +++ b/third_party/tlslite/tlslite/constants.py
-@@ -31,6 +31,7 @@ class HandshakeType:
+@@ -32,6 +32,7 @@ class HandshakeType:
      client_key_exchange = 16
      finished = 20
      next_protocol = 67
@@ -10,7 +10,7 @@ index d52e596..79ad145 100755
  
  class ContentType:
      change_cipher_spec = 20
-@@ -45,6 +46,7 @@ class ExtensionType:    # RFC 6066 / 4366
+@@ -46,6 +47,7 @@ class ExtensionType:    # RFC 6066 / 4366
      cert_type = 9       # RFC 6091
      tack = 0xF300
      supports_npn = 13172
@@ -19,10 +19,10 @@ index d52e596..79ad145 100755
  class NameType:
      host_name = 0
 diff --git a/third_party/tlslite/tlslite/messages.py b/third_party/tlslite/tlslite/messages.py
-index 7ef4e3f..246082e 100755
+index 2b3e518..4fa9d96 100644
 --- a/third_party/tlslite/tlslite/messages.py
 +++ b/third_party/tlslite/tlslite/messages.py
-@@ -112,6 +112,7 @@ class ClientHello(HandshakeMsg):
+@@ -113,6 +113,7 @@ class ClientHello(HandshakeMsg):
          self.tack = False
          self.supports_npn = False
          self.server_name = bytearray(0)
@@ -30,7 +30,7 @@ index 7ef4e3f..246082e 100755
  
      def create(self, version, random, session_id, cipher_suites,
                 certificate_types=None, srpUsername=None,
-@@ -179,6 +180,8 @@ class ClientHello(HandshakeMsg):
+@@ -180,6 +181,8 @@ class ClientHello(HandshakeMsg):
                              if name_type == NameType.host_name:
                                  self.server_name = hostNameBytes
                                  break
@@ -39,7 +39,7 @@ index 7ef4e3f..246082e 100755
                      else:
                          _ = p.getFixBytes(extLength)
                      index2 = p.index
-@@ -243,6 +246,7 @@ class ServerHello(HandshakeMsg):
+@@ -244,6 +247,7 @@ class ServerHello(HandshakeMsg):
          self.tackExt = None
          self.next_protos_advertised = None
          self.next_protos = None
@@ -47,7 +47,7 @@ index 7ef4e3f..246082e 100755
  
      def create(self, version, random, session_id, cipher_suite,
                 certificate_type, tackExt, next_protos_advertised):
-@@ -329,6 +333,9 @@ class ServerHello(HandshakeMsg):
+@@ -330,6 +334,9 @@ class ServerHello(HandshakeMsg):
              w2.add(ExtensionType.supports_npn, 2)
              w2.add(len(encoded_next_protos_advertised), 2)
              w2.addFixSeq(encoded_next_protos_advertised, 1)
@@ -57,7 +57,7 @@ index 7ef4e3f..246082e 100755
          if len(w2.bytes):
              w.add(len(w2.bytes), 2)
              w.bytes += w2.bytes        
-@@ -656,6 +663,28 @@ class Finished(HandshakeMsg):
+@@ -665,6 +672,28 @@ class Finished(HandshakeMsg):
          w.addFixSeq(self.verify_data, 1)
          return self.postWrite(w)
  
@@ -87,10 +87,10 @@ index 7ef4e3f..246082e 100755
      def __init__(self):
          self.contentType = ContentType.application_data
 diff --git a/third_party/tlslite/tlslite/tlsconnection.py b/third_party/tlslite/tlslite/tlsconnection.py
-index 8415592..e7c5140 100755
+index 0e78753..b0400f8 100644
 --- a/third_party/tlslite/tlslite/tlsconnection.py
 +++ b/third_party/tlslite/tlslite/tlsconnection.py
-@@ -1155,6 +1155,7 @@ class TLSConnection(TLSRecordLayer):
+@@ -1158,6 +1158,7 @@ class TLSConnection(TLSRecordLayer):
          serverHello.create(self.version, getRandomBytes(32), sessionID, \
                              cipherSuite, CertificateType.x509, tackExt,
                              nextProtos)
@@ -98,7 +98,7 @@ index 8415592..e7c5140 100755
  
          # Perform the SRP key exchange
          clientCertChain = None
-@@ -1191,7 +1192,7 @@ class TLSConnection(TLSRecordLayer):
+@@ -1194,7 +1195,7 @@ class TLSConnection(TLSRecordLayer):
          for result in self._serverFinished(premasterSecret, 
                                  clientHello.random, serverHello.random,
                                  cipherSuite, settings.cipherImplementations,
@@ -107,7 +107,7 @@ index 8415592..e7c5140 100755
                  if result in (0,1): yield result
                  else: break
          masterSecret = result
-@@ -1609,7 +1610,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1614,7 +1615,8 @@ class TLSConnection(TLSRecordLayer):
  
  
      def _serverFinished(self,  premasterSecret, clientRandom, serverRandom,
@@ -117,7 +117,7 @@ index 8415592..e7c5140 100755
          masterSecret = calcMasterSecret(self.version, premasterSecret,
                                        clientRandom, serverRandom)
          
-@@ -1620,7 +1622,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1625,7 +1627,8 @@ class TLSConnection(TLSRecordLayer):
  
          #Exchange ChangeCipherSpec and Finished messages
          for result in self._getFinished(masterSecret, 
@@ -127,7 +127,7 @@ index 8415592..e7c5140 100755
              yield result
  
          for result in self._sendFinished(masterSecret):
-@@ -1657,7 +1660,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1662,7 +1665,8 @@ class TLSConnection(TLSRecordLayer):
          for result in self._sendMsg(finished):
              yield result
  
@@ -137,7 +137,7 @@ index 8415592..e7c5140 100755
          #Get and check ChangeCipherSpec
          for result in self._getMsg(ContentType.change_cipher_spec):
              if result in (0,1):
-@@ -1690,6 +1694,20 @@ class TLSConnection(TLSRecordLayer):
+@@ -1695,6 +1699,20 @@ class TLSConnection(TLSRecordLayer):
          if nextProto:
              self.next_proto = nextProto
  
@@ -159,10 +159,10 @@ index 8415592..e7c5140 100755
          verifyData = self._calcFinished(masterSecret, False)
  
 diff --git a/third_party/tlslite/tlslite/tlsrecordlayer.py b/third_party/tlslite/tlslite/tlsrecordlayer.py
-index b0833fe..ff08cbf 100755
+index 5fe7410..f18fcf5 100644
 --- a/third_party/tlslite/tlslite/tlsrecordlayer.py
 +++ b/third_party/tlslite/tlslite/tlsrecordlayer.py
-@@ -800,6 +800,8 @@ class TLSRecordLayer(object):
+@@ -806,6 +806,8 @@ class TLSRecordLayer(object):
                      yield Finished(self.version).parse(p)
                  elif subType == HandshakeType.next_protocol:
                      yield NextProtocol().parse(p)

@@ -1,8 +1,8 @@
 diff --git a/third_party/tlslite/tlslite/constants.py b/third_party/tlslite/tlslite/constants.py
-index d132b78..ceaa903 100755
+index 69e6067..1a1ace9 100644
 --- a/third_party/tlslite/tlslite/constants.py
 +++ b/third_party/tlslite/tlslite/constants.py
-@@ -30,6 +30,7 @@ class HandshakeType:
+@@ -31,6 +31,7 @@ class HandshakeType:
      certificate_verify = 15
      client_key_exchange = 16
      finished = 20
@@ -10,7 +10,7 @@ index d132b78..ceaa903 100755
      next_protocol = 67
      encrypted_extensions = 203
  
-@@ -40,8 +41,12 @@ class ContentType:
+@@ -41,8 +42,12 @@ class ContentType:
      application_data = 23
      all = (20,21,22,23)
  
@@ -24,10 +24,10 @@ index d132b78..ceaa903 100755
      cert_type = 9       # RFC 6091
      signed_cert_timestamps = 18  # RFC 6962
 diff --git a/third_party/tlslite/tlslite/messages.py b/third_party/tlslite/tlslite/messages.py
-index 5a2cd6c..532d86b 100755
+index 876b033..9a8e5f6 100644
 --- a/third_party/tlslite/tlslite/messages.py
 +++ b/third_party/tlslite/tlslite/messages.py
-@@ -114,6 +114,7 @@ class ClientHello(HandshakeMsg):
+@@ -115,6 +115,7 @@ class ClientHello(HandshakeMsg):
          self.server_name = bytearray(0)
          self.channel_id = False
          self.support_signed_cert_timestamps = False
@@ -35,7 +35,7 @@ index 5a2cd6c..532d86b 100755
  
      def create(self, version, random, session_id, cipher_suites,
                 certificate_types=None, srpUsername=None,
-@@ -187,6 +188,19 @@ class ClientHello(HandshakeMsg):
+@@ -188,6 +189,19 @@ class ClientHello(HandshakeMsg):
                          if extLength:
                              raise SyntaxError()
                          self.support_signed_cert_timestamps = True
@@ -55,7 +55,7 @@ index 5a2cd6c..532d86b 100755
                      else:
                          _ = p.getFixBytes(extLength)
                      index2 = p.index
-@@ -253,6 +267,7 @@ class ServerHello(HandshakeMsg):
+@@ -254,6 +268,7 @@ class ServerHello(HandshakeMsg):
          self.next_protos = None
          self.channel_id = False
          self.signed_cert_timestamps = None
@@ -63,7 +63,7 @@ index 5a2cd6c..532d86b 100755
  
      def create(self, version, random, session_id, cipher_suite,
                 certificate_type, tackExt, next_protos_advertised):
-@@ -345,6 +360,9 @@ class ServerHello(HandshakeMsg):
+@@ -346,6 +361,9 @@ class ServerHello(HandshakeMsg):
          if self.signed_cert_timestamps:
              w2.add(ExtensionType.signed_cert_timestamps, 2)
              w2.addVarSeq(bytearray(self.signed_cert_timestamps), 1, 2)
@@ -73,7 +73,7 @@ index 5a2cd6c..532d86b 100755
          if len(w2.bytes):
              w.add(len(w2.bytes), 2)
              w.bytes += w2.bytes        
-@@ -402,6 +420,37 @@ class Certificate(HandshakeMsg):
+@@ -403,6 +421,37 @@ class Certificate(HandshakeMsg):
              raise AssertionError()
          return self.postWrite(w)
  
@@ -109,13 +109,13 @@ index 5a2cd6c..532d86b 100755
 +        return self.postWrite(w)
 +
  class CertificateRequest(HandshakeMsg):
-     def __init__(self):
+     def __init__(self, version):
          HandshakeMsg.__init__(self, HandshakeType.certificate_request)
 diff --git a/third_party/tlslite/tlslite/tlsconnection.py b/third_party/tlslite/tlslite/tlsconnection.py
-index bd92161..b9797d2 100755
+index 0563fb5f..5d508ed 100644
 --- a/third_party/tlslite/tlslite/tlsconnection.py
 +++ b/third_party/tlslite/tlslite/tlsconnection.py
-@@ -967,7 +967,7 @@ class TLSConnection(TLSRecordLayer):
+@@ -970,7 +970,7 @@ class TLSConnection(TLSRecordLayer):
                          tacks=None, activationFlags=0,
                          nextProtos=None, anon=False,
                          tlsIntolerant=None, signedCertTimestamps=None,
@@ -124,7 +124,7 @@ index bd92161..b9797d2 100755
          """Perform a handshake in the role of server.
  
          This function performs an SSL or TLS handshake.  Depending on
-@@ -1051,6 +1051,16 @@ class TLSConnection(TLSRecordLayer):
+@@ -1054,6 +1054,16 @@ class TLSConnection(TLSRecordLayer):
          TLS_FALLBACK_SCSV and thus reject connections using less than the
          server's maximum TLS version that include this cipher suite.
  
@@ -141,7 +141,7 @@ index bd92161..b9797d2 100755
          @raise socket.error: If a socket error occurs.
          @raise tlslite.errors.TLSAbruptCloseError: If the socket is closed
          without a preceding alert.
-@@ -1064,7 +1074,7 @@ class TLSConnection(TLSRecordLayer):
+@@ -1067,7 +1077,7 @@ class TLSConnection(TLSRecordLayer):
                  tacks=tacks, activationFlags=activationFlags, 
                  nextProtos=nextProtos, anon=anon, tlsIntolerant=tlsIntolerant,
                  signedCertTimestamps=signedCertTimestamps,
@@ -150,7 +150,7 @@ index bd92161..b9797d2 100755
              pass
  
  
-@@ -1076,7 +1086,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1079,7 +1089,8 @@ class TLSConnection(TLSRecordLayer):
                               nextProtos=None, anon=False,
                               tlsIntolerant=None,
                               signedCertTimestamps=None,
@@ -160,7 +160,7 @@ index bd92161..b9797d2 100755
                               ):
          """Start a server handshake operation on the TLS connection.
  
-@@ -1098,7 +1109,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1101,7 +1112,8 @@ class TLSConnection(TLSRecordLayer):
              nextProtos=nextProtos, anon=anon,
              tlsIntolerant=tlsIntolerant,
              signedCertTimestamps=signedCertTimestamps,
@@ -170,7 +170,7 @@ index bd92161..b9797d2 100755
          for result in self._handshakeWrapperAsync(handshaker, checker):
              yield result
  
-@@ -1108,7 +1120,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1111,7 +1123,8 @@ class TLSConnection(TLSRecordLayer):
                               settings, reqCAs, 
                               tacks, activationFlags, 
                               nextProtos, anon,
@@ -180,7 +180,7 @@ index bd92161..b9797d2 100755
  
          self._handshakeStart(client=False)
  
-@@ -1178,6 +1191,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1181,6 +1194,8 @@ class TLSConnection(TLSRecordLayer):
          serverHello.channel_id = clientHello.channel_id
          if clientHello.support_signed_cert_timestamps:
              serverHello.signed_cert_timestamps = signedCertTimestamps
@@ -189,7 +189,7 @@ index bd92161..b9797d2 100755
  
          # Perform the SRP key exchange
          clientCertChain = None
-@@ -1194,7 +1209,7 @@ class TLSConnection(TLSRecordLayer):
+@@ -1197,7 +1212,7 @@ class TLSConnection(TLSRecordLayer):
              for result in self._serverCertKeyExchange(clientHello, serverHello, 
                                          certChain, privateKey,
                                          reqCert, reqCAs, cipherSuite,
@@ -198,7 +198,7 @@ index bd92161..b9797d2 100755
                  if result in (0,1): yield result
                  else: break
              (premasterSecret, clientCertChain) = result
-@@ -1471,7 +1486,7 @@ class TLSConnection(TLSRecordLayer):
+@@ -1475,7 +1490,7 @@ class TLSConnection(TLSRecordLayer):
      def _serverCertKeyExchange(self, clientHello, serverHello, 
                                  serverCertChain, privateKey,
                                  reqCert, reqCAs, cipherSuite,
@@ -207,7 +207,7 @@ index bd92161..b9797d2 100755
          #Send ServerHello, Certificate[, CertificateRequest],
          #ServerHelloDone
          msgs = []
-@@ -1481,6 +1496,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1485,6 +1500,8 @@ class TLSConnection(TLSRecordLayer):
  
          msgs.append(serverHello)
          msgs.append(Certificate(CertificateType.x509).create(serverCertChain))

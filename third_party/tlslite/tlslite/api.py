@@ -1,7 +1,7 @@
 # Author: Trevor Perrin
 # See the LICENSE file for legal information regarding use of this file.
 
-__version__ = "0.4.6"
+__version__ = "0.4.8"
 from .constants import AlertLevel, AlertDescription, ClientCertificateType, \
                        Fault
 from .errors import *

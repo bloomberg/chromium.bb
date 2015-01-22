@@ -1,6 +1,7 @@
 # Authors: 
 #   Trevor Perrin
 #   Dave Baggett (Arcode Corporation) - cleanup handling of constants
+#   Yngve Pettersen (ported by Paul Sokolovsky) - TLS 1.2
 #
 # See the LICENSE file for legal information regarding use of this file.
 
@@ -13,8 +14,8 @@ from .utils import cipherfactory
 # RC4 is preferred as faster in Python, works in SSL3, and immune to CBC
 # issues such as timing attacks
 CIPHER_NAMES = ["rc4", "aes256", "aes128", "3des"]
-MAC_NAMES = ["sha"] # Don't allow "md5" by default.
-ALL_MAC_NAMES = ["sha", "md5"]
+MAC_NAMES = ["sha", "sha256"] # Don't allow "md5" by default.
+ALL_MAC_NAMES = ["sha", "sha256", "md5"]
 KEY_EXCHANGE_NAMES = ["rsa", "dhe_rsa", "srp_sha", "srp_sha_rsa", "dh_anon"]
 CIPHER_IMPLEMENTATIONS = ["openssl", "pycrypto", "python"]
 CERTIFICATE_TYPES = ["x509"]
@@ -79,20 +80,18 @@ class HandshakeSettings(object):
     @type minVersion: tuple
     @ivar minVersion: The minimum allowed SSL/TLS version.
 
-    This variable can be set to (3,0) for SSL 3.0, (3,1) for
-    TLS 1.0, or (3,2) for TLS 1.1.  If the other party wishes to
-    use a lower version, a protocol_version alert will be signalled.
-    The default is (3,0).
+    This variable can be set to (3,0) for SSL 3.0, (3,1) for TLS 1.0, (3,2) for
+    TLS 1.1, or (3,3) for TLS 1.2.  If the other party wishes to use a lower
+    version, a protocol_version alert will be signalled.  The default is (3,1).
 
     @type maxVersion: tuple
     @ivar maxVersion: The maximum allowed SSL/TLS version.
 
-    This variable can be set to (3,0) for SSL 3.0, (3,1) for
-    TLS 1.0, or (3,2) for TLS 1.1.  If the other party wishes to
-    use a higher version, a protocol_version alert will be signalled.
-    The default is (3,2).  (WARNING: Some servers may (improperly)
-    reject clients which offer support for TLS 1.1.  In this case,
-    try lowering maxVersion to (3,1)).
+    This variable can be set to (3,0) for SSL 3.0, (3,1) for TLS 1.0, (3,2) for
+    TLS 1.1, or (3,3) for TLS 1.2.  If the other party wishes to use a higher
+    version, a protocol_version alert will be signalled.  The default is (3,3).
+    (WARNING: Some servers may (improperly) reject clients which offer support
+    for TLS 1.1.  In this case, try lowering maxVersion to (3,1)).
 
     @type tlsIntolerant: tuple
     @ivar tlsIntolerant: The TLS ClientHello version which the server
@@ -123,8 +122,8 @@ class HandshakeSettings(object):
         self.keyExchangeNames = KEY_EXCHANGE_NAMES
         self.cipherImplementations = CIPHER_IMPLEMENTATIONS
         self.certificateTypes = CERTIFICATE_TYPES
-        self.minVersion = (3,0)
-        self.maxVersion = (3,2)
+        self.minVersion = (3,1)
+        self.maxVersion = (3,3)
         self.tlsIntolerant = None
         self.tlsIntoleranceType = 'alert'
         self.useExperimentalTackExtension = False
@@ -192,11 +191,15 @@ class HandshakeSettings(object):
         if other.minVersion > other.maxVersion:
             raise ValueError("Versions set incorrectly")
 
-        if not other.minVersion in ((3,0), (3,1), (3,2)):
+        if not other.minVersion in ((3,0), (3,1), (3,2), (3,3)):
             raise ValueError("minVersion set incorrectly")
 
-        if not other.maxVersion in ((3,0), (3,1), (3,2)):
+        if not other.maxVersion in ((3,0), (3,1), (3,2), (3,3)):
             raise ValueError("maxVersion set incorrectly")
+
+        if other.maxVersion < (3,3):
+            # No sha256 pre TLS 1.2
+            other.macNames = [e for e in self.macNames if e != "sha256"]
 
         return other
 

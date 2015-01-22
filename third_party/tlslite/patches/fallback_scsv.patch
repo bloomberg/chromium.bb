@@ -1,8 +1,8 @@
 diff --git a/third_party/tlslite/tlslite/constants.py b/third_party/tlslite/tlslite/constants.py
-index b3bad2d..d132b78 100755
+index 8720de6..69e6067 100644
 --- a/third_party/tlslite/tlslite/constants.py
 +++ b/third_party/tlslite/tlslite/constants.py
-@@ -106,6 +106,7 @@ class AlertDescription:
+@@ -107,6 +107,7 @@ class AlertDescription:
      protocol_version = 70
      insufficient_security = 71
      internal_error = 80
@@ -10,18 +10,18 @@ index b3bad2d..d132b78 100755
      user_canceled = 90
      no_renegotiation = 100
      unknown_psk_identity = 115
-@@ -117,6 +118,9 @@ class CipherSuite:
+@@ -118,6 +119,9 @@ class CipherSuite:
      # We actually don't do any renegotiation, but this
      # prevents renegotiation attacks
      TLS_EMPTY_RENEGOTIATION_INFO_SCSV = 0x00FF
 +
-+    # draft-bmoeller-tls-downgrade-scsv-01
++    # draft-ietf-tls-downgrade-scsv-03
 +    TLS_FALLBACK_SCSV = 0x5600
      
      TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA  = 0xC01A
      TLS_SRP_SHA_WITH_AES_128_CBC_SHA = 0xC01D
 diff --git a/third_party/tlslite/tlslite/errors.py b/third_party/tlslite/tlslite/errors.py
-index 22c298c..001ef33 100755
+index 22c298c..001ef33 100644
 --- a/third_party/tlslite/tlslite/errors.py
 +++ b/third_party/tlslite/tlslite/errors.py
 @@ -63,6 +63,7 @@ class TLSAlert(TLSError):
@@ -33,10 +33,10 @@ index 22c298c..001ef33 100755
          AlertDescription.no_renegotiation: "no_renegotiation",\
          AlertDescription.unknown_psk_identity: "unknown_psk_identity"}
 diff --git a/third_party/tlslite/tlslite/tlsconnection.py b/third_party/tlslite/tlslite/tlsconnection.py
-index 45b0bbb..bd92161 100755
+index 4dedc5f..0563fb5f 100644
 --- a/third_party/tlslite/tlslite/tlsconnection.py
 +++ b/third_party/tlslite/tlslite/tlsconnection.py
-@@ -966,7 +966,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -969,7 +969,8 @@ class TLSConnection(TLSRecordLayer):
                          reqCAs = None, 
                          tacks=None, activationFlags=0,
                          nextProtos=None, anon=False,
@@ -46,7 +46,7 @@ index 45b0bbb..bd92161 100755
          """Perform a handshake in the role of server.
  
          This function performs an SSL or TLS handshake.  Depending on
-@@ -1045,6 +1046,11 @@ class TLSConnection(TLSRecordLayer):
+@@ -1048,6 +1049,11 @@ class TLSConnection(TLSRecordLayer):
          binary 8-bit string) that will be sent as a TLS extension whenever
          the client announces support for the extension.
  
@@ -58,7 +58,7 @@ index 45b0bbb..bd92161 100755
          @raise socket.error: If a socket error occurs.
          @raise tlslite.errors.TLSAbruptCloseError: If the socket is closed
          without a preceding alert.
-@@ -1057,7 +1063,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1060,7 +1066,8 @@ class TLSConnection(TLSRecordLayer):
                  checker, reqCAs, 
                  tacks=tacks, activationFlags=activationFlags, 
                  nextProtos=nextProtos, anon=anon, tlsIntolerant=tlsIntolerant,
@@ -68,7 +68,7 @@ index 45b0bbb..bd92161 100755
              pass
  
  
-@@ -1068,7 +1075,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1071,7 +1078,8 @@ class TLSConnection(TLSRecordLayer):
                               tacks=None, activationFlags=0,
                               nextProtos=None, anon=False,
                               tlsIntolerant=None,
@@ -78,7 +78,7 @@ index 45b0bbb..bd92161 100755
                               ):
          """Start a server handshake operation on the TLS connection.
  
-@@ -1089,7 +1097,8 @@ class TLSConnection(TLSRecordLayer):
+@@ -1092,7 +1100,8 @@ class TLSConnection(TLSRecordLayer):
              tacks=tacks, activationFlags=activationFlags, 
              nextProtos=nextProtos, anon=anon,
              tlsIntolerant=tlsIntolerant,
@@ -88,7 +88,7 @@ index 45b0bbb..bd92161 100755
          for result in self._handshakeWrapperAsync(handshaker, checker):
              yield result
  
-@@ -1099,7 +1108,7 @@ class TLSConnection(TLSRecordLayer):
+@@ -1102,7 +1111,7 @@ class TLSConnection(TLSRecordLayer):
                               settings, reqCAs, 
                               tacks, activationFlags, 
                               nextProtos, anon,
@@ -97,7 +97,7 @@ index 45b0bbb..bd92161 100755
  
          self._handshakeStart(client=False)
  
-@@ -1134,7 +1143,7 @@ class TLSConnection(TLSRecordLayer):
+@@ -1137,7 +1146,7 @@ class TLSConnection(TLSRecordLayer):
          # Handle ClientHello and resumption
          for result in self._serverGetClientHello(settings, certChain,\
                                              verifierDB, sessionCache,
@@ -106,7 +106,7 @@ index 45b0bbb..bd92161 100755
              if result in (0,1): yield result
              elif result == None:
                  self._handshakeDone(resumed=True)                
-@@ -1234,7 +1243,7 @@ class TLSConnection(TLSRecordLayer):
+@@ -1237,7 +1246,7 @@ class TLSConnection(TLSRecordLayer):
  
  
      def _serverGetClientHello(self, settings, certChain, verifierDB,
@@ -115,7 +115,7 @@ index 45b0bbb..bd92161 100755
          #Initialize acceptable cipher suites
          cipherSuites = []
          if verifierDB:
-@@ -1280,6 +1289,14 @@ class TLSConnection(TLSRecordLayer):
+@@ -1283,6 +1292,14 @@ class TLSConnection(TLSRecordLayer):
          elif clientHello.client_version > settings.maxVersion:
              self.version = settings.maxVersion
  

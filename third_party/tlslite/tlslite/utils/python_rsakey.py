@@ -84,8 +84,7 @@ class Python_RSAKey(RSAKey):
     generate = staticmethod(generate)
 
     def parsePEM(s, passwordCallback=None):
-        """Parse a string containing a <privateKey> or <publicKey>, or
-        PEM-encoded key."""
+        """Parse a string containing a PEM-encoded <privateKey>."""
 
         if pemSniff(s, "PRIVATE KEY"):
             bytes = dePem(s, "PRIVATE KEY")

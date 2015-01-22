@@ -1,6 +1,7 @@
 # Authors: 
 #   Trevor Perrin
 #   Dave Baggett (Arcode Corporation) - MD5 support for MAC_SSL
+#   Yngve Pettersen (ported by Paul Sokolovsky) - TLS 1.2
 #
 # See the LICENSE file for legal information regarding use of this file.
 
@@ -49,6 +50,8 @@ def PRF(secret, label, seed, length):
         p_md5[x] ^= p_sha1[x]
     return p_md5
 
+def PRF_1_2(secret, label, seed, length):
+    return P_hash(HMAC_SHA256, secret, label + seed, length)
 
 def PRF_SSL(secret, seed, length):
     bytes = bytearray(length)
@@ -70,6 +73,9 @@ def calcMasterSecret(version, premasterSecret, clientRandom, serverRandom):
                             clientRandom + serverRandom, 48)
     elif version in ((3,1), (3,2)):
         masterSecret = PRF(premasterSecret, b"master secret",
+                            clientRandom + serverRandom, 48)
+    elif version == (3,3):
+        masterSecret = PRF_1_2(premasterSecret, b"master secret",
                             clientRandom + serverRandom, 48)
     else:
         raise AssertionError()

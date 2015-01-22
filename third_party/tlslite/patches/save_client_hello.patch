@@ -1,8 +1,8 @@
 diff --git a/third_party/tlslite/tlslite/tlsconnection.py b/third_party/tlslite/tlslite/tlsconnection.py
-index 996b7e9..06aa0c9 100644
+index 4f3ba1c..cb743fe 100644
 --- a/third_party/tlslite/tlslite/tlsconnection.py
 +++ b/third_party/tlslite/tlslite/tlsconnection.py
-@@ -1261,6 +1261,9 @@ class TLSConnection(TLSRecordLayer):
+@@ -1269,6 +1269,9 @@ class TLSConnection(TLSRecordLayer):
                  return # Handshake was resumed, we're done 
              else: break
          (clientHello, cipherSuite) = result

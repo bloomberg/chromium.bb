@@ -15,9 +15,9 @@ if pycryptoLoaded:
     class PyCrypto_RSAKey(RSAKey):
         def __init__(self, n=0, e=0, d=0, p=0, q=0, dP=0, dQ=0, qInv=0):
             if not d:
-                self.rsa = RSA.construct( (n, e) )
+                self.rsa = RSA.construct( (long(n), long(e)) )
             else:
-                self.rsa = RSA.construct( (n, e, d, p, q) )
+                self.rsa = RSA.construct( (long(n), long(e), long(d), long(p), long(q)) )
 
         def __getattr__(self, name):
             return getattr(self.rsa, name)
@@ -26,13 +26,11 @@ if pycryptoLoaded:
             return self.rsa.has_private()
 
         def _rawPrivateKeyOp(self, m):
-            s = bytes(numberToByteArray(m, numBytes(self.n)))
-            c = bytesToNumber(bytearray(self.rsa.decrypt((s,))))
+            c = self.rsa.decrypt((m,))
             return c
 
         def _rawPublicKeyOp(self, c):
-            s = bytes(numberToByteArray(c, numBytes(self.n)))
-            m = bytesToNumber(bytearray(self.rsa.encrypt(s, None)[0]))
+            m = self.rsa.encrypt(c, None)[0]
             return m
 
         def generate(bits):
