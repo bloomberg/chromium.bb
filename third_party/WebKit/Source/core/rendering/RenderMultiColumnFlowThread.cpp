@@ -73,6 +73,57 @@ RenderMultiColumnSet* RenderMultiColumnFlowThread::lastMultiColumnSet() const
     return 0;
 }
 
+static RenderObject* firstRendererInSet(RenderMultiColumnSet* multicolSet)
+{
+    RenderBox* sibling = multicolSet->previousSiblingMultiColumnBox();
+    if (!sibling)
+        return multicolSet->flowThread()->firstChild();
+    // Adjacent column content sets should not occur. We would have no way of figuring out what each
+    // of them contains then.
+    ASSERT(sibling->isRenderMultiColumnSpannerPlaceholder());
+    return toRenderMultiColumnSpannerPlaceholder(sibling)->rendererInFlowThread()->nextInPreOrderAfterChildren(multicolSet->flowThread());
+}
+
+static RenderObject* lastRendererInSet(RenderMultiColumnSet* multicolSet)
+{
+    RenderBox* sibling = multicolSet->nextSiblingMultiColumnBox();
+    if (!sibling)
+        return 0; // By right we should return lastLeafChild() here, but the caller doesn't care, so just return 0.
+    // Adjacent column content sets should not occur. We would have no way of figuring out what each
+    // of them contains then.
+    ASSERT(sibling->isRenderMultiColumnSpannerPlaceholder());
+    return toRenderMultiColumnSpannerPlaceholder(sibling)->rendererInFlowThread()->previousInPreOrder(multicolSet->flowThread());
+}
+
+RenderMultiColumnSet* RenderMultiColumnFlowThread::findSetRendering(RenderObject* renderer) const
+{
+    ASSERT(!containingColumnSpannerPlaceholder(renderer)); // should not be used for spanners or content inside them.
+    ASSERT(renderer != this);
+    ASSERT(renderer->isDescendantOf(this));
+    RenderMultiColumnSet* multicolSet = firstMultiColumnSet();
+    if (!multicolSet)
+        return 0;
+    if (!multicolSet->nextSiblingMultiColumnSet())
+        return multicolSet;
+
+    // This is potentially SLOW! But luckily very uncommon. You would have to dynamically insert a
+    // spanner into the middle of column contents to need this.
+    for (; multicolSet; multicolSet = multicolSet->nextSiblingMultiColumnSet()) {
+        RenderObject* firstRenderer = firstRendererInSet(multicolSet);
+        RenderObject* lastRenderer = lastRendererInSet(multicolSet);
+        ASSERT(firstRenderer);
+
+        for (RenderObject* walker = firstRenderer; walker; walker = walker->nextInPreOrder(this)) {
+            if (walker == renderer)
+                return multicolSet;
+            if (walker == lastRenderer)
+                break;
+        }
+    }
+
+    return 0;
+}
+
 RenderMultiColumnSpannerPlaceholder* RenderMultiColumnFlowThread::containingColumnSpannerPlaceholder(const RenderObject* descendant) const
 {
     ASSERT(descendant->isDescendantOf(this));

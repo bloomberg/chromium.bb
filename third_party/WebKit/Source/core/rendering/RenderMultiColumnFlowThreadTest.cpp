@@ -107,14 +107,21 @@ TEST_F(MultiColumnRenderingTest, OneBlock)
 {
     // There is some content, so we should create a column set.
     setMulticolHTML("<div id='mc'><div id='block'></div></div>");
-    ASSERT_EQ(columnSetSignature("mc"), "c");
+    RenderMultiColumnFlowThread* flowThread = findFlowThread("mc");
+    ASSERT_EQ(columnSetSignature(flowThread), "c");
+    RenderMultiColumnSet* columnSet = flowThread->firstMultiColumnSet();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("block")->renderer()), columnSet);
 }
 
 TEST_F(MultiColumnRenderingTest, TwoBlocks)
 {
     // No matter how much content, we should only create one column set (unless there are spanners).
     setMulticolHTML("<div id='mc'><div id='block1'></div><div id='block2'></div></div>");
-    ASSERT_EQ(columnSetSignature("mc"), "c");
+    RenderMultiColumnFlowThread* flowThread = findFlowThread("mc");
+    ASSERT_EQ(columnSetSignature(flowThread), "c");
+    RenderMultiColumnSet* columnSet = flowThread->firstMultiColumnSet();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("block1")->renderer()), columnSet);
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("block2")->renderer()), columnSet);
 }
 
 TEST_F(MultiColumnRenderingTest, Spanner)
@@ -135,7 +142,9 @@ TEST_F(MultiColumnRenderingTest, ContentThenSpanner)
     setMulticolHTML("<div id='mc'><div id='columnContent'></div><div id='spanner'></div></div>");
     RenderMultiColumnFlowThread* flowThread = findFlowThread("mc");
     ASSERT_EQ(columnSetSignature(flowThread), "cs");
-    RenderBox* columnBox = flowThread->lastMultiColumnBox();
+    RenderBox* columnBox = flowThread->firstMultiColumnBox();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("columnContent")->renderer()), columnBox);
+    columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->renderer()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContent")->renderer()), nullptr);
 }
@@ -148,6 +157,8 @@ TEST_F(MultiColumnRenderingTest, SpannerThenContent)
     ASSERT_EQ(columnSetSignature(flowThread), "sc");
     RenderBox* columnBox = flowThread->firstMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->renderer()), columnBox);
+    columnBox = columnBox->nextSiblingMultiColumnBox();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("columnContent")->renderer()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContent")->renderer()), nullptr);
 }
 
@@ -158,9 +169,13 @@ TEST_F(MultiColumnRenderingTest, ContentThenSpannerThenContent)
     setMulticolHTML("<div id='mc'><div id='columnContentBefore'></div><div id='spanner'></div><div id='columnContentAfter'></div></div>");
     RenderMultiColumnFlowThread* flowThread = findFlowThread("mc");
     ASSERT_EQ(columnSetSignature(flowThread), "csc");
-    RenderBox* columnBox = flowThread->firstMultiColumnSet()->nextSiblingMultiColumnBox();
+    RenderBox* columnBox = flowThread->firstMultiColumnSet();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("columnContentBefore")->renderer()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContentBefore")->renderer()), nullptr);
+    columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->renderer()), columnBox);
+    columnBox = columnBox->nextSiblingMultiColumnBox();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("columnContentAfter")->renderer()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContentAfter")->renderer()), nullptr);
 }
 
@@ -191,6 +206,7 @@ TEST_F(MultiColumnRenderingTest, SpannerThenContentThenSpanner)
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner1")->renderer()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(columnBox, columnSet);
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("columnContent")->renderer()), columnSet);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContent")->renderer()), nullptr);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner2")->renderer()), columnBox);
@@ -215,13 +231,18 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpanner)
     setMulticolHTML("<div id='mc'><div id='outer'><div id='block1'></div><div id='spanner'></div><div id='block2'></div></div></div>");
     RenderMultiColumnFlowThread* flowThread = findFlowThread("mc");
     EXPECT_EQ(columnSetSignature(flowThread), "csc");
-    RenderBox* columnBox = flowThread->firstMultiColumnSet()->nextSiblingMultiColumnBox();
+    RenderBox* columnBox = flowThread->firstMultiColumnBox();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("outer")->renderer()), columnBox);
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("block1")->renderer()), columnBox);
+    columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->renderer()), columnBox);
     EXPECT_EQ(document().getElementById("spanner")->renderer()->spannerPlaceholder(), columnBox);
     EXPECT_EQ(toRenderMultiColumnSpannerPlaceholder(columnBox)->rendererInFlowThread(), document().getElementById("spanner")->renderer());
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("outer")->renderer()), nullptr);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("block1")->renderer()), nullptr);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("block2")->renderer()), nullptr);
+    columnBox = columnBox->nextSiblingMultiColumnBox();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("block2")->renderer()), columnBox);
 }
 
 TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerAfterSpanner)
@@ -233,12 +254,16 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerAfterSpanner)
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner1")->renderer()), columnBox);
     EXPECT_EQ(toRenderMultiColumnSpannerPlaceholder(columnBox)->rendererInFlowThread(), document().getElementById("spanner1")->renderer());
     EXPECT_EQ(document().getElementById("spanner1")->renderer()->spannerPlaceholder(), columnBox);
-    columnBox = columnBox->nextSiblingMultiColumnBox()->nextSiblingMultiColumnBox();
+    columnBox = columnBox->nextSiblingMultiColumnBox();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("outer")->renderer()), columnBox);
+    columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner2")->renderer()), columnBox);
     EXPECT_EQ(toRenderMultiColumnSpannerPlaceholder(columnBox)->rendererInFlowThread(), document().getElementById("spanner2")->renderer());
     EXPECT_EQ(document().getElementById("spanner2")->renderer()->spannerPlaceholder(), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("outer")->renderer()), nullptr);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("after")->renderer()), nullptr);
+    columnBox = columnBox->nextSiblingMultiColumnBox();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("after")->renderer()), columnBox);
 }
 
 TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerBeforeSpanner)
@@ -246,7 +271,9 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerBeforeSpanner)
     setMulticolHTML("<div id='mc'><div id='outer'>text<div id='spanner1'></div>text</div><div id='spanner2'></div></div>");
     RenderMultiColumnFlowThread* flowThread = findFlowThread("mc");
     EXPECT_EQ(columnSetSignature(flowThread), "cscs");
-    RenderBox* columnBox = flowThread->firstMultiColumnSet()->nextSiblingMultiColumnBox();
+    RenderBox* columnBox = flowThread->firstMultiColumnSet();
+    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("outer")->renderer()), columnBox);
+    columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner1")->renderer()), columnBox);
     EXPECT_EQ(document().getElementById("spanner1")->renderer()->spannerPlaceholder(), columnBox);
     EXPECT_EQ(toRenderMultiColumnSpannerPlaceholder(columnBox)->rendererInFlowThread(), document().getElementById("spanner1")->renderer());

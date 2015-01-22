@@ -124,6 +124,9 @@ public:
         return lastSiblingBox != this ? lastSiblingBox : 0;
     }
 
+    // Find the first set inside which the specified renderer would be rendered.
+    RenderMultiColumnSet* findSetRendering(RenderObject*) const;
+
     // Return the spanner placeholder that belongs to the spanner in the containing block chain, if
     // any. This includes the renderer for the element that actually establishes the spanner too.
     RenderMultiColumnSpannerPlaceholder* containingColumnSpannerPlaceholder(const RenderObject* descendant) const;
