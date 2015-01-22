@@ -945,10 +945,13 @@ syncer::StringOrdinal AppListSyncableService::GetOemFolderPos() {
     for (SyncItemMap::iterator iter = sync_items_.begin();
          iter != sync_items_.end(); ++iter) {
       SyncItem* sync_item = iter->second;
-      if (!last.IsValid() || sync_item->item_ordinal.GreaterThan(last))
+      if (sync_item->item_ordinal.IsValid() &&
+          (!last.IsValid() || sync_item->item_ordinal.GreaterThan(last))) {
         last = sync_item->item_ordinal;
+      }
     }
-    return last.CreateAfter();
+    if (last.IsValid())
+      return last.CreateAfter();
   }
 
   // Place the OEM folder just after the web store, which should always be
