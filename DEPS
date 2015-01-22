@@ -40,7 +40,7 @@ vars = {
   'pdfium_git': 'https://pdfium.googlesource.com',
   'skia_git': 'https://skia.googlesource.com',
   'boringssl_git': 'https://boringssl.googlesource.com',
-  'libvpx_revision': '3fdc59b241fdf9dc08d4073a23eb85328340e856',
+  'libvpx_revision': 'cc9c0c5198e416173f480fb1f11e052f5c29a95b',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
   'skia_revision': 'ec7e12f3cf240a85a2409205e135c24256233733',
   # Three lines of non-changing comments so that
