@@ -22,6 +22,8 @@
         'web_resource/resource_request_allowed_notifier.h',
         'web_resource/web_resource_pref_names.cc',
         'web_resource/web_resource_pref_names.h',
+        'web_resource/web_resource_service.cc',
+        'web_resource/web_resource_service.h',
       ],
     },
     {

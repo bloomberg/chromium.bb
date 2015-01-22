@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_RESOURCE_WEB_RESOURCE_SERVICE_H_
-#define CHROME_BROWSER_WEB_RESOURCE_WEB_RESOURCE_SERVICE_H_
+#ifndef COMPONENTS_WEB_RESOURCE_WEB_RESOURCE_SERVICE_H_
+#define COMPONENTS_WEB_RESOURCE_WEB_RESOURCE_SERVICE_H_
 
 #include <string>
 
@@ -26,12 +26,14 @@ class URLFetcher;
 class URLRequestContextGetter;
 }
 
+namespace web_resource {
+
 // A WebResourceService fetches JSON data from a web server and periodically
 // refreshes it.
 class WebResourceService
     : public net::URLFetcherDelegate,
       public base::RefCountedThreadSafe<WebResourceService>,
-      public web_resource::ResourceRequestAllowedNotifier::Observer {
+      public ResourceRequestAllowedNotifier::Observer {
  public:
   // Creates a new WebResourceService.
   // If |application_locale| is not empty, it will be appended as a locale
@@ -95,8 +97,7 @@ class WebResourceService
 
   // Helper class used to tell this service if it's allowed to make network
   // resource requests.
-  web_resource::ResourceRequestAllowedNotifier
-      resource_request_allowed_notifier_;
+  ResourceRequestAllowedNotifier resource_request_allowed_notifier_;
 
   // The tool that fetches the url data from the server.
   scoped_ptr<net::URLFetcher> url_fetcher_;
@@ -129,4 +130,6 @@ class WebResourceService
   DISALLOW_COPY_AND_ASSIGN(WebResourceService);
 };
 
-#endif  // CHROME_BROWSER_WEB_RESOURCE_WEB_RESOURCE_SERVICE_H_
+}  // namespace web_resource
+
+#endif  // COMPONENTS_WEB_RESOURCE_WEB_RESOURCE_SERVICE_H_

@@ -2804,8 +2804,6 @@
       'browser/web_resource/notification_promo.h',
       'browser/web_resource/promo_resource_service.cc',
       'browser/web_resource/promo_resource_service.h',
-      'browser/web_resource/web_resource_service.cc',
-      'browser/web_resource/web_resource_service.h',
     ],
     'chrome_browser_webrtc_sources': [
       # TODO(brettw) should webrtc_log_list.cc go here?

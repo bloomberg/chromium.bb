@@ -19,15 +19,15 @@ ChromeWebResourceService::ChromeWebResourceService(
     const char* last_update_time_pref_name,
     int start_fetch_delay_ms,
     int cache_update_delay_ms)
-    : WebResourceService(prefs,
-                         web_resource_server,
-                         apply_locale_to_url
-                             ? g_browser_process->GetApplicationLocale()
-                             : std::string(),
-                         last_update_time_pref_name,
-                         start_fetch_delay_ms,
-                         cache_update_delay_ms,
-                         switches::kDisableBackgroundNetworking) {
+    : web_resource::WebResourceService(
+          prefs,
+          web_resource_server,
+          apply_locale_to_url ? g_browser_process->GetApplicationLocale()
+                              : std::string(),
+          last_update_time_pref_name,
+          start_fetch_delay_ms,
+          cache_update_delay_ms,
+          switches::kDisableBackgroundNetworking) {
 }
 
 ChromeWebResourceService::~ChromeWebResourceService() {

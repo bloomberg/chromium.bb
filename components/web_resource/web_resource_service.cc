@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_resource/web_resource_service.h"
+#include "components/web_resource/web_resource_service.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -25,6 +25,8 @@ const char kInvalidDataTypeError[] =
 
 const char kUnexpectedJSONFormatError[] =
     "Data from web resource server does not have expected format.";
+
+namespace web_resource {
 
 WebResourceService::WebResourceService(PrefService* prefs,
                                        const GURL& web_resource_server,
@@ -81,9 +83,8 @@ void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
 // with startup time.
 void WebResourceService::ScheduleFetch(int64 delay_ms) {
   base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&WebResourceService::StartFetch,
-                 weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE, base::Bind(&WebResourceService::StartFetch,
+                            weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
@@ -95,7 +96,7 @@ void WebResourceService::StartFetch() {
 
   // Set cache update time in preferences.
   prefs_->SetString(last_update_time_pref_name_,
-      base::DoubleToString(base::Time::Now().ToDoubleT()));
+                    base::DoubleToString(base::Time::Now().ToDoubleT()));
 
   // If we are still fetching data, exit.
   if (in_fetch_)
@@ -112,8 +113,8 @@ void WebResourceService::StartFetch() {
           : web_resource_server_;
 
   DVLOG(1) << "WebResourceService StartFetch " << web_resource_server;
-  url_fetcher_.reset(net::URLFetcher::Create(
-      web_resource_server, net::URLFetcher::GET, this));
+  url_fetcher_.reset(
+      net::URLFetcher::Create(web_resource_server, net::URLFetcher::GET, this));
   // Do not let url fetcher affect existing state in system context
   // (by setting cookies, for example).
   url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
@@ -127,8 +128,7 @@ void WebResourceService::EndFetch() {
   in_fetch_ = false;
 }
 
-void WebResourceService::OnUnpackFinished(
-    scoped_ptr<base::Value> value) {
+void WebResourceService::OnUnpackFinished(scoped_ptr<base::Value> value) {
   if (!value) {
     // Page information not properly read, or corrupted.
     OnUnpackError(kInvalidDataTypeError);
@@ -159,9 +159,11 @@ void WebResourceService::OnResourceRequestsAllowed() {
     if (!last_update_pref.empty()) {
       double last_update_value;
       base::StringToDouble(last_update_pref, &last_update_value);
-      int64 ms_until_update = cache_update_delay_ms_ -
-          static_cast<int64>((base::Time::Now() - base::Time::FromDoubleT(
-          last_update_value)).InMilliseconds());
+      int64 ms_until_update =
+          cache_update_delay_ms_ -
+          static_cast<int64>(
+              (base::Time::Now() - base::Time::FromDoubleT(last_update_value))
+                  .InMilliseconds());
       // Wait at least |start_fetch_delay_ms_|.
       if (ms_until_update > start_fetch_delay_ms_)
         delay = ms_until_update;
@@ -170,3 +172,5 @@ void WebResourceService::OnResourceRequestsAllowed() {
   // Start fetch and wait for UpdateResourceCache.
   ScheduleFetch(delay);
 }
+
+}  // namespace web_resource

@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_WEB_RESOURCE_CHROME_WEB_RESOURCE_SERVICE_H_
 
 #include "base/macros.h"
-#include "chrome/browser/web_resource/web_resource_service.h"
+#include "components/web_resource/web_resource_service.h"
 
 // Chrome implementation of WebResourceService.
 // ChromeWebResourceService safely parses JSON out of process.
-class ChromeWebResourceService : public WebResourceService {
+class ChromeWebResourceService : public web_resource::WebResourceService {
  public:
   ChromeWebResourceService(PrefService* prefs,
                            const GURL& web_resource_server,
