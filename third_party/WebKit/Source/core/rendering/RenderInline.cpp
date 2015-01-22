@@ -1024,7 +1024,25 @@ LayoutRect RenderInline::linesVisualOverflowBoundingBox() const
 
 LayoutRect RenderInline::absoluteClippedOverflowRect() const
 {
-    return clippedOverflowRect(view());
+    if (!continuation())
+        return clippedOverflowRect(view());
+
+    FloatRect floatResult;
+    LinesBoundingBoxGeneratorContext context(floatResult);
+
+    RenderInline* endContinuation = inlineElementContinuation();
+    while (endContinuation->inlineElementContinuation())
+        endContinuation = endContinuation->inlineElementContinuation();
+
+    for (RenderBlock* currBlock = containingBlock(); currBlock && currBlock->isAnonymousBlock(); currBlock = toRenderBlock(currBlock->nextSibling())) {
+        for (RenderObject* curr = currBlock->firstChild(); curr; curr = curr->nextSibling()) {
+            LayoutRect rect = curr->clippedOverflowRectForPaintInvalidation(view());
+            context(rect);
+            if (curr == endContinuation)
+                return enclosingIntRect(floatResult);
+        }
+    }
+    return LayoutRect();
 }
 
 LayoutRect RenderInline::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
