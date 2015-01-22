@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@ class Value;
 
 namespace net {
 class URLFetcher;
+class URLRequestContextGetter;
 }
 
 // A WebResourceService fetches JSON data from a web server and periodically
@@ -32,12 +33,16 @@ class WebResourceService
       public base::RefCountedThreadSafe<WebResourceService>,
       public web_resource::ResourceRequestAllowedNotifier::Observer {
  public:
+  // Creates a new WebResourceService.
+  // If |application_locale| is not empty, it will be appended as a locale
+  // parameter to the resource URL.
   WebResourceService(PrefService* prefs,
                      const GURL& web_resource_server,
-                     bool apply_locale_to_url_,
+                     const std::string& application_locale,  // May be empty
                      const char* last_update_time_pref_name,
                      int start_fetch_delay_ms,
-                     int cache_update_delay_ms);
+                     int cache_update_delay_ms,
+                     const char* disable_network_switch);
 
   // Sleep until cache needs to be updated, but always for at least
   // |start_fetch_delay_ms| so we don't interfere with startup.
@@ -45,16 +50,29 @@ class WebResourceService
   void StartAfterDelay();
 
  protected:
-  ~WebResourceService() override;
+  // Callbacks for JSON parsing.
+  using SuccessCallback = base::Callback<void(scoped_ptr<base::Value>)>;
+  using ErrorCallback = base::Callback<void(const std::string&)>;
 
-  // For the subclasses to process the result of a fetch.
-  virtual void Unpack(const base::DictionaryValue& parsed_json) = 0;
+  ~WebResourceService() override;
 
   PrefService* prefs_;
 
  private:
   class UnpackerClient;
   friend class base::RefCountedThreadSafe<WebResourceService>;
+
+  // For the subclasses to process the result of a fetch.
+  virtual void Unpack(const base::DictionaryValue& parsed_json) = 0;
+
+  // Parses a JSON string |data| and invokes |success_callback| or
+  // |error_callback|.
+  virtual void ParseJSON(const std::string& data,
+                         const SuccessCallback& success_callback,
+                         const ErrorCallback& error_callback) = 0;
+
+  // Gets the request context for the resource fetch.
+  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
   // net::URLFetcherDelegate implementation:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -91,8 +109,8 @@ class WebResourceService
   // URL that hosts the web resource.
   GURL web_resource_server_;
 
-  // Indicates whether we should append locale to the web resource server URL.
-  bool apply_locale_to_url_;
+  // Application locale, appended to the URL if not empty.
+  std::string application_locale_;
 
   // Pref name to store the last update's time.
   const char* last_update_time_pref_name_;
