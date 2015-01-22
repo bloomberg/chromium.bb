@@ -145,22 +145,21 @@ ExtensionAppItem::~ExtensionAppItem() {
 }
 
 bool ExtensionAppItem::NeedsOverlay() const {
-  // The overlay icon is disabled for hosted apps in windowed mode with
-  // streamlined hosted apps.
-  bool streamlined_hosted_apps =
-      extensions::util::IsStreamlinedHostedAppsEnabled();
 #if defined(OS_CHROMEOS)
-  if (!streamlined_hosted_apps)
-    return false;
+  // The overlay is disabled completely in ChromeOS.
+  return false;
 #endif
+
   extensions::LaunchType launch_type =
       GetExtension()
           ? extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile_),
                                       GetExtension())
           : extensions::LAUNCH_TYPE_WINDOW;
 
+  // The overlay icon is disabled for hosted apps in windowed mode with
+  // streamlined hosted apps.
   return !is_platform_app_ && extension_id_ != extension_misc::kChromeAppId &&
-      (!streamlined_hosted_apps ||
+      (!extensions::util::IsStreamlinedHostedAppsEnabled() ||
        launch_type != extensions::LAUNCH_TYPE_WINDOW);
 }
 
