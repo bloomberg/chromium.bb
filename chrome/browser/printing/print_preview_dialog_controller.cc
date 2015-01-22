@@ -40,6 +40,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 using content::NavigationController;
@@ -122,7 +123,15 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
   *size = kMinDialogSize;
 
   web_modal::WebContentsModalDialogHost* host = NULL;
-  Browser* browser = chrome::FindBrowserWithWebContents(initiator_);
+  content::WebContents* outermost_web_contents = initiator_;
+  const extensions::GuestViewBase* guest_view =
+      extensions::GuestViewBase::FromWebContents(outermost_web_contents);
+  while (guest_view && guest_view->attached()) {
+    outermost_web_contents = guest_view->embedder_web_contents();
+    guest_view =
+        extensions::GuestViewBase::FromWebContents(outermost_web_contents);
+  }
+  Browser* browser = chrome::FindBrowserWithWebContents(outermost_web_contents);
   if (browser)
     host = browser->window()->GetWebContentsModalDialogHost();
 
@@ -130,7 +139,7 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
     size->SetToMax(host->GetMaximumDialogSize());
     size->Enlarge(-2 * kBorder, -kBorder);
   } else {
-    size->SetToMax(initiator_->GetContainerBounds().size());
+    size->SetToMax(outermost_web_contents->GetContainerBounds().size());
     size->Enlarge(-2 * kBorder, -2 * kBorder);
   }
 
