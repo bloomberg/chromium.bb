@@ -1,4 +1,4 @@
-var SCOPE = 'resources/fetch-access-control-iframe.html';
+var SCOPE = '/serviceworker/resources/fetch-access-control-iframe.html';
 var BASE_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control.php?';
 var OTHER_BASE_URL = 'http://localhost:8000/serviceworker/resources/fetch-access-control.php?';
 var REDIRECT_URL = 'http://127.0.0.1:8000/serviceworker/resources/redirect.php?Redirect=';
@@ -7,6 +7,10 @@ var REDIRECT_LOOP_URL = 'http://127.0.0.1:8000/serviceworker/resources/redirect-
 var IFRAME_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control-iframe.html';
 var WORKER_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control-worker.js';
 var IFRAME_ORIGIN = 'http://127.0.0.1:8000';
+
+function onlyOnServiceWorkerProxiedTest(checkFuncs) {
+  return [];
+}
 
 // Functions to check the result from the ServiceWorker.
 var checkFetchResult = function(expected, url, data) {
@@ -121,21 +125,26 @@ var authCheckNone =
 var authCheck1 = checkJsonpAuth.bind(this, 'username1', 'password1', 'cookie1');
 var authCheck2 = checkJsonpAuth.bind(this, 'username2', 'password2', 'cookie2');
 
-function executeTests(test, test_targets) {
+function login(test) {
+  var login1 =
+    test_login(test, 'http://127.0.0.1:8000',
+               'username1', 'password1', 'cookie1');
+  var login2 =
+    test_login(test, 'http://localhost:8000',
+               'username2', 'password2', 'cookie2');
+  return Promise.all([login1, login2]);
+}
+
+function executeServiceWorkerProxiedTests(test, test_targets) {
   test.step(function() {
-      var login1 =
-        test_login(test, 'http://127.0.0.1:8000',
-                   'username1', 'password1', 'cookie1');
-      var login2 =
-        test_login(test, 'http://localhost:8000',
-                   'username2', 'password2', 'cookie2');
-      var workerScript = 'resources/fetch-access-control-worker.js';
+      var workerScript =
+        '/serviceworker/resources/fetch-access-control-worker.js';
       var worker = undefined;
       var frameWindow = {};
       var counter = 0;
       window.addEventListener('message', test.step_func(onMessage), false);
 
-      Promise.all([login1, login2])
+      login(test)
         .then(function() {
             return service_worker_unregister_and_register(test,
                                                           workerScript,
@@ -216,4 +225,129 @@ function executeTests(test, test_targets) {
             }));
       }
     });
+}
+
+function getQueryParams(url) {
+  var search = (new URL(url)).search;
+  if (!search) {
+    return {};
+  }
+  var ret = {};
+  var params = search.substring(1).split('&');
+  params.forEach(function(param) {
+      var element = param.split('=');
+      ret[decodeURIComponent(element[0])] = decodeURIComponent(element[1]);
+    });
+  return ret;
+}
+
+function getRequestInit(params) {
+  var init = {};
+  if (params['method']) {
+    init['method'] = params['method'];
+  }
+  if (params['mode']) {
+    init['mode'] = params['mode'];
+  }
+  if (params['credentials']) {
+    init['credentials'] = params['credentials'];
+  }
+  if (params['headers'] === 'CUSTOM') {
+    init['headers'] = {'X-ServiceWorker-Test': 'test'};
+  } else if (params['headers'] === '{}') {
+    init['headers'] = {};
+  }
+  return init;
+}
+
+function headersToArray(headers) {
+  var ret = [];
+  for (var header of headers) {
+    ret.push(header);
+  }
+  return ret;
+}
+
+function doFetch(url0) {
+  var request = new Request(url0,
+                            {credentials: 'same-origin', mode: 'no-cors'});
+  var originalURL = request.url;
+  var params = getQueryParams(originalURL);
+  var init = getRequestInit(params);
+  var url = params['url'];
+  try {
+    if (url) {
+      request = new Request(url, init);
+    } else {
+      request = new Request(request, init);
+    }
+    var response;
+    return fetch(request)
+      .then(function(res) {
+          response = res;
+          return res.clone().text()
+            .then(function(body) {
+                return Promise.resolve({
+                  // Setting a comment will fail the test and show the
+                  // comment in the result. Use this for debugging
+                  // tests.
+                  comment: undefined,
+
+                  fetchResult: 'resolved',
+                  body: body,
+                  status: response.status,
+                  headers: headersToArray(response.headers),
+                  type: response.type,
+                  response: response,
+                  originalURL: originalURL
+                });
+              })
+            .catch(function(e) {
+                return Promise.resolve({fetchResult: 'error'});
+              });
+        })
+      .catch(function(e) {
+          return Promise.resolve({fetchResult: 'rejected'});
+        });
+  } catch (e) {
+    return Promise.resolve({fetchResult: 'error'});
+  }
+}
+
+var report_data = {};
+function report(data) {
+  report_data = data;
+}
+
+function executeTests(test_targets) {
+  var i;
+  for (i = 0; i < test_targets.length; ++i) {
+    promise_test(function(counter, test) {
+        return doFetch(test_targets[counter][0])
+          .then(function(message) {
+              var checks = test_targets[counter][1].concat(showComment);
+              checks.forEach(function(checkFunc) {
+                  checkFunc.call(this, test_targets[counter][0], message);
+                });
+
+              if (test_targets[counter][2]) {
+                report_data = {};
+                if (message.fetchResult !== 'resolved' ||
+                    message.body === '' ||
+                    400 <= message.status) {
+                  report({jsonpResult:'error'});
+                } else {
+                  eval(message.body);
+                }
+                assert_not_equals(report_data, {}, 'data should be set');
+
+                test_targets[counter][2].forEach(function(checkFunc) {
+                    checkFunc.call(this, test_targets[counter][0], report_data);
+                  });
+              }
+
+            })
+      }.bind(this, i), 'FetchAccessControlUtil-' + i);
+  }
+  done();
 }

@@ -1,0 +1,25 @@
+<!doctype html>
+<head>
+<script src = "/resources/testharness.js"></script>
+<script src = "/resources/testharnessreport.js"></script>
+<script src = "/resources/testharness-helpers.js"></script>
+<script src = "/serviceworker/resources/test-helpers.js"></script>
+<script src = "../resources/fetch-test-helpers.js"></script>
+<script src = "/serviceworker/resources/fetch-access-control-util.js"></script>
+</head>
+<body>
+<script>
+if (window.testRunner) {
+    testRunner.setAlwaysAcceptCookies(true);
+}
+
+var test = async_test("Login");
+login(test)
+  .then(function() {
+      service_worker_test(
+        '../script-tests/TESTNAME.js',
+        'fetch-access-control');
+      test.done();
+    });
+</script>
+</body>

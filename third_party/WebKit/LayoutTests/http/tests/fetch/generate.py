@@ -20,7 +20,7 @@ import re
 import sys
 
 def main():
-    contexts = ['window', 'workers', 'serviceworker']
+    basic_contexts = ['window', 'workers', 'serviceworker']
 
     top_path = os.path.dirname(os.path.abspath(__file__))
     script_tests_path = os.path.join(top_path, 'script-tests')
@@ -30,10 +30,16 @@ def main():
             continue
         testname = re.sub(r'\.js$', '', os.path.basename(script))
         basename = testname + '.html'
+        templatename = 'TEMPLATE'
+        contexts = list(basic_contexts)
+
+        if script.startswith('fetch-access-control'):
+            templatename = 'TEMPLATE-fetch-access-control'
+            contexts.append('serviceworker-proxied')
 
         for context in contexts:
             template_path = os.path.join(
-                script_tests_path, 'TEMPLATE-' + context + '.html')
+                script_tests_path, templatename + '-' + context + '.html')
             with open(template_path, 'r') as template_file:
                 template_data = template_file.read()
                 output_data = re.sub(r'TESTNAME', testname, template_data)

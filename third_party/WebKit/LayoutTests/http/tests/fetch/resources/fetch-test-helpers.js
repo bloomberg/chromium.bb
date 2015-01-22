@@ -3,12 +3,15 @@ if ('ServiceWorkerGlobalScope' in self &&
   // ServiceWorker case
   importScripts('/serviceworker/resources/worker-testharness.js');
   importScripts('/resources/testharness-helpers.js');
+  importScripts('/serviceworker/resources/test-helpers.js');
 } else if (self.importScripts) {
   // Other workers cases
   importScripts('/resources/testharness.js');
   importScripts('/resources/testharness-helpers.js');
+  importScripts('/serviceworker/resources/test-helpers.js');
 }
 
+// FIXME: unreached_rejection is duplicated so should be removed.
 // Rejection-specific helper that provides more details
 function unreached_rejection(test, prefix) {
   return test.step_func(function(error) {

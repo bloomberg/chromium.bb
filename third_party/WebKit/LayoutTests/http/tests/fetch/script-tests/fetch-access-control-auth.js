@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<title>Service Worker: fetch()</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
-<script src="resources/fetch-access-control-util.js"></script>
-<body>
-<script>
+if (self.importScripts) {
+  importScripts('../resources/fetch-test-helpers.js');
+  importScripts('/serviceworker/resources/fetch-access-control-util.js');
+}
+
 var TEST_TARGETS = [
   // Auth check
   [BASE_URL + 'Auth',
@@ -39,20 +36,27 @@ var TEST_TARGETS = [
    [fetchResolved, hasBody], [authCheck1]],
 
   [OTHER_BASE_URL + 'Auth',
-   [fetchResolved, noBody], [authCheck2]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([authCheck2])],
   [OTHER_BASE_URL + 'Auth&credentials=omit',
-   [fetchResolved, noBody], [checkJsonpError]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([checkJsonpError])],
   [OTHER_BASE_URL + 'Auth&credentials=include',
-   [fetchResolved, noBody], [authCheck2]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([authCheck2])],
   [OTHER_BASE_URL + 'Auth&credentials=same-origin',
-   [fetchResolved, noBody], [authCheck2]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([authCheck2])],
 
   [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=omit',
-   [fetchResolved, noBody], [checkJsonpError]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([checkJsonpError])],
   [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=include',
-   [fetchResolved, noBody], [authCheck2]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([authCheck2])],
   [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=same-origin',
-   [fetchResolved, noBody], [authCheck2]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([authCheck2])],
 
   [OTHER_BASE_URL + 'Auth&mode=same-origin&credentials=omit',
    [fetchRejected]],
@@ -78,13 +82,13 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*&ACACredentials=true',
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
-   [fetchResolved, hasBody], [authCheck2]],
+   [fetchResolved, hasBody, typeCors], [authCheck2]],
 
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=*',
    [fetchResolved, hasBody], [checkJsonpError]],
 ];
 
-var test = async_test('Verify access control of fetch() in a Service Worker');
-executeTests(test, TEST_TARGETS);
-</script>
-</body>
+if (self.importScripts) {
+  executeTests(TEST_TARGETS);
+  done();
+}

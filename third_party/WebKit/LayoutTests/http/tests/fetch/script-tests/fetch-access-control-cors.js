@@ -1,19 +1,16 @@
-<!DOCTYPE html>
-<title>Service Worker: fetch()</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
-<script src="resources/fetch-access-control-util.js"></script>
-<body>
-<script>
+if (self.importScripts) {
+  importScripts('../resources/fetch-test-helpers.js');
+  importScripts('/serviceworker/resources/fetch-access-control-util.js');
+}
+
 var TEST_TARGETS = [
   // CORS test
   [OTHER_BASE_URL + 'method=GET&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, noCustomHeader, authCheck2]],
+   onlyOnServiceWorkerProxiedTest([methodIsGET, noCustomHeader, authCheck2])],
   [OTHER_BASE_URL + 'method=POST&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsPOST, noCustomHeader]],
+   onlyOnServiceWorkerProxiedTest([methodIsPOST, noCustomHeader])],
   [OTHER_BASE_URL + 'method=PUT&headers=CUSTOM',
    [fetchError]],
   [OTHER_BASE_URL + 'method=XXX&headers=CUSTOM',
@@ -26,10 +23,10 @@ var TEST_TARGETS = [
 
   [OTHER_BASE_URL + 'mode=no-cors&method=GET&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, noCustomHeader, authCheck2]],
+   onlyOnServiceWorkerProxiedTest([methodIsGET, noCustomHeader, authCheck2])],
   [OTHER_BASE_URL + 'mode=no-cors&method=POST&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsPOST, noCustomHeader]],
+   onlyOnServiceWorkerProxiedTest([methodIsPOST, noCustomHeader])],
   [OTHER_BASE_URL + 'mode=no-cors&method=PUT&headers=CUSTOM',
    [fetchError]],
   [OTHER_BASE_URL + 'mode=no-cors&method=XXX&headers=CUSTOM',
@@ -216,7 +213,7 @@ var TEST_TARGETS = [
    [methodIsXXX, hasCustomHeader]]
 ];
 
-var test = async_test('Verify access control of fetch() in a Service Worker');
-executeTests(test, TEST_TARGETS);
-</script>
-</body>
+if (self.importScripts) {
+  executeTests(TEST_TARGETS);
+  done();
+}

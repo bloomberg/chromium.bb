@@ -1,11 +1,21 @@
-<!DOCTYPE html>
-<title>Service Worker: fetch()</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
-<script src="resources/fetch-access-control-util.js"></script>
-<body>
-<script>
+if (self.importScripts) {
+  importScripts('../resources/fetch-test-helpers.js');
+  importScripts('/serviceworker/resources/fetch-access-control-util.js');
+}
+
+var referer;
+
+if (self.importScripts) {
+  // fetch/workers or fetch/serviceworker
+  referer = 'http://127.0.0.1:8000/fetch/script-tests/fetch-access-control.js';
+} else if(location.pathname ==
+    '/fetch/serviceworker-proxied/fetch-access-control.html') {
+  // fetch/serviceworker-proxied
+  referer = WORKER_URL;
+} else {
+  // fetch/window
+  referer = 'http://127.0.0.1:8000/fetch/window/fetch-access-control.html';
+}
 
 var TEST_TARGETS = [
   [BASE_URL + 'method=GET',
@@ -81,15 +91,9 @@ var TEST_TARGETS = [
    [methodIsXXX, hasCustomHeader]],
 
   // Referer check
-  [BASE_URL + 'ignore=true',
-   [fetchIgnored],
-   [checkJsonpHeader.bind(this, 'Referer', IFRAME_URL)]],
-  [BASE_URL + 'noChange=true',
+  [BASE_URL,
    [fetchResolved],
-   [checkJsonpHeader.bind(this, 'Referer', WORKER_URL)]],
-  [BASE_URL ,
-   [fetchResolved],
-   [checkJsonpHeader.bind(this, 'Referer', WORKER_URL)]],
+   [checkJsonpHeader.bind(this, 'Referer', referer)]],
 
   // Auth check
   [BASE_URL + 'Auth',
@@ -123,20 +127,27 @@ var TEST_TARGETS = [
    [fetchResolved, hasBody], [authCheck1]],
 
   [OTHER_BASE_URL + 'Auth',
-   [fetchResolved, noBody], [authCheck2]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([authCheck2])],
   [OTHER_BASE_URL + 'Auth&credentials=omit',
-   [fetchResolved, noBody], [checkJsonpError]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([checkJsonpError])],
   [OTHER_BASE_URL + 'Auth&credentials=include',
-   [fetchResolved, noBody], [authCheck2]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([authCheck2])],
   [OTHER_BASE_URL + 'Auth&credentials=same-origin',
-   [fetchResolved, noBody], [authCheck2]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([authCheck2])],
 
   [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=omit',
-   [fetchResolved, noBody], [checkJsonpError]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([checkJsonpError])],
   [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=include',
-   [fetchResolved, noBody], [authCheck2]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([authCheck2])],
   [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=same-origin',
-   [fetchResolved, noBody], [authCheck2]],
+   [fetchResolved, noBody, typeOpaque],
+   onlyOnServiceWorkerProxiedTest([authCheck2])],
 
   [OTHER_BASE_URL + 'Auth&mode=same-origin&credentials=omit',
    [fetchRejected]],
@@ -161,7 +172,7 @@ var TEST_TARGETS = [
    [fetchResolved, hasBody], [authCheck2]]
 ];
 
-var test = async_test('Verify access control of fetch() in a Service Worker');
-executeTests(test, TEST_TARGETS);
-</script>
-</body>
+if (self.importScripts) {
+  executeTests(TEST_TARGETS);
+  done();
+}

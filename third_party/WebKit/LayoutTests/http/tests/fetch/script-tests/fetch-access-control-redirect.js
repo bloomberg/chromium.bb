@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<title>Service Worker: fetch()</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
-<script src="resources/fetch-access-control-util.js"></script>
-<body>
-<script>
+if (self.importScripts) {
+  importScripts('../resources/fetch-test-helpers.js');
+  importScripts('/serviceworker/resources/fetch-access-control-util.js');
+}
 
 var TEST_TARGETS = [
   // Redirect: same origin -> same origin
@@ -71,17 +67,17 @@ var TEST_TARGETS = [
   [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
    '&mode=no-cors&method=GET&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, noCustomHeader, authCheck2]],
+   onlyOnServiceWorkerProxiedTest([methodIsGET, noCustomHeader, authCheck2])],
   // The 302 redirect response changes POST method to GET method.
   [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
    '&mode=no-cors&method=POST',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, authCheck2]],
+   onlyOnServiceWorkerProxiedTest([methodIsGET, authCheck2])],
   // The 307 redirect response doesn't change the method.
   [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
    '&mode=no-cors&method=POST&Status=307',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsPOST, authCheck2]],
+   onlyOnServiceWorkerProxiedTest([methodIsPOST, authCheck2])],
 
   [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
    '&mode=cors&method=GET',
@@ -170,21 +166,21 @@ var TEST_TARGETS = [
   [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
    '&mode=no-cors&method=GET',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, authCheck1]],
+   onlyOnServiceWorkerProxiedTest([methodIsGET, authCheck1])],
   [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
    '&mode=no-cors&method=GET&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, noCustomHeader, authCheck1]],
+   onlyOnServiceWorkerProxiedTest([methodIsGET, noCustomHeader, authCheck1])],
   // The 302 redirect response changes POST method to GET method.
   [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
    '&mode=no-cors&method=POST',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, authCheck1]],
+   onlyOnServiceWorkerProxiedTest([methodIsGET, authCheck1])],
   // The 307 redirect response doesn't change the method.
   [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
    '&mode=no-cors&method=POST&Status=307',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsPOST, authCheck1]],
+   onlyOnServiceWorkerProxiedTest([methodIsPOST, authCheck1])],
 
   [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
    '&mode=cors&method=GET',
@@ -250,7 +246,7 @@ var TEST_TARGETS = [
   [OTHER_REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
    '&mode=no-cors&method=GET',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, authCheck2]],
+   onlyOnServiceWorkerProxiedTest([methodIsGET, authCheck2])],
   [OTHER_REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
    '&mode=cors&method=GET',
    [fetchRejected]],
@@ -308,7 +304,7 @@ var TEST_TARGETS = [
    [fetchRejected]],
 ];
 
-var test = async_test('Verify access control of fetch() in a Service Worker');
-executeTests(test, TEST_TARGETS);
-</script>
-</body>
+if (self.importScripts) {
+  executeTests(TEST_TARGETS);
+  done();
+}

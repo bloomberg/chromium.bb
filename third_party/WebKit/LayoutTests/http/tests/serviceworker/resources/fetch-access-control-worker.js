@@ -1,3 +1,5 @@
+importScripts('fetch-access-control-util.js');
+
 var port = undefined;
 var isTestTargetFetch = false;
 
@@ -10,47 +12,6 @@ self.onmessage = function(e) {
     port.postMessage({msg: 'READY'});
   }
 };
-
-function getQueryParams(url) {
-  var search = (new URL(url)).search;
-  if (!search) {
-    return {};
-  }
-  var ret = {};
-  var params = search.substring(1).split('&');
-  params.forEach(function(param) {
-      var element = param.split('=');
-      ret[decodeURIComponent(element[0])] = decodeURIComponent(element[1]);
-    });
-  return ret;
-}
-
-function getRequestInit(params) {
-  var init = {};
-  if (params['method']) {
-    init['method'] = params['method'];
-  }
-  if (params['mode']) {
-    init['mode'] = params['mode'];
-  }
-  if (params['credentials']) {
-    init['credentials'] = params['credentials'];
-  }
-  if (params['headers'] === 'CUSTOM') {
-    init['headers'] = {'X-ServiceWorker-Test': 'test'};
-  } else if (params['headers'] === '{}') {
-    init['headers'] = {};
-  }
-  return init;
-}
-
-function headersToArray(headers) {
-  var ret = [];
-  for (var header of headers) {
-    ret.push(header);
-  }
-  return ret;
-}
 
 self.addEventListener('fetch', function(event) {
     var originalURL = event.request.url;

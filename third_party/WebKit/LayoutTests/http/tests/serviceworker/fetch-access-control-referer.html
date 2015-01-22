@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<title>Service Worker: check referer of fetch()</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script src="resources/fetch-access-control-util.js"></script>
+<body>
+<script>
+
+var TEST_TARGETS = [
+  // Referer check
+  [BASE_URL + 'ignore=true',
+   [fetchIgnored],
+   [checkJsonpHeader.bind(this, 'Referer', IFRAME_URL)]],
+  [BASE_URL + 'noChange=true',
+   [fetchResolved],
+   [checkJsonpHeader.bind(this, 'Referer', WORKER_URL)]],
+];
+// Referer is also checked in http/tests/fetch/*/fetch-access-control.html.
+
+var test = async_test('Verify referer of fetch() in a Service Worker');
+executeServiceWorkerProxiedTests(test, TEST_TARGETS);
+</script>
+</body>
+ 

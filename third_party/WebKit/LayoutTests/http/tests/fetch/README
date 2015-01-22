@@ -7,6 +7,9 @@ For each test (say X), we have
 - /fetch/workers/X.html Worker test file, and
 - /fetch/serviceworker/X.html ServiceWorker test file.
 
+Some tests that require a serviceworker to test CORS requests are executed in
+- /fetch/serviceworker-proxied/X.html.
+
 Run
 $ python generate.py
 at this (/LayoutTests/http/tests/fetch/) directory to generate these files
@@ -18,6 +21,8 @@ corresponding html files must exist at the paths listed above.
 
 Other resources such as helper JS files and server side scripts are located on
 /fetch/resources.
+Some tests depends on files under
+/LayoutTests/http/tests/serviceworker/resources/.
 
 Tests should conform to Service Worker Testing style[1].
 
