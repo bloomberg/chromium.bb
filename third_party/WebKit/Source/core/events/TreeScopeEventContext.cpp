@@ -41,7 +41,7 @@ WillBeHeapVector<RefPtrWillBeMember<EventTarget>>& TreeScopeEventContext::ensure
 
     m_eventPath = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<EventTarget>>());
     LocalDOMWindow* window = path.windowEventContext().window();
-    m_eventPath->reserveCapacity(path.size() + window ? 1 : 0);
+    m_eventPath->reserveCapacity(path.size() + (window ? 1 : 0));
     for (size_t i = 0; i < path.size(); ++i) {
         Node& rootNode = path[i].treeScopeEventContext().rootNode();
         if (rootNode.isShadowRoot() && toShadowRoot(rootNode).type() == ShadowRoot::AuthorShadowRoot)
