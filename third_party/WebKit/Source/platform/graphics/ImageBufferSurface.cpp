@@ -96,7 +96,7 @@ static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
     return tmp;
 }
 
-void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator op, WebBlendMode blendMode, bool needsCopy)
+void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op, bool needsCopy)
 {
     SkBitmap bmp = bitmap();
     // For ImageBufferSurface that enables cachedBitmap, Use the cached bitmap for CPU side usage
@@ -108,7 +108,7 @@ void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRec
 
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(needsCopy ? deepSkBitmapCopy(bmp) : bmp));
 
-    context->drawImage(image.get(), destRect, srcRect, WebCoreCompositeToSkiaComposite(op, blendMode), DoNotRespectImageOrientation);
+    context->drawImage(image.get(), destRect, srcRect, op, DoNotRespectImageOrientation);
 }
 
 } // namespace blink

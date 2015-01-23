@@ -85,7 +85,7 @@ public:
     virtual void finalizeFrame(const FloatRect &dirtyRect) { }
     virtual void willDrawVideo() { }
     virtual PassRefPtr<SkImage> newImageSnapshot() const;
-    virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode, bool needsCopy);
+    virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode, bool needsCopy);
 
     OpacityMode opacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }

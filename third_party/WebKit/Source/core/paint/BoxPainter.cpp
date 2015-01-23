@@ -464,7 +464,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
             if (isOpaqueRoot && !skipBaseColor) {
                 paintRootBackgroundColor(obj, paintInfo, rect, bgColor);
             } else if (bgColor.alpha()) {
-                context->fillRect(backgroundRect, bgColor, context->compositeOperationDeprecated());
+                context->fillRect(backgroundRect, bgColor, context->compositeOperation());
             }
         }
     }
@@ -588,7 +588,7 @@ void BoxPainter::paintRootBackgroundColor(RenderObject& obj, const PaintInfo& pa
 
     Color baseColor = obj.view()->frameView()->baseBackgroundColor();
     bool shouldClearDocumentBackground = obj.document().settings() && obj.document().settings()->shouldClearDocumentBackground();
-    CompositeOperator operation = shouldClearDocumentBackground ? CompositeCopy : context->compositeOperationDeprecated();
+    SkXfermode::Mode operation = shouldClearDocumentBackground ? SkXfermode::kSrc_Mode : context->compositeOperation();
 
     // If we have an alpha go ahead and blend with the base background color.
     if (baseColor.alpha()) {

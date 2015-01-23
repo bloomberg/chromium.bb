@@ -81,12 +81,12 @@ TEST(GraphicsContextTest, trackDisplayListRecording)
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
 
-    context.fillRect(FloatRect(0, 0, 50, 50), opaque, CompositeSourceOver);
+    context.fillRect(FloatRect(0, 0, 50, 50), opaque, SkXfermode::kSrcOver_Mode);
     EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
 
     FloatRect bounds(0, 0, 100, 100);
     context.beginRecording(bounds);
-    context.fillRect(FloatRect(0, 0, 100, 100), opaque, CompositeSourceOver);
+    context.fillRect(FloatRect(0, 0, 100, 100), opaque, SkXfermode::kSrcOver_Mode);
     RefPtr<const SkPicture> picture = context.endRecording();
 
     // Make sure the opaque region was unaffected by the rect drawn during Picture recording.
@@ -111,7 +111,7 @@ TEST(GraphicsContextTest, trackImageMask)
 
     context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.beginTransparencyLayer(1);
-    context.fillRect(FloatRect(10, 10, 10, 10), opaque, CompositeSourceOver);
+    context.fillRect(FloatRect(10, 10, 10, 10), opaque, SkXfermode::kSrcOver_Mode);
 
     context.setCompositeOperation(SkXfermode::kDstIn_Mode);
     context.beginTransparencyLayer(1);
@@ -147,7 +147,7 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
 
     context.setCompositeOperation(SkXfermode::kSrcOver_Mode);
     context.beginTransparencyLayer(1);
-    context.fillRect(FloatRect(10, 10, 10, 10), opaque, CompositeSourceOver);
+    context.fillRect(FloatRect(10, 10, 10, 10), opaque, SkXfermode::kSrcOver_Mode);
 
     context.setCompositeOperation(SkXfermode::kDstIn_Mode);
     context.beginTransparencyLayer(1);
@@ -160,7 +160,7 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     context.drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
 
     // We can't have an opaque mask actually, but we can pretend here like it would look if we did.
-    context.fillRect(FloatRect(12, 12, 3, 3), opaque, CompositeSourceOver);
+    context.fillRect(FloatRect(12, 12, 3, 3), opaque, SkXfermode::kSrcOver_Mode);
 
     context.endLayer();
     context.endLayer();
@@ -420,7 +420,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     context.setLineDash(dashArray, 0);
 
     // Make the device opaque in 10,10 40x40.
-    context.fillRect(FloatRect(10, 10, 40, 40), opaque, CompositeSourceOver);
+    context.fillRect(FloatRect(10, 10, 40, 40), opaque, SkXfermode::kSrcOver_Mode);
     EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(10, 10, 40, 40));
 
     // Clip to the left edge of the opaque area.

@@ -46,7 +46,7 @@ public:
     virtual void setImageBuffer(ImageBuffer*) override;
     virtual PassRefPtr<SkImage> newImageSnapshot() const override;
     virtual bool needsClipTracking() const override { return !m_fallbackSurface; }
-    virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode, bool needsCopy) override;
+    void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode, bool needsCopy) override;
 
     // Passthroughs to fallback surface
     virtual const SkBitmap& bitmap() override;

@@ -266,13 +266,13 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     return result;
 }
 
-void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect* srcPtr, CompositeOperator op, WebBlendMode blendMode)
+void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect* srcPtr, SkXfermode::Mode op)
 {
     if (!isSurfaceValid())
         return;
 
     FloatRect srcRect = srcPtr ? *srcPtr : FloatRect(FloatPoint(), size());
-    m_surface->draw(context, destRect, srcRect, op, blendMode, drawNeedsCopy(m_context.get(), context));
+    m_surface->draw(context, destRect, srcRect, op, drawNeedsCopy(m_context.get(), context));
 }
 
 void ImageBuffer::flush()

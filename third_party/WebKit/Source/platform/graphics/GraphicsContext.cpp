@@ -566,14 +566,14 @@ void GraphicsContext::drawPicture(const SkPicture* picture)
     m_canvas->drawPicture(picture);
 }
 
-void GraphicsContext::compositePicture(SkPicture* picture, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode)
+void GraphicsContext::compositePicture(SkPicture* picture, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode op)
 {
     ASSERT(m_canvas);
     if (contextDisabled() || !picture)
         return;
 
     SkPaint picturePaint;
-    picturePaint.setXfermodeMode(WebCoreCompositeToSkiaComposite(op, blendMode));
+    picturePaint.setXfermodeMode(op);
     m_canvas->save();
     SkRect sourceBounds = WebCoreFloatRectToSKRect(src);
     SkRect skBounds = WebCoreFloatRectToSKRect(dest);
@@ -1117,12 +1117,12 @@ void GraphicsContext::drawTiledImage(Image* image, const IntRect& dest, const In
 }
 
 void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest,
-    const FloatRect* src, CompositeOperator op, WebBlendMode blendMode)
+    const FloatRect* src, SkXfermode::Mode op)
 {
     if (contextDisabled() || !image)
         return;
 
-    image->draw(this, dest, src, op, blendMode);
+    image->draw(this, dest, src, op);
 }
 
 void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)
@@ -1632,13 +1632,13 @@ void GraphicsContext::setCTM(const AffineTransform& affine)
     setMatrix(affineTransformToSkMatrix(affine));
 }
 
-void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, CompositeOperator op)
+void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, SkXfermode::Mode op)
 {
     if (contextDisabled())
         return;
 
     SkXfermode::Mode previousOperation = compositeOperation();
-    setCompositeOperation(WebCoreCompositeToSkiaComposite(op));
+    setCompositeOperation(op);
     fillRect(rect, color);
     setCompositeOperation(previousOperation);
 }
