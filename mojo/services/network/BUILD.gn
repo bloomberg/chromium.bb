@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(ppi): Switch this file back to using absolute paths to refer to the Mojo
+# SDK once it is no longer being used to build the network service impl in
+# Mojo.
 import("../mojo_sdk_root.gni")
 import("$mojo_sdk_root/mojo/public/mojo_application.gni")
 
