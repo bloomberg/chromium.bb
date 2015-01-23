@@ -506,20 +506,58 @@ TEST_F(PasswordSyncableServiceTest, StartSyncFlare) {
 TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
   scoped_ptr<syncer::SyncErrorFactoryMock> error_factory(
       new syncer::SyncErrorFactoryMock);
+  syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                          "Failed to get passwords from store.",
+                          syncer::PASSWORDS);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(Return(false));
   EXPECT_CALL(*error_factory, CreateAndUploadError(_, _))
-      .WillOnce(Return(SyncError()));
+      .WillOnce(Return(error));
   // ActOnPasswordStoreChanges() below shouldn't generate any changes for Sync.
   // |processor_| will be destroyed in MergeDataAndStartSyncing().
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, _)).Times(0);
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      syncer::SyncDataList(),
-                                      processor_.Pass(),
-                                      error_factory.Pass());
+  syncer::SyncMergeResult result =
+      service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
+                                          syncer::SyncDataList(),
+                                          processor_.Pass(),
+                                          error_factory.Pass());
+  EXPECT_TRUE(result.error().IsSet());
 
   autofill::PasswordForm form;
   form.signon_realm = kSignonRealm;
+  PasswordStoreChangeList list;
+  list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+  service()->ActOnPasswordStoreChanges(list);
+}
+
+// Start syncing with an error in ProcessSyncChanges. Subsequent password store
+// updates shouldn't be propagated to Sync.
+TEST_F(PasswordSyncableServiceTest, FailedProcessSyncChanges) {
+  autofill::PasswordForm form;
+  form.signon_realm = kSignonRealm;
+  form.username_value = base::ASCIIToUTF16(kUsername);
+  form.password_value = base::ASCIIToUTF16(kPassword);
+  scoped_ptr<syncer::SyncErrorFactoryMock> error_factory(
+      new syncer::SyncErrorFactoryMock);
+  syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                          "There is a problem", syncer::PASSWORDS);
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(AppendForm(form));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
+
+  // ActOnPasswordStoreChanges() below shouldn't generate any changes for Sync.
+  // |processor_| will be destroyed in MergeDataAndStartSyncing().
+  EXPECT_CALL(*processor_, ProcessSyncChanges(_, _))
+      .Times(1)
+      .WillOnce(Return(error));
+  syncer::SyncMergeResult result =
+      service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
+                                          syncer::SyncDataList(),
+                                          processor_.Pass(),
+                                          error_factory.Pass());
+  EXPECT_TRUE(result.error().IsSet());
+
+  form.signon_realm = kSignonRealm2;
   PasswordStoreChangeList list;
   list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
   service()->ActOnPasswordStoreChanges(list);

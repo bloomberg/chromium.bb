@@ -166,12 +166,6 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
         "There are passwords with identical sync tags in the database."));
     return merge_result;
   }
-
-  // Save |sync_processor_| only if reading the PasswordStore succeeded. In case
-  // of failure Sync shouldn't receive any updates from the PasswordStore.
-  sync_error_factory_ = sync_error_factory.Pass();
-  sync_processor_ = sync_processor.Pass();
-
   merge_result.set_num_items_before_association(new_local_entries.size());
 
   SyncEntries sync_entries;
@@ -204,14 +198,22 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   }
 
   WriteToPasswordStore(sync_entries);
+  merge_result.set_error(
+      sync_processor->ProcessSyncChanges(FROM_HERE, updated_db_entries));
+  if (merge_result.error().IsSet())
+    return merge_result;
+
   merge_result.set_num_items_after_association(
       merge_result.num_items_before_association() +
       sync_entries.new_entries.size());
   merge_result.set_num_items_added(sync_entries.new_entries.size());
   merge_result.set_num_items_modified(sync_entries.updated_entries.size());
   merge_result.set_num_items_deleted(sync_entries.deleted_entries.size());
-  merge_result.set_error(
-      sync_processor_->ProcessSyncChanges(FROM_HERE, updated_db_entries));
+
+  // Save |sync_processor_| only if the whole procedure succeeded. In case of
+  // failure Sync shouldn't receive any updates from the PasswordStore.
+  sync_error_factory_ = sync_error_factory.Pass();
+  sync_processor_ = sync_processor.Pass();
   return merge_result;
 }
 
@@ -341,6 +343,7 @@ void PasswordSyncableService::WriteToPasswordStore(const SyncEntries& entries) {
   password_store_->NotifyLoginsChanged(changes);
 }
 
+// static
 void PasswordSyncableService::CreateOrUpdateEntry(
     const syncer::SyncData& data,
     PasswordEntryMap* unmatched_data_from_password_db,

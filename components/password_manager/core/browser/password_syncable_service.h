@@ -88,10 +88,11 @@ class PasswordSyncableService : public syncer::SyncableService,
   // Examines |data|, an entry in sync db, and updates |sync_entries| or
   // |updated_db_entries| accordingly. An element is removed from
   // |unmatched_data_from_password_db| if its tag is identical to |data|'s.
-  void CreateOrUpdateEntry(const syncer::SyncData& data,
-                           PasswordEntryMap* unmatched_data_from_password_db,
-                           SyncEntries* sync_entries,
-                           syncer::SyncChangeList* updated_db_entries);
+  static void CreateOrUpdateEntry(
+      const syncer::SyncData& data,
+      PasswordEntryMap* unmatched_data_from_password_db,
+      SyncEntries* sync_entries,
+      syncer::SyncChangeList* updated_db_entries);
 
   // Calls |operation| for each element in |entries| and appends the changes to
   // |all_changes|.
