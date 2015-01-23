@@ -102,7 +102,6 @@ def AddCommonOptions(parser):
                      help='If set, will dump results in JSON form '
                           'to specified file.')
 
-
 def ProcessCommonOptions(args):
   """Processes and handles all common options."""
   run_tests_helper.SetLogLevel(args.verbose_count)
@@ -140,10 +139,11 @@ def AddRemoteDeviceOptions(parser):
   group.add_argument('--api-port', help='Port to send HTTP requests to.')
   group.add_argument('--runner-type', default='',
                      help='Type of test to run as.')
-  group.add_argument('--runner-package', default='',
-                     help='Package name of test.')
-  group.add_argument('--app-under-test', default='',
-                     help='APK to run tests on.')
+  group.add_argument('--runner-package', help='Package name of test.')
+  group.add_argument('--app-under-test', help='APK to run tests on.')
+  group.add_argument('--device-type', default='Android',
+                     choices=constants.VALID_DEVICE_TYPES,
+                     help=('Type of device to run on. iOS or android'))
 
   api_secret_group = group.add_mutually_exclusive_group()
   api_secret_group.add_argument('--api-secret', default='',

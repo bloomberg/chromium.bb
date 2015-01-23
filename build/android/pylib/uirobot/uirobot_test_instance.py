@@ -10,18 +10,26 @@ from pylib.utils import apk_helper
 
 class UirobotTestInstance(test_instance.TestInstance):
 
-  def __init__(self, args):
+  def __init__(self, args, error_func):
     """Constructor.
 
     Args:
       args: Command line arguments.
     """
     super(UirobotTestInstance, self).__init__()
-    self._apk_under_test = os.path.join(
-        constants.GetOutDirectory(), args.app_under_test)
+    if not args.app_under_test:
+      error_func('Must set --app-under-test.')
+    self._app_under_test = args.app_under_test
+
+    if args.device_type == 'Android':
+      self._suite = 'Android Uirobot'
+      self._package_name = apk_helper.GetPackageName(self._app_under_test)
+
+    elif args.device_type == 'iOS':
+      self._suite = 'iOS Uirobot'
+      self._package_name = self._app_under_test
+
     self._minutes = args.minutes
-    self._package_name = apk_helper.GetPackageName(self._apk_under_test)
-    self._suite = 'Android Uirobot'
 
   #override
   def TestType(self):
@@ -39,9 +47,9 @@ class UirobotTestInstance(test_instance.TestInstance):
     pass
 
   @property
-  def apk_under_test(self):
+  def app_under_test(self):
     """Returns the app to run the test on."""
-    return self._apk_under_test
+    return self._app_under_test
 
   @property
   def minutes(self):

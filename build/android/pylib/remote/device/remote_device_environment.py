@@ -65,6 +65,7 @@ class RemoteDeviceEnvironment(environment.Environment):
     self._runner_type = args.runner_type
     self._device = ''
     self._verbose_count = args.verbose_count
+    self._device_type = args.device_type
     self._timeouts = {
         'queueing': 60 * 10,
         'installing': 60 * 10,
@@ -147,7 +148,7 @@ class RemoteDeviceEnvironment(environment.Environment):
     device_list = dev_list_res.json()['response']
     random.shuffle(device_list)
     for device in device_list:
-      if device['os_name'] != 'Android':
+      if device['os_name'] != self._device_type:
         continue
       if self._remote_device and device['name'] != self._remote_device:
         continue
@@ -169,9 +170,9 @@ class RemoteDeviceEnvironment(environment.Environment):
           return c
       return 0
 
-    logging.critical('Available Android Devices:')
-    android_devices = (d for d in device_list if d['os_name'] == 'Android')
-    for d in sorted(android_devices, compare_devices):
+    logging.critical('Available %s Devices:', self._device_type)
+    devices = (d for d in device_list if d['os_name'] == self._device_type)
+    for d in sorted(devices, compare_devices):
       logging.critical('  %s %s', d['os_version'].ljust(7), d['name'])
 
   def _NoDeviceFound(self, device_list):
@@ -218,3 +219,7 @@ class RemoteDeviceEnvironment(environment.Environment):
   @property
   def verbose_count(self):
     return self._verbose_count
+
+  @property
+  def device_type(self):
+    return self._device_type

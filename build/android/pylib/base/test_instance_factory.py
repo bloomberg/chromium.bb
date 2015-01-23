@@ -19,7 +19,6 @@ def CreateTestInstance(args, error_func):
     return instrumentation_test_instance.InstrumentationTestInstance(
         args, isolator.Isolator(constants.ISOLATE_DEPS_DIR), error_func)
   elif args.command == 'uirobot':
-    return uirobot_test_instance.UirobotTestInstance(args)
-
+    return uirobot_test_instance.UirobotTestInstance(args, error_func)
 
   error_func('Unable to create %s test instance.' % args.command)
