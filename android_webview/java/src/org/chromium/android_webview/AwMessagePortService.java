@@ -54,8 +54,20 @@ public class AwMessagePortService {
     // The messages from JS to Java are posted to a message port on a background thread.
     // We do this to make any potential synchronization between Java and JS
     // easier for user programs.
-    private static class MessageHandler extends Thread {
-        private Handler mHandler;
+    private static class MessageHandlerThread extends Thread {
+        private static class MessageHandler extends Handler {
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg.what == POST_MESSAGE) {
+                    PostMessage m = (PostMessage) msg.obj;
+                    m.port.onMessage(m.message);
+                    return;
+                }
+                throw new IllegalStateException("undefined message");
+            }
+        }
+
+        private MessageHandler mHandler;
 
         public Handler getHandler() {
             return mHandler;
@@ -63,16 +75,7 @@ public class AwMessagePortService {
 
         public void run() {
             Looper.prepare();
-            mHandler = new Handler() {
-                public void handleMessage(Message msg) {
-                    if (msg.what == POST_MESSAGE) {
-                        PostMessage m = (PostMessage) msg.obj;
-                        m.port.onMessage(m.message);
-                        return;
-                    }
-                    throw new IllegalStateException("undefined message");
-                }
-            };
+            mHandler = new MessageHandler();
             Looper.loop();
         }
     }
@@ -96,11 +99,11 @@ public class AwMessagePortService {
 
     private long mNativeMessagePortService;
     private MessagePortStorage mPortStorage = new MessagePortStorage();
-    private MessageHandler mMessageHandler = new MessageHandler();
+    private MessageHandlerThread mMessageHandlerThread = new MessageHandlerThread();
 
     AwMessagePortService() {
         mNativeMessagePortService = nativeInitAwMessagePortService();
-        mMessageHandler.start();
+        mMessageHandlerThread.start();
     }
 
     private MessagePort addPort(int portId) {
@@ -122,7 +125,7 @@ public class AwMessagePortService {
     @CalledByNative
     private void onPostMessage(int portId, String message, int[] ports) {
         PostMessage m = new PostMessage(mPortStorage.get(portId), message);
-        Handler handler = mMessageHandler.getHandler();
+        Handler handler = mMessageHandlerThread.getHandler();
         Message msg = handler.obtainMessage(POST_MESSAGE, m);
         handler.sendMessage(msg);
     }
