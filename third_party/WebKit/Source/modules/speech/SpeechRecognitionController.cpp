@@ -28,17 +28,6 @@
 
 namespace blink {
 
-void SpeechRecognitionController::provideTo(LocalFrame& frame, PassOwnPtr<SpeechRecognitionClient> client)
-{
-    SpeechRecognitionController* controller = new SpeechRecognitionController(client);
-    WillBeHeapSupplement<LocalFrame>::provideTo(frame, SpeechRecognitionController::supplementName(), adoptPtrWillBeNoop(controller));
-}
-
-SpeechRecognitionController* SpeechRecognitionController::from(LocalFrame& frame)
-{
-    return static_cast<SpeechRecognitionController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName()));
-}
-
 const char* SpeechRecognitionController::supplementName()
 {
     return "SpeechRecognitionController";
@@ -54,9 +43,14 @@ SpeechRecognitionController::~SpeechRecognitionController()
     // FIXME: Call m_client->pageDestroyed(); once we have implemented a client.
 }
 
-void SpeechRecognitionController::trace(Visitor* visitor)
+PassOwnPtrWillBeRawPtr<SpeechRecognitionController> SpeechRecognitionController::create(PassOwnPtr<SpeechRecognitionClient> client)
 {
-    WillBeHeapSupplement<LocalFrame>::trace(visitor);
+    return adoptPtrWillBeNoop(new SpeechRecognitionController(client));
+}
+
+void provideSpeechRecognitionTo(Page& page, PassOwnPtr<SpeechRecognitionClient> client)
+{
+    SpeechRecognitionController::provideTo(page, SpeechRecognitionController::supplementName(), SpeechRecognitionController::create(client));
 }
 
 } // namespace blink

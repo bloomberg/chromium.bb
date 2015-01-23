@@ -79,7 +79,6 @@ class WebPluginPlaceholder;
 class WebPushClient;
 class WebRTCPeerConnectionHandler;
 class WebScreenOrientationClient;
-class WebSpeechRecognizer;
 class WebString;
 class WebURL;
 class WebURLResponse;
@@ -594,12 +593,6 @@ public:
     // Returns an identifier of the service worker controlling the document
     // associated with the WebDataSource.
     virtual int64_t serviceWorkerID(WebDataSource&) { return -1; }
-
-
-    // Speech --------------------------------------------------------------
-
-    // Access the embedder API for speech recognition services.
-    virtual WebSpeechRecognizer* speechRecognizer() { return 0; }
 
 
     // Fullscreen ----------------------------------------------------------
