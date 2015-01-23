@@ -22,29 +22,29 @@ class AudioServiceImpl : public AudioService,
                          public chromeos::CrasAudioHandler::AudioObserver {
  public:
   AudioServiceImpl();
-  virtual ~AudioServiceImpl();
+  ~AudioServiceImpl() override;
 
   // Called by listeners to this service to add/remove themselves as observers.
-  virtual void AddObserver(AudioService::Observer* observer) override;
-  virtual void RemoveObserver(AudioService::Observer* observer) override;
+  void AddObserver(AudioService::Observer* observer) override;
+  void RemoveObserver(AudioService::Observer* observer) override;
 
   // Start to query audio device information.
-  virtual void StartGetInfo(const GetInfoCallback& callback) override;
-  virtual void SetActiveDevices(const DeviceIdList& device_list) override;
-  virtual bool SetDeviceProperties(const std::string& device_id,
-                                   bool muted,
-                                   int volume,
-                                   int gain) override;
+  void StartGetInfo(const GetInfoCallback& callback) override;
+  void SetActiveDevices(const DeviceIdList& device_list) override;
+  bool SetDeviceProperties(const std::string& device_id,
+                           bool muted,
+                           int volume,
+                           int gain) override;
 
  protected:
   // chromeos::CrasAudioHandler::AudioObserver overrides.
-  virtual void OnOutputVolumeChanged() override;
-  virtual void OnInputGainChanged() override;
-  virtual void OnOutputMuteChanged() override;
-  virtual void OnInputMuteChanged() override;
-  virtual void OnAudioNodesChanged() override;
-  virtual void OnActiveOutputNodeChanged() override;
-  virtual void OnActiveInputNodeChanged() override;
+  void OnOutputVolumeChanged() override;
+  void OnInputGainChanged() override;
+  void OnOutputMuteChanged() override;
+  void OnInputMuteChanged() override;
+  void OnAudioNodesChanged() override;
+  void OnActiveOutputNodeChanged() override;
+  void OnActiveInputNodeChanged() override;
 
  private:
   void NotifyDeviceChanged();

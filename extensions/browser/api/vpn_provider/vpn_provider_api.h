@@ -19,7 +19,7 @@ class VpnThreadExtensionFunction : public UIThreadExtensionFunction {
                                    const std::string& error_message);
 
  protected:
-  virtual ~VpnThreadExtensionFunction();
+  ~VpnThreadExtensionFunction() override;
 };
 
 class VpnProviderCreateConfigFunction : public VpnThreadExtensionFunction {
@@ -28,9 +28,9 @@ class VpnProviderCreateConfigFunction : public VpnThreadExtensionFunction {
                              VPNPROVIDER_CREATECONFIG);
 
  protected:
-  virtual ~VpnProviderCreateConfigFunction();
+  ~VpnProviderCreateConfigFunction() override;
 
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 class VpnProviderDestroyConfigFunction : public VpnThreadExtensionFunction {
@@ -39,9 +39,9 @@ class VpnProviderDestroyConfigFunction : public VpnThreadExtensionFunction {
                              VPNPROVIDER_DESTROYCONFIG);
 
  protected:
-  virtual ~VpnProviderDestroyConfigFunction();
+  ~VpnProviderDestroyConfigFunction() override;
 
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 class VpnProviderSetParametersFunction : public VpnThreadExtensionFunction {
@@ -50,9 +50,9 @@ class VpnProviderSetParametersFunction : public VpnThreadExtensionFunction {
                              VPNPROVIDER_SETPARAMETERS);
 
  protected:
-  virtual ~VpnProviderSetParametersFunction();
+  ~VpnProviderSetParametersFunction() override;
 
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 class VpnProviderSendPacketFunction : public VpnThreadExtensionFunction {
@@ -60,9 +60,9 @@ class VpnProviderSendPacketFunction : public VpnThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("vpnProvider.sendPacket", VPNPROVIDER_SENDPACKET);
 
  protected:
-  virtual ~VpnProviderSendPacketFunction();
+  ~VpnProviderSendPacketFunction() override;
 
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 class VpnProviderNotifyConnectionStateChangedFunction
@@ -72,9 +72,9 @@ class VpnProviderNotifyConnectionStateChangedFunction
                              VPNPROVIDER_NOTIFYCONNECTIONSTATECHANGED);
 
  protected:
-  virtual ~VpnProviderNotifyConnectionStateChangedFunction();
+  ~VpnProviderNotifyConnectionStateChangedFunction() override;
 
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions

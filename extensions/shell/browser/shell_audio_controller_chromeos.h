@@ -14,7 +14,7 @@ namespace extensions {
 class ShellAudioController : public chromeos::CrasAudioHandler::AudioObserver {
  public:
   ShellAudioController();
-  virtual ~ShellAudioController();
+  ~ShellAudioController() override;
 
   // chromeos::CrasAudioHandler::Observer implementation:
   void OnOutputVolumeChanged() override;

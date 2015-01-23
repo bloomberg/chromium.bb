@@ -36,7 +36,7 @@ class ShellAudioControllerTest : public testing::Test {
     controller_.reset(new ShellAudioController());
   }
 
-  virtual ~ShellAudioControllerTest() {
+  ~ShellAudioControllerTest() override {
     controller_.reset();
     chromeos::CrasAudioHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();

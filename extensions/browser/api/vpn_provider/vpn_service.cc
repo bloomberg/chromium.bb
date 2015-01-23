@@ -59,7 +59,7 @@ class VpnService::VpnConfiguration : public ShillThirdPartyVpnObserver {
                    const std::string& configuration_name,
                    const std::string& key,
                    base::WeakPtr<VpnService> vpn_service);
-  ~VpnConfiguration();
+  ~VpnConfiguration() override;
 
   const std::string& extension_id() const { return extension_id_; }
   const std::string& configuration_name() const { return configuration_name_; }
