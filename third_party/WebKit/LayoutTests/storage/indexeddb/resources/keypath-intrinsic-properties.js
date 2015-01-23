@@ -32,7 +32,7 @@ function testKeyPaths()
             array: Array(i * 3 + 1).join('x').split(/(?:)/),
             blob: new Blob([Array(i * 4 + 1).join('x')], {type: "type " + i})
         };
-        debug("store.put(" + JSON.stringify(datum) + ")");
+        debug("store.put(" + stringifyDOMObject(datum) + ")");
         store.put(datum);
     }
 

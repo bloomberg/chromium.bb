@@ -190,6 +190,16 @@ function isResultCorrect(actual, expected)
     return false;
 }
 
+// Returns a sorted array of property names of object.  This function returns
+// not only own properties but also properties on prototype chains.
+function getAllPropertyNames(object) {
+    var properties = [];
+    for (var property in object) {
+        properties.push(property);
+    }
+    return properties.sort();
+}
+
 function stringify(v)
 {
     if (isNewSVGTearOffType(v))
@@ -197,6 +207,23 @@ function stringify(v)
     if (v === 0 && 1/v < 0)
         return "-0";
     else return "" + v;
+}
+
+// Stringifies a DOM object.  This function stringifies not only own properties
+// but also DOM attributes which are on a prototype chain.  Note that
+// JSON.stringify only stringifies own properties.
+function stringifyDOMObject(object)
+{
+    function deepCopy(src) {
+        if (typeof src != "object")
+            return src;
+        var dst = Array.isArray(src) ? [] : {};
+        for (var property in src) {
+            dst[property] = deepCopy(src[property]);
+        }
+        return dst;
+    }
+    return JSON.stringify(deepCopy(object));
 }
 
 function evalAndLog(_a, _quiet)

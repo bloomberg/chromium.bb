@@ -73,7 +73,8 @@ delete Object.prototype.__defineSetter__;
 shouldBe("Object.getOwnPropertyNames(Object.prototype).indexOf('__defineSetter__')", "-1");
 
 delete navigator.appCodeName;
-var navigatorPropertyNames = Object.getOwnPropertyNames(navigator);
+delete Navigator.prototype.appCodeName;
+var navigatorPropertyNames = getAllPropertyNames(navigator);
 var expectedPropertyNames = [
     "appName",
     "appVersion",

@@ -6,7 +6,7 @@ test(function() {
 
     var event = new PushEvent('PushEvent');
     assert_equals(event.type, 'PushEvent');
-    assert_own_property(event, 'data');
+    assert_will_be_idl_attribute(event, 'data');
     assert_equals(event.cancelable, false);
     assert_equals(event.bubbles, false);
     assert_inherits(event, 'waitUntil');

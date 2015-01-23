@@ -5,6 +5,7 @@
 <link rel="manifest" href="resources/push_manifest.json">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
 <script src="../serviceworker/resources/test-helpers.js"></script>
 </head>
 <body>
@@ -25,10 +26,10 @@ async_test(function(test) {
             return swRegistration.pushManager.subscribe();
         })
         .then(function(pushSubscription) {
-            assert_own_property(pushSubscription, 'subscriptionId');
+            assert_will_be_idl_attribute(pushSubscription, 'subscriptionId');
             assert_equals(typeof pushSubscription.subscriptionId, 'string');
 
-            assert_own_property(pushSubscription, 'endpoint');
+            assert_will_be_idl_attribute(pushSubscription, 'endpoint');
             assert_equals(typeof pushSubscription.endpoint, 'string');
             try {
               var endpointUrl = new URL(pushSubscription.endpoint);

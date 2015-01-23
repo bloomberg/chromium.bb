@@ -12,6 +12,5 @@ function hasGeolocationProperty()
 shouldBeTrue("typeof navigator.geolocation == 'object'");
 shouldBeTrue("hasGeolocationProperty()");
 shouldBeTrue("'geolocation' in navigator");
-shouldBeTrue("navigator.hasOwnProperty('geolocation')");
 
 window.jsTestIsAsync = false;

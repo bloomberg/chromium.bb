@@ -13,36 +13,36 @@ function listElementProperties(type) {
     debug('namespace ' + namespace);
     var tags = internals[type + 'Tags']();
     var tagProperties = {};
-    var isCommonProperty = null; // Will be a map containing the intersection of properties across all elements as keys.
+    var commonProperties = null; // Will be a map containing the intersection of properties across all elements as keys.
     tags.forEach(function(tag) {
         var element = document.createElement(tag, namespace);
         // We don't read out the property descriptors here to avoid the test timing out.
-        var properties = Object.getOwnPropertyNames(element).sort();
+        var properties = getAllPropertyNames(element);
         tagProperties[tag] = properties;
-        if (isCommonProperty === null) {
-            isCommonProperty = {};
+        if (commonProperties === null) {
+            commonProperties = {};
             properties.forEach(function(property) {
-                isCommonProperty[property] = true;
+                commonProperties[property] = true;
             });
         } else {
             var hasProperty = {};
             properties.forEach(function(property) {
                 hasProperty[property] = true;
             });
-            Object.getOwnPropertyNames(isCommonProperty).forEach(function(property) {
+            Object.getOwnPropertyNames(commonProperties).forEach(function(property) {
                 if (!hasProperty[property])
-                    delete isCommonProperty[property];
+                    delete commonProperties[property];
             });
         }
     });
     debug(escapeHTML('<common>'));
-    Object.getOwnPropertyNames(isCommonProperty).sort().forEach(function(property) {
+    Object.getOwnPropertyNames(commonProperties).sort().forEach(function(property) {
         debug('    property ' + property);
     });
     tags.forEach(function(tag) {
         debug(type + ' element ' + tag);
         tagProperties[tag].forEach(function(property) {
-            if (!isCommonProperty[property])
+            if (!(property in commonProperties))
                 debug('    property ' + property);
         });
     });

@@ -6,7 +6,7 @@ test(function() {
 
     var event = new NotificationEvent('NotificationEvent');
     assert_equals(event.type, 'NotificationEvent');
-    assert_own_property(event, 'notification');
+    assert_will_be_idl_attribute(event, 'notification');
     assert_equals(event.cancelable, false);
     assert_equals(event.bubbles, false);
     assert_equals(event.notification, null);
@@ -25,7 +25,9 @@ test(function() {
 }, 'NotificationEvent is exposed, and has the expected interface.');
 
 test(function() {
-    assert_own_property(self, 'onnotificationclick', 'The notificationclick event exists.');
-    assert_own_property(self, 'onnotificationerror', 'The notificationerror event exists.');
+    assert_will_be_idl_attribute(self, 'onnotificationclick',
+                                 'The notificationclick event exists.');
+    assert_will_be_idl_attribute(self, 'onnotificationerror',
+                                 'The notificationerror event exists.');
 
 }, 'The notificationclick and notificationerror events exist on the global scope.');

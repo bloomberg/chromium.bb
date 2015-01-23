@@ -27,9 +27,9 @@ function testTimingWithDocumentOpen()
 }
 
 function finishTest() {
-    keys = Object.keys(timing).sort();
-    for (var i = 0; i < keys.length; ++i) {
-        shouldBe("timing." + keys[i], "originalTiming." + keys[i]);
+    var properties = getAllPropertyNames(timing);
+    for (var i = 0; i < properties.length; ++i) {
+        shouldBe("timing." + properties[i], "originalTiming." + properties[i]);
     }
 
     finishJSTest();

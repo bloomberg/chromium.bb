@@ -6,43 +6,99 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 [HTML NAMESPACE ELEMENT PROPERTIES]
 namespace http://www.w3.org/1999/xhtml
 <common>
+    property ATTRIBUTE_NODE
+    property CDATA_SECTION_NODE
+    property COMMENT_NODE
+    property DOCUMENT_FRAGMENT_NODE
+    property DOCUMENT_NODE
+    property DOCUMENT_POSITION_CONTAINED_BY
+    property DOCUMENT_POSITION_CONTAINS
+    property DOCUMENT_POSITION_DISCONNECTED
+    property DOCUMENT_POSITION_FOLLOWING
+    property DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+    property DOCUMENT_POSITION_PRECEDING
+    property DOCUMENT_TYPE_NODE
+    property ELEMENT_NODE
+    property ENTITY_NODE
+    property ENTITY_REFERENCE_NODE
+    property NOTATION_NODE
+    property PROCESSING_INSTRUCTION_NODE
+    property TEXT_NODE
     property accessKey
+    property addEventListener
+    property animate
+    property appendChild
     property attributes
     property baseURI
+    property blur
     property childElementCount
     property childNodes
     property children
     property classList
     property className
+    property click
     property clientHeight
     property clientLeft
     property clientTop
     property clientWidth
+    property cloneNode
+    property closest
+    property compareDocumentPosition
     property computedName
     property computedRole
+    property contains
     property contentEditable
     property contextMenu
+    property createShadowRoot
     property dataset
     property dir
+    property dispatchEvent
     property draggable
     property firstChild
     property firstElementChild
+    property focus
+    property getAnimationPlayers
+    property getAttribute
+    property getAttributeNS
+    property getAttributeNode
+    property getAttributeNodeNS
+    property getBoundingClientRect
+    property getClientRects
+    property getDestinationInsertionPoints
+    property getElementsByClassName
+    property getElementsByTagName
+    property getElementsByTagNameNS
+    property hasAttribute
+    property hasAttributeNS
+    property hasAttributes
+    property hasChildNodes
     property hidden
     property id
     property innerHTML
     property innerText
     property inputMethodContext
+    property insertAdjacentElement
+    property insertAdjacentHTML
+    property insertAdjacentText
+    property insertBefore
     property isContentEditable
+    property isDefaultNamespace
+    property isEqualNode
+    property isSameNode
     property lang
     property lastChild
     property lastElementChild
     property localName
+    property lookupNamespaceURI
+    property lookupPrefix
+    property matches
     property namespaceURI
     property nextElementSibling
     property nextSibling
     property nodeName
     property nodeType
     property nodeValue
+    property normalize
     property offsetHeight
     property offsetLeft
     property offsetParent
@@ -132,10 +188,30 @@ namespace http://www.w3.org/1999/xhtml
     property prefix
     property previousElementSibling
     property previousSibling
+    property querySelector
+    property querySelectorAll
+    property remove
+    property removeAttribute
+    property removeAttributeNS
+    property removeAttributeNode
+    property removeChild
+    property removeEventListener
+    property replaceChild
+    property requestFullscreen
+    property requestPointerLock
+    property scroll
+    property scrollBy
     property scrollHeight
+    property scrollIntoView
+    property scrollIntoViewIfNeeded
     property scrollLeft
+    property scrollTo
     property scrollTop
     property scrollWidth
+    property setAttribute
+    property setAttributeNS
+    property setAttributeNode
+    property setAttributeNodeNS
     property shadowRoot
     property spellcheck
     property style
@@ -144,6 +220,9 @@ namespace http://www.w3.org/1999/xhtml
     property textContent
     property title
     property translate
+    property webkitMatchesSelector
+    property webkitRequestFullScreen
+    property webkitRequestFullscreen
     property webkitdropzone
 html element a
     property charset
@@ -206,9 +285,20 @@ html element area
 html element article
 html element aside
 html element audio
+    property HAVE_CURRENT_DATA
+    property HAVE_ENOUGH_DATA
+    property HAVE_FUTURE_DATA
+    property HAVE_METADATA
+    property HAVE_NOTHING
+    property NETWORK_EMPTY
+    property NETWORK_IDLE
+    property NETWORK_LOADING
+    property NETWORK_NO_SOURCE
+    property addTextTrack
     property audioTracks
     property autoplay
     property buffered
+    property canPlayType
     property controller
     property controls
     property crossOrigin
@@ -220,6 +310,7 @@ html element audio
     property ended
     property error
     property integrity
+    property load
     property loop
     property mediaGroup
     property mediaKeys
@@ -230,18 +321,24 @@ html element audio
     property onwebkitkeyerror
     property onwebkitkeymessage
     property onwebkitneedkey
+    property pause
     property paused
+    property play
     property playbackRate
     property played
     property preload
     property readyState
     property seekable
     property seeking
+    property setMediaKeys
     property src
     property textTracks
     property videoTracks
     property volume
+    property webkitAddKey
     property webkitAudioDecodedByteCount
+    property webkitCancelKeyRequest
+    property webkitGenerateKeyRequest
     property webkitVideoDecodedByteCount
 html element b
 html element base
@@ -276,6 +373,7 @@ html element br
     property clear
 html element button
     property autofocus
+    property checkValidity
     property disabled
     property form
     property formAction
@@ -285,13 +383,17 @@ html element button
     property formTarget
     property labels
     property name
+    property reportValidity
+    property setCustomValidity
     property type
     property validationMessage
     property validity
     property value
     property willValidate
 html element canvas
+    property getContext
     property height
+    property toDataURL
     property width
 html element caption
     property align
@@ -314,6 +416,7 @@ html element colgroup
     property width
 html element command
 html element content
+    property getDistributedNodes
     property select
 html element datalist
     property options
@@ -325,8 +428,11 @@ html element details
     property open
 html element dfn
 html element dialog
+    property close
     property open
     property returnValue
+    property show
+    property showModal
 html element dir
     property compact
 html element div
@@ -337,6 +443,7 @@ html element dt
 html element em
 html element embed
     property align
+    property getSVGDocument
     property height
     property integrity
     property name
@@ -344,10 +451,13 @@ html element embed
     property type
     property width
 html element fieldset
+    property checkValidity
     property disabled
     property elements
     property form
     property name
+    property reportValidity
+    property setCustomValidity
     property type
     property validationMessage
     property validity
@@ -363,6 +473,7 @@ html element form
     property acceptCharset
     property action
     property autocomplete
+    property checkValidity
     property elements
     property encoding
     property enctype
@@ -370,11 +481,16 @@ html element form
     property method
     property name
     property noValidate
+    property reportValidity
+    property requestAutocomplete
+    property reset
+    property submit
     property target
 html element frame
     property contentDocument
     property contentWindow
     property frameBorder
+    property getSVGDocument
     property longDesc
     property marginHeight
     property marginWidth
@@ -426,6 +542,7 @@ html element iframe
     property contentDocument
     property contentWindow
     property frameBorder
+    property getSVGDocument
     property height
     property integrity
     property longDesc
@@ -468,6 +585,7 @@ html element input
     property alt
     property autocomplete
     property autofocus
+    property checkValidity
     property checked
     property defaultChecked
     property defaultValue
@@ -495,13 +613,20 @@ html element input
     property pattern
     property placeholder
     property readOnly
+    property reportValidity
     property required
+    property select
     property selectionDirection
     property selectionEnd
     property selectionStart
+    property setCustomValidity
+    property setRangeText
+    property setSelectionRange
     property size
     property src
     property step
+    property stepDown
+    property stepUp
     property type
     property useMap
     property validationMessage
@@ -520,11 +645,14 @@ html element kbd
 html element keygen
     property autofocus
     property challenge
+    property checkValidity
     property disabled
     property form
     property keytype
     property labels
     property name
+    property reportValidity
+    property setCustomValidity
     property type
     property validationMessage
     property validity
@@ -571,6 +699,8 @@ html element marquee
     property loop
     property scrollAmount
     property scrollDelay
+    property start
+    property stop
     property trueSpeed
     property vspace
     property width
@@ -609,6 +739,7 @@ html element object
     property align
     property archive
     property border
+    property checkValidity
     property code
     property codeBase
     property codeType
@@ -616,10 +747,13 @@ html element object
     property data
     property declare
     property form
+    property getSVGDocument
     property height
     property hspace
     property integrity
     property name
+    property reportValidity
+    property setCustomValidity
     property standby
     property type
     property useMap
@@ -646,11 +780,14 @@ html element option
     property text
     property value
 html element output
+    property checkValidity
     property defaultValue
     property form
     property htmlFor
     property labels
     property name
+    property reportValidity
+    property setCustomValidity
     property type
     property validationMessage
     property validity
@@ -695,17 +832,23 @@ html element script
     property type
 html element section
 html element select
+    property add
     property autofocus
+    property checkValidity
     property disabled
     property form
+    property item
     property labels
     property length
     property multiple
     property name
+    property namedItem
     property options
+    property reportValidity
     property required
     property selectedIndex
     property selectedOptions
+    property setCustomValidity
     property size
     property type
     property validationMessage
@@ -713,6 +856,7 @@ html element select
     property value
     property willValidate
 html element shadow
+    property getDistributedNodes
 html element small
 html element source
     property integrity
@@ -739,7 +883,16 @@ html element table
     property caption
     property cellPadding
     property cellSpacing
+    property createCaption
+    property createTBody
+    property createTFoot
+    property createTHead
+    property deleteCaption
+    property deleteRow
+    property deleteTFoot
+    property deleteTHead
     property frame
+    property insertRow
     property rows
     property rules
     property summary
@@ -751,6 +904,8 @@ html element tbody
     property align
     property ch
     property chOff
+    property deleteRow
+    property insertRow
     property rows
     property vAlign
 html element td
@@ -773,6 +928,7 @@ html element template
     property content
 html element textarea
     property autofocus
+    property checkValidity
     property cols
     property defaultValue
     property dirName
@@ -785,11 +941,16 @@ html element textarea
     property name
     property placeholder
     property readOnly
+    property reportValidity
     property required
     property rows
+    property select
     property selectionDirection
     property selectionEnd
     property selectionStart
+    property setCustomValidity
+    property setRangeText
+    property setSelectionRange
     property textLength
     property type
     property validationMessage
@@ -801,6 +962,8 @@ html element tfoot
     property align
     property ch
     property chOff
+    property deleteRow
+    property insertRow
     property rows
     property vAlign
 html element th
@@ -823,6 +986,8 @@ html element thead
     property align
     property ch
     property chOff
+    property deleteRow
+    property insertRow
     property rows
     property vAlign
 html element title
@@ -833,10 +998,16 @@ html element tr
     property cells
     property ch
     property chOff
+    property deleteCell
+    property insertCell
     property rowIndex
     property sectionRowIndex
     property vAlign
 html element track
+    property ERROR
+    property LOADED
+    property LOADING
+    property NONE
     property default
     property integrity
     property kind
@@ -852,9 +1023,20 @@ html element ul
     property type
 html element var
 html element video
+    property HAVE_CURRENT_DATA
+    property HAVE_ENOUGH_DATA
+    property HAVE_FUTURE_DATA
+    property HAVE_METADATA
+    property HAVE_NOTHING
+    property NETWORK_EMPTY
+    property NETWORK_IDLE
+    property NETWORK_LOADING
+    property NETWORK_NO_SOURCE
+    property addTextTrack
     property audioTracks
     property autoplay
     property buffered
+    property canPlayType
     property controller
     property controls
     property crossOrigin
@@ -865,8 +1047,10 @@ html element video
     property duration
     property ended
     property error
+    property getVideoPlaybackQuality
     property height
     property integrity
+    property load
     property loop
     property mediaGroup
     property mediaKeys
@@ -877,7 +1061,9 @@ html element video
     property onwebkitkeyerror
     property onwebkitkeymessage
     property onwebkitneedkey
+    property pause
     property paused
+    property play
     property playbackRate
     property played
     property poster
@@ -885,16 +1071,24 @@ html element video
     property readyState
     property seekable
     property seeking
+    property setMediaKeys
     property src
     property textTracks
     property videoHeight
     property videoTracks
     property videoWidth
     property volume
+    property webkitAddKey
     property webkitAudioDecodedByteCount
+    property webkitCancelKeyRequest
     property webkitDecodedFrameCount
     property webkitDisplayingFullscreen
     property webkitDroppedFrameCount
+    property webkitEnterFullScreen
+    property webkitEnterFullscreen
+    property webkitExitFullScreen
+    property webkitExitFullscreen
+    property webkitGenerateKeyRequest
     property webkitSupportsFullscreen
     property webkitVideoDecodedByteCount
     property width
@@ -904,43 +1098,99 @@ html element xmp
 [SVG NAMESPACE ELEMENT PROPERTIES]
 namespace http://www.w3.org/2000/svg
 <common>
+    property ATTRIBUTE_NODE
+    property CDATA_SECTION_NODE
+    property COMMENT_NODE
+    property DOCUMENT_FRAGMENT_NODE
+    property DOCUMENT_NODE
+    property DOCUMENT_POSITION_CONTAINED_BY
+    property DOCUMENT_POSITION_CONTAINS
+    property DOCUMENT_POSITION_DISCONNECTED
+    property DOCUMENT_POSITION_FOLLOWING
+    property DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+    property DOCUMENT_POSITION_PRECEDING
+    property DOCUMENT_TYPE_NODE
+    property ELEMENT_NODE
+    property ENTITY_NODE
+    property ENTITY_REFERENCE_NODE
+    property NOTATION_NODE
+    property PROCESSING_INSTRUCTION_NODE
+    property TEXT_NODE
     property accessKey
+    property addEventListener
+    property animate
+    property appendChild
     property attributes
     property baseURI
+    property blur
     property childElementCount
     property childNodes
     property children
     property classList
     property className
+    property click
     property clientHeight
     property clientLeft
     property clientTop
     property clientWidth
+    property cloneNode
+    property closest
+    property compareDocumentPosition
     property computedName
     property computedRole
+    property contains
     property contentEditable
     property contextMenu
+    property createShadowRoot
     property dataset
     property dir
+    property dispatchEvent
     property draggable
     property firstChild
     property firstElementChild
+    property focus
+    property getAnimationPlayers
+    property getAttribute
+    property getAttributeNS
+    property getAttributeNode
+    property getAttributeNodeNS
+    property getBoundingClientRect
+    property getClientRects
+    property getDestinationInsertionPoints
+    property getElementsByClassName
+    property getElementsByTagName
+    property getElementsByTagNameNS
+    property hasAttribute
+    property hasAttributeNS
+    property hasAttributes
+    property hasChildNodes
     property hidden
     property id
     property innerHTML
     property innerText
     property inputMethodContext
+    property insertAdjacentElement
+    property insertAdjacentHTML
+    property insertAdjacentText
+    property insertBefore
     property isContentEditable
+    property isDefaultNamespace
+    property isEqualNode
+    property isSameNode
     property lang
     property lastChild
     property lastElementChild
     property localName
+    property lookupNamespaceURI
+    property lookupPrefix
+    property matches
     property namespaceURI
     property nextElementSibling
     property nextSibling
     property nodeName
     property nodeType
     property nodeValue
+    property normalize
     property offsetHeight
     property offsetLeft
     property offsetParent
@@ -1030,10 +1280,30 @@ namespace http://www.w3.org/2000/svg
     property prefix
     property previousElementSibling
     property previousSibling
+    property querySelector
+    property querySelectorAll
+    property remove
+    property removeAttribute
+    property removeAttributeNS
+    property removeAttributeNode
+    property removeChild
+    property removeEventListener
+    property replaceChild
+    property requestFullscreen
+    property requestPointerLock
+    property scroll
+    property scrollBy
     property scrollHeight
+    property scrollIntoView
+    property scrollIntoViewIfNeeded
     property scrollLeft
+    property scrollTo
     property scrollTop
     property scrollWidth
+    property setAttribute
+    property setAttributeNS
+    property setAttributeNode
+    property setAttributeNodeNS
     property shadowRoot
     property spellcheck
     property style
@@ -1042,6 +1312,9 @@ namespace http://www.w3.org/2000/svg
     property textContent
     property title
     property translate
+    property webkitMatchesSelector
+    property webkitRequestFullScreen
+    property webkitRequestFullscreen
     property webkitdropzone
 svg element a
     property charset

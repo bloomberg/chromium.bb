@@ -11,7 +11,10 @@
 var tests = [
   '"performance" in self;',
   '"memory" in self.performance;',
-  'JSON.stringify(self.performance.memory);',
+  ('JSON.stringify(' +
+   '{jsHeapSizeLimit: self.performance.memory.jsHeapSizeLimit,' +
+   ' totalJSHeapSize: self.performance.memory.totalJSHeapSize,' +
+   ' usedJSHeapSize: self.performance.memory.usedJSHeapSize});')
 ];
 
 var t = async_test('window.performance.memory in shared workers');
