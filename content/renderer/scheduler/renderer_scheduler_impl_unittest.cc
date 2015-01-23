@@ -12,31 +12,18 @@
 
 namespace content {
 
-class RendererSchedulerImplForTest : public RendererSchedulerImpl {
- public:
-  RendererSchedulerImplForTest(
-      scoped_refptr<cc::OrderedSimpleTaskRunner> task_runner,
-      scoped_refptr<cc::TestNowSource> clock)
-      : RendererSchedulerImpl(task_runner), clock_(clock) {}
-  ~RendererSchedulerImplForTest() override {}
-
- protected:
-  base::TimeTicks Now() const override { return clock_->Now(); }
-
- private:
-  scoped_refptr<cc::TestNowSource> clock_;
-};
-
 class RendererSchedulerImplTest : public testing::Test {
  public:
   RendererSchedulerImplTest()
       : clock_(cc::TestNowSource::Create(5000)),
         mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_, false)),
-        scheduler_(new RendererSchedulerImplForTest(mock_task_runner_, clock_)),
+        scheduler_(new RendererSchedulerImpl(mock_task_runner_)),
         default_task_runner_(scheduler_->DefaultTaskRunner()),
         compositor_task_runner_(scheduler_->CompositorTaskRunner()),
         loading_task_runner_(scheduler_->LoadingTaskRunner()),
-        idle_task_runner_(scheduler_->IdleTaskRunner()) {}
+        idle_task_runner_(scheduler_->IdleTaskRunner()) {
+    scheduler_->SetTimeSourceForTesting(clock_);
+  }
   ~RendererSchedulerImplTest() override {}
 
   void RunUntilIdle() { mock_task_runner_->RunUntilIdle(); }
