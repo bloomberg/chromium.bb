@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/image_decoder.h"
@@ -84,6 +85,111 @@ std::string ValueToString(const base::Value* value) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// KioskAppData::CrxLoader
+// Loads meta data from crx file.
+
+class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
+ public:
+  CrxLoader(const base::WeakPtr<KioskAppData>& client,
+            const base::FilePath& crx_file)
+      : client_(client),
+        crx_file_(crx_file),
+        success_(false) {
+  }
+
+  void Start() {
+    base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+    base::SequencedWorkerPool::SequenceToken token =
+        pool->GetNamedSequenceToken("KioskAppData.CrxLoaderWorker");
+    task_runner_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
+        token,
+        base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&CrxLoader::StartOnBlockingPool, this));
+  }
+
+  bool success() const { return success_; }
+  const base::FilePath& crx_file() const { return crx_file_; }
+  const std::string& name() const { return name_; }
+  const SkBitmap& icon() const { return icon_; }
+
+ private:
+  ~CrxLoader() override {};
+
+  // extensions::SandboxedUnpackerClient
+  void OnUnpackSuccess(const base::FilePath& temp_dir,
+                       const base::FilePath& extension_root,
+                       const base::DictionaryValue* original_manifest,
+                       const extensions::Extension* extension,
+                       const SkBitmap& install_icon) override {
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+    success_ = true;
+    name_ = extension->name();
+    icon_ = install_icon;
+    NotifyFinishedOnBlockingPool();
+  }
+  void OnUnpackFailure(const base::string16& error) override {
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+    success_ = false;
+    NotifyFinishedOnBlockingPool();
+  }
+
+  void StartOnBlockingPool() {
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+    if (!temp_dir_.CreateUniqueTempDir()) {
+      success_ = false;
+      NotifyFinishedOnBlockingPool();
+      return;
+    }
+
+    scoped_refptr<extensions::SandboxedUnpacker> unpacker(
+        new extensions::SandboxedUnpacker(crx_file_,
+                                          extensions::Manifest::INTERNAL,
+                                          extensions::Extension::NO_FLAGS,
+                                          temp_dir_.path(),
+                                          task_runner_.get(),
+                                          this));
+    unpacker->Start();
+  }
+
+  void NotifyFinishedOnBlockingPool() {
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+    if (!temp_dir_.Delete()) {
+      LOG(WARNING) << "Can not delete temp directory at "
+                   << temp_dir_.path().value();
+    }
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&CrxLoader::NotifyFinishedOnUIThread, this));
+  }
+
+  void NotifyFinishedOnUIThread() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    if (client_)
+      client_->OnCrxLoadFinished(this);
+  }
+
+  base::WeakPtr<KioskAppData> client_;
+  base::FilePath crx_file_;
+  bool success_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::ScopedTempDir temp_dir_;
+
+  // Extracted meta data.
+  std::string name_;
+  SkBitmap icon_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrxLoader);
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // KioskAppData::IconLoader
 // Loads locally stored icon data and decode it.
 
@@ -106,7 +212,7 @@ class KioskAppData::IconLoader : public ImageDecoder::Delegate {
     base::SequencedWorkerPool::SequenceToken token = pool->GetSequenceToken();
     task_runner_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
         token,
-        base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+        base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&IconLoader::LoadOnBlockingPool,
                                       base::Unretained(this)));
@@ -149,7 +255,7 @@ class KioskAppData::IconLoader : public ImageDecoder::Delegate {
       return;
 
     if (load_result_ == SUCCESS)
-      client_->OnIconLoadSuccess(raw_icon_, icon_);
+      client_->OnIconLoadSuccess(icon_);
     else
       client_->OnIconLoadFailure();
   }
@@ -313,8 +419,21 @@ void KioskAppData::LoadFromInstalledApp(Profile* profile,
       base::Bind(&KioskAppData::OnExtensionIconLoaded, AsWeakPtr()));
 }
 
+void KioskAppData::SetCachedCrx(const base::FilePath& crx_file) {
+  if (crx_file_ == crx_file)
+    return;
+
+  crx_file_ = crx_file;
+  MaybeLoadFromCrx();
+}
+
 bool KioskAppData::IsLoading() const {
   return status_ == STATUS_LOADING;
+}
+
+bool KioskAppData::IsFromWebStore() const {
+  return update_url_.is_empty() ||
+         extension_urls::IsWebstoreUpdateUrl(update_url_);
 }
 
 void KioskAppData::SetStatus(Status status) {
@@ -380,13 +499,15 @@ void KioskAppData::SetCache(const std::string& name,
 }
 
 void KioskAppData::SetCache(const std::string& name, const SkBitmap& icon) {
+  name_ = name;
+
   icon_ = gfx::ImageSkia::CreateFrom1xBitmap(icon);
   icon_.MakeThreadSafe();
 
   std::vector<unsigned char> image_data;
   CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(icon, false, &image_data));
-  raw_icon_ = new base::RefCountedString;
-  raw_icon_->data().assign(image_data.begin(), image_data.end());
+  scoped_refptr<base::RefCountedString> raw_icon(new base::RefCountedString);
+  raw_icon->data().assign(image_data.begin(), image_data.end());
 
   base::FilePath cache_dir;
   if (delegate_)
@@ -396,7 +517,7 @@ void KioskAppData::SetCache(const std::string& name, const SkBitmap& icon) {
       cache_dir.AppendASCII(app_id_).AddExtension(kIconFileExtension);
   BrowserThread::GetBlockingPool()->PostTask(
       FROM_HERE,
-      base::Bind(&SaveIconToLocalOnBlockingPool, icon_path, raw_icon_));
+      base::Bind(&SaveIconToLocalOnBlockingPool, icon_path, raw_icon));
 
   SetCache(name, icon_path);
 }
@@ -413,11 +534,8 @@ void KioskAppData::OnExtensionIconLoaded(const gfx::Image& icon) {
   SetStatus(STATUS_LOADED);
 }
 
-void KioskAppData::OnIconLoadSuccess(
-    const scoped_refptr<base::RefCountedString>& raw_icon,
-    const gfx::ImageSkia& icon) {
+void KioskAppData::OnIconLoadSuccess(const gfx::ImageSkia& icon) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  raw_icon_ = raw_icon;
   icon_ = icon;
   SetStatus(STATUS_LOADED);
 }
@@ -437,6 +555,11 @@ void KioskAppData::OnWebstoreParseFailure() {
 }
 
 void KioskAppData::StartFetch() {
+  if (!IsFromWebStore()) {
+    MaybeLoadFromCrx();
+    return;
+  }
+
   webstore_fetcher_.reset(new extensions::WebstoreDataFetcher(
       this,
       GetRequestContextGetter(),
@@ -500,6 +623,33 @@ bool KioskAppData::CheckResponseKeyValue(const base::DictionaryValue* response,
     return false;
   }
   return true;
+}
+
+void KioskAppData::MaybeLoadFromCrx() {
+  if (status_ == STATUS_LOADED || crx_file_.empty())
+    return;
+
+  scoped_refptr<CrxLoader> crx_loader(new CrxLoader(AsWeakPtr(), crx_file_));
+  crx_loader->Start();
+}
+
+void KioskAppData::OnCrxLoadFinished(const CrxLoader* crx_loader) {
+  DCHECK(crx_loader);
+
+  if (crx_loader->crx_file() != crx_file_)
+    return;
+
+  if (!crx_loader->success()) {
+    SetStatus(STATUS_ERROR);
+    return;
+  }
+
+  SkBitmap icon = crx_loader->icon();
+  if (icon.empty())
+    icon = *extensions::util::GetDefaultAppIcon().bitmap();
+  SetCache(crx_loader->name(), icon);
+
+  SetStatus(STATUS_LOADED);
 }
 
 }  // namespace chromeos

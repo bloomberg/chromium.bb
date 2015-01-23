@@ -326,15 +326,6 @@ bool KioskAppManager::GetApp(const std::string& app_id, App* app) const {
   return true;
 }
 
-const base::RefCountedString* KioskAppManager::GetAppRawIcon(
-    const std::string& app_id) const {
-  const KioskAppData* data = GetAppData(app_id);
-  if (!data)
-    return NULL;
-
-  return data->raw_icon();
-}
-
 bool KioskAppManager::GetDisableBailoutShortcut() const {
   bool enable;
   if (CrosSettings::Get()->GetBoolean(
@@ -595,6 +586,12 @@ void KioskAppManager::OnExtensionLoadedInCache(const std::string& id) {
   KioskAppData* app_data = GetAppDataMutable(id);
   if (!app_data)
     return;
+
+  base::FilePath crx_path;
+  std::string version;
+  if (GetCachedCrx(id, &crx_path, &version))
+    app_data->SetCachedCrx(crx_path);
+
   FOR_EACH_OBSERVER(KioskAppManagerObserver,
                     observers_,
                     OnKioskExtensionLoadedInCache(id));

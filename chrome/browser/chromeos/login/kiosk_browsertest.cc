@@ -288,6 +288,113 @@ class KioskFakeDiskMountManager : public file_manager::FakeDiskMountManager {
   DISALLOW_COPY_AND_ASSIGN(KioskFakeDiskMountManager);
 };
 
+class AppDataLoadWaiter : public KioskAppManagerObserver {
+ public:
+  AppDataLoadWaiter(KioskAppManager* manager,
+                    const std::string& app_id,
+                    const std::string& version)
+      : runner_(NULL),
+        manager_(manager),
+        wait_type_(WAIT_FOR_CRX_CACHE),
+        loaded_(false),
+        quit_(false),
+        app_id_(app_id),
+        version_(version) {
+    manager_->AddObserver(this);
+  }
+
+  ~AppDataLoadWaiter() override { manager_->RemoveObserver(this); }
+
+  void Wait() {
+    wait_type_ = WAIT_FOR_CRX_CACHE;
+    if (quit_)
+      return;
+    runner_ = new content::MessageLoopRunner;
+    runner_->Run();
+  }
+
+  void WaitForAppData() {
+    wait_type_ = WAIT_FOR_APP_DATA;
+    if (quit_ || IsAppDataLoaded())
+      return;
+    runner_ = new content::MessageLoopRunner;
+    runner_->Run();
+  }
+
+  bool loaded() const { return loaded_; }
+
+ private:
+  enum WaitType {
+    WAIT_FOR_CRX_CACHE,
+    WAIT_FOR_APP_DATA,
+  };
+
+  // KioskAppManagerObserver overrides:
+  void OnKioskAppDataChanged(const std::string& app_id) override {
+    if (wait_type_ != WAIT_FOR_APP_DATA ||
+        app_id != app_id_ ||
+        !IsAppDataLoaded()) {
+      return;
+    }
+
+    loaded_ = true;
+    quit_ = true;
+    if (runner_.get())
+      runner_->Quit();
+  }
+
+  void OnKioskAppDataLoadFailure(const std::string& app_id) override {
+    if (wait_type_ != WAIT_FOR_APP_DATA || app_id != app_id_)
+      return;
+
+    loaded_ = false;
+    quit_ = true;
+    if (runner_.get())
+      runner_->Quit();
+  }
+
+  void OnKioskExtensionLoadedInCache(const std::string& app_id) override {
+    if (wait_type_ != WAIT_FOR_CRX_CACHE)
+      return;
+
+    std::string cached_version;
+    base::FilePath file_path;
+    if (!manager_->GetCachedCrx(app_id_, &file_path, &cached_version))
+      return;
+    if (version_ != cached_version)
+      return;
+    loaded_ = true;
+    quit_ = true;
+    if (runner_.get())
+      runner_->Quit();
+  }
+
+  void OnKioskExtensionDownloadFailed(const std::string& app_id) override {
+    if (wait_type_ != WAIT_FOR_CRX_CACHE)
+      return;
+
+    loaded_ = false;
+    quit_ = true;
+    if (runner_.get())
+      runner_->Quit();
+  }
+
+  bool IsAppDataLoaded() {
+    KioskAppManager::App app;
+    return manager_->GetApp(app_id_, &app) && !app.is_loading;
+  }
+
+  scoped_refptr<content::MessageLoopRunner> runner_;
+  KioskAppManager* manager_;
+  WaitType wait_type_;
+  bool loaded_;
+  bool quit_;
+  std::string app_id_;
+  std::string version_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppDataLoadWaiter);
+};
+
 }  // namespace
 
 class KioskTest : public OobeBaseTest {
@@ -1212,63 +1319,6 @@ class KioskUpdateTest : public KioskTest {
     DISALLOW_COPY_AND_ASSIGN(KioskAppExternalUpdateWaiter);
   };
 
-  class AppDataLoadWaiter : public KioskAppManagerObserver {
-   public:
-    AppDataLoadWaiter(KioskAppManager* manager,
-                      const std::string& app_id,
-                      const std::string& version)
-        : runner_(NULL),
-          manager_(manager),
-          loaded_(false),
-          quit_(false),
-          app_id_(app_id),
-          version_(version) {
-      manager_->AddObserver(this);
-    }
-
-    ~AppDataLoadWaiter() override { manager_->RemoveObserver(this); }
-
-    void Wait() {
-      if (quit_)
-        return;
-      runner_ = new content::MessageLoopRunner;
-      runner_->Run();
-    }
-
-    bool loaded() const { return loaded_; }
-
-   private:
-    // KioskAppManagerObserver overrides:
-    void OnKioskExtensionLoadedInCache(const std::string& app_id) override {
-      std::string cached_version;
-      base::FilePath file_path;
-      if (!manager_->GetCachedCrx(app_id_, &file_path, &cached_version))
-        return;
-      if (version_ != cached_version)
-        return;
-      loaded_ = true;
-      quit_ = true;
-      if (runner_.get())
-        runner_->Quit();
-    }
-
-    void OnKioskExtensionDownloadFailed(const std::string& app_id) override {
-      loaded_ = false;
-      quit_ = true;
-      if (runner_.get())
-        runner_->Quit();
-    }
-
-    scoped_refptr<content::MessageLoopRunner> runner_;
-    KioskAppManager* manager_;
-    bool loaded_;
-    bool quit_;
-    std::string app_id_;
-    std::string version_;
-
-    DISALLOW_COPY_AND_ASSIGN(AppDataLoadWaiter);
-  };
-
   // Owned by DiskMountManager.
   KioskFakeDiskMountManager* fake_disk_mount_manager_;
 
@@ -1750,6 +1800,11 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
   ConfigureKioskAppInPolicy(kTestEnterpriseAccountId,
                             kTestEnterpriseKioskApp,
                             private_server.GetURL(kPrivateStoreUpdate).spec());
+
+  // Meta should be able to be extracted from crx before launching.
+  KioskAppManager* manager = KioskAppManager::Get();
+  AppDataLoadWaiter waiter(manager, kTestEnterpriseKioskApp, std::string());
+  waiter.WaitForAppData();
 
   PrepareAppLaunch();
   LaunchApp(kTestEnterpriseKioskApp, false);

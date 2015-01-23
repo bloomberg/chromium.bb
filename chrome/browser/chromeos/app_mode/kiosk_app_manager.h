@@ -138,10 +138,6 @@ class KioskAppManager : public KioskAppDataDelegate,
   // |app| is populated. Otherwise, return false.
   bool GetApp(const std::string& app_id, App* app) const;
 
-  // Gets the raw icon data for the given app id. Returns NULL if |app_id|
-  // is unknown.
-  const base::RefCountedString* GetAppRawIcon(const std::string& app_id) const;
-
   // Gets whether the bailout shortcut is disabled.
   bool GetDisableBailoutShortcut() const;
 
