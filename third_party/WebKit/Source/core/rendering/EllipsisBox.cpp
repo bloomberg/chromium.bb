@@ -66,7 +66,9 @@ IntRect EllipsisBox::selectionRect()
 
 bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    LayoutPoint adjustedLocation = accumulatedOffset + roundedLayoutPoint(topLeft());
+    // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
+    // the transition to LayoutUnit-based types is complete (crbug.com/321237)
+    LayoutPoint adjustedLocation = accumulatedOffset + topLeft().roundedLayoutPoint();
 
     // Hit test the markup box.
     if (InlineBox* markupBox = this->markupBox()) {
@@ -82,7 +84,7 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     FloatPointWillBeLayoutPoint boxOrigin = locationIncludingFlipping();
     boxOrigin.moveBy(accumulatedOffset);
     FloatRectWillBeLayoutRect boundsRect(boxOrigin, size());
-    if (visibleToHitTestRequest(request) && boundsRect.intersects(HitTestLocation::rectForPoint(locationInContainer.point(), 0, 0, 0, 0))) {
+    if (visibleToHitTestRequest(request) && boundsRect.intersects(FloatRectWillBeLayoutRect(HitTestLocation::rectForPoint(locationInContainer.point(), 0, 0, 0, 0)))) {
         renderer().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
         // FIXME: the call to rawValue() below is temporary and should be removed once the transition
         // to LayoutUnit-based types is complete (crbug.com/321237)

@@ -196,7 +196,7 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
     FloatPointWillBeLayoutPoint startingPoint = FloatPointWillBeLayoutPoint(logicalLeft(), selTop.toFloat());
     LayoutRect r;
     if (sPos || ePos != static_cast<int>(m_len)) {
-        r = enclosingIntRect(font.selectionRectForText(textRun, startingPoint, selHeight, sPos, ePos));
+        r = enclosingIntRect(font.selectionRectForText(textRun, startingPoint.toFloatPoint(), selHeight, sPos, ePos));
     } else { // Avoid computing the font width when the entire line box is selected as an optimization.
         // FIXME: the call to rawValue() below is temporary and should be removed once the transition
         // to LayoutUnit-based types is complete (crbug.com/321237)
@@ -377,12 +377,12 @@ void InlineTextBox::selectionStartEnd(int& sPos, int& ePos) const
 
 void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker* marker, RenderStyle* style, const Font& font, bool grammar)
 {
-    InlineTextBoxPainter(*this).paintDocumentMarker(pt, boxOrigin, marker, style, font, grammar);
+    InlineTextBoxPainter(*this).paintDocumentMarker(pt, boxOrigin.toFloatPoint(), marker, style, font, grammar);
 }
 
 void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker* marker, RenderStyle* style, const Font& font)
 {
-    InlineTextBoxPainter(*this).paintTextMatchMarker(pt, boxOrigin, marker, style, font);
+    InlineTextBoxPainter(*this).paintTextMatchMarker(pt, boxOrigin.toFloatPoint(), marker, style, font);
 }
 
 int InlineTextBox::caretMinOffset() const

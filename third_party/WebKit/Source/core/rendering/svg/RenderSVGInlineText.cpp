@@ -125,7 +125,7 @@ FloatRect RenderSVGInlineText::floatLinesBoundingBox() const
 {
     FloatRect boundingBox;
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
-        boundingBox.unite(box->calculateBoundaries());
+        boundingBox.unite(box->calculateBoundaries().toFloatRect());
     return boundingBox;
 }
 

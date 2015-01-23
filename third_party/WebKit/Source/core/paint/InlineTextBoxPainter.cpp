@@ -103,7 +103,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
 
     adjustedPaintOffset.move(0, styleToUse->isHorizontalWritingMode() ? LayoutUnit() : -m_inlineTextBox.logicalHeight().toLayoutUnit());
 
-    FloatPoint boxOrigin = m_inlineTextBox.locationIncludingFlipping();
+    FloatPoint boxOrigin = m_inlineTextBox.locationIncludingFlipping().toFloatPoint();
     boxOrigin.move(adjustedPaintOffset.x().toFloat(), adjustedPaintOffset.y().toFloat());
     FloatRect boxRect(boxOrigin, FloatSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
 
@@ -331,13 +331,13 @@ void InlineTextBoxPainter::paintDocumentMarkers(GraphicsContext* pt, const Float
         // marker intersects this run.  Paint it.
         switch (marker->type()) {
         case DocumentMarker::Spelling:
-            m_inlineTextBox.paintDocumentMarker(pt, boxOrigin, marker, style, font, false);
+            m_inlineTextBox.paintDocumentMarker(pt, FloatPointWillBeLayoutPoint(boxOrigin), marker, style, font, false);
             break;
         case DocumentMarker::Grammar:
-            m_inlineTextBox.paintDocumentMarker(pt, boxOrigin, marker, style, font, true);
+            m_inlineTextBox.paintDocumentMarker(pt, FloatPointWillBeLayoutPoint(boxOrigin), marker, style, font, true);
             break;
         case DocumentMarker::TextMatch:
-            m_inlineTextBox.paintTextMatchMarker(pt, boxOrigin, marker, style, font);
+            m_inlineTextBox.paintTextMatchMarker(pt, FloatPointWillBeLayoutPoint(boxOrigin), marker, style, font);
             break;
         default:
             ASSERT_NOT_REACHED();

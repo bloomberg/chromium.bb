@@ -25,7 +25,7 @@ void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pa
 void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle* style)
 {
     GraphicsContext* context = paintInfo.context;
-    FloatPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping();
+    FloatPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping().toFloatPoint();
     boxOrigin.moveBy(FloatPoint(paintOffset));
     if (!m_ellipsisBox.isHorizontal())
         boxOrigin.move(0, -m_ellipsisBox.virtualLogicalHeight());

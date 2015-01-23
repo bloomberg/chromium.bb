@@ -606,12 +606,11 @@ private:
 class FloatPointLineLayoutPoint {
 public:
     FloatPointLineLayoutPoint() { }
-    FloatPointLineLayoutPoint(const FloatPoint& floatPoint) : m_value(floatPoint) { }
+    explicit FloatPointLineLayoutPoint(const FloatPoint& floatPoint) : m_value(floatPoint) { }
     FloatPointLineLayoutPoint(FloatLineLayoutUnit x, FloatLineLayoutUnit y) : m_value(x.toFloat(), y.toFloat()) { }
     FloatPointLineLayoutPoint(const IntPoint& intPoint) : m_value(intPoint) { }
     FloatPointLineLayoutPoint(const LayoutPoint& layoutPoint) : m_value(layoutPoint) { }
 
-    operator FloatPoint() const { return toFloatPoint(); }
     operator LayoutPoint() const { return toLayoutPoint(); }
 
     FloatPoint toFloatPoint() const
@@ -622,6 +621,16 @@ public:
     LayoutPoint toLayoutPoint() const
     {
         return LayoutPoint(m_value);
+    }
+
+    LayoutPoint roundedLayoutPoint() const
+    {
+        return ::blink::roundedLayoutPoint(m_value);
+    }
+
+    LayoutPoint flooredLayoutPoint() const
+    {
+        return ::blink::flooredLayoutPoint(m_value);
     }
 
     FloatLineLayoutUnit x() const { return FloatLineLayoutUnit(m_value.x()); }
@@ -643,12 +652,11 @@ private:
 class FloatSizeLineLayoutSize {
 public:
     FloatSizeLineLayoutSize() { }
-    FloatSizeLineLayoutSize(const FloatSize& floatSize) : m_value(floatSize) { }
+    explicit FloatSizeLineLayoutSize(const FloatSize& floatSize) : m_value(floatSize) { }
     FloatSizeLineLayoutSize(FloatLineLayoutUnit width, FloatLineLayoutUnit height) : m_value(width.toFloat(), height.toFloat()) { }
-    FloatSizeLineLayoutSize(const IntSize& size) : m_value(size) { }
+    explicit FloatSizeLineLayoutSize(const IntSize& size) : m_value(size) { }
     FloatSizeLineLayoutSize(const LayoutSize& size) : m_value(size) { }
 
-    operator FloatSize() const { return toFloatSize(); }
     operator LayoutSize() const { return toLayoutSize(); }
 
     FloatSize toFloatSize() const
@@ -679,10 +687,9 @@ public:
         : m_value(location.toFloatPoint(), size.toFloatSize()) { }
     FloatRectLineLayoutRect(FloatLineLayoutUnit x, FloatLineLayoutUnit y, FloatLineLayoutUnit width, FloatLineLayoutUnit height)
         : m_value(x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat()) { }
-    FloatRectLineLayoutRect(const IntRect& rect) : m_value(rect) { }
+    explicit FloatRectLineLayoutRect(const IntRect& rect) : m_value(rect) { }
     FloatRectLineLayoutRect(const LayoutRect& rect) : m_value(rect) { }
 
-    operator FloatRect() const { return toFloatRect(); }
     operator LayoutRect() const { return toLayoutRect(); }
 
     FloatRect rawValue() const
@@ -699,6 +706,11 @@ public:
     LayoutRect toLayoutRect() const
     {
         return LayoutRect(m_value);
+    }
+
+    LayoutRect enclosingLayoutRect() const
+    {
+        return ::blink::enclosingLayoutRect(m_value);
     }
 
     FloatPointLineLayoutPoint location() const { return FloatPointLineLayoutPoint(m_value.location()); }

@@ -277,8 +277,11 @@ LayoutRect RenderInline::localCaretRect(InlineBox* inlineBox, int, LayoutUnit* e
 
     LayoutRect caretRect = localCaretRectForEmptyElement(borderAndPaddingWidth(), 0);
 
-    if (InlineBox* firstBox = firstLineBox())
-        caretRect.moveBy(roundedLayoutPoint(firstBox->topLeft()));
+    if (InlineBox* firstBox = firstLineBox()) {
+        // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
+        // the transition to LayoutUnit-based types is complete (crbug.com/321237)
+        caretRect.moveBy(firstBox->topLeft().roundedLayoutPoint());
+    }
 
     return caretRect;
 }
@@ -565,7 +568,7 @@ void RenderInline::generateLineBoxRects(GeneratorContext& yield) const
         generateCulledLineBoxRects(yield, this);
     else if (InlineFlowBox* curr = firstLineBox()) {
         for (; curr; curr = curr->nextLineBox())
-            yield(FloatRect(curr->topLeft(), curr->size()));
+            yield(FloatRect(curr->topLeft().toFloatPoint(), curr->size().toFloatSize()));
     } else
         yield(FloatRect());
 }
@@ -704,16 +707,22 @@ void RenderInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 LayoutUnit RenderInline::offsetLeft() const
 {
     LayoutPoint topLeft;
-    if (InlineBox* firstBox = firstLineBoxIncludingCulling())
-        topLeft = flooredLayoutPoint(firstBox->topLeft());
+    if (InlineBox* firstBox = firstLineBoxIncludingCulling()) {
+        // FIXME: the call to flooredLayoutPoint() below is temporary and should be removed once
+        // the transition to LayoutUnit-based types is complete (crbug.com/321237)
+        topLeft = firstBox->topLeft().flooredLayoutPoint();
+    }
     return adjustedPositionRelativeToOffsetParent(topLeft).x();
 }
 
 LayoutUnit RenderInline::offsetTop() const
 {
     LayoutPoint topLeft;
-    if (InlineBox* firstBox = firstLineBoxIncludingCulling())
-        topLeft = flooredLayoutPoint(firstBox->topLeft());
+    if (InlineBox* firstBox = firstLineBoxIncludingCulling()) {
+        // FIXME: the call to flooredLayoutPoint() below is temporary and should be removed once
+        // the transition to LayoutUnit-based types is complete (crbug.com/321237)
+        topLeft = firstBox->topLeft().flooredLayoutPoint();
+    }
     return adjustedPositionRelativeToOffsetParent(topLeft).y();
 }
 

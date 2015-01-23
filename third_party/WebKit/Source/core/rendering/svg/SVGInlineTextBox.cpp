@@ -123,7 +123,7 @@ FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const S
 
     textOrigin.move(0, -scaledFontMetrics.floatAscent());
 
-    FloatRectWillBeLayoutRect selectionRect = scaledFont.selectionRectForText(constructTextRun(style, fragment), textOrigin, fragment.height * scalingFactor, startPosition, endPosition);
+    FloatRectWillBeLayoutRect selectionRect = scaledFont.selectionRectForText(constructTextRun(style, fragment), textOrigin.toFloatPoint(), fragment.height * scalingFactor, startPosition, endPosition);
     if (scalingFactor == 1)
         return selectionRect;
 
@@ -158,7 +158,7 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
 
         FloatRectWillBeLayoutRect fragmentRect = selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style);
         fragment.buildFragmentTransform(fragmentTransform);
-        fragmentRect = fragmentTransform.mapRect(fragmentRect);
+        fragmentRect = fragmentTransform.mapRect(fragmentRect.toFloatRect());
 
         selectionRect.unite(fragmentRect);
     }
@@ -241,7 +241,7 @@ void SVGInlineTextBox::paintDocumentMarker(GraphicsContext*, const FloatPointWil
 
 void SVGInlineTextBox::paintTextMatchMarker(GraphicsContext* context, const FloatPointWillBeLayoutPoint& point, DocumentMarker* marker, RenderStyle* style, const Font& font)
 {
-    SVGInlineTextBoxPainter(*this).paintTextMatchMarker(context, point, marker, style, font);
+    SVGInlineTextBoxPainter(*this).paintTextMatchMarker(context, point.toFloatPoint(), marker, style, font);
 }
 
 FloatRectWillBeLayoutRect SVGInlineTextBox::calculateBoundaries() const
@@ -261,7 +261,7 @@ FloatRectWillBeLayoutRect SVGInlineTextBox::calculateBoundaries() const
         const SVGTextFragment& fragment = m_textFragments.at(i);
         FloatRectWillBeLayoutRect fragmentRect(fragment.x, fragment.y - baseline, fragment.width, fragment.height);
         fragment.buildFragmentTransform(fragmentTransform);
-        fragmentRect = fragmentTransform.mapRect(fragmentRect);
+        fragmentRect = fragmentTransform.mapRect(fragmentRect.toFloatRect());
 
         textRect.unite(fragmentRect);
     }

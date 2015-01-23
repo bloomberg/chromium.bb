@@ -327,7 +327,7 @@ String RenderText::plainText() const
 void RenderText::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const
 {
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
-        rects.append(enclosingIntRect(FloatRect(FloatPoint(accumulatedOffset) + box->topLeft(), box->size())));
+        rects.append(enclosingIntRect(FloatRect(FloatPoint(accumulatedOffset) + box->topLeft().toFloatPoint(), box->size().toFloatSize())));
 }
 
 static FloatRect localQuadForTextBox(InlineTextBox* box, unsigned start, unsigned end, bool useSelectionHeight)
@@ -366,7 +366,7 @@ void RenderText::absoluteRectsForRange(Vector<IntRect>& rects, unsigned start, u
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
         // Note: box->end() returns the index of the last character, not the index past it
         if (start <= box->start() && box->end() < end) {
-            FloatRect r = box->calculateBoundaries();
+            FloatRect r = box->calculateBoundaries().toFloatRect();
             if (useSelectionHeight) {
                 LayoutRect selectionRect = box->localSelectionRect(start, end);
                 if (box->isHorizontal()) {
@@ -414,7 +414,7 @@ static IntRect ellipsisRectForBox(InlineTextBox* box, unsigned startPos, unsigne
 void RenderText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed, ClippingOption option) const
 {
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-        FloatRect boundaries = box->calculateBoundaries();
+        FloatRect boundaries = box->calculateBoundaries().toFloatRect();
 
         // Shorten the width of this text box if it ends in an ellipsis.
         // FIXME: ellipsisRectForBox should switch to return FloatRect soon with the subpixellayout branch.
@@ -449,7 +449,7 @@ void RenderText::absoluteQuadsForRange(Vector<FloatQuad>& quads, unsigned start,
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
         // Note: box->end() returns the index of the last character, not the index past it
         if (start <= box->start() && box->end() < end) {
-            FloatRect r = box->calculateBoundaries();
+            FloatRect r = box->calculateBoundaries().toFloatRect();
             if (useSelectionHeight) {
                 LayoutRect selectionRect = box->localSelectionRect(start, end);
                 if (box->isHorizontal()) {

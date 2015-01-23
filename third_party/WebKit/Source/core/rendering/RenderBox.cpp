@@ -1702,7 +1702,9 @@ void RenderBox::positionLineBox(InlineBox* box)
         box->remove(DontMarkLineBoxes);
         box->destroy();
     } else if (isReplaced()) {
-        setLocation(roundedLayoutPoint(box->topLeft()));
+        // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
+        // the transition to LayoutUnit-based types is complete (crbug.com/321237)
+        setLocation(box->topLeft().roundedLayoutPoint());
         setInlineBoxWrapper(box);
     }
 }

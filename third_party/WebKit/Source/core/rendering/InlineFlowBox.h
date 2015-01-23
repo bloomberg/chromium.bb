@@ -220,7 +220,9 @@ public:
     // respectively are flipped when compared to their physical counterparts.  For example minX is on the left in vertical-lr, but it is on the right in vertical-rl.
     LayoutRect layoutOverflowRect(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
-        return m_overflow ? m_overflow->layoutOverflowRect() : enclosingLayoutRect(frameRectIncludingLineHeight(lineTop, lineBottom));
+        // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once
+        // the transition to LayoutUnit-based types is complete (crbug.com/321237)
+        return m_overflow ? m_overflow->layoutOverflowRect() : frameRectIncludingLineHeight(lineTop, lineBottom).enclosingLayoutRect();
     }
     LayoutUnit logicalTopLayoutOverflow(LayoutUnit lineTop) const
     {
@@ -244,7 +246,9 @@ public:
 
     LayoutRect visualOverflowRect(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
-        return m_overflow ? m_overflow->visualOverflowRect() : enclosingLayoutRect(frameRectIncludingLineHeight(lineTop, lineBottom));
+        // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once
+        // the transition to LayoutUnit-based types is complete (crbug.com/321237)
+        return m_overflow ? m_overflow->visualOverflowRect() : frameRectIncludingLineHeight(lineTop, lineBottom).enclosingLayoutRect();
     }
     LayoutUnit logicalLeftVisualOverflow() const { return m_overflow ? (isHorizontal() ? m_overflow->visualOverflowRect().x() : m_overflow->visualOverflowRect().y()) : logicalLeft().toLayoutUnit(); }
     LayoutUnit logicalRightVisualOverflow() const { return m_overflow ? (isHorizontal() ? m_overflow->visualOverflowRect().maxX() : m_overflow->visualOverflowRect().maxY()) : static_cast<LayoutUnit>(ceilf(logicalRight())); }
