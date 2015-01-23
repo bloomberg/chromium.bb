@@ -45,8 +45,8 @@ class ExtensionSyncService : public syncer::SyncableService,
 
   ~ExtensionSyncService() override;
 
-  // Convenience function to get the ExtensionSyncService for a Profile.
-  static ExtensionSyncService* Get(Profile* profile);
+  // Convenience function to get the ExtensionSyncService for a BrowserContext.
+  static ExtensionSyncService* Get(content::BrowserContext* context);
 
   const extensions::ExtensionPrefs& extension_prefs() const {
     return *extension_prefs_;

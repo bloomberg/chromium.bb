@@ -883,10 +883,7 @@ void ChromeLauncherController::SetLaunchType(
   if (!controller)
     return;
 
-  extensions::SetLaunchType(
-      extensions::ExtensionSystem::Get(profile_)->extension_service(),
-      controller->app_id(),
-      launch_type);
+  extensions::SetLaunchType(profile_, controller->app_id(), launch_type);
 }
 
 void ChromeLauncherController::UnpinAppWithID(const std::string& app_id) {
