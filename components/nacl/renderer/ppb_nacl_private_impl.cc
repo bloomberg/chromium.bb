@@ -776,17 +776,6 @@ void DispatchEvent(PP_Instance instance,
   DispatchProgressEvent(instance, event);
 }
 
-void ReportLoadSuccess(PP_Instance instance,
-                       uint64_t loaded_bytes,
-                       uint64_t total_bytes) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  if (load_manager) {
-    load_manager->ReportLoadSuccess(load_manager->program_url(),
-                                    loaded_bytes,
-                                    total_bytes);
-  }
-}
-
 void ReportLoadError(PP_Instance instance,
                      PP_NaClError error,
                      const char* error_message) {
@@ -1689,7 +1678,6 @@ const PPB_NaCl_Private nacl_interface = {
   &GetNumberOfProcessors,
   &ReportTranslationFinished,
   &DispatchEvent,
-  &ReportLoadSuccess,
   &ReportLoadError,
   &InstanceCreated,
   &InstanceDestroyed,
