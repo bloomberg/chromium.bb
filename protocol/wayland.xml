@@ -643,7 +643,9 @@
 	immediately before receiving keyboard focus and when a new
 	selection is set while the client has keyboard focus.  The
 	data_offer is valid until a new data_offer or NULL is received
-	or until the client loses keyboard focus.
+	or until the client loses keyboard focus.  The client must
+	destroy the previous selection data_offer, if any, upon receiving
+	this event.
       </description>
       <arg name="id" type="object" interface="wl_data_offer" allow-null="true"/>
     </event>
