@@ -123,6 +123,9 @@ TEST(test_buffer_count)
 	int i;
 
 	test_data.client = client_create(10, 10, 10, 10);
+	if (!test_data.client->has_wl_drm)
+		skip("compositor has not bound its display to EGL\n");
+
 	if (init_egl(&test_data) < 0)
 		skip("could not initialize egl, "
 		     "possibly using the headless backend\n");

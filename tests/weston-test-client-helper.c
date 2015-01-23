@@ -482,6 +482,8 @@ handle_global(void *data, struct wl_registry *registry,
 					 &wl_test_interface, 1);
 		wl_test_add_listener(test->wl_test, &test_listener, test);
 		client->test = test;
+	} else if (strcmp(interface, "wl_drm") == 0) {
+		client->has_wl_drm = true;
 	}
 }
 
