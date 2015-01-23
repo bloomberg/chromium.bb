@@ -153,7 +153,7 @@ void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo,
         FloatRect blobBounds = runInfo.bounds;
         blobBounds.moveBy(-point);
 
-        textBlob = buildTextBlob(glyphBuffer, blobBounds, context->couldUseLCDRenderedText());
+        textBlob = buildTextBlob(glyphBuffer, blobBounds);
         if (textBlob) {
             drawTextBlob(context, textBlob.get(), point.data());
             return;
@@ -256,8 +256,7 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     return result;
 }
 
-PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, const FloatRect& bounds,
-    bool couldUseLCD) const
+PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, const FloatRect& bounds) const
 {
     ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
 
@@ -278,9 +277,6 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, const FloatR
         SkPaint paint;
         fontData->platformData().setupPaint(&paint, 0, this);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-
-        // FIXME: this should go away after the big LCD cleanup.
-        paint.setLCDRenderText(paint.isLCDRenderText() && couldUseLCD);
 
         unsigned start = i++;
         while (i < glyphBuffer.size() && glyphBuffer.fontDataAt(i) == fontData)
