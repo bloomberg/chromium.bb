@@ -132,57 +132,6 @@ PrefService* GetPrefService() {
   return GetOriginalProfile()->GetPrefs();
 }
 
-static void EnsureConsistentGeolocationPreferences(Profile* profile) {
-  // On Android, we use the kGeolocationEnabled flag to control geolocation on a
-  // global basis, rather than the default geolocation host content setting,
-  // which is only used if no previously stored more specific host exception
-  // cannot be found.
-  //
-  // On Android, there is currently no UI to change this default setting, so it
-  // needs to default to ASK. Additionally, for users that have previously set
-  // the default to BLOCK, we set the preference to disable geolocation
-  // globally.
-
-  ContentSetting defaultSetting = profile->GetHostContentSettingsMap()->
-      GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION, NULL);
-
-  if (defaultSetting == CONTENT_SETTING_ASK)
-    return;
-
-  profile->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ASK);
-
-  if (defaultSetting == CONTENT_SETTING_BLOCK) {
-    profile->GetPrefs()->SetBoolean(prefs::kGeolocationEnabled, false);
-  }
-}
-
-static void EnsureConsistentProtectedMediaIdentifierPreferences(
-    Profile* profile) {
-  // We use the kProtectedMediaIdentifierEnabled flag to control protected media
-  // identifier on a global basis.
-  //
-  // On Android, there is currently no UI to change this default setting, so it
-  // needs to default to ASK. Additionally, for users that have previously set
-  // the default to BLOCK, we set the preference to disable protected media
-  // identifier globally.
-  ContentSetting defaultSetting =
-      profile->GetHostContentSettingsMap()->
-      GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-                               NULL);
-
-  if (defaultSetting == CONTENT_SETTING_ASK)
-    return;
-
-  profile->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, CONTENT_SETTING_ASK);
-
-  if (defaultSetting == CONTENT_SETTING_BLOCK) {
-    profile->GetPrefs()->SetBoolean(prefs::kProtectedMediaIdentifierEnabled,
-                                    false);
-  }
-}
-
 }  // namespace
 
 // ----------------------------------------------------------------------------
@@ -262,7 +211,6 @@ static jboolean GetSearchSuggestManaged(JNIEnv* env, jobject obj) {
 
 static jboolean GetProtectedMediaIdentifierEnabled(JNIEnv* env, jobject obj) {
   Profile* profile = GetOriginalProfile();
-  EnsureConsistentProtectedMediaIdentifierPreferences(profile);
   HostContentSettingsMap* content_settings =
       profile->GetHostContentSettingsMap();
   return GetBooleanForContentSetting(
@@ -280,7 +228,6 @@ static jboolean GetPushNotificationsEnabled(JNIEnv* env, jobject obj) {
 
 static jboolean GetAllowLocationEnabled(JNIEnv* env, jobject obj) {
   Profile* profile = GetOriginalProfile();
-  EnsureConsistentGeolocationPreferences(profile);
   HostContentSettingsMap* content_settings =
       profile->GetHostContentSettingsMap();
   return GetBooleanForContentSetting(content_settings,
