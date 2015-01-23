@@ -11,6 +11,8 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/context_group.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace gpu {
 namespace gles2 {
@@ -137,12 +139,10 @@ void GPUTrace::Start(bool trace_service) {
 
     case kTracerTypeDisjointTimer:
       // For the disjoint timer, GPU idle time does not seem to increment the
-      // internal counter. We must calculate the offset before any query. The
-      // good news is any device that supports disjoint timer will also support
-      // glGetInteger64v, so we can query it directly unlike the ARBTimer case.
-      // The "offset_" variable will always be 0 during normal use cases, only
-      // under the unit tests will it be set to specific test values.
-      if (offset_ == 0) {
+      // internal counter. We must calculate the offset before any query.
+      // glGetInteger64v is supported under ES3 which we check for before using
+      // the kTracerTypeDisjointTimer.
+      {
         GLint64 gl_now = 0;
         glGetInteger64v(GL_TIMESTAMP, &gl_now);
         offset_ = cpu_time_->GetCurrentTime() -
@@ -180,7 +180,7 @@ bool GPUTrace::IsAvailable() {
       return false;
 
     GLint done = 0;
-    glGetQueryObjectiv(queries_[1], GL_QUERY_RESULT_AVAILABLE, &done);
+    glGetQueryObjectivARB(queries_[1], GL_QUERY_RESULT_AVAILABLE, &done);
     return !!done;
   }
 
@@ -385,7 +385,12 @@ scoped_refptr<CPUTime> GPUTracer::CreateCPUTime() {
 }
 
 GpuTracerType GPUTracer::DetermineTracerType() {
-  if (gfx::g_driver_gl.ext.b_GL_EXT_disjoint_timer_query) {
+  ContextGroup* context_group = decoder_->GetContextGroup();
+  const gpu::gles2::FeatureInfo* feature_info = context_group->feature_info();
+  const gfx::GLVersionInfo& version_info = feature_info->gl_version_info();
+
+  if (version_info.is_es3 &&
+      gfx::g_driver_gl.ext.b_GL_EXT_disjoint_timer_query) {
     return kTracerTypeDisjointTimer;
   } else if (gfx::g_driver_gl.ext.b_GL_ARB_timer_query) {
     return kTracerTypeARBTimer;
@@ -446,35 +451,16 @@ void GPUTracer::CalculateTimerOffset() {
     if (*gpu_trace_dev_category == '\0') {
       // If GPU device category is off, invalidate timing sync.
       gpu_timing_synced_ = false;
-      return;
-    } else if (tracer_type_ == kTracerTypeDisjointTimer) {
-      // Disjoint timers offsets should be calculated before every query.
+    } else if (!gpu_timing_synced_ && tracer_type_ == kTracerTypeARBTimer) {
+      TRACE_EVENT0("gpu", "GPUTracer::CalculateTimerOffset");
+
+      // ARB Timer is written for OpenGL 3.2 which contains glGetInteger64v().
+      GLint64 gl_now = 0;
+      glGetInteger64v(GL_TIMESTAMP, &gl_now);
+      timer_offset_ = cpu_time_->GetCurrentTime() -
+                      gl_now / base::Time::kNanosecondsPerMicrosecond;
       gpu_timing_synced_ = true;
-      timer_offset_ = 0;
     }
-
-    if (gpu_timing_synced_)
-      return;
-
-    TRACE_EVENT0("gpu", "GPUTracer::CalculateTimerOffset");
-
-    // NOTE(vmiura): It would be better to use glGetInteger64v, however
-    // it's not available everywhere.
-    GLuint64 gl_now = 0;
-    GLuint query;
-
-    glGenQueriesARB(1, &query);
-
-    glFinish();
-    glQueryCounter(query, GL_TIMESTAMP);
-    glFinish();
-
-    glGetQueryObjectui64v(query, GL_QUERY_RESULT, &gl_now);
-    glDeleteQueriesARB(1, &query);
-
-    gl_now /= base::Time::kNanosecondsPerMicrosecond;
-    timer_offset_ = cpu_time_->GetCurrentTime() - gl_now;
-    gpu_timing_synced_ = true;
   }
 }
 

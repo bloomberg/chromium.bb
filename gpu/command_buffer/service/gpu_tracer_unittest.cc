@@ -88,7 +88,7 @@ class GlFakeQueries {
     }
   }
 
-  void GetQueryObjectiv(GLuint id, GLenum pname, GLint* params) {
+  void GetQueryObjectivARB(GLuint id, GLenum pname, GLint* params) {
     switch (pname) {
       case GL_QUERY_RESULT_AVAILABLE: {
         std::map<GLuint, GLint64>::iterator it = query_timestamp_.find(id);
@@ -99,7 +99,7 @@ class GlFakeQueries {
         break;
       }
       default:
-        FAIL() << "Invalid variable passed to GetQueryObjectiv: " << pname;
+        FAIL() << "Invalid variable passed to GetQueryObjectivARB: " << pname;
     }
   }
 
@@ -255,10 +255,10 @@ class BaseGpuTest : public GpuServiceTest {
           .WillRepeatedly(
               Invoke(&gl_fake_queries_, &GlFakeQueries::GenQueriesARB));
 
-      EXPECT_CALL(*gl_, GetQueryObjectiv(_, GL_QUERY_RESULT_AVAILABLE,
+      EXPECT_CALL(*gl_, GetQueryObjectivARB(_, GL_QUERY_RESULT_AVAILABLE,
                                          NotNull()))
           .WillRepeatedly(
-               Invoke(&gl_fake_queries_, &GlFakeQueries::GetQueryObjectiv));
+               Invoke(&gl_fake_queries_, &GlFakeQueries::GetQueryObjectivARB));
 
       if (GetTracerType() == kTracerTypeDisjointTimer) {
         EXPECT_CALL(*gl_, GetInteger64v(GL_TIMESTAMP, _))
@@ -330,36 +330,13 @@ class BaseGpuTest : public GpuServiceTest {
 
     // Timer offset calculation should only happen for the regular timer.
     if (GetTracerType() != kTracerTypeARBTimer) {
-      EXPECT_CALL(*gl_, GenQueriesARB(_, NotNull())).Times(Exactly(0));
-      EXPECT_CALL(*gl_, Finish()).Times(Exactly(0));
-      EXPECT_CALL(*gl_, QueryCounter(_, GL_TIMESTAMP)).Times(Exactly(0));
-      EXPECT_CALL(*gl_, GetQueryObjectui64v(_, GL_QUERY_RESULT, NotNull()))
+      EXPECT_CALL(*gl_, GetInteger64v(GL_TIMESTAMP, NotNull()))
           .Times(Exactly(0));
-      EXPECT_CALL(*gl_, DeleteQueriesARB(_, NotNull())).Times(Exactly(0));
     } else {
-      EXPECT_CALL(*gl_, GenQueriesARB(_, NotNull())).Times(AtLeast(1))
-          .WillRepeatedly(
-              Invoke(&gl_fake_queries_, &GlFakeQueries::GenQueriesARB));
-
-      EXPECT_CALL(*gl_, Finish()).Times(AtLeast(2))
-          .WillRepeatedly(
-              Invoke(&gl_fake_queries_, &GlFakeQueries::Finish));
-
-      EXPECT_CALL(*gl_, QueryCounter(_, GL_TIMESTAMP))
+      EXPECT_CALL(*gl_, GetInteger64v(GL_TIMESTAMP, NotNull()))
           .Times(AtLeast(1))
           .WillRepeatedly(
-               Invoke(&gl_fake_queries_, &GlFakeQueries::QueryCounter));
-
-      EXPECT_CALL(*gl_, GetQueryObjectui64v(_, GL_QUERY_RESULT, NotNull()))
-          .Times(AtLeast(1))
-          .WillRepeatedly(
-               Invoke(&gl_fake_queries_,
-                      &GlFakeQueries::GetQueryObjectui64v));
-
-      EXPECT_CALL(*gl_, DeleteQueriesARB(1, NotNull()))
-          .Times(AtLeast(1))
-          .WillRepeatedly(
-               Invoke(&gl_fake_queries_, &GlFakeQueries::DeleteQueriesARB));
+              Invoke(&gl_fake_queries_, &GlFakeQueries::GetInteger64v));
     }
   }
 
@@ -404,6 +381,7 @@ class BaseGpuTraceTest : public BaseGpuTest {
                      offset_time, GetTracerType());
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
+    cpu_time_ref_->SetFakeCPUTime(expect_start_time);
     trace->Start(true);
 
     // Shouldn't be available before End() call
