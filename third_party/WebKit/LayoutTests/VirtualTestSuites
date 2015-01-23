@@ -222,5 +222,10 @@
     "prefix": "slimmingpaint",
     "base": "fast/canvas",
     "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/backgrounds",
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   }
 ]

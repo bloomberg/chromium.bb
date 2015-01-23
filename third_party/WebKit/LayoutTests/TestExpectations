@@ -1,4 +1,16 @@
 
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/svg-as-mask.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-body-background.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/gradient-background-leakage-hidpi.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/gradient-background-leakage.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/mask-box-image.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/background-leakage.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-html-body-background.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/gradient-background-leakage-2.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-body-html-background.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/background-leakage-transforms.html [ ImageOnlyFailure ]
+
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-document.html [ Failure ]

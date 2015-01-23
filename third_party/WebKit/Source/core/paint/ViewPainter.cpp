@@ -8,6 +8,7 @@
 #include "core/frame/FrameView.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
@@ -73,14 +74,19 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     // Only fill with the base background color (typically white) if we're the root document,
     // since iframes/frames with no background in the child document should show the parent's background.
     if (!m_renderView.frameView()->isTransparent()) {
+        LayoutRect paintRect = paintInfo.rect;
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+            paintRect = m_renderView.viewRect();
+
+        RenderDrawingRecorder recorder(paintInfo.context, m_renderView, paintInfo.phase, m_renderView.viewRect());
         Color baseColor = m_renderView.frameView()->baseBackgroundColor();
         if (baseColor.alpha()) {
             SkXfermode::Mode previousOperation = paintInfo.context->compositeOperation();
             paintInfo.context->setCompositeOperation(SkXfermode::kSrc_Mode);
-            paintInfo.context->fillRect(paintInfo.rect, baseColor);
+            paintInfo.context->fillRect(paintRect, baseColor);
             paintInfo.context->setCompositeOperation(previousOperation);
         } else {
-            paintInfo.context->clearRect(paintInfo.rect);
+            paintInfo.context->clearRect(paintRect);
         }
     }
 }
