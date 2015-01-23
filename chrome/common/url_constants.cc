@@ -730,6 +730,6 @@ const char kMac32BitDeprecationURL[] =
 #endif
 
 const char kEasyUnlockLearnMoreUrl[] =
-    "https://support.google.com/chromebook/?p=easy_unlock";
+    "https://support.google.com/chromebook/?p=smart_lock";
 
 }  // namespace chrome
