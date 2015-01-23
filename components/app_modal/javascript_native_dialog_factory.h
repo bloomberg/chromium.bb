@@ -18,8 +18,7 @@ class JavaScriptNativeDialogFactory {
 
   // Creates an native modal dialog for a JavaScript dialog;
   virtual NativeAppModalDialog* CreateNativeJavaScriptDialog(
-      JavaScriptAppModalDialog* dialog,
-      gfx::NativeWindow parent_window) = 0;
+      JavaScriptAppModalDialog* dialog) = 0;
 };
 
 }  // namespace app_modal

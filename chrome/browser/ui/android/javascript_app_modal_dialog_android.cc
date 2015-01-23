@@ -12,6 +12,8 @@
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/javascript_message_type.h"
 #include "jni/JavascriptAppModalDialog_jni.h"
 #include "ui/base/android/window_android.h"
@@ -171,11 +173,12 @@ class ChromeJavaScriptNativeDialogAndroidFactory
 
  private:
   app_modal::NativeAppModalDialog* CreateNativeJavaScriptDialog(
-      app_modal::JavaScriptAppModalDialog* dialog,
-      gfx::NativeWindow parent_window) override {
+      app_modal::JavaScriptAppModalDialog* dialog) override {
+    dialog->web_contents()->GetDelegate()->ActivateContents(
+        dialog->web_contents());
     return new JavascriptAppModalDialogAndroid(
         base::android::AttachCurrentThread(),
-        dialog, parent_window);
+        dialog, dialog->web_contents()->GetTopLevelNativeWindow());
   }
 
   DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptNativeDialogAndroidFactory);

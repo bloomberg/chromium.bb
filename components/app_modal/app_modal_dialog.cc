@@ -8,8 +8,6 @@
 #include "base/run_loop.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/native_app_modal_dialog.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 
 using content::WebContents;
 
@@ -45,7 +43,6 @@ AppModalDialog::~AppModalDialog() {
 
 void AppModalDialog::ShowModalDialog() {
   native_dialog_ = CreateNativeDialog();
-  web_contents_->GetDelegate()->ActivateContents(web_contents_);
   native_dialog_->ShowAppModalDialog();
   if (app_modal_dialog_observer)
     app_modal_dialog_observer->Notify(this);

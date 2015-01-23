@@ -16,6 +16,8 @@
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/ui_base_types.h"
@@ -457,9 +459,12 @@ class ChromeJavaScriptNativeDialogCocoaFactory
 
  private:
   app_modal::NativeAppModalDialog* CreateNativeJavaScriptDialog(
-      app_modal::JavaScriptAppModalDialog* dialog,
-      gfx::NativeWindow parent_window) override {
-    return new JavaScriptAppModalDialogCocoa(dialog);
+      app_modal::JavaScriptAppModalDialog* dialog) override {
+    app_modal::NativeAppModalDialog* d =
+        new JavaScriptAppModalDialogCocoa(dialog);
+    dialog->web_contents()->GetDelegate()->ActivateContents(
+        dialog->web_contents());
+    return d;
   }
 
   DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptNativeDialogCocoaFactory);

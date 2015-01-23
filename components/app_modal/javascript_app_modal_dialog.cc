@@ -6,15 +6,8 @@
 
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/gfx/text_elider.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#endif
-
-using content::WebContents;
 
 namespace app_modal {
 namespace {
@@ -60,7 +53,7 @@ ChromeJavaScriptDialogExtraData::ChromeJavaScriptDialogExtraData()
 }
 
 JavaScriptAppModalDialog::JavaScriptAppModalDialog(
-    WebContents* web_contents,
+    content::WebContents* web_contents,
     ExtraDataMap* extra_data_map,
     const base::string16& title,
     content::JavaScriptMessageType javascript_message_type,
@@ -86,17 +79,9 @@ JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
 }
 
 NativeAppModalDialog* JavaScriptAppModalDialog::CreateNativeDialog() {
-  gfx::NativeWindow parent_window = web_contents()->GetTopLevelNativeWindow();
-
-#if defined(USE_AURA)
-  if (!parent_window->GetRootWindow()) {
-    // When we are part of a WebContents that isn't actually being displayed on
-    // the screen, we can't actually attach to it.
-    parent_window = NULL;
-  }
-#endif  // defined(USE_AURA)
-  return JavaScriptDialogManager::GetInstance()->native_dialog_factory()->
-      CreateNativeJavaScriptDialog(this, parent_window);
+  return JavaScriptDialogManager::GetInstance()
+      ->native_dialog_factory()
+      ->CreateNativeJavaScriptDialog(this);
 }
 
 bool JavaScriptAppModalDialog::IsJavaScriptModalDialog() {
