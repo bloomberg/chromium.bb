@@ -384,7 +384,9 @@ tr{
                 "d MMMM y EEEE",
                 "d MMMM y",
                 "d MMM y",
+                // Chromium change begins. See b/8566501.
                 "d MM y",
+                // Chromium change ends.
                 "{1} {0}",
                 "{1} {0}",
                 "{1} {0}",
@@ -860,7 +862,9 @@ tr{
                 "d MMMM y G EEEE",
                 "d MMMM y G",
                 "d MMM y G",
-                "d.MM.y G",
+                // Chromium change begins. See b/8566501.
+                "d MM y G",
+                // Chromium change ends.
                 "{1} {0}",
                 "{1} {0}",
                 "{1} {0}",

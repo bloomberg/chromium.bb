@@ -2,7 +2,7 @@
 # Copyright (C) 2002-2013, International Business Machines Corporation 
 # and others. All Rights Reserved.
 #
-# file:  word.txt
+# file:  word_ja.txt
 #
 # ICU Word Break Rules
 #      See Unicode Standard Annex #29.
@@ -56,15 +56,13 @@ $Hiragana           = [:Hiragana:];
 #   5.0 or later as the definition of Complex_Context was corrected to include all
 #   characters requiring dictionary break.
 
-$Control        = [\p{Grapheme_Cluster_Break = Control}]; 
+$Control        = [\p{Grapheme_Cluster_Break = Control}];
 $HangulSyllable = [\uac00-\ud7a3];
 $ComplexContext = [:LineBreak = Complex_Context:];
 $KanaKanji      = [$Han $Hiragana $Katakana];
-$dictionaryCJK  = [$KanaKanji $HangulSyllable];
-$dictionary     = [$ComplexContext $dictionaryCJK];
+$dictionary     = [$ComplexContext];
 
-# leave CJK scripts out of ALetterPlus
-$ALetterPlus  = [$ALetter-$dictionaryCJK [$ComplexContext-$Extend-$Control]];
+$ALetterPlus  = [$ALetter [$ComplexContext-$Extend-$Control]];
 
 
 #
@@ -84,7 +82,7 @@ $NumericEx            = $Numeric            ($Extend |  $Format)*;
 $ExtendNumLetEx       = $ExtendNumLet       ($Extend |  $Format)*;
 $Regional_IndicatorEx = $Regional_Indicator ($Extend |  $Format)*;
 
-$Ideographic    = [\p{Ideographic}];
+$Ideographic    = [\p{Ideographic} [\u3005 \u3007 \u303B]];
 $HiraganaEx     = $Hiragana     ($Extend |  $Format)*;
 $IdeographicEx  = $Ideographic  ($Extend |  $Format)*;
 
@@ -148,6 +146,8 @@ $NumericEx ($MidNumEx | $MidNumLetEx | $Single_QuoteEx) $NumericEx {100};
 # from 300 to 400.
 # See also TestRuleStatus in intltest/rbbiapts.cpp
 $KatakanaEx  $KatakanaEx {400};
+$HiraganaEx  $HiraganaEx {400};
+$IdeographicEx  $IdeographicEx {400};
 
 # rule 13a/b
 
@@ -166,11 +166,6 @@ $ExtendNumLetEx  $KatakanaEx     {400};    #  (13b)
 
 $Regional_IndicatorEx $Regional_IndicatorEx;
 
-# special handling for CJK characters: chain for later dictionary segmentation
-$HangulSyllable $HangulSyllable {200};
-$KanaKanji $KanaKanji {400}; # different rule status if both kana and kanji found 
-
-
 ## -------------------------------------------------
 
 !!reverse;
@@ -185,6 +180,7 @@ $BackMidNumEx             = ($Format | $Extend)* $MidNum;
 $BackMidLetterEx          = ($Format | $Extend)* $MidLetter;
 $BackKatakanaEx           = ($Format | $Extend)* $Katakana;
 $BackHiraganaEx           = ($Format | $Extend)* $Hiragana;
+$BackIdeographicEx        = ($Format | $Extend)* $Ideographic;
 $BackExtendNumLetEx       = ($Format | $Extend)* $ExtendNumLet;
 $BackRegional_IndicatorEx = ($Format | $Extend)* $Regional_Indicator;
 
@@ -227,6 +223,8 @@ $BackNumericEx ($BackMidNumEx | $BackMidNumLetEx | $BackSingle_QuoteEx) $BackNum
 # rule 13
 
 $BackKatakanaEx $BackKatakanaEx;
+$BackHiraganaEx $BackHiraganaEx;
+$BackIdeographicEx $BackIdeographicEx;
 
 # rules 13 a/b
 #
@@ -236,10 +234,6 @@ $BackExtendNumLetEx ($BackALetterEx | $BackHebrew_LetterEx | $BackNumericEx | $B
 # rule 13c
 
 $BackRegional_IndicatorEx $BackRegional_IndicatorEx;
-
-# special handling for CJK characters: chain for later dictionary segmentation
-$HangulSyllable $HangulSyllable;
-$KanaKanji $KanaKanji; #different rule status if both kanji and kana found
 
 ## -------------------------------------------------
 

@@ -112,8 +112,7 @@ This directory contains the source code of ICU 54.1 for C/C++.
 
   - patches/locale1.patch :
       a. Exemplar character set changes for zh*, ja + 9 Indian locales
-      b. Minor fixes for Korean, a few Indic (AmPmMarkers) and
-      others (datetime format)
+      b. Minor fixes for Korean and Turkish
 
   - Locale build configuration files: To include the full locale data
     for Chrome's UI languages and the minimum locale data for other locales,
@@ -138,9 +137,9 @@ This directory contains the source code of ICU 54.1 for C/C++.
       b. Remove exemplar cities in timezone data (data/zone)
       c. Keep only the minimal calendar data in data/locales
 
-  - Add tg.txt to source/data/locale source/data/lang to add the minimal locale
-    data necessary for the spellchecker. In both directories, add tg.txt to
-    reslocal.mk
+  - Add tg.txt, ckb.txt, and ku.txt to source/data/{locale,lang} 
+    with the minimal locale data necessary for spellchecker and 
+    and language menus.
 
 6. Timezone data update
   - Grab the latest version of the following timezone data files and
