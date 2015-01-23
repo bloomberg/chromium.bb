@@ -77,13 +77,6 @@ static bool vTableInitialized(void* objectPointer)
     return !!(*reinterpret_cast<Address*>(objectPointer));
 }
 
-#if OS(WIN)
-static bool IsPowerOf2(size_t power)
-{
-    return !((power - 1) & power);
-}
-#endif
-
 static Address roundToBlinkPageBoundary(void* base)
 {
     return reinterpret_cast<Address>((reinterpret_cast<uintptr_t>(base) + blinkPageOffsetMask) & blinkPageBaseMask);
