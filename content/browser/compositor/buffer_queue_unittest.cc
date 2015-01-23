@@ -9,6 +9,7 @@
 #include "content/browser/compositor/buffer_queue.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -221,8 +222,37 @@ TEST(BufferQueueStandaloneTest, FboBinding) {
   output_surface->BindFramebuffer();
 }
 
+TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
+  scoped_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager;
+  scoped_ptr<BufferQueue> output_surface;
+  scoped_refptr<cc::TestContextProvider> context_provider =
+      cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create());
+  context_provider->BindToCurrentThread();
+  gpu_memory_buffer_manager.reset(new StubBrowserGpuMemoryBufferManager);
+
+  scoped_ptr<GLHelper> gl_helper;
+  gl_helper.reset(new GLHelper(context_provider->ContextGL(),
+                               context_provider->ContextSupport()));
+
+  output_surface.reset(new BufferQueue(context_provider, GL_RGBA,
+                                       gl_helper.get(),
+                                       gpu_memory_buffer_manager.get(), 1));
+  output_surface->Initialize();
+  output_surface->Reshape(screen_size, 1.0f);
+  // Trigger a sub-buffer copy to exercise all paths.
+  output_surface->BindFramebuffer();
+  output_surface->SwapBuffers(screen_rect);
+  output_surface->PageFlipComplete();
+  output_surface->BindFramebuffer();
+  output_surface->SwapBuffers(small_damage);
+
+  int current_fbo = 0;
+  context_provider->ContextGL()->GetIntegerv(GL_FRAMEBUFFER_BINDING,
+                                             &current_fbo);
+  EXPECT_EQ(static_cast<int>(output_surface->fbo()), current_fbo);
+}
+
 TEST_F(BufferQueueTest, PartialSwapReuse) {
-  // Check that
   output_surface_->Reshape(screen_size, 1.0f);
   ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*output_surface_,

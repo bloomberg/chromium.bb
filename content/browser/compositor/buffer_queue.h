@@ -43,7 +43,8 @@ class CONTENT_EXPORT BufferQueue {
   void PageFlipComplete();
   void Reshape(const gfx::Size& size, float scale_factor);
 
-  unsigned int current_texture_id() { return current_surface_.texture; }
+  unsigned int current_texture_id() const { return current_surface_.texture; }
+  unsigned int fbo() const { return fbo_; }
 
  private:
   friend class BufferQueueTest;

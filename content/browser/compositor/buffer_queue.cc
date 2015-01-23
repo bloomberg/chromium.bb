@@ -101,6 +101,9 @@ void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
   in_flight_surfaces_.push_back(current_surface_);
   current_surface_.texture = 0;
   current_surface_.image = 0;
+  // Some things reset the framebuffer (CopySubBufferDamage, some GLRenderer
+  // paths), so ensure we restore it here.
+  context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
 }
 
 void BufferQueue::Reshape(const gfx::Size& size, float scale_factor) {
