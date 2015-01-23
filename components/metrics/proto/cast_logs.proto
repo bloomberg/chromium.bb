@@ -20,6 +20,7 @@ message CastLogsProto {
     enum CastProductType {
       CAST_PRODUCT_TYPE_UNKNOWN = 0;
       CAST_PRODUCT_TYPE_CHROMECAST = 1;
+      CAST_PRODUCT_TYPE_AUDIO = 3;
       CAST_PRODUCT_TYPE_ANDROID_TV = 4;
     }
     optional CastProductType type = 1;
