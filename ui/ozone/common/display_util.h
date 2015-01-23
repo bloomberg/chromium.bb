@@ -5,7 +5,13 @@
 #ifndef UI_OZONE_COMMON_DISPLAY_UTIL_H_
 #define UI_OZONE_COMMON_DISPLAY_UTIL_H_
 
+#include <vector>
+
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace ui {
 
@@ -28,7 +34,19 @@ DisplayMode_Params GetDisplayModeParams(const DisplayMode& mode);
 DisplaySnapshot_Params GetDisplaySnapshotParams(const DisplaySnapshot& display);
 
 // Create a display using the Ozone command line parameters.
-DisplaySnapshot_Params CreateSnapshotFromCommandLine();
+// Return false if the command line flags are not specified.
+bool CreateSnapshotFromCommandLine(DisplaySnapshot_Params* snapshot_out);
+
+// Create a display snapshot from |file| that contains EDID.
+// Return false if the file doesn't exist, or it doesn't contain valid EDID.
+bool CreateSnapshotFromEDIDFile(const base::FilePath& file,
+                                DisplaySnapshot_Params* snapshot_out);
+
+// Create a display snaphot from edid.
+// Return false if it doesn't contain valid EDID.
+bool CreateSnapshotFromEDID(bool internal,
+                            const std::vector<uint8_t>& edid,
+                            DisplaySnapshot_Params* snapshot_out);
 
 }  // namespace ui
 

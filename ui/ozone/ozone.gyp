@@ -174,10 +174,11 @@
       'target_name': 'ozone_unittests',
       'type': '<(gtest_target_type)',
       'sources': [
+        'common/display_util_unittest.cc',
         'run_all_unittests.cc',
       ],
       'dependencies': [
-        'ozone_base',
+        'ozone',
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',

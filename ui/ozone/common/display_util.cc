@@ -5,8 +5,12 @@
 #include "ui/ozone/common/display_util.h"
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/display/util/edid_parser.h"
+#include "ui/display/util/edid_parser.h"
 #include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
@@ -59,25 +63,19 @@ DisplaySnapshot_Params GetDisplaySnapshotParams(
   return params;
 }
 
-DisplaySnapshot_Params CreateSnapshotFromCommandLine() {
-  DisplaySnapshot_Params display_param;
-
+bool CreateSnapshotFromCommandLine(DisplaySnapshot_Params* snapshot_out) {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   std::string spec =
       cmd->GetSwitchValueASCII(switches::kOzoneInitialDisplayBounds);
   std::string physical_spec =
       cmd->GetSwitchValueASCII(switches::kOzoneInitialDisplayPhysicalSizeMm);
 
-  if (spec.empty())
-    return display_param;
-
   int width = 0;
   int height = 0;
-  if (sscanf(spec.c_str(), "%dx%d", &width, &height) < 2)
-    return display_param;
-
-  if (width == 0 || height == 0)
-    return display_param;
+  if (spec.empty() || sscanf(spec.c_str(), "%dx%d", &width, &height) < 2 ||
+      width == 0 || height == 0) {
+    return false;
+  }
 
   int physical_width = 0;
   int physical_height = 0;
@@ -87,16 +85,61 @@ DisplaySnapshot_Params CreateSnapshotFromCommandLine() {
   mode_param.size = gfx::Size(width, height);
   mode_param.refresh_rate = 60;
 
-  display_param.display_id = kDummyDisplayId;
-  display_param.modes.push_back(mode_param);
-  display_param.type = DISPLAY_CONNECTION_TYPE_INTERNAL;
-  display_param.physical_size = gfx::Size(physical_width, physical_height);
-  display_param.has_current_mode = true;
-  display_param.current_mode = mode_param;
-  display_param.has_native_mode = true;
-  display_param.native_mode = mode_param;
+  snapshot_out->display_id = kDummyDisplayId;
+  snapshot_out->modes.push_back(mode_param);
+  snapshot_out->type = DISPLAY_CONNECTION_TYPE_INTERNAL;
+  snapshot_out->physical_size = gfx::Size(physical_width, physical_height);
+  snapshot_out->has_current_mode = true;
+  snapshot_out->current_mode = mode_param;
+  snapshot_out->has_native_mode = true;
+  snapshot_out->native_mode = mode_param;
+  return true;
+}
 
-  return display_param;
+bool CreateSnapshotFromEDID(bool internal,
+                            const std::vector<uint8_t>& edid,
+                            DisplaySnapshot_Params* snapshot_out) {
+  uint16_t manufacturer_id = 0;
+  gfx::Size resolution;
+
+  DisplayMode_Params mode_param;
+  mode_param.refresh_rate = 60.0f;
+
+  if (!ParseOutputDeviceData(edid, &manufacturer_id,
+                             &snapshot_out->display_name, &mode_param.size,
+                             &snapshot_out->physical_size) ||
+      !GetDisplayIdFromEDID(edid, 0, &snapshot_out->display_id)) {
+    return false;
+  }
+  ParseOutputOverscanFlag(edid, &snapshot_out->has_overscan);
+
+  snapshot_out->modes.push_back(mode_param);
+  // Use VGA for external display for now.
+  // TODO(oshima): frecon should set this value in the display_info.bin file.
+  snapshot_out->type =
+      internal ? DISPLAY_CONNECTION_TYPE_INTERNAL : DISPLAY_CONNECTION_TYPE_VGA;
+  snapshot_out->has_current_mode = true;
+  snapshot_out->current_mode = mode_param;
+  snapshot_out->has_native_mode = true;
+  snapshot_out->native_mode = mode_param;
+  return true;
+}
+
+bool CreateSnapshotFromEDIDFile(const base::FilePath& file,
+                                DisplaySnapshot_Params* snapshot_out) {
+  std::string raw_display_info;
+  const int kEDIDMaxSize = 128;
+  if (!base::ReadFileToString(file, &raw_display_info, kEDIDMaxSize + 1) ||
+      raw_display_info.size() < 10) {
+    return false;
+  }
+  std::vector<uint8_t> edid;
+  // The head of the file contains one byte flag that indicates the type of
+  // display.
+  bool internal = raw_display_info[0] == 1;
+  edid.assign(raw_display_info.c_str() + 1,
+              raw_display_info.c_str() + raw_display_info.size());
+  return CreateSnapshotFromEDID(internal, edid, snapshot_out);
 }
 
 }  // namespace ui

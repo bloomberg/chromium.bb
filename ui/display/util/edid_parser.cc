@@ -9,6 +9,7 @@
 #include "base/hash.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
@@ -37,7 +38,8 @@ bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
   std::string product_name;
 
   // ParseOutputDeviceData fails if it doesn't have product_name.
-  ParseOutputDeviceData(edid, &manufacturer_id, &product_name);
+  ParseOutputDeviceData(edid, &manufacturer_id, &product_name, nullptr,
+                        nullptr);
 
   // Generates product specific value from product_name instead of product code.
   // See crbug.com/240341
@@ -55,7 +57,9 @@ bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
 
 bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
                            uint16_t* manufacturer_id,
-                           std::string* human_readable_name) {
+                           std::string* human_readable_name,
+                           gfx::Size* active_pixel_out,
+                           gfx::Size* physical_display_size_out) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the details of EDID data format.  We use the following data:
   //   bytes 8-9: manufacturer EISA ID, in big-endian
@@ -82,15 +86,57 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
 #endif
   }
 
-  if (!human_readable_name)
-    return true;
+  if (human_readable_name)
+    human_readable_name->clear();
 
-  human_readable_name->clear();
   for (unsigned int i = 0; i < kNumDescriptors; ++i) {
     if (edid.size() < kDescriptorOffset + (i + 1) * kDescriptorLength)
       break;
 
     size_t offset = kDescriptorOffset + i * kDescriptorLength;
+
+    // Detailed Timing Descriptor:
+    if (edid[offset] != 0 && edid[offset + 1] != 0) {
+      const int kMaxResolution = 10080;  // 8k display.
+
+      if (active_pixel_out) {
+        const int kHorizontalPixelLsbOffset = 2;
+        const int kHorizontalPixelMsbOffset = 4;
+        const int kVerticalPixelLsbOffset = 5;
+        const int kVerticalPixelMsbOffset = 7;
+
+        int h_lsb = edid[offset + kHorizontalPixelLsbOffset];
+        int h_msb = edid[offset + kHorizontalPixelMsbOffset];
+        int h_pixel = std::min(h_lsb + ((h_msb & 0xF0) << 4), kMaxResolution);
+
+        int v_lsb = edid[offset + kVerticalPixelLsbOffset];
+        int v_msb = edid[offset + kVerticalPixelMsbOffset];
+        int v_pixel = std::min(v_lsb + ((v_msb & 0xF0) << 4), kMaxResolution);
+
+        active_pixel_out->SetSize(h_pixel, v_pixel);
+        // EDID may contain multiple DTD. Use first one that
+        // contains the highest resolution.
+        active_pixel_out = nullptr;
+      }
+
+      if (physical_display_size_out) {
+        const int kHorizontalSizeLsbOffset = 12;
+        const int kVerticalSizeLsbOffset = 13;
+        const int kSizeMsbOffset = 14;
+
+        int h_lsb = edid[offset + kHorizontalSizeLsbOffset];
+        int v_lsb = edid[offset + kVerticalSizeLsbOffset];
+
+        int msb = edid[offset + kSizeMsbOffset];
+        int h_size = h_lsb + ((msb & 0xF0) << 4);
+        int v_size = v_lsb + ((msb & 0x0F) << 8);
+        physical_display_size_out->SetSize(h_size, v_size);
+        physical_display_size_out = nullptr;
+      }
+      continue;
+    }
+
+    // EDID Other Monitor Descriptors:
     // If the descriptor contains the display name, it has the following
     // structure:
     //   bytes 0-2, 4: \0
@@ -99,22 +145,26 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
     // we should check bytes 0-2 and 4, since it may have other values in
     // case that the descriptor contains other type of data.
     if (edid[offset] == 0 && edid[offset + 1] == 0 && edid[offset + 2] == 0 &&
-        edid[offset + 3] == kMonitorNameDescriptor && edid[offset + 4] == 0) {
+        edid[offset + 3] == kMonitorNameDescriptor && edid[offset + 4] == 0 &&
+        human_readable_name) {
       std::string found_name(reinterpret_cast<const char*>(&edid[offset + 5]),
                              kDescriptorLength - 5);
       base::TrimWhitespaceASCII(
           found_name, base::TRIM_TRAILING, human_readable_name);
-      break;
+      continue;
     }
   }
 
   // Verify if the |human_readable_name| consists of printable characters only.
-  for (size_t i = 0; i < human_readable_name->size(); ++i) {
-    char c = (*human_readable_name)[i];
-    if (!isascii(c) || !isprint(c)) {
-      human_readable_name->clear();
-      LOG(ERROR) << "invalid EDID: human unreadable char in name";
-      return false;
+  // TODO(oshima|muka): Consider replacing unprintable chars with white space.
+  if (human_readable_name) {
+    for (size_t i = 0; i < human_readable_name->size(); ++i) {
+      char c = (*human_readable_name)[i];
+      if (!isascii(c) || !isprint(c)) {
+        human_readable_name->clear();
+        LOG(ERROR) << "invalid EDID: human unreadable char in name";
+        return false;
+      }
     }
   }
 

@@ -3,6 +3,7 @@ include_rules = [
   "+third_party/khronos",
   "+third_party/skia",
   "+ui/display/types",
+  "+ui/display/util",
   "+ui/events",
   "+ui/gfx",
   "+ui/base/cursor",

@@ -79,8 +79,8 @@ DisplaySnapshotDri::DisplaySnapshotDri(DriWrapper* drm,
                       false,
                       std::string(),
                       std::vector<const DisplayMode*>(),
-                      NULL,
-                      NULL),
+                      nullptr,
+                      nullptr),
       connector_(connector->connector_id),
       crtc_(crtc->crtc_id),
       dpms_property_(drm->GetProperty(connector, "DPMS")) {
@@ -98,7 +98,7 @@ DisplaySnapshotDri::DisplaySnapshotDri(DriWrapper* drm,
     if (!GetDisplayIdFromEDID(edid, index, &display_id_))
       display_id_ = index;
 
-    ParseOutputDeviceData(edid, NULL, &display_name_);
+    ParseOutputDeviceData(edid, nullptr, &display_name_, nullptr, nullptr);
     ParseOutputOverscanFlag(edid, &overscan_flag_);
   } else {
     VLOG(1) << "Failed to get EDID blob for connector "

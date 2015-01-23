@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
@@ -93,6 +94,11 @@ const unsigned char kLP2565B[] =
     "\x50\x20\x4C\x50\x32\x34\x36\x35\x0A\x20\x20\x20\x00\x00\x00\xFF"
     "\x00\x43\x4E\x4B\x38\x30\x32\x30\x34\x48\x4D\x0A\x20\x20\x00\x45";
 
+void Reset(gfx::Size* pixel, gfx::Size* size) {
+  pixel->SetSize(0, 0);
+  size->SetSize(0, 0);
+}
+
 }  // namespace
 
 TEST(EDIDParserTest, ParseOverscanFlag) {
@@ -149,29 +155,42 @@ TEST(EDIDParserTest, ParseEDID) {
   std::string human_readable_name;
   std::vector<uint8_t> edid(
       kNormalDisplay, kNormalDisplay + charsize(kNormalDisplay));
-  EXPECT_TRUE(ParseOutputDeviceData(
-      edid, &manufacturer_id, &human_readable_name));
+  gfx::Size pixel;
+  gfx::Size size;
+  EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id,
+                                    &human_readable_name, &pixel, &size));
   EXPECT_EQ(0x22f0u, manufacturer_id);
   EXPECT_EQ("HP ZR30w", human_readable_name);
+  EXPECT_EQ("2560x1600", pixel.ToString());
+  EXPECT_EQ("641x400", size.ToString());
 
   manufacturer_id = 0;
   human_readable_name.clear();
+  Reset(&pixel, &size);
   edid.assign(kInternalDisplay, kInternalDisplay + charsize(kInternalDisplay));
-  EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id, NULL));
+
+  EXPECT_TRUE(
+      ParseOutputDeviceData(edid, &manufacturer_id, nullptr, &pixel, &size));
   EXPECT_EQ(0x4ca3u, manufacturer_id);
   EXPECT_EQ("", human_readable_name);
+  EXPECT_EQ("1280x800", pixel.ToString());
+  EXPECT_EQ("261x163", size.ToString());
 
   // Internal display doesn't have name.
-  EXPECT_TRUE(ParseOutputDeviceData(edid, NULL, &human_readable_name));
+  EXPECT_TRUE(ParseOutputDeviceData(edid, nullptr, &human_readable_name, &pixel,
+                                    &size));
   EXPECT_TRUE(human_readable_name.empty());
 
   manufacturer_id = 0;
   human_readable_name.clear();
+  Reset(&pixel, &size);
   edid.assign(kOverscanDisplay, kOverscanDisplay + charsize(kOverscanDisplay));
-  EXPECT_TRUE(ParseOutputDeviceData(
-      edid, &manufacturer_id, &human_readable_name));
+  EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id,
+                                    &human_readable_name, &pixel, &size));
   EXPECT_EQ(0x4c2du, manufacturer_id);
   EXPECT_EQ("SAMSUNG", human_readable_name);
+  EXPECT_EQ("1920x1080", pixel.ToString());
+  EXPECT_EQ("160x90", size.ToString());
 }
 
 TEST(EDIDParserTest, ParseBrokenEDID) {
@@ -179,9 +198,11 @@ TEST(EDIDParserTest, ParseBrokenEDID) {
   std::string human_readable_name;
   std::vector<uint8_t> edid;
 
+  gfx::Size dummy;
+
   // length == 0
-  EXPECT_FALSE(ParseOutputDeviceData(
-      edid, &manufacturer_id, &human_readable_name));
+  EXPECT_FALSE(ParseOutputDeviceData(edid, &manufacturer_id,
+                                     &human_readable_name, &dummy, &dummy));
 
   // name is broken. Copying kNormalDisplay and substitute its name data by
   // some control code.
@@ -190,12 +211,13 @@ TEST(EDIDParserTest, ParseBrokenEDID) {
   // display's name data is embedded in byte 95-107 in this specific example.
   // Fix here too when the contents of kNormalDisplay is altered.
   edid[97] = '\x1b';
-  EXPECT_FALSE(ParseOutputDeviceData(
-      edid, &manufacturer_id, &human_readable_name));
+  EXPECT_FALSE(ParseOutputDeviceData(edid, &manufacturer_id,
+                                     &human_readable_name, &dummy, &dummy));
 
   // If |human_readable_name| isn't specified, it skips parsing the name.
   manufacturer_id = 0;
-  EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id, NULL));
+  EXPECT_TRUE(
+      ParseOutputDeviceData(edid, &manufacturer_id, nullptr, &dummy, &dummy));
   EXPECT_EQ(0x22f0u, manufacturer_id);
 }
 
