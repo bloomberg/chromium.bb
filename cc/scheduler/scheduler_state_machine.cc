@@ -875,18 +875,18 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   if (pending_swaps_ >= max_pending_swaps_)
     return false;
 
+  if (active_tree_needs_first_draw_)
+    return true;
+
+  if (!needs_redraw_)
+    return false;
+
   // This is used to prioritize impl-thread draws when the main thread isn't
   // producing anything, e.g., after an aborted commit. We also check that we
   // don't have a pending tree -- otherwise we should give it a chance to
   // activate.
   // TODO(skyostil): Revisit this when we have more accurate deadline estimates.
   if (commit_state_ == COMMIT_STATE_IDLE && !has_pending_tree_)
-    return true;
-
-  if (!needs_redraw_)
-    return false;
-
-  if (active_tree_needs_first_draw_)
     return true;
 
   // Prioritize impl-thread draws in impl_latency_takes_priority_ mode.

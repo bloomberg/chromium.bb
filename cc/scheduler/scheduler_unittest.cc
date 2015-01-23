@@ -2318,34 +2318,5 @@ TEST(SchedulerTest, SwitchFrameSourceToThrottled) {
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 1);
 }
 
-TEST(SchedulerTest, BeginMainFrameAbortedTriggersImmediateDeadline) {
-  FakeSchedulerClient client;
-  SchedulerSettings settings;
-  settings.use_external_begin_frame_source = true;
-
-  CREATE_SCHEDULER_AND_INIT_SURFACE(settings);
-
-  scheduler->SetNeedsCommit();
-  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client);
-  client.Reset();
-
-  client.AdvanceFrame();
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
-  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
-  client.Reset();
-
-  client.task_runner().RunUntilTime(client.now_src()->Now());
-  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
-
-  scheduler->BeginMainFrameAborted(CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
-
-  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
-  client.task_runner().RunUntilTime(client.now_src()->Now());
-  EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
-
-  EXPECT_NO_ACTION(client);
-}
-
 }  // namespace
 }  // namespace cc
