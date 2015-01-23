@@ -32,14 +32,6 @@ namespace chromeos {
 
 namespace {
 
-void InvokeErrorCallback(const std::string& service_path,
-                         const network_handler::ErrorCallback& error_callback,
-                         const std::string& error_name) {
-  NET_LOG_ERROR("Connect Error: " + error_name, service_path);
-  network_handler::RunErrorCallback(
-      error_callback, service_path, error_name, "");
-}
-
 bool IsAuthenticationError(const std::string& error) {
   return (error == shill::kErrorBadWEPKey ||
           error == shill::kErrorPppAuthFailed ||
@@ -108,15 +100,16 @@ const char NetworkConnectionHandler::kErrorConnecting[] = "connecting";
 const char NetworkConnectionHandler::kErrorNotConnected[] = "not-connected";
 const char NetworkConnectionHandler::kErrorPassphraseRequired[] =
     "passphrase-required";
-const char NetworkConnectionHandler::kErrorActivationRequired[] =
-    "activation-required";
+const char NetworkConnectionHandler::kErrorBadPassphrase[] = "bad-passphrase";
 const char NetworkConnectionHandler::kErrorCertificateRequired[] =
     "certificate-required";
 const char NetworkConnectionHandler::kErrorConfigurationRequired[] =
     "configuration-required";
 const char NetworkConnectionHandler::kErrorAuthenticationRequired[] =
     "authentication-required";
-const char NetworkConnectionHandler::kErrorShillError[] = "shill-error";
+const char NetworkConnectionHandler::kErrorConnectFailed[] = "connect-failed";
+const char NetworkConnectionHandler::kErrorDisconnectFailed[] =
+    "disconnect-failed";
 const char NetworkConnectionHandler::kErrorConfigureFailed[] =
     "configure-failed";
 const char NetworkConnectionHandler::kErrorConnectCanceled[] =
@@ -198,11 +191,13 @@ void NetworkConnectionHandler::Init(
     LoggedInStateChanged();
 }
 
-void NetworkConnectionHandler::AddObserver(Observer* observer) {
+void NetworkConnectionHandler::AddObserver(
+    NetworkConnectionObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void NetworkConnectionHandler::RemoveObserver(Observer* observer) {
+void NetworkConnectionHandler::RemoveObserver(
+    NetworkConnectionObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -230,14 +225,14 @@ void NetworkConnectionHandler::ConnectToNetwork(
     const network_handler::ErrorCallback& error_callback,
     bool check_error_state) {
   NET_LOG_USER("ConnectToNetwork", service_path);
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(NetworkConnectionObserver, observers_,
                     ConnectToNetworkRequested(service_path));
 
   // Clear any existing queued connect request.
   queued_connect_.reset();
   if (HasConnectingNetwork(service_path)) {
     NET_LOG_USER("Connect Request While Pending", service_path);
-    InvokeErrorCallback(service_path, error_callback, kErrorConnecting);
+    InvokeConnectErrorCallback(service_path, error_callback, kErrorConnecting);
     return;
   }
 
@@ -251,23 +246,25 @@ void NetworkConnectionHandler::ConnectToNetwork(
   if (network) {
     // For existing networks, perform some immediate consistency checks.
     if (network->IsConnectedState()) {
-      InvokeErrorCallback(service_path, error_callback, kErrorConnected);
+      InvokeConnectErrorCallback(service_path, error_callback, kErrorConnected);
       return;
     }
     if (network->IsConnectingState()) {
-      InvokeErrorCallback(service_path, error_callback, kErrorConnecting);
+      InvokeConnectErrorCallback(service_path, error_callback,
+                                 kErrorConnecting);
       return;
     }
 
     if (check_error_state) {
       const std::string& error = network->last_error();
       if (error == shill::kErrorBadPassphrase) {
-        InvokeErrorCallback(service_path, error_callback, error);
+        InvokeConnectErrorCallback(service_path, error_callback,
+                                   kErrorBadPassphrase);
         return;
       }
       if (IsAuthenticationError(error)) {
-        InvokeErrorCallback(
-            service_path, error_callback, kErrorAuthenticationRequired);
+        InvokeConnectErrorCallback(service_path, error_callback,
+                                   kErrorAuthenticationRequired);
         return;
       }
     }
@@ -309,14 +306,21 @@ void NetworkConnectionHandler::DisconnectNetwork(
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
   NET_LOG_USER("DisconnectNetwork", service_path);
+  FOR_EACH_OBSERVER(NetworkConnectionObserver, observers_,
+                    DiconnectRequested(service_path));
+
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);
   if (!network) {
-    InvokeErrorCallback(service_path, error_callback, kErrorNotFound);
+    NET_LOG_ERROR("Disconnect Error: Not Found", service_path);
+    network_handler::RunErrorCallback(error_callback, service_path,
+                                      kErrorNotFound, "");
     return;
   }
   if (!network->IsConnectedState() && !network->IsConnectingState()) {
-    InvokeErrorCallback(service_path, error_callback, kErrorNotConnected);
+    NET_LOG_ERROR("Disconnect Error: Not Connected", service_path);
+    network_handler::RunErrorCallback(error_callback, service_path,
+                                      kErrorNotConnected, "");
     return;
   }
   pending_requests_.erase(service_path);
@@ -535,9 +539,8 @@ void NetworkConnectionHandler::QueueConnectRequest(
   base::TimeDelta dtime = base::TimeTicks::Now() - logged_in_time_;
   if (dtime > base::TimeDelta::FromSeconds(kMaxCertLoadTimeSeconds)) {
     NET_LOG_ERROR("Certificate load timeout", service_path);
-    InvokeErrorCallback(service_path,
-                        request->error_callback,
-                        kErrorCertLoadTimeout);
+    InvokeConnectErrorCallback(service_path, request->error_callback,
+                               kErrorCertLoadTimeout);
     return;
   }
 
@@ -566,9 +569,9 @@ void NetworkConnectionHandler::CheckCertificatesLoaded() {
     return;
   // Otherwise, notify the user.
   NET_LOG_ERROR("Certificate load timeout", queued_connect_->service_path);
-  InvokeErrorCallback(queued_connect_->service_path,
-                      queued_connect_->error_callback,
-                      kErrorCertLoadTimeout);
+  InvokeConnectErrorCallback(queued_connect_->service_path,
+                             queued_connect_->error_callback,
+                             kErrorCertLoadTimeout);
   queued_connect_.reset();
 }
 
@@ -611,8 +614,8 @@ void NetworkConnectionHandler::HandleConfigurationFailure(
   }
   network_handler::ErrorCallback error_callback = request->error_callback;
   pending_requests_.erase(service_path);
-  if (!error_callback.is_null())
-    error_callback.Run(kErrorConfigureFailed, error_data.Pass());
+  InvokeConnectErrorCallback(service_path, error_callback,
+                             kErrorConfigureFailed);
 }
 
 void NetworkConnectionHandler::HandleShillConnectSuccess(
@@ -644,9 +647,17 @@ void NetworkConnectionHandler::HandleShillConnectFailure(
   }
   network_handler::ErrorCallback error_callback = request->error_callback;
   pending_requests_.erase(service_path);
-  network_handler::ShillErrorCallbackFunction(
-      shill::kErrorConnectFailed, service_path, error_callback,
-      dbus_error_name, dbus_error_message);
+  std::string error;
+  if (dbus_error_name == shill::kErrorResultAlreadyConnected) {
+    error = kErrorConnected;
+  } else if (dbus_error_name == shill::kErrorResultInProgress) {
+    error = kErrorConnecting;
+  } else {
+    NET_LOG_ERROR("Connect Failure, Shill error: " + dbus_error_name,
+                  service_path);
+    error = kErrorConnectFailed;
+  }
+  InvokeConnectErrorCallback(service_path, error_callback, error);
 }
 
 void NetworkConnectionHandler::CheckPendingRequest(
@@ -665,7 +676,6 @@ void NetworkConnectionHandler::CheckPendingRequest(
     return;
   }
   if (network->IsConnectedState()) {
-    NET_LOG_EVENT("Connect Request Succeeded", service_path);
     if (!request->profile_path.empty()) {
       // If a profile path was specified, set it on a successful connection.
       configuration_handler_->SetNetworkProfile(
@@ -675,8 +685,8 @@ void NetworkConnectionHandler::CheckPendingRequest(
           base::Bind(&base::DoNothing),
           chromeos::network_handler::ErrorCallback());
     }
-    if (!request->success_callback.is_null())
-      request->success_callback.Run();
+    InvokeConnectSuccessCallback(request->service_path,
+                                 request->success_callback);
     pending_requests_.erase(service_path);
     return;
   }
@@ -693,7 +703,7 @@ void NetworkConnectionHandler::CheckPendingRequest(
     // Another connect request canceled this one.
     error_name = kErrorConnectCanceled;
   } else {
-    error_name = shill::kErrorConnectFailed;
+    error_name = kErrorConnectFailed;
     if (network->connection_state() != shill::kStateFailure) {
       NET_LOG_ERROR("Unexpected State: " + network->connection_state(),
                     service_path);
@@ -702,11 +712,7 @@ void NetworkConnectionHandler::CheckPendingRequest(
 
   network_handler::ErrorCallback error_callback = request->error_callback;
   pending_requests_.erase(service_path);
-  if (error_callback.is_null()) {
-    NET_LOG_ERROR("Connect Error, no callback: " + error_name, service_path);
-    return;
-  }
-  InvokeErrorCallback(service_path, error_callback, error_name);
+  InvokeConnectErrorCallback(service_path, error_callback, error_name);
 }
 
 void NetworkConnectionHandler::CheckAllPendingRequests() {
@@ -714,6 +720,18 @@ void NetworkConnectionHandler::CheckAllPendingRequests() {
            pending_requests_.begin(); iter != pending_requests_.end(); ++iter) {
     CheckPendingRequest(iter->first);
   }
+}
+
+// Connect callbacks
+
+void NetworkConnectionHandler::InvokeConnectSuccessCallback(
+    const std::string& service_path,
+    const base::Closure& success_callback) {
+  NET_LOG_EVENT("Connect Request Succeeded", service_path);
+  if (!success_callback.is_null())
+    success_callback.Run();
+  FOR_EACH_OBSERVER(NetworkConnectionObserver, observers_,
+                    ConnectSucceeded(service_path));
 }
 
 void NetworkConnectionHandler::ErrorCallbackForPendingRequest(
@@ -728,7 +746,18 @@ void NetworkConnectionHandler::ErrorCallbackForPendingRequest(
   // Remove the entry before invoking the callback in case it triggers a retry.
   network_handler::ErrorCallback error_callback = request->error_callback;
   pending_requests_.erase(service_path);
-  InvokeErrorCallback(service_path, error_callback, error_name);
+  InvokeConnectErrorCallback(service_path, error_callback, error_name);
+}
+
+void NetworkConnectionHandler::InvokeConnectErrorCallback(
+    const std::string& service_path,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& error_name) {
+  NET_LOG_ERROR("Connect Failure: " + error_name, service_path);
+  network_handler::RunErrorCallback(error_callback, service_path, error_name,
+                                    "");
+  FOR_EACH_OBSERVER(NetworkConnectionObserver, observers_,
+                    ConnectFailed(service_path, error_name));
 }
 
 // Disconnect
@@ -743,7 +772,7 @@ void NetworkConnectionHandler::CallShillDisconnect(
       base::Bind(&NetworkConnectionHandler::HandleShillDisconnectSuccess,
                  AsWeakPtr(), service_path, success_callback),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kErrorShillError, service_path, error_callback));
+                 kErrorDisconnectFailed, service_path, error_callback));
 }
 
 void NetworkConnectionHandler::HandleShillDisconnectSuccess(

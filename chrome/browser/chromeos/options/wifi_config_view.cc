@@ -588,7 +588,7 @@ void WifiConfigView::UpdateErrorLabel() {
   if (error_msg.empty() && !service_path_.empty()) {
     const NetworkState* network = GetNetworkState();
     if (network && network->connection_state() == shill::kStateFailure) {
-      error_msg = ui::NetworkConnect::Get()->GetErrorString(
+      error_msg = ui::NetworkConnect::Get()->GetShillErrorString(
           network->last_error(), network->path());
     }
   }

@@ -96,8 +96,9 @@ class UI_CHROMEOS_EXPORT NetworkConnect {
                                    bool shared) = 0;
 
   // Returns the localized string for shill error string |error|.
-  virtual base::string16 GetErrorString(const std::string& error,
-                                        const std::string& service_path) = 0;
+  virtual base::string16 GetShillErrorString(
+      const std::string& error,
+      const std::string& service_path) = 0;
 
   // Shows the settings for the network specified by |service_path|. If empty,
   // or no matching network exists, shows the general internet settings page.

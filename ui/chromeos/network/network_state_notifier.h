@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 
@@ -34,11 +35,16 @@ class NetworkConnect;
 //    notification system.
 // 2. It observes NetworkState changes to generate notifications when a
 //    Cellular network is out of credits.
-class UI_CHROMEOS_EXPORT NetworkStateNotifier :
+class UI_CHROMEOS_EXPORT NetworkStateNotifier
+    : public chromeos::NetworkConnectionObserver,
       public chromeos::NetworkStateHandlerObserver {
  public:
   explicit NetworkStateNotifier(NetworkConnect* network_connect);
   ~NetworkStateNotifier() override;
+
+  // NetworkConnectionObserver
+  void ConnectFailed(const std::string& service_path,
+                     const std::string& error_name) override;
 
   // NetworkStateHandlerObserver
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;

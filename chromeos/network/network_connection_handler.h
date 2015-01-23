@@ -19,6 +19,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -49,19 +50,6 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
       public NetworkStateHandlerObserver,
       public base::SupportsWeakPtr<NetworkConnectionHandler> {
  public:
-  class Observer {
-   public:
-    // Called if a connection to network |service_path| was requested, by
-    // calling ConnectToNetwork.
-    virtual void ConnectToNetworkRequested(const std::string& service_path) = 0;
-
-   protected:
-    virtual ~Observer() {}
-
-   private:
-    DISALLOW_ASSIGN(Observer);
-  };
-
   // Constants for |error_name| from |error_callback| for Connect.
 
   //  No network matching |service_path| is found (hidden networks must be
@@ -77,7 +65,8 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // The passphrase is missing or invalid.
   static const char kErrorPassphraseRequired[];
 
-  static const char kErrorActivationRequired[];
+  // The passphrase is incorrect.
+  static const char kErrorBadPassphrase[];
 
   // The network requires a cert and none exists.
   static const char kErrorCertificateRequired[];
@@ -92,8 +81,11 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Configuration failed during the configure stage of the connect flow.
   static const char kErrorConfigureFailed[];
 
-  // For Disconnect or Activate, an unexpected DBus or Shill error occurred.
-  static const char kErrorShillError[];
+  // An unexpected DBus or Shill error occurred while connecting.
+  static const char kErrorConnectFailed[];
+
+  // An unexpected DBus or Shill error occurred while disconnecting.
+  static const char kErrorDisconnectFailed[];
 
   // A new network connect request canceled this one.
   static const char kErrorConnectCanceled[];
@@ -106,15 +98,13 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
 
   ~NetworkConnectionHandler() override;
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(NetworkConnectionObserver* observer);
+  void RemoveObserver(NetworkConnectionObserver* observer);
 
   // ConnectToNetwork() will start an asynchronous connection attempt.
   // On success, |success_callback| will be called.
   // On failure, |error_callback| will be called with |error_name| one of the
-  //   constants defined above, or shill::kErrorConnectFailed or
-  //   shill::kErrorBadPassphrase if the Shill Error property (from a
-  //   previous connect attempt) was set to one of those.
+  //   constants defined above.
   // |error_message| will contain an additional error string for debugging.
   // If |check_error_state| is true, the current state of the network is
   //  checked for errors, otherwise current state is ignored (e.g. for recently
@@ -129,7 +119,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // On failure, |error_callback| will be called with |error_name| one of:
   //  kErrorNotFound if no network matching |service_path| is found.
   //  kErrorNotConnected if not connected to the network.
-  //  kErrorShillError if a DBus or Shill error occurred.
+  //  kErrorDisconnectFailed if a DBus or Shill error occurred.
   // |error_message| will contain and additional error string for debugging.
   void DisconnectNetwork(const std::string& service_path,
                          const base::Closure& success_callback,
@@ -206,8 +196,21 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void CheckPendingRequest(const std::string service_path);
   void CheckAllPendingRequests();
 
+  // Notify caller and observers that the connect request succeeded.
+  void InvokeConnectSuccessCallback(const std::string& service_path,
+                                    const base::Closure& success_callback);
+
+  // Look up the ConnectRequest for |service_path| and call
+  // InvokeConnectErrorCallback.
   void ErrorCallbackForPendingRequest(const std::string& service_path,
                                       const std::string& error_name);
+
+  // Notify caller and observers that the connect request failed.
+  // |error_name| will be one of the kError* messages defined above.
+  void InvokeConnectErrorCallback(
+      const std::string& service_path,
+      const network_handler::ErrorCallback& error_callback,
+      const std::string& error_name);
 
   // Calls Shill.Manager.Disconnect asynchronously.
   void CallShillDisconnect(
@@ -219,7 +222,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void HandleShillDisconnectSuccess(const std::string& service_path,
                                     const base::Closure& success_callback);
 
-  ObserverList<Observer> observers_;
+  ObserverList<NetworkConnectionObserver> observers_;
 
   // Local references to the associated handler instances.
   CertLoader* cert_loader_;

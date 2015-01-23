@@ -100,7 +100,7 @@ void WimaxConfigView::UpdateErrorLabel() {
     const NetworkState* wimax = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
     if (wimax && wimax->connection_state() == shill::kStateFailure)
-      error_msg = ui::NetworkConnect::Get()->GetErrorString(
+      error_msg = ui::NetworkConnect::Get()->GetShillErrorString(
           wimax->last_error(), wimax->path());
   }
   if (!error_msg.empty()) {

@@ -74,8 +74,8 @@ class NetworkConnectImpl : public NetworkConnect {
                                      bool shared) override;
   void CreateConfiguration(base::DictionaryValue* properties,
                            bool shared) override;
-  base::string16 GetErrorString(const std::string& error,
-                                const std::string& service_path) override;
+  base::string16 GetShillErrorString(const std::string& error,
+                                     const std::string& service_path) override;
   void ShowNetworkSettings(const std::string& service_path) override;
 
  private:
@@ -192,18 +192,30 @@ bool NetworkConnectImpl::GetNetworkProfilePath(bool shared,
   return true;
 }
 
+// This handles connect failures that are a direct result of a user initiated
+// connect request and result in a new UI being shown. Note: notifications are
+// handled by NetworkStateNotifier.
 void NetworkConnectImpl::OnConnectFailed(
     const std::string& service_path,
     const std::string& error_name,
     scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Connect Failed: " + error_name, service_path);
 
-  // If a new connect attempt canceled this connect, no need to notify the
-  // user.
-  if (error_name == NetworkConnectionHandler::kErrorConnectCanceled)
+  // If a new connect attempt canceled this connect, or a connect attempt to
+  // the same network is in progress, no need to notify the user here since they
+  // will be notified when the new or existing attempt completes.
+  if (error_name == NetworkConnectionHandler::kErrorConnectCanceled ||
+      error_name == NetworkConnectionHandler::kErrorConnecting) {
     return;
+  }
 
-  if (error_name == shill::kErrorBadPassphrase ||
+  // Already connected to the network, show the settings UI for the network.
+  if (error_name == NetworkConnectionHandler::kErrorConnected) {
+    ShowNetworkSettings(service_path);
+    return;
+  }
+
+  if (error_name == NetworkConnectionHandler::kErrorBadPassphrase ||
       error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
       error_name == NetworkConnectionHandler::kErrorConfigurationRequired ||
       error_name == NetworkConnectionHandler::kErrorAuthenticationRequired) {
@@ -212,38 +224,19 @@ void NetworkConnectImpl::OnConnectFailed(
   }
 
   if (error_name == NetworkConnectionHandler::kErrorCertificateRequired) {
-    if (!delegate_->ShowEnrollNetwork(service_path)) {
+    if (!delegate_->ShowEnrollNetwork(service_path))
       HandleUnconfiguredNetwork(service_path);
-    }
     return;
   }
 
-  if (error_name == NetworkConnectionHandler::kErrorActivationRequired) {
-    ActivateCellular(service_path);
-    return;
-  }
+  // Only show a configure dialog if there was a ConnectFailed error. The dialog
+  // allows the user to request a new connect attempt or cancel. Note: a
+  // notification may also be displayed by NetworkStateNotifier in this case.
+  if (error_name == NetworkConnectionHandler::kErrorConnectFailed)
+    HandleUnconfiguredNetwork(service_path);
 
-  if (error_name == NetworkConnectionHandler::kErrorConnected ||
-      error_name == NetworkConnectionHandler::kErrorConnecting) {
-    ShowNetworkSettings(service_path);
-    return;
-  }
-
-  // ConnectFailed or unknown error; show a notification.
-  network_state_notifier_->ShowNetworkConnectError(error_name, service_path);
-
-  // Only show a configure dialog if there was a ConnectFailed error.
-  if (error_name != shill::kErrorConnectFailed)
-    return;
-
-  // If Shill reports an InProgress error, don't try to configure the network.
-  std::string dbus_error_name;
-  error_data.get()->GetString(chromeos::network_handler::kDbusErrorName,
-                              &dbus_error_name);
-  if (dbus_error_name == shill::kErrorResultInProgress)
-    return;
-
-  HandleUnconfiguredNetwork(service_path);
+  // Notifications for other connect failures are handled by
+  // NetworkStateNotifier, so no need to do anything else here.
 }
 
 void NetworkConnectImpl::OnConnectSucceeded(const std::string& service_path) {
@@ -530,7 +523,7 @@ void NetworkConnectImpl::CreateConfiguration(base::DictionaryValue* properties,
   CallCreateConfiguration(properties, shared, false /* connect_on_configure */);
 }
 
-base::string16 NetworkConnectImpl::GetErrorString(
+base::string16 NetworkConnectImpl::GetShillErrorString(
     const std::string& error,
     const std::string& service_path) {
   if (error.empty())

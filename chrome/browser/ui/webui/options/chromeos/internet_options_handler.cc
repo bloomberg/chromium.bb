@@ -576,7 +576,7 @@ void InternetOptionsHandler::GetManagedPropertiesResult(
     // out a more robust way to track errors. Service.Error is transient so we
     // use NetworkState.error() which accurately tracks the "last" error.
     dictionary->SetString(kTagErrorMessage,
-                          ui::NetworkConnect::Get()->GetErrorString(
+                          ui::NetworkConnect::Get()->GetShillErrorString(
                               network->error(), service_path));
     // Add additional non-ONC cellular properties to inform the UI.
     if (network->type() == shill::kTypeCellular) {

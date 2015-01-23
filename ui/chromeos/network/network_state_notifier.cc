@@ -100,6 +100,7 @@ NetworkStateNotifier::NetworkStateNotifier(NetworkConnect* network_connect)
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   handler->AddObserver(this, FROM_HERE);
   UpdateDefaultNetwork(handler->DefaultNetwork());
+  NetworkHandler::Get()->network_connection_handler()->AddObserver(this);
 }
 
 NetworkStateNotifier::~NetworkStateNotifier() {
@@ -107,6 +108,23 @@ NetworkStateNotifier::~NetworkStateNotifier() {
     return;
   NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                  FROM_HERE);
+  NetworkHandler::Get()->network_connection_handler()->RemoveObserver(this);
+}
+
+void NetworkStateNotifier::ConnectFailed(const std::string& service_path,
+                                         const std::string& error_name) {
+  // Only show a notification for certain errors. Other failures are expected
+  // to be handled by the UI that initiated the connect request.
+  // Note: kErrorConnectFailed may also cause the configure dialog to be
+  // displayed, but we rely on the notification system to show additional
+  // details if available.
+  if (error_name != NetworkConnectionHandler::kErrorConnectFailed &&
+      error_name != NetworkConnectionHandler::kErrorNotFound &&
+      error_name != NetworkConnectionHandler::kErrorConfigureFailed &&
+      error_name != NetworkConnectionHandler::kErrorCertLoadTimeout) {
+    return;
+  }
+  ShowNetworkConnectError(error_name, service_path);
 }
 
 void NetworkStateNotifier::DefaultNetworkChanged(const NetworkState* network) {
@@ -316,7 +334,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
       return;
     }
 
-    error = network_connect_->GetErrorString(shill_error, service_path);
+    error = network_connect_->GetShillErrorString(shill_error, service_path);
     if (error.empty())
       error = l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
   }

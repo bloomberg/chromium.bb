@@ -337,6 +337,8 @@
       'network/network_configuration_observer.h',
       'network/network_connection_handler.cc',
       'network/network_connection_handler.h',
+      'network/network_connection_observer.cc',
+      'network/network_connection_observer.h',
       'network/network_device_handler.cc',
       'network/network_device_handler.h',
       'network/network_device_handler_impl.cc',

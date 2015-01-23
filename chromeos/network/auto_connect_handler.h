@@ -12,26 +12,25 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/client_cert_resolver.h"
-#include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_policy_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT AutoConnectHandler
-    : public LoginState::Observer,
-      public NetworkPolicyObserver,
-      public NetworkConnectionHandler::Observer,
-      public NetworkStateHandlerObserver,
-      public ClientCertResolver::Observer {
+class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
+                                           public NetworkPolicyObserver,
+                                           public NetworkConnectionObserver,
+                                           public NetworkStateHandlerObserver,
+                                           public ClientCertResolver::Observer {
  public:
   ~AutoConnectHandler() override;
 
   // LoginState::Observer
   void LoggedInStateChanged() override;
 
-  // NetworkConnectionHandler::Observer
+  // NetworkConnectionObserver
   void ConnectToNetworkRequested(const std::string& service_path) override;
 
   // NetworkPolicyObserver
