@@ -29,7 +29,15 @@ podrow[ncolumns='6'] .pod {
   transform: scale(0.8);
 }
 
+/* Because of crbug.com/406529, the text in the .name div is janky if there's
+both a transform:scale and a transition:opacity applied to a div, so we must
+apply the opacity change to the children instead. */
 .pod.faded {
+  opacity: 1;
+}
+
+.pod.faded .user-image-pane,
+.pod.faded .main-pane {
   opacity: .4;
 }
 
