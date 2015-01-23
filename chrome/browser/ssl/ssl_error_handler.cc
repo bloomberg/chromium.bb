@@ -178,13 +178,13 @@ void SSLErrorHandler::CheckForCaptivePortal() {
 #endif
 }
 
-void SSLErrorHandler::ShowCaptivePortalInterstitial() {
+void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   // Show captive portal blocking page. The interstitial owns the blocking page.
   RecordUMA(SSLBlockingPage::IsOptionsOverridable(options_mask_) ?
             SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE :
             SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE);
-  (new CaptivePortalBlockingPage(web_contents_, request_url_,
+  (new CaptivePortalBlockingPage(web_contents_, request_url_, landing_url,
                                  callback_))->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
@@ -216,7 +216,7 @@ void SSLErrorHandler::Observe(
     CaptivePortalService::Results* results =
         content::Details<CaptivePortalService::Results>(details).ptr();
     if (results->result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL)
-      ShowCaptivePortalInterstitial();
+      ShowCaptivePortalInterstitial(results->landing_url);
     else
       ShowSSLInterstitial();
   }

@@ -9907,6 +9907,9 @@ I don't think this site should be blocked!
         Connect to network
       </message>
       <message name="IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the captive portal error page for network connections.">
+        The network you are using may require you to visit <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="LOGIN_URL">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;strong&gt;</ph>.
+      </message>
+      <message name="IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL" desc="The primary explanatory paragraph for the captive portal error page for network connections when the captive portal login url isn't available.">
         The network you are using may require you to visit its login page.
       </message>
       <message name="IDS_CAPTIVE_PORTAL_BUTTON_OPEN_LOGIN_PAGE" desc="Text for the open login page button">

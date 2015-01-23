@@ -386,6 +386,7 @@
       'browser/signin/easy_unlock_service_browsertest_chromeos.cc',
       'browser/signin/signin_browsertest.cc',
       'browser/spellchecker/spellcheck_service_browsertest.cc',
+      'browser/ssl/captive_portal_blocking_page_browsertest.cc',
       'browser/ssl/chrome_ssl_host_state_delegate_test.cc',
       'browser/ssl/ssl_browser_tests.cc',
       'browser/ssl/ssl_client_certificate_selector_test.cc',

@@ -42,6 +42,9 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
     captive_portal::CaptivePortalResult previous_result;
     // The result of the most recent captive portal check.
     captive_portal::CaptivePortalResult result;
+    // Landing url of the captive portal check ping. If behind a captive portal,
+    // this points to the login page.
+    GURL landing_url;
   };
 
   explicit CaptivePortalService(Profile* profile);
@@ -120,7 +123,8 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
 
   // Called when a captive portal check completes.  Passes the result to all
   // observers.
-  void OnResult(captive_portal::CaptivePortalResult result);
+  void OnResult(captive_portal::CaptivePortalResult result,
+                const GURL& landing_url);
 
   // Updates BackoffEntry::Policy and creates a new BackoffEntry, which
   // resets the count used for throttling.

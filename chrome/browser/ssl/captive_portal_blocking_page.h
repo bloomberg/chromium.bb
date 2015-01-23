@@ -10,8 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace content{
 class WebContents;
@@ -31,6 +30,7 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
 
   CaptivePortalBlockingPage(content::WebContents* web_contents,
                             const GURL& request_url,
+                            const GURL& login_url,
                             const base::Callback<void(bool)>& callback);
   ~CaptivePortalBlockingPage() override;
 
@@ -47,6 +47,8 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
   void CommandReceived(const std::string& command) override;
 
  private:
+  // URL of the login page, opened when the user clicks the "Connect" button.
+  GURL login_url_;
   base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPage);

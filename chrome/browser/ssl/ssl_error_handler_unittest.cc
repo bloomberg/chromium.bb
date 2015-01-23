@@ -83,7 +83,7 @@ class TestSSLErrorHandler : public SSLErrorHandler {
     ssl_interstitial_shown_ = true;
   }
 
-  void ShowCaptivePortalInterstitial() override {
+  void ShowCaptivePortalInterstitial(const GURL& landing_url) override {
     captive_portal_interstitial_shown_ = true;
   }
 

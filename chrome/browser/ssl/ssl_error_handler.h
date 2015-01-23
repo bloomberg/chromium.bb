@@ -82,7 +82,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
 
   // These are virtual for tests:
   virtual void CheckForCaptivePortal();
-  virtual void ShowCaptivePortalInterstitial();
+  virtual void ShowCaptivePortalInterstitial(const GURL& landing_url);
   virtual void ShowSSLInterstitial();
 
   // content::NotificationObserver:
