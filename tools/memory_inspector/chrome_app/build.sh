@@ -47,7 +47,7 @@ wget "${NACL_PREBUILTS_BASE_URL}/pydata_pnacl.tar" -P "${SANDBOX_DIR}" \
 
 # Download Memory Inspector prebuilt files.
 download_from_google_storage --directory "${MEMORY_INSPECTOR_PREBUILTS_DIR}" \
-  --bucket "${MEMORY_INSPECTOR_PREBUILTS_BUCKET}"
+  --bucket "${MEMORY_INSPECTOR_PREBUILTS_BUCKET}" --no_auth
 
 # Add Memory Inspector dependencies to pydata_pnacl.tar.
 tmp_dir="$(mktemp -d)"

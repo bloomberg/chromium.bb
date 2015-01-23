@@ -25,6 +25,9 @@ this.onDomReady_ = function() {
       .click(this.dumpMmapForSelectedSnapshot_.bind(this));
   $('#storage-dump-nheap').button({icons:{primary: 'ui-icon-calculator'}})
       .click(this.dumpNheapForSelectedSnapshot_.bind(this));
+  if (window.DISABLE_NATIVE_TRACING) {
+    $('#storage-dump-nheap').hide();
+  }
 
   // Create the table.
   this.table_ = new google.visualization.Table($('#storage-table')[0]);
@@ -36,6 +39,10 @@ this.reload = function() {
 }
 
 this.onListAjaxResponse_ = function(data) {
+  if (window.DISABLE_NATIVE_TRACING) {
+    // Do not show the native heap column if native tracing is disabled.
+    data.cols.pop();
+  }
   this.tableData_ = new google.visualization.DataTable(data);
   this.redraw();
 };
@@ -139,13 +146,15 @@ this.rebuildMenu_ = function() {
             this.profileMmapForSelectedSnapshots.bind(this, rule)));
   }, this);
 
-  this.profileMenu_.append(
-      $('<li/>').addClass('header').text('Native heap rules'));
-  profiler.rulesets['nheap'].forEach(function(rule) {
+  if (!window.DISABLE_NATIVE_TRACING) {
     this.profileMenu_.append(
-        $('<li/>').text(rule).click(
-            this.profileNativeForSelectedSnapshots.bind(this, rule)));
-  }, this);
+        $('<li/>').addClass('header').text('Native heap rules'));
+    profiler.rulesets['nheap'].forEach(function(rule) {
+      this.profileMenu_.append(
+          $('<li/>').text(rule).click(
+              this.profileNativeForSelectedSnapshots.bind(this, rule)));
+    }, this);
+  }
 
   this.profileMenu_.menu();
 };

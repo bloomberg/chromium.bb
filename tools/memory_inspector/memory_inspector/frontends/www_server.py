@@ -88,6 +88,8 @@ class UriHandler(object):
   @staticmethod
   def Handle(method, path, req_vars):
     """Finds a matching handler and calls it (or returns a 404 - Not Found)."""
+    cache_headers = [('Cache-Control', 'no-cache'),
+                     ('Expires', 'Fri, 19 Sep 1986 05:00:00 GMT')]
     for (match_method, path_regex, output_filter, fn) in UriHandler._handlers:
       if method != match_method:
         continue
@@ -99,15 +101,15 @@ class UriHandler(object):
       except Exception as e:
         traceback.print_exc()
         return _HTTP_INTERNAL_ERROR, [], str(e)
-      return output_filter(http_code, headers, body)
+      return output_filter(http_code, cache_headers + headers, body)
     return (_HTTP_NOT_FOUND, [], 'No AJAX handlers found')
 
 
 class AjaxHandler(UriHandler):
   """Decorator for routing AJAX requests.
 
-  This decorator essentially groups the JSON serialization and the cache headers
-  which is shared by most of the handlers defined below.
+  This decorator performs JSON serialization which is shared by most of the
+  handlers defined below.
   """
   def __init__(self, path_regex, verb='GET'):
     super(AjaxHandler, self).__init__(
@@ -116,9 +118,7 @@ class AjaxHandler(UriHandler):
   @staticmethod
   def AjaxOutputFilter(http_code, headers, body):
     serialized_content = json.dumps(body, cls=serialization.Encoder)
-    extra_headers = [('Cache-Control', 'no-cache'),
-                     ('Expires', 'Fri, 19 Sep 1986 05:00:00 GMT')]
-    return http_code, headers + extra_headers, serialized_content
+    return http_code, headers, serialized_content
 
 
 @AjaxHandler('/ajax/backends')
@@ -643,8 +643,6 @@ def _GetTracerStatus(args, req_vars):  # pylint: disable=W0613
 
 @UriHandler(r'^(?!/ajax)/(.*)$')
 def _StaticContent(args, req_vars):  # pylint: disable=W0613
-  # Give the browser a 1-day TTL cache to minimize the start-up time.
-  cache_headers = [('Cache-Control', 'max-age=86400, public')]
   req_path = args[0] if args[0] else 'index.html'
   file_path = os.path.abspath(os.path.join(_CONTENT_DIR, req_path))
   if (os.path.isfile(file_path) and
@@ -655,8 +653,8 @@ def _StaticContent(args, req_vars):  # pylint: disable=W0613
       mtype = guessed_mime[0]
     with open(file_path, 'rb') as f:
       body = f.read()
-    return _HTTP_OK, cache_headers + [('Content-Type', mtype)], body
-  return _HTTP_NOT_FOUND, cache_headers,  file_path + ' not found'
+    return _HTTP_OK, [('Content-Type', mtype)], body
+  return _HTTP_NOT_FOUND, [],  file_path + ' not found'
 
 
 def _GetDevice(args):

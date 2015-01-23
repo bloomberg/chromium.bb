@@ -11,6 +11,11 @@ this.onDomReady_ = function() {
   webservice.onServerUnreachableOrTimeout =
       this.onServerUnreachableOrTimeout.bind(this);
 
+  if (window.DISABLE_NATIVE_TRACING) {
+    $('#tabs').tabs('disable', '#tabs-nheap');
+    $('#tabs').tabs('disable', '#tabs-settings');
+  }
+
   // Initialize the status bar.
   $('#status_messages').mouseenter(function() {
     $('#status_bar').addClass('expanded');

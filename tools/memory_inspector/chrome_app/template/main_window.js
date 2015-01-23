@@ -368,6 +368,8 @@ MemoryInspectorWindow.prototype.onPollRequestStateChange_ = function(request) {
   console.log('Inspector server ready. Loading the inspector view...');
   this.inspectorViewElement_.addEventListener('loadstop',
       this.onInspectorLoaded_.bind(this));
+  this.inspectorViewElement_.addEventListener('loadcommit',
+      this.onInspectorNavigated_.bind(this));
   this.inspectorViewElement_.src = 'http://127.0.0.1:' +
       MemoryInspectorConfig.PORT;
 };
@@ -380,6 +382,17 @@ MemoryInspectorWindow.prototype.onPollRequestStateChange_ = function(request) {
 MemoryInspectorWindow.prototype.onInspectorLoaded_ = function() {
   this.stopLoadDotsAnimation_();
   document.body.classList.add('inspector_view_visible');
+};
+
+/**
+ * Listener called when the inspector view navigates to the inspector website.
+ * @private
+ */
+MemoryInspectorWindow.prototype.onInspectorNavigated_ = function() {
+  this.inspectorViewElement_.executeScript({
+    'file': 'inject.js',
+    'runAt': 'document_start'
+  });
 };
 
 window.addEventListener('load', function() {

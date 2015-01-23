@@ -101,6 +101,10 @@ this.showTracingDialog_ = function() {
   if (!this.selProcUri_)
     return rootUi.showDialog('Must select a process!');
   $('#ps-tracer-process').val(this.selProcName_);
+  if (window.DISABLE_NATIVE_TRACING) {
+    $('#ps-tracer-bt').hide();
+    $('label[for="ps-tracer-bt"]').hide();
+  }
   $('#ps-tracer-dialog').dialog('open');
 };
 
