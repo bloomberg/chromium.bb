@@ -11,14 +11,8 @@
     "ftp://*/",
     "http://*/",
     "https://*/",
-    "chrome://*/",
-    "streamsPrivate"
+    "chrome://*/"
   ],
-  "background": {
-    "scripts": ["background.js"],
-    "transient": true,
-    "persistent": false
-  },
   "mime_types": [
     "application/pdf"
   ],

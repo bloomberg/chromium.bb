@@ -7,9 +7,13 @@
     "text/csv"
   ],
   "web_accessible_resources": [
+    "test_embedded.html",
     "test_postmessage.html",
     "test_postmessage.js",
-    "test.csv"
+    "test.csv",
+    "testAbort.csv",
+    "testBasic.csv",
+    "testEmbedded.csv"
   ],
   "mime_types_handler": "embedded.html",
   "permissions": [

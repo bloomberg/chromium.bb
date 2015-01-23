@@ -208,6 +208,21 @@ struct IconRepresentationInfo {
 extern const IconRepresentationInfo kExtensionActionIconSizes[];
 const size_t kNumExtensionActionIconSizes = 2u;
 
+// The extension id of the PDF extension.
+extern const char kPdfExtensionId[];
+
+// The extension id of the Office Viewer component extension.
+extern const char kQuickOfficeComponentExtensionId[];
+
+// The extension id of the Office Viewer extension on the internal webstore.
+extern const char kQuickOfficeInternalExtensionId[];
+
+// The extension id of the Office Viewer extension.
+extern const char kQuickOfficeExtensionId[];
+
+// The extension id used for testing mimeHandlerPrivate.
+extern const char kMimeHandlerPrivateTestExtensionId[];
+
 }  // namespace extension_misc
 
 #endif  // EXTENSIONS_COMMON_CONSTANTS_H_

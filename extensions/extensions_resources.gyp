@@ -11,6 +11,7 @@
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/extensions',
       },
       'dependencies': [
+        'common/api/api.gyp:extensions_api_mojom',
         '../device/serial/serial.gyp:device_serial_mojo',
       ],
       'actions': [

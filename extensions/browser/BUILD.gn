@@ -168,6 +168,8 @@ source_set("browser") {
       "api/management/management_api_constants.h",
       "api/management/management_api_delegate.h",
       "api/messaging/native_message_host.cc",
+      "api/mime_handler_private/mime_handler_private.cc",
+      "api/mime_handler_private/mime_handler_private.h",
       "api/power/power_api.cc",
       "api/power/power_api.h",
       "api/power/power_api_manager.cc",

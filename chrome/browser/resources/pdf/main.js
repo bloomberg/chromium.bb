@@ -40,36 +40,7 @@ var viewer;
       viewer.handleScriptingMessage(pendingMessages.shift());
   }
 
-  /**
-   * Entrypoint for starting the PDF viewer. This function obtains the details
-   * of the PDF 'stream' (the data that points to the PDF) and constructs a
-   * PDFViewer object with it.
-   */
-  function main() {
-    // Set up an event listener to catch scripting messages which are sent prior
-    // to the PDFViewer being created.
-    window.addEventListener('message', handleScriptingMessage, false);
-
-    // If the viewer is started from the browser plugin, the view ID will be
-    // passed in which identifies the instance of the plugin.
-    var params = window.location.search.substring(1).split('=');
-    if (params.length == 2 && params[0] == 'id') {
-      var viewId = params[1];
-
-      // Send a message to the background page to obtain the stream details. It
-      // will run the callback function passed in to initialize the viewer.
-      chrome.runtime.sendMessage(
-          'mhjfbmdgcfjbbpaeojofohoefgiehjai',
-          {viewId: viewId},
-          initViewer);
-      return;
-    }
-
-    // The viewer may be started directly by passing in the URL of the PDF to
-    // load as the query string. This is used for print preview in particular.
-    // The URL of this page will be of the form
-    // 'chrome-extension://<extension id>?<pdf url>'. We pull out the <pdf url>
-    // part here.
+  function generateStreamDetailsAndInitViewer() {
     var url = window.location.search.substring(1);
     var streamDetails = {
       streamUrl: url,
@@ -83,11 +54,32 @@ var viewer;
       return;
     }
     chrome.tabs.getCurrent(function(tab) {
-      if (tab && tab.id != undefined)
-        streamDetails.tabId = tab.id;
+      streamDetails.tabId = tab.id;
       initViewer(streamDetails);
     });
   }
+
+  /**
+   * Entrypoint for starting the PDF viewer. This function obtains the details
+   * of the PDF 'stream' (the data that points to the PDF) and constructs a
+   * PDFViewer object with it.
+   */
+  function main() {
+    // Set up an event listener to catch scripting messages which are sent prior
+    // to the PDFViewer being created.
+    window.addEventListener('message', handleScriptingMessage, false);
+
+    if (window.location.search) {
+      generateStreamDetailsAndInitViewer();
+      return;
+    }
+
+    // If the viewer is started from the browser plugin, getStreamInfo will
+    // return the details of the stream.
+    chrome.mimeHandlerPrivate.getStreamInfo(function(streamDetails) {
+      initViewer(streamDetails);
+    });
+  };
 
   main();
 })();

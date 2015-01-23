@@ -28,26 +28,47 @@ class MimeHandlerViewTest : public ExtensionApiTest {
 
     return extension;
   }
+
+  void RunTest(const std::string& path) {
+    const extensions::Extension* extension = LoadTestExtension();
+    ASSERT_TRUE(extension);
+
+    extensions::ResultCatcher catcher;
+
+    GURL extension_url("chrome-extension://" + std::string(kExtensionId) + "/" +
+                       path);
+    ui_test_utils::NavigateToURL(browser(), extension_url);
+
+    if (!catcher.GetNextResult())
+      FAIL() << catcher.message();
+  }
 };
 
 // Not working on Windows because of crbug.com/443466.
 #if defined(OS_WIN)
 #define MAYBE_PostMessage DISABLED_PostMessage
+#define MAYBE_Basic DISABLED_Basic
+#define MAYBE_Embedded DISABLED_Embedded
+#define MAYBE_Abort DISABLED_Abort
 #else
 #define MAYBE_PostMessage PostMessage
+#define MAYBE_Basic Basic
+#define MAYBE_Embedded Embedded
+#define MAYBE_Abort Abort
 #endif
 
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, MAYBE_PostMessage) {
-  const extensions::Extension* extension = LoadTestExtension();
-  ASSERT_TRUE(extension);
+  RunTest("test_postmessage.html");
+}
 
-  extensions::ResultCatcher catcher;
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, MAYBE_Basic) {
+  RunTest("testBasic.csv");
+}
 
-  GURL extension_url("chrome-extension://" +
-                     std::string(kExtensionId) +
-                     "/test_postmessage.html");
-  ui_test_utils::NavigateToURL(browser(), extension_url);
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, MAYBE_Embedded) {
+  RunTest("test_embedded.html");
+}
 
-  if (!catcher.GetNextResult())
-    FAIL() << catcher.message();
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, MAYBE_Abort) {
+  RunTest("testAbort.csv");
 }

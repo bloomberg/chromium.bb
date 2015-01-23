@@ -60,8 +60,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -85,7 +83,9 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/escape.h"
@@ -3613,7 +3613,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, StreamsTest) {
   const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("streams_private/handle_mime_type"));
   ASSERT_TRUE(extension);
-  EXPECT_EQ(std::string(extension_misc::kStreamsPrivateTestExtensionId),
+  EXPECT_EQ(std::string(extension_misc::kMimeHandlerPrivateTestExtensionId),
             extension->id());
   MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
   ASSERT_TRUE(handler);

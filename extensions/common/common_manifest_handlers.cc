@@ -17,6 +17,7 @@
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "extensions/common/manifest_handlers/launcher_page_info.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/common/manifest_handlers/nacl_modules_handler.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
@@ -41,6 +42,7 @@ void RegisterCommonManifestHandlers() {
   (new IncognitoHandler)->Register();
   (new KioskModeHandler)->Register();
   (new LauncherPageHandler)->Register();
+  (new MimeTypesHandlerParser)->Register();
 #if !defined(DISABLE_NACL)
   (new NaClModulesHandler)->Register();
 #endif

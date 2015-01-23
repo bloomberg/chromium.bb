@@ -74,11 +74,6 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   content::BrowserContext* const browser_context_;
   StreamMap streams_;
 
-  // The streams whose lifetimes are managed by MimeHandlerViewGuest.
-  std::map<std::string,
-           std::map<GURL, std::pair<content::WebContents*, std::string>>>
-      mime_handler_streams_;
-
   // Listen to extension unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

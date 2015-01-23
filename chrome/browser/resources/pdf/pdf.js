@@ -492,7 +492,7 @@ PDFViewer.prototype = {
         this.errorScreen_.text = message.data.loadFailedString;
         break;
       case 'cancelStreamUrl':
-        chrome.streamsPrivate.abort(this.streamDetails_.streamUrl);
+        chrome.mimeHandlerPrivate.abortStream();
         break;
       case 'bookmarks':
         this.bookmarks_ = message.data.bookmarks;

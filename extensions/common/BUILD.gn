@@ -141,6 +141,8 @@ if (enable_extensions) {
       "manifest_handlers/kiosk_mode_info.h",
       "manifest_handlers/launcher_page_info.cc",
       "manifest_handlers/launcher_page_info.h",
+      "manifest_handlers/mime_types_handler.cc",
+      "manifest_handlers/mime_types_handler.h",
       "manifest_handlers/oauth2_manifest_handler.cc",
       "manifest_handlers/oauth2_manifest_handler.h",
       "manifest_handlers/offline_enabled_info.cc",

@@ -8,15 +8,14 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/common/extensions/api/streams_private.h"
-#include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "net/http/http_response_headers.h"
 
 namespace extensions {
@@ -40,22 +39,6 @@ void CreateResponseHeadersDictionary(const net::HttpResponseHeaders* headers,
       result->SetString(header_name, header_value);
     }
   }
-}
-
-// If |guest_web_contents| has a MimeHandlerViewGuest with view id of |view_id|,
-// abort it. Returns true if the MimeHandlerViewGuest has a matching view id.
-bool MaybeAbortStreamInGuest(const std::string& view_id,
-                             content::WebContents* guest_web_contents) {
-  MimeHandlerViewGuest* guest =
-      MimeHandlerViewGuest::FromWebContents(guest_web_contents);
-  if (!guest)
-    return false;
-  if (guest->view_id() != view_id)
-    return false;
-  base::WeakPtr<StreamContainer> stream = guest->GetStream();
-  if (stream)
-    stream->Abort();
-  return true;
 }
 
 }  // namespace
@@ -92,6 +75,21 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
   if (!extension)
     return;
 
+  MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
+  // If the mime handler uses MimeHandlerViewGuest, the MimeHandlerViewGuest
+  // will take ownership of the stream. Otherwise, store the stream handle in
+  // |streams_| and fire an event notifying the extension.
+  if (!handler->handler_url().empty()) {
+    GURL handler_url(Extension::GetBaseURLFromExtensionId(extension_id).spec() +
+                     handler->handler_url());
+    auto tab_id = ExtensionTabUtil::GetTabId(web_contents);
+    scoped_ptr<StreamContainer> stream_container(new StreamContainer(
+        stream.Pass(), tab_id, embedded, handler_url, extension_id));
+    MimeHandlerStreamManager::Get(browser_context_)
+        ->AddStream(view_id, stream_container.Pass(), render_process_id,
+                    render_frame_id);
+    return;
+  }
   // Create the event's arguments value.
   streams_private::StreamInfo info;
   info.mime_type = stream->mime_type;
@@ -118,55 +116,14 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
 
   EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
-  MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
-  GURL url = stream->handle->GetURL();
-  // If the mime handler uses MimeHandlerViewGuest, the MimeHandlerViewGuest
-  // will take ownership of the stream. Otherwise, store the stream handle in
-  // |streams_|.
-  if (handler->handler_url().empty()) {
-    streams_[extension_id][url] = make_linked_ptr(stream->handle.release());
-    return;
-  }
 
-  GURL handler_url(Extension::GetBaseURLFromExtensionId(extension_id).spec() +
-                   handler->handler_url() + "?id=" + view_id);
-  MimeHandlerStreamManager::Get(browser_context_)
-      ->AddStream(view_id, make_scoped_ptr(new StreamContainer(
-                               stream.Pass(), handler_url, extension_id)),
-                  render_process_id, render_frame_id);
-  // If the mime handler uses MimeHandlerViewGuest, we need to be able to look
-  // up the MimeHandlerViewGuest instance that is handling the streamed
-  // resource in order to abort the stream. The embedding WebContents and the
-  // view id are necessary to perform that lookup.
-  mime_handler_streams_[extension_id][url] =
-      std::make_pair(web_contents, view_id);
+  GURL url = stream->handle->GetURL();
+  streams_[extension_id][url] = make_linked_ptr(stream->handle.release());
 }
 
 void StreamsPrivateAPI::AbortStream(const std::string& extension_id,
                                     const GURL& stream_url,
                                     const base::Closure& callback) {
-  auto streams = mime_handler_streams_.find(extension_id);
-  if (streams != mime_handler_streams_.end()) {
-    auto stream_info = streams->second.find(stream_url);
-    if (stream_info != streams->second.end()) {
-      scoped_ptr<StreamContainer> stream =
-          MimeHandlerStreamManager::Get(browser_context_)
-              ->ReleaseStream(stream_info->second.second);
-      // If the mime handler uses MimeHandlerViewGuest, the stream will either
-      // be owned by the particular MimeHandlerViewGuest if it has been created,
-      // or by the MimeHandleStreamManager, otherwise.
-      if (!stream) {
-        GuestViewManager::FromBrowserContext(browser_context_)
-            ->ForEachGuest(stream_info->second.first,
-                           base::Bind(&MaybeAbortStreamInGuest,
-                                      stream_info->second.second));
-      }
-      streams->second.erase(stream_info);
-      callback.Run();
-    }
-    return;
-  }
-
   StreamMap::iterator extension_it = streams_.find(extension_id);
   if (extension_it == streams_.end()) {
     callback.Run();
@@ -189,7 +146,6 @@ void StreamsPrivateAPI::OnExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
   streams_.erase(extension->id());
-  mime_handler_streams_.erase(extension->id());
 }
 
 StreamsPrivateAbortFunction::StreamsPrivateAbortFunction() {

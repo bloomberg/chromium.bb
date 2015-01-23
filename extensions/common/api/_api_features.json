@@ -185,6 +185,10 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
+  "mimeHandlerPrivate": {
+    "dependencies": ["manifest:mime_types_handler"],
+    "contexts": ["blessed_extension"]
+  },
   "mojoPrivate": {
     "contexts": ["blessed_extension"],
     "channel": "stable",

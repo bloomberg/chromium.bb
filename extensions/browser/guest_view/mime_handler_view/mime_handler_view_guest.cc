@@ -9,8 +9,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
+#include "content/public/common/service_registry.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
@@ -27,9 +29,13 @@ using content::WebContents;
 namespace extensions {
 
 StreamContainer::StreamContainer(scoped_ptr<content::StreamInfo> stream,
+                                 int tab_id,
+                                 bool embedded,
                                  const GURL& handler_url,
                                  const std::string& extension_id)
     : stream_(stream.Pass()),
+      embedded_(embedded),
+      tab_id_(tab_id),
       handler_url_(handler_url),
       extension_id_(extension_id),
       weak_factory_(this) {
@@ -38,7 +44,12 @@ StreamContainer::StreamContainer(scoped_ptr<content::StreamInfo> stream,
 StreamContainer::~StreamContainer() {
 }
 
-void StreamContainer::Abort() {
+void StreamContainer::Abort(const base::Closure& callback) {
+  if (!stream_) {
+    callback.Run();
+    return;
+  }
+  stream_->handle->AddCloseListener(callback);
   stream_->handle.reset();
 }
 
@@ -126,6 +137,8 @@ void MimeHandlerViewGuest::DidAttachToEmbedder() {
   web_contents()->GetController().LoadURL(
       stream_->handler_url(), content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+  web_contents()->GetMainFrame()->GetServiceRegistry()->AddService(
+      base::Bind(&MimeHandlerServiceImpl::Create, stream_->GetWeakPtr()));
 }
 
 void MimeHandlerViewGuest::DidInitialize(

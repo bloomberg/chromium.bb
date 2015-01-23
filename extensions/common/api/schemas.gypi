@@ -29,6 +29,7 @@
       'management.json',
       'hid.idl',
       'idle.json',
+      'mime_handler_private.idl',
       'mime_handler_view_guest_internal.json',
       'mojo_private.idl',
       'power.idl',

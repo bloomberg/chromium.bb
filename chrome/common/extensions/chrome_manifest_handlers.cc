@@ -25,7 +25,6 @@
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_handlers/copresence_manifest.h"
 #include "chrome/common/extensions/manifest_handlers/extension_action_handler.h"
-#include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "chrome/common/extensions/manifest_handlers/minimum_chrome_version_checker.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
@@ -53,7 +52,6 @@ void RegisterChromeManifestHandlers() {
 #if defined(OS_CHROMEOS)
   (new InputComponentsHandler)->Register();
 #endif
-  (new MimeTypesHandlerParser)->Register();
   (new MinimumChromeVersionChecker)->Register();
   (new OmniboxHandler)->Register();
   (new OptionsPageManifestHandler)->Register();

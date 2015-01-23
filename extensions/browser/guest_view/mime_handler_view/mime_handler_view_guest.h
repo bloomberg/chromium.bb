@@ -23,21 +23,27 @@ class MimeHandlerViewGuestDelegate;
 class StreamContainer {
  public:
   StreamContainer(scoped_ptr<content::StreamInfo> stream,
+                  int tab_id,
+                  bool embedded,
                   const GURL& handler_url,
                   const std::string& extension_id);
   ~StreamContainer();
 
   // Aborts the stream.
-  void Abort();
+  void Abort(const base::Closure& callback);
 
   base::WeakPtr<StreamContainer> GetWeakPtr();
 
   const content::StreamInfo* stream_info() const { return stream_.get(); }
+  bool embedded() const { return embedded_; }
+  int tab_id() const { return tab_id_; }
   GURL handler_url() const { return handler_url_; }
   std::string extension_id() const { return extension_id_; }
 
  private:
   const scoped_ptr<content::StreamInfo> stream_;
+  const bool embedded_;
+  const int tab_id_;
   const GURL handler_url_;
   const std::string extension_id_;
 

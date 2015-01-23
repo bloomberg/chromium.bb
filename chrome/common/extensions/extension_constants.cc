@@ -47,15 +47,7 @@ const char kHotwordAudioVerificationAppId[] =
 const char kHotwordExtensionId[] = "bepbmhgboaologfdajaanbcjmnhjmhfn";
 const char kHotwordNewExtensionId[] = "nbpagnldghgfoolbancepceaanlmhfmd";
 const char kHotwordSharedModuleId[] = "lccekmodgklaepjeofjdjpbminllajkg";
-const char kPdfExtensionId[] = "mhjfbmdgcfjbbpaeojofohoefgiehjai";
-const char kQuickOfficeComponentExtensionId[] =
-    "bpmcpldpdmajfigpchkicefoigmkfalc";
-const char kQuickOfficeInternalExtensionId[] =
-    "ehibbfinohgbchlgdbfpikodjaojhccn";
-const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
 const char kSettingsAppId[] = "ennkphjdgehloodpbhlhldgbnhmacadg";
-const char kStreamsPrivateTestExtensionId[] =
-    "oickdpebdnfbgkcaoklfcdhjniefkcji";
 const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
 const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
 

@@ -4,14 +4,30 @@
 
 import("//build/config/features.gni")
 import("//build/json_schema_api.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 import("schemas.gni")
 
 assert(enable_extensions)
 
-# GYP version: extensions/common/api/api.gyp:extensions_api
-json_schema_api("api") {
+json_schema_api("generated_api") {
   schemas = true
   bundle = true
+}
+
+# GYP version: extensions/common/api/api.gyp:extensions_api_mojom
+mojom("mojom") {
+  sources = []
+  sources = [
+    "mime_handler.mojom",
+  ]
+}
+
+# GYP version: extensions/common/api/api.gyp:extensions_api
+source_set("api") {
+  deps = [
+    ":mojom",
+    ":generated_api",
+  ]
 }
 
 # GYP version: extensions/browser/api/api_registration.gyp:extensions_api_registration

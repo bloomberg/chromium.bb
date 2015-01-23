@@ -167,30 +167,6 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
-  "mime_types": {
-    "channel": "stable",
-    "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ],
-    "whitelist": [
-      "oickdpebdnfbgkcaoklfcdhjniefkcji",  // browser_tests
-      "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // QuickOffice
-      "ionpfmkccalenbmnddpbmocokhaknphg",  // QuickOffice Dev
-      "bpmcpldpdmajfigpchkicefoigmkfalc",  // Quickoffice component extension
-      "ehibbfinohgbchlgdbfpikodjaojhccn",  // Editor
-      "mhjfbmdgcfjbbpaeojofohoefgiehjai"   // PDF
-    ]
-  },
-  "mime_types_handler": {
-    "channel": "stable",
-    "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ],
-    "whitelist": [
-      "oickdpebdnfbgkcaoklfcdhjniefkcji",  // browser_tests
-      "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // QuickOffice
-      "ionpfmkccalenbmnddpbmocokhaknphg",  // QuickOffice Dev
-      "bpmcpldpdmajfigpchkicefoigmkfalc",  // Quickoffice component extension
-      "ehibbfinohgbchlgdbfpikodjaojhccn",  // Editor
-      "mhjfbmdgcfjbbpaeojofohoefgiehjai"   // PDF
-    ]
-  },
   "minimum_chrome_version": {
     "channel": "stable",
     "extension_types": [
