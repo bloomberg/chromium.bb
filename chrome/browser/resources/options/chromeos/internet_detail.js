@@ -1639,7 +1639,7 @@ cr.define('options.internet', function() {
             /** @type {{value: *, controlledBy: *, recommendedValue: *}} */(
                 propValue));
       indicators[i].handlePrefChange(event);
-      var forElement = $(indicators[i].getAttribute('for'));
+      var forElement = $(indicators[i].getAttribute('internet-detail-for'));
       if (forElement) {
         if (event.value.controlledBy == 'policy')
           forElement.disabled = true;
