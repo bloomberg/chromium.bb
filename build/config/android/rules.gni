@@ -1341,9 +1341,7 @@ template("android_apk") {
       outputs = [
         depfile,
       ]
-      inputs = [
-        _build_config,
-      ]
+      inputs = [ _build_config ] + _native_libs
       deps = []
       skip_packing_list = [
         "gdbserver",

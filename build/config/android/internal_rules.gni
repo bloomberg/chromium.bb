@@ -273,6 +273,7 @@ template("write_build_config") {
 
     if (is_apk) {
       if (defined(invoker.native_libs)) {
+        inputs += invoker.native_libs
         rebased_native_libs = rebase_path(invoker.native_libs, root_build_dir)
         rebased_android_readelf = rebase_path(android_readelf, root_build_dir)
         args += [
