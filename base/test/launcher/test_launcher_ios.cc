@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/strings/string_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
@@ -54,9 +55,9 @@ void PrintUsage() {
   fflush(stdout);
 }
 
-class IOSUnitTestLauncherDelegate : public base::UnitTestLauncherDelegate {
+class IOSUnitTestPlatformDelegate : public base::UnitTestPlatformDelegate {
  public:
-  IOSUnitTestLauncherDelegate() : base::UnitTestLauncherDelegate(0, false) {
+  IOSUnitTestPlatformDelegate() {
   }
 
   bool Init() WARN_UNUSED_RESULT {
@@ -107,6 +108,27 @@ class IOSUnitTestLauncherDelegate : public base::UnitTestLauncherDelegate {
     return base::ReadTestNamesFromFile(test_list_path, output);
   }
 
+  bool CreateTemporaryFile(base::FilePath* path) override {
+    if (!CreateTemporaryDirInDir(writable_path_, std::string(), path))
+      return false;
+    *path = path->AppendASCII("test_results.xml");
+    return true;
+  }
+
+  base::CommandLine GetCommandLineForChildGTestProcess(
+      const std::vector<std::string>& test_names,
+      const base::FilePath& output_file) override {
+    base::CommandLine cmd_line(dir_exe_.AppendASCII(test_name_ + ".app"));
+    cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
+    cmd_line.AppendSwitchASCII(base::kGTestFilterFlag,
+                               JoinString(test_names, ":"));
+    return cmd_line;
+  }
+
+  std::string GetWrapperForChildGTestProcess() override {
+    return dir_exe_.AppendASCII("iossim").value();
+  }
+
  private:
   // Directory containing test launcher's executable.
   base::FilePath dir_exe_;
@@ -117,7 +139,7 @@ class IOSUnitTestLauncherDelegate : public base::UnitTestLauncherDelegate {
   // Path that launched test binary can write to.
   base::FilePath writable_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(IOSUnitTestLauncherDelegate);
+  DISALLOW_COPY_AND_ASSIGN(IOSUnitTestPlatformDelegate);
 };
 
 }  // namespace
@@ -138,12 +160,13 @@ int main(int argc, char** argv) {
 
   base::MessageLoopForIO message_loop;
 
-  IOSUnitTestLauncherDelegate delegate;
-  if (!delegate.Init()) {
-    fprintf(stderr, "Failed to intialize test launcher delegate.\n");
+  IOSUnitTestPlatformDelegate platform_delegate;
+  if (!platform_delegate.Init()) {
+    fprintf(stderr, "Failed to intialize test launcher platform delegate.\n");
     fflush(stderr);
     return 1;
   }
+  base::UnitTestLauncherDelegate delegate(&platform_delegate, 0, false);
   // Force one job since we can't run multiple simulators in parallel.
   base::TestLauncher launcher(&delegate, 1);
   bool success = launcher.Run();

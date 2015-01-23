@@ -11,6 +11,11 @@
 
 namespace base {
 
+std::string FormatFullTestName(const std::string& test_case_name,
+                               const std::string& test_name) {
+  return test_case_name + "." + test_name;
+}
+
 std::vector<SplitTestName> GetCompiledInTests() {
   testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
 

@@ -686,12 +686,6 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
   test_started_count_ += retry_started_count;
 }
 
-// static
-std::string TestLauncher::FormatFullTestName(const std::string& test_case_name,
-                                             const std::string& test_name) {
-  return test_case_name + "." + test_name;
-}
-
 bool TestLauncher::Init() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 

@@ -85,20 +85,44 @@ void PrintUsage() {
   fflush(stdout);
 }
 
-// Returns command line for child GTest process based on the command line
-// of current process. |test_names| is a vector of test full names
-// (e.g. "A.B"), |output_file| is path to the GTest XML output file.
-CommandLine GetCommandLineForChildGTestProcess(
-    const std::vector<std::string>& test_names,
-    const base::FilePath& output_file) {
-  CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
+class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
+ public:
+  DefaultUnitTestPlatformDelegate() {
+  }
 
-  new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
-  new_cmd_line.AppendSwitchASCII(kGTestFilterFlag, JoinString(test_names, ":"));
-  new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
+ private:
+  // UnitTestPlatformDelegate:
+  bool GetTests(std::vector<SplitTestName>* output) override {
+    *output = GetCompiledInTests();
+    return true;
+  }
 
-  return new_cmd_line;
-}
+  bool CreateTemporaryFile(base::FilePath* path) override {
+    if (!CreateNewTempDirectory(FilePath::StringType(), path))
+      return false;
+    *path = path->AppendASCII("test_results.xml");
+    return true;
+  }
+
+  CommandLine GetCommandLineForChildGTestProcess(
+      const std::vector<std::string>& test_names,
+      const base::FilePath& output_file) override {
+    CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
+
+    new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
+    new_cmd_line.AppendSwitchASCII(kGTestFilterFlag,
+                                   JoinString(test_names, ":"));
+    new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
+
+    return new_cmd_line;
+  }
+
+  std::string GetWrapperForChildGTestProcess() override {
+    return std::string();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultUnitTestPlatformDelegate);
+};
 
 bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switch_name))
@@ -169,7 +193,9 @@ int LaunchUnitTestsInternal(const RunTestSuiteCallback& run_test_suite,
 
   MessageLoopForIO message_loop;
 
-  UnitTestLauncherDelegate delegate(batch_limit, use_job_objects);
+  DefaultUnitTestPlatformDelegate platform_delegate;
+  UnitTestLauncherDelegate delegate(
+      &platform_delegate, batch_limit, use_job_objects);
   base::TestLauncher launcher(&delegate, default_jobs);
   bool success = launcher.Run();
 
@@ -221,9 +247,13 @@ int LaunchUnitTests(int argc,
 }
 #endif  // defined(OS_WIN)
 
-UnitTestLauncherDelegate::UnitTestLauncherDelegate(size_t batch_limit,
-                                                   bool use_job_objects)
-    : batch_limit_(batch_limit), use_job_objects_(use_job_objects) {
+UnitTestLauncherDelegate::UnitTestLauncherDelegate(
+    UnitTestPlatformDelegate* platform_delegate,
+    size_t batch_limit,
+    bool use_job_objects)
+    : platform_delegate_(platform_delegate),
+      batch_limit_(batch_limit),
+      use_job_objects_(use_job_objects) {
 }
 
 UnitTestLauncherDelegate::~UnitTestLauncherDelegate() {
@@ -238,8 +268,7 @@ UnitTestLauncherDelegate::GTestCallbackState::~GTestCallbackState() {
 
 bool UnitTestLauncherDelegate::GetTests(std::vector<SplitTestName>* output) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  *output = GetCompiledInTests();
-  return true;
+  return platform_delegate_->GetTests(output);
 }
 
 bool UnitTestLauncherDelegate::ShouldRunTest(const std::string& test_case_name,
@@ -259,7 +288,8 @@ size_t UnitTestLauncherDelegate::RunTests(
   for (size_t i = 0; i < test_names.size(); i++) {
     batch.push_back(test_names[i]);
 
-    if (batch.size() >= batch_limit_) {
+    // Use 0 to indicate unlimited batch size.
+    if (batch.size() >= batch_limit_ && batch_limit_ != 0) {
       RunBatch(test_launcher, batch);
       batch.clear();
     }
@@ -293,13 +323,12 @@ void UnitTestLauncherDelegate::RunSerially(
   // per run to ensure clean state and make it possible to launch multiple
   // processes in parallel.
   base::FilePath output_file;
-  CHECK(CreateNewTempDirectory(FilePath::StringType(), &output_file));
-  output_file = output_file.AppendASCII("test_results.xml");
+  CHECK(platform_delegate_->CreateTemporaryFile(&output_file));
 
   std::vector<std::string> current_test_names;
   current_test_names.push_back(test_name);
-  CommandLine cmd_line(
-      GetCommandLineForChildGTestProcess(current_test_names, output_file));
+  CommandLine cmd_line(platform_delegate_->GetCommandLineForChildGTestProcess(
+      current_test_names, output_file));
 
   GTestCallbackState callback_state;
   callback_state.test_launcher = test_launcher;
@@ -307,7 +336,9 @@ void UnitTestLauncherDelegate::RunSerially(
   callback_state.output_file = output_file;
 
   test_launcher->LaunchChildGTestProcess(
-      cmd_line, std::string(), TestTimeouts::test_launcher_timeout(),
+      cmd_line,
+      platform_delegate_->GetWrapperForChildGTestProcess(),
+      TestTimeouts::test_launcher_timeout(),
       use_job_objects_ ? TestLauncher::USE_JOB_OBJECTS : 0,
       Bind(&UnitTestLauncherDelegate::SerialGTestCallback, Unretained(this),
            callback_state, new_test_names));
@@ -325,11 +356,10 @@ void UnitTestLauncherDelegate::RunBatch(
   // per run to ensure clean state and make it possible to launch multiple
   // processes in parallel.
   base::FilePath output_file;
-  CHECK(CreateNewTempDirectory(FilePath::StringType(), &output_file));
-  output_file = output_file.AppendASCII("test_results.xml");
+  CHECK(platform_delegate_->CreateTemporaryFile(&output_file));
 
-  CommandLine cmd_line(
-      GetCommandLineForChildGTestProcess(test_names, output_file));
+  CommandLine cmd_line(platform_delegate_->GetCommandLineForChildGTestProcess(
+      test_names, output_file));
 
   // Adjust the timeout depending on how many tests we're running
   // (note that e.g. the last batch of tests will be smaller).
@@ -346,7 +376,9 @@ void UnitTestLauncherDelegate::RunBatch(
   callback_state.output_file = output_file;
 
   test_launcher->LaunchChildGTestProcess(
-      cmd_line, std::string(), timeout,
+      cmd_line,
+      platform_delegate_->GetWrapperForChildGTestProcess(),
+      timeout,
       use_job_objects_ ? TestLauncher::USE_JOB_OBJECTS : 0,
       Bind(&UnitTestLauncherDelegate::GTestCallback, Unretained(this),
            callback_state));

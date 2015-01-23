@@ -171,7 +171,6 @@ void TestSuite::ResetCommandLine() {
   listeners.Append(new TestClientInitializer);
 }
 
-#if !defined(OS_IOS)
 void TestSuite::AddTestLauncherResultPrinter() {
   // Only add the custom printer if requested.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -197,7 +196,6 @@ void TestSuite::AddTestLauncherResultPrinter() {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(printer);
 }
-#endif  // !defined(OS_IOS)
 
 // Don't add additional code to this method.  Instead add it to
 // Initialize().  See bug 6436.
@@ -326,9 +324,7 @@ void TestSuite::Initialize() {
 
   CatchMaybeTests();
   ResetCommandLine();
-#if !defined(OS_IOS)
   AddTestLauncherResultPrinter();
-#endif  // !defined(OS_IOS)
 
   TestTimeouts::Initialize();
 

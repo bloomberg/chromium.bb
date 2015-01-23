@@ -33,10 +33,38 @@ int LaunchUnitTests(int argc,
                     const RunTestSuiteCallback& run_test_suite);
 #endif  // defined(OS_WIN)
 
+// Delegate to abstract away platform differences for unit tests.
+class UnitTestPlatformDelegate {
+ public:
+  // Called to get names of tests available for running. The delegate
+  // must put the result in |output| and return true on success.
+  virtual bool GetTests(std::vector<SplitTestName>* output) = 0;
+
+  // Called to create a temporary file. The delegate must put the resulting
+  // path in |path| and return true on success.
+  virtual bool CreateTemporaryFile(base::FilePath* path) = 0;
+
+  // Returns command line for child GTest process based on the command line
+  // of current process. |test_names| is a vector of test full names
+  // (e.g. "A.B"), |output_file| is path to the GTest XML output file.
+  virtual CommandLine GetCommandLineForChildGTestProcess(
+      const std::vector<std::string>& test_names,
+      const base::FilePath& output_file) = 0;
+
+  // Returns wrapper to use for child GTest process. Empty string means
+  // no wrapper.
+  virtual std::string GetWrapperForChildGTestProcess() = 0;
+
+ protected:
+  ~UnitTestPlatformDelegate() {}
+};
+
 // Test launcher delegate for unit tests (mostly to support batching).
 class UnitTestLauncherDelegate : public TestLauncherDelegate {
  public:
-  explicit UnitTestLauncherDelegate(size_t batch_limit, bool use_job_objects);
+  UnitTestLauncherDelegate(UnitTestPlatformDelegate* delegate,
+                           size_t batch_limit,
+                           bool use_job_objects);
   ~UnitTestLauncherDelegate() override;
 
  private:
@@ -92,6 +120,8 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
                                  std::vector<std::string>* tests_to_relaunch);
 
   ThreadChecker thread_checker_;
+
+  UnitTestPlatformDelegate* platform_delegate_;
 
   // Maximum number of tests to run in a single batch.
   size_t batch_limit_;
