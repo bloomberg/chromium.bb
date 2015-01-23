@@ -18171,6 +18171,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.CookieSentToAccountsOverChannelId"
+    enum="BooleanUsage">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    Logs whether channel ID was used when a cookie is sent over QUIC to
+    https://accounts.google.com.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.CreationError" enum="QuicSessionErrorCodes">
   <owner>jar@chromium.org</owner>
   <owner>rch@chromium.org</owner>
