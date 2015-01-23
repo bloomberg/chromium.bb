@@ -120,30 +120,6 @@ const char* const kMockHttpsQuickTimeoutUrl =
 // captive portal.
 const char* const kInternetConnectedTitle = "Title Of Awesomeness";
 
-// Wait until all resources have loaded in an interstitial page.
-bool WaitForInterstitialReady(content::InterstitialPage* interstitial) {
-  content::RenderFrameHost* rfh = interstitial->GetMainFrame();
-  if (!rfh)
-    return false;
-  bool load_complete = false;
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractBool(
-          rfh,
-          "(function() {"
-          "  var done = false;"
-          "  function checkState() {"
-          "    if (!done && document.readyState == 'complete') {"
-          "      done = true;"
-          "      window.domAutomationController.send(true);"
-          "    }"
-          "  }"
-          "  checkState();"
-          "  document.addEventListener('readystatechange', checkState);"
-          "})();",
-          &load_complete));
-  return load_complete;
-}
-
 // A URL request job that hangs until FailJobs() is called.  Started jobs
 // are stored in a static class variable containing a linked list so that
 // FailJobs() can locate them.
@@ -1982,10 +1958,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   tab_strip_model->ActivateTabAt(cert_error_tab_index, false);
   // Wait for the interstitial to load all the JavaScript code. Otherwise,
   // trying to click on a button will fail.
-  EXPECT_TRUE(WaitForInterstitialReady(
-      broken_tab_contents->GetInterstitialPage()));
   content::RenderFrameHost* rfh =
       broken_tab_contents->GetInterstitialPage()->GetMainFrame();
+  EXPECT_TRUE(WaitForRenderFrameReady(rfh));
   const char kClickConnectButtonJS[] =
       "document.getElementById('primary-button').click();";
   EXPECT_TRUE(

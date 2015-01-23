@@ -243,6 +243,12 @@ void WaitForInterstitialDetach(content::WebContents* web_contents);
 void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
                                          const base::Closure& task);
 
+// Waits until all resources have loaded in the given RenderFrameHost.
+// When the load completes, this function sends a "pageLoadComplete" message
+// via domAutomationController. The caller should make sure this extra
+// message is handled properly.
+bool WaitForRenderFrameReady(RenderFrameHost* rfh) WARN_UNUSED_RESULT;
+
 // Watches title changes on a WebContents, blocking until an expected title is
 // set.
 class TitleWatcher : public WebContentsObserver {

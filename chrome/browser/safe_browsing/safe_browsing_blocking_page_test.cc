@@ -512,20 +512,11 @@ class SafeBrowsingBlockingPageBrowserTest
   }
 
   bool WaitForReady() {
-    content::RenderViewHost* rvh = GetRenderViewHost();
-    if (!rvh)
+    InterstitialPage* interstitial = InterstitialPage::GetInterstitialPage(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    if (!interstitial)
       return false;
-    // Wait until all <script> tags have executed, including jstemplate.
-    // TODO(joaodasilva): it would be nice to avoid the busy loop, though in
-    // practice it spins at most once or twice.
-    std::string ready_state;
-    do {
-      scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
-          rvh->GetMainFrame(), "document.readyState");
-      if (!value.get() || !value->GetAsString(&ready_state))
-        return false;
-    } while (ready_state != "complete");
-    return true;
+    return content::WaitForRenderFrameReady(interstitial->GetMainFrame());
   }
 
   Visibility GetVisibility(const std::string& node_id) {

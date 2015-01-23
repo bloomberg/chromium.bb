@@ -220,6 +220,13 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   if (command.length() > 1 && command[0] == '"') {
     command = command.substr(1, command.length() - 2);
   }
+
+  if (command == "pageLoadComplete") {
+    // content::WaitForRenderFrameReady sends this message when the page
+    // load completes. Ignore it.
+    return;
+  }
+
   if (command == kDoReportCommand) {
     SetReportingPreference(true);
     return;
