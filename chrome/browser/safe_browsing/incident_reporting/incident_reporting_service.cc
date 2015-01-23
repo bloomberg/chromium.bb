@@ -27,7 +27,6 @@
 #include "chrome/browser/safe_browsing/incident_reporting/environment_data_collection.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.h"
-#include "chrome/browser/safe_browsing/incident_reporting/omnibox_watcher.h"
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
@@ -155,9 +154,6 @@ struct IncidentReportingService::ProfileContext {
   // The incidents collected for this profile pending creation and/or upload.
   // Will contain null values for pruned incidents.
   ScopedVector<Incident> incidents;
-
-  // Watches for suspicious omnibox interactions on this profile.
-  scoped_ptr<OmniboxWatcher> omnibox_watcher;
 
   // False until PROFILE_ADDED notification is received.
   bool added;
@@ -364,11 +360,6 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
   // so that the service can determine whether or not it can evaluate a
   // profile's preferences at the time of incident addition.
   ProfileContext* context = GetOrCreateProfileContext(profile);
-  // Start watching the profile now if necessary.
-  if (!context->omnibox_watcher) {
-    context->omnibox_watcher.reset(
-        new OmniboxWatcher(profile, GetAddIncidentCallback(profile)));
-  }
   context->added = true;
 
   const bool safe_browsing_enabled =

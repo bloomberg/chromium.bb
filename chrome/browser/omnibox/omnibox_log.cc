@@ -11,7 +11,6 @@ OmniboxLog::OmniboxLog(
     bool is_popup_open,
     size_t selected_index,
     bool is_paste_and_go,
-    bool last_action_was_paste,
     SessionID::id_type tab_id,
     metrics::OmniboxEventProto::PageClassification current_page_classification,
     base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
@@ -24,7 +23,6 @@ OmniboxLog::OmniboxLog(
       is_popup_open(is_popup_open),
       selected_index(selected_index),
       is_paste_and_go(is_paste_and_go),
-      last_action_was_paste(last_action_was_paste),
       tab_id(tab_id),
       current_page_classification(current_page_classification),
       elapsed_time_since_user_first_modified_omnibox(

@@ -26,7 +26,6 @@ struct OmniboxLog {
       bool is_popup_open,
       size_t selected_index,
       bool is_paste_and_go,
-      bool last_action_was_paste,
       SessionID::id_type tab_id,
       metrics::OmniboxEventProto::PageClassification
           current_page_classification,
@@ -56,10 +55,6 @@ struct OmniboxLog {
   // True if this is a paste-and-search or paste-and-go omnibox interaction.
   // (The codebase refers to both these types as paste-and-go.)
   bool is_paste_and_go;
-
-  // True if the user's last action was a paste or if (somehow) the user is
-  // still in the act of pasting.
-  bool last_action_was_paste;
 
   // ID of the tab the selected autocomplete suggestion was opened in.
   // Set to -1 if we haven't yet determined the destination tab.
