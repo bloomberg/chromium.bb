@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -175,6 +176,11 @@ QuicClientSession::QuicClientSession(
       num_packets_read_(0),
       going_away_(false),
       weak_factory_(this) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicClientSession::QuicClientSession"));
+
   connection->set_debug_visitor(logger_);
   IPEndPoint address;
   if (socket && socket->GetLocalAddress(&address) == OK &&

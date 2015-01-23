@@ -1108,6 +1108,11 @@ int QuicStreamFactory::CreateSession(
     server_info->Start();
   }
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile6(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::CreateSession61"));
+
   *session = new QuicClientSession(
       connection, socket.Pass(), this, transport_security_state_,
       server_info.Pass(), config,
