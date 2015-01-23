@@ -62,8 +62,8 @@ void WifiAccessPointInfoProviderChromeos::ParseInfo(
     const std::string &service_path,
     const base::DictionaryValue& properties) {
   // Skip services that contain "_nomap" in the SSID.
-  std::string ssid =
-      chromeos::shill_property_util::GetSSIDFromProperties(properties, NULL);
+  std::string ssid = chromeos::shill_property_util::GetSSIDFromProperties(
+      properties, false /* verbose_logging */, nullptr);
   if (ssid.find("_nomap", 0) != std::string::npos)
     return;
 

@@ -318,7 +318,7 @@ void ShillToONCTranslator::TranslateWiFiWithState() {
                            ::onc::wifi::kSecurity);
   bool unknown_encoding = true;
   std::string ssid = shill_property_util::GetSSIDFromProperties(
-      *shill_dictionary_, &unknown_encoding);
+      *shill_dictionary_, false /* verbose_logging */, &unknown_encoding);
   if (!unknown_encoding && !ssid.empty())
     onc_object_->SetStringWithoutPathExpansion(::onc::wifi::kSSID, ssid);
 

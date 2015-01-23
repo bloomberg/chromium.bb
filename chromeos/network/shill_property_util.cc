@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/values.h"
-#include "chromeos/network/network_event_log.h"
+#include "chromeos/device_event_log.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -65,12 +65,10 @@ void SetSSID(const std::string ssid, base::DictionaryValue* properties) {
 }
 
 std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
+                                  bool verbose_logging,
                                   bool* unknown_encoding) {
-  bool verbose_logging = false;
-  if (unknown_encoding) {
+  if (unknown_encoding)
     *unknown_encoding = false;
-    verbose_logging = true;
-  }
 
   // Get name for debugging.
   std::string name;
@@ -80,8 +78,9 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   properties.GetStringWithoutPathExpansion(shill::kWifiHexSsid, &hex_ssid);
 
   if (hex_ssid.empty()) {
+    // Note: use VLOG here to avoid spamming the event log.
     if (verbose_logging)
-      NET_LOG_DEBUG("GetSSIDFromProperties: No HexSSID set.", name);
+      NET_LOG(DEBUG) << "GetSSIDFromProperties: No HexSSID set: " << name;
     return std::string();
   }
 
@@ -90,13 +89,12 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   if (base::HexStringToBytes(hex_ssid, &raw_ssid_bytes)) {
     ssid = std::string(raw_ssid_bytes.begin(), raw_ssid_bytes.end());
     if (verbose_logging) {
-      NET_LOG_DEBUG(base::StringPrintf("GetSSIDFromProperties: %s, SSID: %s",
-                                       hex_ssid.c_str(), ssid.c_str()), name);
+      NET_LOG(DEBUG) << "GetSSIDFromProperties: " << name
+                     << " HexSsid=" << hex_ssid << " SSID=" << ssid;
     }
   } else {
-    NET_LOG_ERROR(
-        base::StringPrintf("GetSSIDFromProperties: Error processing: %s",
-                           hex_ssid.c_str()), name);
+    NET_LOG(ERROR) << "GetSSIDFromProperties: " << name
+                   << " Error processing HexSsid: " << hex_ssid;
     return std::string();
   }
 
@@ -117,9 +115,9 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
       base::ConvertToUtf8AndNormalize(ssid, encoding, &utf8_ssid)) {
     if (utf8_ssid != ssid) {
       if (verbose_logging) {
-        NET_LOG_DEBUG(
-            base::StringPrintf("GetSSIDFromProperties: Encoding=%s: %s",
-                               encoding.c_str(), utf8_ssid.c_str()), name);
+        NET_LOG(DEBUG) << "GetSSIDFromProperties: " << name
+                       << " Encoding=" << encoding << " SSID=" << ssid
+                       << " UTF8 SSID=" << utf8_ssid;
       }
     }
     return utf8_ssid;
@@ -128,9 +126,8 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   if (unknown_encoding)
     *unknown_encoding = true;
   if (verbose_logging) {
-    NET_LOG_DEBUG(
-        base::StringPrintf("GetSSIDFromProperties: Unrecognized Encoding=%s",
-                           encoding.c_str()), name);
+    NET_LOG(DEBUG) << "GetSSIDFromProperties: " << name
+                   << " Unrecognized Encoding=" << encoding;
   }
   return ssid;
 }
@@ -158,25 +155,26 @@ std::string GetNameFromProperties(const std::string& service_path,
 
   std::string validated_name = ValidateUTF8(name);
   if (validated_name != name) {
-    NET_LOG_DEBUG("GetNameFromProperties",
-                  base::StringPrintf("Validated name %s: UTF8: %s",
-                                     service_path.c_str(),
-                                     validated_name.c_str()));
+    NET_LOG(DEBUG) << "GetNameFromProperties: " << service_path
+                   << " Validated name=" << validated_name << " name=" << name;
   }
 
   std::string type;
   properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
   if (type.empty()) {
-    NET_LOG_ERROR("GetNameFromProperties: No type", service_path);
+    NET_LOG(ERROR) << "GetNameFromProperties: " << service_path << " No type.";
     return validated_name;
   }
   if (!NetworkTypePattern::WiFi().MatchesType(type))
     return validated_name;
 
   bool unknown_ssid_encoding = false;
-  std::string ssid = GetSSIDFromProperties(properties, &unknown_ssid_encoding);
-  if (ssid.empty())
-    NET_LOG_ERROR("GetNameFromProperties", "No SSID set: " + service_path);
+  std::string ssid = GetSSIDFromProperties(
+      properties, true /* verbose_logging */, &unknown_ssid_encoding);
+  if (ssid.empty()) {
+    NET_LOG(ERROR) << "GetNameFromProperties: " << service_path
+                   << " No SSID set";
+  }
 
   // Use |validated_name| if |ssid| is empty.
   // And if the encoding of the SSID is unknown, use |ssid|, which contains raw
@@ -185,11 +183,8 @@ std::string GetNameFromProperties(const std::string& service_path,
     return validated_name;
 
   if (ssid != validated_name) {
-    NET_LOG_DEBUG("GetNameFromProperties",
-                  base::StringPrintf("%s: SSID: %s, Name: %s",
-                                     service_path.c_str(),
-                                     ssid.c_str(),
-                                     validated_name.c_str()));
+    NET_LOG(DEBUG) << "GetNameFromProperties: " << service_path
+                   << " SSID=" << ssid << " Validated name=" << validated_name;
   }
   return ssid;
 }
@@ -265,8 +260,8 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
       const base::DictionaryValue* provider_properties = NULL;
       if (!service_properties.GetDictionaryWithoutPathExpansion(
               shill::kProviderProperty, &provider_properties)) {
-        NET_LOG_ERROR("Missing VPN provider dict",
-                      GetNetworkIdFromProperties(service_properties));
+        NET_LOG(ERROR) << "Missing VPN provider dict: "
+                       << GetNetworkIdFromProperties(service_properties);
       }
       provider_properties->GetStringWithoutPathExpansion(shill::kTypeProperty,
                                                          &vpn_provider_type);
@@ -293,8 +288,8 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
     success = false;
   }
   if (!success) {
-    NET_LOG_ERROR("Missing required properties",
-                  GetNetworkIdFromProperties(service_properties));
+    NET_LOG(ERROR) << "Missing required properties: "
+                   << GetNetworkIdFromProperties(service_properties);
   }
   return success;
 }
