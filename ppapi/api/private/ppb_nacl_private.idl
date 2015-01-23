@@ -323,17 +323,6 @@ interface PPB_NaCl_Private {
   void LogTranslateTime([in] str_t histogram_name,
                         [in] int64_t time_us);
 
-  /* Opens a manifest entry for the given instance. If this is for a helper
-   * process, we consult our internal pnacl.json instead of the user-supplied
-   * NMF.
-   * Fails for files which require PNaCl translation.
-   */
-  void OpenManifestEntry([in] PP_Instance instance,
-                         [in] PP_Bool is_helper_process,
-                         [in] str_t key,
-                         [out] PP_NaClFileInfo file_info,
-                         [in] PP_CompletionCallback callback);
-
   /* Sets the start time for PNaCl downloading and translation to the current
    * time.
    */

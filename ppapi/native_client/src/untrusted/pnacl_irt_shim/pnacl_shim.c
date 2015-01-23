@@ -3720,11 +3720,6 @@ static void Pnacl_M25_PPB_NaCl_Private_LogTranslateTime(const char* histogram_na
   iface->LogTranslateTime(histogram_name, time_us);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_OpenManifestEntry(PP_Instance instance, PP_Bool is_helper_process, const char* key, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback* callback) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->OpenManifestEntry(instance, is_helper_process, key, file_info, *callback);
-}
-
 static void Pnacl_M25_PPB_NaCl_Private_SetPNaClStartTime(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->SetPNaClStartTime(instance);
@@ -5616,7 +5611,6 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .DownloadNexe = (void (*)(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadNexe,
     .ReportSelLdrStatus = (void (*)(PP_Instance instance, int32_t load_status, int32_t max_status))&Pnacl_M25_PPB_NaCl_Private_ReportSelLdrStatus,
     .LogTranslateTime = (void (*)(const char* histogram_name, int64_t time_us))&Pnacl_M25_PPB_NaCl_Private_LogTranslateTime,
-    .OpenManifestEntry = (void (*)(PP_Instance instance, PP_Bool is_helper_process, const char* key, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_OpenManifestEntry,
     .SetPNaClStartTime = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_SetPNaClStartTime,
     .StreamPexe = (void (*)(PP_Instance instance, const char* pexe_url, int32_t opt_level, const struct PPP_PexeStreamHandler_1_0* stream_handler, void* stream_handler_user_data))&Pnacl_M25_PPB_NaCl_Private_StreamPexe
 };

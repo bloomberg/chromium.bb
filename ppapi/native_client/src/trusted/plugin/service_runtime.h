@@ -13,10 +13,9 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
+#include "native_client/src/public/imc_types.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/reverse_service/reverse_service.h"
-#include "native_client/src/trusted/weak_ref/weak_ref.h"
 
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
@@ -44,75 +43,6 @@ struct SelLdrStartParams {
   std::string url;
   PP_NaClFileInfo file_info;
   PP_NaClAppProcessType process_type;
-};
-
-// Callback resources are essentially our continuation state.
-struct OpenManifestEntryResource {
- public:
-  OpenManifestEntryResource(const std::string& target_url,
-                            struct NaClFileInfo* finfo,
-                            bool* op_complete)
-      : url(target_url),
-        file_info(finfo),
-        op_complete_ptr(op_complete) {}
-  ~OpenManifestEntryResource();
-
-  std::string url;
-  struct NaClFileInfo* file_info;
-  PP_NaClFileInfo pp_file_info;
-  bool* op_complete_ptr;
-};
-
-// Do not invoke from the main thread, since the main methods will
-// invoke CallOnMainThread and then wait on a condvar for the task to
-// complete: if invoked from the main thread, the main method not
-// returning (and thus unblocking the main thread) means that the
-// main-thread continuation methods will never get called, and thus
-// we'd get a deadlock.
-class PluginReverseInterface: public nacl::ReverseInterface {
- public:
-  PluginReverseInterface(nacl::WeakRefAnchor* anchor,
-                         PP_Instance pp_instance,
-                         ServiceRuntime* service_runtime);
-
-  virtual ~PluginReverseInterface();
-
-  void ShutDown();
-
-  virtual void DoPostMessage(std::string message);
-
-  virtual void StartupInitializationComplete();
-
-  virtual bool OpenManifestEntry(std::string url_key,
-                                 struct NaClFileInfo *info);
-
-  virtual void ReportCrash();
-
-  virtual void ReportExitStatus(int exit_status);
-
-  // TODO(teravest): Remove this method once it's gone from
-  // nacl::ReverseInterface.
-  virtual int64_t RequestQuotaForWrite(std::string file_id,
-                                       int64_t offset,
-                                       int64_t bytes_to_write);
-
- protected:
-  virtual void OpenManifestEntry_MainThreadContinuation(
-      OpenManifestEntryResource* p,
-      int32_t err);
-
-  virtual void StreamAsFile_MainThreadContinuation(
-      OpenManifestEntryResource* p,
-      int32_t result);
-
- private:
-  nacl::WeakRefAnchor* anchor_;  // holds a ref
-  // Should be used only in main thread in WeakRef-protected callbacks.
-  PP_Instance pp_instance_;
-  ServiceRuntime* service_runtime_;
-  NaClMutex mu_;
-  NaClCondVar cv_;
-  bool shutting_down_;
 };
 
 //  ServiceRuntime abstracts a NativeClient sel_ldr instance.
@@ -169,7 +99,6 @@ class ServiceRuntime {
   bool StartNexeInternal();
 
   bool SetupCommandChannel();
-  bool InitReverseService();
   bool StartModule();
   void ReapLogs();
 
@@ -180,12 +109,7 @@ class ServiceRuntime {
   PP_Instance pp_instance_;
   bool main_service_runtime_;
   bool uses_nonsfi_mode_;
-  nacl::ReverseService* reverse_service_;
   nacl::scoped_ptr<SelLdrLauncherChrome> subprocess_;
-
-  nacl::WeakRefAnchor* anchor_;
-
-  PluginReverseInterface* rev_interface_;
 
   // Mutex and CondVar to protect start_sel_ldr_done_ and nexe_started_.
   NaClMutex mu_;

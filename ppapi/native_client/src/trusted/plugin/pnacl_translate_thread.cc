@@ -5,7 +5,9 @@
 #include "ppapi/native_client/src/trusted/plugin/pnacl_translate_thread.h"
 
 #include <iterator>
+#include <sstream>
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"

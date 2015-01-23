@@ -23,7 +23,6 @@
             {
               'destination': '>(tc_include_dir_newlib)/nacl',
               'files': [
-                'src/trusted/weak_ref/call_on_main_thread.h',
                 'src/shared/ppapi_proxy/ppruntime.h',
               ],
             },
@@ -41,7 +40,6 @@
                 {
                   'destination': '>(tc_include_dir_glibc)/include/nacl',
                   'files': [
-                    'src/trusted/weak_ref/call_on_main_thread.h',
                     'src/shared/ppapi_proxy/ppruntime.h',
                   ],
                 },

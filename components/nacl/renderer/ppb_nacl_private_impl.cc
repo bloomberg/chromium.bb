@@ -1462,39 +1462,6 @@ void LogTranslateTime(const char* histogram_name,
                  time_in_us / 1000));
 }
 
-void DidOpenManifestEntry(PP_NaClFileInfo* out_file_info,
-                          PP_CompletionCallback callback,
-                          int32_t pp_error,
-                          const PP_NaClFileInfo& file_info) {
-  if (pp_error == PP_OK)
-    *out_file_info = file_info;
-  callback.func(callback.user_data, pp_error);
-}
-
-void OpenManifestEntry(PP_Instance instance,
-                       PP_Bool is_helper_process,
-                       const char* key,
-                       PP_NaClFileInfo* out_file_info,
-                       PP_CompletionCallback callback) {
-  std::string url;
-  PP_PNaClOptions pnacl_options;
-  pnacl_options.translate = PP_FALSE;
-  pnacl_options.is_debug = PP_FALSE;
-  pnacl_options.opt_level = 2;
-  if (!ManifestResolveKey(instance,
-                          PP_ToBool(is_helper_process),
-                          key,
-                          &url,
-                          &pnacl_options)) {
-    PostPPCompletionCallback(callback, PP_ERROR_FAILED);
-  }
-
-  // TODO(teravest): Make a type like PP_NaClFileInfo to use for DownloadFile
-  // that would close the file handle on destruction.
-  DownloadFile(instance, url,
-               base::Bind(&DidOpenManifestEntry, out_file_info, callback));
-}
-
 void SetPNaClStartTime(PP_Instance instance) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
@@ -1694,7 +1661,6 @@ const PPB_NaCl_Private nacl_interface = {
   &DownloadNexe,
   &ReportSelLdrStatus,
   &LogTranslateTime,
-  &OpenManifestEntry,
   &SetPNaClStartTime,
   &StreamPexe
 };

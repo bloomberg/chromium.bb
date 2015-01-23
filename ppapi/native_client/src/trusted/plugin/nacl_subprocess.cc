@@ -6,6 +6,8 @@
 
 #include <stdarg.h>
 
+#include <sstream>
+
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 #include "ppapi/native_client/src/trusted/plugin/srpc_params.h"

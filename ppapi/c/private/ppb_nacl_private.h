@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Jan 22 15:56:12 2015. */
+/* From private/ppb_nacl_private.idl modified Fri Jan 23 07:36:29 2015. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -340,16 +340,6 @@ struct PPB_NaCl_Private_1_0 {
    * This function is safe to call on any thread.
    */
   void (*LogTranslateTime)(const char* histogram_name, int64_t time_us);
-  /* Opens a manifest entry for the given instance. If this is for a helper
-   * process, we consult our internal pnacl.json instead of the user-supplied
-   * NMF.
-   * Fails for files which require PNaCl translation.
-   */
-  void (*OpenManifestEntry)(PP_Instance instance,
-                            PP_Bool is_helper_process,
-                            const char* key,
-                            struct PP_NaClFileInfo* file_info,
-                            struct PP_CompletionCallback callback);
   /* Sets the start time for PNaCl downloading and translation to the current
    * time.
    */

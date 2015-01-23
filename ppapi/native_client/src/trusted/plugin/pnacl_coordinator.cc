@@ -5,6 +5,7 @@
 #include "ppapi/native_client/src/trusted/plugin/pnacl_coordinator.h"
 
 #include <algorithm>
+#include <sstream>
 #include <utility>
 
 #include "native_client/src/include/portability_io.h"
