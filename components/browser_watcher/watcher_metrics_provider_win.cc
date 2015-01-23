@@ -145,10 +145,13 @@ void ReadSingleExitFunnel(
   events_out->swap(events);
 }
 
-void RecordSingleExitFunnel(base::win::RegKey* parent_key,
-                            const base::char16* name) {
+void MaybeRecordSingleExitFunnel(base::win::RegKey* parent_key,
+                                 const base::char16* name,
+                                 bool report) {
   std::vector<std::pair<base::string16, int64>> events;
   ReadSingleExitFunnel(parent_key, name, &events);
+  if (!report)
+    return;
 
   // Find the earliest event time.
   int64 min_time = std::numeric_limits<int64>::max();
@@ -173,7 +176,7 @@ void RecordSingleExitFunnel(base::win::RegKey* parent_key,
   }
 }
 
-void RecordExitFunnels(const base::string16& registry_path) {
+void MaybeRecordExitFunnels(const base::string16& registry_path, bool report) {
   base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, registry_path.c_str());
   if (!it.Valid())
     return;
@@ -196,7 +199,7 @@ void RecordExitFunnels(const base::string16& registry_path) {
   for (; it.Valid(); ++it) {
     // Defer reporting on still-live processes.
     if (IsDeadProcess(it.Name())) {
-      RecordSingleExitFunnel(&key, it.Name());
+      MaybeRecordSingleExitFunnel(&key, it.Name(), report);
       to_delete.push_back(it.Name());
     }
   }
@@ -216,7 +219,9 @@ const char WatcherMetricsProviderWin::kExitFunnelHistogramPrefix[] =
     "Stability.ExitFunnel.";
 
 WatcherMetricsProviderWin::WatcherMetricsProviderWin(
-    const base::char16* registry_path) : registry_path_(registry_path) {
+    const base::char16* registry_path, bool report_exit_funnels) :
+        registry_path_(registry_path),
+        report_exit_funnels_(report_exit_funnels) {
 }
 
 WatcherMetricsProviderWin::~WatcherMetricsProviderWin() {
@@ -231,7 +236,7 @@ void WatcherMetricsProviderWin::ProvideStabilityMetrics(
   // necessary to implement some form of global locking, which is not worth it
   // here.
   RecordExitCodes(registry_path_);
-  RecordExitFunnels(registry_path_);
+  MaybeRecordExitFunnels(registry_path_, report_exit_funnels_);
 }
 
 }  // namespace browser_watcher

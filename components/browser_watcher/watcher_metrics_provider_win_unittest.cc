@@ -81,7 +81,7 @@ TEST_F(WatcherMetricsProviderWinTest, RecordsStabilityHistogram) {
   // Record a single failure.
   AddProcessExitCode(false, 100);
 
-  WatcherMetricsProviderWin provider(kRegistryPath);
+  WatcherMetricsProviderWin provider(kRegistryPath, true);
 
   provider.ProvideStabilityMetrics(NULL);
   histogram_tester_.ExpectBucketCount(
@@ -103,7 +103,7 @@ TEST_F(WatcherMetricsProviderWinTest, DoesNotReportOwnProcessId) {
   // Record own process as STILL_ACTIVE.
   AddProcessExitCode(true, STILL_ACTIVE);
 
-  WatcherMetricsProviderWin provider(kRegistryPath);
+  WatcherMetricsProviderWin provider(kRegistryPath, true);
 
   provider.ProvideStabilityMetrics(NULL);
   histogram_tester_.ExpectUniqueSample(
@@ -122,7 +122,7 @@ TEST_F(WatcherMetricsProviderWinTest, RecordsOrderedExitFunnelEvents) {
   AddExitFunnelEvent(100, L"Two", 1010 * 1000);
   AddExitFunnelEvent(100, L"Three", 990 * 1000);
 
-  WatcherMetricsProviderWin provider(kRegistryPath);
+  WatcherMetricsProviderWin provider(kRegistryPath, true);
 
   provider.ProvideStabilityMetrics(NULL);
   histogram_tester_.ExpectUniqueSample("Stability.ExitFunnel.Three", 0, 1);
@@ -135,7 +135,7 @@ TEST_F(WatcherMetricsProviderWinTest, RecordsOrderedExitFunnelEvents) {
 }
 
 TEST_F(WatcherMetricsProviderWinTest, ReadsExitFunnelWrites) {
-  // Test that the metrics provider picks up the writes from
+  // Test that the metrics provider picks up the writes from the funnel.
   ExitFunnel funnel;
 
   // Events against our own process should not get reported.
@@ -153,12 +153,45 @@ TEST_F(WatcherMetricsProviderWinTest, ReadsExitFunnelWrites) {
   ASSERT_TRUE(funnel.RecordEvent(L"Two"));
   ASSERT_TRUE(funnel.RecordEvent(L"Three"));
 
-  WatcherMetricsProviderWin provider(kRegistryPath);
+  WatcherMetricsProviderWin provider(kRegistryPath, true);
 
   provider.ProvideStabilityMetrics(NULL);
   histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.One", 1);
   histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Two", 1);
   histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Three", 1);
+
+  // Make sure the subkey for the pseudo process has been deleted on reporting.
+  base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
+  ASSERT_EQ(it.SubkeyCount(), 1);
+}
+
+TEST_F(WatcherMetricsProviderWinTest, ClearsExitFunnelWriteWhenNotReporting) {
+  // Tests that the metrics provider cleans up, but doesn't report exit funnels
+  // when funnel reporting is quenched.
+  ExitFunnel funnel;
+
+  // Events against our own process should not get reported.
+  ASSERT_TRUE(funnel.Init(kRegistryPath, base::GetCurrentProcessHandle()));
+  ASSERT_TRUE(funnel.RecordEvent(L"Forgetaboutit"));
+
+  // Reset the funnel to a pseudo process. The PID 4 is the system process,
+  // which tests can hopefully never open.
+  ASSERT_TRUE(funnel.InitImpl(kRegistryPath, 4, base::Time::Now()));
+
+  // Each named event can only exist in a single copy.
+  ASSERT_TRUE(funnel.RecordEvent(L"One"));
+  ASSERT_TRUE(funnel.RecordEvent(L"One"));
+  ASSERT_TRUE(funnel.RecordEvent(L"One"));
+  ASSERT_TRUE(funnel.RecordEvent(L"Two"));
+  ASSERT_TRUE(funnel.RecordEvent(L"Three"));
+
+  // Turn off exit funnel reporting.
+  WatcherMetricsProviderWin provider(kRegistryPath, false);
+
+  provider.ProvideStabilityMetrics(NULL);
+  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.One", 0);
+  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Two", 0);
+  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Three", 0);
 
   // Make sure the subkey for the pseudo process has been deleted on reporting.
   base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);

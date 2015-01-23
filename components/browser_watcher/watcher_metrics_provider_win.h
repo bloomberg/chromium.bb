@@ -27,7 +27,10 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
   static const char kBrowserExitCodeHistogramName[];
   static const char kExitFunnelHistogramPrefix[];
 
-  explicit WatcherMetricsProviderWin(const base::char16* registry_path);
+  // Initializes the reporter. If |report_exit_funnels| is false, the provider
+  // will clear the registry data, but not report it.
+  WatcherMetricsProviderWin(const base::char16* registry_path,
+                            bool report_exit_funnels);
   ~WatcherMetricsProviderWin();
 
   // metrics::MetricsProvider implementation.
@@ -36,6 +39,7 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
 
  private:
   base::string16 registry_path_;
+  bool report_exit_funnels_;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherMetricsProviderWin);
 };
