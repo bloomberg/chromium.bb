@@ -79,23 +79,49 @@ void FloatRoundedRect::Radii::scale(float factor)
 
 }
 
+void FloatRoundedRect::Radii::roundToInt()
+{
+    m_topLeft = FloatSize(roundedIntSize(m_topLeft));
+    m_topRight = FloatSize(roundedIntSize(m_topRight));
+    m_bottomLeft = FloatSize(roundedIntSize(m_bottomLeft));
+    m_bottomRight = FloatSize(roundedIntSize(m_bottomRight));
+}
+
+void FloatRoundedRect::Radii::shrink(float topWidth, float bottomWidth, float leftWidth, float rightWidth)
+{
+    ASSERT(topWidth >= 0 && bottomWidth >= 0 && leftWidth >= 0 && rightWidth >= 0);
+
+    m_topLeft.setWidth(std::max<float>(0, m_topLeft.width() - leftWidth));
+    m_topLeft.setHeight(std::max<float>(0, m_topLeft.height() - topWidth));
+
+    m_topRight.setWidth(std::max<float>(0, m_topRight.width() - rightWidth));
+    m_topRight.setHeight(std::max<float>(0, m_topRight.height() - topWidth));
+
+    m_bottomLeft.setWidth(std::max<float>(0, m_bottomLeft.width() - leftWidth));
+    m_bottomLeft.setHeight(std::max<float>(0, m_bottomLeft.height() - bottomWidth));
+
+    m_bottomRight.setWidth(std::max<float>(0, m_bottomRight.width() - rightWidth));
+    m_bottomRight.setHeight(std::max<float>(0, m_bottomRight.height() - bottomWidth));
+}
+
 void FloatRoundedRect::Radii::expand(float topWidth, float bottomWidth, float leftWidth, float rightWidth)
 {
+    ASSERT(topWidth >= 0 && bottomWidth >= 0 && leftWidth >= 0 && rightWidth >= 0);
     if (m_topLeft.width() > 0 && m_topLeft.height() > 0) {
-        m_topLeft.setWidth(std::max<float>(0, m_topLeft.width() + leftWidth));
-        m_topLeft.setHeight(std::max<float>(0, m_topLeft.height() + topWidth));
+        m_topLeft.setWidth(m_topLeft.width() + leftWidth);
+        m_topLeft.setHeight(m_topLeft.height() + topWidth);
     }
     if (m_topRight.width() > 0 && m_topRight.height() > 0) {
-        m_topRight.setWidth(std::max<float>(0, m_topRight.width() + rightWidth));
-        m_topRight.setHeight(std::max<float>(0, m_topRight.height() + topWidth));
+        m_topRight.setWidth(m_topRight.width() + rightWidth);
+        m_topRight.setHeight(m_topRight.height() + topWidth);
     }
     if (m_bottomLeft.width() > 0 && m_bottomLeft.height() > 0) {
-        m_bottomLeft.setWidth(std::max<float>(0, m_bottomLeft.width() + leftWidth));
-        m_bottomLeft.setHeight(std::max<float>(0, m_bottomLeft.height() + bottomWidth));
+        m_bottomLeft.setWidth(m_bottomLeft.width() + leftWidth);
+        m_bottomLeft.setHeight(m_bottomLeft.height() + bottomWidth);
     }
     if (m_bottomRight.width() > 0 && m_bottomRight.height() > 0) {
-        m_bottomRight.setWidth(std::max<float>(0, m_bottomRight.width() + rightWidth));
-        m_bottomRight.setHeight(std::max<float>(0, m_bottomRight.height() + bottomWidth));
+        m_bottomRight.setWidth(m_bottomRight.width() + rightWidth);
+        m_bottomRight.setHeight(m_bottomRight.height() + bottomWidth);
     }
 }
 

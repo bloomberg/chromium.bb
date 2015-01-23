@@ -745,7 +745,10 @@ void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color&
         Path path;
         path.addRoundedRect(rect);
         clipPath(path);
-        roundedHole.shrinkRadii(shadowSpread);
+        if (shadowSpread < 0)
+            roundedHole.expandRadii(-shadowSpread);
+        else
+            roundedHole.shrinkRadii(shadowSpread);
     } else {
         clip(rect.rect());
     }

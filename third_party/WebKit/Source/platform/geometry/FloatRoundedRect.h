@@ -70,10 +70,14 @@ public:
         bool isZero() const;
 
         void scale(float factor);
+
         void expand(float topWidth, float bottomWidth, float leftWidth, float rightWidth);
         void expand(float size) { expand(size, size, size, size); }
-        void shrink(float topWidth, float bottomWidth, float leftWidth, float rightWidth) { expand(-topWidth, -bottomWidth, -leftWidth, -rightWidth); }
+
+        void shrink(float topWidth, float bottomWidth, float leftWidth, float rightWidth);
         void shrink(float size) { shrink(size, size, size, size); }
+
+        void roundToInt();
 
         void includeLogicalEdges(const Radii& edges, bool isHorizontal, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
 
@@ -99,6 +103,10 @@ public:
     void move(const FloatSize& size) { m_rect.move(size); }
     void inflateWithRadii(int size);
     void inflate(float size) { m_rect.inflate(size); }
+
+    // expandRadii() does not have any effect on corner radii which have zero width or height. This is because the process of expanding
+    // the radius of a corner is not allowed to make sharp corners non-sharp. This applies when "spreading" a shadow or
+    // a box shape.
     void expandRadii(float size) { m_radii.expand(size); }
     void shrinkRadii(float size) { m_radii.shrink(size); }
 

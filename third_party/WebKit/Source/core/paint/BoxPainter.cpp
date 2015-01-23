@@ -1996,7 +1996,12 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
 
             if (hasBorderRadius) {
                 FloatRoundedRect influenceRect(pixelSnappedIntRect(LayoutRect(shadowRect)), border.radii());
-                influenceRect.expandRadii(2 * shadowBlur + shadowSpread);
+                float changeAmount = 2 * shadowBlur + shadowSpread;
+                if (changeAmount >= 0)
+                    influenceRect.expandRadii(changeAmount);
+                else
+                    influenceRect.shrinkRadii(-changeAmount);
+
                 if (allCornersClippedOut(influenceRect, info.rect)) {
                     context->fillRect(fillRect, Color::black);
                 } else {
@@ -2004,7 +2009,10 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
                     FloatRoundedRect roundedFillRect = border;
                     roundedFillRect.inflate(shadowSpread);
 
-                    roundedFillRect.expandRadii(shadowSpread);
+                    if (shadowSpread >= 0)
+                        roundedFillRect.expandRadii(shadowSpread);
+                    else
+                        roundedFillRect.shrinkRadii(-shadowSpread);
                     if (!roundedFillRect.isRenderable())
                         roundedFillRect.adjustRadii();
                     context->fillRoundedRect(roundedFillRect, Color::black);
