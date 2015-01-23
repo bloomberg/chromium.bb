@@ -95,7 +95,7 @@
       'type': 'none',
       'dependencies': [
         'chrome_java',
-        'chrome_shell_paks',
+        'chrome_android_paks_copy',
         'libchromeshell',
         '../media/media.gyp:media_java',
       ],
@@ -129,22 +129,6 @@
       'includes': [ '../build/apk_fake_jar.gypi' ],
     },
     {
-      'target_name': 'chrome_shell_paks',
-      'type': 'none',
-      'dependencies': [
-        '<(DEPTH)/chrome/chrome_resources.gyp:packed_resources',
-        '<(DEPTH)/chrome/chrome_resources.gyp:packed_extra_resources',
-      ],
-      'copies': [
-        {
-          'destination': '<(chrome_android_pak_output_folder)',
-          'files': [
-            '<@(chrome_android_pak_input_resources)',
-          ],
-        }
-      ],
-    },
-    {
       # GN: //chrome/android:chrome_sync_shell_manifest
       'target_name': 'chrome_sync_shell_manifest',
       'type': 'none',
@@ -160,7 +144,7 @@
       'type': 'none',
       'dependencies': [
         'chrome_java',
-        'chrome_shell_paks',
+        'chrome_android_paks_copy',
         'libchromesyncshell',
         '../media/media.gyp:media_java',
         '../sync/sync.gyp:sync_java_test_support',

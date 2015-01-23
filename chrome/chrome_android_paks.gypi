@@ -121,5 +121,23 @@
       }],
     ],
   },
+  'targets': [
+    {
+      'target_name': 'chrome_android_paks_copy',
+      'type': 'none',
+      'dependencies': [
+        '<(DEPTH)/chrome/chrome_resources.gyp:packed_resources',
+        '<(DEPTH)/chrome/chrome_resources.gyp:packed_extra_resources',
+      ],
+      'copies': [
+        {
+          'destination': '<(chrome_android_pak_output_folder)',
+          'files': [
+            '<@(chrome_android_pak_input_resources)',
+          ],
+        }
+      ],
+    },
+  ],
 }
 
