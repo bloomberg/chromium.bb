@@ -2996,6 +2996,9 @@ void WebContentsImpl::OnOpenColorChooser(
     int color_chooser_id,
     SkColor color,
     const std::vector<ColorSuggestion>& suggestions) {
+  // Protect against malicious renderer. See http://crbug.com/449777
+  if (!render_frame_message_source_)
+    return;
   ColorChooser* new_color_chooser = delegate_ ?
       delegate_->OpenColorChooser(this, color, suggestions) :
       NULL;
