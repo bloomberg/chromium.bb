@@ -1711,5 +1711,8 @@ crbug.com/449081 [ Mac Linux Debug ] virtual/gpu/fast/canvas/canvas-lose-restore
 crbug.com/444493 [ XP ] http/tests/fetch/serviceworker/fetch-access-control-redirect.html [ Timeout ]
 crbug.com/444493 [ XP ] http/tests/fetch/window/fetch-access-control-redirect.html [ Timeout ]
 crbug.com/444493 [ XP ] http/tests/fetch/workers/fetch-access-control-redirect.html [ Timeout ]
+crbug.com/444493 [ XP ] http/tests/fetch/serviceworker/filtered-response.html [ Timeout ]
+crbug.com/444493 [ XP ] http/tests/fetch/window/filtered-response.html [ Timeout ]
+crbug.com/444493 [ XP ] http/tests/fetch/workers/filtered-response.html [ Timeout ]
 
 crbug.com/451191 http/tests/security/mixedContent/insecure-image-in-iframe.html [ Pass Failure ]
