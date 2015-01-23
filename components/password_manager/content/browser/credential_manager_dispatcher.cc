@@ -125,6 +125,14 @@ void CredentialManagerDispatcher::OnRequestCredential(
     return;
   }
 
+  if (zero_click_only && !IsZeroClickAllowed()) {
+    web_contents()->GetRenderViewHost()->Send(
+        new CredentialManagerMsg_SendCredential(
+            web_contents()->GetRenderViewHost()->GetRoutingID(), request_id,
+            CredentialInfo()));
+    return;
+  }
+
   pending_request_.reset(new PendingRequestParameters(
       request_id, zero_click_only,
       web_contents()->GetLastCommittedURL().GetOrigin(), federations));
@@ -179,6 +187,10 @@ PasswordStore* CredentialManagerDispatcher::GetPasswordStore() {
 
 bool CredentialManagerDispatcher::IsSavingEnabledForCurrentPage() const {
   // TODO(vasilii): add more, see http://crbug.com/450583.
+  return !client_->IsOffTheRecord();
+}
+
+bool CredentialManagerDispatcher::IsZeroClickAllowed() const {
   return !client_->IsOffTheRecord();
 }
 

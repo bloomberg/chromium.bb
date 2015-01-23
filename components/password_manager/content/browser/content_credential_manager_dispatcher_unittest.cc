@@ -330,4 +330,23 @@ TEST_F(CredentialManagerDispatcherTest,
   EXPECT_TRUE(client_->did_prompt_user_to_choose());
 }
 
+TEST_F(CredentialManagerDispatcherTest, IncognitoRequestCredential) {
+  client_->set_off_the_record(true);
+  store_->AddLogin(form_);
+
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, true, federations);
+
+  RunAllPendingTasks();
+
+  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  ASSERT_TRUE(message);
+  CredentialManagerMsg_SendCredential::Param param;
+  CredentialManagerMsg_SendCredential::Read(message, &param);
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, get<1>(param).type);
+  EXPECT_FALSE(client_->did_prompt_user_to_choose());
+}
+
 }  // namespace password_manager
