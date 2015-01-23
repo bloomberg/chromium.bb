@@ -62,6 +62,7 @@ private:
 
     void dispatchOneEvent();
     void didRemoveGamepadEventListeners();
+    bool startUpdatingIfAttached();
 
     // DOMWindowProperty
     virtual void willDestroyGlobalObjectInFrame() override;
