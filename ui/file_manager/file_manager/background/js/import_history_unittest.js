@@ -67,7 +67,7 @@ function testHistoryWasCopiedFalseForUnknownEntry(callback) {
   // but not for this file.
   testPromise = historyProvider.then(
       function(history) {
-        history.wasCopied(testFileEntry, SPACE_CAMP).then(assertFalse);
+        return history.wasCopied(testFileEntry, SPACE_CAMP).then(assertFalse);
       });
 
   reportPromise(testPromise, callback);
@@ -77,7 +77,7 @@ function testHistoryWasCopiedTrueForKnownEntryLoadedFromStorage(callback) {
   // TestRecordWriter is pre-configured with this entry.
   testPromise = historyProvider.then(
       function(history) {
-        history.wasCopied(testFileEntry, GOOGLE_DRIVE).then(assertTrue);
+        return history.wasCopied(testFileEntry, GOOGLE_DRIVE).then(assertTrue);
       });
 
   reportPromise(testPromise, callback);
@@ -86,9 +86,10 @@ function testHistoryWasCopiedTrueForKnownEntryLoadedFromStorage(callback) {
 function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
   testPromise = historyProvider.then(
       function(history) {
-        history.markImported(testFileEntry, SPACE_CAMP).then(
+        return history.markImported(testFileEntry, SPACE_CAMP).then(
             function() {
-              history.wasImported(testFileEntry, SPACE_CAMP).then(assertTrue);
+              return history.wasImported(testFileEntry, SPACE_CAMP)
+                  .then(assertTrue);
             });
       });
 
@@ -99,7 +100,7 @@ function testHistoryWasCopiedTrueForKnownEntryLoadedFromStorage(callback) {
   // TestRecordWriter is pre-configured with this entry.
   testPromise = historyProvider.then(
       function(history) {
-        history.wasCopied(testFileEntry, GOOGLE_DRIVE).then(assertTrue);
+        return history.wasCopied(testFileEntry, GOOGLE_DRIVE).then(assertTrue);
       });
 
   reportPromise(testPromise, callback);
@@ -110,9 +111,9 @@ function testCopyChangeFiresChangedEvent(callback) {
       function(history) {
         var recorder = new TestCallRecorder();
         history.addObserver(recorder.callback);
-        history.markCopied(testFileEntry, SPACE_CAMP, 'url1').then(
+        return history.markCopied(testFileEntry, SPACE_CAMP, 'url1').then(
             function() {
-              Promise.resolve()
+              return Promise.resolve()
                   .then(
                       function() {
                         recorder.assertCallCount(1);
@@ -152,7 +153,7 @@ function testHistoryWasImportedFalseForUnknownEntry(callback) {
   // but not for this file.
   testPromise = historyProvider.then(
       function(history) {
-        history.wasImported(testFileEntry, SPACE_CAMP).then(assertFalse);
+        return history.wasImported(testFileEntry, SPACE_CAMP).then(assertFalse);
       });
 
   reportPromise(testPromise, callback);
@@ -162,7 +163,8 @@ function testHistoryWasImportedTrueForKnownEntryLoadedFromStorage(callback) {
   // TestRecordWriter is pre-configured with this entry.
   testPromise = historyProvider.then(
       function(history) {
-        history.wasImported(testFileEntry, GOOGLE_DRIVE).then(assertTrue);
+        return history.wasImported(testFileEntry, GOOGLE_DRIVE)
+            .then(assertTrue);
       });
 
   reportPromise(testPromise, callback);
@@ -171,9 +173,10 @@ function testHistoryWasImportedTrueForKnownEntryLoadedFromStorage(callback) {
 function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
   testPromise = historyProvider.then(
       function(history) {
-        history.markImported(testFileEntry, SPACE_CAMP).then(
+        return history.markImported(testFileEntry, SPACE_CAMP).then(
             function() {
-              history.wasImported(testFileEntry, SPACE_CAMP).then(assertTrue);
+              return history.wasImported(testFileEntry, SPACE_CAMP)
+                  .then(assertTrue);
             });
       });
 
@@ -185,9 +188,9 @@ function testImportChangeFiresChangedEvent(callback) {
       function(history) {
         var recorder = new TestCallRecorder();
         history.addObserver(recorder.callback);
-        history.markImported(testFileEntry, SPACE_CAMP).then(
+        return history.markImported(testFileEntry, SPACE_CAMP).then(
             function() {
-              Promise.resolve()
+              return Promise.resolve()
                   .then(
                       function() {
                         recorder.assertCallCount(1);
@@ -211,9 +214,9 @@ function testHistoryObserverUnsubscribe(callback) {
         var promises = [];
         promises.push(history.markCopied(testFileEntry, SPACE_CAMP, 'url2'));
         promises.push(history.markImported(testFileEntry, SPACE_CAMP));
-        Promise.all(promises).then(
+        return Promise.all(promises).then(
             function() {
-              Promise.resolve()
+              return Promise.resolve()
                   .then(
                       function() {
                         recorder.assertCallCount(0);
