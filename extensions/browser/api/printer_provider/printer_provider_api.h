@@ -64,6 +64,8 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
     std::string document_bytes;
   };
 
+  using GetPrintersCallback =
+      base::Callback<void(const base::ListValue& printers, bool done)>;
   using GetCapabilityCallback =
       base::Callback<void(const base::DictionaryValue&)>;
   using PrintCallback = base::Callback<void(PrintError)>;
@@ -73,6 +75,15 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
 
   explicit PrinterProviderAPI(content::BrowserContext* browser_context);
   ~PrinterProviderAPI() override;
+
+  // Requests list of supported printers from extensions implementing
+  // chrome.printerProvider API. It dispatches
+  // chrome.printerProvider.onGetPrintersRequested event. The callback is
+  // called once for every extension handling the event with a list of its
+  // supported printers. The printer values reported by an extension are
+  // added "extensionId" property that is set to the ID of the extension
+  // returning the list.
+  void DispatchGetPrintersRequested(const GetPrintersCallback& callback);
 
   // Requests printer capability from the extension with id |extension_id| for
   // the printer with id |printer_id|. |printer_id| should be one of the printer
@@ -95,6 +106,62 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
 
  private:
   friend class BrowserContextKeyedAPIFactory<PrinterProviderAPI>;
+
+  // Holds information about a pending onGetPrintersRequested request;
+  // in particular, the list of extensions to which the event was dispatched but
+  // which haven't yet responded, and the |GetPrinters| callback associated with
+  // the event.
+  class GetPrintersRequest {
+   public:
+    explicit GetPrintersRequest(const GetPrintersCallback& callback);
+    ~GetPrintersRequest();
+
+    // Adds an extension id to the list of the extensions that need to respond
+    // to the event.
+    void AddSource(const std::string& extension_id);
+
+    // Whether all extensions have responded to the event.
+    bool IsDone() const;
+
+    // Runs the callback for an extension and removes the extension from the
+    // list of extensions that still have to respond to the event.
+    void ReportForExtension(const std::string& extension_id,
+                            const base::ListValue& printers);
+
+   private:
+    // Callback reporting event result for an extension. Called once for each
+    // extension.
+    GetPrintersCallback callback_;
+
+    // The list of extensions that still have to respond to the event.
+    std::set<std::string> extensions_;
+
+    DISALLOW_COPY_AND_ASSIGN(GetPrintersRequest);
+  };
+
+  // Keeps track of pending chrome.printerProvider.onGetPrintersRequested
+  // requests.
+  class PendingGetPrintersRequests {
+   public:
+    PendingGetPrintersRequests();
+    ~PendingGetPrintersRequests();
+
+    // Adds a new request to the set of pending requests. Returns the id
+    // assigned to the request.
+    int Add(scoped_ptr<GetPrintersRequest> request);
+
+    // Completes a request for an extension. It runs the request callback with
+    // values reported by the extension.
+    bool CompleteForExtension(const std::string& extension_id,
+                              int request_id,
+                              const base::ListValue& result);
+
+   private:
+    int last_request_id_;
+    std::map<int, GetPrintersRequest*> pending_requests_;
+
+    DISALLOW_COPY_AND_ASSIGN(PendingGetPrintersRequests);
+  };
 
   // Keeps track of pending chrome.printerProvider.onGetCapabilityRequested
   // requests for an extension.
@@ -140,6 +207,9 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
   static const char* service_name() { return "PrinterProvider"; }
 
   // PrinterProviderInternalAPIObserver implementation:
+  void OnGetPrintersResult(const Extension* extension,
+                           int request_id,
+                           const base::ListValue& result) override;
   void OnGetCapabilityResult(const Extension* extension,
                              int request_id,
                              const base::DictionaryValue& result) override;
@@ -148,7 +218,19 @@ class PrinterProviderAPI : public BrowserContextKeyedAPI,
       int request_id,
       core_api::printer_provider_internal::PrintError error) override;
 
+  // Called before chrome.printerProvider.onGetPrintersRequested event is
+  // dispatched to an extension. It returns whether the extension is interested
+  // in the event. If the extension listens to the event, it's added to the set
+  // of |request| sources. |request| is |GetPrintersRequest| object associated
+  // with the event.
+  bool WillRequestPrinters(GetPrintersRequest* request,
+                           content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           base::ListValue* args) const;
+
   content::BrowserContext* browser_context_;
+
+  PendingGetPrintersRequests pending_get_printers_requests_;
 
   std::map<std::string, PendingPrintRequests> pending_print_requests_;
 

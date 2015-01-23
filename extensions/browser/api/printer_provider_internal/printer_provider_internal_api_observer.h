@@ -9,6 +9,7 @@
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 namespace extensions {
@@ -18,6 +19,15 @@ class Extension;
 // Interface for observing chrome.printerProviderInternal API function calls.
 class PrinterProviderInternalAPIObserver {
  public:
+  // Used by chrome.printerProviderInternal API to report
+  // chrome.printerProvider.onGetPrintersRequested result returned by the
+  // extension |extension|.
+  // |request_id| is the request id passed to the original
+  // chrome.printerProvider.onGetPrintersRequested event.
+  virtual void OnGetPrintersResult(const Extension* extension,
+                                   int request_id,
+                                   const base::ListValue& result) = 0;
+
   // Used by chrome.printerProviderInternal API to report
   // chrome.printerProvider.onGetCapabilityRequested result returned by the
   // extension |extensiod|.

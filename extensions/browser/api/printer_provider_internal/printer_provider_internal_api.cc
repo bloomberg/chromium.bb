@@ -44,6 +44,14 @@ void PrinterProviderInternalAPI::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void PrinterProviderInternalAPI::NotifyGetPrintersResult(
+    const Extension* extension,
+    int request_id,
+    const base::ListValue& printers) {
+  FOR_EACH_OBSERVER(PrinterProviderInternalAPIObserver, observers_,
+                    OnGetPrintersResult(extension, request_id, printers));
+}
+
 void PrinterProviderInternalAPI::NotifyGetCapabilityResult(
     const Extension* extension,
     int request_id,
@@ -122,6 +130,19 @@ PrinterProviderInternalReportPrintersFunction::Run() {
       internal_api::ReportPrinters::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  base::ListValue printers;
+  if (params->printers) {
+    for (size_t i = 0; i < params->printers->size(); ++i) {
+      scoped_ptr<base::DictionaryValue> printer(
+          params->printers->at(i)->ToValue());
+      printer->SetString("extensionId", extension()->id());
+      printers.Append(printer.release());
+    }
+  }
+
+  PrinterProviderInternalAPI::GetFactoryInstance()
+      ->Get(browser_context())
+      ->NotifyGetPrintersResult(extension(), params->request_id, printers);
   return RespondNow(NoArguments());
 }
 

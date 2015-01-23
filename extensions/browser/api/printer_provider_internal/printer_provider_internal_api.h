@@ -14,6 +14,7 @@
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 namespace content {
@@ -41,8 +42,16 @@ class PrinterProviderInternalAPI : public BrowserContextKeyedAPI {
 
  private:
   friend class BrowserContextKeyedAPIFactory<PrinterProviderInternalAPI>;
+  friend class PrinterProviderInternalReportPrintersFunction;
   friend class PrinterProviderInternalReportPrinterCapabilityFunction;
   friend class PrinterProviderInternalReportPrintResultFunction;
+
+  // Notifies observers that a printerProvider.onGetPrintersRequested callback
+  // has been called. Called from
+  // |PrinterProviderInternalReportPrintersFunction|.
+  void NotifyGetPrintersResult(const Extension* extension,
+                               int request_id,
+                               const base::ListValue& printers);
 
   // Notifies observers that a printerProvider.onGetCapabilityRequested callback
   // has been called. Called from
