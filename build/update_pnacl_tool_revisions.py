@@ -32,10 +32,6 @@ DEFAULT_HASH='0000000000000000000000000000000000000000'
 PNACL_PACKAGE = 'pnacl_newlib'
 
 
-def GitHash(h):
-  assert len(h) == 40, 'expected 40-character hex number, got: %s' % h
-  return int(h, 16)
-
 def ParseArgs(args):
   parser = argparse.ArgumentParser(
       formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -76,8 +72,7 @@ There is further complication when toolchain builds are merged.
   parser.add_argument('--email', metavar='ADDRESS', type=str,
                       default=getpass.getuser()+'@chromium.org',
                       help="Email address to send errors to.")
-  parser.add_argument('--hash', metavar='HASH', type=GitHash,
-                      default=DEFAULT_HASH,
+  parser.add_argument('--hash', metavar='HASH',
                       help="Update to a specific git hash instead of the most "
                       "recent git hash with a PNaCl change. This value must "
                       "be more recent than the one in the current "
@@ -85,9 +80,12 @@ There is further complication when toolchain builds are merged.
                       "changelists' toolchain builds were merged, or when "
                       "too many PNaCl changes would be pulled in at the "
                       "same time.")
-  parser.add_argument('--dry-run', default=False, action='store_true',
+  parser.add_argument('-n', '--dry-run', default=False, action='store_true',
                       help="Print the changelist that would be sent, but "
                       "don't actually send anything to review.")
+  parser.add_argument('--ignore-branch', default=False, action='store_true',
+                      help='Allow script to run from branches other than '
+                      'master')
   # TODO(jfb) The following options come from download_toolchain.py and
   #           should be shared in some way.
   parser.add_argument('--filter_out_predicates', default=[],
@@ -114,7 +112,7 @@ def SetCurrentRevision(hash):
   ExecCommand([sys.executable, PKG_VER,
                'setrevision',
                '--revision-set', PNACL_PACKAGE,
-               '--revision', "%040x" % hash])
+               '--revision', hash])
 
 
 def GetRevisionPackageFiles():
@@ -130,17 +128,21 @@ def GitCurrentBranch():
   return ExecCommand(['git', 'symbolic-ref', 'HEAD', '--short']).strip()
 
 
+def GitRevParse(rev):
+  return ExecCommand(['git', 'rev-parse', rev]).strip()
+
+
 def GitStatus():
   """List of statuses, one per path, of paths in the current git branch.
   Ignores untracked paths."""
-  out = ExecCommand(['git', 'status', '--porcelain']).strip().split('\n')
+  out = ExecCommand(['git', 'status', '--porcelain']).strip()
+  if not out:
+    return []
+  out = out.split('\n')
   return [f.strip() for f in out if not re.match('^\?\? (.*)$', f.strip())]
 
 
 def SyncSources():
-  """Assumes a git checkout of NaCl. See:
-  www.chromium.org/nativeclient/how-tos/how-to-use-git-svn-with-native-client
-  """
   ExecCommand(['gclient', 'sync'])
 
 
@@ -343,7 +345,7 @@ def FmtOut(tr_points_at, pnacl_changes, new_git_hash, err=[], msg=[]):
           '\n\n'.join(msg) +
           ('\n\n' if err or msg else '') +
           ('Update revision for PNaCl\n\n'
-           'Update %s -> %040x\n\n'
+           'Update %s -> %s\n\n'
            'Pull the following PNaCl changes into NaCl:\n%s\n\n'
            '%s\n'
            'R= %s\n'
@@ -352,26 +354,30 @@ def FmtOut(tr_points_at, pnacl_changes, new_git_hash, err=[], msg=[]):
            (old_git_hash, new_git_hash, changes, bugs, reviewers)))
 
 
-def Main():
-  args = ParseArgs(sys.argv[1:])
+def Main(args):
+  args = ParseArgs(args)
 
   new_pnacl_revision = args.hash
-  user_provided_hash = new_pnacl_revision != GitHash(DEFAULT_HASH)
+  user_provided_hash = args.hash is not None
+  if user_provided_hash:
+    new_pnacl_revision = GitRevParse(new_pnacl_revision)
 
   tr_points_at = CLInfo('revision update points at PNaCl version')
   pnacl_changes = []
   msg = []
 
-  branch = GitCurrentBranch()
+  orig_branch = GitCurrentBranch()
+  if not args.dry_run and not args.ignore_branch:
+    if orig_branch != 'master':
+      raise Exception('Must be on branch master, currently on %s' % orig_branch)
+
   if not args.dry_run:
-    assert branch == 'master', ('Must be on branch master, currently on %s' %
-                                branch)
+    status = GitStatus()
+    if len(status) != 0:
+      raise Exception("Repository isn't clean:\n  %s" % '\n  '.join(status))
 
   try:
-    status = GitStatus()
     if not args.dry_run:
-      assert len(status) == 0, ("Repository isn't clean:\n  %s" %
-                                '\n  '.join(status))
       SyncSources()
 
     # The current revision file points at a specific PNaCl LLVM version. LLVM is
@@ -386,15 +392,15 @@ def Main():
 
     if not user_provided_hash:
       # No update hash specified, take the latest commit.
-      new_pnacl_revision = GitHash(recent_commits[0])
+      new_pnacl_revision = recent_commits[0]
     else:
       new_pnacl_revision_date = GitCommitInfo(
-          info='date', obj='%040x' % new_pnacl_revision, num=1)
+          info='date', obj=new_pnacl_revision, num=1)
       new_date = dateutilparser.parse(new_pnacl_revision_date)
       old_date = dateutilparser.parse(tr_points_at['date'])
       if new_date <= old_date:
         Done(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision,
-                    err=["Can't update to git hash %040x committed on %s: "
+                    err=["Can't update to git hash %s committed on %s: "
                          "the current PNaCl revision's current hash %s "
                          "committed on %s is more recent." %
                          (new_pnacl_revision, new_pnacl_revision_date,
@@ -423,7 +429,7 @@ def Main():
 
     # Remove commits later than the current commit or the user-provided one.
     cutoff_date = dateutilparser.parse(GitCommitInfo(
-        info='date', obj='%040x' % new_pnacl_revision, num=1))
+        info='date', obj=new_pnacl_revision, num=1))
     pnacl_changes = [cl for cl in pnacl_changes if
                      dateutilparser.parse(cl['date']) <= cutoff_date]
 
@@ -434,34 +440,35 @@ def Main():
 
     if not user_provided_hash:
       # Take the latest commit that touched PNaCl.
-      new_pnacl_revision = GitHash(pnacl_changes[-1]['hash'])
+      new_pnacl_revision = pnacl_changes[-1]['hash']
 
-    new_branch_name = ('pnacl-revision-update-to-%040x' %
-                       new_pnacl_revision)
+    new_branch_name = 'pnacl-revision-update-to-%s' % new_pnacl_revision
     if GitBranchExists(new_branch_name):
       # TODO(jfb) Figure out if tryjobs succeeded, checkout the branch and land.
       raise Exception("Branch %s already exists, the change hasn't "
                       "landed yet.\nPlease check trybots and land it "
                       "manually." % new_branch_name)
+
     if args.dry_run:
       DryRun("Would check out branch: " + new_branch_name)
+      DryRun("Would update PNaCl revision to: %s" % new_pnacl_revision)
     else:
       GitCheckoutNewBranch(new_branch_name)
+      try:
+        SetCurrentRevision(new_pnacl_revision)
+        for f in GetRevisionPackageFiles():
+          GitAdd(f)
+        GitCommit(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision))
 
-    if args.dry_run:
-      DryRun("Would update PNaCl revision to: %040x" % new_pnacl_revision)
-    else:
-      SetCurrentRevision(new_pnacl_revision)
-      for f in GetRevisionPackageFiles():
-        GitAdd(f)
-      GitCommit(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision))
+        upload_res = UploadChanges()
+        msg += ['Upload result:\n%s' % upload_res]
+        try_res = GitTry()
+        msg += ['Try result:\n%s' % try_res]
 
-      upload_res = UploadChanges()
-      msg += ['Upload result:\n%s' % upload_res]
-      try_res = GitTry()
-      msg += ['Try result:\n%s' % try_res]
-
-      GitCheckout('master', force=False)
+        GitCheckout(orig_branch, force=False)
+      except:
+        GitCheckout(orig_branch, force=True)
+        raise
 
     Done(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision, msg=msg))
 
@@ -474,12 +481,13 @@ def Main():
     # runs of the cronjob from succeeding until the failure is fixed.
     out = FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision, msg=msg,
                  err=['Failed at %s: %s' % (datetime.datetime.now(), e)])
-    sys.stderr.write(out)
+    sys.stderr.write('%s\n' % e)
     if not args.dry_run:
       SendEmail(args.email, out)
-      GitCheckout('master', force=True)
     raise
+
+  return 0
 
 
 if __name__ == '__main__':
-  Main()
+  sys.exit(Main(sys.argv[1:]))
