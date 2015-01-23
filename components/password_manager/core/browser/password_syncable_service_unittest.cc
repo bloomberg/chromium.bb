@@ -464,8 +464,8 @@ TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*other_service_wrapper.password_store(),
               FillAutofillableLogins(_)).WillOnce(AppendForm(form2));
-  EXPECT_CALL(*other_service_wrapper.password_store(),
-              FillBlacklistLogins(_)).WillOnce(Return(true));
+  EXPECT_CALL(*other_service_wrapper.password_store(), FillBlacklistLogins(_))
+      .WillOnce(Return(true));
 
   EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(form2)));
   EXPECT_CALL(*other_service_wrapper.password_store(),

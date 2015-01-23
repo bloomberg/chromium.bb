@@ -28,8 +28,8 @@ CredentialInfo::CredentialInfo(const blink::WebCredential& credential)
         static_cast<const blink::WebLocalCredential&>(credential).password();
   } else {
     DCHECK(credential.isFederatedCredential());
-    federation = static_cast<const blink::WebFederatedCredential&>(
-        credential).federation();
+    federation = static_cast<const blink::WebFederatedCredential&>(credential)
+                     .federation();
   }
 }
 

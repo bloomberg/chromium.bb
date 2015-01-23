@@ -635,9 +635,8 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   ASSERT_EQ(1U, passwords[saved_match()->signon_realm].size());
   EXPECT_EQ(saved_match()->username_value,
             passwords[saved_match()->signon_realm][0].username_value);
-  EXPECT_EQ(0U,
-            passwords[saved_match()->signon_realm][0]
-                .other_possible_usernames.size());
+  EXPECT_EQ(0U, passwords[saved_match()->signon_realm][0]
+                    .other_possible_usernames.size());
 
   // This time use an alternate username
   PasswordFormManager manager_alt(&password_manager, &client_with_store,
@@ -666,9 +665,8 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   ASSERT_EQ(1U, passwords[saved_match()->signon_realm].size());
   EXPECT_EQ(new_username,
             passwords[saved_match()->signon_realm][0].username_value);
-  EXPECT_EQ(0U,
-            passwords[saved_match()->signon_realm][0]
-                .other_possible_usernames.size());
+  EXPECT_EQ(0U, passwords[saved_match()->signon_realm][0]
+                    .other_possible_usernames.size());
   password_store->Shutdown();
 }
 
@@ -989,8 +987,9 @@ TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
   SimulateFetchMatchingLoginsFromPasswordStore(&manager);
   SimulateResponseFromPasswordStore(&manager, results);
   EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
-  EXPECT_EQ("", password_manager.GetLatestBestMatches().begin()
-      ->second->original_signon_realm);
+  EXPECT_EQ("", password_manager.GetLatestBestMatches()
+                    .begin()
+                    ->second->original_signon_realm);
 }
 
 TEST_F(PasswordFormManagerTest, InvalidActionURLsDoNotMatch) {
@@ -1257,8 +1256,8 @@ TEST_F(PasswordFormManagerTest, UploadFormData_AccountCreationPassword) {
   SimulateResponseFromPasswordStore(&form_manager, result);
 
   EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
-              UploadPasswordForm(_,
-                                 autofill::ACCOUNT_CREATION_PASSWORD)).Times(1);
+              UploadPasswordForm(_, autofill::ACCOUNT_CREATION_PASSWORD))
+      .Times(1);
   form_manager.ProvisionallySave(
       form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   form_manager.Save();

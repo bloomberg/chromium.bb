@@ -167,17 +167,18 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
   // Expect the appropriate replies, as above, in reverse order than we will
   // issue the queries. Each retires on saturation to avoid matcher spew.
-  EXPECT_CALL(consumer,
-      OnGetPasswordStoreResults(ContainsAllPasswordForms(bar_example_expected)))
-      .WillOnce(WithArg<0>(STLDeleteElements0())).RetiresOnSaturation();
-  EXPECT_CALL(consumer,
-      OnGetPasswordStoreResults(
-          ContainsAllPasswordForms(accounts_google_expected)))
-      .WillOnce(WithArg<0>(STLDeleteElements0())).RetiresOnSaturation();
-  EXPECT_CALL(consumer,
-      OnGetPasswordStoreResults(
-          ContainsAllPasswordForms(www_google_expected)))
-      .WillOnce(WithArg<0>(STLDeleteElements0())).RetiresOnSaturation();
+  EXPECT_CALL(consumer, OnGetPasswordStoreResults(
+                            ContainsAllPasswordForms(bar_example_expected)))
+      .WillOnce(WithArg<0>(STLDeleteElements0()))
+      .RetiresOnSaturation();
+  EXPECT_CALL(consumer, OnGetPasswordStoreResults(
+                            ContainsAllPasswordForms(accounts_google_expected)))
+      .WillOnce(WithArg<0>(STLDeleteElements0()))
+      .RetiresOnSaturation();
+  EXPECT_CALL(consumer, OnGetPasswordStoreResults(
+                            ContainsAllPasswordForms(www_google_expected)))
+      .WillOnce(WithArg<0>(STLDeleteElements0()))
+      .RetiresOnSaturation();
 
   store->GetLogins(www_google, PasswordStore::ALLOW_PROMPT, &consumer);
   store->GetLogins(accounts_google, PasswordStore::ALLOW_PROMPT, &consumer);
