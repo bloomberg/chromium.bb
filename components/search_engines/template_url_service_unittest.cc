@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/search_engines/template_url_service.h"
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/test/mock_time_provider.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service.h"
@@ -24,15 +27,12 @@
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
-#include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
-using ::testing::Return;
-using ::testing::StrictMock;
 
 namespace {
 
@@ -150,6 +150,10 @@ class TemplateURLServiceTest : public testing::Test {
   // Verifies the two TemplateURLs are equal.
   void AssertEquals(const TemplateURL& expected, const TemplateURL& actual);
 
+  // Verifies the two timestamps are equal, within the expected degree of
+  // precision.
+  void AssertTimesEqual(const base::Time& expected, const base::Time& actual);
+
   // Create an URL that appears to have been prepopulated, but won't be in the
   // current data. The caller owns the returned TemplateURL*.
   TemplateURL* CreatePreloadedTemplateURL(bool safe_for_autoreplace,
@@ -227,10 +231,18 @@ void TemplateURLServiceTest::AssertEquals(const TemplateURL& expected,
   ASSERT_EQ(expected.input_encodings(), actual.input_encodings());
   ASSERT_EQ(expected.id(), actual.id());
   ASSERT_EQ(expected.date_created(), actual.date_created());
-  ASSERT_EQ(expected.last_modified(), actual.last_modified());
+  AssertTimesEqual(expected.last_modified(), actual.last_modified());
   ASSERT_EQ(expected.sync_guid(), actual.sync_guid());
   ASSERT_EQ(expected.search_terms_replacement_key(),
             actual.search_terms_replacement_key());
+}
+
+void TemplateURLServiceTest::AssertTimesEqual(const base::Time& expected,
+                                              const base::Time& actual) {
+  // Because times are stored with a granularity of one second, there is a loss
+  // of precision when serializing and deserializing the timestamps. Hence, only
+  // expect timestamps to be equal to within one second of one another.
+  ASSERT_LT((expected - actual).magnitude(), base::TimeDelta::FromSeconds(1));
 }
 
 TemplateURL* TemplateURLServiceTest::CreatePreloadedTemplateURL(
@@ -305,11 +317,11 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
                                          NULL));
 
   // We expect the last_modified time to be updated to the present time on an
-  // explicit reset. We have to set up the expectation here because ResetModel
-  // resets the TimeProvider in the TemplateURLService.
-  StrictMock<base::MockTimeProvider> mock_time;
-  model()->set_time_provider(&base::MockTimeProvider::StaticNow);
-  EXPECT_CALL(mock_time, Now()).WillOnce(Return(base::Time::FromDoubleT(1337)));
+  // explicit reset.
+  base::Time now = base::Time::Now();
+  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  clock->SetNow(now);
+  model()->set_clock(clock.Pass());
 
   // Mutate an element and verify it succeeded.
   model()->ResetTemplateURL(loaded_url, ASCIIToUTF16("a"), ASCIIToUTF16("b"),
@@ -330,7 +342,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   AssertEquals(*cloned_url, *loaded_url);
   // We changed a TemplateURL in the service, so ensure that the time was
   // updated.
-  ASSERT_EQ(base::Time::FromDoubleT(1337), loaded_url->last_modified());
+  AssertTimesEqual(now, loaded_url->last_modified());
 
   // Remove an element and verify it succeeded.
   model()->Remove(loaded_url);
@@ -620,9 +632,10 @@ TEST_F(TemplateURLServiceTest, Reset) {
   VerifyObserverCount(1);
   base::RunLoop().RunUntilIdle();
 
-  StrictMock<base::MockTimeProvider> mock_time;
-  model()->set_time_provider(&base::MockTimeProvider::StaticNow);
-  EXPECT_CALL(mock_time, Now()).WillOnce(Return(base::Time::FromDoubleT(1337)));
+  base::Time now = base::Time::Now();
+  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  clock->SetNow(now);
+  model()->set_clock(clock.Pass());
 
   // Reset the short name, keyword, url and make sure it takes.
   const base::string16 new_short_name(ASCIIToUTF16("a"));
@@ -646,7 +659,7 @@ TEST_F(TemplateURLServiceTest, Reset) {
   const TemplateURL* read_url = model()->GetTemplateURLForKeyword(new_keyword);
   ASSERT_TRUE(read_url);
   AssertEquals(*cloned_url, *read_url);
-  ASSERT_EQ(base::Time::FromDoubleT(1337), read_url->last_modified());
+  AssertTimesEqual(now, read_url->last_modified());
 }
 
 TEST_F(TemplateURLServiceTest, DefaultSearchProvider) {

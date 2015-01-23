@@ -929,8 +929,6 @@
         'test/mock_chrome_application_mac.mm',
         'test/mock_devices_changed_observer.cc',
         'test/mock_devices_changed_observer.h',
-        'test/mock_time_provider.cc',
-        'test/mock_time_provider.h',
         'test/multiprocess_test.cc',
         'test/multiprocess_test.h',
         'test/multiprocess_test_android.cc',

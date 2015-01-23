@@ -20,6 +20,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/rappor/rappor_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -198,7 +199,7 @@ TemplateURLService::TemplateURLService(
       load_handle_(0),
       default_search_provider_(NULL),
       next_id_(kInvalidTemplateURLID + 1),
-      time_provider_(&base::Time::Now),
+      clock_(new base::DefaultClock),
       models_associated_(false),
       processing_syncer_changes_(false),
       dsp_change_origin_(DSP_CHANGE_OTHER),
@@ -223,7 +224,7 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
       load_handle_(0),
       default_search_provider_(NULL),
       next_id_(kInvalidTemplateURLID + 1),
-      time_provider_(&base::Time::Now),
+      clock_(new base::DefaultClock),
       models_associated_(false),
       processing_syncer_changes_(false),
       dsp_change_origin_(DSP_CHANGE_OTHER),
@@ -2067,7 +2068,7 @@ bool TemplateURLService::ResetTemplateURLNoNotify(
     data.favicon_url = GURL();
   }
   data.safe_for_autoreplace = false;
-  data.last_modified = time_provider_();
+  data.last_modified = clock_->Now();
   return UpdateNoNotify(url, TemplateURL(data));
 }
 
