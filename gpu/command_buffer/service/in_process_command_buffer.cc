@@ -238,6 +238,13 @@ InProcessCommandBuffer::Service::Service() {}
 
 InProcessCommandBuffer::Service::~Service() {}
 
+scoped_refptr<gfx::GLShareGroup>
+InProcessCommandBuffer::Service::share_group() {
+  if (!share_group_.get())
+    share_group_ = new gfx::GLShareGroup;
+  return share_group_;
+}
+
 scoped_refptr<gles2::MailboxManager>
 InProcessCommandBuffer::Service::mailbox_manager() {
   if (!mailbox_manager_.get()) {
@@ -397,8 +404,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   }
 
   gl_share_group_ = params.context_group
-                        ? params.context_group->gl_share_group_.get()
-                        : new gfx::GLShareGroup;
+                        ? params.context_group->gl_share_group_
+                        : service_->share_group();
 
 #if defined(OS_ANDROID)
   stream_texture_manager_.reset(new StreamTextureManagerInProcess);

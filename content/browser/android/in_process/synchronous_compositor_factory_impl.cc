@@ -53,7 +53,7 @@ scoped_ptr<gpu::GLInProcessContext> CreateOffscreenContext(
       gfx::kNullAcceleratedWidget,
       gfx::Size(1, 1),
       NULL /* share_context */,
-      true,  // TODO(sievers): Use attributes.shareResources. crbug/443464.
+      attributes.shareResources,
       in_process_attribs,
       gpu_preference,
       gpu::GLInProcessContextSharedMemoryLimits(),
