@@ -1542,9 +1542,6 @@ crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/ve
 # Skip until V8's --harmony-scoping is shipped by default.
 crbug.com/433324 inspector/sources/debugger/debugger-es6-harmony-scopes.html [ Skip ]
 
-crbug.com/450612 fast/forms/input-placeholder-paint-order.html [ NeedsRebaseline ]
-crbug.com/450612 fast/forms/textarea/textarea-placeholder-paint-order.html [ NeedsRebaseline ]
-
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/pop-up-button-text-alignment-and-direction.html [ Pass ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/text-shadow-no-default-color.html [ Pass Failure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/008.html [ Pass ImageOnlyFailure ]
