@@ -46,6 +46,7 @@ public:
     static PassRefPtrWillBeRawPtr<ImageData> create(const IntSize&);
     static PassRefPtrWillBeRawPtr<ImageData> create(const IntSize&, PassRefPtr<DOMUint8ClampedArray>);
     static PassRefPtrWillBeRawPtr<ImageData> create(unsigned width, unsigned height, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<ImageData> create(DOMUint8ClampedArray*, unsigned width, ExceptionState&);
     static PassRefPtrWillBeRawPtr<ImageData> create(DOMUint8ClampedArray*, unsigned width, unsigned height, ExceptionState&);
 
     IntSize size() const { return m_size; }
@@ -61,6 +62,8 @@ public:
 private:
     explicit ImageData(const IntSize&);
     ImageData(const IntSize&, PassRefPtr<DOMUint8ClampedArray>);
+
+    static bool validateConstructorArguments(DOMUint8ClampedArray*, unsigned width, unsigned&, ExceptionState&);
 
     IntSize m_size;
     RefPtr<DOMUint8ClampedArray> m_data;

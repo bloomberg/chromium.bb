@@ -29,8 +29,9 @@
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#imagedata
 
 [
+    TypeChecking=Interface,
     Constructor(unsigned long width, unsigned long height),
-    Constructor(Uint8ClampedArray data, unsigned long width, [Default=Undefined] optional unsigned long height),
+    Constructor(Uint8ClampedArray data, unsigned long width, optional unsigned long height),
     Exposed=(Window,Worker),
     RaisesException=Constructor,
     WillBeGarbageCollected,

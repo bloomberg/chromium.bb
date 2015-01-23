@@ -41,12 +41,16 @@ shouldThrow("new ImageData(1 << 31, 1 << 31)");
 shouldThrow("new ImageData(new Uint8ClampedArray(0))");
 shouldThrow("new ImageData(new Uint8Array(100), 25)");
 shouldThrow("new ImageData(new Uint8ClampedArray(27), 2)");
+shouldThrow("new ImageData(new Uint8ClampedArray(28), 7, 0)");
 shouldThrow("new ImageData(new Uint8ClampedArray(104), 14)");
+shouldThrow("new ImageData(self, 4, 4)");
+shouldThrow("new ImageData(null, 4, 4)");
 shouldThrow("new ImageData(imageData.data, 0)");
 shouldThrow("new ImageData(imageData.data, 13)");
 shouldThrow("new ImageData(imageData.data, 1 << 31)");
 shouldThrow("new ImageData(imageData.data, 'biggish')");
 shouldThrow("new ImageData(imageData.data, 1 << 24, 1 << 31)");
+shouldBe("(new ImageData(new Uint8ClampedArray(28), 7)).height", "1");
 
 imageDataFromData = new ImageData(imageData.data, 100);
 shouldBe("imageDataFromData.width", "100");
