@@ -1,0 +1,205 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chrome/version.gni")
+import("//testing/test.gni")
+
+process_version("chrome_elf_resources") {
+  source = "//chrome/app/chrome_version.rc.version"
+  output = "$target_gen_dir/chrome_elf_version.rc"
+  extra_args = [
+    "-f",
+    rebase_path("chrome_elf.ver"),
+  ]
+}
+
+shared_library("chrome_elf") {
+  sources = [
+    "chrome_elf_main.cc",
+    "chrome_elf_main.h",
+    "$target_gen_dir/chrome_elf_version.rc",
+  ]
+  deps = [
+    ":blacklist",
+    ":breakpad",
+    ":lib",
+    ":chrome_elf_resources",
+  ]
+  configs += [ "//build/config/win:windowed" ]
+  configs -= [ "//build/config/win:console" ]
+  ldflags = [
+    "/NODEFAULTLIB:user32.lib",
+    "/DEF:" + rebase_path("chrome_elf.def"),
+  ]
+  if (cpu_arch == "x86") {
+    # Don"t set an x64 base address (to avoid breaking HE-ASLR).
+    ldflags += [ "/BASE:0x01c20000" ]
+  }
+}
+
+source_set("lib") {
+  sources = [
+    "create_file/chrome_create_file.cc",
+    "create_file/chrome_create_file.h",
+    "ntdll_cache.cc",
+    "ntdll_cache.h",
+  ]
+  deps = [
+    ":common",
+    "//base:base_static",
+    "//sandbox",
+  ]
+}
+
+source_set("constants") {
+  sources = [
+    "chrome_elf_constants.cc",
+    "chrome_elf_constants.h",
+  ]
+}
+
+source_set("common") {
+  deps = [
+    ":constants",
+  ]
+  sources = [
+    "chrome_elf_types.h",
+    "chrome_elf_util.cc",
+    "chrome_elf_util.h",
+    "thunk_getter.cc",
+    "thunk_getter.h",
+  ]
+}
+
+source_set("breakpad") {
+  include_dirs = [ "$target_gen_dir" ]
+  sources = [
+    "breakpad.cc",
+    "breakpad.h",
+  ]
+  deps = [
+    ":common",
+    "//breakpad:breakpad_handler",
+    "//chrome:version_header",
+  ]
+}
+
+if (is_component_build) {
+  shared_library("chrome_redirects") {
+    sources = [
+      "chrome_redirects_main.cc",
+    ]
+    deps = [
+      ":lib",
+    ]
+    configs += [ "//build/config/win:windowed" ]
+    ldflags = [ "/DEF:" + rebase_path("chrome_redirects.def") ]
+
+    if (cpu_arch == "x86") {
+      # Don't set an x64 base address (to avoid breaking HE-ASLR).
+      ldflags += [ "/BASE:0x01c20000" ]
+    }
+  }
+}
+
+source_set("dll_hash") {
+  deps = [
+    "//base",
+  ]
+  sources = [
+    "dll_hash/dll_hash.cc",
+    "dll_hash/dll_hash.h",
+  ]
+}
+
+executable("dll_hash_main") {
+  deps = [
+    ":dll_hash",
+  ]
+  sources = [
+    "dll_hash/dll_hash_main.cc",
+  ]
+}
+
+static_library("blacklist") {
+  sources = [
+    "blacklist/blacklist.cc",
+    "blacklist/blacklist.h",
+    "blacklist/blacklist_interceptions.cc",
+    "blacklist/blacklist_interceptions.h",
+  ]
+  deps = [
+    # Depend on base_static, but do NOT take a dependency on base.gyp:base
+    # as that would risk pulling in base's link-time dependencies which
+    # chrome_elf cannot do.
+    ":breakpad",
+    ":constants",
+    "//base:base_static",
+    "//sandbox:sandbox",
+  ]
+}
+
+test("chrome_elf_unittests") {
+  output_name = "chrome_elf_unittests"
+  sources = [
+    "blacklist/test/blacklist_test.cc",
+    "chrome_elf_util_unittest.cc",
+    "create_file/chrome_create_file_unittest.cc",
+    "elf_imports_unittest.cc",
+    "ntdll_cache_unittest.cc",
+  ]
+  include_dirs = [ "$target_gen_dir" ]
+  deps = [
+    ":blacklist",
+    ":blacklist_test_main_dll",
+    ":lib",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//sandbox",
+    "//testing/gtest",
+  ]
+  data_deps = [
+    ":blacklist_test_dll_1",
+    ":blacklist_test_dll_2",
+    ":blacklist_test_dll_3",
+    ":chrome_elf",
+    "//chrome",
+  ]
+}
+
+shared_library("blacklist_test_main_dll") {
+  sources = [
+    "blacklist/test/blacklist_test_main_dll.cc",
+  ]
+  deps = [
+    "//base",
+    ":blacklist",
+  ]
+  ldflags =
+      [ "/DEF:" + rebase_path("blacklist/test/blacklist_test_main_dll.def",
+                              root_build_dir) ]
+}
+
+shared_library("blacklist_test_dll_1") {
+  sources = [
+    "blacklist/test/blacklist_test_dll_1.cc",
+  ]
+  ldflags = [ "/DEF:" + rebase_path("blacklist/test/blacklist_test_dll_1.def",
+                                    root_build_dir) ]
+}
+
+shared_library("blacklist_test_dll_2") {
+  sources = [
+    "blacklist/test/blacklist_test_dll_2.cc",
+  ]
+  ldflags = [ "/DEF:" + rebase_path("blacklist/test/blacklist_test_dll_2.def",
+                                    root_build_dir) ]
+}
+
+shared_library("blacklist_test_dll_3") {
+  sources = [
+    "blacklist/test/blacklist_test_dll_3.cc",
+  ]
+}

@@ -158,7 +158,7 @@ static_library("renderer") {
   }
   if (is_win) {
     deps += [
-      #'../chrome_elf/chrome_elf.gyp:chrome_elf',  TODO(GYP)
+      "//chrome_elf",
       "//third_party/wtl",
     ]
   }
