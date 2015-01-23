@@ -13,7 +13,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "storage/common/blob/blob_data.h"
-#include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThreadSafeData.h"
@@ -44,32 +43,20 @@ void WebBlobRegistryImpl::registerBlobData(
     const blink::WebString& uuid, const blink::WebBlobData& data) {
   const std::string uuid_str(uuid.utf8());
 
-  storage::DataElement data_buffer;
-  data_buffer.SetToEmptyBytes();
-
   sender_->Send(new BlobHostMsg_StartBuilding(uuid_str));
   size_t i = 0;
   WebBlobData::Item data_item;
   while (data.itemAt(i++, data_item)) {
-    if (data_item.length == 0) {
-      continue;
-    }
-    if (data_item.type != WebBlobData::Item::TypeData &&
-        data_buffer.length() != 0) {
-      FlushBlobItemBuffer(uuid_str, &data_buffer);
-    }
-    storage::BlobData::Item item;
     switch (data_item.type) {
       case WebBlobData::Item::TypeData: {
         // WebBlobData does not allow partial data items.
         DCHECK(!data_item.offset && data_item.length == -1);
-        if (data_item.data.size() == 0) {
-          continue;
-        }
-        BufferBlobData(uuid_str, data_item.data, &data_buffer);
+        SendDataForBlob(uuid_str, data_item.data);
         break;
       }
       case WebBlobData::Item::TypeFile:
+        if (data_item.length) {
+          storage::BlobData::Item item;
           item.SetToFilePathRange(
               base::FilePath::FromUTF16Unsafe(data_item.filePath),
               static_cast<uint64>(data_item.offset),
@@ -77,18 +64,24 @@ void WebBlobRegistryImpl::registerBlobData(
               base::Time::FromDoubleT(data_item.expectedModificationTime));
           sender_->Send(
               new BlobHostMsg_AppendBlobDataItem(uuid_str, item));
+        }
         break;
       case WebBlobData::Item::TypeBlob:
+        if (data_item.length) {
+          storage::BlobData::Item item;
           item.SetToBlobRange(
               data_item.blobUUID.utf8(),
               static_cast<uint64>(data_item.offset),
               static_cast<uint64>(data_item.length));
           sender_->Send(
               new BlobHostMsg_AppendBlobDataItem(uuid_str, item));
+        }
         break;
       case WebBlobData::Item::TypeFileSystemURL:
+        if (data_item.length) {
           // We only support filesystem URL as of now.
           DCHECK(GURL(data_item.fileSystemURL).SchemeIsFileSystem());
+          storage::BlobData::Item item;
           item.SetToFileSystemUrlRange(
               data_item.fileSystemURL,
               static_cast<uint64>(data_item.offset),
@@ -96,13 +89,11 @@ void WebBlobRegistryImpl::registerBlobData(
               base::Time::FromDoubleT(data_item.expectedModificationTime));
           sender_->Send(
               new BlobHostMsg_AppendBlobDataItem(uuid_str, item));
+        }
         break;
       default:
         NOTREACHED();
     }
-  }
-  if (data_buffer.length() != 0) {
-    FlushBlobItemBuffer(uuid_str, &data_buffer);
   }
   sender_->Send(new BlobHostMsg_FinishBuilding(
       uuid_str, data.contentType().utf8().data()));
@@ -125,55 +116,37 @@ void WebBlobRegistryImpl::revokePublicBlobURL(const WebURL& url) {
   sender_->Send(new BlobHostMsg_RevokePublicURL(url));
 }
 
-void WebBlobRegistryImpl::FlushBlobItemBuffer(
-    const std::string& uuid_str,
-    storage::DataElement* data_buffer) const {
-  DCHECK_NE(data_buffer->length(), 0ul);
-  DCHECK_LT(data_buffer->length(), kLargeThresholdBytes);
-  sender_->Send(new BlobHostMsg_AppendBlobDataItem(uuid_str, *data_buffer));
-  data_buffer->SetToEmptyBytes();
-}
+void WebBlobRegistryImpl::SendDataForBlob(const std::string& uuid_str,
+                                          const WebThreadSafeData& data) {
 
-void WebBlobRegistryImpl::BufferBlobData(const std::string& uuid_str,
-                                         const blink::WebThreadSafeData& data,
-                                         storage::DataElement* data_buffer) {
-  size_t buffer_size = data_buffer->length();
-  size_t data_size = data.size();
-  DCHECK_NE(data_size, 0ul);
-  if (buffer_size != 0 && buffer_size + data_size >= kLargeThresholdBytes) {
-    FlushBlobItemBuffer(uuid_str, data_buffer);
-    buffer_size = 0;
-  }
-  if (data_size >= kLargeThresholdBytes) {
-    SendOversizedDataForBlob(uuid_str, data);
+  if (data.size() == 0)
+    return;
+  if (data.size() < kLargeThresholdBytes) {
+    storage::BlobData::Item item;
+    item.SetToBytes(data.data(), data.size());
+    sender_->Send(new BlobHostMsg_AppendBlobDataItem(uuid_str, item));
   } else {
-    DCHECK_LT(buffer_size + data_size, kLargeThresholdBytes);
-    data_buffer->AppendBytes(data.data(), data_size);
-  }
-}
+    // We handle larger amounts of data via SharedMemory instead of
+    // writing it directly to the IPC channel.
+    size_t shared_memory_size = std::min(
+        data.size(), kMaxSharedMemoryBytes);
+    scoped_ptr<base::SharedMemory> shared_memory(
+        ChildThread::AllocateSharedMemory(shared_memory_size,
+                                          sender_.get()));
+    CHECK(shared_memory.get());
+    if (!shared_memory->Map(shared_memory_size))
+      CHECK(false);
 
-void WebBlobRegistryImpl::SendOversizedDataForBlob(
-    const std::string& uuid_str,
-    const blink::WebThreadSafeData& data) {
-  DCHECK_GE(data.size(), kLargeThresholdBytes);
-  // We handle larger amounts of data via SharedMemory instead of
-  // writing it directly to the IPC channel.
-  size_t shared_memory_size = std::min(data.size(), kMaxSharedMemoryBytes);
-  scoped_ptr<base::SharedMemory> shared_memory(
-      ChildThread::AllocateSharedMemory(shared_memory_size, sender_.get()));
-  CHECK(shared_memory.get());
-  if (!shared_memory->Map(shared_memory_size))
-    CHECK(false);
-
-  size_t data_size = data.size();
-  const char* data_ptr = data.data();
-  while (data_size) {
-    size_t chunk_size = std::min(data_size, shared_memory_size);
-    memcpy(shared_memory->memory(), data_ptr, chunk_size);
-    sender_->Send(new BlobHostMsg_SyncAppendSharedMemory(
-        uuid_str, shared_memory->handle(), chunk_size));
-    data_size -= chunk_size;
-    data_ptr += chunk_size;
+    size_t data_size = data.size();
+    const char* data_ptr = data.data();
+    while (data_size) {
+      size_t chunk_size = std::min(data_size, shared_memory_size);
+      memcpy(shared_memory->memory(), data_ptr, chunk_size);
+      sender_->Send(new BlobHostMsg_SyncAppendSharedMemory(
+          uuid_str, shared_memory->handle(), chunk_size));
+      data_size -= chunk_size;
+      data_ptr += chunk_size;
+    }
   }
 }
 

@@ -6,7 +6,6 @@
 #define CONTENT_CHILD_WEBBLOBREGISTRY_IMPL_H_
 
 #include <string>
-#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
@@ -14,10 +13,6 @@
 namespace blink {
 class WebThreadSafeData;
 }  // namespace blink
-
-namespace storage {
-class DataElement;
-}
 
 namespace content {
 class ThreadSafeSender;
@@ -48,19 +43,8 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
   virtual void unregisterStreamURL(const blink::WebURL& url);
 
  private:
-  // Sends the data in the buffer as a blob item, then resets the buffer size.
-  void FlushBlobItemBuffer(const std::string& uuid_str,
-                           storage::DataElement* data_buffer) const;
-
-  // Adds the item to the consolidating buffer, flushing the buffer if needed.
-  // If the item is too big for the buffer, it is sent as Sync messages in
-  // shared memory instead.
-  void BufferBlobData(const std::string& uuid_str,
-                      const blink::WebThreadSafeData& data,
-                      storage::DataElement* data_buffer);
-  // Sends data that is larger than the threshold.
-  void SendOversizedDataForBlob(const std::string& uuid_str,
-                                const blink::WebThreadSafeData& data);
+  void SendDataForBlob(const std::string& uuid_str,
+                       const blink::WebThreadSafeData& data);
 
   scoped_refptr<ThreadSafeSender> sender_;
 };
