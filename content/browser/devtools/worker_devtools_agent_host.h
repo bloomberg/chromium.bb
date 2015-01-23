@@ -52,9 +52,7 @@ class WorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   void AttachToWorker();
   void DetachFromWorker();
   void WorkerCreated();
-  void OnDispatchOnInspectorFrontend(const std::string& message,
-                                     uint32 total_size);
-  void OnSaveAgentRuntimeState(const std::string& state);
+  void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
 
   void set_state(WorkerState state) { state_ = state; }
   const WorkerId& worker_id() const { return worker_id_; }
@@ -64,7 +62,6 @@ class WorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
 
   WorkerState state_;
   WorkerId worker_id_;
-  std::string saved_agent_state_;
   DISALLOW_COPY_AND_ASSIGN(WorkerDevToolsAgentHost);
 };
 

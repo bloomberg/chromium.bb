@@ -23,6 +23,7 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/renderer/document_state.h"
+#include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_script_context.h"
@@ -35,8 +36,6 @@
 namespace content {
 
 namespace {
-
-const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
 
 // For now client must be a per-thread instance.
 // TODO(kinuko): This needs to be refactored when we start using thread pool
@@ -248,28 +247,13 @@ void EmbeddedWorkerContextClient::reportConsoleMessage(
       embedded_worker_id_, params));
 }
 
-void EmbeddedWorkerContextClient::dispatchDevToolsMessage(
-    const blink::WebString& message) {
-  std::string msg(message.utf8());
-
-  if (msg.length() < kMaxMessageChunkSize) {
-    sender_->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-        worker_devtools_agent_route_id_, msg, msg.size()));
-    return;
-  }
-
-  for (size_t pos = 0; pos < msg.length(); pos += kMaxMessageChunkSize) {
-    sender_->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-        worker_devtools_agent_route_id_,
-        msg.substr(pos, kMaxMessageChunkSize),
-        pos ? 0 : msg.size()));
-  }
-}
-
-void EmbeddedWorkerContextClient::saveDevToolsAgentState(
-    const blink::WebString& state) {
-  sender_->Send(new DevToolsHostMsg_SaveAgentRuntimeState(
-      worker_devtools_agent_route_id_, state.utf8()));
+void EmbeddedWorkerContextClient::sendDevToolsMessage(
+    int call_id,
+    const blink::WebString& message,
+    const blink::WebString& state_cookie) {
+  DevToolsAgent::SendChunkedProtocolMessage(
+      sender_.get(), worker_devtools_agent_route_id_,
+      call_id, message.utf8(), state_cookie.utf8());
 }
 
 void EmbeddedWorkerContextClient::didHandleActivateEvent(

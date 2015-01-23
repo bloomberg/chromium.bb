@@ -83,8 +83,9 @@ class EmbeddedWorkerContextClient
                                     const blink::WebString& message,
                                     int line_number,
                                     const blink::WebString& source_url);
-  virtual void dispatchDevToolsMessage(const blink::WebString&);
-  virtual void saveDevToolsAgentState(const blink::WebString&);
+  virtual void sendDevToolsMessage(int call_id,
+                                   const blink::WebString& message,
+                                   const blink::WebString& state);
   virtual void didHandleActivateEvent(int request_id,
                                       blink::WebServiceWorkerEventResult);
   virtual void didHandleInstallEvent(int request_id,
