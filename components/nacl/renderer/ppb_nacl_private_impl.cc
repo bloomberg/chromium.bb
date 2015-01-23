@@ -148,7 +148,7 @@ static const PP_NaClFileInfo kInvalidNaClFileInfo = {
 int GetRoutingID(PP_Instance instance) {
   // Check that we are on the main renderer thread.
   DCHECK(content::RenderThread::Get());
-  content::RendererPpapiHost *host =
+  content::RendererPpapiHost* host =
       content::RendererPpapiHost::GetForPPInstance(instance);
   if (!host)
     return 0;
@@ -644,11 +644,11 @@ void GetNexeFd(PP_Instance instance,
                base::Callback<void(int32_t, bool, PP_FileHandle)> callback) {
   if (!InitializePnaclResourceHost()) {
     ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-    FROM_HERE,
-    base::Bind(callback,
-               static_cast<int32_t>(PP_ERROR_FAILED),
-               false,
-               PP_kInvalidFileHandle));
+        FROM_HERE,
+        base::Bind(callback,
+                   static_cast<int32_t>(PP_ERROR_FAILED),
+                   false,
+                   PP_kInvalidFileHandle));
     return;
   }
 
@@ -764,7 +764,7 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
 
 void DispatchEvent(PP_Instance instance,
                    PP_NaClEventType event_type,
-                   const char *resource_url,
+                   const char* resource_url,
                    PP_Bool length_is_computable,
                    uint64_t loaded_bytes,
                    uint64_t total_bytes) {
