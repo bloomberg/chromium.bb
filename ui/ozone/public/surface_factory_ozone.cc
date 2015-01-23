@@ -42,20 +42,20 @@ int SurfaceFactoryOzone::GetDrmFd() {
 scoped_ptr<SurfaceOzoneEGL> SurfaceFactoryOzone::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   NOTIMPLEMENTED();
-  return scoped_ptr<SurfaceOzoneEGL>();
+  return nullptr;
 }
 
 scoped_ptr<SurfaceOzoneEGL>
 SurfaceFactoryOzone::CreateSurfacelessEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   NOTIMPLEMENTED();
-  return scoped_ptr<SurfaceOzoneEGL>();
+  return nullptr;
 }
 
 scoped_ptr<SurfaceOzoneCanvas> SurfaceFactoryOzone::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   NOTIMPLEMENTED();
-  return scoped_ptr<SurfaceOzoneCanvas>();
+  return nullptr;
 }
 
 const int32* SurfaceFactoryOzone::GetEGLSurfaceProperties(

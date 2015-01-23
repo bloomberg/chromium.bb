@@ -100,7 +100,7 @@ void CacaSurface::PresentCanvas(const gfx::Rect& damage) {
 }
 
 scoped_ptr<gfx::VSyncProvider> CacaSurface::CreateVSyncProvider() {
-  return scoped_ptr<gfx::VSyncProvider>();
+  return nullptr;
 }
 
 }  // namespace

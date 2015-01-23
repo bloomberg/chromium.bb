@@ -162,7 +162,7 @@ scoped_ptr<ui::MenuModel> NotificationViewTest::CreateMenuModel(
     const base::string16& display_source) {
   // For this test, this method should not be invoked.
   NOTREACHED();
-  return scoped_ptr<ui::MenuModel>();
+  return nullptr;
 }
 
 bool NotificationViewTest::HasClickedListener(

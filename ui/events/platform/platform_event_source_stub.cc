@@ -7,7 +7,7 @@
 namespace ui {
 
 scoped_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
-  return scoped_ptr<PlatformEventSource>();
+  return nullptr;
 }
 
 }  // namespace ui

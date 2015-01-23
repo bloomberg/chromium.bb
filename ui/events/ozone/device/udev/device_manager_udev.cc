@@ -158,7 +158,7 @@ scoped_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(udev_device* device) {
       device::udev_device_get_property_value(device, "SUBSYSTEM");
 
   if (!path || !subsystem)
-    return scoped_ptr<DeviceEvent>();
+    return nullptr;
 
   DeviceEvent::DeviceType device_type;
   if (!strcmp(subsystem, "input") &&
@@ -168,7 +168,7 @@ scoped_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(udev_device* device) {
            StartsWithASCII(path, "/dev/dri/card", true))
     device_type = DeviceEvent::DISPLAY;
   else
-    return scoped_ptr<DeviceEvent>();
+    return nullptr;
 
   DeviceEvent::ActionType action_type;
   if (!action || !strcmp(action, "add"))
@@ -178,9 +178,9 @@ scoped_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(udev_device* device) {
   else if (!strcmp(action, "change"))
     action_type = DeviceEvent::CHANGE;
   else
-    return scoped_ptr<DeviceEvent>();
+    return nullptr;
 
-  return scoped_ptr<DeviceEvent>(
+  return make_scoped_ptr(
       new DeviceEvent(device_type, action_type, base::FilePath(path)));
 }
 

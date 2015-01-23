@@ -43,7 +43,7 @@ class TestTarget : public EventTarget {
   EventTarget* GetParentTarget() override { return parent_; }
 
   scoped_ptr<EventTargetIterator> GetChildIterator() const override {
-    return scoped_ptr<EventTargetIterator>();
+    return nullptr;
   }
 
   EventTargeter* GetEventTargeter() override { return NULL; }

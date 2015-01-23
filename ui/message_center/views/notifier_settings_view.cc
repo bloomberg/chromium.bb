@@ -576,7 +576,7 @@ void NotifierSettingsView::UpdateContentsView(
         new views::MenuButton(NULL, notifier_group_text, this, true);
     notifier_group_selector_->SetBorder(scoped_ptr<views::Border>(
         new views::LabelButtonBorder(views::Button::STYLE_BUTTON)).Pass());
-    notifier_group_selector_->SetFocusPainter(scoped_ptr<views::Painter>());
+    notifier_group_selector_->SetFocusPainter(nullptr);
     notifier_group_selector_->set_animate_on_state_change(false);
     notifier_group_selector_->SetFocusable(true);
     contents_title_view->AddChildView(notifier_group_selector_);

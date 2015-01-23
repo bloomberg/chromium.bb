@@ -195,8 +195,7 @@ void ChangeQueue::UpdateNotification(const std::string& old_id,
 }
 
 void ChangeQueue::EraseNotification(const std::string& id, bool by_user) {
-  scoped_ptr<Change> change(
-      new Change(CHANGE_TYPE_DELETE, id, scoped_ptr<Notification>()));
+  scoped_ptr<Change> change(new Change(CHANGE_TYPE_DELETE, id, nullptr));
   change->set_by_user(by_user);
   Replace(id, change.Pass());
 }

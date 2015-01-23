@@ -59,13 +59,13 @@ scoped_ptr<HistoryData::Associations> Parse(
   std::string version;
   if (!dict->GetStringWithoutPathExpansion(kKeyVersion, &version) ||
       version != kCurrentVersion) {
-    return scoped_ptr<HistoryData::Associations>();
+    return nullptr;
   }
 
   const base::DictionaryValue* assoc_dict = NULL;
   if (!dict->GetDictionaryWithoutPathExpansion(kKeyAssociations, &assoc_dict) ||
       !assoc_dict) {
-    return scoped_ptr<HistoryData::Associations>();
+    return nullptr;
   }
 
   scoped_ptr<HistoryData::Associations> data(new HistoryData::Associations);
@@ -212,7 +212,7 @@ void HistoryDataStore::OnDictionaryLoadedCallback(
     OnLoadedCallback callback,
     scoped_ptr<base::DictionaryValue> dict) {
   if (!dict) {
-    callback.Run(scoped_ptr<HistoryData::Associations>());
+    callback.Run(nullptr);
   } else {
     callback.Run(Parse(dict.Pass()).Pass());
   }

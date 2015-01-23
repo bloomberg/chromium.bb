@@ -191,7 +191,7 @@ void LabelButton::SetStyle(ButtonStyle style) {
   style_ = style;
   // Inset the button focus rect from the actual border; roughly match Windows.
   if (style == STYLE_BUTTON) {
-    SetFocusPainter(scoped_ptr<Painter>());
+    SetFocusPainter(nullptr);
   } else {
     SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(
                         gfx::Insets(3, 3, 3, 3)));

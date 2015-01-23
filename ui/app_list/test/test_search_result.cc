@@ -18,7 +18,7 @@ void TestSearchResult::SetDisplayType(SearchResult::DisplayType type) {
 
 scoped_ptr<SearchResult> TestSearchResult::Duplicate() {
   NOTREACHED();
-  return scoped_ptr<SearchResult>();
+  return nullptr;
 }
 
 }  // namespace app_list

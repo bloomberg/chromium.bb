@@ -553,8 +553,7 @@ TEST_F(EventsXTest, DisableKeyboard) {
   EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(xev));
 
   device_data_manager->EnableDevice(blocked_device_id);
-  device_data_manager->SetDisabledKeyboardAllowedKeys(
-      scoped_ptr<std::set<KeyboardCode> >());
+  device_data_manager->SetDisabledKeyboardAllowedKeys(nullptr);
 
   // A key returns KEY_PRESSED as per usual now that keyboard was re-enabled.
   xev.InitGenericKeyEvent(master_device_id,

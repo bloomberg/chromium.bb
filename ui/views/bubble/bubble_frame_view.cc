@@ -92,7 +92,7 @@ LabelButton* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
                   *rb.GetImageNamed(IDR_CLOSE_DIALOG_H).ToImageSkia());
   close->SetImage(CustomButton::STATE_PRESSED,
                   *rb.GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
-  close->SetBorder(scoped_ptr<Border>());
+  close->SetBorder(nullptr);
   close->SetSize(close->GetPreferredSize());
   return close;
 }

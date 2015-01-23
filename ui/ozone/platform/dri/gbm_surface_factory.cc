@@ -134,7 +134,7 @@ scoped_ptr<SurfaceOzoneEGL>
 GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   if (!allow_surfaceless_)
-    return scoped_ptr<SurfaceOzoneEGL>();
+    return nullptr;
 
   DriWindowDelegate* delegate = GetOrCreateWindowDelegate(widget);
   return scoped_ptr<SurfaceOzoneEGL>(new GbmSurfaceless(delegate));

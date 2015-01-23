@@ -307,7 +307,7 @@ scoped_ptr<ui::MenuModel> ToastContentsView::CreateMenuModel(
   // Should not reach, the context menu should be handled in
   // MessagePopupCollection.
   NOTREACHED();
-  return scoped_ptr<ui::MenuModel>();
+  return nullptr;
 }
 
 bool ToastContentsView::HasClickedListener(

@@ -219,7 +219,7 @@ class SurfaceOzoneEgltest : public SurfaceOzoneEGL {
   }
 
   scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
-    return scoped_ptr<gfx::VSyncProvider>();
+    return nullptr;
   }
 
  private:

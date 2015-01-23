@@ -37,7 +37,7 @@ scoped_ptr<TestEventTarget> TestEventTarget::RemoveChild(TestEventTarget *c) {
     c->set_parent(NULL);
     return scoped_ptr<TestEventTarget>(c);
   }
-  return scoped_ptr<TestEventTarget>();
+  return nullptr;
 }
 
 void TestEventTarget::SetEventTargeter(scoped_ptr<EventTargeter> targeter) {

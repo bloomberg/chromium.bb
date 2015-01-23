@@ -8,7 +8,7 @@ namespace views {
 
 // static
 scoped_ptr<DesktopCursorLoaderUpdater> DesktopCursorLoaderUpdater::Create() {
-  return scoped_ptr<DesktopCursorLoaderUpdater>().Pass();
+  return nullptr;
 }
 
 }  // namespace views

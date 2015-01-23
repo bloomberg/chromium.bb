@@ -38,8 +38,7 @@ bool IsKeyEvent(const XEvent* xev) {
 scoped_ptr<ui::ScopedEventDispatcher> OverrideDispatcher(
     ui::PlatformEventDispatcher* dispatcher) {
   ui::PlatformEventSource* source = ui::PlatformEventSource::GetInstance();
-  return source ? source->OverrideDispatcher(dispatcher)
-                : scoped_ptr<ui::ScopedEventDispatcher>();
+  return source ? source->OverrideDispatcher(dispatcher) : nullptr;
 }
 
 }  // namespace

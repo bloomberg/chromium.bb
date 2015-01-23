@@ -366,7 +366,7 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
 }
 
 bool NativeViewGLSurfaceEGL::Initialize() {
-  return Initialize(scoped_ptr<VSyncProvider>());
+  return Initialize(nullptr);
 }
 
 bool NativeViewGLSurfaceEGL::Initialize(

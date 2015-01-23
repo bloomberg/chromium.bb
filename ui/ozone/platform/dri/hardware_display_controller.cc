@@ -185,7 +185,7 @@ scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
     }
   }
 
-  return scoped_ptr<CrtcController>();
+  return nullptr;
 }
 
 bool HardwareDisplayController::HasCrtc(uint32_t crtc) const {
