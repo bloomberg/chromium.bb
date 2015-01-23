@@ -644,7 +644,7 @@ GLsync GLES2Implementation::FenceSync(GLenum condition, GLbitfield flags) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFenceSync("
                      << GLES2Util::GetStringSyncCondition(condition) << ", "
                      << flags << ")");
-  if (condition != 0x9117) {
+  if (condition != GL_SYNC_GPU_COMMANDS_COMPLETE) {
     SetGLError(GL_INVALID_ENUM, "glFenceSync", "condition GL_INVALID_ENUM");
     return 0;
   }

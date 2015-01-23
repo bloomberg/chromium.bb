@@ -876,7 +876,8 @@ TEST_P(GLES2DecoderTest1, EnableVertexAttribArrayValidArgs) {
 
 TEST_P(GLES2DecoderTest1, FenceSyncValidArgs) {
   const GLsync kNewServiceIdGLuint = reinterpret_cast<GLsync>(kNewServiceId);
-  EXPECT_CALL(*gl_, FenceSync(0x9117, 0)).WillOnce(Return(kNewServiceIdGLuint));
+  EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+      .WillOnce(Return(kNewServiceIdGLuint));
   SpecializedSetup<cmds::FenceSync, 0>(true);
   cmds::FenceSync cmd;
   cmd.Init(kNewClientId);

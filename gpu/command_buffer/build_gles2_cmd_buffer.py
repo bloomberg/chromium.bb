@@ -1372,8 +1372,7 @@ _NAMED_TYPE_INFO = {
     'type': 'GLenum',
     'is_complete': True,
     'valid': [
-      #TODO(zmo): avoid using the direct number.
-      '0x9117',  # GL_SYNC_GPU_COMMANDS_COMPLETE
+      'GL_SYNC_GPU_COMMANDS_COMPLETE',
     ],
     'invalid': [
       '0',
@@ -8889,6 +8888,15 @@ class GLGenerator(object):
   def WriteFormat(self, filename):
     """Writes the command buffer format"""
     file = CHeaderWriter(filename)
+    # Forward declaration of a few enums used in constant argument
+    # to avoid including GL header files.
+    enum_defines = {
+        'GL_SYNC_GPU_COMMANDS_COMPLETE': 0x9117,
+      }
+    file.Write('\n')
+    for enum in enum_defines:
+      file.Write("#define %s 0x%x\n" % (enum, enum_defines[enum]))
+    file.Write('\n')
     for func in self.functions:
       if True:
       #gen_cmd = func.GetInfo('gen_cmd')

@@ -5094,7 +5094,7 @@ std::string GLES2Util::GetStringSubscriptionTarget(uint32_t value) {
 
 std::string GLES2Util::GetStringSyncCondition(uint32_t value) {
   static const EnumToString string_table[] = {
-      {0x9117, "0x9117"},
+      {GL_SYNC_GPU_COMMANDS_COMPLETE, "GL_SYNC_GPU_COMMANDS_COMPLETE"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

@@ -11,6 +11,8 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 
+#define GL_SYNC_GPU_COMMANDS_COMPLETE 0x9117
+
 struct ActiveTexture {
   typedef ActiveTexture ValueType;
   static const CommandId kCmdId = kActiveTexture;
@@ -2595,7 +2597,7 @@ struct FenceSync {
 
   gpu::CommandHeader header;
   uint32_t client_id;
-  static const uint32_t condition = 0x9117;
+  static const uint32_t condition = GL_SYNC_GPU_COMMANDS_COMPLETE;
   static const uint32_t flags = 0;
 };
 
