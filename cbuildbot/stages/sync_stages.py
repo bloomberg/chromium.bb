@@ -905,14 +905,10 @@ class PreCQLauncherStage(SyncStage):
   LAUNCH_DELAY = 2
 
   # The number of minutes we allow before considering a launch attempt failed.
-  # If this window isn't hit in a given launcher run, the window will start
-  # again from scratch in the next run.
   LAUNCH_TIMEOUT = 90
 
-  # The number of minutes we allow before considering an in-flight
-  # job failed. If this window isn't hit in a given launcher run, the window
-  # will start again from scratch in the next run.
-  INFLIGHT_TIMEOUT = 120
+  # The number of minutes we allow before considering an in-flight job failed.
+  INFLIGHT_TIMEOUT = 240
 
   # The number of minutes we allow before expiring a pre-cq PASSED or
   # FULLY_VERIFIED status. After this timeout is hit, a CL's status will be
