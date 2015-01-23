@@ -86,11 +86,9 @@ function PDFViewer(streamDetails) {
   this.plugin_.type = 'application/x-google-chrome-pdf';
   this.plugin_.addEventListener('message', this.handlePluginMessage_.bind(this),
                                 false);
-  if (this.isMaterial_) {
-    this.plugin_.style.height =
+  this.plugin_.style.height =
         (window.innerHeight - this.toolbarHeight_) + 'px';
-    this.plugin_.style.width = window.innerWidth + 'px';
-  }
+  this.plugin_.style.width = window.innerWidth + 'px';
 
   // Handle scripting messages from outside the extension that wish to interact
   // with it. We also send a message indicating that extension has loaded and
@@ -495,14 +493,18 @@ PDFViewer.prototype = {
    * A callback that's called after the viewport changes.
    */
   viewportChanged_: function() {
+    var hasScrollbars = this.viewport_.documentHasScrollbars();
+    var scrollbarWidth = this.viewport_.scrollbarWidth;
+    var verticalScrollbarWidth = hasScrollbars.vertical ? scrollbarWidth : 0;
+    var horizontalScrollbarWidth =
+        hasScrollbars.horizontal ? scrollbarWidth : 0;
+    this.plugin_.style.width =
+        (window.innerWidth - verticalScrollbarWidth) + 'px';
+    this.plugin_.style.height = (window.innerHeight -
+        horizontalScrollbarWidth - this.toolbarHeight_) + 'px';
+
     if (!this.documentDimensions_)
       return;
-
-    if (this.isMaterial_) {
-      this.plugin_.style.height =
-          (window.innerHeight - this.toolbarHeight_) + 'px';
-      this.plugin_.style.width = window.innerWidth + 'px';
-    }
 
     // Update the buttons selected.
     $('fit-to-page-button').classList.remove('polymer-selected');
@@ -514,15 +516,11 @@ PDFViewer.prototype = {
       $('fit-to-width-button').classList.add('polymer-selected');
     }
 
-    var hasScrollbars = this.viewport_.documentHasScrollbars();
-    var scrollbarWidth = this.viewport_.scrollbarWidth;
     // Offset the toolbar position so that it doesn't move if scrollbars appear.
     var toolbarRight = Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
     var toolbarBottom = Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
-    if (hasScrollbars.vertical)
-      toolbarRight -= scrollbarWidth;
-    if (hasScrollbars.horizontal)
-      toolbarBottom -= scrollbarWidth;
+    toolbarRight -= verticalScrollbarWidth;
+    toolbarBottom -= horizontalScrollbarWidth;
     this.toolbar_.style.right = toolbarRight + 'px';
     this.toolbar_.style.bottom = toolbarBottom + 'px';
     // Hide the toolbar if it doesn't fit in the viewport.
