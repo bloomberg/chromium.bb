@@ -886,10 +886,7 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
     }
     InputRecord& input_record = input_buffer_map_[dqbuf.index];
     DCHECK(input_record.at_device);
-    input_record.at_device = false;
-    input_record.input_id = -1;
-    input_record.bytes_used = 0;
-    free_input_buffers_.push_back(dqbuf.index);
+    ReuseInputBuffer(dqbuf.index);
     input_buffer_queued_count_--;
     DVLOGF(4) << "Dequeued input=" << dqbuf.index
               << " count: " << input_buffer_queued_count_;
@@ -947,6 +944,18 @@ void V4L2SliceVideoDecodeAccelerator::ProcessPendingEventsIfNeeded() {
   // Process external (client) requests.
   FinishFlushIfNeeded();
   FinishResetIfNeeded();
+}
+
+void V4L2SliceVideoDecodeAccelerator::ReuseInputBuffer(int index) {
+  DCHECK_LT(index, static_cast<int>(input_buffer_map_.size()));
+  DVLOGF(4) << "Reusing input buffer, index=" << index;
+  DCHECK(decoder_thread_proxy_->BelongsToCurrentThread());
+
+  InputRecord& input_record = input_buffer_map_[index];
+  input_record.at_device = false;
+  input_record.input_id = -1;
+  input_record.bytes_used = 0;
+  free_input_buffers_.push_back(index);
 }
 
 void V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer(int index) {
@@ -1104,13 +1113,10 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
 
   if (!keep_input_state) {
     free_input_buffers_.clear();
-    for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
-      InputRecord& input_record = input_buffer_map_[i];
-      input_record.at_device = false;
-      input_record.bytes_used = 0;
-      input_record.input_id = -1;
-      free_input_buffers_.push_back(i);
-    }
+    // We don't care about the buffer state (at_device) here, because
+    // STREAMOFF tells the driver to drop all buffers without DQBUFing them.
+    for (size_t i = 0; i < input_buffer_map_.size(); ++i)
+      ReuseInputBuffer(i);
     input_buffer_queued_count_ = 0;
   }
 
@@ -1561,6 +1567,11 @@ void V4L2SliceVideoDecodeAccelerator::FinishFlushIfNeeded() {
   // we will have all remaining PictureReady() posted to the client and we
   // can post NotifyFlushDone().
   DCHECK(decoder_display_queue_.empty());
+
+  // Decoder should have already returned all surfaces and all surfaces are
+  // out of hardware. There can be no other owners of input buffers.
+  DCHECK_EQ(free_input_buffers_.size(), input_buffer_map_.size());
+
   SendPictureReady();
 
   child_message_loop_proxy_->PostTask(
@@ -1623,6 +1634,19 @@ void V4L2SliceVideoDecodeAccelerator::FinishResetIfNeeded() {
   // Drop any pending outputs.
   while (!decoder_display_queue_.empty())
     decoder_display_queue_.pop();
+
+  // At this point we can have no input buffers in the decoder, because we
+  // Reset()ed it in ResetTask(), and have not scheduled any new Decode()s
+  // having been in kIdle since. We don't have any surfaces in the HW either -
+  // we just checked that surfaces_at_device_.empty(), and inputs are tied
+  // to surfaces. Since there can be no other owners of input buffers, we can
+  // simply mark them all as available.
+  DCHECK_EQ(input_buffer_queued_count_, 0);
+  free_input_buffers_.clear();
+  for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
+    DCHECK(!input_buffer_map_[i].at_device);
+    ReuseInputBuffer(i);
+  }
 
   decoder_resetting_ = false;
 
@@ -2360,6 +2384,7 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
 scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
 V4L2SliceVideoDecodeAccelerator::CreateSurface() {
   DCHECK(decoder_thread_proxy_->BelongsToCurrentThread());
+  DCHECK_EQ(state_, kDecoding);
 
   if (free_input_buffers_.empty() || free_output_buffers_.empty())
     return nullptr;

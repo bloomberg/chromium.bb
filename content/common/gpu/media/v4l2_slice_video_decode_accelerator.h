@@ -111,6 +111,9 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   //
   // Internal methods of this class.
   //
+  // Recycle a V4L2 input buffer with |index| after dequeuing from device.
+  void ReuseInputBuffer(int index);
+
   // Recycle V4L2 output buffer with |index|. Used as surface release callback.
   void ReuseOutputBuffer(int index);
 
