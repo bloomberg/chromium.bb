@@ -121,7 +121,10 @@ class MEDIA_EXPORT MediaKeys{
                              int response_length,
                              scoped_ptr<SimpleCdmPromise> promise) = 0;
 
-  // Closes the session specified by |session_id|.
+  // Closes the session specified by |session_id|. The CDM should resolve or
+  // reject the |promise| when the call has been processed. This may be before
+  // the session is closed. Once the session is closed, a SessionClosedCB must
+  // also be called.
   virtual void CloseSession(const std::string& session_id,
                             scoped_ptr<SimpleCdmPromise> promise) = 0;
 
@@ -144,12 +147,17 @@ class MEDIA_EXPORT MediaKeys{
 
 // Key event callbacks. See the spec for details:
 // https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#event-summary
+
 typedef base::Callback<void(const std::string& session_id,
                             MediaKeys::MessageType message_type,
                             const std::vector<uint8>& message,
                             const GURL& legacy_destination_url)>
     SessionMessageCB;
 
+// Called when the session specified by |session_id| is closed. Note that the
+// CDM may close a session at any point, such as in response to a CloseSession()
+// call, when the session is no longer needed, or when system resources are
+// lost. See for details: http://w3c.github.io/encrypted-media/#session-close
 typedef base::Callback<void(const std::string& session_id)> SessionClosedCB;
 
 typedef base::Callback<void(const std::string& session_id,

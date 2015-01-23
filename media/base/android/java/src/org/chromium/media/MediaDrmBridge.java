@@ -359,7 +359,9 @@ public class MediaDrmBridge {
         mPendingCreateSessionDataQueue = null;
 
         for (ByteBuffer sessionId : mSessionIds.keySet()) {
+            mMediaDrm.removeKeys(sessionId.array());
             mMediaDrm.closeSession(sessionId.array());
+            onSessionClosed(sessionId.array());
         }
         mSessionIds.clear();
         mSessionIds = null;
@@ -551,7 +553,8 @@ public class MediaDrmBridge {
         mMediaDrm.closeSession(sessionId);
         mSessionIds.remove(ByteBuffer.wrap(sessionId));
         onPromiseResolved(promiseId);
-        Log.d(TAG, "Session " + bytesToHexString(sessionId) + "closed.");
+        onSessionClosed(sessionId);
+        Log.d(TAG, "Session " + bytesToHexString(sessionId) + " closed.");
     }
 
     /**
@@ -565,7 +568,7 @@ public class MediaDrmBridge {
     private void updateSession(byte[] sessionId, byte[] response, long promiseId) {
         Log.d(TAG, "updateSession()");
         if (mMediaDrm == null) {
-            onPromiseRejected(promiseId, "closeSession() called when MediaDrm is null.");
+            onPromiseRejected(promiseId, "updateSession() called when MediaDrm is null.");
             return;
         }
 
