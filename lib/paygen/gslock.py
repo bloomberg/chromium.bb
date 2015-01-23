@@ -94,6 +94,7 @@ class Lock(object):
     self._timeout = datetime.timedelta(minutes=lock_timeout_mins)
     self._contents = cros_build_lib.MachineDetails()
     self._generation = 0
+    self._dry_run = dry_run
     self._ctx = ctx if ctx is not None else gs.GSContext(dry_run=dry_run)
 
   def _LockExpired(self):
@@ -126,7 +127,8 @@ class Lock(object):
           '-', self._gs_path, input=self._contents, version=self._generation)
       if self._generation is None:
         self._generation = 0
-        raise LockProbeError('Unable to detect generation')
+        if not self._dry_run:
+          raise LockProbeError('Unable to detect generation')
     except gs.GSContextPreconditionFailed:
       # Find the lock contents. Either use this for error reporting, or to find
       # out if we already own it.

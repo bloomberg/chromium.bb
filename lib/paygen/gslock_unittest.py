@@ -248,3 +248,20 @@ class GSLockTest(cros_test_lib.MockTestCase):
 
     # Clean up the data file.
     self.ctx.Remove(self.data_uri)
+
+  @cros_test_lib.NetworkTest()
+  def testDryrunLock(self):
+    """Ensure that lcok can be obtained and released in dry-run mode."""
+    lock = gslock.Lock(self.lock_uri, dry_run=True)
+    self.assertIsNone(lock.Acquire())
+    self.assertFalse(self.ctx.Exists(self.lock_uri))
+    self.assertIsNone(lock.Release())
+
+  def testDryrunLockRepetition(self):
+    """Test aquiring same lock multiple times in dry-run mode."""
+    lock = gslock.Lock(self.lock_uri, dry_run=True)
+    self.assertIsNone(lock.Acquire())
+    self.assertIsNone(lock.Acquire())
+    self.assertIsNone(lock.Release())
+    self.assertIsNone(lock.Acquire())
+    self.assertIsNone(lock.Release())
