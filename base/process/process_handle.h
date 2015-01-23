@@ -44,12 +44,6 @@ BASE_EXPORT ProcessHandle GetCurrentProcessHandle();
 // CloseProcessHandle when you are done with it. Returns true on success.
 BASE_EXPORT bool OpenProcessHandle(ProcessId pid, ProcessHandle* handle);
 
-// Converts a PID to a process handle using the desired access flags. Use a
-// combination of the kProcessAccess* flags defined above for |access_flags|.
-BASE_EXPORT bool OpenProcessHandleWithAccess(ProcessId pid,
-                                             uint32 access_flags,
-                                             ProcessHandle* handle);
-
 // Closes the process handle opened by OpenProcessHandle.
 BASE_EXPORT void CloseProcessHandle(ProcessHandle process);
 

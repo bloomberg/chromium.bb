@@ -23,14 +23,6 @@ bool OpenProcessHandle(ProcessId pid, ProcessHandle* handle) {
   return true;
 }
 
-bool OpenProcessHandleWithAccess(ProcessId pid,
-                                 uint32 access_flags,
-                                 ProcessHandle* handle) {
-  // On POSIX permissions are checked for each operation on process,
-  // not when opening a "handle".
-  return OpenProcessHandle(pid, handle);
-}
-
 void CloseProcessHandle(ProcessHandle process) {
   // See OpenProcessHandle, nothing to do.
   return;

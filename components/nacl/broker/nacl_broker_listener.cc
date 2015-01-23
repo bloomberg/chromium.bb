@@ -127,7 +127,7 @@ void NaClBrokerListener::OnLaunchDebugExceptionHandler(
     int32 pid, base::ProcessHandle process_handle,
     const std::string& startup_info) {
   NaClStartDebugExceptionHandlerThread(
-      process_handle, startup_info,
+      base::Process(process_handle), startup_info,
       base::MessageLoopProxy::current(),
       base::Bind(SendReply, channel_.get(), pid));
 }

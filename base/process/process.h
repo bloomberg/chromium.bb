@@ -54,6 +54,12 @@ class BASE_EXPORT Process {
   // address space and duplicate handles).
   static Process OpenWithExtraPriviles(ProcessId pid);
 
+#if defined(OS_WIN)
+  // Returns a Process for the given |pid|, using some |desired_access|.
+  // See ::OpenProcess documentation for valid |desired_access|.
+  static Process OpenWithAccess(ProcessId pid, DWORD desired_access);
+#endif
+
   // Creates an object from a |handle| owned by someone else.
   // Don't use this for new code. It is only intended to ease the migration to
   // a strict ownership model.

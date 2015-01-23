@@ -7,6 +7,7 @@
 #include <windef.h>
 
 #include "base/logging.h"
+#include "base/process/process.h"
 #include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/gfx/win/dpi.h"
 
@@ -24,15 +25,13 @@ TestMetroViewerProcessHost::~TestMetroViewerProcessHost() {
 void TestMetroViewerProcessHost::TerminateViewer() {
   base::ProcessId viewer_process_id = GetViewerProcessId();
   if (viewer_process_id != base::kNullProcessId) {
-    base::ProcessHandle viewer_process = NULL;
-    base::OpenProcessHandleWithAccess(
+    base::Process viewer_process = base::Process::OpenWithAccess(
         viewer_process_id,
-        PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE,
-        &viewer_process);
-    if (viewer_process) {
-      ::TerminateProcess(viewer_process, 0);
-      ::WaitForSingleObject(viewer_process, INFINITE);
-      ::CloseHandle(viewer_process);
+        PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE);
+    if (viewer_process.IsValid()) {
+      viewer_process.Terminate(0);
+      int exit_code;
+      viewer_process.WaitForExit(&exit_code);
     }
   }
 }

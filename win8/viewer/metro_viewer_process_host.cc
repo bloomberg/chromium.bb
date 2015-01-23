@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
-#include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
@@ -68,14 +67,13 @@ MetroViewerProcessHost::~MetroViewerProcessHost() {
   if (message_filter_.get()) {
     // Wait for the viewer process to go away.
     if (viewer_process_id != base::kNullProcessId) {
-      base::ProcessHandle viewer_process = NULL;
-      base::OpenProcessHandleWithAccess(
-          viewer_process_id,
-          PROCESS_QUERY_INFORMATION | SYNCHRONIZE,
-          &viewer_process);
-      if (viewer_process) {
-        ::WaitForSingleObject(viewer_process, INFINITE);
-        ::CloseHandle(viewer_process);
+      base::Process viewer_process =
+          base::Process::OpenWithAccess(
+              viewer_process_id,
+              PROCESS_QUERY_INFORMATION | SYNCHRONIZE);
+      if (viewer_process.IsValid()) {
+        int exit_code;
+        viewer_process.WaitForExit(&exit_code);
       }
     }
     channel_->RemoveFilter(message_filter_.get());

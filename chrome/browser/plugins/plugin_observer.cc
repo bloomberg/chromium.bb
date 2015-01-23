@@ -294,14 +294,15 @@ void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
   // process died, |plugin_pid| has been reused by a new process. The
   // consequence is that we will display |IDS_PLUGIN_DISCONNECTED_PROMPT| rather
   // than |IDS_PLUGIN_CRASHED_PROMPT| to the user, which seems acceptable.
-  base::ProcessHandle plugin_handle = base::kNullProcessHandle;
-  bool open_result = base::OpenProcessHandleWithAccess(
-      plugin_pid, PROCESS_QUERY_INFORMATION | SYNCHRONIZE, &plugin_handle);
+  base::Process plugin_process =
+      base::Process::OpenWithAccess(plugin_pid,
+                                    PROCESS_QUERY_INFORMATION | SYNCHRONIZE);
   bool is_running = false;
-  if (open_result) {
-    is_running = base::GetTerminationStatus(plugin_handle, NULL) ==
-        base::TERMINATION_STATUS_STILL_RUNNING;
-    base::CloseProcessHandle(plugin_handle);
+  if (plugin_process.IsValid()) {
+    is_running =
+        base::GetTerminationStatus(plugin_process.Handle(), NULL) ==
+            base::TERMINATION_STATUS_STILL_RUNNING;
+    plugin_process.Close();
   }
 
   if (is_running) {

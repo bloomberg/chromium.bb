@@ -14,11 +14,11 @@ namespace {
 class DebugExceptionHandler : public base::PlatformThread::Delegate {
  public:
   DebugExceptionHandler(
-      base::ProcessHandle nacl_process,
+      base::Process nacl_process,
       const std::string& startup_info,
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       const base::Callback<void(bool)>& on_connected)
-      : nacl_process_(nacl_process),
+      : nacl_process_(nacl_process.Pass()),
         startup_info_(startup_info),
         message_loop_(message_loop),
         on_connected_(on_connected) {}
@@ -30,21 +30,22 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
     // NaClDebugExceptionHandlerRun() receives debug events for the
     // process.
     bool attached = false;
-    int pid = GetProcessId(nacl_process_.Get());
-    if (pid == 0) {
-      LOG(ERROR) << "Invalid process handle";
-    } else {
+    int pid = nacl_process_.pid();
+    if (nacl_process_.IsValid()) {
+      DCHECK(pid);
       if (!DebugActiveProcess(pid)) {
         LOG(ERROR) << "Failed to connect to the process";
       } else {
         attached = true;
       }
+    } else {
+      LOG(ERROR) << "Invalid process handle";
     }
     message_loop_->PostTask(FROM_HERE, base::Bind(on_connected_, attached));
 
     if (attached) {
       NaClDebugExceptionHandlerRun(
-          nacl_process_.Get(),
+          nacl_process_.Handle(),
           reinterpret_cast<const void*>(startup_info_.data()),
           startup_info_.size());
     }
@@ -52,7 +53,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
   }
 
  private:
-  base::win::ScopedHandle nacl_process_;
+  base::Process nacl_process_;
   std::string startup_info_;
   const scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::Callback<void(bool)> on_connected_;
@@ -63,14 +64,14 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
 }  // namespace
 
 void NaClStartDebugExceptionHandlerThread(
-    base::ProcessHandle nacl_process,
+    base::Process nacl_process,
     const std::string& startup_info,
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const base::Callback<void(bool)>& on_connected) {
   // The new PlatformThread will take ownership of the
   // DebugExceptionHandler object, which will delete itself on exit.
   DebugExceptionHandler* handler = new DebugExceptionHandler(
-      nacl_process, startup_info, message_loop, on_connected);
+      nacl_process.Pass(), startup_info, message_loop, on_connected);
   if (!base::PlatformThread::CreateNonJoinable(0, handler)) {
     on_connected.Run(false);
     delete handler;

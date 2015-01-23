@@ -1143,7 +1143,6 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
   debug_exception_handler_requested_ = true;
 
   base::ProcessId nacl_pid = base::GetProcId(process_->GetData().handle);
-  base::ProcessHandle temp_handle;
   // We cannot use process_->GetData().handle because it does not have
   // the necessary access rights.  We open the new handle here rather
   // than in the NaCl broker process in case the NaCl loader process
@@ -1152,21 +1151,20 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
   // but this takes a PID.  We need to prevent the NaCl loader's PID
   // from being reused before DebugActiveProcess() is called, and
   // holding a process handle open achieves this.
-  if (!base::OpenProcessHandleWithAccess(
-           nacl_pid,
-           base::kProcessAccessQueryInformation |
-           base::kProcessAccessSuspendResume |
-           base::kProcessAccessTerminate |
-           base::kProcessAccessVMOperation |
-           base::kProcessAccessVMRead |
-           base::kProcessAccessVMWrite |
-           base::kProcessAccessDuplicateHandle |
-           base::kProcessAccessWaitForTermination,
-           &temp_handle)) {
+  base::Process process =
+      base::Process::OpenWithAccess(nacl_pid,
+                                    PROCESS_QUERY_INFORMATION |
+                                    PROCESS_SUSPEND_RESUME |
+                                    PROCESS_TERMINATE |
+                                    PROCESS_VM_OPERATION |
+                                    PROCESS_VM_READ |
+                                    PROCESS_VM_WRITE |
+                                    PROCESS_DUP_HANDLE |
+                                    SYNCHRONIZE);
+  if (!process.IsValid()) {
     LOG(ERROR) << "Failed to get process handle";
     return false;
   }
-  base::win::ScopedHandle process_handle(temp_handle);
 
   attach_debug_exception_handler_reply_msg_.reset(reply_msg);
   // If the NaCl loader is 64-bit, the process running its debug
@@ -1175,11 +1173,11 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
   // the 32-bit browser process to run the debug exception handler.
   if (RunningOnWOW64()) {
     return NaClBrokerService::GetInstance()->LaunchDebugExceptionHandler(
-               weak_factory_.GetWeakPtr(), nacl_pid, process_handle.Get(),
+               weak_factory_.GetWeakPtr(), nacl_pid, process.Handle(),
                info);
   } else {
     NaClStartDebugExceptionHandlerThread(
-        process_handle.Take(), info,
+        process.Pass(), info,
         base::MessageLoopProxy::current(),
         base::Bind(&NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker,
                    weak_factory_.GetWeakPtr()));

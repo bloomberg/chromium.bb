@@ -11,7 +11,7 @@
 #include "base/process/process.h"
 
 void NaClStartDebugExceptionHandlerThread(
-    base::ProcessHandle nacl_process,
+    base::Process nacl_process,
     const std::string& startup_info,
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const base::Callback<void(bool)>& on_connected);

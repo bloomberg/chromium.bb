@@ -36,26 +36,6 @@ struct ProcessEntry : public PROCESSENTRY32 {
   ProcessId parent_pid() const { return th32ParentProcessID; }
   const wchar_t* exe_file() const { return szExeFile; }
 };
-
-// Process access masks. These constants provide platform-independent
-// definitions for the standard Windows access masks.
-// See http://msdn.microsoft.com/en-us/library/ms684880(VS.85).aspx for
-// the specific semantics of each mask value.
-const uint32 kProcessAccessTerminate              = PROCESS_TERMINATE;
-const uint32 kProcessAccessCreateThread           = PROCESS_CREATE_THREAD;
-const uint32 kProcessAccessSetSessionId           = PROCESS_SET_SESSIONID;
-const uint32 kProcessAccessVMOperation            = PROCESS_VM_OPERATION;
-const uint32 kProcessAccessVMRead                 = PROCESS_VM_READ;
-const uint32 kProcessAccessVMWrite                = PROCESS_VM_WRITE;
-const uint32 kProcessAccessDuplicateHandle        = PROCESS_DUP_HANDLE;
-const uint32 kProcessAccessCreateProcess          = PROCESS_CREATE_PROCESS;
-const uint32 kProcessAccessSetQuota               = PROCESS_SET_QUOTA;
-const uint32 kProcessAccessSetInformation         = PROCESS_SET_INFORMATION;
-const uint32 kProcessAccessQueryInformation       = PROCESS_QUERY_INFORMATION;
-const uint32 kProcessAccessSuspendResume          = PROCESS_SUSPEND_RESUME;
-const uint32 kProcessAccessQueryLimitedInfomation =
-    PROCESS_QUERY_LIMITED_INFORMATION;
-const uint32 kProcessAccessWaitForTermination     = SYNCHRONIZE;
 #elif defined(OS_POSIX)
 struct BASE_EXPORT ProcessEntry {
   ProcessEntry();
@@ -75,23 +55,6 @@ struct BASE_EXPORT ProcessEntry {
   std::string exe_file_;
   std::vector<std::string> cmd_line_args_;
 };
-
-// Process access masks. They are not used on Posix because access checking
-// does not happen during handle creation.
-const uint32 kProcessAccessTerminate              = 0;
-const uint32 kProcessAccessCreateThread           = 0;
-const uint32 kProcessAccessSetSessionId           = 0;
-const uint32 kProcessAccessVMOperation            = 0;
-const uint32 kProcessAccessVMRead                 = 0;
-const uint32 kProcessAccessVMWrite                = 0;
-const uint32 kProcessAccessDuplicateHandle        = 0;
-const uint32 kProcessAccessCreateProcess          = 0;
-const uint32 kProcessAccessSetQuota               = 0;
-const uint32 kProcessAccessSetInformation         = 0;
-const uint32 kProcessAccessQueryInformation       = 0;
-const uint32 kProcessAccessSuspendResume          = 0;
-const uint32 kProcessAccessQueryLimitedInfomation = 0;
-const uint32 kProcessAccessWaitForTermination     = 0;
 #endif  // defined(OS_POSIX)
 
 // Used to filter processes by process ID.

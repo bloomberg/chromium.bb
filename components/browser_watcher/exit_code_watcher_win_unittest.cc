@@ -98,10 +98,7 @@ class ExitCodeWatcherTest : public testing::Test {
   }
 
   base::Process OpenSelfWithAccess(uint32 access) {
-    HANDLE self = nullptr;
-    EXPECT_TRUE(base::OpenProcessHandleWithAccess(base::GetCurrentProcId(),
-                                                  access, &self));
-    return base::Process(self);
+    return base::Process::OpenWithAccess(base::GetCurrentProcId(), access);
   }
 
   void VerifyWroteExitCode(base::ProcessId proc_id, int exit_code) {
