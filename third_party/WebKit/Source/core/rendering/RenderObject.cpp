@@ -2061,6 +2061,9 @@ LayoutSize RenderObject::offsetFromContainer(const RenderObject* o, const Layout
 
 LayoutSize RenderObject::offsetFromAncestorContainer(const RenderObject* container) const
 {
+    if (container == this)
+        return LayoutSize();
+
     LayoutSize offset;
     LayoutPoint referencePoint;
     const RenderObject* currContainer = this;
