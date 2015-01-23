@@ -319,35 +319,37 @@ function report(data) {
   report_data = data;
 }
 
+function executeTest(test_target) {
+  return doFetch(test_target[0])
+    .then(function(message) {
+        var checks = test_target[1].concat(showComment);
+        checks.forEach(function(checkFunc) {
+            checkFunc.call(this, test_target[0], message);
+          });
+
+        if (test_target[2]) {
+          report_data = {};
+          if (message.fetchResult !== 'resolved' ||
+              message.body === '' ||
+              400 <= message.status) {
+            report({jsonpResult:'error'});
+          } else {
+            eval(message.body);
+          }
+          assert_not_equals(report_data, {}, 'data should be set');
+
+          test_target[2].forEach(function(checkFunc) {
+              checkFunc.call(this, test_target[0], report_data);
+            });
+        }
+      });
+}
+
 function executeTests(test_targets) {
-  var i;
-  for (i = 0; i < test_targets.length; ++i) {
-    promise_test(function(counter, test) {
-        return doFetch(test_targets[counter][0])
-          .then(function(message) {
-              var checks = test_targets[counter][1].concat(showComment);
-              checks.forEach(function(checkFunc) {
-                  checkFunc.call(this, test_targets[counter][0], message);
-                });
-
-              if (test_targets[counter][2]) {
-                report_data = {};
-                if (message.fetchResult !== 'resolved' ||
-                    message.body === '' ||
-                    400 <= message.status) {
-                  report({jsonpResult:'error'});
-                } else {
-                  eval(message.body);
-                }
-                assert_not_equals(report_data, {}, 'data should be set');
-
-                test_targets[counter][2].forEach(function(checkFunc) {
-                    checkFunc.call(this, test_targets[counter][0], report_data);
-                  });
-              }
-
-            })
-      }.bind(this, i), 'FetchAccessControlUtil-' + i);
+  var promise = Promise.resolve();
+  for (var i = 0; i < test_targets.length; ++i) {
+    promise = promise.then(executeTest.bind(undefined, test_targets[i]));
   }
-  done();
+  promise_test(function(test){return promise;},
+               'fetch-access-control-util:executeTests');
 }
