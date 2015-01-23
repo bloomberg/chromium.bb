@@ -41,17 +41,17 @@ class POLICY_EXPORT ProxyPolicyProvider
       public ConfigurationPolicyProvider::Observer {
  public:
   ProxyPolicyProvider();
-  virtual ~ProxyPolicyProvider();
+  ~ProxyPolicyProvider() override;
 
   // Updates the provider this proxy delegates to.
   void SetDelegate(ConfigurationPolicyProvider* delegate);
 
   // ConfigurationPolicyProvider:
-  virtual void Shutdown() override;
-  virtual void RefreshPolicies() override;
+  void Shutdown() override;
+  void RefreshPolicies() override;
 
   // ConfigurationPolicyProvider::Observer:
-  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) override;
+  void OnUpdatePolicy(ConfigurationPolicyProvider* provider) override;
 
  private:
   ConfigurationPolicyProvider* delegate_;

@@ -28,7 +28,7 @@ class FakeHostPairingController
   // * device_name - string. Default: "Chromebox-01".
   // * domain - string. Default: "example.com".
   explicit FakeHostPairingController(const std::string& config);
-  virtual ~FakeHostPairingController();
+  ~FakeHostPairingController() override;
 
   // Applies given |config| to flow.
   void ApplyConfig(const std::string& config);
@@ -38,25 +38,24 @@ class FakeHostPairingController
   void ChangeStageLater(Stage new_stage);
 
   // HostPairingController:
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual Stage GetCurrentStage() override;
-  virtual void StartPairing() override;
-  virtual std::string GetDeviceName() override;
-  virtual std::string GetConfirmationCode() override;
-  virtual std::string GetEnrollmentDomain() override;
-  virtual void OnUpdateStatusChanged(UpdateStatus update_status) override;
-  virtual void OnEnrollmentStatusChanged(
-      EnrollmentStatus enrollment_status) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  Stage GetCurrentStage() override;
+  void StartPairing() override;
+  std::string GetDeviceName() override;
+  std::string GetConfirmationCode() override;
+  std::string GetEnrollmentDomain() override;
+  void OnUpdateStatusChanged(UpdateStatus update_status) override;
+  void OnEnrollmentStatusChanged(EnrollmentStatus enrollment_status) override;
 
   // HostPairingController::Observer:
-  virtual void PairingStageChanged(Stage new_stage) override;
-  virtual void ConfigureHost(bool accepted_eula,
-                             const std::string& lang,
-                             const std::string& timezone,
-                             bool send_reports,
-                             const std::string& keyboard_layout) override;
-  virtual void EnrollHost(const std::string& auth_token) override;
+  void PairingStageChanged(Stage new_stage) override;
+  void ConfigureHost(bool accepted_eula,
+                     const std::string& lang,
+                     const std::string& timezone,
+                     bool send_reports,
+                     const std::string& keyboard_layout) override;
+  void EnrollHost(const std::string& auth_token) override;
 
   ObserverList<Observer> observers_;
   Stage current_stage_;

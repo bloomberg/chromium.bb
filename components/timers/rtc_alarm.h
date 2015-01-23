@@ -48,7 +48,7 @@ class RtcAlarm : public AlarmTimer::Delegate,
 
  protected:
   // Needs to be protected because AlarmTimer::Delegate is a refcounted class.
-  virtual ~RtcAlarm();
+  ~RtcAlarm() override;
 
  private:
   // Actually performs the system calls to set up the timer.  This must be

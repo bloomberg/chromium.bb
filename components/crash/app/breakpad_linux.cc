@@ -401,25 +401,25 @@ class CrashReporterWriter : public MimeWriter {
  public:
   explicit CrashReporterWriter(int fd);
 
-  virtual void AddBoundary() override;
+  void AddBoundary() override;
 
-  virtual void AddEnd() override;
+  void AddEnd() override;
 
-  virtual void AddPairData(const char* msg_type,
+  void AddPairData(const char* msg_type,
+                   size_t msg_type_size,
+                   const char* msg_data,
+                   size_t msg_data_size) override;
+
+  void AddPairDataInChunks(const char* msg_type,
                            size_t msg_type_size,
-                          const char* msg_data,
-                           size_t msg_data_size) override;
+                           const char* msg_data,
+                           size_t msg_data_size,
+                           size_t chunk_size,
+                           bool strip_trailing_spaces) override;
 
-  virtual void AddPairDataInChunks(const char* msg_type,
-                                   size_t msg_type_size,
-                                   const char* msg_data,
-                                   size_t msg_data_size,
-                                   size_t chunk_size,
-                                   bool strip_trailing_spaces) override;
-
-  virtual void AddFileContents(const char* filename_msg,
-                               uint8_t* file_data,
-                               size_t file_size) override;
+  void AddFileContents(const char* filename_msg,
+                       uint8_t* file_data,
+                       size_t file_size) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrashReporterWriter);

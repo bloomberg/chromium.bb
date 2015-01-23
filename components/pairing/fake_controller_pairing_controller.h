@@ -37,7 +37,7 @@ class FakeControllerPairingController
   // * code - 6 digits or empty string. Default: empty string. If strings is
   // empty, random code is generated.
   explicit FakeControllerPairingController(const std::string& config);
-  virtual ~FakeControllerPairingController();
+  ~FakeControllerPairingController() override;
 
   // Applies given |config| to controller.
   void ApplyConfig(const std::string& config);
@@ -64,24 +64,23 @@ class FakeControllerPairingController
   void SetDiscoveryScenario(const DiscoveryScenario& discovery_scenario);
 
   // Overridden from ControllerPairingController:
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual Stage GetCurrentStage() override;
-  virtual void StartPairing() override;
-  virtual DeviceIdList GetDiscoveredDevices() override;
-  virtual void ChooseDeviceForPairing(const std::string& device_id) override;
-  virtual void RepeatDiscovery() override;
-  virtual std::string GetConfirmationCode() override;
-  virtual void SetConfirmationCodeIsCorrect(bool correct) override;
-  virtual void SetHostConfiguration(
-      bool accepted_eula,
-      const std::string& lang,
-      const std::string& timezone,
-      bool send_reports,
-      const std::string& keyboard_layout) override;
-  virtual void OnAuthenticationDone(const std::string& domain,
-                                    const std::string& auth_token) override;
-  virtual void StartSession() override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  Stage GetCurrentStage() override;
+  void StartPairing() override;
+  DeviceIdList GetDiscoveredDevices() override;
+  void ChooseDeviceForPairing(const std::string& device_id) override;
+  void RepeatDiscovery() override;
+  std::string GetConfirmationCode() override;
+  void SetConfirmationCodeIsCorrect(bool correct) override;
+  void SetHostConfiguration(bool accepted_eula,
+                            const std::string& lang,
+                            const std::string& timezone,
+                            bool send_reports,
+                            const std::string& keyboard_layout) override;
+  void OnAuthenticationDone(const std::string& domain,
+                            const std::string& auth_token) override;
+  void StartSession() override;
 
  private:
   void ChangeStage(Stage new_stage);
@@ -91,8 +90,8 @@ class FakeControllerPairingController
   void DeviceLost(const std::string& device_id);
 
   // Overridden from ui::ControllerPairingController::Observer:
-  virtual void PairingStageChanged(Stage new_stage) override;
-  virtual void DiscoveredDevicesListChanged() override;
+  void PairingStageChanged(Stage new_stage) override;
+  void DiscoveredDevicesListChanged() override;
 
   ObserverList<ControllerPairingController::Observer> observers_;
   Stage current_stage_;

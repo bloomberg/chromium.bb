@@ -23,7 +23,7 @@ class WifiAccessPointInfoProviderChromeos
       public base::SupportsWeakPtr<WifiAccessPointInfoProviderChromeos> {
  public:
   WifiAccessPointInfoProviderChromeos();
-  virtual ~WifiAccessPointInfoProviderChromeos();
+  ~WifiAccessPointInfoProviderChromeos() override;
 
   // WifiAccessPointInfoProvider:
   bool GetInfo(WifiAccessPointInfo* info) override;
