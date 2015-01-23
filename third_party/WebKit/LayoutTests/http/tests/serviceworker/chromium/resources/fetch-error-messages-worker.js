@@ -7,11 +7,7 @@ async_test(function(t) {
       .then(
         t.unreached_func('Fetching must fail.'),
         function(e) {
-          assert_equals(
-            e.message,
-            'Fetch API cannot load ' + url + '. ' +
-            'Request mode is "same-origin" but the URL\'s origin is not same ' +
-            'as the request origin ' + get_host_info()['HTTP_ORIGIN']  + '.');
+          assert_equals(e.message, 'Failed to fetch');
           t.done();
         })
       .catch(unreached_rejection(t));
@@ -23,10 +19,7 @@ async_test(function(t) {
       .then(
         t.unreached_func('Fetching must fail.'),
         function(e) {
-          assert_equals(
-            e.message,
-            'Fetch API cannot load ' + url + '. ' +
-            'URL scheme must be "http" or "https" for CORS request.');
+          assert_equals(e.message, 'Failed to fetch');
           t.done();
         })
       .catch(unreached_rejection(t));
@@ -38,10 +31,7 @@ async_test(function(t) {
       .then(
         t.unreached_func('Fetching must fail.'),
         function(e) {
-          assert_equals(
-            e.message,
-            'Fetch API cannot load ' + url + '. ' +
-            'URL scheme "about" is not supported.');
+          assert_equals(e.message, 'Failed to fetch');
           t.done();
         })
       .catch(unreached_rejection(t));
@@ -57,10 +47,7 @@ async_test(function(t) {
           return response.text().then(
               t.unreached_func('Getting text must fail.'),
               function(e) {
-                assert_equals(
-                  e.message,
-                  'Fetch API cannot load ' + url + '. ' +
-                  'net::ERR_INVALID_CHUNKED_ENCODING');
+                assert_equals(e.message, 'Failed to fetch');
                 t.done();
               });
         },
@@ -76,12 +63,7 @@ async_test(function(t) {
       .then(
         t.unreached_func('Fetching must fail.'),
         function(e) {
-          assert_equals(
-            e.message,
-            'Fetch API cannot load ' + url + '. ' +
-            'No \'Access-Control-Allow-Origin\' header is present on the ' +
-            'requested resource. Origin \'' + get_host_info()['HTTP_ORIGIN'] +
-            '\' is therefore not allowed access.');
+          assert_equals(e.message, 'Failed to fetch');
           t.done();
         })
       .catch(unreached_rejection(t));

@@ -13,6 +13,7 @@
 #include "core/fetch/FetchUtils.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "modules/fetch/Body.h"
@@ -29,7 +30,7 @@
 
 namespace blink {
 
-class FetchManager::Loader : public ThreadableLoaderClient {
+class FetchManager::Loader : public ThreadableLoaderClient, public ContextLifecycleObserver {
 public:
     Loader(ExecutionContext*, FetchManager*, PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, const FetchRequestData*);
     ~Loader() override;
@@ -50,7 +51,6 @@ private:
     void failed(const String& message);
     void notifyFinished();
 
-    ExecutionContext* m_executionContext;
     FetchManager* m_fetchManager;
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
     Persistent<FetchRequestData> m_request;
@@ -60,7 +60,7 @@ private:
 };
 
 FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, const FetchRequestData* request)
-    : m_executionContext(executionContext)
+    : ContextLifecycleObserver(executionContext)
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
     , m_request(request->createCopy())
@@ -171,7 +171,7 @@ void FetchManager::Loader::start()
 
     // "- should fetching |request| be blocked as content security returns
     //    blocked"
-    if (!ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext) && !m_executionContext->contentSecurityPolicy()->allowConnectToSource(m_request->url())) {
+    if (!ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) && !executionContext()->contentSecurityPolicy()->allowConnectToSource(m_request->url())) {
         // "A network error."
         performNetworkError("Refused to connect to '" + m_request->url().elidedString() + "' because it violates the document's Content Security Policy.");
         return;
@@ -322,7 +322,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     resourceLoaderOptions.securityOrigin = m_request->origin().get();
 
     ThreadableLoaderOptions threadableLoaderOptions;
-    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
+    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
     if (corsPreflightFlag)
         threadableLoaderOptions.preflightPolicy = ForcePreflight;
     switch (m_request->mode()) {
@@ -337,7 +337,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
         threadableLoaderOptions.crossOriginRequestPolicy = UseAccessControl;
         break;
     }
-    m_loader = ThreadableLoader::create(*m_executionContext, this, request, threadableLoaderOptions, resourceLoaderOptions);
+    m_loader = ThreadableLoader::create(*executionContext(), this, request, threadableLoaderOptions, resourceLoaderOptions);
     if (!m_loader)
         performNetworkError("Can't create ThreadableLoader");
 }
@@ -347,15 +347,16 @@ void FetchManager::Loader::failed(const String& message)
     if (m_failed)
         return;
     m_failed = true;
+    executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
     if (m_responseBuffer) {
-        m_responseBuffer->error(DOMException::create(NetworkError, message));
+        m_responseBuffer->error(DOMException::create(NetworkError, "Failed to fetch"));
         m_responseBuffer.clear();
     } else if (m_resolver) {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
         ScriptState* state = m_resolver->scriptState();
         ScriptState::Scope scope(state);
-        m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), message));
+        m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), "Failed to fetch"));
     }
     notifyFinished();
 }
