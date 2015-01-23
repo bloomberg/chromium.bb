@@ -75,12 +75,6 @@ SmoothScrollInterruptionTest.prototype.waitForSmoothScrollStart = function() {
         return;
     }
 
-    var scrollElement = this.scrollElement;
-    var scrollEndPoint = this.scrollEndPoint;
-    this.asyncTest.step(function() {
-        assert_not_equals(scrollElement.scrollTop, scrollEndPoint);
-    });
-
     var testCase = this.testCases[this.currentTestCase];
     testCase.interruptSmoothScroll(this);
     window.requestAnimationFrame(testCase.verifyScrollInterrupted.bind(testCase, this, this.testCaseComplete.bind(this)));
@@ -147,7 +141,7 @@ function interruptWithSmoothScroll(smoothScrollTest) {
 function verifyScrollInterruptedBySmoothScroll(smoothScrollTest, verificationComplete) {
     var currentPosition = smoothScrollTest.scrollElement.scrollTop;
 
-    if (currentPosition < this.scrollInterruptionPoint && currentPosition > smoothScrollTest.scrollNewEndpoint) {
+    if (currentPosition < this.scrollInterruptionPoint && currentPosition >= smoothScrollTest.scrollNewEndpoint) {
         verificationComplete();
     } else {
         window.requestAnimationFrame(this.verifyScrollInterrupted.bind(this, smoothScrollTest, verificationComplete));

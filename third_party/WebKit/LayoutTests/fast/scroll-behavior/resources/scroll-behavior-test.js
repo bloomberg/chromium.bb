@@ -27,15 +27,17 @@ function ScrollBehaviorTest(scrollElement,
 }
 
 ScrollBehaviorTest.prototype.scrollListener = function(testCase) {
-    if (testCase.waitForEnd) {
-        if (this.scrollElement.scrollLeft == testCase.endX && this.scrollElement.scrollTop == testCase.endY)
-            this.testCaseComplete();
+    var endReached = (this.scrollElement.scrollLeft == testCase.endX && this.scrollElement.scrollTop == testCase.endY);
+    if (endReached) {
+        this.testCaseComplete();
         return;
     }
 
-    // Wait for an intermediate frame, then instant-scroll to the end state.
-    if ((this.scrollElement.scrollLeft != testCase.startX || this.scrollElement.scrollTop != testCase.startY) &&
-        (this.scrollElement.scrollLeft != testCase.endX || this.scrollElement.scrollTop != testCase.endY)) {
+    if (testCase.waitForEnd)
+        return;
+
+    // Wait for the animation to start, then instant-scroll to the end state.
+    if (this.scrollElement.scrollLeft != testCase.startX || this.scrollElement.scrollTop != testCase.startY) {
         // Instant scroll, and then wait for the next scroll event. This allows
         // the instant scroll to propagate to the compositor (when using
         // composited scrolling) so that the next smooth scroll starts at this
