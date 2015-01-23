@@ -1313,11 +1313,10 @@ wl_resource_create(struct wl_client *client,
 	resource->version = version;
 	resource->dispatcher = NULL;
 
-	if (wl_map_insert_at(&client->objects, 0, resource->object.id, resource) < 0) {
+	if (wl_map_insert_at(&client->objects, 0, id, resource) < 0) {
 		wl_resource_post_error(client->display_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "invalid new id %d",
-				       resource->object.id);
+				       "invalid new id %d", id);
 		free(resource);
 		return NULL;
 	}
