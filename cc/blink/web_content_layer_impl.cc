@@ -54,11 +54,8 @@ void WebContentLayerImpl::PaintContents(
   if (!client_)
     return;
 
-  // TODO(danakj): Stop passing this to blink it should always use LCD when it
-  // wants to. crbug.com/430617
-  bool can_use_lcd_text = true;
   client_->paintContents(
-      canvas, clip, can_use_lcd_text,
+      canvas, clip,
       graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
           ? blink::WebContentLayerClient::GraphicsContextEnabled
           : blink::WebContentLayerClient::GraphicsContextDisabled);
@@ -72,9 +69,8 @@ WebContentLayerImpl::PaintContentsToDisplayList(
     return cc::DisplayItemList::Create();
 
   WebDisplayItemListImpl list;
-  bool can_use_lcd_text = true;
   client_->paintContents(
-      &list, clip, can_use_lcd_text,
+      &list, clip,
       graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
           ? blink::WebContentLayerClient::GraphicsContextEnabled
           : blink::WebContentLayerClient::GraphicsContextDisabled);
