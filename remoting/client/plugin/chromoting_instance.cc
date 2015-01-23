@@ -636,18 +636,21 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 #endif
   input_handler_.set_input_stub(normalizing_input_filter_.get());
 
-  // 3D renderer is currently disabled because it may be unstable. See
-  // crbug.com/447403 .
-  //
-  // video_renderer_.reset(new PepperVideoRenderer3D());
-  // if (!video_renderer_->Initialize(this, context_, this))
-  //   video_renderer_.reset();
+  // PPB_VideoDecoder is not always enabled because it's broken in some versions
+  // of Chrome. See crbug.com/447403 .
+  bool enable_video_decode_renderer = false;
+  if (data.GetBoolean("enableVideoDecodeRenderer",
+                      &enable_video_decode_renderer) &&
+      enable_video_decode_renderer) {
+    LOG(ERROR) << "Initializing 3D renderer.";
+    video_renderer_.reset(new PepperVideoRenderer3D());
+    if (!video_renderer_->Initialize(this, context_, this))
+      video_renderer_.reset();
+  }
 
-  // If we failed to initialize 3D renderer (because there is no hardware
-  // support on this machine) then use the 2D renderer.
+  // If we didn't initialize 3D renderer then use the 2D renderer.
   if (!video_renderer_) {
-    LOG(WARNING)
-        << "Failed to initialize 3D renderer. Using 2D renderer instead.";
+    LOG(ERROR) << "Initializing 2D renderer.";
     video_renderer_.reset(new PepperVideoRenderer2D());
     if (!video_renderer_->Initialize(this, context_, this))
       video_renderer_.reset();
