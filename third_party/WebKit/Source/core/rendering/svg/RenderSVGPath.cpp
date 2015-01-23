@@ -49,24 +49,26 @@ RenderSVGPath::~RenderSVGPath()
 void RenderSVGPath::updateShapeFromElement()
 {
     RenderSVGShape::updateShapeFromElement();
-    updateZeroLengthSubpaths();
 
-    m_strokeBoundingBox = calculateUpdatedStrokeBoundingBox();
+    updateZeroLengthSubpaths();
+    m_hitTestStrokeBoundingBox = calculateUpdatedHitTestStrokeBoundingBox();
+
+    m_strokeBoundingBox = style()->svgStyle().hasStroke() ? m_hitTestStrokeBoundingBox : m_fillBoundingBox;
+
+    if (!m_markerPositions.isEmpty()) {
+        const FloatRect markerRect = this->markerRect(strokeWidth());
+        m_strokeBoundingBox.unite(markerRect);
+    }
 }
 
-FloatRect RenderSVGPath::calculateUpdatedStrokeBoundingBox() const
+FloatRect RenderSVGPath::calculateUpdatedHitTestStrokeBoundingBox() const
 {
-    FloatRect strokeBoundingBox = m_strokeBoundingBox;
+    FloatRect strokeBoundingBox = m_hitTestStrokeBoundingBox;
 
-    if (!m_markerPositions.isEmpty())
-        strokeBoundingBox.unite(markerRect(strokeWidth()));
-
-    if (style()->svgStyle().hasStroke()) {
-        // FIXME: zero-length subpaths do not respect vector-effect = non-scaling-stroke.
-        float strokeWidth = this->strokeWidth();
-        for (size_t i = 0; i < m_zeroLengthLinecapLocations.size(); ++i)
-            strokeBoundingBox.unite(zeroLengthSubpathRect(m_zeroLengthLinecapLocations[i], strokeWidth));
-    }
+    // FIXME: zero-length subpaths do not respect vector-effect = non-scaling-stroke.
+    const float strokeWidth = this->strokeWidth();
+    for (size_t i = 0; i < m_zeroLengthLinecapLocations.size(); ++i)
+        strokeBoundingBox.unite(zeroLengthSubpathRect(m_zeroLengthLinecapLocations[i], strokeWidth));
 
     return strokeBoundingBox;
 }
@@ -77,9 +79,9 @@ bool RenderSVGPath::shapeDependentStrokeContains(const FloatPoint& point)
         return true;
 
     const SVGRenderStyle& svgStyle = style()->svgStyle();
+    const float strokeWidth = this->strokeWidth();
     for (size_t i = 0; i < m_zeroLengthLinecapLocations.size(); ++i) {
         ASSERT(svgStyle.hasStroke());
-        float strokeWidth = this->strokeWidth();
         if (svgStyle.capStyle() == SquareCap) {
             if (zeroLengthSubpathRect(m_zeroLengthLinecapLocations[i], strokeWidth).contains(point))
                 return true;

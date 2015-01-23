@@ -44,7 +44,7 @@ private:
     virtual const char* renderName() const override { return "RenderSVGPath"; }
 
     virtual void updateShapeFromElement() override;
-    FloatRect calculateUpdatedStrokeBoundingBox() const;
+    FloatRect calculateUpdatedHitTestStrokeBoundingBox() const;
 
     virtual bool shapeDependentStrokeContains(const FloatPoint&) override;
 
