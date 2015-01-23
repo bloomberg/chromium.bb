@@ -339,10 +339,6 @@ class OutOfProcessInstance : public pp::Instance,
   // zooming the plugin so that flickering doesn't occur while zooming.
   bool stop_scrolling_;
 
-  // If a print command comes in before the document has loaded, we set
-  // |delay_print_| to true and print after the document has loaded.
-  bool delay_print_;
-
   // The callback for receiving the password from the page.
   scoped_ptr<pp::CompletionCallbackWithOutput<pp::Var> > password_callback_;
 };

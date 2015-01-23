@@ -48,6 +48,8 @@ function PDFViewer(streamDetails) {
   this.loaded_ = false;
   this.parentWindow_ = null;
 
+  this.delayedScriptingMessages_ = [];
+
   this.isPrintPreview_ =
       this.streamDetails_.originalUrl.indexOf('chrome://print') == 0;
   this.isMaterial_ = location.pathname.substring(1) == 'index-material.html';
@@ -340,9 +342,8 @@ PDFViewer.prototype = {
         this.viewport_.position = this.lastViewportPosition_;
       this.handleURLParams_();
       this.loaded_ = true;
-      this.sendScriptingMessage_({
-        type: 'documentLoaded'
-      });
+      while (this.delayedScriptingMessages_.length > 0)
+        this.handleScriptingMessage(this.delayedScriptingMessages_.shift());
     }
   },
 
@@ -613,25 +614,57 @@ PDFViewer.prototype = {
   },
 
   /**
-   * @private
    * Handle a scripting message from outside the extension (typically sent by
    * PDFScriptingAPI in a page containing the extension) to interact with the
    * plugin.
    * @param {MessageObject} message the message to handle.
    */
   handleScriptingMessage: function(message) {
+    if (this.parentWindow_ != message.source)
+      this.parentWindow_ = message.source;
+
+    if (this.handlePrintPreviewScriptingMessage_(message))
+      return;
+
+    // Delay scripting messages from users of the scripting API until the
+    // document is loaded. This simplifies use of the APIs.
+    if (!this.loaded_) {
+      this.delayedScriptingMessages_.push(message);
+      return;
+    }
+
     switch (message.data.type.toString()) {
       case 'getAccessibilityJSON':
       case 'getSelectedText':
-      case 'loadPreviewPage':
       case 'print':
       case 'selectAll':
         this.plugin_.postMessage(message.data);
         break;
-      case 'resetPrintPreviewMode':
-        if (!this.isPrintPreview_)
-          break;
+      case 'isDocumentLoaded':
+        // Since this is only hit after the document has been loaded, we can
+        // send a reply immediately.
+        this.sendScriptingMessage_({
+          type: 'documentLoaded'
+        });
+        break;
+    }
+  },
 
+  /**
+   * @private
+   * Handle scripting messages specific to print preview.
+   * @param {MessageObject} message the message to handle.
+   * @return {boolean} true if the message was handled, false otherwise.
+   */
+  handlePrintPreviewScriptingMessage_: function(message) {
+    if (!this.isPrintPreview_)
+      return false;
+
+    switch (message.data.type.toString()) {
+      case 'loadPreviewPage':
+        this.plugin_.postMessage(message.data);
+        return true;
+      case 'resetPrintPreviewMode':
         if (!this.inPrintPreviewMode_) {
           this.inPrintPreviewMode_ = true;
           this.viewport_.fitToPage();
@@ -660,26 +693,16 @@ PDFViewer.prototype = {
           pageCount: (message.data.modifiable ?
                       message.data.pageNumbers.length : 0)
         });
-        break;
+        return true;
       case 'sendKeyEvent':
         var e = document.createEvent('Event');
         e.initEvent('scriptingKeypress');
         e.keyCode = message.data.keyCode;
         this.handleKeyEvent_(e);
-        break;
-      case 'setParentWindow':
-        if (this.parentWindow_ != message.source) {
-          this.parentWindow_ = message.source;
-          // If the document has already loaded, we always send a message that
-          // indicates that so that the embedder is aware.
-          if (this.loaded_) {
-            this.sendScriptingMessage_({
-              type: 'documentLoaded'
-            });
-          }
-        }
-        break;
+        return true;
     }
+
+    return false;
   },
 
   /**

@@ -267,8 +267,7 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       recently_sent_find_update_(false),
       received_viewport_message_(false),
       did_call_start_loading_(false),
-      stop_scrolling_(false),
-      delay_print_(false) {
+      stop_scrolling_(false) {
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
   form_factory_.Initialize(this);
@@ -970,11 +969,6 @@ void OutOfProcessInstance::Email(const std::string& to,
 }
 
 void OutOfProcessInstance::Print() {
-  if (document_load_state_ == LOAD_STATE_LOADING) {
-    delay_print_ = true;
-    return;
-  }
-
   if (!engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
       !engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
     return;
@@ -1102,25 +1096,23 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   progress_message.Set(pp::Var(kJSProgressPercentage), pp::Var(100));
   PostMessage(progress_message);
 
-  if (full_) {
-    if (did_call_start_loading_) {
-      pp::PDF::DidStopLoading(this);
-      did_call_start_loading_ = false;
-    }
+  if (!full_)
+    return;
 
-    int content_restrictions =
-        CONTENT_RESTRICTION_CUT | CONTENT_RESTRICTION_PASTE;
-    if (!engine_->HasPermission(PDFEngine::PERMISSION_COPY))
-      content_restrictions |= CONTENT_RESTRICTION_COPY;
-
-    pp::PDF::SetContentRestriction(this, content_restrictions);
-
-    uma_.HistogramCustomCounts("PDF.PageCount", page_count,
-                               1, 1000000, 50);
+  if (did_call_start_loading_) {
+    pp::PDF::DidStopLoading(this);
+    did_call_start_loading_ = false;
   }
 
-  if (delay_print_)
-    Print();
+  int content_restrictions =
+      CONTENT_RESTRICTION_CUT | CONTENT_RESTRICTION_PASTE;
+  if (!engine_->HasPermission(PDFEngine::PERMISSION_COPY))
+    content_restrictions |= CONTENT_RESTRICTION_COPY;
+
+  pp::PDF::SetContentRestriction(this, content_restrictions);
+
+  uma_.HistogramCustomCounts("PDF.PageCount", page_count,
+                             1, 1000000, 50);
 }
 
 void OutOfProcessInstance::RotateClockwise() {
