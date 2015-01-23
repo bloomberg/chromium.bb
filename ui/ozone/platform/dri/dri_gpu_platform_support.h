@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "ipc/message_filter.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/dri/dri_helper_thread.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 
 class SkBitmap;
@@ -76,11 +77,14 @@ class DriGpuPlatformSupport : public GpuPlatformSupport {
   void OnAddGraphicsDevice(const base::FilePath& path);
   void OnRemoveGraphicsDevice(const base::FilePath& path);
 
+  void OnFilterAdded();
+
   IPC::Sender* sender_;                       // Not owned.
   DriWrapper* drm_;                           // Not owned.
   DriWindowDelegateManager* window_manager_;  // Not owned.
   ScreenManager* screen_manager_;             // Not owned.
 
+  DriHelperThread helper_thread_;
   scoped_ptr<NativeDisplayDelegateDri> ndd_;
   ScopedVector<GpuPlatformSupport> handlers_;
   scoped_refptr<IPC::MessageFilter> filter_;

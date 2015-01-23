@@ -144,11 +144,8 @@ class DriWrapper::IOWatcher
   DISALLOW_COPY_AND_ASSIGN(IOWatcher);
 };
 
-DriWrapper::DriWrapper(const char* device_path, bool use_sync_flips)
-    : fd_(-1),
-      use_sync_flips_(use_sync_flips),
-      device_path_(device_path),
-      io_thread_("DriIOThread") {
+DriWrapper::DriWrapper(const char* device_path)
+    : fd_(-1), device_path_(device_path) {
   plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
 }
 
@@ -168,14 +165,11 @@ void DriWrapper::Initialize() {
     LOG(ERROR) << "Failed to initialize the plane manager";
 }
 
-void DriWrapper::InitializeIOWatcher() {
-  if (!use_sync_flips_ && !watcher_) {
-    if (!io_thread_.StartWithOptions(
-            base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
-      LOG(FATAL) << "Failed to start the IO helper thread";
-
-    watcher_ = new IOWatcher(fd_, io_thread_.task_runner());
-  }
+void DriWrapper::InitializeTaskRunner(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  DCHECK(!task_runner_);
+  task_runner_ = task_runner;
+  watcher_ = new IOWatcher(fd_, task_runner_);
 }
 
 ScopedDrmCrtcPtr DriWrapper::GetCrtc(uint32_t crtc_id) {
@@ -278,7 +272,10 @@ bool DriWrapper::PageFlip(uint32_t crtc_id,
                        payload.get())) {
     // If successful the payload will be removed by a PageFlip event.
     ignore_result(payload.release());
-    if (use_sync_flips_) {
+
+    // If a task runner isn't installed then fall back to synchronously handling
+    // the page flip events.
+    if (!task_runner_) {
       TRACE_EVENT1("dri", "OnDrmEvent", "socket", fd_);
 
       drmEventContext event;
@@ -287,8 +284,6 @@ bool DriWrapper::PageFlip(uint32_t crtc_id,
       event.vblank_handler = nullptr;
 
       drmHandleEvent(fd_, &event);
-    } else {
-      InitializeIOWatcher();
     }
 
     return true;

@@ -40,7 +40,7 @@ class MockHardwareDisplayPlaneManager
 }  // namespace
 
 MockDriWrapper::MockDriWrapper(int fd)
-    : DriWrapper("", true),
+    : DriWrapper(""),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
       restore_crtc_call_count_(0),
@@ -61,7 +61,7 @@ MockDriWrapper::MockDriWrapper(int fd,
                                bool use_sync_flips,
                                std::vector<uint32_t> crtcs,
                                size_t planes_per_crtc)
-    : DriWrapper("", use_sync_flips),
+    : DriWrapper(""),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
       restore_crtc_call_count_(0),
@@ -73,6 +73,7 @@ MockDriWrapper::MockDriWrapper(int fd,
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true),
       create_dumb_buffer_expectation_(true),
+      use_sync_flips_(use_sync_flips),
       current_framebuffer_(0) {
   fd_ = fd;
   plane_manager_.reset(

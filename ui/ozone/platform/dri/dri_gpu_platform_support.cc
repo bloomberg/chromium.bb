@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/dri/dri_gpu_platform_support.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/display/types/display_mode.h"
@@ -12,9 +13,12 @@
 #include "ui/ozone/common/display_util.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
+#include "ui/ozone/platform/dri/dri_helper_thread.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
 
@@ -28,9 +32,12 @@ void MessageProcessedOnMain(
 
 class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
  public:
-  DriGpuPlatformSupportMessageFilter(DriWindowDelegateManager* window_manager,
-                                     IPC::Listener* main_thread_listener)
+  DriGpuPlatformSupportMessageFilter(
+      DriWindowDelegateManager* window_manager,
+      const base::Closure& on_filter_added_callback,
+      IPC::Listener* main_thread_listener)
       : window_manager_(window_manager),
+        on_filter_added_callback_(on_filter_added_callback),
         main_thread_listener_(main_thread_listener),
         main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         pending_main_thread_operations_(0),
@@ -38,6 +45,7 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
 
   void OnFilterAdded(IPC::Sender* sender) override {
     io_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    main_thread_task_runner_->PostTask(FROM_HERE, on_filter_added_callback_);
   }
 
   // This code is meant to be very temporary and only as a special case to fix
@@ -146,6 +154,7 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
   }
 
   DriWindowDelegateManager* window_manager_;
+  base::Closure on_filter_added_callback_;
   IPC::Listener* main_thread_listener_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
@@ -164,7 +173,10 @@ DriGpuPlatformSupport::DriGpuPlatformSupport(
       window_manager_(window_manager),
       screen_manager_(screen_manager),
       ndd_(ndd.Pass()) {
-  filter_ = new DriGpuPlatformSupportMessageFilter(window_manager, this);
+  filter_ = new DriGpuPlatformSupportMessageFilter(
+      window_manager,
+      base::Bind(&DriGpuPlatformSupport::OnFilterAdded, base::Unretained(this)),
+      this);
 }
 
 DriGpuPlatformSupport::~DriGpuPlatformSupport() {
@@ -344,6 +356,17 @@ void DriGpuPlatformSupport::OnRemoveGraphicsDevice(const base::FilePath& path) {
 void DriGpuPlatformSupport::RelinquishGpuResources(
     const base::Closure& callback) {
   callback.Run();
+}
+
+void DriGpuPlatformSupport::OnFilterAdded() {
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  // Only surfaceless path supports async page flips. So we only initialize the
+  // helper thread if we're using async page flips.
+  if (!helper_thread_.IsRunning() &&
+      cmd->HasSwitch(switches::kOzoneUseSurfaceless)) {
+    helper_thread_.Initialize();
+    drm_->InitializeTaskRunner(helper_thread_.task_runner());
+  }
 }
 
 IPC::MessageFilter* DriGpuPlatformSupport::GetMessageFilter() {

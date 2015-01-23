@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/threading/thread.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform.h"
@@ -23,6 +22,10 @@ typedef struct _drmEventContext drmEventContext;
 typedef struct _drmModeModeInfo drmModeModeInfo;
 
 struct SkImageInfo;
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace ui {
 
@@ -37,11 +40,15 @@ class DriWrapper {
                               unsigned int /* seconds */,
                               unsigned int /* useconds */)> PageFlipCallback;
 
-  DriWrapper(const char* device_path, bool use_sync_flips);
+  DriWrapper(const char* device_path);
   virtual ~DriWrapper();
 
   // Open device.
   virtual void Initialize();
+
+  // |task_runner| will be used to asynchronously page flip.
+  virtual void InitializeTaskRunner(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Get the CRTC state. This is generally used to save state before using the
   // CRTC. When the user finishes using the CRTC, the user should restore the
@@ -152,19 +159,12 @@ class DriWrapper {
   HardwareDisplayPlaneManager* plane_manager() { return plane_manager_.get(); }
 
  protected:
-  // Responsible for late initialization of the IO thread. This needs to happen
-  // after the sandbox is up, thus the late initialization.
-  virtual void InitializeIOWatcher();
-
   // The file descriptor associated with this wrapper. All DRM operations will
   // be performed using this FD.
   // TODO(dnicoara) Make this a base::File
   int fd_;
 
   scoped_ptr<HardwareDisplayPlaneManager> plane_manager_;
-
-  // If we need to block when performing page flips this is set to true.
-  bool use_sync_flips_;
 
  private:
   class IOWatcher;
@@ -173,9 +173,7 @@ class DriWrapper {
   const char* device_path_;
 
   // Helper thread to perform IO listener operations.
-  // TODO(dnicoara) This should really be supported by the main thread.
-  // Alternatively we should have a way to access the IO thread's task runner.
-  base::Thread io_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Watcher for |fd_| listening for page flip events.
   scoped_refptr<IOWatcher> watcher_;

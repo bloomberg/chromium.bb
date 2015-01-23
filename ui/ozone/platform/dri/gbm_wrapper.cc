@@ -8,8 +8,8 @@
 
 namespace ui {
 
-GbmWrapper::GbmWrapper(const char* device_path, bool use_sync_flips)
-    : DriWrapper(device_path, use_sync_flips), device_(nullptr) {
+GbmWrapper::GbmWrapper(const char* device_path)
+    : DriWrapper(device_path), device_(nullptr) {
 }
 
 GbmWrapper::~GbmWrapper() {

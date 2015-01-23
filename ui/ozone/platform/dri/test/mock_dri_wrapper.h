@@ -116,6 +116,8 @@ class MockDriWrapper : public ui::DriWrapper {
   bool page_flip_expectation_;
   bool create_dumb_buffer_expectation_;
 
+  bool use_sync_flips_;
+
   uint32_t current_framebuffer_;
 
   std::vector<skia::RefPtr<SkSurface> > buffers_;
