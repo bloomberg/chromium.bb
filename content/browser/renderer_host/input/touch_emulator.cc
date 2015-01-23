@@ -331,7 +331,7 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
 }
 
 void TouchEmulator::CancelTouch() {
-  if (!emulated_stream_active_sequence_count_)
+  if (!emulated_stream_active_sequence_count_ || !enabled())
     return;
 
   WebTouchEventTraits::ResetTypeAndTouchStates(

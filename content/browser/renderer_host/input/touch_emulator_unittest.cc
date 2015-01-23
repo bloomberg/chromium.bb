@@ -552,4 +552,12 @@ TEST_F(TouchEmulatorTest, MultipleTouchStreamsLateEnable) {
       ExpectedEvents());
 }
 
+TEST_F(TouchEmulatorTest, CancelAfterDisableDoesNotCrash) {
+  DisableSynchronousTouchAck();
+  MouseDown(100, 200);
+  emulator()->Disable();
+  EXPECT_EQ("TouchStart TouchCancel", ExpectedEvents());
+  emulator()->CancelTouch();
+}
+
 }  // namespace content
