@@ -1053,6 +1053,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_disable_connection_pooling);
   globals.quic_load_server_info_timeout_ms.CopyToIfSet(
       &params->quic_load_server_info_timeout_ms);
+  globals.quic_disable_loading_server_info_for_new_servers.CopyToIfSet(
+      &params->quic_disable_loading_server_info_for_new_servers);
   globals.quic_load_server_info_timeout_srtt_multiplier.CopyToIfSet(
       &params->quic_load_server_info_timeout_srtt_multiplier);
   globals.quic_enable_truncated_connection_ids.CopyToIfSet(
@@ -1215,6 +1217,8 @@ void IOThread::ConfigureQuicGlobals(
       globals->quic_load_server_info_timeout_ms.set(
           load_server_info_timeout_ms);
     }
+    globals->quic_disable_loading_server_info_for_new_servers.set(
+        ShouldDisableLoadingServerInfoForNewServers(quic_trial_params));
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);
     globals->quic_enable_truncated_connection_ids.set(
@@ -1378,6 +1382,15 @@ int IOThread::GetQuicLoadServerInfoTimeout(
     return value;
   }
   return 0;
+}
+
+// static
+bool IOThread::ShouldDisableLoadingServerInfoForNewServers(
+    const VariationParameters& quic_trial_params) {
+  return LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params,
+                        "disable_loading_server_info_for_new_servers"),
+      "true");
 }
 
 // static

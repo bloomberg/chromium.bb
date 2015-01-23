@@ -163,6 +163,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
                  /*always_require_handshake_confirmation=*/false,
                  /*disable_connection_pooling=*/false,
                  /*load_server_info_timeout=*/0u,
+                 /*disable_loading_server_info_for_new_servers=*/false,
                  /*load_server_info_timeout_srtt_multiplier=*/0.0f,
                  /*enable_truncated_connection_ids=*/true,
                  QuicTagVector()),
