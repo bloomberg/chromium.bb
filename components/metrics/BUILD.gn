@@ -64,6 +64,10 @@ source_set("metrics") {
   if (is_chromeos) {
     deps += [ ":serialization" ]
   }
+
+  if (is_win) {
+    sources -= [ "machine_id_provider_stub.cc" ]
+  }
 }
 
 # GYP version: components/metrics.gypi:metrics_gpu
