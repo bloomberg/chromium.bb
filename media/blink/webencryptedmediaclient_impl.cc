@@ -160,34 +160,30 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   }
 
   // 7.2 Let implementation be the implementation of keySystem.
-  // 7.3 Follow the steps for the first matching condition from the following
-  //     list:
-  //       - If supportedConfigurations was not provided, run the Is Key System
-  //         Supported? algorithm and if successful, resolve promise with access
-  //         and abort these steps.
-  // TODO(sandersd): Remove pending the resolution of
-  // https://github.com/w3c/encrypted-media/issues/1.
+  // 7.3 For each value in supportedConfigurations, run the GetSupported
+  //     Configuration algorithm and if successful, resolve promise with access
+  //     and abort these steps.
   const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
       configurations = request.supportedConfigurations();
+
+  // TODO(sandersd): Remove once Blink requires the configurations parameter for
+  // requestMediaKeySystemAccess().
   if (configurations.isEmpty()) {
     request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
-        request.keySystem(), request.securityOrigin(), cdm_factory_.get()));
+        request.keySystem(), blink::WebMediaKeySystemConfiguration(),
+        request.securityOrigin(), cdm_factory_.get()));
     return;
   }
 
-  //       - Otherwise, for each value in supportedConfigurations, run the
-  //         GetSuppored Configuration algorithm and if successful, resolve
-  //         promise with access and abort these steps.
   for (size_t i = 0; i < configurations.size(); i++) {
     const blink::WebMediaKeySystemConfiguration& candidate = configurations[i];
     blink::WebMediaKeySystemConfiguration accumulated_configuration;
     if (GetSupportedConfiguration(key_system, candidate,
                                   request.securityOrigin(),
                                   &accumulated_configuration)) {
-      // TODO(sandersd): Pass the accumulated configuration along.
-      // http://crbug.com/447059.
       request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
-          request.keySystem(), request.securityOrigin(), cdm_factory_.get()));
+          request.keySystem(), accumulated_configuration,
+          request.securityOrigin(), cdm_factory_.get()));
       return;
     }
   }

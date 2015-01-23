@@ -25,22 +25,30 @@ static void CreateCdm(CdmFactory* cdm_factory,
 WebContentDecryptionModuleAccessImpl*
 WebContentDecryptionModuleAccessImpl::Create(
     const blink::WebString& key_system,
+    const blink::WebMediaKeySystemConfiguration& configuration,
     const blink::WebSecurityOrigin& security_origin,
     CdmFactory* cdm_factory) {
-  return new WebContentDecryptionModuleAccessImpl(key_system, security_origin,
-                                                  cdm_factory);
+  return new WebContentDecryptionModuleAccessImpl(key_system, configuration,
+                                                  security_origin, cdm_factory);
 }
 
 WebContentDecryptionModuleAccessImpl::WebContentDecryptionModuleAccessImpl(
     const blink::WebString& key_system,
+    const blink::WebMediaKeySystemConfiguration& configuration,
     const blink::WebSecurityOrigin& security_origin,
     CdmFactory* cdm_factory)
     : key_system_(key_system),
+      configuration_(configuration),
       security_origin_(security_origin),
       cdm_factory_(cdm_factory) {
 }
 
 WebContentDecryptionModuleAccessImpl::~WebContentDecryptionModuleAccessImpl() {
+}
+
+blink::WebMediaKeySystemConfiguration
+WebContentDecryptionModuleAccessImpl::getConfiguration() {
+  return configuration_;
 }
 
 void WebContentDecryptionModuleAccessImpl::createContentDecryptionModule(
