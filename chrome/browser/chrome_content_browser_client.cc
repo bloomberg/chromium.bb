@@ -1962,7 +1962,12 @@ content::PermissionStatus ChromeContentBrowserClient::GetPermissionStatus(
       context = GeolocationPermissionContextFactory::GetForProfile(profile);
       break;
     case content::PERMISSION_PROTECTED_MEDIA:
+#if defined(OS_ANDROID)
+      context = ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
+          profile);
+#else
       NOTIMPLEMENTED();
+#endif
       break;
     case content::PERMISSION_PUSH_MESSAGING:
       context = gcm::PushMessagingPermissionContextFactory::GetForProfile(
