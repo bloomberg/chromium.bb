@@ -168,17 +168,20 @@ void ObjectProxy::ConnectToSignal(const std::string& interface_name,
                                   OnConnectedCallback on_connected_callback) {
   bus_->AssertOnOriginThread();
 
-  base::PostTaskAndReplyWithResult(
-      bus_->GetDBusTaskRunner(),
-      FROM_HERE,
-      base::Bind(&ObjectProxy::ConnectToSignalInternal,
-                 this,
-                 interface_name,
-                 signal_name,
-                 signal_callback),
-      base::Bind(on_connected_callback,
-                 interface_name,
-                 signal_name));
+  if (bus_->HasDBusThread()) {
+    base::PostTaskAndReplyWithResult(
+        bus_->GetDBusTaskRunner(), FROM_HERE,
+        base::Bind(&ObjectProxy::ConnectToSignalInternal, this, interface_name,
+                   signal_name, signal_callback),
+        base::Bind(on_connected_callback, interface_name, signal_name));
+  } else {
+    // If the bus doesn't have a dedicated dbus thread we need to call
+    // ConnectToSignalInternal directly otherwise we might miss a signal
+    // that is currently queued if we do a PostTask.
+    const bool success =
+        ConnectToSignalInternal(interface_name, signal_name, signal_callback);
+    on_connected_callback.Run(interface_name, signal_name, success);
+  }
 }
 
 void ObjectProxy::SetNameOwnerChangedCallback(
