@@ -421,8 +421,9 @@ void FetchManager::stop()
 
 void FetchManager::onLoaderFinished(Loader* loader)
 {
-    // We don't use remove here, becuase it may cause recursive deletion.
-    OwnPtr<Loader> p = m_loaders.take(loader);
+    // We don't use remove here, because it may cause recursive deletion.
+    OwnPtrWillBeRawPtr<Loader> p = m_loaders.take(loader);
+    ALLOW_UNUSED_LOCAL(p);
 }
 
 void FetchManager::trace(Visitor* visitor)
