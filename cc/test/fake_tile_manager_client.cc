@@ -25,4 +25,9 @@ scoped_ptr<RasterTilePriorityQueue> FakeTileManagerClient::BuildRasterQueue(
   return nullptr;
 }
 
+scoped_ptr<EvictionTilePriorityQueue> FakeTileManagerClient::BuildEvictionQueue(
+    TreePriority tree_priority) {
+  return nullptr;
+}
+
 }  // namespace cc

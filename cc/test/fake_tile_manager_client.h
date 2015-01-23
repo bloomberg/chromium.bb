@@ -24,8 +24,8 @@ class FakeTileManagerClient : public TileManagerClient {
   scoped_ptr<RasterTilePriorityQueue> BuildRasterQueue(
       TreePriority tree_priority,
       RasterTilePriorityQueue::Type type) override;
-  void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
-                          TreePriority tree_priority) override {}
+  scoped_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
+      TreePriority tree_priority) override;
 
  private:
   std::vector<PictureLayerImpl*> picture_layers_;

@@ -1219,12 +1219,14 @@ scoped_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
   return queue;
 }
 
-void LayerTreeHostImpl::BuildEvictionQueue(EvictionTilePriorityQueue* queue,
-                                           TreePriority tree_priority) {
+scoped_ptr<EvictionTilePriorityQueue> LayerTreeHostImpl::BuildEvictionQueue(
+    TreePriority tree_priority) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildEvictionQueue");
+  scoped_ptr<EvictionTilePriorityQueue> queue(new EvictionTilePriorityQueue);
   picture_layer_pairs_.clear();
   GetPictureLayerImplPairs(&picture_layer_pairs_, false);
   queue->Build(picture_layer_pairs_, tree_priority);
+  return queue;
 }
 
 const std::vector<PictureLayerImpl*>& LayerTreeHostImpl::GetPictureLayers()

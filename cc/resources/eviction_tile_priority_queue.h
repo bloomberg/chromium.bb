@@ -42,7 +42,6 @@ class CC_EXPORT EvictionTilePriorityQueue {
 
   void Build(const std::vector<PictureLayerImpl::Pair>& paired_layers,
              TreePriority tree_priority);
-  void Reset();
 
   bool IsEmpty() const;
   Tile* Top();

@@ -249,8 +249,8 @@ class TileManagerPerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      EvictionTilePriorityQueue queue;
-      host_impl_.BuildEvictionQueue(&queue, priorities[priority_count]);
+      scoped_ptr<EvictionTilePriorityQueue> queue(
+          host_impl_.BuildEvictionQueue(priorities[priority_count]));
       priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
@@ -285,12 +285,12 @@ class TileManagerPerfTest : public testing::Test {
     timer_.Reset();
     do {
       int count = tile_count;
-      EvictionTilePriorityQueue queue;
-      host_impl_.BuildEvictionQueue(&queue, priorities[priority_count]);
+      scoped_ptr<EvictionTilePriorityQueue> queue(
+          host_impl_.BuildEvictionQueue(priorities[priority_count]));
       while (count--) {
-        ASSERT_FALSE(queue.IsEmpty());
-        ASSERT_TRUE(queue.Top() != NULL);
-        queue.Pop();
+        ASSERT_FALSE(queue->IsEmpty());
+        ASSERT_TRUE(queue->Top() != NULL);
+        queue->Pop();
       }
       priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();

@@ -5836,12 +5836,11 @@ class GpuRasterizationRasterizesVisibleOnly : public LayerTreeHostTest {
 
     // Verify which tiles got resources using an eviction iterator, which has to
     // return all tiles that have resources.
-    EvictionTilePriorityQueue eviction_queue;
-    host_impl->BuildEvictionQueue(&eviction_queue,
-                                  SAME_PRIORITY_FOR_BOTH_TREES);
+    scoped_ptr<EvictionTilePriorityQueue> eviction_queue(
+        host_impl->BuildEvictionQueue(SAME_PRIORITY_FOR_BOTH_TREES));
     int tile_count = 0;
-    for (; !eviction_queue.IsEmpty(); eviction_queue.Pop()) {
-      Tile* tile = eviction_queue.Top();
+    for (; !eviction_queue->IsEmpty(); eviction_queue->Pop()) {
+      Tile* tile = eviction_queue->Top();
       // Ensure this tile is within the viewport.
       EXPECT_TRUE(tile->content_rect().Intersects(gfx::Rect(viewport_size_)));
       // Ensure that the tile is 1/4 of the viewport tall (plus padding).

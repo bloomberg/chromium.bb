@@ -240,7 +240,6 @@ TileManager::TileManager(
           task_runner_.get(),
           base::Bind(&TileManager::CheckIfMoreTilesNeedToBePrepared,
                      base::Unretained(this))),
-      eviction_priority_queue_is_up_to_date_(false),
       did_notify_ready_to_activate_(false),
       did_notify_ready_to_draw_(false) {
   tile_task_runner_->SetClient(this);
@@ -374,15 +373,12 @@ void TileManager::PrepareTiles(
     did_notify_ready_to_draw_ = false;
   } else {
     if (global_state_.hard_memory_limit_in_bytes == 0) {
-      // TODO(vmpstr): Add a function to unconditionally create an eviction
-      // queue and guard the rest of the calls sites with this flag, instead of
-      // clearing here and building, which is a bit awkward.
-      eviction_priority_queue_is_up_to_date_ = false;
       resource_pool_->CheckBusyResources(false);
       MemoryUsage memory_limit(0, 0);
       MemoryUsage memory_usage(resource_pool_->acquired_memory_usage_bytes(),
                                resource_pool_->acquired_resource_count());
-      FreeTileResourcesUntilUsageIsWithinLimit(memory_limit, &memory_usage);
+      FreeTileResourcesUntilUsageIsWithinLimit(nullptr, memory_limit,
+                                               &memory_usage);
     }
 
     did_notify_ready_to_activate_ = false;
@@ -491,54 +487,50 @@ void TileManager::BasicStateAsValueInto(base::debug::TracedValue* state) const {
   state->EndDictionary();
 }
 
-void TileManager::RebuildEvictionQueueIfNeeded() {
-  TRACE_EVENT1("cc",
-               "TileManager::RebuildEvictionQueueIfNeeded",
-               "eviction_priority_queue_is_up_to_date",
-               eviction_priority_queue_is_up_to_date_);
-  if (eviction_priority_queue_is_up_to_date_)
-    return;
-
-  eviction_priority_queue_.Reset();
-  client_->BuildEvictionQueue(&eviction_priority_queue_,
-                              global_state_.tree_priority);
-  eviction_priority_queue_is_up_to_date_ = true;
-}
-
-bool TileManager::FreeTileResourcesUntilUsageIsWithinLimit(
+scoped_ptr<EvictionTilePriorityQueue>
+TileManager::FreeTileResourcesUntilUsageIsWithinLimit(
+    scoped_ptr<EvictionTilePriorityQueue> eviction_priority_queue,
     const MemoryUsage& limit,
     MemoryUsage* usage) {
   while (usage->Exceeds(limit)) {
-    RebuildEvictionQueueIfNeeded();
-    if (eviction_priority_queue_.IsEmpty())
-      return false;
+    if (!eviction_priority_queue) {
+      eviction_priority_queue =
+          client_->BuildEvictionQueue(global_state_.tree_priority);
+    }
+    if (eviction_priority_queue->IsEmpty())
+      break;
 
-    Tile* tile = eviction_priority_queue_.Top();
+    Tile* tile = eviction_priority_queue->Top();
     *usage -= MemoryUsage::FromTile(tile);
     FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(tile);
-    eviction_priority_queue_.Pop();
+    eviction_priority_queue->Pop();
   }
-  return true;
+  return eviction_priority_queue;
 }
 
-bool TileManager::FreeTileResourcesWithLowerPriorityUntilUsageIsWithinLimit(
+scoped_ptr<EvictionTilePriorityQueue>
+TileManager::FreeTileResourcesWithLowerPriorityUntilUsageIsWithinLimit(
+    scoped_ptr<EvictionTilePriorityQueue> eviction_priority_queue,
     const MemoryUsage& limit,
     const TilePriority& other_priority,
     MemoryUsage* usage) {
   while (usage->Exceeds(limit)) {
-    RebuildEvictionQueueIfNeeded();
-    if (eviction_priority_queue_.IsEmpty())
-      return false;
+    if (!eviction_priority_queue) {
+      eviction_priority_queue =
+          client_->BuildEvictionQueue(global_state_.tree_priority);
+    }
+    if (eviction_priority_queue->IsEmpty())
+      break;
 
-    Tile* tile = eviction_priority_queue_.Top();
+    Tile* tile = eviction_priority_queue->Top();
     if (!other_priority.IsHigherPriorityThan(tile->combined_priority()))
-      return false;
+      break;
 
     *usage -= MemoryUsage::FromTile(tile);
     FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(tile);
-    eviction_priority_queue_.Pop();
+    eviction_priority_queue->Pop();
   }
-  return true;
+  return eviction_priority_queue;
 }
 
 bool TileManager::TilePriorityViolatesMemoryPolicy(
@@ -583,7 +575,7 @@ void TileManager::AssignGpuMemoryToTiles(
   MemoryUsage memory_usage(resource_pool_->acquired_memory_usage_bytes(),
                            resource_pool_->acquired_resource_count());
 
-  eviction_priority_queue_is_up_to_date_ = false;
+  scoped_ptr<EvictionTilePriorityQueue> eviction_priority_queue;
   for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
     Tile* tile = raster_priority_queue->Top();
     TilePriority priority = tile->combined_priority();
@@ -625,10 +617,14 @@ void TileManager::AssignGpuMemoryToTiles(
     MemoryUsage& tile_memory_limit =
         tile_is_needed_now ? hard_memory_limit : soft_memory_limit;
 
-    bool memory_usage_is_within_limit =
+    const MemoryUsage& scheduled_tile_memory_limit =
+        tile_memory_limit - memory_required_by_tile_to_be_scheduled;
+    eviction_priority_queue =
         FreeTileResourcesWithLowerPriorityUntilUsageIsWithinLimit(
-            tile_memory_limit - memory_required_by_tile_to_be_scheduled,
+            eviction_priority_queue.Pass(), scheduled_tile_memory_limit,
             priority, &memory_usage);
+    bool memory_usage_is_within_limit =
+        !memory_usage.Exceeds(scheduled_tile_memory_limit);
 
     // If we couldn't fit the tile into our current memory limit, then we're
     // done.
@@ -646,7 +642,8 @@ void TileManager::AssignGpuMemoryToTiles(
   // Note that we should try and further reduce memory in case the above loop
   // didn't reduce memory. This ensures that we always release as many resources
   // as possible to stay within the memory limit.
-  FreeTileResourcesUntilUsageIsWithinLimit(hard_memory_limit, &memory_usage);
+  eviction_priority_queue = FreeTileResourcesUntilUsageIsWithinLimit(
+      eviction_priority_queue.Pass(), hard_memory_limit, &memory_usage);
 
   UMA_HISTOGRAM_BOOLEAN("TileManager.ExceededMemoryBudget",
                         !had_enough_memory_to_schedule_tiles_needed_now);

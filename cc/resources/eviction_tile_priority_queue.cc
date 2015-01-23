@@ -100,10 +100,6 @@ void EvictionTilePriorityQueue::Build(
   paired_queues_.make_heap(EvictionOrderComparator(tree_priority_));
 }
 
-void EvictionTilePriorityQueue::Reset() {
-  paired_queues_.clear();
-}
-
 bool EvictionTilePriorityQueue::IsEmpty() const {
   return paired_queues_.empty() || paired_queues_.front()->IsEmpty();
 }

@@ -248,8 +248,8 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<RasterTilePriorityQueue> BuildRasterQueue(
       TreePriority tree_priority,
       RasterTilePriorityQueue::Type type) override;
-  void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
-                          TreePriority tree_priority) override;
+  scoped_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
+      TreePriority tree_priority) override;
 
   // ScrollbarAnimationControllerClient implementation.
   void PostDelayedScrollbarFade(const base::Closure& start_fade,

@@ -573,9 +573,9 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   host_impl_.SetViewportSize(layer_bounds);
   SetupDefaultTrees(layer_bounds);
 
-  EvictionTilePriorityQueue empty_queue;
-  host_impl_.BuildEvictionQueue(&empty_queue, SAME_PRIORITY_FOR_BOTH_TREES);
-  EXPECT_TRUE(empty_queue.IsEmpty());
+  scoped_ptr<EvictionTilePriorityQueue> empty_queue(
+      host_impl_.BuildEvictionQueue(SAME_PRIORITY_FOR_BOTH_TREES));
+  EXPECT_TRUE(empty_queue->IsEmpty());
   std::set<Tile*> all_tiles;
   size_t tile_count = 0;
 
@@ -594,20 +594,20 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   tile_manager()->InitializeTilesWithResourcesForTesting(
       std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
 
-  EvictionTilePriorityQueue queue;
-  host_impl_.BuildEvictionQueue(&queue, SMOOTHNESS_TAKES_PRIORITY);
-  EXPECT_FALSE(queue.IsEmpty());
+  scoped_ptr<EvictionTilePriorityQueue> queue(
+      host_impl_.BuildEvictionQueue(SMOOTHNESS_TAKES_PRIORITY));
+  EXPECT_FALSE(queue->IsEmpty());
 
   // Sanity check, all tiles should be visible.
   std::set<Tile*> smoothness_tiles;
-  while (!queue.IsEmpty()) {
-    Tile* tile = queue.Top();
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
     EXPECT_TRUE(tile);
     EXPECT_EQ(TilePriority::NOW, tile->priority(ACTIVE_TREE).priority_bin);
     EXPECT_EQ(TilePriority::NOW, tile->priority(PENDING_TREE).priority_bin);
     EXPECT_TRUE(tile->HasResource());
     smoothness_tiles.insert(tile);
-    queue.Pop();
+    queue->Pop();
   }
   EXPECT_EQ(all_tiles, smoothness_tiles);
 
@@ -664,12 +664,11 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   smoothness_tiles.clear();
   tile_count = 0;
   // Here we expect to get increasing ACTIVE_TREE priority_bin.
-  queue.Reset();
-  host_impl_.BuildEvictionQueue(&queue, SMOOTHNESS_TAKES_PRIORITY);
+  queue = host_impl_.BuildEvictionQueue(SMOOTHNESS_TAKES_PRIORITY);
   int distance_increasing = 0;
   int distance_decreasing = 0;
-  while (!queue.IsEmpty()) {
-    Tile* tile = queue.Top();
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
     EXPECT_TRUE(tile);
     EXPECT_TRUE(tile->HasResource());
 
@@ -695,7 +694,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
     last_tile = tile;
     ++tile_count;
     smoothness_tiles.insert(tile);
-    queue.Pop();
+    queue->Pop();
   }
 
   EXPECT_EQ(3, distance_increasing);
@@ -706,12 +705,11 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   std::set<Tile*> new_content_tiles;
   last_tile = NULL;
   // Here we expect to get increasing PENDING_TREE priority_bin.
-  queue.Reset();
-  host_impl_.BuildEvictionQueue(&queue, NEW_CONTENT_TAKES_PRIORITY);
+  queue = host_impl_.BuildEvictionQueue(NEW_CONTENT_TAKES_PRIORITY);
   distance_decreasing = 0;
   distance_increasing = 0;
-  while (!queue.IsEmpty()) {
-    Tile* tile = queue.Top();
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
     EXPECT_TRUE(tile);
 
     if (!last_tile)
@@ -735,7 +733,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
 
     last_tile = tile;
     new_content_tiles.insert(tile);
-    queue.Pop();
+    queue->Pop();
   }
 
   EXPECT_EQ(3, distance_increasing);
@@ -831,10 +829,10 @@ TEST_F(TileManagerTilePriorityQueueTest,
   TreePriority tree_priority = NEW_CONTENT_TAKES_PRIORITY;
   size_t occluded_count = 0u;
   Tile* last_tile = NULL;
-  EvictionTilePriorityQueue queue;
-  host_impl_.BuildEvictionQueue(&queue, tree_priority);
-  while (!queue.IsEmpty()) {
-    Tile* tile = queue.Top();
+  scoped_ptr<EvictionTilePriorityQueue> queue(
+      host_impl_.BuildEvictionQueue(tree_priority));
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
     if (!last_tile)
       last_tile = tile;
 
@@ -860,7 +858,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
       }
     }
     last_tile = tile;
-    queue.Pop();
+    queue->Pop();
   }
   size_t expected_occluded_count =
       pending_child_high_res_tiles.size() + pending_child_low_res_tiles.size();
@@ -957,10 +955,10 @@ TEST_F(TileManagerTilePriorityQueueTest,
   TreePriority tree_priority = NEW_CONTENT_TAKES_PRIORITY;
   std::set<Tile*> new_content_tiles;
   size_t tile_count = 0;
-  EvictionTilePriorityQueue queue;
-  host_impl_.BuildEvictionQueue(&queue, tree_priority);
-  while (!queue.IsEmpty()) {
-    Tile* tile = queue.Top();
+  scoped_ptr<EvictionTilePriorityQueue> queue(
+      host_impl_.BuildEvictionQueue(tree_priority));
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
     const TilePriority& pending_priority = tile->priority(PENDING_TREE);
     EXPECT_NE(std::numeric_limits<float>::infinity(),
               pending_priority.distance_to_visible);
@@ -970,7 +968,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
       EXPECT_EQ(TilePriority::NOW, pending_priority.priority_bin);
     new_content_tiles.insert(tile);
     ++tile_count;
-    queue.Pop();
+    queue->Pop();
   }
   EXPECT_EQ(tile_count, new_content_tiles.size());
   EXPECT_EQ(all_tiles, new_content_tiles);
@@ -1044,7 +1042,6 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
   std::vector<Tile*> tiles(all_tiles.begin(), all_tiles.end());
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
 
-  EvictionTilePriorityQueue queue;
   for (int i = 1; i < 10; ++i) {
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::Create(host_impl_.pending_tree(), id_ + i);
@@ -1053,16 +1050,17 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
     pending_layer_->AddChild(pending_layer.Pass());
   }
 
-  host_impl_.BuildEvictionQueue(&queue, SAME_PRIORITY_FOR_BOTH_TREES);
-  EXPECT_FALSE(queue.IsEmpty());
+  scoped_ptr<EvictionTilePriorityQueue> queue(
+      host_impl_.BuildEvictionQueue(SAME_PRIORITY_FOR_BOTH_TREES));
+  EXPECT_FALSE(queue->IsEmpty());
 
   tile_count = 0;
   all_tiles.clear();
-  while (!queue.IsEmpty()) {
-    EXPECT_TRUE(queue.Top());
-    all_tiles.insert(queue.Top());
+  while (!queue->IsEmpty()) {
+    EXPECT_TRUE(queue->Top());
+    all_tiles.insert(queue->Top());
     ++tile_count;
-    queue.Pop();
+    queue->Pop();
   }
   EXPECT_EQ(tile_count, all_tiles.size());
   EXPECT_EQ(16u, tile_count);
