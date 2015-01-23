@@ -211,7 +211,7 @@ def _FindLibsInPath(name, lib_path):
     # the SONAME is actually libc.so.  If we pass glibc's libc.so to objdump
     # if fails to parse it, os this filters out libc.so expept for within
     # the bionic toolchain.
-    # TODO(noelallen): Remove this once the SONAME in bionic is made to be
+    # TODO(bradnelson): Remove this once the SONAME in bionic is made to be
     # unique in the same it is under glibc:
     # https://code.google.com/p/nativeclient/issues/detail?id=3833
     rel_dirname = os.path.relpath(dirname, SDK_DIR)

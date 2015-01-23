@@ -620,7 +620,7 @@ class CGen(object):
         newest_dev = rel
     last_rel = build_list[-1]
 
-    # TODO(noelallen) : Bug 157017 finish multiversion support
+    # TODO(bradnelson) : Bug 157017 finish multiversion support
     if node.IsA('Struct'):
       if len(build_list) != 1:
         node.Error('Can not support multiple versions of node.')

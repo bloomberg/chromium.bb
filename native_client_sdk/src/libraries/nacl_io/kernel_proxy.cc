@@ -972,7 +972,7 @@ int KernelProxy::utimens(const char* path, const struct timespec times[2]) {
   return FutimensInternal(node, times);
 }
 
-// TODO(noelallen): Needs implementation.
+// TODO(bradnelson): Needs implementation.
 int KernelProxy::link(const char* oldpath, const char* newpath) {
   LOG_TRACE("link is not implemented.");
   errno = EINVAL;

@@ -385,7 +385,7 @@ class IDLParser(IDLLexer):
 #  Name=HEX | INT | OCT | FLOAT
 #  Name="STRING"
 #  Name=Function(arg ...)
-#  TODO(noelallen) -Not currently supported:
+#  TODO(bradnelson) -Not currently supported:
 #  ** Name(arg ...) ...
 #  ** Name=Scope::Value
 #

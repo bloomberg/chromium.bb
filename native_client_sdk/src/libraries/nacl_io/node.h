@@ -140,7 +140,7 @@ class Node : public sdk_util::RefObject {
   sdk_util::SimpleLock node_lock_;
 
   // We use a pointer directly to avoid cycles in the ref count.
-  // TODO(noelallen) We should change this so it's unnecessary for the node
+  // TODO(bradnelson) We should change this so it's unnecessary for the node
   // to track it's parent.  When a node is unlinked, the filesystem should do
   // any cleanup it needs.
   Filesystem* filesystem_;

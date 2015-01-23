@@ -290,7 +290,7 @@ TEST_F(SelectPollTest, PollMemPipe) {
   SetFDs(fds, 2);
 
   ASSERT_EQ(2, kp->poll(pollfds, 2, 0));
-  // TODO(noelallen) fix poll based on open mode
+  // TODO(bradnelson) fix poll based on open mode
   // EXPECT_EQ(0, pollfds[0].revents);
   // Bug 291018
   ASSERT_EQ(POLLOUT, pollfds[1].revents);
@@ -325,7 +325,7 @@ TEST_F(SelectPollTest, SelectMemPipe) {
   ASSERT_EQ(2, kp->select(fds[1] + 1, &rd_set, &wr_set, &ex_set, &tv));
   EXPECT_EQ(0, FD_ISSET(fds[0], &rd_set));
   EXPECT_EQ(0, FD_ISSET(fds[1], &rd_set));
-  // TODO(noelallen) fix poll based on open mode
+  // TODO(bradnelson) fix poll based on open mode
   // EXPECT_EQ(0, FD_ISSET(fds[0], &wr_set));
   // Bug 291018
   EXPECT_NE(0, FD_ISSET(fds[1], &wr_set));

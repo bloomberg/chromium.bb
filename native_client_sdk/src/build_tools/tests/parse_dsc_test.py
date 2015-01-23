@@ -81,7 +81,7 @@ class TestValidateFormat(unittest.TestCase):
     testdesc['TOOLS'] = 'newlib'
     self._validate(testdesc, 'Key TOOLS expects LIST not STR.')
 
-# TODO(noelallen):  Add test which generates a real make and runs it.
+# TODO(bradnelson):  Add test which generates a real make and runs it.
 
 if __name__ == '__main__':
   unittest.main()

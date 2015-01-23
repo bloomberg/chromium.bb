@@ -364,7 +364,7 @@ Error SocketNode::RecvHelper(const HandleAttr& attr,
   if ((flags & MSG_DONTWAIT) || !attr.IsBlocking())
     ms = 0;
 
-  // TODO(noelallen) BUG=295177
+  // TODO(bradnelson) BUG=295177
   // For UDP we should support filtering packets when using connect
   EventListenerLock wait(GetEventEmitter());
   Error err = wait.WaitOnEvent(POLLIN, ms);
