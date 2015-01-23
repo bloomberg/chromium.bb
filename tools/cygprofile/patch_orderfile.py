@@ -155,26 +155,53 @@ def _GetSymbolsFromOrderfile(filename):
   with open(filename, 'r') as f:
     return _GetSymbolsFromStream(f.xreadlines())
 
+def _SymbolsWithSameOffset(profiled_symbol, name_to_symbol_info,
+                           offset_to_symbol_info):
+  """Expand a profiled symbol to include all symbols which share an offset
+     with that symbol.
+  Args:
+    profiled_symbol: the string symbol name to be expanded.
+    name_to_symbol_info: {name: [symbol_info1], ...}, as returned by
+        GetSymbolInfosFromBinary
+    offset_to_symbol_info: {offset: [symbol_info1, ...], ...}
 
-def _MatchProfiledSymbols(profiled_symbols, name_to_symbol_infos):
-  """Filter name_to_symbol_infos with the keys from profiled_symbols.
+  Returns:
+    A list of symbol names, or an empty list if profiled_symbol was not in
+    name_to_symbol_info.
+  """
+  if not profiled_symbol in name_to_symbol_info:
+    return []
+  symbol_infos = name_to_symbol_info[profiled_symbol]
+  expanded = []
+  for symbol_info in symbol_infos:
+    expanded += (s.name for s in offset_to_symbol_info[symbol_info.offset])
+  return expanded
+
+def _ExpandSymbols(profiled_symbols, name_to_symbol_infos,
+                   offset_to_symbol_infos):
+  """Expand all of the symbols in profiled_symbols to include any symbols which
+     share the same address.
 
   Args:
     profiled_symbols: Symbols to match
-    name_to_symbol_infos: {name: [symbol_infos], ...}, as returned by
+    name_to_symbol_infos: {name: [symbol_info1], ...}, as returned by
         GetSymbolInfosFromBinary
+    offset_to_symbol_infos: {offset: [symbol_info1, ...], ...}
 
   Returns:
-    A list of the symbol infos that have been matched.
+    A list of the symbol names.
   """
   found_symbols = 0
   missing_symbols = []
-  symbol_infos = []
+  all_symbols = []
   for name in profiled_symbols:
-    if name in name_to_symbol_infos:
-      symbol_infos += name_to_symbol_infos[name]
+    expansion = _SymbolsWithSameOffset(name,
+        name_to_symbol_infos, offset_to_symbol_infos)
+    if expansion:
       found_symbols += 1
+      all_symbols += expansion
     else:
+      all_symbols.append(name)
       missing_symbols.append(name)
   logging.info('symbols found: %d\n' % found_symbols)
   if missing_symbols > 0:
@@ -183,27 +210,7 @@ def _MatchProfiledSymbols(profiled_symbols, name_to_symbol_infos):
     logging.warning('First %d missing symbols:\n%s' % (
         missing_symbols_to_show,
         '\n'.join(missing_symbols[:missing_symbols_to_show])))
-  return symbol_infos
-
-
-def _ExpandSymbolsWithDupsFromSameOffset(symbol_infos, offset_to_symbol_infos):
-  """Return the SymbolInfo sharing the same offset as those from symbol_infos.
-
-  Args:
-    symbol_infos: list of symbols to look for
-    offset_to_symbol_infos: {offset: [symbol_info1, ...], ...}
-
-  Returns:
-    A list of matching symbol names
-  """
-  seen_offsets = set()
-  matching_symbols = []
-  for symbol in symbol_infos:
-    if symbol.offset not in seen_offsets:
-      seen_offsets.add(symbol.offset)
-      matching_symbols += [
-          s.name for s in offset_to_symbol_infos[symbol.offset]]
-  return matching_symbols
+  return all_symbols
 
 
 def _PrintSymbolsWithPrefixes(symbol_names, output_file):
@@ -226,11 +233,9 @@ def main(argv):
   (offset_to_symbol_infos, name_to_symbol_infos) = _GetSymbolInfosFromBinary(
       binary_filename)
   profiled_symbols = _GetSymbolsFromOrderfile(orderfile_filename)
-  matched_symbols = _MatchProfiledSymbols(
-      profiled_symbols, name_to_symbol_infos)
-  symbols_by_offset = _ExpandSymbolsWithDupsFromSameOffset(
-      matched_symbols, offset_to_symbol_infos)
-  _PrintSymbolsWithPrefixes(symbols_by_offset, sys.stdout)
+  expanded_symbols = _ExpandSymbols(
+      profiled_symbols, name_to_symbol_infos, offset_to_symbol_infos)
+  _PrintSymbolsWithPrefixes(expanded_symbols, sys.stdout)
   # The following is needed otherwise Gold only applies a partial sort.
   print '.text'    # gets methods not in a section, such as assembly
   print '.text.*'  # gets everything else

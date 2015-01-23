@@ -78,28 +78,21 @@ class TestPatchOrderFile(unittest.TestCase):
         names[1], "_ZN2v88internal33HEnvironmentLivenessAnalysisPhase3RunEv")
 
 
-  def testMatchProfiledSymbols(self):
+  def testExpandSymbols(self):
     symbol_name = "dummySymbol"
+    symbol_name2 = "other"
     profiled_symbol_names = [symbol_name, "symbolThatShouldntMatch"]
     name_to_symbol_infos = {symbol_name: [
         patch_orderfile.SymbolInfo(0x42, 0x12, symbol_name)]}
-    matched_symbols = patch_orderfile._MatchProfiledSymbols(
-        profiled_symbol_names, name_to_symbol_infos)
-    self.assertEquals(len(matched_symbols), 1)
-    self.assertEquals(matched_symbols[0], name_to_symbol_infos[symbol_name][0])
-
-  def testExpandSymbolsWithDupsFromSameOffset(self):
-    symbol_name = "dummySymbol"
-    symbol_name2 = "other"
-    symbols = [patch_orderfile.SymbolInfo(0x42, 0x12, symbol_name)]
     offset_to_symbol_infos = {
         0x42: [patch_orderfile.SymbolInfo(0x42, 0x12, symbol_name),
                patch_orderfile.SymbolInfo(0x42, 0x12, symbol_name2)]}
-    symbol_names = patch_orderfile._ExpandSymbolsWithDupsFromSameOffset(
-        symbols, offset_to_symbol_infos)
-    self.assertEquals(len(symbol_names), 2)
+    symbol_names = patch_orderfile._ExpandSymbols(
+        profiled_symbol_names, name_to_symbol_infos, offset_to_symbol_infos)
+    self.assertEquals(len(symbol_names), 3)
     self.assertEquals(symbol_names[0], symbol_name)
     self.assertEquals(symbol_names[1], symbol_name2)
+    self.assertEquals(symbol_names[2], "symbolThatShouldntMatch")
 
   def testPrintSymbolWithPrefixes(self):
     class FakeOutputFile(object):
