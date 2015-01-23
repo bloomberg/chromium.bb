@@ -729,9 +729,22 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def testConsoleLogSources(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/console_log.html'))
     logs = self._driver.GetLog('browser')
-    self.assertEquals(len(logs), 2)
-    self.assertEquals(logs[0]['source'], 'network')
-    self.assertEquals(logs[1]['source'], 'javascript')
+
+    self.assertEqual('network', logs[0]['source'])
+    self.assertTrue('nonexistent.png' in logs[0]['message'])
+    self.assertTrue('404' in logs[0]['message'])
+
+    self.assertEqual('javascript', logs[1]['source'])
+    self.assertTrue('TypeError' in logs[1]['message'])
+
+    # Sometimes, we also get an error for a missing favicon.
+    if len(logs) > 2:
+      self.assertEqual('network', logs[2]['source'])
+      self.assertTrue('favicon.ico' in logs[2]['message'])
+      self.assertTrue('404' in logs[2]['message'])
+      self.assertEqual(3, len(logs))
+    else:
+      self.assertEqual(2, len(logs))
 
   def testAutoReporting(self):
     self.assertFalse(self._driver.IsAutoReporting())
