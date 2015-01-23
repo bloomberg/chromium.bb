@@ -10,8 +10,8 @@ Usage:
   ./provision_devices.py [-d <device serial number>]
 """
 
+import argparse
 import logging
-import optparse
 import os
 import re
 import subprocess
@@ -79,7 +79,7 @@ def PushAndLaunchAdbReboot(device, target):
       '/data/local/tmp/adb_reboot')
 
 
-def _ConfigureLocalProperties(device, is_perf):
+def _ConfigureLocalProperties(device, java_debug=True):
   """Set standard readonly testing device properties prior to reboot."""
   local_props = [
       'persist.sys.usb.config=adb',
@@ -88,7 +88,7 @@ def _ConfigureLocalProperties(device, is_perf):
       'ro.audio.silent=1',
       'ro.setupwizard.mode=DISABLED',
       ]
-  if not is_perf:
+  if java_debug:
     local_props.append('%s=all' % android_commands.JAVA_ASSERT_PROPERTY)
     local_props.append('debug.checkjni=1')
   try:
@@ -97,7 +97,7 @@ def _ConfigureLocalProperties(device, is_perf):
         '\n'.join(local_props), as_root=True)
     # Android will not respect the local props file if it is world writable.
     device.RunShellCommand(
-        'chmod 644 %s' % constants.DEVICE_LOCAL_PROPERTIES_PATH,
+        ['chmod', '644', constants.DEVICE_LOCAL_PROPERTIES_PATH],
         as_root=True)
   except device_errors.CommandFailedError as e:
     logging.warning(str(e))
@@ -136,25 +136,24 @@ def WipeDeviceData(device):
                            as_root=True)
 
 
-def WipeDeviceIfPossible(device):
+def WipeDeviceIfPossible(device, timeout):
   try:
     device.EnableRoot()
     WipeDeviceData(device)
-    # TODO(jbudorick): Tune the timeout per OS version.
-    device.Reboot(True, timeout=600, retries=0)
+    device.Reboot(True, timeout=timeout, retries=0)
   except (errors.DeviceUnresponsiveError, device_errors.CommandFailedError):
     pass
 
 
-def ProvisionDevice(device, options, is_perf):
+def ProvisionDevice(device, options):
   try:
     if not options.skip_wipe:
-      WipeDeviceIfPossible(device)
+      WipeDeviceIfPossible(device, options.reboot_timeout)
     try:
       device.EnableRoot()
     except device_errors.CommandFailedError as e:
       logging.warning(str(e))
-    _ConfigureLocalProperties(device, is_perf)
+    _ConfigureLocalProperties(device, options.enable_java_debug)
     device_settings.ConfigureContentSettings(
         device, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
     if options.disable_location:
@@ -164,14 +163,10 @@ def ProvisionDevice(device, options, is_perf):
       device_settings.ConfigureContentSettings(
           device, device_settings.ENABLE_LOCATION_SETTINGS)
     device_settings.SetLockScreenSettings(device)
-    if is_perf:
-      # TODO(tonyg): We eventually want network on. However, currently radios
-      # can cause perfbots to drain faster than they charge.
+    if options.disable_network:
       device_settings.ConfigureContentSettings(
           device, device_settings.NETWORK_DISABLED_SETTINGS)
-      # Some perf bots run benchmarks with USB charging disabled which leads
-      # to gradual draining of the battery. We must wait for a full charge
-      # before starting a run in order to keep the devices online.
+    if options.wait_for_battery:
       try:
         battery_info = device.old_interface.GetBatteryInfo()
       except Exception as e:
@@ -191,8 +186,7 @@ def ProvisionDevice(device, options, is_perf):
         time.sleep(60)
         battery_info = device.old_interface.GetBatteryInfo()
     if not options.skip_wipe:
-      # TODO(jbudorick): Tune the timeout per OS version.
-      device.Reboot(True, timeout=600, retries=0)
+      device.Reboot(True, timeout=options.reboot_timeout, retries=0)
     device.RunShellCommand('date -s %s' % time.strftime('%Y%m%d.%H%M%S',
                                                         time.gmtime()),
                            as_root=True)
@@ -214,14 +208,13 @@ def ProvisionDevice(device, options, is_perf):
 
 
 def ProvisionDevices(options):
-  is_perf = 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower()
   if options.device is not None:
     devices = [options.device]
   else:
     devices = android_commands.GetAttachedDevices()
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
-  parallel_devices.pMap(ProvisionDevice, options, is_perf)
+  parallel_devices.pMap(ProvisionDevice, options)
   if options.auto_reconnect:
     LaunchHostHeartbeat()
   blacklist = device_blacklist.ReadBlacklist()
@@ -230,35 +223,70 @@ def ProvisionDevices(options):
   return 0
 
 
-def main(argv):
+def main():
   custom_handler = logging.StreamHandler(sys.stdout)
   custom_handler.setFormatter(run_tests_helper.CustomFormatter())
   logging.getLogger().addHandler(custom_handler)
   logging.getLogger().setLevel(logging.INFO)
 
-  parser = optparse.OptionParser()
-  parser.add_option('--min-battery-level', default=95, type='int',
-                    help="Minimum battery level for performance testing "
-                         "(default: 95).")
-  parser.add_option('--skip-wipe', action='store_true', default=False,
-                    help="Don't wipe device data during provisioning.")
-  parser.add_option('--disable-location', action='store_true', default=False,
-                    help="Disallow Google location services on devices.")
-  parser.add_option('-d', '--device',
-                    help='The serial number of the device to be provisioned')
-  parser.add_option('-t', '--target', default='Debug', help='The build target')
-  parser.add_option(
-      '-r', '--auto-reconnect', action='store_true',
-      help='Push binary which will reboot the device on adb disconnections.')
-  options, args = parser.parse_args(argv[1:])
-  constants.SetBuildType(options.target)
+  # TODO(perezju): This script used to rely on the builder name to determine
+  # the desired device configuration for perf bots. To safely phase this out,
+  # we now:
+  # - expose these configuration settings as command line options
+  # - set default values for these options based on the builder name, thus
+  #   matching the previous behaviour of the script on all bots.
+  # - explicitly adding these options on the perf bots will also maintain the
+  #   script behaviour, namely:
+  #     --wait-for-battery --disable-network --disable-java-debug
+  # - after all perf-bot recipes are updated, we can remove the following
+  #   builder-name-sniffing code and replace |is_perf| with |False|.
+  is_perf = 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower()
 
-  if args:
-    print >> sys.stderr, 'Unused args %s' % args
-    return 1
+  # Recommended options on perf bots:
+  # --disable-network
+  #     TODO(tonyg): We eventually want network on. However, currently radios
+  #     can cause perfbots to drain faster than they charge.
+  # --wait-for-battery
+  #     Some perf bots run benchmarks with USB charging disabled which leads
+  #     to gradual draining of the battery. We must wait for a full charge
+  #     before starting a run in order to keep the devices online.
 
-  return ProvisionDevices(options)
+  parser = argparse.ArgumentParser(
+      description='Provision Android devices with settings required for bots.')
+  parser.add_argument('-d', '--device', metavar='SERIAL',
+                      help='the serial number of the device to be provisioned'
+                      ' (the default is to provision all devices attached)')
+  parser.add_argument('--skip-wipe', action='store_true', default=False,
+                      help="don't wipe device data during provisioning")
+  parser.add_argument('--reboot-timeout', default=600, type=int,
+                      metavar='SECS',
+                      help='when wiping the device, max number of seconds to'
+                      ' wait after each reboot (default: %(default)s)')
+  parser.add_argument('--wait-for-battery', action='store_true',
+                      default=is_perf,
+                      help='wait for the battery on the devices to charge')
+  parser.add_argument('--min-battery-level', default=95, type=int,
+                      metavar='NUM',
+                      help='when waiting for battery, minimum battery level'
+                      ' required to continue (default: %(default)s)')
+  parser.add_argument('--disable-location', action='store_true',
+                      help='disable Google location services on devices')
+  parser.add_argument('--disable-network', action='store_true',
+                      default=is_perf,
+                      help='disable network access on devices')
+  parser.add_argument('--disable-java-debug', action='store_false',
+                      dest='enable_java_debug', default=not is_perf,
+                      help='disable Java property asserts and JNI checking')
+  parser.add_argument('-t', '--target', default='Debug',
+                      help='the build target (default: %(default)s)')
+  parser.add_argument('-r', '--auto-reconnect', action='store_true',
+                      help='push binary which will reboot the device on adb'
+                      ' disconnections')
+  args = parser.parse_args()
+  constants.SetBuildType(args.target)
+
+  return ProvisionDevices(args)
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
