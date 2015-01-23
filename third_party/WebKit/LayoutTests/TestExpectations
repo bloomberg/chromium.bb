@@ -1533,13 +1533,6 @@ crbug.com/429128 [ Linux ] virtual/gpu/fast/canvas/yuv-video-on-accelerated-canv
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ Mac ] virtual/antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 
-crbug.com/442574 [ Mac ] fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-crbug.com/442574 [ Mac ] fast/text/orientation-sideways.html [ NeedsRebaseline ]
-crbug.com/442574 [ Mac ] virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-crbug.com/442574 [ Mac ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ NeedsRebaseline ]
-crbug.com/442574 [ Mac ] virtual/slimmingpaint/fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-crbug.com/442574 [ Mac ] virtual/slimmingpaint/fast/text/orientation-sideways.html [ NeedsRebaseline ]
-
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/016.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/fieldset-stretch-to-legend.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/008.html [ Failure ImageOnlyFailure ]
