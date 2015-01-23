@@ -24,6 +24,8 @@
 #include "base/third_party/valgrind/valgrind.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 
+namespace sandbox {
+
 namespace {
 
 bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }
@@ -97,6 +99,17 @@ bool GetRESIds(uid_t* resuid, gid_t* resgid) {
   return true;
 }
 
+const int kExitSuccess = 0;
+
+int ChrootToSelfFdinfo(void*) {
+  RAW_CHECK(chroot("/proc/self/fdinfo/") == 0);
+
+  // CWD is essentially an implicit file descriptor, so be careful to not
+  // leave it behind.
+  RAW_CHECK(chdir("/") == 0);
+  _exit(kExitSuccess);
+}
+
 // chroot() to an empty dir that is "safe". To be safe, it must not contain
 // any subdirectory (chroot-ing there would allow a chroot escape) and it must
 // be impossible to create an empty directory there.
@@ -108,25 +121,32 @@ bool GetRESIds(uid_t* resuid, gid_t* resgid) {
 // 3. The process dies
 // After (3) happens, the directory is not available anymore in /proc.
 bool ChrootToSafeEmptyDir() {
-  // We do not use a thread because when we are in a PID namespace, we cannot
-  // easily get a handle to the /proc/tid directory for the thread (since /proc
-  // may not be aware of the PID namespace). With a process, we can just use
-  // /proc/self.
-  pid_t pid = base::ForkWithFlags(SIGCHLD | CLONE_FS, nullptr, nullptr);
+  // We need to chroot to a fdinfo that is unique to a process and have that
+  // process die.
+  // 1. We don't want to simply fork() because duplicating the page tables is
+  // slow with a big address space.
+  // 2. We do not use a regular thread (that would unshare CLONE_FILES) because
+  // when we are in a PID namespace, we cannot easily get a handle to the
+  // /proc/tid directory for the thread (since /proc may not be aware of the
+  // PID namespace). With a process, we can just use /proc/self.
+  pid_t pid = -1;
+  char stack_buf[PTHREAD_STACK_MIN];
+#if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY) || \
+    defined(ARCH_CPU_MIPS64_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
+  // The stack grows downward.
+  void* stack = stack_buf + sizeof(stack_buf);
+#else
+#error "Unsupported architecture"
+#endif
+  pid = clone(ChrootToSelfFdinfo, stack,
+              CLONE_VM | CLONE_VFORK | CLONE_FS | SIGCHLD, nullptr, nullptr,
+              nullptr, nullptr);
   PCHECK(pid != -1);
-  if (pid == 0) {
-    RAW_CHECK(chroot("/proc/self/fdinfo/") == 0);
-
-    // CWD is essentially an implicit file descriptor, so be careful to not
-    // leave it behind.
-    RAW_CHECK(chdir("/") == 0);
-    _exit(0);
-  }
 
   int status = -1;
   PCHECK(HANDLE_EINTR(waitpid(pid, &status, 0)) == pid);
 
-  return status == 0;
+  return kExitSuccess == status;
 }
 
 // CHECK() that an attempt to move to a new user namespace raised an expected
@@ -140,8 +160,6 @@ void CheckCloneNewUserErrno(int error) {
 }
 
 }  // namespace.
-
-namespace sandbox {
 
 bool Credentials::DropAllCapabilities() {
   ScopedCap cap(cap_init());

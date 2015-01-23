@@ -137,6 +137,7 @@ SANDBOX_TEST(Credentials, DISABLE_ON_LSAN(DropFileSystemAccessIsSafe)) {
   CHECK(Credentials::DropFileSystemAccess());
   CHECK(!base::DirectoryExists(base::FilePath("/proc")));
   CHECK(WorkingDirectoryIsRoot());
+  CHECK(base::IsDirectoryEmpty(base::FilePath("/")));
   // We want the chroot to never have a subdirectory. A subdirectory
   // could allow a chroot escape.
   CHECK_NE(0, mkdir("/test", 0700));
