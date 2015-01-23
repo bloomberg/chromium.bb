@@ -58,6 +58,11 @@ class HistoryServiceObserver {
                                           KeywordID keyword_id,
                                           const base::string16& term) {}
 
+  // Sent when a keyword search term is deleted.
+  // |url_id| is the id of the url row.
+  virtual void OnKeywordSearchTermDeleted(HistoryService* history_service,
+                                          URLID url_id) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryServiceObserver);
 };

@@ -197,6 +197,8 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
                                   const history::URLRow& row,
                                   history::KeywordID keyword_id,
                                   const base::string16& term) override;
+  void OnKeywordSearchTermDeleted(HistoryService* history_service,
+                                  history::URLID url_id) override;
 
   // Override content::NotificationObserver.
   virtual void Observe(int type,

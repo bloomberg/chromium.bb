@@ -17,10 +17,4 @@ URLsDeletedDetails::URLsDeletedDetails()
 
 URLsDeletedDetails::~URLsDeletedDetails() {}
 
-KeywordSearchDeletedDetails::KeywordSearchDeletedDetails(URLID url_row_id)
-    : url_row_id(url_row_id) {
-}
-
-KeywordSearchDeletedDetails::~KeywordSearchDeletedDetails() {}
-
 }  // namespace history

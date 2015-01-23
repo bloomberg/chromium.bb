@@ -1086,9 +1086,9 @@ void HistoryBackend::DeleteKeywordSearchTermForURL(const GURL& url) {
     return;
   db_->DeleteKeywordSearchTermForURL(url_id);
 
-  BroadcastNotifications(
-      chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_DELETED,
-      scoped_ptr<HistoryDetails>(new KeywordSearchDeletedDetails(url_id)));
+  if (delegate_)
+    delegate_->NotifyKeywordSearchTermDeleted(url_id);
+
   ScheduleCommit();
 }
 

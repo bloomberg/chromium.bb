@@ -48,15 +48,6 @@ struct URLsDeletedDetails : public HistoryDetails {
   std::set<GURL> favicon_urls;
 };
 
-// Details for HISTORY_KEYWORD_SEARCH_TERM_DELETED.
-struct KeywordSearchDeletedDetails : public HistoryDetails {
-  explicit KeywordSearchDeletedDetails(URLID url_row_id);
-  ~KeywordSearchDeletedDetails() override;
-
-  // The ID of the corresponding URLRow in the main history database.
-  URLID url_row_id;
-};
-
 }  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_NOTIFICATIONS_H__

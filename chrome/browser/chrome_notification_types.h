@@ -236,10 +236,6 @@ enum NotificationType {
   // the details is history::URLsDeletedDetails that lists the deleted URLs.
   NOTIFICATION_HISTORY_URLS_DELETED,
 
-  // Sent when a keyword search term is deleted. The source is the Profile and
-  // the details is history::KeywordSearchDeletedDetails.
-  NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_DELETED,
-
   // Sent by FaviconTabHelper when a tab's favicon has been successfully
   // updated. The details are a bool indicating whether the
   // NavigationEntry's favicon URL has changed since the previous

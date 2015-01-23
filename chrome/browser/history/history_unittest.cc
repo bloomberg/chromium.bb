@@ -111,6 +111,7 @@ class BackendDelegate : public HistoryBackend::Delegate {
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                       KeywordID keyword_id,
                                       const base::string16& term) override {}
+  void NotifyKeywordSearchTermDeleted(URLID url_id) override {}
   void BroadcastNotifications(int type,
                               scoped_ptr<HistoryDetails> details) override;
   void DBLoaded() override {}

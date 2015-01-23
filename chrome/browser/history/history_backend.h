@@ -151,6 +151,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                                                 KeywordID keyword_id,
                                                 const base::string16& term) = 0;
 
+    // Notify HistoryService that keyword search term has been deleted.
+    // The event will be forwarded to the HistoryServiceObservers in the correct
+    // thread.
+    virtual void NotifyKeywordSearchTermDeleted(URLID url_id) = 0;
+
     // Broadcasts the specified notification to the notification service.
     // This is implemented here because notifications must only be sent from
     // the main thread. This is the only method that doesn't identify the

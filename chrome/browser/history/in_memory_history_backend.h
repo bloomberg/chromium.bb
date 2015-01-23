@@ -41,7 +41,6 @@ class FilePath;
 namespace history {
 
 class InMemoryDatabase;
-struct KeywordSearchDeletedDetails;
 class URLDatabase;
 class URLRow;
 struct URLsDeletedDetails;
@@ -85,6 +84,8 @@ class InMemoryHistoryBackend : public HistoryServiceObserver,
                                   const URLRow& row,
                                   KeywordID keyword_id,
                                   const base::string16& term) override;
+  void OnKeywordSearchTermDeleted(HistoryService* history_service,
+                                  URLID url_id) override;
 
   // Notification callback.
   void Observe(int type,
@@ -99,9 +100,6 @@ class InMemoryHistoryBackend : public HistoryServiceObserver,
 
   // Handler for HISTORY_URLS_DELETED.
   void OnURLsDeleted(const URLsDeletedDetails& details);
-
-  // Handler for HISTORY_KEYWORD_SEARCH_TERM_DELETED.
-  void OnKeywordSearchTermDeleted(const KeywordSearchDeletedDetails& details);
 
   content::NotificationRegistrar registrar_;
 

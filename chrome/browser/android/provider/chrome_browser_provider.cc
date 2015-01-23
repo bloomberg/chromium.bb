@@ -1637,6 +1637,10 @@ void ChromeBrowserProvider::OnKeywordSearchTermUpdated(
   Java_ChromeBrowserProvider_onSearchTermChanged(env, obj.obj());
 }
 
+void ChromeBrowserProvider::OnKeywordSearchTermDeleted(
+    HistoryService* history_service,
+    history::URLID url_id) {}
+
 void ChromeBrowserProvider::Observe(
     int type,
     const content::NotificationSource& source,

@@ -60,8 +60,6 @@ void InMemoryHistoryBackend::AttachToHistoryService(
   // We only want notifications for the associated profile.
   content::Source<Profile> source(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
-  registrar_.Add(
-      this, chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_DELETED, source);
 }
 
 void InMemoryHistoryBackend::DeleteAllSearchTermsForKeyword(
@@ -96,15 +94,19 @@ void InMemoryHistoryBackend::OnKeywordSearchTermUpdated(
   db_->SetKeywordSearchTermsForURL(row.id(), keyword_id, term);
 }
 
+void InMemoryHistoryBackend::OnKeywordSearchTermDeleted(
+    HistoryService* history_service,
+    URLID url_id) {
+  // For simplicity, this will not remove the corresponding URLRow, but this is
+  // okay, as the main database does not do so either.
+  db_->DeleteKeywordSearchTermForURL(url_id);
+}
+
 void InMemoryHistoryBackend::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_DELETED:
-      OnKeywordSearchTermDeleted(
-          *content::Details<KeywordSearchDeletedDetails>(details).ptr());
-      break;
     case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
       OnURLsDeleted(*content::Details<URLsDeletedDetails>(details).ptr());
       break;
@@ -143,13 +145,6 @@ void InMemoryHistoryBackend::OnURLsDeleted(const URLsDeletedDetails& details) {
     // Ignore errors, as we typically only cache a subset of URLRows.
     db_->DeleteURLRow(row->id());
   }
-}
-
-void InMemoryHistoryBackend::OnKeywordSearchTermDeleted(
-    const KeywordSearchDeletedDetails& details) {
-  // For simplicity, this will not remove the corresponding URLRow, but this is
-  // okay, as the main database does not do so either.
-  db_->DeleteKeywordSearchTermForURL(details.url_row_id);
 }
 
 }  // namespace history

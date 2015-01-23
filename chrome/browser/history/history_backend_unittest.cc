@@ -131,6 +131,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                       KeywordID keyword_id,
                                       const base::string16& term) override;
+  void NotifyKeywordSearchTermDeleted(URLID url_id) override;
   void BroadcastNotifications(int type,
                               scoped_ptr<HistoryDetails> details) override;
   void DBLoaded() override;
@@ -225,6 +226,10 @@ class HistoryBackendTestBase : public testing::Test {
     mem_backend_->OnKeywordSearchTermUpdated(nullptr, row, keyword_id, term);
   }
 
+  void NotifyKeywordSearchTermDeleted(URLID url_id) {
+    mem_backend_->OnKeywordSearchTermDeleted(nullptr, url_id);
+  }
+
   void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details) {
     // Send the notifications directly to the in-memory database.
     content::Details<HistoryDetails> det(details.get());
@@ -310,6 +315,10 @@ void HistoryBackendTestDelegate::NotifyKeywordSearchTermUpdated(
     KeywordID keyword_id,
     const base::string16& term) {
   test_->NotifyKeywordSearchTermUpdated(row, keyword_id, term);
+}
+
+void HistoryBackendTestDelegate::NotifyKeywordSearchTermDeleted(URLID url_id) {
+  test_->NotifyKeywordSearchTermDeleted(url_id);
 }
 
 void HistoryBackendTestDelegate::BroadcastNotifications(

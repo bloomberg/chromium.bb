@@ -198,6 +198,12 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                               history_service_, row, keyword_id, term));
   }
 
+  void NotifyKeywordSearchTermDeleted(history::URLID url_id) override {
+    service_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&HistoryService::NotifyKeywordSearchTermDeleted,
+                              history_service_, url_id));
+  }
+
   void BroadcastNotifications(
       int type,
       scoped_ptr<history::HistoryDetails> details) override {
@@ -1300,6 +1306,12 @@ void HistoryService::NotifyKeywordSearchTermUpdated(
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(history::HistoryServiceObserver, observers_,
                     OnKeywordSearchTermUpdated(this, row, keyword_id, term));
+}
+
+void HistoryService::NotifyKeywordSearchTermDeleted(history::URLID url_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(history::HistoryServiceObserver, observers_,
+                    OnKeywordSearchTermDeleted(this, url_id));
 }
 
 scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
