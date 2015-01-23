@@ -22,10 +22,6 @@ class TracedValue;
 }
 }
 
-namespace cc {
-class TestNowSource;
-}
-
 namespace content {
 namespace internal {
 class TaskQueue;
@@ -84,14 +80,6 @@ class CONTENT_EXPORT TaskQueueManager {
   // to a static string.
   void SetQueueName(size_t queue_index, const char* name);
 
-  // Set the number of tasks executed in a single invocation of the task queue
-  // manager. Increasing the batch size can reduce the overhead of yielding
-  // back to the main message loop -- at the cost of potentially delaying other
-  // tasks posted to the main loop. The batch size is 1 by default.
-  void SetWorkBatchSize(int work_batch_size);
-
-  void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
-
  private:
   friend class internal::TaskQueue;
 
@@ -109,9 +97,7 @@ class CONTENT_EXPORT TaskQueueManager {
 
   // Reloads any empty work queues which have automatic pumping enabled.
   // Returns true if any work queue has tasks after doing this.
-  // |next_pending_delayed_task| should be the time of the next known delayed
-  // task. It is updated if any task is found which should run earlier.
-  bool UpdateWorkQueues(base::TimeTicks* next_pending_delayed_task);
+  bool UpdateWorkQueues();
 
   // Chooses the next work queue to service. Returns true if |out_queue_index|
   // indicates the queue from which the next task should be run, false to
@@ -132,8 +118,6 @@ class CONTENT_EXPORT TaskQueueManager {
                                   base::TimeDelta delay);
   internal::TaskQueue* Queue(size_t queue_index) const;
 
-  base::TimeTicks Now() const;
-
   scoped_refptr<base::debug::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run, size_t selected_queue) const;
 
@@ -150,10 +134,6 @@ class CONTENT_EXPORT TaskQueueManager {
   // The pending_dowork_count_ is only tracked on the main thread since that's
   // where re-entrant problems happen.
   int pending_dowork_count_;
-
-  int work_batch_size_;
-
-  scoped_refptr<cc::TestNowSource> time_source_;
 
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 

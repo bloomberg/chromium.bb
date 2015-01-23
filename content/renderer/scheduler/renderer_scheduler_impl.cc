@@ -45,8 +45,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       CONTROL_TASK_QUEUE, RendererTaskQueueSelector::CONTROL_PRIORITY);
   renderer_task_queue_selector_->DisableQueue(IDLE_TASK_QUEUE);
   task_queue_manager_->SetAutoPump(IDLE_TASK_QUEUE, false);
-  // See crbug.com/444764 for how this work batch size was derived.
-  task_queue_manager_->SetWorkBatchSize(4);
 
   for (size_t i = 0; i < TASK_QUEUE_COUNT; i++) {
     task_queue_manager_->SetQueueName(
@@ -255,15 +253,8 @@ void RendererSchedulerImpl::EndIdlePeriod() {
   renderer_task_queue_selector_->DisableQueue(IDLE_TASK_QUEUE);
 }
 
-void RendererSchedulerImpl::SetTimeSourceForTesting(
-    scoped_refptr<cc::TestNowSource> time_source) {
-  main_thread_checker_.CalledOnValidThread();
-  time_source_ = time_source;
-  task_queue_manager_->SetTimeSourceForTesting(time_source);
-}
-
 base::TimeTicks RendererSchedulerImpl::Now() const {
-  return UNLIKELY(time_source_) ? time_source_->Now() : base::TimeTicks::Now();
+  return gfx::FrameTime::Now();
 }
 
 RendererSchedulerImpl::PollableNeedsUpdateFlag::PollableNeedsUpdateFlag(
