@@ -410,7 +410,7 @@ template <class A, class B>
 struct GenerateTraits<std::map<A, B> > {
   static bool Generate(std::map<A, B>* p, Generator* generator) {
     static int g_depth = 0;
-    size_t count = ++g_depth > 3 ? 0 : RandInRange(20);
+    size_t count = ++g_depth > 3 ? 0 : RandInRange(10);
     std::pair<A, B> place_holder;
     for (size_t i = 0; i < count; ++i) {
       if (!GenerateParam(&place_holder, generator)) {
