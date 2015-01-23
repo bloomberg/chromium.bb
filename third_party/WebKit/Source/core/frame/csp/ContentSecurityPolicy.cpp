@@ -586,6 +586,7 @@ ReferrerPolicy ContentSecurityPolicy::referrerPolicy() const
                 referrerPolicy = policy->referrerPolicy();
             else
                 referrerPolicy = mergeReferrerPolicies(referrerPolicy, policy->referrerPolicy());
+            first = false;
         }
     }
     return referrerPolicy;
