@@ -5,6 +5,7 @@
 #include "components/enhanced_bookmarks/persistent_image_store.h"
 
 #include "base/files/file.h"
+#include "base/logging.h"
 #include "components/enhanced_bookmarks/image_store_util.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -12,6 +13,11 @@
 #include "url/gurl.h"
 
 namespace {
+// Current version number. Databases are written at the "current" version
+// number, but any previous version that can read the "compatible" one can make
+// do with our database without *too* many bad effects.
+const int kCurrentVersionNumber = 2;
+const int kCompatibleVersionNumber = 1;
 
 bool InitTables(sql::Connection& db) {
   const char kTableSql[] =
@@ -20,7 +26,8 @@ bool InitTables(sql::Connection& db) {
       "image_url LONGVARCHAR NOT NULL,"
       "image_data BLOB,"
       "width INTEGER,"
-      "height INTEGER"
+      "height INTEGER,"
+      "image_dominant_color INTEGER"
       ")";
   if (!db.Execute(kTableSql))
     return false;
@@ -35,7 +42,60 @@ bool InitIndices(sql::Connection& db) {
   return true;
 }
 
+// V1 didn't store the dominant color of an image. Creates the column to store
+// a dominant color in the database. The value will be filled when queried for a
+// one time cost.
+bool MigrateImagesWithNoDominantColor(sql::Connection& db) {
+  if (!db.DoesTableExist("images_by_url")) {
+    NOTREACHED() << "images_by_url table should exist before migration.";
+    return false;
+  }
+
+  if (!db.DoesColumnExist("images_by_url", "image_dominant_color")) {
+    // The initial version doesn't have the image_dominant_color column, it is
+    // added to the table here.
+    if (!db.Execute(
+            "ALTER TABLE images_by_url "
+            "ADD COLUMN image_dominant_color INTEGER")) {
+      return false;
+    }
+  }
+  return true;
+}
+
+sql::InitStatus EnsureCurrentVersion(sql::Connection& db,
+                                     sql::MetaTable& meta_table) {
+  // 1- Newer databases than designed for can't be read.
+  if (meta_table.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
+    LOG(WARNING) << "Image DB is too new.";
+    return sql::INIT_TOO_NEW;
+  }
+
+  int cur_version = meta_table.GetVersionNumber();
+
+  // 2- Put migration code here.
+
+  if (cur_version == 1) {
+    if (!MigrateImagesWithNoDominantColor(db)) {
+      LOG(WARNING) << "Unable to update image DB to version 1.";
+      return sql::INIT_FAILURE;
+    }
+    ++cur_version;
+    meta_table.SetVersionNumber(cur_version);
+    meta_table.SetCompatibleVersionNumber(
+        std::min(cur_version, kCompatibleVersionNumber));
+  }
+
+  // 3- When the version is too old, just try to continue anyway, there should
+  // not be a released product that makes a database too old to handle.
+  LOG_IF(WARNING, cur_version < kCurrentVersionNumber)
+      << "Image DB version " << cur_version << " is too old to handle.";
+
+  return sql::INIT_OK;
+}
+
 sql::InitStatus OpenDatabaseImpl(sql::Connection& db,
+                                 sql::MetaTable& meta_table,
                                  const base::FilePath& db_path) {
   DCHECK(!db.is_open());
 
@@ -44,22 +104,33 @@ sql::InitStatus OpenDatabaseImpl(sql::Connection& db,
   // TODO(noyau): Set error callback?
 
   // Run the database in exclusive mode. Nobody else should be accessing the
-  // database while we're running, and this will give somewhat improved perf.
+  // database while running, and this will give somewhat improved performance.
   db.set_exclusive_locking();
 
   if (!db.Open(db_path))
     return sql::INIT_FAILURE;
 
-  // Scope initialization in a transaction so we can't be partially initialized.
+  // Scope initialization in a transaction so it can't be partially initialized.
   sql::Transaction transaction(&db);
   if (!transaction.Begin())
     return sql::INIT_FAILURE;
 
-  // Create the tables.
-  if (!InitTables(db) ||
-      !InitIndices(db)) {
+  // Initialize the meta table.
+  int cur_version = meta_table.DoesTableExist(&db)
+                        ? kCurrentVersionNumber
+                        : 1;  // Only v1 didn't have a meta table.
+  if (!meta_table.Init(&db, cur_version,
+                       std::min(cur_version, kCompatibleVersionNumber)))
     return sql::INIT_FAILURE;
-  }
+
+  // Create the tables.
+  if (!InitTables(db) || !InitIndices(db))
+    return sql::INIT_FAILURE;
+
+  // Check the version.
+  sql::InitStatus version_status = EnsureCurrentVersion(db, meta_table);
+  if (version_status != sql::INIT_OK)
+    return version_status;
 
   // Initialization is complete.
   if (!transaction.Commit())
@@ -90,24 +161,25 @@ bool PersistentImageStore::HasKey(const GURL& page_url) {
   return !!count;
 }
 
-void PersistentImageStore::Insert(const GURL& page_url,
-                                  const GURL& image_url,
-                                  const gfx::Image& image) {
+void PersistentImageStore::Insert(
+    const GURL& page_url,
+    const enhanced_bookmarks::ImageRecord& record) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (OpenDatabase() != sql::INIT_OK)
     return;
 
   Erase(page_url);  // Remove previous image for this url, if any.
-  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+  sql::Statement statement(db_.GetCachedStatement(
+      SQL_FROM_HERE,
       "INSERT INTO images_by_url "
-      "(page_url, image_url, image_data, width, height)"
-      "VALUES (?, ?, ?, ?, ?)"));
+      "(page_url, image_url, image_data, width, height, image_dominant_color)"
+      "VALUES (?, ?, ?, ?, ?, ?)"));
 
   statement.BindString(0, page_url.possibly_invalid_spec());
-  statement.BindString(1, image_url.possibly_invalid_spec());
+  statement.BindString(1, record.url.possibly_invalid_spec());
 
   scoped_refptr<base::RefCountedMemory> image_bytes =
-        enhanced_bookmarks::BytesForImage(image);
+      enhanced_bookmarks::BytesForImage(record.image);
 
   // Insert an empty image in case encoding fails.
   if (!image_bytes.get())
@@ -117,8 +189,9 @@ void PersistentImageStore::Insert(const GURL& page_url,
 
   statement.BindBlob(2, image_bytes->front(), (int)image_bytes->size());
 
-  statement.BindInt(3, image.Size().width());
-  statement.BindInt(4, image.Size().height());
+  statement.BindInt(3, record.image.Size().width());
+  statement.BindInt(4, record.image.Size().height());
+  statement.BindInt(5, record.dominant_color);
   statement.Run();
 }
 
@@ -133,27 +206,59 @@ void PersistentImageStore::Erase(const GURL& page_url) {
   statement.Run();
 }
 
-std::pair<gfx::Image, GURL> PersistentImageStore::Get(const GURL& page_url) {
+enhanced_bookmarks::ImageRecord PersistentImageStore::Get(
+    const GURL& page_url) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  enhanced_bookmarks::ImageRecord image_record;
   if (OpenDatabase() != sql::INIT_OK)
-    return std::make_pair(gfx::Image(), GURL());
+    return image_record;
 
-  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT image_data, image_url FROM images_by_url WHERE page_url = ?"));
+  bool stored_image_record_needs_update = false;
 
-  statement.BindString(0, page_url.possibly_invalid_spec());
+  // Scope the SELECT statement.
+  {
+    sql::Statement statement(db_.GetCachedStatement(
+        SQL_FROM_HERE,
+        "SELECT image_data, image_url, image_dominant_color FROM images_by_url "
+        "WHERE page_url = ?"));
 
-  while (statement.Step()) {
+    statement.BindString(0, page_url.possibly_invalid_spec());
+
+    if (!statement.Step())
+      return image_record;
+
+    // Image.
     if (statement.ColumnByteLength(0) > 0) {
       scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
       statement.ColumnBlobAsVector(0, &data->data());
-
-      return std::make_pair(enhanced_bookmarks::ImageForBytes(data),
-                            GURL(statement.ColumnString(1)));
+      image_record.image = enhanced_bookmarks::ImageForBytes(data);
     }
+
+    // URL.
+    image_record.url = GURL(statement.ColumnString(1));
+
+    // Dominant color.
+    if (statement.ColumnType(2) != sql::COLUMN_TYPE_NULL) {
+      image_record.dominant_color = SkColor(statement.ColumnInt(2));
+    } else {
+      // The dominant color was not computed when the image was first
+      // stored.
+      // Compute it now.
+      image_record.dominant_color =
+          enhanced_bookmarks::DominantColorForImage(image_record.image);
+      stored_image_record_needs_update = true;
+    }
+
+    // Make sure there is only one record for page_url.
+    DCHECK(!statement.Step());
   }
 
-  return std::make_pair(gfx::Image(), GURL());
+  if (stored_image_record_needs_update) {
+    Erase(page_url);
+    Insert(page_url, image_record);
+  }
+
+  return image_record;
 }
 
 gfx::Size PersistentImageStore::GetSize(const GURL& page_url) {
@@ -217,7 +322,7 @@ sql::InitStatus PersistentImageStore::OpenDatabase() {
 
   sql::InitStatus status = sql::INIT_FAILURE;
   for (size_t i = 0; i < kAttempts; ++i) {
-    status = OpenDatabaseImpl(db_, path_);
+    status = OpenDatabaseImpl(db_, meta_table_, path_);
     if (status == sql::INIT_OK)
       return status;
 

@@ -18,15 +18,11 @@ bool TestImageStore::HasKey(const GURL& page_url) {
 }
 
 void TestImageStore::Insert(const GURL& page_url,
-                              const GURL& image_url,
-                              const gfx::Image& image) {
+                            const enhanced_bookmarks::ImageRecord& image) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   Erase(page_url);
-  store_.insert(std::make_pair(
-      page_url,
-      std::make_pair(image,
-                     image_url)));
+  store_.insert(std::make_pair(page_url, image));
 }
 
 void TestImageStore::Erase(const GURL& page_url) {
@@ -35,14 +31,13 @@ void TestImageStore::Erase(const GURL& page_url) {
   store_.erase(page_url);
 }
 
-std::pair<gfx::Image, GURL> TestImageStore::Get(const GURL& page_url) {
+enhanced_bookmarks::ImageRecord TestImageStore::Get(const GURL& page_url) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  ImageMap::const_iterator pair_enumerator = store_.find(page_url);
-  if (pair_enumerator == store_.end())
-    return std::make_pair(gfx::Image(), GURL());
+  if (store_.find(page_url) == store_.end())
+    return enhanced_bookmarks::ImageRecord();
 
-  return std::make_pair(store_[page_url].first, store_[page_url].second);
+  return store_[page_url];
 }
 
 gfx::Size TestImageStore::GetSize(const GURL& page_url) {
@@ -52,7 +47,7 @@ gfx::Size TestImageStore::GetSize(const GURL& page_url) {
   if (pair_enumerator == store_.end())
     return gfx::Size();
 
-  return store_[page_url].first.Size();
+  return store_[page_url].image.Size();
 }
 
 void TestImageStore::GetAllPageUrls(std::set<GURL>* urls) {
@@ -77,9 +72,10 @@ int64 TestImageStore::GetStoreSizeInBytes() {
     size += sizeof(it->first);
     size += it->first.spec().length();
     size += sizeof(it->second);
-    SkBitmap bitmap = it->second.first.AsBitmap();
+    SkBitmap bitmap = it->second.image.AsBitmap();
     size += bitmap.getSize();
-    size += it->second.second.spec().length();
+    size += it->second.url.spec().length();
+    size += sizeof(it->second.dominant_color);
   }
   return size;
 }

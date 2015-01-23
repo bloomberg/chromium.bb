@@ -4,6 +4,8 @@
 
 #include "components/enhanced_bookmarks/image_store_util.h"
 
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 
@@ -29,5 +31,9 @@ scoped_refptr<base::RefCountedMemory> BytesForImage(const gfx::Image& image) {
 
 gfx::Image ImageForBytes(const scoped_refptr<base::RefCountedMemory>& bytes) {
   return gfx::ImageFrom1xJPEGEncodedData(bytes->front(), bytes->size());
+}
+
+SkColor DominantColorForImage(const gfx::Image& image) {
+  return color_utils::CalculateKMeanColorOfBitmap(*image.ToSkBitmap());
 }
 }

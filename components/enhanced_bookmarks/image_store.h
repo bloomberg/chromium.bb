@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_ENHANCED_BOOKMARKS_IMAGE_STORE_H_
 #define COMPONENTS_ENHANCED_BOOKMARKS_IMAGE_STORE_H_
 
-#include <map>
 #include <set>
 
 #include "base/sequence_checker.h"
-#include "ui/gfx/image/image.h"
+#include "components/enhanced_bookmarks/image_record.h"
+#include "ui/gfx/geometry/size.h"
 
 class GURL;
 
@@ -23,21 +23,22 @@ class ImageStore {
   // Returns true if there is an image for this url.
   virtual bool HasKey(const GURL& page_url) = 0;
 
-  // Inserts an image and its url in the store for the the given page url. The
-  // image can be null indicating that the download of the image at this URL or
-  // encoding for insertion failed previously. On non-ios platforms, |image|
+  // Inserts an ImageRecord in the store for the given page url. The image can
+  // be null indicating that the download of the image at this URL or
+  // encoding for insertion failed previously. On non-iOS platforms, |image|
   // must have exactly one representation with a scale factor of 1.
   virtual void Insert(const GURL& page_url,
-                      const GURL& image_url,
-                      const gfx::Image& image) = 0;
+                      const enhanced_bookmarks::ImageRecord& image_record) = 0;
 
   // Removes an image from the store.
   virtual void Erase(const GURL& page_url) = 0;
 
-  // Returns the image associated with this url. Returns empty image and url if
-  // there are no image for this url. It also returns the image_url where the
-  // image was downloaded from or failed to be downloaded from.
-  virtual std::pair<gfx::Image, GURL> Get(const GURL& page_url) = 0;
+  // Returns the image associated with this url. Returns an ImageRecord with an
+  // empty image if there is no image for this url. It also returns the
+  // image_url where the image was downloaded from or failed to be downloaded
+  // from. When the image is not empty, the dominant color of the image is also
+  // filled.
+  virtual enhanced_bookmarks::ImageRecord Get(const GURL& page_url) = 0;
 
   // Returns the size of the image stored for this URL or empty size if no
   // images are present.

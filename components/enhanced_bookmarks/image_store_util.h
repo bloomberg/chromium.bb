@@ -6,6 +6,7 @@
 #define COMPONENTS_ENHANCED_BOOKMARKS_IMAGE_STORE_UTIL_H_
 
 #include "base/memory/ref_counted_memory.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 
@@ -22,6 +23,9 @@ scoped_refptr<base::RefCountedMemory> BytesForImage(const gfx::Image& image);
 // returns a gfx::Image. If decoding fails, returns an empty image.
 gfx::Image ImageForBytes(const scoped_refptr<base::RefCountedMemory>& data);
 
+// Returns the dominant color for |image|. This method can be slow on very large
+// images.
+SkColor DominantColorForImage(const gfx::Image& image);
 }
 
 #endif  // COMPONENTS_ENHANCED_BOOKMARKS_IMAGE_STORE_UTIL_H_

@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
+#include "components/enhanced_bookmarks/image_record.h"
 #include "components/enhanced_bookmarks/image_store.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/url_request/url_request.h"
@@ -36,7 +37,7 @@ class BookmarkImageService : public KeyedService,
 
   ~BookmarkImageService() override;
 
-  typedef base::Callback<void(const gfx::Image&, const GURL& url)> Callback;
+  typedef base::Callback<void(const ImageRecord&)> ImageCallback;
 
   // KeyedService:
   void Shutdown() override;
@@ -46,7 +47,7 @@ class BookmarkImageService : public KeyedService,
   // a URL for this salient image available.  The image (which may be empty) is
   // sent via the callback. The callback may be called synchronously if it is
   // possible. The callback is always triggered on the main thread.
-  void SalientImageForUrl(const GURL& page_url, Callback callback);
+  void SalientImageForUrl(const GURL& page_url, ImageCallback callback);
 
   // bookmarks::BookmarkModelObserver:
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
@@ -108,28 +109,37 @@ class BookmarkImageService : public KeyedService,
   EnhancedBookmarkModel* enhanced_bookmark_model_;
 
  private:
-  // Same as SalientImageForUrl(const GURL&, Callback) but can prevent the
-  // network request if fetch_from_bookmark is false.
+  // Same as SalientImageForUrl(const GURL&, ImageCallback) but can
+  // prevent the network request if fetch_from_bookmark is false.
   void SalientImageForUrl(const GURL& page_url,
                           bool fetch_from_bookmark,
-                          Callback stack_callback);
+                          ImageCallback stack_callback);
 
   // Processes the requests that have been waiting on an image.
-  void ProcessRequests(const GURL& page_url,
-                       const gfx::Image& image,
-                       const GURL& image_url);
+  void ProcessRequests(const GURL& page_url, const ImageRecord& image);
 
-  // Once an image is retrieved this method updates the store with it.
-  void StoreImage(const gfx::Image& image,
-                  const GURL& image_url,
-                  const GURL& page_url);
+  // Once an image is retrieved this method updates the store with it. Returns
+  // the newly formed ImageRecord.  This is typically called on |pool_|, the
+  // background sequenced worker pool for this object.
+  ImageRecord StoreImage(const gfx::Image& image,
+                         const GURL& image_url,
+                         const GURL& page_url);
+
+  // Calls |StoreImage| in the background.  This should only be called from the
+  // main thread.
+  void PostTaskToStoreImage(const gfx::Image& image,
+                            const GURL& image_url,
+                            const GURL& page_url);
+
+  // Called when |StoreImage| as been posted.  This should only be called from
+  // the main thread.
+  void OnStoreImagePosted(const GURL& page_url, const ImageRecord& image);
 
   // Called when retrieving an image from the image store fails, to trigger
   // retrieving the image from the url stored in the bookmark (if any).
   void FetchCallback(const GURL& page_url,
-                     Callback original_callback,
-                     const gfx::Image& image,
-                     const GURL& image_url);
+                     ImageCallback original_callback,
+                     const ImageRecord& record);
 
   // Remove the image stored for this bookmark (if it exists). Called when a
   // bookmark is deleted.
@@ -147,21 +157,20 @@ class BookmarkImageService : public KeyedService,
   // main thread and the callback will be called on the main thread as well. The
   // callback will always be called. The returned image is nil if the image is
   // not present in the store.
-  void RetrieveImageFromStore(const GURL& page_url,
-                              BookmarkImageService::Callback callback);
+  void RetrieveImageFromStore(const GURL& page_url, ImageCallback callback);
 
   // Maps a pageUrl to an image.
   scoped_ptr<ImageStore> store_;
 
   // All the callbacks waiting for a particular image.
-  std::map<const GURL, std::vector<Callback> > callbacks_;
+  std::map<const GURL, std::vector<ImageCallback>> callbacks_;
 
   // When a bookmark is changed, two messages are received on the
   // bookmarkModelObserver, one with the old state, one with the new. The url
   // before the change is saved in this instance variable.
   GURL previous_url_;
 
-  // The worker pool to enqueue the store requests onto.
+  // The worker pool to enqueue the requests onto.
   scoped_refptr<base::SequencedWorkerPool> pool_;
   DISALLOW_COPY_AND_ASSIGN(BookmarkImageService);
 };

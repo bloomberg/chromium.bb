@@ -8,6 +8,8 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/color_analysis.h"
 
 namespace {
 // An implementation of RefCountedMemory, where the bytes are stored in a
@@ -43,6 +45,10 @@ scoped_refptr<base::RefCountedMemory> BytesForImage(const gfx::Image& image) {
 gfx::Image ImageForBytes(const scoped_refptr<base::RefCountedMemory>& data) {
   return gfx::Image([[NSKeyedUnarchiver unarchiveObjectWithData:
       [NSData dataWithBytes:data->front() length:data->size()]] retain]);
+}
+
+SkColor DominantColorForImage(const gfx::Image& image) {
+  return color_utils::CalculateKMeanColorOfBitmap(*image.ToSkBitmap());
 }
 
 }  // namespace enhanced_bookmarks

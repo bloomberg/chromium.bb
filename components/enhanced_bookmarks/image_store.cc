@@ -18,7 +18,7 @@ void ImageStore::ChangeImageURL(const GURL& from, const GURL& to) {
   if (!HasKey(from))
     return;
 
-  std::pair<gfx::Image, GURL> image_info = Get(from);
+  const enhanced_bookmarks::ImageRecord& record = Get(from);
   Erase(from);
-  Insert(to, image_info.second, image_info.first);
+  Insert(to, record);
 }

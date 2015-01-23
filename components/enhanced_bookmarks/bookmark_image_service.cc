@@ -5,12 +5,14 @@
 #include "components/enhanced_bookmarks/bookmark_image_service.h"
 
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
+#include "components/enhanced_bookmarks/image_store_util.h"
 #include "components/enhanced_bookmarks/persistent_image_store.h"
 
 using bookmarks::BookmarkModel;
@@ -33,11 +35,9 @@ void DeleteImageStore(ImageStore* store) {
 void RetrieveImageFromStoreRelay(
     ImageStore* store,
     const GURL& page_url,
-    enhanced_bookmarks::BookmarkImageService::Callback callback,
+    enhanced_bookmarks::BookmarkImageService::ImageCallback callback,
     scoped_refptr<base::SingleThreadTaskRunner> origin_loop) {
-  std::pair<gfx::Image, GURL> image_data = store->Get(page_url);
-  origin_loop->PostTask(
-      FROM_HERE, base::Bind(callback, image_data.first, image_data.second));
+  origin_loop->PostTask(FROM_HERE, base::Bind(callback, store->Get(page_url)));
 }
 
 }  // namespace
@@ -99,14 +99,13 @@ void BookmarkImageService::Shutdown() {
 }
 
 void BookmarkImageService::SalientImageForUrl(const GURL& page_url,
-                                              Callback callback) {
+                                              ImageCallback callback) {
   DCHECK(CalledOnValidThread());
   SalientImageForUrl(page_url, true, callback);
 }
 
-void BookmarkImageService::RetrieveImageFromStore(
-    const GURL& page_url,
-    BookmarkImageService::Callback callback) {
+void BookmarkImageService::RetrieveImageFromStore(const GURL& page_url,
+                                                  ImageCallback callback) {
   DCHECK(CalledOnValidThread());
   pool_->PostSequencedWorkerTaskWithShutdownBehavior(
       pool_->GetNamedSequenceToken(kSequenceToken),
@@ -147,19 +146,18 @@ void BookmarkImageService::RetrieveSalientImageForPageUrl(
 }
 
 void BookmarkImageService::FetchCallback(const GURL& page_url,
-                                         Callback original_callback,
-                                         const gfx::Image& image,
-                                         const GURL& image_url) {
+                                         ImageCallback original_callback,
+                                         const ImageRecord& record) {
   DCHECK(CalledOnValidThread());
-  if (!image.IsEmpty() || !image_url.is_empty()) {
-    // Either the image was in the store or there is no image in the store, but
-    // an URL for an image is present, indicating that a previous attempt to
-    // download the image failed. Just return the image.
-    original_callback.Run(image, image_url);
+  if (!record.image.IsEmpty() || !record.url.is_empty()) {
+    // Either the record was in the store or there is no image in the store, but
+    // an URL for a record is present, indicating that a previous attempt to
+    // download the image failed. Just return the record.
+    original_callback.Run(record);
   } else {
-    // There is no image in the store, and no previous attempts to retrieve
+    // There is no record in the store, and no previous attempts to retrieve
     // one. Start a request to retrieve a salient image if there is an image
-    // url set on a bookmark, and then enqueue the request for the image to
+    // url set on a bookmark, and then enqueue the request for the record to
     // be triggered when the retrieval is finished.
     RetrieveSalientImageForPageUrl(page_url);
     SalientImageForUrl(page_url, false, original_callback);
@@ -168,7 +166,7 @@ void BookmarkImageService::FetchCallback(const GURL& page_url,
 
 void BookmarkImageService::SalientImageForUrl(const GURL& page_url,
                                               bool fetch_from_bookmark,
-                                              Callback callback) {
+                                              ImageCallback callback) {
   DCHECK(CalledOnValidThread());
 
   // If the request is done while the image is currently being retrieved, just
@@ -194,9 +192,7 @@ void BookmarkImageService::ProcessNewImage(const GURL& page_url,
                                            const gfx::Image& image,
                                            const GURL& image_url) {
   DCHECK(CalledOnValidThread());
-  StoreImage(image, image_url, page_url);
-  in_progress_page_urls_.erase(page_url);
-  ProcessRequests(page_url, image, image_url);
+  PostTaskToStoreImage(image, image_url, page_url);
   if (update_bookmarks && image_url.is_valid()) {
     const BookmarkNode* bookmark =
         enhanced_bookmark_model_->bookmark_model()
@@ -215,20 +211,42 @@ bool BookmarkImageService::IsPageUrlInProgress(const GURL& page_url) {
   return in_progress_page_urls_.find(page_url) != in_progress_page_urls_.end();
 }
 
-void BookmarkImageService::StoreImage(const gfx::Image& image,
-                                      const GURL& image_url,
-                                      const GURL& page_url) {
-  DCHECK(CalledOnValidThread());
+ImageRecord BookmarkImageService::StoreImage(const gfx::Image& image,
+                                             const GURL& image_url,
+                                             const GURL& page_url) {
+  ImageRecord image_info(image, image_url, SK_ColorBLACK);
   if (!image.IsEmpty()) {
+    image_info.dominant_color = DominantColorForImage(image);
+    // TODO(lpromero): this should be saved all the time, even when there is an
+    // empty image. http://crbug.com/451450
     pool_->PostNamedSequencedWorkerTask(
-        kSequenceToken,
-        FROM_HERE,
-        base::Bind(&ImageStore::Insert,
-                   base::Unretained(store_.get()),
-                   page_url,
-                   image_url,
-                   image));
+        kSequenceToken, FROM_HERE,
+        base::Bind(&ImageStore::Insert, base::Unretained(store_.get()),
+                   page_url, image_info));
   }
+  return image_info;
+}
+
+void BookmarkImageService::PostTaskToStoreImage(const gfx::Image& image,
+                                                const GURL& image_url,
+                                                const GURL& page_url) {
+  DCHECK(CalledOnValidThread());
+
+  base::Callback<ImageRecord(void)> task =
+      base::Bind(&BookmarkImageService::StoreImage, base::Unretained(this),
+                 image, image_url, page_url);
+  base::Callback<void(const ImageRecord&)> reply =
+      base::Bind(&BookmarkImageService::OnStoreImagePosted,
+                 base::Unretained(this), page_url);
+
+  base::PostTaskAndReplyWithResult(pool_.get(), FROM_HERE, task, reply);
+}
+
+void BookmarkImageService::OnStoreImagePosted(const GURL& page_url,
+                                              const ImageRecord& image) {
+  DCHECK(CalledOnValidThread());
+  in_progress_page_urls_.erase(page_url);
+  ProcessRequests(page_url, image);
 }
 
 void BookmarkImageService::RemoveImageForUrl(const GURL& page_url) {
@@ -238,7 +256,7 @@ void BookmarkImageService::RemoveImageForUrl(const GURL& page_url) {
       FROM_HERE,
       base::Bind(&ImageStore::Erase, base::Unretained(store_.get()), page_url));
   in_progress_page_urls_.erase(page_url);
-  ProcessRequests(page_url, gfx::Image(), GURL());
+  ProcessRequests(page_url, ImageRecord());
 }
 
 void BookmarkImageService::ChangeImageURL(const GURL& from, const GURL& to) {
@@ -250,7 +268,7 @@ void BookmarkImageService::ChangeImageURL(const GURL& from, const GURL& to) {
                                                  from,
                                                  to));
   in_progress_page_urls_.erase(from);
-  ProcessRequests(from, gfx::Image(), GURL());
+  ProcessRequests(from, ImageRecord());
 }
 
 void BookmarkImageService::ClearAll() {
@@ -261,11 +279,10 @@ void BookmarkImageService::ClearAll() {
       FROM_HERE,
       base::Bind(&ImageStore::ClearAll, base::Unretained(store_.get())));
 
-  for (std::map<const GURL, std::vector<Callback> >::const_iterator it =
+  for (std::map<const GURL, std::vector<ImageCallback>>::const_iterator it =
            callbacks_.begin();
-       it != callbacks_.end();
-       ++it) {
-    ProcessRequests(it->first, gfx::Image(), GURL());
+       it != callbacks_.end(); ++it) {
+    ProcessRequests(it->first, ImageRecord());
   }
 
   in_progress_page_urls_.erase(in_progress_page_urls_.begin(),
@@ -273,15 +290,13 @@ void BookmarkImageService::ClearAll() {
 }
 
 void BookmarkImageService::ProcessRequests(const GURL& page_url,
-                                           const gfx::Image& image,
-                                           const GURL& image_url) {
+                                           const ImageRecord& record) {
   DCHECK(CalledOnValidThread());
 
-  std::vector<Callback> callbacks = callbacks_[page_url];
-  for (std::vector<Callback>::const_iterator it = callbacks.begin();
-       it != callbacks.end();
-       ++it) {
-    it->Run(image, image_url);
+  std::vector<ImageCallback> callbacks = callbacks_[page_url];
+  for (std::vector<ImageCallback>::const_iterator it = callbacks.begin();
+       it != callbacks.end(); ++it) {
+    it->Run(record);
   }
 
   callbacks_.erase(page_url);
