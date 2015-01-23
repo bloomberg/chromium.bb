@@ -65,6 +65,27 @@ bool GetSecurityLevelForFieldTrialGroup(const std::string& group,
   return true;
 }
 
+ToolbarModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
+  std::string choice = base::CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kMarkNonSecureAs);
+  if (choice == switches::kMarkNonSecureAsNeutral)
+    return ToolbarModel::NONE;
+  if (choice == switches::kMarkNonSecureAsDubious)
+    return ToolbarModel::SECURITY_WARNING;
+  if (choice == switches::kMarkNonSecureAsNonSecure)
+    return ToolbarModel::SECURITY_ERROR;
+
+  std::string group = base::FieldTrialList::FindFullName("MarkNonSecureAs");
+  if (group == switches::kMarkNonSecureAsNeutral)
+    return ToolbarModel::NONE;
+  if (group == switches::kMarkNonSecureAsDubious)
+    return ToolbarModel::SECURITY_WARNING;
+  if (group == switches::kMarkNonSecureAsNonSecure)
+    return ToolbarModel::SECURITY_ERROR;
+
+  return ToolbarModel::NONE;
+}
+
 }  // namespace
 
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate)
@@ -87,8 +108,14 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
   const SSLStatus& ssl = entry->GetSSL();
   switch (ssl.security_style) {
     case content::SECURITY_STYLE_UNKNOWN:
-    case content::SECURITY_STYLE_UNAUTHENTICATED:
       return NONE;
+
+    case content::SECURITY_STYLE_UNAUTHENTICATED: {
+      const GURL& url = entry->GetURL();
+      if (url.SchemeIs("http") || url.SchemeIs("ftp"))
+        return GetSecurityLevelForNonSecureFieldTrial();
+      return NONE;
+    }
 
     case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
       return SECURITY_ERROR;

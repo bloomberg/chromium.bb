@@ -188,6 +188,16 @@ const Experiment::Choice kNaClDebugMaskChoices[] = {
 };
 #endif
 
+const Experiment::Choice kMarkNonSecureAsChoices[] = {
+    { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+    { IDS_MARK_NON_SECURE_AS_NEUTRAL,
+        switches::kMarkNonSecureAs, switches::kMarkNonSecureAsNeutral},
+    { IDS_MARK_NON_SECURE_AS_NON_SECURE,
+        switches::kMarkNonSecureAs, switches::kMarkNonSecureAsNonSecure},
+    { IDS_MARK_NON_SECURE_AS_DUBIOUS,
+        switches::kMarkNonSecureAs, switches::kMarkNonSecureAsDubious}
+};
+
 const Experiment::Choice kMaxTilesForInterestAreaChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_SHORT,
@@ -2138,6 +2148,14 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_DELAY_AGNOSTIC_AEC_DESCRIPTION,
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableDelayAgnosticAec)
+  },
+
+  {
+    "mark-non-secure-as",  // FLAGS:RECORD_UMA
+     IDS_MARK_NON_SECURE_AS_NAME,
+     IDS_MARK_NON_SECURE_AS_DESCRIPTION,
+     kOsAll,
+     MULTI_VALUE_TYPE(kMarkNonSecureAsChoices)
   },
 
   // NOTE: Adding new command-line switches requires adding corresponding

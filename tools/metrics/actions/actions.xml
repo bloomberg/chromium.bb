@@ -189,6 +189,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AboutFlags_mark-non-secure-as">
+  <owner>palmer@chromium.org</owner>
+  <owner>felt@chromium.org</owner>
+  <description>
+    This flag lets users opt into or out of marking HTTP as Dubious or as
+    Non-Secure. The action is emitted once per startup when the flag is active.
+  </description>
+</action>
+
 <action name="AboutFlags_match-preview">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

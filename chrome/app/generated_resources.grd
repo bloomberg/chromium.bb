@@ -5677,6 +5677,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG">
         Debug only if manifest URL ends with debug.nmf.
       </message>
+      <message name="IDS_MARK_NON_SECURE_AS_NAME" desc="Name of the 'Mark Non-Secure Origins As' lab.">
+        Mark non-secure origins as non-secure
+      </message>
+      <message name="IDS_MARK_NON_SECURE_AS_DESCRIPTION" desc="Description of the 'Mark Non-Secure Origins As' lab.">
+        Mark non-secure origins as non-secure, or as "dubious".
+      </message>
+      <message name="IDS_MARK_NON_SECURE_AS_NEUTRAL">
+        Mark non-secure origins as neutral.
+      </message>
+      <message name="IDS_MARK_NON_SECURE_AS_NON_SECURE">
+        Mark non-secure origins as non-secure.
+      </message>
+      <message name="IDS_MARK_NON_SECURE_AS_DUBIOUS">
+        Mark non-secure origins as dubious.
+      </message>
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME" desc="Name of the 'Save Page as MHTML' lab.">
         Save Page as MHTML
       </message>

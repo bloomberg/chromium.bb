@@ -50515,6 +50515,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="851085848" label="enable-settings-window"/>
   <int value="855746780" label="disable-physical-keyboard-autocorrect"/>
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
+  <int value="867512869" label="mark-non-secure-as"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>
   <int value="879699575" label="disable-gesture-tap-highlight"/>
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
