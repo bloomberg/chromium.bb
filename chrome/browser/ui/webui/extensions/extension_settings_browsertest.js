@@ -89,7 +89,7 @@ TEST_F('AsyncExtensionSettingsWebUITest', 'testDeveloperModeA11y', function() {
       testDone();
     }
   });
-  ensureTransitionEndEvent(devControl, 500);
+  ensureTransitionEndEvent(devControl, 2000);
 });
 
 /**
