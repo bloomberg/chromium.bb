@@ -260,9 +260,13 @@ class FileManagerPrivateSearchFilesByHashesFunction
   ~FileManagerPrivateSearchFilesByHashesFunction() override {}
 
  private:
-  void OnSearchByHashes(const std::vector<drive::HashAndFilePath>& results);
-
+  // AsyncExtensionFunction overrides.
   bool RunAsync() override;
+
+  // Sends a response with |results| to the extension.
+  void OnSearchByHashes(const std::set<std::string>& hashes,
+                        drive::FileError error,
+                        const std::vector<drive::HashAndFilePath>& results);
 };
 
 }  // namespace extensions

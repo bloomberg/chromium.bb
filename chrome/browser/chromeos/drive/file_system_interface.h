@@ -24,9 +24,7 @@ class FileSystemObserver;
 // browser.
 struct SearchResultInfo {
   SearchResultInfo(const base::FilePath& path, bool is_directory)
-      : path(path),
-        is_directory(is_directory) {
-  }
+      : path(path), is_directory(is_directory) {}
 
   base::FilePath path;
   bool is_directory;
@@ -40,12 +38,10 @@ struct HashAndFilePath {
 
 // Struct to represent a search result for SearchMetadata().
 struct MetadataSearchResult {
-  MetadataSearchResult(const base::FilePath& in_path,
+  MetadataSearchResult(const base::FilePath& path,
                        bool is_directory,
-                       const std::string& in_highlighted_base_name)
-      : path(in_path),
-        is_directory(is_directory),
-        highlighted_base_name(in_highlighted_base_name) {}
+                       const std::string& highlighted_base_name,
+                       const std::string& md5);
 
   // The two members are used to create FileEntry object.
   base::FilePath path;
@@ -61,6 +57,9 @@ struct MetadataSearchResult {
   //
   // Why <b> instead of <strong>? Because <b> is shorter.
   std::string highlighted_base_name;
+
+  // MD5 hash of the file.
+  std::string md5;
 };
 
 typedef std::vector<MetadataSearchResult> MetadataSearchResultVector;
@@ -104,7 +103,7 @@ typedef base::Callback<void(
 
 // Callback for SearchByHashesCallback. On success, vector contains hash and
 // corresponding files. The vector can include multiple entries for one hash.
-typedef base::Callback<void(const std::vector<HashAndFilePath>&)>
+typedef base::Callback<void(FileError, const std::vector<HashAndFilePath>&)>
     SearchByHashesCallback;
 
 // Used to open files from the file system. |file_path| is the path on the local
@@ -397,7 +396,7 @@ class FileSystemInterface {
   // given |hashes|. The list of resource entries are passed to |callback|. The
   // item of the list can be null if the corresponding file is not found.
   // |callback| must not be null.
-  virtual void SearchByHashes(const std::vector<std::string>& hashes,
+  virtual void SearchByHashes(const std::set<std::string>& hashes,
                               const SearchByHashesCallback& callback) = 0;
 
   // Fetches the user's Account Metadata to find out current quota information

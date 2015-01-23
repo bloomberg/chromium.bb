@@ -185,7 +185,7 @@ void FakeFileSystem::SearchMetadata(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::SearchByHashes(const std::vector<std::string>& hashes,
+void FakeFileSystem::SearchByHashes(const std::set<std::string>& hashes,
                                     const SearchByHashesCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

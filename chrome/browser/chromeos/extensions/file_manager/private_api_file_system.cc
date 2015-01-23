@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_file_system.h"
 
 #include <sys/statvfs.h>
+#include <set>
 
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -772,17 +773,41 @@ bool FileManagerPrivateSearchFilesByHashesFunction::RunAsync() {
     return false;
   }
 
+  std::set<std::string> hashes(params->hash_list.begin(),
+                               params->hash_list.end());
   file_system->SearchByHashes(
-      params->hash_list,
+      hashes,
       base::Bind(
           &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes,
-          this));
+          this, hashes));
   return true;
 }
 
 void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
-    const std::vector<drive::HashAndFilePath>& results) {
-  NOTIMPLEMENTED();
+    const std::set<std::string>& hashes,
+    drive::FileError error,
+    const std::vector<drive::HashAndFilePath>& search_results) {
+  if (error != drive::FileError::FILE_ERROR_OK) {
+    SendResponse(false);
+    return;
+  }
+
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  for (const auto& hash : hashes) {
+    result->SetWithoutPathExpansion(hash,
+                                    make_scoped_ptr(new base::ListValue()));
+  }
+
+  for (const auto& hashAndPath : search_results) {
+    DCHECK(result->HasKey(hashAndPath.hash));
+    base::ListValue* list;
+    result->GetListWithoutPathExpansion(hashAndPath.hash, &list);
+    list->AppendString(
+        file_manager::util::ConvertDrivePathToFileSystemUrl(
+            GetProfile(), hashAndPath.path, extension_id()).spec());
+  }
+  SetResult(result.release());
+  SendResponse(true);
 }
 
 }  // namespace extensions

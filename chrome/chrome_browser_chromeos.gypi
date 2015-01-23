@@ -139,6 +139,7 @@
         'browser/chromeos/drive/file_system/touch_operation.h',
         'browser/chromeos/drive/file_system/truncate_operation.cc',
         'browser/chromeos/drive/file_system/truncate_operation.h',
+        'browser/chromeos/drive/file_system_interface.cc',
         'browser/chromeos/drive/file_system_interface.h',
         'browser/chromeos/drive/file_system_metadata.cc',
         'browser/chromeos/drive/file_system_metadata.h',

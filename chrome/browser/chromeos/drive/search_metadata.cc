@@ -142,43 +142,6 @@ class HiddenEntryClassifier {
   std::map<std::string, bool> is_hiding_child_;
 };
 
-// Returns true if |entry| is eligible for the search |options| and should be
-// tested for the match with the query.  If
-// SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS is requested, the hosted documents
-// are skipped. If SEARCH_METADATA_EXCLUDE_DIRECTORIES is requested, the
-// directories are skipped. If SEARCH_METADATA_SHARED_WITH_ME is requested, only
-// the entries with shared-with-me label will be tested. If
-// SEARCH_METADATA_OFFLINE is requested, only hosted documents and cached files
-// match with the query. This option can not be used with other options.
-bool IsEligibleEntry(const ResourceEntry& entry, int options) {
-  if ((options & SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS) &&
-      entry.file_specific_info().is_hosted_document())
-    return false;
-
-  if ((options & SEARCH_METADATA_EXCLUDE_DIRECTORIES) &&
-      entry.file_info().is_directory())
-    return false;
-
-  if (options & SEARCH_METADATA_SHARED_WITH_ME)
-    return entry.shared_with_me();
-
-  if (options & SEARCH_METADATA_OFFLINE) {
-    if (entry.file_specific_info().is_hosted_document()) {
-      // Not all hosted documents are cached by Drive offline app.
-      // http://support.google.com/drive/bin/answer.py?hl=en&answer=1628467
-      std::string mime_type = entry.file_specific_info().content_mime_type();
-      return mime_type == drive::util::kGoogleDocumentMimeType ||
-             mime_type == drive::util::kGoogleSpreadsheetMimeType ||
-             mime_type == drive::util::kGooglePresentationMimeType ||
-             mime_type == drive::util::kGoogleDrawingMimeType;
-    } else {
-      return entry.file_specific_info().cache_state().is_present();
-    }
-  }
-
-  return true;
-}
-
 // Used to implement SearchMetadata.
 // Adds entry to the result when appropriate.
 // In particular, if |query| is non-null, only adds files with the name matching
@@ -187,11 +150,11 @@ FileError MaybeAddEntryToResult(
     ResourceMetadata* resource_metadata,
     ResourceMetadata::Iterator* it,
     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents* query,
-    int options,
+    const SearchMetadataPredicate& predicate,
     size_t at_most_num_matches,
     HiddenEntryClassifier* hidden_entry_classifier,
-    ScopedPriorityQueue<ResultCandidate,
-                        ResultCandidateComparator>* result_candidates) {
+    ScopedPriorityQueue<ResultCandidate, ResultCandidateComparator>*
+        result_candidates) {
   DCHECK_GE(at_most_num_matches, result_candidates->size());
 
   const ResourceEntry& entry = it->GetValue();
@@ -207,7 +170,7 @@ FileError MaybeAddEntryToResult(
   // |options| and matches the query. The base name of the entry must
   // contain |query| to match the query.
   std::string highlighted;
-  if (!IsEligibleEntry(entry, options) ||
+  if (!predicate.Run(entry) ||
       (query && !FindAndHighlight(entry.base_name(), query, &highlighted)))
     return FILE_ERROR_OK;
 
@@ -227,7 +190,7 @@ FileError MaybeAddEntryToResult(
 // Implements SearchMetadata().
 FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
                                        const std::string& query_text,
-                                       int options,
+                                       const SearchMetadataPredicate& predicate,
                                        int at_most_num_matches,
                                        MetadataSearchResultVector* results) {
   ScopedPriorityQueue<ResultCandidate,
@@ -249,12 +212,10 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
   // Iterate over entries.
   scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
-    FileError error = MaybeAddEntryToResult(resource_metadata, it.get(),
-                                            query_text.empty() ? NULL : &query,
-                                            options,
-                                            at_most_num_matches,
-                                            &hidden_entry_classifier,
-                                            &result_candidates);
+    FileError error = MaybeAddEntryToResult(
+        resource_metadata, it.get(), query_text.empty() ? NULL : &query,
+        predicate, at_most_num_matches, &hidden_entry_classifier,
+        &result_candidates);
     if (error != FILE_ERROR_OK)
       return error;
   }
@@ -271,7 +232,8 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
       return error;
     bool is_directory = candidate.entry.file_info().is_directory();
     results->push_back(MetadataSearchResult(
-        path, is_directory, candidate.highlighted_base_name));
+        path, is_directory, candidate.highlighted_base_name,
+        candidate.entry.file_specific_info().md5()));
   }
 
   // Reverse the order here because |result_candidates| puts the most
@@ -300,11 +262,10 @@ void SearchMetadata(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     ResourceMetadata* resource_metadata,
     const std::string& query,
-    int options,
-    int at_most_num_matches,
+    const SearchMetadataPredicate& predicate,
+    size_t at_most_num_matches,
     const SearchMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_LE(0, at_most_num_matches);
   DCHECK(!callback.is_null());
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
@@ -312,18 +273,41 @@ void SearchMetadata(
   scoped_ptr<MetadataSearchResultVector> results(
       new MetadataSearchResultVector);
   MetadataSearchResultVector* results_ptr = results.get();
-  base::PostTaskAndReplyWithResult(blocking_task_runner.get(),
-                                   FROM_HERE,
-                                   base::Bind(&SearchMetadataOnBlockingPool,
-                                              resource_metadata,
-                                              query,
-                                              options,
-                                              at_most_num_matches,
-                                              results_ptr),
-                                   base::Bind(&RunSearchMetadataCallback,
-                                              callback,
-                                              start_time,
-                                              base::Passed(&results)));
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner.get(), FROM_HERE,
+      base::Bind(&SearchMetadataOnBlockingPool, resource_metadata, query,
+                 predicate, at_most_num_matches, results_ptr),
+      base::Bind(&RunSearchMetadataCallback, callback, start_time,
+                 base::Passed(&results)));
+}
+
+bool MatchesType(int options, const ResourceEntry& entry) {
+  if ((options & SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS) &&
+      entry.file_specific_info().is_hosted_document())
+    return false;
+
+  if ((options & SEARCH_METADATA_EXCLUDE_DIRECTORIES) &&
+      entry.file_info().is_directory())
+    return false;
+
+  if (options & SEARCH_METADATA_SHARED_WITH_ME)
+    return entry.shared_with_me();
+
+  if (options & SEARCH_METADATA_OFFLINE) {
+    if (entry.file_specific_info().is_hosted_document()) {
+      // Not all hosted documents are cached by Drive offline app.
+      // http://support.google.com/drive/bin/answer.py?hl=en&answer=1628467
+      std::string mime_type = entry.file_specific_info().content_mime_type();
+      return mime_type == drive::util::kGoogleDocumentMimeType ||
+             mime_type == drive::util::kGoogleSpreadsheetMimeType ||
+             mime_type == drive::util::kGooglePresentationMimeType ||
+             mime_type == drive::util::kGoogleDrawingMimeType;
+    } else {
+      return entry.file_specific_info().cache_state().is_present();
+    }
+  }
+
+  return true;
 }
 
 bool FindAndHighlight(

@@ -54,6 +54,16 @@ void AsyncInitializationCallback(
     quit.Run();
 }
 
+bool CompareHashAndFilePath(const HashAndFilePath& a,
+                            const HashAndFilePath& b) {
+  const int result = a.hash.compare(b.hash);
+  if (result < 0)
+    return true;
+  if (result > 0)
+    return false;
+  return a.path.AsUTF8Unsafe().compare(b.path.AsUTF8Unsafe()) < 0;
+}
+
 // This class is used to record directory changes and examine them later.
 class MockDirectoryChangeObserver : public FileSystemObserver {
  public:
@@ -249,7 +259,7 @@ class FileSystemTest : public testing::Test {
     file1.set_title("File1");
     file1.set_resource_id("resource_id:File1");
     file1.set_parent_local_id(root.local_id());
-    file1.mutable_file_specific_info()->set_md5("md5");
+    file1.mutable_file_specific_info()->set_md5("md5#1");
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file1, &local_id));
@@ -268,7 +278,7 @@ class FileSystemTest : public testing::Test {
     file2.set_title("File2");
     file2.set_resource_id("resource_id:File2");
     file2.set_parent_local_id(dir1_local_id);
-    file2.mutable_file_specific_info()->set_md5("md5");
+    file2.mutable_file_specific_info()->set_md5("md5#2");
     file2.mutable_file_info()->set_is_directory(false);
     file2.mutable_file_info()->set_size(555);
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file2, &local_id));
@@ -287,7 +297,7 @@ class FileSystemTest : public testing::Test {
     file3.set_title("File3");
     file3.set_resource_id("resource_id:File3");
     file3.set_parent_local_id(dir2_local_id);
-    file3.mutable_file_specific_info()->set_md5("md5");
+    file3.mutable_file_specific_info()->set_md5("md5#2");
     file3.mutable_file_info()->set_is_directory(false);
     file3.mutable_file_info()->set_size(12345);
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file3, &local_id));
@@ -315,6 +325,53 @@ class FileSystemTest : public testing::Test {
       resource_metadata_;
   scoped_ptr<FileSystem> file_system_;
 };
+
+TEST_F(FileSystemTest, SearchByHashes) {
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
+
+  std::set<std::string> hashes;
+  FileError error;
+  std::vector<HashAndFilePath> results;
+
+  hashes.insert("md5#1");
+  file_system_->SearchByHashes(
+      hashes,
+      google_apis::test_util::CreateCopyResultCallback(&error, &results));
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_EQ(1u, results.size());
+  EXPECT_EQ(FILE_PATH_LITERAL("drive/root/File1"), results[0].path.value());
+
+  hashes.clear();
+  hashes.insert("md5#2");
+  file_system_->SearchByHashes(
+      hashes,
+      google_apis::test_util::CreateCopyResultCallback(&error, &results));
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_EQ(2u, results.size());
+  std::sort(results.begin(), results.end(), &CompareHashAndFilePath);
+  EXPECT_EQ(FILE_PATH_LITERAL("drive/root/Dir1/File2"),
+            results[0].path.value());
+  EXPECT_EQ(FILE_PATH_LITERAL("drive/root/Dir1/SubDir2/File3"),
+            results[1].path.value());
+
+  hashes.clear();
+  hashes.insert("md5#1");
+  hashes.insert("md5#2");
+  file_system_->SearchByHashes(
+      hashes,
+      google_apis::test_util::CreateCopyResultCallback(&error, &results));
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_EQ(3u, results.size());
+  std::sort(results.begin(), results.end(), &CompareHashAndFilePath);
+  EXPECT_EQ(FILE_PATH_LITERAL("drive/root/File1"), results[0].path.value());
+  EXPECT_EQ(FILE_PATH_LITERAL("drive/root/Dir1/File2"),
+            results[1].path.value());
+  EXPECT_EQ(FILE_PATH_LITERAL("drive/root/Dir1/SubDir2/File3"),
+            results[2].path.value());
+}
 
 TEST_F(FileSystemTest, Copy) {
   base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
