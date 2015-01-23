@@ -324,9 +324,10 @@ void WebNavigationTabObserver::RenderViewDeleted(
 }
 
 void WebNavigationTabObserver::AboutToNavigateRenderFrame(
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
   content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
+      new_host->GetRenderViewHost();
   if (!render_view_host_) {
     render_view_host_ = render_view_host;
   } else if (render_view_host != render_view_host_) {

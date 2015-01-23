@@ -522,7 +522,8 @@ class CONTENT_EXPORT WebContentsImpl
   bool CanOverscrollContent() const override;
   void NotifyChangedNavigationState(InvalidateTypes changed_flags) override;
   void AboutToNavigateRenderFrame(
-      RenderFrameHostImpl* render_frame_host) override;
+      RenderFrameHostImpl* old_host,
+      RenderFrameHostImpl* new_host) override;
   void DidStartNavigationToPendingEntry(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,

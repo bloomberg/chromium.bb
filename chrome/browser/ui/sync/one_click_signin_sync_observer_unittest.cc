@@ -38,7 +38,8 @@ class MockWebContentsObserver : public content::WebContentsObserver {
   // to the continue URL. Navigations in unit_tests never complete, but a
   // navigation start is a sufficient signal for the purposes of this test.
   // Listening for this call also has the advantage of being synchronous.
-  MOCK_METHOD1(AboutToNavigateRenderFrame, void(content::RenderFrameHost*));
+  MOCK_METHOD2(AboutToNavigateRenderFrame, void(content::RenderFrameHost*,
+                                                content::RenderFrameHost*));
 };
 
 class OneClickTestProfileSyncService : public TestProfileSyncService {
@@ -169,7 +170,7 @@ TEST_F(OneClickSigninSyncObserverTest, NoSyncService_RedirectsImmediately) {
               profile(), BuildNullService));
 
   // The observer should immediately redirect to the continue URL.
-  EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderFrame(_));
+  EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderFrame(_, _));
   CreateSyncObserver(kContinueUrl);
   EXPECT_EQ(GURL(kContinueUrl), web_contents()->GetVisibleURL());
 
@@ -181,7 +182,8 @@ TEST_F(OneClickSigninSyncObserverTest, NoSyncService_RedirectsImmediately) {
 // Verify that when the WebContents is destroyed without any Sync notifications
 // firing, the observer cleans up its memory without loading the continue URL.
 TEST_F(OneClickSigninSyncObserverTest, WebContentsDestroyed) {
-  EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderFrame(_)).Times(0);
+  EXPECT_CALL(*web_contents_observer_,
+              AboutToNavigateRenderFrame(_, _)).Times(0);
   CreateSyncObserver(kContinueUrl);
   SetContents(NULL);
 }
@@ -194,7 +196,7 @@ TEST_F(OneClickSigninSyncObserverTest,
   sync_service_->set_first_setup_in_progress(false);
   sync_service_->set_sync_active(true);
 
-  EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderFrame(_));
+  EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderFrame(_, _));
   sync_service_->NotifyObservers();
   EXPECT_EQ(GURL(kContinueUrl), web_contents()->GetVisibleURL());
 }
@@ -207,7 +209,8 @@ TEST_F(OneClickSigninSyncObserverTest,
   sync_service_->set_first_setup_in_progress(false);
   sync_service_->set_sync_active(false);
 
-  EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderFrame(_)).Times(0);
+  EXPECT_CALL(*web_contents_observer_,
+              AboutToNavigateRenderFrame(_, _)).Times(0);
   sync_service_->NotifyObservers();
   EXPECT_NE(GURL(kContinueUrl), web_contents()->GetVisibleURL());
 }
@@ -220,7 +223,8 @@ TEST_F(OneClickSigninSyncObserverTest,
   sync_service_->set_first_setup_in_progress(true);
   sync_service_->set_sync_active(false);
 
-  EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderFrame(_)).Times(0);
+  EXPECT_CALL(*web_contents_observer_,
+              AboutToNavigateRenderFrame(_, _)).Times(0);
   sync_service_->NotifyObservers();
   EXPECT_NE(GURL(kContinueUrl), web_contents()->GetVisibleURL());
 
@@ -238,7 +242,8 @@ TEST_F(OneClickSigninSyncObserverTest,
   sync_service_->set_first_setup_in_progress(false);
   sync_service_->set_sync_active(true);
 
-  EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderFrame(_)).Times(0);
+  EXPECT_CALL(*web_contents_observer_,
+              AboutToNavigateRenderFrame(_, _)).Times(0);
   sync_service_->NotifyObservers();
   EXPECT_NE(GURL(kContinueUrl), web_contents()->GetVisibleURL());
 }

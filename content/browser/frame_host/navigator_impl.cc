@@ -424,8 +424,10 @@ bool NavigatorImpl::NavigateToEntry(
       dest_render_frame_host, entry.GetURL());
 
   // Notify observers that we will navigate in this RenderFrame.
-  if (delegate_)
-    delegate_->AboutToNavigateRenderFrame(dest_render_frame_host);
+  if (delegate_) {
+    delegate_->AboutToNavigateRenderFrame(render_frame_host,
+                                          dest_render_frame_host);
+  }
 
   // Create the navigation parameters.
   // TODO(vitalybuka): Move this before AboutToNavigateRenderFrame once

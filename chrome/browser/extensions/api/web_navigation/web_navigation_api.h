@@ -55,7 +55,8 @@ class WebNavigationTabObserver
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
   void AboutToNavigateRenderFrame(
-      content::RenderFrameHost* render_frame_host) override;
+      content::RenderFrameHost* old_host,
+      content::RenderFrameHost* new_host) override;
   void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,

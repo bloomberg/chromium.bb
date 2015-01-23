@@ -44,6 +44,17 @@ typedef std::vector<RenderViewDevToolsAgentHost*> Instances;
 namespace {
 base::LazyInstance<Instances>::Leaky g_instances = LAZY_INSTANCE_INITIALIZER;
 
+static RenderViewDevToolsAgentHost* FindAgentHost(RenderFrameHost* host) {
+  if (g_instances == NULL)
+    return NULL;
+  for (Instances::iterator it = g_instances.Get().begin();
+       it != g_instances.Get().end(); ++it) {
+    if ((*it)->HasRenderFrameHost(host))
+      return *it;
+  }
+  return NULL;
+}
+
 // Returns RenderViewDevToolsAgentHost attached to any of RenderFrameHost
 // instances associated with |web_contents|
 static RenderViewDevToolsAgentHost* FindAgentHost(WebContents* web_contents) {
@@ -104,11 +115,7 @@ std::vector<WebContents*> DevToolsAgentHostImpl::GetInspectableWebContents() {
 void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
     RenderFrameHost* pending,
     RenderFrameHost* current) {
-  if (current->GetParent())
-    return;
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(pending);
-  RenderViewDevToolsAgentHost* agent_host = FindAgentHost(web_contents);
+  RenderViewDevToolsAgentHost* agent_host = FindAgentHost(pending);
   if (!agent_host)
     return;
   agent_host->DisconnectRenderFrameHost();
@@ -267,30 +274,27 @@ RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
 
 // TODO(creis): Consider removing this in favor of RenderFrameHostChanged.
 void RenderViewDevToolsAgentHost::AboutToNavigateRenderFrame(
-    RenderFrameHost* render_frame_host) {
-  if (!render_frame_host_)
-    return;
-  if (render_frame_host->GetParent())
+    RenderFrameHost* old_host,
+    RenderFrameHost* new_host) {
+  if (render_frame_host_ != old_host)
     return;
 
   // TODO(creis): This will need to be updated for --site-per-process, since
   // RenderViewHost is going away and navigations could happen in any frame.
-  if (render_frame_host_ == render_frame_host) {
+  if (render_frame_host_ == new_host) {
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
         render_frame_host_->GetRenderViewHost());
     if (rvh->render_view_termination_status() ==
             base::TERMINATION_STATUS_STILL_RUNNING)
       return;
   }
-  ReattachToRenderFrameHost(render_frame_host);
+  ReattachToRenderFrameHost(new_host);
 }
 
 void RenderViewDevToolsAgentHost::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
-  if (new_host->GetParent())
-    return;
-  if (new_host != render_frame_host_) {
+  if (old_host == render_frame_host_ && new_host != render_frame_host_) {
     // AboutToNavigateRenderFrame was not called for renderer-initiated
     // navigation.
     ReattachToRenderFrameHost(new_host);
@@ -398,7 +402,6 @@ void RenderViewDevToolsAgentHost::Observe(int type,
 
 void RenderViewDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
   DCHECK(!render_frame_host_);
-  DCHECK(!rfh->GetParent());
   render_frame_host_ = static_cast<RenderFrameHostImpl*>(rfh);
 
   WebContentsObserver::Observe(WebContents::FromRenderFrameHost(rfh));
@@ -499,6 +502,11 @@ void RenderViewDevToolsAgentHost::SynchronousSwapCompositorFrame(
   if (!render_frame_host_)
     return;
   page_handler_->OnSwapCompositorFrame(frame_metadata);
+}
+
+bool RenderViewDevToolsAgentHost::HasRenderFrameHost(
+    RenderFrameHost* host) {
+  return host == render_frame_host_;
 }
 
 void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(

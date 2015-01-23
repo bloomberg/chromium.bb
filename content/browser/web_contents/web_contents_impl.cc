@@ -2560,12 +2560,13 @@ void WebContentsImpl::NotifyChangedNavigationState(
 }
 
 void WebContentsImpl::AboutToNavigateRenderFrame(
-      RenderFrameHostImpl* render_frame_host) {
+      RenderFrameHostImpl* old_host,
+      RenderFrameHostImpl* new_host) {
   // Notify observers that we will navigate in this RenderFrame.
   FOR_EACH_OBSERVER(
       WebContentsObserver,
       observers_,
-      AboutToNavigateRenderFrame(render_frame_host));
+      AboutToNavigateRenderFrame(old_host, new_host));
 }
 
 void WebContentsImpl::DidStartNavigationToPendingEntry(

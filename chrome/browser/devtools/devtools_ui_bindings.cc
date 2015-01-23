@@ -249,7 +249,8 @@ class DevToolsUIBindings::FrontendWebContentsObserver
   // TODO(creis): Replace with RenderFrameCreated when http://crbug.com/425397
   // is fixed.  See also http://crbug.com/424641.
   void AboutToNavigateRenderFrame(
-      content::RenderFrameHost* render_frame_host) override;
+      content::RenderFrameHost* old_host,
+      content::RenderFrameHost* new_host) override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -287,11 +288,12 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
-    AboutToNavigateRenderFrame(content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host->GetParent())
+    AboutToNavigateRenderFrame(content::RenderFrameHost* old_host,
+                               content::RenderFrameHost* new_host) {
+  if (new_host->GetParent())
     return;
   devtools_bindings_->frontend_host_.reset(
-      content::DevToolsFrontendHost::Create(render_frame_host,
+      content::DevToolsFrontendHost::Create(new_host,
                                             devtools_bindings_));
 }
 

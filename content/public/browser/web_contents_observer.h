@@ -118,7 +118,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   //
   // DEPRECATED.  This method is difficult to use correctly and should be
   // removed.  TODO(creis): Remove in http://crbug.com/424641.
-  virtual void AboutToNavigateRenderFrame(RenderFrameHost* render_frame_host) {}
+  virtual void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
+                                          RenderFrameHost* new_host) {}
 
   // This method is invoked after the browser process starts a navigation to a
   // pending NavigationEntry. It is not called for renderer-initiated

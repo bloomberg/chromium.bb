@@ -52,6 +52,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void SynchronousSwapCompositorFrame(
       const cc::CompositorFrameMetadata& frame_metadata);
 
+  bool HasRenderFrameHost(RenderFrameHost* host);
+
   // DevTooolsAgentHost overrides.
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* web_contents) override;
@@ -75,7 +77,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void OnClientDetached() override;
 
   // WebContentsObserver overrides.
-  void AboutToNavigateRenderFrame(RenderFrameHost* render_frame_host) override;
+  void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
+                                  RenderFrameHost* new_host) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
   void RenderFrameDeleted(RenderFrameHost* rvh) override;
