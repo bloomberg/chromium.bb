@@ -43,6 +43,7 @@ public:
     GridTrack()
         : m_baseSize(0)
         , m_growthLimit(0)
+        , m_plannedIncrease(0)
     {
     }
 
@@ -99,6 +100,23 @@ public:
         return (m_growthLimit == infinity) ? m_baseSize : m_growthLimit;
     }
 
+    const LayoutUnit& plannedIncrease() const { return m_plannedIncrease; }
+
+    void growPlannedIncrease(const LayoutUnit& plannedIncrease)
+    {
+        ASSERT(plannedIncrease >= 0);
+        m_plannedIncrease += plannedIncrease;
+    }
+
+    void updateFromPlannedIncrease(RenderGrid::AccumulatorGrowFunction trackGrowthFunction)
+    {
+        if (m_plannedIncrease == 0)
+            return;
+
+        (this->*trackGrowthFunction)(m_plannedIncrease);
+        m_plannedIncrease = 0;
+    }
+
 private:
     bool isGrowthLimitBiggerThanBaseSize() const { return growthLimitIsInfinite() || m_growthLimit >= m_baseSize; }
 
@@ -110,6 +128,7 @@ private:
 
     LayoutUnit m_baseSize;
     LayoutUnit m_growthLimit;
+    LayoutUnit m_plannedIncrease;
 };
 
 struct GridTrackForNormalization {
@@ -228,10 +247,9 @@ public:
     Vector<size_t> contentSizedTracksIndex;
 
     // Performance optimization: hold onto these Vectors until the end of Layout to avoid repeated malloc / free.
-    Vector<LayoutUnit> distributeTrackVector;
     Vector<GridTrack*> filteredTracks;
     WillBeHeapVector<GridItemWithSpan> itemsSortedByIncreasingSpan;
-    Vector<size_t> growAboveMaxBreadthTrackIndexes;
+    Vector<GridTrack*> growBeyondGrowthLimitsTracks;
 };
 
 RenderGrid::RenderGrid(Element* element)
@@ -438,7 +456,7 @@ void RenderGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         for (size_t i = 0; i < tracksSize; ++i)
             tracksForDistribution[i] = tracks.data() + i;
 
-        distributeSpaceToTracks(tracksForDistribution, 0, &GridTrack::baseSize, &GridTrack::growBaseSize, sizingData, availableLogicalSpace);
+        distributeSpaceToTracks(tracksForDistribution, nullptr, &GridTrack::baseSize, &GridTrack::growBaseSize, sizingData, availableLogicalSpace);
     } else {
         for (auto& track : tracks)
             track.setBaseSize(track.growthLimit());
@@ -753,7 +771,7 @@ void RenderGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
     const GridResolvedPosition initialTrackPosition = (direction == ForColumns) ? coordinate.columns.resolvedInitialPosition : coordinate.rows.resolvedInitialPosition;
     const GridResolvedPosition finalTrackPosition = (direction == ForColumns) ? coordinate.columns.resolvedFinalPosition : coordinate.rows.resolvedFinalPosition;
 
-    sizingData.growAboveMaxBreadthTrackIndexes.shrink(0);
+    sizingData.growBeyondGrowthLimitsTracks.shrink(0);
     sizingData.filteredTracks.shrink(0);
     for (GridResolvedPosition trackPosition = initialTrackPosition; trackPosition <= finalTrackPosition; ++trackPosition) {
         GridTrackSize trackSize = gridTrackSize(direction, trackPosition.toInt());
@@ -763,23 +781,25 @@ void RenderGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
         GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackPosition.toInt()] : sizingData.rowTracks[trackPosition.toInt()];
         sizingData.filteredTracks.append(&track);
 
-        if (growAboveMaxBreadthFilterFunction && (trackSize.*growAboveMaxBreadthFilterFunction)())
-            sizingData.growAboveMaxBreadthTrackIndexes.append(sizingData.filteredTracks.size() - 1);
+        if (!growAboveMaxBreadthFilterFunction || (trackSize.*growAboveMaxBreadthFilterFunction)())
+            sizingData.growBeyondGrowthLimitsTracks.append(&track);
     }
 
     if (sizingData.filteredTracks.isEmpty())
         return;
 
-    LayoutUnit additionalBreadthSpace = (this->*sizingFunction)(gridItemWithSpan.gridItem(), direction, sizingData.columnTracks);
+    LayoutUnit extraSpace = (this->*sizingFunction)(gridItemWithSpan.gridItem(), direction, sizingData.columnTracks);
     for (GridResolvedPosition trackIndexForSpace = initialTrackPosition; trackIndexForSpace <= finalTrackPosition; ++trackIndexForSpace) {
         GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackIndexForSpace.toInt()] : sizingData.rowTracks[trackIndexForSpace.toInt()];
-        additionalBreadthSpace -= (track.*trackGetter)();
+        extraSpace -= (track.*trackGetter)();
     }
 
-    // Specs mandate to floor additionalBreadthSpace (extra-space in specs) to 0. Instead we directly avoid the function
-    // call in those cases as it will be a noop in terms of track sizing.
-    if (additionalBreadthSpace > 0)
-        distributeSpaceToTracks(sizingData.filteredTracks, &sizingData.growAboveMaxBreadthTrackIndexes, trackGetter, trackGrowthFunction, sizingData, additionalBreadthSpace);
+    // Specs mandate to floor extraSpace to 0. Instead we directly avoid the function call in those cases as it will be
+    // a noop in terms of track sizing.
+    if (extraSpace > 0) {
+        Vector<GridTrack*>* tracksToGrowBeyondGrowthLimits = sizingData.growBeyondGrowthLimitsTracks.isEmpty() ? &sizingData.filteredTracks : &sizingData.growBeyondGrowthLimitsTracks;
+        distributeSpaceToTracks(sizingData.filteredTracks, tracksToGrowBeyondGrowthLimits, trackGetter, trackGrowthFunction, sizingData, extraSpace);
+    }
 }
 
 static bool sortByGridTrackGrowthPotential(const GridTrack* track1, const GridTrack* track2)
@@ -795,44 +815,38 @@ static bool sortByGridTrackGrowthPotential(const GridTrack* track1, const GridTr
     return (track1->growthLimit() - track1->baseSize()) < (track2->growthLimit() - track2->baseSize());
 }
 
-void RenderGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, Vector<size_t>* growAboveMaxBreadthTrackIndexes, AccumulatorGetter trackGetter, AccumulatorGrowFunction trackGrowthFunction, GridSizingData& sizingData, LayoutUnit& availableLogicalSpace)
+void RenderGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, const Vector<GridTrack*>* growBeyondGrowthLimitsTracks, AccumulatorGetter trackGetter, AccumulatorGrowFunction trackGrowthFunction, GridSizingData& sizingData, LayoutUnit& availableLogicalSpace)
 {
     ASSERT(availableLogicalSpace > 0);
     std::sort(tracks.begin(), tracks.end(), sortByGridTrackGrowthPotential);
 
     size_t tracksSize = tracks.size();
-    sizingData.distributeTrackVector.resize(tracksSize);
-
     for (size_t i = 0; i < tracksSize; ++i) {
         GridTrack& track = *tracks[i];
+        ASSERT(track.plannedIncrease() == 0);
         LayoutUnit availableLogicalSpaceShare = availableLogicalSpace / (tracksSize - i);
-        const LayoutUnit& trackBreadth = (tracks[i]->*trackGetter)();
+        const LayoutUnit& trackBreadth = (track.*trackGetter)();
         LayoutUnit growthShare = track.growthLimitIsInfinite() ? availableLogicalSpaceShare : std::min(availableLogicalSpaceShare, track.growthLimit() - trackBreadth);
-        sizingData.distributeTrackVector[i] = trackBreadth;
         // We should never shrink any grid track or else we can't guarantee we abide by our min-sizing function.
         if (growthShare > 0) {
-            sizingData.distributeTrackVector[i] += growthShare;
+            track.growPlannedIncrease(growthShare);
             availableLogicalSpace -= growthShare;
         }
     }
 
-    if (availableLogicalSpace > 0 && growAboveMaxBreadthTrackIndexes) {
-        size_t indexesSize = growAboveMaxBreadthTrackIndexes->size();
-        size_t tracksGrowingAboveMaxBreadthSize = indexesSize ? indexesSize : tracksSize;
-        // If we have a non-null empty vector of track indexes to grow above max breadth means that we should grow all
-        // affected tracks.
+    if (availableLogicalSpace > 0 && growBeyondGrowthLimitsTracks) {
+        size_t tracksGrowingAboveMaxBreadthSize = growBeyondGrowthLimitsTracks->size();
         for (size_t i = 0; i < tracksGrowingAboveMaxBreadthSize; ++i) {
+            GridTrack* track = growBeyondGrowthLimitsTracks->at(i);
             LayoutUnit growthShare = availableLogicalSpace / (tracksGrowingAboveMaxBreadthSize - i);
-            size_t distributeTrackIndex = indexesSize ? growAboveMaxBreadthTrackIndexes->at(i) : i;
-            sizingData.distributeTrackVector[distributeTrackIndex] += growthShare;
+            track->growPlannedIncrease(growthShare);
             availableLogicalSpace -= growthShare;
         }
     }
 
-    for (size_t i = 0; i < tracksSize; ++i) {
-        LayoutUnit growth = sizingData.distributeTrackVector[i] - (tracks[i]->*trackGetter)();
-        if (growth >= 0)
-            (tracks[i]->*trackGrowthFunction)(growth);
+    for (auto* track: tracks) {
+        track->updateFromPlannedIncrease(trackGrowthFunction);
+        ASSERT(track->plannedIncrease() == 0);
     }
 }
 

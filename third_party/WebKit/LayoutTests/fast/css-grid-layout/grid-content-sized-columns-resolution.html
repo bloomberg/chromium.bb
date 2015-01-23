@@ -47,6 +47,12 @@
  .gridAutoAndFixedFixedAndMaxContentFixed {
      grid-template-columns: auto minmax(20px, 30px) minmax(max-content, 20px);
  }
+ .gridMaxContentAndMaxContentFixedAndMaxContent {
+    grid-template-columns: max-content minmax(max-content, 20px) max-content;
+ }
+ .gridAutoAndMinContentFixedAndMinContent {
+    grid-template-columns: auto minmax(min-content, 30px) min-content;
+ }
 
 </style>
 <script src="../../resources/js-test.js"></script>
@@ -295,6 +301,18 @@
     </div>
 </div>
 
+<div class="grid gridMaxContentAndMaxContentFixedAndMaxContent" id="gridMaxContentAndMaxContentFixedAndMaxContent">
+    <div style="grid-row: 1; grid-column: 1;">X X X</div>
+    <div style="grid-row: 1; grid-column: 3;">X X</div>
+    <div style="grid-row: 1; grid-column: 1 / -1;">XX XX XX XX XX</div>
+</div>
+
+<div class="grid gridAutoAndMinContentFixedAndMinContent" id="gridAutoAndMinContentFixedAndMinContent">
+    <div style="grid-row: 1; grid-column: 1;">XX</div>
+    <div style="grid-row: 1; grid-column: 1 / -1;">XXXXXXXXXXXXXXX</div>
+    <div style="grid-row: 1; grid-column: 3;">XXX XXX</div>
+</div>
+
 <script>
    function testGridColumnsValues(id, computedColumnValue)
    {
@@ -350,6 +368,8 @@
    testGridColumnsValues("gridMaxContentFixedAndAutoAboveLimits", "65px 85px");
    testGridColumnsValues("gridMinContentFixedAndFixedFixedAndAuto", "20px 20px 60px");
    testGridColumnsValues("gridAutoAndFixedFixedAndMaxContentFixed", "70px 20px 60px");
+   testGridColumnsValues("gridMaxContentAndMaxContentFixedAndMaxContent", "70px 20px 50px");
+   testGridColumnsValues("gridAutoAndMinContentFixedAndMinContent", "55px 30px 65px");
 </script>
 </body>
 </html>
