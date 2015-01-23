@@ -2432,4 +2432,37 @@ TEST_F(RenderTextTest, TextDoesntClip) {
   }
 }
 
+// This test validates that the RenderText centering baseline is greater than
+// the font list baseline for a valid display rect.
+TEST_F(RenderTextTest, CenteringBaselineTest) {
+  FontList font_list("Arial, 12px");
+  const std::vector<Font>& fonts = font_list.GetFonts();
+  ASSERT_EQ(1U, fonts.size());
+  ASSERT_EQ("arial",
+            base::StringToLowerASCII(fonts[0].GetActualFontNameForTesting()));
+
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetDisplayRect(Rect(0, 0, 25, 25));
+  render_text->SetFontList(font_list);
+  EXPECT_GT(render_text->GetBaseline(), font_list.GetBaseline());
+}
+
+#if defined(OS_WIN)
+// This test validates that the RenderText centering baseline for uniscribe
+// fonts like Devnagri fonts is greater than the font list baseline for a valid
+// display rect.
+TEST_F(RenderTextTest, CenteringBaselineTestForUniscribeFonts) {
+  FontList font_list("Madhav, 12px");
+  const std::vector<Font>& fonts = font_list.GetFonts();
+  ASSERT_EQ(1U, fonts.size());
+  ASSERT_EQ("madhav",
+            base::StringToLowerASCII(fonts[0].GetActualFontNameForTesting()));
+
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetDisplayRect(Rect(0, 0, 25, 25));
+  render_text->SetFontList(font_list);
+  EXPECT_GT(render_text->GetBaseline(), font_list.GetBaseline());
+}
+#endif
+
 }  // namespace gfx
