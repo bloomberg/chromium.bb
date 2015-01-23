@@ -37,6 +37,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/AnimationPlayerEvent.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/TraceEvent.h"
 #include "wtf/MathExtras.h"
@@ -868,6 +869,9 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
         break;
     }
     m_player->endUpdatingState();
+
+    if (oldPlayState != newPlayState && newPlayState == Running)
+        InspectorInstrumentation::didCreateAnimationPlayer(m_player->timeline()->document(), *m_player);
 }
 
 

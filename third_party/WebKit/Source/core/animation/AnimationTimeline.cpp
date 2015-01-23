@@ -35,7 +35,6 @@
 #include "core/animation/AnimationClock.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "platform/TraceEvent.h"
@@ -89,7 +88,6 @@ void AnimationTimeline::playerAttached(AnimationPlayer& player)
     ASSERT(player.timeline() == this);
     ASSERT(!m_players.contains(&player));
     m_players.add(&player);
-    InspectorInstrumentation::didCreateAnimationPlayer(m_document, player);
 }
 
 AnimationPlayer* AnimationTimeline::play(AnimationNode* child)
