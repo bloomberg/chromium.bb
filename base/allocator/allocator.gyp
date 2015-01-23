@@ -24,11 +24,6 @@
     {
       'target_name': 'allocator',
       'type': 'static_library',
-      # Make sure the allocation library is optimized to
-      # the hilt in official builds.
-      'variables': {
-        'optimize': 'max',
-      },
       'direct_dependent_settings': {
         'configurations': {
           'Common_Base': {
