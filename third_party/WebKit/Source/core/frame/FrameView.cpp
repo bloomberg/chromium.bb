@@ -3961,6 +3961,7 @@ void FrameView::show()
 {
     if (!isSelfVisible()) {
         setSelfVisible(true);
+        updateScrollableAreaSet();
         if (isParentVisible()) {
             for (const auto& child : m_children)
                 child->setParentVisible(true);
@@ -3978,6 +3979,7 @@ void FrameView::hide()
                 child->setParentVisible(false);
         }
         setSelfVisible(false);
+        updateScrollableAreaSet();
     }
 
     Widget::hide();
