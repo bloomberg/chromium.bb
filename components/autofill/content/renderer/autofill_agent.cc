@@ -309,6 +309,9 @@ void AutofillAgent::FormControlElementClicked(
   options.display_warning_if_disabled = true;
   options.show_full_suggestion_list = element.isAutofilled();
 
+  // On Android, default to showing the dropdown on field focus.
+  // On desktop, require an extra click after field focus.
+  // See http://crbug.com/427660
 #if defined(OS_ANDROID)
   bool single_click_autofill =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
