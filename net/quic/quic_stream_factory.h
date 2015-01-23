@@ -105,7 +105,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool always_require_handshake_confirmation,
       bool disable_connection_pooling,
       int load_server_info_timeout,
-      bool disable_loading_server_info_for_new_servers,
       float load_server_info_timeout_srtt_multiplier,
       bool enable_truncated_connection_ids,
       const QuicTagVector& connection_options);
@@ -296,11 +295,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // information. If we don't want to timeout, set
   // |load_server_info_timeout_ms_| to 0.
   int load_server_info_timeout_ms_;
-
-  // Set to disable loading of QUIC server information from disk cache for new
-  // servers. New servers are those servers for which there is no QUIC protocol
-  // entry in AlternateProtocolMap.
-  bool disable_loading_server_info_for_new_servers_;
 
   // Specifies the ratio between time to load QUIC server information from disk
   // cache to 'smoothed RTT'. This ratio is used to calculate the timeout in
