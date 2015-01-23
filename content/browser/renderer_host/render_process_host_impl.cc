@@ -1071,10 +1071,11 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kEnableDelegatedRenderer);
 
   if (IsImplSidePaintingEnabled()) {
-    command_line->AppendSwitch(switches::kEnableImplSidePainting);
     command_line->AppendSwitchASCII(
         switches::kNumRasterThreads,
         base::IntToString(NumberOfRendererRasterThreads()));
+  } else {
+    command_line->AppendSwitch(switches::kDisableImplSidePainting);
   }
 
   if (IsGpuRasterizationEnabled())
