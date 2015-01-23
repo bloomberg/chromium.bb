@@ -13,9 +13,6 @@ namespace switches {
 // added to the experimental app launcher.
 const char kCustomLauncherPage[] = "custom-launcher-page";
 
-// If set, the app info context menu item is not available in the app list UI.
-const char kDisableAppInfo[] = "disable-app-list-app-info";
-
 // If set, the app list will not be dismissed when it loses focus. This is
 // useful when testing the app list or a custom launcher page. It can still be
 // dismissed via the other methods (like the Esc key).
@@ -72,10 +69,9 @@ bool IsVoiceSearchEnabled() {
 
 bool IsAppInfoEnabled() {
 #if defined(OS_MACOSX)
-  if (!IsMacViewsAppListListEnabled())
-    return false;
+  return IsMacViewsAppListListEnabled();
 #endif
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableAppInfo);
+  return true;
 }
 
 bool IsExperimentalAppListEnabled() {

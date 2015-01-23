@@ -1484,13 +1484,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "disable-app-list-app-info",
-    IDS_FLAGS_DISABLE_APP_INFO_IN_APP_LIST,
-    IDS_FLAGS_DISABLE_APP_INFO_IN_APP_LIST_DESCRIPTION,
-    kOsLinux | kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(app_list::switches::kDisableAppInfo)
-  },
-  {
     "disable-drive-apps-in-app-list",
     IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_NAME,
     IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_DESCRIPTION,
