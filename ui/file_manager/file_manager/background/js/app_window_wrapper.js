@@ -250,9 +250,6 @@ AppWindowWrapper.prototype.onClosed_ = function() {
   // Remove the window from the set.
   delete window.background.appWindows[this.id_];
 
-  // If there is no application window, reset window ID.
-  if (!Object.keys(window.background.appWindows).length)
-    nextFileManagerWindowID = 0;
   window.background.tryClose();
 };
 
