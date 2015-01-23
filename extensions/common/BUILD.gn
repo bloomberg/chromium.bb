@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
@@ -41,6 +42,8 @@ if (enable_extensions) {
       "api/sockets/sockets_manifest_handler.h",
       "api/sockets/sockets_manifest_permission.cc",
       "api/sockets/sockets_manifest_permission.h",
+      "cast/cast_cert_validator.cc",
+      "cast/cast_cert_validator.h",
       "common_manifest_handlers.cc",
       "common_manifest_handlers.h",
       "csp_validator.cc",
@@ -248,6 +251,12 @@ if (enable_extensions) {
       "//ui/gfx/ipc",
       "//url",
     ]
+
+    if (use_openssl) {
+      sources += [ "cast/cast_cert_validator_openssl.cc" ]
+    } else {
+      sources += [ "cast/cast_cert_validator_nss.cc" ]
+    }
 
     if (enable_nacl) {
       sources += [

@@ -46,6 +46,30 @@ TEST_F(NetworkingPrivateCryptoTest, VerifyCredentials) {
       "wM9asRj3tJA5VRFbLbsit1VI7IaRCk9rsSKkpBUaVeKbPLz+y/Z6JonXXT6AxsfgUSKDd4B7"
       "MYLrTwMQfGuUaaaKko6ldKIrovjrcPloQr1Hxb2bipFcjLmG7nxQLoS6vQ=="
       "-----END CERTIFICATE-----";
+  static const char kICAData[] =
+      "-----BEGIN CERTIFICATE-----"
+      "MIIDzTCCArWgAwIBAgIBAzANBgkqhkiG9w0BAQUFADB1MQswCQYDVQQGEwJVUzET"
+      "MBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNTW91bnRhaW4gVmlldzETMBEG"
+      "A1UECgwKR29vZ2xlIEluYzENMAsGA1UECwwEQ2FzdDEVMBMGA1UEAwwMQ2FzdCBS"
+      "b290IENBMB4XDTE0MDQwMjIwNTg1NFoXDTE5MDQwMjIwNTg1NFowfTELMAkGA1UE"
+      "BhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDU1vdW50YWluIFZp"
+      "ZXcxEzARBgNVBAoMCkdvb2dsZSBJbmMxEjAQBgNVBAsMCUdvb2dsZSBUVjEYMBYG"
+      "A1UEAwwPRXVyZWthIEdlbjEgSUNBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB"
+      "CgKCAQEAvCKAvYD2OiEAO652XjV/PcNkXFWUhjQvBYcozfdpjBezUKe4gvrfx0Mt"
+      "1n6roG+3E3KApEcVwSCZUM3sFGIJW6SYzdJBtjZO/+guMjBKgahCo2ybM27KsvVT"
+      "ZuAnU4YahR6nOT9Kd477VGZm+1hUwF45x/VQBgvgitTO4WpVH4sXAOZpoyfmCCVp"
+      "PBKdjQUs1i6iMd60UlDWIEnecaD5rSBAEvHdJevV5rg29NaPf8pD3NcQW+Y/UYqF"
+      "s/P/9gMtyyNPnK0Y55MFjKxSmvdM6Zl6vm5+TQrjxhypk/o6pZFdHL1m68xg3IZ0"
+      "ys/4khyYfVf6YUeeq4C35EiAKpLFGwIDAQABo2AwXjAPBgNVHRMECDAGAQH/AgEA"
+      "MB0GA1UdDgQWBBQyr35sod0oQuWz4VmnWjnJ/4pinzAfBgNVHSMEGDAWgBR8mh59"
+      "33lUvNfMXsqZhkV5ZXQoGTALBgNVHQ8EBAMCAQYwDQYJKoZIhvcNAQEFBQADggEB"
+      "ABPENY9iGt6qsc5yq4JOO6EEqYbKVtkSf1AqW2yJc4M4EZ65eA6bpj9EVIKvDxYq"
+      "NI7q40f7jCXiS+Y73OXFaC3Xue8+DV7WVjAvf9QYy79ohnbqadA4U/Sb7vw4AzwT"
+      "KCMlH2fUJ5PCNFfTj6lAkeZOhxtegnEMTIB8zvXEb42H0hN4UxRRhCeKS9tIlAmI"
+      "Ql1ib0jTDDN6IgQYslrx0dyZzBAsRocq/d3ycXX71iMykoIHZ7rNJ2bDMddRdFk2"
+      "D0Ljj4fZjrQNyD4mot/9mqSrF1Q2/AdWQO3pJONcXRWRynJ4Ian3sWdq2B5Dq8Iz"
+      "kqrjM7lOq9YEQ+hMRdmOHP4="
+      "-----END CERTIFICATE-----";
   static const char kName[] = "eureka8997";
   static const char kSsdpUdn[] = "c5b2a83b-5958-7ce6-b179-e1f44699429b";
   static const char kHotspotBssid[] = "00:1A:11:FF:AC:DF";
@@ -91,26 +115,43 @@ TEST_F(NetworkingPrivateCryptoTest, VerifyCredentials) {
 
   // Checking basic verification operation.
   EXPECT_TRUE(networking_private_crypto::VerifyCredentials(
-      kCertData, signed_data, unsigned_data, kHotspotBssid));
+      kCertData, std::vector<std::string>(), signed_data, unsigned_data,
+      kHotspotBssid));
+
+  // Checking verification operation with an ICA
+  std::vector<std::string> icas;
+  icas.push_back(kICAData);
+  EXPECT_TRUE(networking_private_crypto::VerifyCredentials(
+      kCertData, icas, signed_data, unsigned_data, kHotspotBssid));
 
   // Checking that verification fails when the certificate is signed, but
   // subject is malformed.
   EXPECT_FALSE(networking_private_crypto::VerifyCredentials(
-      kBadSubjectCertData, signed_data, unsigned_data, kHotspotBssid));
+      kBadSubjectCertData, std::vector<std::string>(), signed_data,
+      unsigned_data, kHotspotBssid));
 
   // Checking that verification fails when certificate has invalid format.
   EXPECT_FALSE(networking_private_crypto::VerifyCredentials(
-      kBadCertData, signed_data, unsigned_data, kHotspotBssid));
+      kBadCertData, std::vector<std::string>(), signed_data, unsigned_data,
+      kHotspotBssid));
+
+  // Checking that verification fails if we supply a bad ICA.
+  std::vector<std::string> bad_icas;
+  bad_icas.push_back(kCertData);
+  EXPECT_FALSE(networking_private_crypto::VerifyCredentials(
+      kCertData, bad_icas, signed_data, unsigned_data, kHotspotBssid));
 
   // Checking that verification fails when Hotspot Bssid is invalid.
   EXPECT_FALSE(networking_private_crypto::VerifyCredentials(
-      kCertData, signed_data, unsigned_data, kBadHotspotBssid));
+      kCertData, std::vector<std::string>(), signed_data, unsigned_data,
+      kBadHotspotBssid));
 
   // Checking that verification fails when there is bad nonce in unsigned_data.
   unsigned_data = base::StringPrintf(
       "%s,%s,%s,%s,%s", kName, kSsdpUdn, kHotspotBssid, kPublicKey, kBadNonce);
   EXPECT_FALSE(networking_private_crypto::VerifyCredentials(
-      kCertData, signed_data, unsigned_data, kHotspotBssid));
+      kCertData, std::vector<std::string>(), signed_data, unsigned_data,
+      kHotspotBssid));
 }
 
 // Test that networking_private_crypto::EncryptByteString behaves as expected.

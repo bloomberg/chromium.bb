@@ -2418,6 +2418,11 @@
         ['OS=="win" or OS=="mac"', {
           'sources': [ '<@(chrome_unit_tests_win_mac_sources)' ],
         }],
+        ['OS=="win" or OS=="mac" or chromeos==1', {
+          'sources': [
+            'common/extensions/api/networking_private/networking_private_crypto_unittest.cc',
+          ],
+        }],
         ['enable_rlz!=0', {
           'dependencies': [
             '../rlz/rlz.gyp:test_support_rlz',

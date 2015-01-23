@@ -114,15 +114,23 @@ static_library("common") {
   if (is_win || is_mac) {
     sources +=
         rebase_path(gypi_values.chrome_common_win_mac_sources, ".", "//chrome")
+    deps += [ "//breakpad:client" ]
+  }
+  if (is_win || is_mac || is_chromeos) {
     if (use_openssl) {
-      sources -= [ "extensions/api/networking_private/networking_private_crypto_nss.cc" ]
+      sources += rebase_path(
+              gypi_values.chrome_common_networking_private_sources_openssl,
+              ".",
+              "//chrome")
 
       # networking_private_crypto_openssl.cc depends on boringssl.
       deps += [ "//third_party/boringssl" ]
     } else {
-      sources -= [ "extensions/api/networking_private/networking_private_crypto_openssl.cc" ]
+      sources +=
+          rebase_path(gypi_values.chrome_common_networking_private_sources_nss,
+                      ".",
+                      "//chrome")
     }
-    deps += [ "//breakpad:client" ]
   }
   if (is_mac) {
     sources +=
