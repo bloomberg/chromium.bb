@@ -190,11 +190,11 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         bool textNeedsReversing = WTF::Unicode::direction(m_renderListMarker.text()[0]) == WTF::Unicode::RightToLeft;
         StringBuilder reversedText;
         if (textNeedsReversing) {
-            int length = m_renderListMarker.text().length();
+            unsigned length = m_renderListMarker.text().length();
             reversedText.reserveCapacity(length);
             for (int i = length - 1; i >= 0; --i)
                 reversedText.append(m_renderListMarker.text()[i]);
-            ASSERT(reversedText.length() == reversedText.capacity());
+            ASSERT(reversedText.length() == length);
             textRun.setText(reversedText.toString());
         }
 
