@@ -596,7 +596,7 @@ def SetupSignalHandlers():
         pass
     os.kill(os.getpid(), signal.SIGKILL)
     return 0
-  if os.name == "posix":
+  if os.name == 'posix' and sys.platform != 'nacl':
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGHUP, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
