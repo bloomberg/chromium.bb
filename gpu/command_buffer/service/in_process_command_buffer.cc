@@ -101,8 +101,9 @@ void GpuInProcessThread::ScheduleTask(const base::Closure& task) {
 }
 
 void GpuInProcessThread::ScheduleIdleWork(const base::Closure& callback) {
+  // Match delay with GpuCommandBufferStub.
   message_loop()->PostDelayedTask(
-      FROM_HERE, callback, base::TimeDelta::FromMilliseconds(5));
+      FROM_HERE, callback, base::TimeDelta::FromMilliseconds(2));
 }
 
 scoped_refptr<gles2::ShaderTranslatorCache>
