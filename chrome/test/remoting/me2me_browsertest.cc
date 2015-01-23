@@ -154,6 +154,16 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
   Cleanup();
 }
 
+IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
+                       MANUAL_Me2Me_Disable_Remote_Connection) {
+  SetUpTest();
+
+  DisableRemoteConnection();
+  EXPECT_FALSE(IsLocalHostReady());
+
+  Cleanup();
+}
+
 void Me2MeBrowserTest::SetupForRemoteHostTest() {
   VerifyInternetAccess();
   OpenClientBrowserPage();

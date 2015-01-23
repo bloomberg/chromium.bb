@@ -907,4 +907,35 @@ bool RemoteDesktopBrowserTest::IsEnabled(
     "document.getElementById(\"" + element_name + "\").disabled");
 }
 
+bool RemoteDesktopBrowserTest::IsAppModeEqualTo(const std::string& mode) {
+  return ExecuteScriptAndExtractBool(
+      "remoting.currentMode == " + mode);
+}
+
+void RemoteDesktopBrowserTest::DisableRemoteConnection() {
+  ConditionalTimeoutWaiter hostReadyWaiter(
+        base::TimeDelta::FromSeconds(5),
+        base::TimeDelta::FromMilliseconds(500),
+        base::Bind(&RemoteDesktopBrowserTest::IsLocalHostReady, this));
+  EXPECT_TRUE(hostReadyWaiter.Wait());
+
+  ClickOnControl("stop-daemon");
+
+  ConditionalTimeoutWaiter setupDoneWaiter(
+          base::TimeDelta::FromSeconds(30),
+          base::TimeDelta::FromMilliseconds(500),
+          base::Bind(&RemoteDesktopBrowserTest::IsAppModeEqualTo,
+                     this, "remoting.AppMode.HOST_SETUP_DONE"));
+  EXPECT_TRUE(setupDoneWaiter.Wait());
+
+  ClickOnControl("host-config-done-dismiss");
+
+  ConditionalTimeoutWaiter homeWaiter(
+          base::TimeDelta::FromSeconds(5),
+          base::TimeDelta::FromMilliseconds(500),
+          base::Bind(&RemoteDesktopBrowserTest::IsAppModeEqualTo,
+                     this, "remoting.AppMode.HOME"));
+  EXPECT_TRUE(homeWaiter.Wait());
+}
+
 }  // namespace remoting

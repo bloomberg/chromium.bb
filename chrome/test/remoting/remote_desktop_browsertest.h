@@ -347,6 +347,12 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   static bool IsHostActionComplete(
       content::WebContents* client_web_content, std::string host_action_var);
 
+  // Test if the remoting app mode is equal to the given mode
+  bool IsAppModeEqualTo(const std::string& mode);
+
+  // Disable remote connection while the remote connection is enabled
+  void DisableRemoteConnection();
+
  private:
   // Fields
 
