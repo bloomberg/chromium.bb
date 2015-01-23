@@ -44,7 +44,19 @@ importer.isMediaEntry = function(entry) {
   return !!entry &&
       entry.isFile &&
       FileType.isImageOrVideo(entry) &&
-      entry.fullPath.toUpperCase().indexOf('/DCIM/') === 0;
+      importer.isBeneathMediaDir(entry);
+};
+
+/**
+ * Returns true if the entry is a media file (and a descendant of a DCIM dir).
+ *
+ * @param {Entry} entry
+ * @return {boolean}
+ */
+importer.isBeneathMediaDir = function(entry) {
+  var path = entry.fullPath.toUpperCase();
+  return path.indexOf('/DCIM/') === 0 ||
+      path.indexOf('/MISSINGNO/') >= 0;
 };
 
 /**
@@ -68,8 +80,13 @@ importer.isEligibleVolume = function(volumeInfo) {
 importer.isEligibleEntry = function(volumeInfoProvider, entry) {
   console.assert(volumeInfoProvider !== null);
   if (importer.isMediaEntry(entry)) {
-    var volumeInfo = volumeInfoProvider.getVolumeInfo(entry);
-    return importer.isEligibleVolume(volumeInfo);
+    // MissingNo knows no bounds....like volume type checks.
+    if (entry.fullPath.toUpperCase().indexOf('/MISSINGNO/') >= 0) {
+      return true;
+    } else {
+      var volumeInfo = volumeInfoProvider.getVolumeInfo(entry);
+      return importer.isEligibleVolume(volumeInfo);
+    }
   }
   return false;
 };
@@ -87,8 +104,10 @@ importer.isMediaDirectory = function(entry, volumeInfoProvider) {
     return false;
   }
 
-  var fullPath = entry.fullPath.toUpperCase();
-  if (fullPath !== '/DCIM' && fullPath !== '/DCIM/') {
+  var path = entry.fullPath.toUpperCase();
+  if (path.indexOf('/MISSINGNO') !== -1) {
+    return true;
+  } else if (path !== '/DCIM' && path !== '/DCIM/') {
     return false;
   }
 
