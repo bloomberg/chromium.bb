@@ -23,9 +23,6 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
 
@@ -89,24 +86,28 @@ void SIGTERMHandler(int signal) {
 // appropriate time. Specifically if we get an exit and have not finished
 // session restore we delay the exit. To do otherwise means we're exiting part
 // way through startup which causes all sorts of problems.
-class ExitHandler : public content::NotificationObserver {
+class ExitHandler {
  public:
   // Invokes exit when appropriate.
   static void ExitWhenPossibleOnUIThread();
 
-  // Overridden from content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
  private:
   ExitHandler();
-  ~ExitHandler() override;
+  ~ExitHandler();
+
+  // Called when a session restore has finished.
+  void OnSessionRestoreDone();
 
   // Does the appropriate call to Exit.
   static void Exit();
 
-  content::NotificationRegistrar registrar_;
+  // Points to the on-session-restored callback that was registered with
+  // SessionRestore's callback list. When objects of this class are destroyed,
+  // the subscription object's destructor will automatically unregister the
+  // callback in SessionRestore, so that the callback list does not contain any
+  // obsolete callbacks.
+  SessionRestore::CallbackSubscription
+      on_session_restored_callback_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ExitHandler);
 };
@@ -122,9 +123,17 @@ void ExitHandler::ExitWhenPossibleOnUIThread() {
   }
 }
 
-void ExitHandler::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
+ExitHandler::ExitHandler() {
+  on_session_restored_callback_subscription_ =
+      SessionRestore::RegisterOnSessionRestoredCallback(
+          base::Bind(&ExitHandler::OnSessionRestoreDone,
+                     base::Unretained(this)));
+}
+
+ExitHandler::~ExitHandler() {
+}
+
+void ExitHandler::OnSessionRestoreDone() {
   if (!SessionRestore::IsRestoringSynchronously()) {
     // At this point the message loop may not be running (meaning we haven't
     // gotten through browser startup, but are close). Post the task to at which
@@ -133,15 +142,6 @@ void ExitHandler::Observe(int type,
                             base::Bind(&ExitHandler::Exit));
     delete this;
   }
-}
-
-ExitHandler::ExitHandler() {
-  registrar_.Add(
-      this, chrome::NOTIFICATION_SESSION_RESTORE_DONE,
-      content::NotificationService::AllBrowserContextsAndSources());
-}
-
-ExitHandler::~ExitHandler() {
 }
 
 // static
