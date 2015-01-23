@@ -254,9 +254,9 @@ void QuicCryptoClientStream::DoSendCHLO(
     const CryptoHandshakeMessage* in,
     QuicCryptoClientConfig::CachedState* cached) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicCryptoClientStream::DoSendCHLO"));
+          "422516 QuicCryptoClientStream::DoSendCHLO1"));
 
   // Send the client hello in plaintext.
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_NONE);
@@ -307,6 +307,12 @@ void QuicCryptoClientStream::DoSendCHLO(
       &crypto_negotiated_params_,
       &out,
       &error_details);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicCryptoClientStream::DoSendCHLO2"));
+
   if (error != QUIC_NO_ERROR) {
     // Flush the cached config so that, if it's bad, the server has a
     // chance to send us another in the future.
