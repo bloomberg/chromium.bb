@@ -42,8 +42,7 @@ ExtensionOptionsGuest::ExtensionOptionsGuest(
     : GuestView<ExtensionOptionsGuest>(owner_web_contents, guest_instance_id),
       extension_options_guest_delegate_(
           extensions::ExtensionsAPIClient::Get()
-              ->CreateExtensionOptionsGuestDelegate(this)),
-      has_navigated_(false) {
+              ->CreateExtensionOptionsGuestDelegate(this)) {
 }
 
 ExtensionOptionsGuest::~ExtensionOptionsGuest() {
@@ -54,6 +53,10 @@ extensions::GuestViewBase* ExtensionOptionsGuest::Create(
     content::WebContents* owner_web_contents,
     int guest_instance_id) {
   return new ExtensionOptionsGuest(owner_web_contents, guest_instance_id);
+}
+
+bool ExtensionOptionsGuest::CanRunInDetachedState() const {
+  return true;
 }
 
 void ExtensionOptionsGuest::CreateWebContents(
@@ -111,18 +114,6 @@ void ExtensionOptionsGuest::CreateWebContents(
   callback.Run(WebContents::Create(params));
 }
 
-void ExtensionOptionsGuest::DidAttachToEmbedder() {
-  // We should not re-navigate on reattachment.
-  if (has_navigated_)
-    return;
-
-  web_contents()->GetController().LoadURL(options_page_,
-                                          content::Referrer(),
-                                          ui::PAGE_TRANSITION_LINK,
-                                          std::string());
-  has_navigated_ = true;
-}
-
 void ExtensionOptionsGuest::DidInitialize(
     const base::DictionaryValue& create_params) {
   extension_function_dispatcher_.reset(
@@ -130,6 +121,10 @@ void ExtensionOptionsGuest::DidInitialize(
   if (extension_options_guest_delegate_) {
     extension_options_guest_delegate_->DidInitialize();
   }
+  web_contents()->GetController().LoadURL(options_page_,
+                                          content::Referrer(),
+                                          ui::PAGE_TRANSITION_LINK,
+                                          std::string());
 }
 
 void ExtensionOptionsGuest::DidStopLoading() {
@@ -159,6 +154,14 @@ void ExtensionOptionsGuest::GuestSizeChangedDueToAutoSize(
       options.ToValue()));
 }
 
+bool ExtensionOptionsGuest::IsAutoSizeSupported() const {
+  return true;
+}
+
+bool ExtensionOptionsGuest::IsPreferredSizeModeEnabled() const {
+  return true;
+}
+
 void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
   extension_options_internal::PreferredSizeChangedOptions options;
   options.width = pref_size.width();
@@ -166,14 +169,6 @@ void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
   DispatchEventToView(new GuestViewBase::Event(
       extension_options_internal::OnPreferredSizeChanged::kEventName,
       options.ToValue()));
-}
-
-bool ExtensionOptionsGuest::IsAutoSizeSupported() const {
-  return true;
-}
-
-bool ExtensionOptionsGuest::IsPreferredSizeModeEnabled() const {
-  return true;
 }
 
 content::WebContents* ExtensionOptionsGuest::GetAssociatedWebContents() const {

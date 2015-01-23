@@ -9,6 +9,9 @@ var IdGenerator = requireNative('id_generator');
 
 function AppViewImpl(appviewElement) {
   GuestViewContainer.call(this, appviewElement, 'appview');
+
+  this.app = '';
+  this.data = '';
 }
 
 AppViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
@@ -39,6 +42,13 @@ AppViewImpl.prototype.getErrorNode = function() {
   return this.errorNode;
 };
 
+AppViewImpl.prototype.buildContainerParams = function() {
+  return {
+    'appId': this.app,
+    'data': this.data || {}
+  };
+};
+
 AppViewImpl.prototype.connect = function(app, data, callback) {
   if (!this.elementAttached) {
     if (callback) {
@@ -46,13 +56,12 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
     }
     return;
   }
-  var createParams = {
-    'appId': app,
-    'data': data || {}
-  };
+
+  this.app = app;
+  this.data = data;
 
   this.guest.destroy();
-  this.guest.create(createParams, function() {
+  this.guest.create(this.buildParams(), function() {
     if (!this.guest.getId()) {
       var errorMsg = 'Unable to connect to app "' + app + '".';
       window.console.warn(errorMsg);

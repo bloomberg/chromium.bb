@@ -25,6 +25,10 @@ SurfaceViewImpl.setupElement = function(proto) {
   GuestViewContainer.forwardApiMethods(proto, apiMethods);
 }
 
+SurfaceViewImpl.prototype.buildContainerParams = function() {
+  return { 'url': this.url };
+};
+
 SurfaceViewImpl.prototype.connect = function(url, callback) {
   if (!this.elementAttached) {
     if (callback) {
@@ -33,13 +37,11 @@ SurfaceViewImpl.prototype.connect = function(url, callback) {
     return;
   }
 
+  this.url = url;
+
   this.guest.destroy();
 
-  var createParams = {
-    'url': url
-  };
-
-  this.guest.create(createParams, function() {
+  this.guest.create(this.buildParams(), function() {
     this.attachWindow();
     if (callback) {
       callback(true);

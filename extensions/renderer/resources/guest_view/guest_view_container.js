@@ -82,22 +82,14 @@ GuestViewContainer.prototype.setupFocusPropagation = function() {
   }.bind(this));
 };
 
-GuestViewContainer.prototype.attach = function() {
-  // Augment the attach parameters with the element size, so that the guestview
-  // can fit the element initially.
-  var attachParams = this.buildAttachParams();
-  attachParams['elementWidth'] = parseInt(this.element.offsetWidth);
-  attachParams['elementHeight'] = parseInt(this.element.offsetHeight);
-
-  this.guest.attach(this.internalInstanceId, this.viewInstanceId, attachParams);
-};
-
 GuestViewContainer.prototype.attachWindow = function() {
   if (!this.internalInstanceId) {
     return true;
   }
 
-  this.attach();
+  this.guest.attach(this.internalInstanceId,
+                    this.viewInstanceId,
+                    this.buildParams());
   return true;
 };
 
@@ -114,12 +106,22 @@ GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
     if (!this.guest.getId()) {
       return;
     }
-    this.attach();
+    this.guest.attach(this.internalInstanceId,
+                      this.viewInstanceId,
+                      this.buildParams());
   }
 };
 
+GuestViewContainer.prototype.buildParams = function() {
+  var params = this.buildContainerParams();
+  params['instanceId'] = this.viewInstanceId;
+  params['elementWidth'] = parseInt(this.element.offsetWidth);
+  params['elementHeight'] = parseInt(this.element.offsetHeight);
+  return params;
+};
+
 // Implemented by the specific view type, if needed.
-GuestViewContainer.prototype.buildAttachParams = function() { return {}; };
+GuestViewContainer.prototype.buildContainerParams = function() { return {}; };
 GuestViewContainer.prototype.handleAttributeMutation = function() {};
 GuestViewContainer.prototype.onElementAttached = function() {};
 GuestViewContainer.prototype.onElementDetached = function() {
@@ -196,6 +198,7 @@ function registerGuestViewElement(guestViewContainerType) {
       return;
     }
     internal.elementAttached = false;
+    internal.internalInstanceId = 0;
     internal.onElementDetached();
   };
 

@@ -216,12 +216,8 @@ int WebViewGuest::GetViewInstanceId(WebContents* contents) {
   return guest->view_instance_id();
 }
 
-const char* WebViewGuest::GetAPINamespace() const {
-  return webview::kAPINamespace;
-}
-
-int WebViewGuest::GetTaskPrefix() const {
-  return IDS_EXTENSION_TASK_MANAGER_WEBVIEW_TAG_PREFIX;
+bool WebViewGuest::CanRunInDetachedState() const {
+  return true;
 }
 
 void WebViewGuest::CreateWebContents(
@@ -303,8 +299,7 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
   // requests.
   PushWebViewStateToIOThread();
 
-  // TODO(fsamuel): Once <webview> can run in a detached state, call
-  // ApplyAttributes here.
+  ApplyAttributes(create_params);
 }
 
 void WebViewGuest::AttachWebViewHelpers(WebContents* contents) {
@@ -336,6 +331,14 @@ void WebViewGuest::EmbedderWillBeDestroyed() {
           owner_extension_id(),
           owner_web_contents()->GetRenderProcessHost()->GetID(),
           view_instance_id()));
+}
+
+const char* WebViewGuest::GetAPINamespace() const {
+  return webview::kAPINamespace;
+}
+
+int WebViewGuest::GetTaskPrefix() const {
+  return IDS_EXTENSION_TASK_MANAGER_WEBVIEW_TAG_PREFIX;
 }
 
 void WebViewGuest::GuestDestroyed() {
@@ -479,10 +482,6 @@ void WebViewGuest::OnFrameNameChanged(bool is_top_level,
     return;
 
   ReportFrameNameChange(name);
-}
-
-bool WebViewGuest::CanRunInDetachedState() const {
-  return false;
 }
 
 void WebViewGuest::CreateNewGuestWebViewWindow(

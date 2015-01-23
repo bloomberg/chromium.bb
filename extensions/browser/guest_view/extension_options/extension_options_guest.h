@@ -27,9 +27,9 @@ class ExtensionOptionsGuest
       int guest_instance_id);
 
   // GuestViewBase implementation.
+  bool CanRunInDetachedState() const override;
   void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
-  void DidAttachToEmbedder() override;
   void DidInitialize(const base::DictionaryValue& create_params) override;
   void DidStopLoading() override;
   const char* GetAPINamespace() const override;
@@ -37,8 +37,8 @@ class ExtensionOptionsGuest
   void GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
                                      const gfx::Size& new_size) override;
   bool IsAutoSizeSupported() const override;
-  void OnPreferredSizeChanged(const gfx::Size& pref_size) override;
   bool IsPreferredSizeModeEnabled() const override;
+  void OnPreferredSizeChanged(const gfx::Size& pref_size) override;
 
   // ExtensionFunctionDispatcher::Delegate implementation.
   content::WebContents* GetAssociatedWebContents() const override;
@@ -76,7 +76,6 @@ class ExtensionOptionsGuest
   scoped_ptr<extensions::ExtensionOptionsGuestDelegate>
       extension_options_guest_delegate_;
   GURL options_page_;
-  bool has_navigated_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionOptionsGuest);
 };

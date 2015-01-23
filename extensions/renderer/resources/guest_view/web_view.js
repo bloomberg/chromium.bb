@@ -74,7 +74,6 @@ WebViewImpl.prototype.onElementDetached = function() {
   this.beforeFirstNavigation = true;
   this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId =
       true;
-  this.internalInstanceId = 0;
 };
 
 // Sets the <webview>.request property.
@@ -154,17 +153,7 @@ WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
 };
 
 WebViewImpl.prototype.createGuest = function() {
-  var params = {
-    'instanceId': this.viewInstanceId,
-    'userAgentOverride': this.userAgentOverride,
-    'width': this.element.offsetWidth,
-    'height': this.element.offsetHeight,
-  };
-  for (var i in this.attributes) {
-    params[i] = this.attributes[i].getValue();
-  }
-
-  this.guest.create(params, function() {
+  this.guest.create(this.buildParams(), function() {
     this.attachWindow();
   }.bind(this));
 };
@@ -225,7 +214,7 @@ WebViewImpl.prototype.onAttach = function(storagePartitionId) {
       storagePartitionId);
 };
 
-WebViewImpl.prototype.buildAttachParams = function() {
+WebViewImpl.prototype.buildContainerParams = function() {
   var params = { 'userAgentOverride': this.userAgentOverride };
   for (var i in this.attributes) {
     params[i] = this.attributes[i].getValue();

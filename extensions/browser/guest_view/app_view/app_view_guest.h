@@ -52,12 +52,12 @@ class AppViewGuest : public GuestView<AppViewGuest>,
                                   content::MediaStreamType type) override;
 
   // GuestViewBase implementation.
-  const char* GetAPINamespace() const override;
-  int GetTaskPrefix() const override;
+  bool CanRunInDetachedState() const override;
   void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
-  void DidAttachToEmbedder() override;
   void DidInitialize(const base::DictionaryValue& create_params) override;
+  const char* GetAPINamespace() const override;
+  int GetTaskPrefix() const override;
 
   // Sets the AppDelegate for this guest.
   void SetAppDelegateForTest(AppDelegate* delegate);

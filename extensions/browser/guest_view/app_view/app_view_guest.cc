@@ -165,12 +165,8 @@ bool AppViewGuest::CheckMediaAccessPermission(
       web_contents, security_origin, type, guest_extension);
 }
 
-const char* AppViewGuest::GetAPINamespace() const {
-  return appview::kEmbedderAPINamespace;
-}
-
-int AppViewGuest::GetTaskPrefix() const {
-  return IDS_EXTENSION_TASK_MANAGER_APPVIEW_TAG_PREFIX;
+bool AppViewGuest::CanRunInDetachedState() const {
+  return true;
 }
 
 void AppViewGuest::CreateWebContents(
@@ -227,22 +223,23 @@ void AppViewGuest::CreateWebContents(
   LaunchAppAndFireEvent(make_scoped_ptr(data->DeepCopy()), callback, host);
 }
 
-void AppViewGuest::DidAttachToEmbedder() {
-  // This is called after the guest process has been attached to a host
-  // element. This means that the host element knows how to route input
-  // events to the guest, and the guest knows how to get frames to the
-  // embedder.
+void AppViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
+  extension_function_dispatcher_.reset(
+      new ExtensionFunctionDispatcher(browser_context(), this));
+
   if (!url_.is_valid())
     return;
 
   web_contents()->GetController().LoadURL(
       url_, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  url_ = GURL();
 }
 
-void AppViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
-  extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(browser_context(), this));
+const char* AppViewGuest::GetAPINamespace() const {
+  return appview::kEmbedderAPINamespace;
+}
+
+int AppViewGuest::GetTaskPrefix() const {
+  return IDS_EXTENSION_TASK_MANAGER_APPVIEW_TAG_PREFIX;
 }
 
 void AppViewGuest::OnRequest(const ExtensionHostMsg_Request_Params& params) {

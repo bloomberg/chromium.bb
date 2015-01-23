@@ -220,6 +220,11 @@ GuestViewImpl.prototype.destroyImpl = function(callback) {
     return;
   }
 
+  // If this guest is attached, then detach it first.
+  if (!!this.internalInstanceId) {
+    GuestViewInternalNatives.DetachGuest(this.internalInstanceId);
+  }
+
   GuestViewInternal.destroyGuest(this.id,
                                  this.handleCallback.bind(this, callback));
 

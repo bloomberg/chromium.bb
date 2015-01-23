@@ -90,14 +90,15 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                            std::string* error);
 
   // GuestViewBase implementation.
-  const char* GetAPINamespace() const override;
-  int GetTaskPrefix() const override;
+  bool CanRunInDetachedState() const override;
   void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
   void DidInitialize(const base::DictionaryValue& create_params) override;
   void DidStopLoading() override;
   void EmbedderWillBeDestroyed() override;
+  const char* GetAPINamespace() const override;
+  int GetTaskPrefix() const override;
   void GuestDestroyed() override;
   void GuestReady() override;
   void GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
@@ -132,6 +133,10 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       content::WebContents* source,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override;
+  void RequestPointerLockPermission(
+      bool user_gesture,
+      bool last_unlocked_by_target,
+      const base::Callback<void(bool)>& callback) override;
   bool CheckMediaAccessPermission(content::WebContents* source,
                                   const GURL& security_origin,
                                   content::MediaStreamType type) override;
@@ -160,12 +165,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                           const GURL& target_url,
                           content::WebContents* new_contents) override;
 
-  // BrowserPluginGuestDelegate implementation.
-  bool CanRunInDetachedState() const override;
-  void RequestPointerLockPermission(
-      bool user_gesture,
-      bool last_unlocked_by_target,
-      const base::Callback<void(bool)>& callback) override;
   // NotificationObserver implementation.
   void Observe(int type,
                const content::NotificationSource& source,

@@ -37,7 +37,6 @@ function ExtensionOptionsImpl(extensionoptionsElement) {
   this.autosizeDeferred = false;
 
   this.setupElementProperties();
-  this.parseExtensionAttribute();
 };
 
 ExtensionOptionsImpl.prototype.__proto__ = GuestViewContainer.prototype;
@@ -56,17 +55,17 @@ ExtensionOptionsImpl.setupElement = function(proto) {
 }
 
 ExtensionOptionsImpl.prototype.onElementAttached = function() {
-  this.parseExtensionAttribute();
   this.createGuest();
 }
 
-ExtensionOptionsImpl.prototype.buildAttachParams = function() {
+ExtensionOptionsImpl.prototype.buildContainerParams = function() {
   var params = {
     'autosize': this.element.hasAttribute('autosize'),
     'maxheight': parseInt(this.maxheight || 0),
     'maxwidth': parseInt(this.maxwidth || 0),
     'minheight': parseInt(this.minheight || 0),
-    'minwidth': parseInt(this.minwidth || 0)
+    'minwidth': parseInt(this.minwidth || 0),
+    'extensionId': this.element.getAttribute('extension')
   };
   return params;
 };
@@ -75,15 +74,14 @@ ExtensionOptionsImpl.prototype.createGuest = function() {
   if (!this.elementAttached) {
     return;
   }
-  var params = {
-    'extensionId': this.extensionId,
-  };
 
-  this.guest.create(params, function() {
+  // Destroy the old guest if one exists.
+  this.guest.destroy();
+
+  this.guest.create(this.buildParams(), function() {
     if (!this.guest.getId()) {
       // Fire a createfailed event here rather than in ExtensionOptionsGuest
       // because the guest will not be created, and cannot fire an event.
-      this.initCalled = false;
       var createFailedEvent = new Event('createfailed', { bubbles: true });
       this.dispatchEvent(createFailedEvent);
     } else {
@@ -107,20 +105,8 @@ ExtensionOptionsImpl.prototype.handleAttributeMutation =
   if (oldValue === newValue)
     return;
 
-  if (name == 'extension' && !oldValue && !!newValue) {
-    this.extensionId = newValue;
-    // If the browser plugin is not ready then don't create the guest until
-    // it is ready (in handleBrowserPluginAttributeMutation).
-    if (!this.internalInstanceId)
-      return;
-
-    // If a guest view does not exist then create one.
-    if (!this.guest.getId()) {
-      this.createGuest();
-      return;
-    }
-    // TODO(ericzeng): Implement navigation to another guest view if we want
-    // that functionality.
+  if (name == 'extension') {
+    this.createGuest();
   } else if (AUTO_SIZE_ATTRIBUTES.hasOwnProperty(name) > -1) {
     this[name] = newValue;
     this.resetSizeConstraintsIfInvalid();
@@ -154,14 +140,6 @@ ExtensionOptionsImpl.prototype.onSizeChanged =
   } else {
     this.resize(newWidth, newHeight, oldWidth, oldHeight);
   }
-};
-
-ExtensionOptionsImpl.prototype.parseExtensionAttribute = function() {
-  if (this.element.hasAttribute('extension')) {
-    this.extensionId = this.element.getAttribute('extension');
-    return true;
-  }
-  return false;
 };
 
 ExtensionOptionsImpl.prototype.resize =
@@ -237,7 +215,7 @@ ExtensionOptionsImpl.prototype.setupElementProperties = function() {
 
   Object.defineProperty(this.element, 'extension', {
     get: function() {
-      return this.extensionId;
+      return this.element.getAttribute('extension');
     }.bind(this),
     set: function(value) {
       this.element.setAttribute('extension', value);
