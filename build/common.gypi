@@ -5549,52 +5549,6 @@
                 ],
               },
             }],
-            ['asan==1', {
-              # ASan on Windows is a work in progress and very experimental.
-              # See crbug.com/345874.
-              'VCCLCompilerTool': {
-                'AdditionalOptions': [
-                  '-fsanitize=address',
-                ],
-                'AdditionalIncludeDirectories': [
-                  # MSVC needs to be able to find the sanitizer headers when
-                  # invoked via /fallback. This is critical for using macros
-                  # like ASAN_UNPOISON_MEMORY_REGION in files where we fall
-                  # back.
-                  '<(DEPTH)/<(make_clang_dir)/lib/clang/3.7.0/include_sanitizer',
-                ],
-              },
-              'VCLinkerTool': {
-                'AdditionalLibraryDirectories': [
-                  # TODO(hans): If make_clang_dir is absolute, this breaks.
-                  '<(DEPTH)/<(make_clang_dir)/lib/clang/3.7.0/lib/windows',
-                ],
-              },
-              'target_conditions': [
-                ['component=="shared_library"', {
-                  'VCLinkerTool': {
-                    'AdditionalDependencies': [
-                       'clang_rt.asan_dynamic-i386.lib',
-                       'clang_rt.asan_dynamic_runtime_thunk-i386.lib',
-                    ],
-                  },
-                }],
-                ['_type=="executable" and component=="static_library"', {
-                  'VCLinkerTool': {
-                    'AdditionalDependencies': [
-                       'clang_rt.asan-i386.lib',
-                    ],
-                  },
-                }],
-                ['(_type=="shared_library" or _type=="loadable_module") and component=="static_library"', {
-                  'VCLinkerTool': {
-                    'AdditionalDependencies': [
-                       'clang_rt.asan_dll_thunk-i386.lib',
-                    ],
-                  },
-                }],
-              ],
-            }],
           ],
         },
       },
@@ -5629,12 +5583,61 @@
                   '/ignore:4221',
                   '/nxcompat',
                 ],
-                'conditions': [
-                  ['syzyasan==0', {
-                    'AdditionalOptions': ['/largeaddressaware'],
-                  }],
-                ],
               },
+              'conditions': [
+                ['syzyasan==0', {
+                  'VCLinkerTool': {
+                    'AdditionalOptions': ['/largeaddressaware'],
+                  },
+                }],
+                ['asan==1', {
+                  # TODO(asan/win): Move this down into the general
+                  # win-target_defaults section once the 64-bit asan runtime
+                  # exists.  See crbug.com/345874.
+                  'VCCLCompilerTool': {
+                    'AdditionalOptions': [
+                      '-fsanitize=address',
+                    ],
+                    'AdditionalIncludeDirectories': [
+                      # MSVC needs to be able to find the sanitizer headers when
+                      # invoked via /fallback. This is critical for using macros
+                      # like ASAN_UNPOISON_MEMORY_REGION in files where we fall
+                      # back.
+                      '<(DEPTH)/<(make_clang_dir)/lib/clang/3.7.0/include_sanitizer',
+                    ],
+                  },
+                  'VCLinkerTool': {
+                    'AdditionalLibraryDirectories': [
+                      # TODO(hans): If make_clang_dir is absolute, this breaks.
+                      '<(DEPTH)/<(make_clang_dir)/lib/clang/3.7.0/lib/windows',
+                    ],
+                  },
+                  'target_conditions': [
+                    ['component=="shared_library"', {
+                      'VCLinkerTool': {
+                        'AdditionalDependencies': [
+                           'clang_rt.asan_dynamic-i386.lib',
+                           'clang_rt.asan_dynamic_runtime_thunk-i386.lib',
+                        ],
+                      },
+                    }],
+                    ['_type=="executable" and component=="static_library"', {
+                      'VCLinkerTool': {
+                        'AdditionalDependencies': [
+                           'clang_rt.asan-i386.lib',
+                        ],
+                      },
+                    }],
+                    ['(_type=="shared_library" or _type=="loadable_module") and component=="static_library"', {
+                      'VCLinkerTool': {
+                        'AdditionalDependencies': [
+                           'clang_rt.asan_dll_thunk-i386.lib',
+                        ],
+                      },
+                    }],
+                  ],
+                }],
+              ],
             },
           },
           'x64_Base': {

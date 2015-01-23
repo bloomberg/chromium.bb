@@ -34,7 +34,7 @@
       'variables': {
         'files': [
           '../tools/valgrind/asan/',
-          '../third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer',
+          '../third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
