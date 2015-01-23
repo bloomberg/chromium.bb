@@ -298,6 +298,7 @@
         {
           'destination': '<(PRODUCT_DIR)/remoting/browser_test_resources',
             'files': [
+              '<@(remoting_webapp_js_test_common_files)',
               '<@(remoting_webapp_js_browser_test_files)',
             ],
         },
@@ -341,8 +342,9 @@
           'destination': '<(output_dir)',
           'files': [
             '<@(webapp_js_files)',
+            '<@(remoting_webapp_js_test_common_files)',
+            '<@(remoting_webapp_unittest_additional_files)',
             '<@(remoting_webapp_unittest_js_files)',
-            '<@(remoting_webapp_unittest_additional_files)'
           ],
         },
       ],
@@ -353,6 +355,7 @@
             'webapp/build-html.py',
             '<(remoting_webapp_unittest_template_main)',
             '<@(webapp_js_files)',
+            '<@(remoting_webapp_js_test_common_files)',
             '<@(remoting_webapp_unittest_js_files)'
           ],
           'outputs': [
@@ -368,6 +371,7 @@
             # exclude list.
             '--exclude-js', '<@(remoting_webapp_unittest_exclude_files)',
             '--js', '<@(remoting_webapp_unittest_js_files)',
+            '<@(remoting_webapp_js_test_common_files)',
             '--instrument-js', '<@(webapp_js_files)',
            ],
         },

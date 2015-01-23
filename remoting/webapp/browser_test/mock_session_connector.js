@@ -86,6 +86,7 @@ remoting.MockSessionConnector.prototype.pairingRequested = function() {
 
 remoting.MockSessionConnector.prototype.connect_ = function() {
   var signalling = new remoting.MockSignalStrategy();
+  signalling.setStateForTesting(remoting.SignalStrategy.State.CONNECTED);
   var hostName = 'Mock host';
   var accessCode = '';
   var authenticationMethods = '';

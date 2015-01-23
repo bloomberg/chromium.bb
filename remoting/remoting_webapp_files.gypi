@@ -119,6 +119,7 @@
     ],
     # Remoting signaling files.
     'remoting_webapp_js_signaling_files': [
+      'webapp/crd/js/dns_blackhole_checker.js',
       'webapp/crd/js/fallback_signal_strategy.js',
       'webapp/crd/js/signal_strategy.js',
       'webapp/crd/js/wcs_adapter.js',
@@ -142,6 +143,10 @@
     'remoting_webapp_js_cast_extension_files': [
       'webapp/crd/js/cast_extension_handler.js',
     ],
+    # Shared files for tests.
+    'remoting_webapp_js_test_common_files': [
+      'webapp/unittests/mock_signal_strategy.js',
+    ],
     # browser test JavaScript files.
     'remoting_webapp_js_browser_test_files': [
       'webapp/browser_test/browser_test.js',
@@ -154,7 +159,6 @@
       'webapp/browser_test/mock_identity.js',
       'webapp/browser_test/mock_oauth2_api.js',
       'webapp/browser_test/mock_session_connector.js',
-      'webapp/browser_test/mock_signal_strategy.js',
       'webapp/browser_test/scrollbar_browser_test.js',
       'webapp/browser_test/timeout_waiter.js',
       'webapp/browser_test/unauthenticated_browser_test.js',
@@ -172,6 +176,7 @@
       'webapp/js_proto/chrome_proto.js',
       'webapp/unittests/apps_v2_migration_unittest.js',
       'webapp/unittests/base_unittest.js',
+      'webapp/unittests/dns_blackhole_checker_unittest.js',
       'webapp/unittests/fallback_signal_strategy_unittest.js',
       'webapp/unittests/it2me_helpee_channel_unittest.js',
       'webapp/unittests/it2me_helper_channel_unittest.js',
@@ -204,9 +209,10 @@
       '<@(remoting_webapp_js_logging_files)',
       '<@(remoting_webapp_js_ui_files)',
       '<@(remoting_webapp_js_signaling_files)',
-      # Uncomment this line to include browser test files in the web app
+      # Uncomment these lines to include browser test files in the web app
       # to expedite debugging or local development.
-      # '<@(remoting_webapp_js_browser_test_files)'
+      # '<@(remoting_webapp_js_browser_test_files)',
+      # '<@(remoting_webapp_js_test_common_files)'
     ],
 
     # The CRD-specific JavaScript files required by main.html.

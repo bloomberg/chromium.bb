@@ -22,6 +22,7 @@ remoting.SignalStrategy = function() {};
  *    HANDSHAKE -> CONNECTED (authenticated successfully).
  *    CONNECTING -> FAILED (connection failed).
  *    HANDSHAKE -> FAILED (authentication failed).
+ *    CONNECTED -> FAILED (connection was terminated).
  *    * -> CLOSED (dispose() called).
  *
  * Do not re-order these values without updating fallback_signal_strategy.js.
@@ -113,9 +114,9 @@ remoting.SignalStrategy.create = function() {
       console.log('FallbackSignalStrategy progress: ' + progress);
     };
 
-    return new remoting.FallbackSignalStrategy(new remoting.XmppConnection(),
-                                               new remoting.WcsAdapter());
-
+    return new remoting.FallbackSignalStrategy(
+        new remoting.DnsBlackholeChecker(new remoting.XmppConnection()),
+        new remoting.WcsAdapter());
   } else {
     return new remoting.WcsAdapter();
   }
