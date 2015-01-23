@@ -91,7 +91,10 @@ HRESULT CoCreateInstanceAsAdmin(REFCLSID class_id,
         base::StringPrintf(L"Elevation:Administrator!new:%ls",
                            class_id_as_string);
 
-    BIND_OPTS3 bind_opts = {};
+    BIND_OPTS3 bind_opts;
+    // An explicit memset is needed rather than relying on value initialization
+    // since BIND_OPTS3 is not an aggregate (it is a derived type).
+    memset(&bind_opts, 0, sizeof(bind_opts));
     bind_opts.cbStruct = sizeof(bind_opts);
     bind_opts.dwClassContext = CLSCTX_LOCAL_SERVER;
     bind_opts.hwnd = hwnd;
