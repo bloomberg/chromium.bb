@@ -401,7 +401,7 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
     case CSSPropertyBackgroundRepeat:
         return backgroundRepeatPropertyValue();
     case CSSPropertyBackground:
-        return getLayeredShorthandValue(backgroundShorthand());
+        return getLayeredShorthandValue(backgroundShorthand(), true);
     case CSSPropertyBorder:
         return borderPropertyValue(OmitUncommonValues);
     case CSSPropertyBorderTop:
