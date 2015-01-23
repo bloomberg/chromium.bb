@@ -57,7 +57,8 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   void OnStreamReady(const mojo::Closure& callback);
 
   // Called when |audio_renderer_| initialization has completed.
-  void OnRendererInitializeDone(const mojo::Closure& callback);
+  void OnRendererInitializeDone(const mojo::Closure& callback,
+                                PipelineStatus status);
 
   // Callback executed by filters to update statistics.
   void OnUpdateStatistics(const PipelineStatistics& stats);

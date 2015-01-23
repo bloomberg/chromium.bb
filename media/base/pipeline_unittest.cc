@@ -57,13 +57,6 @@ ACTION_P2(SetBufferingState, cb, buffering_state) {
 
 ACTION_TEMPLATE(PostCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_0_VALUE_PARAMS()) {
-  return base::MessageLoop::current()->PostTask(FROM_HERE,
-                                                ::std::tr1::get<k>(args));
-}
-
-ACTION_TEMPLATE(PostCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p0)) {
   return base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(::std::tr1::get<k>(args), p0));
@@ -180,7 +173,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&buffering_state_cb_),
                         SaveArg<5>(&ended_cb_),
-                        PostCallback<1>()));
+                        PostCallback<1>(PIPELINE_OK)));
     EXPECT_CALL(*renderer_, HasAudio()).WillRepeatedly(Return(audio_stream()));
     EXPECT_CALL(*renderer_, HasVideo()).WillRepeatedly(Return(video_stream()));
   }
@@ -865,13 +858,12 @@ class PipelineTeardownTest : public PipelineTest {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
             .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
-                            PostCallback<1>()));
+                            PostCallback<1>(PIPELINE_OK)));
         ExpectPipelineStopAndDestroyPipeline();
       } else {
         status = PIPELINE_ERROR_INITIALIZATION_FAILED;
         EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
-            .WillOnce(
-                DoAll(RunCallback<6>(status), PostCallback<1>()));
+            .WillOnce(PostCallback<1>(status));
       }
 
       EXPECT_CALL(*demuxer_, Stop());
@@ -880,7 +872,7 @@ class PipelineTeardownTest : public PipelineTest {
 
     EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&buffering_state_cb_),
-                        PostCallback<1>()));
+                        PostCallback<1>(PIPELINE_OK)));
 
     EXPECT_CALL(callbacks_, OnMetadata(_));
 

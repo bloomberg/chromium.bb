@@ -168,7 +168,7 @@ class MockRenderer : public Renderer {
 
   // Renderer implementation.
   MOCK_METHOD7(Initialize, void(DemuxerStreamProvider* demuxer_stream_provider,
-                                const base::Closure& init_cb,
+                                const PipelineStatusCB& init_cb,
                                 const StatisticsCB& statistics_cb,
                                 const BufferingStateCB& buffering_state_cb,
                                 const PaintCB& paint_cb,

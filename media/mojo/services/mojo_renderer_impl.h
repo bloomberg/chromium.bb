@@ -34,7 +34,7 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
 
   // Renderer implementation.
   void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
-                  const base::Closure& init_cb,
+                  const PipelineStatusCB& init_cb,
                   const StatisticsCB& statistics_cb,
                   const BufferingStateCB& buffering_state_cb,
                   const PaintCB& paint_cb,
@@ -74,7 +74,7 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
 
   // Callbacks passed to Initialize() that we forward messages from
   // |remote_media_renderer_| through.
-  base::Closure init_cb_;
+  PipelineStatusCB init_cb_;
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
   BufferingStateCB buffering_state_cb_;

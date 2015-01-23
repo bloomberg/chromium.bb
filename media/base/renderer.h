@@ -29,10 +29,11 @@ class MEDIA_EXPORT Renderer {
   virtual ~Renderer();
 
   // Initializes the Renderer with |demuxer_stream_provider|, executing
-  // |init_cb| upon completion.  If initialization failed, fires |error_cb|
-  // before |init_cb|.  |demuxer_stream_provider| must be valid throughout the
-  // lifetime of the Renderer object.  |init_cb| must only be run after this
-  // method has returned.
+  // |init_cb| upon completion.  If initialization fails, only |init_cb| (not
+  // |error_cb|) should be called.  |demuxer_stream_provider| must be valid for
+  // the lifetime of the Renderer object.  |init_cb| must only be run after this
+  // method has returned.  Firing |init_cb| may result in the immediate
+  // destruction of the caller, so it must be run only prior to returning.
   //
   // Permanent callbacks:
   // - |statistics_cb|: Executed periodically with rendering statistics.
@@ -41,9 +42,9 @@ class MEDIA_EXPORT Renderer {
   //               ignored if the Renderer handles the painting by itself. Can
   //               be called from any thread.
   // - |ended_cb|: Executed when rendering has reached the end of stream.
-  // - |error_cb|: Executed if any error was encountered during rendering.
+  // - |error_cb|: Executed if any error was encountered after initialization.
   virtual void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
-                          const base::Closure& init_cb,
+                          const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const BufferingStateCB& buffering_state_cb,
                           const PaintCB& paint_cb,

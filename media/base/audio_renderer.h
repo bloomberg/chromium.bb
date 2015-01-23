@@ -25,7 +25,8 @@ class MEDIA_EXPORT AudioRenderer {
   virtual ~AudioRenderer();
 
   // Initialize an AudioRenderer with |stream|, executing |init_cb| upon
-  // completion.
+  // completion. If initialization fails, only |init_cb| (not |error_cb|) will
+  // be called.
   //
   // |set_decryptor_ready_cb| is fired when a Decryptor is needed, i.e. when the
   // |stream| is encrypted.
@@ -37,7 +38,7 @@ class MEDIA_EXPORT AudioRenderer {
   //
   // |ended_cb| is executed when audio rendering has reached the end of stream.
   //
-  // |error_cb| is executed if an error was encountered.
+  // |error_cb| is executed if an error was encountered after initialization.
   virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& init_cb,
                           const SetDecryptorReadyCB& set_decryptor_ready_cb,

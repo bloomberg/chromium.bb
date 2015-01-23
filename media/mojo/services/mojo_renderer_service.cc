@@ -125,8 +125,11 @@ void MojoRendererService::OnStreamReady(const mojo::Closure& callback) {
 }
 
 void MojoRendererService::OnRendererInitializeDone(
-    const mojo::Closure& callback) {
+    const mojo::Closure& callback, PipelineStatus status) {
   DVLOG(1) << __FUNCTION__;
+
+  if (status != PIPELINE_OK && state_ != STATE_ERROR)
+    OnError(status);
 
   if (state_ == STATE_ERROR) {
     renderer_.reset();

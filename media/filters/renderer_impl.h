@@ -44,7 +44,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
   // Renderer implementation.
   void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
-                  const base::Closure& init_cb,
+                  const PipelineStatusCB& init_cb,
                   const StatisticsCB& statistics_cb,
                   const BufferingStateCB& buffering_state_cb,
                   const PaintCB& paint_cb,
@@ -120,8 +120,6 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // Callback executed when a runtime error happens.
   void OnError(PipelineStatus error);
 
-  void FireAllPendingCallbacks();
-
   State state_;
 
   // Task runner used to execute pipeline tasks.
@@ -137,7 +135,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   PaintCB paint_cb_;
 
   // Temporary callback used for Initialize() and Flush().
-  base::Closure init_cb_;
+  PipelineStatusCB init_cb_;
   base::Closure flush_cb_;
 
   scoped_ptr<AudioRenderer> audio_renderer_;

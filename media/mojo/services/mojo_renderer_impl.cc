@@ -35,7 +35,7 @@ MojoRendererImpl::~MojoRendererImpl() {
 // TODO(xhwang): Support |paint_cb| if needed.
 void MojoRendererImpl::Initialize(
     DemuxerStreamProvider* demuxer_stream_provider,
-    const base::Closure& init_cb,
+    const PipelineStatusCB& init_cb,
     const StatisticsCB& statistics_cb,
     const BufferingStateCB& buffering_state_cb,
     const PaintCB& /* paint_cb */,
@@ -202,15 +202,14 @@ void MojoRendererImpl::OnError() {
   if (init_cb_.is_null())  // We have initialized already.
     error_cb_.Run(PIPELINE_ERROR_DECODE);
   else
-    error_cb_.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
+    init_cb_.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
 }
 
 void MojoRendererImpl::OnInitialized() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!init_cb_.is_null());
-
-  base::ResetAndReturn(&init_cb_).Run();
+  if (!init_cb_.is_null())
+    base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
 }
 
 }  // namespace media

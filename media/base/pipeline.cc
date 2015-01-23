@@ -335,7 +335,7 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
       return InitializeDemuxer(done_cb);
 
     case kInitRenderer:
-      return InitializeRenderer(base::Bind(done_cb, PIPELINE_OK));
+      return InitializeRenderer(done_cb);
 
     case kPlaying:
       // Report metadata the first time we enter the playing state.
@@ -702,7 +702,7 @@ void Pipeline::InitializeDemuxer(const PipelineStatusCB& done_cb) {
   demuxer_->Initialize(this, done_cb, text_renderer_);
 }
 
-void Pipeline::InitializeRenderer(const base::Closure& done_cb) {
+void Pipeline::InitializeRenderer(const PipelineStatusCB& done_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!demuxer_->GetStream(DemuxerStream::AUDIO) &&
