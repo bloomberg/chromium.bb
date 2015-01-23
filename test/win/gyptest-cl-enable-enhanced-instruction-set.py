@@ -28,12 +28,17 @@ if sys.platform == 'win32':
 
   # /arch:AVX introduced in VS2010, but MSBuild support lagged until 2012.
   if os.path.exists(test.built_file_path('avx_extensions')):
-    test.run_built_executable('no_extensions', chdir=CHDIR,
+    test.run_built_executable('avx_extensions', chdir=CHDIR,
                               stdout='/arch:AVX\n')
 
   # /arch:IA32 introduced in VS2012.
   if os.path.exists(test.built_file_path('no_extensions')):
     test.run_built_executable('no_extensions', chdir=CHDIR,
                               stdout='/arch:IA32\n')
+
+  # /arch:AVX2 introduced in VS2013r2.
+  if os.path.exists(test.built_file_path('avx2_extensions')):
+    test.run_built_executable('avx2_extensions', chdir=CHDIR,
+                              stdout='/arch:AVX2\n')
 
   test.pass_test()

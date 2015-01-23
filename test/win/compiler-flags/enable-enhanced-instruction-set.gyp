@@ -50,5 +50,19 @@
         },
       ],
     }],
+    ['MSVS_VERSION[0:4]>="2013"', {
+      'targets': [
+        {
+          'target_name': 'avx2_extensions',
+          'type': 'executable',
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              'EnableEnhancedInstructionSet': '5',  # AdvancedVectorExtensions2
+            }
+          },
+          'sources': ['enable-enhanced-instruction-set.cc'],
+        },
+      ],
+    }],
   ],
 }

@@ -456,7 +456,8 @@ class MsvsSettings(object):
     cl('EnablePREfast', map={'true': '/analyze'})
     cl('AdditionalOptions', prefix='')
     cl('EnableEnhancedInstructionSet',
-       map={'1': 'SSE', '2': 'SSE2', '3': 'AVX', '4': 'IA32'}, prefix='/arch:')
+        map={'1': 'SSE', '2': 'SSE2', '3': 'AVX', '4': 'IA32', '5': 'AVX2'},
+        prefix='/arch:')
     cflags.extend(['/FI' + f for f in self._Setting(
         ('VCCLCompilerTool', 'ForcedIncludeFiles'), config, default=[])])
     if self.vs_version.short_name in ('2013', '2013e', '2015'):

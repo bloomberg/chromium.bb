@@ -10,10 +10,12 @@ static const char* GetArchOption() {
 #elif _M_IX86_FP == 1
   return "SSE";
 #elif _M_IX86_FP == 2
-#  if !defined(__AVX__)
-  return "SSE2";
-#  else
+#  if defined(__AVX2__)
+  return "AVX2";
+#  elif defined(__AVX__)
   return "AVX";
+#  else
+  return "SSE2";
 #  endif
 #else
   return "UNSUPPORTED OPTION";

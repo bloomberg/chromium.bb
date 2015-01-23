@@ -619,7 +619,10 @@ _Same(_compile, 'EnableEnhancedInstructionSet',
                     'StreamingSIMDExtensions',  # /arch:SSE
                     'StreamingSIMDExtensions2',  # /arch:SSE2
                     'AdvancedVectorExtensions',  # /arch:AVX (vs2012+)
-                    'NoExtensions',]))  # /arch:IA32 (vs2012+)
+                    'NoExtensions',  # /arch:IA32 (vs2012+)
+                    # This one only exists in the new msbuild format.
+                    'AdvancedVectorExtensions2',  # /arch:AVX2 (vs2013r2+)
+                    ]))
 _Same(_compile, 'ErrorReporting',
       _Enumeration(['None',  # /errorReport:none
                     'Prompt',  # /errorReport:prompt
