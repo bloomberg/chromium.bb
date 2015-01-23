@@ -320,12 +320,6 @@
           ],
           'sources': [
             'allocator_shim_win.cc',
-            'generic_allocators.cc',
-          ],
-          # sources! means that these are not compiled directly.
-          'sources!': [
-            # Included by allocator_shim_win.cc for maximal inlining.
-            'generic_allocators.cc',
           ],
         }],
         ['profiling!=1', {

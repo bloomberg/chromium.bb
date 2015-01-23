@@ -50,8 +50,7 @@ def main():
   cppvspath = 'f:\\binaries\\Intermediate\\vctools\\crt_bld\\' + bindir + \
       '\\crt\\prebuild\\build\\' + objdir + '\\mt_obj\\nativecpp\\\\';
 
-  cobjfiles = ['malloc', 'free', 'realloc', 'align', 'msize', 'heapinit',
-      'expand', 'heapchk', 'heapwalk', 'heapmin', 'calloc', 'recalloc',
+  cobjfiles = ['malloc', 'free', 'realloc', 'heapinit', 'calloc', 'recalloc',
       'calloc_impl']
   cppobjfiles = ['new', 'new2', 'delete', 'delete2', 'new_mode', 'newopnt',
       'newaopnt']
