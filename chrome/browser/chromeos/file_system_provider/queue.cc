@@ -84,7 +84,13 @@ void Queue::MaybeRun() {
   pending_.pop_front();
 
   executed_[task.token] = task;
-  executed_[task.token].abort_callback = task.callback.Run();
+  AbortCallback abort_callback = task.callback.Run();
+
+  // It may happen that the task is completed and removed synchronously. Hence,
+  // we need to check if the task is still in the executed collection.
+  const auto executed_task_it = executed_.find(task.token);
+  if (executed_task_it != executed_.end())
+    executed_task_it->second.abort_callback = abort_callback;
 }
 
 void Queue::Abort(size_t token) {

@@ -139,7 +139,7 @@ class Observer : public ProvidedFileSystemObserver {
                         const base::Closure& callback) override {
     EXPECT_EQ(kFileSystemId, file_system_info.file_system_id());
     change_events_.push_back(new ChangeEvent(change_type, changes));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    complete_callback_ = callback;
   }
 
   void OnWatcherTagUpdated(const ProvidedFileSystemInfo& file_system_info,
@@ -154,6 +154,14 @@ class Observer : public ProvidedFileSystemObserver {
     ++list_changed_counter_;
   }
 
+  // Completes handling the OnWatcherChanged event.
+  void CompleteOnWatcherChanged() {
+    DCHECK(!complete_callback_.is_null());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  complete_callback_);
+    complete_callback_ = base::Closure();
+  }
+
   int list_changed_counter() const { return list_changed_counter_; }
   const ScopedVector<ChangeEvent>& change_events() const {
     return change_events_;
@@ -164,6 +172,7 @@ class Observer : public ProvidedFileSystemObserver {
   ScopedVector<ChangeEvent> change_events_;
   int list_changed_counter_;
   int tag_updated_counter_;
+  base::Closure complete_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Observer);
 };
@@ -738,6 +747,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
         base::FilePath(kDirectoryPath), false /* recursive */, change_type,
         make_scoped_ptr(new ProvidedFileSystemObserver::Changes), tag,
         base::Bind(&LogStatus, base::Unretained(&log)));
+    base::RunLoop().RunUntilIdle();
 
     // Confirm that the notification callback was called.
     ASSERT_EQ(1u, notification_log.size());
@@ -758,6 +768,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     EXPECT_EQ("", watchers->begin()->second.last_tag);
 
     // Wait until all observers finish handling the notification.
+    observer.CompleteOnWatcherChanged();
     base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(1u, log.size());
@@ -783,6 +794,11 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
         make_scoped_ptr(new ProvidedFileSystemObserver::Changes), tag,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
+
+    // Complete all change events.
+    observer.CompleteOnWatcherChanged();
+    base::RunLoop().RunUntilIdle();
+
     ASSERT_EQ(1u, log.size());
     EXPECT_EQ(base::File::FILE_OK, log[0]);
 

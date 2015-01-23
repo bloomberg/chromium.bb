@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
+#include "chrome/browser/chromeos/file_system_provider/queue.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "storage/browser/fileapi/watcher_manager.h"
@@ -165,28 +166,56 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
  private:
+  // Wrapper for arguments for AddWatcherInQueue, as it's too many of them to
+  // be used by base::Bind.
+  struct AddWatcherInQueueArgs;
+
+  // Wrapper for arguments for NotifyInQueue, as it's too many of them to be
+  // used by base::Bind.
+  struct NotifyInQueueArgs;
+
   // Aborts an operation executed with a request id equal to
   // |operation_request_id|. The request is removed immediately on the C++ side
   // despite being handled by the providing extension or not.
   void Abort(int operation_request_id);
 
+  // Adds a watcher within |watcher_queue_|.
+  AbortCallback AddWatcherInQueue(const AddWatcherInQueueArgs& args);
+
+  // Removes a watcher within |watcher_queue_|.
+  AbortCallback RemoveWatcherInQueue(
+      size_t token,
+      const GURL& origin,
+      const base::FilePath& entry_path,
+      bool recursive,
+      const storage::AsyncFileUtil::StatusCallback& callback);
+
+  // Notifies about a notifier even within |watcher_queue_|.
+  AbortCallback NotifyInQueue(scoped_ptr<NotifyInQueueArgs> args);
+
   // Called when adding a watcher is completed with either success or en error.
-  void OnAddWatcherCompleted(
+  void OnAddWatcherInQueueCompleted(
+      size_t token,
       const base::FilePath& entry_path,
       bool recursive,
       const Subscriber& subscriber,
       const storage::AsyncFileUtil::StatusCallback& callback,
       base::File::Error result);
 
+  // Called when adding a watcher is completed with either a success or an
+  // error.
+  void OnRemoveWatcherInQueueCompleted(
+      size_t token,
+      const GURL& origin,
+      const WatcherKey& key,
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      bool extension_response,
+      base::File::Error result);
+
   // Called when all observers finished handling the change notification. It
   // updates the tag to |tag| for the entry at |entry_path|.
-  void OnNotifyCompleted(
-      const base::FilePath& entry_path,
-      bool recursive,
-      storage::WatcherManager::ChangeType change_type,
-      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
-      const std::string& tag,
-      const storage::AsyncFileUtil::StatusCallback& callback);
+  void OnNotifyInQueueCompleted(scoped_ptr<NotifyInQueueArgs> args,
+                                const base::File::Error result);
 
   // Called when opening a file is completed with either a success or an error.
   void OnOpenFileCompleted(const base::FilePath& file_path,
@@ -207,6 +236,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   scoped_ptr<NotificationManagerInterface> notification_manager_;
   scoped_ptr<RequestManager> request_manager_;
   Watchers watchers_;
+  Queue watcher_queue_;
   OpenedFiles opened_files_;
   ObserverList<ProvidedFileSystemObserver> observers_;
 

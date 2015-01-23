@@ -42,13 +42,6 @@ namespace {
 void EmptyStatusCallback(base::File::Error /* result */) {
 }
 
-// Discards the error code and always calls the callback with a success.
-void AlwaysSuccessCallback(
-    const storage::AsyncFileUtil::StatusCallback& callback,
-    base::File::Error /* result */) {
-  callback.Run(base::File::FILE_OK);
-}
-
 }  // namespace
 
 AutoUpdater::AutoUpdater(const base::Closure& update_callback)
@@ -78,6 +71,62 @@ AutoUpdater::~AutoUpdater() {
     LOG(ERROR) << "Not all callbacks called. This may happen on shutdown.";
 }
 
+struct ProvidedFileSystem::AddWatcherInQueueArgs {
+  AddWatcherInQueueArgs(size_t token,
+                        const GURL& origin,
+                        const base::FilePath& entry_path,
+                        bool recursive,
+                        bool persistent,
+                        const storage::AsyncFileUtil::StatusCallback& callback,
+                        const storage::WatcherManager::NotificationCallback&
+                            notification_callback)
+      : token(token),
+        origin(origin),
+        entry_path(entry_path),
+        recursive(recursive),
+        persistent(persistent),
+        callback(callback),
+        notification_callback(notification_callback) {}
+  ~AddWatcherInQueueArgs() {}
+
+  const size_t token;
+  const GURL origin;
+  const base::FilePath entry_path;
+  const bool recursive;
+  const bool persistent;
+  const storage::AsyncFileUtil::StatusCallback callback;
+  const storage::WatcherManager::NotificationCallback notification_callback;
+};
+
+struct ProvidedFileSystem::NotifyInQueueArgs {
+  NotifyInQueueArgs(size_t token,
+                    const base::FilePath& entry_path,
+                    bool recursive,
+                    storage::WatcherManager::ChangeType change_type,
+                    scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+                    const std::string& tag,
+                    const storage::AsyncFileUtil::StatusCallback& callback)
+      : token(token),
+        entry_path(entry_path),
+        recursive(recursive),
+        change_type(change_type),
+        changes(changes.Pass()),
+        tag(tag),
+        callback(callback) {}
+  ~NotifyInQueueArgs() {}
+
+  const size_t token;
+  const base::FilePath entry_path;
+  const bool recursive;
+  const storage::WatcherManager::ChangeType change_type;
+  const scoped_ptr<ProvidedFileSystemObserver::Changes> changes;
+  const std::string tag;
+  const storage::AsyncFileUtil::StatusCallback callback;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NotifyInQueueArgs);
+};
+
 ProvidedFileSystem::ProvidedFileSystem(
     Profile* profile,
     const ProvidedFileSystemInfo& file_system_info)
@@ -87,6 +136,7 @@ ProvidedFileSystem::ProvidedFileSystem(
       notification_manager_(
           new NotificationManager(profile_, file_system_info_)),
       request_manager_(new RequestManager(notification_manager_.get())),
+      watcher_queue_(1),
       weak_ptr_factory_(this) {
 }
 
@@ -376,64 +426,14 @@ AbortCallback ProvidedFileSystem::AddWatcher(
     const storage::AsyncFileUtil::StatusCallback& callback,
     const storage::WatcherManager::NotificationCallback&
         notification_callback) {
-  // TODO(mtomasz): Wrap the entire method body with an asynchronous queue to
-  // avoid races.
-  if (persistent && (!file_system_info_.supports_notify_tag() ||
-                     !notification_callback.is_null())) {
-    OnAddWatcherCompleted(entry_path,
-                          recursive,
-                          Subscriber(),
-                          callback,
-                          base::File::FILE_ERROR_INVALID_OPERATION);
-    return AbortCallback();
-  }
-
-  // Create a candidate subscriber. This could be done in OnAddWatcherCompleted,
-  // but base::Bind supports only up to 7 arguments.
-  Subscriber subscriber;
-  subscriber.origin = origin;
-  subscriber.persistent = persistent;
-  subscriber.notification_callback = notification_callback;
-
-  const WatcherKey key(entry_path, recursive);
-  const Watchers::const_iterator it = watchers_.find(key);
-  if (it != watchers_.end()) {
-    const bool exists =
-        it->second.subscribers.find(origin) != it->second.subscribers.end();
-    OnAddWatcherCompleted(
-        entry_path,
-        recursive,
-        subscriber,
-        callback,
-        exists ? base::File::FILE_ERROR_EXISTS : base::File::FILE_OK);
-    return AbortCallback();
-  }
-
-  const int request_id = request_manager_->CreateRequest(
-      ADD_WATCHER,
-      scoped_ptr<RequestManager::HandlerInterface>(new operations::AddWatcher(
-          event_router_,
-          file_system_info_,
-          entry_path,
-          recursive,
-          base::Bind(&ProvidedFileSystem::OnAddWatcherCompleted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     entry_path,
-                     recursive,
-                     subscriber,
-                     callback))));
-
-  if (!request_id) {
-    OnAddWatcherCompleted(entry_path,
-                          recursive,
-                          subscriber,
-                          callback,
-                          base::File::FILE_ERROR_SECURITY);
-    return AbortCallback();
-  }
-
-  return base::Bind(
-      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
+  const size_t token = watcher_queue_.NewToken();
+  watcher_queue_.Enqueue(
+      token, base::Bind(&ProvidedFileSystem::AddWatcherInQueue,
+                        base::Unretained(this),  // Outlived by the queue.
+                        AddWatcherInQueueArgs(token, origin, entry_path,
+                                              recursive, persistent, callback,
+                                              notification_callback)));
+  return AbortCallback();
 }
 
 void ProvidedFileSystem::RemoveWatcher(
@@ -441,46 +441,11 @@ void ProvidedFileSystem::RemoveWatcher(
     const base::FilePath& entry_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  const WatcherKey key(entry_path, recursive);
-  const Watchers::iterator it = watchers_.find(key);
-  if (it == watchers_.end() ||
-      it->second.subscribers.find(origin) == it->second.subscribers.end()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  // Delete the subscriber in advance, since the list of watchers is owned by
-  // the C++ layer, not by the extension.
-  it->second.subscribers.erase(origin);
-
-  FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
-                    observers_,
-                    OnWatcherListChanged(file_system_info_, watchers_));
-
-  // If there are other subscribers, then do not remove the obsererver, but
-  // simply return a success.
-  if (it->second.subscribers.size()) {
-    callback.Run(base::File::FILE_OK);
-    return;
-  }
-
-  // Delete the watcher in advance.
-  watchers_.erase(it);
-
-  // Even if the extension returns an error, the callback is called with base::
-  // File::FILE_OK. The reason for that is that the entry is not watche anymore
-  // anyway, as it's removed in advance.
-  const int request_id = request_manager_->CreateRequest(
-      REMOVE_WATCHER,
-      scoped_ptr<RequestManager::HandlerInterface>(
-          new operations::RemoveWatcher(
-              event_router_,
-              file_system_info_,
-              entry_path,
-              recursive,
-              base::Bind(&AlwaysSuccessCallback, callback))));
-  if (!request_id)
-    callback.Run(base::File::FILE_OK);
+  const size_t token = watcher_queue_.NewToken();
+  watcher_queue_.Enqueue(
+      token, base::Bind(&ProvidedFileSystem::RemoveWatcherInQueue,
+                        base::Unretained(this),  // Outlived by the queue.
+                        token, origin, entry_path, recursive, callback));
 }
 
 const ProvidedFileSystemInfo& ProvidedFileSystem::GetFileSystemInfo() const {
@@ -516,33 +481,144 @@ void ProvidedFileSystem::Notify(
     scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
     const std::string& tag,
     const storage::AsyncFileUtil::StatusCallback& callback) {
+  const size_t token = watcher_queue_.NewToken();
+  watcher_queue_.Enqueue(
+      token, base::Bind(&ProvidedFileSystem::NotifyInQueue,
+                        base::Unretained(this),  // Outlived by the queue.
+                        base::Passed(make_scoped_ptr(new NotifyInQueueArgs(
+                            token, entry_path, recursive, change_type,
+                            changes.Pass(), tag, callback)))));
+}
+
+void ProvidedFileSystem::Abort(int operation_request_id) {
+  request_manager_->RejectRequest(operation_request_id,
+                                  make_scoped_ptr(new RequestValue()),
+                                  base::File::FILE_ERROR_ABORT);
+  if (!request_manager_->CreateRequest(
+          ABORT,
+          scoped_ptr<RequestManager::HandlerInterface>(new operations::Abort(
+              event_router_, file_system_info_, operation_request_id,
+              base::Bind(&EmptyStatusCallback))))) {
+    LOG(ERROR) << "Failed to create an abort request.";
+  }
+}
+
+AbortCallback ProvidedFileSystem::AddWatcherInQueue(
+    const AddWatcherInQueueArgs& args) {
+  if (args.persistent && (!file_system_info_.supports_notify_tag() ||
+                          !args.notification_callback.is_null())) {
+    OnAddWatcherInQueueCompleted(args.token, args.entry_path, args.recursive,
+                                 Subscriber(), args.callback,
+                                 base::File::FILE_ERROR_INVALID_OPERATION);
+    return AbortCallback();
+  }
+
+  // Create a candidate subscriber. This could be done in OnAddWatcherCompleted,
+  // but base::Bind supports only up to 7 arguments.
+  Subscriber subscriber;
+  subscriber.origin = args.origin;
+  subscriber.persistent = args.persistent;
+  subscriber.notification_callback = args.notification_callback;
+
+  const WatcherKey key(args.entry_path, args.recursive);
+  const Watchers::const_iterator it = watchers_.find(key);
+  if (it != watchers_.end()) {
+    const bool exists = it->second.subscribers.find(args.origin) !=
+                        it->second.subscribers.end();
+    OnAddWatcherInQueueCompleted(
+        args.token, args.entry_path, args.recursive, subscriber, args.callback,
+        exists ? base::File::FILE_ERROR_EXISTS : base::File::FILE_OK);
+    return AbortCallback();
+  }
+
+  const int request_id = request_manager_->CreateRequest(
+      ADD_WATCHER,
+      scoped_ptr<RequestManager::HandlerInterface>(new operations::AddWatcher(
+          event_router_, file_system_info_, args.entry_path, args.recursive,
+          base::Bind(&ProvidedFileSystem::OnAddWatcherInQueueCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), args.token,
+                     args.entry_path, args.recursive, subscriber,
+                     args.callback))));
+
+  if (!request_id) {
+    OnAddWatcherInQueueCompleted(args.token, args.entry_path, args.recursive,
+                                 subscriber, args.callback,
+                                 base::File::FILE_ERROR_SECURITY);
+  }
+
+  return AbortCallback();
+}
+
+AbortCallback ProvidedFileSystem::RemoveWatcherInQueue(
+    size_t token,
+    const GURL& origin,
+    const base::FilePath& entry_path,
+    bool recursive,
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const WatcherKey key(entry_path, recursive);
+  const Watchers::iterator it = watchers_.find(key);
+  if (it == watchers_.end() ||
+      it->second.subscribers.find(origin) == it->second.subscribers.end()) {
+    OnRemoveWatcherInQueueCompleted(token, origin, key, callback,
+                                    false /* extension_response */,
+                                    base::File::FILE_ERROR_NOT_FOUND);
+    return AbortCallback();
+  }
+
+  // If there are other subscribers, then do not remove the observer, but simply
+  // return a success.
+  if (it->second.subscribers.size() > 1) {
+    OnRemoveWatcherInQueueCompleted(token, origin, key, callback,
+                                    false /* extension_response */,
+                                    base::File::FILE_OK);
+    return AbortCallback();
+  }
+
+  // Otherwise, emit an event, and remove the watcher.
+  request_manager_->CreateRequest(
+      REMOVE_WATCHER,
+      scoped_ptr<RequestManager::HandlerInterface>(
+          new operations::RemoveWatcher(
+              event_router_, file_system_info_, entry_path, recursive,
+              base::Bind(&ProvidedFileSystem::OnRemoveWatcherInQueueCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), token, origin, key,
+                         callback, true /* extension_response */))));
+
+  return AbortCallback();
+}
+
+AbortCallback ProvidedFileSystem::NotifyInQueue(
+    scoped_ptr<NotifyInQueueArgs> args) {
+  const WatcherKey key(args->entry_path, args->recursive);
   const auto& watcher_it = watchers_.find(key);
   if (watcher_it == watchers_.end()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
-    return;
+    OnNotifyInQueueCompleted(args.Pass(), base::File::FILE_ERROR_NOT_FOUND);
+    return AbortCallback();
   }
 
   // The tag must be provided if and only if it's explicitly supported.
-  if (file_system_info_.supports_notify_tag() == tag.empty()) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
-    return;
+  if (file_system_info_.supports_notify_tag() == args->tag.empty()) {
+    OnNotifyInQueueCompleted(args.Pass(),
+                             base::File::FILE_ERROR_INVALID_OPERATION);
+    return AbortCallback();
   }
 
   // It's illegal to provide a tag which is not unique.
-  if (!tag.empty() && tag == watcher_it->second.last_tag) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
-    return;
+  if (!args->tag.empty() && args->tag == watcher_it->second.last_tag) {
+    OnNotifyInQueueCompleted(args.Pass(),
+                             base::File::FILE_ERROR_INVALID_OPERATION);
+    return AbortCallback();
   }
 
   // The object is owned by AutoUpdated, so the reference is valid as long as
   // callbacks created with AutoUpdater::CreateCallback().
-  const ProvidedFileSystemObserver::Changes& changes_ref = *changes.get();
+  const ProvidedFileSystemObserver::Changes& changes_ref = *args->changes.get();
+  const storage::WatcherManager::ChangeType change_type = args->change_type;
 
-  scoped_refptr<AutoUpdater> auto_updater(new AutoUpdater(
-      base::Bind(&ProvidedFileSystem::OnNotifyCompleted,
-                 weak_ptr_factory_.GetWeakPtr(), entry_path, recursive,
-                 change_type, base::Passed(&changes), tag, callback)));
+  scoped_refptr<AutoUpdater> auto_updater(
+      new AutoUpdater(base::Bind(&ProvidedFileSystem::OnNotifyInQueueCompleted,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 base::Passed(&args), base::File::FILE_OK)));
 
   // Call all notification callbacks (if any).
   for (const auto& subscriber_it : watcher_it->second.subscribers) {
@@ -560,26 +636,16 @@ void ProvidedFileSystem::Notify(
                                      change_type,
                                      changes_ref,
                                      auto_updater->CreateCallback()));
+
+  return AbortCallback();
 }
 
 base::WeakPtr<ProvidedFileSystemInterface> ProvidedFileSystem::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void ProvidedFileSystem::Abort(int operation_request_id) {
-  request_manager_->RejectRequest(operation_request_id,
-                                  make_scoped_ptr(new RequestValue()),
-                                  base::File::FILE_ERROR_ABORT);
-  if (!request_manager_->CreateRequest(
-          ABORT,
-          scoped_ptr<RequestManager::HandlerInterface>(new operations::Abort(
-              event_router_, file_system_info_, operation_request_id,
-              base::Bind(&EmptyStatusCallback))))) {
-    LOG(ERROR) << "Failed to create an abort request.";
-  }
-}
-
-void ProvidedFileSystem::OnAddWatcherCompleted(
+void ProvidedFileSystem::OnAddWatcherInQueueCompleted(
+    size_t token,
     const base::FilePath& entry_path,
     bool recursive,
     const Subscriber& subscriber,
@@ -587,6 +653,8 @@ void ProvidedFileSystem::OnAddWatcherCompleted(
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
     callback.Run(result);
+    watcher_queue_.Complete(token);
+    watcher_queue_.Remove(token);
     return;
   }
 
@@ -594,10 +662,11 @@ void ProvidedFileSystem::OnAddWatcherCompleted(
   const Watchers::iterator it = watchers_.find(key);
   if (it != watchers_.end()) {
     callback.Run(base::File::FILE_OK);
+    watcher_queue_.Complete(token);
+    watcher_queue_.Remove(token);
     return;
   }
 
-  // TODO(mtomasz): Add a queue to prevent races.
   Watcher* const watcher = &watchers_[key];
   watcher->entry_path = entry_path;
   watcher->recursive = recursive;
@@ -608,46 +677,84 @@ void ProvidedFileSystem::OnAddWatcherCompleted(
                     OnWatcherListChanged(file_system_info_, watchers_));
 
   callback.Run(base::File::FILE_OK);
+  watcher_queue_.Complete(token);
+  watcher_queue_.Remove(token);
 }
 
-void ProvidedFileSystem::OnNotifyCompleted(
-    const base::FilePath& entry_path,
-    bool recursive,
-    storage::WatcherManager::ChangeType change_type,
-    scoped_ptr<ProvidedFileSystemObserver::Changes> /* changes */,
-    const std::string& tag,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
-  const WatcherKey key(entry_path, recursive);
-  const Watchers::iterator it = watchers_.find(key);
-  // Check if the entry is still watched.
-  if (it == watchers_.end()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+void ProvidedFileSystem::OnRemoveWatcherInQueueCompleted(
+    size_t token,
+    const GURL& origin,
+    const WatcherKey& key,
+    const storage::AsyncFileUtil::StatusCallback& callback,
+    bool extension_response,
+    base::File::Error result) {
+  if (!extension_response && result != base::File::FILE_OK) {
+    watcher_queue_.Complete(token);
+    watcher_queue_.Remove(token);
+    callback.Run(result);
     return;
   }
 
-  // TODO(mtomasz): Add an async queue around notify and other watcher related
-  // methods so there is no race.
+  // Even if the extension returns an error, the callback is called with base::
+  // File::FILE_OK.
+  const auto it = watchers_.find(key);
+  DCHECK(it != watchers_.end());
+  DCHECK(it->second.subscribers.find(origin) != it->second.subscribers.end());
 
-  it->second.last_tag = tag;
+  it->second.subscribers.erase(origin);
+
+  FOR_EACH_OBSERVER(ProvidedFileSystemObserver, observers_,
+                    OnWatcherListChanged(file_system_info_, watchers_));
+
+  // If there are no more subscribers, then remove the watcher.
+  if (!it->second.subscribers.size())
+    watchers_.erase(it);
+
+  callback.Run(base::File::FILE_OK);
+  watcher_queue_.Complete(token);
+  watcher_queue_.Remove(token);
+}
+
+void ProvidedFileSystem::OnNotifyInQueueCompleted(
+    scoped_ptr<NotifyInQueueArgs> args,
+    base::File::Error result) {
+  if (result != base::File::FILE_OK) {
+    args->callback.Run(result);
+    watcher_queue_.Complete(args->token);
+    watcher_queue_.Remove(args->token);
+    return;
+  }
+
+  // Check if the entry is still watched.
+  const WatcherKey key(args->entry_path, args->recursive);
+  const Watchers::iterator it = watchers_.find(key);
+  if (it == watchers_.end()) {
+    args->callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    watcher_queue_.Complete(args->token);
+    watcher_queue_.Remove(args->token);
+    return;
+  }
+
+  it->second.last_tag = args->tag;
 
   FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
                     observers_,
                     OnWatcherTagUpdated(file_system_info_, it->second));
 
   // If the watched entry is deleted, then remove the watcher.
-  if (change_type == storage::WatcherManager::DELETED) {
+  if (args->change_type == storage::WatcherManager::DELETED) {
     // Make a copy, since the |it| iterator will get invalidated on the last
     // subscriber.
     Subscribers subscribers = it->second.subscribers;
     for (const auto& subscriber_it : subscribers) {
-      RemoveWatcher(subscriber_it.second.origin,
-                    entry_path,
-                    recursive,
-                    base::Bind(&EmptyStatusCallback));
+      RemoveWatcher(subscriber_it.second.origin, args->entry_path,
+                    args->recursive, base::Bind(&EmptyStatusCallback));
     }
   }
 
-  callback.Run(base::File::FILE_OK);
+  args->callback.Run(base::File::FILE_OK);
+  watcher_queue_.Complete(args->token);
+  watcher_queue_.Remove(args->token);
 }
 
 void ProvidedFileSystem::OnOpenFileCompleted(const base::FilePath& file_path,
