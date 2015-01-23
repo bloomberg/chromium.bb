@@ -6823,6 +6823,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Event.DragDrop.Cancel" enum="DragDropEventSource">
+  <owner>mfomitchev@chromium.org</owner>
+  <summary>
+    Counts the number of times the user cancelled a drag and drop operation.
+  </summary>
+</histogram>
+
+<histogram name="Event.DragDrop.Drop" enum="DragDropEventSource">
+  <owner>mfomitchev@chromium.org</owner>
+  <summary>
+    Counts the number of times the user completed a drag and drop operation.
+  </summary>
+</histogram>
+
+<histogram name="Event.DragDrop.ExternalOriginDrop">
+  <owner>mfomitchev@chromium.org</owner>
+  <summary>
+    Counts the number of times a drag and drop operation originating outside of
+    a Chrome window successfuly drops.
+  </summary>
+</histogram>
+
+<histogram name="Event.DragDrop.Start" enum="DragDropEventSource">
+  <owner>mfomitchev@chromium.org</owner>
+  <summary>
+    Counts the number of times the user started a drag and drop operation.
+  </summary>
+</histogram>
+
 <histogram name="Event.Frequency.Renderer.FlingAnimate" units="hertz">
   <owner>rbyers@chromium.org</owner>
   <summary>
@@ -44795,6 +44824,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Initiated by RPC from Renderer"/>
   <int value="3" label="Initiated by Save from Pepper"/>
   <int value="4" label="Initiated by Resumption"/>
+</enum>
+
+<enum name="DragDropEventSource" type="int">
+  <int value="0" label="Mouse"/>
+  <int value="1" label="Touch"/>
 </enum>
 
 <enum name="DriveCacheDBOpenStatus" type="int">

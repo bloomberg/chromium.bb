@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
@@ -159,6 +160,9 @@ int DragDropController::StartDragAndDrop(
       provider->GetDragImage().size().IsEmpty())
     return 0;
 
+  UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Start", source,
+                            ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
+
   current_drag_event_source_ = source;
   DragDropTracker* tracker =
       new DragDropTracker(root_window, drag_drop_window_delegate_.get());
@@ -220,6 +224,14 @@ int DragDropController::StartDragAndDrop(
     base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
     base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
     run_loop.Run();
+  }
+
+  if (drag_operation_ == 0) {
+    UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Cancel", source,
+                              ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Drop", source,
+                              ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
   }
 
   if (!cancel_animation_.get() || !cancel_animation_->is_animating() ||
@@ -482,9 +494,9 @@ void DragDropController::AnimationEnded(const gfx::Animation* animation) {
     drag_image_.reset();
   if (pending_long_tap_) {
     // If not in a nested message loop, we can forward the long tap right now.
-    if (!should_block_during_drag_drop_)
+    if (!should_block_during_drag_drop_) {
       ForwardPendingLongTap();
-    else {
+    } else {
       // See comment about this in OnGestureEvent().
       base::MessageLoopForUI::current()->PostTask(
           FROM_HERE,

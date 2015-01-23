@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_drop_target_win.h"
 
+#include "base/metrics/histogram.h"
 #include "base/win/win_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -14,6 +15,7 @@
 #include "ui/wm/public/drag_drop_client.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
+using aura::client::DragDropClient;
 using aura::client::DragDropDelegate;
 using ui::OSExchangeData;
 using ui::OSExchangeDataProviderWin;
@@ -72,8 +74,14 @@ DWORD DesktopDropTargetWin::OnDrop(IDataObject* data_object,
   scoped_ptr<ui::DropTargetEvent> event;
   DragDropDelegate* delegate;
   Translate(data_object, key_state, position, effect, &data, &event, &delegate);
-  if (delegate)
+  if (delegate) {
     drag_operation = delegate->OnPerformDrop(*event);
+    DragDropClient* client = aura::client::GetDragDropClient(root_window_);
+    if (client && !client->IsDragDropInProgress() &&
+        drag_operation != ui::DragDropTypes::DRAG_NONE) {
+      UMA_HISTOGRAM_COUNTS("Event.DragDrop.ExternalOriginDrop", 1);
+    }
+  }
   if (target_window_) {
     target_window_->RemoveObserver(this);
     target_window_ = NULL;
