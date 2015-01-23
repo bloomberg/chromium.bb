@@ -28,6 +28,7 @@ import mimetypes
 import os
 import posixpath
 import re
+import traceback
 import urlparse
 import uuid
 import wsgiref.simple_server
@@ -42,9 +43,10 @@ from memory_inspector.data import file_storage
 from memory_inspector.frontends import background_tasks
 
 
-_HTTP_OK = '200 - OK'
-_HTTP_GONE = '410 - Gone'
-_HTTP_NOT_FOUND = '404 - Not Found'
+_HTTP_OK = '200 OK'
+_HTTP_GONE = '410 Gone'
+_HTTP_NOT_FOUND = '404 Not Found'
+_HTTP_INTERNAL_ERROR = '500 Internal Server Error'
 _PERSISTENT_STORAGE_PATH = os.path.join(
     os.path.expanduser('~'), '.config', 'memory_inspector')
 _CONTENT_DIR = os.path.abspath(os.path.join(
@@ -92,7 +94,11 @@ class UriHandler(object):
       m = re.match(path_regex, path)
       if not m:
         continue
-      (http_code, headers, body) = fn(m.groups(), req_vars)
+      try:
+        (http_code, headers, body) = fn(m.groups(), req_vars)
+      except Exception as e:
+        traceback.print_exc()
+        return _HTTP_INTERNAL_ERROR, [], str(e)
       return output_filter(http_code, headers, body)
     return (_HTTP_NOT_FOUND, [], 'No AJAX handlers found')
 

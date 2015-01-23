@@ -23,6 +23,7 @@ this.ajaxRequest = function(path, responseCallback, errorCallback, postArgs) {
       console.log('AJAX error (req: ' + path + ').');
       console.log('HTTP response: ' + xhr.status + ' ' + thrownError);
       console.log(xhr.responseText);
+      rootUi.showDialog(xhr.responseText || 'Unknown server error');
       if (errorCallback)
         errorCallback(xhr.status, xhr.responseText);
       if (xhr.readyState < 4 && this_.onServerUnreachableOrTimeout != null)

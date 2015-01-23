@@ -20,6 +20,7 @@ import struct
 
 ADB_PORT = 5037
 TIMEOUT = 5
+ADB_NOT_RUNNING_MESSAGE = 'ADB daemon not running. Run \'adb start-server\'.'
 
 
 class ADBClientError(Exception):
@@ -52,12 +53,14 @@ class ADBHostSession(object):
       self._sock = socket.create_connection(('127.0.0.1', ADB_PORT),
                                             timeout=TIMEOUT)
     except socket.error:
-      raise ADBClientError('adb daemon not running. Run adb start-server.')
+      raise ADBClientError(ADB_NOT_RUNNING_MESSAGE)
     if self._transport:
       self.SendCmd('host:transport:' + self._transport)
     return self
 
-  def __exit__(self, _type, _value, _traceback):
+  def __exit__(self, exc_type, exc_value, exc_traceback):
+    if exc_type is socket.error:
+      raise ADBClientError(ADB_NOT_RUNNING_MESSAGE)
     try:
       self._sock.close()
     except Exception as e:
