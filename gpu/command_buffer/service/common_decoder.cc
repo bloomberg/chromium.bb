@@ -7,6 +7,19 @@
 
 namespace gpu {
 
+const CommonDecoder::CommandInfo CommonDecoder::command_info[] = {
+#define COMMON_COMMAND_BUFFER_CMD_OP(name)                       \
+  {                                                              \
+    &CommonDecoder::Handle##name, cmd::name::kArgFlags,          \
+        cmd::name::cmd_flags,                                    \
+        sizeof(cmd::name) / sizeof(CommandBufferEntry) - 1,      \
+  }                                                              \
+  ,  /* NOLINT */
+  COMMON_COMMAND_BUFFER_CMDS(COMMON_COMMAND_BUFFER_CMD_OP)
+  #undef COMMON_COMMAND_BUFFER_CMD_OP
+};
+
+
 CommonDecoder::Bucket::Bucket() : size_(0) {}
 
 CommonDecoder::Bucket::~Bucket() {}
@@ -108,29 +121,6 @@ RETURN_TYPE GetImmediateDataAs(const COMMAND_TYPE& pod) {
   return static_cast<RETURN_TYPE>(const_cast<void*>(AddressAfterStruct(pod)));
 }
 
-// TODO(vmiura): Looks like this g_command_info is duplicated in
-// common_decoder.cc
-// and gles2_cmd_decoder.cc.  Fix it!
-
-// A struct to hold info about each command.
-struct CommandInfo {
-  uint8 arg_flags;   // How to handle the arguments for this command
-  uint8 cmd_flags;   // How to handle this command
-  uint16 arg_count;  // How many arguments are expected for this command.
-};
-
-// A table of CommandInfo for all the commands.
-const CommandInfo g_command_info[] = {
-  #define COMMON_COMMAND_BUFFER_CMD_OP(name) {                           \
-    cmd::name::kArgFlags,                                                \
-    cmd::name::cmd_flags,                                                \
-    sizeof(cmd::name) / sizeof(CommandBufferEntry) - 1, },  /* NOLINT */
-
-  COMMON_COMMAND_BUFFER_CMDS(COMMON_COMMAND_BUFFER_CMD_OP)
-
-  #undef COMMON_COMMAND_BUFFER_CMD_OP
-};
-
 }  // anonymous namespace.
 
 // Decode command with its arguments, and call the corresponding method.
@@ -141,24 +131,14 @@ error::Error CommonDecoder::DoCommonCommand(
     unsigned int command,
     unsigned int arg_count,
     const void* cmd_data) {
-  if (command < arraysize(g_command_info)) {
-    const CommandInfo& info = g_command_info[command];
+  if (command < arraysize(command_info)) {
+    const CommandInfo& info = command_info[command];
     unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
     if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
         (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
       uint32 immediate_data_size =
           (arg_count - info_arg_count) * sizeof(CommandBufferEntry);  // NOLINT
-      switch (command) {
-        #define COMMON_COMMAND_BUFFER_CMD_OP(name)                      \
-          case cmd::name::kCmdId:                                       \
-            return Handle ## name(                                      \
-                immediate_data_size,                                    \
-                *static_cast<const cmd::name*>(cmd_data));              \
-
-        COMMON_COMMAND_BUFFER_CMDS(COMMON_COMMAND_BUFFER_CMD_OP)
-
-        #undef COMMON_COMMAND_BUFFER_CMD_OP
-      }
+      return (this->*info.cmd_handler)(immediate_data_size, cmd_data);
     } else {
       return error::kInvalidArguments;
     }
@@ -168,20 +148,23 @@ error::Error CommonDecoder::DoCommonCommand(
 
 error::Error CommonDecoder::HandleNoop(
     uint32 immediate_data_size,
-    const cmd::Noop& args) {
+    const void* cmd_data) {
   return error::kNoError;
 }
 
 error::Error CommonDecoder::HandleSetToken(
     uint32 immediate_data_size,
-    const cmd::SetToken& args) {
+    const void* cmd_data) {
+  const cmd::SetToken& args = *static_cast<const cmd::SetToken*>(cmd_data);
   engine_->set_token(args.token);
   return error::kNoError;
 }
 
 error::Error CommonDecoder::HandleSetBucketSize(
     uint32 immediate_data_size,
-    const cmd::SetBucketSize& args) {
+    const void* cmd_data) {
+  const cmd::SetBucketSize& args =
+      *static_cast<const cmd::SetBucketSize*>(cmd_data);
   uint32 bucket_id = args.bucket_id;
   uint32 size = args.size;
 
@@ -192,7 +175,9 @@ error::Error CommonDecoder::HandleSetBucketSize(
 
 error::Error CommonDecoder::HandleSetBucketData(
     uint32 immediate_data_size,
-    const cmd::SetBucketData& args) {
+    const void* cmd_data) {
+  const cmd::SetBucketData& args =
+      *static_cast<const cmd::SetBucketData*>(cmd_data);
   uint32 bucket_id = args.bucket_id;
   uint32 offset = args.offset;
   uint32 size = args.size;
@@ -214,7 +199,9 @@ error::Error CommonDecoder::HandleSetBucketData(
 
 error::Error CommonDecoder::HandleSetBucketDataImmediate(
     uint32 immediate_data_size,
-    const cmd::SetBucketDataImmediate& args) {
+    const void* cmd_data) {
+  const cmd::SetBucketDataImmediate& args =
+      *static_cast<const cmd::SetBucketDataImmediate*>(cmd_data);
   const void* data = GetImmediateDataAs<const void*>(args);
   uint32 bucket_id = args.bucket_id;
   uint32 offset = args.offset;
@@ -234,7 +221,9 @@ error::Error CommonDecoder::HandleSetBucketDataImmediate(
 
 error::Error CommonDecoder::HandleGetBucketStart(
     uint32 immediate_data_size,
-    const cmd::GetBucketStart& args) {
+    const void* cmd_data) {
+  const cmd::GetBucketStart& args =
+      *static_cast<const cmd::GetBucketStart*>(cmd_data);
   uint32 bucket_id = args.bucket_id;
   uint32* result = GetSharedMemoryAs<uint32*>(
       args.result_memory_id, args.result_memory_offset, sizeof(*result));
@@ -271,7 +260,9 @@ error::Error CommonDecoder::HandleGetBucketStart(
 
 error::Error CommonDecoder::HandleGetBucketData(
     uint32 immediate_data_size,
-    const cmd::GetBucketData& args) {
+    const void* cmd_data) {
+  const cmd::GetBucketData& args =
+      *static_cast<const cmd::GetBucketData*>(cmd_data);
   uint32 bucket_id = args.bucket_id;
   uint32 offset = args.offset;
   uint32 size = args.size;
