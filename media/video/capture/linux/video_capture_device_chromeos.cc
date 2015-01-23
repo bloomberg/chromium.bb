@@ -41,14 +41,12 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
  private:
   friend class base::RefCountedThreadSafe<ScreenObserverDelegate>;
 
-  virtual ~ScreenObserverDelegate() {
-    DCHECK(!capture_device_);
-  }
+  ~ScreenObserverDelegate() override { DCHECK(!capture_device_); }
 
-  virtual void OnDisplayAdded(const gfx::Display& /*new_display*/) override {}
-  virtual void OnDisplayRemoved(const gfx::Display& /*old_display*/) override {}
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override {
+  void OnDisplayAdded(const gfx::Display& /*new_display*/) override {}
+  void OnDisplayRemoved(const gfx::Display& /*old_display*/) override {}
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override {
     DCHECK(ui_task_runner_->BelongsToCurrentThread());
     if (!(metrics & DISPLAY_METRIC_ROTATION))
       return;
