@@ -11,9 +11,9 @@ FFmpeg's configure scripts and Makefiles. It scans through build directories for
 object files then does a reverse lookup against the FFmpeg source tree to find
 the corresponding C or assembly file.
 
-Running build_ffmpeg.sh for ia32, arm, and arm-neon platforms is required
-prior to running this script. The arm and arm-neon platforms assume a
-Chromium OS build environment.
+Running build_ffmpeg.sh for ia32, arm, arm-neon and mips32 platforms is
+required prior to running this script. The arm, arm-neon and mips32 platforms
+assume a Chromium OS build environment.
 
 Step 1: Have a Chromium OS checkout (refer to http://dev.chromium.org)
   mkdir chromeos
@@ -43,11 +43,17 @@ Step 6: Build for arm/arm-neon platforms inside chroot
   ./chromium/scripts/build_ffmpeg.sh linux arm path/to/chromeos/deps/ffmpeg
   ./chromium/scripts/build_ffmpeg.sh linux arm-neon path/to/chromeos/deps/ffmpeg
 
-Step 7: Build for Windows platform; you will need a MinGW shell started from
+Step 7: Setup build environment for MIPS:
+  ./setup_board --board mipsel-o32-generic
+
+Step 8: Build for mipsel platform inside chroot
+  ./chromium/scripts/build_ffmpeg.py linux mipsel
+
+Step 9: Build for Windows platform; you will need a MinGW shell started from
 inside a Visual Studio Command Prompt to run build_ffmpeg.sh:
   ./chromium/scripts/build_ffmpeg.sh win ia32 $(pwd)
 
-Step 8: Exit chroot and generate gyp file
+Step 10: Exit chroot and generate gyp file
   exit
   cd path/to/chromeos/deps/ffmpeg
   ./chromium/scripts/generate_gyp.py
@@ -131,7 +137,7 @@ GN_SOURCE_END = """]
 """
 
 # Controls GYP conditional stanza generation.
-SUPPORTED_ARCHITECTURES = ['ia32', 'arm', 'arm-neon', 'x64']
+SUPPORTED_ARCHITECTURES = ['ia32', 'arm', 'arm-neon', 'x64', 'mipsel']
 SUPPORTED_TARGETS = ['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS']
 # Mac doesn't have any platform specific files, so just use linux and win.
 SUPPORTED_PLATFORMS = ['linux', 'win']
@@ -301,7 +307,7 @@ class SourceSet(object):
 
     Args:
       sources: a python set of source files
-      architectures: a python set of architectures (i.e., arm, x64)
+      architectures: a python set of architectures (i.e., arm, x64, mipsel)
       targets: a python set of targets (i.e., Chromium, Chrome)
       platforms: a python set of platforms (i.e., win, linux)
     """

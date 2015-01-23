@@ -70,6 +70,14 @@
           'libavcodec/arm/simple_idct_armv6.S',
         ],
       }],  # (target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "ChromeOS") and (1)
+      ['(target_arch == "mipsel") and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS") and (1)', {
+        'c_sources': [
+          'libavcodec/mips/aacdec_mips.c',
+          'libavcodec/mips/aacpsdsp_mips.c',
+          'libavcodec/mips/aacsbr_mips.c',
+          'libavcodec/mips/sbrdsp_mips.c',
+        ],
+      }],  # (target_arch == "mipsel") and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS") and (1)
       ['((target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS") and (1)', {
         'asm_sources': [
           'libavcodec/arm/aacpsdsp_neon.S',
@@ -166,6 +174,11 @@
           'libavcodec/arm/flacdsp_arm.S',
         ],
       }],  # (target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "ChromeOS") and (1)
+      ['(target_arch == "mipsel") and (1) and (1)', {
+        'c_sources': [
+          'libavutil/mips/float_dsp_mips.c',
+        ],
+      }],  # (target_arch == "mipsel") and (1) and (1)
       ['((target_arch == "arm" and arm_neon == 1)) and (1) and (1)', {
         'c_sources': [
           'libavcodec/arm/hpeldsp_init_neon.c',
