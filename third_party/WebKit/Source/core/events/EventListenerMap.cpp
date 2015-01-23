@@ -38,6 +38,7 @@
 #include "wtf/Vector.h"
 
 #if ENABLE(ASSERT)
+#include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #endif
 
@@ -48,7 +49,7 @@ namespace blink {
 #if ENABLE(ASSERT)
 static Mutex& activeIteratorCountMutex()
 {
-    DEFINE_STATIC_LOCAL(Mutex, mutex, ());
+    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex());
     return mutex;
 }
 
