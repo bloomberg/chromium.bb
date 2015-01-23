@@ -14,20 +14,17 @@ namespace extensions {
 StateStoreNotificationObserver::StateStoreNotificationObserver(
     StateStore* state_store)
     : state_store_(state_store) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_SESSION_RESTORE_DONE,
-                 content::NotificationService::AllBrowserContextsAndSources());
+  on_session_restored_callback_subscription_ =
+      SessionRestore::RegisterOnSessionRestoredCallback(
+          base::Bind(&StateStoreNotificationObserver::OnSessionRestoreDone,
+                     base::Unretained(this)));
 }
 
 StateStoreNotificationObserver::~StateStoreNotificationObserver() {
 }
 
-void StateStoreNotificationObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_SESSION_RESTORE_DONE);
-  registrar_.RemoveAll();
+void StateStoreNotificationObserver::OnSessionRestoreDone() {
+  on_session_restored_callback_subscription_.reset();
   state_store_->RequestInitAfterDelay();
 }
 

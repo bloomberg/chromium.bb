@@ -7,8 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/sessions/session_restore.h"
 
 namespace extensions {
 class StateStore;
@@ -16,19 +15,24 @@ class StateStore;
 // Initializes the StateStore when session restore is complete, for example when
 // page load notifications are not sent ("Continue where I left off").
 // http://crbug.com/230481
-class StateStoreNotificationObserver : public content::NotificationObserver {
+class StateStoreNotificationObserver {
  public:
   explicit StateStoreNotificationObserver(StateStore* state_store);
-  ~StateStoreNotificationObserver() override;
-
-  // content::NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  ~StateStoreNotificationObserver();
 
  private:
+  // Called when a session restore has finished.
+  void OnSessionRestoreDone();
+
   StateStore* state_store_;  // Not owned.
-  content::NotificationRegistrar registrar_;
+
+  // Points to the on-session-restored callback that was registered with
+  // SessionRestore's callback list. When objects of this class are destroyed,
+  // the subscription object's destructor will automatically unregister the
+  // callback in SessionRestore, so that the callback list does not contain any
+  // obsolete callbacks.
+  SessionRestore::CallbackSubscription
+      on_session_restored_callback_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(StateStoreNotificationObserver);
 };
