@@ -42,11 +42,13 @@ class _SessionRestoreTest(benchmark.Benchmark):
     is_cold = (self.tag == 'cold')
     return session_restore.SessionRestore(cold=is_cold)
 
+  def CreatePageSet(self, options):
+    return page_sets.Typical25PageSet(make_pages_with_no_interactions=True)
+
 # crbug.com/325479, crbug.com/381990
 @benchmark.Disabled('android', 'linux', 'reference')
 class SessionRestoreColdTypical25(_SessionRestoreTest):
   tag = 'cold'
-  page_set = page_sets.Typical25PageSet
   options = {'pageset_repeat': 5}
 
   @classmethod
@@ -58,8 +60,8 @@ class SessionRestoreColdTypical25(_SessionRestoreTest):
 @benchmark.Disabled('android', 'linux', 'reference')
 class SessionRestoreWarmTypical25(_SessionRestoreTest):
   tag = 'warm'
-  page_set = page_sets.Typical25PageSet
   options = {'pageset_repeat': 20}
+
   @classmethod
   def Name(cls):
     return 'session_restore.warm.typical_25'
