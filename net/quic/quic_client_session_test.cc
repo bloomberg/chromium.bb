@@ -156,11 +156,11 @@ TEST_P(QuicClientSessionTest, CanPool) {
   session_.OnProofVerifyDetailsAvailable(details);
   CompleteCryptoHandshake();
 
-
-  EXPECT_TRUE(session_.CanPool("www.example.org"));
-  EXPECT_TRUE(session_.CanPool("mail.example.org"));
-  EXPECT_TRUE(session_.CanPool("mail.example.com"));
-  EXPECT_FALSE(session_.CanPool("mail.google.com"));
+  EXPECT_TRUE(session_.CanPool("www.example.org", PRIVACY_MODE_DISABLED));
+  EXPECT_FALSE(session_.CanPool("www.example.org", PRIVACY_MODE_ENABLED));
+  EXPECT_TRUE(session_.CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
+  EXPECT_TRUE(session_.CanPool("mail.example.com", PRIVACY_MODE_DISABLED));
+  EXPECT_FALSE(session_.CanPool("mail.google.com", PRIVACY_MODE_DISABLED));
 }
 
 TEST_P(QuicClientSessionTest, ConnectionPooledWithTlsChannelId) {
@@ -178,10 +178,10 @@ TEST_P(QuicClientSessionTest, ConnectionPooledWithTlsChannelId) {
   CompleteCryptoHandshake();
   QuicClientSessionPeer::SetChannelIDSent(&session_, true);
 
-  EXPECT_TRUE(session_.CanPool("www.example.org"));
-  EXPECT_TRUE(session_.CanPool("mail.example.org"));
-  EXPECT_FALSE(session_.CanPool("mail.example.com"));
-  EXPECT_FALSE(session_.CanPool("mail.google.com"));
+  EXPECT_TRUE(session_.CanPool("www.example.org", PRIVACY_MODE_DISABLED));
+  EXPECT_TRUE(session_.CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
+  EXPECT_FALSE(session_.CanPool("mail.example.com", PRIVACY_MODE_DISABLED));
+  EXPECT_FALSE(session_.CanPool("mail.google.com", PRIVACY_MODE_DISABLED));
 }
 
 TEST_P(QuicClientSessionTest, ConnectionNotPooledWithDifferentPin) {
@@ -204,7 +204,7 @@ TEST_P(QuicClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   CompleteCryptoHandshake();
   QuicClientSessionPeer::SetChannelIDSent(&session_, true);
 
-  EXPECT_FALSE(session_.CanPool("mail.example.org"));
+  EXPECT_FALSE(session_.CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
 }
 
 TEST_P(QuicClientSessionTest, ConnectionPooledWithMatchingPin) {
@@ -226,7 +226,7 @@ TEST_P(QuicClientSessionTest, ConnectionPooledWithMatchingPin) {
   CompleteCryptoHandshake();
   QuicClientSessionPeer::SetChannelIDSent(&session_, true);
 
-  EXPECT_TRUE(session_.CanPool("mail.example.org"));
+  EXPECT_TRUE(session_.CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
 }
 
 }  // namespace

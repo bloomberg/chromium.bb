@@ -706,17 +706,14 @@ bool QuicStreamFactory::OnResolution(
   if (disable_connection_pooling_) {
     return false;
   }
-  for (size_t i = 0; i < address_list.size(); ++i) {
-    const IPEndPoint& address = address_list[i];
+  for (const IPEndPoint& address : address_list) {
     const IpAliasKey ip_alias_key(address, server_id.is_https());
     if (!ContainsKey(ip_aliases_, ip_alias_key))
       continue;
 
     const SessionSet& sessions = ip_aliases_[ip_alias_key];
-    for (SessionSet::const_iterator i = sessions.begin();
-         i != sessions.end(); ++i) {
-      QuicClientSession* session = *i;
-      if (!session->CanPool(server_id.host()))
+    for (QuicClientSession* session : sessions) {
+      if (!session->CanPool(server_id.host(), server_id.privacy_mode()))
         continue;
       active_sessions_[server_id] = session;
       session_aliases_[session].insert(server_id);

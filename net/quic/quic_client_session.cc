@@ -188,7 +188,7 @@ void QuicClientSession::InitializeSession(
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config,
     QuicCryptoClientStreamFactory* crypto_client_stream_factory) {
-  server_host_port_ = server_id.host_port_pair();
+  server_id_ = server_id;
   crypto_stream_.reset(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
@@ -533,8 +533,13 @@ int QuicClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
-bool QuicClientSession::CanPool(const std::string& hostname) const {
+bool QuicClientSession::CanPool(const std::string& hostname,
+                                PrivacyMode privacy_mode) const {
   DCHECK(connection()->connected());
+  if (privacy_mode != server_id_.privacy_mode()) {
+    // Privacy mode must always match.
+    return false;
+  }
   SSLInfo ssl_info;
   if (!GetSSLInfo(&ssl_info) || !ssl_info.cert.get()) {
     // We can always pool with insecure QUIC sessions.
@@ -542,7 +547,7 @@ bool QuicClientSession::CanPool(const std::string& hostname) const {
   }
 
   return SpdySession::CanPool(transport_security_state_, ssl_info,
-                              server_host_port_.host(), hostname);
+                              server_id_.host(), hostname);
 }
 
 QuicDataStream* QuicClientSession::CreateIncomingDataStream(
