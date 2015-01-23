@@ -708,7 +708,7 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_ErrorNotification,
 // These messages are sent from the Renderer process to GPU process.
 
 // Queue a input buffer to the encoder to encode. |frame_id| will be returned by
-// AcceleratedVideoEncoderHostMsg_NotifyEncodeDone.
+// AcceleratedVideoEncoderHostMsg_NotifyInputDone.
 IPC_MESSAGE_ROUTED4(AcceleratedVideoEncoderMsg_Encode,
                     int32 /* frame_id */,
                     base::SharedMemoryHandle /* buffer_handle */,
