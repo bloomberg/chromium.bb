@@ -280,6 +280,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
   std::string GetOAuth2ClientId() const;
 
+  bool interactive_;
   bool should_prompt_for_scopes_;
   IdentityMintRequestQueue::MintType mint_token_flow_type_;
   scoped_ptr<OAuth2MintTokenFlow> mint_token_flow_;

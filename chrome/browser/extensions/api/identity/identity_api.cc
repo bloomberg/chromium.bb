@@ -288,6 +288,7 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
     : OAuth2TokenService::Consumer("extensions_identity_api"),
+      interactive_(false),
       should_prompt_for_scopes_(false),
       should_prompt_for_signin_(false) {
 }
@@ -311,12 +312,12 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
   scoped_ptr<identity::GetAuthToken::Params> params(
       identity::GetAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  bool interactive = params->details.get() &&
+  interactive_ = params->details.get() &&
       params->details->interactive.get() &&
       *params->details->interactive;
 
-  should_prompt_for_scopes_ = interactive;
-  should_prompt_for_signin_ = interactive;
+  should_prompt_for_scopes_ = interactive_;
+  should_prompt_for_signin_ = interactive_;
 
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension());
 
@@ -567,8 +568,13 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
                                "error",
                                error.ToString());
   CompleteMintTokenFlow();
-
   switch (error.state()) {
+    case GoogleServiceAuthError::SERVICE_ERROR:
+      if (interactive_) {
+        StartSigninFlow();
+        return;
+      }
+      break;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
@@ -646,6 +652,16 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowFailure(
       break;
 
     case GaiaWebAuthFlow::SERVICE_AUTH_ERROR:
+      // If this is really an authentication error and not just a transient
+      // network error, and this is an interactive request for a signed-in
+      // user, then we show signin UI instead of failing.
+      if (service_error.state() != GoogleServiceAuthError::CONNECTION_FAILED &&
+          service_error.state() !=
+              GoogleServiceAuthError::SERVICE_UNAVAILABLE &&
+          interactive_ && HasLoginToken()) {
+        StartSigninFlow();
+        return;
+      }
       error = std::string(identity_constants::kAuthFailure) +
           service_error.ToString();
       break;

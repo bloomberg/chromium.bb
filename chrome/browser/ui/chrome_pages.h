@@ -82,9 +82,13 @@ void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-// If the user is already signed in, shows the "Signin" portion of Settings,
-// otherwise initiates signin.
+// Initiates signin in a new browser tab.
 void ShowBrowserSignin(Browser* browser, signin_metrics::Source source);
+
+// If the user is already signed in, shows the "Signin" portion of Settings,
+// otherwise initiates signin in a new browser tab.
+void ShowBrowserSigninOrSettings(Browser* browser,
+                                 signin_metrics::Source source);
 #endif
 
 }  // namespace chrome
