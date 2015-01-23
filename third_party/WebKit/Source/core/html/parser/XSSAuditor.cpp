@@ -52,6 +52,9 @@ namespace {
 // SecurityOrigin::urlWithUniqueSecurityOrigin() can't be used cross-thread, or we'd use it instead.
 const char kURLWithUniqueOrigin[] = "data:,";
 
+const char kSafeJavaScriptURL[] = "javascript:void(0)";
+const char kXSSProtectionHeader[] = "X-XSS-Protection";
+
 } // namespace
 
 namespace blink {
@@ -327,8 +330,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
         m_encoding = document->encoding();
 
     if (DocumentLoader* documentLoader = document->frame()->loader().documentLoader()) {
-        DEFINE_STATIC_LOCAL(const AtomicString, XSSProtectionHeader, ("X-XSS-Protection", AtomicString::ConstructFromLiteral));
-        const AtomicString& headerValue = documentLoader->response().httpHeaderField(XSSProtectionHeader);
+        const AtomicString& headerValue = documentLoader->response().httpHeaderField(kXSSProtectionHeader);
         String errorDetails;
         unsigned errorPosition = 0;
         String reportURL;
@@ -620,8 +622,6 @@ bool XSSAuditor::filterLinkToken(const FilterTokenRequest& request)
 
 bool XSSAuditor::eraseDangerousAttributesIfInjected(const FilterTokenRequest& request)
 {
-    DEFINE_STATIC_LOCAL(String, safeJavaScriptURL, ("javascript:void(0)"));
-
     bool didBlockScript = false;
     for (size_t i = 0; i < request.token.attributes().size(); ++i) {
         bool eraseAttribute = false;
@@ -645,7 +645,7 @@ bool XSSAuditor::eraseDangerousAttributesIfInjected(const FilterTokenRequest& re
             continue;
         request.token.eraseValueOfAttribute(i);
         if (valueContainsJavaScriptURL)
-            request.token.appendToAttributeValue(i, safeJavaScriptURL);
+            request.token.appendToAttributeValue(i, kSafeJavaScriptURL);
         didBlockScript = true;
     }
     return didBlockScript;
