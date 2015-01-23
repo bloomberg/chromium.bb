@@ -325,18 +325,16 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 
     var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
     sidebarPane.expand();
-    var eventListenerSections = WebInspector.panels.elements.sidebarPanes.eventListeners.sections;
-    for (var i = 0; i < eventListenerSections.length; ++i)
-        eventListenerSections[i].expand();
+    sidebarPane.treeOutline.expand();
 
     function listenersArrived()
     {
-        var eventListenerSections = WebInspector.panels.elements.sidebarPanes.eventListeners.sections;
-        for (var i = 0; i < eventListenerSections.length; ++i) {
-            var eventType = eventListenerSections[i]._title;
-            var eventBarChildren = eventListenerSections[i]._eventBars.children;
-            for (var j = 0; j < eventBarChildren.length; ++j) {
-                var objectPropertiesSection = eventBarChildren[j]._section;
+        var listenerTypes = sidebarPane.treeOutline.children;
+        for (var i = 0; i < listenerTypes.length; ++i) {
+            listenerTypes[i].expand();
+            var listenerItems = listenerTypes[i].children;
+            for (var j = 0; j < listenerItems.length; ++j) {
+                var objectPropertiesSection = listenerItems[j].listItemElement.firstChild._section;
                 objectPropertiesSection.expand();
             }
         }
@@ -345,14 +343,14 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 
     function objectsExpanded()
     {
-        var eventListenerSections = WebInspector.panels.elements.sidebarPanes.eventListeners.sections;
-        for (var i = 0; i < eventListenerSections.length; ++i) {
-            var eventType = eventListenerSections[i]._title;
+        var listenerTypes = sidebarPane.treeOutline.children;
+        for (var i = 0; i < listenerTypes.length; ++i) {
+            var eventType = listenerTypes[i]._title;
             InspectorTest.addResult("");
             InspectorTest.addResult("======== " + eventType + " ========");
-            var eventBarChildren = eventListenerSections[i]._eventBars.children;
-            for (var j = 0; j < eventBarChildren.length; ++j) {
-                var objectPropertiesSection = eventBarChildren[j]._section;
+            var listenerItems = listenerTypes[i].children;
+            for (var j = 0; j < listenerItems.length; ++j) {
+                var objectPropertiesSection = listenerItems[j].listItemElement.firstChild._section;
                 InspectorTest.dumpObjectPropertySection(objectPropertiesSection, {
                     sourceName: formatSourceNameProperty
                 });
