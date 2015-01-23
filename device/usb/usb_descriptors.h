@@ -39,8 +39,6 @@ struct UsbEndpointDescriptor {
   UsbEndpointDescriptor();
   ~UsbEndpointDescriptor();
 
-  typedef std::vector<UsbEndpointDescriptor>::const_iterator Iterator;
-
   uint8_t address;
   UsbEndpointDirection direction;
   uint16_t maximum_packet_size;
@@ -54,8 +52,6 @@ struct UsbEndpointDescriptor {
 struct UsbInterfaceDescriptor {
   UsbInterfaceDescriptor();
   ~UsbInterfaceDescriptor();
-
-  typedef std::vector<UsbInterfaceDescriptor>::const_iterator Iterator;
 
   uint8_t interface_number;
   uint8_t alternate_setting;
