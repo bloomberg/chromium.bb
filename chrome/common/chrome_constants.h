@@ -59,6 +59,7 @@ extern const wchar_t kTestingInterfaceDLL[];
 extern const char    kInitialProfile[];
 extern const char    kMultiProfileDirPrefix[];
 extern const base::FilePath::CharType kGuestProfileDir[];
+extern const base::FilePath::CharType kSystemProfileDir[];
 extern const wchar_t kBrowserResourcesDll[];
 
 // filenames

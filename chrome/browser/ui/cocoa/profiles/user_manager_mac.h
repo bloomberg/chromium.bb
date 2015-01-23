@@ -28,10 +28,10 @@ class UserManagerMac {
   // controller destroyed itself. Deletes the instance.
   void WindowWasClosed();
 
-  // Called from the UserManager class once the |guest_profile| is ready. Will
+  // Called from the UserManager class once the |system_profile| is ready. Will
   // construct a UserManagerMac object and show |url|.
-  static void OnGuestProfileCreated(Profile* guest_profile,
-                                    const std::string& url);
+  static void OnSystemProfileCreated(Profile* system_profile,
+                                     const std::string& url);
 
   UserManagerWindowController* window_controller() {
     return window_controller_.get();

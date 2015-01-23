@@ -593,6 +593,16 @@ base::FilePath ProfileManager::GetGuestProfilePath() {
   return guest_path.Append(chrome::kGuestProfileDir);
 }
 
+// static
+base::FilePath ProfileManager::GetSystemProfilePath() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  base::FilePath system_path = profile_manager->user_data_dir();
+  return system_path.Append(chrome::kSystemProfileDir);
+}
+
 base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
@@ -1183,7 +1193,7 @@ ProfileManager::ProfileInfo* ProfileManager::GetProfileInfoByPath(
 }
 
 void ProfileManager::AddProfileToCache(Profile* profile) {
-  if (profile->IsGuestSession())
+  if (profile->IsGuestSession() || profile->IsSystemProfile())
     return;
   ProfileInfoCache& cache = GetProfileInfoCache();
   if (profile->GetPath().DirName() != cache.GetUserDataDir())

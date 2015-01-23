@@ -84,14 +84,14 @@ void LockProfile(Profile* profile);
 // Returns whether lock is available to this profile.
 bool IsLockAvailable(Profile* profile);
 
-// Creates or reuses the guest profile needed by the user manager. Based on
+// Creates or reuses the system profile needed by the user manager. Based on
 // the value of |tutorial_mode|, the user manager can show a specific
 // tutorial, or no tutorial at all. If a tutorial is not shown, then
 // |profile_path_to_focus| could be used to specify which user should be
 // focused. After a profile is opened from the user manager, perform
 // |profile_open_action|. |callback| is run with the custom url to be displayed,
 // as well as a pointer to the guest profile.
-void CreateGuestProfileForUserManager(
+void CreateSystemProfileForUserManager(
     const base::FilePath& profile_path_to_focus,
     profiles::UserManagerTutorialMode tutorial_mode,
     profiles::UserManagerProfileSelected profile_open_action,

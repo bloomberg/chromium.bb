@@ -22,11 +22,11 @@ class UserManagerView : public views::DialogDelegateView {
   // Do not call directly. To display the User Manager, use UserManager::Show().
   UserManagerView();
 
-  // Creates a new UserManagerView instance for the |guest_profile| and
-  // shows the |url|.
-  static void OnGuestProfileCreated(scoped_ptr<UserManagerView> instance,
-                                    Profile* guest_profile,
-                                    const std::string& url);
+  // Creates a new UserManagerView instance for the |system_profile| and shows
+  // the |url|.
+  static void OnSystemProfileCreated(scoped_ptr<UserManagerView> instance,
+                                     Profile* system_profile,
+                                     const std::string& url);
 
  private:
   ~UserManagerView() override;

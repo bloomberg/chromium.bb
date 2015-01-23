@@ -182,11 +182,11 @@ void UserManager::Show(
 
   // Create the guest profile, if necessary, and open the User Manager
   // from the guest profile.
-  profiles::CreateGuestProfileForUserManager(
+  profiles::CreateSystemProfileForUserManager(
       profile_path_to_focus,
       tutorial_mode,
       profile_open_action,
-      base::Bind(&UserManagerMac::OnGuestProfileCreated));
+      base::Bind(&UserManagerMac::OnSystemProfileCreated));
 }
 
 void UserManager::Hide() {
@@ -207,10 +207,10 @@ UserManagerMac::~UserManagerMac() {
 }
 
 // static
-void UserManagerMac::OnGuestProfileCreated(Profile* guest_profile,
-                                           const std::string& url) {
+void UserManagerMac::OnSystemProfileCreated(Profile* system_profile,
+                                            const std::string& url) {
   DCHECK(!instance_);
-  instance_ = new UserManagerMac(guest_profile);
+  instance_ = new UserManagerMac(system_profile);
   [instance_->window_controller() showURL:GURL(url)];
 }
 

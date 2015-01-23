@@ -18,6 +18,7 @@
 #endif
 
 const char kGuestProfileName[] = "Guest";
+const char kSystemProfileName[] = "System";
 
 namespace testing {
 
@@ -136,6 +137,24 @@ TestingProfile* TestingProfileManager::CreateGuestProfile() {
   return profile;
 }
 
+TestingProfile* TestingProfileManager::CreateSystemProfile() {
+  DCHECK(called_set_up_);
+
+  // Create the profile and register it.
+  TestingProfile::Builder builder;
+  builder.SetPath(ProfileManager::GetSystemProfilePath());
+
+  // Add the system profile to the profile manager, but not to the info cache.
+  TestingProfile* profile = builder.Build().release();
+  profile->set_profile_name(kSystemProfileName);
+
+  profile_manager_->AddProfile(profile);  // Takes ownership.
+
+  testing_profiles_.insert(std::make_pair(kSystemProfileName, profile));
+
+  return profile;
+}
+
 void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
   DCHECK(called_set_up_);
 
@@ -168,6 +187,16 @@ void TestingProfileManager::DeleteGuestProfile() {
   DCHECK(it != testing_profiles_.end());
 
   profile_manager_->profiles_info_.erase(ProfileManager::GetGuestProfilePath());
+}
+
+void TestingProfileManager::DeleteSystemProfile() {
+  DCHECK(called_set_up_);
+
+  TestingProfilesMap::iterator it = testing_profiles_.find(kSystemProfileName);
+  DCHECK(it != testing_profiles_.end());
+
+  profile_manager_->profiles_info_.erase(
+      ProfileManager::GetSystemProfilePath());
 }
 
 void TestingProfileManager::DeleteProfileInfoCache() {

@@ -174,16 +174,16 @@ void OpenBrowserWindowForProfile(
       true);
 }
 
-// Called after a |guest_profile| is available to be used by the user manager.
+// Called after a |system_profile| is available to be used by the user manager.
 // Based on the value of |tutorial_mode| we determine a url to be displayed
 // by the webui and run the |callback|, if it exists. After opening a profile,
 // perform |profile_open_action|.
-void OnUserManagerGuestProfileCreated(
+void OnUserManagerSystemProfileCreated(
     const base::FilePath& profile_path_to_focus,
     profiles::UserManagerTutorialMode tutorial_mode,
     profiles::UserManagerProfileSelected profile_open_action,
     const base::Callback<void(Profile*, const std::string&)>& callback,
-    Profile* guest_profile,
+    Profile* system_profile,
     Profile::CreateStatus status) {
   if (status != Profile::CREATE_STATUS_INITIALIZED || callback.is_null())
     return;
@@ -214,7 +214,7 @@ void OnUserManagerGuestProfileCreated(
              profiles::USER_MANAGER_SELECT_PROFILE_CHROME_MEMORY) {
     page += profiles::kUserManagerSelectProfileChromeMemory;
   }
-  callback.Run(guest_profile, page);
+  callback.Run(system_profile, page);
 }
 
 // Updates Chrome services that require notification when
@@ -396,16 +396,16 @@ bool IsLockAvailable(Profile* profile) {
   return false;
 }
 
-void CreateGuestProfileForUserManager(
+void CreateSystemProfileForUserManager(
     const base::FilePath& profile_path_to_focus,
     profiles::UserManagerTutorialMode tutorial_mode,
     profiles::UserManagerProfileSelected profile_open_action,
     const base::Callback<void(Profile*, const std::string&)>& callback) {
-  // Create the guest profile, if necessary, and open the User Manager
-  // from the guest profile.
+  // Create the system profile, if necessary, and open the User Manager
+  // from the system profile.
   g_browser_process->profile_manager()->CreateProfileAsync(
-      ProfileManager::GetGuestProfilePath(),
-      base::Bind(&OnUserManagerGuestProfileCreated,
+      ProfileManager::GetSystemProfilePath(),
+      base::Bind(&OnUserManagerSystemProfileCreated,
                  profile_path_to_focus,
                  tutorial_mode,
                  profile_open_action,

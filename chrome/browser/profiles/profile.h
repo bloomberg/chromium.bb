@@ -322,6 +322,9 @@ class Profile : public content::BrowserContext {
   // Returns whether it is a guest session.
   virtual bool IsGuestSession() const;
 
+  // Returns whether it is a system profile.
+  virtual bool IsSystemProfile() const;
+
   // Did the user restore the last session? This is set by SessionRestore.
   void set_restored_last_session(bool restored_last_session) {
     restored_last_session_ = restored_last_session;
@@ -384,6 +387,10 @@ class Profile : public content::BrowserContext {
     is_guest_profile_ = is_guest_profile;
   }
 
+  void set_is_system_profile(bool is_system_profile) {
+    is_system_profile_ = is_system_profile;
+  }
+
  private:
   bool restored_last_session_;
 
@@ -398,6 +405,9 @@ class Profile : public content::BrowserContext {
   int accessibility_pause_level_;
 
   bool is_guest_profile_;
+
+  // A non-browsing profile not associated to a user. Sample use: User-Manager.
+  bool is_system_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(Profile);
 };

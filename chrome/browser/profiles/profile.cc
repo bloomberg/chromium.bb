@@ -38,7 +38,8 @@ Profile::Profile()
     : restored_last_session_(false),
       sent_destroyed_notification_(false),
       accessibility_pause_level_(0),
-      is_guest_profile_(false) {
+      is_guest_profile_(false),
+      is_system_profile_(false) {
 }
 
 Profile::~Profile() {
@@ -213,6 +214,10 @@ bool Profile::IsGuestSession() const {
 #else
   return is_guest_profile_;
 #endif
+}
+
+bool Profile::IsSystemProfile() const {
+  return is_system_profile_;
 }
 
 bool Profile::IsNewProfile() {

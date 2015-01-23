@@ -384,6 +384,13 @@ TEST_F(ProfileManagerTest, GetGuestProfilePath) {
   EXPECT_EQ(expected_path, guest_path);
 }
 
+TEST_F(ProfileManagerTest, GetSystemProfilePath) {
+  base::FilePath system_profile_path = ProfileManager::GetSystemProfilePath();
+  base::FilePath expected_path = temp_dir_.path();
+  expected_path = expected_path.Append(chrome::kSystemProfileDir);
+  EXPECT_EQ(expected_path, system_profile_path);
+}
+
 class UnittestGuestProfileManager : public UnittestProfileManager {
  public:
   explicit UnittestGuestProfileManager(const base::FilePath& user_data_dir)

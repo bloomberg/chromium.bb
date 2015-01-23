@@ -139,6 +139,9 @@ class ProfileManager : public base::NonThreadSafe,
   // Returns the full path to be used for guest profiles.
   static base::FilePath GetGuestProfilePath();
 
+  // Returns the full path to be used for system profiles.
+  static base::FilePath GetSystemProfilePath();
+
   // Get the path of the next profile directory and increment the internal
   // count.
   // Lack of side effects:

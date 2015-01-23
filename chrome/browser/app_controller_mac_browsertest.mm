@@ -202,12 +202,12 @@ void CreateProfileCallback(const base::Closure& quit_closure,
     quit_closure.Run();
 }
 
-void CreateAndWaitForGuestProfile() {
+void CreateAndWaitForSystemProfile() {
   ProfileManager::CreateCallback create_callback =
       base::Bind(&CreateProfileCallback,
                  base::MessageLoop::current()->QuitClosure());
   g_browser_process->profile_manager()->CreateProfileAsync(
-      ProfileManager::GetGuestProfilePath(),
+      ProfileManager::GetSystemProfilePath(),
       create_callback,
       base::string16(),
       base::string16(),
@@ -245,10 +245,10 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
 // Test that for a locked last profile, a reopen event opens the User Manager.
 IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
                        LockedProfileReopenWithNoWindows) {
-  // The User Manager uses the guest profile as its underlying profile. To
+  // The User Manager uses the system profile as its underlying profile. To
   // minimize flakiness due to the scheduling/descheduling of tasks on the
   // different threads, pre-initialize the guest profile before it is needed.
-  CreateAndWaitForGuestProfile();
+  CreateAndWaitForSystemProfile();
   base::scoped_nsobject<AppController> ac([[AppController alloc] init]);
 
   // Lock the active profile.
@@ -272,9 +272,9 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
 // Test that for a guest last profile, a reopen event opens the User Manager.
 IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
                        GuestProfileReopenWithNoWindows) {
-  // Create the guest profile, and set it as the last used profile so the
+  // Create the system profile. Set the guest as the last used profile so the
   // app controller can use it on init.
-  CreateAndWaitForGuestProfile();
+  CreateAndWaitForSystemProfile();
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kProfileLastUsed, chrome::kGuestProfileDir);
 
@@ -301,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
 
   // Create the guest profile, and set it as the last used profile so the
   // app controller can use it on init.
-  CreateAndWaitForGuestProfile();
+  CreateAndWaitForSystemProfile();
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kProfileLastUsed, chrome::kGuestProfileDir);
 

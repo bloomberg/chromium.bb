@@ -431,6 +431,7 @@ ProfileImpl::ProfileImpl(
 #endif
 
   set_is_guest_profile(path == ProfileManager::GetGuestProfilePath());
+  set_is_system_profile(path == ProfileManager::GetSystemProfilePath());
 
   // Determine if prefetch is enabled for this profile.
   // If not profile_manager is present, it means we are in a unittest.

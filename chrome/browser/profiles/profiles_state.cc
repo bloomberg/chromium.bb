@@ -184,7 +184,7 @@ Profile* SetActiveProfileToGuestIfLocked() {
   if (!cache.ProfileIsSigninRequiredAtIndex(index))
     return NULL;
 
-  // The guest profile must have been loaded already.
+  // Profile loads synchronously if it was not previously created.
   Profile* guest_profile = profile_manager->GetProfile(
       ProfileManager::GetGuestProfilePath());
   DCHECK(guest_profile);

@@ -133,6 +133,7 @@ const wchar_t kTestingInterfaceDLL[] = L"testing_interface.dll";
 const char    kInitialProfile[] = "Default";
 const char    kMultiProfileDirPrefix[] = "Profile ";
 const base::FilePath::CharType kGuestProfileDir[] = FPL("Guest Profile");
+const base::FilePath::CharType kSystemProfileDir[] = FPL("System Profile");
 const wchar_t kBrowserResourcesDll[] = L"chrome.dll";
 
 // filenames

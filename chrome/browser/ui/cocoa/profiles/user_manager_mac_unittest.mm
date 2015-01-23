@@ -20,13 +20,13 @@ class UserManagerMacTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     ASSERT_TRUE(testing_profile_manager_.SetUp());
-    // Pre-load the guest profile so we don't have to wait for the User Manager
+    // Pre-load the system profile so we don't have to wait for the User Manager
     // to asynchronously create it.
-    testing_profile_manager_.CreateGuestProfile();
+    testing_profile_manager_.CreateSystemProfile();
   }
 
   void TearDown() override {
-    testing_profile_manager_.DeleteGuestProfile();
+    testing_profile_manager_.DeleteSystemProfile();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
     base::RunLoop().RunUntilIdle();
     BrowserWithTestWindowTest::TearDown();
