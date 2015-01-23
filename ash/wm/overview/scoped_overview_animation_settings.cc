@@ -73,4 +73,15 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
 ScopedOverviewAnimationSettings::~ScopedOverviewAnimationSettings() {
 }
 
+// static:
+void ScopedOverviewAnimationSettings::SetupFadeInAfterLayout(
+    aura::Window* window) {
+  ui::Layer* layer = window->layer();
+  layer->SetOpacity(0.0f);
+  ScopedOverviewAnimationSettings animation_settings(
+      OverviewAnimationType::OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+      window);
+  layer->SetOpacity(1.0f);
+}
+
 }  // namespace ash

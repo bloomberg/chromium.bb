@@ -24,6 +24,11 @@ class ScopedOverviewAnimationSettings {
                                   aura::Window* window);
   virtual ~ScopedOverviewAnimationSettings();
 
+  // Convenvience method to fade in a Window with predefined animation settings.
+  // Note: The fade in animation will occur after a delay where the delay is how
+  // long the lay out animations take.
+  static void SetupFadeInAfterLayout(aura::Window* window);
+
  private:
   // The managed animation settings.
   ui::ScopedLayerAnimationSettings animation_settings_;

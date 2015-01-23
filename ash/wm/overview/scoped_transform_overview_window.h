@@ -6,8 +6,6 @@
 #define ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
 
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/transparent_activate_window_button.h"
-#include "ash/wm/overview/transparent_activate_window_button_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -35,8 +33,7 @@ class ScopedWindowCopy;
 // class allows transforming the windows with a helper to determine the best
 // fit in certain bounds. The window's state is restored on destruction of this
 // object.
-class ScopedTransformOverviewWindow
-    : public TransparentActivateWindowButtonDelegate {
+class ScopedTransformOverviewWindow {
  public:
   typedef ScopedVector<ScopedOverviewAnimationSettings> ScopedAnimationSettings;
 
@@ -51,16 +48,12 @@ class ScopedTransformOverviewWindow
                                             const gfx::Rect& dst_rect);
 
   explicit ScopedTransformOverviewWindow(aura::Window* window);
-  ~ScopedTransformOverviewWindow() override;
+  ~ScopedTransformOverviewWindow();
 
   gfx::Transform get_overview_transform() const { return overview_transform_; }
 
   void set_overview_transform(const gfx::Transform& transform) {
     overview_transform_ = transform;
-  }
-
-  TransparentActivateWindowButton* activate_button() {
-    return activate_button_.get();
   }
 
   // Starts an animation sequence which will use animation settings specified by
@@ -115,18 +108,12 @@ class ScopedTransformOverviewWindow
   // Closes the transient root of the window managed by |this|.
   void Close();
 
-  // ash::TransparentActivateWindowButtonDelegate:
-  void Select() override;
-
  private:
   // Shows the window if it was minimized.
   void ShowWindowIfMinimized();
 
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
-
-  // The transparent overlay that captures events.
-  scoped_ptr<TransparentActivateWindowButton> activate_button_;
 
   // If true, the window was minimized and should be restored if the window
   // was not selected.

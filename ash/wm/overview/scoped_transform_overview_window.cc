@@ -166,8 +166,6 @@ TransientDescendantIteratorRange GetTransientTreeIterator(
 ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
         aura::Window* window)
     : window_(window),
-      activate_button_(new TransparentActivateWindowButton(
-          window_->GetRootWindow(), this)),
       minimized_(window->GetProperty(aura::client::kShowStateKey) ==
                  ui::SHOW_STATE_MINIMIZED),
       ignored_by_shelf_(wm::GetWindowState(window)->ignored_by_shelf()),
@@ -302,10 +300,6 @@ void ScopedTransformOverviewWindow::SetOpacity(float opacity) {
   for (const auto& window : GetTransientTreeIterator(window_)) {
     window->layer()->SetOpacity(opacity);
   }
-}
-
-void ScopedTransformOverviewWindow::Select() {
-  wm::GetWindowState(window_)->Activate();
 }
 
 void ScopedTransformOverviewWindow::Close() {

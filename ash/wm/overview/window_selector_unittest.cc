@@ -19,6 +19,7 @@
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_window_button.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -46,7 +47,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
-#include "ui/views/controls/label.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_util.h"
@@ -214,8 +215,9 @@ class WindowSelectorTest : public test::AshTestBase {
     return &(window->close_button_widget_);
   }
 
-  views::Label* GetLabelView(ash::WindowSelectorItem* window) {
-    return window->window_label_view_;
+  views::LabelButton* GetLabelButtonView(ash::WindowSelectorItem* window) {
+    return static_cast<views::LabelButton*>(
+        window->overview_window_button_->window_label_->GetContentsView());
   }
 
   // Tests that a window is contained within a given WindowSelectorItem, and
@@ -346,9 +348,9 @@ TEST_F(WindowSelectorTest, NoCrashWithDesktopTap) {
   event_generator.PressTouchId(kTouchId);
 
   // Tap on the desktop, which should not cause a crash. Overview mode should
-  // remain engaged because the transparent widget over the window has capture.
+  // be disengaged.
   event_generator.GestureTapAt(gfx::Point(0, 0));
-  EXPECT_TRUE(IsSelecting());
+  EXPECT_FALSE(IsSelecting());
 
   event_generator.ReleaseTouchId(kTouchId);
 }
@@ -371,14 +373,15 @@ TEST_F(WindowSelectorTest, ClickOnWindowDuringTouch) {
                                            window1_bounds.CenterPoint());
 
   // Clicking on |window2| while touching on |window1| should not cause a
-  // crash, and overview mode should remain engaged because |window1|
-  // has capture.
+  // crash, and |window2| should be selected.
   const int kTouchId = 19;
   event_generator.PressTouchId(kTouchId);
   event_generator.MoveMouseToCenterOf(window2.get());
   event_generator.ClickLeftButton();
-  EXPECT_TRUE(IsSelecting());
+  EXPECT_FALSE(IsSelecting());
   event_generator.ReleaseTouchId(kTouchId);
+
+  ToggleOverview();
 
   // Clicking on |window1| while touching on |window1| should not cause
   // a crash, overview mode should be disengaged, and |window1| should
@@ -910,17 +913,17 @@ TEST_F(WindowSelectorTest, CreateLabelUnderWindow) {
   window->SetTitle(window_title);
   ToggleOverview();
   WindowSelectorItem* window_item = GetWindowItemsForRoot(0).back();
-  views::Label* label = GetLabelView(window_item);
+  views::LabelButton* label = GetLabelButtonView(window_item);
   // Has the label view been created?
   ASSERT_TRUE(label);
 
   // Verify the label matches the window title.
-  EXPECT_EQ(label->text(), window_title);
+  EXPECT_EQ(label->GetText(), window_title);
 
   // Update the window title and check that the label is updated, too.
   base::string16 updated_title = base::UTF8ToUTF16("Updated title");
   window->SetTitle(updated_title);
-  EXPECT_EQ(label->text(), updated_title);
+  EXPECT_EQ(label->GetText(), updated_title);
 
   // Labels are located based on target_bounds, not the actual window item
   // bounds.

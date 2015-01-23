@@ -7,10 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
-#include "ash/wm/overview/transparent_activate_window_button.h"
-#include "ash/wm/overview/transparent_activate_window_button_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/button.h"
@@ -21,17 +20,17 @@ class Window;
 }
 
 namespace views {
-class Label;
+class LabelButton;
 class Widget;
 }
 
 namespace ash {
 
+class OverviewWindowButton;
+
 // This class represents an item in overview mode.
-class ASH_EXPORT WindowSelectorItem
-    : public views::ButtonListener,
-      public aura::WindowObserver,
-      public TransparentActivateWindowButtonDelegate {
+class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
+                                      public aura::WindowObserver {
  public:
   explicit WindowSelectorItem(aura::Window* window);
   ~WindowSelectorItem() override;
@@ -83,9 +82,6 @@ class ASH_EXPORT WindowSelectorItem
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowTitleChanged(aura::Window* window) override;
 
-  // ash::TransparentActivateWindowButtonDelegate:
-  void Select() override;
-
  private:
   friend class WindowSelectorTest;
 
@@ -97,19 +93,6 @@ class ASH_EXPORT WindowSelectorItem
 
   // Changes the opacity of all the windows the item owns.
   void SetOpacity(float opacity);
-
-  // Updates the window label's bounds to |target_bounds|. Will create a new
-  // window label and fade it in if it doesn't exist. The bounds change is
-  // animated as specified by the |animation_type|.
-  void UpdateWindowLabels(const gfx::Rect& target_bounds,
-                          OverviewAnimationType animation_type);
-
-  // Initializes window_label_.
-  void CreateWindowLabel(const base::string16& title);
-
-  // Updates the bounds and accessibility names for all the transparent
-  // overlays.
-  void UpdateSelectorButtons();
 
   // Updates the close button's bounds. Any change in bounds will be animated
   // from the current bounds to the new bounds as per the |animation_type|.
@@ -136,12 +119,6 @@ class ASH_EXPORT WindowSelectorItem
   // a window layer for display on another monitor.
   bool in_bounds_update_;
 
-  // Label under the window displaying its active tab name.
-  scoped_ptr<views::Widget> window_label_;
-
-  // View for the label under the window.
-  views::Label* window_label_view_;
-
   // The close buttons widget container.
   views::Widget close_button_widget_;
 
@@ -149,11 +126,8 @@ class ASH_EXPORT WindowSelectorItem
   // close_button_widget_.
   views::ImageButton* close_button_;
 
-  // Transparent overlay that covers the entire bounds of the
-  // WindowSelectorItem and is stacked in front of all windows but behind each
-  // Windows' own TransparentActivateWindowButton.
-  scoped_ptr<TransparentActivateWindowButton>
-      selector_item_activate_window_button_;
+  // Button that handles window activation.
+  scoped_ptr<OverviewWindowButton> overview_window_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };
