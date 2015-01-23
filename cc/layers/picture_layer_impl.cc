@@ -557,6 +557,9 @@ void PictureLayerImpl::UpdateRasterSource(
   invalidation_.Swap(new_invalidation);
 
   bool can_have_tilings = CanHaveTilings();
+  DCHECK_IMPLIES(
+      pending_set,
+      can_have_tilings == GetPendingOrActiveTwinLayer()->CanHaveTilings());
 
   // Need to call UpdateTiles again if CanHaveTilings changed.
   if (could_have_tilings != can_have_tilings)
