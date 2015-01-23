@@ -27,6 +27,7 @@
 #ifndef ComposedTreeTraversal_h
 #define ComposedTreeTraversal_h
 
+#include "core/dom/Document.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -62,6 +63,7 @@ private:
     static void assertPrecondition(const Node& node)
     {
 #if ENABLE(ASSERT)
+        ASSERT(!node.document().childNeedsDistributionRecalc());
         ASSERT(node.canParticipateInComposedTree());
 #endif
     }

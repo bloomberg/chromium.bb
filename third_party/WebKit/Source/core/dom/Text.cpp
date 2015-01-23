@@ -277,6 +277,10 @@ bool Text::textRendererIsNeeded(const RenderStyle& style, const RenderObject& pa
     if (style.preserveNewline()) // pre/pre-wrap/pre-line always make renderers.
         return true;
 
+    // childNeedsDistributionRecalc() here is rare, only happens JS calling surroundContents() etc. from DOMNodeInsertedIntoDocument etc.
+    if (document().childNeedsDistributionRecalc())
+        return true;
+
     const RenderObject* prev = NodeRenderingTraversal::previousSiblingRenderer(*this);
     if (prev && prev->isBR()) // <span><br/> <br/></span>
         return false;
