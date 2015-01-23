@@ -20,4 +20,6 @@ include_rules = [
 
   "+ui/gfx",
   "+ui/gl/gpu_memory_buffer.h",
+
+  "+v8/include/v8.h",
 ]

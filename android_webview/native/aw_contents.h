@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "android_webview/browser/aw_browser_permission_request_delegate.h"
+#include "android_webview/browser/aw_message_port_message_filter.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/find_helper.h"
@@ -220,6 +221,7 @@ class AwContents : public FindHelper::Listener,
   void SetJsOnlineProperty(JNIEnv* env, jobject obj, jboolean network_up);
   void TrimMemory(JNIEnv* env, jobject obj, jint level, jboolean visible);
 
+  scoped_refptr<AwMessagePortMessageFilter> GetMessagePortMessageFilter();
   void PostMessageToFrame(JNIEnv* env, jobject obj, jstring frame_id,
       jstring message, jstring source_origin, jstring target_origin,
       jintArray msgPorts);
@@ -244,6 +246,7 @@ class AwContents : public FindHelper::Listener,
   BrowserViewRenderer browser_view_renderer_;
   scoped_ptr<AwPdfExporter> pdf_exporter_;
   scoped_ptr<PermissionRequestHandler> permission_request_handler_;
+  scoped_refptr<AwMessagePortMessageFilter> message_port_message_filter_;
 
   // GURL is supplied by the content layer as requesting frame.
   // Callback is supplied by the content layer, and is invoked with the result

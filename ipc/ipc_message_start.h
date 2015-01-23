@@ -113,6 +113,7 @@ enum IPCMessageStart {
   BluetoothMsgStart,
   NavigatorConnectMsgStart,
   CastMediaMsgStart,
+  AwMessagePortMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

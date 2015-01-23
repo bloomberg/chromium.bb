@@ -12,12 +12,13 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 
 namespace content {
 class MessagePortDelegate;
 
-class MessagePortService {
+class CONTENT_EXPORT MessagePortService {
  public:
   typedef std::vector<std::pair<base::string16, std::vector<int> > >
       QueuedMessages;

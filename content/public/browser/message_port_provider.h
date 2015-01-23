@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 
 namespace content {
 
+class MessagePortDelegate;
 class WebContents;
 
 // An interface consisting of methods that can be called to use Message ports.
@@ -24,7 +25,7 @@ class CONTENT_EXPORT MessagePortProvider {
   // part of the message.
   // See https://html.spec.whatwg.org/multipage/comms.html#messageevent for
   // further information on message events.
-  // Should be called on IO thread.
+  // Should be called on UI thread.
   static void PostMessageToFrame(WebContents* web_contents,
                                  const base::string16& source_origin,
                                  const base::string16& target_origin,
@@ -35,9 +36,14 @@ class CONTENT_EXPORT MessagePortProvider {
   // associated with this message channel.
   // See https://html.spec.whatwg.org/multipage/comms.html#messagechannel
   // Should be called on IO thread.
-  static void CreateMessageChannel(WebContents* web_contents,
+  // The message ports that are created will have their routing id numbers equal
+  // to the message port numbers.
+  static void CreateMessageChannel(MessagePortDelegate* delegate,
                                    int* port1,
                                    int* port2);
+
+  // Cleanup the message ports that belong to the closing delegate.
+  static void OnMessagePortDelegateClosing(MessagePortDelegate * delegate);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MessagePortProvider);

@@ -1790,9 +1790,16 @@ public class AwContents implements SmartClipProvider {
      *                 message ports to pass.
      */
     public void postMessageToFrame(String frameName, String message,
-            String sourceOrigin, String targetOrigin, int[] msgPorts) {
+            String sourceOrigin, String targetOrigin, MessagePort[] msgPorts) {
+        if (isDestroyed()) return;
+        int[] portIds = null;
+        if (msgPorts != null) {
+            portIds = new int[msgPorts.length];
+            for (int i = 0; i < msgPorts.length; i++)
+                portIds[i] = msgPorts[i].portId();
+        }
         nativePostMessageToFrame(mNativeAwContents, frameName, message, sourceOrigin,
-                targetOrigin, msgPorts);
+                targetOrigin, portIds);
     }
 
     /**
@@ -1801,9 +1808,11 @@ public class AwContents implements SmartClipProvider {
      * @param callback The message channel created.
      */
     public void createMessageChannel(ValueCallback<MessageChannel> callback) {
+        if (isDestroyed()) return;
+        // Make sure the message port service is created.
+        mBrowserContext.createMessagePortService();
         nativeCreateMessageChannel(mNativeAwContents, callback);
     }
-
 
     //--------------------------------------------------------------------------------------------
     //  View and ViewGroup method implementations
@@ -2215,12 +2224,6 @@ public class AwContents implements SmartClipProvider {
         if (mOverScrollGlow != null && mOverScrollGlow.isAnimating()) {
             postInvalidateOnAnimation();
         }
-    }
-
-    @CalledByNative
-    private static void onMessageChannelCreated(int portId1, int portId2,
-            ValueCallback<MessageChannel> callback) {
-        callback.onReceiveValue(new MessageChannel(portId1, portId2));
     }
 
     // -------------------------------------------------------------------------------------------

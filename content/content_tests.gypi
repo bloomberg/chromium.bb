@@ -218,6 +218,7 @@
       'browser/media/media_browsertest.h',
       'browser/media/media_canplaytype_browsertest.cc',
       'browser/media/media_source_browsertest.cc',
+      'browser/message_port_provider_browsertest.cc',
       'browser/net_info_browsertest.cc',
       'browser/plugin_browsertest.cc',
       'browser/renderer_host/input/touch_action_browsertest.cc',

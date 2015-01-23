@@ -28,6 +28,7 @@ public class AwBrowserContext {
     private AwFormDatabase mFormDatabase;
     private HttpAuthDatabase mHttpAuthDatabase;
     private DefaultAndroidKeyStore mLocalKeyStore;
+    private AwMessagePortService mMessagePortService;
 
     public AwBrowserContext(SharedPreferences sharedPreferences) {
         mSharedPreferences = sharedPreferences;
@@ -66,6 +67,13 @@ public class AwBrowserContext {
             mLocalKeyStore = new DefaultAndroidKeyStore();
         }
         return mLocalKeyStore;
+    }
+
+    public AwMessagePortService createMessagePortService() {
+        if (mMessagePortService == null) {
+            mMessagePortService = new AwMessagePortService();
+        }
+        return mMessagePortService;
     }
 
     /**

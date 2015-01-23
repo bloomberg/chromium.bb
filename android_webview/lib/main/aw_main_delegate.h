@@ -30,23 +30,23 @@ class AwMainDelegate : public content::ContentMainDelegate,
 
  private:
   // content::ContentMainDelegate implementation:
-  virtual bool BasicStartupComplete(int* exit_code) override;
-  virtual void PreSandboxStartup() override;
-  virtual void SandboxInitialized(const std::string& process_type) override;
-  virtual int RunProcess(
+  bool BasicStartupComplete(int* exit_code) override;
+  void PreSandboxStartup() override;
+  void SandboxInitialized(const std::string& process_type) override;
+  int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;
-  virtual void ProcessExiting(const std::string& process_type) override;
-  virtual content::ContentBrowserClient* CreateContentBrowserClient() override;
-  virtual content::ContentRendererClient*
-      CreateContentRendererClient() override;
+  void ProcessExiting(const std::string& process_type) override;
+  content::ContentBrowserClient* CreateContentBrowserClient() override;
+  content::ContentRendererClient* CreateContentRendererClient() override;
 
   // JniDependencyFactory implementation.
-  virtual scoped_refptr<AwQuotaManagerBridge> CreateAwQuotaManagerBridge(
+  scoped_refptr<AwQuotaManagerBridge> CreateAwQuotaManagerBridge(
       AwBrowserContext* browser_context) override;
-  virtual content::WebContentsViewDelegate* CreateViewDelegate(
+  content::WebContentsViewDelegate* CreateViewDelegate(
       content::WebContents* web_contents) override;
-  virtual AwWebPreferencesPopulater* CreateWebPreferencesPopulater() override;
+  AwWebPreferencesPopulater* CreateWebPreferencesPopulater() override;
+  AwMessagePortService* CreateAwMessagePortService() override;
 #if defined(VIDEO_HOLE)
   virtual content::ExternalVideoSurfaceContainer*
       CreateExternalVideoSurfaceContainer(

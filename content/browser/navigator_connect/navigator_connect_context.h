@@ -7,8 +7,8 @@
 
 #include <map>
 #include "base/memory/ref_counted.h"
-#include "content/browser/message_port_delegate.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/public/browser/message_port_delegate.h"
 
 namespace content {
 

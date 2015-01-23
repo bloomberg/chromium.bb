@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "android_webview/browser/aw_download_manager_delegate.h"
+#include "android_webview/browser/aw_message_port_service.h"
 #include "android_webview/browser/aw_ssl_host_state_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -101,6 +102,8 @@ class AwBrowserContext : public content::BrowserContext,
 
   void CreateUserPrefServiceIfNecessary();
 
+  AwMessagePortService* GetMessagePortService();
+
   // content::BrowserContext implementation.
   scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
@@ -143,6 +146,7 @@ class AwBrowserContext : public content::BrowserContext,
   scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<AwQuotaManagerBridge> quota_manager_bridge_;
   scoped_ptr<AwFormDatabaseService> form_database_service_;
+  scoped_ptr<AwMessagePortService> message_port_service_;
 
   AwDownloadManagerDelegate download_manager_delegate_;
 

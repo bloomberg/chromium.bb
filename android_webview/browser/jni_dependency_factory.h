@@ -16,6 +16,7 @@ class WebContentsViewDelegate;
 namespace android_webview {
 
 class AwBrowserContext;
+class AwMessagePortService;
 class AwQuotaManagerBridge;
 class AwWebPreferencesPopulater;
 
@@ -29,6 +30,7 @@ class JniDependencyFactory {
   virtual content::WebContentsViewDelegate* CreateViewDelegate(
       content::WebContents* web_contents) = 0;
   virtual AwWebPreferencesPopulater* CreateWebPreferencesPopulater() = 0;
+  virtual AwMessagePortService* CreateAwMessagePortService() = 0;
 #if defined(VIDEO_HOLE)
   virtual content::ExternalVideoSurfaceContainer*
       CreateExternalVideoSurfaceContainer(content::WebContents* contents) = 0;

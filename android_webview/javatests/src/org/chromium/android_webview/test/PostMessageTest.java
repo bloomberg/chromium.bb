@@ -13,6 +13,7 @@ import static org.chromium.content.browser.test.util.TestCallbackHelperContainer
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.MessageChannel;
+import org.chromium.android_webview.MessagePort;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -25,12 +26,11 @@ import org.chromium.net.test.util.TestWebServer;
 public class PostMessageTest extends AwTestBase {
 
     private static final String SOURCE_ORIGIN = "android_webview";
+    // Timeout to failure, in milliseconds
+    private static final long TIMEOUT = scaleTimeout(5000);
 
     // Inject to the page to verify received messages.
     private static class MessageObject {
-        // Timeout to failure, in milliseconds
-        private static final long TIMEOUT = scaleTimeout(5000);
-
         private boolean mReady;
         private String mData;
         private String mOrigin;
@@ -102,12 +102,16 @@ public class PostMessageTest extends AwTestBase {
     }
 
     private static final String WEBVIEW_MESSAGE = "from_webview";
+    private static final String JS_MESSAGE = "from_js";
 
     private static final String TEST_PAGE =
             "<!DOCTYPE html><html><body>"
             + "    <script type=\"text/javascript\">"
             + "        onmessage = function (e) {"
             + "            messageObject.setMessageParams(e.data, e.origin, e.ports);"
+            + "            if (e.ports != null && e.ports.length > 0) {"
+            + "               e.ports[0].postMessage(\"" + JS_MESSAGE + "\");"
+            + "            }"
             + "        }"
             + "   </script>"
             + "</body></html>";
@@ -137,22 +141,61 @@ public class PostMessageTest extends AwTestBase {
         assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());
     }
 
-    // TODO(sgurun) This test verifies a channel is created by posting one of the
-    // ports of the channel to a MessagePort and verifying one port is received.
-    // in a next CL we will update the JS to post messages back to Webview so
-    // we could do a more thorough verification.
+    private static class ChannelContainer {
+        private boolean mReady;
+        private MessageChannel mChannel;
+        private Object mLock = new Object();
+        private String mMessage;
+
+        public void set(MessageChannel channel) {
+            mChannel = channel;
+        }
+        public MessageChannel get() {
+            return mChannel;
+        }
+
+        public void setMessage(String message) {
+            synchronized (mLock) {
+                mMessage = message;
+                mReady = true;
+                mLock.notify();
+            }
+        }
+
+        public String getMessage() {
+            return mMessage;
+        }
+
+        public void waitForMessage() throws InterruptedException {
+            synchronized (mLock) {
+                if (!mReady) mLock.wait(TIMEOUT);
+            }
+        }
+    }
+
+    // Verify that a channel can be created and basic full duplex communication
+    // can happen on it.
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testCreateChannel() throws Throwable {
         loadPage(TEST_PAGE);
+        final ChannelContainer channelContainer = new ChannelContainer();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ValueCallback<MessageChannel> callback = new ValueCallback<MessageChannel>() {
                     @Override
                     public void onReceiveValue(MessageChannel channel) {
+                        // verify communication from JS to Java.
+                        channelContainer.set(channel);
+                        channel.port1().setMessageHandler(new MessagePort.MessageHandler() {
+                            @Override
+                            public void onMessage(String message) {
+                                channelContainer.setMessage(message);
+                            }
+                        });
                         mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
-                                mWebServer.getBaseUrl(), new int[]{channel.port2()});
+                                mWebServer.getBaseUrl(), new MessagePort[]{channel.port2()});
                     }
                 };
                 mAwContents.createMessageChannel(callback);
@@ -161,8 +204,21 @@ public class PostMessageTest extends AwTestBase {
         mMessageObject.waitForMessage();
         assertEquals(WEBVIEW_MESSAGE, mMessageObject.getData());
         assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());
-        // verify that one message port is received.
+        // verify that one message port is received at the js side
         assertEquals(1, mMessageObject.getPorts().length);
+        // wait until we receive a message from JS
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    channelContainer.waitForMessage();
+                } catch (InterruptedException e) {
+                    // ignore.
+                }
+            }
+        });
+        assertEquals(JS_MESSAGE, channelContainer.getMessage());
+        // TODO(sgurun) verify communication from Java to JS on the created channel
     }
 
     private static final String WORKER_MESSAGE = "from_worker";
@@ -211,7 +267,7 @@ public class PostMessageTest extends AwTestBase {
                     public void onReceiveValue(MessageChannel channel) {
                         mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
                                 mWebServer.getBaseUrl(),
-                                new int[]{channel.port1(), channel.port2()});
+                                new MessagePort[]{channel.port1(), channel.port2()});
                     }
                 };
                 mAwContents.createMessageChannel(callback);

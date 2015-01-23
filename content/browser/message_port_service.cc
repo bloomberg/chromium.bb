@@ -4,9 +4,9 @@
 
 #include "content/browser/message_port_service.h"
 
-#include "content/browser/message_port_delegate.h"
 #include "content/common/message_port_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/message_port_delegate.h"
 
 namespace content {
 
