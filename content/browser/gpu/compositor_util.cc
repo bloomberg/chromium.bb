@@ -229,7 +229,7 @@ bool IsOneCopyUploadEnabled() {
   if (command_line.HasSwitch(switches::kDisableOneCopy))
     return false;
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   return false;
 #endif
   return true;
