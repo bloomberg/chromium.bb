@@ -12,14 +12,12 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/expire_history_backend.h"
-#include "chrome/browser/history/history_details.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
+#include "components/history/core/browser/expire_history_backend.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/thumbnail_database.h"
@@ -63,7 +61,7 @@ class ExpireHistoryTest : public testing::Test,
   // Add visits with source information.
   void AddExampleSourceData(const GURL& url, URLID* id);
 
-  // Returns true if the given favicon/thumanil has an entry in the DB.
+  // Returns true if the given favicon/thumbnail has an entry in the DB.
   bool HasFavicon(favicon_base::FaviconID favicon_id);
   bool HasThumbnail(URLID url_id);
 
@@ -81,7 +79,6 @@ class ExpireHistoryTest : public testing::Test,
 
   // Clears the list of notifications received.
   void ClearLastNotifications() {
-    STLDeleteValues(&notifications_);
     urls_modified_notifications_.clear();
     urls_deleted_notifications_.clear();
   }
@@ -112,13 +109,7 @@ class ExpireHistoryTest : public testing::Test,
   // Time at the beginning of the test, so everybody agrees what "now" is.
   const Time now_;
 
-  // Notifications intended to be broadcast, we can check these values to make
-  // sure that the deletor is doing the correct broadcasts. We own the details
-  // pointers.
-  typedef std::vector< std::pair<int, HistoryDetails*> >
-      NotificationList;
-  NotificationList notifications_;
-
+  // Details received from HistoryObserver events.
   typedef std::vector<URLRows> URLsModifiedNotificationList;
   URLsModifiedNotificationList urls_modified_notifications_;
 

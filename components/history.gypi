@@ -33,6 +33,8 @@
         'history/core/browser/download_row.h',
         'history/core/browser/download_types.cc',
         'history/core/browser/download_types.h',
+        'history/core/browser/expire_history_backend.cc',
+        'history/core/browser/expire_history_backend.h',
         'history/core/browser/history_backend_notifier.h',
         'history/core/browser/history_backend_observer.h',
         'history/core/browser/history_client.cc',

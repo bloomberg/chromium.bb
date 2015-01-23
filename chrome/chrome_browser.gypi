@@ -1490,8 +1490,6 @@
       'browser/history/chrome_history_client_factory.h',
       'browser/history/delete_directive_handler.cc',
       'browser/history/delete_directive_handler.h',
-      'browser/history/expire_history_backend.cc',
-      'browser/history/expire_history_backend.h',
       'browser/history/history_backend.cc',
       'browser/history/history_backend.h',
       'browser/history/history_backend_android.cc',

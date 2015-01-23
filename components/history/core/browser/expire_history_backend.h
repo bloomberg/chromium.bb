@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H_
-#define CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_EXPIRE_HISTORY_BACKEND_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_EXPIRE_HISTORY_BACKEND_H_
 
 #include <queue>
 #include <set>
@@ -268,4 +268,4 @@ class ExpireHistoryBackend {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_EXPIRE_HISTORY_BACKEND_H_
