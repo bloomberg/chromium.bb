@@ -544,6 +544,7 @@ void View::Layout() {
   for (int i = 0, count = child_count(); i < count; ++i) {
     View* child = child_at(i);
     if (child->needs_layout_ || !layout_manager_.get()) {
+      TRACE_EVENT1("views", "View::Layout", "class", child->GetClassName());
       child->needs_layout_ = false;
       child->Layout();
     }
