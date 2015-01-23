@@ -130,10 +130,10 @@ CredentialsItemView::CredentialsItemView(
   // the parent can receive the events instead.
   image_view_ = new CircularImageView;
   image_view_->set_interactive(false);
-  gfx::Image image =
-      ResourceBundle::GetSharedInstance().GetImageNamed(IDR_PROFILE_AVATAR_26);
-  image_view_->SetImageSize(gfx::Size(kIconSize, kIconSize));
-  image_view_->SetImage(image.ToImageSkia());
+  gfx::Image image = ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE);
+  DCHECK(image.Width() >= kIconSize && image.Height() >= kIconSize);
+  UpdateAvatar(image.AsImageSkia());
   if (form_.avatar_url.is_valid()) {
     // Fetch the actual avatar.
     AvatarFetcher* fetcher = new AvatarFetcher(form_.avatar_url,
