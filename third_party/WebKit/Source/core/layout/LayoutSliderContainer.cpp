@@ -30,20 +30,20 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderSliderContainer.h"
+#include "core/layout/LayoutSliderContainer.h"
 
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
+#include "core/layout/LayoutSlider.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderSlider.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace blink {
 
-RenderSliderContainer::RenderSliderContainer(SliderContainerElement* element)
+LayoutSliderContainer::LayoutSliderContainer(SliderContainerElement* element)
     : RenderFlexibleBox(element)
 {
 }
@@ -63,7 +63,7 @@ inline static bool hasVerticalAppearance(HTMLInputElement* input)
     return sliderStyle->appearance() == SliderVerticalPart;
 }
 
-void RenderSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
+void LayoutSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     HTMLInputElement* input = toHTMLInputElement(node()->shadowHost());
     bool isVertical = hasVerticalAppearance(input);
@@ -88,7 +88,7 @@ void RenderSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
         return;
     }
     if (isVertical)
-        logicalHeight = RenderSlider::defaultTrackLength;
+        logicalHeight = LayoutSlider::defaultTrackLength;
 
     // FIXME: The trackHeight should have been added before updateLogicalHeight was called to avoid this hack.
     setIntrinsicContentLogicalHeight(logicalHeight);
@@ -96,7 +96,7 @@ void RenderSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
     RenderBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
 }
 
-void RenderSliderContainer::layout()
+void LayoutSliderContainer::layout()
 {
     HTMLInputElement* input = toHTMLInputElement(node()->shadowHost());
     bool isVertical = hasVerticalAppearance(input);

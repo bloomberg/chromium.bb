@@ -29,26 +29,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderSliderContainer_h
-#define RenderSliderContainer_h
+#include "config.h"
+#include "core/layout/LayoutSliderThumb.h"
 
-#include "core/rendering/RenderFlexibleBox.h"
+#include "core/rendering/RenderTheme.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace blink {
 
-class SliderContainerElement;
+LayoutSliderThumb::LayoutSliderThumb(SliderThumbElement* element)
+    : RenderBlockFlow(element)
+{
+}
 
-// FIXME: Find a way to cascade appearance and adjust heights, and get rid of this class.
-// http://webkit.org/b/62535
-class RenderSliderContainer : public RenderFlexibleBox {
-public:
-    RenderSliderContainer(SliderContainerElement*);
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
-
-private:
-    virtual void layout() override;
-};
+void LayoutSliderThumb::updateAppearance(RenderStyle* parentStyle)
+{
+    if (parentStyle->appearance() == SliderVerticalPart)
+        style()->setAppearance(SliderThumbVerticalPart);
+    else if (parentStyle->appearance() == SliderHorizontalPart)
+        style()->setAppearance(SliderThumbHorizontalPart);
+    else if (parentStyle->appearance() == MediaSliderPart)
+        style()->setAppearance(MediaSliderThumbPart);
+    else if (parentStyle->appearance() == MediaVolumeSliderPart)
+        style()->setAppearance(MediaVolumeSliderThumbPart);
+    else if (parentStyle->appearance() == MediaFullScreenVolumeSliderPart)
+        style()->setAppearance(MediaFullScreenVolumeSliderThumbPart);
+    if (style()->hasAppearance())
+        RenderTheme::theme().adjustSliderThumbSize(style(), toElement(node()));
+}
 
 } // namespace blink
-
-#endif // RenderSliderContainer_h

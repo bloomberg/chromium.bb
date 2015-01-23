@@ -52,7 +52,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
-#include "core/rendering/RenderSlider.h"
+#include "core/layout/LayoutSlider.h"
 #include "platform/PlatformMouseEvent.h"
 #include "wtf/MathExtras.h"
 #include "wtf/NonCopyingSort.h"
@@ -246,7 +246,7 @@ void RangeInputType::createShadowSubtree()
 
 RenderObject* RangeInputType::createRenderer(RenderStyle*) const
 {
-    return new RenderSlider(&element());
+    return new LayoutSlider(&element());
 }
 
 Decimal RangeInputType::parseToNumber(const String& src, const Decimal& defaultValue) const

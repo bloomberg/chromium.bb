@@ -19,7 +19,7 @@ layer at (8,8) size 300x150
 layer at (13,123) size 290x30
   RenderFlexibleBox {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
-    RenderSlider {INPUT} at (48,11) size 152x8
+    LayoutSlider {INPUT} at (48,11) size 152x8
       RenderFlexibleBox {DIV} at (0,0) size 152x8 [border: (1px solid #E6E6E659)]
         RenderBlock {DIV} at (1,-8) size 164x24
           RenderBlock {DIV} at (-7,0) size 32x24
@@ -34,7 +34,7 @@ layer at (308,128) size 300x30
 layer at (308,128) size 300x30
   RenderFlexibleBox {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
-    RenderSlider {INPUT} at (48,11) size 162x8
+    LayoutSlider {INPUT} at (48,11) size 162x8
       RenderFlexibleBox {DIV} at (0,0) size 162x8 [border: (1px solid #E6E6E659)]
         RenderBlock {DIV} at (1,-8) size 174x24
           RenderBlock {DIV} at (-7,0) size 32x24
@@ -49,7 +49,7 @@ layer at (8,163) size 300x150
 layer at (13,278) size 290x30
   RenderFlexibleBox {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
-    RenderSlider {INPUT} at (48,11) size 152x8
+    LayoutSlider {INPUT} at (48,11) size 152x8
       RenderFlexibleBox {DIV} at (0,0) size 152x8 [border: (1px solid #E6E6E659)]
         RenderBlock {DIV} at (1,-8) size 164x24
           RenderBlock {DIV} at (-7,0) size 32x24
@@ -64,7 +64,7 @@ layer at (308,283) size 300x30
 layer at (308,283) size 300x30
   RenderFlexibleBox {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
-    RenderSlider {INPUT} at (48,11) size 162x8
+    LayoutSlider {INPUT} at (48,11) size 162x8
       RenderFlexibleBox {DIV} at (0,0) size 162x8 [border: (1px solid #E6E6E659)]
         RenderBlock {DIV} at (1,-8) size 174x24
           RenderBlock {DIV} at (-7,0) size 32x24

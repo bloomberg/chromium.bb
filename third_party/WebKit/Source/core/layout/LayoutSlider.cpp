@@ -19,64 +19,64 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderSlider.h"
+#include "core/layout/LayoutSlider.h"
 
 #include "core/InputTypeNames.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
-#include "core/rendering/RenderSliderThumb.h"
+#include "core/layout/LayoutSliderThumb.h"
 #include "wtf/MathExtras.h"
 
-using std::min;
+using namespace::std;
 
 namespace blink {
 
-const int RenderSlider::defaultTrackLength = 129;
+const int LayoutSlider::defaultTrackLength = 129;
 
-RenderSlider::RenderSlider(HTMLInputElement* element)
+LayoutSlider::LayoutSlider(HTMLInputElement* element)
     : RenderFlexibleBox(element)
 {
-    // We assume RenderSlider works only with <input type=range>.
+    // We assume LayoutSlider works only with <input type=range>.
     ASSERT(element->type() == InputTypeNames::range);
 }
 
-RenderSlider::~RenderSlider()
+LayoutSlider::~LayoutSlider()
 {
 }
 
-int RenderSlider::baselinePosition(FontBaseline, bool /*firstLine*/, LineDirectionMode, LinePositionMode linePositionMode) const
+int LayoutSlider::baselinePosition(FontBaseline, bool /*firstLine*/, LineDirectionMode, LinePositionMode linePositionMode) const
 {
     ASSERT(linePositionMode == PositionOnContainingLine);
     // FIXME: Patch this function for writing-mode.
     return size().height() + marginTop();
 }
 
-void RenderSlider::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
+void LayoutSlider::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     maxLogicalWidth = defaultTrackLength * style()->effectiveZoom();
     if (!style()->width().isPercent())
         minLogicalWidth = maxLogicalWidth;
 }
 
-inline SliderThumbElement* RenderSlider::sliderThumbElement() const
+inline SliderThumbElement* LayoutSlider::sliderThumbElement() const
 {
     return toSliderThumbElement(toElement(node())->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb()));
 }
 
-void RenderSlider::layout()
+void LayoutSlider::layout()
 {
     // FIXME: Find a way to cascade appearance.
     // http://webkit.org/b/62535
     RenderBox* thumbBox = sliderThumbElement()->renderBox();
     if (thumbBox && thumbBox->isSliderThumb())
-        toRenderSliderThumb(thumbBox)->updateAppearance(style());
+        toLayoutSliderThumb(thumbBox)->updateAppearance(style());
 
     RenderFlexibleBox::layout();
 }
 
-bool RenderSlider::inDragMode() const
+bool LayoutSlider::inDragMode() const
 {
     return sliderThumbElement()->active();
 }

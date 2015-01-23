@@ -121,7 +121,7 @@ void AXSlider::setValue(const String& value)
 
     input->setValue(value);
 
-    // Fire change event manually, as RenderSlider::setValueForPosition does.
+    // Fire change event manually, as LayoutSlider::setValueForPosition does.
     input->dispatchFormControlChangeEvent();
 }
 

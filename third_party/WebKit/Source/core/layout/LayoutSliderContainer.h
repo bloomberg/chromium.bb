@@ -29,27 +29,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderSliderThumb_h
-#define RenderSliderThumb_h
+#ifndef LayoutSliderContainer_h
+#define LayoutSliderContainer_h
 
-#include "core/html/shadow/SliderThumbElement.h"
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/rendering/RenderFlexibleBox.h"
 
 namespace blink {
 
-class SliderThumbElement;
+class SliderContainerElement;
 
-class RenderSliderThumb final : public RenderBlockFlow {
+// FIXME: Find a way to cascade appearance and adjust heights, and get rid of this class.
+// http://webkit.org/b/62535
+class LayoutSliderContainer : public RenderFlexibleBox {
 public:
-    RenderSliderThumb(SliderThumbElement*);
-    void updateAppearance(RenderStyle* parentStyle);
+    LayoutSliderContainer(SliderContainerElement*);
+    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
 private:
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSliderThumb || RenderBlockFlow::isOfType(type); }
+    virtual void layout() override;
 };
-
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSliderThumb, isSliderThumb());
 
 } // namespace blink
 
-#endif // RenderSliderThumb_h
+#endif // LayoutSliderContainer_h

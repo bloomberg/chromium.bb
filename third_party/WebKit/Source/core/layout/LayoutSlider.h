@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef RenderSlider_h
-#define RenderSlider_h
+#ifndef LayoutSlider_h
+#define LayoutSlider_h
 
 #include "core/rendering/RenderFlexibleBox.h"
 
@@ -28,17 +28,17 @@ namespace blink {
 class HTMLInputElement;
 class SliderThumbElement;
 
-class RenderSlider final : public RenderFlexibleBox {
+class LayoutSlider final : public RenderFlexibleBox {
 public:
     static const int defaultTrackLength;
 
-    explicit RenderSlider(HTMLInputElement*);
-    virtual ~RenderSlider();
+    explicit LayoutSlider(HTMLInputElement*);
+    virtual ~LayoutSlider();
 
     bool inDragMode() const;
 
 private:
-    virtual const char* renderName() const override { return "RenderSlider"; }
+    virtual const char* renderName() const override { return "LayoutSlider"; }
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSlider || RenderFlexibleBox::isOfType(type); }
 
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
@@ -48,8 +48,8 @@ private:
     SliderThumbElement* sliderThumbElement() const;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSlider, isSlider());
+DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutSlider, isSlider());
 
 } // namespace blink
 
-#endif // RenderSlider_h
+#endif // LayoutSlider_h

@@ -29,33 +29,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/rendering/RenderSliderThumb.h"
+#ifndef LayoutSliderThumb_h
+#define LayoutSliderThumb_h
 
-#include "core/rendering/RenderTheme.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/html/shadow/SliderThumbElement.h"
+#include "core/rendering/RenderBlockFlow.h"
 
 namespace blink {
 
-RenderSliderThumb::RenderSliderThumb(SliderThumbElement* element)
-    : RenderBlockFlow(element)
-{
-}
+class SliderThumbElement;
 
-void RenderSliderThumb::updateAppearance(RenderStyle* parentStyle)
-{
-    if (parentStyle->appearance() == SliderVerticalPart)
-        style()->setAppearance(SliderThumbVerticalPart);
-    else if (parentStyle->appearance() == SliderHorizontalPart)
-        style()->setAppearance(SliderThumbHorizontalPart);
-    else if (parentStyle->appearance() == MediaSliderPart)
-        style()->setAppearance(MediaSliderThumbPart);
-    else if (parentStyle->appearance() == MediaVolumeSliderPart)
-        style()->setAppearance(MediaVolumeSliderThumbPart);
-    else if (parentStyle->appearance() == MediaFullScreenVolumeSliderPart)
-        style()->setAppearance(MediaFullScreenVolumeSliderThumbPart);
-    if (style()->hasAppearance())
-        RenderTheme::theme().adjustSliderThumbSize(style(), toElement(node()));
-}
+class LayoutSliderThumb final : public RenderBlockFlow {
+public:
+    LayoutSliderThumb(SliderThumbElement*);
+    void updateAppearance(RenderStyle* parentStyle);
+
+private:
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSliderThumb || RenderBlockFlow::isOfType(type); }
+};
+
+DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutSliderThumb, isSliderThumb());
 
 } // namespace blink
+
+#endif // LayoutSliderThumb_h

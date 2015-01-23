@@ -40,11 +40,11 @@
 #include "core/html/forms/StepRange.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/layout/LayoutSlider.h"
+#include "core/layout/LayoutSliderContainer.h"
+#include "core/layout/LayoutSliderThumb.h"
 #include "core/page/EventHandler.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderSlider.h"
-#include "core/rendering/RenderSliderContainer.h"
-#include "core/rendering/RenderSliderThumb.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace blink {
@@ -74,7 +74,7 @@ PassRefPtrWillBeRawPtr<SliderThumbElement> SliderThumbElement::create(Document& 
 
 void SliderThumbElement::setPositionFromValue()
 {
-    // Since the code to calculate position is in the RenderSliderThumb layout
+    // Since the code to calculate position is in the LayoutSliderThumb layout
     // path, we don't actually update the value here. Instead, we poke at the
     // renderer directly to trigger layout.
     if (renderer())
@@ -83,7 +83,7 @@ void SliderThumbElement::setPositionFromValue()
 
 RenderObject* SliderThumbElement::createRenderer(RenderStyle*)
 {
-    return new RenderSliderThumb(this);
+    return new LayoutSliderThumb(this);
 }
 
 bool SliderThumbElement::isDisabledFormControl() const
@@ -308,7 +308,7 @@ DEFINE_NODE_FACTORY(SliderContainerElement)
 
 RenderObject* SliderContainerElement::createRenderer(RenderStyle*)
 {
-    return new RenderSliderContainer(this);
+    return new LayoutSliderContainer(this);
 }
 
 const AtomicString& SliderContainerElement::shadowPseudoId() const

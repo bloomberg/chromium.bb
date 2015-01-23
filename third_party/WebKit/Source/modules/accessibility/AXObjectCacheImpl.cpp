@@ -39,6 +39,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
+#include "core/layout/LayoutSlider.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -47,7 +48,6 @@
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderProgress.h"
-#include "core/rendering/RenderSlider.h"
 #include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableRow.h"
@@ -302,7 +302,7 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(RenderObject* rendere
 
         // input type=range
         if (cssBox->isSlider())
-            return AXSlider::create(toRenderSlider(cssBox), this);
+            return AXSlider::create(toLayoutSlider(cssBox), this);
     }
 
     return AXRenderObject::create(renderer, this);

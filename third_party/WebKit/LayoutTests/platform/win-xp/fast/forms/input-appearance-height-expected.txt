@@ -49,7 +49,7 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (60,123) size 0x0
         RenderText {#text} at (0,136) size 37x19
           text run at (0,136) width 37: "range "
-        RenderSlider {INPUT} at (39,130) size 129x21 [color=#C4C4C4] [bgcolor=#FFFFFF]
+        LayoutSlider {INPUT} at (39,130) size 129x21 [color=#C4C4C4] [bgcolor=#FFFFFF]
           RenderFlexibleBox {DIV} at (0,0) size 129x21
             RenderBlock {DIV} at (0,0) size 129x21
               RenderBlock {DIV} at (59,0) size 11x21
