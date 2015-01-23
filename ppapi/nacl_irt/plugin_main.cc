@@ -18,10 +18,6 @@
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
-#if defined(__native_client__)
-#include "native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h"
-#endif
-
 void PpapiPluginRegisterThreadCreator(
     const struct PP_ThreadFunctions* thread_functions) {
   // Initialize all classes that need to create threads that call back into
@@ -32,14 +28,6 @@ void PpapiPluginRegisterThreadCreator(
 int PpapiPluginMain() {
   base::MessageLoop loop;
   ppapi::proxy::PluginGlobals plugin_globals;
-
-#if defined(OS_NACL_SFI)
-  // This is currently needed so that the NaCl reverse service calls the
-  // StartupInitializationComplete() SRPC method, which unblocks plugin
-  // startup on the Chromium side.
-  // TODO(mseaborn): Remove the need to call this.
-  NaClPluginLowLevelInitializationComplete();
-#endif
 
   ppapi::PpapiDispatcher ppapi_dispatcher(
       ppapi::GetIOThread()->message_loop_proxy(),
