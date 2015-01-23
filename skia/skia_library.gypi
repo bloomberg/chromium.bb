@@ -118,8 +118,6 @@
   '../third_party/skia/src/utils/SkCullPoints.cpp',
   '../third_party/skia/src/utils/SkDumpCanvas.cpp',
   '../third_party/skia/src/utils/SkFloatUtils.h',
-  '../third_party/skia/src/utils/SkGatherPixelRefsAndRects.cpp',
-  '../third_party/skia/src/utils/SkGatherPixelRefsAndRects.h',
   '../third_party/skia/src/utils/SkInterpolator.cpp',
   '../third_party/skia/src/utils/SkLayer.cpp',
   '../third_party/skia/src/utils/SkMD5.cpp',
