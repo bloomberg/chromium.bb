@@ -446,7 +446,7 @@ NavigationEntry* NavigationControllerImpl::GetVisibleEntry() const {
   bool safe_to_show_pending =
       pending_entry_ &&
       // Require a new navigation.
-      pending_entry_->GetPageID() == -1 &&
+      pending_entry_index_ == -1 &&
       // Require either browser-initiated or an unmodified new tab.
       (!pending_entry_->is_renderer_initiated() || IsUnmodifiedBlankTab());
 
@@ -455,7 +455,7 @@ NavigationEntry* NavigationControllerImpl::GetVisibleEntry() const {
   // can script the new tab before it commits.
   if (!safe_to_show_pending &&
       pending_entry_ &&
-      pending_entry_->GetPageID() != -1 &&
+      pending_entry_index_ != -1 &&
       IsInitialNavigation() &&
       !pending_entry_->is_renderer_initiated())
     safe_to_show_pending = true;
