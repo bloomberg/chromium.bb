@@ -244,13 +244,6 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
   }
 }
 
-// Sort ZoomLevelChanges by host and scheme
-// (a.com < http://a.com < https://a.com < b.com).
-bool HostZoomSort(const content::HostZoomMap::ZoomLevelChange& a,
-                  const content::HostZoomMap::ZoomLevelChange& b) {
-  return a.host == b.host ? a.scheme < b.scheme : a.host < b.host;
-}
-
 }  // namespace
 
 namespace options {
@@ -1040,7 +1033,13 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
 
   AdjustZoomLevelsListForSigninPageIfNecessary(&zoom_levels);
 
-  std::sort(zoom_levels.begin(), zoom_levels.end(), HostZoomSort);
+  // Sort ZoomLevelChanges by host and scheme
+  // (a.com < http://a.com < https://a.com < b.com).
+  std::sort(zoom_levels.begin(), zoom_levels.end(),
+            [](const content::HostZoomMap::ZoomLevelChange& a,
+               const content::HostZoomMap::ZoomLevelChange& b) {
+              return a.host == b.host ? a.scheme < b.scheme : a.host < b.host;
+            });
 
   for (content::HostZoomMap::ZoomLevelVector::const_iterator i =
            zoom_levels.begin();
