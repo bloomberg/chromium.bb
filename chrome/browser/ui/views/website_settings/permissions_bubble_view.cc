@@ -263,6 +263,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     views::ImageView* icon = new views::ImageView();
     icon->SetImage(bundle.GetImageSkiaNamed(requests.at(index)->GetIconID()));
     icon->SetImageSize(gfx::Size(kIconSize, kIconSize));
+    icon->SetTooltipText(base::string16());  // Redundant with the text fragment
     label_container->AddChildView(icon);
     views::Label* label =
         new views::Label(requests.at(index)->GetMessageTextFragment());
@@ -330,6 +331,8 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
         new CustomizeAllowComboboxModel());
     allow_combobox->set_listener(this);
     allow_combobox->SetStyle(views::Combobox::STYLE_ACTION);
+    allow_combobox->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW_COMBOBOX));
     button_layout->AddView(allow_combobox);
     allow_combobox_ = allow_combobox;
   }

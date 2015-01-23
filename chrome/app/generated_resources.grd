@@ -450,6 +450,9 @@ are declared in build/common.gypi.
       <message name="IDS_PERMISSION_ALLOW" desc="Label on button to allow a permissions request.">
         Allow
       </message>
+      <message name="IDS_PERMISSION_ALLOW_COMBOBOX" desc="Label on combobox to allow the user to either allow all or customize.">
+        Allow all or customize
+      </message>
       <message name="IDS_PERMISSION_DENY" desc="Label on button to deny a permissions request.">
         Block
       </message>
