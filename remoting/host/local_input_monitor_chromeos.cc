@@ -28,14 +28,14 @@ class LocalInputMonitorChromeos : public LocalInputMonitor {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);
-  virtual ~LocalInputMonitorChromeos();
+  ~LocalInputMonitorChromeos() override;
 
  private:
   class Core : ui::PlatformEventObserver {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
          base::WeakPtr<ClientSessionControl> client_session_control);
-    ~Core();
+    ~Core() override;
 
     void Start();
 

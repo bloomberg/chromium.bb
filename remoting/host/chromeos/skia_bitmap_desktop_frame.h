@@ -13,7 +13,7 @@ namespace remoting {
 class SkiaBitmapDesktopFrame : public webrtc::DesktopFrame {
  public:
   static SkiaBitmapDesktopFrame* Create(scoped_ptr<SkBitmap> bitmap);
-  virtual ~SkiaBitmapDesktopFrame();
+  ~SkiaBitmapDesktopFrame() override;
 
  private:
   SkiaBitmapDesktopFrame(webrtc::DesktopSize size,
