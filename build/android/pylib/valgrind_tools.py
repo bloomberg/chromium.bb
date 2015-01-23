@@ -116,11 +116,13 @@ class AddressSanitizerTool(BaseTool):
                                   'lib/clang/*/lib/linux/',
                                   'libclang_rt.asan-arm-android.so'))
     assert len(libs) == 1
-    subprocess.call([os.path.join(DIR_SOURCE_ROOT,
-                                  'tools/android/asan/asan_device_setup.sh'),
-                     '--device', str(device),
-                     '--lib', libs[0],
-                     '--extra-options', AddressSanitizerTool.EXTRA_OPTIONS])
+    subprocess.call(
+        [os.path.join(
+             DIR_SOURCE_ROOT,
+             'tools/android/asan/third_party/asan_device_setup.sh'),
+         '--device', str(device),
+         '--lib', libs[0],
+         '--extra-options', AddressSanitizerTool.EXTRA_OPTIONS])
     device.WaitUntilFullyBooted()
 
   def GetTestWrapper(self):
