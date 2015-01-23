@@ -51,7 +51,7 @@ DecodeToYUV status=experimental
 DeviceLight status=experimental
 DisplayList2dCanvas status=stable
 ForceDisplayList2dCanvas
-EncryptedMedia status=test
+EncryptedMedia status=stable
 ExecCommandInJavaScript status=test
 ComputedAccessibilityInfo status=experimental
 ExperimentalCanvasFeatures status=test
@@ -98,6 +98,8 @@ PeerConnection status=stable
 Permissions status=experimental
 Picture status=stable
 PreciseMemoryInfo
+// This feature is deprecated and replaced by EncryptedMedia.
+// See http://crbug.com/451117 for current status.
 PrefixedEncryptedMedia status=stable
 // This feature is deprecated and we are evangalizing affected sites.
 // See https://crbug.com/346236 for current status.

@@ -800,6 +800,7 @@ interface HTMLMediaElement
     method load
     method pause
     method play
+    method setMediaKeys
     method webkitAddKey
     method webkitCancelKeyRequest
     method webkitGenerateKeyRequest
@@ -1048,6 +1049,8 @@ interface Map
     method values
 interface MediaElementAudioSourceNode
     method constructor
+interface MediaEncryptedEvent
+    method constructor
 interface MediaError
     attribute MEDIA_ERR_ABORTED
     attribute MEDIA_ERR_DECODE
@@ -1064,6 +1067,22 @@ interface MediaKeyError
     method constructor
 interface MediaKeyEvent
     method constructor
+interface MediaKeyMessageEvent
+    method constructor
+interface MediaKeySession
+    method close
+    method constructor
+    method generateRequest
+    method load
+    method remove
+    method update
+interface MediaKeySystemAccess
+    method constructor
+    method createMediaKeys
+interface MediaKeys
+    method constructor
+    method createSession
+    method setServerCertificate
 interface MediaList
     method appendMedium
     method constructor
@@ -1138,6 +1157,7 @@ interface Navigator
     method getStorageUpdates
     method javaEnabled
     method registerProtocolHandler
+    method requestMediaKeySystemAccess
     method sendBeacon
     method unregisterProtocolHandler
     method vibrate

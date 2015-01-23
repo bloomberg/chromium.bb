@@ -297,8 +297,10 @@ html element audio
     property error
     property load
     property loop
+    property mediaKeys
     property muted
     property networkState
+    property onencrypted
     property onwebkitkeyadded
     property onwebkitkeyerror
     property onwebkitkeymessage
@@ -1007,8 +1009,10 @@ html element video
     property height
     property load
     property loop
+    property mediaKeys
     property muted
     property networkState
+    property onencrypted
     property onwebkitkeyadded
     property onwebkitkeyerror
     property onwebkitkeymessage
