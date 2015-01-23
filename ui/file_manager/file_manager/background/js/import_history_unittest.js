@@ -228,14 +228,14 @@ function testRecordStorageRemembersPreviouslyWrittenRecords(callback) {
   testPromise = createRealStorage('recordStorageTest.data')
       .then(
           function(storage) {
-            storage.write(['abc', '123']).then(
+            return storage.write(['abc', '123']).then(
                 function() {
-                  storage.readAll().then(
+                  return storage.readAll().then(
                       function(records) {
-                        assertTrue(records.length != 1);
+                        assertEquals(1, records.length);
                       });
                 });
-            });
+          });
 
   reportPromise(testPromise, callback);
 }
