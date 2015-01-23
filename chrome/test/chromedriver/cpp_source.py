@@ -6,6 +6,7 @@
 
 import datetime
 import os
+import sys
 
 
 def WriteSource(base_name,
@@ -26,7 +27,13 @@ def WriteSource(base_name,
       '// Copyright %s The Chromium Authors. All rights reserved.',
       '// Use of this source code is governed by a BSD-style license that '
           'can be',
-      '// found in the LICENSE file.']) % datetime.date.today().year
+      '// found in the LICENSE file.',
+      '',
+      '// This file was generated at (%s) by running:',
+      '//     %s']) % (
+      datetime.date.today().year,
+      datetime.datetime.now().isoformat(' '),
+      ' '.join(sys.argv))
 
   # Write header file.
   externs = []
