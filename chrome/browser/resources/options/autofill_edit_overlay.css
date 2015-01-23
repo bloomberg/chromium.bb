@@ -48,6 +48,17 @@
   line-height: 2em;
 }
 
+#autofill-edit-address-overlay list:not([has-element-focus]) >
+    [selected]:not(:hover) {
+  background-color: transparent;
+}
+
+#autofill-edit-address-overlay list:not([has-element-focus]) > *:not(:hover)
+    .row-delete-button {
+  opacity: 0;
+  pointer-events: none;
+}
+
 :-webkit-any(#autofill-edit-credit-card-overlay, #autofill-edit-address-overlay)
     .settings-row label > :-webkit-any(input, select, textarea, list) {
   margin-top: 4px;
