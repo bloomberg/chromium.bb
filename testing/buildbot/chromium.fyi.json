@@ -379,10 +379,20 @@
       "gpu_unittests",
       "url_unittests",
       "jingle_unittests",
-      "content_unittests",
+      {
+        "test": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "device_unittests",
       "media_unittests",
-      "net_unittests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
@@ -392,12 +402,23 @@
       "ipc_tests",
       "sync_unit_tests",
       "skia_unittests",
-      "unit_tests",
+      {
+        "test": "unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "sql_unittests",
       "ui_base_unittests",
       "content_unittests",
       "views_unittests",
-      "browser_tests",
+      {
+        "test": "browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 10
+        }
+      },
       {
         "test": "content_browsertests",
         "swarming": {
