@@ -36,6 +36,13 @@ importer.ImportHistory.prototype.wasImported;
 importer.ImportHistory.prototype.markCopied;
 
 /**
+ * List urls of all files that are marked as copied, but not marked as synced.
+ * @param {!importer.Destination} destination
+ * @return {!Promise.<!Array.<string>>}
+ */
+importer.ImportHistory.prototype.listUnimportedUrls;
+
+/**
  * @param {!FileEntry} entry
  * @param {!importer.Destination} destination
  * @return {!Promise.<?>} Resolves when the operation is completed.
@@ -115,6 +122,12 @@ importer.DummyImportHistory.prototype.wasImported =
 importer.DummyImportHistory.prototype.markCopied =
     function(entry, destination, destinationUrl) {
   return Promise.resolve();
+};
+
+/** @override */
+importer.DummyImportHistory.prototype.listUnimportedUrls =
+    function(destination) {
+  return Promise.resolve([]);
 };
 
 /** @override */
@@ -464,6 +477,27 @@ importer.PersistentImportHistory.prototype.markCopied =
           entry,
           destination,
           destinationUrl));
+};
+
+/** @override */
+importer.PersistentImportHistory.prototype.listUnimportedUrls =
+    function(destination) {
+  return this.whenReady_.then(
+      function() {
+        // TODO(smckay): Merge copy and sync records for simpler
+        // unimported file discovery.
+        var unimported = [];
+        for (var key in this.copiedEntries_) {
+          var imported = this.importedEntries_[key];
+          for (var destination in this.copiedEntries_[key]) {
+            if (!imported || imported.indexOf(destination) === -1) {
+              unimported.push(
+                  this.copiedEntries_[key][destination].destinationUrl);
+            }
+          }
+        }
+        return unimported;
+      }.bind(this));
 };
 
 /** @override */
@@ -864,12 +898,44 @@ importer.DriveSyncWatcher = function(history) {
   this.history_.addObserver(
       this.onHistoryChanged_.bind(this));
 
+  this.history_.whenReady_
+      .then(
+          function() {
+            this.history_.listUnimportedUrls(importer.Destination.GOOGLE_DRIVE)
+                .then(this.updateSyncStatus_.bind(
+                    this,
+                    importer.Destination.GOOGLE_DRIVE));
+          }.bind(this));
+
   // Listener is only registered once the history object is initialized.
   // No need to register synchonously since we don't want to be
   // woken up to respond to events.
   chrome.fileManagerPrivate.onFileTransfersUpdated.addListener(
       this.onFileTransfersUpdated_.bind(this));
   // TODO(smckay): Listen also for errors on onDriveSyncError.
+};
+
+/** @const {number} */
+importer.DriveSyncWatcher.UPDATE_DELAY_MS = 3500;
+
+/**
+ * @param {!importer.Destination} destination
+ * @param {!Array.<string>} unimportedUrls
+ * @private
+ */
+importer.DriveSyncWatcher.prototype.updateSyncStatus_ =
+    function(destination, unimportedUrls) {
+  // TODO(smckay): Chunk processing of urls...to ensure we're not
+  // blocking interactive tasks. For now, we just defer the update
+  // for a few seconds.
+  setTimeout(
+      function() {
+        unimportedUrls.forEach(
+            function(url) {
+              this.checkSyncStatus_(destination, url);
+            }.bind(this));
+      }.bind(this),
+      importer.DriveSyncWatcher.UPDATE_DELAY_MS);
 };
 
 /**
@@ -893,34 +959,73 @@ importer.DriveSyncWatcher.prototype.onHistoryChanged_ =
     // Check sync status incase the file synced *before* it was able
     // to mark be marked as copied.
     this.checkSyncStatus_(
-        event.entry,
         event.destination,
-        event.destinationUrl);
+        event.destinationUrl,
+        event.entry);
   }
 };
 
 /**
- * @param {!FileEntry} entry
  * @param {!importer.Destination} destination
  * @param {string} url
+ * @param {!FileEntry=} opt_entry Pass this if you have an entry
+ *     on hand, else, we'll jump through some extra hoops to
+ *     make do without it.
  * @private
  */
 importer.DriveSyncWatcher.prototype.checkSyncStatus_ =
-    function(entry, destination, url) {
-  // TODO(smckay): User Metadata Cache...once it is available
-  // in the background.
-  chrome.fileManagerPrivate.getEntryProperties(
-      [url],
-      /**
-       * @param {!Array.<Object>} propertiesList
-       * @this {importer.DriveSyncWatcher}
-       */
-      function(propertiesList) {
-        console.assert(propertiesList.length === 1);
-        var data = propertiesList[0];
-        if (!data['isDirty']) {
-          this.history_.markImported(entry, destination);
-        }
+    function(destination, url, opt_entry) {
+  console.assert(
+      destination === importer.Destination.GOOGLE_DRIVE,
+      'Unsupported destination: ' + destination);
+
+  this.getSyncStatus_(url)
+      .then(
+          /**
+           * @param {boolean} synced True if file is synced
+           * @this {importer.DriveSyncWatcher}
+           */
+          function(synced) {
+            if (synced) {
+              if (opt_entry) {
+                this.history_.markImported(opt_entry, destination);
+              } else {
+                this.history_.markImportedByUrl(url);
+              }
+            }
+          }.bind(this));
+};
+
+/**
+ * @param {string} url
+ * @return {!Promise.<boolean>} Resolves with true if the
+ *     file has been synced to the named destination.
+ * @private
+ */
+importer.DriveSyncWatcher.prototype.getSyncStatus_ =
+    function(url) {
+  return new Promise(
+      /** @this {importer.DriveSyncWatcher} */
+      function(resolve, reject) {
+        // TODO(smckay): User Metadata Cache...once it is available
+        // in the background.
+        chrome.fileManagerPrivate.getEntryProperties(
+            [url],
+            /**
+             * @param {!Array.<Object>} propertiesList
+             * @this {importer.DriveSyncWatcher}
+             */
+            function(propertiesList) {
+              console.assert(
+                  propertiesList.length === 1,
+                  'Got an unexpected number of results.');
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+              } else {
+                var data = propertiesList[0];
+                resolve(!data['isDirty']);
+              }
+            }.bind(this));
       }.bind(this));
 };
 

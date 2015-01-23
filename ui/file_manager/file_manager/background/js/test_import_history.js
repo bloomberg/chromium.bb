@@ -107,6 +107,12 @@ importer.TestImportHistory.prototype.markCopied =
   return Promise.resolve();
 };
 
+/** @override */
+importer.TestImportHistory.prototype.listUnimportedUrls =
+    function(destination) {
+  return Promise.resolve([]);
+};
+
 /**
  * @param {!FileEntry} entry
  * @param {!importer.Destination} destination
