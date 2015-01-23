@@ -1194,13 +1194,14 @@ void LayerTreeHostImpl::GetPictureLayerImplPairs(
   }
 }
 
-void LayerTreeHostImpl::BuildRasterQueue(RasterTilePriorityQueue* queue,
-                                         TreePriority tree_priority,
-                                         RasterTilePriorityQueue::Type type) {
+scoped_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
+    TreePriority tree_priority,
+    RasterTilePriorityQueue::Type type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildRasterQueue");
   picture_layer_pairs_.clear();
   GetPictureLayerImplPairs(&picture_layer_pairs_, true);
-  queue->Build(picture_layer_pairs_, tree_priority, type);
+  scoped_ptr<RasterTilePriorityQueue> queue(RasterTilePriorityQueue::Create(
+      picture_layer_pairs_, tree_priority, type));
 
   if (!queue->IsEmpty()) {
     // Only checking the Top() tile here isn't a definite answer that there is
@@ -1215,6 +1216,7 @@ void LayerTreeHostImpl::BuildRasterQueue(RasterTilePriorityQueue* queue,
   } else {
     required_for_draw_tile_is_top_of_raster_queue_ = false;
   }
+  return queue;
 }
 
 void LayerTreeHostImpl::BuildEvictionQueue(EvictionTilePriorityQueue* queue,

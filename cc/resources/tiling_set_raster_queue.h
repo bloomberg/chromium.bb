@@ -8,6 +8,8 @@
 namespace cc {
 class Tile;
 
+// TODO(vmpstr): Remove this, since RasterTilePriorityQueue knows the type
+// directly.
 class TilingSetRasterQueue {
  public:
   virtual ~TilingSetRasterQueue() {}
