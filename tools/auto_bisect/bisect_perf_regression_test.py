@@ -433,6 +433,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
   @mock.patch('bisect_utils.RunGClient')
   def testSyncToRevisionForChromium(self, mock_RunGClient):
     bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
+    mock_RunGClient.return_value = 0
     bisect_instance._SyncRevision(
         'chromium', 'e6db23a037cad47299a94b155b95eebd1ee61a58', 'gclient')
     expected_params = [

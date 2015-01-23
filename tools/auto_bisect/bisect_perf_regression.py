@@ -1318,8 +1318,9 @@ class BisectPerformanceMetrics(object):
         print output
 
       if metric and self._IsBisectModeUsingMetric():
-        metric_values.append(math_utils.Mean(
-            _ParseMetricValuesFromOutput(metric, output)))
+        parsed_metric = _ParseMetricValuesFromOutput(metric, output)
+        if parsed_metric:
+          metric_values.append(math_utils.Mean(parsed_metric))
         # If we're bisecting on a metric (ie, changes in the mean or
         # standard deviation) and no metric values are produced, bail out.
         if not metric_values:
