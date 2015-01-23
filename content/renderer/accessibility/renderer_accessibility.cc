@@ -108,7 +108,8 @@ void RendererAccessibility::HandleAccessibilityFindInPageResult(
   Send(new AccessibilityHostMsg_FindInPageResult(routing_id(), params));
 }
 
-void RendererAccessibility::FocusedNodeChanged(const WebNode& node) {
+void RendererAccessibility::AccessibilityFocusedNodeChanged(
+    const WebNode& node) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;

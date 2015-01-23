@@ -16,6 +16,7 @@
 namespace blink {
 class WebFormElement;
 class WebFrame;
+class WebNode;
 struct WebURLError;
 }
 
@@ -84,6 +85,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
 
   // Called when a compositor frame has committed.
   virtual void DidCommitCompositorFrame() {}
+
+  // Called when the focused node has changed to |node|.
+  virtual void FocusedNodeChanged(const blink::WebNode& node) {}
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

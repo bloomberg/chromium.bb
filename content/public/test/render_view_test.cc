@@ -343,7 +343,7 @@ void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
 
 void RenderViewTest::SetFocused(const blink::WebNode& node) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->focusedNodeChanged(node);
+  impl->focusedNodeChanged(blink::WebNode(), node);
 }
 
 void RenderViewTest::Reload(const GURL& url) {

@@ -1916,21 +1916,35 @@ void RenderViewImpl::focusPrevious() {
   Send(new ViewHostMsg_TakeFocus(routing_id_, true));
 }
 
-void RenderViewImpl::focusedNodeChanged(const WebNode& node) {
+void RenderViewImpl::focusedNodeChanged(const WebNode& fromNode,
+                                        const WebNode& toNode) {
   has_scrolled_focused_editable_node_into_rect_ = false;
 
   gfx::Rect node_bounds;
-  if (!node.isNull() && node.isElementNode()) {
-    WebNode web_node = const_cast<WebNode&>(node);
+  if (!toNode.isNull() && toNode.isElementNode()) {
+    WebNode web_node = const_cast<WebNode&>(toNode);
     node_bounds = gfx::Rect(web_node.to<WebElement>().boundsInViewportSpace());
   }
-  Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, IsEditableNode(node),
+  Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, IsEditableNode(toNode),
                                           node_bounds));
 
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(node));
+  // TODO(estade): remove.
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(toNode));
 
-  // TODO(dmazzoni): this should be part of RenderFrameObserver.
-  GetMainRenderFrame()->FocusedNodeChanged(node);
+  RenderFrameImpl* previous_frame = nullptr;
+  if (!fromNode.isNull())
+    previous_frame = RenderFrameImpl::FromWebFrame(fromNode.document().frame());
+  RenderFrameImpl* new_frame = nullptr;
+  if (!toNode.isNull())
+    new_frame = RenderFrameImpl::FromWebFrame(toNode.document().frame());
+
+  if (previous_frame && previous_frame != new_frame)
+    previous_frame->FocusedNodeChanged(WebNode());
+  if (new_frame)
+    new_frame->FocusedNodeChanged(toNode);
+
+  // TODO(dmazzoni): remove once there's a separate a11y tree per frame.
+  GetMainRenderFrame()->FocusedNodeChangedForAccessibility(toNode);
 }
 
 void RenderViewImpl::didUpdateLayout() {

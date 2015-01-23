@@ -65,7 +65,7 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
       const blink::WebAXObject& end_object,
       int end_offset);
 
-  void FocusedNodeChanged(const blink::WebNode& node);
+  void AccessibilityFocusedNodeChanged(const blink::WebNode& node);
 
   // This can be called before deleting a RendererAccessibility instance due
   // to the accessibility mode changing, as opposed to during frame destruction

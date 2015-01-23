@@ -213,14 +213,7 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   if (node.isNull() || !node.isElementNode())
     return;
 
-  if (node.document().frame() != render_frame()->GetWebFrame())
-    return;
-
   WebElement web_element = node.toConst<WebElement>();
-
-  if (!web_element.document().frame())
-    return;
-
   const WebInputElement* element = toWebInputElement(&web_element);
 
   if (!element || !element->isEnabled() || element->isReadOnly() ||
@@ -792,11 +785,6 @@ AutofillAgent::LegacyAutofillAgent::~LegacyAutofillAgent() {
 
 void AutofillAgent::LegacyAutofillAgent::OnDestruct() {
   // No-op. Don't delete |this|.
-}
-
-void AutofillAgent::LegacyAutofillAgent::FocusedNodeChanged(
-    const WebNode& node) {
-  agent_->FocusedNodeChanged(node);
 }
 
 void AutofillAgent::LegacyAutofillAgent::FocusChangeComplete() {

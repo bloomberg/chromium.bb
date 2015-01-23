@@ -769,8 +769,8 @@ void RenderFrameImpl::PepperTextInputTypeChanged(
     return;
 
   GetRenderWidget()->UpdateTextInputType();
-  if (renderer_accessibility())
-    renderer_accessibility()->FocusedNodeChanged(WebNode());
+
+  FocusedNodeChangedForAccessibility(WebNode());
 }
 
 void RenderFrameImpl::PepperCaretPositionChanged(
@@ -3824,8 +3824,12 @@ void RenderFrameImpl::HandleWebAccessibilityEvent(
 }
 
 void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
-  if (renderer_accessibility_)
-    renderer_accessibility_->FocusedNodeChanged(node);
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FocusedNodeChanged(node));
+}
+
+void RenderFrameImpl::FocusedNodeChangedForAccessibility(const WebNode& node) {
+  if (renderer_accessibility())
+    renderer_accessibility()->AccessibilityFocusedNodeChanged(node);
 }
 
 // PlzNavigate

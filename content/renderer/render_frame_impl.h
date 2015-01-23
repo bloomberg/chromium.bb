@@ -209,10 +209,14 @@ class CONTENT_EXPORT RenderFrameImpl
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
                                    blink::WebAXEvent event);
 
-  // TODO(dmazzoni): the only reason this is here is to plumb it through to
-  // RendererAccessibility. It should be part of RenderFrameObserver, once
-  // blink has a separate accessibility tree per frame.
+  // The focused node changed to |node|. If focus was lost from this frame,
+  // |node| will be null.
   void FocusedNodeChanged(const blink::WebNode& node);
+
+  // TODO(dmazzoni): the only reason this is here is to plumb it through to
+  // RendererAccessibility. It should use the RenderFrameObserver method, once
+  // blink has a separate accessibility tree per frame.
+  void FocusedNodeChangedForAccessibility(const blink::WebNode& node);
 
 #if defined(ENABLE_PLUGINS)
   // Notification that a PPAPI plugin has been created.

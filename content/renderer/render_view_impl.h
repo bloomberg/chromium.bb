@@ -384,7 +384,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool acceptsLoadDrops();
   virtual void focusNext();
   virtual void focusPrevious();
-  virtual void focusedNodeChanged(const blink::WebNode& node);
+  virtual void focusedNodeChanged(const blink::WebNode& fromNode,
+                                  const blink::WebNode& toNode);
   virtual void didUpdateLayout();
 #if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
   virtual bool didTapMultipleTargets(
