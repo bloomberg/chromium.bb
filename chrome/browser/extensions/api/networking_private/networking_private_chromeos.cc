@@ -283,15 +283,13 @@ void NetworkingPrivateChromeOS::GetCaptivePortalStatus(
     const std::string& guid,
     const StringCallback& success_callback,
     const FailureCallback& failure_callback) {
-  chromeos::NetworkPortalDetector* detector =
-      chromeos::NetworkPortalDetector::Get();
-  if (!detector) {
+  if (!chromeos::NetworkPortalDetector::IsInitialized()) {
     failure_callback.Run(networking_private::kErrorNotReady);
     return;
   }
 
   chromeos::NetworkPortalDetector::CaptivePortalState state =
-      detector->GetCaptivePortalState(guid);
+      chromeos::NetworkPortalDetector::Get()->GetCaptivePortalState(guid);
   success_callback.Run(
       chromeos::NetworkPortalDetector::CaptivePortalStatusString(state.status));
 }

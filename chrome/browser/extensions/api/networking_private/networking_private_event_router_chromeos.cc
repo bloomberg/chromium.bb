@@ -132,11 +132,13 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
   if (should_listen && !listening_) {
     NetworkHandler::Get()->network_state_handler()->AddObserver(
         this, FROM_HERE);
-    NetworkPortalDetector::Get()->AddObserver(this);
+    if (chromeos::NetworkPortalDetector::IsInitialized())
+      NetworkPortalDetector::Get()->AddObserver(this);
   } else if (!should_listen && listening_) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(
         this, FROM_HERE);
-    NetworkPortalDetector::Get()->RemoveObserver(this);
+    if (chromeos::NetworkPortalDetector::IsInitialized())
+      NetworkPortalDetector::Get()->RemoveObserver(this);
   }
   listening_ = should_listen;
 }
