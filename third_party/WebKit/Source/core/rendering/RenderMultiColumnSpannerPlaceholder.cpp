@@ -34,15 +34,6 @@ RenderMultiColumnSpannerPlaceholder::RenderMultiColumnSpannerPlaceholder(RenderB
 {
 }
 
-void RenderMultiColumnSpannerPlaceholder::spannerWillBeRemoved()
-{
-    ASSERT(m_rendererInFlowThread);
-    RenderBox* renderer = m_rendererInFlowThread;
-    m_rendererInFlowThread = 0;
-    flowThread()->flowThreadDescendantWillBeRemoved(renderer);
-    // |this| should be destroyed by now.
-}
-
 void RenderMultiColumnSpannerPlaceholder::updateMarginProperties()
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::clone(style());

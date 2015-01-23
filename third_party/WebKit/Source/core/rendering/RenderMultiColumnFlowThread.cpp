@@ -321,11 +321,11 @@ void RenderMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width
     }
 }
 
-void RenderMultiColumnFlowThread::createAndInsertMultiColumnSet()
+void RenderMultiColumnFlowThread::createAndInsertMultiColumnSet(RenderBox* insertBefore)
 {
     RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
     RenderMultiColumnSet* newSet = RenderMultiColumnSet::createAnonymous(this, multicolContainer->style());
-    multicolContainer->RenderBlock::addChild(newSet);
+    multicolContainer->RenderBlock::addChild(newSet, insertBefore);
     invalidateRegions();
 
     // We cannot handle immediate column set siblings (and there's no need for it, either).
@@ -334,11 +334,11 @@ void RenderMultiColumnFlowThread::createAndInsertMultiColumnSet()
     ASSERT(!newSet->nextSiblingMultiColumnBox() || !newSet->nextSiblingMultiColumnBox()->isRenderMultiColumnSet());
 }
 
-void RenderMultiColumnFlowThread::createAndInsertSpannerPlaceholder(RenderBox* spanner)
+void RenderMultiColumnFlowThread::createAndInsertSpannerPlaceholder(RenderBox* spanner, RenderBox* insertBefore)
 {
     RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
     RenderMultiColumnSpannerPlaceholder* newPlaceholder = RenderMultiColumnSpannerPlaceholder::createAnonymous(multicolContainer->style(), spanner);
-    multicolContainer->RenderBlock::addChild(newPlaceholder);
+    multicolContainer->RenderBlock::addChild(newPlaceholder, insertBefore);
     spanner->setSpannerPlaceholder(*newPlaceholder);
 }
 
@@ -441,27 +441,86 @@ LayoutUnit RenderMultiColumnFlowThread::skipColumnSpanner(RenderBox* renderer, L
 void RenderMultiColumnFlowThread::flowThreadDescendantWasInserted(RenderObject* descendant)
 {
     ASSERT(!m_isBeingEvacuated);
-    // Go through the subtree that was just inserted and create column sets (needed by regular
-    // column content) and spanner placeholders (one needed by each spanner).
+    RenderObject* nextRenderer = descendant->nextInPreOrderAfterChildren(this);
+    // This method ensures that the list of column sets and spanner placeholders reflects the
+    // multicol content after having inserted a descendant (or descendant subtree). See the header
+    // file for more information. Go through the subtree that was just inserted and create column
+    // sets (needed by regular column content) and spanner placeholders (one needed by each spanner)
+    // where needed.
     for (RenderObject* renderer = descendant; renderer; renderer = renderer->nextInPreOrder(descendant)) {
         if (containingColumnSpannerPlaceholder(renderer))
             continue; // Inside a column spanner. Nothing to do, then.
         if (descendantIsValidColumnSpanner(renderer)) {
             // This renderer is a spanner, so it needs to establish a spanner placeholder.
-            createAndInsertSpannerPlaceholder(toRenderBox(renderer));
+            RenderBox* insertBefore = 0;
+            RenderMultiColumnSet* setToSplit = 0;
+            if (nextRenderer) {
+                // The spanner is inserted before something. Figure out what this entails. If the
+                // next renderer is a spanner too, it means that we can simply insert a new spanner
+                // placeholder in front of its placeholder.
+                insertBefore = nextRenderer->spannerPlaceholder();
+                if (!insertBefore) {
+                    // The next renderer isn't a spanner; it's regular column content. Examine what
+                    // comes right before us in the flow thread, then.
+                    RenderObject* previousRenderer = renderer->previousInPreOrder(this);
+                    if (!previousRenderer || previousRenderer == this) {
+                        // The spanner is inserted as the first child of the multicol container,
+                        // which means that we simply insert a new spanner placeholder at the
+                        // beginning.
+                        insertBefore = firstMultiColumnBox();
+                    } else if (RenderMultiColumnSpannerPlaceholder* previousPlaceholder = containingColumnSpannerPlaceholder(previousRenderer)) {
+                        // Before us is another spanner. We belong right after it then.
+                        insertBefore = previousPlaceholder->nextSiblingMultiColumnBox();
+                    } else {
+                        // We're inside regular column content with both feet. Find out which column
+                        // set this is. It needs to be split it into two sets, so that we can insert
+                        // a new spanner placeholder between them.
+                        setToSplit = findSetRendering(previousRenderer);
+                        ASSERT(setToSplit == findSetRendering(nextRenderer));
+                        setToSplit->setNeedsLayoutAndFullPaintInvalidation();
+                        insertBefore = setToSplit->nextSiblingMultiColumnBox();
+                        // We've found out which set that needs to be split. Now proceed to
+                        // inserting the spanner placeholder, and then insert a second column set.
+                    }
+                }
+                ASSERT(setToSplit || insertBefore);
+            }
+            createAndInsertSpannerPlaceholder(toRenderBox(renderer), insertBefore);
+            if (setToSplit)
+                createAndInsertMultiColumnSet(insertBefore);
             continue;
         }
         // This renderer is regular column content (i.e. not a spanner). Create a set if necessary.
-        RenderBox* lastColumnBox = lastMultiColumnBox();
-        if (!lastColumnBox || !lastColumnBox->isRenderMultiColumnSet())
-            createAndInsertMultiColumnSet();
+        if (nextRenderer) {
+            if (RenderMultiColumnSpannerPlaceholder* placeholder = nextRenderer->spannerPlaceholder()) {
+                // If inserted right before a spanner, we need to make sure that there's a set for us there.
+                RenderBox* previous = placeholder->previousSiblingMultiColumnBox();
+                if (!previous || !previous->isRenderMultiColumnSet())
+                    createAndInsertMultiColumnSet(placeholder);
+            } else {
+                // Otherwise, since |nextRenderer| isn't a spanner, it has to mean that there's
+                // already a set for that content. We can use it for this renderer too.
+                ASSERT(findSetRendering(nextRenderer));
+                ASSERT(findSetRendering(renderer) == findSetRendering(nextRenderer));
+            }
+        } else {
+            // Inserting at the end. Then we just need to make sure that there's a column set at the end.
+            RenderBox* lastColumnBox = lastMultiColumnBox();
+            if (!lastColumnBox || !lastColumnBox->isRenderMultiColumnSet())
+                createAndInsertMultiColumnSet();
+        }
     }
 }
 
 void RenderMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(RenderObject* descendant)
 {
+    // This method ensures that the list of column sets and spanner placeholders reflects the
+    // multicol content that we'll be left with after removal of a descendant (or descendant
+    // subtree). See the header file for more information. Removing content may mean that we need to
+    // remove column sets and/or spanner placeholders.
     if (m_isBeingEvacuated)
         return;
+    bool hadContainingPlaceholder = containingColumnSpannerPlaceholder(descendant);
     RenderObject* next;
     // Remove spanner placeholders that are no longer needed, and merge column sets around them.
     for (RenderObject* renderer = descendant; renderer; renderer = next) {
@@ -483,6 +542,42 @@ void RenderMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(RenderObject
         }
         placeholder->destroy();
     }
+    if (hadContainingPlaceholder)
+        return; // We're only removing a spanner (or something inside one), which means that no column content will be removed.
+
+    // Column content will be removed. Does this mean that we should destroy a column set?
+    RenderMultiColumnSpannerPlaceholder* adjacentPreviousSpannerPlaceholder = 0;
+    RenderObject* previousRenderer = descendant->previousInPreOrder(this);
+    if (previousRenderer && previousRenderer != this) {
+        adjacentPreviousSpannerPlaceholder = containingColumnSpannerPlaceholder(previousRenderer);
+        if (!adjacentPreviousSpannerPlaceholder)
+            return; // Preceded by column content. Set still needed.
+    }
+    RenderMultiColumnSpannerPlaceholder* adjacentNextSpannerPlaceholder = 0;
+    RenderObject* nextRenderer = descendant->nextInPreOrderAfterChildren(this);
+    if (nextRenderer) {
+        adjacentNextSpannerPlaceholder = containingColumnSpannerPlaceholder(nextRenderer);
+        if (!adjacentNextSpannerPlaceholder)
+            return; // Followed by column content. Set still needed.
+    }
+    // We have now determined that, with the removal of |descendant|, we should remove a column
+    // set. Locate it and remove it. Do it without involving findSetRendering(), as that might be
+    // very slow. Deduce the right set from the spanner placeholders that we've already found.
+    RenderMultiColumnSet* columnSetToRemove;
+    if (adjacentNextSpannerPlaceholder) {
+        columnSetToRemove = toRenderMultiColumnSet(adjacentNextSpannerPlaceholder->previousSiblingMultiColumnBox());
+        ASSERT(!adjacentPreviousSpannerPlaceholder || columnSetToRemove == adjacentPreviousSpannerPlaceholder->nextSiblingMultiColumnBox());
+    } else if (adjacentPreviousSpannerPlaceholder) {
+        columnSetToRemove = toRenderMultiColumnSet(adjacentPreviousSpannerPlaceholder->nextSiblingMultiColumnBox());
+    } else {
+        // If there were no adjacent spanners, it has to mean that there's only one column set,
+        // since it's only spanners that may cause creation of multiple sets.
+        columnSetToRemove = firstMultiColumnSet();
+        ASSERT(columnSetToRemove);
+        ASSERT(!columnSetToRemove->nextSiblingMultiColumnSet());
+    }
+    ASSERT(columnSetToRemove);
+    columnSetToRemove->destroy();
 }
 
 void RenderMultiColumnFlowThread::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const

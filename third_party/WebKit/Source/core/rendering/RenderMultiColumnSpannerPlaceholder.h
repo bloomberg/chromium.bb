@@ -22,8 +22,6 @@ public:
     RenderFlowThread* flowThread() const { return toRenderBlockFlow(parent())->multiColumnFlowThread(); }
 
     RenderBox* rendererInFlowThread() const { return m_rendererInFlowThread; }
-    void setRendererInFlowThread(RenderBox* renderer) { m_rendererInFlowThread = renderer; }
-    void spannerWillBeRemoved();
     void updateMarginProperties();
 
 protected:

@@ -651,7 +651,6 @@ public:
 
     void setIntrinsicContentLogicalHeight(LayoutUnit intrinsicContentLogicalHeight) const { m_intrinsicContentLogicalHeight = intrinsicContentLogicalHeight; }
 protected:
-    virtual void willBeRemovedFromTree() override;
     virtual void willBeDestroyed() override;
 
     virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;

@@ -128,15 +128,6 @@ LayerType RenderBox::layerTypeRequired() const
     return NoLayer;
 }
 
-void RenderBox::willBeRemovedFromTree()
-{
-    if (m_rareData && m_rareData->m_spannerPlaceholder) {
-        m_rareData->m_spannerPlaceholder->spannerWillBeRemoved();
-        m_rareData->m_spannerPlaceholder = 0;
-    }
-    RenderBoxModelObject::willBeRemovedFromTree();
-}
-
 void RenderBox::willBeDestroyed()
 {
     clearOverrideSize();

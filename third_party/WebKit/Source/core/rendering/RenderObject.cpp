@@ -2400,7 +2400,12 @@ void RenderObject::removeFromRenderFlowThread()
     // It's only until later when we actually destroy it and remove all the children from it.
     // Currently, that happens for firstLetter elements and list markers.
     // Pass in the flow thread so that we don't have to look it up for all the children.
-    removeFromRenderFlowThreadRecursive(flowThreadContainingBlock());
+    // If we're a column spanner, we need to use our parent to find the flow thread, since a spanner
+    // doesn't have the flow thread in its containing block chain. We still need to notify the flow
+    // thread when the renderer removed happens to be a spanner, so that we get rid of the spanner
+    // placeholder, and column sets around the placeholder get merged.
+    RenderFlowThread* flowThread = isColumnSpanAll() ? parent()->flowThreadContainingBlock() : flowThreadContainingBlock();
+    removeFromRenderFlowThreadRecursive(flowThread);
 }
 
 void RenderObject::removeFromRenderFlowThreadRecursive(RenderFlowThread* renderFlowThread)
@@ -2413,6 +2418,7 @@ void RenderObject::removeFromRenderFlowThreadRecursive(RenderFlowThread* renderF
     if (renderFlowThread && renderFlowThread != this)
         renderFlowThread->flowThreadDescendantWillBeRemoved(this);
     setFlowThreadState(NotInsideFlowThread);
+    RELEASE_ASSERT(!spannerPlaceholder());
 }
 
 void RenderObject::destroyAndCleanupAnonymousWrappers()

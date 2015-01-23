@@ -60,6 +60,21 @@ class RenderMultiColumnSpannerPlaceholder;
 // positioned and sized correctly. The column-span:all element is inside the flow thread, but its
 // containing block is the multicol container.
 //
+// Some invariants for the render tree structure for multicol:
+// - A multicol container is always a RenderBlockFlow
+// - Every multicol container has one and only one RenderMultiColumnFlowThread
+// - All multicol DOM children and pseudo-elements associated with the multicol container are
+//   reparented into the flow thread
+// - The RenderMultiColumnFlowThread is the first child of the multicol container
+// - A multicol container may only have RenderMultiColumnFlowThread, RenderMultiColumnSet and
+//   RenderMultiColumnSpannerPlaceholder children
+// - A RenderMultiColumnSet may not be adjacent to another RenderMultiColumnSet; there are no
+//   use-cases for it, and there are also implementation limitations behind this requirement.
+// - The flow thread is not in the containing block chain for children that are not to be laid out
+//   in columns. This means column spanners and absolutely positioned children whose containing
+//   block is outside column content
+// - Each spanner (column-span:all) establishes a RenderMultiColumnSpannerPlaceholder
+//
 // The width of the flow thread is the same as the column width. The width of a column set is the
 // same as the content box width of the multicol container; in other words exactly enough to hold
 // the number of columns to be used, stacked horizontally, plus column gaps between them.
@@ -166,8 +181,8 @@ protected:
 
 private:
     void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
-    void createAndInsertMultiColumnSet();
-    void createAndInsertSpannerPlaceholder(RenderBox* spanner);
+    void createAndInsertMultiColumnSet(RenderBox* insertBefore = 0);
+    void createAndInsertSpannerPlaceholder(RenderBox* spanner, RenderBox* insertBefore = 0);
     virtual bool descendantIsValidColumnSpanner(RenderObject* descendant) const;
 
     virtual const char* renderName() const override;
