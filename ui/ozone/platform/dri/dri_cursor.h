@@ -104,6 +104,8 @@ class DriCursor : public CursorDelegateEvdev, public GpuPlatformSupportHost {
     // The bounds of the display under the cursor.
     gfx::Rect bounds;
 
+    int host_id;
+
     // Callback for IPC updates.
     base::Callback<void(IPC::Message*)> send_callback;
     scoped_refptr<base::SingleThreadTaskRunner> send_runner;

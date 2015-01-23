@@ -192,6 +192,7 @@ void DriCursor::OnChannelEstablished(
 #endif
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(state_.lock);
+  state_.host_id = host_id;
   state_.send_runner = send_runner;
   state_.send_callback = send_callback;
   // Initial set for this GPU process will happen after the window
@@ -201,8 +202,11 @@ void DriCursor::OnChannelEstablished(
 void DriCursor::OnChannelDestroyed(int host_id) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(state_.lock);
-  state_.send_runner = NULL;
-  state_.send_callback.Reset();
+  if (state_.host_id == host_id) {
+    state_.host_id = -1;
+    state_.send_runner = NULL;
+    state_.send_callback.Reset();
+  }
 }
 
 bool DriCursor::OnMessageReceived(const IPC::Message& message) {
@@ -267,7 +271,8 @@ void DriCursor::SendLocked(IPC::Message* message) {
   delete message;
 }
 
-DriCursor::CursorState::CursorState() : window(gfx::kNullAcceleratedWidget) {
+DriCursor::CursorState::CursorState()
+    : window(gfx::kNullAcceleratedWidget), host_id(-1) {
 }
 
 DriCursor::CursorState::~CursorState() {
