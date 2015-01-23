@@ -31,29 +31,29 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
     if (isSVGSVGElement(*m_renderSVGContainer.element()) && toSVGSVGElement(*m_renderSVGContainer.element()).hasEmptyViewBox())
         return;
 
-    PaintInfo childPaintInfo(paintInfo);
-    TransformRecorder transformRecorder(*childPaintInfo.context, m_renderSVGContainer.displayItemClient(), m_renderSVGContainer.localToParentTransform());
+    PaintInfo paintInfoBeforeFiltering(paintInfo);
+    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGContainer.displayItemClient(), m_renderSVGContainer.localToParentTransform());
     {
         OwnPtr<FloatClipRecorder> clipRecorder;
         if (m_renderSVGContainer.isSVGViewportContainer() && SVGRenderSupport::isOverflowHidden(&m_renderSVGContainer)) {
             FloatRect viewport = m_renderSVGContainer.localToParentTransform().inverse().mapRect(toRenderSVGViewportContainer(m_renderSVGContainer).viewport());
-            clipRecorder = adoptPtr(new FloatClipRecorder(*childPaintInfo.context, m_renderSVGContainer.displayItemClient(), childPaintInfo.phase, viewport));
+            clipRecorder = adoptPtr(new FloatClipRecorder(*paintInfoBeforeFiltering.context, m_renderSVGContainer.displayItemClient(), paintInfoBeforeFiltering.phase, viewport));
         }
 
-        SVGRenderingContext renderingContext(m_renderSVGContainer, childPaintInfo);
+        SVGRenderingContext renderingContext(m_renderSVGContainer, paintInfoBeforeFiltering);
         bool continueRendering = true;
-        if (childPaintInfo.phase == PaintPhaseForeground)
+        if (renderingContext.paintInfo().phase == PaintPhaseForeground)
             continueRendering = renderingContext.applyClipMaskAndFilterIfNecessary();
 
         if (continueRendering) {
-            childPaintInfo.updatePaintingRootForChildren(&m_renderSVGContainer);
+            renderingContext.paintInfo().updatePaintingRootForChildren(&m_renderSVGContainer);
             for (RenderObject* child = m_renderSVGContainer.firstChild(); child; child = child->nextSibling())
-                child->paint(childPaintInfo, IntPoint());
+                child->paint(renderingContext.paintInfo(), IntPoint());
         }
     }
 
-    if (paintInfo.phase == PaintPhaseForeground && m_renderSVGContainer.style()->outlineWidth() && m_renderSVGContainer.style()->visibility() == VISIBLE)
-        ObjectPainter(m_renderSVGContainer).paintOutline(childPaintInfo, LayoutRect(m_renderSVGContainer.paintInvalidationRectInLocalCoordinates()));
+    if (paintInfoBeforeFiltering.phase == PaintPhaseForeground && m_renderSVGContainer.style()->outlineWidth() && m_renderSVGContainer.style()->visibility() == VISIBLE)
+        ObjectPainter(m_renderSVGContainer).paintOutline(paintInfoBeforeFiltering, LayoutRect(m_renderSVGContainer.paintInvalidationRectInLocalCoordinates()));
 }
 
 } // namespace blink

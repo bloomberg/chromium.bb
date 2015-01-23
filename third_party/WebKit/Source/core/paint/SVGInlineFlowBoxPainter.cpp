@@ -30,12 +30,10 @@ void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
-    // FIXME: SVGRenderingContext wants a non-const PaintInfo to muck with.
-    PaintInfo localPaintInfo(paintInfo);
-    SVGRenderingContext renderingContext(m_svgInlineFlowBox.renderer(), localPaintInfo);
+    SVGRenderingContext renderingContext(m_svgInlineFlowBox.renderer(), paintInfo);
     if (renderingContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine())
-            child->paint(localPaintInfo, paintOffset, 0, 0);
+            child->paint(renderingContext.paintInfo(), paintOffset, 0, 0);
     }
 }
 

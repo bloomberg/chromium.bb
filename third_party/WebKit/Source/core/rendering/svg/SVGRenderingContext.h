@@ -27,6 +27,7 @@
 
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
+#include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/transforms/AffineTransform.h"
@@ -34,7 +35,6 @@
 namespace blink {
 
 class RenderObject;
-struct PaintInfo;
 class RenderSVGResourceFilter;
 class RenderSVGResourceMasker;
 class SVGResources;
@@ -51,9 +51,9 @@ private:
 class SVGRenderingContext {
     STACK_ALLOCATED();
 public:
-    SVGRenderingContext(RenderObject& object, PaintInfo& paintInfo)
+    SVGRenderingContext(RenderObject& object, const PaintInfo& paintInfo)
         : m_object(&object)
-        , m_paintInfo(&paintInfo)
+        , m_paintInfo(paintInfo)
         , m_filter(nullptr)
         , m_clipper(nullptr)
         , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
@@ -64,6 +64,8 @@ public:
     { }
 
     ~SVGRenderingContext();
+
+    PaintInfo& paintInfo() { return m_paintInfo; }
 
     // Return true if these operations aren't necessary or if they are successfully applied.
     bool applyClipMaskAndFilterIfNecessary();
@@ -87,8 +89,7 @@ private:
     bool isIsolationInstalled() const;
 
     RawPtrWillBeMember<RenderObject> m_object;
-    RawPtrWillBeMember<PaintInfo> m_paintInfo;
-    IntRect m_savedPaintRect;
+    PaintInfo m_paintInfo;
     RawPtrWillBeMember<RenderSVGResourceFilter> m_filter;
     RawPtrWillBeMember<RenderSVGResourceClipper> m_clipper;
     RenderSVGResourceClipper::ClipperState m_clipperState;

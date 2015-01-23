@@ -42,20 +42,19 @@ SVGRenderingContext::~SVGRenderingContext()
     if (m_filter) {
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->filter() == m_filter);
-        m_filter->finishEffect(m_object, m_paintInfo->context);
-        m_paintInfo->rect = m_savedPaintRect;
+        m_filter->finishEffect(m_object, m_paintInfo.context);
     }
 
     if (m_masker) {
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->masker() == m_masker);
-        m_masker->finishEffect(m_object, m_paintInfo->context);
+        m_masker->finishEffect(m_object, m_paintInfo.context);
     }
 
     if (m_clipper) {
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->clipper() == m_clipper);
-        m_clipper->postApplyStatefulResource(m_object, m_paintInfo->context, m_clipperState);
+        m_clipper->postApplyStatefulResource(m_object, m_paintInfo.context, m_clipperState);
     }
 }
 
@@ -70,7 +69,7 @@ bool SVGRenderingContext::applyClipMaskAndFilterIfNecessary()
 
     // When rendering clip paths as masks, only geometric operations should be included so skip
     // non-geometric operations such as compositing, masking, and filtering.
-    if (m_paintInfo->isRenderingClipPathAsMaskImage()) {
+    if (m_paintInfo.isRenderingClipPathAsMaskImage()) {
         if (!applyClipIfNecessary(resources))
             return false;
         return true;
@@ -88,14 +87,14 @@ bool SVGRenderingContext::applyClipMaskAndFilterIfNecessary()
         return false;
 
     if (!isIsolationInstalled() && SVGRenderSupport::isIsolationRequired(m_object))
-        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo->context, m_object->displayItemClient(), m_paintInfo->context->compositeOperationDeprecated(), WebBlendModeNormal, 1, m_paintInfo->context->compositeOperationDeprecated()));
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, m_object->displayItemClient(), m_paintInfo.context->compositeOperationDeprecated(), WebBlendModeNormal, 1, m_paintInfo.context->compositeOperationDeprecated()));
 
     return true;
 }
 
 void SVGRenderingContext::applyCompositingIfNecessary()
 {
-    ASSERT(!m_paintInfo->isRenderingClipPathAsMaskImage());
+    ASSERT(!m_paintInfo.isRenderingClipPathAsMaskImage());
 
     // RenderLayer takes care of root opacity and blend mode.
     if (m_object->isSVGRoot())
@@ -106,10 +105,10 @@ void SVGRenderingContext::applyCompositingIfNecessary()
     float opacity = style->opacity();
     bool hasBlendMode = style->hasBlendMode() && m_object->isBlendingAllowed();
     if (opacity < 1 || hasBlendMode) {
-        m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo->context, m_object->displayItemClient(), m_paintInfo->phase, m_object->paintInvalidationRectInLocalCoordinates()));
+        m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo.context, m_object->displayItemClient(), m_paintInfo.phase, m_object->paintInvalidationRectInLocalCoordinates()));
         WebBlendMode blendMode = hasBlendMode ? style->blendMode() : WebBlendModeNormal;
-        CompositeOperator compositeOp = hasBlendMode ? CompositeSourceOver : m_paintInfo->context->compositeOperationDeprecated();
-        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo->context, m_object->displayItemClient(), compositeOp, blendMode, opacity, compositeOp));
+        CompositeOperator compositeOp = hasBlendMode ? CompositeSourceOver : m_paintInfo.context->compositeOperationDeprecated();
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo.context, m_object->displayItemClient(), compositeOp, blendMode, opacity, compositeOp));
     }
 }
 
@@ -119,7 +118,7 @@ bool SVGRenderingContext::applyClipIfNecessary(SVGResources* resources)
     // m_object->style()->clipPath() corresponds to '-webkit-clip-path'.
     // FIXME: We should unify the clip-path and -webkit-clip-path codepaths.
     if (RenderSVGResourceClipper* clipper = resources ? resources->clipper() : nullptr) {
-        if (!clipper->applyStatefulResource(m_object, m_paintInfo->context, m_clipperState))
+        if (!clipper->applyStatefulResource(m_object, m_paintInfo.context, m_clipperState))
             return false;
         m_clipper = clipper;
     } else {
@@ -128,7 +127,7 @@ bool SVGRenderingContext::applyClipIfNecessary(SVGResources* resources)
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(clipPathOperation);
             if (!clipPath->isValid())
                 return false;
-            m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*m_paintInfo->context, m_object->displayItemClient(), clipPath->path(m_object->objectBoundingBox()), clipPath->windRule()));
+            m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*m_paintInfo.context, m_object->displayItemClient(), clipPath->path(m_object->objectBoundingBox()), clipPath->windRule()));
         }
     }
     return true;
@@ -137,7 +136,7 @@ bool SVGRenderingContext::applyClipIfNecessary(SVGResources* resources)
 bool SVGRenderingContext::applyMaskIfNecessary(SVGResources* resources)
 {
     if (RenderSVGResourceMasker* masker = resources ? resources->masker() : nullptr) {
-        if (!masker->prepareEffect(m_object, m_paintInfo->context))
+        if (!masker->prepareEffect(m_object, m_paintInfo.context))
             return false;
         m_masker = masker;
     }
@@ -150,15 +149,14 @@ bool SVGRenderingContext::applyFilterIfNecessary(SVGResources* resources)
         if (m_object->style()->svgStyle().hasFilter())
             return false;
     } else if (RenderSVGResourceFilter* filter = resources->filter()) {
-        if (!filter->prepareEffect(m_object, m_paintInfo->context))
+        if (!filter->prepareEffect(m_object, m_paintInfo.context))
             return false;
         m_filter = filter;
 
         // Because we cache the filter contents and do not invalidate on paint
         // invalidation rect changes, we need to paint the entire filter region
         // so elements outside the initial paint (due to scrolling, etc) paint.
-        m_savedPaintRect = m_paintInfo->rect;
-        m_paintInfo->rect = LayoutRect::infiniteIntRect();
+        m_paintInfo.rect = LayoutRect::infiniteIntRect();
     }
     return true;
 }
