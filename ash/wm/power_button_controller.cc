@@ -78,7 +78,7 @@ void PowerButtonController::OnPowerButtonEvent(
     // immediately.
     if (down) {
       if (session_state_delegate->CanLockScreen() &&
-          !session_state_delegate->IsScreenLocked() &&
+          !session_state_delegate->IsUserSessionBlocked() &&
           !controller_->LockRequested()) {
         controller_->StartLockAnimationAndLockImmediately(false);
       } else {
@@ -92,7 +92,7 @@ void PowerButtonController::OnPowerButtonEvent(
         return;
 
       if (session_state_delegate->CanLockScreen() &&
-          !session_state_delegate->IsScreenLocked()) {
+          !session_state_delegate->IsUserSessionBlocked()) {
         if (Shell::GetInstance()->maximize_mode_controller()->
             IsMaximizeModeWindowManagerEnabled() && enable_quick_lock_)
           controller_->StartLockAnimationAndLockImmediately(true);

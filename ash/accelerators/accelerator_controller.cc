@@ -1218,8 +1218,8 @@ void  AcceleratorController::PerformAction(AcceleratorAction action,
     case POWER_PRESSED:  // fallthrough
     case POWER_RELEASED:
       if (!base::SysInfo::IsRunningOnChromeOS()) {
-        // There is no powerd in linux desktop, so call the
-        // PowerButtonController here.
+        // There is no powerd, the Chrome OS power manager, in linux desktop,
+        // so call the PowerButtonController here.
         Shell::GetInstance()->power_button_controller()->
             OnPowerButtonEvent(action == POWER_PRESSED, base::TimeTicks());
       }
