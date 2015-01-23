@@ -19,11 +19,13 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/display.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/test/webview_test_helper.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -73,6 +75,23 @@ void TriggerLidUpdate(const gfx::Vector3dF& lid) {
   update.Set(ui::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
   Shell::GetInstance()->screen_orientation_controller()->OnAccelerometerUpdated(
       update);
+}
+
+// Attaches the NativeView of |web_contents| to |parent| without changing the
+// currently active window.
+void AttachWebContents(content::WebContents* web_contents,
+                       aura::Window* parent) {
+  aura::Window* window = web_contents->GetNativeView();
+  window->Show();
+  parent->AddChild(window);
+}
+
+// Attaches the NativeView of |web_contents| to |parent|, ensures that it is
+// visible, and activates the parent window.
+void AttachAndActivateWebContents(content::WebContents* web_contents,
+                                  aura::Window* parent) {
+  AttachWebContents(web_contents, parent);
+  Shell::GetInstance()->activation_client()->ActivateWindow(parent);
 }
 
 }  // namespace
@@ -143,10 +162,12 @@ void ScreenOrientationControllerTest::SetUp() {
 // Tests that a content::WebContents can lock rotation.
 TEST_F(ScreenOrientationControllerTest, LockOrientation) {
   scoped_ptr<content::WebContents> content(CreateWebContents());
+  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   ASSERT_NE(nullptr, content->GetNativeView());
   ASSERT_EQ(gfx::Display::ROTATE_0, Rotation());
   ASSERT_FALSE(RotationLocked());
 
+  AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
   EXPECT_EQ(gfx::Display::ROTATE_0, Rotation());
   EXPECT_TRUE(RotationLocked());
@@ -155,10 +176,12 @@ TEST_F(ScreenOrientationControllerTest, LockOrientation) {
 // Tests that a content::WebContents can unlock rotation.
 TEST_F(ScreenOrientationControllerTest, Unlock) {
   scoped_ptr<content::WebContents> content(CreateWebContents());
+  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   ASSERT_NE(nullptr, content->GetNativeView());
   ASSERT_EQ(gfx::Display::ROTATE_0, Rotation());
   ASSERT_FALSE(RotationLocked());
 
+  AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
   EXPECT_EQ(gfx::Display::ROTATE_0, Rotation());
   EXPECT_TRUE(RotationLocked());
@@ -171,10 +194,12 @@ TEST_F(ScreenOrientationControllerTest, Unlock) {
 // display after having locked rotation.
 TEST_F(ScreenOrientationControllerTest, OrientationChanges) {
   scoped_ptr<content::WebContents> content(CreateWebContents());
+  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   ASSERT_NE(nullptr, content->GetNativeView());
   ASSERT_EQ(gfx::Display::ROTATE_0, Rotation());
   ASSERT_FALSE(RotationLocked());
 
+  AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockPortrait);
   EXPECT_EQ(gfx::Display::ROTATE_90, Rotation());
   EXPECT_TRUE(RotationLocked());
@@ -183,23 +208,17 @@ TEST_F(ScreenOrientationControllerTest, OrientationChanges) {
   EXPECT_EQ(gfx::Display::ROTATE_0, Rotation());
 }
 
-// Tests that a user initiated rotation lock cannot be unlocked by a
-// content::WebContents.
-TEST_F(ScreenOrientationControllerTest, UserLockRejectsUnlock) {
-  delegate()->SetRotationLocked(true);
-
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  delegate()->Unlock(content.get());
-  EXPECT_TRUE(RotationLocked());
-}
-
 // Tests that orientation can only be set by the first content::WebContents that
 // has set a rotation lock.
 TEST_F(ScreenOrientationControllerTest, SecondContentCannotChangeOrientation) {
   scoped_ptr<content::WebContents> content1(CreateWebContents());
   scoped_ptr<content::WebContents> content2(CreateSecondaryWebContents());
+  scoped_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
+  scoped_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
   ASSERT_NE(content1->GetNativeView(), content2->GetNativeView());
 
+  AttachAndActivateWebContents(content1.get(), focus_window1.get());
+  AttachWebContents(content2.get(), focus_window2.get());
   delegate()->Lock(content1.get(), blink::WebScreenOrientationLockLandscape);
   delegate()->Lock(content2.get(), blink::WebScreenOrientationLockPortrait);
   EXPECT_EQ(gfx::Display::ROTATE_0, Rotation());
@@ -210,25 +229,101 @@ TEST_F(ScreenOrientationControllerTest, SecondContentCannotChangeOrientation) {
 TEST_F(ScreenOrientationControllerTest, SecondContentCannotUnlock) {
   scoped_ptr<content::WebContents> content1(CreateWebContents());
   scoped_ptr<content::WebContents> content2(CreateSecondaryWebContents());
+  scoped_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
+  scoped_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
   ASSERT_NE(content1->GetNativeView(), content2->GetNativeView());
 
+  AttachAndActivateWebContents(content1.get(), focus_window1.get());
+  AttachWebContents(content2.get(), focus_window2.get());
   delegate()->Lock(content1.get(), blink::WebScreenOrientationLockLandscape);
   delegate()->Unlock(content2.get());
   EXPECT_TRUE(RotationLocked());
 }
 
-// Tests that alternate content::WebContents can set a rotation lock after a
-// preexisting lock has been released.
-TEST_F(ScreenOrientationControllerTest, AfterUnlockSecondContentCanLock) {
+// Tests that a rotation lock is applied only while the content::WebContents are
+// a part of the active window.
+TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateLock) {
+  scoped_ptr<content::WebContents> content(CreateWebContents());
+  scoped_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
+  scoped_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
+
+  AttachAndActivateWebContents(content.get(), focus_window1.get());
+  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  ASSERT_TRUE(RotationLocked());
+
+  aura::client::ActivationClient* activation_client =
+      Shell::GetInstance()->activation_client();
+  activation_client->ActivateWindow(focus_window2.get());
+  EXPECT_FALSE(RotationLocked());
+
+  activation_client->ActivateWindow(focus_window1.get());
+  EXPECT_TRUE(RotationLocked());
+}
+
+// Tests that switching between windows with different orientation locks change
+// the orientation.
+TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateOrientation) {
   scoped_ptr<content::WebContents> content1(CreateWebContents());
   scoped_ptr<content::WebContents> content2(CreateSecondaryWebContents());
-  ASSERT_NE(content1->GetNativeView(), content2->GetNativeView());
+  scoped_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
+  scoped_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
+  AttachAndActivateWebContents(content1.get(), focus_window1.get());
+  AttachWebContents(content2.get(), focus_window2.get());
 
   delegate()->Lock(content1.get(), blink::WebScreenOrientationLockLandscape);
-  delegate()->Unlock(content1.get());
   delegate()->Lock(content2.get(), blink::WebScreenOrientationLockPortrait);
-  EXPECT_EQ(gfx::Display::ROTATE_90, Rotation());
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
+
+  aura::client::ActivationClient* activation_client =
+      Shell::GetInstance()->activation_client();
+  activation_client->ActivateWindow(focus_window2.get());
   EXPECT_TRUE(RotationLocked());
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
+
+  activation_client->ActivateWindow(focus_window1.get());
+  EXPECT_TRUE(RotationLocked());
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
+}
+
+// Tests that a rotation lock is removed when the setting window is hidden, and
+// that it is reapplied when the window becomes visible.
+TEST_F(ScreenOrientationControllerTest, VisibilityChangesLock) {
+  scoped_ptr<content::WebContents> content(CreateWebContents());
+  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
+  AttachAndActivateWebContents(content.get(), focus_window.get());
+  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  EXPECT_TRUE(RotationLocked());
+
+  aura::Window* window = content->GetNativeView();
+  window->Hide();
+  EXPECT_FALSE(RotationLocked());
+
+  window->Show();
+  EXPECT_TRUE(RotationLocked());
+}
+
+// Tests that when a window is destroyed that its rotation lock is removed, and
+// window activations no longer change the lock
+TEST_F(ScreenOrientationControllerTest, WindowDestructionRemovesLock) {
+  scoped_ptr<content::WebContents> content(CreateWebContents());
+  scoped_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
+  scoped_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
+
+  AttachAndActivateWebContents(content.get(), focus_window1.get());
+  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  ASSERT_TRUE(RotationLocked());
+
+  focus_window1->RemoveChild(content->GetNativeView());
+  content.reset();
+  EXPECT_FALSE(RotationLocked());
+
+  aura::client::ActivationClient* activation_client =
+      Shell::GetInstance()->activation_client();
+  activation_client->ActivateWindow(focus_window2.get());
+  EXPECT_FALSE(RotationLocked());
+
+  activation_client->ActivateWindow(focus_window1.get());
+  EXPECT_FALSE(RotationLocked());
 }
 
 // Tests that accelerometer readings in each of the screen angles will trigger a
