@@ -6,6 +6,7 @@
   'variables': {
     'android_support_v13_target%':
         '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
+    'cast_build_release': 'internal/build/cast_build_release',
     'chromium_code': 1,
     'chromecast_branding%': 'Chromium',
     'disable_display%': 0,
@@ -260,8 +261,12 @@
             'python',
             '<(version_py_path)',
             '-e', 'VERSION_FULL="<(version_full)"',
-            # Revision is taken from buildbot if available; otherwise, a dev string is used.
-            '-e', 'CAST_BUILD_REVISION="<!(echo ${CAST_BUILD_REVISION:="eng.${USER}.<!(date +%Y%m%d.%H%M%S)"})"',
+            # CAST_BUILD_INCREMENTAL is taken from buildbot if available;
+            # otherwise, a dev string is used.
+            '-e', 'CAST_BUILD_INCREMENTAL="<!(echo ${CAST_BUILD_INCREMENTAL:="<!(date +%Y%m%d.%H%M%S)"})"',
+            # CAST_BUILD_RELEASE is taken from cast_build_release file if exist;
+            # otherwise, a dev string is used.
+            '-e', 'CAST_BUILD_RELEASE="<!(if test -f <(cast_build_release); then cat <(cast_build_release); else echo eng.${USER}; fi)"',
             '-e', 'CAST_IS_DEBUG_BUILD=1 if "<(CONFIGURATION_NAME)" == "Debug" else 0',
             'common/version.h.in',
             '<@(_outputs)',
