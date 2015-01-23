@@ -37,8 +37,7 @@ class SmoothnessController(object):
       category_filter.AddIncludedCategory(c)
     options = tracing_options.TracingOptions()
     options.enable_chrome_trace = True
-    if tab.browser.platform.tracing_controller.IsDisplayTracingSupported():
-      options.enable_platform_display_trace = True
+    options.enable_platform_display_trace = True
     tab.browser.platform.tracing_controller.Start(options, category_filter, 60)
 
   def Start(self, tab):
