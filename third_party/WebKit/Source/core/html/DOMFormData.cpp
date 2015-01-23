@@ -32,11 +32,47 @@
 #include "core/html/DOMFormData.h"
 
 #include "core/fileapi/Blob.h"
+#include "core/fileapi/File.h"
 #include "core/html/HTMLFormElement.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+namespace {
+
+class DOMFormDataIterationSource final : public PairIterable<String, FormDataEntryValue>::IterationSource {
+public:
+    DOMFormDataIterationSource(DOMFormData* formData) : m_formData(formData), m_current(0) { }
+
+    bool next(ScriptState* scriptState, String& key, FormDataEntryValue& value, ExceptionState& exceptionState) override
+    {
+        if (m_current >= m_formData->size())
+            return false;
+
+        const FormDataList::Entry entry = m_formData->getEntry(m_current++);
+        key = entry.name();
+        if (entry.isString())
+            value.setUSVString(entry.string());
+        else if (entry.isFile())
+            value.setFile(entry.file());
+        else
+            ASSERT_NOT_REACHED();
+        return true;
+    }
+
+    void trace(Visitor* visitor) override
+    {
+        visitor->trace(m_formData);
+        PairIterable<String, FormDataEntryValue>::IterationSource::trace(visitor);
+    }
+
+private:
+    const RefPtrWillBeMember<DOMFormData> m_formData;
+    size_t m_current;
+};
+
+} // namespace
 
 DOMFormData::DOMFormData(const WTF::TextEncoding& encoding)
     : FormDataList(encoding)
@@ -64,6 +100,52 @@ void DOMFormData::append(const String& name, const String& value)
 void DOMFormData::append(const String& name, Blob* blob, const String& filename)
 {
     appendBlob(name, blob, filename);
+}
+
+void DOMFormData::get(const String& name, FormDataEntryValue& result)
+{
+    Entry entry = getEntry(name);
+    if (entry.isString())
+        result.setUSVString(entry.string());
+    else if (entry.isFile())
+        result.setFile(entry.file());
+    else
+        ASSERT(entry.isNone());
+}
+
+Vector<FormDataEntryValue> DOMFormData::getAll(const String& name)
+{
+    Vector<FormDataEntryValue> results;
+    WillBeHeapVector<FormDataList::Entry> entries = FormDataList::getAll(name);
+    for (size_t i = 0; i < entries.size(); ++i) {
+        const FormDataList::Entry& entry = entries[i];
+        ASSERT(entry.name() == name);
+        FormDataEntryValue value;
+        if (entry.isString())
+            value.setUSVString(entry.string());
+        else if (entry.isFile())
+            value.setFile(entry.file());
+        else
+            ASSERT_NOT_REACHED();
+        results.append(value);
+    }
+    ASSERT(results.size() == entries.size());
+    return results;
+}
+
+void DOMFormData::set(const String& name, const String& value)
+{
+    setData(name, value);
+}
+
+void DOMFormData::set(const String& name, Blob* blob, const String& filename)
+{
+    setBlob(name, blob, filename);
+}
+
+PairIterable<String, FormDataEntryValue>::IterationSource* DOMFormData::startIteration(ScriptState*, ExceptionState&)
+{
+    return new DOMFormDataIterationSource(this);
 }
 
 } // namespace blink

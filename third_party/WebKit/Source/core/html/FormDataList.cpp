@@ -24,6 +24,7 @@
 #include "core/fileapi/File.h"
 #include "platform/network/FormDataBuilder.h"
 #include "platform/text/LineEnding.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 
@@ -36,8 +37,7 @@ FormDataList::FormDataList(const WTF::TextEncoding& c)
 
 void FormDataList::appendString(const String& string)
 {
-    CString encodedString = m_encoding.encode(string, WTF::EntitiesForUnencodables);
-    m_items.append(normalizeLineEndingsToCRLF(encodedString));
+    m_items.append(encodeAndNormalize(string));
 }
 
 void FormDataList::appendString(const CString& string)
@@ -48,6 +48,146 @@ void FormDataList::appendString(const CString& string)
 void FormDataList::appendBlob(Blob* blob, const String& filename)
 {
     m_items.append(Item(blob, filename));
+}
+
+void FormDataList::deleteEntry(const String& key)
+{
+    const CString keyData = encodeAndNormalize(key);
+    ASSERT(!(m_items.size() % 2));
+    size_t i = 0;
+    while (i < m_items.size()) {
+        if (m_items[i].data() == keyData) {
+            m_items.remove(i, 2);
+        } else {
+            i += 2;
+        }
+    }
+    ASSERT(!(m_items.size() % 2));
+    return;
+}
+
+FormDataList::Entry FormDataList::getEntry(const String& key) const
+{
+    const CString keyData = encodeAndNormalize(key);
+    const FormDataListItems& items = this->items();
+    size_t formDataListSize = items.size();
+    ASSERT(!(formDataListSize % 2));
+    for (size_t i = 0; i < formDataListSize; i += 2) {
+        const FormDataList::Item& key = items[i];
+        if (key.data() != keyData)
+            continue;
+        const FormDataList::Item& value = items[i + 1];
+        return itemsToEntry(key, value);
+    }
+    return Entry();
+}
+
+FormDataList::Entry FormDataList::getEntry(size_t index) const
+{
+    const FormDataListItems& items = this->items();
+    size_t formDataListSize = items.size();
+    ASSERT(!(formDataListSize % 2));
+    if (index >= formDataListSize / 2)
+        return Entry();
+    const FormDataList::Item& key = items[index * 2];
+    const FormDataList::Item& value = items[index * 2 + 1];
+    return itemsToEntry(key, value);
+}
+
+WillBeHeapVector<FormDataList::Entry> FormDataList::getAll(const String& key) const
+{
+    WillBeHeapVector<FormDataList::Entry> matches;
+
+    const CString keyData = encodeAndNormalize(key);
+    const FormDataListItems& items = this->items();
+    size_t formDataListSize = items.size();
+    ASSERT(!(formDataListSize % 2));
+    for (size_t i = 0; i < formDataListSize; i += 2) {
+        const FormDataList::Item& key = items[i];
+        if (key.data() != keyData)
+            continue;
+        const FormDataList::Item& value = items[i + 1];
+        matches.append(itemsToEntry(key, value));
+    }
+
+    return matches;
+}
+
+FormDataList::Entry FormDataList::itemsToEntry(const FormDataList::Item& key, const FormDataList::Item& value) const
+{
+    const CString nameData = key.data();
+    const String name = m_encoding.decode(nameData.data(), nameData.length());
+
+    if (!value.blob()) {
+        const CString valueData = value.data();
+        return Entry(name, m_encoding.decode(valueData.data(), valueData.length()));
+    }
+
+    // The spec uses the passed filename when inserting entries into the list.
+    // Here, we apply the filename (if present) as an override when extracting
+    // items.
+    // FIXME: Consider applying the name during insertion.
+
+    if (value.blob()->isFile()) {
+        File* file = toFile(value.blob());
+        if (value.filename().isNull())
+            return Entry(name, file);
+        return Entry(name, file->clone(value.filename()));
+    }
+
+    String filename = value.filename();
+    if (filename.isNull())
+        filename = "blob";
+    return Entry(name, File::create(filename, currentTime(), value.blob()->blobDataHandle()));
+}
+
+bool FormDataList::hasEntry(const String& key) const
+{
+    const CString keyData = encodeAndNormalize(key);
+    const FormDataListItems& items = this->items();
+    size_t formDataListSize = items.size();
+    ASSERT(!(formDataListSize % 2));
+    for (size_t i = 0; i < formDataListSize; i += 2) {
+        const FormDataList::Item& key = items[i];
+        if (key.data() == keyData)
+            return true;
+    }
+    return false;
+}
+
+void FormDataList::setBlob(const String& key, Blob* blob, const String& filename)
+{
+    setEntry(key, Item(blob, filename));
+}
+
+void FormDataList::setData(const String& key, const String& value)
+{
+    setEntry(key, encodeAndNormalize(value));
+}
+
+void FormDataList::setEntry(const String& key, const Item& item)
+{
+    const CString keyData = encodeAndNormalize(key);
+    ASSERT(!(m_items.size() % 2));
+    bool found = false;
+    size_t i = 0;
+    while (i < m_items.size()) {
+        if (m_items[i].data() != keyData) {
+            i += 2;
+        } else if (found) {
+            m_items.remove(i, 2);
+        } else {
+            found = true;
+            m_items[i + 1] = item;
+            i += 2;
+        }
+    }
+    if (!found) {
+        m_items.append(keyData);
+        m_items.append(item);
+    }
+    ASSERT(!(m_items.size() % 2));
+    return;
 }
 
 PassRefPtr<FormData> FormDataList::createFormData(FormData::EncodingType encodingType)
@@ -142,9 +282,21 @@ void FormDataList::appendKeyValuePairItemsTo(FormData* formData, const WTF::Text
     formData->appendData(encodedData.data(), encodedData.size());
 }
 
+CString FormDataList::encodeAndNormalize(const String& string) const
+{
+    CString encodedString = m_encoding.encode(string, WTF::EntitiesForUnencodables);
+    return normalizeLineEndingsToCRLF(encodedString);
+}
+
 void FormDataList::trace(Visitor* visitor)
 {
     visitor->trace(m_items);
+}
+
+
+void FormDataList::Entry::trace(Visitor* visitor)
+{
+    visitor->trace(m_file);
 }
 
 void FormDataList::Item::trace(Visitor* visitor)
@@ -152,4 +304,4 @@ void FormDataList::Item::trace(Visitor* visitor)
     visitor->trace(m_blob);
 }
 
-} // namespace
+} // namespace blink

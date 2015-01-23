@@ -31,6 +31,9 @@
 #ifndef DOMFormData_h
 #define DOMFormData_h
 
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/UnionTypesCore.h"
+#include "core/dom/Iterable.h"
 #include "core/html/FormDataList.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -46,8 +49,12 @@ namespace blink {
 class Blob;
 class HTMLFormElement;
 
-class DOMFormData final : public FormDataList, public ScriptWrappable {
+// Typedef from FormData.idl:
+typedef FileOrUSVString FormDataEntryValue;
+
+class DOMFormData final : public FormDataList, public ScriptWrappable, public PairIterable<String, FormDataEntryValue> {
     DEFINE_WRAPPERTYPEINFO();
+
 public:
     static PassRefPtrWillBeRawPtr<DOMFormData> create(HTMLFormElement* form = 0)
     {
@@ -59,12 +66,19 @@ public:
         return adoptRefWillBeNoop(new DOMFormData(encoding));
     }
 
+    // FormData interface.
     void append(const String& name, const String& value);
     void append(const String& name, Blob*, const String& filename = String());
+    void get(const String& name, FormDataEntryValue& result);
+    Vector<FormDataEntryValue> getAll(const String& name);
+    void set(const String& name, const String& value);
+    void set(const String& name, Blob*, const String& filename = String());
 
 private:
     explicit DOMFormData(const WTF::TextEncoding&);
     explicit DOMFormData(HTMLFormElement*);
+
+    IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 };
 
 } // namespace blink

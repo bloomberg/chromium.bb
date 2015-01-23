@@ -59,6 +59,7 @@ ExperimentalContentSecurityPolicyFeatures status=experimental
 FastMobileScrolling
 FileAPIBlobClose status=experimental
 FileSystem status=stable
+FormDataNewMethods status=experimental
 FullscreenUnprefixed status=test
 Geofencing status=experimental
 GeometryInterfaces status=test

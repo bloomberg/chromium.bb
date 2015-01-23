@@ -104,6 +104,8 @@ public:
         return new File(path, name, policy, File::IsNotUserVisible);
     }
 
+    File* clone(const String& name = String()) const;
+
     virtual unsigned long long size() const override;
     virtual Blob* slice(long long start, long long end, const String& contentType, ExceptionState&) const override;
     virtual void close(ExecutionContext*, ExceptionState&) override;
@@ -145,6 +147,7 @@ private:
     File(const String& name, double modificationTime, PassRefPtr<BlobDataHandle>);
     File(const String& name, const FileMetadata&, UserVisibility);
     File(const KURL& fileSystemURL, const FileMetadata&, UserVisibility);
+    File(const File&);
 
     void invalidateSnapshotMetadata() { m_snapshotSize = -1; }
 

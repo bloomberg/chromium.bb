@@ -159,6 +159,27 @@ File::File(const KURL& fileSystemURL, const FileMetadata& metadata, UserVisibili
 {
 }
 
+File::File(const File& other)
+    : Blob(other.blobDataHandle())
+    , m_hasBackingFile(other.m_hasBackingFile)
+    , m_userVisibility(other.m_userVisibility)
+    , m_path(other.m_path)
+    , m_name(other.m_name)
+    , m_fileSystemURL(other.m_fileSystemURL)
+    , m_snapshotSize(other.m_snapshotSize)
+    , m_snapshotModificationTime(other.m_snapshotModificationTime)
+    , m_relativePath(other.m_relativePath)
+{
+}
+
+File* File::clone(const String& name) const
+{
+    File* file = new File(*this);
+    if (!name.isNull())
+        file->m_name = name;
+    return file;
+}
+
 double File::lastModifiedMS() const
 {
     if (hasValidSnapshotMetadata() && isValidFileTime(m_snapshotModificationTime))

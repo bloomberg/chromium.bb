@@ -710,6 +710,14 @@ interface FontFace
 interface FormData
     method append
     method constructor
+    method delete
+    method entries
+    method get
+    method getAll
+    method has
+    method keys
+    method set
+    method values
 interface Function
     attribute arguments
     attribute caller

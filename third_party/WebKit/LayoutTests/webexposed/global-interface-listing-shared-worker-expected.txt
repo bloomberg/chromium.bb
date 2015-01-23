@@ -229,6 +229,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface FormData
 [Worker]     method append
 [Worker]     method constructor
+[Worker]     method delete
+[Worker]     method entries
+[Worker]     method get
+[Worker]     method getAll
+[Worker]     method has
+[Worker]     method keys
+[Worker]     method set
+[Worker]     method values
 [Worker] interface Function
 [Worker]     attribute arguments
 [Worker]     attribute caller
