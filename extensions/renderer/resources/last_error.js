@@ -19,12 +19,12 @@ var GetGlobal = requireNative('sendRequest').GetGlobal;
  * optional |stack|.
  */
 function set(name, message, stack, targetChrome) {
-  var errorMessage = name + ': ' + message;
-  if (stack != null && stack != '')
-    errorMessage += '\n' + stack;
-
-  if (!targetChrome)
+  if (!targetChrome) {
+    var errorMessage = name + ': ' + message;
+    if (stack != null && stack != '')
+      errorMessage += '\n' + stack;
     throw new Error('No chrome object to set error: ' + errorMessage);
+  }
   clear(targetChrome);  // in case somebody has set a sneaky getter/setter
 
   var errorObject = { message: message };
@@ -113,8 +113,25 @@ function run(name, message, stack, callback, args) {
   try {
     $Function.apply(callback, undefined, args);
   } finally {
+    reportIfUnchecked(name, targetChrome, stack);
     clear(targetChrome);
   }
+}
+
+/**
+ * Checks whether chrome.runtime.lastError has been accessed if set.
+ * If it was set but not accessed, the error is reported to the console.
+ *
+ * @param {string=} name - name of API.
+ * @param {Object} targetChrome - the Chrome object to check.
+ * @param {string=} stack - Stack trace of the call up to the error.
+ */
+function reportIfUnchecked(name, targetChrome, stack) {
+  if (hasAccessed(targetChrome) || !hasError(targetChrome))
+    return;
+  var message = targetChrome.runtime.lastError.message;
+  console.error("Unchecked runtime.lastError while running " +
+      (name || "unknown") + ": " + message + (stack ? "\n" + stack : ""));
 }
 
 exports.clear = clear;
@@ -122,3 +139,4 @@ exports.hasAccessed = hasAccessed;
 exports.hasError = hasError;
 exports.set = set;
 exports.run = run;
+exports.reportIfUnchecked = reportIfUnchecked;

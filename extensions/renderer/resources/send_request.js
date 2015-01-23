@@ -73,15 +73,10 @@ function handleResponse(requestId, name, success, responseList, error) {
       safeCallbackApply(name, request, request.callback, responseList);
     }
 
-    if (error &&
-        !lastError.hasAccessed(chrome) &&
-        !lastError.hasAccessed(callerChrome)) {
-      // The native call caused an error, but the developer didn't check
-      // runtime.lastError.
-      // Notify the developer of the error via the (error) console.
-      console.error("Unchecked runtime.lastError while running " +
-          (name || "unknown") + ": " + error +
-          (request.stack ? "\n" + request.stack : ""));
+    if (error && !lastError.hasAccessed(chrome)) {
+      // The native call caused an error, but the developer might not have
+      // checked runtime.lastError.
+      lastError.reportIfUnchecked(name, callerChrome, request.stack);
     }
   } finally {
     delete requests[requestId];
@@ -120,12 +115,14 @@ function prepareRequest(args, argSchemas) {
 // - forIOThread: true if this function should be handled on the browser IO
 //   thread.
 // - preserveNullInObjects: true if it is safe for null to be in objects.
+// - stack: An optional string that contains the stack trace, to be displayed
+//   to the user if an error occurs.
 function sendRequest(functionName, args, argSchemas, optArgs) {
   calledSendRequest = true;
   if (!optArgs)
     optArgs = {};
   var request = prepareRequest(args, argSchemas);
-  request.stack = exceptionHandler.getExtensionStackTrace();
+  request.stack = optArgs.stack || exceptionHandler.getExtensionStackTrace();
   if (optArgs.customCallback) {
     request.customCallback = optArgs.customCallback;
   }
