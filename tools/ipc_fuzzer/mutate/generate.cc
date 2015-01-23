@@ -1143,6 +1143,68 @@ struct GenerateTraits<ppapi::SocketOptionData> {
   }
 };
 
+template <>
+struct GenerateTraits<remoting::ScreenResolution> {
+  static bool Generate(remoting::ScreenResolution* p, Generator* generator) {
+    webrtc::DesktopSize size;
+    webrtc::DesktopVector vector;
+    if (!GenerateParam(&size, generator))
+      return false;
+    if (!GenerateParam(&vector, generator))
+      return false;
+    *p = remoting::ScreenResolution(size, vector);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<webrtc::DesktopSize> {
+  static bool Generate(webrtc::DesktopSize* p, Generator* generator) {
+    int32_t width;
+    int32_t height;
+    if (!GenerateParam(&width, generator))
+      return false;
+    if (!GenerateParam(&height, generator))
+      return false;
+    *p = webrtc::DesktopSize(width, height);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<webrtc::DesktopVector> {
+  static bool Generate(webrtc::DesktopVector* p, Generator* generator) {
+    int32_t x;
+    int32_t y;
+    if (!GenerateParam(&x, generator))
+      return false;
+    if (!GenerateParam(&y, generator))
+      return false;
+    p->set(x, y);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<webrtc::DesktopRect> {
+  static bool Generate(webrtc::DesktopRect* p, Generator* generator) {
+    int32_t left;
+    int32_t top;
+    int32_t right;
+    int32_t bottom;
+    if (!GenerateParam(&left, generator))
+      return false;
+    if (!GenerateParam(&top, generator))
+      return false;
+    if (!GenerateParam(&right, generator))
+      return false;
+    if (!GenerateParam(&bottom, generator))
+      return false;
+    *p = webrtc::DesktopRect::MakeLTRB(left, top, right, bottom);
+    return true;
+  }
+};
+
 // Redefine macros to generate generating from traits declarations.
 // STRUCT declarations cause corresponding STRUCT_TRAITS declarations to occur.
 #undef IPC_STRUCT_BEGIN
