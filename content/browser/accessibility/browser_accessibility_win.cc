@@ -382,7 +382,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accDefaultAction(VARIANT var_id,
     return E_INVALIDARG;
 
   return target->GetStringAttributeAsBstr(
-      ui::AX_ATTR_SHORTCUT, def_action);
+      ui::AX_ATTR_ACTION, def_action);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accDescription(VARIANT var_id,
