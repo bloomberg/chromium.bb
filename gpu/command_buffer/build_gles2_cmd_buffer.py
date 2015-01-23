@@ -2441,7 +2441,6 @@ _FUNCTION_INFO = {
     'type': 'PUTSTR',
     'decoder_func': 'DoShaderSource',
     'data_transfer_methods': ['bucket'],
-    'client_test': False,
     'cmd_args':
         'GLuint shader, const char** str',
     'pepper_args':
@@ -6507,6 +6506,245 @@ class PUTSTRHandler(ArrayArgTypeHandler):
     file.Write("}\n")
     file.Write("\n")
 
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    code = """
+TEST_F(GLES2ImplementationTest, %(name)s) {
+  const uint32 kBucketId = GLES2Implementation::kResultBucketId;
+  const char* kString1 = "happy";
+  const char* kString2 = "ending";
+  const size_t kString1Size = ::strlen(kString1) + 1;
+  const size_t kString2Size = ::strlen(kString2) + 1;
+  const size_t kHeaderSize = sizeof(GLint) * 3;
+  const size_t kSourceSize = kHeaderSize + kString1Size + kString2Size;
+  const size_t kPaddedHeaderSize =
+      transfer_buffer_->RoundToAlignment(kHeaderSize);
+  const size_t kPaddedString1Size =
+      transfer_buffer_->RoundToAlignment(kString1Size);
+  const size_t kPaddedString2Size =
+      transfer_buffer_->RoundToAlignment(kString2Size);
+  struct Cmds {
+    cmd::SetBucketSize set_bucket_size;
+    cmd::SetBucketData set_bucket_header;
+    cmd::SetToken set_token1;
+    cmd::SetBucketData set_bucket_data1;
+    cmd::SetToken set_token2;
+    cmd::SetBucketData set_bucket_data2;
+    cmd::SetToken set_token3;
+    cmds::ShaderSourceBucket shader_source_bucket;
+    cmd::SetBucketSize clear_bucket_size;
+  };
+
+  ExpectedMemoryInfo mem0 = GetExpectedMemory(kPaddedHeaderSize);
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(kPaddedString1Size);
+  ExpectedMemoryInfo mem2 = GetExpectedMemory(kPaddedString2Size);
+
+  Cmds expected;
+  expected.set_bucket_size.Init(kBucketId, kSourceSize);
+  expected.set_bucket_header.Init(
+      kBucketId, 0, kHeaderSize, mem0.id, mem0.offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.set_bucket_data1.Init(
+      kBucketId, kHeaderSize, kString1Size, mem1.id, mem1.offset);
+  expected.set_token2.Init(GetNextToken());
+  expected.set_bucket_data2.Init(
+      kBucketId, kHeaderSize + kString1Size, kString2Size, mem2.id,
+      mem2.offset);
+  expected.set_token3.Init(GetNextToken());
+  expected.shader_source_bucket.Init(%(cmd_args)s, kBucketId);
+  expected.clear_bucket_size.Init(kBucketId, 0);
+  const char* kStrings[] = { kString1, kString2 };
+  gl_->%(name)s(%(gl_args)s);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+"""
+    gl_args = []
+    cmd_args = []
+    for arg in func.GetOriginalArgs():
+      if arg == self.__GetDataArg(func):
+        gl_args.append('kStrings')
+      elif arg == self.__GetLengthArg(func):
+        gl_args.append('NULL')
+      elif arg.name == 'count':
+        gl_args.append('2')
+      else:
+        gl_args.append(arg.GetValidClientSideArg(func))
+        cmd_args.append(arg.GetValidClientSideArg(func))
+    file.Write(code % {
+        'name': func.name,
+        'gl_args': ", ".join(gl_args),
+        'cmd_args': ", ".join(cmd_args),
+      })
+
+    if self.__GetLengthArg(func) == None:
+      return
+    code = """
+TEST_F(GLES2ImplementationTest, %(name)sWithLength) {
+  const uint32 kBucketId = GLES2Implementation::kResultBucketId;
+  const char* kString = "foobar******";
+  const size_t kStringSize = 6;  // We only need "foobar".
+  const size_t kHeaderSize = sizeof(GLint) * 2;
+  const size_t kSourceSize = kHeaderSize + kStringSize + 1;
+  const size_t kPaddedHeaderSize =
+      transfer_buffer_->RoundToAlignment(kHeaderSize);
+  const size_t kPaddedStringSize =
+      transfer_buffer_->RoundToAlignment(kStringSize + 1);
+  struct Cmds {
+    cmd::SetBucketSize set_bucket_size;
+    cmd::SetBucketData set_bucket_header;
+    cmd::SetToken set_token1;
+    cmd::SetBucketData set_bucket_data;
+    cmd::SetToken set_token2;
+    cmds::ShaderSourceBucket shader_source_bucket;
+    cmd::SetBucketSize clear_bucket_size;
+  };
+
+  ExpectedMemoryInfo mem0 = GetExpectedMemory(kPaddedHeaderSize);
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(kPaddedStringSize);
+
+  Cmds expected;
+  expected.set_bucket_size.Init(kBucketId, kSourceSize);
+  expected.set_bucket_header.Init(
+      kBucketId, 0, kHeaderSize, mem0.id, mem0.offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.set_bucket_data.Init(
+      kBucketId, kHeaderSize, kStringSize + 1, mem1.id, mem1.offset);
+  expected.set_token2.Init(GetNextToken());
+  expected.shader_source_bucket.Init(%(cmd_args)s, kBucketId);
+  expected.clear_bucket_size.Init(kBucketId, 0);
+  const char* kStrings[] = { kString };
+  const GLint kLength[] = { kStringSize };
+  gl_->%(name)s(%(gl_args)s);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+"""
+    gl_args = []
+    for arg in func.GetOriginalArgs():
+      if arg == self.__GetDataArg(func):
+        gl_args.append('kStrings')
+      elif arg == self.__GetLengthArg(func):
+        gl_args.append('kLength')
+      elif arg.name == 'count':
+        gl_args.append('1')
+      else:
+        gl_args.append(arg.GetValidClientSideArg(func))
+    file.Write(code % {
+        'name': func.name,
+        'gl_args': ", ".join(gl_args),
+        'cmd_args': ", ".join(cmd_args),
+      })
+
+  def WriteBucketServiceUnitTest(self, func, file, *extras):
+    """Overrriden from TypeHandler."""
+    cmd_args = []
+    cmd_args_with_invalid_id = []
+    for index, arg in enumerate(func.GetOriginalArgs()):
+      if (arg == self.__GetLengthArg(func) or
+          arg == self.__GetDataArg(func) or arg.name == 'count'):
+        continue
+      if index == 0:  # Resource ID arg
+        cmd_args.append(arg.GetValidArg(func))
+        cmd_args_with_invalid_id.append('kInvalidClientId')
+      else:
+        cmd_args.append(arg.GetValidArg(func))
+        cmd_args_with_invalid_id.append(arg.GetValidArg(func))
+
+    test = """
+TEST_P(%(test_name)s, %(name)sValidArgs) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = { kSource0 };
+  const char kValidStrEnd = 0;
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
+  cmds::%(name)s cmd;
+  cmd.Init(%(cmd_args)s, kBucketId);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));"""
+    if func.IsUnsafe():
+      test += """
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+"""
+    test += """
+}
+"""
+    self.WriteValidUnitTest(func, file, test, {
+        'cmd_args': ", ".join(cmd_args),
+      }, *extras)
+
+    test = """
+TEST_P(%(test_name)s, %(name)sInvalidArgs) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = { kSource0 };
+  const char kValidStrEnd = 0;
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  cmds::%(name)s cmd;
+  // Test no bucket.
+  cmd.Init(%(cmd_args)s, kBucketId);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  // Test invalid client.
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
+  cmd.Init(%(cmd_args_with_invalid_id)s, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+"""
+    self.WriteValidUnitTest(func, file, test, {
+        'cmd_args': ", ".join(cmd_args),
+        'cmd_args_with_invalid_id': ", ".join(cmd_args_with_invalid_id),
+      }, *extras)
+
+    test = """
+TEST_P(%(test_name)s, %(name)sInvalidHeader) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = { kSource0 };
+  const char kValidStrEnd = 0;
+  const GLsizei kCount = static_cast<GLsizei>(arraysize(kSource));
+  const GLsizei kTests[] = {
+      kCount,
+      0,
+      std::numeric_limits<GLsizei>::max(),
+      -1,
+      kCount,
+  };
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  for (size_t ii = 0; ii < arraysize(kTests); ++ii) {
+    SetBucketAsCStrings(kBucketId, 1, kSource, kTests[ii], kValidStrEnd);
+    cmds::%(name)s cmd;
+    cmd.Init(%(cmd_args)s, kBucketId);
+    if (kTests[ii] == kCount) {
+      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    } else {
+      EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+    }
+  }
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+"""
+    self.WriteValidUnitTest(func, file, test, {
+        'cmd_args': ", ".join(cmd_args),
+      }, *extras)
+
+    test = """
+TEST_P(%(test_name)s, %(name)sInvalidStringEnding) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = { kSource0 };
+  const char kInvalidStrEnd = '*';
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kInvalidStrEnd);
+  cmds::%(name)s cmd;
+  cmd.Init(%(cmd_args)s, kBucketId);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+"""
+    self.WriteValidUnitTest(func, file, test, {
+        'cmd_args': ", ".join(cmd_args),
+      }, *extras)
+
 
 class PUTXnHandler(ArrayArgTypeHandler):
   """Handler for glUniform?f functions."""
@@ -7539,39 +7777,6 @@ class ImmediatePointerArgument(Argument):
     return "static_cast<const void*>(%s)" % self.name
 
 
-class BucketPointerArgument(Argument):
-  """A class that represents an bucket argument to a function."""
-
-  def __init__(self, name, type):
-    Argument.__init__(self, name, type)
-
-  def AddCmdArgs(self, args):
-    """Overridden from Argument."""
-    pass
-
-  def WriteGetCode(self, file):
-    """Overridden from Argument."""
-    file.Write(
-      "  %s %s = bucket->GetData(0, data_size);\n" %
-      (self.type, self.name))
-
-  def WriteValidationCode(self, file, func):
-    """Overridden from Argument."""
-    pass
-
-  def GetImmediateVersion(self):
-    """Overridden from Argument."""
-    return None
-
-  def WriteDestinationInitalizationValidation(self, file, func):
-    """Overridden from Argument."""
-    self.WriteDestinationInitalizationValidatationIfNeeded(file, func)
-
-  def GetLogArg(self):
-    """Overridden from Argument."""
-    return "static_cast<const void*>(%s)" % self.name
-
-
 class PointerArgument(Argument):
   """A class that represents a pointer argument to a function."""
 
@@ -7579,11 +7784,11 @@ class PointerArgument(Argument):
     Argument.__init__(self, name, type)
 
   def IsPointer(self):
-    """Returns true if argument is a pointer."""
+    """Overridden from Argument."""
     return True
 
   def IsPointer2D(self):
-    """Returns true if argument is a 2D pointer."""
+    """Overridden from Argument."""
     return self.type.count('*') == 2
 
   def GetPointedType(self):
@@ -7661,11 +7866,52 @@ class PointerArgument(Argument):
     self.WriteDestinationInitalizationValidatationIfNeeded(file, func)
 
 
+class BucketPointerArgument(PointerArgument):
+  """A class that represents an bucket argument to a function."""
+
+  def __init__(self, name, type):
+    Argument.__init__(self, name, type)
+
+  def AddCmdArgs(self, args):
+    """Overridden from Argument."""
+    pass
+
+  def WriteGetCode(self, file):
+    """Overridden from Argument."""
+    file.Write(
+      "  %s %s = bucket->GetData(0, data_size);\n" %
+      (self.type, self.name))
+
+  def WriteValidationCode(self, file, func):
+    """Overridden from Argument."""
+    pass
+
+  def GetImmediateVersion(self):
+    """Overridden from Argument."""
+    return None
+
+  def WriteDestinationInitalizationValidation(self, file, func):
+    """Overridden from Argument."""
+    self.WriteDestinationInitalizationValidatationIfNeeded(file, func)
+
+  def GetLogArg(self):
+    """Overridden from Argument."""
+    return "static_cast<const void*>(%s)" % self.name
+
+
 class InputStringBucketArgument(Argument):
   """A string input argument where the string is passed in a bucket."""
 
   def __init__(self, name, type):
     Argument.__init__(self, name + "_bucket_id", "uint32_t")
+
+  def IsPointer(self):
+    """Overridden from Argument."""
+    return True
+
+  def IsPointer2D(self):
+    """Overridden from Argument."""
+    return False
 
 
 class InputStringArrayBucketArgument(Argument):
@@ -7731,6 +7977,14 @@ class InputStringArrayBucketArgument(Argument):
 
   def GetValidGLArg(self, func):
     return "_"
+
+  def IsPointer(self):
+    """Overridden from Argument."""
+    return True
+
+  def IsPointer2D(self):
+    """Overridden from Argument."""
+    return True
 
 
 class ResourceIdArgument(Argument):

@@ -540,7 +540,70 @@ TEST_P(GLES2DecoderTest2, ScissorInvalidArgs3_0) {
 }
 // TODO(gman): ShaderBinary
 
-// TODO(gman): ShaderSourceBucket
+TEST_P(GLES2DecoderTest2, ShaderSourceBucketValidArgs) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = {kSource0};
+  const char kValidStrEnd = 0;
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
+  cmds::ShaderSourceBucket cmd;
+  cmd.Init(client_shader_id_, kBucketId);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidArgs) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = {kSource0};
+  const char kValidStrEnd = 0;
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  cmds::ShaderSourceBucket cmd;
+  // Test no bucket.
+  cmd.Init(client_shader_id_, kBucketId);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  // Test invalid client.
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
+  cmd.Init(kInvalidClientId, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidHeader) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = {kSource0};
+  const char kValidStrEnd = 0;
+  const GLsizei kCount = static_cast<GLsizei>(arraysize(kSource));
+  const GLsizei kTests[] = {
+      kCount, 0, std::numeric_limits<GLsizei>::max(), -1, kCount,
+  };
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  for (size_t ii = 0; ii < arraysize(kTests); ++ii) {
+    SetBucketAsCStrings(kBucketId, 1, kSource, kTests[ii], kValidStrEnd);
+    cmds::ShaderSourceBucket cmd;
+    cmd.Init(client_shader_id_, kBucketId);
+    if (kTests[ii] == kCount) {
+      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    } else {
+      EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+    }
+  }
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidStringEnding) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = {kSource0};
+  const char kInvalidStrEnd = '*';
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kInvalidStrEnd);
+  cmds::ShaderSourceBucket cmd;
+  cmd.Init(client_shader_id_, kBucketId);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 
 TEST_P(GLES2DecoderTest2, StencilFuncValidArgs) {
   EXPECT_CALL(*gl_, StencilFunc(GL_NEVER, 2, 3));

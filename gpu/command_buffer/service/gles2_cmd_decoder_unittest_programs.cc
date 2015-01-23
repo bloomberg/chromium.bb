@@ -711,28 +711,19 @@ TEST_P(GLES2DecoderTest, ShaderSourceBucketAndGetShaderSourceValidArgs) {
                       kSource0, bucket->size()));
 }
 
-TEST_P(GLES2DecoderTest, ShaderSourceBucketInvalidArgs) {
+#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
+TEST_P(GLES2DecoderTest, ShaderSourceBucketWithProgramId) {
   const uint32 kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = { kSource0 };
   const char kValidStrEnd = 0;
-  ShaderSourceBucket cmd;
-  // Test no bucket.
-  cmd.Init(client_shader_id_, kBucketId);
-  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
-  // Test invalid client.
   SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
-  cmd.Init(kInvalidClientId, kBucketId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
-  SetBucketAsCStrings(kBucketId, 1, kSource);
-  cmd.Init(
-      client_program_id_, kBucketId);
+  ShaderSourceBucket cmd;
+  cmd.Init(client_program_id_, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
-#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
 }
+#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
 
 TEST_P(GLES2DecoderTest, ShaderSourceStripComments) {
   const uint32 kInBucketId = 123;
@@ -743,45 +734,6 @@ TEST_P(GLES2DecoderTest, ShaderSourceStripComments) {
   ShaderSourceBucket cmd;
   cmd.Init(client_shader_id_, kInBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest, ShaderSourceInvalidHeader) {
-  const uint32 kInBucketId = 123;
-  const char kSource0[] = "hello";
-  const char* kSource[] = { kSource0 };
-  const char kValidStrEnd = 0;
-  const GLsizei kCount = 1;
-  const GLsizei kTests[] = {
-      kCount + 1,
-      0,
-      std::numeric_limits<GLsizei>::max(),
-      -1,
-      kCount
-  };
-  size_t kTestCount = 5;
-  for (size_t ii = 0; ii < kTestCount; ++ii) {
-    SetBucketAsCStrings(kInBucketId, 1, kSource, kTests[ii], kValidStrEnd);
-    ShaderSourceBucket cmd;
-    cmd.Init(client_shader_id_, kInBucketId);
-    if (kTests[ii] == kCount) {
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    } else {
-      EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
-    }
-  }
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest, ShaderSourceInvalidStringEnding) {
-  const uint32 kInBucketId = 123;
-  const char kSource0[] = "hello";
-  const char* kSource[] = { kSource0 };
-  const char kInvalidStrEnd = '*';
-  SetBucketAsCStrings(kInBucketId, 1, kSource, 1, kInvalidStrEnd);
-  ShaderSourceBucket cmd;
-  cmd.Init(client_shader_id_, kInBucketId);
-  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
