@@ -29,10 +29,10 @@ remoting.identity = null;
 remoting.Identity = function(consentCallback) {
   /** @private */
   this.consentCallback_ = consentCallback;
-  /** @type {?string} @private */
-  this.email_ = null;
-  /** @type {?string} @private */
-  this.fullName_ = null;
+  /** @type {string} @private */
+  this.email_ = '';
+  /** @type {string} @private */
+  this.fullName_ = '';
   /** @type {Array.<remoting.Identity.Callbacks>} */
   this.pendingCallbacks_ = [];
 };
@@ -110,8 +110,14 @@ remoting.Identity.prototype.removeCachedAuthToken = function(onDone) {
  * @return {void} Nothing.
  */
 remoting.Identity.prototype.getUserInfo = function(onOk, onError) {
+  if (this.isAuthenticated()) {
+    onOk(this.email_, this.fullName_);
+    return;
+  }
+
   /** @type {remoting.Identity} */
   var that = this;
+
   /**
    * @param {string} email
    * @param {string} name
@@ -126,6 +132,21 @@ remoting.Identity.prototype.getUserInfo = function(onOk, onError) {
       remoting.oauth2Api.getUserInfo.bind(
           remoting.oauth2Api, onResponse, onError),
       onError);
+};
+
+/**
+ * Get the user's email address.
+ *
+ * @param {function(string):void} onOk Callback invoked when the email
+ *     address is available.
+ * @param {function(remoting.Error):void} onError Callback invoked if an
+ *     error occurs.
+ * @return {void} Nothing.
+ */
+remoting.Identity.prototype.getEmail = function(onOk, onError) {
+  this.getUserInfo(function(email, name) {
+    onOk(email);
+  }, onError);
 };
 
 /**
@@ -221,5 +242,5 @@ remoting.Identity.Callbacks = function(onOk, onError) {
  * @return {boolean}
  */
 remoting.Identity.prototype.isAuthenticated = function() {
-  return remoting.identity.email_ != null;
+  return remoting.identity.email_ !== '';
 };
