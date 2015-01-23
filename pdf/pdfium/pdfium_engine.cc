@@ -1052,6 +1052,10 @@ void PDFiumEngine::Paint(const pp::Rect& rect,
                          pp::ImageData* image_data,
                          std::vector<pp::Rect>* ready,
                          std::vector<pp::Rect>* pending) {
+  DCHECK(image_data);
+  DCHECK(ready);
+  DCHECK(pending);
+
   pp::Rect leftover = rect;
   for (size_t i = 0; i < visible_pages_.size(); ++i) {
     int index = visible_pages_[i];
@@ -1070,15 +1074,18 @@ void PDFiumEngine::Paint(const pp::Rect& rect,
 
     if (pages_[index]->available()) {
       int progressive = GetProgressiveIndex(index);
-      if (progressive != -1 &&
-          progressive_paints_[progressive].rect != dirty_in_screen) {
-        // The PDFium code can only handle one progressive paint at a time, so
-        // queue this up. Previously we used to merge the rects when this
-        // happened, but it made scrolling up on complex PDFs very slow since
-        // there would be a damaged rect at the top (from scroll) and at the
-        // bottom (from toolbar).
-        pending->push_back(dirty_in_screen);
-        continue;
+      if (progressive != -1) {
+        DCHECK_GE(progressive, 0);
+        DCHECK_LT(static_cast<size_t>(progressive), progressive_paints_.size());
+        if (progressive_paints_[progressive].rect != dirty_in_screen) {
+          // The PDFium code can only handle one progressive paint at a time, so
+          // queue this up. Previously we used to merge the rects when this
+          // happened, but it made scrolling up on complex PDFs very slow since
+          // there would be a damaged rect at the top (from scroll) and at the
+          // bottom (from toolbar).
+          pending->push_back(dirty_in_screen);
+          continue;
+        }
       }
 
       if (progressive == -1) {
@@ -2341,7 +2348,7 @@ bool PDFiumEngine::HasPermission(DocumentPermission permission) const {
              (permissions_ & kPDFPermissionPrintHighQualityMask) != 0;
     default:
       return true;
-  };
+  }
 }
 
 void PDFiumEngine::SelectAll() {
@@ -2838,36 +2845,45 @@ int PDFiumEngine::StartPaint(int page_index, const pp::Rect& dirty) {
 
 bool PDFiumEngine::ContinuePaint(int progressive_index,
                                  pp::ImageData* image_data) {
+  DCHECK_GE(progressive_index, 0);
+  DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
+  DCHECK(image_data);
+
 #if defined(OS_LINUX)
   g_last_instance_id = client_->GetPluginInstance()->pp_instance();
 #endif
 
   int rv;
+  FPDF_BITMAP bitmap = progressive_paints_[progressive_index].bitmap;
   int page_index = progressive_paints_[progressive_index].page_index;
+  DCHECK_GE(page_index, 0);
+  DCHECK_LT(static_cast<size_t>(page_index), pages_.size());
+  FPDF_PAGE page = pages_[page_index]->GetPage();
+
   last_progressive_start_time_ = base::Time::Now();
-  if (progressive_paints_[progressive_index].bitmap) {
-    rv = FPDF_RenderPage_Continue(
-        pages_[page_index]->GetPage(), static_cast<IFSDK_PAUSE*>(this));
+  if (bitmap) {
+    rv = FPDF_RenderPage_Continue(page, static_cast<IFSDK_PAUSE*>(this));
   } else {
     pp::Rect dirty = progressive_paints_[progressive_index].rect;
-    progressive_paints_[progressive_index].bitmap = CreateBitmap(dirty,
-                                                                 image_data);
+    bitmap = CreateBitmap(dirty, image_data);
     int start_x, start_y, size_x, size_y;
-    GetPDFiumRect(
-        page_index, dirty, &start_x, &start_y, &size_x, &size_y);
-    FPDFBitmap_FillRect(progressive_paints_[progressive_index].bitmap, start_x,
-                        start_y, size_x, size_y, 0xFFFFFFFF);
+    GetPDFiumRect(page_index, dirty, &start_x, &start_y, &size_x, &size_y);
+    FPDFBitmap_FillRect(bitmap, start_x, start_y, size_x, size_y, 0xFFFFFFFF);
     rv = FPDF_RenderPageBitmap_Start(
-        progressive_paints_[progressive_index].bitmap,
-        pages_[page_index]->GetPage(), start_x, start_y, size_x, size_y,
+        bitmap, page, start_x, start_y, size_x, size_y,
         current_rotation_,
         GetRenderingFlags(), static_cast<IFSDK_PAUSE*>(this));
+    progressive_paints_[progressive_index].bitmap = bitmap;
   }
   return rv != FPDF_RENDER_TOBECOUNTINUED;
 }
 
 void PDFiumEngine::FinishPaint(int progressive_index,
                                pp::ImageData* image_data) {
+  DCHECK_GE(progressive_index, 0);
+  DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
+  DCHECK(image_data);
+
   int page_index = progressive_paints_[progressive_index].page_index;
   pp::Rect dirty_in_screen = progressive_paints_[progressive_index].rect;
   FPDF_BITMAP bitmap = progressive_paints_[progressive_index].bitmap;
@@ -2903,6 +2919,9 @@ void PDFiumEngine::CancelPaints() {
 }
 
 void PDFiumEngine::FillPageSides(int progressive_index) {
+  DCHECK_GE(progressive_index, 0);
+  DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
+
   int page_index = progressive_paints_[progressive_index].page_index;
   pp::Rect dirty_in_screen = progressive_paints_[progressive_index].rect;
   FPDF_BITMAP bitmap = progressive_paints_[progressive_index].bitmap;
@@ -2949,6 +2968,10 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
 
 void PDFiumEngine::PaintPageShadow(int progressive_index,
                                    pp::ImageData* image_data) {
+  DCHECK_GE(progressive_index, 0);
+  DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
+  DCHECK(image_data);
+
   int page_index = progressive_paints_[progressive_index].page_index;
   pp::Rect dirty_in_screen = progressive_paints_[progressive_index].rect;
   pp::Rect page_rect = pages_[page_index]->rect();
@@ -2973,6 +2996,10 @@ void PDFiumEngine::PaintPageShadow(int progressive_index,
 
 void PDFiumEngine::DrawSelections(int progressive_index,
                                   pp::ImageData* image_data) {
+  DCHECK_GE(progressive_index, 0);
+  DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
+  DCHECK(image_data);
+
   int page_index = progressive_paints_[progressive_index].page_index;
   pp::Rect dirty_in_screen = progressive_paints_[progressive_index].rect;
 

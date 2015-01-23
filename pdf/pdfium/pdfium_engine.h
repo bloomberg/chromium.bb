@@ -691,7 +691,7 @@ class PDFiumEngine : public PDFEngine,
     int page_index;
     // Temporary used to figure out if in a series of Paint() calls whether this
     // pending paint was updated or not.
-    int painted_;
+    bool painted_;
   };
   std::vector<ProgressivePaint> progressive_paints_;
 
@@ -708,6 +708,8 @@ class PDFiumEngine : public PDFEngine,
   // Set to true if the user is being prompted for their password. Will be set
   // to false after the user finishes getting their password.
   bool getting_password_;
+
+  DISALLOW_COPY_AND_ASSIGN(PDFiumEngine);
 };
 
 // Create a local variable of this when calling PDFium functions which can call
