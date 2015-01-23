@@ -791,6 +791,8 @@ bool GLES2Util::ParseUniformName(
     size_t* array_pos,
     int* element_index,
     bool* getting_array) {
+  if (name.empty())
+    return false;
   bool getting_array_location = false;
   size_t open_pos = std::string::npos;
   base::CheckedNumeric<int> index = 0;

@@ -390,6 +390,7 @@ TEST_F(GLES2UtilTest, ParseUniformName) {
   CheckParseUniformName("u_name[03][02]", true, 10u, 2, true);
   CheckParseUniformName("u_name[30][20]", true, 10u, 20, true);
   CheckParseUniformName("u_name[030][020]", true, 11u, 20, true);
+  CheckParseUniformName("", false, std::string::npos, 0, false);
 }
 
 }  // namespace gles2
