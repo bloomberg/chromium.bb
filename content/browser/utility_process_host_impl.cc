@@ -194,7 +194,6 @@ bool UtilityProcessHostImpl::StartProcess() {
         *base::CommandLine::ForCurrentProcess();
     int child_flags = child_flags_;
 
-#if defined(OS_POSIX)
     bool has_cmd_prefix = browser_command_line.HasSwitch(
         switches::kUtilityCmdPrefix);
 
@@ -205,7 +204,6 @@ bool UtilityProcessHostImpl::StartProcess() {
     // a similar case with Valgrind.
     if (has_cmd_prefix)
       child_flags = ChildProcessHost::CHILD_NORMAL;
-#endif
 
     base::FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
     if (exe_path.empty()) {
@@ -229,7 +227,6 @@ bool UtilityProcessHostImpl::StartProcess() {
     if (browser_command_line.HasSwitch(switches::kDebugPluginLoading))
       cmd_line->AppendSwitch(switches::kDebugPluginLoading);
 
-#if defined(OS_POSIX)
     if (has_cmd_prefix) {
       // Launch the utility child process with some prefix
       // (usually "xterm -e gdb --args").
@@ -241,7 +238,6 @@ bool UtilityProcessHostImpl::StartProcess() {
       cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir,
                                  exposed_dir_);
     }
-#endif
 
     if (is_mdns_enabled_)
       cmd_line->AppendSwitch(switches::kUtilityProcessEnableMDns);

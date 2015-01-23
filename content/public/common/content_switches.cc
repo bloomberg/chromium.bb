@@ -666,8 +666,8 @@ const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 // Enables remote debug over HTTP on the specified port.
 const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 
-// On POSIX only: the contents of this flag are prepended to the renderer
-// command line. Useful values might be "valgrind" or "xterm -e gdb --args".
+// The contents of this flag are prepended to the renderer command line.
+// Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kRendererCmdPrefix[]             = "renderer-cmd-prefix";
 
 // Causes the process to run as renderer instead of as browser.
@@ -820,9 +820,8 @@ const char kUseNormalPriorityForTileTaskWorkerThreads[] =
 // Use the new surfaces system to handle compositor delegation.
 const char kUseSurfaces[] = "use-surfaces";
 
-// On POSIX only: the contents of this flag are prepended to the utility
-// process command line. Useful values might be "valgrind" or "xterm -e gdb
-// --args".
+// The contents of this flag are prepended to the utility process command line.
+// Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kUtilityCmdPrefix[]              = "utility-cmd-prefix";
 
 // Causes the process to run as a utility subprocess.

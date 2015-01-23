@@ -564,14 +564,12 @@ bool RenderProcessHostImpl::Init() {
     return true;
 
   base::CommandLine::StringType renderer_prefix;
-#if defined(OS_POSIX)
   // A command prefix is something prepended to the command line of the spawned
-  // process. It is supported only on POSIX systems.
+  // process.
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   renderer_prefix =
       browser_command_line.GetSwitchValueNative(switches::kRendererCmdPrefix);
-#endif  // defined(OS_POSIX)
 
 #if defined(OS_LINUX)
   int flags = renderer_prefix.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
