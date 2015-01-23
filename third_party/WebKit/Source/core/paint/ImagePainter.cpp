@@ -20,7 +20,6 @@
 #include "core/rendering/RenderReplaced.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/Path.h"
 
 namespace blink {
@@ -60,18 +59,21 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
     if (!outlineWidth)
         return;
 
-    // FIXME: Clip path instead of context when Skia pathops is ready.
-    // https://crbug.com/251206
-    GraphicsContextStateSaver savedContext(*paintInfo.context);
     IntRect focusRect = m_renderImage.absoluteContentBox();
-    RenderDrawingRecorder recorder(paintInfo.context, m_renderImage, paintInfo.phase, focusRect);
-    if (recorder.canUseCachedDrawing())
+
+    RenderDrawingRecorder drawingRecorder(paintInfo.context, m_renderImage, paintInfo.phase, focusRect);
+    if (drawingRecorder.canUseCachedDrawing())
         return;
 
+    // FIXME: Clip path instead of context when Skia pathops is ready.
+    // https://crbug.com/251206
+
+    paintInfo.context->save();
     paintInfo.context->clip(focusRect);
     paintInfo.context->drawFocusRing(path, outlineWidth,
         areaElementStyle->outlineOffset(),
         m_renderImage.resolveColor(areaElementStyle, CSSPropertyOutlineColor));
+    paintInfo.context->restore();
 }
 
 void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
