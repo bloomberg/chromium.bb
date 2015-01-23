@@ -35,11 +35,20 @@ using device::UsbUsageType;
 
 namespace {
 
+struct NoConfigTraits {
+  static const int kClass = 0xff;
+  static const int kSubclass = 0x42;
+  static const int kProtocol = 0x1;
+  static const bool kBreaks = false;
+  static const bool kConfigured = false;
+};
+
 struct AndroidTraits {
   static const int kClass = 0xff;
   static const int kSubclass = 0x42;
   static const int kProtocol = 0x1;
   static const bool kBreaks = false;
+  static const bool kConfigured = true;
 };
 
 struct NonAndroidTraits {
@@ -47,6 +56,7 @@ struct NonAndroidTraits {
   static const int kSubclass = 0x42;
   static const int kProtocol = 0x2;
   static const bool kBreaks = false;
+  static const bool kConfigured = true;
 };
 
 struct BreakingAndroidTraits {
@@ -54,6 +64,7 @@ struct BreakingAndroidTraits {
   static const int kSubclass = 0x42;
   static const int kProtocol = 0x1;
   static const bool kBreaks = true;
+  static const bool kConfigured = true;
 };
 
 const uint32 kMaxPayload = 4096;
@@ -400,7 +411,7 @@ class MockUsbDevice : public UsbDevice {
   }
 
   virtual const UsbConfigDescriptor* GetConfiguration() override {
-    return &config_desc_;
+    return T::kConfigured ? &config_desc_ : nullptr;
   }
 
   virtual bool GetManufacturer(base::string16* manufacturer) override {
@@ -472,6 +483,20 @@ class MockBreakingUsbService : public UsbService {
   void GetDevices(std::vector<scoped_refptr<UsbDevice>>* devices) override {
     STLClearObject(devices);
     devices->push_back(new MockUsbDevice<BreakingAndroidTraits>());
+  }
+};
+
+class MockNoConfigUsbService : public UsbService {
+ public:
+  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  void GetDevices(std::vector<scoped_refptr<UsbDevice>>* devices) override {
+    STLClearObject(devices);
+    devices->push_back(new MockUsbDevice<AndroidTraits>());
+    devices->push_back(new MockUsbDevice<NoConfigTraits>());
   }
 };
 
@@ -609,6 +634,13 @@ class AndroidBreakingUsbTest : public AndroidUsbDiscoveryTest {
  protected:
   void SetUpService() override {
     UsbService::SetInstanceForTest(new MockBreakingUsbService());
+  }
+};
+
+class AndroidNoConfigUsbTest : public AndroidUsbDiscoveryTest {
+ protected:
+  void SetUpService() override {
+    UsbService::SetInstanceForTest(new MockNoConfigUsbService());
   }
 };
 
@@ -782,6 +814,12 @@ IN_PROC_BROWSER_TEST_F(AndroidUsbDiscoveryTest, TestDeviceDiscovery) {
 }
 
 IN_PROC_BROWSER_TEST_F(AndroidBreakingUsbTest, TestDeviceBreaking) {
+  MockListListener listener(adb_bridge_, runner_->QuitClosure());
+  adb_bridge_->AddDeviceListListener(&listener);
+  runner_->Run();
+}
+
+IN_PROC_BROWSER_TEST_F(AndroidNoConfigUsbTest, TestDeviceNoConfig) {
   MockListListener listener(adb_bridge_, runner_->QuitClosure());
   adb_bridge_->AddDeviceListListener(&listener);
   runner_->Run();

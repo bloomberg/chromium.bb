@@ -78,16 +78,14 @@ scoped_refptr<AndroidUsbDevice> ClaimInterface(
   int outbound_address = 0;
   int zero_mask = 0;
 
-  for (UsbEndpointDescriptor::Iterator endpointIt = interface.endpoints.begin();
-       endpointIt != interface.endpoints.end();
-       ++endpointIt) {
-    if (endpointIt->transfer_type != device::USB_TRANSFER_BULK)
+  for (const UsbEndpointDescriptor& endpoint : interface.endpoints) {
+    if (endpoint.transfer_type != device::USB_TRANSFER_BULK)
       continue;
-    if (endpointIt->direction == device::USB_DIRECTION_INBOUND)
-      inbound_address = endpointIt->address;
+    if (endpoint.direction == device::USB_DIRECTION_INBOUND)
+      inbound_address = endpoint.address;
     else
-      outbound_address = endpointIt->address;
-    zero_mask = endpointIt->maximum_packet_size - 1;
+      outbound_address = endpoint.address;
+    zero_mask = endpoint.maximum_packet_size - 1;
   }
 
   if (inbound_address == 0 || outbound_address == 0)
@@ -169,9 +167,8 @@ static void RespondOnCallerThread(const AndroidUsbDevicesCallback& callback,
   scoped_ptr<AndroidUsbDevices> devices(new_devices);
 
   // Add raw pointers to the newly claimed devices.
-  for (AndroidUsbDevices::iterator it = devices->begin(); it != devices->end();
-       ++it) {
-    g_devices.Get().push_back(it->get());
+  for (const scoped_refptr<AndroidUsbDevice>& device : *devices) {
+    g_devices.Get().push_back(device.get());
   }
 
   // Return all claimed devices.
@@ -207,7 +204,7 @@ static void OpenAndroidDeviceOnFileThread(
           scoped_refptr<AndroidUsbDevice> android_device = ClaimInterface(
               rsa_key, usb_handle, serial, config->interfaces[interface_id]);
           if (android_device.get())
-            devices->push_back(android_device.get());
+            devices->push_back(android_device);
           else
             usb_handle->Close();
         }
@@ -259,6 +256,7 @@ static void EnumerateOnFileThread(
   for (const scoped_refptr<UsbDevice>& device : usb_devices) {
     const UsbConfigDescriptor* config = device->GetConfiguration();
     if (!config) {
+      barrier.Run();
       continue;
     }
     bool has_android_interface = false;
@@ -299,12 +297,11 @@ void AndroidUsbDevice::Enumerate(crypto::RSAPrivateKey* rsa_key,
                                  const AndroidUsbDevicesCallback& callback) {
 
   // Collect devices with closed handles.
-  for (std::vector<AndroidUsbDevice*>::iterator it = g_devices.Get().begin();
-       it != g_devices.Get().end(); ++it) {
-    if ((*it)->usb_handle_.get()) {
+  for (AndroidUsbDevice* device : g_devices.Get()) {
+    if (device->usb_handle_.get()) {
       BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-          base::Bind(&AndroidUsbDevice::TerminateIfReleased, *it,
-                     (*it)->usb_handle_));
+          base::Bind(&AndroidUsbDevice::TerminateIfReleased, device,
+                     device->usb_handle_));
     }
   }
 

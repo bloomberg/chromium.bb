@@ -211,6 +211,7 @@ class UsbDeviceHandleImpl::Transfer {
   scoped_refptr<UsbDeviceHandleImpl::InterfaceClaimer> claimed_interface_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   size_t length_;
+  bool cancelled_;
   UsbTransferCallback callback_;
   scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
 };
@@ -340,6 +341,7 @@ UsbDeviceHandleImpl::Transfer::Transfer(UsbTransferType transfer_type,
     : transfer_type_(transfer_type),
       buffer_(buffer),
       length_(length),
+      cancelled_(false),
       callback_(callback) {
   // Remember the thread from which this transfer was created so that |callback|
   // can be dispatched there.
@@ -376,8 +378,11 @@ bool UsbDeviceHandleImpl::Transfer::Submit(
 }
 
 void UsbDeviceHandleImpl::Transfer::Cancel() {
-  libusb_cancel_transfer(platform_transfer_);
-  claimed_interface_ = nullptr;
+  if (!cancelled_) {
+    libusb_cancel_transfer(platform_transfer_);
+    claimed_interface_ = nullptr;
+  }
+  cancelled_ = true;
 }
 
 void UsbDeviceHandleImpl::Transfer::ProcessCompletion() {
