@@ -49,7 +49,7 @@ public:
     void didFailRedirectCheck() override;
 
     void start();
-    void cleanup();
+    void dispose();
 
 private:
     Loader(ExecutionContext*, FetchManager*, PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, const FetchRequestData*);
@@ -79,8 +79,7 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
 
 FetchManager::Loader::~Loader()
 {
-    if (m_loader)
-        m_loader->cancel();
+    ASSERT(!m_loader);
 }
 
 void FetchManager::Loader::trace(Visitor* visitor)
@@ -256,11 +255,10 @@ void FetchManager::Loader::start()
     performHTTPFetch(true, false);
 }
 
-void FetchManager::Loader::cleanup()
+void FetchManager::Loader::dispose()
 {
     // Prevent notification
-    m_fetchManager = 0;
-
+    m_fetchManager = nullptr;
     if (m_loader) {
         m_loader->cancel();
         m_loader.clear();
@@ -414,16 +412,16 @@ void FetchManager::stop()
 {
     ASSERT(!m_isStopped);
     m_isStopped = true;
-    for (auto& loader : m_loaders) {
-        loader->cleanup();
-    }
+    for (auto& loader : m_loaders)
+        loader->dispose();
 }
 
 void FetchManager::onLoaderFinished(Loader* loader)
 {
     // We don't use remove here, because it may cause recursive deletion.
     OwnPtrWillBeRawPtr<Loader> p = m_loaders.take(loader);
-    ALLOW_UNUSED_LOCAL(p);
+    ASSERT(p);
+    p->dispose();
 }
 
 void FetchManager::trace(Visitor* visitor)
