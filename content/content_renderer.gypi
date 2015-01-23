@@ -78,7 +78,6 @@
       'public/renderer/video_encode_accelerator.h',
     ],
     'public_renderer_plugin_sources': [
-      'public/renderer/plugin_instance_throttler.cc',
       'public/renderer/plugin_instance_throttler.h',
     ],
     'private_renderer_sources': [

@@ -17,15 +17,6 @@ namespace content {
 
 namespace {
 
-const char kPowerSaverUnthrottleHistogram[] = "Plugin.PowerSaver.Unthrottle";
-
-void RecordUnthrottleMethodMetric(
-    PluginInstanceThrottlerImpl::PowerSaverUnthrottleMethod method) {
-  UMA_HISTOGRAM_ENUMERATION(
-      kPowerSaverUnthrottleHistogram, method,
-      PluginInstanceThrottler::UNTHROTTLE_METHOD_NUM_ITEMS);
-}
-
 // When we give up waiting for a suitable preview frame, and simply suspend
 // the plugin where it's at. In milliseconds.
 const int kThrottleTimeout = 5000;
@@ -38,6 +29,29 @@ const double kAcceptableFrameMaximumBoringness = 0.94;
 const int kMinimumConsecutiveInterestingFrames = 4;
 
 }  // namespace
+
+// static
+scoped_ptr<PluginInstanceThrottler> PluginInstanceThrottler::Get(
+    RenderFrame* frame,
+    const GURL& plugin_url,
+    PluginPowerSaverMode power_saver_mode) {
+  if (power_saver_mode == PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL)
+    return nullptr;
+
+  bool power_saver_enabled =
+      power_saver_mode ==
+      PluginPowerSaverMode::POWER_SAVER_MODE_PERIPHERAL_THROTTLED;
+  return make_scoped_ptr(
+      new PluginInstanceThrottlerImpl(frame, plugin_url, power_saver_enabled));
+}
+
+// static
+void PluginInstanceThrottler::RecordUnthrottleMethodMetric(
+    PluginInstanceThrottlerImpl::PowerSaverUnthrottleMethod method) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Plugin.PowerSaver.Unthrottle", method,
+      PluginInstanceThrottler::UNTHROTTLE_METHOD_NUM_ITEMS);
+}
 
 PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl(
     RenderFrame* frame,
@@ -64,6 +78,8 @@ PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl(
 }
 
 PluginInstanceThrottlerImpl::~PluginInstanceThrottlerImpl() {
+  if (state_ != PLUGIN_INSTANCE_MARKED_ESSENTIAL)
+    RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_NEVER);
 }
 
 void PluginInstanceThrottlerImpl::AddObserver(Observer* observer) {

@@ -44,7 +44,8 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   ~LoadablePluginPlaceholder() override;
 
 #if defined(ENABLE_PLUGINS)
-  void DisablePowerSaverForInstance();
+  void DisablePowerSaverForInstance(
+      content::PluginInstanceThrottler::PowerSaverUnthrottleMethod method);
 #endif
 
   void OnLoadBlockedPlugins(const std::string& identifier);
@@ -110,6 +111,9 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   content::PluginPowerSaverMode power_saver_mode_;
 
   bool allow_loading_;
+
+  // True if the placeholder was replaced with the real plugin.
+  bool placeholder_was_replaced_;
 
   bool hidden_;
   bool finished_loading_;

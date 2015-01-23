@@ -31,6 +31,7 @@ using blink::WebPluginContainer;
 using blink::WebPluginParams;
 using blink::WebScriptSource;
 using blink::WebURLRequest;
+using content::PluginInstanceThrottler;
 using content::PluginPowerSaverMode;
 using content::RenderThread;
 
@@ -44,7 +45,8 @@ void LoadablePluginPlaceholder::BlockForPowerSaverPoster() {
   render_frame()->RegisterPeripheralPlugin(
       GURL(GetPluginParams().url).GetOrigin(),
       base::Bind(&LoadablePluginPlaceholder::DisablePowerSaverForInstance,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(),
+                 PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_WHITELIST));
 }
 #endif
 
@@ -64,17 +66,30 @@ LoadablePluginPlaceholder::LoadablePluginPlaceholder(
       is_blocked_for_power_saver_poster_(false),
       power_saver_mode_(PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL),
       allow_loading_(false),
+      placeholder_was_replaced_(false),
       hidden_(false),
       finished_loading_(false),
       weak_factory_(this) {
 }
 
 LoadablePluginPlaceholder::~LoadablePluginPlaceholder() {
+#if defined(ENABLE_PLUGINS)
+  if (!placeholder_was_replaced_ && !is_blocked_for_prerendering_ &&
+      power_saver_mode_ != PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL) {
+    PluginInstanceThrottler::RecordUnthrottleMethodMetric(
+        PluginInstanceThrottler::UNTHROTTLE_METHOD_NEVER);
+  }
+#endif
 }
 
 #if defined(ENABLE_PLUGINS)
-void LoadablePluginPlaceholder::DisablePowerSaverForInstance() {
+void LoadablePluginPlaceholder::DisablePowerSaverForInstance(
+    PluginInstanceThrottler::PowerSaverUnthrottleMethod method) {
+  if (power_saver_mode_ == PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL)
+    return;
+
   power_saver_mode_ = PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL;
+  PluginInstanceThrottler::RecordUnthrottleMethodMetric(method);
   if (is_blocked_for_power_saver_poster_) {
     is_blocked_for_power_saver_poster_ = false;
     if (!LoadingBlocked())
@@ -125,6 +140,8 @@ void LoadablePluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
   container->reportGeometry();
   plugin()->ReplayReceivedData(new_plugin);
   plugin()->destroy();
+
+  placeholder_was_replaced_ = true;
 }
 
 void LoadablePluginPlaceholder::HidePlugin() {
@@ -239,9 +256,9 @@ void LoadablePluginPlaceholder::LoadPlugin() {
   // TODO(mmenke):  In the case of prerendering, feed into
   //                ChromeContentRendererClient::CreatePlugin instead, to
   //                reduce the chance of future regressions.
-  scoped_ptr<content::PluginInstanceThrottler> throttler;
+  scoped_ptr<PluginInstanceThrottler> throttler;
 #if defined(ENABLE_PLUGINS)
-  throttler = content::PluginInstanceThrottler::Get(
+  throttler = PluginInstanceThrottler::Get(
       render_frame(), GetPluginParams().url, power_saver_mode_);
 #endif
   WebPlugin* plugin = render_frame()->CreatePlugin(
@@ -254,7 +271,8 @@ void LoadablePluginPlaceholder::LoadCallback() {
 #if defined(ENABLE_PLUGINS)
   // If the user specifically clicks on the plug-in content's placeholder,
   // disable power saver throttling for this instance.
-  DisablePowerSaverForInstance();
+  DisablePowerSaverForInstance(
+      PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_CLICK);
 #endif
   LoadPlugin();
 }

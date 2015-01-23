@@ -70,6 +70,8 @@ class CONTENT_EXPORT PluginInstanceThrottler {
       const GURL& plugin_url,
       PluginPowerSaverMode power_saver_mode);
 
+  static void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method);
+
   virtual ~PluginInstanceThrottler() {}
 
   virtual void AddObserver(Observer* observer) = 0;
