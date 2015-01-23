@@ -440,7 +440,7 @@
 	file descriptor.
 
 	The receiving client reads from the read end of the pipe until
-	EOF and the closes its end, at which point the transfer is
+	EOF and then closes its end, at which point the transfer is
 	complete.
       </description>
       <arg name="mime_type" type="string"/>
