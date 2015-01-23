@@ -126,8 +126,8 @@ public:
     virtual PassRefPtr<Image> imageForDefaultFrame();
 
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
-        const FloatSize&, const FloatPoint& phase, CompositeOperator,
-        const FloatRect&, WebBlendMode = WebBlendModeNormal, const IntSize& repeatSpacing = IntSize());
+        const FloatSize&, const FloatPoint& phase, SkXfermode::Mode,
+        const FloatRect&, const IntSize& repeatSpacing = IntSize());
 
 #if ENABLE(ASSERT)
     virtual bool notSolidColor() { return true; }
@@ -136,13 +136,13 @@ public:
 protected:
     Image(ImageObserver* = 0);
 
-    static void fillWithSolidColor(GraphicsContext*, const FloatRect& dstRect, const Color&, CompositeOperator);
+    static void fillWithSolidColor(GraphicsContext*, const FloatRect& dstRect, const Color&, SkXfermode::Mode);
     static FloatRect adjustForNegativeSize(const FloatRect&); // A helper method for translating negative width and height values.
 
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode, RespectImageOrientationEnum) = 0;
+    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode, RespectImageOrientationEnum) = 0;
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatPoint& srcPoint, const FloatSize& tileSize,
-        CompositeOperator, WebBlendMode, const IntSize& repeatSpacing);
-    void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, const FloatSize& tileScaleFactor, TileRule hRule, TileRule vRule, CompositeOperator);
+        SkXfermode::Mode, const IntSize& repeatSpacing);
+    void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, const FloatSize& tileScaleFactor, TileRule hRule, TileRule vRule, SkXfermode::Mode);
 
     // Supporting tiled drawing
     virtual bool mayFillWithSolidColor() { return false; }

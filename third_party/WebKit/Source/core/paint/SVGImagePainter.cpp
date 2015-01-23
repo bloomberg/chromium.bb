@@ -74,7 +74,7 @@ void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)
 
     InterpolationQuality previousInterpolationQuality = paintInfo.context->imageInterpolationQuality();
     paintInfo.context->setImageInterpolationQuality(interpolationQuality);
-    paintInfo.context->drawImage(image.get(), destRect, srcRect, CompositeSourceOver);
+    paintInfo.context->drawImage(image.get(), destRect, srcRect, SkXfermode::kSrcOver_Mode);
     paintInfo.context->setImageInterpolationQuality(previousInterpolationQuality);
 }
 

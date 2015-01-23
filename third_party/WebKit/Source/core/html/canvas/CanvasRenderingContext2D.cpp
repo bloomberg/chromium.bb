@@ -1452,7 +1452,7 @@ static void drawVideo(GraphicsContext* c, CanvasImageSource* imageSource, FloatR
 static void drawImageOnContext(GraphicsContext* c, CanvasImageSource* imageSource, Image* image, const FloatRect& srcRect, const FloatRect& dstRect)
 {
     if (!imageSource->isVideoElement()) {
-        c->drawImage(image, dstRect, srcRect, c->compositeOperationDeprecated(), c->blendModeOperation());
+        c->drawImage(image, dstRect, srcRect, c->compositeOperation());
     } else {
         drawVideo(c, static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
     }

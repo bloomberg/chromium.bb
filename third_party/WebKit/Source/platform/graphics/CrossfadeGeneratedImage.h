@@ -50,7 +50,7 @@ public:
 
 protected:
     void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
-        CompositeOperator, WebBlendMode, RespectImageOrientationEnum) override;
+        SkXfermode::Mode, RespectImageOrientationEnum) override;
     virtual void drawTile(GraphicsContext*, const FloatRect&) final;
 
     CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize&);

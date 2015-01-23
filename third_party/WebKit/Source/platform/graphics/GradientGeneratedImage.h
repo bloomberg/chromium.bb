@@ -48,7 +48,7 @@ public:
 
 protected:
     void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
-        CompositeOperator, WebBlendMode, RespectImageOrientationEnum) override;
+        SkXfermode::Mode, RespectImageOrientationEnum) override;
     virtual void drawTile(GraphicsContext*, const FloatRect&) final;
 
     GradientGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)

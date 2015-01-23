@@ -86,7 +86,7 @@ public:
     {
     }
 
-    void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, WebBlendMode, RespectImageOrientationEnum) override
+    void draw(GraphicsContext*, const FloatRect&, const FloatRect&, SkXfermode::Mode, RespectImageOrientationEnum) override
     {
     }
 

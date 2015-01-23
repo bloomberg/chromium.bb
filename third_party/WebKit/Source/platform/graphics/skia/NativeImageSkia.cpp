@@ -54,8 +54,7 @@ void NativeImageSkia::draw(
     GraphicsContext* context,
     const SkRect& srcRect,
     const SkRect& destRect,
-    CompositeOperator compositeOp,
-    WebBlendMode blendMode) const
+    SkXfermode::Mode op) const
 {
     TRACE_EVENT0("skia", "NativeImageSkia::draw");
 
@@ -64,7 +63,7 @@ void NativeImageSkia::draw(
 
     {
         SkPaint paint;
-        int initialSaveCount = context->preparePaintForDrawRectToRect(&paint, srcRect, destRect, compositeOp, blendMode, !isOpaque, isLazyDecoded, isDataComplete());
+        int initialSaveCount = context->preparePaintForDrawRectToRect(&paint, srcRect, destRect, op, !isOpaque, isLazyDecoded, isDataComplete());
         // We want to filter it if we decided to do interpolation above, or if
         // there is something interesting going on with the matrix (like a rotation).
         // Note: for serialization, we will want to subset the bitmap first so we
@@ -95,9 +94,8 @@ void NativeImageSkia::drawPattern(
     const FloatRect& floatSrcRect,
     const FloatSize& scale,
     const FloatPoint& phase,
-    CompositeOperator compositeOp,
+    SkXfermode::Mode compositeOp,
     const FloatRect& destRect,
-    WebBlendMode blendMode,
     const IntSize& repeatSpacing) const
 {
     FloatRect normSrcRect = floatSrcRect;
@@ -164,7 +162,7 @@ void NativeImageSkia::drawPattern(
 
     SkPaint paint;
     paint.setShader(shader.get());
-    paint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+    paint.setXfermodeMode(compositeOp);
     paint.setColorFilter(context->colorFilter());
     paint.setFilterLevel(static_cast<SkPaint::FilterLevel>(resampling));
 

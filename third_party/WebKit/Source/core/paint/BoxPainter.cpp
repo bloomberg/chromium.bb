@@ -144,11 +144,11 @@ void BoxPainter::paintRootBoxFillLayers(const PaintInfo& paintInfo)
     const FillLayer& bgLayer = rootBackgroundRenderer->style()->backgroundLayers();
     Color bgColor = rootBackgroundRenderer->resolveColor(CSSPropertyBackgroundColor);
 
-    paintFillLayers(paintInfo, bgColor, bgLayer, m_renderBox.view()->backgroundRect(&m_renderBox), BackgroundBleedNone, CompositeSourceOver, rootBackgroundRenderer);
+    paintFillLayers(paintInfo, bgColor, bgLayer, m_renderBox.view()->backgroundRect(&m_renderBox), BackgroundBleedNone, SkXfermode::kSrcOver_Mode, rootBackgroundRenderer);
 }
 
 void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, CompositeOperator op, RenderObject* backgroundObject)
+    BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, RenderObject* backgroundObject)
 {
     Vector<const FillLayer*, 8> layers;
     const FillLayer* curLayer = &fillLayer;
@@ -207,7 +207,7 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, con
 }
 
 void BoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, CompositeOperator op, RenderObject* backgroundObject, bool skipBaseColor)
+    BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, RenderObject* backgroundObject, bool skipBaseColor)
 {
     BoxPainter::paintFillLayerExtended(m_renderBox, paintInfo, c, fillLayer, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject, skipBaseColor);
 }
@@ -296,7 +296,7 @@ void BoxPainter::clipRoundedInnerRect(GraphicsContext * context, const LayoutRec
 }
 
 void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, CompositeOperator op, RenderObject* backgroundObject, bool skipBaseColor)
+    BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, SkXfermode::Mode op, RenderObject* backgroundObject, bool skipBaseColor)
 {
     GraphicsContext* context = paintInfo.context;
     if (rect.isEmpty())
@@ -474,7 +474,9 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
         BackgroundImageGeometry geometry;
         calculateBackgroundImageGeometry(obj, paintInfo.paintContainer(), bgLayer, scrolledPaintRect, geometry, backgroundObject);
         if (!geometry.destRect().isEmpty()) {
-            CompositeOperator compositeOp = op == CompositeSourceOver ? bgLayer.composite() : op;
+            SkXfermode::Mode bgOp = WebCoreCompositeToSkiaComposite(bgLayer.composite(), bgLayer.blendMode());
+            // if op != SkXfermode::kSrcOver_Mode, a mask is being painted.
+            SkXfermode::Mode compositeOp = op == SkXfermode::kSrcOver_Mode ? bgOp : op;
             RenderObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
             RefPtr<Image> image = bgImage->image(clientForBackgroundImage, geometry.tileSize());
             InterpolationQuality interpolationQuality = chooseInterpolationQuality(obj, context, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
@@ -484,7 +486,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
             context->setImageInterpolationQuality(interpolationQuality);
             TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(obj, *bgImage));
             context->drawTiledImage(image.get(), geometry.destRect(), geometry.phase(), geometry.tileSize(),
-                compositeOp, bgLayer.blendMode(), geometry.spaceSize());
+                compositeOp, geometry.spaceSize());
             context->setImageInterpolationQuality(previousInterpolationQuality);
         }
     }
@@ -551,8 +553,8 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
     }
 
     if (allMaskImagesLoaded) {
-        paintFillLayers(paintInfo, Color::transparent, m_renderBox.style()->maskLayers(), paintRect, BackgroundBleedNone, CompositeSourceOver);
-        paintNinePieceImage(m_renderBox, paintInfo.context, paintRect, m_renderBox.style(), m_renderBox.style()->maskBoxImage(), CompositeSourceOver);
+        paintFillLayers(paintInfo, Color::transparent, m_renderBox.style()->maskLayers(), paintRect, BackgroundBleedNone, SkXfermode::kSrcOver_Mode);
+        paintNinePieceImage(m_renderBox, paintInfo.context, paintRect, m_renderBox.style(), m_renderBox.style()->maskBoxImage(), SkXfermode::kSrcOver_Mode);
     }
 
     if (pushTransparencyLayer) {
@@ -914,7 +916,7 @@ static LayoutUnit computeBorderImageSide(const BorderImageLength& borderSlice, L
     return valueForLength(borderSlice.length(), boxExtent);
 }
 
-bool BoxPainter::paintNinePieceImage(RenderBoxModelObject& obj, GraphicsContext* graphicsContext, const LayoutRect& rect, const RenderStyle* style, const NinePieceImage& ninePieceImage, CompositeOperator op)
+bool BoxPainter::paintNinePieceImage(RenderBoxModelObject& obj, GraphicsContext* graphicsContext, const LayoutRect& rect, const RenderStyle* style, const NinePieceImage& ninePieceImage, SkXfermode::Mode op)
 {
     StyleImage* styleImage = ninePieceImage.image();
     if (!styleImage)

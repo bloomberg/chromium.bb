@@ -211,7 +211,7 @@ void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, co
             clipRect.expand(m_renderTableCell.borderInsets());
             paintInfo.context->clip(clipRect);
         }
-        BoxPainter(m_renderTableCell).paintFillLayers(paintInfo, c, bgLayer, paintRect, BackgroundBleedNone, CompositeSourceOver, backgroundObject);
+        BoxPainter(m_renderTableCell).paintFillLayers(paintInfo, c, bgLayer, paintRect, BackgroundBleedNone, SkXfermode::kSrcOver_Mode, backgroundObject);
     }
 }
 

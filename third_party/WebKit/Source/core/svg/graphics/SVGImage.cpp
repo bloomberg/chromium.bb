@@ -185,7 +185,7 @@ IntSize SVGImage::containerSize() const
 }
 
 void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize containerSize, float zoom, const FloatRect& dstRect,
-    const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode)
+    const FloatRect& srcRect, SkXfermode::Mode compositeOp)
 {
     if (!m_page)
         return;
@@ -204,7 +204,7 @@ void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize contai
     adjustedSrcSize.scale(roundedContainerSize.width() / containerSize.width(), roundedContainerSize.height() / containerSize.height());
     scaledSrc.setSize(adjustedSrcSize);
 
-    draw(context, dstRect, scaledSrc, compositeOp, blendMode, DoNotRespectImageOrientation);
+    draw(context, dstRect, scaledSrc, compositeOp, DoNotRespectImageOrientation);
 }
 
 PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
@@ -216,14 +216,14 @@ PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
     if (!buffer)
         return nullptr;
 
-    drawForContainer(buffer->context(), size(), 1, rect(), rect(), CompositeSourceOver, blink::WebBlendModeNormal);
+    drawForContainer(buffer->context(), size(), 1, rect(), rect(), SkXfermode::kSrcOver_Mode);
 
     return NativeImageSkia::create(buffer->bitmap());
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize,
     float zoom, const FloatRect& srcRect, const FloatSize& tileScale, const FloatPoint& phase,
-    CompositeOperator compositeOp, const FloatRect& dstRect, blink::WebBlendMode blendMode,
+    SkXfermode::Mode compositeOp, const FloatRect& dstRect,
     const IntSize& repeatSpacing)
 {
     // Tile adjusted for scaling/stretch.
@@ -248,7 +248,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
         OwnPtr<FloatClipRecorder> clipRecorder;
         if (tile != spacedTile)
             clipRecorder = adoptPtr(new FloatClipRecorder(recordingContext, displayItemClient(), PaintPhaseForeground, tile));
-        drawForContainer(&recordingContext, containerSize, zoom, tile, srcRect, CompositeSourceOver, blink::WebBlendModeNormal);
+        drawForContainer(&recordingContext, containerSize, zoom, tile, srcRect, SkXfermode::kSrcOver_Mode);
     }
 
     if (displayItemList)
@@ -264,12 +264,12 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
 
     SkPaint paint;
     paint.setShader(patternShader.get());
-    paint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+    paint.setXfermodeMode(compositeOp);
     paint.setColorFilter(context->colorFilter());
     context->drawRect(dstRect, paint);
 }
 
-void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode, RespectImageOrientationEnum)
+void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum)
 {
     if (!m_page)
         return;
@@ -285,11 +285,11 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     {
         ClipRecorder clipRecorder(displayItemClient(), &recordingContext, DisplayItem::ClipNodeImage, enclosingIntRect(dstRect));
 
-        bool hasCompositing = compositeOp != CompositeSourceOver || blendMode != blink::WebBlendModeNormal;
+        bool hasCompositing = compositeOp != SkXfermode::kSrcOver_Mode;
         OwnPtr<CompositingRecorder> compositingRecorder;
         if (hasCompositing || opacity < 1) {
-            CompositeOperator postCompositeOp = hasCompositing ? CompositeSourceOver : compositeOp;
-            compositingRecorder = adoptPtr(new CompositingRecorder(&recordingContext, displayItemClient(), compositeOp, blendMode, opacity, postCompositeOp));
+            SkXfermode::Mode postCompositeOp = hasCompositing ? SkXfermode::kSrcOver_Mode : compositeOp;
+            compositingRecorder = adoptPtr(new CompositingRecorder(&recordingContext, displayItemClient(), compositeOperatorFromSkia(compositeOp), blendModeFromSkia(compositeOp), opacity, compositeOperatorFromSkia(postCompositeOp)));
         }
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left

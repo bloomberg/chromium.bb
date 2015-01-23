@@ -73,17 +73,15 @@ public:
         GraphicsContext*,
         const SkRect& srcRect,
         const SkRect& destRect,
-        CompositeOperator,
-        WebBlendMode) const;
+        SkXfermode::Mode) const;
 
     void drawPattern(
         GraphicsContext*,
         const FloatRect& srcRect,
         const FloatSize& scale,
         const FloatPoint& phase,
-        CompositeOperator,
+        SkXfermode::Mode,
         const FloatRect& destRect,
-        WebBlendMode,
         const IntSize& repeatSpacing) const;
 
 private:

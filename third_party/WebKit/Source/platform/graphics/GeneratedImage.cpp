@@ -44,7 +44,7 @@ void GeneratedImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& 
 }
 
 void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, WebBlendMode blendMode,
+    const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect,
     const IntSize& repeatSpacing)
 {
     FloatRect tileRect = srcRect;
@@ -64,7 +64,7 @@ void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& 
     picturePattern->setPatternSpaceTransform(patternTransform);
 
     GraphicsContextStateSaver saver(*destContext);
-    destContext->setCompositeOperation(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+    destContext->setCompositeOperation(compositeOp);
     destContext->setFillPattern(picturePattern);
     destContext->fillRect(destRect);
 }

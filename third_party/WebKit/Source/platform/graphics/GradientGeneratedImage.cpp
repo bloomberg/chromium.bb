@@ -31,10 +31,10 @@
 
 namespace blink {
 
-void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator compositeOp, WebBlendMode blendMode, RespectImageOrientationEnum)
+void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum)
 {
     GraphicsContextStateSaver stateSaver(*destContext);
-    destContext->setCompositeOperation(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+    destContext->setCompositeOperation(compositeOp);
     destContext->clip(destRect);
     destContext->translate(destRect.x(), destRect.y());
     if (destRect.size() != srcRect.size())

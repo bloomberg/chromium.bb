@@ -48,9 +48,9 @@ public:
     virtual void destroyDecodedData(bool) override { }
 
 protected:
-    virtual void drawPattern(GraphicsContext*, const FloatRect&,
-        const FloatSize&, const FloatPoint&, CompositeOperator,
-        const FloatRect&, WebBlendMode, const IntSize& repeatSpacing) final;
+    void drawPattern(GraphicsContext*, const FloatRect&,
+        const FloatSize&, const FloatPoint&, SkXfermode::Mode,
+        const FloatRect&, const IntSize& repeatSpacing) final;
 
     // FIXME: Implement this to be less conservative.
     virtual bool currentFrameKnownToBeOpaque() override { return false; }

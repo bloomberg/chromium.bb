@@ -68,20 +68,20 @@ void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
             static_cast<float>(m_crossfadeSize.height()) / toImageSize.height());
     }
     context->setAlphaAsFloat(m_percentage);
-    context->drawImage(m_toImage, IntPoint(), CompositePlusLighter);
+    context->drawImage(m_toImage, IntPoint(), SkXfermode::kPlus_Mode);
     context->restore();
 
     context->endLayer();
 }
 
-void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, WebBlendMode blendMode, RespectImageOrientationEnum)
+void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum)
 {
     // Draw nothing if either of the images hasn't loaded yet.
     if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())
         return;
 
     GraphicsContextStateSaver stateSaver(*context);
-    context->setCompositeOperation(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+    context->setCompositeOperation(compositeOp);
     context->clip(dstRect);
     context->translate(dstRect.x(), dstRect.y());
     if (dstRect.size() != srcRect.size())

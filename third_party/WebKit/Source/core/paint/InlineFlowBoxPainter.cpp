@@ -87,7 +87,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     }
 }
 
-void InlineFlowBoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect, CompositeOperator op)
+void InlineFlowBoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect, SkXfermode::Mode op)
 {
     // FIXME: This should be a for loop or similar. It's a little non-trivial to do so, however, since the layers need to be
     // painted in reverse order.
@@ -96,7 +96,7 @@ void InlineFlowBoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Col
     paintFillLayer(paintInfo, c, fillLayer, rect, op);
 }
 
-void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect, CompositeOperator op)
+void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect, SkXfermode::Mode op)
 {
     StyleImage* img = fillLayer.image();
     bool hasFillImage = img && img->canRender(m_inlineFlowBox.renderer(), m_inlineFlowBox.renderer().style()->effectiveZoom());
@@ -270,16 +270,16 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
     bool pushTransparencyLayer = false;
     bool compositedMask = m_inlineFlowBox.renderer().hasLayer() && m_inlineFlowBox.boxModelObject()->layer()->hasCompositedMask();
     bool flattenCompositingLayers = m_inlineFlowBox.renderer().view()->frameView() && m_inlineFlowBox.renderer().view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers;
-    CompositeOperator compositeOp = CompositeSourceOver;
+    SkXfermode::Mode compositeOp = SkXfermode::kSrcOver_Mode;
     if (!compositedMask || flattenCompositingLayers) {
         if ((maskBoxImage && m_inlineFlowBox.renderer().style()->maskLayers().hasImage()) || m_inlineFlowBox.renderer().style()->maskLayers().next())
             pushTransparencyLayer = true;
 
-        compositeOp = CompositeDestinationIn;
+        compositeOp = SkXfermode::kDstIn_Mode;
         if (pushTransparencyLayer) {
             paintInfo.context->setCompositeOperation(SkXfermode::kDstIn_Mode);
             paintInfo.context->beginTransparencyLayer(1.0f);
-            compositeOp = CompositeSourceOver;
+            compositeOp = SkXfermode::kSrcOver_Mode;
         }
     }
 

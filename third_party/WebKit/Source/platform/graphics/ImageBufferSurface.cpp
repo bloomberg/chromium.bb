@@ -108,7 +108,7 @@ void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRec
 
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(needsCopy ? deepSkBitmapCopy(bmp) : bmp));
 
-    context->drawImage(image.get(), destRect, srcRect, op, blendMode, DoNotRespectImageOrientation);
+    context->drawImage(image.get(), destRect, srcRect, WebCoreCompositeToSkiaComposite(op, blendMode), DoNotRespectImageOrientation);
 }
 
 } // namespace blink

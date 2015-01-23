@@ -37,7 +37,7 @@ bool StaticBitmapImage::currentFrameKnownToBeOpaque()
     return m_image->isOpaque();
 }
 
-void StaticBitmapImage::draw(GraphicsContext* ctx, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, WebBlendMode blendMode, RespectImageOrientationEnum)
+void StaticBitmapImage::draw(GraphicsContext* ctx, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum)
 {
     FloatRect normDstRect = adjustForNegativeSize(dstRect);
     FloatRect normSrcRect = adjustForNegativeSize(srcRect);
@@ -53,7 +53,7 @@ void StaticBitmapImage::draw(GraphicsContext* ctx, const FloatRect& dstRect, con
         SkCanvas* canvas = ctx->canvas();
 
         SkPaint paint;
-        int initialSaveCount = ctx->preparePaintForDrawRectToRect(&paint, srcRect, dstRect, compositeOp, blendMode, !currentFrameKnownToBeOpaque());
+        int initialSaveCount = ctx->preparePaintForDrawRectToRect(&paint, srcRect, dstRect, compositeOp, !currentFrameKnownToBeOpaque());
 
         SkRect srcSkRect = WebCoreFloatRectToSKRect(normSrcRect);
         SkRect dstSkRect = WebCoreFloatRectToSKRect(normDstRect);

@@ -35,7 +35,6 @@
 #include "platform/graphics/GraphicsContextClient.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
-#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRunIterator.h"
 #include "platform/weborigin/KURL.h"
@@ -436,11 +435,6 @@ SkXfermode::Mode GraphicsContext::compositeOperation() const
 CompositeOperator GraphicsContext::compositeOperationDeprecated() const
 {
     return compositeOperatorFromSkia(immutableState()->compositeOperation());
-}
-
-WebBlendMode GraphicsContext::blendModeOperation() const
-{
-    return blendModeFromSkia(immutableState()->compositeOperation());
 }
 
 SkColorFilter* GraphicsContext::colorFilter() const
@@ -1072,23 +1066,18 @@ void GraphicsContext::drawHighlightForText(const Font& font, const TextRun& run,
     fillRect(font.selectionRectForText(run, point, h, from, to), backgroundColor);
 }
 
-void GraphicsContext::drawImage(Image* image, const IntPoint& p, CompositeOperator op, RespectImageOrientationEnum shouldRespectImageOrientation)
+void GraphicsContext::drawImage(Image* image, const IntPoint& p, SkXfermode::Mode op, RespectImageOrientationEnum shouldRespectImageOrientation)
 {
     if (!image)
         return;
     drawImage(image, FloatRect(IntRect(p, image->size())), FloatRect(FloatPoint(), FloatSize(image->size())), op, shouldRespectImageOrientation);
 }
 
-void GraphicsContext::drawImage(Image* image, const IntRect& r, CompositeOperator op, RespectImageOrientationEnum shouldRespectImageOrientation)
+void GraphicsContext::drawImage(Image* image, const IntRect& r, SkXfermode::Mode op, RespectImageOrientationEnum shouldRespectImageOrientation)
 {
     if (!image)
         return;
     drawImage(image, FloatRect(r), FloatRect(FloatPoint(), FloatSize(image->size())), op, shouldRespectImageOrientation);
-}
-
-void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, RespectImageOrientationEnum shouldRespectImageOrientation)
-{
-    drawImage(image, dest, src, op, WebBlendModeNormal, shouldRespectImageOrientation);
 }
 
 void GraphicsContext::drawImage(Image* image, const FloatRect& dest)
@@ -1098,22 +1087,22 @@ void GraphicsContext::drawImage(Image* image, const FloatRect& dest)
     drawImage(image, dest, FloatRect(IntRect(IntPoint(), image->size())));
 }
 
-void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode, RespectImageOrientationEnum shouldRespectImageOrientation)
+void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode op, RespectImageOrientationEnum shouldRespectImageOrientation)
 {
     if (contextDisabled() || !image)
         return;
-    image->draw(this, dest, src, op, blendMode, shouldRespectImageOrientation);
+    image->draw(this, dest, src, op, shouldRespectImageOrientation);
 }
 
-void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize, CompositeOperator op, WebBlendMode blendMode, const IntSize& repeatSpacing)
+void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize, SkXfermode::Mode op, const IntSize& repeatSpacing)
 {
     if (contextDisabled() || !image)
         return;
-    image->drawTiled(this, destRect, srcPoint, tileSize, op, blendMode, repeatSpacing);
+    image->drawTiled(this, destRect, srcPoint, tileSize, op, repeatSpacing);
 }
 
 void GraphicsContext::drawTiledImage(Image* image, const IntRect& dest, const IntRect& srcRect,
-    const FloatSize& tileScaleFactor, Image::TileRule hRule, Image::TileRule vRule, CompositeOperator op)
+    const FloatSize& tileScaleFactor, Image::TileRule hRule, Image::TileRule vRule, SkXfermode::Mode op)
 {
     if (contextDisabled() || !image)
         return;
@@ -1876,8 +1865,7 @@ int GraphicsContext::preparePaintForDrawRectToRect(
     SkPaint* paint,
     const SkRect& srcRect,
     const SkRect& destRect,
-    CompositeOperator compositeOp,
-    WebBlendMode blendMode,
+    SkXfermode::Mode compositeOp,
     bool isBitmapWithAlpha,
     bool isLazyDecoded,
     bool isDataComplete) const
@@ -1904,7 +1892,7 @@ int GraphicsContext::preparePaintForDrawRectToRect(
             SkRect filteredBounds;
             dropShadowImageFilter()->computeFastBounds(bounds, &filteredBounds);
             SkPaint layerPaint;
-            layerPaint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+            layerPaint.setXfermodeMode(compositeOp);
             layerPaint.setImageFilter(dropShadowImageFilter());
             m_canvas->saveLayer(&filteredBounds, &layerPaint);
             m_canvas->concat(ctm);
@@ -1912,7 +1900,7 @@ int GraphicsContext::preparePaintForDrawRectToRect(
     }
 
     if (!usingImageFilter) {
-        paint->setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+        paint->setXfermodeMode(compositeOp);
         paint->setLooper(this->drawLooper());
     }
 

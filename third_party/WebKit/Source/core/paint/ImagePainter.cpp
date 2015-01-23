@@ -136,7 +136,7 @@ void ImagePainter::paintIntoRect(GraphicsContext* context, const LayoutRect& rec
 
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
-    context->drawImage(image.get(), alignedRect, CompositeSourceOver, m_renderImage.shouldRespectImageOrientation());
+    context->drawImage(image.get(), alignedRect, SkXfermode::kSrcOver_Mode, m_renderImage.shouldRespectImageOrientation());
     context->setImageInterpolationQuality(previousInterpolationQuality);
 
     InspectorInstrumentation::didPaintImage(&m_renderImage);
