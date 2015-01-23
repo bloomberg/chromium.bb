@@ -28,6 +28,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_data_item.h"
+#include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "url/gurl.h"
 
@@ -59,18 +61,19 @@ static void RequestPlatformPathFromBlobURL(
     ReturnResultOnUIThread(callback, std::string());
     return;
   }
-  storage::BlobData* data = handle->data();
+  scoped_ptr<storage::BlobDataSnapshot> data = handle->CreateSnapshot();
   if (!data) {
     ReturnResultOnUIThread(callback, std::string());
     NOTREACHED();
     return;
   }
-  const std::vector<storage::BlobData::Item> items = data->items();
+  const std::vector<scoped_refptr<storage::BlobDataItem>>& items =
+      data->items();
 
   // TODO(qinmin): handle the case when the blob data is not a single file.
   DLOG_IF(WARNING, items.size() != 1u)
-      << "More than one blob data are present: " << items.size();
-  ReturnResultOnUIThread(callback, items[0].path().value());
+      << "More than one blob item is present: " << items.size();
+  ReturnResultOnUIThread(callback, items[0]->path().value());
 }
 
 static void RequestPlaformPathFromFileSystemURL(

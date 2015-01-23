@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "storage/common/blob/shareable_file_reference.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/memory/scoped_vector.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -29,6 +30,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
@@ -409,27 +411,35 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   if (!body_.get() || !blob_storage_context_)
     return false;
 
+  // To ensure the blobs stick around until the end of the reading.
+  ScopedVector<storage::BlobDataHandle> handles;
+  ScopedVector<storage::BlobDataSnapshot> snapshots;
+  // TODO(dmurph): Allow blobs to be added below, so that the context can
+  // efficiently re-use blob items for the new blob.
   std::vector<const ResourceRequestBody::Element*> resolved_elements;
-  for (size_t i = 0; i < body_->elements()->size(); ++i) {
-    const ResourceRequestBody::Element& element = (*body_->elements())[i];
+  for (const ResourceRequestBody::Element& element : (*body_->elements())) {
     if (element.type() != ResourceRequestBody::Element::TYPE_BLOB) {
       resolved_elements.push_back(&element);
       continue;
     }
     scoped_ptr<storage::BlobDataHandle> handle =
         blob_storage_context_->GetBlobDataFromUUID(element.blob_uuid());
-    if (handle->data()->items().empty())
+    scoped_ptr<storage::BlobDataSnapshot> snapshot = handle->CreateSnapshot();
+    if (snapshot->items().empty())
       continue;
-    for (size_t i = 0; i < handle->data()->items().size(); ++i) {
-      const storage::BlobData::Item& item = handle->data()->items().at(i);
-      DCHECK_NE(storage::BlobData::Item::TYPE_BLOB, item.type());
-      resolved_elements.push_back(&item);
+    const auto& items = snapshot->items();
+    for (const auto& item : items) {
+      DCHECK_NE(storage::DataElement::TYPE_BLOB, item->type());
+      resolved_elements.push_back(item->data_element_ptr());
     }
+    handles.push_back(handle.release());
+    snapshots.push_back(snapshot.release());
   }
 
   const std::string uuid(base::GenerateGUID());
   uint64 total_size = 0;
-  scoped_refptr<storage::BlobData> blob_data = new storage::BlobData(uuid);
+
+  storage::BlobDataBuilder blob_builder(uuid);
   for (size_t i = 0; i < resolved_elements.size(); ++i) {
     const ResourceRequestBody::Element& element = *resolved_elements[i];
     if (total_size != kuint64max && element.length() != kuint64max)
@@ -438,23 +448,21 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
       total_size = kuint64max;
     switch (element.type()) {
       case ResourceRequestBody::Element::TYPE_BYTES:
-        blob_data->AppendData(element.bytes(), element.length());
+        blob_builder.AppendData(element.bytes(), element.length());
         break;
       case ResourceRequestBody::Element::TYPE_FILE:
-        blob_data->AppendFile(element.path(),
-                              element.offset(),
-                              element.length(),
-                              element.expected_modification_time());
+        blob_builder.AppendFile(element.path(), element.offset(),
+                                element.length(),
+                                element.expected_modification_time());
         break;
       case ResourceRequestBody::Element::TYPE_BLOB:
         // Blob elements should be resolved beforehand.
         NOTREACHED();
         break;
       case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
-        blob_data->AppendFileSystemFile(element.filesystem_url(),
-                                        element.offset(),
-                                        element.length(),
-                                        element.expected_modification_time());
+        blob_builder.AppendFileSystemFile(element.filesystem_url(),
+                                          element.offset(), element.length(),
+                                          element.expected_modification_time());
         break;
       default:
         NOTIMPLEMENTED();
@@ -462,7 +470,7 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   }
 
   request_body_blob_data_handle_ =
-      blob_storage_context_->AddFinishedBlob(blob_data.get());
+      blob_storage_context_->AddFinishedBlob(blob_builder);
   *blob_uuid = uuid;
   *blob_size = total_size;
   return true;

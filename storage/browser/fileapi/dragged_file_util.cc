@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/fileapi/native_file_util.h"
-#include "storage/common/blob/shareable_file_reference.h"
 
 namespace storage {
 

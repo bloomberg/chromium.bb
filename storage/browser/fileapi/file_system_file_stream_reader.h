@@ -10,9 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/common/blob/shareable_file_reference.h"
 
 namespace base {
 class FilePath;

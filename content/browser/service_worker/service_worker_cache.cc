@@ -17,6 +17,7 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request_context.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
@@ -343,7 +344,7 @@ struct ServiceWorkerCache::MatchContext {
 
   // Output
   scoped_ptr<ServiceWorkerResponse> response;
-  scoped_refptr<storage::BlobData> blob_data;
+  scoped_ptr<storage::BlobDataBuilder> blob_data;
 
   // For reading the cache entry data into a blob.
   scoped_refptr<net::IOBufferWithSize> response_body_buffer;
@@ -735,7 +736,8 @@ void ServiceWorkerCache::MatchDidReadMetadata(
 
   response->blob_uuid = base::GenerateGUID();
 
-  match_context->blob_data = new storage::BlobData(response->blob_uuid);
+  match_context->blob_data.reset(
+      new storage::BlobDataBuilder(response->blob_uuid));
   match_context->response_body_buffer = new net::IOBufferWithSize(kBufferSize);
 
   disk_cache::Entry* tmp_entry_ptr = match_context->entry;
@@ -810,7 +812,7 @@ void ServiceWorkerCache::MatchDoneWithBody(
 
   scoped_ptr<storage::BlobDataHandle> blob_data_handle(
       match_context->blob_storage_context->AddFinishedBlob(
-          match_context->blob_data.get()));
+          *match_context->blob_data.get()));
 
   match_context->original_callback.Run(ServiceWorkerCache::ErrorTypeOK,
                                        match_context->response.Pass(),

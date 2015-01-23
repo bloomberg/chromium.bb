@@ -25,7 +25,6 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/local_file_util.h"
-#include "storage/common/blob/blob_data.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

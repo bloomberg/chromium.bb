@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "storage/common/blob/shareable_file_reference.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 
 namespace content {
 

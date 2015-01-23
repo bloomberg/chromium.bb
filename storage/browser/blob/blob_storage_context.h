@@ -12,8 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/common/blob/blob_data.h"
+#include "storage/common/data_element.h"
 
 class GURL;
 
@@ -29,6 +30,7 @@ class BlobStorageHost;
 namespace storage {
 
 class BlobDataHandle;
+class BlobDataBuilder;
 
 // This class handles the logistics of blob Storage within the browser process,
 // and maintains a mapping from blob uuid to the data. The class is single
@@ -45,7 +47,7 @@ class STORAGE_EXPORT BlobStorageContext
 
   // Useful for coining blobs from within the browser process. If the
   // blob cannot be added due to memory consumption, returns NULL.
-  scoped_ptr<BlobDataHandle> AddFinishedBlob(const BlobData* blob_data);
+  scoped_ptr<BlobDataHandle> AddFinishedBlob(const BlobDataBuilder& blob_data);
 
   // Useful for coining blob urls from within the browser process.
   bool RegisterPublicBlobURL(const GURL& url, const std::string& uuid);
@@ -57,46 +59,54 @@ class STORAGE_EXPORT BlobStorageContext
   friend class ViewBlobInternalsJob;
 
   enum EntryFlags {
-    BEING_BUILT = 1 << 0,
     EXCEEDED_MEMORY = 1 << 1,
   };
 
   struct BlobMapEntry {
     int refcount;
     int flags;
-    scoped_refptr<BlobData> data;
+    // data and data_builder are mutually exclusive.
+    scoped_ptr<BlobDataSnapshot> data;
+    scoped_ptr<BlobDataBuilder> data_builder;
 
     BlobMapEntry();
-    BlobMapEntry(int refcount, int flags, BlobData* data);
+    BlobMapEntry(int refcount, BlobDataBuilder* data);
     ~BlobMapEntry();
+
+    bool IsBeingBuilt();
   };
 
-  typedef std::map<std::string, BlobMapEntry>
-      BlobMap;
+  typedef std::map<std::string, BlobMapEntry*> BlobMap;
   typedef std::map<GURL, std::string> BlobURLMap;
+
+  // Called by BlobDataHandle.
+  scoped_ptr<BlobDataSnapshot> CreateSnapshot(const std::string& uuid);
 
   void StartBuildingBlob(const std::string& uuid);
   void AppendBlobDataItem(const std::string& uuid,
-                          const BlobData::Item& data_item);
+                          const DataElement& data_item);
   void FinishBuildingBlob(const std::string& uuid, const std::string& type);
   void CancelBuildingBlob(const std::string& uuid);
   void IncrementBlobRefCount(const std::string& uuid);
   void DecrementBlobRefCount(const std::string& uuid);
 
-  bool ExpandStorageItems(BlobData* target_blob_data,
-                          BlobData* src_blob_data,
+  bool ExpandStorageItems(BlobDataBuilder* target_blob_data,
+                          const BlobDataSnapshot& src_blob_data,
                           uint64 offset,
                           uint64 length);
-  bool AppendBytesItem(BlobData* target_blob_data,
-                       const char* data, int64 length);
-  void AppendFileItem(BlobData* target_blob_data,
+  bool AppendBytesItem(BlobDataBuilder* target_blob_data,
+                       const char* data,
+                       int64 length);
+  void AppendFileItem(BlobDataBuilder* target_blob_data,
                       const base::FilePath& file_path,
-                      uint64 offset, uint64 length,
+                      uint64 offset,
+                      uint64 length,
                       const base::Time& expected_modification_time);
-  void AppendFileSystemFileItem(
-      BlobData* target_blob_data,
-      const GURL& url, uint64 offset, uint64 length,
-      const base::Time& expected_modification_time);
+  void AppendFileSystemFileItem(BlobDataBuilder* target_blob_data,
+                                const GURL& url,
+                                uint64 offset,
+                                uint64 length,
+                                const base::Time& expected_modification_time);
 
   bool IsInUse(const std::string& uuid);
   bool IsBeingBuilt(const std::string& uuid);

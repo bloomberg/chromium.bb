@@ -22,14 +22,16 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_url_request_job.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "storage/common/blob/blob_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::BlobData;
+using storage::BlobDataSnapshot;
+using storage::BlobDataBuilder;
 using storage::BlobURLRequestJob;
 
 namespace content {
@@ -64,9 +66,8 @@ class BlobURLRequestJobTest : public testing::Test {
     net::URLRequestJob* MaybeCreateJob(
         net::URLRequest* request,
         net::NetworkDelegate* network_delegate) const override {
-      return new BlobURLRequestJob(request,
-                                   network_delegate,
-                                   test_->blob_data_.get(),
+      return new BlobURLRequestJob(request, network_delegate,
+                                   test_->blob_data_->BuildSnapshot().Pass(),
                                    test_->file_system_context_.get(),
                                    base::MessageLoopProxy::current().get());
     }
@@ -76,8 +77,7 @@ class BlobURLRequestJobTest : public testing::Test {
   };
 
   BlobURLRequestJobTest()
-      : blob_data_(new BlobData()),
-        expected_status_code_(0) {}
+      : blob_data_(new BlobDataBuilder("uuid")), expected_status_code_(0) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -219,10 +219,10 @@ class BlobURLRequestJobTest : public testing::Test {
   // Otherwise, this will fail a CHECK.
   int64 GetTotalBlobLength() const {
     int64 total = 0;
-    const std::vector<BlobData::Item>& items = blob_data_->items();
-    for (std::vector<BlobData::Item>::const_iterator it = items.begin();
-         it != items.end(); ++it) {
-      int64 length = base::checked_cast<int64>(it->length());
+    scoped_ptr<BlobDataSnapshot> data = blob_data_->BuildSnapshot();
+    const auto& items = data->items();
+    for (const auto& item : items) {
+      int64 length = base::checked_cast<int64>(item->length());
       CHECK(length <= kint64max - total);
       total += length;
     }
@@ -243,7 +243,8 @@ class BlobURLRequestJobTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
-  scoped_refptr<BlobData> blob_data_;
+  scoped_ptr<BlobDataBuilder> blob_data_;
+  scoped_ptr<BlobDataSnapshot> blob_data_snapshot_;
   net::URLRequestJobFactoryImpl url_request_job_factory_;
   net::URLRequestContext url_request_context_;
   MockURLRequestDelegate url_request_delegate_;

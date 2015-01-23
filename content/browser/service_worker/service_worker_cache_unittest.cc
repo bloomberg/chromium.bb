@@ -18,11 +18,12 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "storage/common/blob/blob_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -227,12 +228,12 @@ class ServiceWorkerCacheTest : public testing::Test {
     for (int i = 0; i < 100; ++i)
       expected_blob_data_ += kTestData;
 
-    scoped_refptr<storage::BlobData> blob_data(
-        new storage::BlobData("blob-id:myblob"));
+    scoped_ptr<storage::BlobDataBuilder> blob_data(
+        new storage::BlobDataBuilder("blob-id:myblob"));
     blob_data->AppendData(expected_blob_data_);
 
     blob_handle_ =
-        blob_storage_context->context()->AddFinishedBlob(blob_data.get());
+        blob_storage_context->context()->AddFinishedBlob(*blob_data.get());
 
     body_response_ =
         ServiceWorkerResponse(GURL("http://example.com/body.html"),
@@ -385,10 +386,11 @@ class ServiceWorkerCacheTest : public testing::Test {
   }
 
   void CopyBody(storage::BlobDataHandle* blob_handle, std::string* output) {
-    storage::BlobData* data = blob_handle->data();
-    std::vector<storage::BlobData::Item> items = data->items();
-    for (size_t i = 0, max = items.size(); i < max; ++i)
-      output->append(items[i].bytes(), items[i].length());
+    scoped_ptr<storage::BlobDataSnapshot> data = blob_handle->CreateSnapshot();
+    const auto& items = data->items();
+    for (const auto& item : items) {
+      output->append(item->bytes(), item->length());
+    }
   }
 
   bool VerifyKeys(const std::vector<std::string>& expected_keys) {

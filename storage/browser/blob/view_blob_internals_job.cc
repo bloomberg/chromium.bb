@@ -18,8 +18,8 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
+#include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/common/blob/blob_data.h"
 
 namespace {
 
@@ -150,8 +150,7 @@ void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
        iter != blob_storage_context_->blob_map_.end();
        ++iter) {
     AddHTMLBoldText(iter->first, out);
-    GenerateHTMLForBlobData(*(iter->second.data.get()),
-                            iter->second.refcount,
+    GenerateHTMLForBlobData(*(iter->second->data.get()), iter->second->refcount,
                             out);
   }
   if (!blob_storage_context_->public_blob_urls_.empty()) {
@@ -168,9 +167,10 @@ void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
   }
 }
 
-void ViewBlobInternalsJob::GenerateHTMLForBlobData(const BlobData& blob_data,
-                                                   int refcount,
-                                                   std::string* out) {
+void ViewBlobInternalsJob::GenerateHTMLForBlobData(
+    const BlobDataSnapshot& blob_data,
+    int refcount,
+    std::string* out) {
   StartHTMLList(out);
 
   AddHTMLListItem(kRefcount, base::IntToString(refcount), out);
@@ -190,13 +190,13 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(const BlobData& blob_data,
       AddHTMLListItem(kIndex, base::UTF16ToUTF8(base::FormatNumber(i)), out);
       StartHTMLList(out);
     }
-    const BlobData::Item& item = blob_data.items().at(i);
+    const BlobDataItem& item = *(blob_data.items().at(i));
 
     switch (item.type()) {
-      case BlobData::Item::TYPE_BYTES:
+      case DataElement::TYPE_BYTES:
         AddHTMLListItem(kType, "data", out);
         break;
-      case BlobData::Item::TYPE_FILE:
+      case DataElement::TYPE_FILE:
         AddHTMLListItem(kType, "file", out);
         AddHTMLListItem(kPath,
                  net::EscapeForHTML(item.path().AsUTF8Unsafe()),
@@ -207,10 +207,10 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(const BlobData& blob_data,
               out);
         }
         break;
-      case BlobData::Item::TYPE_BLOB:
+      case DataElement::TYPE_BLOB:
         NOTREACHED();   // Should be flattened in the storage context.
         break;
-      case BlobData::Item::TYPE_FILE_FILESYSTEM:
+      case DataElement::TYPE_FILE_FILESYSTEM:
         AddHTMLListItem(kType, "filesystem", out);
         AddHTMLListItem(kURL, item.filesystem_url().spec(), out);
         if (!item.expected_modification_time().is_null()) {
@@ -219,7 +219,7 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(const BlobData& blob_data,
               out);
         }
         break;
-      case BlobData::Item::TYPE_UNKNOWN:
+      case DataElement::TYPE_UNKNOWN:
         NOTREACHED();
         break;
     }

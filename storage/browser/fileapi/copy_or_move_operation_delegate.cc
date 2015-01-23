@@ -9,6 +9,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/copy_or_move_file_validator.h"
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
@@ -16,7 +17,6 @@
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/recursive_operation_delegate.h"
-#include "storage/common/blob/shareable_file_reference.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 namespace storage {

@@ -37,8 +37,8 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_job.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/common/blob/blob_data.h"
 
 namespace content {
 
@@ -124,9 +124,10 @@ ServiceWorkerVersion::FetchCallback CreateResponseReceiver(
 void ReadResponseBody(std::string* body,
                       storage::BlobDataHandle* blob_data_handle) {
   ASSERT_TRUE(blob_data_handle);
-  ASSERT_EQ(1U, blob_data_handle->data()->items().size());
-  *body = std::string(blob_data_handle->data()->items()[0].bytes(),
-                      blob_data_handle->data()->items()[0].length());
+  scoped_ptr<storage::BlobDataSnapshot> data =
+      blob_data_handle->CreateSnapshot();
+  ASSERT_EQ(1U, data->items().size());
+  *body = std::string(data->items()[0]->bytes(), data->items()[0]->length());
 }
 
 void ExpectResultAndRun(bool expected,

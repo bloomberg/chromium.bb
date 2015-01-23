@@ -11,11 +11,8 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_storage_context.h"
-
-using storage::BlobData;
-using storage::BlobDataHandle;
-using storage::BlobStorageContext;
 
 namespace content {
 namespace {
@@ -64,6 +61,7 @@ class FileElementReader : public net::UploadFileElementReader {
 };
 
 void ResolveBlobReference(
+    ResourceRequestBody* body,
     storage::BlobStorageContext* blob_context,
     const ResourceRequestBody::Element& element,
     std::vector<const ResourceRequestBody::Element*>* resolved_elements) {
@@ -74,23 +72,29 @@ void ResolveBlobReference(
   if (!handle)
     return;
 
+  // TODO(dmurph): Create a reader for blobs instead of decomposing the blob
+  // and storing the snapshot on the request to keep the resources around.
+  // Currently a handle is attached to the request in the resource dispatcher
+  // host, so we know the blob won't go away, but it's not very clear or useful.
+  scoped_ptr<storage::BlobDataSnapshot> snapshot = handle->CreateSnapshot();
   // If there is no element in the referred blob data, just return.
-  if (handle->data()->items().empty())
+  if (snapshot->items().empty())
     return;
 
   // Append the elements in the referenced blob data.
-  for (size_t i = 0; i < handle->data()->items().size(); ++i) {
-    const BlobData::Item& item = handle->data()->items().at(i);
-    DCHECK_NE(BlobData::Item::TYPE_BLOB, item.type());
-    resolved_elements->push_back(&item);
+  for (const auto& item : snapshot->items()) {
+    DCHECK_NE(storage::DataElement::TYPE_BLOB, item->type());
+    resolved_elements->push_back(item->data_element_ptr());
   }
+  const void* key = snapshot.get();
+  body->SetUserData(key, snapshot.release());
 }
 
 }  // namespace
 
 scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
     ResourceRequestBody* body,
-    BlobStorageContext* blob_context,
+    storage::BlobStorageContext* blob_context,
     storage::FileSystemContext* file_system_context,
     base::TaskRunner* file_task_runner) {
   // Resolve all blob elements.
@@ -98,7 +102,7 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
   for (size_t i = 0; i < body->elements()->size(); ++i) {
     const ResourceRequestBody::Element& element = (*body->elements())[i];
     if (element.type() == ResourceRequestBody::Element::TYPE_BLOB)
-      ResolveBlobReference(blob_context, element, &resolved_elements);
+      ResolveBlobReference(body, blob_context, element, &resolved_elements);
     else
       resolved_elements.push_back(&element);
   }
@@ -128,6 +132,7 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
         break;
       case ResourceRequestBody::Element::TYPE_BLOB:
         // Blob elements should be resolved beforehand.
+        // TODO(dmurph): Create blob reader and store the snapshot in there.
         NOTREACHED();
         break;
       case ResourceRequestBody::Element::TYPE_UNKNOWN:

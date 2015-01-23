@@ -4,11 +4,10 @@
 
 #include "content/public/test/mock_blob_url_request_context.h"
 
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
-#include "storage/common/blob/blob_data.h"
-
 
 namespace content {
 
@@ -35,10 +34,10 @@ ScopedTextBlob::ScopedTextBlob(
     : blob_id_(blob_id),
       context_(request_context.blob_storage_context()) {
   DCHECK(context_);
-  scoped_refptr<storage::BlobData> blob_data(new storage::BlobData(blob_id_));
+  storage::BlobDataBuilder blob_builder(blob_id_);
   if (!data.empty())
-    blob_data->AppendData(data);
-  handle_ = context_->AddFinishedBlob(blob_data.get());
+    blob_builder.AppendData(data);
+  handle_ = context_->AddFinishedBlob(blob_builder);
 }
 
 ScopedTextBlob::~ScopedTextBlob() {

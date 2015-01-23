@@ -19,7 +19,7 @@ class IOBufferWithSize;
 }
 
 namespace storage {
-class BlobData;
+class BlobDataBuilder;
 class BlobDataHandle;
 class BlobStorageContext;
 class QuotaManagerProxy;

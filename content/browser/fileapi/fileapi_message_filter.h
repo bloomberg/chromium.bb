@@ -20,7 +20,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
-#include "storage/common/blob/blob_data.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/quota/quota_types.h"
 
@@ -49,6 +48,7 @@ class BlobStorageHost;
 
 namespace storage {
 class ShareableFileReference;
+class DataElement;
 }
 
 namespace content {
@@ -130,7 +130,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
 
   void OnStartBuildingBlob(const std::string& uuid);
   void OnAppendBlobDataItemToBlob(const std::string& uuid,
-                                  const storage::BlobData::Item& item);
+                                  const storage::DataElement& item);
   void OnAppendSharedMemoryToBlob(const std::string& uuid,
                                   base::SharedMemoryHandle handle,
                                   size_t buffer_size);
@@ -151,7 +151,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   // TODO(tyoshino): Set |content_type| to the stream.
   void OnStartBuildingStream(const GURL& url, const std::string& content_type);
   void OnAppendBlobDataItemToStream(const GURL& url,
-                                    const storage::BlobData::Item& item);
+                                    const storage::DataElement& item);
   void OnAppendSharedMemoryToStream(
       const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size);
   void OnFlushStream(const GURL& url);

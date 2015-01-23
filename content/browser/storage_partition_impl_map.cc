@@ -39,7 +39,6 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/fileapi/file_system_url_request_job_factory.h"
-#include "storage/common/blob/blob_data.h"
 
 using storage::FileSystemContext;
 using storage::BlobStorageContext;

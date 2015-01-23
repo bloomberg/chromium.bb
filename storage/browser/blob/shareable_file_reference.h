@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_BLOB_SHAREABLE_FILE_REFERENCE_H_
-#define STORAGE_COMMON_BLOB_SHAREABLE_FILE_REFERENCE_H_
+#ifndef STORAGE_BROWSER_BLOB_SHAREABLE_FILE_REFERENCE_H_
+#define STORAGE_BROWSER_BLOB_SHAREABLE_FILE_REFERENCE_H_
 
 #include <vector>
 
-#include "storage/common/blob/scoped_file.h"
+#include "storage/browser/blob/scoped_file.h"
+#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
@@ -15,7 +16,7 @@ namespace storage {
 // same path if it already exists in its internal map.
 // This class is non-thread-safe and all methods must be called on a single
 // thread.
-class STORAGE_COMMON_EXPORT ShareableFileReference
+class STORAGE_EXPORT ShareableFileReference
     : public base::RefCounted<ShareableFileReference> {
  public:
   typedef ScopedFile::ScopeOutCallback FinalReleaseCallback;
@@ -71,4 +72,4 @@ class STORAGE_COMMON_EXPORT ShareableFileReference
 
 }  // namespace storage
 
-#endif  // STORAGE_COMMON_BLOB_SHAREABLE_FILE_REFERENCE_H_
+#endif  // STORAGE_BROWSER_BLOB_SHAREABLE_FILE_REFERENCE_H_

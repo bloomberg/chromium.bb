@@ -22,9 +22,8 @@
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/common/blob/blob_data.h"
-#include "storage/common/blob/shareable_file_reference.h"
 
 using storage::ShareableFileReference;
 

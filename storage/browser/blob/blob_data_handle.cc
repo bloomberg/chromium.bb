@@ -8,38 +8,38 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/common/blob/blob_data.h"
 
 namespace storage {
 
 BlobDataHandle::BlobDataHandleShared::BlobDataHandleShared(
-    BlobData* blob_data,
+    const std::string& uuid,
     BlobStorageContext* context,
     base::SequencedTaskRunner* task_runner)
-    : blob_data_(blob_data),
-      context_(context->AsWeakPtr()) {
-  context_->IncrementBlobRefCount(blob_data->uuid());
+    : uuid_(uuid), context_(context->AsWeakPtr()) {
+  context_->IncrementBlobRefCount(uuid);
 }
 
-BlobData* BlobDataHandle::BlobDataHandleShared::data() const {
-  return blob_data_.get();
+scoped_ptr<BlobDataSnapshot>
+BlobDataHandle::BlobDataHandleShared::CreateSnapshot() const {
+  return context_->CreateSnapshot(uuid_).Pass();
 }
 
 const std::string& BlobDataHandle::BlobDataHandleShared::uuid() const {
-  return blob_data_->uuid();
+  return uuid_;
 }
 
 BlobDataHandle::BlobDataHandleShared::~BlobDataHandleShared() {
   if (context_.get())
-    context_->DecrementBlobRefCount(blob_data_->uuid());
+    context_->DecrementBlobRefCount(uuid_);
 }
 
-BlobDataHandle::BlobDataHandle(BlobData* blob_data,
+BlobDataHandle::BlobDataHandle(const std::string& uuid,
                                BlobStorageContext* context,
                                base::SequencedTaskRunner* task_runner)
     : io_task_runner_(task_runner),
-      shared_(new BlobDataHandleShared(blob_data, context, task_runner)) {
+      shared_(new BlobDataHandleShared(uuid, context, task_runner)) {
   DCHECK(io_task_runner_.get());
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 }
@@ -52,16 +52,16 @@ BlobDataHandle::BlobDataHandle(const BlobDataHandle& other) {
 BlobDataHandle::~BlobDataHandle() {
   BlobDataHandleShared* raw = shared_.get();
   raw->AddRef();
-  shared_ = 0;
+  shared_ = nullptr;
   io_task_runner_->ReleaseSoon(FROM_HERE, raw);
 }
 
-BlobData* BlobDataHandle::data() const {
+scoped_ptr<BlobDataSnapshot> BlobDataHandle::CreateSnapshot() const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  return shared_->data();
+  return shared_->CreateSnapshot().Pass();
 }
 
-std::string BlobDataHandle::uuid() const {
+const std::string& BlobDataHandle::uuid() const {
   return shared_->uuid();
 }
 

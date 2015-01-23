@@ -6,12 +6,10 @@
 
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
-#include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "url/gurl.h"
 
 using storage::BlobStorageContext;
-using storage::BlobData;
 
 namespace content {
 
@@ -42,7 +40,8 @@ bool BlobStorageHost::StartBuildingBlob(const std::string& uuid) {
 }
 
 bool BlobStorageHost::AppendBlobDataItem(
-    const std::string& uuid, const BlobData::Item& data_item) {
+    const std::string& uuid,
+    const storage::DataElement& data_item) {
   if (!context_.get() || !IsBeingBuiltInHost(uuid))
     return false;
   context_->AppendBlobDataItem(uuid, data_item);

@@ -27,13 +27,14 @@
 #include "net/base/mime_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/isolated_context.h"
-#include "storage/common/blob/blob_data.h"
-#include "storage/common/blob/shareable_file_reference.h"
+#include "storage/common/data_element.h"
 #include "storage/common/fileapi/directory_entry.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -44,7 +45,7 @@ using storage::FileSystemFileUtil;
 using storage::FileSystemBackend;
 using storage::FileSystemOperation;
 using storage::FileSystemURL;
-using storage::BlobData;
+using storage::BlobDataBuilder;
 using storage::BlobStorageContext;
 
 namespace content {
@@ -519,9 +520,10 @@ void FileAPIMessageFilter::OnStartBuildingBlob(const std::string& uuid) {
 }
 
 void FileAPIMessageFilter::OnAppendBlobDataItemToBlob(
-    const std::string& uuid, const BlobData::Item& item) {
+    const std::string& uuid,
+    const storage::DataElement& item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (item.type() == BlobData::Item::TYPE_FILE_FILESYSTEM) {
+  if (item.type() == storage::DataElement::TYPE_FILE_FILESYSTEM) {
     FileSystemURL filesystem_url(context_->CrackURL(item.filesystem_url()));
     if (!FileSystemURLIsValid(context_, filesystem_url) ||
         !security_policy_->CanReadFileSystemFile(process_id_, filesystem_url)) {
@@ -529,7 +531,7 @@ void FileAPIMessageFilter::OnAppendBlobDataItemToBlob(
       return;
     }
   }
-  if (item.type() == BlobData::Item::TYPE_FILE &&
+  if (item.type() == storage::DataElement::TYPE_FILE &&
       !security_policy_->CanReadFile(process_id_, item.path())) {
     ignore_result(blob_storage_host_->CancelBuildingBlob(uuid));
     return;
@@ -560,7 +562,7 @@ void FileAPIMessageFilter::OnAppendSharedMemoryToBlob(
     return;
   }
 
-  BlobData::Item item;
+  storage::DataElement item;
   item.SetToSharedBytes(static_cast<char*>(shared_memory.memory()),
                         buffer_size);
   ignore_result(blob_storage_host_->AppendBlobDataItem(uuid, item));
@@ -613,7 +615,8 @@ void FileAPIMessageFilter::OnStartBuildingStream(
 }
 
 void FileAPIMessageFilter::OnAppendBlobDataItemToStream(
-    const GURL& url, const BlobData::Item& item) {
+    const GURL& url,
+    const storage::DataElement& item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   scoped_refptr<Stream> stream(GetStreamForURL(url));
@@ -623,7 +626,7 @@ void FileAPIMessageFilter::OnAppendBlobDataItemToStream(
     return;
 
   // Data for stream is delivered as TYPE_BYTES item.
-  if (item.type() != BlobData::Item::TYPE_BYTES) {
+  if (item.type() != storage::DataElement::TYPE_BYTES) {
     BadMessageReceived();
     return;
   }

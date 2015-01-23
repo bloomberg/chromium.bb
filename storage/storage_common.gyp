@@ -22,12 +22,6 @@
       'sources': [
         'common/data_element.cc',
         'common/data_element.h',
-        'common/blob/blob_data.cc',
-        'common/blob/blob_data.h',
-        'common/blob/scoped_file.cc',
-        'common/blob/scoped_file.h',
-        'common/blob/shareable_file_reference.cc',
-        'common/blob/shareable_file_reference.h',
         'common/database/database_connections.cc',
         'common/database/database_connections.h',
         'common/database/database_identifier.cc',

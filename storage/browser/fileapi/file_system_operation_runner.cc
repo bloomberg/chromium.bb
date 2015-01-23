@@ -9,12 +9,12 @@
 #include "base/stl_util.h"
 #include "net/url_request/url_request_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_writer_delegate.h"
-#include "storage/common/blob/shareable_file_reference.h"
 
 namespace storage {
 

@@ -9,6 +9,7 @@
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
@@ -24,8 +25,7 @@ const char kBlobStorageContextKeyName[] = "content_blob_storage_context";
 class BlobHandleImpl : public BlobHandle {
  public:
   explicit BlobHandleImpl(scoped_ptr<storage::BlobDataHandle> handle)
-      : handle_(handle.Pass()) {
-  }
+      : handle_(handle.Pass()) {}
 
   ~BlobHandleImpl() override {}
 
@@ -69,11 +69,12 @@ scoped_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   std::string uuid(base::GenerateGUID());
-  scoped_refptr<storage::BlobData> blob_data = new storage::BlobData(uuid);
-  blob_data->AppendData(data, length);
+  scoped_ptr<storage::BlobDataBuilder> blob_data_builder(
+      new storage::BlobDataBuilder(uuid));
+  blob_data_builder->AppendData(data, length);
 
   scoped_ptr<storage::BlobDataHandle> blob_data_handle =
-      context_->AddFinishedBlob(blob_data.get());
+      context_->AddFinishedBlob(*blob_data_builder.get());
   if (!blob_data_handle)
     return scoped_ptr<BlobHandle>();
 

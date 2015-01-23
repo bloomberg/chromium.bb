@@ -8,7 +8,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "storage/common/blob/blob_data.h"
+#include "storage/common/data_element.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -20,7 +20,7 @@ IPC_MESSAGE_CONTROL1(BlobHostMsg_StartBuilding,
                      std::string /*uuid */)
 IPC_MESSAGE_CONTROL2(BlobHostMsg_AppendBlobDataItem,
                      std::string /* uuid */,
-                     storage::BlobData::Item)
+                     storage::DataElement)
 IPC_SYNC_MESSAGE_CONTROL3_0(BlobHostMsg_SyncAppendSharedMemory,
                             std::string /*uuid*/,
                             base::SharedMemoryHandle,
@@ -49,7 +49,7 @@ IPC_MESSAGE_CONTROL2(StreamHostMsg_StartBuilding,
 // Appends data to a stream being built.
 IPC_MESSAGE_CONTROL2(StreamHostMsg_AppendBlobDataItem,
                      GURL /* url */,
-                     storage::BlobData::Item)
+                     storage::DataElement)
 
 // Appends data to a stream being built.
 IPC_SYNC_MESSAGE_CONTROL3_0(StreamHostMsg_SyncAppendSharedMemory,

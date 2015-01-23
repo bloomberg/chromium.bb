@@ -26,7 +26,7 @@ class URLRequestContext;
 
 namespace storage {
 
-class BlobData;
+class BlobDataSnapshot;
 class BlobDataHandle;
 class BlobStorageContext;
 
@@ -56,8 +56,7 @@ class STORAGE_EXPORT BlobProtocolHandler
       net::NetworkDelegate* network_delegate) const override;
 
  private:
-  scoped_refptr<BlobData> LookupBlobData(
-      net::URLRequest* request) const;
+  scoped_ptr<BlobDataSnapshot> LookupBlobData(net::URLRequest* request) const;
 
   base::WeakPtr<BlobStorageContext> context_;
   const scoped_refptr<storage::FileSystemContext> file_system_context_;

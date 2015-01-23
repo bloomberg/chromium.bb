@@ -27,6 +27,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/common/database/database_identifier.h"
@@ -226,11 +227,11 @@ std::string IndexedDBDispatcherHost::HoldBlobData(
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
   if (uuid.empty()) {
     uuid = base::GenerateGUID();
-    scoped_refptr<storage::BlobData> blob_data = new storage::BlobData(uuid);
-    blob_data->set_content_type(base::UTF16ToUTF8(blob_info.type()));
-    blob_data->AppendFile(blob_info.file_path(), 0, blob_info.size(),
-                          blob_info.last_modified());
-    blob_data_handle = context->AddFinishedBlob(blob_data.get());
+    storage::BlobDataBuilder blob_data_builder(uuid);
+    blob_data_builder.set_content_type(base::UTF16ToUTF8(blob_info.type()));
+    blob_data_builder.AppendFile(blob_info.file_path(), 0, blob_info.size(),
+                                 blob_info.last_modified());
+    blob_data_handle = context->AddFinishedBlob(blob_data_builder);
   } else {
     auto iter = blob_data_handle_map_.find(uuid);
     if (iter != blob_data_handle_map_.end()) {

@@ -16,11 +16,12 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using storage::BlobData;
+using storage::BlobDataBuilder;
 using storage::BlobDataHandle;
 using storage::BlobStorageContext;
 
@@ -105,29 +106,30 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
     BlobStorageContext blob_storage_context;
 
     const std::string blob_id0("id-0");
-    scoped_refptr<BlobData> blob_data(new BlobData(blob_id0));
+    scoped_ptr<BlobDataBuilder> blob_data_builder(
+        new BlobDataBuilder(blob_id0));
     scoped_ptr<BlobDataHandle> handle1 =
-        blob_storage_context.AddFinishedBlob(blob_data.get());
+        blob_storage_context.AddFinishedBlob(*blob_data_builder.get());
 
     const std::string blob_id1("id-1");
-    blob_data = new BlobData(blob_id1);
-    blob_data->AppendData("BlobData");
-    blob_data->AppendFile(
+    blob_data_builder.reset(new BlobDataBuilder(blob_id1));
+    blob_data_builder->AppendData("BlobData");
+    blob_data_builder->AppendFile(
         base::FilePath(FILE_PATH_LITERAL("BlobFile.txt")), 0, 20, time1);
     scoped_ptr<BlobDataHandle> handle2 =
-        blob_storage_context.AddFinishedBlob(blob_data.get());
+        blob_storage_context.AddFinishedBlob(*blob_data_builder.get());
 
     // Setup upload data elements for comparison.
+    auto blob_data = blob_data_builder->BuildSnapshot();
     ResourceRequestBody::Element blob_element1, blob_element2;
     blob_element1.SetToBytes(
-        blob_data->items().at(0).bytes() +
-        static_cast<int>(blob_data->items().at(0).offset()),
-        static_cast<int>(blob_data->items().at(0).length()));
+        blob_data->items().at(0)->bytes() +
+            static_cast<int>(blob_data->items().at(0)->offset()),
+        static_cast<int>(blob_data->items().at(0)->length()));
     blob_element2.SetToFilePathRange(
-        blob_data->items().at(1).path(),
-        blob_data->items().at(1).offset(),
-        blob_data->items().at(1).length(),
-        blob_data->items().at(1).expected_modification_time());
+        blob_data->items().at(1)->path(), blob_data->items().at(1)->offset(),
+        blob_data->items().at(1)->length(),
+        blob_data->items().at(1)->expected_modification_time());
 
     ResourceRequestBody::Element upload_element1, upload_element2;
     upload_element1.SetToBytes("Hello", 5);

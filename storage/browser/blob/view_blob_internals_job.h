@@ -17,7 +17,7 @@ class URLRequest;
 
 namespace storage {
 
-class BlobData;
+class BlobDataSnapshot;
 class BlobStorageContext;
 
 // A job subclass that implements a protocol to inspect the internal
@@ -41,7 +41,7 @@ class STORAGE_EXPORT ViewBlobInternalsJob
   ~ViewBlobInternalsJob() override;
 
   void GenerateHTML(std::string* out) const;
-  static void GenerateHTMLForBlobData(const BlobData& blob_data,
+  static void GenerateHTMLForBlobData(const BlobDataSnapshot& blob_data,
                                       int refcount,
                                       std::string* out);
 

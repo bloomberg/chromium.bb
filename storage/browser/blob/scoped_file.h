@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_BLOB_SCOPED_FILE_H_
-#define STORAGE_COMMON_BLOB_SCOPED_FILE_H_
+#ifndef STORAGE_BROWSER_BLOB_SCOPED_FILE_H_
+#define STORAGE_BROWSER_BLOB_SCOPED_FILE_H_
 
 #include <map>
 
@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/move.h"
-#include "storage/common/storage_common_export.h"
+#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class TaskRunner;
@@ -26,7 +26,7 @@ namespace storage {
 //
 // TODO(kinuko): Probably this can be moved under base or somewhere more
 // common place.
-class STORAGE_COMMON_EXPORT ScopedFile {
+class STORAGE_EXPORT ScopedFile {
   // To support destructive assignment from an l-value assignment.
   // This provides Pass() method which creates an r-value for the current
   // instance. (See base/move.h for details)
@@ -91,4 +91,4 @@ class STORAGE_COMMON_EXPORT ScopedFile {
 
 }  // namespace storage
 
-#endif  // STORAGE_COMMON_BLOB_SCOPED_FILE_H_
+#endif  // STORAGE_BROWSER_BLOB_SCOPED_FILE_H_

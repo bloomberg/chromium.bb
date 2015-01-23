@@ -12,7 +12,7 @@
 #include "content/child/child_thread.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
-#include "storage/common/blob/blob_data.h"
+#include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThreadSafeData.h"
@@ -56,7 +56,7 @@ void WebBlobRegistryImpl::registerBlobData(
       }
       case WebBlobData::Item::TypeFile:
         if (data_item.length) {
-          storage::BlobData::Item item;
+          storage::DataElement item;
           item.SetToFilePathRange(
               base::FilePath::FromUTF16Unsafe(data_item.filePath),
               static_cast<uint64>(data_item.offset),
@@ -68,7 +68,7 @@ void WebBlobRegistryImpl::registerBlobData(
         break;
       case WebBlobData::Item::TypeBlob:
         if (data_item.length) {
-          storage::BlobData::Item item;
+          storage::DataElement item;
           item.SetToBlobRange(
               data_item.blobUUID.utf8(),
               static_cast<uint64>(data_item.offset),
@@ -81,7 +81,7 @@ void WebBlobRegistryImpl::registerBlobData(
         if (data_item.length) {
           // We only support filesystem URL as of now.
           DCHECK(GURL(data_item.fileSystemURL).SchemeIsFileSystem());
-          storage::BlobData::Item item;
+          storage::DataElement item;
           item.SetToFileSystemUrlRange(
               data_item.fileSystemURL,
               static_cast<uint64>(data_item.offset),
@@ -122,7 +122,7 @@ void WebBlobRegistryImpl::SendDataForBlob(const std::string& uuid_str,
   if (data.size() == 0)
     return;
   if (data.size() < kLargeThresholdBytes) {
-    storage::BlobData::Item item;
+    storage::DataElement item;
     item.SetToBytes(data.data(), data.size());
     sender_->Send(new BlobHostMsg_AppendBlobDataItem(uuid_str, item));
   } else {
@@ -170,7 +170,7 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
   if (length == 0)
     return;
   if (length < kLargeThresholdBytes) {
-    storage::BlobData::Item item;
+    storage::DataElement item;
     item.SetToBytes(data, length);
     sender_->Send(new StreamHostMsg_AppendBlobDataItem(url, item));
   } else {

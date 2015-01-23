@@ -94,10 +94,9 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/common/blob/blob_data.h"
-#include "storage/common/blob/shareable_file_reference.h"
 #include "url/url_constants.h"
 
 using base::Time;

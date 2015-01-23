@@ -36,10 +36,10 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
-#include "storage/common/blob/blob_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -104,7 +104,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
  protected:
   ServiceWorkerURLRequestJobTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        blob_data_(new storage::BlobData("blob-id:myblob")) {}
+        blob_data_(new storage::BlobDataBuilder("blob-id:myblob")) {}
   ~ServiceWorkerURLRequestJobTest() override {}
 
   void SetUp() override {
@@ -198,7 +198,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
   MockURLRequestDelegate url_request_delegate_;
   scoped_ptr<net::URLRequest> request_;
 
-  scoped_refptr<storage::BlobData> blob_data_;
+  scoped_ptr<storage::BlobDataBuilder> blob_data_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLRequestJobTest);
@@ -255,7 +255,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
     expected_response += kTestData;
   }
   scoped_ptr<storage::BlobDataHandle> blob_handle =
-      blob_storage_context->context()->AddFinishedBlob(blob_data_.get());
+      blob_storage_context->context()->AddFinishedBlob(*blob_data_.get());
   SetUpWithHelper(new BlobResponder(
       kProcessID, blob_handle->uuid(), expected_response.size()));
 

@@ -9,18 +9,24 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "content/browser/fileapi/blob_storage_host.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using storage::BlobDataBuilder;
 using storage::BlobDataHandle;
+using storage::BlobDataSnapshot;
+using storage::BlobStorageContext;
+using storage::DataElement;
 
 namespace content {
 
 namespace {
 void SetupBasicBlob(BlobStorageHost* host, const std::string& id) {
   EXPECT_TRUE(host->StartBuildingBlob(id));
-  BlobData::Item item;
+  DataElement item;
   item.SetToBytes("1", 1);
   EXPECT_TRUE(host->AppendBlobDataItem(id, item));
   EXPECT_TRUE(host->FinishBuildingBlob(id, "text/plain"));
@@ -64,6 +70,22 @@ TEST(BlobStorageContextTest, IncrementDecrementRef) {
   EXPECT_FALSE(blob_data_handle);
   EXPECT_FALSE(host.DecrementBlobRefCount(kId));
   EXPECT_FALSE(host.IncrementBlobRefCount(kId));
+}
+
+TEST(BlobStorageContextTest, CancelBuildingBlob) {
+  BlobStorageContext context;
+  BlobStorageHost host(&context);
+  base::MessageLoop fake_io_message_loop;
+
+  // Build up a basic blob.
+  const std::string kId("id");
+  EXPECT_TRUE(host.StartBuildingBlob(kId));
+  DataElement item;
+  item.SetToBytes("1", 1);
+  EXPECT_TRUE(host.AppendBlobDataItem(kId, item));
+  EXPECT_TRUE(host.CancelBuildingBlob(kId));
+  EXPECT_FALSE(host.FinishBuildingBlob(kId, "text/plain"));
+  EXPECT_TRUE(host.StartBuildingBlob(kId));
 }
 
 TEST(BlobStorageContextTest, BlobDataHandle) {
@@ -111,19 +133,20 @@ TEST(BlobStorageContextTest, CompoundBlobs) {
   base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &time1);
   base::Time::FromString("Mon, 14 Nov 1994, 11:30:49 GMT", &time2);
 
-  scoped_refptr<BlobData> blob_data1(new BlobData(kId1));
+  scoped_ptr<BlobDataBuilder> blob_data1(new BlobDataBuilder(kId1));
   blob_data1->AppendData("Data1");
   blob_data1->AppendData("Data2");
   blob_data1->AppendFile(base::FilePath(FILE_PATH_LITERAL("File1.txt")),
     10, 1024, time1);
 
-  scoped_refptr<BlobData> blob_data2(new BlobData(kId2));
+  scoped_ptr<BlobDataBuilder> blob_data2(new BlobDataBuilder(kId2));
   blob_data2->AppendData("Data3");
   blob_data2->AppendBlob(kId1, 8, 100);
   blob_data2->AppendFile(base::FilePath(FILE_PATH_LITERAL("File2.txt")),
       0, 20, time2);
 
-  scoped_refptr<BlobData> canonicalized_blob_data2(new BlobData(kId2Prime));
+  scoped_ptr<BlobDataBuilder> canonicalized_blob_data2(
+      new BlobDataBuilder(kId2Prime));
   canonicalized_blob_data2->AppendData("Data3");
   canonicalized_blob_data2->AppendData("a2___", 2);
   canonicalized_blob_data2->AppendFile(
@@ -136,14 +159,18 @@ TEST(BlobStorageContextTest, CompoundBlobs) {
   scoped_ptr<BlobDataHandle> blob_data_handle;
 
   // Test a blob referring to only data and a file.
-  blob_data_handle = context.AddFinishedBlob(blob_data1.get());
-  ASSERT_TRUE(blob_data_handle.get());
-  EXPECT_TRUE(*(blob_data_handle->data()) == *blob_data1.get());
+  blob_data_handle = context.AddFinishedBlob(*blob_data1.get());
+  ASSERT_TRUE(blob_data_handle);
+  scoped_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
+  ASSERT_TRUE(blob_data_handle);
+  EXPECT_EQ(*data, *blob_data1);
 
   // Test a blob composed in part with another blob.
-  blob_data_handle = context.AddFinishedBlob(blob_data2.get());
-  ASSERT_TRUE(blob_data_handle.get());
-  EXPECT_TRUE(*(blob_data_handle->data()) == *canonicalized_blob_data2.get());
+  blob_data_handle = context.AddFinishedBlob(*blob_data2.get());
+  data = blob_data_handle->CreateSnapshot();
+  ASSERT_TRUE(blob_data_handle);
+  ASSERT_TRUE(data);
+  EXPECT_EQ(*data, *canonicalized_blob_data2);
 
   blob_data_handle.reset();
   {  // Clean up for ASAN
@@ -167,7 +194,8 @@ TEST(BlobStorageContextTest, PublicBlobUrls) {
   scoped_ptr<BlobDataHandle> blob_data_handle =
       context.GetBlobDataFromPublicURL(kUrl);
   ASSERT_TRUE(blob_data_handle.get());
-  EXPECT_EQ(kId, blob_data_handle->data()->uuid());
+  EXPECT_EQ(kId, blob_data_handle->uuid());
+  scoped_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
   blob_data_handle.reset();
   {  // Clean up for ASAN
     base::RunLoop run_loop;
@@ -222,7 +250,7 @@ TEST(BlobStorageContextTest, EarlyContextDeletion) {
   const std::string kId("id");
   GURL kUrl("blob:id");
   EXPECT_FALSE(host.StartBuildingBlob(kId));
-  BlobData::Item item;
+  DataElement item;
   item.SetToBytes("1", 1);
   EXPECT_FALSE(host.AppendBlobDataItem(kId, item));
   EXPECT_FALSE(host.FinishBuildingBlob(kId, "text/plain"));
