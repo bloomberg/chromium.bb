@@ -127,7 +127,9 @@ bool FileSystemPolicy::GenerateRules(const wchar_t* name,
                             GENERIC_READ | GENERIC_EXECUTE | READ_CONTROL;
       DWORD restricted_flags = ~allowed_flags;
       open.AddNumberMatch(IF_NOT, OpenFile::ACCESS, restricted_flags, AND);
+      open.AddNumberMatch(IF, OpenFile::DISPOSITION, FILE_OPEN, EQUAL);
       create.AddNumberMatch(IF_NOT, OpenFile::ACCESS, restricted_flags, AND);
+      create.AddNumberMatch(IF, OpenFile::DISPOSITION, FILE_OPEN, EQUAL);
 
       // Read only access don't work for rename.
       rule_to_add &= ~kCallNtSetInfoRename;

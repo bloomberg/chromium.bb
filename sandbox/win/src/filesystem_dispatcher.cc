@@ -102,6 +102,7 @@ bool FilesystemDispatcher::NtCreateFile(IPCInfo* ipc,
   CountedParameterSet<OpenFile> params;
   params[OpenFile::NAME] = ParamPickerMake(filename);
   params[OpenFile::ACCESS] = ParamPickerMake(desired_access);
+  params[OpenFile::DISPOSITION] = ParamPickerMake(create_disposition);
   params[OpenFile::OPTIONS] = ParamPickerMake(create_options);
   params[OpenFile::BROKER] = ParamPickerMake(broker);
 
@@ -144,9 +145,11 @@ bool FilesystemDispatcher::NtOpenFile(IPCInfo* ipc,
   const wchar_t* filename = name->c_str();
 
   uint32 broker = TRUE;
+  uint32 create_disposition = 0;
   CountedParameterSet<OpenFile> params;
   params[OpenFile::NAME] = ParamPickerMake(filename);
   params[OpenFile::ACCESS] = ParamPickerMake(desired_access);
+  params[OpenFile::DISPOSITION] = ParamPickerMake(create_disposition);
   params[OpenFile::OPTIONS] = ParamPickerMake(open_options);
   params[OpenFile::BROKER] = ParamPickerMake(broker);
 

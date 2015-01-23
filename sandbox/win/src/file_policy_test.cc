@@ -28,34 +28,47 @@ namespace sandbox {
 const ULONG kSharing = FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE;
 
 // Creates a file using different desired access. Returns if the call succeeded
-// or not.  The first argument in argv is the filename. If the second argument
-// is "read", we try read only access. Otherwise we try read-write access.
+// or not.  The first argument in argv is the filename. The second argument
+// determines the type of access and the dispositino of the file.
 SBOX_TESTS_COMMAND int File_Create(int argc, wchar_t **argv) {
   if (argc != 2)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
-  bool read = (_wcsicmp(argv[0], L"Read") == 0);
+  std::wstring operation(argv[0]);
 
-  if (read) {
+  if (operation == L"Read") {
     base::win::ScopedHandle file1(CreateFile(
         argv[1], GENERIC_READ, kSharing, NULL, OPEN_EXISTING, 0, NULL));
     base::win::ScopedHandle file2(CreateFile(
         argv[1], FILE_EXECUTE, kSharing, NULL, OPEN_EXISTING, 0, NULL));
 
-    if (file1.Get() && file2.Get())
-      return SBOX_TEST_SUCCEEDED;
-    return SBOX_TEST_DENIED;
-  } else {
+    if (file1.IsValid() == file2.IsValid())
+      return file1.IsValid() ? SBOX_TEST_SUCCEEDED : SBOX_TEST_DENIED;
+    return file1.IsValid() ? SBOX_TEST_FIRST_ERROR : SBOX_TEST_SECOND_ERROR;
+
+  } else if (operation == L"Write") {
     base::win::ScopedHandle file1(CreateFile(
         argv[1], GENERIC_ALL, kSharing, NULL, OPEN_EXISTING, 0, NULL));
     base::win::ScopedHandle file2(CreateFile(
         argv[1], GENERIC_READ | FILE_WRITE_DATA, kSharing, NULL, OPEN_EXISTING,
         0, NULL));
 
-    if (file1.Get() && file2.Get())
-      return SBOX_TEST_SUCCEEDED;
-    return SBOX_TEST_DENIED;
+    if (file1.IsValid() == file2.IsValid())
+      return file1.IsValid() ? SBOX_TEST_SUCCEEDED : SBOX_TEST_DENIED;
+    return file1.IsValid() ? SBOX_TEST_FIRST_ERROR : SBOX_TEST_SECOND_ERROR;
+
+  } else if (operation == L"ReadCreate") {
+    base::win::ScopedHandle file2(CreateFile(
+        argv[1], GENERIC_READ, kSharing, NULL, CREATE_NEW, 0, NULL));
+    base::win::ScopedHandle file1(CreateFile(
+        argv[1], GENERIC_READ, kSharing, NULL, CREATE_ALWAYS, 0, NULL));
+
+    if (file1.IsValid() == file2.IsValid())
+      return file1.IsValid() ? SBOX_TEST_SUCCEEDED : SBOX_TEST_DENIED;
+    return file1.IsValid() ? SBOX_TEST_FIRST_ERROR : SBOX_TEST_SECOND_ERROR;
   }
+
+  return SBOX_TEST_INVALID_PARAMETER;
 }
 
 SBOX_TESTS_COMMAND int File_Win32Create(int argc, wchar_t **argv) {
@@ -295,14 +308,20 @@ TEST(FilePolicyTest, AllowReadOnly) {
 
   wchar_t command_read[MAX_PATH + 20] = {0};
   wsprintf(command_read, L"File_Create Read \"%ls\"", temp_file_name);
+  wchar_t command_read_create[MAX_PATH + 20] = {0};
+  wsprintf(command_read_create, L"File_Create ReadCreate \"%ls\"",
+           temp_file_name);
   wchar_t command_write[MAX_PATH + 20] = {0};
   wsprintf(command_write, L"File_Create Write \"%ls\"", temp_file_name);
 
-  // Verify that we have read access after revert.
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command_read));
+  // Verify that we cannot create the file after revert.
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command_read_create));
 
   // Verify that we don't have write access after revert.
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command_write));
+
+  // Verify that we have read access after revert.
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command_read));
 
   // Verify that we really have write access to the file.
   runner.SetTestState(BEFORE_REVERT);

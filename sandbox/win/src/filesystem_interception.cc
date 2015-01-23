@@ -54,10 +54,12 @@ NTSTATUS WINAPI TargetNtCreateFile(NtCreateFileFunction orig_CreateFile,
 
     uint32 desired_access_uint32 = desired_access;
     uint32 options_uint32 = options;
+    uint32 disposition_uint32 = disposition;
     uint32 broker = FALSE;
     CountedParameterSet<OpenFile> params;
     params[OpenFile::NAME] = ParamPickerMake(name);
     params[OpenFile::ACCESS] = ParamPickerMake(desired_access_uint32);
+    params[OpenFile::DISPOSITION] = ParamPickerMake(disposition_uint32);
     params[OpenFile::OPTIONS] = ParamPickerMake(options_uint32);
     params[OpenFile::BROKER] = ParamPickerMake(broker);
 
@@ -128,10 +130,12 @@ NTSTATUS WINAPI TargetNtOpenFile(NtOpenFileFunction orig_OpenFile, PHANDLE file,
 
     uint32 desired_access_uint32 = desired_access;
     uint32 options_uint32 = options;
+    uint32 disposition_uint32 = FILE_OPEN;
     uint32 broker = FALSE;
     CountedParameterSet<OpenFile> params;
     params[OpenFile::NAME] = ParamPickerMake(name);
     params[OpenFile::ACCESS] = ParamPickerMake(desired_access_uint32);
+    params[OpenFile::DISPOSITION] = ParamPickerMake(disposition_uint32);
     params[OpenFile::OPTIONS] = ParamPickerMake(options_uint32);
     params[OpenFile::BROKER] = ParamPickerMake(broker);
 
