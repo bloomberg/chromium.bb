@@ -36,7 +36,7 @@ private:
     void onLoaderFinished(Loader*);
 
     RawPtrWillBeMember<ExecutionContext> m_executionContext;
-    HashSet<OwnPtr<Loader>> m_loaders;
+    WillBeHeapHashSet<OwnPtrWillBeMember<Loader>> m_loaders;
     bool m_isStopped;
 };
 
