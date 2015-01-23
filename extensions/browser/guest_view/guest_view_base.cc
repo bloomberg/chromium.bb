@@ -569,8 +569,8 @@ void GuestViewBase::HandleKeyboardEvent(
     return;
 
   // Send the keyboard events back to the embedder to reprocess them.
-  embedder_web_contents()->GetDelegate()->HandleKeyboardEvent(web_contents(),
-                                                              event);
+  embedder_web_contents()->GetDelegate()->
+      HandleKeyboardEvent(embedder_web_contents(), event);
 }
 
 void GuestViewBase::RunFileChooser(WebContents* web_contents,
