@@ -73,8 +73,7 @@ class PluginReverseInterface: public nacl::ReverseInterface {
  public:
   PluginReverseInterface(nacl::WeakRefAnchor* anchor,
                          PP_Instance pp_instance,
-                         ServiceRuntime* service_runtime,
-                         pp::CompletionCallback init_done_cb);
+                         ServiceRuntime* service_runtime);
 
   virtual ~PluginReverseInterface();
 
@@ -114,8 +113,6 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   NaClMutex mu_;
   NaClCondVar cv_;
   bool shutting_down_;
-
-  pp::CompletionCallback init_done_cb_;
 };
 
 //  ServiceRuntime abstracts a NativeClient sel_ldr instance.
@@ -124,8 +121,7 @@ class ServiceRuntime {
   ServiceRuntime(Plugin* plugin,
                  PP_Instance pp_instance,
                  bool main_service_runtime,
-                 bool uses_nonsfi_mode,
-                 pp::CompletionCallback init_done_cb);
+                 bool uses_nonsfi_mode);
   // The destructor terminates the sel_ldr process.
   ~ServiceRuntime();
 

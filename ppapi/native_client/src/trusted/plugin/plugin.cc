@@ -65,8 +65,7 @@ bool Plugin::LoadHelperNaClModuleInternal(NaClSubprocess* subprocess,
       new ServiceRuntime(this,
                          pp_instance(),
                          false,  // No main_service_runtime.
-                         false,  // No non-SFI mode (i.e. in SFI-mode).
-                         pp::BlockUntilComplete());
+                         false);  // No non-SFI mode (i.e. in SFI-mode).
 
   // Now start the SelLdr instance.  This must be created on the main thread.
   bool service_runtime_started = false;
@@ -133,8 +132,7 @@ void Plugin::SignalStartSelLdrDone(int32_t pp_error,
 
 void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
                             bool uses_nonsfi_mode,
-                            PP_NaClAppProcessType process_type,
-                            const pp::CompletionCallback& init_done_cb) {
+                            PP_NaClAppProcessType process_type) {
   CHECK(pp::Module::Get()->core()->IsMainThread());
   // Before forking a new sel_ldr process, ensure that we do not leak
   // the ServiceRuntime object for an existing subprocess, and that any
@@ -150,7 +148,7 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
                            process_type);
   ErrorInfo error_info;
   ServiceRuntime* service_runtime = new ServiceRuntime(
-      this, pp_instance(), true, uses_nonsfi_mode, init_done_cb);
+      this, pp_instance(), true, uses_nonsfi_mode);
   main_subprocess_.set_service_runtime(service_runtime);
   if (NULL == service_runtime) {
     error_info.SetReport(
@@ -199,9 +197,8 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const std::string& helper_url,
   if (!LoadHelperNaClModuleInternal(nacl_subprocess.get(), params))
     return NULL;
 
-  // We need not wait for the init_done callback.  We can block
-  // here in StartSrpcServices, since helper NaCl modules
-  // are spawned from a private thread.
+  // We can block here in StartSrpcServices, since helper NaCl
+  // modules are spawned from a private thread.
   //
   // TODO(bsy): if helper module crashes, we should abort.
   // crash_cb is not used here, so we are relying on crashes
@@ -309,9 +306,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   LoadNaClModule(
       nexe_file_info_,
       uses_nonsfi_mode_,
-      PP_NATIVE_NACL_PROCESS_TYPE,
-      // No-op callback.
-      pp::CompletionCallback());
+      PP_NATIVE_NACL_PROCESS_TYPE);
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
@@ -332,9 +327,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   LoadNaClModule(
       info,
       false, /* uses_nonsfi_mode */
-      PP_PNACL_PROCESS_TYPE,
-      // No-op callback.
-      pp::CompletionCallback());
+      PP_PNACL_PROCESS_TYPE);
 }
 
 void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {

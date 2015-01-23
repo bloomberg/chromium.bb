@@ -85,8 +85,7 @@ class Plugin : public pp::Instance {
   // mechanism(s) take over.
   void LoadNaClModule(PP_NaClFileInfo file_info,
                       bool uses_nonsfi_mode,
-                      PP_NaClAppProcessType process_type,
-                      const pp::CompletionCallback& init_done_cb);
+                      PP_NaClAppProcessType process_type);
 
   // Load support.
   // A helper SRPC NaCl module can be loaded given a PP_NaClFileInfo.

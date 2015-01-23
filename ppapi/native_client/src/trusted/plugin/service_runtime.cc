@@ -49,13 +49,11 @@ OpenManifestEntryResource::~OpenManifestEntryResource() {
 PluginReverseInterface::PluginReverseInterface(
     nacl::WeakRefAnchor* anchor,
     PP_Instance pp_instance,
-    ServiceRuntime* service_runtime,
-    pp::CompletionCallback init_done_cb)
+    ServiceRuntime* service_runtime)
       : anchor_(anchor),
         pp_instance_(pp_instance),
         service_runtime_(service_runtime),
-        shutting_down_(false),
-        init_done_cb_(init_done_cb) {
+        shutting_down_(false) {
   NaClXMutexCtor(&mu_);
   NaClXCondVarCtor(&cv_);
 }
@@ -79,17 +77,7 @@ void PluginReverseInterface::DoPostMessage(std::string message) {
 }
 
 void PluginReverseInterface::StartupInitializationComplete() {
-  NaClLog(4, "PluginReverseInterface::StartupInitializationComplete\n");
-  if (init_done_cb_.pp_completion_callback().func != NULL) {
-    NaClLog(4,
-            "PluginReverseInterface::StartupInitializationComplete:"
-            " invoking CB\n");
-    pp::Module::Get()->core()->CallOnMainThread(0, init_done_cb_, PP_OK);
-  } else {
-    NaClLog(1,
-            "PluginReverseInterface::StartupInitializationComplete:"
-            " init_done_cb_ not valid, skipping.\n");
-  }
+  // This is no longer used.
 }
 
 // TODO(bsy): OpenManifestEntry should use the manifest to ResolveKey
@@ -238,16 +226,14 @@ int64_t PluginReverseInterface::RequestQuotaForWrite(
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                PP_Instance pp_instance,
                                bool main_service_runtime,
-                               bool uses_nonsfi_mode,
-                               pp::CompletionCallback init_done_cb)
+                               bool uses_nonsfi_mode)
     : plugin_(plugin),
       pp_instance_(pp_instance),
       main_service_runtime_(main_service_runtime),
       uses_nonsfi_mode_(uses_nonsfi_mode),
       reverse_service_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
-      rev_interface_(new PluginReverseInterface(anchor_, pp_instance, this,
-                                                init_done_cb)),
+      rev_interface_(new PluginReverseInterface(anchor_, pp_instance, this)),
       start_sel_ldr_done_(false),
       sel_ldr_wait_timed_out_(false),
       start_nexe_done_(false),
