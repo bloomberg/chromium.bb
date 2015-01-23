@@ -123,6 +123,11 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
                               int limit,
                               NetworkMap* network_map);
 
+  // Helper function for handling a scan request. This function acts similarly
+  // to the public GetNetworks to get visible networks and fire the
+  // OnNetworkListChanged event, however no callbacks are called.
+  bool GetNetworksForScanRequest();
+
   // Initiates the connection to the network.
   // Must be called on |dbus_thread_|.
   void ConnectToNetwork(const std::string& guid, std::string* error);
@@ -155,10 +160,19 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
   bool AddAccessPointsFromDevice(const dbus::ObjectPath& device_path,
                                  NetworkMap* network_map);
 
-  // Reply callback accepts the map of networks and fires the callback.
+  // Reply callback accepts the map of networks and fires the
+  // OnNetworkListChanged event and user callbacks.
   void OnAccessPointsFound(scoped_ptr<NetworkMap> network_map,
                            const NetworkListCallback& success_callback,
                            const FailureCallback& failure_callback);
+
+  // Reply callback accepts the map of networks and fires the
+  // OnNetworkListChanged event.
+  void OnAccessPointsFoundViaScan(scoped_ptr<NetworkMap> network_map);
+
+  // Helper function for OnAccessPointsFound and OnAccessPointsFoundViaScan to
+  // fire the OnNetworkListChangedEvent.
+  void SendNetworkListChangedEvent(const base::ListValue& network_list);
 
   // Gets a dictionary of information about the access point.
   // Returns false if there is an error getting information about the

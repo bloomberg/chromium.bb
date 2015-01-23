@@ -303,6 +303,27 @@ void NetworkingPrivateLinux::GetNetworks(
                  success_callback, failure_callback));
 }
 
+bool NetworkingPrivateLinux::GetNetworksForScanRequest() {
+  if (!network_manager_proxy_) {
+    return false;
+  }
+
+  scoped_ptr<NetworkMap> network_map(new NetworkMap);
+
+  // Runs GetAllWiFiAccessPoints on the dbus_thread and returns the
+  // results back to SendNetworkListChangedEvent to fire the event. No
+  // callbacks are used in this case.
+  dbus_thread_.task_runner()->PostTaskAndReply(
+      FROM_HERE, base::Bind(&NetworkingPrivateLinux::GetAllWiFiAccessPoints,
+                            base::Unretained(this), false /* configured_only */,
+                            false /* visible_only */, 0 /* limit */,
+                            base::Unretained(network_map.get())),
+      base::Bind(&NetworkingPrivateLinux::OnAccessPointsFoundViaScan,
+                 base::Unretained(this), base::Passed(&network_map)));
+
+  return true;
+}
+
 // Constructs the network configuration message and connects to the network.
 // The message is of the form:
 // {
@@ -540,7 +561,7 @@ bool NetworkingPrivateLinux::DisableNetworkType(const std::string& type) {
 }
 
 bool NetworkingPrivateLinux::RequestScan() {
-  return true;
+  return GetNetworksForScanRequest();
 }
 
 void NetworkingPrivateLinux::AddObserver(
@@ -558,12 +579,25 @@ void NetworkingPrivateLinux::OnAccessPointsFound(
     const NetworkListCallback& success_callback,
     const FailureCallback& failure_callback) {
   scoped_ptr<base::ListValue> network_list = CopyNetworkMapToList(*network_map);
-
   // Give ownership to the member variable.
   network_map_.swap(network_map);
+  SendNetworkListChangedEvent(*network_list);
+  success_callback.Run(network_list.Pass());
+}
+
+void NetworkingPrivateLinux::OnAccessPointsFoundViaScan(
+    scoped_ptr<NetworkMap> network_map) {
+  scoped_ptr<base::ListValue> network_list = CopyNetworkMapToList(*network_map);
+  // Give ownership to the member variable.
+  network_map_.swap(network_map);
+  SendNetworkListChangedEvent(*network_list);
+}
+
+void NetworkingPrivateLinux::SendNetworkListChangedEvent(
+    const base::ListValue& network_list) {
   GuidList guidsForEventCallback;
 
-  for (const auto& network : *network_list) {
+  for (const auto& network : network_list) {
     std::string guid;
     base::DictionaryValue* dict;
     if (network->GetAsDictionary(&dict)) {
@@ -573,8 +607,6 @@ void NetworkingPrivateLinux::OnAccessPointsFound(
     }
   }
 
-  // TODO(zentaro): Which order should this be?
-  success_callback.Run(network_list.Pass());
   OnNetworkListChangedEventOnUIThread(guidsForEventCallback);
 }
 
