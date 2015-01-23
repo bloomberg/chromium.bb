@@ -116,6 +116,13 @@
         'remoting_webapp_v1',
         'remoting_webapp_v2',
       ],
+      'conditions': [
+        ['disable_nacl==0 and disable_nacl_untrusted==0', {
+          'dependencies': [
+            'remoting_webapp_v2_pnacl',
+          ],
+        }]
+      ],
     },  # end of target 'remoting_webapp'
 
     {
@@ -135,26 +142,33 @@
       'variables': {
         'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.v2',
         'zip_path': '<(PRODUCT_DIR)/remoting-webapp.v2.zip',
+        'webapp_type': 'v2',
       },
-      'conditions': [
-        ['disable_nacl==0 and disable_nacl_untrusted==0', {
-          'dependencies': [
-            'remoting_nacl.gyp:remoting_client_plugin_nacl',
-          ],
+      'includes': [ 'remoting_webapp.gypi', ],
+    },  # end of target 'remoting_webapp_v2'
+  ],  # end of targets
+
+  'conditions': [
+    ['disable_nacl==0 and disable_nacl_untrusted==0', {
+      'targets': [
+        {
+          'target_name': 'remoting_webapp_v2_pnacl',
+          'type': 'none',
           'variables': {
+            'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.v2_pnacl',
+            'zip_path': '<(PRODUCT_DIR)/remoting-webapp.v2_pnacl.zip',
             'webapp_type': 'v2_pnacl',
             'extra_files': [
               'webapp/crd/remoting_client_pnacl.nmf',
               '<(PRODUCT_DIR)/remoting_client_plugin_newlib.pexe',
             ],
           },
-        }, {
-          'variables': {
-            'webapp_type': 'v2',
-          },
-        }],
+          'dependencies': [
+            'remoting_nacl.gyp:remoting_client_plugin_nacl',
+          ],
+          'includes': [ 'remoting_webapp.gypi', ],
+        },  # end of target 'remoting_webapp_v2_pnacl'
       ],
-      'includes': [ 'remoting_webapp.gypi', ],
-    },  # end of target 'remoting_webapp_v2'
-  ],  # end of targets
+    }],
+  ],
 }
