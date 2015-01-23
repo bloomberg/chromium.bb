@@ -27,10 +27,6 @@ rn{
             "BHD",
             "Idinari ry’iribahireyini",
         }
-        BIF{
-            "FBu",
-            "Ifaranga ry’Uburundi",
-        }
         BWP{
             "BWP",
             "Ipula ryo muri Botswana",
@@ -51,14 +47,6 @@ rn{
             "CN¥",
             "Iyuwani ryo mu Bushinwa",
         }
-        CVE{
-            "CVE",
-            "Irikaboveridiyano ryo muri Esikudo",
-        }
-        DJF{
-            "DJF",
-            "Ifaranga ryo muri Jibuti",
-        }
         DZD{
             "DZD",
             "Idinari ryo muri Alijeriya",
@@ -66,10 +54,6 @@ rn{
         EGP{
             "EGP",
             "Ipawundi rya Misiri",
-        }
-        ERN{
-            "ERN",
-            "Irinakufa ryo muri Eritereya",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ rn{
             "£",
             "Ipawundi ryo mu Bwongereza",
         }
-        GHC{
-            "GHC",
-            "Icedi ryo muri Gana",
-        }
-        GMD{
-            "GMD",
-            "Idalasi ryo muri Gambiya",
-        }
-        GNS{
-            "GNS",
-            "Ifaranga ryo muri Gineya",
-        }
         INR{
             "Rs.",
             "Irupiya ryo mu Buhindi",
@@ -106,18 +78,6 @@ rn{
         KES{
             "KES",
             "Ishilingi rya Kenya",
-        }
-        KMF{
-            "KMF",
-            "Ifaranga rya Komore",
-        }
-        LRD{
-            "LRD",
-            "Idolari rya Liberiya",
-        }
-        LSL{
-            "LSL",
-            "Iloti ryo muro Lesoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ rn{
             "MWK",
             "Ikwaca ryo muri Malawi",
         }
-        MZM{
-            "MZM",
-            "Irimetikali ryo muri Mozambike",
-        }
         NAD{
             "NAD",
             "Idolari rya Namibiya",
@@ -163,25 +119,13 @@ rn{
             "SAR",
             "Iriyari ryo muri Arabiya Sawudite",
         }
-        SCR{
-            "SCR",
-            "Irupiya ryo mu birwa bya Sayisheli",
-        }
         SDG{
             "SDG",
             "Ipawundi rya Sudani",
         }
-        SHP{
-            "SHP",
-            "Ipawundi rya Sente Helena",
-        }
         SLL{
             "SLL",
             "Ilewone",
-        }
-        SOS{
-            "SOS",
-            "Ishilingi ryo muri Somaliya",
         }
         STD{
             "STD",
@@ -211,17 +155,9 @@ rn{
             "ZAR",
             "Irandi ryo muri Afurika y’Epfo",
         }
-        ZMK{
-            "ZMK",
-            "Ikwaca ryo muri Zambiya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Ikwaca ryo muri Zambiya",
-        }
-        ZWD{
-            "ZWD",
-            "Idolari ryo muri Zimbabwe",
         }
     }
     Version{"2.1.7.39"}

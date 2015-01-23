@@ -11,35 +11,6 @@
  */
 br{
     Countries{
-        001{"Bed"}
-        002{"Afrika"}
-        003{"Norzhamerika"}
-        005{"Suamerika"}
-        009{"Oseania"}
-        011{"Afrika ar Cʼhornôg"}
-        013{"Kreizamerika"}
-        014{"Afrika ar Reter"}
-        015{"Afrika an Norzh"}
-        017{"Afrika ar Cʼhreiz"}
-        018{"Afrika ar Su"}
-        019{"Amerikaoù"}
-        021{"Amerika an Norzh"}
-        029{"Karib"}
-        030{"Azia ar Reter"}
-        034{"Azia ar Su"}
-        035{"Azia ar Gevred"}
-        039{"Europa ar Su"}
-        053{"Aostralazia"}
-        054{"Melanezia"}
-        057{"Rannved Mikronezia"}
-        061{"Polinezia"}
-        142{"Azia"}
-        143{"Azia ar Cʼhreiz"}
-        145{"Azia ar Cʼhornôg"}
-        150{"Europa"}
-        151{"Europa ar Reter"}
-        154{"Europa an Norzh"}
-        155{"Europa ar Cʼhornôg"}
         419{"Amerika Latin"}
         AC{"Enez Ascension"}
         AD{"Andorra"}

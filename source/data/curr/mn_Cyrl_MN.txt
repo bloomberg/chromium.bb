@@ -10,5 +10,4 @@
  * generated alias target
  */
 mn_Cyrl_MN{
-    ___{""}
 }

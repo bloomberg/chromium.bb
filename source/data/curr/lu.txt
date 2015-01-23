@@ -27,10 +27,6 @@ lu{
             "BHD",
             "Ndina wa Bahrene",
         }
-        BIF{
-            "BIF",
-            "Nfalanga wa Bulundi",
-        }
         BWP{
             "BWP",
             "Pula wa Botswana",
@@ -51,14 +47,6 @@ lu{
             "CN¥",
             "Yuani Renminbi wa Shine",
         }
-        CVE{
-            "CVE",
-            "Esikuludo wa Kapevere",
-        }
-        DJF{
-            "DJF",
-            "Nfalanga wa Dzibuti",
-        }
         DZD{
             "DZD",
             "Ndina wa Alijeri",
@@ -66,10 +54,6 @@ lu{
         EGP{
             "EGP",
             "Pauni wa Mushidi",
-        }
-        ERN{
-            "ERN",
-            "Nakfa wa Elitle",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ lu{
             "£",
             "Pauni wa Angeletele",
         }
-        GHC{
-            "GHC",
-            "Sedi wa Ngana",
-        }
-        GMD{
-            "GMD",
-            "Ndalasi wa Ngambi",
-        }
-        GNS{
-            "GNS",
-            "Nfalanga wa Ngina",
-        }
         INR{
             "Rs.",
             "Rupi wa Inde",
@@ -106,18 +78,6 @@ lu{
         KES{
             "KES",
             "Nshili wa Kenya",
-        }
-        KMF{
-            "KMF",
-            "Nfalanga wa Komoru",
-        }
-        LRD{
-            "LRD",
-            "Ndola wa Liberya",
-        }
-        LSL{
-            "LSL",
-            "Loti wa Lesoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ lu{
             "MWK",
             "Kwasha wa Malawi",
         }
-        MZM{
-            "MZM",
-            "Metikali wa Mozambiki",
-        }
         NAD{
             "NAD",
             "Ndola wa Namibi",
@@ -163,29 +119,13 @@ lu{
             "SAR",
             "Riyale wa Alabu Nsawu",
         }
-        SCR{
-            "SCR",
-            "Rupya wa Seshele",
-        }
         SDG{
             "SDG",
             "Ndina wa Suda",
         }
-        SDP{
-            "SDP",
-            "Pauni wa Suda",
-        }
-        SHP{
-            "SHP",
-            "Pauni wa Santu Elena",
-        }
         SLL{
             "SLL",
             "Leone",
-        }
-        SOS{
-            "SOS",
-            "Nshili wa Somali",
         }
         STD{
             "STD",
@@ -223,17 +163,9 @@ lu{
             "ZAR",
             "Rande wa Afrika wa Mwinshi",
         }
-        ZMK{
-            "ZMK",
-            "Kwasha wa Zambi (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwasha wa Zambi",
-        }
-        ZWD{
-            "ZWD",
-            "Ndola wa Zimbabwe",
         }
     }
     Version{"2.1.6.69"}

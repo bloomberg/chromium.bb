@@ -27,10 +27,6 @@ naq{
             "BHD",
             "Bahrain Dinar",
         }
-        BIF{
-            "BIF",
-            "Burundi Franc",
-        }
         BWP{
             "BWP",
             "Botswanan Pulab",
@@ -51,14 +47,6 @@ naq{
             "CN¥",
             "Chinese Yuan Renminbi",
         }
-        CVE{
-            "CVE",
-            "Escudo Caboverdiano",
-        }
-        DJF{
-            "DJF",
-            "Djibouti Franc",
-        }
         DZD{
             "DZD",
             "Algerian Dinar",
@@ -66,10 +54,6 @@ naq{
         EGP{
             "EGP",
             "Egytian Ponds",
-        }
-        ERN{
-            "ERN",
-            "Eritreian Nakfa",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ naq{
             "£",
             "British Ponds",
         }
-        GHC{
-            "GHC",
-            "Ghana Cedi",
-        }
-        GMD{
-            "GMD",
-            "Gambia Dalasi",
-        }
-        GNS{
-            "GNS",
-            "Guinea Franc",
-        }
         INR{
             "Rs.",
             "Indian Rupee",
@@ -106,18 +78,6 @@ naq{
         KES{
             "KES",
             "Kenyan Shilling",
-        }
-        KMF{
-            "KMF",
-            "Comorian Franc",
-        }
-        LRD{
-            "LRD",
-            "Liberian Dollar",
-        }
-        LSL{
-            "LSL",
-            "Lesotho Loti",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ naq{
             "MWK",
             "Malawian Kwachab",
         }
-        MZM{
-            "MZM",
-            "Mozambique Metical",
-        }
         NAD{
             "$",
             "Namibia Dollari",
@@ -163,29 +119,13 @@ naq{
             "SAR",
             "Saudi Riyal",
         }
-        SCR{
-            "SCR",
-            "Seychelles Rupee",
-        }
         SDG{
             "SDG",
             "Sudanese Dinar",
         }
-        SDP{
-            "SDP",
-            "Sudanese Ponds",
-        }
-        SHP{
-            "SHP",
-            "St Helena Ponds",
-        }
         SLL{
             "SLL",
             "Leone",
-        }
-        SOS{
-            "SOS",
-            "Somali Shillings",
         }
         STD{
             "STD",
@@ -223,17 +163,9 @@ naq{
             "ZAR",
             "South African Randi",
         }
-        ZMK{
-            "ZMK",
-            "Zambian Kwachab (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Zambian Kwachab",
-        }
-        ZWD{
-            "ZWD",
-            "Zimbabwe Dollari",
         }
     }
     Version{"2.1.6.69"}

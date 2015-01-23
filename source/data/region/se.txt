@@ -11,35 +11,6 @@
  */
 se{
     Countries{
-        001{"máilbmi"}
-        002{"Afrihkká"}
-        003{"dávvi-Amerihkká ja gaska-Amerihkká"}
-        005{"mátta-Amerihkká"}
-        009{"Oseania"}
-        011{"oarji-Afrihkká"}
-        013{"gaska-Amerihkká"}
-        014{"nuorta-Afrihkká"}
-        015{"davvi-Afrihkká"}
-        017{"gaska-Afrihkká"}
-        018{"mátta-Afrihkká"}
-        019{"Amerihkká"}
-        021{"dávvi-Amerihkká"}
-        029{"Karibia"}
-        030{"nuorta-Ásia"}
-        034{"mátta-Ásia"}
-        035{"mátta-nuorta-Ásia"}
-        039{"mátta-Eurohpá"}
-        053{"Austrália ja Ođđa-Selánda"}
-        054{"Melanesia"}
-        057{"Mikronesia guovllus"}
-        061{"Polynesia"}
-        142{"Ásia"}
-        143{"gaska-Ásia"}
-        145{"oarji-Ásia"}
-        150{"Eurohpá"}
-        151{"nuorta-Eurohpá"}
-        154{"davvi-Eurohpá"}
-        155{"oarji-Eurohpá"}
         419{"lulli-Amerihkká"}
         AC{"Ascension"}
         AD{"Andorra"}

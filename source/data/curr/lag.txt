@@ -27,10 +27,6 @@ lag{
             "BHD",
             "Dináari ya Baharéeni",
         }
-        BIF{
-            "BIF",
-            "Faráanga ya Burúundi",
-        }
         BWP{
             "BWP",
             "Púula ya Botiswáana",
@@ -51,14 +47,6 @@ lag{
             "CN¥",
             "Yúani Renimínibi ya Chíina",
         }
-        CVE{
-            "CVE",
-            "Esikúudo ya Kepuvéede",
-        }
-        DJF{
-            "DJF",
-            "Faráanga ya Jibóuti",
-        }
         DZD{
             "DZD",
             "Dináairi ya Alijéria",
@@ -66,10 +54,6 @@ lag{
         EGP{
             "EGP",
             "Páundi ya Mísiri",
-        }
-        ERN{
-            "ERN",
-            "Nákɨfa ya Eriterea",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ lag{
             "£",
             "Páundi ya Ʉɨngɨréesa",
         }
-        GHC{
-            "GHC",
-            "Séedi ya Gáana",
-        }
-        GMD{
-            "GMD",
-            "Daláasi ya Gámbia",
-        }
-        GNS{
-            "GNS",
-            "Faráanga ya Gíine",
-        }
         INR{
             "Rs.",
             "Rupía ya Índia",
@@ -106,18 +78,6 @@ lag{
         KES{
             "KES",
             "Shilíingi ya Kéenya",
-        }
-        KMF{
-            "KMF",
-            "Faráanga ya Komóoro",
-        }
-        LRD{
-            "LRD",
-            "Dóola ya Libéria",
-        }
-        LSL{
-            "LSL",
-            "Lóoti ya Lesóoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ lag{
             "MWK",
             "Kwáacha ya Maláawi",
         }
-        MZM{
-            "MZM",
-            "Metikáali ya Musumbíiji",
-        }
         NAD{
             "NAD",
             "Dóola ya Namíbia",
@@ -163,25 +119,13 @@ lag{
             "SAR",
             "Riyáali ya Saudía",
         }
-        SCR{
-            "SCR",
-            "Rupía ya Shelishéeli",
-        }
         SDG{
             "SDG",
             "Páundi ya Sudáani",
         }
-        SHP{
-            "SHP",
-            "Páundi ya Mʉtakatíifu Heléena",
-        }
         SLL{
             "SLL",
             "Leóoni",
-        }
-        SOS{
-            "SOS",
-            "Shilíingi ya Somália",
         }
         STD{
             "STD",
@@ -219,17 +163,9 @@ lag{
             "ZAR",
             "Ráandi ya Afɨrɨka ya Saame",
         }
-        ZMK{
-            "ZMK",
-            "Kwácha ya Sámbia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwácha ya Sámbia",
-        }
-        ZWD{
-            "ZWD",
-            "Dóola ya Simbáabwe",
         }
     }
     Version{"2.1.6.69"}

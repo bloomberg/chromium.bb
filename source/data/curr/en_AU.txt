@@ -21,10 +21,6 @@ en_AU{
             "RUB",
             "Russian Rouble",
         }
-        SCR{
-            "SCR",
-            "Seychelles Rupee",
-        }
         UZS{
             "UZS",
             "Uzbekistani Som",
@@ -74,10 +70,6 @@ en_AU{
         XOF{
             one{"West African CFA franc"}
             other{"West African CFA francs"}
-        }
-        XXX{
-            one{"(unknown currency)"}
-            other{"(unknown currency)"}
         }
     }
     Version{"2.1.8.19"}

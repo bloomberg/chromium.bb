@@ -10,5 +10,4 @@
  * generated alias target
  */
 ks_Arab_IN{
-    ___{""}
 }

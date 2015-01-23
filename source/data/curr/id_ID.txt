@@ -10,5 +10,4 @@
  * generated alias target
  */
 id_ID{
-    ___{""}
 }

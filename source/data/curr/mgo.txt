@@ -15,10 +15,6 @@ mgo{
             "FCFA",
             "shirè",
         }
-        XXX{
-            "XXX",
-            "iku ikap mɔʼɔ",
-        }
     }
     CurrencyUnitPatterns{
         one{"{0} {1}"}

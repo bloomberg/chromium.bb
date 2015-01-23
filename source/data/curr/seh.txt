@@ -27,10 +27,6 @@ seh{
             "BHD",
             "Dinar bareinita",
         }
-        BIF{
-            "BIF",
-            "Franco do Burundi",
-        }
         BWP{
             "BWP",
             "Pula botsuanesa",
@@ -51,14 +47,6 @@ seh{
             "CN¥",
             "Yuan Renminbi chinês",
         }
-        CVE{
-            "CVE",
-            "Escudo cabo-verdiano",
-        }
-        DJF{
-            "DJF",
-            "Franco do Djibuti",
-        }
         DZD{
             "DZD",
             "Dinar argelino",
@@ -66,10 +54,6 @@ seh{
         EGP{
             "EGP",
             "Libra egípcia",
-        }
-        ERN{
-            "ERN",
-            "Nakfa da Eritréia",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ seh{
             "£",
             "Libra esterlina britânica",
         }
-        GHC{
-            "GHC",
-            "Cedi de Gana (1979–2007)",
-        }
-        GMD{
-            "GMD",
-            "Dalasi de Gâmbia",
-        }
-        GNS{
-            "GNS",
-            "Syli da Guiné",
-        }
         INR{
             "Rs.",
             "Rúpia indiana",
@@ -106,18 +78,6 @@ seh{
         KES{
             "KES",
             "Xelim queniano",
-        }
-        KMF{
-            "KMF",
-            "Franco de Comores",
-        }
-        LRD{
-            "LRD",
-            "Dólar liberiano",
-        }
-        LSL{
-            "LSL",
-            "Loti do Lesoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ seh{
             "MWK",
             "Cuacha do Maláui",
         }
-        MZM{
-            "MZM",
-            "Metical antigo de Moçambique",
-        }
         MZN{
             "MTn",
             "Metical de Moçambique",
@@ -167,29 +123,13 @@ seh{
             "SAR",
             "Rial saudita",
         }
-        SCR{
-            "SCR",
-            "Rupia das Seychelles",
-        }
         SDG{
             "SDG",
             "Dinar sudanês",
         }
-        SDP{
-            "SDP",
-            "Libra sudanesa antiga",
-        }
-        SHP{
-            "SHP",
-            "Libra de Santa Helena",
-        }
         SLL{
             "SLL",
             "Leone de Serra Leoa",
-        }
-        SOS{
-            "SOS",
-            "Xelim somali",
         }
         STD{
             "STD",
@@ -227,17 +167,9 @@ seh{
             "ZAR",
             "Rand sul-africano",
         }
-        ZMK{
-            "ZMK",
-            "Cuacha zambiano (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Cuacha zambiano",
-        }
-        ZWD{
-            "ZWD",
-            "Dólar do Zimbábue",
         }
     }
     Version{"2.1.6.69"}

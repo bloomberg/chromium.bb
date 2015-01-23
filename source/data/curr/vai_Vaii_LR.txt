@@ -10,5 +10,4 @@
  * generated alias target
  */
 vai_Vaii_LR{
-    ___{""}
 }

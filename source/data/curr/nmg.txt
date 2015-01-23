@@ -27,10 +27,6 @@ nmg{
             "BHD",
             "Mɔn Bahrein",
         }
-        BIF{
-            "BIF",
-            "Fraŋ Burundi",
-        }
         BWP{
             "BWP",
             "Mɔn Botswana",
@@ -51,14 +47,6 @@ nmg{
             "CN¥",
             "Mɔn bó Chinois",
         }
-        CVE{
-            "CVE",
-            "Mɔn Kapvɛrt",
-        }
-        DJF{
-            "DJF",
-            "Fraŋ Jibuti",
-        }
         DZD{
             "DZD",
             "Mɔn Algeria",
@@ -66,10 +54,6 @@ nmg{
         EGP{
             "EGP",
             "Mɔn Ägyptɛn",
-        }
-        ERN{
-            "ERN",
-            "Mɔn Erytré",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ nmg{
             "£",
             "Mɔn Ngɛ̄lɛ̄n",
         }
-        GHC{
-            "GHC",
-            "Mɔn Gana",
-        }
-        GMD{
-            "GMD",
-            "Mɔn Gambia",
-        }
-        GNS{
-            "GNS",
-            "Fraŋ Guiné",
-        }
         INR{
             "Rs.",
             "Mɔn India",
@@ -106,18 +78,6 @@ nmg{
         KES{
             "KES",
             "Mɔn Kɛnya",
-        }
-        KMF{
-            "KMF",
-            "Fraŋ bó Kɔmɔr",
-        }
-        LRD{
-            "LRD",
-            "Dɔ́llɔ Liberia",
-        }
-        LSL{
-            "LSL",
-            "Mɔn Lesoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ nmg{
             "MWK",
             "Mɔn Malawi",
         }
-        MZM{
-            "MZM",
-            "Mɔn Mozambik",
-        }
         NAD{
             "NAD",
             "Dɔ́llɔ Namibia",
@@ -163,29 +119,13 @@ nmg{
             "SAR",
             "Mɔn Saudi Arabia",
         }
-        SCR{
-            "SCR",
-            "Mɔn Seychɛlle",
-        }
         SDG{
             "SDG",
             "Mɔn Sudan",
         }
-        SDP{
-            "SDP",
-            "Mɔn Sudan (1957–1998)",
-        }
-        SHP{
-            "SHP",
-            "Mɔn má Saint Lina",
-        }
         SLL{
             "SLL",
             "Mɔn Leɔne",
-        }
-        SOS{
-            "SOS",
-            "Mɔn Somalía",
         }
         STD{
             "STD",
@@ -223,17 +163,9 @@ nmg{
             "ZAR",
             "Mɔn Afrik yí sí",
         }
-        ZMK{
-            "ZMK",
-            "Mɔn Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Mɔn Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "Dɔ́llɔ Zimbabwǝ (1980–2008)",
         }
     }
     Version{"2.1.7.39"}

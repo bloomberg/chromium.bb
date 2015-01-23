@@ -27,10 +27,6 @@ eu{
             "AMD",
             "Armeniako drama",
         }
-        ANG{
-            "ANG",
-            "Holandarren Antilletako guilderra",
-        }
         AOA{
             "AOA",
             "Angolako kwanza",
@@ -43,10 +39,6 @@ eu{
             "A$",
             "Australiako dolarra",
         }
-        AWG{
-            "AWG",
-            "Arubeko florina",
-        }
         AZN{
             "AZN",
             "Azerbaijango manata",
@@ -54,10 +46,6 @@ eu{
         BAM{
             "BAM",
             "Bosnia-Herzegovinako marko trukakorra",
-        }
-        BBD{
-            "BBD",
-            "Barbadosetako dolarra",
         }
         BDT{
             "BDT",
@@ -71,14 +59,6 @@ eu{
             "BHD",
             "Bahraingo dinarra",
         }
-        BIF{
-            "BIF",
-            "Burundiko frankoa",
-        }
-        BMD{
-            "BMD",
-            "Bermudetako dolarra",
-        }
         BND{
             "BND",
             "Bruneiko dolarra",
@@ -91,14 +71,6 @@ eu{
             "R$",
             "Brasilgo erreala",
         }
-        BSD{
-            "BSD",
-            "Bahametako dolarra",
-        }
-        BTN{
-            "BTN",
-            "Bhutango ngultruma",
-        }
         BWP{
             "BWP",
             "Bosniako pula",
@@ -106,10 +78,6 @@ eu{
         BYR{
             "BYR",
             "Bielorrusiako errubloa",
-        }
-        BZD{
-            "BZD",
-            "Belizeko dolarra",
         }
         CAD{
             "CA$",
@@ -139,25 +107,9 @@ eu{
             "CRC",
             "Costa Ricako colona",
         }
-        CUC{
-            "CUC",
-            "Kubako peso trukakorra",
-        }
-        CUP{
-            "CUP",
-            "Kubako pesoa",
-        }
-        CVE{
-            "CVE",
-            "Cabo Verdeko ezkutua",
-        }
         CZK{
             "CZK",
             "Txekiar Errepublikako koroa",
-        }
-        DJF{
-            "DJF",
-            "Djibouteko frankoa",
         }
         DKK{
             "DKK",
@@ -175,19 +127,6 @@ eu{
             "EGP",
             "Egiptoko libera",
         }
-        ERN{
-            "ERN",
-            "Eritreako nakfa",
-        }
-        ESP{
-            "₧",
-            "ESP",
-            {
-                "¤ #,##0.00",
-                ",",
-                ".",
-            }
-        }
         ETB{
             "ETB",
             "Etiopiako birra",
@@ -195,10 +134,6 @@ eu{
         EUR{
             "€",
             "Euroa",
-        }
-        FJD{
-            "FJD",
-            "Fijiko dolarra",
         }
         FKP{
             "FKP",
@@ -216,14 +151,6 @@ eu{
             "GHS",
             "Ghanako cedia",
         }
-        GIP{
-            "GIP",
-            "Gibraltarreko libera",
-        }
-        GMD{
-            "GMD",
-            "Ganbiako dalasia",
-        }
         GNF{
             "GNF",
             "Gineako frankoa",
@@ -231,10 +158,6 @@ eu{
         GTQ{
             "GTQ",
             "Guatemalako quetzala",
-        }
-        GYD{
-            "GYD",
-            "Guyanako dolarra",
         }
         HKD{
             "HK$",
@@ -304,10 +227,6 @@ eu{
             "KHR",
             "Kanbodiako riela",
         }
-        KMF{
-            "KMF",
-            "Komoreetako frankoa",
-        }
         KPW{
             "KPW",
             "Ipar Koreako wona",
@@ -340,21 +259,9 @@ eu{
             "LKR",
             "Sri Lankako errupia",
         }
-        LRD{
-            "LRD",
-            "Liberiako dolarra",
-        }
-        LSL{
-            "LSL",
-            "Lesothoko lotia",
-        }
         LTL{
             "LTL",
             "Lituaniako litasa",
-        }
-        LVL{
-            "LVL",
-            "Letoniako latsa",
         }
         LYD{
             "LYD",
@@ -376,17 +283,9 @@ eu{
             "MKD",
             "Mazedoniako denara",
         }
-        MMK{
-            "MMK",
-            "Myanmarreko kyata",
-        }
         MNT{
             "MNT",
             "Mongoliako tugrika",
-        }
-        MOP{
-            "MOP",
-            "Macanako pataca",
         }
         MRO{
             "MRO",
@@ -395,10 +294,6 @@ eu{
         MUR{
             "MUR",
             "Maurizio uharteetako errupia",
-        }
-        MVR{
-            "MVR",
-            "Maldivetako rufiyaa",
         }
         MWK{
             "MWK",
@@ -500,10 +395,6 @@ eu{
             "SBD",
             "Salomon uharteetako dolarra",
         }
-        SCR{
-            "SCR",
-            "Seychelleetako errupia",
-        }
         SDG{
             "SDG",
             "Sudango libera",
@@ -516,21 +407,9 @@ eu{
             "SGD",
             "Singapurreko dolarra",
         }
-        SHP{
-            "SHP",
-            "Santa Helenako libera",
-        }
         SLL{
             "SLL",
             "Sierra Leonako leona",
-        }
-        SOS{
-            "SOS",
-            "Somaliako txelina",
-        }
-        SRD{
-            "SRD",
-            "Surinameko dolarra",
         }
         SSP{
             "SSP",
@@ -563,10 +442,6 @@ eu{
         TND{
             "TND",
             "Tunisiako dinarra",
-        }
-        TOP{
-            "TOP",
-            "Tongako Paʻanga",
         }
         TRY{
             "TRY",
@@ -612,14 +487,6 @@ eu{
             "₫",
             "Vietnameko donga",
         }
-        VUV{
-            "VUV",
-            "Vanuatuko vatua",
-        }
-        WST{
-            "WST",
-            "Samoko tala",
-        }
         XAF{
             "FCFA",
             "Afrika erdialdeko frankoa BEAC",
@@ -636,10 +503,6 @@ eu{
             "CFPF",
             "CFP frankoa",
         }
-        XXX{
-            "XXX",
-            "Moneta ezezaguna",
-        }
         YER{
             "YER",
             "Yemengo riala",
@@ -647,10 +510,6 @@ eu{
         ZAR{
             "ZAR",
             "Hegoafrikako randa",
-        }
-        ZMK{
-            "ZMK",
-            "Zambiako kwacha (1968–2012)",
         }
         ZMW{
             "ZMW",
@@ -660,26 +519,18 @@ eu{
     Currencies%narrow{
         ARS{"$"}
         AUD{"$"}
-        BBD{"$"}
         BDT{"৳"}
-        BMD{"$"}
         BND{"$"}
         BRL{"R$"}
-        BSD{"$"}
         BYR{"р."}
-        BZD{"$"}
         CAD{"$"}
         CLP{"$"}
         CNY{"¥"}
         COP{"$"}
         CRC{"₡"}
-        CUP{"$"}
         DOP{"$"}
         EUR{"€"}
-        FJD{"$"}
         GBP{"£"}
-        GIP{"£"}
-        GYD{"$"}
         HKD{"$"}
         ILS{"₪"}
         INR{"₹"}
@@ -690,7 +541,6 @@ eu{
         KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
-        LRD{"$"}
         MNT{"₮"}
         MXN{"$"}
         NAD{"$"}
@@ -700,7 +550,6 @@ eu{
         PYG{"₲"}
         SBD{"$"}
         SGD{"$"}
-        SRD{"$"}
         SSP{"£"}
         TRY{"₺"}
         TTD{"$"}
@@ -727,10 +576,6 @@ eu{
             one{"Armeniako dram"}
             other{"Armeniako dram"}
         }
-        ANG{
-            one{"Holandarren Antilletako guilder"}
-            other{"Holandarren Antilletako guilder"}
-        }
         AOA{
             one{"Angolako kwanza"}
             other{"Angolako kwanza"}
@@ -743,10 +588,6 @@ eu{
             one{"Australiako dolar"}
             other{"Australiako dolar"}
         }
-        AWG{
-            one{"Arubeko florin"}
-            other{"Arubeko florin"}
-        }
         AZN{
             one{"Azerbaijango manat"}
             other{"Azerbaijango manat"}
@@ -754,10 +595,6 @@ eu{
         BAM{
             one{"Bosnia-Herzegovinako marko trukakor"}
             other{"Bosnia-Herzegovinako marko trukakor"}
-        }
-        BBD{
-            one{"Barbadosetako dolar"}
-            other{"Barbadosetako dolar"}
         }
         BDT{
             one{"Bangladesheko taka"}
@@ -771,14 +608,6 @@ eu{
             one{"Bahraingo dinar"}
             other{"Bahraingo dinar"}
         }
-        BIF{
-            one{"Burundiko franko"}
-            other{"Burundiko franko"}
-        }
-        BMD{
-            one{"Bermudetako dolar"}
-            other{"Bermudetako dolar"}
-        }
         BND{
             one{"Bruneiko dolar"}
             other{"Bruneiko dolar"}
@@ -791,14 +620,6 @@ eu{
             one{"Brasilgo erreal"}
             other{"Brasilgo erreal"}
         }
-        BSD{
-            one{"Bahametako dolar"}
-            other{"Bahametako dolar"}
-        }
-        BTN{
-            one{"Bhutango ngultrum"}
-            other{"Bhutango ngultrum"}
-        }
         BWP{
             one{"Bosniako pula"}
             other{"Bosniako pula"}
@@ -806,10 +627,6 @@ eu{
         BYR{
             one{"Bielorrusiako errublo"}
             other{"Bielorrusiako errublo"}
-        }
-        BZD{
-            one{"Belizeko dolar"}
-            other{"Belizeko dolar"}
         }
         CAD{
             one{"Kanadako dolar"}
@@ -839,25 +656,9 @@ eu{
             one{"Costa Ricako colon"}
             other{"Costa Ricako colon"}
         }
-        CUC{
-            one{"Kubako peso trukakor"}
-            other{"Kubako peso trukakor"}
-        }
-        CUP{
-            one{"Kubako peso"}
-            other{"Kubako peso"}
-        }
-        CVE{
-            one{"Cabo Verdeko ezkutu"}
-            other{"Cabo Verdeko ezkutu"}
-        }
         CZK{
             one{"Txekiar Errepublikako koroa"}
             other{"Txekiar Errepublikako koroa"}
-        }
-        DJF{
-            one{"Djibouteko franko"}
-            other{"Djibouteko franko"}
         }
         DKK{
             one{"Danimarkako koroa"}
@@ -875,10 +676,6 @@ eu{
             one{"Egiptoko libera"}
             other{"Egiptoko libera"}
         }
-        ERN{
-            one{"Eritreako nakfa"}
-            other{"Eritreako nakfa"}
-        }
         ETB{
             one{"Etiopiako birra"}
             other{"Etiopiako birra"}
@@ -886,10 +683,6 @@ eu{
         EUR{
             one{"euro"}
             other{"euro"}
-        }
-        FJD{
-            one{"Fijiko dolar"}
-            other{"Fijiko dolar"}
         }
         FKP{
             one{"Falkland uharteetako libera"}
@@ -907,14 +700,6 @@ eu{
             one{"Ghanako cedi"}
             other{"Ghanako cedi"}
         }
-        GIP{
-            one{"Gibraltarreko libera"}
-            other{"Gibraltarreko libera"}
-        }
-        GMD{
-            one{"Ganbiako dalasi"}
-            other{"Ganbiako dalasi"}
-        }
         GNF{
             one{"Gineako franko"}
             other{"Gineako franko"}
@@ -922,10 +707,6 @@ eu{
         GTQ{
             one{"Guatemalako quetzal"}
             other{"Guatemalako quetzal"}
-        }
-        GYD{
-            one{"Guyanako dolar"}
-            other{"Guyanako dolar"}
         }
         HKD{
             one{"Hong Kongeko dolar"}
@@ -995,10 +776,6 @@ eu{
             one{"Kanbodiako riel"}
             other{"Kanbodiako riel"}
         }
-        KMF{
-            one{"Komoreetako franko"}
-            other{"Komoreetako franko"}
-        }
         KPW{
             one{"Ipar Koreako won"}
             other{"Ipar Koreako won"}
@@ -1031,17 +808,9 @@ eu{
             one{"Sri Lankako errupia"}
             other{"Sri Lankako errupia"}
         }
-        LRD{
-            one{"Liberiako dolar"}
-            other{"Liberiako dolar"}
-        }
         LTL{
             one{"Lituaniako litas"}
             other{"Lituaniako litas"}
-        }
-        LVL{
-            one{"Letoniako lats"}
-            other{"Letoniako lats"}
         }
         LYD{
             one{"Libiako dinar"}
@@ -1063,17 +832,9 @@ eu{
             one{"Mazedoniako dinar"}
             other{"Mazedoniako dinar"}
         }
-        MMK{
-            one{"Myanmarreko kyat"}
-            other{"Myanmarreko kyat"}
-        }
         MNT{
             one{"Mongoliako tugrik"}
             other{"Mongoliako tugrik"}
-        }
-        MOP{
-            one{"Macanako pataca"}
-            other{"Macanako pataca"}
         }
         MRO{
             one{"Mauritaniako ouguiya"}
@@ -1082,10 +843,6 @@ eu{
         MUR{
             one{"Maurizio uharteetako errupia"}
             other{"Maurizio uharteetako errupia"}
-        }
-        MVR{
-            one{"Maldivetako rufiyaa"}
-            other{"Maldivetako rufiyaa"}
         }
         MWK{
             one{"Malawiko kwacha"}
@@ -1187,10 +944,6 @@ eu{
             one{"Salomon uharteetako dolar"}
             other{"Salomon uharteetako dolar"}
         }
-        SCR{
-            one{"Seychelleetako errupia"}
-            other{"Seychelleetako errupia"}
-        }
         SDG{
             one{"Sudango libera"}
             other{"Sudango libera"}
@@ -1203,21 +956,9 @@ eu{
             one{"Singapurreko dolar"}
             other{"Singapurreko dolar"}
         }
-        SHP{
-            one{"Santa Helenako libera"}
-            other{"Santa Helenako libera"}
-        }
         SLL{
             one{"Sierra Leonako leona"}
             other{"Sierra Leonako leona"}
-        }
-        SOS{
-            one{"Somaliako txelin"}
-            other{"Somaliako txelin"}
-        }
-        SRD{
-            one{"Surinameko dolar"}
-            other{"Surinameko dolar"}
         }
         SSP{
             one{"Hego Sudango libera"}
@@ -1250,10 +991,6 @@ eu{
         TND{
             one{"Tunisiako dinar"}
             other{"Tunisiako dinar"}
-        }
-        TOP{
-            one{"Tongako Paʻanga"}
-            other{"Tongako Paʻanga"}
         }
         TRY{
             one{"Turkiako lira"}
@@ -1299,14 +1036,6 @@ eu{
             one{"Vietnameko dong"}
             other{"Vietnameko dong"}
         }
-        VUV{
-            one{"Vanuatuko vatu"}
-            other{"Vanuatuko vatu"}
-        }
-        WST{
-            one{"Samoko tala"}
-            other{"Samoko tala"}
-        }
         XAF{
             one{"Afrika erdialdeko franko BEAC"}
             other{"Afrika erdialdeko franko BEAC"}
@@ -1322,10 +1051,6 @@ eu{
         XPF{
             one{"CFP franko"}
             other{"CFP franko"}
-        }
-        XXX{
-            one{"(moneta ezezaguna)"}
-            other{"(moneta ezezaguna)"}
         }
         YER{
             one{"Yemengo rial"}

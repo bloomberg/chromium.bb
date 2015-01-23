@@ -27,10 +27,6 @@ mas{
             "BHD",
             "Iropiyianí e Bahareini",
         }
-        BIF{
-            "BIF",
-            "Iropiyianí e Burundi",
-        }
         BWP{
             "BWP",
             "Iropiyianí e Botswana",
@@ -51,14 +47,6 @@ mas{
             "CN¥",
             "Iropiyianí e China",
         }
-        CVE{
-            "CVE",
-            "Iropiyianí e Kepuvede",
-        }
-        DJF{
-            "DJF",
-            "Iropiyianí e Jibuti",
-        }
         DZD{
             "DZD",
             "Iropiyianí e Algeria",
@@ -66,10 +54,6 @@ mas{
         EGP{
             "EGP",
             "Iropiyianí e Misri",
-        }
-        ERN{
-            "ERN",
-            "Iropiyianí e Eritrea",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ mas{
             "£",
             "Iropiyianí e Nkɨ́resa",
         }
-        GHC{
-            "GHC",
-            "Iropiyianí e Ghana",
-        }
-        GMD{
-            "GMD",
-            "Iropiyianí e Gambia",
-        }
-        GNS{
-            "GNS",
-            "Iropiyianí e Gine",
-        }
         INR{
             "Rs.",
             "Iropiyianí e India",
@@ -106,18 +78,6 @@ mas{
         KES{
             "Ksh",
             "Iropiyianí e Kenya",
-        }
-        KMF{
-            "KMF",
-            "Iropiyianí e Komoro",
-        }
-        LRD{
-            "LRD",
-            "Iropiyianí e Liberia",
-        }
-        LSL{
-            "LSL",
-            "Iropiyianí e Lesoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ mas{
             "MWK",
             "Iropiyianí e Malawi",
         }
-        MZM{
-            "MZM",
-            "Iropiyianí e Msumbiji",
-        }
         NAD{
             "NAD",
             "Iropiyianí e Namibia",
@@ -163,25 +119,13 @@ mas{
             "SAR",
             "Iropiyianí e Saudi",
         }
-        SCR{
-            "SCR",
-            "Iropiyianí e Shelisheli",
-        }
         SDG{
             "SDG",
             "Iropiyianí e Sudani",
         }
-        SHP{
-            "SHP",
-            "Iropiyianí e Santahelena",
-        }
         SLL{
             "SLL",
             "Iropiyianí e leoni",
-        }
-        SOS{
-            "SOS",
-            "Iropiyianí e Somalia",
         }
         STD{
             "STD",
@@ -219,17 +163,9 @@ mas{
             "ZAR",
             "Iropiyianí e Afrika Kusini",
         }
-        ZMK{
-            "ZMK",
-            "Iropiyianí e Sambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Iropiyianí e Sambia",
-        }
-        ZWD{
-            "ZWD",
-            "Iropiyianí e Simbabwe",
         }
     }
     Version{"2.1.7.39"}

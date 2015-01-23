@@ -11,35 +11,6 @@
  */
 eu{
     Countries{
-        001{"Mundua"}
-        002{"Afrika"}
-        003{"Ipar Amerika"}
-        005{"Hego Amerika"}
-        009{"Ozeania"}
-        011{"Afrika mendebaldea"}
-        013{"Erdialdeko Amerika"}
-        014{"Afrika ekialdea"}
-        015{"Afrika iparraldea"}
-        017{"Erdialdeko Afrika"}
-        018{"Afrika hegoaldea"}
-        019{"Amerika"}
-        021{"Amerika iparraldea"}
-        029{"Karibea"}
-        030{"Asia ekialdea"}
-        034{"Asia hegoaldea"}
-        035{"Asia hego-ekialdea"}
-        039{"Europa hegoaldea"}
-        053{"Australasia"}
-        054{"Melanesia"}
-        057{"Mikronesia eskualdea"}
-        061{"Polinesia"}
-        142{"Asia"}
-        143{"Asia erdialdea"}
-        145{"Asia mendebaldea"}
-        150{"Europa"}
-        151{"Europa ekialdea"}
-        154{"Europa iparraldea"}
-        155{"Europa mendebaldea"}
         419{"Latinoamerika"}
         AC{"Ascension uhartea"}
         AD{"Andorra"}

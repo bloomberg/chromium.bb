@@ -27,10 +27,6 @@ ki{
             "BHD",
             "Dinari ya Bahareni",
         }
-        BIF{
-            "BIF",
-            "Faranga ya Burundi",
-        }
         BWP{
             "BWP",
             "Pula ya Botswana",
@@ -51,14 +47,6 @@ ki{
             "CN¥",
             "Yuan Renminbi ya China",
         }
-        CVE{
-            "CVE",
-            "Eskudo ya Kepuvede",
-        }
-        DJF{
-            "DJF",
-            "Faranga ya Jibuti",
-        }
         DZD{
             "DZD",
             "Dinari ya Aljeria",
@@ -66,10 +54,6 @@ ki{
         EGP{
             "EGP",
             "Pauni ya Misri",
-        }
-        ERN{
-            "ERN",
-            "Nakfa ya Eritrea",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ ki{
             "£",
             "Mbauini cia Ngeretha",
         }
-        GHC{
-            "GHC",
-            "Sedi ya Ghana",
-        }
-        GMD{
-            "GMD",
-            "Dalasi ya Gambia",
-        }
-        GNS{
-            "GNS",
-            "Faranga ya Gine",
-        }
         INR{
             "Rs.",
             "Rubia rwa India",
@@ -106,18 +78,6 @@ ki{
         KES{
             "Ksh",
             "Ciringi ya Kenya",
-        }
-        KMF{
-            "KMF",
-            "Faranga ya Komoro",
-        }
-        LRD{
-            "LRD",
-            "Dola ya Liberia",
-        }
-        LSL{
-            "LSL",
-            "Loti ya Lesoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ ki{
             "MWK",
             "Kwacha ya Malawi",
         }
-        MZM{
-            "MZM",
-            "Metikali ya Msumbiji",
-        }
         NAD{
             "NAD",
             "Dola ya Namibia",
@@ -163,25 +119,13 @@ ki{
             "SAR",
             "Riyal ya Saudia",
         }
-        SCR{
-            "SCR",
-            "Rupia ya Shelisheli",
-        }
         SDG{
             "SDG",
             "Pauni ya Sudani",
         }
-        SHP{
-            "SHP",
-            "Pauni ya Santahelena",
-        }
         SLL{
             "SLL",
             "Leoni",
-        }
-        SOS{
-            "SOS",
-            "ciringi cia cumarĩ",
         }
         STD{
             "STD",
@@ -219,17 +163,9 @@ ki{
             "ZAR",
             "Randi ya Afrika Kusini",
         }
-        ZMK{
-            "ZMK",
-            "Kwacha ya Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwacha ya Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "Dola ya Zimbabwe",
         }
     }
     Version{"2.1.6.69"}

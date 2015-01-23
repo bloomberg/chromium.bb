@@ -20,21 +20,9 @@ fr_CA{
             "AZN",
             "manat azerbaïdjanais",
         }
-        BMD{
-            "BMD",
-            "dollar bermudien",
-        }
         BND{
             "BND",
             "dollar brunéien",
-        }
-        BSD{
-            "BSD",
-            "dollar bahaméen",
-        }
-        BZD{
-            "BZD",
-            "dollar bélizéen",
         }
         CAD{
             "$",
@@ -52,14 +40,6 @@ fr_CA{
             "COP",
             "peso colombien",
         }
-        CVE{
-            "CVE",
-            "escudo du Cap-Vert",
-        }
-        FJD{
-            "FJD",
-            "dollar fidjien",
-        }
         FKP{
             "FKP",
             "livre des Îles Malouines",
@@ -67,10 +47,6 @@ fr_CA{
         GBP{
             "£",
             "livre sterling",
-        }
-        GIP{
-            "GIP",
-            "livre de Gibraltar",
         }
         HKD{
             "$ HK",
@@ -128,17 +104,9 @@ fr_CA{
             "$ SG",
             "dollar de Singapour",
         }
-        SRD{
-            "SRD",
-            "dollar du Suriname",
-        }
         THB{
             "THB",
             "baht thaïlandais",
-        }
-        TOP{
-            "TOP",
-            "pa’anga",
         }
         TTD{
             "TTD",
@@ -155,14 +123,6 @@ fr_CA{
         VND{
             "VND",
             "dông vietnamien",
-        }
-        VUV{
-            "VUV",
-            "vatu",
-        }
-        WST{
-            "WST",
-            "tala",
         }
         XAF{
             "XAF",
@@ -182,10 +142,6 @@ fr_CA{
             one{"manat azerbaïdjanais"}
             other{"manats azerbaïdjanais"}
         }
-        CVE{
-            one{"escudo du Cap-Vert"}
-            other{"escudos du Cap-Vert"}
-        }
         FKP{
             one{"livre des Îles Malouines"}
             other{"livres des Îles Malouines"}
@@ -193,10 +149,6 @@ fr_CA{
         GEL{
             one{"lari géorgien"}
             other{"laris géorgiens"}
-        }
-        GYD{
-            one{"dollar guyanien"}
-            other{"dollars guyaniens"}
         }
         LAK{
             one{"kip laotien"}
@@ -209,26 +161,6 @@ fr_CA{
         QAR{
             one{"riyal du Qatar"}
             other{"riyals du Qatar"}
-        }
-        SRD{
-            one{"dollar du Suriname"}
-            other{"dollars du Suriname"}
-        }
-        TOP{
-            one{"pa’anga"}
-            other{"pa’angas"}
-        }
-        VUV{
-            one{"vatu"}
-            other{"vatus"}
-        }
-        WST{
-            one{"tala"}
-            other{"talas"}
-        }
-        XXX{
-            one{"devise inconnue ou non valide"}
-            other{"devise inconnue ou non valide"}
         }
     }
     Version{"2.1.8.19"}

@@ -23,10 +23,6 @@ dyo{
             "BHD",
             "dinaar yati Bahrayn",
         }
-        BIF{
-            "BIF",
-            "fraaŋ yati Burundi",
-        }
         BWP{
             "BWP",
             "pula yati Boswana",
@@ -43,14 +39,6 @@ dyo{
             "CN¥",
             "yuan yati Siin",
         }
-        CVE{
-            "CVE",
-            "eskuudo yati Kap Ver",
-        }
-        DJF{
-            "DJF",
-            "fraaŋ yati Jibuti",
-        }
         DZD{
             "DZD",
             "dinaar yati Alseri",
@@ -59,10 +47,6 @@ dyo{
             "EGP",
             "liiverey yati Esípt",
         }
-        ERN{
-            "ERN",
-            "nafka yati Eritree",
-        }
         ETB{
             "ETB",
             "birr yati Ecoopi",
@@ -70,18 +54,6 @@ dyo{
         EUR{
             "€",
             "euro",
-        }
-        GHC{
-            "GHC",
-            "cedi yati Gaana",
-        }
-        GMD{
-            "GMD",
-            "dalasi yati Gambi",
-        }
-        GNS{
-            "GNS",
-            "sili yati Giné",
         }
         INR{
             "Rs.",
@@ -94,14 +66,6 @@ dyo{
         KES{
             "KES",
             "silliŋ yati Keniya",
-        }
-        KMF{
-            "KMF",
-            "fraaŋ yati Komor",
-        }
-        LRD{
-            "LRD",
-            "dolaar yati Liberia",
         }
         LYD{
             "LYD",

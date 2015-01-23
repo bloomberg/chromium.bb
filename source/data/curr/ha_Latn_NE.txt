@@ -10,5 +10,4 @@
  * generated alias target
  */
 ha_Latn_NE{
-    ___{""}
 }

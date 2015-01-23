@@ -9,15 +9,5 @@
 ar_AE{
     Version{"2.1.8.19"}
     unitsNarrow{
-        length{
-            millimeter{
-                few{"{0} ملم"}
-                many{"{0} ملم"}
-                one{"ملم"}
-                other{"{0} ملم"}
-                two{"ملم"}
-                zero{"ملم"}
-            }
-        }
     }
 }

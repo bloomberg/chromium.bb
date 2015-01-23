@@ -19,10 +19,6 @@ se{
             "€",
             "euro",
         }
-        FIM{
-            "FIM",
-            "suoma márkki",
-        }
         HKD{
             "HK$",
             "HKD",
@@ -50,14 +46,6 @@ se{
         THB{
             "฿",
             "THB",
-        }
-        XAG{
-            "XAG",
-            "uns silba",
-        }
-        XAU{
-            "XAU",
-            "uns golli",
         }
     }
     CurrencyPlurals{

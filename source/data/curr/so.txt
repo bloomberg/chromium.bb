@@ -11,10 +11,6 @@
  */
 so{
     Currencies{
-        DJF{
-            "DJF",
-            "Faran Jabbuuti",
-        }
         ETB{
             "ETB",
             "Birta Itoobbiya",
@@ -26,10 +22,6 @@ so{
         SAR{
             "SAR",
             "Riyaalka Sacuudiga",
-        }
-        SOS{
-            "S",
-            "Shilin soomaali",
         }
         TZS{
             "TZS",

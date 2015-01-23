@@ -27,10 +27,6 @@ sg{
             "BHD",
             "dolùara tî Bahrâina",
         }
-        BIF{
-            "BIF",
-            "farânga tî Burundïi",
-        }
         BWP{
             "BWP",
             "pûla tî Botswana",
@@ -51,14 +47,6 @@ sg{
             "CN¥",
             "yuan renminbi tî Shîni",
         }
-        CVE{
-            "CVE",
-            "eskûêdo tî Kâpo-Vêre",
-        }
-        DJF{
-            "DJF",
-            "farânga tî Dibutïi",
-        }
         DZD{
             "DZD",
             "dinäri tî Alzerïi",
@@ -66,10 +54,6 @@ sg{
         EGP{
             "EGP",
             "pôndo tî Kâmitâ",
-        }
-        ERN{
-            "ERN",
-            "nakafa tî Eritrëe",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ sg{
             "£",
             "pôndo tî Anglëe",
         }
-        GHC{
-            "GHC",
-            "sêdi tî Ganäa",
-        }
-        GMD{
-            "GMD",
-            "dalasi tî gambïi",
-        }
-        GNS{
-            "GNS",
-            "sili tî Ginëe",
-        }
         INR{
             "Rs.",
             "rupïi tî Ênnde",
@@ -106,18 +78,6 @@ sg{
         KES{
             "KES",
             "shilîngi tî Kenyäa",
-        }
-        KMF{
-            "KMF",
-            "farânga tî Kömôro",
-        }
-        LRD{
-            "LRD",
-            "dolära tî Liberïa",
-        }
-        LSL{
-            "LSL",
-            "loti tî Lesôtho",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ sg{
             "MWK",
             "kwâtia tî Malawïi",
         }
-        MZM{
-            "MZM",
-            "metikala tî Mozambîka",
-        }
         NAD{
             "NAD",
             "dolära tî Namibïi",
@@ -163,25 +119,13 @@ sg{
             "SAR",
             "riâli tî Saûdi Arabïi",
         }
-        SCR{
-            "SCR",
-            "rupïi tî Sëyshêle",
-        }
         SDG{
             "SDG",
             "pôndo tî Sudäan",
         }
-        SHP{
-            "SHP",
-            "pôndo tî Zûâ Sênt-Helêna",
-        }
         SLL{
             "SLL",
             "leône tî Sierâ-Leône",
-        }
-        SOS{
-            "SOS",
-            "shilîngi tî Somalïi",
         }
         STD{
             "STD",
@@ -219,17 +163,9 @@ sg{
             "ZAR",
             "rânde tî Mbongo-Afrîka",
         }
-        ZMK{
-            "ZMK",
-            "kwâtia tî Zambïi (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "kwâtia tî Zambïi",
-        }
-        ZWD{
-            "ZWD",
-            "dolära tî Zimbäbwe",
         }
     }
     Version{"2.1.6.69"}

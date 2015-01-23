@@ -17,8 +17,5 @@ az_Cyrl{
             "AZN",
         }
     }
-    Currencies%variant{
-        AZN{"₼"}
-    }
     Version{"2.1.6.69"}
 }

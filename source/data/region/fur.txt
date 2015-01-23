@@ -11,35 +11,6 @@
  */
 fur{
     Countries{
-        001{"Mont"}
-        002{"Afriche"}
-        003{"Americhe dal Nord"}
-        005{"Americhe meridionâl"}
-        009{"Oceanie"}
-        011{"Afriche ocidentâl"}
-        013{"Americhe centrâl"}
-        014{"Afriche orientâl"}
-        015{"Afriche setentrionâl"}
-        017{"Afriche di mieç"}
-        018{"Afriche meridionâl"}
-        019{"Americhis"}
-        021{"Americhe setentrionâl"}
-        029{"caraibic"}
-        030{"Asie orientâl"}
-        034{"Asie meridionâl"}
-        035{"Asie sud orientâl"}
-        039{"Europe meridionâl"}
-        053{"Australie e Gnove Zelande"}
-        054{"Melanesie"}
-        057{"Regjon de Micronesie"}
-        061{"Polinesie"}
-        142{"Asie"}
-        143{"Asie centrâl"}
-        145{"Asie ocidentâl"}
-        150{"Europe"}
-        151{"Europe orientâl"}
-        154{"Europe setentrionâl"}
-        155{"Europe ocidentâl"}
         419{"Americhe latine"}
         AD{"Andorra"}
         AE{"Emirâts araps unîts"}

@@ -11,10 +11,6 @@
  */
 ig{
     Currencies{
-        CVE{
-            "CVE",
-            "Escudo Caboverdiano",
-        }
         NGN{
             "₦",
             "Naịra",

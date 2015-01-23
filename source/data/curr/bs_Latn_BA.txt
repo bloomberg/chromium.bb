@@ -10,5 +10,4 @@
  * generated alias target
  */
 bs_Latn_BA{
-    ___{""}
 }

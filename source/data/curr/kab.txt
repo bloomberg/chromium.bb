@@ -27,10 +27,6 @@ kab{
             "BHD",
             "Adinar Abaḥrini",
         }
-        BIF{
-            "BIF",
-            "Afrank Aburandi",
-        }
         BWP{
             "BWP",
             "Apula Abusṭwanan",
@@ -51,14 +47,6 @@ kab{
             "CN¥",
             "Ayuwan Renminbi Acinwa",
         }
-        CVE{
-            "CVE",
-            "Akabuviradinu Askudi",
-        }
-        DJF{
-            "DJF",
-            "Afrank Ajibuti",
-        }
         DZD{
             "DA",
             "Adinar Azzayri",
@@ -66,10 +54,6 @@ kab{
         EGP{
             "EGP",
             "Apund Amaṣri",
-        }
-        ERN{
-            "ERN",
-            "Anakfa Iritiri",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ kab{
             "£",
             "Apund Sterling Aglizi",
         }
-        GHC{
-            "GHC",
-            "Asidi Aɣani",
-        }
-        GMD{
-            "GMD",
-            "Adalasi Agambi",
-        }
-        GNS{
-            "GNS",
-            "Afrank Aɣini",
-        }
         INR{
             "Rs.",
             "Arupi Ahendi",
@@ -106,18 +78,6 @@ kab{
         KES{
             "KES",
             "Aciling Akini",
-        }
-        KMF{
-            "KMF",
-            "Afrank Akamiruni",
-        }
-        LRD{
-            "LRD",
-            "Adular Alibiri",
-        }
-        LSL{
-            "LSL",
-            "Aluṭi Alizuṭi",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ kab{
             "MWK",
             "Akwaca Amalawi",
         }
-        MZM{
-            "MZM",
-            "Amitikal Amuzembiqi",
-        }
         NAD{
             "NAD",
             "Adular Anamibi",
@@ -163,25 +119,13 @@ kab{
             "SAR",
             "Aryal Asuɛudi",
         }
-        SCR{
-            "SCR",
-            "Arupi Aseycili",
-        }
         SDG{
             "SDG",
             "Apund Asudani",
         }
-        SHP{
-            "SHP",
-            "Apund Asant Ilini",
-        }
         SLL{
             "SLL",
             "Alyun",
-        }
-        SOS{
-            "SOS",
-            "Aciling Aṣumali",
         }
         STD{
             "STD",
@@ -219,17 +163,9 @@ kab{
             "ZAR",
             "Arand Afriqi n Wadda",
         }
-        ZMK{
-            "ZMK",
-            "Akwaca Azambi (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Akwaca Azambi",
-        }
-        ZWD{
-            "ZWD",
-            "Adular Azimbabwi",
         }
     }
     Version{"2.1.6.69"}

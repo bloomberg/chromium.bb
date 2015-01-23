@@ -31,22 +31,6 @@ fo{
             "SEK",
             "svensk króna",
         }
-        XAG{
-            "XAG",
-            "unse sølv",
-        }
-        XAU{
-            "XAU",
-            "unse guld",
-        }
-        XPD{
-            "XPD",
-            "unse palladium",
-        }
-        XPT{
-            "XPT",
-            "unse platin",
-        }
     }
     CurrencyPlurals{
         DKK{
@@ -68,22 +52,6 @@ fo{
         SEK{
             one{"svensk króna"}
             other{"svenska krónur"}
-        }
-        XAG{
-            one{"unse sølv"}
-            other{"unse sølv"}
-        }
-        XAU{
-            one{"unse guld"}
-            other{"unse guld"}
-        }
-        XPD{
-            one{"unse palladium"}
-            other{"unse palladium"}
-        }
-        XPT{
-            one{"unse platin"}
-            other{"unse platin"}
         }
     }
     CurrencyUnitPatterns{

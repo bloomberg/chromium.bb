@@ -27,10 +27,6 @@ bez{
             "BHD",
             "Lupila lwa Hubahareni",
         }
-        BIF{
-            "BIF",
-            "Lupila lwa Huburundi",
-        }
         BWP{
             "BWP",
             "Lupila lwa Hubotswana",
@@ -51,14 +47,6 @@ bez{
             "CN¥",
             "Lupila lwa Huchina",
         }
-        CVE{
-            "CVE",
-            "Lupila lwa Hukepuvede",
-        }
-        DJF{
-            "DJF",
-            "Lupila lwa Hujibuti",
-        }
         DZD{
             "DZD",
             "Lupila lwa Hualjelia",
@@ -66,10 +54,6 @@ bez{
         EGP{
             "EGP",
             "Lupila lwa Humisri",
-        }
-        ERN{
-            "ERN",
-            "Lupila lwa Hueritrea",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ bez{
             "£",
             "Lupila lwa Huuingereza",
         }
-        GHC{
-            "GHC",
-            "Lupila lwa Hughana",
-        }
-        GMD{
-            "GMD",
-            "Lupila lwa Hugambia",
-        }
-        GNS{
-            "GNS",
-            "Lupila lwa Hujine",
-        }
         INR{
             "Rs.",
             "Lupila lwa Huindia",
@@ -106,18 +78,6 @@ bez{
         KES{
             "KES",
             "Shilingi ya Hukenya",
-        }
-        KMF{
-            "KMF",
-            "Lupila lwa Hukomoro",
-        }
-        LRD{
-            "LRD",
-            "Lupila lwa Hulibelia",
-        }
-        LSL{
-            "LSL",
-            "Lupila lwa Hulesoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ bez{
             "MWK",
             "Lupila lwa Humalawi",
         }
-        MZM{
-            "MZM",
-            "Lupila lwa Humsumbiji",
-        }
         NAD{
             "NAD",
             "Lupila lwa Hunamibia",
@@ -163,25 +119,13 @@ bez{
             "SAR",
             "Lupila lwa Husaudi",
         }
-        SCR{
-            "SCR",
-            "Lupila lwa Hushelisheli",
-        }
         SDG{
             "SDG",
             "Lupila lwa Husudani",
         }
-        SHP{
-            "SHP",
-            "Lupila lwa Husantahelena",
-        }
         SLL{
             "SLL",
             "Lupila lwa Lioni",
-        }
-        SOS{
-            "SOS",
-            "Lupila lwa Husomalia",
         }
         STD{
             "STD",
@@ -219,17 +163,9 @@ bez{
             "ZAR",
             "Lupila lwa Huafriaka ya Hukusini",
         }
-        ZMK{
-            "ZMK",
-            "Lupila lwa Huzambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Lupila lwa Huzambia",
-        }
-        ZWD{
-            "ZWD",
-            "Lupila lwa Huzimbabwe",
         }
     }
     Version{"2.1.7.39"}

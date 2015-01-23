@@ -11,35 +11,6 @@
  */
 fil{
     Countries{
-        001{"Mundo"}
-        002{"Africa"}
-        003{"Hilagang Amerika"}
-        005{"South America"}
-        009{"Oceania"}
-        011{"Kanlurang Africa"}
-        013{"Gitnang Amerika"}
-        014{"Silangang Africa"}
-        015{"Hilagang Africa"}
-        017{"Gitnang Africa"}
-        018{"Katimugang Africa"}
-        019{"Americas"}
-        021{"Rehiyon ng Hilagang Amerika"}
-        029{"Carribbean"}
-        030{"Silangang Asya"}
-        034{"Katimugang Asya"}
-        035{"Timog-Silangang Asya"}
-        039{"Katimugang Europe"}
-        053{"Australasia"}
-        054{"Melanesia"}
-        057{"Rehiyon ng Micronesia"}
-        061{"Polynesia"}
-        142{"Asya"}
-        143{"Gitnang Asya"}
-        145{"Kanlurang Asya"}
-        150{"Europe"}
-        151{"Silangang Europe"}
-        154{"Hilagang Europe"}
-        155{"Kanlurang Europe"}
         419{"Latin America"}
         AC{"Acsencion island"}
         AD{"Andorra"}

@@ -27,10 +27,6 @@ ff{
             "BHD",
             "Dinaar Bahrayn",
         }
-        BIF{
-            "BIF",
-            "Mbuuɗu Burunndi",
-        }
         BWP{
             "BWP",
             "Pulaa Botwanaa",
@@ -51,14 +47,6 @@ ff{
             "CN¥",
             "Yuam Siin",
         }
-        CVE{
-            "CVE",
-            "Eskudoo Kap Weer",
-        }
-        DJF{
-            "DJF",
-            "Faraa Jibutii",
-        }
         DZD{
             "DZD",
             "Dinaar Alaseri",
@@ -66,10 +54,6 @@ ff{
         EGP{
             "EGP",
             "Liibar Ejipt",
-        }
-        ERN{
-            "ERN",
-            "Nafka Eriteree",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ ff{
             "£",
             "Liibar Sterling",
         }
-        GHC{
-            "GHC",
-            "Sedi Ganaa",
-        }
-        GMD{
-            "GMD",
-            "Dalasi Gammbi",
-        }
-        GNS{
-            "GNS",
-            "Faraa Gine",
-        }
         INR{
             "Rs.",
             "Rupii Enndo",
@@ -106,18 +78,6 @@ ff{
         KES{
             "KES",
             "Siling Keñaa",
-        }
-        KMF{
-            "KMF",
-            "Faraa Komoor",
-        }
-        LRD{
-            "LRD",
-            "Dolaar Liberiyaa",
-        }
-        LSL{
-            "LSL",
-            "Loti Lesotoo",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ ff{
             "MWK",
             "Kuwacca Malaawi",
         }
-        MZM{
-            "MZM",
-            "Metikal Mosammbik",
-        }
         NAD{
             "NAD",
             "Dolaar Namibii",
@@ -163,25 +119,13 @@ ff{
             "SAR",
             "Riyaal Arabi Sawdit",
         }
-        SCR{
-            "SCR",
-            "Rupii Seysel",
-        }
         SDG{
             "SDG",
             "Liibar Sudaan",
         }
-        SHP{
-            "SHP",
-            "Liibar Sent Helen",
-        }
         SLL{
             "SLL",
             "Lewoon Seraa Liyon",
-        }
-        SOS{
-            "SOS",
-            "Siling Soomali",
         }
         STD{
             "STD",
@@ -219,17 +163,9 @@ ff{
             "ZAR",
             "Rannda Afrik Bŋ Worgo",
         }
-        ZMK{
-            "ZMK",
-            "Kuwacca Sammbi (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kuwacca Sammbi",
-        }
-        ZWD{
-            "ZWD",
-            "Dolaar Simbaabuwe",
         }
     }
     Version{"2.1.7.39"}

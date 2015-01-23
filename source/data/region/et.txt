@@ -11,35 +11,6 @@
  */
 et{
     Countries{
-        001{"maailm"}
-        002{"Aafrika"}
-        003{"Põhja-Ameerika"}
-        005{"Lõuna-Ameerika"}
-        009{"Okeaania"}
-        011{"Lääne-Aafrika"}
-        013{"Kesk-Ameerika"}
-        014{"Ida-Aafrika"}
-        015{"Põhja-Aafrika"}
-        017{"Kesk-Aafrika"}
-        018{"Lõuna-Aafrika"}
-        019{"Ameerika maailmajagu"}
-        021{"Ameerika põhjaosa"}
-        029{"Kariibi meri"}
-        030{"Ida-Aasia"}
-        034{"Lõuna-Aasia"}
-        035{"Kagu-Aasia"}
-        039{"Lõuna-Euroopa"}
-        053{"Australaasia"}
-        054{"Melaneesia"}
-        057{"Mikroneesia"}
-        061{"Polüneesia"}
-        142{"Aasia"}
-        143{"Kesk-Aasia"}
-        145{"Lääne-Aasia"}
-        150{"Euroopa"}
-        151{"Ida-Euroopa"}
-        154{"Põhja-Euroopa"}
-        155{"Lääne-Euroopa"}
         419{"Ladina-Ameerika"}
         AC{"Ascensioni saar"}
         AD{"Andorra"}

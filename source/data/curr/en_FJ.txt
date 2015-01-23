@@ -9,10 +9,6 @@
 en_FJ{
     %%Parent{"en_001"}
     Currencies{
-        FJD{
-            "$",
-            "Fijian Dollar",
-        }
     }
     Version{"2.1.6.69"}
 }

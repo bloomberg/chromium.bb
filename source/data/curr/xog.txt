@@ -27,10 +27,6 @@ xog{
             "BHD",
             "Dinaali ya Baareeni",
         }
-        BIF{
-            "BIF",
-            "Faranga ya burundi",
-        }
         BWP{
             "BWP",
             "Pula ya Botiswana",
@@ -51,14 +47,6 @@ xog{
             "CN¥",
             "Yuwani Reniminibi ya Cayina",
         }
-        CVE{
-            "CVE",
-            "Esikudo ya Keepu Veredi",
-        }
-        DJF{
-            "DJF",
-            "Faranga ya Jjibuti",
-        }
         DZD{
             "DZD",
             "Dinaali y’Aligerya",
@@ -66,10 +54,6 @@ xog{
         EGP{
             "EGP",
             "Pawunda ya Misiri",
-        }
-        ERN{
-            "ERN",
-            "Nakifa ya Eritureya",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ xog{
             "£",
             "Pawunda ya Bungereza",
         }
-        GHC{
-            "GHC",
-            "Sedi ya Gana",
-        }
-        GMD{
-            "GMD",
-            "Dalasi ya Gambya",
-        }
-        GNS{
-            "GNS",
-            "Faranga ya Gini",
-        }
         INR{
             "Rs.",
             "Rupiya ya Buyindi",
@@ -106,18 +78,6 @@ xog{
         KES{
             "KES",
             "Silingi ya Kenya",
-        }
-        KMF{
-            "KMF",
-            "Faranga ya Komoro",
-        }
-        LRD{
-            "LRD",
-            "Doola ya Liberya",
-        }
-        LSL{
-            "LSL",
-            "Loti ya Lesoso",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ xog{
             "MWK",
             "Kwaca ey’eMalawi",
         }
-        MZM{
-            "MZM",
-            "Metikaali ey’eMozambiiki",
-        }
         NGN{
             "NGN",
             "Nayira ey’eNayijerya",
@@ -159,29 +115,13 @@ xog{
             "SAR",
             "Riyaali ey’eBuwarabu",
         }
-        SCR{
-            "SCR",
-            "Rupiya ey’eSesere",
-        }
         SDG{
             "SDG",
             "Dinaali ey’eSudaani",
         }
-        SDP{
-            "SDP",
-            "Pawunda ey’eSudaani",
-        }
-        SHP{
-            "SHP",
-            "Pawunda ey’eSenti Herena",
-        }
         SLL{
             "SLL",
             "Lewone",
-        }
-        SOS{
-            "SOS",
-            "Silingi ey’eSomaliya",
         }
         STD{
             "STD",
@@ -219,17 +159,9 @@ xog{
             "ZAR",
             "Randi ey’eSawusafirika",
         }
-        ZMK{
-            "ZMK",
-            "Kwaca ey’eZambya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwaca ey’eZambya",
-        }
-        ZWD{
-            "ZWD",
-            "Doola ey’eZimbabwe",
         }
     }
     Version{"2.1.7.39"}

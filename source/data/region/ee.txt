@@ -11,35 +11,6 @@
  */
 ee{
     Countries{
-        001{"xexeme"}
-        002{"Afrika nutome"}
-        003{"Dziehe Amerika nutome"}
-        005{"Anyiehe Amerika nutome"}
-        009{"Oceania nutome"}
-        011{"Ɣetoɖoƒelɔƒo Afrika nutome"}
-        013{"Titina Amerika nutome"}
-        014{"Ɣedzeƒe Afrika nutome"}
-        015{"Dziehe Afrika nutome"}
-        017{"Titina Afrika nutome"}
-        018{"Anyiehelɔƒo Afrika nutome"}
-        019{"Amerika nutome"}
-        021{"Dziehelɔƒo Amerika nutome"}
-        029{"Karibbea nutome"}
-        030{"Ɣedzeƒe Asia nutome"}
-        034{"Anyiehelɔƒo Asia nutome"}
-        035{"Anyiehe Ɣedzeƒe Afrika nutome"}
-        039{"Anyiehelɔƒo Europa nutome"}
-        053{"Australia kple New Zealand nutome"}
-        054{"Melanesia nutome"}
-        057{"Mikronesia"}
-        061{"Pɔlinesia nutome"}
-        142{"Asia nutome"}
-        143{"Titina Asia nutome"}
-        145{"Ɣetoɖoƒelɔƒo Asia nutome"}
-        150{"Europa nutome"}
-        151{"Ɣedzeƒe Europa nutome"}
-        154{"Dziehelɔƒo Europa nutome"}
-        155{"Ɣetoɖoƒelɔƒo Europa nutome"}
         419{"Latin Amerika nutome"}
         AC{"Ascension ƒudomekpo nutome"}
         AD{"Andorra nutome"}

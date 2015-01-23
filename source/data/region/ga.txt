@@ -11,35 +11,6 @@
  */
 ga{
     Countries{
-        001{"An Domhan"}
-        002{"An Afraic"}
-        003{"Meiriceá Thuaidh"}
-        005{"Meiriceá Theas"}
-        009{"An Aigéine"}
-        011{"Iarthar na hAfraice"}
-        013{"Meiriceá Láir"}
-        014{"Oirthear na hAfraice"}
-        015{"Tuaisceart na hAfraice"}
-        017{"An Afraic Láir"}
-        018{"Deisceart na hAfraice"}
-        019{"Críocha Mheiriceá"}
-        021{"Tuaisceart Mheiriceá"}
-        029{"An Mhuir Chairib"}
-        030{"Oirthear na hÁise"}
-        034{"Deisceart na hÁise"}
-        035{"Oirdheisceart na hÁise"}
-        039{"Deisceart na hEorpa"}
-        053{"An Astraláise"}
-        054{"An Mheilinéis"}
-        057{"An Réigiún Micrinéiseach"}
-        061{"An Pholainéis"}
-        142{"An Áise"}
-        143{"An Áise Láir"}
-        145{"Iarthar na hÁise"}
-        150{"An Eoraip"}
-        151{"Oirthear na hEorpa"}
-        154{"Tuaisceart na hEorpa"}
-        155{"Iarthar na hEorpa"}
         419{"Meiriceá Laidineach"}
         AC{"Oileán na Deascabhála"}
         AD{"Andóra"}

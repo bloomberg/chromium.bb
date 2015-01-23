@@ -11,11 +11,6 @@
  */
 lkt{
     Countries{
-        001{"Makȟásitomni"}
-        002{"Hásapa Makȟáwita"}
-        019{"Khéya Wíta"}
-        142{"Hazíla Makȟáwita"}
-        150{"Wašíču Makȟáwita"}
         CA{"Uŋčíyapi Makȟóčhe"}
         CN{"Pȟečhókaŋhaŋska Makȟóčhe"}
         DE{"Iyášiča Makȟóčhe"}

@@ -9,8 +9,6 @@
 zh_Hant_HK{
     %%Parent{"zh_Hant"}
     Countries{
-        013{"中美洲"}
-        029{"加勒比"}
         AE{"阿拉伯聯合酋長國"}
         AG{"安提瓜及巴布達"}
         AW{"阿魯巴"}

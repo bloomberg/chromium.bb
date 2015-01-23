@@ -11,35 +11,6 @@
  */
 da{
     Countries{
-        001{"Verden"}
-        002{"Afrika"}
-        003{"Nordamerika"}
-        005{"Sydamerika"}
-        009{"Oceanien"}
-        011{"Vestafrika"}
-        013{"Mellemamerika"}
-        014{"Østafrika"}
-        015{"Nordafrika"}
-        017{"Centralafrika"}
-        018{"Det sydlige Afrika"}
-        019{"Amerika"}
-        021{"Det nordlige Amerika"}
-        029{"Caribien"}
-        030{"Østasien"}
-        034{"Sydasien"}
-        035{"Sydøstasien"}
-        039{"Sydeuropa"}
-        053{"Australasien"}
-        054{"Melanesien"}
-        057{"Mikronesien"}
-        061{"Polynesien"}
-        142{"Asien"}
-        143{"Centralasien"}
-        145{"Vestasien"}
-        150{"Europa"}
-        151{"Østeuropa"}
-        154{"Nordeuropa"}
-        155{"Vesteuropa"}
         419{"Latinamerika"}
         AC{"Ascensionøen"}
         AD{"Andorra"}

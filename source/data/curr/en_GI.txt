@@ -13,10 +13,6 @@ en_GI{
             "GB£",
             "British Pound Sterling",
         }
-        GIP{
-            "£",
-            "Gibraltar Pound",
-        }
     }
     Version{"2.1.8.19"}
 }

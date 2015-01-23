@@ -11,35 +11,6 @@
  */
 fo{
     Countries{
-        001{"heimur"}
-        002{"Africa"}
-        003{"Norðuramerika"}
-        005{"Suðuramerika"}
-        009{"Kyrrahavsoyggjarnar"}
-        011{"Vesturafrika"}
-        013{"Sentralamerika"}
-        014{"Eysturafrika"}
-        015{"Norðurafrika"}
-        017{"Miðafrika"}
-        018{"Suður Afrika"}
-        019{"Amerika"}
-        021{"Amerika norður Meksiko"}
-        029{"Karibia"}
-        030{"Eysturasia"}
-        034{"Suðurasia"}
-        035{"Suðureysturasia"}
-        039{"Suðurevropa"}
-        053{"Avstralia og Nýsæland"}
-        054{"Melanesia"}
-        057{"Mikronesiske regionen"}
-        061{"Polynesia"}
-        142{"Asia"}
-        143{"Sentralasia"}
-        145{"Vesturasia"}
-        150{"Evropa"}
-        151{"Eysturevropa"}
-        154{"Norðurevropa"}
-        155{"Vesturevropa"}
         419{"Latínamerika"}
         AC{"Ascensionoyggjin"}
         AD{"Andorra"}

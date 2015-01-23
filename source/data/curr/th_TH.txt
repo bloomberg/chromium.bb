@@ -10,5 +10,4 @@
  * generated alias target
  */
 th_TH{
-    ___{""}
 }

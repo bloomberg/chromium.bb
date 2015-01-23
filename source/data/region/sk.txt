@@ -11,35 +11,6 @@
  */
 sk{
     Countries{
-        001{"svet"}
-        002{"Afrika"}
-        003{"Severná Amerika"}
-        005{"Južná Amerika"}
-        009{"Oceánia"}
-        011{"západná Afrika"}
-        013{"Stredná Amerika"}
-        014{"východná Afrika"}
-        015{"severná Afrika"}
-        017{"stredná Afrika"}
-        018{"južné územia Afriky"}
-        019{"Amerika"}
-        021{"severné územia Ameriky"}
-        029{"Karibik"}
-        030{"východná Ázia"}
-        034{"južná Ázia"}
-        035{"juhovýchodná Ázia"}
-        039{"južná Európa"}
-        053{"Australázia"}
-        054{"Melanézia"}
-        057{"oblasť Mikronézie"}
-        061{"Polynézia"}
-        142{"Ázia"}
-        143{"stredná Ázia"}
-        145{"západná Ázia"}
-        150{"Európa"}
-        151{"východná Európa"}
-        154{"severná Európa"}
-        155{"západná Európa"}
         419{"Latinská Amerika"}
         AC{"Ascensión"}
         AD{"Andorra"}

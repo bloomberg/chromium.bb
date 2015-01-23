@@ -27,10 +27,6 @@ nd{
             "BHD",
             "Dinari yase Bhahareni",
         }
-        BIF{
-            "BIF",
-            "Fulenki yase Bhurundi",
-        }
         BWP{
             "BWP",
             "Phula yase Botswana",
@@ -51,14 +47,6 @@ nd{
             "CN¥",
             "Yuan Renminbi yase China",
         }
-        CVE{
-            "CVE",
-            "Escudo Caboverdiano",
-        }
-        DJF{
-            "DJF",
-            "Fulenki yase Jibhuthi",
-        }
         DZD{
             "DZD",
             "Dinali yase Aljeriya",
@@ -66,10 +54,6 @@ nd{
         EGP{
             "EGP",
             "Phawundi laseGibhide",
-        }
-        ERN{
-            "ERN",
-            "Nakfa yase Eritrea",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ nd{
             "£",
             "Phawundi yase Ngilandi",
         }
-        GHC{
-            "GHC",
-            "Sedi yase Ghana",
-        }
-        GMD{
-            "GMD",
-            "Dalasi yase Gambia",
-        }
-        GNS{
-            "GNS",
-            "Fulenki yase Gine",
-        }
         INR{
             "Rs.",
             "Rupi yase Indiya",
@@ -106,18 +78,6 @@ nd{
         KES{
             "KES",
             "Shilingi yase Kenya",
-        }
-        KMF{
-            "KMF",
-            "Fulenki yase Khomoro",
-        }
-        LRD{
-            "LRD",
-            "Dola yase Libheriya",
-        }
-        LSL{
-            "LSL",
-            "Lothi yase Lesotho",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ nd{
             "MWK",
             "Kwacha yase Malawi",
         }
-        MZM{
-            "MZM",
-            "Metikali yase Mozambiki",
-        }
         NAD{
             "NAD",
             "Dola yase Namibiya",
@@ -163,29 +119,13 @@ nd{
             "SAR",
             "Riyal yase Saudi",
         }
-        SCR{
-            "SCR",
-            "Rupi yase Seyisheli",
-        }
         SDG{
             "SDG",
             "Dinari yase Sudani",
         }
-        SDP{
-            "SDP",
-            "Phawundi yase Sudani",
-        }
-        SHP{
-            "SHP",
-            "Phawundindi laseSt Helena",
-        }
         SLL{
             "SLL",
             "Leyoni",
-        }
-        SOS{
-            "SOS",
-            "Shilingi yase Somaliya",
         }
         STD{
             "STD",
@@ -223,17 +163,9 @@ nd{
             "ZAR",
             "Randi yase Afrika ye Zanzi",
         }
-        ZMK{
-            "ZMK",
-            "Kwacha yase Zambiya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwacha yase Zambiya",
-        }
-        ZWD{
-            "ZWD",
-            "Dola yase Zimbabwe",
         }
     }
     Version{"2.1.6.69"}

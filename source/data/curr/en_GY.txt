@@ -9,10 +9,6 @@
 en_GY{
     %%Parent{"en_001"}
     Currencies{
-        GYD{
-            "$",
-            "Guyanaese Dollar",
-        }
     }
     Version{"2.1.6.69"}
 }

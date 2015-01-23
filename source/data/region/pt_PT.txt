@@ -8,10 +8,6 @@
 // ***************************************************************************
 pt_PT{
     Countries{
-        009{"Oceânia"}
-        015{"Norte de África"}
-        029{"Caraíbas"}
-        154{"Europa do Norte"}
         AI{"Anguila"}
         AM{"Arménia"}
         BH{"Barém"}

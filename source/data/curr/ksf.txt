@@ -27,10 +27,6 @@ ksf{
             "BHD",
             "mɔni mǝ á barǝ́n",
         }
-        BIF{
-            "BIF",
-            "mɔni mǝ á burundí",
-        }
         BWP{
             "BWP",
             "mɔni mǝ á botswana",
@@ -51,14 +47,6 @@ ksf{
             "CN¥",
             "mɔni mǝ á cín",
         }
-        CVE{
-            "CVE",
-            "mɔni mǝ á kapvɛr",
-        }
-        DJF{
-            "DJF",
-            "mɔni mǝ á dyibutí",
-        }
         DZD{
             "DZD",
             "mɔni mǝ á aljɛrí",
@@ -66,10 +54,6 @@ ksf{
         EGP{
             "EGP",
             "mɔni mǝ á ɛjípt",
-        }
-        ERN{
-            "ERN",
-            "mɔni mǝ á ɛritrɛ́",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ ksf{
             "£",
             "mɔni mǝ á ingɛrís",
         }
-        GHC{
-            "GHC",
-            "mɔni mǝ á gána",
-        }
-        GMD{
-            "GMD",
-            "mɔni mǝ á gambí",
-        }
-        GNS{
-            "GNS",
-            "mɔni mǝ á ginɛ́",
-        }
         INR{
             "Rs.",
             "mɔni mǝ á indí",
@@ -106,18 +78,6 @@ ksf{
         KES{
             "KES",
             "mɔni mǝ á kɛnya",
-        }
-        KMF{
-            "KMF",
-            "mɔni mǝ á komɔr",
-        }
-        LRD{
-            "LRD",
-            "mɔni mǝ á libɛrya",
-        }
-        LSL{
-            "LSL",
-            "mɔni mǝ á lǝsóto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ ksf{
             "MWK",
             "mɔni mǝ á malawi",
         }
-        MZM{
-            "MZM",
-            "mɔni mǝ á mosambík",
-        }
         NAD{
             "NAD",
             "mɔni mǝ á namibí",
@@ -163,25 +119,13 @@ ksf{
             "SAR",
             "mɔni mǝ á arabí saodí",
         }
-        SCR{
-            "SCR",
-            "mɔni mǝ á sɛcɛl",
-        }
         SDG{
             "SDG",
             "mɔni mǝ á sudan",
         }
-        SHP{
-            "SHP",
-            "mɔni mǝ á sɛntɛ́len",
-        }
         SLL{
             "SLL",
             "mɔni mǝ á syɛraleon",
-        }
-        SOS{
-            "SOS",
-            "mɔni mǝ á somalí",
         }
         STD{
             "STD",
@@ -219,17 +163,9 @@ ksf{
             "ZAR",
             "mɔni mǝ á afrik anǝ a sud",
         }
-        ZMK{
-            "ZMK",
-            "mɔni mǝ á zambí (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "mɔni mǝ á zambí",
-        }
-        ZWD{
-            "ZWD",
-            "mɔni mǝ á zimbabwɛ́",
         }
     }
     Version{"2.1.6.69"}

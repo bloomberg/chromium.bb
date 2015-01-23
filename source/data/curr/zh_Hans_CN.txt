@@ -10,5 +10,4 @@
  * generated alias target
  */
 zh_Hans_CN{
-    ___{""}
 }

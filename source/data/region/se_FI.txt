@@ -8,10 +8,6 @@
 // ***************************************************************************
 se_FI{
     Countries{
-        003{"Davvi-Amerihkká ja Gaska-Amerihkká"}
-        005{"Lulli-Amerihkká"}
-        013{"Gaska-Amerihkká"}
-        021{"Davvi-Amerihkká"}
         419{"Latiinnalaš-Amerihkká"}
         BA{"Bosnia ja Hercegovina"}
         KH{"Kamboža"}

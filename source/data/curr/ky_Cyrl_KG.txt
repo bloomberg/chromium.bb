@@ -10,5 +10,4 @@
  * generated alias target
  */
 ky_Cyrl_KG{
-    ___{""}
 }

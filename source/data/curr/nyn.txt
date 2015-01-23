@@ -27,10 +27,6 @@ nyn{
             "BHD",
             "Dinari ya Bahareni",
         }
-        BIF{
-            "BIF",
-            "Faranga ya Burundi",
-        }
         BWP{
             "BWP",
             "Pura ya Botswana",
@@ -51,14 +47,6 @@ nyn{
             "CN¥",
             "Yuan Renminbi ya China",
         }
-        CVE{
-            "CVE",
-            "Eskudo ya Kepuvede",
-        }
-        DJF{
-            "DJF",
-            "Faranga ya Gyibuti",
-        }
         DZD{
             "DZD",
             "Dinari ya Arigyeriya",
@@ -66,10 +54,6 @@ nyn{
         EGP{
             "EGP",
             "Paundi ya Misiri",
-        }
-        ERN{
-            "ERN",
-            "Nakfa ya Eritireya",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ nyn{
             "£",
             "Paundi ya Bungyereza",
         }
-        GHC{
-            "GHC",
-            "Cedi ya Ghana",
-        }
-        GMD{
-            "GMD",
-            "Dalasi ya Gambia",
-        }
-        GNS{
-            "GNS",
-            "Faranga ya Guinea",
-        }
         INR{
             "Rs.",
             "Rupiya ya India",
@@ -106,18 +78,6 @@ nyn{
         KES{
             "KES",
             "Shiringi ya Kenya",
-        }
-        KMF{
-            "KMF",
-            "Faranga ya Komoro",
-        }
-        LRD{
-            "LRD",
-            "Doora ya Liberia",
-        }
-        LSL{
-            "LSL",
-            "Loti ya Lesoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ nyn{
             "MWK",
             "Kwaca ya Malawi",
         }
-        MZM{
-            "MZM",
-            "Metikari ya Mozambikwi",
-        }
         NAD{
             "NAD",
             "Doora ya Namibiya",
@@ -163,29 +119,13 @@ nyn{
             "SAR",
             "Riya ya Saudi",
         }
-        SCR{
-            "SCR",
-            "Rupiiha ya Sherisheri",
-        }
         SDG{
             "SDG",
             "Dinari ya Sudani",
         }
-        SDP{
-            "SDP",
-            "Paundi ya Sudan",
-        }
-        SHP{
-            "SHP",
-            "Paundi ya Senti Herena",
-        }
         SLL{
             "SLL",
             "Leone",
-        }
-        SOS{
-            "SOS",
-            "Eshiringi ya Somalia",
         }
         STD{
             "STD",
@@ -223,17 +163,9 @@ nyn{
             "ZAR",
             "Randi ya Sausi Afirika",
         }
-        ZMK{
-            "ZMK",
-            "Kwacha ya Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwacha ya Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "Doora ya Zimbabwe",
         }
     }
     Version{"2.1.7.39"}

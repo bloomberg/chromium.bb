@@ -35,10 +35,6 @@ os{
             "$",
             "АИШ-ы Доллар",
         }
-        XXX{
-            "XXX",
-            "Нӕзонгӕ валютӕ",
-        }
     }
     CurrencyPlurals{
         BRL{
@@ -64,10 +60,6 @@ os{
         USD{
             one{"АИШ-ы доллар"}
             other{"АИШ-ы доллары"}
-        }
-        XXX{
-            one{"нӕзонгӕ валютӕ"}
-            other{"нӕзонгӕ валютӕйы"}
         }
     }
     CurrencyUnitPatterns{

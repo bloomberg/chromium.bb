@@ -27,10 +27,6 @@ jgo{
             "FCFA",
             "Fɛlâŋ",
         }
-        XXX{
-            "XXX",
-            "ntɛ-ŋkáp yi pɛ́ ká kɛ́ jínɛ",
-        }
     }
     Version{"2.1.7.39"}
 }

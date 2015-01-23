@@ -10,5 +10,4 @@
  * generated alias target
  */
 he_IL{
-    ___{""}
 }

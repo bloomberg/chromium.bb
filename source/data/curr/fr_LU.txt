@@ -8,14 +8,6 @@
 // ***************************************************************************
 fr_LU{
     Currencies{
-        FRF{
-            "FRF",
-            "franc français",
-        }
-        LUF{
-            "F",
-            "franc luxembourgeois",
-        }
     }
     Version{"2.1.6.69"}
 }

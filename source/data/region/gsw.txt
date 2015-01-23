@@ -11,35 +11,6 @@
  */
 gsw{
     Countries{
-        001{"Wält"}
-        002{"Afrika"}
-        003{"Nordameerika"}
-        005{"Süüdameerika"}
-        009{"Ozeaanie"}
-        011{"Weschtafrika"}
-        013{"Mittelameerika"}
-        014{"Oschtafrika"}
-        015{"Nordafrika"}
-        017{"Zentraalafrika"}
-        018{"Süüdlichs Afrika"}
-        019{"Nord-, Mittel- und Süüdameerika"}
-        021{"Nördlichs Ameerika"}
-        029{"Karibik"}
-        030{"Oschtaasie"}
-        034{"Süüdaasie"}
-        035{"Süüdoschtaasie"}
-        039{"Süüdeuropa"}
-        053{"Auschtraalie und Nöiseeland"}
-        054{"Melaneesie"}
-        057{"Mikroneesischs Inselgebiet"}
-        061{"Polineesie"}
-        142{"Aasie"}
-        143{"Zentraalaasie"}
-        145{"Weschtaasie"}
-        150{"Euroopa"}
-        151{"Oschteuroopa"}
-        154{"Nordeuroopa"}
-        155{"Weschteuroopa"}
         419{"Latiinameerika"}
         AD{"Andorra"}
         AE{"Veräinigti Arabischi Emirate"}

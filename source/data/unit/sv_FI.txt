@@ -9,11 +9,5 @@
 sv_FI{
     Version{"2.1.8.19"}
     unitsNarrow{
-        speed{
-            kilometer-per-hour{
-                one{"{0} km/h"}
-                other{"{0} km/h"}
-            }
-        }
     }
 }

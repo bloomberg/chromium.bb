@@ -11,35 +11,6 @@
  */
 gd{
     Countries{
-        001{"An Saoghal"}
-        002{"Afraga"}
-        003{"Aimeireaga a Tuath"}
-        005{"Aimeireaga a Deas"}
-        009{"Roinn a’ Chuain Sèimh"}
-        011{"Afraga an Iar"}
-        013{"Meadhan Aimeireaga"}
-        014{"Afraga an Ear"}
-        015{"Afraga a Tuath"}
-        017{"Meadhan Afraga"}
-        018{"Ceann a Deas Afraga"}
-        019{"An Dà Aimeireaga"}
-        021{"Ceann a Tuath Aimeireaga"}
-        029{"Am Muir Caraibeach"}
-        030{"Àisia an Ear"}
-        034{"Àisia a Deas"}
-        035{"Àisia an Ear-dheas"}
-        039{"An Roinn-Eòrpa a Deas"}
-        053{"Astràilia is Sealainn Nuadh"}
-        054{"Na h-Eileanan Dubha"}
-        057{"Roinn nam Meanbh-Eileanan"}
-        061{"Poilinèis"}
-        142{"Àisia"}
-        143{"Meadhan Àisia"}
-        145{"Àisia an Iar"}
-        150{"An Roinn-Eòrpa"}
-        151{"An Roinn-Eòrpa an Ear"}
-        154{"An Roinn-Eòrpa a Tuath"}
-        155{"An Roinn-Eòrpa an Iar"}
         419{"Aimeireaga Laidinneach"}
         AC{"Eilean na Deasgabhalach"}
         AD{"Andorra"}

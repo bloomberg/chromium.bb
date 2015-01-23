@@ -9,10 +9,6 @@
 pt_MO{
     %%Parent{"pt_PT"}
     Currencies{
-        MOP{
-            "MOP$",
-            "Pataca de Macau",
-        }
     }
     Version{"2.1.6.69"}
 }

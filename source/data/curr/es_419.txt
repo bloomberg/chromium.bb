@@ -12,29 +12,9 @@ es_419{
             "AMD",
             "dram",
         }
-        AWG{
-            "AWG",
-            "florín arubeño",
-        }
-        BBD{
-            "BBD",
-            "dólar barbadense",
-        }
-        BSD{
-            "BSD",
-            "dólar bahameño",
-        }
-        BZD{
-            "BZD",
-            "dólar beliceño",
-        }
         CAD{
             "CAD",
             "dólar canadiense",
-        }
-        ERN{
-            "ERN",
-            "nakfa",
         }
         EUR{
             "EUR",
@@ -60,10 +40,6 @@ es_419{
             "LKR",
             "rupia esrilanquesa",
         }
-        MOP{
-            "MOP",
-            "pataca",
-        }
         THB{
             "THB",
             "bat",
@@ -76,10 +52,6 @@ es_419{
             "VND",
             "dong",
         }
-        XXX{
-            "XXX",
-            "moneda desconocida",
-        }
         ZMW{
             "ZMK",
             "kuacha zambiano",
@@ -89,25 +61,9 @@ es_419{
         EUR{"€"}
     }
     CurrencyPlurals{
-        AWG{
-            one{"florín arubeño"}
-            other{"florines arubeños"}
-        }
-        BBD{
-            one{"dólar barbadense"}
-            other{"dólares barbadenses"}
-        }
         BHD{
             one{"dinar bareiní"}
             other{"dinares bareiníes"}
-        }
-        BSD{
-            one{"dólar bahameño"}
-            other{"dólares bahameños"}
-        }
-        BZD{
-            one{"dólar beliceño"}
-            other{"dólares beliceños"}
         }
         HKD{
             one{"dólar hongkonés"}
@@ -129,17 +85,9 @@ es_419{
             one{"rupia esrilanquesa"}
             other{"rupias esrilanquesas"}
         }
-        MOP{
-            one{"pataca"}
-            other{"patacas"}
-        }
         MWK{
             one{"kuacha malauí"}
             other{"kuachas malauíes"}
-        }
-        XXX{
-            one{"(unidad de moneda desconocida)"}
-            other{"(moneda desconocida)"}
         }
     }
     Version{"2.1.8.19"}

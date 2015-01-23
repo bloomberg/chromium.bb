@@ -11,35 +11,6 @@
  */
 ksh{
     Countries{
-        001{"de Ääd"}
-        002{"Affrika"}
-        003{"Nood-Amärrika"}
-        005{"Söd-Amärrika"}
-        009{"Ozejaanije"}
-        011{"Wäß-Affrika"}
-        013{"Meddelammärrika"}
-        014{"Oß-Affrika"}
-        015{"Nood-Affrika"}
-        017{"Meddel-Affrika"}
-        018{"Söd-Affrika"}
-        019{"Ammärrika"}
-        021{"der Norde vun Amärrika"}
-        029{"de Karribik"}
-        030{"Oß-Aasije"}
-        034{"Söd-Aasije"}
-        035{"Söd-Oß-Aasije"}
-        039{"Söd-Europpa"}
-        053{"de Rejjohn öm Austraalije"}
-        054{"Mellaneesije"}
-        057{"de Rejohn vun Mikroneeseje"}
-        061{"Polineesije"}
-        142{"Aasije"}
-        143{"Meddelaasije"}
-        145{"Wäß-Aasije"}
-        150{"Europpa"}
-        151{"Oß-Europpa"}
-        154{"Nood-Europpa"}
-        155{"Wäß-Europpa"}
         419{"Lateinamärrika"}
         AC{"Aßension"}
         AD{"Andorra"}

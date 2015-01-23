@@ -11,35 +11,6 @@
  */
 wae{
     Countries{
-        001{"Wäld"}
-        002{"Afrika"}
-        003{"Nordamerika"}
-        005{"Südamerika"}
-        009{"Ozeanie"}
-        011{"Weštafrika"}
-        013{"Zentralamerika"}
-        014{"Oštafrika"}
-        015{"Nordafrika"}
-        017{"Mittelafrika"}
-        018{"Südličs Afrika"}
-        019{"Amerikaniš Kontinänt"}
-        021{"Nördličs Amerika"}
-        029{"Karibik"}
-        030{"Oštasie"}
-        034{"Südasie"}
-        035{"Südoštasie"}
-        039{"Südeuropa"}
-        053{"Auštralie und Niwséland"}
-        054{"Melanesie"}
-        057{"Mikronesišes Inselgebiet"}
-        061{"Polinesie"}
-        142{"Asie"}
-        143{"Zentralasie"}
-        145{"Weštasie"}
-        150{"Europa"}
-        151{"Ošteuropa"}
-        154{"Nordeuropa"}
-        155{"Wešteuropa"}
         419{"Latíamerika"}
         AC{"Himmelfártsinsla"}
         AD{"Andorra"}

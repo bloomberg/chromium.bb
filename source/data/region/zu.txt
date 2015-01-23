@@ -11,35 +11,6 @@
  */
 zu{
     Countries{
-        001{"Umhlaba"}
-        002{"i-Africa"}
-        003{"i-North America"}
-        005{"i-South America"}
-        009{"i-Oceania"}
-        011{"i-Western Africa"}
-        013{"i-Central America"}
-        014{"i-Eastern Africa"}
-        015{"i-Northern Africa"}
-        017{"i-Middle Africa"}
-        018{"i-Southern Africa"}
-        019{"Americas"}
-        021{"i-Northern America"}
-        029{"i-Caribbean"}
-        030{"i-Eastern Asia"}
-        034{"i-Southern Asia"}
-        035{"i-South-Eastern Asia"}
-        039{"i-Southern Europe"}
-        053{"i-Australasia"}
-        054{"i-Melanesia"}
-        057{"i-Micronesian Region"}
-        061{"i-Polynesia"}
-        142{"i-Asia"}
-        143{"i-Central Asia"}
-        145{"i-Western Asia"}
-        150{"i-Europe"}
-        151{"i-Eastern Europe"}
-        154{"i-Northern Europe"}
-        155{"i-Western Europe"}
         419{"i-Latin America"}
         AC{"i-Ascension Island"}
         AD{"i-Andorra"}

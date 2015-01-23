@@ -9,10 +9,6 @@
 en_ER{
     %%Parent{"en_001"}
     Currencies{
-        ERN{
-            "Nfk",
-            "Eritrean Nakfa",
-        }
     }
     Version{"2.1.6.69"}
 }

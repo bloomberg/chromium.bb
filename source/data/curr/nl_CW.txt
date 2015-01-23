@@ -8,10 +8,6 @@
 // ***************************************************************************
 nl_CW{
     Currencies{
-        ANG{
-            "NAf.",
-            "Nederlands-Antilliaanse gulden",
-        }
     }
     Version{"2.1.6.69"}
 }

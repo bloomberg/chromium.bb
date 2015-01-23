@@ -27,10 +27,6 @@ sbp{
             "BHD",
             "Ihela ya Bahaleni",
         }
-        BIF{
-            "BIF",
-            "Ihela ya Bulundi",
-        }
         BWP{
             "BWP",
             "Ihela ya Botiswana",
@@ -51,14 +47,6 @@ sbp{
             "CN¥",
             "Ihela ya Shina",
         }
-        CVE{
-            "CVE",
-            "Ihela ya Kepuvede",
-        }
-        DJF{
-            "DJF",
-            "Ihela ya Jibuti",
-        }
         DZD{
             "DZD",
             "Ihela ya Alijeliya",
@@ -66,10 +54,6 @@ sbp{
         EGP{
             "EGP",
             "Ihela ya Misili",
-        }
-        ERN{
-            "ERN",
-            "Ihela ya Elitileya",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ sbp{
             "£",
             "Ihela ya Uwingelesa",
         }
-        GHC{
-            "GHC",
-            "Ihela ya Ghana",
-        }
-        GMD{
-            "GMD",
-            "Ihela ya Gambiya",
-        }
-        GNS{
-            "GNS",
-            "Ihela ya Gine",
-        }
         INR{
             "Rs.",
             "Ihela ya Indiya",
@@ -106,18 +78,6 @@ sbp{
         KES{
             "KES",
             "Ihela ya Kenya",
-        }
-        KMF{
-            "KMF",
-            "Ihela ya Komolo",
-        }
-        LRD{
-            "LRD",
-            "Ihela ya Libeliya",
-        }
-        LSL{
-            "LSL",
-            "Ihela ya Lesoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ sbp{
             "MWK",
             "Ihela ya Malawi",
         }
-        MZM{
-            "MZM",
-            "Ihela ya Musumbiji",
-        }
         NAD{
             "NAD",
             "Ihela ya Namibiya",
@@ -163,25 +119,13 @@ sbp{
             "SAR",
             "Ihela ya Sawudiya",
         }
-        SCR{
-            "SCR",
-            "Ihela ya Shelisheli",
-        }
         SDG{
             "SDG",
             "Ihela ya Sudani",
         }
-        SHP{
-            "SHP",
-            "Ihela ya Santahelena",
-        }
         SLL{
             "SLL",
             "Ihela ya Siela Liyoni",
-        }
-        SOS{
-            "SOS",
-            "Ihela ya Somaliya",
         }
         STD{
             "STD",
@@ -219,17 +163,9 @@ sbp{
             "ZAR",
             "Ihela ya Afilika Kusini",
         }
-        ZMK{
-            "ZMK",
-            "Ihela ya Sambiya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Ihela ya Sambiya",
-        }
-        ZWD{
-            "ZWD",
-            "Ihela ya Simbabwe",
         }
     }
     Version{"2.1.7.39"}

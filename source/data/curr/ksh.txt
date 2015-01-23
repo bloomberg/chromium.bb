@@ -27,10 +27,6 @@ ksh{
             "AMD",
             "armeenesche Dram",
         }
-        ANG{
-            "ANG",
-            "neederlängsch antillesche Jullde",
-        }
         AOA{
             "AOA",
             "angjolaanesche Kwansa",
@@ -43,14 +39,6 @@ ksh{
             "A$",
             "austraalesche Dollaa",
         }
-        AWG{
-            "AWG",
-            "arubesche Florin",
-        }
-        AZM{
-            "AZM",
-            "Asserbaidschaani Manat (1993–2006)",
-        }
         AZN{
             "AZN",
             "Asserbaidschaani Manat",
@@ -58,10 +46,6 @@ ksh{
         BAM{
             "BAM",
             "ömtuuschbaa Mark us Boßnije un dä Hächejovvina",
-        }
-        BBD{
-            "BBD",
-            "Barbados-Dollaa",
         }
         BDT{
             "BDT",
@@ -75,14 +59,6 @@ ksh{
             "BHD",
             "Bachrainesche Denaa",
         }
-        BIF{
-            "BIF",
-            "burundesche Frang",
-        }
-        BMD{
-            "BMD",
-            "Bermuuda-Dollaa",
-        }
         BND{
             "BND",
             "Brunei-Dollaa",
@@ -95,14 +71,6 @@ ksh{
             "R$",
             "brasilljaanesche Real",
         }
-        BSD{
-            "BSD",
-            "bahama’sche Dollaa",
-        }
-        BTN{
-            "BTN",
-            "bhutanesesche Ngultrum",
-        }
         BWP{
             "BWP",
             "Pula us Bozwaana",
@@ -110,10 +78,6 @@ ksh{
         BYR{
             "BYR",
             "wiißrußesche Rubel",
-        }
-        BZD{
-            "BZD",
-            "belizjaanesche Dollaa",
         }
         CAD{
             "CA$",
@@ -143,25 +107,9 @@ ksh{
             "CRC",
             "koßtarikaanesche Colón",
         }
-        CUC{
-            "CUC",
-            "ömtuuschbaa kubaanesche Pesos",
-        }
-        CUP{
-            "CUP",
-            "kubaanesche Peesos",
-        }
-        CVE{
-            "CVE",
-            "kapverdesche Eskuudos",
-        }
         CZK{
             "CZK",
             "tschäschesche Kruhne",
-        }
-        DJF{
-            "DJF",
-            "Frang uß Dschibuti",
         }
         DKK{
             "DKK",
@@ -175,17 +123,9 @@ ksh{
             "DZD",
             "aljeresche Denaa",
         }
-        EEK{
-            "EEK",
-            "Äßnesche Kruhne",
-        }
         EGP{
             "EGP",
             "äjiptesche Pongk",
-        }
-        ERN{
-            "ERN",
-            "Nafka uß Erritreja",
         }
         ETB{
             "ETB",
@@ -194,10 +134,6 @@ ksh{
         EUR{
             "€",
             "Euro",
-        }
-        FJD{
-            "FJD",
-            "Fidschi-Dollaa",
         }
         FKP{
             "FKP",
@@ -215,14 +151,6 @@ ksh{
             "GHS",
             "janaaesche Cedi",
         }
-        GIP{
-            "GIP",
-            "jibraltaa’sche Pongk",
-        }
-        GMD{
-            "GMD",
-            "jambesche Dalasi",
-        }
         GNF{
             "GNF",
             "Jineea-Frang",
@@ -230,10 +158,6 @@ ksh{
         GTQ{
             "GTQ",
             "juatemalesche Quetzal",
-        }
-        GYD{
-            "GYD",
-            "Juaana-Dollaa",
         }
         HKD{
             "HK$",
@@ -303,10 +227,6 @@ ksh{
             "KHR",
             "kambodschaanesche Riel",
         }
-        KMF{
-            "KMF",
-            "kommooresche Frang",
-        }
         KPW{
             "KPW",
             "noodkorejaansche Won",
@@ -339,21 +259,9 @@ ksh{
             "LKR",
             "schrilankesche Ruupije",
         }
-        LRD{
-            "LRD",
-            "liberijaanesche Dollaa",
-        }
-        LSL{
-            "LSL",
-            "lesoothesche Loti",
-        }
         LTL{
             "LTL",
             "littouesche Litas",
-        }
-        LVL{
-            "LVL",
-            "lättesche Lats",
         }
         LYD{
             "LYD",
@@ -375,17 +283,9 @@ ksh{
             "MKD",
             "mazedoonesche Denaa",
         }
-        MMK{
-            "MMK",
-            "burmeesesche Kyat",
-        }
         MNT{
             "MNT",
             "mongjoolesche Tugrik",
-        }
-        MOP{
-            "MOP",
-            "makaneesesche Pataca",
         }
         MRO{
             "MRO",
@@ -394,10 +294,6 @@ ksh{
         MUR{
             "MUR",
             "maurizjahnesche Ruupije",
-        }
-        MVR{
-            "MVR",
-            "mallediivesche Rufiyaa",
         }
         MWK{
             "MWK",
@@ -410,10 +306,6 @@ ksh{
         MYR{
             "MYR",
             "malaisesche Ringgit",
-        }
-        MZM{
-            "MZM",
-            "mosambikaanesche Metical (1980–2006)",
         }
         MZN{
             "MZN",
@@ -479,10 +371,6 @@ ksh{
             "QAR",
             "kataaresche Rijal",
         }
-        ROL{
-            "ROL",
-            "romäänesche Leu (1952–2006)",
-        }
         RON{
             "RON",
             "romäänesche Leu",
@@ -507,10 +395,6 @@ ksh{
             "SBD",
             "solomonesche Dollaa",
         }
-        SCR{
-            "SCR",
-            "seischellesche Ruupije",
-        }
         SDG{
             "SDG",
             "sudaneesesche Pongk",
@@ -523,25 +407,9 @@ ksh{
             "SGD",
             "singjapurejaanesche Dollaa",
         }
-        SHP{
-            "SHP",
-            "Zint-Hellena-Pongk",
-        }
-        SKK{
-            "SKK",
-            "ßlovaakesche Kruhne",
-        }
         SLL{
             "SLL",
             "ẞjärra-lejoneesesche Leone",
-        }
-        SOS{
-            "SOS",
-            "somaalesche Schillenge",
-        }
-        SRD{
-            "SRD",
-            "sürinameesesche Dollaa",
         }
         SSP{
             "SSP",
@@ -550,10 +418,6 @@ ksh{
         STD{
             "STD",
             "Dobra vun São Tomé un Príncipe",
-        }
-        SVC{
-            "SVC",
-            "asalvadorejaanesche Cosan",
         }
         SYP{
             "SYP",
@@ -571,10 +435,6 @@ ksh{
             "TJS",
             "tadschikißtaanesche Somoni",
         }
-        TMM{
-            "TMM",
-            "turkmeneßtaanesche Manat (1993–2009)",
-        }
         TMT{
             "TMT",
             "turkmeneßtaanesche Manat",
@@ -582,10 +442,6 @@ ksh{
         TND{
             "TND",
             "tuneesesche Denaa",
-        }
-        TOP{
-            "TOP",
-            "tongjanes Paʻangache",
         }
         TRY{
             "TRY",
@@ -631,57 +487,21 @@ ksh{
             "₫",
             "vijätnammeesesche Dong",
         }
-        VUV{
-            "VUV",
-            "vanuatesche Vatu",
-        }
-        WST{
-            "WST",
-            "samowaanesche Tala",
-        }
         XAF{
             "FCFA",
             "Kmmeruhner Frang",
-        }
-        XAG{
-            "XAG",
-            "Sellver",
-        }
-        XAU{
-            "XAU",
-            "Jold",
         }
         XCD{
             "EC$",
             "oß-karribbesche Dollaa",
         }
-        XFO{
-            "XFO",
-            "franzüüsesche Joldfranke",
-        }
         XOF{
             "CFA",
             "Frang uß de Älfebeinköß",
         }
-        XPD{
-            "XPD",
-            "Palladijum",
-        }
         XPF{
             "CFPF",
             "polineesesche Frang",
-        }
-        XPT{
-            "XPT",
-            "Plaatin",
-        }
-        XTS{
-            "XTS",
-            "Währong zum Prööfe",
-        }
-        XXX{
-            "XXX",
-            "onbikannte Währong",
         }
         YER{
             "YER",
@@ -691,21 +511,9 @@ ksh{
             "ZAR",
             "södaffrekaanesche Rand",
         }
-        ZMK{
-            "ZMK",
-            "sambesche Kwacha (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "sambesche Kwacha",
-        }
-        ZWD{
-            "ZWD",
-            "simbabwesche Dollaa (1980–2008)",
-        }
-        ZWL{
-            "ZWL",
-            "simbabwesche Dollaa (2009)",
         }
     }
     CurrencyPlurals{
@@ -729,16 +537,6 @@ ksh{
             other{"Bollivijano"}
             zero{"Bollivijano"}
         }
-        BTN{
-            one{"Bhutanesesche Ngultrum"}
-            other{"Bhutanesesche Ngultrum"}
-            zero{"Bhutanesesche Ngultrum"}
-        }
-        BZD{
-            one{"Belizjaanesche Dollaa"}
-            other{"Belizjaanesche Dollaa"}
-            zero{"Belizjaanesche Dollaa"}
-        }
         CLP{
             one{"schileenesche Peesos"}
             other{"schileenesche Peesos"}
@@ -753,21 +551,6 @@ ksh{
             one{"Kaßtarikaanesche Colón"}
             other{"Kaßtarikaanesche Colón"}
             zero{"Kaßtarikaanesche Colón"}
-        }
-        CUC{
-            one{"ömtuuschbaa kubaanesche Pesos"}
-            other{"ömtuuschbaa kubaanesche Pesos"}
-            zero{"ömtuuschbaa kubaanesche Pesos"}
-        }
-        CUP{
-            one{"kubaanesche Peesos"}
-            other{"kubaanesche Peesos"}
-            zero{"kubaanesche Peesos"}
-        }
-        CVE{
-            one{"kapverdesche Eskuudos"}
-            other{"kapverdesche Eskuudos"}
-            zero{"kapverdesche Eskuudos"}
         }
         CZK{
             one{"tschäschesche Kruhne"}
@@ -848,11 +631,6 @@ ksh{
             one{"schweedesche Kruhne"}
             other{"schweedesche Kruhne"}
             zero{"schweedesche Kruhne"}
-        }
-        SOS{
-            one{"somaalesche Schillenge"}
-            other{"somaalesche Schillenge"}
-            zero{"somaalesche Schillenge"}
         }
         SSP{
             one{"södsudaneesesche Pongk"}

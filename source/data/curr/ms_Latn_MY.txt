@@ -10,5 +10,4 @@
  * generated alias target
  */
 ms_Latn_MY{
-    ___{""}
 }

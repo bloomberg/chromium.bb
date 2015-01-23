@@ -13,10 +13,6 @@ en_SH{
             "GB£",
             "British Pound Sterling",
         }
-        SHP{
-            "£",
-            "Saint Helena Pound",
-        }
     }
     Version{"2.1.6.69"}
 }

@@ -97,36 +97,26 @@ root{
         ARS{"$"}
         AUD{"$"}
         BAM{"KM"}
-        BBD{"$"}
         BDT{"৳"}
-        BMD{"$"}
         BND{"$"}
         BOB{"Bs"}
         BRL{"R$"}
-        BSD{"$"}
         BWP{"P"}
         BYR{"р."}
-        BZD{"$"}
         CAD{"$"}
         CLP{"$"}
         CNY{"¥"}
         COP{"$"}
         CRC{"₡"}
-        CUC{"$"}
-        CUP{"$"}
         CZK{"Kč"}
         DKK{"kr"}
         DOP{"$"}
         EGP{"E£"}
-        ESP{"₧"}
         EUR{"€"}
-        FJD{"$"}
         FKP{"£"}
         GBP{"£"}
-        GIP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
-        GYD{"$"}
         HKD{"$"}
         HNL{"L"}
         HRK{"kn"}
@@ -138,7 +128,6 @@ root{
         JMD{"$"}
         JPY{"¥"}
         KHR{"៛"}
-        KMF{"CF"}
         KPW{"₩"}
         KRW{"₩"}
         KYD{"$"}
@@ -146,11 +135,8 @@ root{
         LAK{"₭"}
         LBP{"L£"}
         LKR{"Rs"}
-        LRD{"$"}
         LTL{"Lt"}
-        LVL{"Ls"}
         MGA{"Ar"}
-        MMK{"K"}
         MNT{"₮"}
         MUR{"Rs"}
         MXN{"$"}
@@ -165,18 +151,14 @@ root{
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
-        RUR{"р."}
         RWF{"RF"}
         SBD{"$"}
         SEK{"kr"}
         SGD{"$"}
-        SHP{"£"}
-        SRD{"$"}
         SSP{"£"}
         STD{"Db"}
         SYP{"£"}
         THB{"฿"}
-        TOP{"T$"}
         TRY{"₺"}
         TTD{"$"}
         TWD{"NT$"}
@@ -188,10 +170,6 @@ root{
         XCD{"$"}
         ZAR{"R"}
         ZMW{"ZK"}
-    }
-    Currencies%variant{
-        RUB{"₽"}
-        TRY{"TL"}
     }
     CurrencyUnitPatterns{
         other{"{0} {1}"}

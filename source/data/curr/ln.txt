@@ -27,10 +27,6 @@ ln{
             "BHD",
             "Dinarɛ ya Bahrɛnɛ",
         }
-        BIF{
-            "BIF",
-            "Falánga ya Burundi",
-        }
         BWP{
             "BWP",
             "Pula ya Botswana",
@@ -51,14 +47,6 @@ ln{
             "CN¥",
             "Yuanɛ Renminbi ya Sinɛ",
         }
-        CVE{
-            "CVE",
-            "Esikudo ya Kapevɛrɛ",
-        }
-        DJF{
-            "DJF",
-            "Falánga ya Dzibuti",
-        }
         DZD{
             "DZD",
             "Dinarɛ ya Alizeri",
@@ -66,10 +54,6 @@ ln{
         EGP{
             "EGP",
             "Paunɛ ya Ezípitɛ",
-        }
-        ERN{
-            "ERN",
-            "Nakfa ya Elitlɛ",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ ln{
             "£",
             "Paunɛ ya Angɛlɛtɛ́lɛ",
         }
-        GHC{
-            "GHC",
-            "Sedi ya Gana",
-        }
-        GMD{
-            "GMD",
-            "Dalasi ya Gambi",
-        }
-        GNS{
-            "GNS",
-            "Falánga ya Ginɛ",
-        }
         INR{
             "Rs.",
             "Rupi ya Índɛ",
@@ -106,18 +78,6 @@ ln{
         KES{
             "KES",
             "Shilingɛ ya Kenya",
-        }
-        KMF{
-            "KMF",
-            "Falánga ya Komoro",
-        }
-        LRD{
-            "LRD",
-            "Dolarɛ ya Liberya",
-        }
-        LSL{
-            "LSL",
-            "Loti ya Lesóto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ ln{
             "MWK",
             "Kwasha ya Malawi",
         }
-        MZM{
-            "MZM",
-            "Metikali ya Mozambiki",
-        }
         NAD{
             "NAD",
             "Dolarɛ ya Namibi",
@@ -163,29 +119,13 @@ ln{
             "SAR",
             "Riyalɛ ya Alabi Sawuditɛ",
         }
-        SCR{
-            "SCR",
-            "Rupi ya Sɛshɛlɛ",
-        }
         SDG{
             "SDG",
             "Dinarɛ ya Sudá",
         }
-        SDP{
-            "SDP",
-            "Paunɛ ya Sudá",
-        }
-        SHP{
-            "SHP",
-            "Paunɛ ya Sántu elena",
-        }
         SLL{
             "SLL",
             "Leonɛ",
-        }
-        SOS{
-            "SOS",
-            "Shilingɛ ya Somali",
         }
         STD{
             "STD",
@@ -223,17 +163,9 @@ ln{
             "ZAR",
             "Randɛ ya Afríka Súdi",
         }
-        ZMK{
-            "ZMK",
-            "Kwasha ya Zambi (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwasha ya Zambi",
-        }
-        ZWD{
-            "ZWD",
-            "Dolarɛ ya Zimbabwɛ",
         }
     }
     Version{"2.1.7.39"}

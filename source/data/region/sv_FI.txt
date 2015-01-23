@@ -8,7 +8,6 @@
 // ***************************************************************************
 sv_FI{
     Countries{
-        035{"Sydöstasien"}
         BL{"Saint-Barthélemy"}
         BQ{"Bonaire, S:t Eustatius och Saba"}
         CD{"Demokratiska republiken Kongo"}

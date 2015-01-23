@@ -10,13 +10,6 @@ en_AU{
     %%Parent{"en_GB"}
     Version{"2.1.8.19"}
     units{
-        mass{
-            metric-ton{
-                dnam{"tonnes"}
-                one{"tonne"}
-                other{"{0} tonnes"}
-            }
-        }
     }
     unitsNarrow{
         duration{
@@ -27,10 +20,5 @@ en_AU{
         }
     }
     unitsShort{
-        length{
-            micrometer{
-                dnam{"µmetres"}
-            }
-        }
     }
 }

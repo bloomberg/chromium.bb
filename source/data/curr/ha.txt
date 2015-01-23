@@ -27,10 +27,6 @@ ha{
             "BHD",
             "Kuɗin Baharan",
         }
-        BIF{
-            "BIF",
-            "Kuɗin Burundi",
-        }
         BWP{
             "BWP",
             "Kuɗin Baswana",
@@ -51,14 +47,6 @@ ha{
             "CN¥",
             "Kuɗin Caina/Sin",
         }
-        CVE{
-            "CVE",
-            "Kuɗin Tsibiran Kap Barde",
-        }
-        DJF{
-            "DJF",
-            "Kuɗin Jibuti",
-        }
         DZD{
             "DZD",
             "Kuɗin Aljeriya",
@@ -66,10 +54,6 @@ ha{
         EGP{
             "EGP",
             "Fam kin Masar",
-        }
-        ERN{
-            "ERN",
-            "Kuɗin Eritireya",
         }
         ETB{
             "ETB",
@@ -83,18 +67,6 @@ ha{
             "£",
             "Fam kin Ingila",
         }
-        GHC{
-            "GHC",
-            "Cedi",
-        }
-        GMD{
-            "GMD",
-            "Kuɗin Gambiya",
-        }
-        GNS{
-            "GNS",
-            "Kuɗin Gini",
-        }
         INR{
             "Rs.",
             "Kuɗin Indiya",
@@ -106,18 +78,6 @@ ha{
         KES{
             "KES",
             "Sulen Kenya",
-        }
-        KMF{
-            "KMF",
-            "Kuɗin Kwamoras",
-        }
-        LRD{
-            "LRD",
-            "Dalar Laberiya",
-        }
-        LSL{
-            "LSL",
-            "Kuɗin Lesoto",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ ha{
             "MWK",
             "Kuɗin Malawi",
         }
-        MZM{
-            "MZM",
-            "Kuɗin Mozambik",
-        }
         NAD{
             "NAD",
             "Dalar Namibiya",
@@ -163,25 +119,13 @@ ha{
             "SAR",
             "Riyal",
         }
-        SCR{
-            "SCR",
-            "Kuɗin Saishal",
-        }
         SDG{
             "SDG",
             "Fam kin Sudan",
         }
-        SHP{
-            "SHP",
-            "Fam kin San Helena",
-        }
         SLL{
             "SLL",
             "Kuɗin Salewo",
-        }
-        SOS{
-            "SOS",
-            "Sulen Somaliya",
         }
         STD{
             "STD",
@@ -219,17 +163,9 @@ ha{
             "ZAR",
             "Kuɗin Afirka Ta Kudu",
         }
-        ZMK{
-            "ZMK",
-            "Kuɗin Zambiya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kuɗin Zambiya",
-        }
-        ZWD{
-            "ZWD",
-            "Dalar zimbabuwe",
         }
     }
     Version{"2.1.7.39"}

@@ -27,10 +27,6 @@ ak{
             "BHD",
             "Baren Dina",
         }
-        BIF{
-            "BIF",
-            "Burundi Frank",
-        }
         BWP{
             "BWP",
             "Botswana Pula",
@@ -47,14 +43,6 @@ ak{
             "CN¥",
             "Yuan",
         }
-        CVE{
-            "CVE",
-            "Ɛskudo",
-        }
-        DJF{
-            "DJF",
-            "Gyebuti Frank",
-        }
         DZD{
             "DZD",
             "Ɔlgyeria Dina",
@@ -62,10 +50,6 @@ ak{
         EGP{
             "EGP",
             "Egypt Pɔn",
-        }
-        ERN{
-            "ERN",
-            "Ɛretereya Nakfa",
         }
         ETB{
             "ETB",
@@ -79,21 +63,9 @@ ak{
             "£",
             "Breten Pɔn",
         }
-        GHC{
-            "GHC",
-            "Ghana Sidi (1979–2007)",
-        }
         GHS{
             "GH₵",
             "Ghana Sidi",
-        }
-        GMD{
-            "GMD",
-            "Gambia Dalasi",
-        }
-        GNS{
-            "GNS",
-            "Gini Frank",
         }
         INR{
             "Rs.",
@@ -106,18 +78,6 @@ ak{
         KES{
             "KES",
             "Kenya Hyelen",
-        }
-        KMF{
-            "KMF",
-            "Komoro Frank",
-        }
-        LRD{
-            "LRD",
-            "Laeberia Dɔla",
-        }
-        LSL{
-            "LSL",
-            "Lesoto Loti",
         }
         LYD{
             "LYD",
@@ -143,10 +103,6 @@ ak{
             "MWK",
             "Malawi Kwacha",
         }
-        MZM{
-            "MZM",
-            "Mozambik Metical",
-        }
         NAD{
             "NAD",
             "Namibia Dɔla",
@@ -163,29 +119,13 @@ ak{
             "SAR",
             "Saudi Riyal",
         }
-        SCR{
-            "SCR",
-            "Seyhyɛls Rupi",
-        }
         SDG{
             "SDG",
             "Sudan Dina",
         }
-        SDP{
-            "SDP",
-            "Sudan Pɔn",
-        }
-        SHP{
-            "SHP",
-            "St Helena Pɔn",
-        }
         SLL{
             "SLL",
             "Leone",
-        }
-        SOS{
-            "SOS",
-            "Somailia Hyelen",
         }
         STD{
             "STD",
@@ -219,17 +159,9 @@ ak{
             "ZAR",
             "Afrika Anaafo Rand",
         }
-        ZMK{
-            "ZMK",
-            "Zambia Kwacha (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Zambia Kwacha",
-        }
-        ZWD{
-            "ZWD",
-            "Zimbabwe Dɔla",
         }
     }
     Version{"2.1.7.39"}
