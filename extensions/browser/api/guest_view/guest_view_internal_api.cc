@@ -79,27 +79,40 @@ bool GuestViewInternalDestroyGuestFunction::RunAsync() {
   return true;
 }
 
-GuestViewInternalSetAutoSizeFunction::
-    GuestViewInternalSetAutoSizeFunction() {
+GuestViewInternalSetSizeFunction::GuestViewInternalSetSizeFunction() {
 }
 
-GuestViewInternalSetAutoSizeFunction::
-    ~GuestViewInternalSetAutoSizeFunction() {
+GuestViewInternalSetSizeFunction::~GuestViewInternalSetSizeFunction() {
 }
 
-bool GuestViewInternalSetAutoSizeFunction::RunAsync() {
-  scoped_ptr<guest_view_internal::SetAutoSize::Params> params(
-      guest_view_internal::SetAutoSize::Params::Create(*args_));
+bool GuestViewInternalSetSizeFunction::RunAsync() {
+  scoped_ptr<guest_view_internal::SetSize::Params> params(
+      guest_view_internal::SetSize::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   GuestViewBase* guest = GuestViewBase::From(
       render_view_host()->GetProcess()->GetID(), params->instance_id);
   if (!guest)
     return false;
-  guest->SetAutoSize(params->params.enable_auto_size,
-                     gfx::Size(params->params.min.width,
-                               params->params.min.height),
-                     gfx::Size(params->params.max.width,
-                               params->params.max.height));
+
+  SetSizeParams set_size_params;
+  if (params->params.enable_auto_size) {
+    set_size_params.enable_auto_size.reset(
+        params->params.enable_auto_size.release());
+  }
+  if (params->params.min) {
+    set_size_params.min_size.reset(
+        new gfx::Size(params->params.min->width, params->params.min->height));
+  }
+  if (params->params.max) {
+    set_size_params.max_size.reset(
+        new gfx::Size(params->params.max->width, params->params.max->height));
+  }
+  if (params->params.normal) {
+    set_size_params.normal_size.reset(new gfx::Size(
+        params->params.normal->width, params->params.normal->height));
+  }
+
+  guest->SetSize(set_size_params);
   SendResponse(true);
   return true;
 }

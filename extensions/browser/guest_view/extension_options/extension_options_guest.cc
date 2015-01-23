@@ -203,9 +203,9 @@ content::WebContents* ExtensionOptionsGuest::OpenURLFromTab(
 }
 
 void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {
-  DispatchEventToView(new GuestViewBase::Event(
-      extension_options_internal::OnClose::kEventName,
-      make_scoped_ptr(new base::DictionaryValue())));
+  DispatchEventToView(
+      new GuestViewBase::Event(extension_options_internal::OnClose::kEventName,
+                               make_scoped_ptr(new base::DictionaryValue())));
 }
 
 bool ExtensionOptionsGuest::HandleContextMenu(

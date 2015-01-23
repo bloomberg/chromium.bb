@@ -35,5 +35,7 @@ const char kParameterInstanceId[] = "instanceId";
 // Other.
 const char kGuestViewManagerKeyName[] = "guest_view_manager";
 const int kInstanceIDNone = 0;
+const int kDefaultWidth = 300;
+const int kDefaultHeight = 300;
 
 }  // namespace guestview

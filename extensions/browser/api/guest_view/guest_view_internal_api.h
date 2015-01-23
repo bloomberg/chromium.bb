@@ -39,19 +39,19 @@ class GuestViewInternalDestroyGuestFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(GuestViewInternalDestroyGuestFunction);
 };
 
-class GuestViewInternalSetAutoSizeFunction : public AsyncExtensionFunction {
+class GuestViewInternalSetSizeFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("guestViewInternal.setAutoSize",
+  DECLARE_EXTENSION_FUNCTION("guestViewInternal.setSize",
                              GUESTVIEWINTERNAL_SETAUTOSIZE);
 
-  GuestViewInternalSetAutoSizeFunction();
+  GuestViewInternalSetSizeFunction();
 
  protected:
-  ~GuestViewInternalSetAutoSizeFunction() override;
+  ~GuestViewInternalSetSizeFunction() override;
   bool RunAsync() final;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GuestViewInternalSetAutoSizeFunction);
+  DISALLOW_COPY_AND_ASSIGN(GuestViewInternalSetSizeFunction);
 };
 
 }  // namespace extensions

@@ -113,7 +113,7 @@ GuestViewImpl.prototype.checkState = function(action) {
     'create': [null, ERROR_MSG_ALREADY_CREATED, ERROR_MSG_ALREADY_CREATED],
     'destroy': [null, null, null],
     'detach': [ERROR_MSG_NOT_ATTACHED, ERROR_MSG_NOT_ATTACHED, null],
-    'setAutoSize': [ERROR_MSG_NOT_CREATED, null, null]
+    'setSize': [ERROR_MSG_NOT_CREATED, null, null]
   };
 
   // Check that the proposed action is a real action.
@@ -250,16 +250,16 @@ GuestViewImpl.prototype.detachImpl = function(callback) {
   this.state = GUEST_STATE_CREATED;
 };
 
-// Internal implementation of setAutoSize().
-GuestViewImpl.prototype.setAutoSizeImpl = function(autoSizeParams, callback) {
+// Internal implementation of setSize().
+GuestViewImpl.prototype.setSizeImpl = function(sizeParams, callback) {
   // Check the current state.
-  if (!this.checkState('setAutoSize')) {
+  if (!this.checkState('setSize')) {
     this.handleCallback(callback);
     return;
   }
 
-  GuestViewInternal.setAutoSize(this.id, autoSizeParams,
-                                this.handleCallback.bind(this, callback));
+  GuestViewInternal.setSize(this.id, sizeParams,
+                            this.handleCallback.bind(this, callback));
 };
 
 // The exposed interface to a guestview. Exposes in its API the functions
@@ -303,10 +303,10 @@ GuestView.prototype.detach = function(callback) {
 };
 
 // Adjusts the guestview's sizing parameters.
-GuestView.prototype.setAutoSize = function(autoSizeParams, callback) {
+GuestView.prototype.setSize = function(sizeParams, callback) {
   var internal = privates(this).internal;
-  internal.actionQueue.push(internal.setAutoSizeImpl.bind(
-      internal, autoSizeParams, callback));
+  internal.actionQueue.push(internal.setSizeImpl.bind(
+      internal, sizeParams, callback));
   internal.performNextAction();
 };
 

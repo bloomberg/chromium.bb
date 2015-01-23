@@ -108,7 +108,7 @@ AutosizeDimensionAttribute.prototype.handleMutation = function(
   if (!this.webViewImpl.guest.getId()) {
     return;
   }
-  this.webViewImpl.guest.setAutoSize({
+  this.webViewImpl.guest.setSize({
     'enableAutoSize': this.webViewImpl.attributes[
       WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue(),
     'min': {

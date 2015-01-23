@@ -126,7 +126,7 @@ bool MimeHandlerViewContainer::OnMessageReceived(const IPC::Message& message) {
                       OnMimeHandlerViewGuestOnLoadCompleted)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-      return handled;
+  return handled;
 }
 
 void MimeHandlerViewContainer::DidResizeElement(const gfx::Size& old_size,
@@ -248,8 +248,7 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
     return;
 
   render_frame()->Send(new ExtensionHostMsg_CreateMimeHandlerViewGuest(
-      render_frame()->GetRoutingID(),
-      view_id_, element_instance_id(),
+      render_frame()->GetRoutingID(), view_id_, element_instance_id(),
       element_size_));
 }
 

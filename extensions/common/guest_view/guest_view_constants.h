@@ -38,6 +38,8 @@ extern const char kParameterInstanceId[];
 // Other.
 extern const char kGuestViewManagerKeyName[];
 extern const int kInstanceIDNone;
+extern const int kDefaultWidth;
+extern const int kDefaultHeight;
 
 }  // namespace guestview
 

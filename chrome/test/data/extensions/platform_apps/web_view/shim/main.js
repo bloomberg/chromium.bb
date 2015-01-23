@@ -198,6 +198,8 @@ function testAutosizeAfterNavigation() {
   var webview = document.createElement('webview');
 
   var step = 1;
+  var autosizeWidth = -1;
+  var autosizeHeight = -1;
   var sizeChangeHandler = function(e) {
     switch (step) {
       case 1:
@@ -207,14 +209,15 @@ function testAutosizeAfterNavigation() {
         embedder.test.assertTrue(e.newWidth >= 60 && e.newWidth <= 70);
         embedder.test.assertTrue(e.newHeight >= 110 && e.newHeight <= 120);
 
-        // Remove autosize attribute and expect webview to return to its
-        // original size.
+        // Remove autosize attribute and expect webview to retain the same size.
+        autosizeWidth = e.newWidth;
+        autosizeHeight = e.newHeight;
         webview.removeAttribute('autosize');
         break;
       case 2:
-        // Expect 50x100.
-        embedder.test.assertEq(50, e.newWidth);
-        embedder.test.assertEq(100, e.newHeight);
+        // Expect the autosized size.
+        embedder.test.assertEq(autosizeWidth, e.newWidth);
+        embedder.test.assertEq(autosizeHeight, e.newHeight);
 
         embedder.test.succeed();
         break;
