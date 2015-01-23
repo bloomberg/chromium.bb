@@ -33,6 +33,7 @@ class GestureConfigurationAndroid : public GestureConfiguration {
     float raw_pixel_to_dip_ratio = 1.f / gfx::Screen::GetNativeScreen()
                                        ->GetPrimaryDisplay()
                                        .device_scale_factor();
+    set_double_tap_enabled(true);
     set_double_tap_timeout_in_ms(ViewConfiguration::GetDoubleTapTimeoutInMs());
     set_gesture_begin_end_types_enabled(false);
     set_long_press_time_in_ms(ViewConfiguration::GetLongPressTimeoutInMs());

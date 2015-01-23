@@ -62,6 +62,8 @@ GestureProvider::Config BuildGestureProviderConfig(
   config.gesture_detector_config = BuildGestureDetectorConfig(gesture_config);
   config.scale_gesture_detector_config =
       BuildScaleGestureDetectorConfig(gesture_config);
+  config.double_tap_support_for_platform_enabled =
+      gesture_config.double_tap_enabled();
   config.gesture_begin_end_types_enabled =
       gesture_config.gesture_begin_end_types_enabled();
   config.min_gesture_bounds_length = gesture_config.min_gesture_bounds_length();

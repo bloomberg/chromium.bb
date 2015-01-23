@@ -21,6 +21,7 @@ class GestureConfigurationAura : public GestureConfiguration {
 
  private:
   GestureConfigurationAura() : GestureConfiguration() {
+    set_double_tap_enabled(false);
     set_double_tap_timeout_in_ms(semi_long_press_time_in_ms());
     set_gesture_begin_end_types_enabled(true);
     set_min_gesture_bounds_length(default_radius());

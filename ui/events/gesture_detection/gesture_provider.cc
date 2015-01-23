@@ -65,6 +65,7 @@ gfx::RectF ClampBoundingBox(const gfx::RectF& bounds,
 GestureProvider::Config::Config()
     : display(gfx::Display::kInvalidDisplayID, gfx::Rect(1, 1)),
       disable_click_delay(false),
+      double_tap_support_for_platform_enabled(true),
       gesture_begin_end_types_enabled(false),
       min_gesture_bounds_length(0),
       max_gesture_bounds_length(0) {
@@ -680,7 +681,8 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
 GestureProvider::GestureProvider(const Config& config,
                                  GestureProviderClient* client)
     : double_tap_support_for_page_(true),
-      double_tap_support_for_platform_(true),
+      double_tap_support_for_platform_(
+          config.double_tap_support_for_platform_enabled),
       gesture_begin_end_types_enabled_(config.gesture_begin_end_types_enabled) {
   DCHECK(client);
   DCHECK(!config.min_gesture_bounds_length ||

@@ -24,6 +24,8 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
     min_scaling_touch_major_ = default_radius_ * 2;
     min_gesture_bounds_length_ = default_radius_;
   }
+  bool double_tap_enabled() const { return double_tap_enabled_; }
+  void set_double_tap_enabled(bool enabled) { double_tap_enabled_ = enabled; }
   int double_tap_timeout_in_ms() const { return double_tap_timeout_in_ms_; }
   int fling_max_cancel_to_down_time_in_ms() const {
     return fling_max_cancel_to_down_time_in_ms_;
@@ -185,7 +187,10 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   // The default touch radius length used when the only information given
   // by the device is the touch center.
   float default_radius_;
+
+  bool double_tap_enabled_;
   int double_tap_timeout_in_ms_;
+
   // Maximum time between a GestureFlingCancel and a mousedown such that the
   // mousedown is considered associated with the cancel event.
   int fling_max_cancel_to_down_time_in_ms_;
