@@ -565,7 +565,6 @@ QuicStreamFactory::QuicStreamFactory(
     bool always_require_handshake_confirmation,
     bool disable_connection_pooling,
     int load_server_info_timeout,
-    bool disable_loading_server_info_for_new_servers,
     float load_server_info_timeout_srtt_multiplier,
     bool enable_truncated_connection_ids,
     const QuicTagVector& connection_options)
@@ -586,8 +585,6 @@ QuicStreamFactory::QuicStreamFactory(
           always_require_handshake_confirmation),
       disable_connection_pooling_(disable_connection_pooling),
       load_server_info_timeout_ms_(load_server_info_timeout),
-      disable_loading_server_info_for_new_servers_(
-          disable_loading_server_info_for_new_servers),
       load_server_info_timeout_srtt_multiplier_(
           load_server_info_timeout_srtt_multiplier),
       enable_truncated_connection_ids_(enable_truncated_connection_ids),
@@ -652,7 +649,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
   QuicServerInfo* quic_server_info = nullptr;
   if (quic_server_info_factory_) {
     bool load_from_disk_cache = true;
-    if (disable_loading_server_info_for_new_servers_) {
+    if (http_server_properties_) {
       const AlternateProtocolMap& alternate_protocol_map =
           http_server_properties_->alternate_protocol_map();
       AlternateProtocolMap::const_iterator it =
