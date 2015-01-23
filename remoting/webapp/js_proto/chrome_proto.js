@@ -366,6 +366,8 @@ var AppWindow = function() {
   /** @type {chrome.Event} */
   this.onMaximized = null;
   /** @type {chrome.Event} */
+  this.onMinimized = null;
+  /** @type {chrome.Event} */
   this.onFullscreened = null;
   /** @type {string} */
   this.id = '';
