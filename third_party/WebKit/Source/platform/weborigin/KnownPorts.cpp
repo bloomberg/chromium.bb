@@ -30,6 +30,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/Threading.h"
 #include "wtf/text/StringHash.h"
 
 namespace blink {
@@ -40,7 +41,7 @@ bool isDefaultPortForProtocol(unsigned short port, const String& protocol)
         return false;
 
     typedef HashMap<String, unsigned, CaseFoldingHash> DefaultPortsMap;
-    DEFINE_STATIC_LOCAL(DefaultPortsMap, defaultPorts, ());
+    AtomicallyInitializedStaticReference(DefaultPortsMap, defaultPorts, new DefaultPortsMap());
     if (defaultPorts.isEmpty()) {
         defaultPorts.set("http", 80);
         defaultPorts.set("https", 443);
