@@ -18,9 +18,9 @@
 #include "media/cast/sender/video_frame_factory.h"
 #include "media/cast/sender/video_sender.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
-#include "media/cast/test/fake_video_encode_accelerator.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/video_utility.h"
+#include "media/video/fake_video_encode_accelerator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -133,7 +133,8 @@ class PeerVideoSender : public VideoSender {
 
 class VideoSenderTest : public ::testing::Test {
  protected:
-  VideoSenderTest() {
+  VideoSenderTest()
+      : stored_bitrates_(NULL) {
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
@@ -191,9 +192,9 @@ class VideoSenderTest : public ::testing::Test {
     CastInitializationStatus status = STATUS_VIDEO_UNINITIALIZED;
 
     if (external) {
-      test::FakeVideoEncodeAccelerator* fake_vea =
-          new test::FakeVideoEncodeAccelerator(
-              task_runner_, &stored_bitrates_);
+      media::FakeVideoEncodeAccelerator* fake_vea =
+          new media::FakeVideoEncodeAccelerator(task_runner_);
+      stored_bitrates_ = &fake_vea->stored_bitrates();
       fake_vea->SetWillInitializationSucceed(expect_init_success);
       scoped_ptr<VideoEncodeAccelerator> fake_vea_owner(fake_vea);
       video_sender_.reset(
@@ -253,7 +254,7 @@ class VideoSenderTest : public ::testing::Test {
   scoped_ptr<CastTransportSenderImpl> transport_sender_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<PeerVideoSender> video_sender_;
-  std::vector<uint32> stored_bitrates_;
+  const std::vector<uint32>* stored_bitrates_;  // Owned by |video_sender_|.
   scoped_refptr<CastEnvironment> cast_environment_;
   int last_pixel_value_;
   base::TimeTicks first_frame_timestamp_;
@@ -288,7 +289,7 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
 
   // Fixed bitrate is used for external encoder. Bitrate is only once
   // to the encoder.
-  EXPECT_EQ(1u, stored_bitrates_.size());
+  EXPECT_EQ(1u, stored_bitrates_->size());
   video_sender_.reset(NULL);
   task_runner_->RunTasks();
 }

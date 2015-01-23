@@ -20,6 +20,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/h264_parser.h"
+#include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -101,6 +102,11 @@ const unsigned int kMinFramesForBitrateTests = 300;
 //   Bitrate is only forced for tests that test bitrate.
 const char* g_default_in_filename = "bear_320x192_40frames.yuv";
 const char* g_default_in_parameters = ":320:192:1:out.h264:200000";
+
+// Enabled by including a --fake_encoder flag to the command line invoking the
+// test.
+bool g_fake_encoder = false;
+
 // Environment to store test stream data for all test cases.
 class VideoEncodeAcceleratorTestEnvironment;
 VideoEncodeAcceleratorTestEnvironment* g_env;
@@ -488,7 +494,9 @@ scoped_ptr<StreamValidator> StreamValidator::Create(
     const FrameFoundCallback& frame_cb) {
   scoped_ptr<StreamValidator> validator;
 
-  if (IsH264(profile)) {
+  if (g_fake_encoder) {
+    validator.reset(NULL);
+  } else if (IsH264(profile)) {
     validator.reset(new H264Validator(frame_cb));
   } else if (IsVP8(profile)) {
     validator.reset(new VP8Validator(frame_cb));
@@ -529,6 +537,7 @@ class VEAClient : public VideoEncodeAccelerator::Client {
  private:
   bool has_encoder() { return encoder_.get(); }
 
+  scoped_ptr<media::VideoEncodeAccelerator> CreateFakeVEA();
   scoped_ptr<media::VideoEncodeAccelerator> CreateV4L2VEA();
   scoped_ptr<media::VideoEncodeAccelerator> CreateVaapiVEA();
 
@@ -716,7 +725,8 @@ VEAClient::VEAClient(TestStream* test_stream,
       test_stream_->requested_profile,
       base::Bind(&VEAClient::HandleEncodedFrame, base::Unretained(this)));
 
-  CHECK(validator_.get());
+
+  CHECK(g_fake_encoder || validator_.get());
 
   if (save_to_file_) {
     CHECK(!test_stream_->out_filename.empty());
@@ -733,6 +743,17 @@ VEAClient::VEAClient(TestStream* test_stream,
 }
 
 VEAClient::~VEAClient() { CHECK(!has_encoder()); }
+
+scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateFakeVEA() {
+  scoped_ptr<media::VideoEncodeAccelerator> encoder;
+  if (g_fake_encoder) {
+    encoder.reset(
+        new media::FakeVideoEncodeAccelerator(
+            scoped_refptr<base::SingleThreadTaskRunner>(
+                base::MessageLoopProxy::current())));
+  }
+  return encoder.Pass();
+}
 
 scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateV4L2VEA() {
   scoped_ptr<media::VideoEncodeAccelerator> encoder;
@@ -758,6 +779,7 @@ void VEAClient::CreateEncoder() {
   CHECK(!has_encoder());
 
   scoped_ptr<media::VideoEncodeAccelerator> encoders[] = {
+    CreateFakeVEA(),
     CreateV4L2VEA(),
     CreateVaapiVEA()
   };
@@ -911,7 +933,11 @@ void VEAClient::BitstreamBufferReady(int32 bitstream_buffer_id,
 
   const uint8* stream_ptr = static_cast<const uint8*>(shm->memory());
   if (payload_size > 0) {
-    validator_->ProcessStreamBuffer(stream_ptr, payload_size);
+    if (validator_) {
+      validator_->ProcessStreamBuffer(stream_ptr, payload_size);
+    } else {
+      HandleEncodedFrame(key_frame);
+    }
 
     if (save_to_file_) {
       if (IsVP8(test_stream_->requested_profile))
@@ -1352,6 +1378,9 @@ int main(int argc, char** argv) {
     if (it->first == "num_frames_to_encode") {
       std::string input(it->second.begin(), it->second.end());
       CHECK(base::StringToInt(input, &content::g_num_frames_to_encode));
+    }
+    if (it->first == "fake_encoder") {
+      content::g_fake_encoder = true;
       continue;
     }
     if (it->first == "run_at_fps") {

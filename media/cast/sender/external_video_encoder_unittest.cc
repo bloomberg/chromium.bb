@@ -12,8 +12,8 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/sender/external_video_encoder.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
-#include "media/cast/test/fake_video_encode_accelerator.h"
 #include "media/cast/test/utility/video_utility.h"
+#include "media/video/fake_video_encode_accelerator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -133,8 +133,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_);
 
-    fake_vea_ = new test::FakeVideoEncodeAccelerator(task_runner_,
-                                                     &stored_bitrates_);
+    fake_vea_ = new media::FakeVideoEncodeAccelerator(task_runner_);
     scoped_ptr<VideoEncodeAccelerator> fake_vea(fake_vea_);
     VEAFactory vea_factory(task_runner_, fake_vea.Pass());
     video_encoder_.reset(new ExternalVideoEncoder(
@@ -156,8 +155,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
-  test::FakeVideoEncodeAccelerator* fake_vea_;  // Owned by video_encoder_.
-  std::vector<uint32> stored_bitrates_;
+  media::FakeVideoEncodeAccelerator* fake_vea_;  // Owned by video_encoder_.
   scoped_refptr<TestVideoEncoderCallback> test_video_encoder_callback_;
   VideoSenderConfig video_config_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
@@ -194,12 +192,12 @@ TEST_F(ExternalVideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
         video_frame_, testing_clock_->NowTicks(), frame_encoded_callback));
     task_runner_->RunTasks();
   }
+  ASSERT_EQ(1u, fake_vea_->stored_bitrates().size());
+  EXPECT_EQ(2000u, fake_vea_->stored_bitrates()[0]);
+
   // We need to run the task to cleanup the GPU instance.
   video_encoder_.reset(NULL);
   task_runner_->RunTasks();
-
-  ASSERT_EQ(1u, stored_bitrates_.size());
-  EXPECT_EQ(2000u, stored_bitrates_[0]);
 }
 
 TEST_F(ExternalVideoEncoderTest, StreamHeader) {
@@ -238,9 +236,8 @@ TEST(ExternalVideoEncoderEarlyDestroyTest, DestroyBeforeVEACreatedCallback) {
                           task_runner,
                           task_runner));
 
-  std::vector<uint32> stored_bitrates;
   scoped_ptr<VideoEncodeAccelerator> fake_vea(
-      new test::FakeVideoEncodeAccelerator(task_runner, &stored_bitrates));
+      new media::FakeVideoEncodeAccelerator(task_runner));
   VEAFactory vea_factory(task_runner, fake_vea.Pass());
 
   scoped_ptr<ExternalVideoEncoder> video_encoder(new ExternalVideoEncoder(

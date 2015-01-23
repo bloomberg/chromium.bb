@@ -123,8 +123,6 @@
         'test/fake_receiver_time_offset_estimator.h',
         'test/fake_single_thread_task_runner.cc',
         'test/fake_single_thread_task_runner.h',
-        'test/fake_video_encode_accelerator.cc',
-        'test/fake_video_encode_accelerator.h',
         'test/utility/audio_utility_unittest.cc',
         'test/utility/barcode_unittest.cc',
       ], # source
@@ -149,8 +147,6 @@
         'test/cast_benchmarks.cc',
         'test/fake_single_thread_task_runner.cc',
         'test/fake_single_thread_task_runner.h',
-        'test/fake_video_encode_accelerator.cc',
-        'test/fake_video_encode_accelerator.h',
         'test/utility/test_util.cc',
         'test/utility/test_util.h',
       ], # source

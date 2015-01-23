@@ -574,6 +574,8 @@
         'video/capture/win/video_capture_device_mf_win.h',
         'video/capture/win/video_capture_device_win.cc',
         'video/capture/win/video_capture_device_win.h',
+        'video/fake_video_encode_accelerator.cc',
+        'video/fake_video_encode_accelerator.h',
         'video/h264_poc.cc',
         'video/h264_poc.h',
         'video/picture.cc',

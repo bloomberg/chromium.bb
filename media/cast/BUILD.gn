@@ -301,8 +301,6 @@ test("cast_unittests") {
     "test/end2end_unittest.cc",
     "test/fake_receiver_time_offset_estimator.cc",
     "test/fake_receiver_time_offset_estimator.h",
-    "test/fake_video_encode_accelerator.cc",
-    "test/fake_video_encode_accelerator.h",
     "test/utility/audio_utility_unittest.cc",
     "test/utility/barcode_unittest.cc",
   ]
