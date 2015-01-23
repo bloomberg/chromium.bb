@@ -7,9 +7,8 @@
 /**
  * Creates a new OpenPDFParamsParser. This parses the open pdf parameters
  * passed in the url to set initial viewport settings for opening the pdf.
- * @param {string} url to be parsed.
  */
-function OpenPDFParamsParser(url) {
+function OpenPDFParamsParser() {
   // A dictionary of all the named destinations in the PDF.
   this.namedDestinations = {};
 }
