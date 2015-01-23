@@ -23,10 +23,10 @@ class ViewEventTestPlatformPartChromeOS : public ViewEventTestPlatformPart {
  public:
   explicit ViewEventTestPlatformPartChromeOS(
       ui::ContextFactory* context_factory);
-  virtual ~ViewEventTestPlatformPartChromeOS();
+  ~ViewEventTestPlatformPartChromeOS() override;
 
   // Overridden from ViewEventTestPlatformPart:
-  virtual gfx::NativeWindow GetContext() override {
+  gfx::NativeWindow GetContext() override {
     return ash::Shell::GetPrimaryRootWindow();
   }
 

@@ -22,7 +22,7 @@
 class CertificateViewerUITest : public WebUIBrowserTest {
  public:
   CertificateViewerUITest();
-  virtual ~CertificateViewerUITest();
+  ~CertificateViewerUITest() override;
 
  protected:
   void CreateCertViewerDialog();

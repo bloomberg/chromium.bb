@@ -83,7 +83,7 @@ class MessageCenterSettingsControllerChromeOSTest
     MessageCenterSettingsControllerBaseTest::TearDown();
   }
 
-  virtual TestingProfile* CreateProfile(const std::string& name) override {
+  TestingProfile* CreateProfile(const std::string& name) override {
     TestingProfile* profile =
         MessageCenterSettingsControllerBaseTest::CreateProfile(name);
 

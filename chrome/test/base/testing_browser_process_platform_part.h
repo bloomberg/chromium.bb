@@ -17,7 +17,7 @@ class TestingBrowserProcessPlatformPart : public BrowserProcessPlatformPart {
 
 #if defined(OS_CHROMEOS)
   // Overridden from BrowserProcessPlatformPart:
-  virtual chromeos::OomPriorityManager* oom_priority_manager() override;
+  chromeos::OomPriorityManager* oom_priority_manager() override;
 #endif
 
  private:
