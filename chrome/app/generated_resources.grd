@@ -5561,7 +5561,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable
         </message>
         <message name="IDS_PLUGINS_ALWAYS_ALLOWED" desc="The checkbox label for whitelisting a plug-in for content settings.">
-          Always allowed
+          Always allowed to run
         </message>
         <message name="IDS_PLUGINS_DOWNLOAD" desc="The link label to download the latest version of this plug-in">
           Download Critical Security Update
@@ -8063,10 +8063,10 @@ I don't think this site should be blocked!
         Click to play
       </message>
       <message name="IDS_PLUGIN_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for gating plug-ins on a context menu activation.">
-        Do not run plugins by default
+        Let me choose when to run plugin content
       </message>
-      <message name="IDS_PLUGIN_SELECTIVE_DISABLE" desc="Link to selectively disable plug-ins">
-        Disable individual plug-ins...
+      <message name="IDS_PLUGIN_MANAGE_INDIVIDUAL" desc="Link to manage individual plug-ins">
+        Manage individual plug-ins...
       </message>
       <message name="IDS_JAVASCRIPT_TAB_LABEL" desc="Label for JavaScript tab on Content Settings dialog">
         JavaScript
