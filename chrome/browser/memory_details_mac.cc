@@ -80,7 +80,7 @@ void CollectProcessDataForChromeProcess(
   scoped_ptr<base::ProcessMetrics> metrics;
   metrics.reset(base::ProcessMetrics::CreateProcessMetrics(
       pid, content::BrowserChildProcessHost::GetPortProvider()));
-  metrics->GetWorkingSetKBytes(&info.working_set);
+  metrics->GetCommittedAndWorkingSetKBytes(&info.committed, &info.working_set);
 
   processes->push_back(info);
 }

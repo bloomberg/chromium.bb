@@ -209,15 +209,32 @@ bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,
 }
 
 void ProcessMetrics::GetCommittedKBytes(CommittedKBytes* usage) const {
+  WorkingSetKBytes unused;
+  if (!GetCommittedAndWorkingSetKBytes(usage, &unused)) {
+    *usage = CommittedKBytes();
+  }
 }
 
 bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
-  size_t priv = GetWorkingSetSize();
-  if (!priv)
+  CommittedKBytes unused;
+  return GetCommittedAndWorkingSetKBytes(&unused, ws_usage);
+}
+
+bool ProcessMetrics::GetCommittedAndWorkingSetKBytes(
+    CommittedKBytes* usage,
+    WorkingSetKBytes* ws_usage) const {
+  task_basic_info_64 task_info_data;
+  if (!GetTaskInfo(TaskForPid(process_), &task_info_data))
     return false;
-  ws_usage->priv = priv / 1024;
+
+  usage->priv = task_info_data.virtual_size / 1024;
+  usage->mapped = 0;
+  usage->image = 0;
+
+  ws_usage->priv = task_info_data.resident_size / 1024;
   ws_usage->shareable = 0;
   ws_usage->shared = 0;
+
   return true;
 }
 

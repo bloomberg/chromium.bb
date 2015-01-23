@@ -143,6 +143,14 @@ class BASE_EXPORT ProcessMetrics {
   // usage in bytes, as per definition of WorkingSetBytes.
   bool GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const;
 
+#if defined(OS_MACOSX)
+  // Fills both CommitedKBytes and WorkingSetKBytes in a single operation. This
+  // is more efficient on Mac OS X, as the two can be retrieved with a single
+  // system call.
+  bool GetCommittedAndWorkingSetKBytes(CommittedKBytes* usage,
+                                       WorkingSetKBytes* ws_usage) const;
+#endif
+
   // Returns the CPU usage in percent since the last time this method or
   // GetPlatformIndependentCPUUsage() was called. The first time this method
   // is called it returns 0 and will return the actual CPU info on subsequent
