@@ -10,7 +10,6 @@
 
 #include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h"
 
 #define BOUND_SOCKET 3
 
@@ -33,7 +32,6 @@ int NaClSrpcAcceptClientOnThread(const struct NaClSrpcHandlerDesc* methods) {
   struct WorkerData *worker_data = NULL;
   pthread_t worker_tid;
 
-  NaClPluginLowLevelInitializationComplete();
   sock_fd = imc_accept(BOUND_SOCKET);
   if (sock_fd == -1) {
     goto done;

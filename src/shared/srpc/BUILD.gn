@@ -37,8 +37,6 @@ if (os == "nacl") {
       "module_init_fini.c",
       "nacl_srpc.c",
       "nacl_srpc_message.c",
-      "nacl_srpc_ppapi_plugin_init.c",
-      "nacl_srpc_ppapi_plugin_internal.c",
       "rpc_log.c",
       "rpc_serialize.c",
       "rpc_server_loop.c",

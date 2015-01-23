@@ -66,8 +66,6 @@
           'rpc_server_loop.c',
           'accept.c',
           'accept_threaded.c',
-          'nacl_srpc_ppapi_plugin_init.c',
-          'nacl_srpc_ppapi_plugin_internal.c'
         ],
       },
       'dependencies': [

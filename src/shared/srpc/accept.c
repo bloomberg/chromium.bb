@@ -9,7 +9,6 @@
 #include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
-#include "native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h"
 
 #define BOUND_SOCKET 3
 
@@ -20,7 +19,6 @@ int NaClSrpcAcceptClientConnection(const struct NaClSrpcHandlerDesc *methods) {
 
   NaClSrpcLog(1, "NaClSrpcAcceptClientConnection(methods=%p)\n",
               (void*) methods);
-  NaClPluginLowLevelInitializationComplete();
   sock_fd = imc_accept(BOUND_SOCKET);
   if (sock_fd == -1) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,

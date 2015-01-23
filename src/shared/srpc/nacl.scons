@@ -25,8 +25,6 @@ trusted_untrusted_shared = [
 untrusted_only = [
     'accept.c',
     'accept_threaded.c',
-    'nacl_srpc_ppapi_plugin_init.c',
-    'nacl_srpc_ppapi_plugin_internal.c'
     ]
 
 libsrpc = env.NaClSdkLibrary('libsrpc',
