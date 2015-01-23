@@ -46,7 +46,10 @@ struct FrameMsg_UILoadMetricsReportType {
     // Report metrics for this load, that originated from clicking on a link.
     REPORT_LINK,
 
-    REPORT_TYPE_LAST = REPORT_LINK,
+    // Report metrics for this load, that originated from an Android OS intent.
+    REPORT_INTENT,
+
+    REPORT_TYPE_LAST = REPORT_INTENT,
   };
 };
 

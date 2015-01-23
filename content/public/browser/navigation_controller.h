@@ -184,6 +184,13 @@ class NavigationController {
     // commits.
     bool should_clear_history_list;
 
+#if defined(OS_ANDROID)
+    // On Android, for a load triggered by an intent, the time Chrome received
+    // the original intent that prompted the load (in milliseconds active time
+    // since boot).
+    int64 intent_received_timestamp;
+#endif
+
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();
 

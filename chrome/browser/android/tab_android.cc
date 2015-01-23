@@ -499,7 +499,8 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
                                               jint page_transition,
                                               jstring j_referrer_url,
                                               jint referrer_policy,
-                                              jboolean is_renderer_initiated) {
+                                              jboolean is_renderer_initiated,
+                                              jlong intent_received_timestamp) {
   if (!web_contents())
     return PAGE_LOAD_FAILED;
 
@@ -581,6 +582,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
       return DEFAULT_PAGE_LOAD;
     }
     load_params.is_renderer_initiated = is_renderer_initiated;
+    load_params.intent_received_timestamp = intent_received_timestamp;
     web_contents()->GetController().LoadURLWithParams(load_params);
   }
   return DEFAULT_PAGE_LOAD;

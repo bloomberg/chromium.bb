@@ -18,7 +18,10 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
       browser_initiated_post_data(nullptr),
       can_load_local_resources(false),
       should_replace_current_entry(false),
-      should_clear_history_list(false)  {
+      should_clear_history_list(false) {
+#if defined(OS_ANDROID)
+  intent_received_timestamp = 0;
+#endif
 }
 
 NavigationController::LoadURLParams::~LoadURLParams() {
@@ -40,6 +43,9 @@ NavigationController::LoadURLParams::LoadURLParams(
       browser_initiated_post_data(other.browser_initiated_post_data),
       should_replace_current_entry(false),
       should_clear_history_list(false) {
+#if defined(OS_ANDROID)
+  intent_received_timestamp = other.intent_received_timestamp;
+#endif
 }
 
 NavigationController::LoadURLParams&
@@ -60,6 +66,9 @@ NavigationController::LoadURLParams::operator=(
   browser_initiated_post_data = other.browser_initiated_post_data;
   should_replace_current_entry = other.should_replace_current_entry;
   should_clear_history_list = other.should_clear_history_list;
+#if defined(OS_ANDROID)
+  intent_received_timestamp = other.intent_received_timestamp;
+#endif
 
   return *this;
 }

@@ -43,6 +43,7 @@ public class LoadUrlParams {
     String mVirtualUrlForDataUrl;
     boolean mCanLoadLocalResources;
     boolean mIsRendererInitiated;
+    long mIntentReceivedTimestamp;
 
     /**
      * Creates an instance with default page transition type.
@@ -394,6 +395,21 @@ public class LoadUrlParams {
      */
     public boolean getIsRendererInitiated() {
         return mIsRendererInitiated;
+    }
+
+    /**
+     * @param intentReceivedTimestamp the timestamp at which Chrome received the intent that
+     *                                triggered this URL load, as returned by System.currentMillis.
+     */
+    public void setIntentReceivedTimestamp(long intentReceivedTimestamp) {
+        mIntentReceivedTimestamp = intentReceivedTimestamp;
+    }
+
+    /**
+     * @return The timestamp at which Chrome received the intent that triggered this URL load.
+     */
+    public long getIntentReceivedTimestamp() {
+        return mIntentReceivedTimestamp;
     }
 
     public boolean isBaseUrlDataScheme() {

@@ -733,6 +733,14 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
       params.transferred_global_request_id);
   entry->SetFrameToNavigate(params.frame_name);
 
+#if defined(OS_ANDROID)
+  if (params.intent_received_timestamp > 0) {
+    entry->set_intent_received_timestamp(
+        base::TimeTicks() +
+        base::TimeDelta::FromMilliseconds(params.intent_received_timestamp));
+  }
+#endif
+
   switch (params.load_type) {
     case LOAD_TYPE_DEFAULT:
       break;

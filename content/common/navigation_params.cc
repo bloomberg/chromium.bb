@@ -10,22 +10,28 @@ namespace content {
 CommonNavigationParams::CommonNavigationParams()
     : transition(ui::PAGE_TRANSITION_LINK),
       navigation_type(FrameMsg_Navigate_Type::NORMAL),
-      allow_download(true) {
+      allow_download(true),
+      report_type(FrameMsg_UILoadMetricsReportType::NO_REPORT) {
 }
-
-CommonNavigationParams::~CommonNavigationParams() {}
 
 CommonNavigationParams::CommonNavigationParams(
     const GURL& url,
     const Referrer& referrer,
     ui::PageTransition transition,
     FrameMsg_Navigate_Type::Value navigation_type,
-    bool allow_download)
+    bool allow_download,
+    base::TimeTicks ui_timestamp,
+    FrameMsg_UILoadMetricsReportType::Value report_type)
     : url(url),
       referrer(referrer),
       transition(transition),
       navigation_type(navigation_type),
-      allow_download(allow_download) {
+      allow_download(allow_download),
+      ui_timestamp(ui_timestamp),
+      report_type(report_type) {
+}
+
+CommonNavigationParams::~CommonNavigationParams() {
 }
 
 RequestNavigationParams::RequestNavigationParams() : is_post(false) {}

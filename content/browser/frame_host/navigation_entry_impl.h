@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
@@ -223,6 +224,17 @@ class CONTENT_EXPORT NavigationEntryImpl
     frame_tree_node_id_ = frame_tree_node_id;
   }
 
+#if defined(OS_ANDROID)
+  base::TimeTicks intent_received_timestamp() const {
+    return intent_received_timestamp_;
+  }
+
+  void set_intent_received_timestamp(
+      const base::TimeTicks intent_received_timestamp) {
+    intent_received_timestamp_ = intent_received_timestamp;
+  }
+#endif
+
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -340,6 +352,12 @@ class CONTENT_EXPORT NavigationEntryImpl
   // because we only use it while the navigation is pending.
   // TODO(creis): Move this to FrameNavigationEntry.
   int64 frame_tree_node_id_;
+
+#if defined(OS_ANDROID)
+  // The time at which Chrome received the Android Intent that triggered this
+  // URL load operation. Reset at commit and not persisted.
+  base::TimeTicks intent_received_timestamp_;
+#endif
 
   // Used to store extra data to support browser features. This member is not
   // persisted, unless specific data is taken out/put back in at save/restore

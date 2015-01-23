@@ -14693,10 +14693,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Navigation.UI_OnCommitProvisionalLoad.Intent"
+    units="milliseconds">
+  <owner>clamy@chromium.org</owner>
+  <summary>
+    Time between receiving an Android Intent and the navigation commit.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.UI_OnCommitProvisionalLoad.Link"
     units="milliseconds">
   <owner>clamy@chromium.org</owner>
   <summary>Time between clicking on a link and the navigation commit.</summary>
+</histogram>
+
+<histogram name="Navigation.UI_OnLoadComplete.Intent" units="milliseconds">
+  <owner>clamy@chromium.org</owner>
+  <summary>
+    Time between receiving an Android intent and the document load complete
+    event for a navigation in the main frame.
+  </summary>
 </histogram>
 
 <histogram name="Navigation.UI_OnLoadComplete.Link" units="milliseconds">

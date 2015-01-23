@@ -36,7 +36,9 @@ struct CONTENT_EXPORT CommonNavigationParams {
                          const Referrer& referrer,
                          ui::PageTransition transition,
                          FrameMsg_Navigate_Type::Value navigation_type,
-                         bool allow_download);
+                         bool allow_download,
+                         base::TimeTicks ui_timestamp,
+                         FrameMsg_UILoadMetricsReportType::Value report_type);
   ~CommonNavigationParams();
 
   // The URL to navigate to.
@@ -56,6 +58,14 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // Allows the URL to be downloaded (true by default).
   // Avoid downloading when in view-source mode.
   bool allow_download;
+
+  // Timestamp of the user input event that triggered this navigation. Empty if
+  // the navigation was not triggered by clicking on a link or by receiving an
+  // intent on Android.
+  base::TimeTicks ui_timestamp;
+
+  // The report type to be used when recording the metric using |ui_timestamp|.
+  FrameMsg_UILoadMetricsReportType::Value report_type;
 };
 
 // Used by FrameMsg_Navigate.

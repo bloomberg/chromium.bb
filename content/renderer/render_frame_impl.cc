@@ -422,6 +422,17 @@ WebURLRequest CreateURLRequestForNavigation(
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_stream_override(stream_override.Pass());
   request.setExtraData(extra_data);
+
+  // Set the ui timestamp for this navigation. Currently the timestamp here is
+  // only non empty when the navigation was triggered by an Android intent. The
+  // timestamp is converted to a double version supported by blink. It will be
+  // passed back to the browser in the DidCommitProvisionalLoad and the
+  // DocumentLoadComplete IPCs.
+  base::TimeDelta ui_timestamp = common_params.ui_timestamp - base::TimeTicks();
+  request.setUiStartTime(ui_timestamp.InSecondsF());
+  request.setInputPerfMetricReportPolicy(
+      static_cast<WebURLRequest::InputToLoadPerfMetricReportPolicy>(
+          common_params.report_type));
   return request;
 }
 
@@ -475,6 +486,17 @@ CommonNavigationParams MakeCommonNavigationParams(
       GURL(request->httpHeaderField(WebString::fromUTF8("Referer")).latin1()),
       request->referrerPolicy());
   params.transition = extra_data->transition_type();
+
+  // Set the ui timestamp for this navigation. Currently the timestamp here is
+  // only non empty when the navigation was triggered by an Android intent, or
+  // by the user clicking on a link. The timestamp is converted from a double
+  // version supported by blink. It will be passed back to the renderer in the
+  // CommitNavigation IPC, and then back to the browser again in the
+  // DidCommitProvisionalLoad and the DocumentLoadComplete IPCs.
+  params.ui_timestamp =
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(request->uiStartTime());
+  params.report_type = static_cast<FrameMsg_UILoadMetricsReportType::Value>(
+      request->inputPerfMetricReportPolicy());
   return params;
 }
 

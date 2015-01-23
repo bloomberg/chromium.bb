@@ -645,8 +645,15 @@ void RenderFrameHostImpl::OnDocumentOnLoadCompleted(
     FrameMsg_UILoadMetricsReportType::Value report_type,
     base::TimeTicks ui_timestamp) {
   if (report_type == FrameMsg_UILoadMetricsReportType::REPORT_LINK) {
-    UMA_HISTOGRAM_TIMES("Navigation.UI_OnLoadComplete.Link",
-                        base::TimeTicks::Now() - ui_timestamp);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation.UI_OnLoadComplete.Link",
+                               base::TimeTicks::Now() - ui_timestamp,
+                               base::TimeDelta::FromMilliseconds(10),
+                               base::TimeDelta::FromMinutes(10), 100);
+  } else if (report_type == FrameMsg_UILoadMetricsReportType::REPORT_INTENT) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation.UI_OnLoadComplete.Intent",
+                               base::TimeTicks::Now() - ui_timestamp,
+                               base::TimeDelta::FromMilliseconds(10),
+                               base::TimeDelta::FromMinutes(10), 100);
   }
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
@@ -719,8 +726,18 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
 
   if (validated_params.report_type ==
       FrameMsg_UILoadMetricsReportType::REPORT_LINK) {
-    UMA_HISTOGRAM_TIMES("Navigation.UI_OnCommitProvisionalLoad.Link",
-                        base::TimeTicks::Now() - validated_params.ui_timestamp);
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Navigation.UI_OnCommitProvisionalLoad.Link",
+        base::TimeTicks::Now() - validated_params.ui_timestamp,
+        base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(10),
+        100);
+  } else if (validated_params.report_type ==
+             FrameMsg_UILoadMetricsReportType::REPORT_INTENT) {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Navigation.UI_OnCommitProvisionalLoad.Intent",
+        base::TimeTicks::Now() - validated_params.ui_timestamp,
+        base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(10),
+        100);
   }
 
   RenderProcessHost* process = GetProcess();

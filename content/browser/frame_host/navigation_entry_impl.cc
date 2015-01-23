@@ -338,6 +338,12 @@ void NavigationEntryImpl::ResetForCommit() {
   set_should_clear_history_list(false);
   set_frame_tree_node_id(-1);
   set_source_site_instance(nullptr);
+
+#if defined(OS_ANDROID)
+  // Reset the time stamp so that the metrics are not reported if this entry is
+  // loaded again in the future.
+  set_intent_received_timestamp(base::TimeTicks());
+#endif
 }
 
 void NavigationEntryImpl::SetScreenshotPNGData(
