@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -60,6 +61,9 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
 
  private:
   ~URLRequestSpecifiedResponseJob() override{};
+
+  // URLRequestSimpleJob implementation:
+
   int GetData(std::string* mime_type,
               std::string* charset,
               std::string* data,
@@ -67,6 +71,10 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
     GURL url(request_->url());
     *data = ExpectedResponseForURL(url);
     return OK;
+  }
+
+  base::TaskRunner* GetTaskRunner() const override {
+    return base::MessageLoopProxy::current().get();
   }
 
   static int jobs_requested_;

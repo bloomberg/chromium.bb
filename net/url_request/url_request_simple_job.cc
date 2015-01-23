@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/threading/worker_pool.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -19,11 +20,24 @@
 
 namespace net {
 
-URLRequestSimpleJob::URLRequestSimpleJob(
-    URLRequest* request, NetworkDelegate* network_delegate)
+namespace {
+
+void CopyData(const scoped_refptr<IOBuffer>& buf,
+              int buf_size,
+              const scoped_refptr<base::RefCountedMemory>& data,
+              int64 data_offset) {
+  memcpy(buf->data(), data->front() + data_offset, buf_size);
+}
+
+}  // namespace
+
+URLRequestSimpleJob::URLRequestSimpleJob(URLRequest* request,
+                                         NetworkDelegate* network_delegate)
     : URLRangeRequestJob(request, network_delegate),
-      data_offset_(0),
-      weak_factory_(this) {}
+      next_data_offset_(0),
+      task_runner_(base::WorkerPool::GetTaskRunner(false)),
+      weak_factory_(this) {
+}
 
 void URLRequestSimpleJob::Start() {
   // Start reading asynchronously so that all error reporting and data
@@ -53,13 +67,33 @@ bool URLRequestSimpleJob::ReadRawData(IOBuffer* buf, int buf_size,
           "422489 URLRequestSimpleJob::ReadRawData"));
 
   DCHECK(bytes_read);
-  buf_size = static_cast<int>(std::min(
-      static_cast<int64>(buf_size),
-      byte_range_.last_byte_position() - data_offset_ + 1));
-  memcpy(buf->data(), data_->front() + data_offset_, buf_size);
-  data_offset_ += buf_size;
-  *bytes_read = buf_size;
-  return true;
+  buf_size = static_cast<int>(
+      std::min(static_cast<int64>(buf_size),
+               byte_range_.last_byte_position() - next_data_offset_ + 1));
+  DCHECK_GE(buf_size, 0);
+  if (buf_size == 0) {
+    *bytes_read = 0;
+    return true;
+  }
+
+  // Do memory copy on a background thread. See crbug.com/422489.
+  GetTaskRunner()->PostTaskAndReply(
+      FROM_HERE, base::Bind(&CopyData, make_scoped_refptr(buf), buf_size, data_,
+                            next_data_offset_),
+      base::Bind(&URLRequestSimpleJob::OnReadCompleted,
+                 weak_factory_.GetWeakPtr(), buf_size));
+  next_data_offset_ += buf_size;
+  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+  return false;
+}
+
+void URLRequestSimpleJob::OnReadCompleted(int bytes_read) {
+  SetStatus(net::URLRequestStatus());
+  NotifyReadComplete(bytes_read);
+}
+
+base::TaskRunner* URLRequestSimpleJob::GetTaskRunner() const {
+  return task_runner_.get();
 }
 
 int URLRequestSimpleJob::GetData(std::string* mime_type,
@@ -137,9 +171,9 @@ void URLRequestSimpleJob::OnGetDataCompleted(int result) {
       return;
     }
 
-    data_offset_ = byte_range_.first_byte_position();
-    set_expected_content_size(
-        byte_range_.last_byte_position() - data_offset_ + 1);
+    next_data_offset_ = byte_range_.first_byte_position();
+    set_expected_content_size(byte_range_.last_byte_position() -
+                              next_data_offset_ + 1);
     NotifyHeadersComplete();
   } else {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));

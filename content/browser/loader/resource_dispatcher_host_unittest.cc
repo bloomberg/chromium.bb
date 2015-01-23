@@ -421,6 +421,7 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
       : net::URLRequestSimpleJob(request, network_delegate) {
   }
 
+  // URLRequestSimpleJob implementation:
   int GetData(std::string* mime_type,
               std::string* charset,
               std::string* data,
@@ -438,6 +439,10 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
       data->append(text);
 
     return net::OK;
+  }
+
+  base::TaskRunner* GetTaskRunner() const override {
+    return base::MessageLoopProxy::current().get();
   }
 
  private:
@@ -2652,6 +2657,8 @@ TEST_F(ResourceDispatcherHostTest, DataReceivedACKs) {
   HandleScheme("big-job");
   MakeTestRequest(0, 1, GURL("big-job:0123456789,1000000"));
 
+  base::RunLoop().RunUntilIdle();
+
   // Sort all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
   accum_.GetClassifiedMessages(&msgs);
@@ -2729,6 +2736,8 @@ TEST_F(ResourceDispatcherHostTest, DelayedDataReceivedACKs) {
   HandleScheme("big-job");
   MakeTestRequest(0, 1, GURL("big-job:0123456789,1000000"));
 
+  base::RunLoop().RunUntilIdle();
+
   // Sort all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
   accum_.GetClassifiedMessages(&msgs);
@@ -2775,6 +2784,8 @@ TEST_F(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
 
   HandleScheme("big-job");
   MakeTestRequest(0, 1, GURL("big-job:0123456789,1000000"));
+
+  base::RunLoop().RunUntilIdle();
 
   // Sort all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
