@@ -642,7 +642,6 @@ RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
       opener_suppressed_(false),
       suppress_dialogs_until_swap_out_(false),
       page_id_(-1),
-      last_page_id_sent_to_browser_(-1),
       next_page_id_(params.next_page_id),
       history_list_offset_(-1),
       history_list_length_(0),
