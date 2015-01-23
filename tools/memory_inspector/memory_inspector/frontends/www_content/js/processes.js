@@ -65,14 +65,14 @@ this.getSelectedProcessURI = function() {
 
 this.snapshotSelectedProcess_ = function() {
   if (!this.selProcUri_)
-    return alert('Must select a process!');
+    return rootUi.showDialog('Must select a process!');
   mmap.dumpMmaps(this.selProcUri_, true);
   rootUi.showTab('prof');
 };
 
 this.dumpSelectedProcessMmaps_ = function() {
   if (!this.selProcUri_)
-    return alert('Must select a process!');
+    return rootUi.showDialog('Must select a process!');
   mmap.dumpMmaps(this.selProcUri_, false);
   rootUi.showTab('mm');
 };
@@ -99,14 +99,14 @@ this.showAndroidProvisionDialog_ = function() {
 
 this.showTracingDialog_ = function() {
   if (!this.selProcUri_)
-    return alert('Must select a process!');
+    return rootUi.showDialog('Must select a process!');
   $('#ps-tracer-process').val(this.selProcName_);
   $('#ps-tracer-dialog').dialog('open');
 };
 
 this.startTracingSelectedProcess_ = function() {
   if (!this.selProcUri_)
-    return alert('The process ' + this.selProcUri_ + ' died.');
+    return rootUi.showDialog('The process ' + this.selProcUri_ + ' died.');
   var traceNativeHeap = $('#ps-tracer-bt').prop('checked');
 
   $('#ps-tracer-dialog').dialog('close');

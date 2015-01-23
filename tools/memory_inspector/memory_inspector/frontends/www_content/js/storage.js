@@ -44,7 +44,7 @@ this.profileMmapForSelectedSnapshots = function(ruleset) {
   // Generates a mmap profile for the selected snapshots.
   var sel = this.table_.getSelection();
   if (!sel.length || !this.tableData_) {
-    alert('No snapshots selected!');
+    rootUi.showDialog('No snapshots selected!');
     return;
   }
   var archiveName = null;
@@ -54,7 +54,8 @@ this.profileMmapForSelectedSnapshots = function(ruleset) {
     var row = sel[i].row;
     var curArchive = this.tableData_.getValue(row, 0);
     if (archiveName && curArchive != archiveName) {
-      alert('All the selected snapshots must belong to the same archive!');
+      rootUi.showDialog(
+          'All the selected snapshots must belong to the same archive!');
       return;
     }
     archiveName = curArchive;
@@ -67,7 +68,7 @@ this.profileMmapForSelectedSnapshots = function(ruleset) {
 this.dumpMmapForSelectedSnapshot_ = function() {
   var sel = this.table_.getSelection();
   if (sel.length != 1) {
-    alert('Please select only one snapshot.')
+    rootUi.showDialog('Please select only one snapshot.')
     return;
   }
 
@@ -80,7 +81,7 @@ this.dumpMmapForSelectedSnapshot_ = function() {
 this.dumpNheapForSelectedSnapshot_ = function() {
   var sel = this.table_.getSelection();
   if (sel.length != 1) {
-    alert('Please select only one snapshot.')
+    rootUi.showDialog('Please select only one snapshot.')
     return;
   }
 
@@ -96,7 +97,7 @@ this.profileNativeForSelectedSnapshots = function(ruleset) {
   // Generates a native heap profile for the selected snapshots.
   var sel = this.table_.getSelection();
   if (!sel.length || !this.tableData_) {
-    alert('No snapshots selected!');
+    rootUi.showDialog('No snapshots selected!');
     return;
   }
   var archiveName = null;
@@ -106,7 +107,8 @@ this.profileNativeForSelectedSnapshots = function(ruleset) {
     var row = sel[i].row;
     var curArchive = this.tableData_.getValue(row, 0);
     if (archiveName && curArchive != archiveName) {
-      alert('All the selected snapshots must belong to the same archive!');
+      rootUi.showDialog(
+          'All the selected snapshots must belong to the same archive!');
       return;
     }
     if (!this.checkHasNativeHapDump_(row))
@@ -120,7 +122,7 @@ this.profileNativeForSelectedSnapshots = function(ruleset) {
 
 this.checkHasNativeHapDump_ = function(row) {
   if (!this.tableData_.getValue(row, 3)) {
-    alert('The selected snapshot doesn\'t have a heap dump!');
+    rootUi.showDialog('The selected snapshot doesn\'t have a heap dump!');
     return false;
   }
   return true;
