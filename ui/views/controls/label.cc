@@ -347,7 +347,8 @@ void Label::PaintText(gfx::Canvas* canvas,
                       const gfx::Rect& text_bounds,
                       int flags) {
   SkColor color = enabled() ? actual_enabled_color_ : actual_disabled_color_;
-  if (elide_behavior_ == gfx::FADE_TAIL) {
+  if (elide_behavior_ == gfx::FADE_TAIL &&
+      text_bounds.width() < GetTextSize().width()) {
     canvas->DrawFadedString(text, font_list_, color, text_bounds, flags);
   } else {
     canvas->DrawStringRectWithShadows(text, font_list_, color, text_bounds,
