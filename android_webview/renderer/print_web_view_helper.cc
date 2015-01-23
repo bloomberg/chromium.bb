@@ -36,6 +36,7 @@
 #include "third_party/WebKit/public/web/WebPluginDocument.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -540,8 +541,13 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   virtual void didStopLoading();
 
   // blink::WebFrameClient override:
+  // TODO(alexmos): Remove once Blink is updated to use sandbox flags.
   virtual blink::WebFrame* createChildFrame(blink::WebLocalFrame* parent,
                                             const blink::WebString& name);
+  virtual blink::WebFrame* createChildFrame(
+      blink::WebLocalFrame* parent,
+      const blink::WebString& name,
+      blink::WebSandboxFlags sandboxFlags);
   virtual void frameDetached(blink::WebFrame* frame);
 
  private:
@@ -682,9 +688,17 @@ void PrepareFrameAndViewForPrint::didStopLoading() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+// TODO(alexmos): Remove once Blink is updated to use sandbox flags.
 blink::WebFrame* PrepareFrameAndViewForPrint::createChildFrame(
     blink::WebLocalFrame* parent,
     const blink::WebString& name) {
+  return createChildFrame(parent, name, blink::WebSandboxFlags::None);
+}
+
+blink::WebFrame* PrepareFrameAndViewForPrint::createChildFrame(
+    blink::WebLocalFrame* parent,
+    const blink::WebString& name,
+    blink::WebSandboxFlags sandboxFlags) {
   blink::WebFrame* frame = blink::WebLocalFrame::create(this);
   parent->appendChild(frame);
   return frame;
