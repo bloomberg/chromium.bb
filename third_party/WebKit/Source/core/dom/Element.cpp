@@ -2236,8 +2236,7 @@ bool Element::supportsSpatialNavigationFocus() const
     // i.e. checks if click or keyboard event handler is specified.
     // This is the way to make it possible to navigate to (focus) elements
     // which web designer meant for being active (made them respond to click events).
-
-    if (!isSpatialNavigationEnabled(document().frame()))
+    if (!isSpatialNavigationEnabled(document().frame()) || spatialNavigationIgnoresEventHandlers(document().frame()))
         return false;
     if (hasEventListeners(EventTypeNames::click)
         || hasEventListeners(EventTypeNames::keydown)

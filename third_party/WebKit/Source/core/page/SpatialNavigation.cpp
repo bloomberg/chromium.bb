@@ -86,6 +86,11 @@ bool isSpatialNavigationEnabled(const LocalFrame* frame)
     return (frame && frame->settings() && frame->settings()->spatialNavigationEnabled());
 }
 
+bool spatialNavigationIgnoresEventHandlers(const LocalFrame* frame)
+{
+    return (frame && frame->settings() && frame->settings()->deviceSupportsTouch());
+}
+
 static bool rectsIntersectOnOrthogonalAxis(WebFocusType type, const LayoutRect& a, const LayoutRect& b)
 {
     switch (type) {
