@@ -158,9 +158,6 @@ class CC_EXPORT PictureLayerImpl
 
   bool raster_source_scale_is_fixed_;
   bool was_screen_space_transform_animating_;
-  // A sanity state check to make sure UpdateTilePriorities only gets called
-  // after a CalculateContentsScale/ManageTilings.
-  bool should_update_tile_priorities_;
   bool only_used_low_res_last_append_quads_;
   const bool is_mask_;
 
