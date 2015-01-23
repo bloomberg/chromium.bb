@@ -163,6 +163,23 @@ def GetCLPreCQStatus(change, action_history):
   """
   return GetCLPreCQStatusAndTime(change, action_history)[0]
 
+
+def IsChangeScreened(change, action_history):
+  """Get's whether |change| has been pre-cq screened.
+
+  Args:
+    change: GerritPatch instance to get the pre-CQ status for.
+    action_history: A list of CLAction instances.
+
+  Returns:
+    True if the change has been pre-cq screened, false otherwise.
+  """
+  actions_for_patch = ActionsForPatch(change, action_history)
+  actions_for_patch = FilterPreResetActions(actions_for_patch)
+  return any(a.action == constants.CL_ACTION_SCREENED_FOR_PRE_CQ
+             for a in actions_for_patch)
+
+
 def ActionsForPatch(change, action_history):
   """Filters a CL action list to only those for a given patch.
 
@@ -260,6 +277,25 @@ def GetCLActionCount(change, configs, action, action_history,
   return len(actions_for_change)
 
 
+def FilterPreResetActions(action_history):
+  """Filters out actions prior to most recent pre-cq reset action.
+
+  Args:
+    action_history: List of CLAction instance.
+
+  Returns:
+    List of CLAction instances that occur after the last pre-cq-reset action.
+  """
+  reset = False
+  for i, a in enumerate(action_history):
+    if a.action == constants.CL_ACTION_PRE_CQ_RESET:
+      reset = True
+      reset_index = i
+  if reset:
+    action_history = action_history[(reset_index+1):]
+  return action_history
+
+
 def GetCLPreCQProgress(change, action_history):
   """Gets a CL's per-config PreCQ statuses.
 
@@ -278,13 +314,7 @@ def GetCLPreCQProgress(change, action_history):
   config_status_dict = {}
 
   # If there is a reset action recorded, filter out all actions prior to it.
-  reset = False
-  for i, a in enumerate(actions_for_patch):
-    if a.action == constants.CL_ACTION_PRE_CQ_RESET:
-      reset = True
-      reset_index = i
-  if reset:
-    actions_for_patch = actions_for_patch[(reset_index+1):]
+  actions_for_patch = FilterPreResetActions(actions_for_patch)
 
   # Only configs for which the pre-cq-launcher has requested verification
   # should be included in the per-config status.

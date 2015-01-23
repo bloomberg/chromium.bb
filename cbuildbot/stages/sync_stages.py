@@ -1295,8 +1295,7 @@ class PreCQLauncherStage(SyncStage):
         continue
 
       # Screen unscreened changes to determine which trybots to test them with.
-      if not any(a.action == constants.CL_ACTION_SCREENED_FOR_PRE_CQ
-                 for a in clactions.ActionsForPatch(change, action_history)):
+      if not clactions.IsChangeScreened(change, action_history):
         self.ScreenChangeForPreCQ(change)
         continue
 
