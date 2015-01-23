@@ -48,7 +48,7 @@ void RunLoopForTimePeriod(base::TimeDelta period) {
   run_loop.Run();
 }
 
-class WebSocketTransportClientSocketPoolTest : public testing::Test {
+class WebSocketTransportClientSocketPoolTest : public ::testing::Test {
  protected:
   WebSocketTransportClientSocketPoolTest()
       : params_(new TransportSocketParams(
@@ -68,9 +68,14 @@ class WebSocketTransportClientSocketPoolTest : public testing::Test {
               NULL) {}
 
   ~WebSocketTransportClientSocketPoolTest() override {
+    RunUntilIdle();
+    // ReleaseAllConnections() calls RunUntilIdle() after releasing each
+    // connection.
     ReleaseAllConnections(ClientSocketPoolTest::NO_KEEP_ALIVE);
     EXPECT_TRUE(WebSocketEndpointLockManager::GetInstance()->IsEmpty());
   }
+
+  static void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {
     scoped_refptr<TransportSocketParams> params(
@@ -108,6 +113,7 @@ class WebSocketTransportClientSocketPoolTest : public testing::Test {
   MockTransportClientSocketFactory client_socket_factory_;
   WebSocketTransportClientSocketPool pool_;
   ClientSocketPoolTest test_base_;
+  ScopedWebSocketEndpointZeroUnlockDelay zero_unlock_delay_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocketTransportClientSocketPoolTest);
@@ -502,7 +508,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LockReleasedOnHandleReset) {
   EXPECT_EQ(OK, request(0)->WaitForResult());
   EXPECT_FALSE(request(1)->handle()->is_initialized());
   request(0)->handle()->Reset();
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   EXPECT_TRUE(request(1)->handle()->is_initialized());
 }
 
@@ -518,7 +524,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LockReleasedOnHandleDelete) {
   EXPECT_EQ(OK, callback.WaitForResult());
   EXPECT_FALSE(request(0)->handle()->is_initialized());
   handle.reset();
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   EXPECT_TRUE(request(0)->handle()->is_initialized());
 }
 
@@ -531,7 +537,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   EXPECT_EQ(OK, request(0)->WaitForResult());
   EXPECT_FALSE(request(1)->handle()->is_initialized());
   WebSocketTransportClientSocketPool::UnlockEndpoint(request(0)->handle());
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   EXPECT_TRUE(request(1)->handle()->is_initialized());
 }
 
@@ -548,7 +554,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 
   EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
   EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   pool_.CancelRequest("a", request(0)->handle());
   EXPECT_EQ(OK, request(1)->WaitForResult());
 }
@@ -902,8 +908,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest, DISABLED_OverallTimeoutApplies) {
 TEST_F(WebSocketTransportClientSocketPoolTest, MaxSocketsEnforced) {
   host_resolver_->set_synchronous_mode(true);
   for (int i = 0; i < kMaxSockets; ++i) {
-    EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
+    ASSERT_EQ(OK, StartRequest("a", kDefaultPriority));
     WebSocketTransportClientSocketPool::UnlockEndpoint(request(i)->handle());
+    RunUntilIdle();
   }
   EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
 }
@@ -914,13 +921,13 @@ TEST_F(WebSocketTransportClientSocketPoolTest, MaxSocketsEnforcedWhenPending) {
   }
   // Now there are 32 sockets waiting to connect, and one stalled.
   for (int i = 0; i < kMaxSockets; ++i) {
-    base::RunLoop().RunUntilIdle();
+    RunUntilIdle();
     EXPECT_TRUE(request(i)->handle()->is_initialized());
     EXPECT_TRUE(request(i)->handle()->socket());
     WebSocketTransportClientSocketPool::UnlockEndpoint(request(i)->handle());
   }
   // Now there are 32 sockets connected, and one stalled.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   EXPECT_FALSE(request(kMaxSockets)->handle()->is_initialized());
   EXPECT_FALSE(request(kMaxSockets)->handle()->socket());
 }
@@ -928,8 +935,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest, MaxSocketsEnforcedWhenPending) {
 TEST_F(WebSocketTransportClientSocketPoolTest, StalledSocketReleased) {
   host_resolver_->set_synchronous_mode(true);
   for (int i = 0; i < kMaxSockets; ++i) {
-    EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
+    ASSERT_EQ(OK, StartRequest("a", kDefaultPriority));
     WebSocketTransportClientSocketPool::UnlockEndpoint(request(i)->handle());
+    RunUntilIdle();
   }
 
   EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
@@ -953,7 +961,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   }
   EXPECT_EQ(OK, request(0)->WaitForResult());
   request(1)->handle()->Reset();
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   EXPECT_FALSE(pool_.IsStalled());
 }
 
@@ -972,6 +980,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
     EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
   }
   request(kMaxSockets)->handle()->Reset();
+  RunUntilIdle();
   EXPECT_FALSE(pool_.IsStalled());
 }
 
@@ -1114,6 +1123,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequestReclaimsSockets) {
 
   request(0)->handle()->Reset();  // calls CancelRequest()
 
+  RunUntilIdle();
   // We should now be able to create a new connection without blocking on the
   // endpoint lock.
   EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
@@ -1123,11 +1133,12 @@ TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequestReclaimsSockets) {
 // Endpoint, not two.
 TEST_F(WebSocketTransportClientSocketPoolTest, EndpointLockIsOnlyReleasedOnce) {
   host_resolver_->set_synchronous_mode(true);
-  EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
+  ASSERT_EQ(OK, StartRequest("a", kDefaultPriority));
   EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
   EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
   // First socket completes handshake.
   WebSocketTransportClientSocketPool::UnlockEndpoint(request(0)->handle());
+  RunUntilIdle();
   // First socket is closed.
   request(0)->handle()->Reset();
   // Second socket should have been released.

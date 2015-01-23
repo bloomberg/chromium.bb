@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/socket/websocket_transport_client_socket_pool.h"
@@ -19,8 +20,25 @@ namespace net {
 
 class StreamSocket;
 
+// Keep track of ongoing WebSocket connections in order to satisfy the WebSocket
+// connection throttling requirements described in RFC6455 4.1.2:
+//
+//   2.  If the client already has a WebSocket connection to the remote
+//       host (IP address) identified by /host/ and port /port/ pair, even
+//       if the remote host is known by another name, the client MUST wait
+//       until that connection has been established or for that connection
+//       to have failed.  There MUST be no more than one connection in a
+//       CONNECTING state.  If multiple connections to the same IP address
+//       are attempted simultaneously, the client MUST serialize them so
+//       that there is no more than one connection at a time running
+//       through the following steps.
+//
+// This class is neither thread-safe nor thread-compatible.
+// TODO(ricea): Make this class thread-compatible by making it not be a
+// singleton.
 class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
  public:
+  // Implement this interface to wait for an endpoint to be available.
   class NET_EXPORT_PRIVATE Waiter : public base::LinkNode<Waiter> {
    public:
     // If the node is in a list, removes it.
@@ -45,21 +63,27 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
   // UnlockSocket().
   void RememberSocket(StreamSocket* socket, const IPEndPoint& endpoint);
 
-  // Releases the lock on the endpoint that was associated with |socket| by
-  // RememberSocket(). If appropriate, triggers the next socket connection.
-  // Should be called exactly once for each |socket| that was passed to
-  // RememberSocket(). Does nothing if UnlockEndpoint() has been called since
+  // Removes the socket association that was recorded by RememberSocket(), then
+  // asynchronously releases the lock on the endpoint after a delay. If
+  // appropriate, calls |waiter->GetEndpointLock()| when the lock is
+  // released. Should be called exactly once for each |socket| that was passed
+  // to RememberSocket(). Does nothing if UnlockEndpoint() has been called since
   // the call to RememberSocket().
   void UnlockSocket(StreamSocket* socket);
 
-  // Releases the lock on |endpoint|. Does nothing if |endpoint| is not locked.
-  // Removes any socket association that was recorded with RememberSocket(). If
-  // appropriate, calls |waiter->GotEndpointLock()|.
+  // Asynchronously releases the lock on |endpoint| after a delay. Does nothing
+  // if |endpoint| is not locked.  Removes any socket association that was
+  // recorded with RememberSocket(). If appropriate, calls
+  // |waiter->GotEndpointLock()| when the lock is released.
   void UnlockEndpoint(const IPEndPoint& endpoint);
 
   // Checks that |lock_info_map_| and |socket_lock_info_map_| are empty. For
   // tests.
   bool IsEmpty() const;
+
+  // Changes the value of the unlock delay. Returns the previous value of the
+  // delay.
+  base::TimeDelta SetUnlockDelayForTesting(base::TimeDelta new_delay);
 
  private:
   struct LockInfo {
@@ -97,7 +121,8 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
   WebSocketEndpointLockManager();
   ~WebSocketEndpointLockManager();
 
-  void UnlockEndpointByIterator(LockInfoMap::iterator lock_info_it);
+  void UnlockEndpointAfterDelay(const IPEndPoint& endpoint);
+  void DelayedUnlockEndpoint(const IPEndPoint& endpoint);
   void EraseSocket(LockInfoMap::iterator lock_info_it);
 
   // If an entry is present in the map for a particular endpoint, then that
@@ -110,6 +135,16 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
   // references a live entry in lock_info_map_, and the LockInfo::socket member
   // is non-NULL if and only if there is an entry in this map for the socket.
   SocketLockInfoMap socket_lock_info_map_;
+
+  // Time to wait between a call to Unlock* and actually unlocking the socket.
+  base::TimeDelta unlock_delay_;
+
+  // Number of sockets currently pending unlock.
+  size_t pending_unlock_count_;
+
+  // The messsage loop holding the unlock delay callback may outlive this
+  // object.
+  base::WeakPtrFactory<WebSocketEndpointLockManager> weak_factory_;
 
   friend struct DefaultSingletonTraits<WebSocketEndpointLockManager>;
 

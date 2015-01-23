@@ -6,11 +6,22 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 
 namespace net {
+
+namespace {
+
+// This delay prevents DoS attacks.
+// TODO(ricea): Replace this with randomised truncated exponential backoff.
+// See crbug.com/377613.
+const int kUnlockDelayInMs = 10;
+
+}  // namespace
 
 WebSocketEndpointLockManager::Waiter::~Waiter() {
   if (next()) {
@@ -65,21 +76,29 @@ void WebSocketEndpointLockManager::UnlockSocket(StreamSocket* socket) {
            << lock_info_it->first.ToString() << " ("
            << socket_lock_info_map_.size() << " socket(s) left)";
   socket_lock_info_map_.erase(socket_it);
-  DCHECK(socket == lock_info_it->second.socket);
+  DCHECK_EQ(socket, lock_info_it->second.socket);
   lock_info_it->second.socket = NULL;
-  UnlockEndpointByIterator(lock_info_it);
+  UnlockEndpointAfterDelay(lock_info_it->first);
 }
 
 void WebSocketEndpointLockManager::UnlockEndpoint(const IPEndPoint& endpoint) {
   LockInfoMap::iterator lock_info_it = lock_info_map_.find(endpoint);
   if (lock_info_it == lock_info_map_.end())
     return;
-
-  UnlockEndpointByIterator(lock_info_it);
+  if (lock_info_it->second.socket)
+    EraseSocket(lock_info_it);
+  UnlockEndpointAfterDelay(endpoint);
 }
 
 bool WebSocketEndpointLockManager::IsEmpty() const {
   return lock_info_map_.empty() && socket_lock_info_map_.empty();
+}
+
+base::TimeDelta WebSocketEndpointLockManager::SetUnlockDelayForTesting(
+    base::TimeDelta new_delay) {
+  base::TimeDelta old_delay = unlock_delay_;
+  unlock_delay_ = new_delay;
+  return old_delay;
 }
 
 WebSocketEndpointLockManager::LockInfo::LockInfo() : socket(NULL) {}
@@ -92,17 +111,37 @@ WebSocketEndpointLockManager::LockInfo::LockInfo(const LockInfo& rhs)
   DCHECK(!rhs.queue);
 }
 
-WebSocketEndpointLockManager::WebSocketEndpointLockManager() {}
+WebSocketEndpointLockManager::WebSocketEndpointLockManager()
+    : unlock_delay_(base::TimeDelta::FromMilliseconds(kUnlockDelayInMs)),
+      pending_unlock_count_(0),
+      weak_factory_(this) {
+}
 
 WebSocketEndpointLockManager::~WebSocketEndpointLockManager() {
-  DCHECK(lock_info_map_.empty());
+  DCHECK_EQ(lock_info_map_.size(), pending_unlock_count_);
   DCHECK(socket_lock_info_map_.empty());
 }
 
-void WebSocketEndpointLockManager::UnlockEndpointByIterator(
-    LockInfoMap::iterator lock_info_it) {
-  if (lock_info_it->second.socket)
-    EraseSocket(lock_info_it);
+void WebSocketEndpointLockManager::UnlockEndpointAfterDelay(
+    const IPEndPoint& endpoint) {
+  DVLOG(3) << "Delaying " << unlock_delay_.InMilliseconds()
+           << "ms before unlocking endpoint " << endpoint.ToString();
+  ++pending_unlock_count_;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&WebSocketEndpointLockManager::DelayedUnlockEndpoint,
+                 weak_factory_.GetWeakPtr(), endpoint),
+      unlock_delay_);
+}
+
+void WebSocketEndpointLockManager::DelayedUnlockEndpoint(
+    const IPEndPoint& endpoint) {
+  LockInfoMap::iterator lock_info_it = lock_info_map_.find(endpoint);
+  DCHECK_GT(pending_unlock_count_, 0U);
+  --pending_unlock_count_;
+  if (lock_info_it == lock_info_map_.end())
+    return;
+  DCHECK(!lock_info_it->second.socket);
   LockInfo::WaiterQueue* queue = lock_info_it->second.queue.get();
   DCHECK(queue);
   if (queue->empty()) {
@@ -115,7 +154,6 @@ void WebSocketEndpointLockManager::UnlockEndpointByIterator(
            << " and activating next waiter";
   Waiter* next_job = queue->head()->value();
   next_job->RemoveFromList();
-  // This must be last to minimise the excitement caused by re-entrancy.
   next_job->GotEndpointLock();
 }
 

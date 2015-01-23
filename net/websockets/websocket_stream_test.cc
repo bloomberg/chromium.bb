@@ -107,6 +107,12 @@ class DeterministicKeyWebSocketHandshakeStreamCreateHelper
 class WebSocketStreamCreateTest : public ::testing::Test {
  public:
   WebSocketStreamCreateTest() : has_failed_(false), ssl_fatal_(false) {}
+  ~WebSocketStreamCreateTest() override {
+    // Permit any endpoint locks to be released.
+    stream_request_.reset();
+    stream_.reset();
+    RunUntilIdle();
+  }
 
   void CreateAndConnectCustomResponse(
       const std::string& socket_url,
@@ -248,6 +254,7 @@ class WebSocketStreamCreateTest : public ::testing::Test {
   SSLInfo ssl_info_;
   bool ssl_fatal_;
   ScopedVector<SSLSocketDataProvider> ssl_data_;
+  ScopedWebSocketEndpointZeroUnlockDelay zero_unlock_delay_;
 };
 
 // There are enough tests of the Sec-WebSocket-Extensions header that they

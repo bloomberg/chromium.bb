@@ -24,6 +24,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket.h"
+#include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
@@ -1987,6 +1988,21 @@ void MockSOCKSClientSocketPool::ReleaseSocket(const std::string& group_name,
                                               scoped_ptr<StreamSocket> socket,
                                               int id) {
   return transport_pool_->ReleaseSocket(group_name, socket.Pass(), id);
+}
+
+ScopedWebSocketEndpointZeroUnlockDelay::
+    ScopedWebSocketEndpointZeroUnlockDelay() {
+  old_delay_ =
+      WebSocketEndpointLockManager::GetInstance()->SetUnlockDelayForTesting(
+          base::TimeDelta());
+}
+
+ScopedWebSocketEndpointZeroUnlockDelay::
+    ~ScopedWebSocketEndpointZeroUnlockDelay() {
+  base::TimeDelta active_delay =
+      WebSocketEndpointLockManager::GetInstance()->SetUnlockDelayForTesting(
+          old_delay_);
+  EXPECT_EQ(active_delay, base::TimeDelta());
 }
 
 const char kSOCKS5GreetRequest[] = { 0x05, 0x01, 0x00 };
