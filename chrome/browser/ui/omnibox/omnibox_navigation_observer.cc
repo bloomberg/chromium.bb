@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -86,30 +87,29 @@ void OmniboxNavigationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_PENDING, type);
-  registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-                    content::NotificationService::AllSources());
+
+  // It's possible for an attempted omnibox navigation to cause the extensions
+  // system to synchronously navigate an extension background page.  Not only is
+  // this navigation not the one we want to observe, the associated WebContents
+  // is invisible and has no InfoBarService, so trying to show an infobar in it
+  // later will crash.  Just ignore this navigation and keep listening.
   content::NavigationController* controller =
       content::Source<content::NavigationController>(source).ptr();
+  content::WebContents* web_contents = controller->GetWebContents();
+  if (!InfoBarService::FromWebContents(web_contents))
+    return;
+
+  CHECK_EQ(match_.destination_url,
+           content::Details<content::NavigationEntry>(
+               details)->GetVirtualURL());
+  registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
+                    content::NotificationService::AllSources());
   if (fetcher_) {
     fetcher_->SetRequestContext(
         controller->GetBrowserContext()->GetRequestContext());
   }
-  WebContentsObserver::Observe(controller->GetWebContents());
+  WebContentsObserver::Observe(web_contents);
   // DidStartNavigationToPendingEntry() will be called for this load as well.
-}
-
-void OmniboxNavigationObserver::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  load_state_ = LOAD_COMMITTED;
-  if (ResponseCodeIndicatesSuccess(load_details.http_status_code) &&
-      IsValidNavigation(match_.destination_url, load_details.entry->GetURL()))
-    OnSuccessfulNavigation();
-  if (!fetcher_ || (fetch_state_ != FETCH_NOT_COMPLETE))
-    OnAllLoadingFinished();  // deletes |this|!
-}
-
-void OmniboxNavigationObserver::WebContentsDestroyed() {
-  delete this;
 }
 
 void OmniboxNavigationObserver::DidStartNavigationToPendingEntry(
@@ -122,6 +122,30 @@ void OmniboxNavigationObserver::DidStartNavigationToPendingEntry(
   } else {
     delete this;
   }
+}
+
+void OmniboxNavigationObserver::DidFailProvisionalLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url,
+    int error_code,
+    const base::string16& error_description) {
+  if ((load_state_ != LOAD_COMMITTED) && !render_frame_host->GetParent())
+    delete this;
+}
+
+void OmniboxNavigationObserver::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  load_state_ = LOAD_COMMITTED;
+  if (ResponseCodeIndicatesSuccess(load_details.http_status_code) &&
+      IsValidNavigation(match_.destination_url,
+                        load_details.entry->GetVirtualURL()))
+    OnSuccessfulNavigation();
+  if (!fetcher_ || (fetch_state_ != FETCH_NOT_COMPLETE))
+    OnAllLoadingFinished();  // deletes |this|!
+}
+
+void OmniboxNavigationObserver::WebContentsDestroyed() {
+  delete this;
 }
 
 void OmniboxNavigationObserver::OnURLFetchComplete(
