@@ -57,10 +57,10 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
  public:
   DesktopCaptureDeviceAuraTest()
       : browser_thread_for_ui_(BrowserThread::UI, &message_loop_) {}
-  virtual ~DesktopCaptureDeviceAuraTest() {}
+  ~DesktopCaptureDeviceAuraTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // The ContextFactory must exist before any Compositors are created.
     bool enable_pixel_output = false;
     ui::ContextFactory* context_factory =
@@ -82,7 +82,7 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
     desktop_window_->Show();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     helper_->RunAllPendingInMessageLoop();
     root_window()->RemoveChild(desktop_window_.get());
     desktop_window_.reset();

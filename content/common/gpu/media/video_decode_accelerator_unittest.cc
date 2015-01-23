@@ -262,21 +262,21 @@ class GLRenderingVDAClient
                        int delay_reuse_after_frame_num,
                        int decode_calls_per_second,
                        bool render_as_thumbnails);
-  virtual ~GLRenderingVDAClient();
+  ~GLRenderingVDAClient() override;
   void CreateAndStartDecoder();
 
   // VideoDecodeAccelerator::Client implementation.
   // The heart of the Client.
-  virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
-                                     const gfx::Size& dimensions,
-                                     uint32 texture_target) override;
-  virtual void DismissPictureBuffer(int32 picture_buffer_id) override;
-  virtual void PictureReady(const media::Picture& picture) override;
+  void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+                             const gfx::Size& dimensions,
+                             uint32 texture_target) override;
+  void DismissPictureBuffer(int32 picture_buffer_id) override;
+  void PictureReady(const media::Picture& picture) override;
   // Simple state changes.
-  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) override;
-  virtual void NotifyFlushDone() override;
-  virtual void NotifyResetDone() override;
-  virtual void NotifyError(VideoDecodeAccelerator::Error error) override;
+  void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) override;
+  void NotifyFlushDone() override;
+  void NotifyResetDone() override;
+  void NotifyError(VideoDecodeAccelerator::Error error) override;
 
   void OutputFrameDeliveryTimes(base::File* output);
 
@@ -914,8 +914,8 @@ base::TimeDelta GLRenderingVDAClient::decode_time_median() {
 class VideoDecodeAcceleratorTest : public ::testing::Test {
  protected:
   VideoDecodeAcceleratorTest();
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   // Parse |data| into its constituent parts, set the various output fields
   // accordingly, and read in video stream. CHECK-fails on unexpected or

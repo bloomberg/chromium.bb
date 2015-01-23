@@ -401,7 +401,7 @@ class H264Validator : public StreamValidator {
         seen_pps_(false),
         seen_idr_(false) {}
 
-  virtual void ProcessStreamBuffer(const uint8* stream, size_t size) override;
+  void ProcessStreamBuffer(const uint8* stream, size_t size) override;
 
  private:
   // Set to true when encoder provides us with the corresponding NALU type.
@@ -468,7 +468,7 @@ class VP8Validator : public StreamValidator {
       : StreamValidator(frame_cb),
         seen_keyframe_(false) {}
 
-  virtual void ProcessStreamBuffer(const uint8* stream, size_t size) override;
+  void ProcessStreamBuffer(const uint8* stream, size_t size) override;
 
  private:
   // Have we already got a keyframe in the stream?
@@ -518,7 +518,7 @@ class VEAClient : public VideoEncodeAccelerator::Client {
             bool mid_stream_bitrate_switch,
             bool mid_stream_framerate_switch,
             bool run_at_fps);
-  virtual ~VEAClient();
+  ~VEAClient() override;
   void CreateEncoder();
   void DestroyEncoder();
 
@@ -526,13 +526,13 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   double frames_per_second();
 
   // VideoDecodeAccelerator::Client implementation.
-  virtual void RequireBitstreamBuffers(unsigned int input_count,
-                                       const gfx::Size& input_coded_size,
-                                       size_t output_buffer_size) override;
-  virtual void BitstreamBufferReady(int32 bitstream_buffer_id,
-                                    size_t payload_size,
-                                    bool key_frame) override;
-  virtual void NotifyError(VideoEncodeAccelerator::Error error) override;
+  void RequireBitstreamBuffers(unsigned int input_count,
+                               const gfx::Size& input_coded_size,
+                               size_t output_buffer_size) override;
+  void BitstreamBufferReady(int32 bitstream_buffer_id,
+                            size_t payload_size,
+                            bool key_frame) override;
+  void NotifyError(VideoEncodeAccelerator::Error error) override;
 
  private:
   bool has_encoder() { return encoder_.get(); }

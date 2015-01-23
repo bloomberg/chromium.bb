@@ -21,7 +21,7 @@ class NetInfoBrowserTest : public content::ContentBrowserTest {
   }
 
 #if defined(OS_CHROMEOS)
-  virtual void SetUp() override {
+  void SetUp() override {
     // ChromeOS's NetworkChangeNotifier isn't known to content and therefore
     // doesn't get created in content_browsertests. Insert a mock
     // NetworkChangeNotifier.

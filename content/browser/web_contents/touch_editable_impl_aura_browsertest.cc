@@ -98,7 +98,7 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   }
 
  protected:
-  virtual ~TestTouchEditableImplAura() {}
+  ~TestTouchEditableImplAura() override {}
 
  private:
   bool selection_changed_callback_arrived_;
