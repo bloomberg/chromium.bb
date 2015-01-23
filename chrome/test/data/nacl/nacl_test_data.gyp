@@ -18,7 +18,6 @@
         'test_files': [
           # TODO(ncbray) move into chrome/test/data/nacl when all tests are
           # converted.
-          '<(DEPTH)/ppapi/native_client/tests/ppapi_browser/progress_event_listener.js',
           '<(DEPTH)/ppapi/native_client/tools/browser_tester/browserdata/nacltest.js',
 
           # Files that aren't assosiated with any particular executable.
@@ -38,6 +37,7 @@
           'crash/ppapi_crash_off_main_thread.html',
           'load_util.js',
           'manifest_file/test_file.txt',
+          'progress_event_listener.js',
         ],
       },
       'conditions': [
