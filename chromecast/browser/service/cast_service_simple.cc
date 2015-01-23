@@ -10,7 +10,6 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "url/gurl.h"
 
 namespace chromecast {
 
@@ -54,6 +53,7 @@ CastServiceSimple::~CastServiceSimple() {
 }
 
 void CastServiceSimple::InitializeInternal() {
+  startup_url_ = GetStartupURL();
 }
 
 void CastServiceSimple::FinalizeInternal() {
@@ -67,8 +67,7 @@ void CastServiceSimple::StartInternal() {
   web_contents_ = window_->CreateWebContents(initial_size, browser_context());
   window_->CreateWindowTree(initial_size, web_contents_.get());
 
-  web_contents_->GetController().LoadURL(GetStartupURL(),
-                                         content::Referrer(),
+  web_contents_->GetController().LoadURL(startup_url_, content::Referrer(),
                                          ui::PAGE_TRANSITION_TYPED,
                                          std::string());
 }

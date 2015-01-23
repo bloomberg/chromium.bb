@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chromecast/browser/service/cast_service.h"
+#include "url/gurl.h"
 
 namespace content {
 class WebContents;
@@ -32,6 +33,7 @@ class CastServiceSimple : public CastService {
  private:
   scoped_ptr<CastContentWindow> window_;
   scoped_ptr<content::WebContents> web_contents_;
+  GURL startup_url_;
 
   DISALLOW_COPY_AND_ASSIGN(CastServiceSimple);
 };
