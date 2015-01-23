@@ -51,9 +51,30 @@ class RemoteDeviceUirobotTestRun(remote_device_test_run.RemoteDeviceTestRun):
       logging.info('Using default runner type: %s', default_runner_type)
     else:
       runner_type = self._env.runner_type
-    self._test_id = self._GetTestByName(runner_type)
+
+    self._test_id = self._UploadTestToDevice(
+        'android_robot', None, app_id=self._app_id)
     config_body = {'duration': self._test_instance.minutes}
     self._SetTestConfig(runner_type, config_body)
+
+
+  # TODO(rnephew): Switch to base class implementation when supported.
+  #override
+  def _UploadTestToDevice(self, test_type, test_path, app_id=None):
+    if test_path:
+      logging.info("Ignoring test path.")
+    data = {
+        'access_token':self._env.token,
+        'test_type':test_type,
+        'app_id':app_id,
+    }
+    with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
+                                            logging.WARNING):
+      test_upload_res = appurify_sanitized.utils.post('tests/upload',
+                                                      data, None)
+    remote_device_helper.TestHttpResponse(
+        test_upload_res, 'Unable to get UiRobot test id.')
+    return test_upload_res.json()['response']['test_id']
 
   #override
   def _ParseTestResults(self):

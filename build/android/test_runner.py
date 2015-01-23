@@ -140,7 +140,6 @@ def AddRemoteDeviceOptions(parser):
   group.add_argument('--runner-type', default='',
                      help='Type of test to run as.')
   group.add_argument('--runner-package', help='Package name of test.')
-  group.add_argument('--app-under-test', help='APK to run tests on.')
   group.add_argument('--device-type', default='Android',
                      choices=constants.VALID_DEVICE_TYPES,
                      help=('Type of device to run on. iOS or android'))
@@ -507,6 +506,7 @@ def AddUirobotTestOptions(parser):
   """Adds uirobot test options to |option_parser|."""
   group = parser.add_argument_group('Uirobot Test Options')
 
+  group.add_argument('--app-under-test', help='APK to run tests on.')
   group.add_argument(
       '--minutes', default=5, type=int,
       help='Number of minutes to run uirobot test [default: %default].')

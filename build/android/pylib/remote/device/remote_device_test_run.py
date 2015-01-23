@@ -19,7 +19,7 @@ from pylib.remote.device import remote_device_helper
 from pylib.utils import zip_utils
 
 class RemoteDeviceTestRun(test_run.TestRun):
-  """Run gtests and uirobot tests on a remote device."""
+  """Run tests on a remote device."""
 
   _TEST_RUN_KEY = 'test_run'
   _TEST_RUN_ID_KEY = 'test_run_id'
