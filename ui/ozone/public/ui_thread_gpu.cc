@@ -8,6 +8,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
+#include "ipc/message_filter.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -27,6 +28,11 @@ class FakeGpuProcess : public IPC::Sender {
 
   void Init() {
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    ui::OzonePlatform::GetInstance()
+        ->GetGpuPlatformSupport()
+        ->GetMessageFilter()
+        ->OnFilterAdded(this);
+
     ui::OzonePlatform::GetInstance()
         ->GetGpuPlatformSupport()
         ->OnChannelEstablished(this);
