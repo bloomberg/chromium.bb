@@ -741,21 +741,20 @@ class _PaygenBuild(object):
 
     _LogList('Images found', images)
 
-    # Discover the previous builds we need deltas from.
-    previous_builds = self._DiscoverNmoBuild()
-    if previous_builds:
-      _LogList('Previous builds considered', previous_builds)
-    else:
-      logging.info('No previous builds found')
-
-    # Discover FSI builds we need deltas from, but omit those that were already
-    # discovered as previous builds.
-    fsi_builds = [b for b in self._DiscoverActiveFsiBuilds()
-                  if b not in previous_builds]
+    # Discover FSI builds we need deltas from.
+    fsi_builds = self._DiscoverActiveFsiBuilds()
     if fsi_builds:
       _LogList('FSI builds considered', fsi_builds)
     else:
       logging.info('No FSI builds found')
+
+    # Discover other previous builds we need deltas from.
+    previous_builds = [b for b in self._DiscoverNmoBuild()
+                       if b not in fsi_builds]
+    if previous_builds:
+      _LogList('Other previous builds considered', previous_builds)
+    else:
+      logging.info('No other previous builds found')
 
     # Discover the images from those previous builds, and put them into
     # a single list. Raises ImageMissing if no images are found.

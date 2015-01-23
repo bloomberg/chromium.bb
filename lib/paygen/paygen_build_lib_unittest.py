@@ -755,20 +755,20 @@ fsi_images: 2913.331.0,2465.105.0
                                board='foo-board',
                                version='1.2.2')
 
-    nmo_images = self._GetBuildImages(nmo_build)
-    nmo_test_image = self._GetBuildTestImage(nmo_build)
     fsi1_images = self._GetBuildImages(fsi1_build)
     fsi1_test_image = self._GetBuildTestImage(fsi1_build)
+    fsi2_images = self._GetBuildImages(fsi2_build)
+    fsi2_test_image = self._GetBuildTestImage(fsi2_build)
 
     paygen._DiscoverImages(paygen._build).AndReturn(self.images)
     paygen._DiscoverTestImageArchives(paygen._build).AndReturn(
         [self.test_image])
-    paygen._DiscoverNmoBuild().AndReturn([nmo_build])
     paygen._DiscoverActiveFsiBuilds().AndReturn([fsi1_build, fsi2_build])
-    paygen._DiscoverImages(nmo_build).AndReturn(nmo_images)
-    paygen._DiscoverTestImageArchives(nmo_build).AndReturn([nmo_test_image])
+    paygen._DiscoverNmoBuild().AndReturn([nmo_build])
     paygen._DiscoverImages(fsi1_build).AndReturn(fsi1_images)
+    paygen._DiscoverImages(fsi2_build).AndReturn(fsi2_images)
     paygen._DiscoverTestImageArchives(fsi1_build).AndReturn([fsi1_test_image])
+    paygen._DiscoverTestImageArchives(fsi2_build).AndReturn([fsi2_test_image])
 
     # Simplify the output URIs, so it's easy to check them below.
     paygen_payload_lib.DefaultPayloadUri(
@@ -790,19 +790,18 @@ fsi_images: 2913.331.0,2465.105.0
                 gspaths.Payload(tgt_image=self.premp_npo_image,
                                 src_image=self.premp_image,
                                 uri=output_uri),
-                # NMO Delta
-                gspaths.Payload(tgt_image=self.basic_image,
-                                src_image=nmo_images[0],
-                                uri=output_uri),
-                gspaths.Payload(tgt_image=self.premp_image,
-                                src_image=nmo_images[1],
-                                uri=output_uri),
                 # FSI Deltas
                 gspaths.Payload(tgt_image=self.basic_image,
                                 src_image=fsi1_images[0],
                                 uri=output_uri),
                 gspaths.Payload(tgt_image=self.premp_image,
                                 src_image=fsi1_images[1],
+                                uri=output_uri),
+                gspaths.Payload(tgt_image=self.basic_image,
+                                src_image=fsi2_images[0],
+                                uri=output_uri),
+                gspaths.Payload(tgt_image=self.premp_image,
+                                src_image=fsi2_images[1],
                                 uri=output_uri),
 
                 # Test full payload.
@@ -814,15 +813,14 @@ fsi_images: 2913.331.0,2465.105.0
                                 src_image=self.test_image,
                                 uri=output_uri),
 
-                # Test NMO delta.
-                gspaths.Payload(tgt_image=self.test_image,
-                                src_image=nmo_test_image,
-                                uri=output_uri),
-
                 # Test FSI deltas.
                 gspaths.Payload(tgt_image=self.test_image,
                                 src_image=fsi1_test_image,
+                                uri=output_uri),
+                gspaths.Payload(tgt_image=self.test_image,
+                                src_image=fsi2_test_image,
                                 uri=output_uri)]
+
     expected = zip(expected, itertools.repeat(False))
 
     self.assertItemsEqual(sorted(results), sorted(expected))
