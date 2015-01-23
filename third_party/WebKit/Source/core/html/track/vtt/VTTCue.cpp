@@ -328,14 +328,8 @@ void VTTCue::line(DoubleOrAutoKeyword& result) const
         result.setDouble(m_linePosition);
 }
 
-void VTTCue::setLine(const DoubleOrAutoKeyword& position, ExceptionState& exceptionState)
+void VTTCue::setLine(const DoubleOrAutoKeyword& position)
 {
-    // FIXME: Expecting bindings code to handle this case: https://crbug.com/450252.
-    if (position.isDouble() && !std::isfinite(position.getAsDouble())) {
-        exceptionState.throwTypeError("The provided double value is non-finite.");
-        return;
-    }
-
     // http://dev.w3.org/html5/webvtt/#dfn-vttcue-line
     // On setting, the text track cue line position must be set to the new
     // value; if the new value is the string "auto", then it must be
@@ -374,12 +368,6 @@ void VTTCue::position(DoubleOrAutoKeyword& result) const
 
 void VTTCue::setPosition(const DoubleOrAutoKeyword& position, ExceptionState& exceptionState)
 {
-    // FIXME: Expecting bindings code to handle this case: https://crbug.com/450252.
-    if (position.isDouble() && !std::isfinite(position.getAsDouble())) {
-        exceptionState.throwTypeError("The provided double value is non-finite.");
-        return;
-    }
-
     // http://dev.w3.org/html5/webvtt/#dfn-vttcue-position
     // On setting, if the new value is negative or greater than 100, then an
     // IndexSizeError exception must be thrown. Otherwise, the text track cue

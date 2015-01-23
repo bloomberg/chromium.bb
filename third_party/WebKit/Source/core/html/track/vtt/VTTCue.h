@@ -78,7 +78,7 @@ public:
     void setSnapToLines(bool);
 
     void line(DoubleOrAutoKeyword&) const;
-    void setLine(const DoubleOrAutoKeyword&, ExceptionState&);
+    void setLine(const DoubleOrAutoKeyword&);
 
     void position(DoubleOrAutoKeyword&) const;
     void setPosition(const DoubleOrAutoKeyword&, ExceptionState&);
