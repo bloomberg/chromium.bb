@@ -18,19 +18,17 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
  public:
   NSSCertDatabaseChromeOS(crypto::ScopedPK11Slot public_slot,
                           crypto::ScopedPK11Slot private_slot);
-  virtual ~NSSCertDatabaseChromeOS();
+  ~NSSCertDatabaseChromeOS() override;
 
   // |system_slot| is the system TPM slot, which is only enabled for certain
   // users.
   void SetSystemSlot(crypto::ScopedPK11Slot system_slot);
 
   // NSSCertDatabase implementation.
-  virtual void ListCertsSync(CertificateList* certs) override;
-  virtual void ListCerts(const NSSCertDatabase::ListCertsCallback& callback)
-      override;
-  virtual void ListModules(CryptoModuleList* modules, bool need_rw) const
-      override;
-  virtual crypto::ScopedPK11Slot GetSystemSlot() const override;
+  void ListCertsSync(CertificateList* certs) override;
+  void ListCerts(const NSSCertDatabase::ListCertsCallback& callback) override;
+  void ListModules(CryptoModuleList* modules, bool need_rw) const override;
+  crypto::ScopedPK11Slot GetSystemSlot() const override;
 
   // TODO(mattm): handle trust setting, deletion, etc correctly when certs exist
   // in multiple slots.

@@ -301,12 +301,11 @@ base::Value* NetLogFinishedResolvingProxyCallback(
 class UnsetProxyConfigService : public ProxyConfigService {
  public:
   UnsetProxyConfigService() {}
-  virtual ~UnsetProxyConfigService() {}
+  ~UnsetProxyConfigService() override {}
 
-  virtual void AddObserver(Observer* observer) override {}
-  virtual void RemoveObserver(Observer* observer) override {}
-  virtual ConfigAvailability GetLatestProxyConfig(
-      ProxyConfig* config) override {
+  void AddObserver(Observer* observer) override {}
+  void RemoveObserver(Observer* observer) override {}
+  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override {
     return CONFIG_UNSET;
   }
 };

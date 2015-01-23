@@ -58,7 +58,7 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
  public:
   NSSProfileFilterChromeOSTest() : user_1_("user1"), user_2_("user2") {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(system_slot_user_.is_open());
     ASSERT_TRUE(user_1_.constructed_successfully());
     ASSERT_TRUE(user_2_.constructed_successfully());

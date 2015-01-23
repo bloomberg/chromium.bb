@@ -48,7 +48,7 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
   NSSCertDatabaseChromeOSTest()
       : observer_added_(false), user_1_("user1"), user_2_("user2") {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Initialize nss_util slots.
     ASSERT_TRUE(user_1_.constructed_successfully());
     ASSERT_TRUE(user_2_.constructed_successfully());
@@ -77,19 +77,19 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
     observer_added_ = true;
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (observer_added_)
       CertDatabase::GetInstance()->RemoveObserver(this);
   }
 
   // CertDatabase::Observer:
-  virtual void OnCertAdded(const X509Certificate* cert) override {
+  void OnCertAdded(const X509Certificate* cert) override {
     added_.push_back(cert ? cert->os_cert_handle() : NULL);
   }
 
-  virtual void OnCertRemoved(const X509Certificate* cert) override {}
+  void OnCertRemoved(const X509Certificate* cert) override {}
 
-  virtual void OnCACertChanged(const X509Certificate* cert) override {
+  void OnCACertChanged(const X509Certificate* cert) override {
     added_ca_.push_back(cert ? cert->os_cert_handle() : NULL);
   }
 

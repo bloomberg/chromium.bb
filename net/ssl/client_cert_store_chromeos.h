@@ -38,19 +38,19 @@ class NET_EXPORT ClientCertStoreChromeOS : public ClientCertStoreNSS {
   ClientCertStoreChromeOS(
       scoped_ptr<CertFilter> cert_filter,
       const PasswordDelegateFactory& password_delegate_factory);
-  virtual ~ClientCertStoreChromeOS();
+  ~ClientCertStoreChromeOS() override;
 
   // ClientCertStoreNSS:
-  virtual void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
-                              CertificateList* selected_certs,
-                              const base::Closure& callback) override;
+  void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
+                      CertificateList* selected_certs,
+                      const base::Closure& callback) override;
 
  protected:
   // ClientCertStoreNSS:
-  virtual void GetClientCertsImpl(CERTCertList* cert_list,
-                                  const SSLCertRequestInfo& request,
-                                  bool query_nssdb,
-                                  CertificateList* selected_certs) override;
+  void GetClientCertsImpl(CERTCertList* cert_list,
+                          const SSLCertRequestInfo& request,
+                          bool query_nssdb,
+                          CertificateList* selected_certs) override;
 
  private:
   void CertFilterInitialized(const SSLCertRequestInfo* request,
