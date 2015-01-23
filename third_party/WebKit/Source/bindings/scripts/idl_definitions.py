@@ -488,7 +488,7 @@ def default_node_to_idl_literal(node):
         return IdlLiteral(idl_type, int(node.GetProperty('NAME'), base=0))
     if idl_type == 'float':
         return IdlLiteral(idl_type, float(node.GetProperty('VALUE')))
-    if idl_type == 'boolean':
+    if idl_type in ['boolean', 'sequence']:
         return IdlLiteral(idl_type, node.GetProperty('VALUE'))
     if idl_type == 'NULL':
         return IdlLiteralNull()

@@ -405,6 +405,13 @@ def argument_set_default_value(argument):
         if not argument.default_value.is_null:
             raise Exception('invalid default value for dictionary type')
         return None
+    if idl_type.is_array_or_sequence_type:
+        if default_value.value != '[]':
+            raise Exception('invalid default value for sequence type: %s' % default_value.value)
+        # Nothing to do when we set an empty sequence as default value, but we
+        # need to return non-empty value so that we don't generate method calls
+        # without this argument.
+        return '/* Nothing to do */'
     if idl_type.is_union_type:
         if argument.default_value.is_null:
             if not idl_type.includes_nullable_type:
