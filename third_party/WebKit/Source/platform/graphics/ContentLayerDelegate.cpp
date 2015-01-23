@@ -52,7 +52,7 @@ ContentLayerDelegate::~ContentLayerDelegate()
 }
 
 void ContentLayerDelegate::paintContents(
-    SkCanvas* canvas, const WebRect& clip, bool canPaintLCDText,
+    SkCanvas* canvas, const WebRect& clip,
     WebContentLayerClient::GraphicsContextStatus contextStatus)
 {
     static const unsigned char* annotationsEnabled = 0;
@@ -61,7 +61,6 @@ void ContentLayerDelegate::paintContents(
 
     GraphicsContext context(canvas, m_painter->displayItemList(), contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
     context.setCertainlyOpaque(m_opaque);
-    context.setShouldSmoothFonts(canPaintLCDText);
     if (*annotationsEnabled)
         context.setAnnotationMode(AnnotateAll);
 
@@ -72,7 +71,7 @@ void ContentLayerDelegate::paintContents(
 }
 
 void ContentLayerDelegate::paintContents(
-    WebDisplayItemList* webDisplayItemList, const WebRect& clip, bool canPaintLCDText,
+    WebDisplayItemList* webDisplayItemList, const WebRect& clip,
     WebContentLayerClient::GraphicsContextStatus contextStatus)
 {
     // Once Slimming Paint is fully implemented, this method will no longer
@@ -89,7 +88,7 @@ void ContentLayerDelegate::paintContents(
     canvas->save();
     canvas->translate(-clip.x, -clip.y);
     canvas->clipRect(SkRect::MakeXYWH(clip.x, clip.y, clip.width, clip.height));
-    paintContents(canvas, clip, canPaintLCDText, contextStatus);
+    paintContents(canvas, clip, contextStatus);
     canvas->restore();
     picture = adoptRef(recorder.endRecording());
 

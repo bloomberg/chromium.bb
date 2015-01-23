@@ -107,7 +107,6 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemL
     , m_isCertainlyOpaque(true)
     , m_printing(false)
     , m_antialiasHairlineImages(false)
-    , m_shouldSmoothFonts(true)
 {
     // FIXME: Do some tests to determine how many states are typically used, and allocate
     // several here.
@@ -419,7 +418,7 @@ bool GraphicsContext::couldUseLCDRenderedText() const
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
         return true;
-    return m_isCertainlyOpaque && m_shouldSmoothFonts;
+    return m_isCertainlyOpaque;
 }
 
 void GraphicsContext::setCompositeOperation(SkXfermode::Mode xferMode)

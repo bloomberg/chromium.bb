@@ -210,7 +210,7 @@ void WebPopupMenuImpl::layout()
 {
 }
 
-void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, bool, WebContentLayerClient::GraphicsContextStatus contextStatus)
+void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, WebContentLayerClient::GraphicsContextStatus contextStatus)
 {
     if (!m_widget)
         return;

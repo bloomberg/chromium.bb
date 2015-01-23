@@ -47,9 +47,20 @@ public:
     // optimizations.
     // The |disableContext| enum controls most processing in
     // GraphicsContext to isolate the painting code in performance tests.
-    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDText, GraphicsContextStatus = GraphicsContextEnabled) = 0;
+    virtual void paintContents(WebCanvas*, const WebRect& clip, GraphicsContextStatus = GraphicsContextEnabled) = 0;
 
-    virtual void paintContents(WebDisplayItemList*, const WebRect& clip, bool canPaintLCDText, GraphicsContextStatus = GraphicsContextEnabled) = 0;
+    virtual void paintContents(WebDisplayItemList*, const WebRect& clip, GraphicsContextStatus = GraphicsContextEnabled) = 0;
+
+    // Transitional, to be removed after WebContentLayerImpl::PaintContents() is updated.
+    void paintContents(WebCanvas* canvas, const WebRect& clip, bool, GraphicsContextStatus status = GraphicsContextEnabled)
+    {
+        paintContents(canvas, clip, status);
+    }
+
+    void paintContents(WebDisplayItemList* list, const WebRect& clip, bool, GraphicsContextStatus status = GraphicsContextEnabled)
+    {
+        paintContents(list, clip, status);
+    }
 
 protected:
     virtual ~WebContentLayerClient() { }
