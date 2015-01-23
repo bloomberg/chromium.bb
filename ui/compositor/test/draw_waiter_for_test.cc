@@ -53,4 +53,6 @@ void DrawWaiterForTest::OnCompositingAborted(Compositor* compositor) {
 
 void DrawWaiterForTest::OnCompositingLockStateChanged(Compositor* compositor) {}
 
+void DrawWaiterForTest::OnCompositingShuttingDown(Compositor* compositor) {}
+
 }  // namespace ui

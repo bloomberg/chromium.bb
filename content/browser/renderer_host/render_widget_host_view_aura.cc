@@ -2519,7 +2519,7 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
         reinterpret_cast<HWND>(GetNativeViewId()));
 #endif
 
-  delegated_frame_host_->AddedToWindow();
+  delegated_frame_host_->SetCompositor(window_->GetHost()->compositor());
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
@@ -2531,7 +2531,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   DetachFromInputMethod();
 
   window_->GetHost()->RemoveObserver(this);
-  delegated_frame_host_->RemovingFromWindow();
+  delegated_frame_host_->ResetCompositor();
 
 #if defined(OS_WIN)
   // Update the legacy window's parent temporarily to the desktop window. It
@@ -2582,11 +2582,6 @@ SkColorType RenderWidgetHostViewAura::PreferredReadbackFormat() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, public:
-
-ui::Compositor* RenderWidgetHostViewAura::GetCompositor() const {
-  aura::WindowTreeHost* host = window_->GetHost();
-  return host ? host->compositor() : NULL;
-}
 
 ui::Layer* RenderWidgetHostViewAura::GetLayer() {
   return window_->layer();

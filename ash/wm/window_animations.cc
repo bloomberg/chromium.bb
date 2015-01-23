@@ -293,6 +293,7 @@ class CrossFadeObserver : public ui::CompositorObserver,
     layer_owner_->root()->GetAnimator()->StopAnimating();
   }
   void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
 
   // aura::WindowObserver overrides:
   void OnWindowDestroying(aura::Window* window) override {

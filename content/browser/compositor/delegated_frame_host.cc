@@ -79,6 +79,7 @@ void DelegatedFrameHostClient::RequestCopyOfOutput(
 
 DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
     : client_(client),
+      compositor_(nullptr),
       use_surfaces_(UseSurfacesEnabled()),
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),
@@ -94,14 +95,12 @@ void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
 
   if (surface_id_.is_null() && !frame_provider_.get() &&
       !released_front_lock_.get()) {
-    ui::Compositor* compositor = client_->GetCompositor();
-    if (compositor)
-      released_front_lock_ = compositor->GetCompositorLock();
+    if (compositor_)
+      released_front_lock_ = compositor_->GetCompositorLock();
   }
 
-  ui::Compositor* compositor = client_->GetCompositor();
-  if (compositor) {
-    compositor->SetLatencyInfo(latency_info);
+  if (compositor_) {
+    compositor_->SetLatencyInfo(latency_info);
   }
 }
 
@@ -117,12 +116,7 @@ void DelegatedFrameHost::WasHidden() {
 void DelegatedFrameHost::MaybeCreateResizeLock() {
   if (!client_->ShouldCreateResizeLock())
     return;
-  DCHECK(client_->GetCompositor());
-
-  // Listen to changes in the compositor lock state.
-  ui::Compositor* compositor = client_->GetCompositor();
-  if (!compositor->HasObserver(this))
-    compositor->AddObserver(this);
+  DCHECK(compositor_);
 
   bool defer_compositor_lock =
       can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
@@ -147,8 +141,7 @@ bool DelegatedFrameHost::ShouldCreateResizeLock() {
   if (desired_size == current_frame_size_in_dip_ || desired_size.IsEmpty())
     return false;
 
-  ui::Compositor* compositor = client_->GetCompositor();
-  if (!compositor)
+  if (!compositor_)
     return false;
 
   return true;
@@ -225,13 +218,11 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
 }
 
 bool DelegatedFrameHost::CanCopyToBitmap() const {
-  return client_->GetCompositor() &&
-         client_->GetLayer()->has_external_content();
+  return compositor_ && client_->GetLayer()->has_external_content();
 }
 
 bool DelegatedFrameHost::CanCopyToVideoFrame() const {
-  return client_->GetCompositor() &&
-         client_->GetLayer()->has_external_content();
+  return compositor_ && client_->GetLayer()->has_external_content();
 }
 
 bool DelegatedFrameHost::CanSubscribeFrame() const {
@@ -283,11 +274,6 @@ void DelegatedFrameHost::CheckResizeLock() {
   // the release of the lock until we've kicked a frame with the new texture, to
   // avoid resizing the UI before we have a chance to draw a "good" frame.
   resize_lock_->UnlockCompositor();
-  ui::Compositor* compositor = client_->GetCompositor();
-  if (compositor) {
-    if (!compositor->HasObserver(this))
-      compositor->AddObserver(this);
-  }
 }
 
 void DelegatedFrameHost::DidReceiveFrameFromRenderer(
@@ -385,8 +371,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     }
     last_output_surface_id_ = output_surface_id;
   }
-  ui::Compositor* compositor = client_->GetCompositor();
-  bool immediate_ack = !compositor;
+  bool immediate_ack = !compositor_;
   if (frame_size.IsEmpty()) {
     DCHECK(frame_data->resource_list.empty());
     EvictDelegatedFrame();
@@ -430,7 +415,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
         immediate_ack = true;
 
       cc::SurfaceFactory::DrawCallback ack_callback;
-      if (compositor && !immediate_ack) {
+      if (compositor_ && !immediate_ack) {
         ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn,
                                   AsWeakPtr(), output_surface_id);
       }
@@ -472,12 +457,12 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   } else if (!use_surfaces_) {
     std::vector<ui::LatencyInfo>::const_iterator it;
     for (it = latency_info.begin(); it != latency_info.end(); ++it)
-      compositor->SetLatencyInfo(*it);
+      compositor_->SetLatencyInfo(*it);
     // If we've previously skipped any latency infos add them.
     for (it = skipped_latency_info_list_.begin();
         it != skipped_latency_info_list_.end();
         ++it)
-      compositor->SetLatencyInfo(*it);
+      compositor_->SetLatencyInfo(*it);
     skipped_latency_info_list_.clear();
     AddOnCommitCallbackAndDisableLocks(
         base::Bind(&DelegatedFrameHost::SendDelegatedFrameAck,
@@ -924,6 +909,12 @@ void DelegatedFrameHost::OnCompositingLockStateChanged(
   }
 }
 
+void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
+  DCHECK_EQ(compositor, compositor_);
+  ResetCompositor();
+  DCHECK(!compositor_);
+}
+
 void DelegatedFrameHost::OnUpdateVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
@@ -951,6 +942,7 @@ void DelegatedFrameHost::OnLostResources() {
 // DelegatedFrameHost, private:
 
 DelegatedFrameHost::~DelegatedFrameHost() {
+  DCHECK(!compositor_);
   ImageTransportFactory::GetInstance()->RemoveObserver(this);
 
   if (!surface_id_.is_null())
@@ -972,38 +964,37 @@ void DelegatedFrameHost::RunOnCommitCallbacks() {
 
 void DelegatedFrameHost::AddOnCommitCallbackAndDisableLocks(
     const base::Closure& callback) {
-  ui::Compositor* compositor = client_->GetCompositor();
-  DCHECK(compositor);
-
-  if (!compositor->HasObserver(this))
-    compositor->AddObserver(this);
+  DCHECK(compositor_);
 
   can_lock_compositor_ = NO_PENDING_COMMIT;
   if (!callback.is_null())
     on_compositing_did_commit_callbacks_.push_back(callback);
 }
 
-void DelegatedFrameHost::AddedToWindow() {
-  ui::Compositor* compositor = client_->GetCompositor();
-  if (compositor) {
-    DCHECK(!vsync_manager_.get());
-    vsync_manager_ = compositor->vsync_manager();
-    vsync_manager_->AddObserver(this);
-  }
+void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
+  DCHECK(!compositor_);
+  if (!compositor)
+    return;
+  compositor_ = compositor;
+  compositor_->AddObserver(this);
+  DCHECK(!vsync_manager_.get());
+  vsync_manager_ = compositor_->vsync_manager();
+  vsync_manager_->AddObserver(this);
 }
 
-void DelegatedFrameHost::RemovingFromWindow() {
+void DelegatedFrameHost::ResetCompositor() {
+  if (!compositor_)
+    return;
   RunOnCommitCallbacks();
   resize_lock_.reset();
   client_->GetHost()->WasResized();
-  ui::Compositor* compositor = client_->GetCompositor();
-  if (compositor && compositor->HasObserver(this))
-    compositor->RemoveObserver(this);
-
+  if (compositor_->HasObserver(this))
+    compositor_->RemoveObserver(this);
   if (vsync_manager_.get()) {
     vsync_manager_->RemoveObserver(this);
     vsync_manager_ = NULL;
   }
+  compositor_ = nullptr;
 }
 
 void DelegatedFrameHost::LockResources() {

@@ -94,6 +94,7 @@ class BenchCompositorObserver : public ui::CompositorObserver {
         frames_(0),
         max_frames_(max_frames) {
   }
+  virtual ~BenchCompositorObserver() {}
 
   void OnCompositingDidCommit(ui::Compositor* compositor) override {}
 
@@ -122,6 +123,8 @@ class BenchCompositorObserver : public ui::CompositorObserver {
   void OnCompositingAborted(Compositor* compositor) override {}
 
   void OnCompositingLockStateChanged(Compositor* compositor) override {}
+
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
 
   virtual void Draw() {}
 

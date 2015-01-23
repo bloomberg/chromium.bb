@@ -44,7 +44,6 @@ class ResizeLock;
 // display them.
 class CONTENT_EXPORT DelegatedFrameHostClient {
  public:
-  virtual ui::Compositor* GetCompositor() const = 0;
   virtual ui::Layer* GetLayer() = 0;
   virtual RenderWidgetHostImpl* GetHost() = 0;
   virtual bool IsVisible() = 0;
@@ -96,8 +95,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   void WasResized();
   bool HasSavedFrame();
   gfx::Size GetRequestedRendererSize() const;
-  void AddedToWindow();
-  void RemovingFromWindow();
+  void SetCompositor(ui::Compositor* compositor);
+  void ResetCompositor();
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& output_size,
                                   ReadbackRequestCallback& callback,
@@ -151,6 +150,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void OnCompositingEnded(ui::Compositor* compositor) override;
   void OnCompositingAborted(ui::Compositor* compositor) override;
   void OnCompositingLockStateChanged(ui::Compositor* compositor) override;
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
   // Overridden from ui::CompositorVSyncManager::Observer:
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
@@ -227,6 +227,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   void DidReceiveFrameFromRenderer(const gfx::Rect& damage_rect);
 
   DelegatedFrameHostClient* client_;
+
+  ui::Compositor* compositor_;
 
   // True if this renders into a Surface, false if it renders into a delegated
   // layer.

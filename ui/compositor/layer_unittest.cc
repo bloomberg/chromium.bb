@@ -344,6 +344,8 @@ class TestCompositorObserver : public CompositorObserver {
 
   void OnCompositingLockStateChanged(Compositor* compositor) override {}
 
+  void OnCompositingShuttingDown(Compositor* compositor) override {}
+
   bool committed_;
   bool started_;
   bool ended_;

@@ -450,7 +450,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void PauseForPendingResizeOrRepaintsAndDraw();
 
   // DelegatedFrameHostClient implementation.
-  ui::Compositor* GetCompositor() const override;
   ui::Layer* GetLayer() override;
   RenderWidgetHostImpl* GetHost() override;
   bool IsVisible() override;

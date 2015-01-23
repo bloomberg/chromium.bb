@@ -27,7 +27,7 @@ class DrawWaiterForTest : public CompositorObserver {
 
  private:
   DrawWaiterForTest();
-  ~DrawWaiterForTest() override;
+  ~DrawWaiterForTest();
 
   void WaitImpl(Compositor* compositor);
 
@@ -38,6 +38,7 @@ class DrawWaiterForTest : public CompositorObserver {
   void OnCompositingEnded(Compositor* compositor) override;
   void OnCompositingAborted(Compositor* compositor) override;
   void OnCompositingLockStateChanged(Compositor* compositor) override;
+  void OnCompositingShuttingDown(Compositor* compositor) override;
 
   scoped_ptr<base::RunLoop> wait_run_loop_;
 

@@ -394,14 +394,6 @@ namespace content {
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, public:
 
-ui::Compositor* RenderWidgetHostViewMac::GetCompositor() const {
-  // When |browser_compositor_| is suspended or destroyed, the connection
-  // between its ui::Compositor and |delegated_frame_host_| has been severed.
-  if (browser_compositor_state_ == BrowserCompositorActive)
-    return browser_compositor_->compositor();
-  return NULL;
-}
-
 ui::Layer* RenderWidgetHostViewMac::GetLayer() {
   return root_layer_.get();
 }
@@ -603,7 +595,7 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
 
   // Show the DelegatedFrameHost to transition from Suspended -> Active.
   if (browser_compositor_state_ == BrowserCompositorSuspended) {
-    delegated_frame_host_->AddedToWindow();
+    delegated_frame_host_->SetCompositor(browser_compositor_->compositor());
     delegated_frame_host_->WasShown(ui::LatencyInfo());
     browser_compositor_->compositor()->SetRootLayer(
         root_layer_.get());
@@ -623,7 +615,7 @@ void RenderWidgetHostViewMac::SuspendBrowserCompositorView() {
     // Marking the DelegatedFrameHost as removed from the window hierarchy is
     // necessary to remove all connections to its old ui::Compositor.
     delegated_frame_host_->WasHidden();
-    delegated_frame_host_->RemovingFromWindow();
+    delegated_frame_host_->ResetCompositor();
     browser_compositor_state_ = BrowserCompositorSuspended;
   }
 }
