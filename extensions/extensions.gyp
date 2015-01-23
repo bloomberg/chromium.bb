@@ -1055,6 +1055,7 @@
         '../content/content.gyp:content_utility',
         '../third_party/zlib/google/zip.gyp:zip',
         'extensions_common',
+        'extensions_strings.gyp:extensions_strings',
       ],
       'include_dirs': [
         '..',
