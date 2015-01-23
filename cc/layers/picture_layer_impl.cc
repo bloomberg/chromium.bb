@@ -589,9 +589,8 @@ void PictureLayerImpl::DidBeginTracing() {
 
 void PictureLayerImpl::ReleaseResources() {
   // Recreate tilings with new settings, since some of those might change when
-  // we release resources. If tilings_ is null, then leave it as null.
-  if (tilings_)
-    tilings_ = CreatePictureLayerTilingSet();
+  // we release resources.
+  tilings_ = CreatePictureLayerTilingSet();
   ResetRasterScale();
 
   // To avoid an edge case after lost context where the tree is up to date but
@@ -784,8 +783,7 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
 }
 
 void PictureLayerImpl::RemoveAllTilings() {
-  if (tilings_)
-    tilings_->RemoveAllTilings();
+  tilings_->RemoveAllTilings();
   // If there are no tilings, then raster scales are no longer meaningful.
   ResetRasterScale();
 }
