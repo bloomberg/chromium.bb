@@ -1340,11 +1340,9 @@ void WebContentsImpl::RenderWidgetGotFocus(
 
 void WebContentsImpl::RenderWidgetWasResized(
     RenderWidgetHostImpl* render_widget_host) {
-  if (render_widget_host !=
-      static_cast<RenderFrameHostImpl*>(GetMainFrame())
-          ->GetRenderWidgetHost()) {
+  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(GetMainFrame());
+  if (!rfh || render_widget_host != rfh->GetRenderWidgetHost())
     return;
-  }
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, MainFrameWasResized());
 }
