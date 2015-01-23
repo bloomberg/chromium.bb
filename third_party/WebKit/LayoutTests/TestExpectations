@@ -1228,8 +1228,6 @@ crbug.com/419101 [ Win Debug ] http/tests/security/contentSecurityPolicy/report-
 crbug.com/374572 svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure ]
 crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
 
-crbug.com/438282 svg/filters/filterRes.svg [ NeedsRebaseline ]
-crbug.com/438282 svg/filters/filterRes2.svg [ NeedsRebaseline ]
 crbug.com/371651 svg/custom/deep-dynamic-updates.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-gradient.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-pattern.svg [ Pass Failure ]
