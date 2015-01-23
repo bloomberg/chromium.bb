@@ -316,8 +316,17 @@ void AutofillAgent::FormControlElementClicked(
   options.display_warning_if_disabled = true;
   options.show_full_suggestion_list = element.isAutofilled();
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSingleClickAutofill)) {
+#if defined(OS_ANDROID)
+  bool single_click_autofill =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSingleClickAutofill);
+#else
+  bool single_click_autofill =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSingleClickAutofill);
+#endif
+
+  if (!single_click_autofill) {
     // Show full suggestions when clicking on an already-focused form field. On
     // the initial click (not focused yet), only show password suggestions.
 #if defined(OS_ANDROID)
