@@ -88,14 +88,6 @@ class Plugin : public pp::Instance {
                       PP_NaClAppProcessType process_type,
                       const pp::CompletionCallback& init_done_cb);
 
-  // Continuation for starting SRPC/JSProxy services as appropriate.
-  // This is invoked as a callback when the NaCl module makes the
-  // init_done reverse RPC to tell us that low-level initialization
-  // such as ld.so processing is done.  That initialization requires
-  // that the main thread be free in order to do Pepper
-  // main-thread-only operations such as file processing.
-  bool LoadNaClModuleContinuation(int32_t pp_error);
-
   // Load support.
   // A helper SRPC NaCl module can be loaded given a PP_NaClFileInfo.
   // Blocks until the helper module signals initialization is done.
