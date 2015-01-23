@@ -1105,6 +1105,19 @@ LONG_STRING_CONST(
       "features": [
         "disable_multisampling"
       ]
+    },
+    {
+      "id": 98,
+      "description": "PowerVR SGX 540 drivers throw GL_OUT_OF_MEMORY error when a buffer object's size is set to 0",
+      "cr_bugs": [451501],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR SGX 540",
+      "features": [
+        "use_non_zero_size_for_client_side_stream_buffers"
+      ]
     }
   ]
 }
