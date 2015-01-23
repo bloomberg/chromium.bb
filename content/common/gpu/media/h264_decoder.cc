@@ -123,9 +123,9 @@ bool H264Decoder::InitCurrPicture(media::H264SliceHeader* slice_hdr) {
   // process after this picture is decoded, store required data for that
   // purpose.
   if (slice_hdr->adaptive_ref_pic_marking_mode_flag) {
-    COMPILE_ASSERT(sizeof(curr_pic_->ref_pic_marking) ==
-                   sizeof(slice_hdr->ref_pic_marking),
-                   ref_pic_marking_array_sizes_do_not_match);
+    static_assert(sizeof(curr_pic_->ref_pic_marking) ==
+                  sizeof(slice_hdr->ref_pic_marking),
+                  "Array sizes of ref pic marking do not match.");
     memcpy(curr_pic_->ref_pic_marking, slice_hdr->ref_pic_marking,
            sizeof(curr_pic_->ref_pic_marking));
   }
