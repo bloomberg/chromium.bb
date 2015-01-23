@@ -23,7 +23,7 @@
 #include "core/rendering/RenderProgress.h"
 
 #include "core/html/HTMLProgressElement.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
 
@@ -85,8 +85,8 @@ void RenderProgress::animationTimerFired(Timer<RenderProgress>*)
 
 void RenderProgress::updateAnimationState()
 {
-    m_animationDuration = RenderTheme::theme().animationDurationForProgressBar(this);
-    m_animationRepeatInterval = RenderTheme::theme().animationRepeatIntervalForProgressBar(this);
+    m_animationDuration = LayoutTheme::theme().animationDurationForProgressBar(this);
+    m_animationRepeatInterval = LayoutTheme::theme().animationRepeatIntervalForProgressBar(this);
 
     bool animating = style()->hasAppearance() && m_animationDuration > 0;
     if (animating == m_animating)

@@ -23,7 +23,7 @@
 #include "core/rendering/RenderMeter.h"
 
 #include "core/html/HTMLMeterElement.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 
 namespace blink {
 
@@ -53,7 +53,7 @@ void RenderMeter::updateLogicalWidth()
 {
     RenderBox::updateLogicalWidth();
 
-    IntSize frameSize = RenderTheme::theme().meterSizeForBounds(this, pixelSnappedIntRect(frameRect()));
+    IntSize frameSize = LayoutTheme::theme().meterSizeForBounds(this, pixelSnappedIntRect(frameRect()));
     setLogicalWidth(isHorizontalWritingMode() ? frameSize.width() : frameSize.height());
 }
 
@@ -66,7 +66,7 @@ void RenderMeter::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logi
         frame.setHeight(computedValues.m_extent);
     else
         frame.setWidth(computedValues.m_extent);
-    IntSize frameSize = RenderTheme::theme().meterSizeForBounds(this, pixelSnappedIntRect(frame));
+    IntSize frameSize = LayoutTheme::theme().meterSizeForBounds(this, pixelSnappedIntRect(frame));
     computedValues.m_extent = isHorizontalWritingMode() ? frameSize.height() : frameSize.width();
 }
 

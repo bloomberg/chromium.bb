@@ -32,7 +32,7 @@
 #include "public/web/WebColorName.h"
 
 #include "core/CSSValueKeywords.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/WebColor.h"
 
@@ -115,12 +115,12 @@ void setNamedColors(const WebColorName* colorNames, const WebColor* colors, size
         // Convert color to internal value identifier.
         int internalColorName = toCSSValueKeyword(colorName);
         if (internalColorName == CSSValueWebkitFocusRingColor) {
-            RenderTheme::theme().setCustomFocusRingColor(color);
+            LayoutTheme::theme().setCustomFocusRingColor(color);
             continue;
         }
     }
 
-    // TODO(jeremy): Tell RenderTheme to update colors.
+    // TODO(jeremy): Tell LayoutTheme to update colors.
 }
 
 } // namespace blink

@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderThemeChromiumDefault.h"
+#include "core/layout/LayoutThemeChromiumDefault.h"
 
 #include "core/CSSValueKeywords.h"
 #include "core/rendering/PaintInfo.h"
@@ -46,20 +46,20 @@ static bool useMockTheme()
     return LayoutTestSupport::isRunningLayoutTest();
 }
 
-unsigned RenderThemeChromiumDefault::m_activeSelectionBackgroundColor =
+unsigned LayoutThemeChromiumDefault::m_activeSelectionBackgroundColor =
     0xff1e90ff;
-unsigned RenderThemeChromiumDefault::m_activeSelectionForegroundColor =
+unsigned LayoutThemeChromiumDefault::m_activeSelectionForegroundColor =
     Color::black;
-unsigned RenderThemeChromiumDefault::m_inactiveSelectionBackgroundColor =
+unsigned LayoutThemeChromiumDefault::m_inactiveSelectionBackgroundColor =
     0xffc8c8c8;
-unsigned RenderThemeChromiumDefault::m_inactiveSelectionForegroundColor =
+unsigned LayoutThemeChromiumDefault::m_inactiveSelectionForegroundColor =
     0xff323232;
 
-double RenderThemeChromiumDefault::m_caretBlinkInterval;
+double LayoutThemeChromiumDefault::m_caretBlinkInterval;
 
 static const unsigned defaultButtonBackgroundColor = 0xffdddddd;
 
-static WebThemeEngine::State getWebThemeState(const RenderTheme* theme, const RenderObject* o)
+static WebThemeEngine::State getWebThemeState(const LayoutTheme* theme, const RenderObject* o)
 {
     if (!theme->isEnabled(o))
         return WebThemeEngine::StateDisabled;
@@ -75,16 +75,16 @@ static WebThemeEngine::State getWebThemeState(const RenderTheme* theme, const Re
     return WebThemeEngine::StateNormal;
 }
 
-RenderThemeChromiumDefault::RenderThemeChromiumDefault()
+LayoutThemeChromiumDefault::LayoutThemeChromiumDefault()
 {
-    m_caretBlinkInterval = RenderTheme::caretBlinkInterval();
+    m_caretBlinkInterval = LayoutTheme::caretBlinkInterval();
 }
 
-RenderThemeChromiumDefault::~RenderThemeChromiumDefault()
+LayoutThemeChromiumDefault::~LayoutThemeChromiumDefault()
 {
 }
 
-bool RenderThemeChromiumDefault::supportsFocusRing(const RenderStyle* style) const
+bool LayoutThemeChromiumDefault::supportsFocusRing(const RenderStyle* style) const
 {
     if (useMockTheme()) {
         // Don't use focus rings for buttons when mocking controls.
@@ -93,10 +93,10 @@ bool RenderThemeChromiumDefault::supportsFocusRing(const RenderStyle* style) con
             || style->appearance() == SquareButtonPart;
     }
 
-    return RenderThemeChromiumSkia::supportsFocusRing(style);
+    return LayoutThemeChromiumSkia::supportsFocusRing(style);
 }
 
-Color RenderThemeChromiumDefault::systemColor(CSSValueID cssValueId) const
+Color LayoutThemeChromiumDefault::systemColor(CSSValueID cssValueId) const
 {
     static const Color defaultButtonGrayColor(0xffdddddd);
     static const Color defaultMenuColor(0xfff7f7f7);
@@ -108,82 +108,82 @@ Color RenderThemeChromiumDefault::systemColor(CSSValueID cssValueId) const
     }
     if (cssValueId == CSSValueMenu)
         return defaultMenuColor;
-    return RenderTheme::systemColor(cssValueId);
+    return LayoutTheme::systemColor(cssValueId);
 }
 
-String RenderThemeChromiumDefault::extraDefaultStyleSheet()
+String LayoutThemeChromiumDefault::extraDefaultStyleSheet()
 {
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    return RenderThemeChromiumSkia::extraDefaultStyleSheet()
+    return LayoutThemeChromiumSkia::extraDefaultStyleSheet()
         + loadResourceAsASCIIString("themeInputMultipleFields.css");
 #else
-    return RenderThemeChromiumSkia::extraDefaultStyleSheet();
+    return LayoutThemeChromiumSkia::extraDefaultStyleSheet();
 #endif
 }
 
-Color RenderThemeChromiumDefault::activeListBoxSelectionBackgroundColor() const
+Color LayoutThemeChromiumDefault::activeListBoxSelectionBackgroundColor() const
 {
     return Color(0x28, 0x28, 0x28);
 }
 
-Color RenderThemeChromiumDefault::activeListBoxSelectionForegroundColor() const
+Color LayoutThemeChromiumDefault::activeListBoxSelectionForegroundColor() const
 {
     return Color::black;
 }
 
-Color RenderThemeChromiumDefault::inactiveListBoxSelectionBackgroundColor() const
+Color LayoutThemeChromiumDefault::inactiveListBoxSelectionBackgroundColor() const
 {
     return Color(0xc8, 0xc8, 0xc8);
 }
 
-Color RenderThemeChromiumDefault::inactiveListBoxSelectionForegroundColor() const
+Color LayoutThemeChromiumDefault::inactiveListBoxSelectionForegroundColor() const
 {
     return Color(0x32, 0x32, 0x32);
 }
 
-Color RenderThemeChromiumDefault::platformActiveSelectionBackgroundColor() const
+Color LayoutThemeChromiumDefault::platformActiveSelectionBackgroundColor() const
 {
     if (useMockTheme())
         return Color(0x00, 0x00, 0xff); // Royal blue.
     return m_activeSelectionBackgroundColor;
 }
 
-Color RenderThemeChromiumDefault::platformInactiveSelectionBackgroundColor() const
+Color LayoutThemeChromiumDefault::platformInactiveSelectionBackgroundColor() const
 {
     if (useMockTheme())
         return Color(0x99, 0x99, 0x99); // Medium gray.
     return m_inactiveSelectionBackgroundColor;
 }
 
-Color RenderThemeChromiumDefault::platformActiveSelectionForegroundColor() const
+Color LayoutThemeChromiumDefault::platformActiveSelectionForegroundColor() const
 {
     if (useMockTheme())
         return Color(0xff, 0xff, 0xcc); // Pale yellow.
     return m_activeSelectionForegroundColor;
 }
 
-Color RenderThemeChromiumDefault::platformInactiveSelectionForegroundColor() const
+Color LayoutThemeChromiumDefault::platformInactiveSelectionForegroundColor() const
 {
     if (useMockTheme())
         return Color::white;
     return m_inactiveSelectionForegroundColor;
 }
 
-IntSize RenderThemeChromiumDefault::sliderTickSize() const
+IntSize LayoutThemeChromiumDefault::sliderTickSize() const
 {
     if (useMockTheme())
         return IntSize(1, 3);
     return IntSize(1, 6);
 }
 
-int RenderThemeChromiumDefault::sliderTickOffsetFromTrackCenter() const
+int LayoutThemeChromiumDefault::sliderTickOffsetFromTrackCenter() const
 {
     if (useMockTheme())
         return 11;
     return -16;
 }
 
-void RenderThemeChromiumDefault::adjustSliderThumbSize(RenderStyle* style, Element* element) const
+void LayoutThemeChromiumDefault::adjustSliderThumbSize(RenderStyle* style, Element* element) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartSliderThumb);
 
@@ -195,21 +195,22 @@ void RenderThemeChromiumDefault::adjustSliderThumbSize(RenderStyle* style, Eleme
     } else if (style->appearance() == SliderThumbVerticalPart) {
         style->setWidth(Length(size.height() * zoomLevel, Fixed));
         style->setHeight(Length(size.width() * zoomLevel, Fixed));
-    } else
-        RenderThemeChromiumSkia::adjustSliderThumbSize(style, element);
+    } else {
+        LayoutThemeChromiumSkia::adjustSliderThumbSize(style, element);
+    }
 }
 
-void RenderThemeChromiumDefault::setCaretBlinkInterval(double interval)
+void LayoutThemeChromiumDefault::setCaretBlinkInterval(double interval)
 {
     m_caretBlinkInterval = interval;
 }
 
-double RenderThemeChromiumDefault::caretBlinkIntervalInternal() const
+double LayoutThemeChromiumDefault::caretBlinkIntervalInternal() const
 {
     return m_caretBlinkInterval;
 }
 
-void RenderThemeChromiumDefault::setSelectionColors(
+void LayoutThemeChromiumDefault::setSelectionColors(
     unsigned activeBackgroundColor,
     unsigned activeForegroundColor,
     unsigned inactiveBackgroundColor,
@@ -221,7 +222,7 @@ void RenderThemeChromiumDefault::setSelectionColors(
     m_inactiveSelectionForegroundColor = inactiveForegroundColor;
 }
 
-bool RenderThemeChromiumDefault::paintCheckbox(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintCheckbox(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -244,7 +245,7 @@ bool RenderThemeChromiumDefault::paintCheckbox(RenderObject* o, const PaintInfo&
     return false;
 }
 
-void RenderThemeChromiumDefault::setCheckboxSize(RenderStyle* style) const
+void LayoutThemeChromiumDefault::setCheckboxSize(RenderStyle* style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
@@ -257,7 +258,7 @@ void RenderThemeChromiumDefault::setCheckboxSize(RenderStyle* style) const
     setSizeIfAuto(style, size);
 }
 
-bool RenderThemeChromiumDefault::paintRadio(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintRadio(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -267,7 +268,7 @@ bool RenderThemeChromiumDefault::paintRadio(RenderObject* o, const PaintInfo& i,
     return false;
 }
 
-void RenderThemeChromiumDefault::setRadioSize(RenderStyle* style) const
+void LayoutThemeChromiumDefault::setRadioSize(RenderStyle* style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
@@ -280,7 +281,7 @@ void RenderThemeChromiumDefault::setRadioSize(RenderStyle* style) const
     setSizeIfAuto(style, size);
 }
 
-bool RenderThemeChromiumDefault::paintButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -293,7 +294,7 @@ bool RenderThemeChromiumDefault::paintButton(RenderObject* o, const PaintInfo& i
     return false;
 }
 
-bool RenderThemeChromiumDefault::paintTextField(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintTextField(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     // WebThemeEngine does not handle border rounded corner and background image
     // so return true to draw CSS border and background.
@@ -315,7 +316,7 @@ bool RenderThemeChromiumDefault::paintTextField(RenderObject* o, const PaintInfo
     return false;
 }
 
-bool RenderThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     if (!o->isBox())
         return false;
@@ -360,7 +361,7 @@ bool RenderThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo&
     return false;
 }
 
-bool RenderThemeChromiumDefault::paintMenuListButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintMenuListButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     if (!o->isBox())
         return false;
@@ -394,7 +395,7 @@ bool RenderThemeChromiumDefault::paintMenuListButton(RenderObject* o, const Pain
     return false;
 }
 
-bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -420,7 +421,7 @@ bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintIn
     return false;
 }
 
-bool RenderThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -444,7 +445,7 @@ bool RenderThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintIn
     return false;
 }
 
-void RenderThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
+void LayoutThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartInnerSpinButton);
 
@@ -452,7 +453,7 @@ void RenderThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle* style, 
     style->setMinWidth(Length(size.width(), Fixed));
 }
 
-bool RenderThemeChromiumDefault::paintInnerSpinButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintInnerSpinButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -463,7 +464,7 @@ bool RenderThemeChromiumDefault::paintInnerSpinButton(RenderObject* o, const Pai
     return false;
 }
 
-bool RenderThemeChromiumDefault::paintProgressBar(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeChromiumDefault::paintProgressBar(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     if (!o->isProgress())
         return true;
@@ -484,12 +485,12 @@ bool RenderThemeChromiumDefault::paintProgressBar(RenderObject* o, const PaintIn
     return false;
 }
 
-bool RenderThemeChromiumDefault::shouldOpenPickerWithF4Key() const
+bool LayoutThemeChromiumDefault::shouldOpenPickerWithF4Key() const
 {
     return true;
 }
 
-bool RenderThemeChromiumDefault::shouldUseFallbackTheme(RenderStyle* style) const
+bool LayoutThemeChromiumDefault::shouldUseFallbackTheme(RenderStyle* style) const
 {
     if (useMockTheme()) {
         // The mock theme can't handle zoomed controls, so we fall back to the "fallback" theme.
@@ -497,7 +498,7 @@ bool RenderThemeChromiumDefault::shouldUseFallbackTheme(RenderStyle* style) cons
         if (part == CheckboxPart || part == RadioPart)
             return style->effectiveZoom() != 1;
     }
-    return RenderTheme::shouldUseFallbackTheme(style);
+    return LayoutTheme::shouldUseFallbackTheme(style);
 }
 
 } // namespace blink

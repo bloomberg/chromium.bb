@@ -71,10 +71,10 @@
 #include "core/html/forms/SearchInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
-#include "core/rendering/RenderTheme.h"
 #include "platform/Language.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -909,7 +909,7 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
     if (RadioButtonGroupScope* scope = radioButtonGroupScope())
         scope->updateCheckedState(this);
     if (renderer() && renderer()->style()->hasAppearance())
-        RenderTheme::theme().stateChanged(renderer(), CheckedControlState);
+        LayoutTheme::theme().stateChanged(renderer(), CheckedControlState);
 
     setNeedsValidityCheck();
 
@@ -946,7 +946,7 @@ void HTMLInputElement::setIndeterminate(bool newValue)
     pseudoStateChanged(CSSSelector::PseudoIndeterminate);
 
     if (renderer() && renderer()->style()->hasAppearance())
-        RenderTheme::theme().stateChanged(renderer(), CheckedControlState);
+        LayoutTheme::theme().stateChanged(renderer(), CheckedControlState);
 }
 
 int HTMLInputElement::size() const

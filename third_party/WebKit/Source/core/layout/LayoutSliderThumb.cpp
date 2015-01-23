@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/layout/LayoutSliderThumb.h"
 
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace blink {
@@ -55,7 +55,7 @@ void LayoutSliderThumb::updateAppearance(RenderStyle* parentStyle)
     else if (parentStyle->appearance() == MediaFullScreenVolumeSliderPart)
         style()->setAppearance(MediaFullScreenVolumeSliderThumbPart);
     if (style()->hasAppearance())
-        RenderTheme::theme().adjustSliderThumbSize(style(), toElement(node()));
+        LayoutTheme::theme().adjustSliderThumbSize(style(), toElement(node()));
 }
 
 } // namespace blink

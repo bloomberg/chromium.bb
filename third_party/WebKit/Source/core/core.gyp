@@ -426,7 +426,6 @@
               # such as:
               # com.google.Chrome[] objc[]: Class ScrollbarPrefsObserver is implemented in both .../Google Chrome.app/Contents/Versions/.../Google Chrome Helper.app/Contents/MacOS/../../../Google Chrome Framework.framework/Google Chrome Framework and /System/Library/Frameworks/WebKit.framework/Versions/A/Frameworks/WebCore.framework/Versions/A/WebCore. One of the two will be used. Which one is undefined.
               'WebCoreTextFieldCell=ChromiumWebCoreObjCWebCoreTextFieldCell',
-              'WebCoreRenderThemeNotificationObserver=ChromiumWebCoreObjCWebCoreRenderThemeNotificationObserver',
             ],
             'postbuilds': [
               {
@@ -435,7 +434,7 @@
                 'postbuild_name': 'Check Objective-C Rename',
                 'variables': {
                   'class_whitelist_regex':
-                      'ChromiumWebCoreObjC|TCMVisibleView|RTCMFlippedView|ScrollerStyleObserver',
+                      'ChromiumWebCoreObjC|TCMVisibleView|RTCMFlippedView|ScrollerStyleObserver|LayoutThemeNotificationObserver',
                   'category_whitelist_regex':
                       'WebCoreFocusRingDrawing|WebCoreTheme',
                 },
@@ -542,10 +541,12 @@
       'sources/': [
         ['exclude', '.*'],
         ['include', 'rendering/'],
+        ['include', 'layout/'],
 
         ['exclude', '(?<!Chromium)(CF|CG|Mac|Win)\\.(cpp|mm?)$'],
         # Previous rule excludes things like ChromiumFooWin, include those.
         ['include', 'rendering/.*Chromium.*\\.(cpp|mm?)$'],
+        ['include', 'layout/.*Chromium.*\\.(cpp|mm?)$'],
       ],
       'conditions': [
         # Shard this taret into parts to work around linker limitations.
@@ -555,7 +556,7 @@
         }],
         ['use_default_render_theme==0', {
           'sources/': [
-            ['exclude', 'rendering/RenderThemeChromiumDefault.*'],
+            ['exclude', 'layout/LayoutThemeChromiumDefault.*'],
           ],
         }],
         ['OS=="win"', {
@@ -574,12 +575,12 @@
         }],
         ['OS=="mac"', {
           'sources/': [
-            # RenderThemeChromiumSkia is not used on mac since RenderThemeChromiumMac
+            # LayoutThemeChromiumSkia is not used on mac since LayoutThemeChromiumMac
             # does not reference the Skia code that is used by Windows, Linux and Android.
-            ['exclude', 'rendering/RenderThemeChromiumSkia\\.cpp$'],
-            # RenderThemeChromiumFontProvider is used by RenderThemeChromiumSkia.
-            ['exclude', 'rendering/RenderThemeChromiumFontProvider\\.cpp'],
-            ['exclude', 'rendering/RenderThemeChromiumFontProvider\\.h'],
+            ['exclude', 'layout/LayoutThemeChromiumSkia\\.cpp$'],
+            # LayoutThemeChromiumFontProvider is used by LayoutThemeChromiumSkia.
+            ['exclude', 'layout/LayoutThemeChromiumFontProvider\\.cpp'],
+            ['exclude', 'layout/LayoutThemeChromiumFontProvider\\.h'],
           ],
         },{ # OS!="mac"
           'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]
@@ -595,8 +596,8 @@
         }],
         ['OS=="android"', {
           'sources/': [
-            ['include', 'rendering/RenderThemeChromiumFontProviderLinux\\.cpp$'],
-            ['include', 'rendering/RenderThemeChromiumDefault\\.cpp$'],
+            ['include', 'layout/LayoutThemeChromiumFontProviderLinux\\.cpp$'],
+            ['include', 'layout/LayoutThemeChromiumDefault\\.cpp$'],
           ],
         },{ # OS!="android"
           'sources/': [
@@ -617,6 +618,7 @@
       ],
       'sources/': [
         ['exclude', 'rendering/'],
+        ['exclude', 'layout/'],
 
         ['exclude', '(?<!Chromium)(CF|CG|Mac|Win)\\.(cpp|mm?)$'],
       ],

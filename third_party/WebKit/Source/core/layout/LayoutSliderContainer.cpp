@@ -38,8 +38,8 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
 #include "core/layout/LayoutSlider.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderTheme.h"
 
 namespace blink {
 
@@ -69,12 +69,12 @@ void LayoutSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
     bool isVertical = hasVerticalAppearance(input);
 
     if (input->renderer()->isSlider() && !isVertical && input->list()) {
-        int offsetFromCenter = RenderTheme::theme().sliderTickOffsetFromTrackCenter();
+        int offsetFromCenter = LayoutTheme::theme().sliderTickOffsetFromTrackCenter();
         LayoutUnit trackHeight = 0;
         if (offsetFromCenter < 0) {
             trackHeight = -2 * offsetFromCenter;
         } else {
-            int tickLength = RenderTheme::theme().sliderTickSize().height();
+            int tickLength = LayoutTheme::theme().sliderTickSize().height();
             trackHeight = 2 * (offsetFromCenter + tickLength);
         }
         float zoomFactor = style()->effectiveZoom();

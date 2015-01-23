@@ -168,7 +168,7 @@
 #include "wtf/TemporaryChange.h"
 
 #if USE(DEFAULT_RENDER_THEME)
-#include "core/rendering/RenderThemeChromiumDefault.h"
+#include "core/layout/LayoutThemeChromiumDefault.h"
 #endif
 
 // Get rid of WTF's pow define so we can use std::pow.
@@ -3864,8 +3864,8 @@ void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
                                      unsigned inactiveBackgroundColor,
                                      unsigned inactiveForegroundColor) {
 #if USE(DEFAULT_RENDER_THEME)
-    RenderThemeChromiumDefault::setSelectionColors(activeBackgroundColor, activeForegroundColor, inactiveBackgroundColor, inactiveForegroundColor);
-    RenderTheme::theme().platformColorsDidChange();
+    LayoutThemeChromiumDefault::setSelectionColors(activeBackgroundColor, activeForegroundColor, inactiveBackgroundColor, inactiveForegroundColor);
+    LayoutTheme::theme().platformColorsDidChange();
 #endif
 }
 

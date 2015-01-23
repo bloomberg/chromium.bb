@@ -42,9 +42,9 @@
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderTheme.h"
 #include "platform/DateComponents.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/DateTimeFormat.h"
@@ -361,7 +361,7 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
     container->appendChild(ClearButtonElement::create(document, *this));
     container->appendChild(SpinButtonElement::create(document, *this));
 
-    if (RenderTheme::theme().supportsCalendarPicker(formControlType()))
+    if (LayoutTheme::theme().supportsCalendarPicker(formControlType()))
         m_pickerIndicatorIsAlwaysVisible = true;
     container->appendChild(PickerIndicatorElement::create(document, *this));
     m_pickerIndicatorIsVisible = true;
@@ -432,7 +432,7 @@ void BaseMultipleFieldsDateAndTimeInputType::requiredAttributeChanged()
 void BaseMultipleFieldsDateAndTimeInputType::handleKeydownEvent(KeyboardEvent* event)
 {
     if (m_pickerIndicatorIsVisible
-        && ((event->keyIdentifier() == "Down" && event->getModifierState("Alt")) || (RenderTheme::theme().shouldOpenPickerWithF4Key() && event->keyIdentifier() == "F4"))) {
+        && ((event->keyIdentifier() == "Down" && event->getModifierState("Alt")) || (LayoutTheme::theme().shouldOpenPickerWithF4Key() && event->keyIdentifier() == "F4"))) {
         if (PickerIndicatorElement* element = pickerIndicatorElement())
             element->openPopup();
         event->setDefaultHandled();

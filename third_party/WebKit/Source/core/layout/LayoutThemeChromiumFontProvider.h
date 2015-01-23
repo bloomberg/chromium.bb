@@ -23,33 +23,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/rendering/RenderThemeChromiumFontProvider.h"
+#ifndef LayoutThemeChromiumFontProvider_h
+#define LayoutThemeChromiumFontProvider_h
 
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/WTFString.h"
+#include "core/CSSValueKeywords.h"
+#include "platform/fonts/FontTraits.h"
 
 namespace blink {
 
-// The default variable-width font size. We use this as the default font
-// size for the "system font", and as a base size (which we then shrink) for
-// form control fonts.
-// static
-float RenderThemeChromiumFontProvider::s_defaultFontSize = 16.0;
+class LayoutThemeChromiumFontProvider {
+public:
+    static void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily);
+    static void setDefaultFontSize(int);
 
-// We aim to match IE here.
-// -IE uses a font based on the encoding as the default font for form controls.
-// -Gecko uses MS Shell Dlg (actually calls GetStockObject(DEFAULT_GUI_FONT),
-// which returns MS Shell Dlg)
-// -Safari uses Lucida Grande.
-//
-// FIXME: The only case where we know we don't match IE is for ANSI encodings.
-// IE uses MS Shell Dlg there, which we render incorrectly at certain pixel
-// sizes (e.g. 15px). So, for now we just use Arial.
-const AtomicString& RenderThemeChromiumFontProvider::defaultGUIFont()
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, fontFace, ("Arial", AtomicString::ConstructFromLiteral));
-    return fontFace;
-}
+protected:
+    static const WTF::AtomicString& defaultGUIFont();
+
+    static float s_defaultFontSize;
+};
 
 } // namespace blink
+
+#endif // LayoutThemeChromiumFontProvider_h

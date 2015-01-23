@@ -25,7 +25,7 @@
 
 #include <algorithm>
 #include "core/css/resolver/StyleResolver.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/AppliedTextDecoration.h"
 #include "core/rendering/style/BorderEdge.h"
@@ -1533,7 +1533,7 @@ TextEmphasisMark RenderStyle::textEmphasisMark() const
 
 Color RenderStyle::initialTapHighlightColor()
 {
-    return RenderTheme::tapHighlightColor();
+    return LayoutTheme::tapHighlightColor();
 }
 
 #if ENABLE(OILPAN)

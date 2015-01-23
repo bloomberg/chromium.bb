@@ -37,10 +37,10 @@
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
 #include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderScrollbar.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/IntSize.h"
@@ -120,10 +120,10 @@ void RenderMenuList::adjustInnerStyle()
         innerStyle->setAlignSelf(ItemPositionFlexStart);
     }
 
-    innerStyle->setPaddingLeft(Length(RenderTheme::theme().popupInternalPaddingLeft(style()), Fixed));
-    innerStyle->setPaddingRight(Length(RenderTheme::theme().popupInternalPaddingRight(style()), Fixed));
-    innerStyle->setPaddingTop(Length(RenderTheme::theme().popupInternalPaddingTop(style()), Fixed));
-    innerStyle->setPaddingBottom(Length(RenderTheme::theme().popupInternalPaddingBottom(style()), Fixed));
+    innerStyle->setPaddingLeft(Length(LayoutTheme::theme().popupInternalPaddingLeft(style()), Fixed));
+    innerStyle->setPaddingRight(Length(LayoutTheme::theme().popupInternalPaddingRight(style()), Fixed));
+    innerStyle->setPaddingTop(Length(LayoutTheme::theme().popupInternalPaddingTop(style()), Fixed));
+    innerStyle->setPaddingBottom(Length(LayoutTheme::theme().popupInternalPaddingBottom(style()), Fixed));
 
     if (m_optionStyle) {
         if ((m_optionStyle->direction() != innerStyle->direction() || m_optionStyle->unicodeBidi() != innerStyle->unicodeBidi()))
@@ -185,7 +185,7 @@ void RenderMenuList::updateOptionsWidth()
 
         String text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
         applyTextTransform(style(), text, ' ');
-        if (RenderTheme::theme().popupOptionSupportsTextIndent()) {
+        if (LayoutTheme::theme().popupOptionSupportsTextIndent()) {
             // Add in the option's text indent.  We can't calculate percentage values for now.
             float optionWidth = 0;
             if (RenderStyle* optionStyle = element->renderStyle())
@@ -331,7 +331,7 @@ LayoutRect RenderMenuList::controlClipRect(const LayoutPoint& additionalOffset) 
 
 void RenderMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    maxLogicalWidth = std::max(m_optionsWidth, RenderTheme::theme().minimumMenuListSize(style())) + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
+    maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(style())) + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
     if (!style()->width().isPercent())
         minLogicalWidth = maxLogicalWidth;
 }

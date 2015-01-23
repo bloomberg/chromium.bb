@@ -25,19 +25,19 @@
  *
  */
 
-#ifndef RenderThemeChromiumSkia_h
-#define RenderThemeChromiumSkia_h
+#ifndef LayoutThemeChromiumSkia_h
+#define LayoutThemeChromiumSkia_h
 
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 
 namespace blink {
 
 class RenderProgress;
 
-class RenderThemeChromiumSkia : public RenderTheme {
+class LayoutThemeChromiumSkia : public LayoutTheme {
 public:
-    RenderThemeChromiumSkia();
-    virtual ~RenderThemeChromiumSkia();
+    LayoutThemeChromiumSkia();
+    virtual ~LayoutThemeChromiumSkia();
 
     virtual String extraDefaultStyleSheet() override;
     virtual String extraQuirksStyleSheet() override;
@@ -161,4 +161,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderThemeChromiumSkia_h
+#endif // LayoutThemeChromiumSkia_h

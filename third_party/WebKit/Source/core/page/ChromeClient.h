@@ -162,7 +162,7 @@ public:
 
     // This function is used for:
     //  - Mandatory date/time choosers if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    //  - Date/time choosers for types for which RenderTheme::supportsCalendarPicker
+    //  - Date/time choosers for types for which LayoutTheme::supportsCalendarPicker
     //    returns true, if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     //  - <datalist> UI for date/time input types regardless of
     //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)

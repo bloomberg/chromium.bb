@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderThemeChromiumAndroid.h"
+#include "core/layout/LayoutThemeChromiumAndroid.h"
 
 #include "core/CSSValueKeywords.h"
 #include "core/InputTypeNames.h"
@@ -43,35 +43,35 @@
 
 namespace blink {
 
-PassRefPtr<RenderTheme> RenderThemeChromiumAndroid::create()
+PassRefPtr<LayoutTheme> LayoutThemeChromiumAndroid::create()
 {
-    return adoptRef(new RenderThemeChromiumAndroid());
+    return adoptRef(new LayoutThemeChromiumAndroid());
 }
 
-RenderTheme& RenderTheme::theme()
+LayoutTheme& LayoutTheme::theme()
 {
-    DEFINE_STATIC_REF(RenderTheme, renderTheme, (RenderThemeChromiumAndroid::create()));
-    return *renderTheme;
+    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeChromiumAndroid::create()));
+    return *layoutTheme;
 }
 
-RenderThemeChromiumAndroid::~RenderThemeChromiumAndroid()
+LayoutThemeChromiumAndroid::~LayoutThemeChromiumAndroid()
 {
 }
 
-String RenderThemeChromiumAndroid::extraMediaControlsStyleSheet()
+String LayoutThemeChromiumAndroid::extraMediaControlsStyleSheet()
 {
     return loadResourceAsASCIIString("mediaControlsAndroid.css");
 }
 
-String RenderThemeChromiumAndroid::extraDefaultStyleSheet()
+String LayoutThemeChromiumAndroid::extraDefaultStyleSheet()
 {
-    return RenderThemeChromiumDefault::extraDefaultStyleSheet() +
+    return LayoutThemeChromiumDefault::extraDefaultStyleSheet() +
         loadResourceAsASCIIString("themeChromiumLinux.css") +
         loadResourceAsASCIIString("themeChromiumAndroid.css");
 
 }
 
-void RenderThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
+void LayoutThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
 {
     if (LayoutTestSupport::isRunningLayoutTest()) {
         // Match Linux spin button style in layout tests.
@@ -83,7 +83,7 @@ void RenderThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle* style, 
     }
 }
 
-int RenderThemeChromiumAndroid::menuListArrowPadding() const
+int LayoutThemeChromiumAndroid::menuListArrowPadding() const
 {
     // We cannot use the scrollbar thickness here, as it's width is 0 on Android.
     // Instead, use the width of the scrollbar down arrow.

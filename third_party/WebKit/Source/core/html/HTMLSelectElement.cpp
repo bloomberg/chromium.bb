@@ -49,6 +49,7 @@
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
@@ -57,7 +58,6 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/text/PlatformLocale.h"
@@ -192,7 +192,7 @@ void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelec
 
 bool HTMLSelectElement::usesMenuList() const
 {
-    if (RenderTheme::theme().delegatesMenuListRendering())
+    if (LayoutTheme::theme().delegatesMenuListRendering())
         return true;
 
     return !m_multiple && m_size <= 1;
@@ -1217,23 +1217,23 @@ void HTMLSelectElement::handlePopupOpenKeyboardEvent(Event* event)
 bool HTMLSelectElement::shouldOpenPopupForKeyDownEvent(KeyboardEvent* keyEvent)
 {
     const String& keyIdentifier = keyEvent->keyIdentifier();
-    RenderTheme& renderTheme = RenderTheme::theme();
+    LayoutTheme& layoutTheme = LayoutTheme::theme();
 
     if (isSpatialNavigationEnabled(document().frame()))
         return false;
 
-    return ((renderTheme.popsMenuByArrowKeys() &&  (keyIdentifier == "Down" || keyIdentifier == "Up"))
-        || (renderTheme.popsMenuByAltDownUpOrF4Key() && (keyIdentifier == "Down" || keyIdentifier == "Up") && keyEvent->altKey())
-        || (renderTheme.popsMenuByAltDownUpOrF4Key() && (!keyEvent->altKey() && !keyEvent->ctrlKey() && keyIdentifier == "F4")));
+    return ((layoutTheme.popsMenuByArrowKeys() &&  (keyIdentifier == "Down" || keyIdentifier == "Up"))
+        || (layoutTheme.popsMenuByAltDownUpOrF4Key() && (keyIdentifier == "Down" || keyIdentifier == "Up") && keyEvent->altKey())
+        || (layoutTheme.popsMenuByAltDownUpOrF4Key() && (!keyEvent->altKey() && !keyEvent->ctrlKey() && keyIdentifier == "F4")));
 }
 
 bool HTMLSelectElement::shouldOpenPopupForKeyPressEvent(KeyboardEvent *event)
 {
-    RenderTheme& renderTheme = RenderTheme::theme();
+    LayoutTheme& layoutTheme = LayoutTheme::theme();
     int keyCode = event->keyCode();
 
-    return ((renderTheme.popsMenuBySpaceKey() && event->keyCode() == ' ')
-        || (renderTheme.popsMenuByReturnKey() && keyCode == '\r'));
+    return ((layoutTheme.popsMenuBySpaceKey() && event->keyCode() == ' ')
+        || (layoutTheme.popsMenuByReturnKey() && keyCode == '\r'));
 }
 
 void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
@@ -1257,7 +1257,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
         }
 
         // The key handling below shouldn't be used for non spatial navigation mode Mac
-        if (RenderTheme::theme().popsMenuByArrowKeys() && !isSpatialNavigationEnabled(document().frame()))
+        if (LayoutTheme::theme().popsMenuByArrowKeys() && !isSpatialNavigationEnabled(document().frame()))
             return;
 
         const String& keyIdentifier = keyEvent->keyIdentifier();
@@ -1305,7 +1305,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
             return;
         }
 
-        if (!RenderTheme::theme().popsMenuByReturnKey() && keyCode == '\r') {
+        if (!LayoutTheme::theme().popsMenuByReturnKey() && keyCode == '\r') {
             if (form())
                 form()->submitImplicitly(event, false);
             dispatchInputAndChangeEventForMenuList();

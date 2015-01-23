@@ -25,6 +25,7 @@
 
 #include "core/dom/Fullscreen.h"
 #include "core/dom/StyleEngine.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
@@ -37,7 +38,6 @@
 #include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/geometry/FloatQuad.h"

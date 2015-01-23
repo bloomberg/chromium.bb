@@ -21,20 +21,20 @@
  *
  */
 
-#ifndef RenderThemeChromiumMac_h
-#define RenderThemeChromiumMac_h
+#ifndef LayoutThemeChromiumMac_h
+#define LayoutThemeChromiumMac_h
 
-#import "core/rendering/RenderTheme.h"
+#import "core/layout/LayoutTheme.h"
 #import "wtf/HashMap.h"
 #import "wtf/RetainPtr.h"
 
-OBJC_CLASS WebCoreRenderThemeNotificationObserver;
+OBJC_CLASS LayoutThemeNotificationObserver;
 
 namespace blink {
 
-class RenderThemeChromiumMac final : public RenderTheme {
+class LayoutThemeChromiumMac final : public LayoutTheme {
 public:
-    static PassRefPtr<RenderTheme> create();
+    static PassRefPtr<LayoutTheme> create();
 
     virtual void adjustPaintInvalidationRect(const RenderObject*, IntRect&) override;
 
@@ -89,8 +89,8 @@ public:
     virtual bool isModalColorChooser() const { return false; }
 
 protected:
-    RenderThemeChromiumMac();
-    virtual ~RenderThemeChromiumMac();
+    LayoutThemeChromiumMac();
+    virtual ~LayoutThemeChromiumMac();
 
     virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&) override;
 
@@ -201,9 +201,9 @@ private:
 
     mutable HashMap<int, RGBA32> m_systemColorCache;
 
-    RetainPtr<WebCoreRenderThemeNotificationObserver> m_notificationObserver;
+    RetainPtr<LayoutThemeNotificationObserver> m_notificationObserver;
 };
 
 } // namespace blink
 
-#endif // RenderThemeChromiumMac_h
+#endif // LayoutThemeChromiumMac_h

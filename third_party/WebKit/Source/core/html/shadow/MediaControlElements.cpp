@@ -43,9 +43,9 @@
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/vtt/VTTRegionList.h"
 #include "core/layout/LayoutSlider.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/EventHandler.h"
 #include "core/rendering/RenderMediaControlElements.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderVideo.h"
 #include "platform/RuntimeEnabledFeatures.h"
 

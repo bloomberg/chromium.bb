@@ -8,6 +8,7 @@
 #include "core/HTMLNames.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/RenderDrawingRecorder.h"
@@ -18,7 +19,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTable.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/style/BorderEdge.h"
@@ -91,7 +91,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     // If we have a native theme appearance, paint that before painting our background.
     // The theme will tell us whether or not we should also paint the CSS background.
     IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
-    bool themePainted = boxDecorationData.hasAppearance && !RenderTheme::theme().paint(&m_renderBox, paintInfo, snappedPaintRect);
+    bool themePainted = boxDecorationData.hasAppearance && !LayoutTheme::theme().paint(&m_renderBox, paintInfo, snappedPaintRect);
     if (!themePainted) {
         if (boxDecorationData.bleedAvoidance() == BackgroundBleedBackgroundOverBorder)
             paintBorder(m_renderBox, paintInfo, paintRect, style, boxDecorationData.bleedAvoidance());
@@ -99,13 +99,13 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
         paintBackground(paintInfo, paintRect, boxDecorationData.backgroundColor, boxDecorationData.bleedAvoidance());
 
         if (boxDecorationData.hasAppearance)
-            RenderTheme::theme().paintDecorations(&m_renderBox, paintInfo, snappedPaintRect);
+            LayoutTheme::theme().paintDecorations(&m_renderBox, paintInfo, snappedPaintRect);
     }
     paintBoxShadow(paintInfo, paintRect, style, Inset);
 
     // The theme will tell us whether or not we should also paint the CSS border.
     if (boxDecorationData.hasBorder && boxDecorationData.bleedAvoidance() != BackgroundBleedBackgroundOverBorder
-        && (!boxDecorationData.hasAppearance || (!themePainted && RenderTheme::theme().paintBorderOnly(&m_renderBox, paintInfo, snappedPaintRect)))
+        && (!boxDecorationData.hasAppearance || (!themePainted && LayoutTheme::theme().paintBorderOnly(&m_renderBox, paintInfo, snappedPaintRect)))
         && !(m_renderBox.isTable() && toRenderTable(&m_renderBox)->collapseBorders()))
         paintBorder(m_renderBox, paintInfo, paintRect, style, boxDecorationData.bleedAvoidance());
 }

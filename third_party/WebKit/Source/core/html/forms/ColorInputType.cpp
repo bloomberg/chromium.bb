@@ -44,8 +44,8 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/ColorChooser.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -199,13 +199,13 @@ void ColorInputType::didChooseColor(const Color& color)
         return;
     element().setValueFromRenderer(color.serialized());
     element().updateView();
-    if (!RenderTheme::theme().isModalColorChooser())
+    if (!LayoutTheme::theme().isModalColorChooser())
         element().dispatchFormControlChangeEvent();
 }
 
 void ColorInputType::didEndChooser()
 {
-    if (RenderTheme::theme().isModalColorChooser())
+    if (LayoutTheme::theme().isModalColorChooser())
         element().dispatchFormControlChangeEvent();
     m_chooser.clear();
 }

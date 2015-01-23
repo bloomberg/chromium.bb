@@ -66,7 +66,7 @@ public:
         PartScrollbarVerticalTrack,
         PartScrollbarCorner,
 
-        // RenderTheme parts
+        // LayoutTheme parts
         PartCheckbox,
         PartRadio,
         PartButton,

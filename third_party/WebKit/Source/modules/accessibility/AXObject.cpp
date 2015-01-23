@@ -34,8 +34,8 @@
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/RenderListItem.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/UserGestureIndicator.h"
@@ -510,7 +510,7 @@ IntRect AXObject::boundingBoxForQuads(RenderObject* obj, const Vector<FloatQuad>
         IntRect r = quads[i].enclosingBoundingBox();
         if (!r.isEmpty()) {
             if (obj->style()->hasAppearance())
-                RenderTheme::theme().adjustPaintInvalidationRect(obj, r);
+                LayoutTheme::theme().adjustPaintInvalidationRect(obj, r);
             result.unite(r);
         }
     }

@@ -23,8 +23,8 @@
 #include "core/rendering/RenderTextControl.h"
 
 #include "core/html/HTMLTextFormControlElement.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -121,7 +121,7 @@ void RenderTextControl::updateFromElement()
 
 int RenderTextControl::scrollbarThickness() const
 {
-    // FIXME: We should get the size of the scrollbar from the RenderTheme instead.
+    // FIXME: We should get the size of the scrollbar from the LayoutTheme instead.
     return ScrollbarTheme::theme()->scrollbarThickness();
 }
 

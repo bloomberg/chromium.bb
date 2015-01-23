@@ -43,9 +43,9 @@
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutSliderContainer.h"
 #include "core/layout/LayoutSliderThumb.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/EventHandler.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderTheme.h"
 
 namespace blink {
 

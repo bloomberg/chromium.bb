@@ -1,4 +1,4 @@
-This test is meaningfull only if RenderTheme::shouldShowPlaceholderWhenFocused() returns true.
+This test is meaningfull only if LayoutTheme::shouldShowPlaceholderWhenFocused() returns true.
 
 The green caret in the following text box should painted over the red placeholder text.
 

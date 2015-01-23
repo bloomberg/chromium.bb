@@ -238,19 +238,19 @@ source_set("remaining") {
     ]
   } else {  # !is_win
     sources -= [
-      "rendering/RenderThemeChromiumFontProviderWin.cpp",
-      "rendering/RenderThemeChromiumWin.cpp",
-      "rendering/RenderThemeChromiumWin.h",
+      "layout/LayoutThemeChromiumFontProviderWin.cpp",
+      "layout/LayoutThemeChromiumWin.cpp",
+      "layout/LayoutThemeChromiumWin.h",
     ]
   }
   if (!is_linux) {
     sources -= [
-      "rendering/RenderThemeChromiumLinux.cpp",
-      "rendering/RenderThemeChromiumLinux.h",
+      "layout/LayoutThemeChromiumLinux.cpp",
+      "layout/LayoutThemeChromiumLinux.h",
     ]
     if (!is_android) {
       sources -= [
-        "rendering/RenderThemeChromiumFontProviderLinux.cpp",
+        "layout/LayoutThemeChromiumFontProviderLinux.cpp",
       ]
     }
   }
@@ -262,19 +262,19 @@ source_set("remaining") {
     cflags += [ "-Wno-uninitialized" ]
   } else {  # !is_android
     sources -= [
-      "rendering/RenderThemeChromiumAndroid.cpp",
-      "rendering/RenderThemeChromiumAndroid.h",
+      "layout/LayoutThemeChromiumAndroid.cpp",
+      "layout/LayoutThemeChromiumAndroid.h",
     ]
   }
 
   if (is_mac) {
     sources -= [
-      "rendering/RenderThemeChromiumDefault.cpp",
-      "rendering/RenderThemeChromiumDefault.h",
-      "rendering/RenderThemeChromiumFontProvider.cpp",
-      "rendering/RenderThemeChromiumFontProvider.h",
-      "rendering/RenderThemeChromiumSkia.cpp",
-      "rendering/RenderThemeChromiumSkia.h",
+      "layout/LayoutThemeChromiumDefault.cpp",
+      "layout/LayoutThemeChromiumDefault.h",
+      "layout/LayoutThemeChromiumFontProvider.cpp",
+      "layout/LayoutThemeChromiumFontProvider.h",
+      "layout/LayoutThemeChromiumSkia.cpp",
+      "layout/LayoutThemeChromiumSkia.h",
     ]
     libs += [ "Carbon.framework" ]
     # Some Mac-specific parts of WebKit won't compile without having this

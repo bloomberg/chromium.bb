@@ -33,7 +33,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/html/forms/PopupMenuClient.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
@@ -428,8 +428,8 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
     // Paint background
     Color backColor, textColor, labelColor;
     if (rowIndex == m_selectedIndex) {
-        backColor = RenderTheme::theme().activeListBoxSelectionBackgroundColor();
-        textColor = RenderTheme::theme().activeListBoxSelectionForegroundColor();
+        backColor = LayoutTheme::theme().activeListBoxSelectionBackgroundColor();
+        textColor = LayoutTheme::theme().activeListBoxSelectionForegroundColor();
         labelColor = textColor;
     } else {
         backColor = style.backgroundColor();
@@ -439,8 +439,8 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
         // <select> background color. On Linux, that makes the <option>
         // background color very dark, so by default, try to use a lighter
         // background color for <option>s.
-        if (style.backgroundColorType() == PopupMenuStyle::DefaultBackgroundColor && RenderTheme::theme().systemColor(CSSValueButtonface) == backColor)
-            backColor = RenderTheme::theme().systemColor(CSSValueMenu);
+        if (style.backgroundColorType() == PopupMenuStyle::DefaultBackgroundColor && LayoutTheme::theme().systemColor(CSSValueButtonface) == backColor)
+            backColor = LayoutTheme::theme().systemColor(CSSValueMenu);
 #endif
 
         // FIXME: for now the label color is hard-coded. It should be added to

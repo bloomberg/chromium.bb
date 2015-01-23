@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RenderTheme_h
-#define RenderTheme_h
+#ifndef LayoutTheme_h
+#define LayoutTheme_h
 
 #if USE(NEW_THEME)
 #include "platform/Theme.h"
@@ -44,16 +44,16 @@ class RenderMeter;
 class RenderProgress;
 
 
-class RenderTheme : public RefCounted<RenderTheme> {
+class LayoutTheme : public RefCounted<LayoutTheme> {
 protected:
-    RenderTheme();
+    LayoutTheme();
 
 public:
-    virtual ~RenderTheme() { }
+    virtual ~LayoutTheme() { }
 
     // This function is to be implemented in your platform-specific theme implementation to hand back the
     // appropriate platform theme.
-    static RenderTheme& theme();
+    static LayoutTheme& theme();
 
     static void setSizeIfAuto(RenderStyle*, const IntSize&);
 
@@ -72,7 +72,7 @@ public:
     bool paintDecorations(RenderObject*, const PaintInfo&, const IntRect&);
 
     // The remaining methods should be implemented by the platform-specific portion of the theme, e.g.,
-    // RenderThemeMac.cpp for Mac OS X.
+    // LayoutThemeMac.cpp for Mac OS X.
 
     // These methods return the theme's extra style sheets rules, to let each platform
     // adjust the default CSS rules in html.css, quirks.css or mediaControls.css.
@@ -131,7 +131,7 @@ public:
     virtual Color platformFocusRingColor() const { return Color(0, 0, 0); }
     void setCustomFocusRingColor(const Color&);
     static Color tapHighlightColor();
-    virtual Color platformTapHighlightColor() const { return RenderTheme::defaultTapHighlightColor; }
+    virtual Color platformTapHighlightColor() const { return LayoutTheme::defaultTapHighlightColor; }
     virtual Color platformDefaultCompositionBackgroundColor() const { return defaultCompositionBackgroundColor; }
     virtual void platformColorsDidChange();
 
@@ -284,7 +284,7 @@ protected:
 
 public:
     // Methods for state querying
-    ControlStates controlStatesForRenderer(const RenderObject* o) const;
+    ControlStates controlStatesForRenderer(const RenderObject*) const;
     bool isActive(const RenderObject*) const;
     bool isChecked(const RenderObject*) const;
     bool isIndeterminate(const RenderObject*) const;
@@ -313,4 +313,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderTheme_h
+#endif // LayoutTheme_h

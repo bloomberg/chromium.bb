@@ -29,7 +29,7 @@
 #include "core/dom/TextLinkColors.h"
 
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -91,7 +91,7 @@ static Color colorForCSSValue(CSSValueID cssValueId)
         if (col->cssValueId == cssValueId)
             return col->color;
     }
-    return RenderTheme::theme().systemColor(cssValueId);
+    return LayoutTheme::theme().systemColor(cssValueId);
 }
 
 Color TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue* value, Color currentColor, bool forVisitedLink) const
@@ -110,7 +110,7 @@ Color TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue* value, Co
     case CSSValueWebkitActivelink:
         return activeLinkColor();
     case CSSValueWebkitFocusRingColor:
-        return RenderTheme::theme().focusRingColor();
+        return LayoutTheme::theme().focusRingColor();
     case CSSValueInvert: // We don't support outline-color: invert
     case CSSValueCurrentcolor:
         return currentColor;

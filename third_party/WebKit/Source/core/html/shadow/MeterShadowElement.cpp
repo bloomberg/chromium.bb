@@ -35,8 +35,8 @@
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/html/HTMLMeterElement.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/RenderMeter.h"
-#include "core/rendering/RenderTheme.h"
 
 namespace blink {
 
@@ -55,7 +55,7 @@ HTMLMeterElement* MeterShadowElement::meterElement() const
 bool MeterShadowElement::rendererIsNeeded(const RenderStyle& style)
 {
     RenderObject* renderer = meterElement()->renderer();
-    return renderer && !RenderTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::rendererIsNeeded(style);
+    return renderer && !LayoutTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::rendererIsNeeded(style);
 }
 
 inline MeterInnerElement::MeterInnerElement(Document& document)
@@ -76,7 +76,7 @@ bool MeterInnerElement::rendererIsNeeded(const RenderStyle& style)
         return HTMLDivElement::rendererIsNeeded(style);
 
     RenderObject* renderer = meterElement()->renderer();
-    return renderer && !RenderTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::rendererIsNeeded(style);
+    return renderer && !LayoutTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::rendererIsNeeded(style);
 }
 
 RenderObject* MeterInnerElement::createRenderer(RenderStyle*)

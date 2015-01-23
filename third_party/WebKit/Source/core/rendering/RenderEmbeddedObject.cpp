@@ -27,13 +27,13 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontSelector.h"
@@ -162,7 +162,7 @@ bool RenderEmbeddedObject::getReplacementTextGeometry(const LayoutPoint& accumul
     contentRect.moveBy(roundedIntPoint(accumulatedOffset));
 
     FontDescription fontDescription;
-    RenderTheme::theme().systemFont(CSSValueWebkitSmallControl, fontDescription);
+    LayoutTheme::theme().systemFont(CSSValueWebkitSmallControl, fontDescription);
     fontDescription.setWeight(FontWeightBold);
     Settings* settings = document().settings();
     ASSERT(settings);

@@ -39,7 +39,7 @@
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -184,7 +184,7 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
             pseudoStateChanged(CSSSelector::PseudoDisabled);
             pseudoStateChanged(CSSSelector::PseudoEnabled);
             if (renderer() && renderer()->style()->hasAppearance())
-                RenderTheme::theme().stateChanged(renderer(), EnabledControlState);
+                LayoutTheme::theme().stateChanged(renderer(), EnabledControlState);
         }
     } else if (name == selectedAttr) {
         if (bool willBeSelected = !value.isNull())

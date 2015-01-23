@@ -28,10 +28,10 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/paint/FileUploadControlPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderButton.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -164,7 +164,7 @@ String RenderFileUploadControl::fileTextValue() const
 {
     HTMLInputElement* input = toHTMLInputElement(node());
     ASSERT(input->files());
-    return RenderTheme::theme().fileListNameForWidth(input->locale(), input->files(), style()->font(), maxFilenameWidth());
+    return LayoutTheme::theme().fileListNameForWidth(input->locale(), input->files(), style()->font(), maxFilenameWidth());
 }
 
 } // namespace blink

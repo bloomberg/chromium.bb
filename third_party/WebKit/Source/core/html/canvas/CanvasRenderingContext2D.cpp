@@ -58,9 +58,9 @@
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasStyle.h"
 #include "core/html/canvas/Path2D.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderTheme.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/DrawLooperBuilder.h"
@@ -2278,7 +2278,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
         return;
 
     // These should match the style defined in html.css.
-    Color focusRingColor = RenderTheme::theme().focusRingColor();
+    Color focusRingColor = LayoutTheme::theme().focusRingColor();
     const int focusRingWidth = 5;
     const int focusRingOutline = 0;
 

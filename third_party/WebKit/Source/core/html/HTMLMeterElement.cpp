@@ -31,8 +31,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MeterShadowElement.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/RenderMeter.h"
-#include "core/rendering/RenderTheme.h"
 
 namespace blink {
 
@@ -57,7 +57,7 @@ PassRefPtrWillBeRawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& docu
 
 RenderObject* HTMLMeterElement::createRenderer(RenderStyle* style)
 {
-    if (hasAuthorShadowRoot() || !RenderTheme::theme().supportsMeter(style->appearance()))
+    if (hasAuthorShadowRoot() || !LayoutTheme::theme().supportsMeter(style->appearance()))
         return RenderObject::createObject(this, style);
 
     return new RenderMeter(this);

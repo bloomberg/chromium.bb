@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/linux/WebFontRendering.h"
 
-#include "core/rendering/RenderThemeChromiumFontProvider.h"
+#include "core/layout/LayoutThemeChromiumFontProvider.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontPlatformData.h"
 
@@ -91,7 +91,7 @@ void WebFontRendering::setLCDOrientation(SkFontHost::LCDOrientation orientation)
 // static
 void WebFontRendering::setDefaultFontSize(int size)
 {
-    RenderThemeChromiumFontProvider::setDefaultFontSize(size);
+    LayoutThemeChromiumFontProvider::setDefaultFontSize(size);
 }
 
 } // namespace blink

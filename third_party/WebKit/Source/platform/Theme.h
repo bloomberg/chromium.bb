@@ -60,7 +60,7 @@ public:
     virtual bool controlsCanHaveInactiveAppearance() const { return false; }
     virtual bool controlsCanHaveHoveredAppearance() const { return false; }
 
-    // Used by RenderTheme::isControlStyled to figure out if the native look and feel should be turned off.
+    // Used by LayoutTheme::isControlStyled to figure out if the native look and feel should be turned off.
     virtual bool controlDrawsBorder(ControlPart) const { return true; }
     virtual bool controlDrawsBackground(ControlPart) const { return true; }
     virtual bool controlDrawsFocusOutline(ControlPart) const { return true; }

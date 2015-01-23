@@ -30,9 +30,9 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderTheme.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/fonts/SimpleFontData.h"
 
@@ -81,7 +81,7 @@ void RenderTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
 
         // Convert the rect into the coords used for painting the content
         contentsRect.moveBy(paintOffset + location());
-        RenderTheme::theme().paintCapsLockIndicator(this, paintInfo, pixelSnappedIntRect(contentsRect));
+        LayoutTheme::theme().paintCapsLockIndicator(this, paintInfo, pixelSnappedIntRect(contentsRect));
     }
 }
 

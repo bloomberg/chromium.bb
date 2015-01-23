@@ -73,7 +73,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/style/GridCoordinate.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/FloatConversion.h"
@@ -4582,7 +4582,7 @@ void CSSPropertyParser::parseSystemFont(bool important)
     FontWeight fontWeight = FontWeightNormal;
     float fontSize = 0;
     AtomicString fontFamily;
-    RenderTheme::theme().systemFont(systemFontID, fontStyle, fontWeight, fontSize, fontFamily);
+    LayoutTheme::theme().systemFont(systemFontID, fontStyle, fontWeight, fontSize, fontFamily);
 
     ShorthandScope scope(this, CSSPropertyFont);
     addProperty(CSSPropertyFontStyle, cssValuePool().createIdentifierValue(fontStyle == FontStyleItalic ? CSSValueItalic : CSSValueNormal), important);
@@ -8170,7 +8170,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             if (id == CSSValueNone || id == CSSValueCurrentcolor) {
                 parsedValue = cssValuePool().createIdentifierValue(id);
             } else if (isSystemColor(id)) {
-                parsedValue = cssValuePool().createColorValue(RenderTheme::theme().systemColor(id).rgb());
+                parsedValue = cssValuePool().createColorValue(LayoutTheme::theme().systemColor(id).rgb());
             } else if (value->unit == CSSPrimitiveValue::CSS_URI) {
                 RGBA32 c = Color::transparent;
                 if (m_valueList->next()) {
@@ -8200,7 +8200,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
         if (isSystemColor(id))
-            parsedValue = cssValuePool().createColorValue(RenderTheme::theme().systemColor(id).rgb());
+            parsedValue = cssValuePool().createColorValue(LayoutTheme::theme().systemColor(id).rgb());
         else if (id == CSSValueCurrentcolor)
             parsedValue = cssValuePool().createIdentifierValue(id);
         else // TODO : svgcolor (iccColor)

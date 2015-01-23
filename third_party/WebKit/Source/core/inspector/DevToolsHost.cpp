@@ -42,11 +42,11 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderTheme.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/SharedBuffer.h"
@@ -250,12 +250,12 @@ void DevToolsHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& 
 
 String DevToolsHost::getSelectionBackgroundColor()
 {
-    return RenderTheme::theme().activeSelectionBackgroundColor().serialized();
+    return LayoutTheme::theme().activeSelectionBackgroundColor().serialized();
 }
 
 String DevToolsHost::getSelectionForegroundColor()
 {
-    return RenderTheme::theme().activeSelectionForegroundColor().serialized();
+    return LayoutTheme::theme().activeSelectionForegroundColor().serialized();
 }
 
 bool DevToolsHost::isUnderTest()

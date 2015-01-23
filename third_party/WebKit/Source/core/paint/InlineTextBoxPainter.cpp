@@ -12,6 +12,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/InputMethodController.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/TextPainter.h"
@@ -19,7 +20,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderCombineText.h"
-#include "core/rendering/RenderTheme.h"
 
 namespace blink {
 
@@ -271,7 +271,7 @@ void InlineTextBoxPainter::paintCompositionBackgrounds(GraphicsContext* pt, cons
         }
 
     } else {
-        paintSingleCompositionBackgroundRun(pt, boxOrigin, style, font, RenderTheme::theme().platformDefaultCompositionBackgroundColor(),
+        paintSingleCompositionBackgroundRun(pt, boxOrigin, style, font, LayoutTheme::theme().platformDefaultCompositionBackgroundColor(),
             m_inlineTextBox.renderer().frame()->inputMethodController().compositionStart(),
             m_inlineTextBox.renderer().frame()->inputMethodController().compositionEnd());
     }
@@ -793,8 +793,8 @@ void InlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* pt, const Float
     // Optionally highlight the text
     if (m_inlineTextBox.renderer().frame()->editor().markedTextMatchesAreHighlighted()) {
         Color color = marker->activeMatch() ?
-            RenderTheme::theme().platformActiveTextSearchHighlightColor() :
-            RenderTheme::theme().platformInactiveTextSearchHighlightColor();
+            LayoutTheme::theme().platformActiveTextSearchHighlightColor() :
+            LayoutTheme::theme().platformInactiveTextSearchHighlightColor();
         GraphicsContextStateSaver stateSaver(*pt);
         pt->clip(FloatRect(boxOrigin.x(), boxOrigin.y() - deltaY, m_inlineTextBox.logicalWidth(), selHeight));
         pt->drawHighlightForText(font, run, FloatPoint(boxOrigin.x(), boxOrigin.y() - deltaY), selHeight, color, sPos, ePos);

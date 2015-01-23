@@ -1,4 +1,4 @@
-Tests if clicking close to a tick mark snaps to it. Result will change depending on the return value of RenderTheme::sliderTickSnappingThreshold().
+Tests if clicking close to a tick mark snaps to it. Result will change depending on the return value of LayoutTheme::sliderTickSnappingThreshold().
 
 value for 40 is <500
 value for 41 is <500

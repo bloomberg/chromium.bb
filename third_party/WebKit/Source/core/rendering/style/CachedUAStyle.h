@@ -26,7 +26,7 @@
 
 namespace blink {
 
-// RenderTheme::adjustStyle wants the background and borders
+// LayoutTheme::adjustStyle wants the background and borders
 // as specified by the UA sheets, excluding any author rules.
 // We use this class to cache those values during
 // applyMatchedProperties for later use during adjustRenderStyle.

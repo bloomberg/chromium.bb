@@ -14,7 +14,7 @@
 #include "core/css/parser/CSSSelectorParser.h"
 #include "core/css/parser/CSSSupportsParser.h"
 #include "core/css/parser/CSSTokenizer.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 
 namespace blink {
 
@@ -176,7 +176,7 @@ bool CSSParser::parseSystemColor(RGBA32& color, const String& colorString)
     if (!CSSPropertyParser::isSystemColor(id))
         return false;
 
-    Color parsedColor = RenderTheme::theme().systemColor(id);
+    Color parsedColor = LayoutTheme::theme().systemColor(id);
     color = parsedColor.rgb();
     return true;
 }

@@ -150,7 +150,6 @@
             'WebScrollbarPartAnimation=ChromiumWebCoreObjCWebScrollbarPartAnimation',
             'WebCoreFlippedView=ChromiumWebCoreObjCWebCoreFlippedView',
             'WebCoreTextFieldCell=ChromiumWebCoreObjCWebCoreTextFieldCell',
-            'WebCoreRenderThemeNotificationObserver=ChromiumWebCoreObjCWebCoreRenderThemeNotificationObserver',
           ],
           'postbuilds': [
             {
@@ -159,7 +158,7 @@
               'postbuild_name': 'Check Objective-C Rename',
               'variables': {
                 'class_whitelist_regex':
-                    'ChromiumWebCoreObjC|TCMVisibleView|RTCMFlippedView|ScrollerStyleObserver',
+                    'ChromiumWebCoreObjC|TCMVisibleView|RTCMFlippedView|ScrollerStyleObserver|LayoutThemeNotificationObserver',
                 'category_whitelist_regex':
                     'WebCoreFocusRingDrawing|WebCoreTheme',
               },

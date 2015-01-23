@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
@@ -30,6 +30,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLDataListOptionsCollection.h"
@@ -44,7 +45,6 @@
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderView.h"
@@ -67,7 +67,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static WebFallbackThemeEngine::State getWebFallbackThemeState(const RenderTheme* theme, const RenderObject* o)
+static WebFallbackThemeEngine::State getWebFallbackThemeState(const LayoutTheme* theme, const RenderObject* o)
 {
     if (!theme->isEnabled(o))
         return WebFallbackThemeEngine::StateDisabled;
@@ -79,7 +79,7 @@ static WebFallbackThemeEngine::State getWebFallbackThemeState(const RenderTheme*
     return WebFallbackThemeEngine::StateNormal;
 }
 
-RenderTheme::RenderTheme()
+LayoutTheme::LayoutTheme()
     : m_hasCustomFocusRingColor(false)
 #if USE(NEW_THEME)
     , m_platformTheme(platformTheme())
@@ -87,7 +87,7 @@ RenderTheme::RenderTheme()
 {
 }
 
-void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyle* uaStyle)
+void LayoutTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyle* uaStyle)
 {
     // Force inline and table display styles to be inline-block (except for table- which is block)
     ControlPart part = style->appearance();
@@ -103,8 +103,9 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
         if (part == MenulistPart) {
             style->setAppearance(MenulistButtonPart);
             part = MenulistButtonPart;
-        } else
+        } else {
             style->setAppearance(NoControlPart);
+        }
     }
 
     if (!style->hasAppearance())
@@ -228,7 +229,7 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
     }
 }
 
-bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     ControlPart part = o->style()->appearance();
 
@@ -334,7 +335,7 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
     return true; // We don't support the appearance, so let the normal background/border paint.
 }
 
-bool RenderTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Call the appropriate paint method based off the appearance value.
     switch (o->style()->appearance()) {
@@ -372,7 +373,7 @@ bool RenderTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, c
     return false;
 }
 
-bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Call the appropriate paint method based off the appearance value.
     switch (o->style()->appearance()) {
@@ -407,7 +408,7 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
     return false;
 }
 
-String RenderTheme::extraDefaultStyleSheet()
+String LayoutTheme::extraDefaultStyleSheet()
 {
     StringBuilder runtimeCSS;
     if (RuntimeEnabledFeatures::contextMenuEnabled())
@@ -415,7 +416,7 @@ String RenderTheme::extraDefaultStyleSheet()
     return runtimeCSS.toString();
 }
 
-String RenderTheme::formatMediaControlsTime(float time) const
+String LayoutTheme::formatMediaControlsTime(float time) const
 {
     if (!std::isfinite(time))
         time = 0;
@@ -433,97 +434,97 @@ String RenderTheme::formatMediaControlsTime(float time) const
     return String::format("%s%02d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
 }
 
-String RenderTheme::formatMediaControlsCurrentTime(float currentTime, float /*duration*/) const
+String LayoutTheme::formatMediaControlsCurrentTime(float currentTime, float /*duration*/) const
 {
     return formatMediaControlsTime(currentTime);
 }
 
-Color RenderTheme::activeSelectionBackgroundColor() const
+Color LayoutTheme::activeSelectionBackgroundColor() const
 {
     return platformActiveSelectionBackgroundColor().blendWithWhite();
 }
 
-Color RenderTheme::inactiveSelectionBackgroundColor() const
+Color LayoutTheme::inactiveSelectionBackgroundColor() const
 {
     return platformInactiveSelectionBackgroundColor().blendWithWhite();
 }
 
-Color RenderTheme::activeSelectionForegroundColor() const
+Color LayoutTheme::activeSelectionForegroundColor() const
 {
     return platformActiveSelectionForegroundColor();
 }
 
-Color RenderTheme::inactiveSelectionForegroundColor() const
+Color LayoutTheme::inactiveSelectionForegroundColor() const
 {
     return platformInactiveSelectionForegroundColor();
 }
 
-Color RenderTheme::activeListBoxSelectionBackgroundColor() const
+Color LayoutTheme::activeListBoxSelectionBackgroundColor() const
 {
     return platformActiveListBoxSelectionBackgroundColor();
 }
 
-Color RenderTheme::inactiveListBoxSelectionBackgroundColor() const
+Color LayoutTheme::inactiveListBoxSelectionBackgroundColor() const
 {
     return platformInactiveListBoxSelectionBackgroundColor();
 }
 
-Color RenderTheme::activeListBoxSelectionForegroundColor() const
+Color LayoutTheme::activeListBoxSelectionForegroundColor() const
 {
     return platformActiveListBoxSelectionForegroundColor();
 }
 
-Color RenderTheme::inactiveListBoxSelectionForegroundColor() const
+Color LayoutTheme::inactiveListBoxSelectionForegroundColor() const
 {
     return platformInactiveListBoxSelectionForegroundColor();
 }
 
-Color RenderTheme::platformActiveSelectionBackgroundColor() const
+Color LayoutTheme::platformActiveSelectionBackgroundColor() const
 {
     // Use a blue color by default if the platform theme doesn't define anything.
     return Color(0, 0, 255);
 }
 
-Color RenderTheme::platformActiveSelectionForegroundColor() const
+Color LayoutTheme::platformActiveSelectionForegroundColor() const
 {
     // Use a white color by default if the platform theme doesn't define anything.
     return Color::white;
 }
 
-Color RenderTheme::platformInactiveSelectionBackgroundColor() const
+Color LayoutTheme::platformInactiveSelectionBackgroundColor() const
 {
     // Use a grey color by default if the platform theme doesn't define anything.
     // This color matches Firefox's inactive color.
     return Color(176, 176, 176);
 }
 
-Color RenderTheme::platformInactiveSelectionForegroundColor() const
+Color LayoutTheme::platformInactiveSelectionForegroundColor() const
 {
     // Use a black color by default.
     return Color::black;
 }
 
-Color RenderTheme::platformActiveListBoxSelectionBackgroundColor() const
+Color LayoutTheme::platformActiveListBoxSelectionBackgroundColor() const
 {
     return platformActiveSelectionBackgroundColor();
 }
 
-Color RenderTheme::platformActiveListBoxSelectionForegroundColor() const
+Color LayoutTheme::platformActiveListBoxSelectionForegroundColor() const
 {
     return platformActiveSelectionForegroundColor();
 }
 
-Color RenderTheme::platformInactiveListBoxSelectionBackgroundColor() const
+Color LayoutTheme::platformInactiveListBoxSelectionBackgroundColor() const
 {
     return platformInactiveSelectionBackgroundColor();
 }
 
-Color RenderTheme::platformInactiveListBoxSelectionForegroundColor() const
+Color LayoutTheme::platformInactiveListBoxSelectionForegroundColor() const
 {
     return platformInactiveSelectionForegroundColor();
 }
 
-int RenderTheme::baselinePosition(const RenderObject* o) const
+int LayoutTheme::baselinePosition(const RenderObject* o) const
 {
     if (!o->isBox())
         return 0;
@@ -537,7 +538,7 @@ int RenderTheme::baselinePosition(const RenderObject* o) const
 #endif
 }
 
-bool RenderTheme::isControlContainer(ControlPart appearance) const
+bool LayoutTheme::isControlContainer(ControlPart appearance) const
 {
     // There are more leaves than this, but we'll patch this function as we add support for
     // more controls.
@@ -559,7 +560,7 @@ static bool isBackgroundOrBorderStyled(const RenderStyle& style, const CachedUAS
         || style.visitedDependentColor(CSSPropertyBackgroundColor) != uaStyle.backgroundColor;
 }
 
-bool RenderTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle* uaStyle) const
+bool LayoutTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle* uaStyle) const
 {
     ASSERT(uaStyle);
 
@@ -590,14 +591,14 @@ bool RenderTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle*
     }
 }
 
-void RenderTheme::adjustPaintInvalidationRect(const RenderObject* o, IntRect& r)
+void LayoutTheme::adjustPaintInvalidationRect(const RenderObject* o, IntRect& r)
 {
 #if USE(NEW_THEME)
     m_platformTheme->inflateControlPaintRect(o->style()->appearance(), controlStatesForRenderer(o), r, o->style()->effectiveZoom());
 #endif
 }
 
-bool RenderTheme::shouldDrawDefaultFocusRing(RenderObject* renderer) const
+bool LayoutTheme::shouldDrawDefaultFocusRing(RenderObject* renderer) const
 {
     if (supportsFocusRing(renderer->style()))
         return false;
@@ -606,19 +607,19 @@ bool RenderTheme::shouldDrawDefaultFocusRing(RenderObject* renderer) const
         return true;
     if (!renderer->style()->hasAppearance() && !node->isLink())
         return true;
-    // We can't use RenderTheme::isFocused because outline:auto might be
+    // We can't use LayoutTheme::isFocused because outline:auto might be
     // specified to non-:focus rulesets.
     if (node->focused() && !node->shouldHaveFocusAppearance())
         return false;
     return true;
 }
 
-bool RenderTheme::supportsFocusRing(const RenderStyle* style) const
+bool LayoutTheme::supportsFocusRing(const RenderStyle* style) const
 {
     return (style->hasAppearance() && style->appearance() != TextFieldPart && style->appearance() != TextAreaPart && style->appearance() != MenulistButtonPart && style->appearance() != ListboxPart);
 }
 
-bool RenderTheme::stateChanged(RenderObject* o, ControlState state) const
+bool LayoutTheme::stateChanged(RenderObject* o, ControlState state) const
 {
     // Default implementation assumes the controls don't respond to changes in :hover state
     if (state == HoverControlState && !supportsHover(o->style()))
@@ -632,7 +633,7 @@ bool RenderTheme::stateChanged(RenderObject* o, ControlState state) const
     return true;
 }
 
-ControlStates RenderTheme::controlStatesForRenderer(const RenderObject* o) const
+ControlStates LayoutTheme::controlStatesForRenderer(const RenderObject* o) const
 {
     ControlStates result = 0;
     if (isHovered(o)) {
@@ -660,7 +661,7 @@ ControlStates RenderTheme::controlStatesForRenderer(const RenderObject* o) const
     return result;
 }
 
-bool RenderTheme::isActive(const RenderObject* o) const
+bool LayoutTheme::isActive(const RenderObject* o) const
 {
     Node* node = o->node();
     if (!node)
@@ -673,21 +674,21 @@ bool RenderTheme::isActive(const RenderObject* o) const
     return page->focusController().isActive();
 }
 
-bool RenderTheme::isChecked(const RenderObject* o) const
+bool LayoutTheme::isChecked(const RenderObject* o) const
 {
     if (!isHTMLInputElement(o->node()))
         return false;
     return toHTMLInputElement(o->node())->shouldAppearChecked();
 }
 
-bool RenderTheme::isIndeterminate(const RenderObject* o) const
+bool LayoutTheme::isIndeterminate(const RenderObject* o) const
 {
     if (!isHTMLInputElement(o->node()))
         return false;
     return toHTMLInputElement(o->node())->shouldAppearIndeterminate();
 }
 
-bool RenderTheme::isEnabled(const RenderObject* o) const
+bool LayoutTheme::isEnabled(const RenderObject* o) const
 {
     Node* node = o->node();
     if (!node || !node->isElementNode())
@@ -695,7 +696,7 @@ bool RenderTheme::isEnabled(const RenderObject* o) const
     return !toElement(node)->isDisabledFormControl();
 }
 
-bool RenderTheme::isFocused(const RenderObject* o) const
+bool LayoutTheme::isFocused(const RenderObject* o) const
 {
     Node* node = o->node();
     if (!node)
@@ -707,14 +708,14 @@ bool RenderTheme::isFocused(const RenderObject* o) const
     return node == document.focusedElement() && node->focused() && node->shouldHaveFocusAppearance() && frame && frame->selection().isFocusedAndActive();
 }
 
-bool RenderTheme::isPressed(const RenderObject* o) const
+bool LayoutTheme::isPressed(const RenderObject* o) const
 {
     if (!o->node())
         return false;
     return o->node()->active();
 }
 
-bool RenderTheme::isSpinUpButtonPartPressed(const RenderObject* o) const
+bool LayoutTheme::isSpinUpButtonPartPressed(const RenderObject* o) const
 {
     Node* node = o->node();
     if (!node || !node->active() || !node->isElementNode()
@@ -724,7 +725,7 @@ bool RenderTheme::isSpinUpButtonPartPressed(const RenderObject* o) const
     return element->upDownState() == SpinButtonElement::Up;
 }
 
-bool RenderTheme::isReadOnlyControl(const RenderObject* o) const
+bool LayoutTheme::isReadOnlyControl(const RenderObject* o) const
 {
     Node* node = o->node();
     if (!node || !node->isElementNode() || !toElement(node)->isFormControlElement())
@@ -733,7 +734,7 @@ bool RenderTheme::isReadOnlyControl(const RenderObject* o) const
     return element->isReadOnly();
 }
 
-bool RenderTheme::isHovered(const RenderObject* o) const
+bool LayoutTheme::isHovered(const RenderObject* o) const
 {
     Node* node = o->node();
     if (!node)
@@ -744,7 +745,7 @@ bool RenderTheme::isHovered(const RenderObject* o) const
     return element->hovered() && element->upDownState() != SpinButtonElement::Indeterminate;
 }
 
-bool RenderTheme::isSpinUpButtonPartHovered(const RenderObject* o) const
+bool LayoutTheme::isSpinUpButtonPartHovered(const RenderObject* o) const
 {
     Node* node = o->node();
     if (!node || !node->isElementNode() || !toElement(node)->isSpinButtonElement())
@@ -755,7 +756,7 @@ bool RenderTheme::isSpinUpButtonPartHovered(const RenderObject* o) const
 
 #if !USE(NEW_THEME)
 
-void RenderTheme::adjustCheckboxStyle(RenderStyle* style, Element*) const
+void LayoutTheme::adjustCheckboxStyle(RenderStyle* style, Element*) const
 {
     // A summary of the rules for checkbox designed to match WinIE:
     // width/height - honored (WinIE actually scales its control for small widths, but lets it overflow for small heights.)
@@ -770,7 +771,7 @@ void RenderTheme::adjustCheckboxStyle(RenderStyle* style, Element*) const
     style->resetBorder();
 }
 
-void RenderTheme::adjustRadioStyle(RenderStyle* style, Element*) const
+void LayoutTheme::adjustRadioStyle(RenderStyle* style, Element*) const
 {
     // A summary of the rules for checkbox designed to match WinIE:
     // width/height - honored (WinIE actually scales its control for small widths, but lets it overflow for small heights.)
@@ -785,35 +786,35 @@ void RenderTheme::adjustRadioStyle(RenderStyle* style, Element*) const
     style->resetBorder();
 }
 
-void RenderTheme::adjustButtonStyle(RenderStyle* style, Element*) const
+void LayoutTheme::adjustButtonStyle(RenderStyle* style, Element*) const
 {
 }
 
-void RenderTheme::adjustInnerSpinButtonStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustInnerSpinButtonStyle(RenderStyle*, Element*) const
 {
 }
 #endif
 
-void RenderTheme::adjustMenuListStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustMenuListStyle(RenderStyle*, Element*) const
 {
 }
 
-IntSize RenderTheme::meterSizeForBounds(const RenderMeter*, const IntRect& bounds) const
+IntSize LayoutTheme::meterSizeForBounds(const RenderMeter*, const IntRect& bounds) const
 {
     return bounds.size();
 }
 
-bool RenderTheme::supportsMeter(ControlPart) const
+bool LayoutTheme::supportsMeter(ControlPart) const
 {
     return false;
 }
 
-bool RenderTheme::paintMeter(RenderObject*, const PaintInfo&, const IntRect&)
+bool LayoutTheme::paintMeter(RenderObject*, const PaintInfo&, const IntRect&)
 {
     return true;
 }
 
-void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, const IntRect& rect)
+void LayoutTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, const IntRect& rect)
 {
     Node* node = o->node();
     if (!isHTMLInputElement(node))
@@ -891,51 +892,51 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
     }
 }
 
-double RenderTheme::animationRepeatIntervalForProgressBar(RenderProgress*) const
+double LayoutTheme::animationRepeatIntervalForProgressBar(RenderProgress*) const
 {
     return 0;
 }
 
-double RenderTheme::animationDurationForProgressBar(RenderProgress*) const
+double LayoutTheme::animationDurationForProgressBar(RenderProgress*) const
 {
     return 0;
 }
 
-bool RenderTheme::shouldHaveSpinButton(HTMLInputElement* inputElement) const
+bool LayoutTheme::shouldHaveSpinButton(HTMLInputElement* inputElement) const
 {
     return inputElement->isSteppable() && inputElement->type() != InputTypeNames::range;
 }
 
-void RenderTheme::adjustMenuListButtonStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustMenuListButtonStyle(RenderStyle*, Element*) const
 {
 }
 
-void RenderTheme::adjustSliderThumbStyle(RenderStyle* style, Element* element) const
+void LayoutTheme::adjustSliderThumbStyle(RenderStyle* style, Element* element) const
 {
     adjustSliderThumbSize(style, element);
 }
 
-void RenderTheme::adjustSliderThumbSize(RenderStyle*, Element*) const
+void LayoutTheme::adjustSliderThumbSize(RenderStyle*, Element*) const
 {
 }
 
-void RenderTheme::adjustSearchFieldStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustSearchFieldStyle(RenderStyle*, Element*) const
 {
 }
 
-void RenderTheme::adjustSearchFieldCancelButtonStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustSearchFieldCancelButtonStyle(RenderStyle*, Element*) const
 {
 }
 
-void RenderTheme::adjustSearchFieldDecorationStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustSearchFieldDecorationStyle(RenderStyle*, Element*) const
 {
 }
 
-void RenderTheme::adjustSearchFieldResultsDecorationStyle(RenderStyle*, Element*) const
+void LayoutTheme::adjustSearchFieldResultsDecorationStyle(RenderStyle*, Element*) const
 {
 }
 
-void RenderTheme::platformColorsDidChange()
+void LayoutTheme::platformColorsDidChange()
 {
     Page::platformColorsChanged();
 }
@@ -979,7 +980,7 @@ static FontDescription& getCachedFontDescription(CSSValueID systemFontID)
     }
 }
 
-void RenderTheme::systemFont(CSSValueID systemFontID, FontDescription& fontDescription)
+void LayoutTheme::systemFont(CSSValueID systemFontID, FontDescription& fontDescription)
 {
     fontDescription = getCachedFontDescription(systemFontID);
     if (fontDescription.isAbsoluteSize())
@@ -998,7 +999,7 @@ void RenderTheme::systemFont(CSSValueID systemFontID, FontDescription& fontDescr
     fontDescription.setGenericFamily(FontDescription::NoFamily);
 }
 
-Color RenderTheme::systemColor(CSSValueID cssValueId) const
+Color LayoutTheme::systemColor(CSSValueID cssValueId) const
 {
     switch (cssValueId) {
     case CSSValueActiveborder:
@@ -1078,33 +1079,33 @@ Color RenderTheme::systemColor(CSSValueID cssValueId) const
     return Color();
 }
 
-Color RenderTheme::platformActiveTextSearchHighlightColor() const
+Color LayoutTheme::platformActiveTextSearchHighlightColor() const
 {
     return Color(255, 150, 50); // Orange.
 }
 
-Color RenderTheme::platformInactiveTextSearchHighlightColor() const
+Color LayoutTheme::platformInactiveTextSearchHighlightColor() const
 {
     return Color(255, 255, 0); // Yellow.
 }
 
-Color RenderTheme::tapHighlightColor()
+Color LayoutTheme::tapHighlightColor()
 {
     return theme().platformTapHighlightColor();
 }
 
-void RenderTheme::setCustomFocusRingColor(const Color& c)
+void LayoutTheme::setCustomFocusRingColor(const Color& c)
 {
     m_customFocusRingColor = c;
     m_hasCustomFocusRingColor = true;
 }
 
-Color RenderTheme::focusRingColor() const
+Color LayoutTheme::focusRingColor() const
 {
     return m_hasCustomFocusRingColor ? m_customFocusRingColor : theme().platformFocusRingColor();
 }
 
-String RenderTheme::fileListNameForWidth(Locale& locale, const FileList* fileList, const Font& font, int width) const
+String LayoutTheme::fileListNameForWidth(Locale& locale, const FileList* fileList, const Font& font, int width) const
 {
     if (width <= 0)
         return String();
@@ -1122,13 +1123,13 @@ String RenderTheme::fileListNameForWidth(Locale& locale, const FileList* fileLis
     return StringTruncator::centerTruncate(string, width, font);
 }
 
-bool RenderTheme::shouldOpenPickerWithF4Key() const
+bool LayoutTheme::shouldOpenPickerWithF4Key() const
 {
     return false;
 }
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-bool RenderTheme::supportsCalendarPicker(const AtomicString& type) const
+bool LayoutTheme::supportsCalendarPicker(const AtomicString& type) const
 {
     return type == InputTypeNames::date
         || type == InputTypeNames::datetime
@@ -1138,12 +1139,12 @@ bool RenderTheme::supportsCalendarPicker(const AtomicString& type) const
 }
 #endif
 
-bool RenderTheme::shouldUseFallbackTheme(RenderStyle*) const
+bool LayoutTheme::shouldUseFallbackTheme(RenderStyle*) const
 {
     return false;
 }
 
-void RenderTheme::adjustStyleUsingFallbackTheme(RenderStyle* style, Element* e)
+void LayoutTheme::adjustStyleUsingFallbackTheme(RenderStyle* style, Element* e)
 {
     ControlPart part = style->appearance();
     switch (part) {
@@ -1156,7 +1157,7 @@ void RenderTheme::adjustStyleUsingFallbackTheme(RenderStyle* style, Element* e)
     }
 }
 
-bool RenderTheme::paintUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
+bool LayoutTheme::paintUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
 {
     ControlPart part = o->style()->appearance();
     switch (part) {
@@ -1171,7 +1172,7 @@ bool RenderTheme::paintUsingFallbackTheme(RenderObject* o, const PaintInfo& i, c
 }
 
 // static
-void RenderTheme::setSizeIfAuto(RenderStyle* style, const IntSize& size)
+void LayoutTheme::setSizeIfAuto(RenderStyle* style, const IntSize& size)
 {
     if (style->width().isIntrinsicOrAuto())
         style->setWidth(Length(size.width(), Fixed));
@@ -1179,7 +1180,7 @@ void RenderTheme::setSizeIfAuto(RenderStyle* style, const IntSize& size)
         style->setHeight(Length(size.height(), Fixed));
 }
 
-bool RenderTheme::paintCheckboxUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
+bool LayoutTheme::paintCheckboxUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
 {
     WebFallbackThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -1201,7 +1202,7 @@ bool RenderTheme::paintCheckboxUsingFallbackTheme(RenderObject* o, const PaintIn
     return false;
 }
 
-void RenderTheme::adjustCheckboxStyleUsingFallbackTheme(RenderStyle* style, Element*) const
+void LayoutTheme::adjustCheckboxStyleUsingFallbackTheme(RenderStyle* style, Element*) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
@@ -1221,7 +1222,7 @@ void RenderTheme::adjustCheckboxStyleUsingFallbackTheme(RenderStyle* style, Elem
     style->resetBorder();
 }
 
-bool RenderTheme::paintRadioUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
+bool LayoutTheme::paintRadioUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
 {
     WebFallbackThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -1243,7 +1244,7 @@ bool RenderTheme::paintRadioUsingFallbackTheme(RenderObject* o, const PaintInfo&
     return false;
 }
 
-void RenderTheme::adjustRadioStyleUsingFallbackTheme(RenderStyle* style, Element*) const
+void LayoutTheme::adjustRadioStyleUsingFallbackTheme(RenderStyle* style, Element*) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())

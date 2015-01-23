@@ -48,6 +48,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
@@ -72,7 +73,6 @@
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableCol.h"
 #include "core/rendering/RenderTableRow.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -1480,8 +1480,8 @@ Color RenderObject::selectionBackgroundColor() const
     if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
         return resolveColor(pseudoStyle.get(), CSSPropertyBackgroundColor).blendWithWhite();
     return frame()->selection().isFocusedAndActive() ?
-        RenderTheme::theme().activeSelectionBackgroundColor() :
-        RenderTheme::theme().inactiveSelectionBackgroundColor();
+        LayoutTheme::theme().activeSelectionBackgroundColor() :
+        LayoutTheme::theme().inactiveSelectionBackgroundColor();
 }
 
 Color RenderObject::selectionColor(int colorProperty) const
@@ -1493,11 +1493,11 @@ Color RenderObject::selectionColor(int colorProperty) const
 
     if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
         return resolveColor(pseudoStyle.get(), colorProperty);
-    if (!RenderTheme::theme().supportsSelectionForegroundColors())
+    if (!LayoutTheme::theme().supportsSelectionForegroundColors())
         return resolveColor(colorProperty);
     return frame()->selection().isFocusedAndActive() ?
-        RenderTheme::theme().activeSelectionForegroundColor() :
-        RenderTheme::theme().inactiveSelectionForegroundColor();
+        LayoutTheme::theme().activeSelectionForegroundColor() :
+        LayoutTheme::theme().inactiveSelectionForegroundColor();
 }
 
 Color RenderObject::selectionForegroundColor() const

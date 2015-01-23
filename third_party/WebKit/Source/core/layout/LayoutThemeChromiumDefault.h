@@ -26,14 +26,14 @@
  *
  */
 
-#ifndef RenderThemeChromiumDefault_h
-#define RenderThemeChromiumDefault_h
+#ifndef LayoutThemeChromiumDefault_h
+#define LayoutThemeChromiumDefault_h
 
-#include "core/rendering/RenderThemeChromiumSkia.h"
+#include "core/layout/LayoutThemeChromiumSkia.h"
 
 namespace blink {
 
-class RenderThemeChromiumDefault : public RenderThemeChromiumSkia {
+class LayoutThemeChromiumDefault : public LayoutThemeChromiumSkia {
 public:
     virtual String extraDefaultStyleSheet() override;
 
@@ -86,8 +86,8 @@ public:
     static void setSelectionColors(unsigned activeBackgroundColor, unsigned activeForegroundColor, unsigned inactiveBackgroundColor, unsigned inactiveForegroundColor);
 
 protected:
-    RenderThemeChromiumDefault();
-    virtual ~RenderThemeChromiumDefault();
+    LayoutThemeChromiumDefault();
+    virtual ~LayoutThemeChromiumDefault();
     virtual bool shouldUseFallbackTheme(RenderStyle*) const override;
 
 private:
@@ -101,4 +101,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderThemeChromiumDefault_h
+#endif // LayoutThemeChromiumDefault_h

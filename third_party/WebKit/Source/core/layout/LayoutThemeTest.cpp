@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 
 #include "core/dom/NodeRenderStyle.h"
 #include "core/frame/FrameView.h"
@@ -20,7 +20,7 @@ using namespace blink;
 
 namespace {
 
-class RenderThemeTest : public ::testing::Test {
+class LayoutThemeTest : public ::testing::Test {
 
 protected:
     virtual void SetUp() override;
@@ -32,14 +32,14 @@ private:
     HTMLDocument* m_document;
 };
 
-void RenderThemeTest::SetUp()
+void LayoutThemeTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     m_document = toHTMLDocument(&m_dummyPageHolder->document());
     ASSERT(m_document);
 }
 
-void RenderThemeTest::setHtmlInnerHTML(const char* htmlContent)
+void LayoutThemeTest::setHtmlInnerHTML(const char* htmlContent)
 {
     document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent), ASSERT_NO_EXCEPTION);
     document().view()->updateLayoutAndStyleIfNeededRecursive();
@@ -55,7 +55,7 @@ inline EBorderStyle outlineStyle(Element* element)
     return element->renderStyle()->outlineStyle();
 }
 
-TEST_F(RenderThemeTest, ChangeFocusRingColor)
+TEST_F(LayoutThemeTest, ChangeFocusRingColor)
 {
     setHtmlInnerHTML("<span id=span tabIndex=0>Span</span>");
 
@@ -80,7 +80,7 @@ TEST_F(RenderThemeTest, ChangeFocusRingColor)
     EXPECT_NE(customColor, outlineColor(span));
 
     // Change focus ring color.
-    RenderTheme::theme().setCustomFocusRingColor(customColor);
+    LayoutTheme::theme().setCustomFocusRingColor(customColor);
     Page::platformColorsChanged();
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 

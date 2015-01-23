@@ -1452,7 +1452,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     // Now do the normal priority UA properties.
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, false, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
-    // Cache the UA properties to pass them to RenderTheme in adjustRenderStyle.
+    // Cache the UA properties to pass them to LayoutTheme in adjustRenderStyle.
     state.cacheUserAgentBorderAndBackground();
 
     // Now do the author and user normal priority properties and all the !important properties.

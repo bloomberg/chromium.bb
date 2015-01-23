@@ -38,6 +38,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/Page.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
@@ -59,7 +60,6 @@
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTextFragment.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/shapes/ShapeOutsideInfo.h"
@@ -1529,7 +1529,7 @@ void RenderBlock::addVisualOverflowFromTheme()
         return;
 
     IntRect inflatedRect = pixelSnappedBorderBoxRect();
-    RenderTheme::theme().adjustPaintInvalidationRect(this, inflatedRect);
+    LayoutTheme::theme().adjustPaintInvalidationRect(this, inflatedRect);
     addVisualOverflow(inflatedRect);
 }
 
@@ -3174,8 +3174,8 @@ int RenderBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
         // FIXME: Might be better to have a custom CSS property instead, so that if the theme
         // is turned off, checkboxes/radios will still have decent baselines.
         // FIXME: Need to patch form controls to deal with vertical lines.
-        if (style()->hasAppearance() && !RenderTheme::theme().isControlContainer(style()->appearance()))
-            return RenderTheme::theme().baselinePosition(this);
+        if (style()->hasAppearance() && !LayoutTheme::theme().isControlContainer(style()->appearance()))
+            return LayoutTheme::theme().baselinePosition(this);
 
         // CSS2.1 states that the baseline of an inline block is the baseline of the last line box in
         // the normal flow.

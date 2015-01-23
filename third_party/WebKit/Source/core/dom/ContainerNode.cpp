@@ -45,10 +45,10 @@
 #include "core/html/HTMLTagCollection.h"
 #include "core/html/RadioNodeList.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderText.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -1009,7 +1009,7 @@ void ContainerNode::focusStateChanged()
     }
 
     if (renderer() && renderer()->style()->hasAppearance())
-        RenderTheme::theme().stateChanged(renderer(), FocusControlState);
+        LayoutTheme::theme().stateChanged(renderer(), FocusControlState);
 }
 
 void ContainerNode::setFocus(bool received)
@@ -1050,7 +1050,7 @@ void ContainerNode::setActive(bool down)
         }
 
         if (renderStyle()->hasAppearance())
-            RenderTheme::theme().stateChanged(renderer(), PressedControlState);
+            LayoutTheme::theme().stateChanged(renderer(), PressedControlState);
     }
 }
 
@@ -1082,7 +1082,7 @@ void ContainerNode::setHovered(bool over)
     }
 
     if (renderer()->style()->hasAppearance())
-        RenderTheme::theme().stateChanged(renderer(), HoverControlState);
+        LayoutTheme::theme().stateChanged(renderer(), HoverControlState);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> ContainerNode::children()

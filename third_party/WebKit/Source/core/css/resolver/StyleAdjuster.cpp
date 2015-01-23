@@ -34,15 +34,15 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/Settings.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/rendering/RenderReplaced.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/GridPosition.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
@@ -218,7 +218,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 
     // Let the theme also have a crack at adjusting the style.
     if (style->hasAppearance())
-        RenderTheme::theme().adjustStyle(style, e, cachedUAStyle);
+        LayoutTheme::theme().adjustStyle(style, e, cachedUAStyle);
 
     // If we have first-letter pseudo style, transitions, or animations, do not share this style.
     if (style->hasPseudoStyle(FIRST_LETTER) || style->transitions() || style->animations())

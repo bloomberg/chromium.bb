@@ -97,7 +97,7 @@ public:
 
     void cacheUserAgentBorderAndBackground()
     {
-        // RenderTheme only needs the cached style if it has an appearance,
+        // LayoutTheme only needs the cached style if it has an appearance,
         // and constructing it is expensive so we avoid it if possible.
         if (!style()->hasAppearance())
             return;

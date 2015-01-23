@@ -9,7 +9,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/resolver/StyleBuilder.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 #include "platform/graphics/Color.h"
 #include "wtf/MathExtras.h"
 
@@ -29,7 +29,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> ColorStyleInterpolation::colorToInterp
     RGBA32 color;
     if (primitive.isValueID()) {
         if (CSSPropertyParser::isSystemColor(primitive.getValueID())) {
-            color = RenderTheme::theme().systemColor(primitive.getValueID()).rgb();
+            color = LayoutTheme::theme().systemColor(primitive.getValueID()).rgb();
         } else {
             Color colorFromID;
             colorFromID.setNamedColor(getValueName(primitive.getValueID()));

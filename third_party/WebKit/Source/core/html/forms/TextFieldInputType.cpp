@@ -47,12 +47,12 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderDetailsMarker.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
-#include "core/rendering/RenderTheme.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -274,7 +274,7 @@ RenderObject* TextFieldInputType::createRenderer(RenderStyle*) const
 
 bool TextFieldInputType::shouldHaveSpinButton() const
 {
-    return RenderTheme::theme().shouldHaveSpinButton(&element());
+    return LayoutTheme::theme().shouldHaveSpinButton(&element());
 }
 
 void TextFieldInputType::createShadowSubtree()

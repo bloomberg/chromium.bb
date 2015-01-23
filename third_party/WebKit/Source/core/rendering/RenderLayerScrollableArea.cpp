@@ -54,6 +54,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
@@ -62,7 +63,6 @@
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -913,7 +913,7 @@ PassRefPtrWillBeRawPtr<Scrollbar> RenderLayerScrollableArea::createScrollbar(Scr
     } else {
         ScrollbarControlSize scrollbarSize = RegularScrollbar;
         if (actualRenderer->style()->hasAppearance())
-            scrollbarSize = RenderTheme::theme().scrollbarControlSizeForPart(actualRenderer->style()->appearance());
+            scrollbarSize = LayoutTheme::theme().scrollbarControlSizeForPart(actualRenderer->style()->appearance());
         widget = Scrollbar::create(this, orientation, scrollbarSize);
         if (orientation == HorizontalScrollbar)
             didAddScrollbar(widget.get(), HorizontalScrollbar);

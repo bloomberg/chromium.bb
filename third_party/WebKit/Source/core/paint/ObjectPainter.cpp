@@ -5,10 +5,10 @@
 #include "config.h"
 #include "core/paint/ObjectPainter.h"
 
+#include "core/layout/LayoutTheme.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -37,7 +37,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& p
         return;
 
     if (styleToUse->outlineStyleIsAuto()) {
-        if (RenderTheme::theme().shouldDrawDefaultFocusRing(&m_renderObject)) {
+        if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_renderObject)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
             paintFocusRing(paintInfo, paintRect.location(), styleToUse);
         }

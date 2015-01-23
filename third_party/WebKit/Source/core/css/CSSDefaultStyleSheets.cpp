@@ -36,7 +36,7 @@
 #include "core/dom/Fullscreen.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLHtmlElement.h"
-#include "core/rendering/RenderTheme.h"
+#include "core/layout/LayoutTheme.h"
 #include "platform/PlatformResourceLoader.h"
 #include "wtf/LeakAnnotations.h"
 
@@ -94,7 +94,7 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     m_defaultQuirksStyle = RuleSet::create();
 
     // Strict-mode rules.
-    String defaultRules = loadResourceAsASCIIString("html.css") + RenderTheme::theme().extraDefaultStyleSheet();
+    String defaultRules = loadResourceAsASCIIString("html.css") + LayoutTheme::theme().extraDefaultStyleSheet();
     m_defaultStyleSheet = parseUASheet(defaultRules);
     m_defaultStyle->addRulesFromSheet(defaultStyleSheet(), screenEval());
 #if OS(ANDROID)
@@ -107,7 +107,7 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     m_defaultPrintStyle->addRulesFromSheet(defaultStyleSheet(), printEval());
 
     // Quirks-mode rules.
-    String quirksRules = loadResourceAsASCIIString("quirks.css") + RenderTheme::theme().extraQuirksStyleSheet();
+    String quirksRules = loadResourceAsASCIIString("quirks.css") + LayoutTheme::theme().extraQuirksStyleSheet();
     m_quirksStyleSheet = parseUASheet(quirksRules);
     m_defaultQuirksStyle->addRulesFromSheet(quirksStyleSheet(), screenEval());
 }
@@ -166,7 +166,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
 
     // FIXME: We should assert that this sheet only contains rules for <video> and <audio>.
     if (!m_mediaControlsStyleSheet && (isHTMLVideoElement(*element) || isHTMLAudioElement(*element))) {
-        String mediaRules = loadResourceAsASCIIString("mediaControls.css") + RenderTheme::theme().extraMediaControlsStyleSheet();
+        String mediaRules = loadResourceAsASCIIString("mediaControls.css") + LayoutTheme::theme().extraMediaControlsStyleSheet();
         m_mediaControlsStyleSheet = parseUASheet(mediaRules);
         m_defaultStyle->addRulesFromSheet(mediaControlsStyleSheet(), screenEval());
         m_defaultPrintStyle->addRulesFromSheet(mediaControlsStyleSheet(), printEval());
@@ -176,7 +176,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
     // FIXME: This only works because we Force recalc the entire document so the new sheet
     // is loaded for <html> and the correct styles apply to everyone.
     if (!m_fullscreenStyleSheet && Fullscreen::isFullScreen(element->document())) {
-        String fullscreenRules = loadResourceAsASCIIString("fullscreen.css") + RenderTheme::theme().extraFullScreenStyleSheet();
+        String fullscreenRules = loadResourceAsASCIIString("fullscreen.css") + LayoutTheme::theme().extraFullScreenStyleSheet();
         m_fullscreenStyleSheet = parseUASheet(fullscreenRules);
         m_defaultStyle->addRulesFromSheet(fullscreenStyleSheet(), screenEval());
         m_defaultQuirksStyle->addRulesFromSheet(fullscreenStyleSheet(), screenEval());

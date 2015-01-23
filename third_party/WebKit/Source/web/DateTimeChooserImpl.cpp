@@ -35,8 +35,8 @@
 #include "core/InputTypeNames.h"
 #include "core/frame/FrameView.h"
 #include "core/html/forms/DateTimeChooserClient.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/PagePopup.h"
-#include "core/rendering/RenderTheme.h"
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
 #include "platform/text/PlatformLocale.h"
@@ -160,10 +160,10 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
         addProperty("localizedSuggestionValues", localizedSuggestionValues, data);
         addProperty("suggestionLabels", suggestionLabels, data);
         addProperty("inputWidth", static_cast<unsigned>(m_parameters.anchorRectInRootView.width()), data);
-        addProperty("showOtherDateEntry", RenderTheme::theme().supportsCalendarPicker(m_parameters.type), data);
+        addProperty("showOtherDateEntry", LayoutTheme::theme().supportsCalendarPicker(m_parameters.type), data);
         addProperty("otherDateLabel", otherDateLabelString, data);
-        addProperty("suggestionHighlightColor", RenderTheme::theme().activeListBoxSelectionBackgroundColor().serialized(), data);
-        addProperty("suggestionHighlightTextColor", RenderTheme::theme().activeListBoxSelectionForegroundColor().serialized(), data);
+        addProperty("suggestionHighlightColor", LayoutTheme::theme().activeListBoxSelectionBackgroundColor().serialized(), data);
+        addProperty("suggestionHighlightTextColor", LayoutTheme::theme().activeListBoxSelectionForegroundColor().serialized(), data);
     }
     addString("}\n", data);
 

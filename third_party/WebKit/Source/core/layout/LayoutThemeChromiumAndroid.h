@@ -23,16 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderThemeChromiumAndroid_h
-#define RenderThemeChromiumAndroid_h
+#ifndef LayoutThemeChromiumAndroid_h
+#define LayoutThemeChromiumAndroid_h
 
-#include "core/rendering/RenderThemeChromiumDefault.h"
+#include "core/layout/LayoutThemeChromiumDefault.h"
 
 namespace blink {
 
-class RenderThemeChromiumAndroid final : public RenderThemeChromiumDefault {
+class LayoutThemeChromiumAndroid final : public LayoutThemeChromiumDefault {
 public:
-    static PassRefPtr<RenderTheme> create();
+    static PassRefPtr<LayoutTheme> create();
     virtual String extraDefaultStyleSheet() override;
 
     virtual void adjustInnerSpinButtonStyle(RenderStyle*, Element*) const override;
@@ -43,19 +43,19 @@ public:
 
     virtual Color platformTapHighlightColor() const override
     {
-        return RenderThemeChromiumAndroid::defaultTapHighlightColor;
+        return LayoutThemeChromiumAndroid::defaultTapHighlightColor;
     }
 
     virtual Color platformActiveSelectionBackgroundColor() const override
     {
-        return RenderThemeChromiumAndroid::defaultActiveSelectionBackgroundColor;
+        return LayoutThemeChromiumAndroid::defaultActiveSelectionBackgroundColor;
     }
 
 protected:
     virtual int menuListArrowPadding() const override;
 
 private:
-    virtual ~RenderThemeChromiumAndroid();
+    virtual ~LayoutThemeChromiumAndroid();
 
     static const RGBA32 defaultTapHighlightColor = 0x6633b5e5;
     static const RGBA32 defaultActiveSelectionBackgroundColor = 0x6633b5e5;
@@ -63,4 +63,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderThemeChromiumAndroid_h
+#endif // LayoutThemeChromiumAndroid_h

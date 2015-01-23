@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/InlinePainter.h"
 
+#include "core/layout/LayoutTheme.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LineBoxListPainter.h"
@@ -13,7 +14,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RootInlineBox.h"
 #include "platform/geometry/LayoutPoint.h"
 
@@ -43,7 +43,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
 
     if (styleToUse->outlineStyleIsAuto()) {
-        if (RenderTheme::theme().shouldDrawDefaultFocusRing(&m_renderInline)) {
+        if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_renderInline)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
             ObjectPainter(m_renderInline).paintFocusRing(paintInfo, paintOffset, styleToUse);
         }

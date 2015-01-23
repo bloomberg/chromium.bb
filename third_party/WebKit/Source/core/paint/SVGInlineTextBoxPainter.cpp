@@ -9,12 +9,12 @@
 #include "core/dom/RenderedDocumentMarker.h"
 #include "core/editing/Editor.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/InlineTextBoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
@@ -434,8 +434,8 @@ void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* context, con
             // Draw the marker highlight.
             if (m_svgInlineTextBox.renderer().frame()->editor().markedTextMatchesAreHighlighted()) {
                 Color color = marker->activeMatch() ?
-                    RenderTheme::theme().platformActiveTextSearchHighlightColor() :
-                    RenderTheme::theme().platformInactiveTextSearchHighlightColor();
+                    LayoutTheme::theme().platformActiveTextSearchHighlightColor() :
+                    LayoutTheme::theme().platformInactiveTextSearchHighlightColor();
                 GraphicsContextStateSaver stateSaver(*context);
                 if (!fragmentTransform.isIdentity())
                     context->concatCTM(fragmentTransform);
