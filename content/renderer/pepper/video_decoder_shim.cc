@@ -96,7 +96,7 @@ class VideoDecoderShim::DecoderImpl {
  private:
   void OnPipelineStatus(media::PipelineStatus status);
   void DoDecode();
-  void OnDecodeComplete(uint32_t decode_id, media::VideoDecoder::Status status);
+  void OnDecodeComplete(media::VideoDecoder::Status status);
   void OnOutputComplete(const scoped_refptr<media::VideoFrame>& frame);
   void OnResetComplete();
 
@@ -107,11 +107,12 @@ class VideoDecoderShim::DecoderImpl {
   // Queue of decodes waiting for the decoder.
   typedef std::queue<PendingDecode> PendingDecodeQueue;
   PendingDecodeQueue pending_decodes_;
-  int max_decodes_at_decoder_;
-  int num_decodes_at_decoder_;
+  bool awaiting_decoder_;
   // VideoDecoder returns pictures without information about the decode buffer
-  // that generated it. Save the decode_id from the last decode that completed,
-  // which is close for most decoders, which only decode one buffer at a time.
+  // that generated it, but VideoDecoder implementations used in this class
+  // (media::FFmpegVideoDecoder and media::VpxVideoDecoder) always generate
+  // corresponding frames before decode is finished. |decode_id_| is used to
+  // store id of the current buffer while Decode() call is pending.
   uint32_t decode_id_;
 };
 
@@ -119,8 +120,7 @@ VideoDecoderShim::DecoderImpl::DecoderImpl(
     const base::WeakPtr<VideoDecoderShim>& proxy)
     : shim_(proxy),
       main_message_loop_(base::MessageLoopProxy::current()),
-      max_decodes_at_decoder_(0),
-      num_decodes_at_decoder_(0),
+      awaiting_decoder_(false),
       decode_id_(0) {
 }
 
@@ -143,7 +143,11 @@ void VideoDecoderShim::DecoderImpl::Initialize(
     ffmpeg_video_decoder->set_decode_nalus(true);
     decoder_ = ffmpeg_video_decoder.Pass();
   }
-  max_decodes_at_decoder_ = decoder_->GetMaxDecodeRequests();
+
+  // VpxVideoDecoder and FFmpegVideoDecoder support only one pending Decode()
+  // request.
+  DCHECK_EQ(decoder_->GetMaxDecodeRequests(), 1);
+
   // We can use base::Unretained() safely in decoder callbacks because
   // |decoder_| is owned by DecoderImpl. During Stop(), the |decoder_| will be
   // destroyed and all outstanding callbacks will be fired.
@@ -207,8 +211,7 @@ void VideoDecoderShim::DecoderImpl::OnPipelineStatus(
   }
 
   // Calculate how many textures the shim should create.
-  uint32_t shim_texture_pool_size =
-      max_decodes_at_decoder_ + media::limits::kMaxVideoFrames;
+  uint32_t shim_texture_pool_size = media::limits::kMaxVideoFrames + 1;
   main_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&VideoDecoderShim::OnInitializeComplete,
@@ -218,24 +221,22 @@ void VideoDecoderShim::DecoderImpl::OnPipelineStatus(
 }
 
 void VideoDecoderShim::DecoderImpl::DoDecode() {
-  while (!pending_decodes_.empty() &&
-         num_decodes_at_decoder_ < max_decodes_at_decoder_) {
-    num_decodes_at_decoder_++;
-    const PendingDecode& decode = pending_decodes_.front();
-    decoder_->Decode(
-        decode.buffer,
-        base::Bind(&VideoDecoderShim::DecoderImpl::OnDecodeComplete,
-                   base::Unretained(this),
-                   decode.decode_id));
-    pending_decodes_.pop();
-  }
+  if (pending_decodes_.empty() || awaiting_decoder_)
+    return;
+
+  awaiting_decoder_ = true;
+  const PendingDecode& decode = pending_decodes_.front();
+  decode_id_ = decode.decode_id;
+  decoder_->Decode(decode.buffer,
+                   base::Bind(&VideoDecoderShim::DecoderImpl::OnDecodeComplete,
+                              base::Unretained(this)));
+  pending_decodes_.pop();
 }
 
 void VideoDecoderShim::DecoderImpl::OnDecodeComplete(
-    uint32_t decode_id,
     media::VideoDecoder::Status status) {
-  num_decodes_at_decoder_--;
-  decode_id_ = decode_id;
+  DCHECK(awaiting_decoder_);
+  awaiting_decoder_ = false;
 
   int32_t result;
   switch (status) {
@@ -255,13 +256,17 @@ void VideoDecoderShim::DecoderImpl::OnDecodeComplete(
   main_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(
-          &VideoDecoderShim::OnDecodeComplete, shim_, result, decode_id));
+          &VideoDecoderShim::OnDecodeComplete, shim_, result, decode_id_));
 
   DoDecode();
 }
 
 void VideoDecoderShim::DecoderImpl::OnOutputComplete(
     const scoped_refptr<media::VideoFrame>& frame) {
+  // Software decoders are expected to generated frames only when a Decode()
+  // call is pending.
+  DCHECK(awaiting_decoder_);
+
   scoped_ptr<PendingFrame> pending_frame;
   if (!frame->end_of_stream()) {
     pending_frame.reset(new PendingFrame(

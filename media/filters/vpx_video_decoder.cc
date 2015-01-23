@@ -354,10 +354,12 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
     return;
   }
 
-  base::ResetAndReturn(&decode_cb_).Run(kOk);
-
   if (video_frame.get())
     output_cb_.Run(video_frame);
+
+  // VideoDecoderShim expects that |decode_cb| is called only after
+  // |output_cb_|.
+  base::ResetAndReturn(&decode_cb_).Run(kOk);
 }
 
 bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,

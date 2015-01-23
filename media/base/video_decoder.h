@@ -84,8 +84,9 @@ class MEDIA_EXPORT VideoDecoder {
   // called again).
   //
   // After decoding is finished the decoder calls |output_cb| specified in
-  // Initialize() for each decoded frame. |output_cb| may be called before or
-  // after |decode_cb|.
+  // Initialize() for each decoded frame. In general |output_cb| may be called
+  // before or after |decode_cb|, but software decoders normally call
+  // |output_cb| before calling |decode_cb|, i.e. while Decode() is pending.
   //
   // If |buffer| is an EOS buffer then the decoder must be flushed, i.e.
   // |output_cb| must be called for each frame pending in the queue and

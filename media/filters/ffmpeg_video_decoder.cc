@@ -240,6 +240,8 @@ void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   if (buffer->end_of_stream())
     state_ = kDecodeFinished;
 
+  // VideoDecoderShim expects that |decode_cb| is called only after
+  // |output_cb_|.
   decode_cb_bound.Run(kOk);
 }
 
