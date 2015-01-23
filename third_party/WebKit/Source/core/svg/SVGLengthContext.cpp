@@ -52,10 +52,10 @@ FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitT
     if (type != SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE && !viewport.isEmpty()) {
         const FloatSize& viewportSize = viewport.size();
         return FloatRect(
-            convertValueFromPercentageToUserUnits(x->valueAsPercentage(), x->unitMode(), viewportSize) + viewport.x(),
-            convertValueFromPercentageToUserUnits(y->valueAsPercentage(), y->unitMode(), viewportSize) + viewport.y(),
-            convertValueFromPercentageToUserUnits(width->valueAsPercentage(), width->unitMode(), viewportSize),
-            convertValueFromPercentageToUserUnits(height->valueAsPercentage(), height->unitMode(), viewportSize));
+            convertValueFromPercentageToUserUnits(*x, viewportSize) + viewport.x(),
+            convertValueFromPercentageToUserUnits(*y, viewportSize) + viewport.y(),
+            convertValueFromPercentageToUserUnits(*width, viewportSize),
+            convertValueFromPercentageToUserUnits(*height, viewportSize));
     }
 
     SVGLengthContext lengthContext(context);
@@ -102,7 +102,7 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
     case LengthTypePX:
         return value;
     case LengthTypePercentage:
-        return convertValueFromPercentageToUserUnits(value / 100, mode, exceptionState);
+        return convertValueFromPercentageToUserUnits(value, mode, exceptionState) / 100;
     case LengthTypeEMS:
         return convertValueFromEMSToUserUnits(value, exceptionState);
     case LengthTypeEXS:
@@ -195,7 +195,22 @@ float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLe
         return value * viewportSize.height();
     case LengthModeOther:
         return value * sqrtf(viewportSize.diagonalLengthSquared() / 2);
-    };
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+float SVGLengthContext::convertValueFromPercentageToUserUnits(const SVGLength& value, const FloatSize& viewportSize)
+{
+    switch (value.unitMode()) {
+    case LengthModeWidth:
+        return value.scaleByPercentage(viewportSize.width());
+    case LengthModeHeight:
+        return value.scaleByPercentage(viewportSize.height());
+    case LengthModeOther:
+        return value.scaleByPercentage(sqrtf(viewportSize.diagonalLengthSquared() / 2));
+    }
 
     ASSERT_NOT_REACHED();
     return 0;

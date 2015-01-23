@@ -3,32 +3,32 @@ layer at (0,0) size 800x600
 layer at (0,0) size 600x250
   RenderSVGRoot {svg} at (0,0) size 580x235
     RenderSVGContainer {g} at (0,0) size 580x235
-      RenderSVGContainer {use} at (0,0) size 121x121 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,10.00)}]
+      RenderSVGContainer {use} at (0,0) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,10.00)}]
         [filter="in"] RenderSVGResourceFilter {filter} at (-10,-10) size 120x120
         RenderSVGContainer {g} at (10,10) size 100x100
           RenderSVGRect {rect} at (10,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
           RenderSVGRect {rect} at (20,20) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      RenderSVGContainer {use} at (115,0) size 120x121 [transform={m=((1.00,0.00)(0.00,1.00)) t=(125.00,10.00)}]
+      RenderSVGContainer {use} at (115,0) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(125.00,10.00)}]
         [filter="out"] RenderSVGResourceFilter {filter} at (-10,-10) size 120x120
         RenderSVGContainer {g} at (125,10) size 100x100
           RenderSVGRect {rect} at (125,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
           RenderSVGRect {rect} at (135,20) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      RenderSVGContainer {use} at (230,0) size 120x121 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,10.00)}]
+      RenderSVGContainer {use} at (230,0) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,10.00)}]
         [filter="atop"] RenderSVGResourceFilter {filter} at (-10,-10) size 120x120
         RenderSVGContainer {g} at (240,10) size 100x100
           RenderSVGRect {rect} at (240,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
           RenderSVGRect {rect} at (250,20) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      RenderSVGContainer {use} at (345,0) size 120x121 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,10.00)}]
+      RenderSVGContainer {use} at (345,0) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,10.00)}]
         [filter="over"] RenderSVGResourceFilter {filter} at (-10,-10) size 120x120
         RenderSVGContainer {g} at (355,10) size 100x100
           RenderSVGRect {rect} at (355,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
           RenderSVGRect {rect} at (365,20) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      RenderSVGContainer {use} at (460,0) size 120x121 [transform={m=((1.00,0.00)(0.00,1.00)) t=(470.00,10.00)}]
+      RenderSVGContainer {use} at (460,0) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(470.00,10.00)}]
         [filter="xor"] RenderSVGResourceFilter {filter} at (-10,-10) size 120x120
         RenderSVGContainer {g} at (470,10) size 100x100
           RenderSVGRect {rect} at (470,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
           RenderSVGRect {rect} at (480,20) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      RenderSVGContainer {use} at (0,115) size 121x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,125.00)}]
+      RenderSVGContainer {use} at (0,115) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,125.00)}]
         [filter="arithmetic_k1"] RenderSVGResourceFilter {filter} at (-10,-10) size 120x120
         RenderSVGContainer {g} at (10,125) size 100x100
           RenderSVGRect {rect} at (10,125) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]

@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x400
   RenderSVGRoot {svg} at (0,80) size 700x240
     RenderSVGContainer {g} at (0,80) size 700x240 [transform={m=((2.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
-      RenderSVGContainer {use} at (0,80) size 241x240 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,150.00)}]
+      RenderSVGContainer {use} at (0,80) size 240x240 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,150.00)}]
         [filter="ct"] RenderSVGResourceFilter {filter} at (-10,-110) size 120x120
         RenderSVGContainer {g} at (20,100) size 200x200
           RenderSVGRect {rect} at (20,100) size 200x200 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=-100.00] [width=100.00] [height=100.00]

@@ -12,14 +12,14 @@ layer at (0,0) size 800x600
         [feImage image-size="100x100"]
       RenderSVGResourceFilter {filter} [id="filter4"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feImage image-size="100x100"]
-    RenderSVGContainer {g} at (10,0) size 481x480 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,10.00)}]
-      RenderSVGRect {rect} at (10,0) size 481x231 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=400.00] [height=200.00]
+    RenderSVGContainer {g} at (10,0) size 480x480 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,10.00)}]
+      RenderSVGRect {rect} at (10,0) size 480x230 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=400.00] [height=200.00]
         [filter="filter1"] RenderSVGResourceFilter {filter} at (-40,-20) size 480x240
-      RenderSVGContainer {g} at (10,240) size 481x240 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,250.00)}]
-        RenderSVGRect {rect} at (10,240) size 481x240 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=400.00] [height=200.00]
+      RenderSVGContainer {g} at (10,240) size 480x240 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,250.00)}]
+        RenderSVGRect {rect} at (10,240) size 480x240 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=400.00] [height=200.00]
           [filter="filter2"] RenderSVGResourceFilter {filter} at (-40,-20) size 480x240
     RenderSVGContainer {g} at (210,0) size 480x480 [transform={m=((1.00,0.00)(0.00,1.00)) t=(250.00,10.00)}]
-      RenderSVGRect {rect} at (210,0) size 480x231 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=400.00] [height=200.00]
+      RenderSVGRect {rect} at (210,0) size 480x230 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=400.00] [height=200.00]
         [filter="filter3"] RenderSVGResourceFilter {filter} at (-40,-20) size 480x240
       RenderSVGContainer {g} at (210,240) size 480x240 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,250.00)}]
         RenderSVGRect {rect} at (210,240) size 480x240 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=400.00] [height=200.00]

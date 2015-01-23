@@ -39,7 +39,7 @@ layer at (0,0) size 450x500
           [filter="dropShadow"] RenderSVGResourceFilter {filter} at (27.54,306.10) size 184.93x70.80
           chunk 1 (middle anchor) text run 1 at (42.95,360.00) startOffset 0 endOffset 5 width 154.10: "BATIK"
       RenderSVGText {text} at (248,312) size 164x60 contains 1 chunk(s)
-        [filter="dropShadow"] RenderSVGResourceFilter {filter} at (232.24,306) size 195.53x72
+        [filter="dropShadow"] RenderSVGResourceFilter {filter} at (232.24,306) size 195.52x72
         RenderSVGInlineText {#text} at (0,0) size 163x60
           [filter="dropShadow"] RenderSVGResourceFilter {filter} at (232.24,306) size 195.52x72
           chunk 1 (middle anchor) text run 1 at (248.53,360.00) startOffset 0 endOffset 5 width 162.93: "BATIK"

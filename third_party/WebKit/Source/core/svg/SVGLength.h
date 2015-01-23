@@ -69,7 +69,14 @@ public:
     float valueInSpecifiedUnits() const { return m_valueInSpecifiedUnits; }
     void setValueInSpecifiedUnits(float value) { m_valueInSpecifiedUnits = value; }
 
+    // Resolves LengthTypePercentage into a normalized floating point number (full value is 1.0).
     float valueAsPercentage() const;
+
+    // Returns a number to be used as percentage (so full value is 100)
+    float valueAsPercentage100() const;
+
+    // Scale the input value by this SVGLength. Higher precision than input * valueAsPercentage().
+    float scaleByPercentage(float) const;
 
     virtual String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);

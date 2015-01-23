@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (86,0) size 199x433
+  RenderSVGRoot {svg} at (86,0) size 199x432
     RenderSVGHiddenContainer {defs} at (0,0) size 0x0
       RenderSVGResourceFilter {filter} [id="shadow1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feComposite operation="OVER"]
@@ -53,10 +53,10 @@ layer at (0,0) size 800x600
         RenderSVGRect {rect} at (135,55) size 9x31 [fill={[type=SOLID] [color=#FF0000]}] [x=135.90] [y=55.90] [width=8.00] [height=30.00]
         RenderSVGRect {rect} at (151,56) size 8x30 [fill={[type=SOLID] [color=#FF0000]}] [x=151.00] [y=56.00] [width=8.00] [height=30.00]
         RenderSVGRect {rect} at (1,1) size 169x94 [stroke={[type=SOLID] [color=#008000] [stroke width=4.00]}] [x=3.00] [y=3.00] [width=165.00] [height=90.00]
-    RenderSVGContainer {g} at (86,0) size 199x433
-      RenderSVGContainer {g} at (86,0) size 199x433
+    RenderSVGContainer {g} at (86,0) size 199x432
+      RenderSVGContainer {g} at (86,0) size 199x432
         [filter="diff"] RenderSVGResourceFilter {filter} at (86.50,-36) size 198x468
-        RenderSVGContainer {g} at (103,3) size 198x109 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,0.00)}]
+        RenderSVGContainer {g} at (103,3) size 198x108 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,0.00)}]
           [filter="shadow1"] RenderSVGResourceFilter {filter} at (3,3) size 198x108
           RenderSVGContainer {use} at (101,1) size 169x94
             RenderSVGContainer {g} at (101,1) size 169x94

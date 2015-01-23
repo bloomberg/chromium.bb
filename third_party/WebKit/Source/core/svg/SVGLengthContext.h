@@ -72,7 +72,8 @@ public:
 private:
     float convertValueFromUserUnitsToPercentage(float value, SVGLengthMode, ExceptionState&) const;
     float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, ExceptionState&) const;
-    static float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, const FloatSize&);
+    static float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, const FloatSize& viewportSize);
+    static float convertValueFromPercentageToUserUnits(const SVGLength& value, const FloatSize& viewportSize);
 
     float convertValueFromUserUnitsToEMS(float value, ExceptionState&) const;
     float convertValueFromEMSToUserUnits(float value, ExceptionState&) const;

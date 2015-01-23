@@ -166,7 +166,7 @@ float SVGLength::value(const SVGLengthContext& context, ExceptionState& es) cons
 
 void SVGLength::setValue(float value, const SVGLengthContext& context, ExceptionState& es)
 {
-    // 100% = 100.0 instead of 1.0 for historical reasons, this could eventually be changed
+    // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy but could eventually be changed.
     if (m_unitType == LengthTypePercentage)
         value = value / 100;
 
@@ -185,11 +185,32 @@ void SVGLength::setUnitType(SVGLengthType type)
 
 float SVGLength::valueAsPercentage() const
 {
-    // 100% = 100.0 instead of 1.0 for historical reasons, this could eventually be changed
-    if (m_unitType == LengthTypePercentage)
+    // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy but could eventually be changed.
+    if (m_unitType == LengthTypePercentage) {
+        // Note: This division is a source of floating point inaccuracy.
         return m_valueInSpecifiedUnits / 100;
+    }
 
     return m_valueInSpecifiedUnits;
+}
+
+float SVGLength::valueAsPercentage100() const
+{
+    // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy but could eventually be changed.
+    if (m_unitType == LengthTypePercentage)
+        return m_valueInSpecifiedUnits;
+
+    return m_valueInSpecifiedUnits * 100;
+}
+
+float SVGLength::scaleByPercentage(float input) const
+{
+    float result = input * m_valueInSpecifiedUnits;
+    if (m_unitType == LengthTypePercentage) {
+        // Delaying division by 100 as long as possible since it introduces floating point errors.
+        result = result / 100;
+    }
+    return result;
 }
 
 template<typename CharType>
@@ -403,8 +424,8 @@ PassRefPtrWillBeRawPtr<SVGLength> SVGLength::blend(PassRefPtrWillBeRawPtr<SVGLen
     RefPtrWillBeRawPtr<SVGLength> length = create();
 
     if (fromType == LengthTypePercentage || toType == LengthTypePercentage) {
-        float fromPercent = from->valueAsPercentage() * 100;
-        float toPercent = valueAsPercentage() * 100;
+        float fromPercent = from->valueAsPercentage100();
+        float toPercent = valueAsPercentage100();
         length->newValueSpecifiedUnits(LengthTypePercentage, blink::blend(fromPercent, toPercent, progress));
         return length;
     }
