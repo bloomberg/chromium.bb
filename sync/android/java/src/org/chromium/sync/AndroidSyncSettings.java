@@ -1,8 +1,8 @@
-// Copyright 2010 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.sync.notifier;
+package org.chromium.sync;
 
 import android.accounts.Account;
 import android.content.ContentResolver;
@@ -12,8 +12,6 @@ import android.os.StrictMode;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.sync.SyncContentResolverDelegate;
-import org.chromium.sync.SystemSyncContentResolverDelegate;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -25,12 +23,12 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * It also provides an observer to be used whenever Android sync settings change.
  *
- * To retrieve an instance of this class, call SyncStatusHelper.get(someContext).
+ * To retrieve an instance of this class, call AndroidSyncSettings.get(someContext).
  *
  * All new public methods MUST call notifyObservers at the end.
  */
 @ThreadSafe
-public class SyncStatusHelper {
+public class AndroidSyncSettings {
 
     /**
      * In-memory holder of the sync configurations for a given account. On each
@@ -133,18 +131,14 @@ public class SyncStatusHelper {
         }
     }
 
-    // This should always have the same value as GaiaConstants::kChromeSyncOAuth2Scope.
-    public static final String CHROME_SYNC_OAUTH2_SCOPE =
-            "https://www.googleapis.com/auth/chromesync";
-
-    public static final String TAG = "SyncStatusHelper";
+    public static final String TAG = "AndroidSyncSettings";
 
     /**
      * Lock for ensuring singleton instantiation across threads.
      */
     private static final Object INSTANCE_LOCK = new Object();
 
-    private static SyncStatusHelper sSyncStatusHelper;
+    private static AndroidSyncSettings sAndroidSyncSettings;
 
     private final String mContractAuthority;
 
@@ -154,24 +148,24 @@ public class SyncStatusHelper {
 
     private boolean mCachedMasterSyncAutomatically;
 
-    // Instantiation of SyncStatusHelper is guarded by a lock so volatile is unneeded.
+    // Instantiation of AndroidSyncSettings is guarded by a lock so volatile is unneeded.
     private CachedAccountSyncSettings mCachedSettings;
 
-    private final ObserverList<SyncSettingsChangedObserver> mObservers =
-            new ObserverList<SyncSettingsChangedObserver>();
+    private final ObserverList<AndroidSyncSettingsObserver> mObservers =
+            new ObserverList<AndroidSyncSettingsObserver>();
 
     /**
      * Provides notifications when Android sync settings have changed.
      */
-    public interface SyncSettingsChangedObserver {
-        public void syncSettingsChanged();
+    public interface AndroidSyncSettingsObserver {
+        public void androidSyncSettingsChanged();
     }
 
     /**
      * @param context the context
      * @param syncContentResolverDelegate an implementation of {@link SyncContentResolverDelegate}.
      */
-    private SyncStatusHelper(Context context,
+    private AndroidSyncSettings(Context context,
             SyncContentResolverDelegate syncContentResolverDelegate,
             CachedAccountSyncSettings cachedAccountSettings) {
         mApplicationContext = context.getApplicationContext();
@@ -196,26 +190,27 @@ public class SyncStatusHelper {
     }
 
     /**
-     * A factory method for the SyncStatusHelper.
+     * A factory method for the AndroidSyncSettings.
      *
      * It is possible to override the {@link SyncContentResolverDelegate} to use in tests for the
-     * instance of the SyncStatusHelper by calling overrideSyncStatusHelperForTests(...) with
+     * instance of the AndroidSyncSettings by calling overrideAndroidSyncSettingsForTests(...) with
      * your {@link SyncContentResolverDelegate}.
      *
      * @param context the ApplicationContext is retrieved from the context used as an argument.
-     * @return a singleton instance of the SyncStatusHelper
+     * @return a singleton instance of the AndroidSyncSettings
      */
-    public static SyncStatusHelper get(Context context) {
+    public static AndroidSyncSettings get(Context context) {
         synchronized (INSTANCE_LOCK) {
-            if (sSyncStatusHelper == null) {
+            if (sAndroidSyncSettings == null) {
                 SyncContentResolverDelegate contentResolverDelegate =
                         new SystemSyncContentResolverDelegate();
                 CachedAccountSyncSettings cache = new CachedAccountSyncSettings(
                         context.getPackageName(), contentResolverDelegate);
-                sSyncStatusHelper = new SyncStatusHelper(context, contentResolverDelegate, cache);
+                sAndroidSyncSettings = new AndroidSyncSettings(
+                        context, contentResolverDelegate, cache);
             }
         }
-        return sSyncStatusHelper;
+        return sAndroidSyncSettings;
     }
 
     /**
@@ -226,24 +221,24 @@ public class SyncStatusHelper {
      * @param syncContentResolverDelegate the {@link SyncContentResolverDelegate} to use
      */
     @VisibleForTesting
-    public static void overrideSyncStatusHelperForTests(Context context,
+    public static void overrideAndroidSyncSettingsForTests(Context context,
             SyncContentResolverDelegate syncContentResolverDelegate,
             CachedAccountSyncSettings cachedAccountSettings) {
         synchronized (INSTANCE_LOCK) {
-            if (sSyncStatusHelper != null) {
-                throw new IllegalStateException("SyncStatusHelper already exists");
+            if (sAndroidSyncSettings != null) {
+                throw new IllegalStateException("AndroidSyncSettings already exists");
             }
-            sSyncStatusHelper = new SyncStatusHelper(context, syncContentResolverDelegate,
+            sAndroidSyncSettings = new AndroidSyncSettings(context, syncContentResolverDelegate,
                     cachedAccountSettings);
         }
     }
 
     @VisibleForTesting
-    public static void overrideSyncStatusHelperForTests(Context context,
+    public static void overrideAndroidSyncSettingsForTests(Context context,
             SyncContentResolverDelegate syncContentResolverDelegate) {
         CachedAccountSyncSettings cachedAccountSettings = new CachedAccountSyncSettings(
                 context.getPackageName(), syncContentResolverDelegate);
-        overrideSyncStatusHelperForTests(context, syncContentResolverDelegate,
+        overrideAndroidSyncSettingsForTests(context, syncContentResolverDelegate,
                 cachedAccountSettings);
     }
 
@@ -255,17 +250,16 @@ public class SyncStatusHelper {
     }
 
     /**
-     * Wrapper method for the ContentResolver.addStatusChangeListener(...) when we are only
-     * interested in the settings type.
+     * Add a new AndroidSyncSettingsObserver.
      */
-    public void registerSyncSettingsChangedObserver(SyncSettingsChangedObserver observer) {
+    public void registerObserver(AndroidSyncSettingsObserver observer) {
         mObservers.addObserver(observer);
     }
 
     /**
-     * Wrapper method for the ContentResolver.removeStatusChangeListener(...).
+     * Remove an AndroidSyncSettingsObserver that was previously added.
      */
-    public void unregisterSyncSettingsChangedObserver(SyncSettingsChangedObserver observer) {
+    public void unregisterObserver(AndroidSyncSettingsObserver observer) {
         mObservers.removeObserver(observer);
     }
 
@@ -310,7 +304,7 @@ public class SyncStatusHelper {
      * @param account the account to check if Chrome sync is enabled on.
      * @return true if sync is on, false otherwise
      */
-    public boolean isSyncEnabledForChrome(Account account) {
+    public boolean isChromeSyncEnabled(Account account) {
         if (account == null) return false;
 
         boolean returnValue;
@@ -327,7 +321,7 @@ public class SyncStatusHelper {
      *
      * @return true if the global master sync is on, false otherwise
      */
-    public boolean isMasterSyncAutomaticallyEnabled() {
+    public boolean isMasterSyncEnabled() {
         synchronized (mCachedSettings) {
             return mCachedMasterSyncAutomatically;
         }
@@ -338,7 +332,7 @@ public class SyncStatusHelper {
      *
      * @param account the account to enable sync on
      */
-    public void enableAndroidSync(Account account) {
+    public void enableChromeSync(Account account) {
         makeSyncable(account);
 
         synchronized (mCachedSettings) {
@@ -353,7 +347,7 @@ public class SyncStatusHelper {
      *
      * @param account the account to disable Chrome sync on
      */
-    public void disableAndroidSync(Account account) {
+    public void disableChromeSync(Account account) {
         synchronized (mCachedSettings) {
             mCachedSettings.setSyncAutomatically(account, false);
         }
@@ -392,7 +386,7 @@ public class SyncStatusHelper {
     /**
      * Helper class to be used by observers whenever sync settings change.
      *
-     * To register the observer, call SyncStatusHelper.registerObserver(...).
+     * To register the observer, call AndroidSyncSettings.registerObserver(...).
      */
     private class AndroidSyncSettingsChangedObserver implements SyncStatusObserver {
         @Override
@@ -404,13 +398,13 @@ public class SyncStatusHelper {
                             ChromeSigninController.get(mApplicationContext).getSignedInUser());
                 }
 
-                boolean oldMasterSyncEnabled = isMasterSyncAutomaticallyEnabled();
+                boolean oldMasterSyncEnabled = isMasterSyncEnabled();
                 updateMasterSyncAutomaticallySetting();
-                boolean didMasterSyncChanged =
-                        oldMasterSyncEnabled != isMasterSyncAutomaticallyEnabled();
+                boolean didMasterSyncChanged = oldMasterSyncEnabled != isMasterSyncEnabled();
                 // Notify observers if MasterSync or account level settings change.
-                if (didMasterSyncChanged || getAndClearDidUpdateStatus())
+                if (didMasterSyncChanged || getAndClearDidUpdateStatus()) {
                     notifyObservers();
+                }
             }
         }
     }
@@ -431,8 +425,8 @@ public class SyncStatusHelper {
     }
 
     private void notifyObservers() {
-        for (SyncSettingsChangedObserver observer : mObservers) {
-            observer.syncSettingsChanged();
+        for (AndroidSyncSettingsObserver observer : mObservers) {
+            observer.androidSyncSettingsChanged();
         }
     }
 }

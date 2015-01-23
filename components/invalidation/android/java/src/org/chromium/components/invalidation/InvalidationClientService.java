@@ -21,12 +21,13 @@ import com.google.protos.ipc.invalidation.Types.ClientType;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.sync.SyncConstants;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationClientNameProvider;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences;
 import org.chromium.sync.notifier.InvalidationPreferences.EditContext;
-import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -82,8 +83,8 @@ public class InvalidationClientService extends AndroidListener {
         // match the stored account. Then, if a client should be running, ensureClientStartState
         // will start a new one if needed. I.e., these two functions work together to restart the
         // client when the account changes.
-        Account account = intent.hasExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT) ?
-                (Account) intent.getParcelableExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT)
+        Account account = intent.hasExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT)
+                ? (Account) intent.getParcelableExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT)
                 : null;
 
         ensureAccount(account);
@@ -350,10 +351,10 @@ public class InvalidationClientService extends AndroidListener {
         // read the current registrations from preferences before we write the new values, so that
         // we can take the diff of the two registration sets and determine which registration change
         // calls to make.
-        Set<ObjectId> existingSyncRegistrations = (sClientId == null) ?
-                null : readSyncRegistrationsFromPrefs();
-        Set<ObjectId> existingNonSyncRegistrations = (sClientId == null) ?
-                null : readNonSyncRegistrationsFromPrefs();
+        Set<ObjectId> existingSyncRegistrations = (sClientId == null)
+                ? null : readSyncRegistrationsFromPrefs();
+        Set<ObjectId> existingNonSyncRegistrations = (sClientId == null)
+                ? null : readNonSyncRegistrationsFromPrefs();
 
         // Write the new sync types/object ids to preferences. We do not expand the syncTypes to
         // take into account the ALL_TYPES_TYPE at this point; we want to persist the wildcard
@@ -381,10 +382,10 @@ public class InvalidationClientService extends AndroidListener {
         // wildcard.
         // When computing the desired set of object ids, if only sync types were provided, then
         // keep the existing non-sync types, and vice-versa.
-        Set<ObjectId> desiredSyncRegistrations = syncTypes != null ?
-                ModelType.syncTypesToObjectIds(syncTypes) : existingSyncRegistrations;
-        Set<ObjectId> desiredNonSyncRegistrations = objectIds != null ?
-                objectIds : existingNonSyncRegistrations;
+        Set<ObjectId> desiredSyncRegistrations = syncTypes != null
+                ? ModelType.syncTypesToObjectIds(syncTypes) : existingSyncRegistrations;
+        Set<ObjectId> desiredNonSyncRegistrations = objectIds != null
+                ? objectIds : existingNonSyncRegistrations;
         Set<ObjectId> desiredRegistrations = joinRegistrations(desiredNonSyncRegistrations,
                 desiredSyncRegistrations);
         Set<ObjectId> existingRegistrations = joinRegistrations(existingNonSyncRegistrations,
@@ -443,7 +444,7 @@ public class InvalidationClientService extends AndroidListener {
             bundle.putString("payload", (payload == null) ? "" : payload);
         }
         Account account = ChromeSigninController.get(this).getSignedInUser();
-        String contractAuthority = SyncStatusHelper.get(this).getContractAuthority();
+        String contractAuthority = AndroidSyncSettings.get(this).getContractAuthority();
         requestSyncFromContentResolver(bundle, account, contractAuthority);
     }
 
@@ -471,7 +472,7 @@ public class InvalidationClientService extends AndroidListener {
     /** Returns whether sync is enabled. LLocal method so it can be overridden in tests. */
     @VisibleForTesting
     boolean isSyncEnabled() {
-        return SyncStatusHelper.get(getApplicationContext()).isSyncEnabled();
+        return AndroidSyncSettings.get(getApplicationContext()).isSyncEnabled();
     }
 
     /**
@@ -495,7 +496,7 @@ public class InvalidationClientService extends AndroidListener {
     }
 
     private static String getOAuth2ScopeWithType() {
-        return "oauth2:" + SyncStatusHelper.CHROME_SYNC_OAUTH2_SCOPE;
+        return "oauth2:" + SyncConstants.CHROME_SYNC_OAUTH2_SCOPE;
     }
 
     private static void setClientId(byte[] clientId) {

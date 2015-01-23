@@ -13,7 +13,7 @@ import android.os.AsyncTask;
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.sync.notifier.SyncContentResolverDelegate;
+import org.chromium.sync.SyncContentResolverDelegate;
 
 import java.util.HashMap;
 import java.util.HashSet;

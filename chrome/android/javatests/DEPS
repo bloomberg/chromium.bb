@@ -2,9 +2,7 @@ include_rules = [
   "+components/dom_distiller/android/java/src/org/chromium/components/dom_distiller/core",
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",
   "+content/public/android/java",
-  "+sync/android/java/src/org/chromium/sync/internal_api/pub",
-  "+sync/android/java/src/org/chromium/sync/notifier",
-  "+sync/android/java/src/org/chromium/sync/signin",
+  "+sync/android/java/src/org/chromium/sync",
   # We should only depend on the util package of something that lives in
   # javatests.
   "+sync/test/android/javatests/src/org/chromium/sync/test/util",

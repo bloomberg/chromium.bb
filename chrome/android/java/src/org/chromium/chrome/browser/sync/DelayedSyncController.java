@@ -15,7 +15,7 @@ import android.util.Log;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.sync.notifier.SyncStatusHelper;
+import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 /**
@@ -64,7 +64,7 @@ public class DelayedSyncController {
             @Override
             protected Void doInBackground(Void... unused) {
                 String contractAuthority =
-                        SyncStatusHelper.get(context).getContractAuthority();
+                        AndroidSyncSettings.get(context).getContractAuthority();
                 ContentResolver.requestSync(account, contractAuthority, new Bundle());
                 return null;
             }

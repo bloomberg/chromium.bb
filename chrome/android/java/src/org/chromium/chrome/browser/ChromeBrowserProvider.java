@@ -35,7 +35,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.database.SQLiteCursor;
-import org.chromium.sync.notifier.SyncStatusHelper;
+import org.chromium.sync.AndroidSyncSettings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -630,7 +630,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         // Don't allow going up the hierarchy if sync is disabled and the requested node
         // is the Mobile Bookmarks folder.
         if (getParent && nodeId == getMobileBookmarksFolderId()
-                && !SyncStatusHelper.get(getContext()).isSyncEnabled()) {
+                && !AndroidSyncSettings.get(getContext()).isSyncEnabled()) {
             getParent = false;
         }
 

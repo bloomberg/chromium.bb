@@ -14,9 +14,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.components.invalidation.InvalidationService;
+import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
-import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
 import java.util.Set;
@@ -36,7 +36,7 @@ public class InvalidationServiceTest extends ChromeShellTestBase {
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         // Android master sync can safely always be on.
         delegate.setMasterSyncAutomatically(true);
-        SyncStatusHelper.overrideSyncStatusHelperForTests(mContext, delegate);
+        AndroidSyncSettings.overrideAndroidSyncSettingsForTests(mContext, delegate);
     }
 
     @SmallTest

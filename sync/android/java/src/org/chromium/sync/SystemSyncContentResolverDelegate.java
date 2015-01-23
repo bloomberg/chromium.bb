@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.sync.notifier;
+package org.chromium.sync;
 
 
 import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.SyncStatusObserver;
 
+/**
+ * A SyncContentResolverDelegate that simply forwards calls to ContentResolver.
+ */
 public class SystemSyncContentResolverDelegate implements SyncContentResolverDelegate {
 
     @Override

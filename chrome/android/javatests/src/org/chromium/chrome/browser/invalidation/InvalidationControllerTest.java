@@ -16,10 +16,10 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.invalidation.InvalidationClientService;
+import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences;
-import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
@@ -46,7 +46,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         // Android master sync can safely always be on.
         delegate.setMasterSyncAutomatically(true);
-        SyncStatusHelper.overrideSyncStatusHelperForTests(mContext, delegate);
+        AndroidSyncSettings.overrideAndroidSyncSettingsForTests(mContext, delegate);
     }
 
     @SmallTest
@@ -117,11 +117,11 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         Account account = AccountManagerHelper.createAccountFromName("test@gmail.com");
         ChromeSigninController chromeSigninController = ChromeSigninController.get(mContext);
         chromeSigninController.setSignedInAccountName(account.name);
-        SyncStatusHelper syncStatusHelper = SyncStatusHelper.get(mContext);
+        AndroidSyncSettings androidSyncSettings = AndroidSyncSettings.get(mContext);
         if (syncEnabled) {
-            syncStatusHelper.enableAndroidSync(account);
+            androidSyncSettings.enableChromeSync(account);
         } else {
-            syncStatusHelper.disableAndroidSync(account);
+            androidSyncSettings.disableChromeSync(account);
         }
     }
 

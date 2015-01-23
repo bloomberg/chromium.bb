@@ -12,10 +12,10 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.invalidation.InvalidationClientService;
+import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences;
-import org.chromium.sync.notifier.SyncStatusHelper;
 
 import java.util.Set;
 
@@ -55,8 +55,8 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
         InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
         Set<String> savedSyncedTypes = invalidationPreferences.getSavedSyncedTypes();
         Account account = invalidationPreferences.getSavedSyncedAccount();
-        boolean allTypes = savedSyncedTypes != null &&
-                savedSyncedTypes.contains(ModelType.ALL_TYPES_TYPE);
+        boolean allTypes = savedSyncedTypes != null
+                && savedSyncedTypes.contains(ModelType.ALL_TYPES_TYPE);
         setRegisteredTypes(account, allTypes, types);
     }
 
@@ -104,7 +104,7 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
 
     @Override
     public void onApplicationStateChange(int newState) {
-        if (SyncStatusHelper.get(mContext).isSyncEnabled()) {
+        if (AndroidSyncSettings.get(mContext).isSyncEnabled()) {
             if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
                 start();
             } else if (newState == ApplicationState.HAS_PAUSED_ACTIVITIES) {

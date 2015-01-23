@@ -26,8 +26,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.internal_api.pub.base.ModelType;
-import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 import java.util.HashSet;
@@ -371,7 +371,7 @@ public class SigninManager {
 
         // Sign-in to sync.
         ProfileSyncService profileSyncService = ProfileSyncService.get(mContext);
-        if (SyncStatusHelper.get(mContext).isSyncEnabled(mSignInAccount)
+        if (AndroidSyncSettings.get(mContext).isSyncEnabled(mSignInAccount)
                 && !profileSyncService.hasSyncSetupCompleted()) {
             profileSyncService.setSetupInProgress(true);
             profileSyncService.syncSignIn();
@@ -454,8 +454,10 @@ public class SigninManager {
         nativeWipeProfileData(mNativeSigninManagerAndroid);
     }
 
-    // This class must be public and static. Otherwise an exception will be thrown when Android
-    // recreates the fragment (e.g. after a configuration change).
+    /**
+     * This class must be public and static. Otherwise an exception will be thrown when Android
+     * recreates the fragment (e.g. after a configuration change).
+     */
     public static class ClearDataProgressDialog extends DialogFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {

@@ -17,7 +17,7 @@ import com.google.protos.ipc.invalidation.Types;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.sync.notifier.SyncStatusHelper;
+import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 /**
@@ -72,7 +72,7 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
 
     public void performSyncWithBundle(Bundle bundle) {
         mSyncAdapter.onPerformSync(TEST_ACCOUNT, bundle,
-                SyncStatusHelper.get(getActivity()).getContractAuthority(),
+                AndroidSyncSettings.get(getActivity()).getContractAuthority(),
                 null, new SyncResult());
     }
 

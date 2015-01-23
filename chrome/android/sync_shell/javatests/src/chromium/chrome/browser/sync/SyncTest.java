@@ -23,7 +23,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.sync.notifier.SyncStatusHelper;
+import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockAccountManager;
@@ -57,7 +57,8 @@ public class SyncTest extends ChromeShellTestBase {
         MockSyncContentResolverDelegate syncContentResolverDelegate =
                 new MockSyncContentResolverDelegate();
         syncContentResolverDelegate.setMasterSyncAutomatically(true);
-        SyncStatusHelper.overrideSyncStatusHelperForTests(mContext, syncContentResolverDelegate);
+        AndroidSyncSettings.overrideAndroidSyncSettingsForTests(
+                mContext, syncContentResolverDelegate);
         // This call initializes the ChromeSigninController to use our test context.
         ChromeSigninController.get(mContext);
         startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
@@ -171,11 +172,11 @@ public class SyncTest extends ChromeShellTestBase {
                 AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
 
         // Disabling Android sync should turn Chrome sync engine off.
-        SyncStatusHelper.get(mContext).disableAndroidSync(account);
+        AndroidSyncSettings.get(mContext).disableChromeSync(account);
         SyncTestUtil.verifySyncIsDisabled(mContext, account);
 
         // Enabling Android sync should turn Chrome sync engine on.
-        SyncStatusHelper.get(mContext).enableAndroidSync(account);
+        AndroidSyncSettings.get(mContext).enableChromeSync(account);
         SyncTestUtil.ensureSyncInitialized(mContext);
         SyncTestUtil.verifySignedInWithAccount(mContext, account);
     }
