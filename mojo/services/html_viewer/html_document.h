@@ -9,11 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/application/interface_factory.h"
-#include "mojo/public/cpp/application/lazy_interface_ptr.h"
-#include "mojo/public/cpp/application/service_provider_impl.h"
-#include "mojo/public/cpp/bindings/interface_impl.h"
-#include "mojo/public/interfaces/application/application.mojom.h"
 #include "mojo/services/content_handler/public/interfaces/content_handler.mojom.h"
 #include "mojo/services/html_viewer/ax_provider_impl.h"
 #include "mojo/services/navigation/public/interfaces/navigation.mojom.h"
@@ -24,6 +19,11 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/lazy_interface_ptr.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/interfaces/application/application.mojom.h"
 
 namespace base {
 class MessageLoopProxy;

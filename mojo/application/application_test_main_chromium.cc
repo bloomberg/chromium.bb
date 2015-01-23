@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
-#include "mojo/public/c/system/main.h"
-#include "mojo/public/cpp/application/application_test_base.h"
+#include "third_party/mojo/src/mojo/public/c/system/main.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_test_base.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   // An AtExitManager instance is needed to construct message loops.

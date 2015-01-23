@@ -6,9 +6,9 @@
 #define MOJO_SERVICES_NETWORK_TCP_BOUND_SOCKET_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/network/public/interfaces/tcp_bound_socket.mojom.h"
 #include "net/socket/tcp_socket.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 
 namespace mojo {
 

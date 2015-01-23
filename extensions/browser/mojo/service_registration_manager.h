@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "content/public/common/service_registry.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {
 class RenderFrameHost;

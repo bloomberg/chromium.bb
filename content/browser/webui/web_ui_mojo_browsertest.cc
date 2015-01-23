@@ -25,10 +25,10 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
-#include "mojo/edk/test/test_utils.h"
-#include "mojo/public/cpp/bindings/interface_impl.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/js/constants.h"
+#include "third_party/mojo/src/mojo/edk/test/test_utils.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/mojo/src/mojo/public/js/constants.h"
 
 namespace content {
 namespace {

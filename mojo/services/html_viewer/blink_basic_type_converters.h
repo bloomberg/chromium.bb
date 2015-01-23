@@ -5,11 +5,11 @@
 #ifndef MOJO_SERVICES_HTML_VIEWER_BLINK_BASIC_TYPE_CONVERTERS_H_
 #define MOJO_SERVICES_HTML_VIEWER_BLINK_BASIC_TYPE_CONVERTERS_H_
 
-#include "mojo/public/cpp/bindings/type_converter.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
-#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/services/geometry/public/interfaces/geometry.mojom.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 
 namespace blink {
 struct WebRect;

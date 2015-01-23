@@ -11,7 +11,7 @@
 #include "device/serial/serial.mojom.h"
 #include "device/serial/serial_connection_factory.h"
 #include "device/serial/serial_device_enumerator.h"
-#include "mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 
 namespace device {
 

@@ -5,13 +5,13 @@
 #include "base/at_exit.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/services/network/public/cpp/udp_socket_wrapper.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/udp_socket.mojom.h"
 #include "mojo/shell/shell_test_helper.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
 #include "url/gurl.h"
 
 namespace mojo {

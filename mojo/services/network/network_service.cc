@@ -9,13 +9,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "mojo/application/application_runner_chromium.h"
-#include "mojo/public/c/system/main.h"
-#include "mojo/public/cpp/application/application_connection.h"
-#include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/network_service_impl.h"
+#include "third_party/mojo/src/mojo/public/c/system/main.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
 
 class NetworkServiceDelegate
     : public mojo::ApplicationDelegate,

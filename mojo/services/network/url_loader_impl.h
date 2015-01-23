@@ -8,12 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/common/handle_watcher.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
-#include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 
 namespace mojo {
 

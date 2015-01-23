@@ -6,7 +6,7 @@
 #define UI_KEYBOARD_WEBUI_VK_MOJO_HANDLER_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/keyboard/webui/keyboard.mojom.h"
 

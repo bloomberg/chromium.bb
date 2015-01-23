@@ -14,7 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "mojo/common/mojo_common_export.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace common {

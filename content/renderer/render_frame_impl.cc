@@ -103,8 +103,6 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/default_renderer_factory.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
-#include "mojo/edk/js/core.h"
-#include "mojo/edk/js/support.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -133,6 +131,8 @@
 #include "third_party/WebKit/public/web/WebSurroundingText.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/mojo/src/mojo/edk/js/core.h"
+#include "third_party/mojo/src/mojo/edk/js/support.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "content/renderer/npapi/webplugin_impl.h"

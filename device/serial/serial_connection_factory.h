@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "device/serial/data_stream.mojom.h"
 #include "device/serial/serial.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace device {
 

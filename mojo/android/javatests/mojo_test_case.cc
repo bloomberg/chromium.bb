@@ -15,7 +15,7 @@
 #include "jni/MojoTestCase_jni.h"
 #include "mojo/common/message_pump_mojo.h"
 
-#include "mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
 
 namespace {
 

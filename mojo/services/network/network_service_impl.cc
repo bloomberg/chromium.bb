@@ -4,13 +4,13 @@
 
 #include "mojo/services/network/network_service_impl.h"
 
-#include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/services/network/cookie_store_impl.h"
 #include "mojo/services/network/net_adapters.h"
 #include "mojo/services/network/tcp_bound_socket_impl.h"
 #include "mojo/services/network/udp_socket_impl.h"
 #include "mojo/services/network/url_loader_impl.h"
 #include "mojo/services/network/web_socket_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
 
 namespace mojo {
 

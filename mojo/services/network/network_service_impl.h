@@ -6,8 +6,8 @@
 #define MOJO_SERVICES_NETWORK_NETWORK_SERVICE_IMPL_H_
 
 #include "base/compiler_specific.h"
-#include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 #include "url/gurl.h"
 
 namespace mojo {

@@ -11,7 +11,7 @@ include_rules = [
   "+extensions/test",
   "+grit/extensions_renderer_resources.h",
   "+grit/extensions_resources.h",
-  "+mojo/public",
+  "+third_party/mojo/src/mojo/public",
   "+third_party/skia/include",
   "+testing",
 

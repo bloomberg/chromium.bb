@@ -14,7 +14,7 @@
 #include "media/base/buffering_state.h"
 #include "media/base/pipeline_status.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
-#include "mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 
 namespace mojo {
 class ApplicationConnection;

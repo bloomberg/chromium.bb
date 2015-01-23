@@ -5,9 +5,9 @@
 #include "content/app/mojo/mojo_init.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "mojo/edk/embedder/configuration.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
+#include "third_party/mojo/src/mojo/edk/embedder/configuration.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
 
 namespace content {
 

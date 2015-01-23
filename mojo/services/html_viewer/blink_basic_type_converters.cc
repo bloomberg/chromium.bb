@@ -4,9 +4,9 @@
 
 #include "mojo/services/html_viewer/blink_basic_type_converters.h"
 
-#include "mojo/public/cpp/bindings/string.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 
 using blink::WebRect;
 using blink::WebString;

@@ -4,7 +4,7 @@
 
 #include "ppapi/tests/mojo/test_mojo.h"
 
-#include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
 
 REGISTER_TEST_CASE(Mojo);
 

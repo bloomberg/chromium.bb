@@ -4,11 +4,11 @@
 
 #include "mojo/services/html_viewer/mojo_blink_platform_impl.h"
 
-#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/html_viewer/webclipboard_impl.h"
 #include "mojo/services/html_viewer/webcookiejar_impl.h"
 #include "mojo/services/html_viewer/websockethandle_impl.h"
 #include "mojo/services/html_viewer/weburlloader_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 
 namespace html_viewer {
 

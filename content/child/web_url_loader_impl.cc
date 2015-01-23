@@ -31,7 +31,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/content_switches.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
@@ -48,6 +47,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 
 using base::Time;
 using base::TimeTicks;

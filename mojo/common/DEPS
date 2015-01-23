@@ -2,5 +2,5 @@ include_rules = [
   # common must not depend on embedder.
   "-mojo",
   "+mojo/common",
-  "+mojo/public",
+  "+third_party/mojo/src/mojo/public",
 ]

@@ -21,8 +21,8 @@
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
-#include "mojo/public/cpp/application/connect.h"
-#include "mojo/public/interfaces/application/shell.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
+#include "third_party/mojo/src/mojo/public/interfaces/application/shell.mojom.h"
 
 using mojo::ServiceProviderPtr;
 

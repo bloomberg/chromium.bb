@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "cc/output/context_provider.h"
-#include "mojo/public/c/gles2/gles2.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 

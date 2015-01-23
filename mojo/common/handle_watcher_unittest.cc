@@ -15,9 +15,9 @@
 #include "base/threading/thread.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/common/time_helper.h"
-#include "mojo/public/cpp/system/core.h"
-#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/test_support/test_utils.h"
 
 namespace mojo {
 namespace common {

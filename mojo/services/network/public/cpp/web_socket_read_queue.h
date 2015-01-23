@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "mojo/common/handle_watcher.h"
-#include "mojo/public/cpp/system/data_pipe.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 
 namespace mojo {
 

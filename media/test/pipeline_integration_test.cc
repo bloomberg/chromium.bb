@@ -24,9 +24,9 @@
 
 #if defined(MOJO_RENDERER)
 #include "media/mojo/services/mojo_renderer_impl.h"
-#include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/application_test_base.h"
-#include "mojo/public/cpp/application/connect.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_test_base.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 
 // TODO(dalecurtis): The mojo renderer is in another process, so we have no way
 // currently to get hashes for video and audio samples.  This also means that

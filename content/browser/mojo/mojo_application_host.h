@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "content/common/mojo/service_registry_impl.h"
-#include "mojo/edk/embedder/channel_init.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/embedder/channel_init.h"
+#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/mojo/service_registry_android.h"

@@ -4,10 +4,10 @@
 
 {{generator_warning}}
 
-#include "mojo/public/c/system/core.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/public/imc_types.h"
+#include "third_party/mojo/src/mojo/public/c/system/core.h"
 
 // The value for this FD must not conflict with uses inside Chromium. However,
 // mojo/nacl doesn't depend on any Chromium headers, so we can't use a #define

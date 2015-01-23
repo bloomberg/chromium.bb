@@ -6,8 +6,8 @@
 #define MOJO_SERVICES_NETWORK_WEB_SOCKET_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 
 namespace net {
 class WebSocketChannel;

@@ -6,7 +6,7 @@
 #include "ipc/ipc_perftest_support.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "ipc/mojo/ipc_channel_mojo_host.h"
-#include "mojo/edk/embedder/test_embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
 
 namespace {
 

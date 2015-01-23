@@ -5,7 +5,7 @@
 #include "mojo/cc/context_provider_mojo.h"
 
 #include "base/logging.h"
-#include "mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 

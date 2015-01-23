@@ -28,13 +28,13 @@
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/nacl/mojo_syscall.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/nacl_desc.h"
 #include "native_client/src/public/nacl_file_info.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_support.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"

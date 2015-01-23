@@ -14,9 +14,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/common/service_registry.h"
-#include "mojo/public/cpp/bindings/interface_impl.h"
-#include "mojo/public/cpp/system/core.h"
-#include "mojo/public/interfaces/application/service_provider.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace content {
 

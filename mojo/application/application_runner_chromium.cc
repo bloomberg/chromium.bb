@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/message_pump_mojo.h"
-#include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/application_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 
 namespace mojo {
 

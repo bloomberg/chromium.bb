@@ -10,8 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/webui/keyboard.mojom.h"
 

@@ -6,7 +6,7 @@
 
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/service_registry.h"
-#include "mojo/edk/js/handle.h"
+#include "third_party/mojo/src/mojo/edk/js/handle.h"
 
 namespace content {
 

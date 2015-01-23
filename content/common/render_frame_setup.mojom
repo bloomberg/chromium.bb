@@ -4,7 +4,7 @@
 
 module content;
 
-import "mojo/public/interfaces/application/service_provider.mojom";
+import "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom";
 
 interface RenderFrameSetup {
   GetServiceProviderForFrame(int32 frame_routing_id,

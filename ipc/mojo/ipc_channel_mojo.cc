@@ -13,8 +13,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/mojo/client_channel.mojom.h"
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace IPC {
 
