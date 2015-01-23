@@ -43,7 +43,7 @@ TEST CASE: Image with explicit hot spot at (-1,-1)
 Cursor Info: type=Custom hotSpot=0,0 image=25x25
 
 TEST CASE: Image with explicit hot spot outside image at (30,30)
-Cursor Info: type=Custom hotSpot=0,0 image=25x25
+Cursor Info: type=Custom hotSpot=24,24 image=25x25
 
 TEST CASE: Image with implicit hot spot at (5,4)
 Cursor Info: type=Custom hotSpot=5,4 image=25x25

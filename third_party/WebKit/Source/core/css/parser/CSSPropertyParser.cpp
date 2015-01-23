@@ -666,13 +666,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
                 coords.append(int(value->fValue));
                 value = m_valueList->next();
             }
-            bool hasHotSpot = false;
+            bool hotSpotSpecified = false;
             IntPoint hotSpot(-1, -1);
             int nrcoords = coords.size();
             if (nrcoords > 0 && nrcoords != 2)
                 return false;
             if (nrcoords == 2) {
-                hasHotSpot = true;
+                hotSpotSpecified = true;
                 hotSpot = IntPoint(coords[0], coords[1]);
             }
 
@@ -680,7 +680,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
                 list = CSSValueList::createCommaSeparated();
 
             if (image)
-                list->append(CSSCursorImageValue::create(image, hasHotSpot, hotSpot));
+                list->append(CSSCursorImageValue::create(image, hotSpotSpecified, hotSpot));
 
             if (!consumeComma(m_valueList))
                 return false;

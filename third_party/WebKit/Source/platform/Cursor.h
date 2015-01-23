@@ -92,10 +92,10 @@ public:
     {
     }
 
-    Cursor(Image*, const IntPoint& hotSpot);
+    Cursor(Image*, bool hotSpotSpecified, const IntPoint& hotSpot);
 
     // Hot spot is in image pixels.
-    Cursor(Image*, const IntPoint& hotSpot, float imageScaleFactor);
+    Cursor(Image*, bool hotSpotSpecified, const IntPoint& hotSpot, float imageScaleFactor);
 
     Cursor(const Cursor&);
     ~Cursor();
@@ -119,7 +119,7 @@ private:
     float m_imageScaleFactor;
 };
 
-PLATFORM_EXPORT IntPoint determineHotSpot(Image*, const IntPoint& specifiedHotSpot);
+PLATFORM_EXPORT IntPoint determineHotSpot(Image*, bool hotSpotSpecified, const IntPoint& specifiedHotSpot);
 
 PLATFORM_EXPORT const Cursor& pointerCursor();
 PLATFORM_EXPORT const Cursor& crossCursor();

@@ -225,7 +225,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(StyleResolverState& stat
                 CSSCursorImageValue* image = toCSSCursorImageValue(item);
                 if (image->updateIfSVGCursorIsUsed(state.element())) // Elements with SVG cursors are not allowed to share style.
                     state.style()->setUnique();
-                state.style()->addCursor(state.styleImage(CSSPropertyCursor, image), image->hotSpot());
+                state.style()->addCursor(state.styleImage(CSSPropertyCursor, image), image->hotSpotSpecified(), image->hotSpot());
             } else {
                 state.style()->setCursor(*toCSSPrimitiveValue(item));
             }

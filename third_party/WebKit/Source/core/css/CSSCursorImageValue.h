@@ -32,21 +32,16 @@ class SVGElement;
 
 class CSSCursorImageValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSCursorImageValue> create(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hasHotSpot, const IntPoint& hotSpot)
+    static PassRefPtrWillBeRawPtr<CSSCursorImageValue> create(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hotSpotSpecified, const IntPoint& hotSpot)
     {
-        return adoptRefWillBeNoop(new CSSCursorImageValue(imageValue, hasHotSpot, hotSpot));
+        return adoptRefWillBeNoop(new CSSCursorImageValue(imageValue, hotSpotSpecified, hotSpot));
     }
 
     ~CSSCursorImageValue();
 
-    bool hasHotSpot() const { return m_hasHotSpot; }
+    bool hotSpotSpecified() const { return m_hotSpotSpecified; }
 
-    IntPoint hotSpot() const
-    {
-        if (m_hasHotSpot)
-            return m_hotSpot;
-        return IntPoint(-1, -1);
-    }
+    IntPoint hotSpot() const { return m_hotSpot; }
 
     String customCSSText() const;
 
@@ -63,7 +58,7 @@ public:
     void traceAfterDispatch(Visitor*);
 
 private:
-    CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hasHotSpot, const IntPoint& hotSpot);
+    CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hotSpotSpecified, const IntPoint& hotSpot);
 
     bool isSVGCursor() const;
     String cachedImageURL();
@@ -71,7 +66,7 @@ private:
 
     RefPtrWillBeMember<CSSValue> m_imageValue;
 
-    bool m_hasHotSpot;
+    bool m_hotSpotSpecified;
     IntPoint m_hotSpot;
     RefPtr<StyleImage> m_image;
     bool m_accessedImage;

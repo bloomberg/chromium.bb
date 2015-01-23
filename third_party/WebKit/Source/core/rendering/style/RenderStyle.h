@@ -1160,7 +1160,7 @@ public:
     void setPaddingRight(const Length& v) { SET_VAR(surround, padding.m_right, v); }
 
     void setCursor(ECursor c) { inherited_flags._cursor_style = c; }
-    void addCursor(PassRefPtr<StyleImage>, const IntPoint& hotSpot = IntPoint());
+    void addCursor(PassRefPtr<StyleImage>, bool hotSpotSpecified, const IntPoint& hotSpot = IntPoint());
     void setCursorList(PassRefPtr<CursorList>);
     void clearCursorList();
 

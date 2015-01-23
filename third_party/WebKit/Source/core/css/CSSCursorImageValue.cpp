@@ -45,10 +45,10 @@ static inline SVGCursorElement* resourceReferencedByCursorElement(const String& 
     return isSVGCursorElement(element) ? toSVGCursorElement(element) : 0;
 }
 
-CSSCursorImageValue::CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hasHotSpot, const IntPoint& hotSpot)
+CSSCursorImageValue::CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hotSpotSpecified, const IntPoint& hotSpot)
     : CSSValue(CursorImageClass)
     , m_imageValue(imageValue)
-    , m_hasHotSpot(hasHotSpot)
+    , m_hotSpotSpecified(hotSpotSpecified)
     , m_hotSpot(hotSpot)
     , m_accessedImage(false)
 {
@@ -78,7 +78,7 @@ String CSSCursorImageValue::customCSSText() const
 {
     StringBuilder result;
     result.append(m_imageValue->cssText());
-    if (m_hasHotSpot) {
+    if (m_hotSpotSpecified) {
         result.append(' ');
         result.appendNumber(m_hotSpot.x());
         result.append(' ');
@@ -99,7 +99,7 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
     if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, element->treeScope())) {
         // FIXME: This will override hot spot specified in CSS, which is probably incorrect.
         SVGLengthContext lengthContext(0);
-        m_hasHotSpot = true;
+        m_hotSpotSpecified = true;
         float x = roundf(cursorElement->x()->currentValue()->value(lengthContext));
         m_hotSpot.setX(static_cast<int>(x));
 
@@ -197,7 +197,7 @@ void CSSCursorImageValue::removeReferencedElement(SVGElement* element)
 
 bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const
 {
-    return m_hasHotSpot ? other.m_hasHotSpot && m_hotSpot == other.m_hotSpot : !other.m_hasHotSpot
+    return m_hotSpotSpecified ? other.m_hotSpotSpecified && m_hotSpot == other.m_hotSpot : !other.m_hotSpotSpecified
         && compareCSSValuePtr(m_imageValue, other.m_imageValue);
 }
 

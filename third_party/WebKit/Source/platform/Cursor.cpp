@@ -28,15 +28,23 @@
 
 namespace blink {
 
-IntPoint determineHotSpot(Image* image, const IntPoint& specifiedHotSpot)
+IntPoint determineHotSpot(Image* image, bool hotSpotSpecified, const IntPoint& specifiedHotSpot)
 {
     if (image->isNull())
         return IntPoint();
 
-    // Hot spot must be inside cursor rectangle.
     IntRect imageRect = image->rect();
-    if (imageRect.contains(specifiedHotSpot))
-        return specifiedHotSpot;
+
+    // Hot spot must be inside cursor rectangle.
+    if (hotSpotSpecified) {
+        if (imageRect.contains(specifiedHotSpot)) {
+            return specifiedHotSpot;
+        }
+
+        return IntPoint(
+            clampTo<int>(specifiedHotSpot.x(), imageRect.x(), imageRect.maxX() - 1),
+            clampTo<int>(specifiedHotSpot.y(), imageRect.y(), imageRect.maxY() - 1));
+    }
 
     // If hot spot is not specified externally, it can be extracted from some image formats (e.g. .cur).
     IntPoint intrinsicHotSpot;
@@ -44,6 +52,7 @@ IntPoint determineHotSpot(Image* image, const IntPoint& specifiedHotSpot)
     if (imageHasIntrinsicHotSpot && imageRect.contains(intrinsicHotSpot))
         return intrinsicHotSpot;
 
+    // If neither is provided, use a default value of (0, 0).
     return IntPoint();
 }
 
@@ -142,18 +151,18 @@ const Cursor& Cursor::fromType(Cursor::Type type)
     return pointerCursor();
 }
 
-Cursor::Cursor(Image* image, const IntPoint& hotSpot)
+Cursor::Cursor(Image* image, bool hotSpotSpecified, const IntPoint& hotSpot)
     : m_type(Custom)
     , m_image(image)
-    , m_hotSpot(determineHotSpot(image, hotSpot))
+    , m_hotSpot(determineHotSpot(image, hotSpotSpecified, hotSpot))
     , m_imageScaleFactor(1)
 {
 }
 
-Cursor::Cursor(Image* image, const IntPoint& hotSpot, float scale)
+Cursor::Cursor(Image* image, bool hotSpotSpecified, const IntPoint& hotSpot, float scale)
     : m_type(Custom)
     , m_image(image)
-    , m_hotSpot(determineHotSpot(image, hotSpot))
+    , m_hotSpot(determineHotSpot(image, hotSpotSpecified, hotSpot))
     , m_imageScaleFactor(scale)
 {
 }

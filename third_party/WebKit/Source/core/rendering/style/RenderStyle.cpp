@@ -701,11 +701,11 @@ void RenderStyle::updatePropertySpecificDifferences(const RenderStyle& other, St
     }
 }
 
-void RenderStyle::addCursor(PassRefPtr<StyleImage> image, const IntPoint& hotSpot)
+void RenderStyle::addCursor(PassRefPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
 {
     if (!rareInheritedData.access()->cursorData)
         rareInheritedData.access()->cursorData = CursorList::create();
-    rareInheritedData.access()->cursorData->append(CursorData(image, hotSpot));
+    rareInheritedData.access()->cursorData->append(CursorData(image, hotSpotSpecified, hotSpot));
 }
 
 void RenderStyle::setCursorList(PassRefPtr<CursorList> other)

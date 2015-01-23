@@ -32,8 +32,9 @@ namespace blink {
 
 class CursorData {
 public:
-    CursorData(PassRefPtr<StyleImage> image, const IntPoint& hotSpot)
+    CursorData(PassRefPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
         : m_image(image)
+        , m_hotSpotSpecified(hotSpotSpecified)
         , m_hotSpot(hotSpot)
     {
     }
@@ -51,11 +52,14 @@ public:
     StyleImage* image() const { return m_image.get(); }
     void setImage(PassRefPtr<StyleImage> image) { m_image = image; }
 
+    bool hotSpotSpecified() const { return m_hotSpotSpecified; }
+
     // Hot spot in the image in logical pixels.
     const IntPoint& hotSpot() const { return m_hotSpot; }
 
 private:
     RefPtr<StyleImage> m_image;
+    bool m_hotSpotSpecified;
     IntPoint m_hotSpot; // for CSS3 support
 };
 

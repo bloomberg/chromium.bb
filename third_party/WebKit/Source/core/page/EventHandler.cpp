@@ -1088,6 +1088,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
             if (!cachedImage)
                 continue;
             float scale = styleImage->imageScaleFactor();
+            bool hotSpotSpecified = (*cursors)[i].hotSpotSpecified();
             // Get hotspot and convert from logical pixels to physical pixels.
             IntPoint hotSpot = (*cursors)[i].hotSpot();
             hotSpot.scale(scale, scale);
@@ -1104,7 +1105,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
             // Ensure no overflow possible in calculations above.
             if (scale < minimumCursorScale)
                 continue;
-            return Cursor(image, hotSpot, scale);
+            return Cursor(image, hotSpotSpecified, hotSpot, scale);
         }
     }
 
