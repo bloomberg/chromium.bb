@@ -20,9 +20,11 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/common/chrome_switches.h"
@@ -1027,28 +1029,13 @@ void DevToolsWindow::OpenInNewTab(const std::string& url) {
       GURL(url), content::Referrer(), NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, false);
   WebContents* inspected_web_contents = GetInspectedWebContents();
-  if (inspected_web_contents) {
-    inspected_web_contents->OpenURL(params);
-  } else {
-    chrome::HostDesktopType host_desktop_type;
-    if (browser_) {
-      host_desktop_type = browser_->host_desktop_type();
-    } else {
-      // There should always be a browser when there are no inspected web
-      // contents.
-      NOTREACHED();
-      host_desktop_type = chrome::GetActiveDesktop();
-    }
+  if (!inspected_web_contents || !inspected_web_contents->OpenURL(params)) {
+    chrome::HostDesktopType host_desktop_type =
+        browser_ ? browser_->host_desktop_type() : chrome::GetActiveDesktop();
 
-    const BrowserList* browser_list =
-        BrowserList::GetInstance(host_desktop_type);
-    for (BrowserList::const_iterator it = browser_list->begin();
-         it != browser_list->end(); ++it) {
-      if ((*it)->type() == Browser::TYPE_TABBED) {
-        (*it)->OpenURL(params);
-        break;
-      }
-    }
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile_, host_desktop_type);
+    chrome::AddSelectedTabWithURL(displayer.browser(), GURL(url),
+                                  ui::PAGE_TRANSITION_LINK);
   }
 }
 
