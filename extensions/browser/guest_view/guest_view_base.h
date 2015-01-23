@@ -296,6 +296,26 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   ~GuestViewBase() override;
 
+  // WebContentsObserver implementation.
+  void DidStopLoading(content::RenderViewHost* render_view_host) final;
+  void RenderViewReady() final;
+  void WebContentsDestroyed() final;
+
+  // WebContentsDelegate implementation.
+  void ActivateContents(content::WebContents* contents) final;
+  void DeactivateContents(content::WebContents* contents) final;
+  void ContentsZoomChange(bool zoom_in) override;
+  void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
+  void RunFileChooser(content::WebContents* web_contents,
+                      const content::FileChooserParams& params) override;
+  bool ShouldFocusPageAfterCrash() final;
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) final;
+  void UpdatePreferredSize(content::WebContents* web_contents,
+                           const gfx::Size& pref_size) final;
+
  private:
   class OwnerLifetimeObserver;
 
@@ -319,26 +339,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void StopTrackingEmbedderZoomLevel();
 
   static void RegisterGuestViewTypes();
-
-  // WebContentsObserver implementation.
-  void DidStopLoading(content::RenderViewHost* render_view_host) final;
-  void RenderViewReady() final;
-  void WebContentsDestroyed() final;
-
-  // WebContentsDelegate implementation.
-  void ActivateContents(content::WebContents* contents) final;
-  void DeactivateContents(content::WebContents* contents) final;
-  void ContentsZoomChange(bool zoom_in) override;
-  void HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override;
-  void RunFileChooser(content::WebContents* web_contents,
-                      const content::FileChooserParams& params) override;
-  bool ShouldFocusPageAfterCrash() final;
-  bool PreHandleGestureEvent(content::WebContents* source,
-                             const blink::WebGestureEvent& event) final;
-  void UpdatePreferredSize(content::WebContents* web_contents,
-                           const gfx::Size& pref_size) final;
 
   // This guest tracks the lifetime of the WebContents specified by
   // |owner_web_contents_|. If |owner_web_contents_| is destroyed then this
