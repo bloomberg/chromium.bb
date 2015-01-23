@@ -150,6 +150,10 @@ class Pixel(cloud_storage_test_base.TestBase):
   test = _PixelValidator
 
   @classmethod
+  def Name(cls):
+    return 'pixel'
+
+  @classmethod
   def AddBenchmarkCommandLineArgs(cls, group):
     super(Pixel, cls).AddBenchmarkCommandLineArgs(group)
     group.add_option('--reference-dir',

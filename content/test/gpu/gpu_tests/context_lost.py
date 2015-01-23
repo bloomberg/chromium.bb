@@ -321,6 +321,11 @@ class ContextLost(benchmark_module.Benchmark):
   enabled = True
   test = _ContextLostValidator
 
+
+  @classmethod
+  def Name(cls):
+    return 'context_lost'
+
   def CreateExpectations(self):
     return context_lost_expectations.ContextLostExpectations()
 

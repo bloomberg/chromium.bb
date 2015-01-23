@@ -59,6 +59,10 @@ class TraceTest(benchmark.Benchmark):
   """Tests GPU traces"""
   test = _TraceValidator
 
+  @classmethod
+  def Name(cls):
+    return 'trace_test'
+
   def CreateExpectations(self):
     return trace_test_expectations.TraceTestExpectations()
 

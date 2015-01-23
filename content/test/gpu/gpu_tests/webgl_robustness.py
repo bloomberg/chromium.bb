@@ -61,6 +61,10 @@ class WebglRobustnessPage(page.Page):
 class WebglRobustness(benchmark.Benchmark):
   test = WebglConformanceValidator
 
+  @classmethod
+  def Name(cls):
+    return 'webgl_robustness'
+
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
       file_path=conformance_path,

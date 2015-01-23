@@ -103,6 +103,10 @@ class MemoryTest(benchmark.Benchmark):
   """Tests GPU memory limits"""
   test = _MemoryValidator
 
+  @classmethod
+  def Name(cls):
+    return 'memory_test'
+
   def CreateExpectations(self):
     return memory_test_expectations.MemoryTestExpectations()
 

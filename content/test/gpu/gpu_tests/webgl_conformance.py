@@ -103,6 +103,10 @@ class WebglConformance(benchmark_module.Benchmark):
     super(WebglConformance, self).__init__(max_failures=10)
 
   @classmethod
+  def Name(cls):
+    return 'webgl_conformance'
+
+  @classmethod
   def AddBenchmarkCommandLineArgs(cls, group):
     group.add_option('--webgl-conformance-version',
         help='Version of the WebGL conformance tests to run.',

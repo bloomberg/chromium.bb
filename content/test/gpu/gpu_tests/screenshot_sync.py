@@ -48,6 +48,10 @@ class ScreenshotSyncProcess(benchmark.Benchmark):
   they were requested"""
   test = _ScreenshotSyncValidator
 
+  @classmethod
+  def Name(cls):
+    return 'screenshot_sync'
+
   def CreateExpectations(self):
     return expectations.ScreenshotSyncExpectations()
 
