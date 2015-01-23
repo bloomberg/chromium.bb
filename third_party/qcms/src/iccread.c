@@ -356,6 +356,7 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
 
 #define DESC_TYPE 0x64657363 // 'desc'
 #define MLUC_TYPE 0x6d6c7563 // 'mluc'
+#define MMOD_TYPE 0x6D6D6F64 // 'mmod'
 
 static bool read_tag_descType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
 {
@@ -405,9 +406,10 @@ invalid_desc_tag:
 
 #if defined(__APPLE__)
 
+// Use the dscm tag to change profile description "Display" to its more specific en-localized monitor name, if any.
+
 #define TAG_dscm  0x6473636D // 'dscm'
 
-// Use dscm tag to change profile description "Display" to its more specific en-localized monitor name, if any.
 static bool read_tag_dscmType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
 {
 	if (strcmp(profile->description, "Display") != 0)
@@ -459,6 +461,40 @@ static bool read_tag_dscmType(qcms_profile *profile, struct mem_source *src, str
 
 invalid_dscm_tag:
 	invalid_source(src, "invalid dscm tag");
+	return false;
+}
+
+// Use the mmod tag to change profile description "Display" to its specific mmod maker model data, if any.
+
+#define TAG_mmod  0x6D6D6F64 // 'mmod'
+
+static bool read_tag_mmodType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
+{
+	if (strcmp(profile->description, "Display") != 0)
+		return true;
+
+	struct tag *tag = find_tag(index, tag_id);
+	if (tag) {
+		const uint8_t length = 4 * 4; // Four 4-byte fields: 'mmod', 0, maker, model.
+
+		uint32_t offset = tag->offset;
+		if (tag->size < 40 || read_u32(src, offset) != MMOD_TYPE)
+			goto invalid_mmod_tag;
+
+		for (uint8_t i = 0; i < length; ++i) {
+			uint8_t value = read_u8(src, offset + i);
+			if (!src->valid)
+				goto invalid_mmod_tag;
+			profile->description[i] = value ? value : '.';
+		}
+		profile->description[length] = 0;
+	}
+
+	if (src->valid)
+		return true;
+
+invalid_mmod_tag:
+	invalid_source(src, "invalid mmod tag");
 	return false;
 }
 
@@ -1162,6 +1198,8 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
 		goto invalid_tag_table;
 #if defined(__APPLE__)
 	if (!read_tag_dscmType(profile, src, index, TAG_dscm))
+		goto invalid_tag_table;
+	if (!read_tag_mmodType(profile, src, index, TAG_mmod))
 		goto invalid_tag_table;
 #endif // __APPLE__
 

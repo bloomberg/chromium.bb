@@ -47,6 +47,8 @@ google.patch contains the following modifications. Apply with
    - https://code.google.com/p/chromium/issues/detail?id=401971
  - [APPLE port] Use en-localized profile description names
    - https://code.google.com/p/chromium/issues/detail?id=401971
+ - [APPLE port] Use mmod data for profile descriptions
+   - https://code.google.com/p/chromium/issues/detail?id=401971
  - Minor variable name change: description -> description_offset
    - https://code.google.com/p/chromium/issues/detail?id=401971
 To regenerate google.patch:
