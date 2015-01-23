@@ -325,7 +325,8 @@ remoting.XmppConnection.prototype.onRead_ = function(readInfo) {
     this.streamParser_.appendData(readInfo.data);
   }
 
-  if (!this.startTlsPending_) {
+  if (!this.startTlsPending_ &&
+      this.state_ != remoting.SignalStrategy.State.CLOSED) {
     this.tryRead_();
   }
 };
