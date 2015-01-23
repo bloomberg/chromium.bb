@@ -24,7 +24,7 @@ public class OMADownloadHandlerTest extends InstrumentationTestCase {
      * right size for OMAInfo.
      */
     @SmallTest
-    @Feature({"OMADownloadHandler"})
+    @Feature({"Download"})
     public void testGetSize() {
         OMADownloadHandler.OMAInfo info = new OMADownloadHandler.OMAInfo();
         assertEquals(OMADownloadHandler.getSize(info), 0);
@@ -44,7 +44,7 @@ public class OMADownloadHandlerTest extends InstrumentationTestCase {
      * right DRM type.
      */
     @SmallTest
-    @Feature({"OMADownloadHandler"})
+    @Feature({"Download"})
     public void testGetDrmType() {
         OMADownloadHandler.OMAInfo info = new OMADownloadHandler.OMAInfo();
         assertEquals(info.getDrmType(), null);
@@ -65,7 +65,7 @@ public class OMADownloadHandlerTest extends InstrumentationTestCase {
      * right MIME type.
      */
     @SmallTest
-    @Feature({"OMADownloadHandler"})
+    @Feature({"Download"})
     public void testGetOpennableType() {
         PackageManager pm = getInstrumentation().getContext().getPackageManager();
         OMADownloadHandler.OMAInfo info = new OMADownloadHandler.OMAInfo();
@@ -90,7 +90,7 @@ public class OMADownloadHandlerTest extends InstrumentationTestCase {
      * correct OMAInfo if the input is valid.
      */
     @SmallTest
-    @Feature({"OMADownloadHandler"})
+    @Feature({"Download"})
     public void testParseValidDownloadDescriptor() {
         String downloadDescriptor =
                 "<media xmlns=\"http://www.openmobilealliance.org/xmlns/dd\">\r\n"
@@ -125,7 +125,7 @@ public class OMADownloadHandlerTest extends InstrumentationTestCase {
      * result on invalid input.
      */
     @SmallTest
-    @Feature({"OMADownloadHandler"})
+    @Feature({"Download"})
     public void testParseInvalidDownloadDescriptor() {
         String downloadDescriptor =
                 "<media xmlns=\"http://www.openmobilealliance.org/xmlns/dd\">\r\n"

@@ -23,6 +23,7 @@
 #include "chrome/browser/android/cookies/cookies_fetcher.h"
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/dom_distiller/feedback_reporter_android.h"
+#include "chrome/browser/android/download/chrome_download_delegate.h"
 #include "chrome/browser/android/enhanced_bookmarks/enhanced_bookmarks_bridge.h"
 #include "chrome/browser/android/favicon_helper.h"
 #include "chrome/browser/android/feature_utilities.h"
@@ -113,6 +114,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AppMenuDragHelper", RegisterAppMenuDragHelper},
     {"Bookmarks", bookmarks::android::RegisterBookmarks},
     {"DomDistiller", dom_distiller::android::RegisterDomDistiller},
+    {"ChromeDownloadDelegate", RegisterChromeDownloadDeleagte},
     {"GCMDriver", gcm::android::RegisterGCMDriverJni},
     {"Invalidation", invalidation::android::RegisterInvalidationJni},
     {"NavigationInterception",

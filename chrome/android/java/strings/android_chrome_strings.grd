@@ -959,6 +959,18 @@ Drag from top to exit.
       </message>
 
       <!-- Download UI -->
+      <message name="IDS_DOWNLOAD_NO_SDCARD_DLG_TITLE_product_nosdcard" desc="Dialog title [CHAR LIMIT=25]">
+        USB storage unavailable
+      </message>
+      <message name="IDS_DOWNLOAD_NO_SDCARD_DLG_TITLE_product_default" desc="Dialog title [CHAR LIMIT=25]">
+        No SD card
+      </message>
+      <message name="IDS_DOWNLOAD_SDCARD_BUSY_DLG_TITLE_product_nosdcard" desc="Title for a dialog informing the user that the SD card used for external storage is busy so they cannot download anything [CHAR LIMIT=30]">
+        USB storage unavailable
+      </message>
+      <message name="IDS_DOWNLOAD_SDCARD_BUSY_DLG_TITLE_product_default" desc="Title for a dialog informing the user that the SD card used for external storage is busy so they cannot download anything [CHAR-LIMIT=30]">
+        SD card unavailable
+      </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_FAILED" desc="Download notification to be displayed when a download fails.">
         Download failed.
       </message>

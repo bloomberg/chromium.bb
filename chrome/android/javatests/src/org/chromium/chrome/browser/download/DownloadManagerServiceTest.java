@@ -233,7 +233,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
     }
 
     @MediumTest
-    @Feature({"Downloads"})
+    @Feature({"Download"})
     public void testDownloadProgressIsCalled() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
@@ -264,7 +264,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
     }
 
     @MediumTest
-    @Feature({"Downloads"})
+    @Feature({"Download"})
     public void testOnlyOneProgressForFastUpdates() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
@@ -289,7 +289,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
     }
 
     @MediumTest
-    @Feature({"Downloads"})
+    @Feature({"Download"})
     public void testDownloadCompletedIsCalled() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
@@ -326,7 +326,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
     }
 
     @MediumTest
-    @Feature({"Downloads"})
+    @Feature({"Download"})
     public void testMultipleDownloadProgress() {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
@@ -348,7 +348,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
     }
 
     @MediumTest
-    @Feature({"Downloads"})
+    @Feature({"Download"})
     public void testInProgressDownloadsAreCancelled() {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
@@ -386,7 +386,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
      * will clear the OMA notifications and pass the notification URI to {@link OMADownloadHandler}.
      */
     @MediumTest
-    @Feature({"Downloads"})
+    @Feature({"Download"})
     public void testClearPendingOMADownloads() throws InterruptedException {
         DownloadManager manager =
                 (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
@@ -417,7 +417,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
      * SharedPrefs.
      */
     @MediumTest
-    @Feature({"Downloads"})
+    @Feature({"Download"})
     public void testEnqueueOMADownloads() throws InterruptedException {
         DownloadInfo info = new DownloadInfo.Builder()
                 .setDownloadId(0)
@@ -457,7 +457,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
      * returns the right result for varying MIME types and Content-Dispositions.
      */
     @SmallTest
-    @Feature({"ChromeDownloadListener"})
+    @Feature({"Download"})
     public void testShouldOpenAfterDownload() {
         // Should not open any download type MIME types.
         assertFalse(
