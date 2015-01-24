@@ -91,15 +91,12 @@
               "win_chromium_x64_rel_ng": ["defaulttests"]
             },
             "tryserver.chromium.gpu": {
-                "linux_gpu": ["defaulttests"],
-                "linux_gpu_triggered_tests": ["defaulttests"],
                 "win_gpu": ["defaulttests"],
                 "win_gpu_triggered_tests": ["defaulttests"]
             }
         },
         "triggered": {
             "tryserver.chromium.gpu": {
-                "linux_gpu_triggered_tests": "linux_gpu",
                 "win_gpu_triggered_tests": "win_gpu"
             }
         }
