@@ -169,7 +169,7 @@ TEST_F(ExitCodeWatcherTest, ExitCodeWatcherOnExitedProcess) {
   EXPECT_TRUE(watcher.Initialize(sleeper.process().Duplicate()));
 
   // Verify that the watcher wrote a sentinel for the process.
-  VerifyWroteExitCode(sleeper.process().pid(), STILL_ACTIVE);
+  VerifyWroteExitCode(sleeper.process().Pid(), STILL_ACTIVE);
 
   // Kill the sleeper, and make sure it's exited before we continue.
   ASSERT_NO_FATAL_FAILURE(sleeper.Kill(kExitCode, true));
@@ -177,7 +177,7 @@ TEST_F(ExitCodeWatcherTest, ExitCodeWatcherOnExitedProcess) {
   watcher.WaitForExit();
   EXPECT_EQ(kExitCode, watcher.exit_code());
 
-  VerifyWroteExitCode(sleeper.process().pid(), kExitCode);
+  VerifyWroteExitCode(sleeper.process().Pid(), kExitCode);
 }
 
 }  // namespace browser_watcher

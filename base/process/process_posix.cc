@@ -75,7 +75,7 @@ Process Process::Duplicate() const {
   return Process(process_);
 }
 
-ProcessId Process::pid() const {
+ProcessId Process::Pid() const {
   DCHECK(IsValid());
   return GetProcId(process_);
 }

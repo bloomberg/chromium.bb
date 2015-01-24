@@ -107,7 +107,7 @@ class BootstrapSandboxTest : public base::MultiProcessTest {
     EXPECT_TRUE(process.WaitForExit(&code));
     EXPECT_EQ(0, code);
     if (out_pid)
-      *out_pid = process.pid();
+      *out_pid = process.Pid();
   }
 
  protected:
@@ -129,7 +129,7 @@ TEST_F(BootstrapSandboxTest, DistributedNotifications_Unsandboxed) {
 
   [observer waitForNotification];
   EXPECT_EQ(1, [observer receivedCount]);
-  EXPECT_EQ(process.pid(), [[observer object] intValue]);
+  EXPECT_EQ(process.Pid(), [[observer object] intValue]);
 }
 
 // Run the test with the sandbox enabled without notifications on the policy

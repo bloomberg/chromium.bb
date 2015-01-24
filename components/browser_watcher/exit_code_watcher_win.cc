@@ -30,7 +30,12 @@ ExitCodeWatcher::~ExitCodeWatcher() {
 }
 
 bool ExitCodeWatcher::Initialize(base::Process process) {
-  DWORD process_pid = process.pid();
+  if (!process.IsValid()) {
+    LOG(ERROR) << "Invalid parent handle, can't get parent process ID.";
+    return false;
+  }
+
+  DWORD process_pid = process.Pid();
   if (process_pid == 0) {
     LOG(ERROR) << "Invalid parent handle, can't get parent process ID.";
     return false;
@@ -44,7 +49,7 @@ bool ExitCodeWatcher::Initialize(base::Process process) {
     return false;
   }
 
-  // Success, take ownership of the process handle.
+  // Success, take ownership of the process.
   process_ = process.Pass();
   process_creation_time_ = base::Time::FromFileTime(creation_time);
 
@@ -68,7 +73,7 @@ bool ExitCodeWatcher::WriteProcessExitCode(int exit_code) {
                         registry_path_.c_str(),
                         KEY_WRITE);
   base::string16 value_name(
-      GetValueName(process_creation_time_, process_.pid()));
+      GetValueName(process_creation_time_, process_.Pid()));
 
   ULONG result = key.WriteValue(value_name.c_str(), exit_code);
   if (result != ERROR_SUCCESS) {

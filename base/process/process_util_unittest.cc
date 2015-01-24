@@ -201,7 +201,7 @@ TEST_F(ProcessUtilTest, GetProcId) {
   EXPECT_NE(0ul, id1);
   base::Process process = SpawnChild("SimpleChildProcess");
   ASSERT_TRUE(process.IsValid());
-  base::ProcessId id2 = process.pid();
+  base::ProcessId id2 = process.Pid();
   EXPECT_NE(0ul, id2);
   EXPECT_NE(id1, id2);
 }

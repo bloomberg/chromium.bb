@@ -99,7 +99,7 @@ void RunCommand(const std::vector<std::string>& argv,
 
   int exit_code = 0;
   if (!process.WaitForExit(&exit_code)) {
-    LOG(ERROR) << "Can't get exit code for pid " << process.pid();
+    LOG(ERROR) << "Can't get exit code for pid " << process.Pid();
     if (!callback.is_null())
       callback.Run(false);
 

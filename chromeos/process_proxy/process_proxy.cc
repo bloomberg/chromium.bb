@@ -237,7 +237,7 @@ bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
   // TODO(rvargas) crbug/417532: This is somewhat wrong but the interface of
   // Open vends pid_t* so ownership is quite vague anyway, and Process::Close
   // doesn't do much in POSIX.
-  *pid = process.pid();
+  *pid = process.Pid();
   return process.IsValid();
 }
 

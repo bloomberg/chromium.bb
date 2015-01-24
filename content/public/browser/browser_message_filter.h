@@ -81,7 +81,7 @@ class CONTENT_EXPORT BrowserMessageFilter
   base::ProcessHandle PeerHandle();
 
   // Can be called on any thread, after OnChannelConnected is called.
-  base::ProcessId peer_pid() const { return peer_process_.pid(); }
+  base::ProcessId peer_pid() const { return peer_process_.Pid(); }
 
   void set_peer_process_for_testing(base::Process peer_process) {
     peer_process_ = peer_process.Pass();

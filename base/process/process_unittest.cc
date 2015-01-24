@@ -68,7 +68,7 @@ TEST_F(ProcessTest, Duplicate) {
   Process process2 = process1.Duplicate();
   ASSERT_TRUE(process1.IsValid());
   ASSERT_TRUE(process2.IsValid());
-  EXPECT_EQ(process1.pid(), process2.pid());
+  EXPECT_EQ(process1.Pid(), process2.Pid());
   EXPECT_FALSE(process1.is_current());
   EXPECT_FALSE(process2.is_current());
 
@@ -83,7 +83,7 @@ TEST_F(ProcessTest, DuplicateCurrent) {
   Process process2 = process1.Duplicate();
   ASSERT_TRUE(process1.IsValid());
   ASSERT_TRUE(process2.IsValid());
-  EXPECT_EQ(process1.pid(), process2.pid());
+  EXPECT_EQ(process1.Pid(), process2.Pid());
   EXPECT_TRUE(process1.is_current());
   EXPECT_TRUE(process2.is_current());
 
@@ -98,7 +98,7 @@ TEST_F(ProcessTest, DeprecatedGetProcessFromHandle) {
   Process process2 = Process::DeprecatedGetProcessFromHandle(process1.Handle());
   ASSERT_TRUE(process1.IsValid());
   ASSERT_TRUE(process2.IsValid());
-  EXPECT_EQ(process1.pid(), process2.pid());
+  EXPECT_EQ(process1.Pid(), process2.Pid());
   EXPECT_FALSE(process1.is_current());
   EXPECT_FALSE(process2.is_current());
 

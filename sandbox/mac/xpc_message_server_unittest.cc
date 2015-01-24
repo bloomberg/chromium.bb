@@ -159,8 +159,8 @@ XPC_TEST_F(GetSenderPID)  // {
   ASSERT_TRUE(child.WaitForExit(&exit_code));
   EXPECT_EQ(0, exit_code);
 
-  EXPECT_EQ(child.pid(), sender_pid);
-  EXPECT_EQ(child.pid(), child_pid);
+  EXPECT_EQ(child.Pid(), sender_pid);
+  EXPECT_EQ(child.Pid(), child_pid);
   EXPECT_EQ(sender_pid, child_pid);
 }
 

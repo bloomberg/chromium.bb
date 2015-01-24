@@ -173,7 +173,7 @@ void ImeKeyboardX11::MaybeExecuteSetLayoutCommand() {
   PollUntilChildFinish(process.Handle());
 
   DVLOG(1) << "ExecuteSetLayoutCommand: " << layout_to_set
-           << ": pid=" << process.pid();
+           << ": pid=" << process.Pid();
 }
 
 // Delay and loop until child process finishes and call the callback.

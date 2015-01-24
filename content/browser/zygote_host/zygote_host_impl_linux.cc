@@ -187,15 +187,15 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
         fds[0], kZygoteHelloMessage, sizeof(kZygoteHelloMessage), &pid_));
     CHECK_GT(pid_, 1);
 
-    if (process.pid() != pid_) {
+    if (process.Pid() != pid_) {
       // Reap the sandbox.
-      base::EnsureProcessGetsReaped(process.pid());
+      base::EnsureProcessGetsReaped(process.Pid());
     }
   } else {
     // Not using the SUID sandbox.
     // Note that ~base::Process() will reset the internal value, but there's no
     // real "handle" on POSIX so that is safe.
-    pid_ = process.pid();
+    pid_ = process.Pid();
   }
 
   close(fds[1]);
@@ -481,7 +481,7 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
     sandbox_helper_process =
         base::LaunchProcess(adj_oom_score_cmdline, options);
     if (sandbox_helper_process.IsValid())
-      base::EnsureProcessGetsReaped(sandbox_helper_process.pid());
+      base::EnsureProcessGetsReaped(sandbox_helper_process.Pid());
   } else if (!using_suid_sandbox_) {
     if (!base::AdjustOOMScore(pid, score))
       PLOG(ERROR) << "Failed to adjust OOM score of renderer with pid " << pid;

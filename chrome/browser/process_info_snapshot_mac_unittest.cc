@@ -132,12 +132,12 @@ TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
   PCHECK(HANDLE_EINTR(read(fds[0], buf, 1)) == 1);
 
   std::vector<base::ProcessId> pid_list;
-  pid_list.push_back(process.pid());
+  pid_list.push_back(process.Pid());
   ProcessInfoSnapshot snapshot;
   ASSERT_TRUE(snapshot.Sample(pid_list));
 
   ProcessInfoSnapshot::ProcInfoEntry proc_info;
-  ASSERT_TRUE(snapshot.GetProcInfo(process.pid(), &proc_info));
+  ASSERT_TRUE(snapshot.GetProcInfo(process.Pid(), &proc_info));
   // Effective user ID should be 0 (root).
   EXPECT_EQ(proc_info.euid, 0u);
   // Real user ID should match the calling process's user id.

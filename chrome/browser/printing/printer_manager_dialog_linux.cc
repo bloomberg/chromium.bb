@@ -54,7 +54,7 @@ void DetectAndOpenPrinterConfigDialog() {
     LOG(ERROR) << "Failed to open printer manager dialog ";
     return;
   }
-  base::EnsureProcessGetsReaped(process.pid());
+  base::EnsureProcessGetsReaped(process.Pid());
 }
 
 }  // anonymous namespace

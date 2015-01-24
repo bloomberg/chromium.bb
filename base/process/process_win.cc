@@ -100,7 +100,7 @@ Process Process::Duplicate() const {
   return Process(out_handle);
 }
 
-ProcessId Process::pid() const {
+ProcessId Process::Pid() const {
   DCHECK(IsValid());
   return GetProcId(Handle());
 }

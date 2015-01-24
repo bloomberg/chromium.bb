@@ -97,7 +97,7 @@ bool StartProxyConfigUtil(const char* command[]) {
     LOG(ERROR) << "StartProxyConfigUtil failed to start " << command[0];
     return false;
   }
-  base::EnsureProcessGetsReaped(process.pid());
+  base::EnsureProcessGetsReaped(process.Pid());
   return true;
 }
 

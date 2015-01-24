@@ -8,7 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
@@ -296,7 +296,7 @@ bool CloseDialogWindow(HWND dialog_window) {
 class DismissTheWindow : public base::DelegateSimpleThread::Delegate {
  public:
   DismissTheWindow()
-      : owner_process_(base::Process::Current().pid()) {
+      : owner_process_(base::GetCurrentProcId()) {
   }
 
   virtual void Run() {

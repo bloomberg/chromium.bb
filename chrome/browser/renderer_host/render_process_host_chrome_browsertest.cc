@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_Backgrounding) {
   GURL page2("data:text/html,hello world2");
   base::Process process2 = ShowSingletonTab(page2);
   ASSERT_TRUE(process2.IsValid());
-  EXPECT_NE(process1.pid(), process2.pid());
+  EXPECT_NE(process1.Pid(), process2.Pid());
   EXPECT_TRUE(process1.IsProcessBackgrounded());
   EXPECT_FALSE(process2.IsProcessBackgrounded());
 
@@ -330,15 +330,15 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_Backgrounding) {
   GURL page3("data:text/html,hello world3");
   base::Process process3 = OpenBackgroundTab(page3);
   ASSERT_TRUE(process3.IsValid());
-  EXPECT_NE(process3.pid(), process1.pid());
-  EXPECT_NE(process3.pid(), process2.pid());
+  EXPECT_NE(process3.Pid(), process1.Pid());
+  EXPECT_NE(process3.Pid(), process2.Pid());
   EXPECT_TRUE(process1.IsProcessBackgrounded());
   EXPECT_FALSE(process2.IsProcessBackgrounded());
   EXPECT_TRUE(process3.IsProcessBackgrounded());
 
   // Navigate back to the first page. Its renderer should be in foreground
   // again while the other renderers should be backgrounded.
-  EXPECT_EQ(process1.pid(), ShowSingletonTab(page1).pid());
+  EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
   EXPECT_FALSE(process1.IsProcessBackgrounded());
   EXPECT_TRUE(process2.IsProcessBackgrounded());
   EXPECT_TRUE(process3.IsProcessBackgrounded());

@@ -80,7 +80,7 @@ class BASE_EXPORT Process {
   Process Duplicate() const;
 
   // Get the PID for this process.
-  ProcessId pid() const;
+  ProcessId Pid() const;
 
   // Returns true if this process is the current process.
   bool is_current() const;

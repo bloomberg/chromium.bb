@@ -39,7 +39,7 @@ void XDGUtil(const std::string& util, const std::string& arg) {
 
   base::Process process = base::LaunchProcess(argv, options);
   if (process.IsValid())
-    base::EnsureProcessGetsReaped(process.pid());
+    base::EnsureProcessGetsReaped(process.Pid());
 }
 
 void XDGOpen(const std::string& path) {

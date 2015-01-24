@@ -30,7 +30,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
     // NaClDebugExceptionHandlerRun() receives debug events for the
     // process.
     bool attached = false;
-    int pid = nacl_process_.pid();
+    int pid = nacl_process_.Pid();
     if (nacl_process_.IsValid()) {
       DCHECK(pid);
       if (!DebugActiveProcess(pid)) {
