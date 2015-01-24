@@ -46,14 +46,20 @@ void GamepadBrowserMessageFilter::OnGamepadDisconnected(
 void GamepadBrowserMessageFilter::OnGamepadStartPolling(
     base::SharedMemoryHandle* renderer_handle) {
   GamepadService* service = GamepadService::GetInstance();
-  CHECK(!is_started_);
+  DCHECK(!is_started_);
+  if (is_started_)
+    return;
+
   is_started_ = true;
   service->ConsumerBecameActive(this);
   *renderer_handle = service->GetSharedMemoryHandleForProcess(PeerHandle());
 }
 
 void GamepadBrowserMessageFilter::OnGamepadStopPolling() {
-  CHECK(is_started_);
+  DCHECK(is_started_);
+  if (!is_started_)
+    return;
+
   is_started_ = false;
   GamepadService::GetInstance()->ConsumerBecameInactive(this);
 }
