@@ -188,7 +188,8 @@ def BuildTestSets(tests, chroot_available, network):
   return testsets
 
 
-def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False):
+def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False,
+             failfast=False):
   """Execute |paths| with |jobs| in parallel (including |network| tests).
 
   Args:
@@ -197,6 +198,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False):
     chroot_available: Whether we can run tests inside the sdk.
     network: Whether to run network based tests.
     dryrun: Do everything but execute the test.
+    failfast: Stop on first failure
 
   Returns:
     True if all tests pass, else False.
@@ -218,6 +220,10 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False):
 
     # Fork each test and add it to the list.
     for test, cmd, tmpfile in testsets:
+      if failed and failfast:
+        cros_build_lib.Error('failure detected; stopping new tests')
+        break
+
       if len(pids) >= jobs:
         if WaitOne():
           failed = True
@@ -372,6 +378,8 @@ def _ReExecuteIfNeeded(argv, network):
 
 def GetParser():
   parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('-f', '--failfast', default=False, action='store_true',
+                      help='Stop on first failure')
   parser.add_argument('-q', '--quick', default=False, action='store_true',
                       help='Only run the really quick tests')
   parser.add_argument('-n', '--dry-run', default=False, action='store_true',
@@ -423,7 +431,8 @@ def main(argv):
 
     ret = cros_build_lib.TimedCommand(
         RunTests, tests, jobs=jobs, chroot_available=ChrootAvailable(),
-        network=opts.network, dryrun=opts.dryrun, timed_log_callback=_Finished)
+        network=opts.network, dryrun=opts.dryrun, failfast=opts.failfast,
+        timed_log_callback=_Finished)
     if not ret:
       return 1
 
