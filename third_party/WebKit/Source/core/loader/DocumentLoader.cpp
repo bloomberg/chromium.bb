@@ -500,7 +500,14 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
 void DocumentLoader::commitData(const char* bytes, size_t length)
 {
     ensureWriter(m_response.mimeType());
-    ASSERT(m_frame->document()->parsing());
+
+    // This can happen if document.close() is called by an event handler while
+    // there's still pending incoming data.
+    if (m_frame && !m_frame->document()->parsing()) {
+        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+        return;
+    }
+
     m_writer->addData(bytes, length);
 }
 
