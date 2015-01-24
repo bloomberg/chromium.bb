@@ -2273,6 +2273,18 @@ legacy_fullscreen(struct weston_wm *wm,
 	return 0;
 }
 
+static bool
+weston_wm_window_type_inactive(struct weston_wm_window *window)
+{
+	struct weston_wm *wm = window->wm;
+
+	return window->type == wm->atom.net_wm_window_type_tooltip ||
+	       window->type == wm->atom.net_wm_window_type_dropdown ||
+	       window->type == wm->atom.net_wm_window_type_dnd ||
+	       window->type == wm->atom.net_wm_window_type_combo ||
+	       window->type == wm->atom.net_wm_window_type_popup;
+}
+
 static void
 xserver_map_shell_surface(struct weston_wm_window *window,
 			  struct weston_surface *surface)
@@ -2282,6 +2294,7 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 		&wm->server->compositor->shell_interface;
 	struct weston_output *output;
 	struct weston_wm_window *parent;
+	int flags = 0;
 
 	weston_wm_window_read_properties(window);
 
@@ -2340,11 +2353,20 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 					      WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
 	} else if (window->transient_for && window->transient_for->surface) {
 		parent = window->transient_for;
+		if (weston_wm_window_type_inactive(window))
+			flags = WL_SHELL_SURFACE_TRANSIENT_INACTIVE;
 		shell_interface->set_transient(window->shsurf,
 					       parent->surface,
 					       window->x - parent->x,
-					       window->y - parent->y, 0);
+					       window->y - parent->y, flags);
 	} else {
-		shell_interface->set_toplevel(window->shsurf);
+		if (weston_wm_window_type_inactive(window)) {
+			shell_interface->set_xwayland(window->shsurf,
+							window->x,
+							window->y,
+							WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
+		} else {
+			shell_interface->set_toplevel(window->shsurf);
+		}
 	}
 }
