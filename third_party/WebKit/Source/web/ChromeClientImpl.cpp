@@ -199,8 +199,6 @@ void ChromeClientImpl::takeFocus(WebFocusType type)
 
 void ChromeClientImpl::focusedNodeChanged(Node* fromNode, Node* toNode)
 {
-    // FIXME: remove.
-    m_webView->client()->focusedNodeChanged(WebNode(toNode));
     m_webView->client()->focusedNodeChanged(WebNode(fromNode), WebNode(toNode));
 
     WebURL focusURL;
