@@ -10,6 +10,18 @@
 namespace ui {
 namespace {
 
+gfx::Vector2dF ComputeLineOffsetFromBottom(const SelectionBound& bound) {
+  gfx::Vector2dF line_offset =
+      gfx::ScaleVector2d(bound.edge_top() - bound.edge_bottom(), 0.5f);
+  // An offset of 5 DIPs is sufficient for most line sizes. For small lines,
+  // using half the line height avoids synthesizing a point on a line above
+  // (or below) the intended line.
+  const gfx::Vector2dF kMaxLineOffset(5.f, 5.f);
+  line_offset.SetToMin(kMaxLineOffset);
+  line_offset.SetToMax(-kMaxLineOffset);
+  return line_offset;
+}
+
 TouchHandleOrientation ToTouchHandleOrientation(SelectionBound::Type type) {
   switch (type) {
     case SelectionBound::LEFT:
@@ -239,7 +251,7 @@ void TouchSelectionController::OnHandleDragUpdate(const TouchHandle& handle,
                                                   const gfx::PointF& position) {
   // As the position corresponds to the bottom left point of the selection
   // bound, offset it by half the corresponding line height.
-  gfx::Vector2dF line_offset = &handle == end_selection_handle_.get()
+  gfx::Vector2dF line_offset = &handle == start_selection_handle_.get()
                                    ? GetStartLineOffset()
                                    : GetEndLineOffset();
   gfx::PointF line_position = position + line_offset;
@@ -408,11 +420,11 @@ const gfx::PointF& TouchSelectionController::GetEndPosition() const {
 }
 
 gfx::Vector2dF TouchSelectionController::GetStartLineOffset() const {
-  return gfx::ScaleVector2d(start_.edge_top() - start_.edge_bottom(), 0.5f);
+  return ComputeLineOffsetFromBottom(start_);
 }
 
 gfx::Vector2dF TouchSelectionController::GetEndLineOffset() const {
-  return gfx::ScaleVector2d(end_.edge_top() - end_.edge_bottom(), 0.5f);
+  return ComputeLineOffsetFromBottom(end_);
 }
 
 bool TouchSelectionController::GetStartVisible() const {

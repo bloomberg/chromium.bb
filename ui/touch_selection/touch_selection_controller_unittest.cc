@@ -730,6 +730,41 @@ TEST_F(TouchSelectionControllerTest, SelectionDraggedToSwitchBaseAndExtent) {
   EXPECT_FALSE(GetAndResetSelectionMoved());
 }
 
+TEST_F(TouchSelectionControllerTest, SelectionDragExtremeLineSize) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  controller().OnLongPressEvent();
+
+  float small_line_height = 1.f;
+  float large_line_height = 50.f;
+  gfx::RectF small_line_rect(0, 0, 0, small_line_height);
+  gfx::RectF large_line_rect(50, 50, 0, large_line_height);
+  bool visible = true;
+  ChangeSelection(small_line_rect, visible, large_line_rect, visible);
+  EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(small_line_rect.bottom_left(), GetLastEventAnchor());
+
+  // Start dragging the handle on the small line.
+  MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time,
+                        small_line_rect.x(), small_line_rect.y());
+  SetDraggingEnabled(true);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STARTED, GetLastEventType());
+  // The drag coordinate for large lines should be capped to a reasonable
+  // offset, allowing seamless transition to neighboring lines with different
+  // sizes. The drag coordinate for small lines should have an offset
+  // commensurate with the small line size.
+  EXPECT_EQ(large_line_rect.bottom_left() - gfx::Vector2dF(0, 5.f),
+            GetLastSelectionStart());
+  EXPECT_EQ(small_line_rect.CenterPoint(), GetLastSelectionEnd());
+
+  small_line_rect += gfx::Vector2dF(25.f, 0);
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time,
+                          small_line_rect.x(), small_line_rect.y());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_TRUE(GetAndResetSelectionMoved());
+  EXPECT_EQ(small_line_rect.CenterPoint(), GetLastSelectionEnd());
+}
+
 TEST_F(TouchSelectionControllerTest, Animation) {
   controller().OnTapEvent();
   controller().OnSelectionEditable(true);
