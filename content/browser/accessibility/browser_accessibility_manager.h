@@ -235,11 +235,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // AXTreeDelegate implementation.
   void OnNodeWillBeDeleted(ui::AXNode* node) override;
+  void OnSubtreeWillBeDeleted(ui::AXNode* node) override;
   void OnNodeCreated(ui::AXNode* node) override;
   void OnNodeChanged(ui::AXNode* node) override;
-  void OnNodeCreationFinished(ui::AXNode* node) override;
-  void OnNodeChangeFinished(ui::AXNode* node) override;
-  void OnRootChanged(ui::AXNode* new_root) override {}
+  void OnAtomicUpdateFinished(
+      bool root_changed,
+      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
   void set_delegate(BrowserAccessibilityDelegate* delegate) {
@@ -263,9 +264,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       const ui::AXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
-
-  // Called at the end of updating the tree.
-  virtual void OnTreeUpdateFinished() {}
 
  private:
   // The following states keep track of whether or not the

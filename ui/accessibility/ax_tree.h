@@ -22,15 +22,15 @@ struct AXTreeUpdateState;
 // Be careful, as the tree may be in an inconsistent state at this time;
 // don't walk the parents and children at this time:
 //   OnNodeWillBeDeleted
+//   OnSubtreeWillBeDeleted
 //   OnNodeCreated
 //   OnNodeChanged
 //
-// Other notifications are called at the end of an atomic update operation.
-// From these, it's safe to walk the tree and do any initialization that
-// assumes the tree is in a consistent state.
-//   OnNodeCreationFinished
-//   OnNodeChangeFinished
-//   OnRootChanged
+// In addition, one additional notification is fired at the end of an
+// atomic update, and it provides a vector of nodes that were added or
+// changed, for final postprocessing:
+//   OnAtomicUpdateFinished
+//
 class AX_EXPORT AXTreeDelegate {
  public:
   AXTreeDelegate();
@@ -41,6 +41,11 @@ class AX_EXPORT AXTreeDelegate {
   // in the middle of an update, the tree may be in an invalid state!
   virtual void OnNodeWillBeDeleted(AXNode* node) = 0;
 
+  // Same as OnNodeWillBeDeleted, but only called once for an entire subtree.
+  // This is called in the middle of an update, the tree may be in an
+  // invalid state!
+  virtual void OnSubtreeWillBeDeleted(AXNode* node) = 0;
+
   // Called immediately after a new node is created. The tree may be in
   // the middle of an update, don't walk the parents and children now.
   virtual void OnNodeCreated(AXNode* node) = 0;
@@ -49,16 +54,28 @@ class AX_EXPORT AXTreeDelegate {
   // the middle of an update, don't walk the parents and children now.
   virtual void OnNodeChanged(AXNode* node) = 0;
 
-  // Called for each new node at the end of an update operation,
-  // when the tree is in a consistent state.
-  virtual void OnNodeCreationFinished(AXNode* node) = 0;
+  enum ChangeType {
+    NODE_CREATED,
+    SUBTREE_CREATED,
+    NODE_CHANGED
+  };
 
-  // Called for each existing node that changed at the end of an update
-  // operation, when the tree is in a consistent state.
-  virtual void OnNodeChangeFinished(AXNode* node) = 0;
+  struct Change {
+    Change(AXNode* node, ChangeType type) {
+      this->node = node;
+      this->type = type;
+    }
+    AXNode *node;
+    ChangeType type;
+  };
 
-  // Called at the end of an update operation when the root node changes.
-  virtual void OnRootChanged(AXNode* new_root) = 0;
+  // Called at the end of the update operation. Every node that was added
+  // or changed will be included in |changes|, along with an enum indicating
+  // the type of change - either (1) a node was created, (2) a node was created
+  // and it's the root of a new subtree, or (3) a node was changed. Finally,
+  // a bool indicates if the root of the tree was changed or not.
+  virtual void OnAtomicUpdateFinished(bool root_changed,
+                                      const std::vector<Change>& changes) = 0;
 };
 
 // AXTree is a live, managed tree of AXNode objects that can receive
@@ -96,6 +113,10 @@ class AX_EXPORT AXTree {
   bool UpdateNode(const AXNodeData& src, AXTreeUpdateState* update_state);
 
   void OnRootChanged();
+
+  // Notify the delegate that the subtree rooted at |node| will be destroyed,
+  // then call DestroyNodeAndSubtree on it.
+  void DestroySubtree(AXNode* node);
 
   // Call Destroy() on |node|, and delete it from the id map, and then
   // call recursively on all nodes in its subtree.

@@ -88,11 +88,11 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
       return false;
     }
     if (node == root_) {
-      DestroyNodeAndSubtree(root_);
+      DestroySubtree(root_);
       root_ = NULL;
     } else {
       for (int i = 0; i < node->child_count(); ++i)
-        DestroyNodeAndSubtree(node->ChildAtIndex(i));
+        DestroySubtree(node->ChildAtIndex(i));
       std::vector<AXNode*> children;
       node->SwapChildren(children);
       update_state.pending_nodes.insert(node);
@@ -114,17 +114,25 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   }
 
   if (delegate_) {
+    std::set<AXNode*>& new_nodes = update_state.new_nodes;
+    std::vector<AXTreeDelegate::Change> changes;
+    changes.reserve(update.nodes.size());
     for (size_t i = 0; i < update.nodes.size(); ++i) {
       AXNode* node = GetFromId(update.nodes[i].id);
-      if (update_state.new_nodes.find(node) != update_state.new_nodes.end()) {
-        delegate_->OnNodeCreationFinished(node);
-        update_state.new_nodes.erase(node);
+      if (new_nodes.find(node) != new_nodes.end()) {
+        if (new_nodes.find(node->parent()) == new_nodes.end()) {
+          changes.push_back(
+              AXTreeDelegate::Change(node, AXTreeDelegate::SUBTREE_CREATED));
+        } else {
+          changes.push_back(
+              AXTreeDelegate::Change(node, AXTreeDelegate::NODE_CREATED));
+        }
       } else {
-        delegate_->OnNodeChangeFinished(node);
+        changes.push_back(
+            AXTreeDelegate::Change(node, AXTreeDelegate::NODE_CHANGED));
       }
     }
-    if (root_->id() != old_root_id)
-      delegate_->OnRootChanged(root_);
+    delegate_->OnAtomicUpdateFinished(root_->id() != old_root_id, changes);
   }
 
   return true;
@@ -176,7 +184,7 @@ bool AXTree::UpdateNode(
   // anymore.
   if (!DeleteOldChildren(node, src.child_ids)) {
     if (new_root)
-      DestroyNodeAndSubtree(new_root);
+      DestroySubtree(new_root);
     return false;
   }
 
@@ -191,11 +199,17 @@ bool AXTree::UpdateNode(
   if (src.role == AX_ROLE_ROOT_WEB_AREA &&
       (!root_ || root_->id() != src.id)) {
     if (root_)
-      DestroyNodeAndSubtree(root_);
+      DestroySubtree(root_);
     root_ = node;
   }
 
   return success;
+}
+
+void AXTree::DestroySubtree(AXNode* node) {
+  if (delegate_)
+    delegate_->OnSubtreeWillBeDeleted(node);
+  DestroyNodeAndSubtree(node);
 }
 
 void AXTree::DestroyNodeAndSubtree(AXNode* node) {
@@ -226,7 +240,7 @@ bool AXTree::DeleteOldChildren(AXNode* node,
   for (size_t i = 0; i < old_children.size(); ++i) {
     int old_id = old_children[i]->id();
     if (new_child_id_set.find(old_id) == new_child_id_set.end())
-      DestroyNodeAndSubtree(old_children[i]);
+      DestroySubtree(old_children[i]);
   }
 
   return true;

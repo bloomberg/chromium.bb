@@ -724,13 +724,17 @@ void BrowserAccessibilityManagerAndroid::SetAccessibilityFocus(
     delegate_->AccessibilitySetAccessibilityFocus(id);
 }
 
-void BrowserAccessibilityManagerAndroid::OnRootChanged(ui::AXNode* new_root) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
+void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(
+    bool root_changed,
+    const std::vector<ui::AXTreeDelegate::Change>& changes) {
+  if (root_changed) {
+    JNIEnv* env = AttachCurrentThread();
+    ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+    if (obj.is_null())
+      return;
 
-  Java_BrowserAccessibilityManager_handleNavigate(env, obj.obj());
+    Java_BrowserAccessibilityManager_handleNavigate(env, obj.obj());
+  }
 }
 
 bool

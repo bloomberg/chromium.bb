@@ -263,10 +263,16 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   }
 }
 
-void BrowserAccessibilityManagerWin::OnRootChanged(ui::AXNode* new_root) {
-  // In order to make screen readers aware of the new accessibility root,
-  // we need to fire a focus event on it.
-  OnWindowFocused();
+void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
+    bool root_changed,
+    const std::vector<ui::AXTreeDelegate::Change>& changes) {
+  BrowserAccessibilityManager::OnAtomicUpdateFinished(root_changed, changes);
+
+  if (root_changed) {
+    // In order to make screen readers aware of the new accessibility root,
+    // we need to fire a focus event on it.
+    OnWindowFocused();
+  }
 }
 
 void BrowserAccessibilityManagerWin::TrackScrollingObject(

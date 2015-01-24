@@ -123,7 +123,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
 
  protected:
   // AXTreeDelegate overrides.
-  virtual void OnRootChanged(ui::AXNode* new_root) override;
+  void OnAtomicUpdateFinished(
+      bool root_changed,
+      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
   virtual bool UseRootScrollOffsetsWhenComputingBounds() override;
 

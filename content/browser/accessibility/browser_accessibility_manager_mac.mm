@@ -26,8 +26,7 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
-      parent_view_(parent_view),
-      created_live_region_(false) {
+      parent_view_(parent_view) {
   Initialize(initial_tree);
 }
 
@@ -145,14 +144,20 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
   NSAccessibilityPostNotification(native_node, event_id);
 }
 
-void BrowserAccessibilityManagerMac::OnNodeCreationFinished(ui::AXNode* node) {
-  BrowserAccessibility* obj = GetFromAXNode(node);
-  if (obj && obj->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS))
-    created_live_region_ = true;
-}
+void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
+    bool root_changed, const std::vector<ui::AXTreeDelegate::Change>& changes) {
+  BrowserAccessibilityManager::OnAtomicUpdateFinished(root_changed, changes);
 
-void BrowserAccessibilityManagerMac::OnTreeUpdateFinished() {
-  if (!created_live_region_)
+  bool created_live_region = false;
+  for (size_t i = 0; i < changes.size(); ++i) {
+    BrowserAccessibility* obj = GetFromAXNode(changes[i].node);
+    if (obj && obj->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
+      created_live_region = true;
+      break;
+    }
+  }
+
+  if (!created_live_region)
     return;
 
   // This code is to work around a bug in VoiceOver, where a new live
@@ -164,8 +169,6 @@ void BrowserAccessibilityManagerMac::OnTreeUpdateFinished() {
       static_cast<BrowserAccessibilityMac*>(GetRoot());
   root->RecreateNativeObject();
   NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, root);
-
-  created_live_region_ = false;
 }
 
 }  // namespace content

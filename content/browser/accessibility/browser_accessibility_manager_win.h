@@ -59,7 +59,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
  protected:
   // BrowserAccessibilityManager methods
-  virtual void OnRootChanged(ui::AXNode* new_root) override;
+  void OnAtomicUpdateFinished(
+      bool root_changed,
+      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
  private:
   // Give BrowserAccessibilityManager::Create access to our constructor.

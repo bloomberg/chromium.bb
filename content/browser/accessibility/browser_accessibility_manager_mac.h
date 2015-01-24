@@ -31,16 +31,15 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   NSView* parent_view() { return parent_view_; }
 
  private:
-  void OnNodeCreationFinished(ui::AXNode* node) override;
-  void OnTreeUpdateFinished() override;
+  void OnAtomicUpdateFinished(
+      bool root_changed,
+      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
   // This gives BrowserAccessibilityManager::Create access to the class
   // constructor.
   friend class BrowserAccessibilityManager;
 
   NSView* parent_view_;
-
-  bool created_live_region_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerMac);
 };

@@ -185,8 +185,6 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     }
   }
 
-  OnTreeUpdateFinished();
-
   if (should_send_initial_focus &&
       (!delegate_ || delegate_->AccessibilityViewHasFocus())) {
     NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetFromAXNode(focus_));
@@ -415,6 +413,9 @@ void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXNode* node) {
   id_wrapper_map_.erase(node->id());
 }
 
+void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXNode* node) {
+}
+
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXNode* node) {
   BrowserAccessibility* wrapper = factory_->Create();
   wrapper->Init(this, node);
@@ -426,12 +427,10 @@ void BrowserAccessibilityManager::OnNodeChanged(ui::AXNode* node) {
   GetFromAXNode(node)->OnDataChanged();
 }
 
-void BrowserAccessibilityManager::OnNodeCreationFinished(ui::AXNode* node) {
-  GetFromAXNode(node)->OnUpdateFinished();
-}
-
-void BrowserAccessibilityManager::OnNodeChangeFinished(ui::AXNode* node) {
-  GetFromAXNode(node)->OnUpdateFinished();
+void BrowserAccessibilityManager::OnAtomicUpdateFinished(
+    bool root_changed, const std::vector<ui::AXTreeDelegate::Change>& changes) {
+  for (size_t i = 0; i < changes.size(); ++i)
+    GetFromAXNode(changes[i].node)->OnUpdateFinished();
 }
 
 BrowserAccessibilityDelegate*

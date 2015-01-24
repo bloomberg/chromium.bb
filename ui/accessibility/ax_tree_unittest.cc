@@ -16,8 +16,14 @@ namespace {
 
 class FakeAXTreeDelegate : public AXTreeDelegate {
  public:
+  FakeAXTreeDelegate() : root_changed_(false) {}
+
   void OnNodeWillBeDeleted(AXNode* node) override {
     deleted_ids_.push_back(node->id());
+  }
+
+  void OnSubtreeWillBeDeleted(AXNode* node) override {
+    subtree_deleted_ids_.push_back(node->id());
   }
 
   void OnNodeCreated(AXNode* node) override {
@@ -28,32 +34,51 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
     changed_ids_.push_back(node->id());
   }
 
-  void OnNodeCreationFinished(AXNode* node) override {
-    creation_finished_ids_.push_back(node->id());
+  void OnAtomicUpdateFinished(bool root_changed,
+                              const std::vector<Change>& changes) override {
+    root_changed_ = root_changed;
+
+    for (size_t i = 0; i < changes.size(); ++i) {
+      int id = changes[i].node->id();
+      switch (changes[i].type) {
+        case NODE_CREATED:
+          node_creation_finished_ids_.push_back(id);
+          break;
+        case SUBTREE_CREATED:
+          subtree_creation_finished_ids_.push_back(id);
+          break;
+        case NODE_CHANGED:
+          change_finished_ids_.push_back(id);
+          break;
+      }
+    }
   }
 
-  void OnNodeChangeFinished(AXNode* node) override {
-    change_finished_ids_.push_back(node->id());
-  }
-
-  void OnRootChanged(AXNode* new_root) override {
-    new_root_ids_.push_back(new_root->id());
-  }
-
+  bool root_changed() const { return root_changed_; }
   const std::vector<int32>& deleted_ids() { return deleted_ids_; }
-  const std::vector<int32>& created_ids() { return created_ids_; }
-  const std::vector<int32>& creation_finished_ids() {
-    return creation_finished_ids_;
+  const std::vector<int32>& subtree_deleted_ids() {
+    return subtree_deleted_ids_;
   }
-  const std::vector<int32>& new_root_ids() { return new_root_ids_; }
+  const std::vector<int32>& created_ids() { return created_ids_; }
+  const std::vector<int32>& node_creation_finished_ids() {
+    return node_creation_finished_ids_;
+  }
+  const std::vector<int32>& subtree_creation_finished_ids() {
+    return subtree_creation_finished_ids_;
+  }
+  const std::vector<int32>& change_finished_ids() {
+    return change_finished_ids_;
+  }
 
  private:
+  bool root_changed_;
   std::vector<int32> deleted_ids_;
+  std::vector<int32> subtree_deleted_ids_;
   std::vector<int32> created_ids_;
-  std::vector<int32> creation_finished_ids_;
   std::vector<int32> changed_ids_;
+  std::vector<int32> node_creation_finished_ids_;
+  std::vector<int32> subtree_creation_finished_ids_;
   std::vector<int32> change_finished_ids_;
-  std::vector<int32> new_root_ids_;
 };
 
 }  // namespace
@@ -260,37 +285,44 @@ TEST(AXTreeTest, InvalidReparentingFails) {
 
 TEST(AXTreeTest, TreeDelegateIsCalled) {
   AXTreeUpdate initial_state;
-  initial_state.nodes.resize(1);
+  initial_state.nodes.resize(2);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[1].id = 2;
 
   AXTree tree(initial_state);
   AXTreeUpdate update;
   update.node_id_to_clear = 1;
   update.nodes.resize(2);
-  update.nodes[0].id = 2;
+  update.nodes[0].id = 3;
   update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
-  update.nodes[0].child_ids.push_back(3);
-  update.nodes[1].id = 3;
+  update.nodes[0].child_ids.push_back(4);
+  update.nodes[1].id = 4;
 
   FakeAXTreeDelegate fake_delegate;
   tree.SetDelegate(&fake_delegate);
 
   EXPECT_TRUE(tree.Unserialize(update));
 
-  ASSERT_EQ(1U, fake_delegate.deleted_ids().size());
-  EXPECT_EQ(1, fake_delegate.deleted_ids()[0]);
+  ASSERT_EQ(2U, fake_delegate.deleted_ids().size());
+  EXPECT_EQ(2, fake_delegate.deleted_ids()[0]);
+  EXPECT_EQ(1, fake_delegate.deleted_ids()[1]);
+
+  ASSERT_EQ(1U, fake_delegate.subtree_deleted_ids().size());
+  EXPECT_EQ(1, fake_delegate.subtree_deleted_ids()[0]);
 
   ASSERT_EQ(2U, fake_delegate.created_ids().size());
-  EXPECT_EQ(2, fake_delegate.created_ids()[0]);
-  EXPECT_EQ(3, fake_delegate.created_ids()[1]);
+  EXPECT_EQ(3, fake_delegate.created_ids()[0]);
+  EXPECT_EQ(4, fake_delegate.created_ids()[1]);
 
-  ASSERT_EQ(2U, fake_delegate.creation_finished_ids().size());
-  EXPECT_EQ(2, fake_delegate.creation_finished_ids()[0]);
-  EXPECT_EQ(3, fake_delegate.creation_finished_ids()[1]);
+  ASSERT_EQ(1U, fake_delegate.subtree_creation_finished_ids().size());
+  EXPECT_EQ(3, fake_delegate.subtree_creation_finished_ids()[0]);
 
-  ASSERT_EQ(1U, fake_delegate.new_root_ids().size());
-  EXPECT_EQ(2, fake_delegate.new_root_ids()[0]);
+  ASSERT_EQ(1U, fake_delegate.node_creation_finished_ids().size());
+  EXPECT_EQ(4, fake_delegate.node_creation_finished_ids()[0]);
+
+  ASSERT_EQ(true, fake_delegate.root_changed());
 
   tree.SetDelegate(NULL);
 }
