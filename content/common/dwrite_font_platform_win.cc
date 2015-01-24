@@ -69,7 +69,7 @@ const char kFontKeyName[] = "font_key_name";
 // phase. If we don't use this percentile formula we will end up
 // increasing significant cache size by caching entire file contents
 // for some of the font files.
-const double kMaxPercentileOfFontFileSizeToCache = 0.5;
+const double kMaxPercentileOfFontFileSizeToCache = 0.6;
 
 // With current implementation we map entire shared section into memory during
 // renderer startup. This causes increase in working set of Chrome. As first
@@ -77,14 +77,14 @@ const double kMaxPercentileOfFontFileSizeToCache = 0.5;
 // users, so we are putting arbitrary limit on cache file size. There are
 // multiple ways we can tune our working size, like mapping only required part
 // of section at any given time.
-const double kArbitraryCacheFileSizeLimit = (20 * 1024 * 1024);
+const double kArbitraryCacheFileSizeLimit = (30 * 1024 * 1024);
 
 // We have chosen current font file length arbitrarily. In our logic
 // if we don't find file we are looking for in cache we end up loading
 // that file directly from system fonts folder.
 const unsigned int kMaxFontFileNameLength = 34;
 
-const DWORD kCacheFileVersion = 102;
+const DWORD kCacheFileVersion = 103;
 const DWORD kFileSignature = 0x4D4F5243; // CROM
 const DWORD kMagicCompletionSignature = 0x454E4F44; // DONE
 
