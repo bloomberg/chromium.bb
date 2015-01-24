@@ -214,7 +214,7 @@ remoting.It2MeHelpeeChannel.prototype.handleIsHostInstalled_ =
     });
   }
 
-  this.hostInstaller_.isInstalled().then(
+  remoting.HostInstaller.isInstalled().then(
     sendResponse,
     /** @type {function(*):void} */(this.sendErrorResponse_.bind(this, message))
   );

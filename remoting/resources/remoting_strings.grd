@@ -807,8 +807,8 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Description of the 'share' or 'host' functionality, displayed next to a button that instigates a share operation." name="IDS_HOME_SHARE_DESCRIPTION">
         Share this computer for another user to see and control.
       </message>
-      <message desc="Text displayed below the description of the 'share' or 'host' functionality on ChromeOS devices, where it is not yet supported." name="IDS_HOME_SHARE_DESCRIPTION_CHROME_OS">
-        (this feature is not yet available for Chromebooks… stay tuned)
+      <message desc="Text displayed below the description of the 'share' or 'host' functionality on an unsupported platform." name="IDS_HOME_SHARE_DESCRIPTION_UNSUPPORTED">
+        (this feature is not yet available for your computer)
       </message>
       <message desc="In the connection history dialog, clicking this button shows only recent connections to this computer." name="IDS_INCOMING_CONNECTIONS">
         To this computer

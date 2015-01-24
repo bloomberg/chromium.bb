@@ -19,16 +19,16 @@ remoting.initHostlist_ = function() {
       document.getElementById('host-list-loading-indicator'));
 
   isHostModeSupported_().then(
-    /** @param {Boolean} supported */
-    function(supported){
-      if (supported) {
-        var noShare = document.getElementById('chrome-os-no-share');
-        noShare.parentNode.removeChild(noShare);
-      } else {
-        var button = document.getElementById('share-button');
-        button.disabled = true;
-      }
-    });
+      /** @param {Boolean} supported */
+      function(supported) {
+        if (supported) {
+          var noShare = document.getElementById('unsupported-platform-message');
+          noShare.parentNode.removeChild(noShare);
+        } else {
+          var button = document.getElementById('share-button');
+          button.disabled = true;
+        }
+      });
 
   /**
    * @return {Promise} A promise that resolves to the id of the current
@@ -87,20 +87,16 @@ remoting.initHostlist_ = function() {
 }
 
 /**
- * Returns whether Host mode is supported on this platform for It2me.
- * TODO(kelvinp): Remove this function once It2me is enabled on Chrome OS (See
- * crbug.com/429860).
+ * Returns whether Host mode is supported on this platform for It2Me.
  *
  * @return {Promise} Resolves to true if Host mode is supported.
  */
 function isHostModeSupported_() {
-  if (!remoting.platformIsChromeOS()) {
+  if (remoting.HostInstaller.canInstall()) {
     return Promise.resolve(true);
   }
-  // Sharing on Chrome OS is currently behind a flag.
-  // isInstalled() will return false if the flag is disabled.
-  var hostInstaller = new remoting.HostInstaller();
-  return hostInstaller.isInstalled();
+
+  return remoting.HostInstaller.isInstalled();
 }
 
 /**

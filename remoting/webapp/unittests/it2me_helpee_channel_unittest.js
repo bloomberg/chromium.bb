@@ -34,7 +34,6 @@ module('It2MeHelpeeChannel', {
 
     // HostInstaller
     hostInstaller = {
-      isInstalled: function() {},
       download: function() {}
     };
 
@@ -64,7 +63,8 @@ test('hello() should return supportedFeatures', function() {
 QUnit.asyncTest(
     'isHostInstalled() should return false if host is not installed',
     function() {
-  sinon.stub(hostInstaller, 'isInstalled').returns(Promise.resolve(false));
+  sinon.stub(remoting.HostInstaller, 'isInstalled')
+      .returns(Promise.resolve(false));
 
   var MessageTypes = remoting.It2MeHelpeeChannel.HangoutMessageTypes;
   hangoutPort.onMessage.mock$fire({
@@ -72,6 +72,7 @@ QUnit.asyncTest(
   });
 
   window.requestAnimationFrame(function() {
+    remoting.HostInstaller.isInstalled.restore();
     sinon.assert.calledWith(hangoutPort.postMessage, {
       method: MessageTypes.IS_HOST_INSTALLED_RESPONSE,
       result: false
@@ -82,7 +83,8 @@ QUnit.asyncTest(
 
 QUnit.asyncTest('isHostInstalled() should return true if host is installed',
     function() {
-  sinon.stub(hostInstaller, 'isInstalled').returns(Promise.resolve(true));
+  sinon.stub(remoting.HostInstaller, 'isInstalled')
+      .returns(Promise.resolve(true));
 
   var MessageTypes = remoting.It2MeHelpeeChannel.HangoutMessageTypes;
   hangoutPort.onMessage.mock$fire({
@@ -90,6 +92,7 @@ QUnit.asyncTest('isHostInstalled() should return true if host is installed',
   });
 
   window.requestAnimationFrame(function() {
+    remoting.HostInstaller.isInstalled.restore();
     sinon.assert.calledWith(hangoutPort.postMessage, {
       method: MessageTypes.IS_HOST_INSTALLED_RESPONSE,
       result: true

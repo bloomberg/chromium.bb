@@ -26,6 +26,8 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+(function() {
+
 /**
  * @constructor
  */
@@ -47,7 +49,7 @@ remoting.HostInstaller = function() {
  * @return {Promise}  The promise will resolve to a boolean value indicating
  *     whether the host is installed or not.
  */
-remoting.HostInstaller.prototype.isInstalled = function() {
+remoting.HostInstaller.isInstalled = function() {
   // Always do a fresh check as we don't get notified when the host is
   // uninstalled.
 
@@ -78,28 +80,39 @@ remoting.HostInstaller.prototype.isInstalled = function() {
   });
 };
 
+/** @type {Object.<string,string>} */
+var HOST_DOWNLOAD_URLS = {
+  'Win32': 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
+               'chromeremotedesktophost.msi',
+  'Win64': 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
+               'chromeremotedesktophost.msi',
+  'MacIntel': 'https://dl.google.com/chrome-remote-desktop/' +
+                  'chromeremotedesktop.dmg',
+  'Linux x86_64': 'https://dl.google.com/linux/direct/' +
+                      'chrome-remote-desktop_current_amd64.deb',
+  'Linux i386': 'https://dl.google.com/linux/direct/' +
+                    'chrome-remote-desktop_current_i386.deb',
+  'Linux i686': 'https://dl.google.com/linux/direct/' +
+                    'chrome-remote-desktop_current_i386.deb'
+};
+
+/**
+ * Returns true if the host is installable on the current platform.
+ * @returns {boolean}
+ */
+remoting.HostInstaller.canInstall = function() {
+  return !!HOST_DOWNLOAD_URLS[navigator.platform];
+};
+
 /**
  * @throws {Error}  Throws if there is no matching host binary for the current
  *     platform.
  */
 remoting.HostInstaller.prototype.download = function() {
-  /** @type {Object.<string,string>} */
-  var hostDownloadUrls = {
-    'Win32' : 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
-        'chromeremotedesktophost.msi',
-    'Win64' : 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
-        'chromeremotedesktophost.msi',
-    'MacIntel' : 'https://dl.google.com/chrome-remote-desktop/' +
-        'chromeremotedesktop.dmg',
-    'Linux x86_64' : 'https://dl.google.com/linux/direct/' +
-        'chrome-remote-desktop_current_amd64.deb',
-    'Linux i386' : 'https://dl.google.com/linux/direct/' +
-        'chrome-remote-desktop_current_i386.deb'
-  };
-
-  var hostPackageUrl = hostDownloadUrls[navigator.platform];
+  var hostPackageUrl = HOST_DOWNLOAD_URLS[navigator.platform];
   if (hostPackageUrl === undefined) {
-    throw new Error(remoting.Error.CANCELLED);
+    console.error("Tried to install host on " + navigator.platform);
+    throw new Error(remoting.Error.UNEXPECTED);
   }
 
   // Start downloading the package.
@@ -122,7 +135,7 @@ remoting.HostInstaller.prototype.downloadAndWaitForInstall = function() {
    */
   var CHECK_INSTALL_INTERVAL_IN_MILLISECONDS = 1000;
 
-  return this.isInstalled().then(
+  return remoting.HostInstaller.isInstalled().then(
       /** @param {boolean} installed */
       function(installed){
         if (installed) {
@@ -135,7 +148,7 @@ remoting.HostInstaller.prototype.downloadAndWaitForInstall = function() {
               function(resolve){
                 that.download();
                 that.checkInstallIntervalId_ = window.setInterval(function() {
-                  that.isInstalled().then(
+                  remoting.HostInstaller.isInstalled().then(
                       /** @param {boolean} installed */
                       function(installed) {
                         if (installed) {
@@ -163,3 +176,5 @@ remoting.HostInstaller.prototype.cancel = function() {
   }
   this.downloadAndWaitForInstallPromise_ = null;
 };
+
+})();
