@@ -415,6 +415,8 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     if (m_page->settings().rootLayerScrolls() && isForRootLayer(scrollableArea))
         m_page->chrome().registerViewportLayers();
 
+    scrollableArea->layerForScrollingDidChange();
+
     return !!webLayer;
 }
 

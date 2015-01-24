@@ -254,6 +254,8 @@ public:
     bool hasLayerForVerticalScrollbar() const;
     bool hasLayerForScrollCorner() const;
 
+    void layerForScrollingDidChange();
+
     void cancelProgrammaticScrollAnimation();
 
 protected:

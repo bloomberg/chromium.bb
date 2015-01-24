@@ -163,6 +163,23 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
     }
 }
 
+void ProgrammaticScrollAnimator::layerForCompositedScrollingDidChange()
+{
+    // If the composited scrolling layer is lost during a composited animation,
+    // continue the animation on the main thread.
+    if (m_runState == RunState::RunningOnCompositor && !m_scrollableArea->layerForScrolling()) {
+        m_runState = RunState::RunningOnMainThread;
+        m_compositorAnimationId = 0;
+        m_compositorAnimationGroupId = 0;
+        m_animationCurve->setInitialValue(FloatPoint(m_scrollableArea->scrollPosition()));
+        m_scrollableArea->registerForAnimation();
+        if (!m_scrollableArea->scheduleAnimation()) {
+            resetAnimationState();
+            m_scrollableArea->notifyScrollPositionChanged(IntPoint(m_targetOffset.x(), m_targetOffset.y()));
+        }
+    }
+}
+
 void ProgrammaticScrollAnimator::notifyCompositorAnimationFinished(int groupId)
 {
     if (m_compositorAnimationGroupId != groupId)

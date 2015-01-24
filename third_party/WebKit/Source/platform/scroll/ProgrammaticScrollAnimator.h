@@ -31,6 +31,7 @@ public:
     void tickAnimation(double monotonicTime);
     bool hasAnimationThatRequiresService() const;
     void updateCompositorAnimations();
+    void layerForCompositedScrollingDidChange();
     void notifyCompositorAnimationFinished(int groupId);
 
 private:
