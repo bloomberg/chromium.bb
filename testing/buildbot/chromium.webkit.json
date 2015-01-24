@@ -85,7 +85,12 @@
       "nacl_loader_unittests",
       "app_shell_unittests",
       "chromevox_tests",
-      "extensions_browsertests",
+      {
+        "test": "extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "skia_unittests"
     ]
   },
@@ -171,7 +176,12 @@
           "shards": 2
         }
       },
-      "extensions_browsertests",
+      {
+        "test": "extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "gcm_unit_tests",
       "skia_unittests",
       {
