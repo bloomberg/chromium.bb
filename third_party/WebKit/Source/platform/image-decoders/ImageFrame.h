@@ -175,24 +175,17 @@ public:
             *dest = SkPackARGB32NoCheck(a, r, g, b);
     }
 
-    static const unsigned div255 = static_cast<unsigned>(1.0 / 255 * (1 << 24)) + 1;
-
     static inline void setRGBAPremultiply(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
     {
-        if (a < 255) {
-            if (!a) {
-                *dest = 0;
-                return;
-            }
+        enum FractionControl { RoundFractionControl = 257 * 128 };
 
-            unsigned alpha = a * div255;
-            r = (r * alpha) >> 24;
-            g = (g * alpha) >> 24;
-            b = (b * alpha) >> 24;
+        if (a < 255) {
+            unsigned alpha = a * 257;
+            r = (r * alpha + RoundFractionControl) >> 16;
+            g = (g * alpha + RoundFractionControl) >> 16;
+            b = (b * alpha + RoundFractionControl) >> 16;
         }
 
-        // Call the "NoCheck" version since we may deliberately pass non-premultiplied
-        // values, and we don't want an assert.
         *dest = SkPackARGB32NoCheck(a, r, g, b);
     }
 
