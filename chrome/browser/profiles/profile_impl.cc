@@ -39,13 +39,10 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -83,11 +80,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/domain_reliability/service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -643,69 +635,6 @@ void ProfileImpl::DoFinalInit() {
     session_cookie_mode = content::CookieStoreConfig::RESTORED_SESSION_COOKIES;
   }
 
-  ChromeNetLog* const net_log = g_browser_process->io_thread()->net_log();
-
-  base::Callback<void(bool)> data_reduction_proxy_unavailable;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-      data_reduction_proxy_params;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator> configurator;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
-      data_reduction_proxy_statistics_prefs;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore> event_store;
-  DataReductionProxyChromeSettings* data_reduction_proxy_chrome_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(this);
-  data_reduction_proxy_params =
-      data_reduction_proxy_chrome_settings->params()->Clone();
-  data_reduction_proxy_unavailable =
-      base::Bind(
-          &data_reduction_proxy::DataReductionProxySettings::SetUnreachable,
-          base::Unretained(data_reduction_proxy_chrome_settings));
-  // The event_store is used by DataReductionProxyChromeSettings, configurator,
-  // and ProfileIOData. Ownership is passed to the latter via
-  // ProfileIOData::Handle, which is only destroyed after
-  // BrowserContextKeyedServices, including DataReductionProxyChromeSettings
-  event_store.reset(
-      new data_reduction_proxy::DataReductionProxyEventStore(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
-  // The configurator is used by DataReductionProxyChromeSettings and
-  // ProfileIOData. Ownership is passed to the latter via ProfileIOData::Handle,
-  // which is only destroyed after BrowserContextKeyedServices,
-  // including DataReductionProxyChromeSettings.
-  configurator.reset(
-      new data_reduction_proxy::DataReductionProxyConfigurator(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          net_log,
-          event_store.get()));
-  // Retain a raw pointer to use for initialization of data reduction proxy
-  // settings after ownership is passed
-  data_reduction_proxy::DataReductionProxyEventStore*
-      data_reduction_proxy_event_store = event_store.get();
-  // Retain a raw pointer to use for initialization of data reduction proxy
-  // settings after ownership is passed.
-  data_reduction_proxy::DataReductionProxyConfigurator*
-      data_reduction_proxy_configurator = configurator.get();
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // On mobile we write data reduction proxy prefs directly to the pref service.
-  // On desktop we store data reduction proxy prefs in memory, writing to disk
-  // every 60 minutes and on termination. Shutdown hooks must be added for
-  // Android and iOS in order for non-zero delays to be supported.
-  // (http://crbug.com/408264)
-  base::TimeDelta commit_delay = base::TimeDelta();
-#else
-  base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
-#endif
-  // TODO(bengr): Remove this in M-43.
-  data_reduction_proxy::MigrateStatisticsPrefs(g_browser_process->local_state(),
-                                               prefs_.get());
-  data_reduction_proxy_statistics_prefs =
-      scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>(
-          new data_reduction_proxy::DataReductionProxyStatisticsPrefs(
-              prefs_.get(),
-              base::MessageLoopProxy::current(),
-              commit_delay));
-  data_reduction_proxy_chrome_settings->SetDataReductionProxyStatisticsPrefs(
-      data_reduction_proxy_statistics_prefs.get());
-
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
@@ -713,19 +642,7 @@ void ProfileImpl::DoFinalInit() {
                 cache_max_size, media_cache_path, media_cache_max_size,
                 extensions_cookie_path, GetPath(), infinite_cache_path,
                 predictor_, session_cookie_mode, GetSpecialStoragePolicy(),
-                CreateDomainReliabilityMonitor(local_state),
-                data_reduction_proxy_unavailable,
-                configurator.Pass(),
-                data_reduction_proxy_params.Pass(),
-                data_reduction_proxy_statistics_prefs.Pass(),
-                event_store.Pass());
-  data_reduction_proxy_chrome_settings->InitDataReductionProxySettings(
-      data_reduction_proxy_configurator,
-      prefs_.get(),
-      g_browser_process->local_state(),
-      GetRequestContext(),
-      net_log,
-      data_reduction_proxy_event_store);
+                CreateDomainReliabilityMonitor(local_state));
 
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(

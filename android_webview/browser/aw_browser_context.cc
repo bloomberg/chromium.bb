@@ -18,11 +18,9 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
@@ -36,9 +34,11 @@
 
 using base::FilePath;
 using content::BrowserThread;
-using data_reduction_proxy::DataReductionProxyConfigurator;
-using data_reduction_proxy::DataReductionProxyEventStore;
-using data_reduction_proxy::DataReductionProxySettings;
+
+namespace data_reduction_proxy {
+class DataReductionProxyConfigurator;
+class DataReductionProxyStatisticsPrefs;
+}
 
 namespace android_webview {
 
@@ -117,14 +117,16 @@ void AwBrowserContext::SetDataReductionProxyEnabled(bool enabled) {
   // Can't enable Data reduction proxy if user pref service is not ready.
   if (context == NULL || context->user_pref_service_.get() == NULL)
     return;
-  DataReductionProxySettings* proxy_settings =
+  data_reduction_proxy::DataReductionProxySettings* proxy_settings =
       context->GetDataReductionProxySettings();
   if (proxy_settings == NULL)
     return;
-
+  // At this point, context->PreMainMessageLoopRun() has run, so
+  // context->data_reduction_proxy_io_data() is valid.
+  DCHECK(context->GetDataReductionProxyIOData());
   context->CreateDataReductionProxyStatisticsIfNecessary();
   proxy_settings->SetDataReductionProxyStatisticsPrefs(
-      context->data_reduction_proxy_statistics_.get());
+      context->GetDataReductionProxyIOData()->statistics_prefs());
   proxy_settings->SetDataReductionProxyEnabled(data_reduction_proxy_enabled_);
 }
 
@@ -157,19 +159,21 @@ void AwBrowserContext::PreMainMessageLoopRun() {
           make_scoped_ptr(CreateProxyConfigService()).Pass());
 
   data_reduction_proxy_settings_.reset(
-      new DataReductionProxySettings(
+      new data_reduction_proxy::DataReductionProxySettings(
           new data_reduction_proxy::DataReductionProxyParams(
               data_reduction_proxy::DataReductionProxyParams::kAllowed)));
-  data_reduction_proxy_event_store_.reset(
-      new DataReductionProxyEventStore(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
-  data_reduction_proxy_configurator_.reset(
-      new data_reduction_proxy::DataReductionProxyConfigurator(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+  data_reduction_proxy_io_data_.reset(
+      new data_reduction_proxy::DataReductionProxyIOData(
+          data_reduction_proxy::Client::WEBVIEW_ANDROID,
+          scoped_ptr<
+              data_reduction_proxy::DataReductionProxyStatisticsPrefs>(),
+          data_reduction_proxy_settings_.get(),
           url_request_context_getter_->GetNetLog(),
-          data_reduction_proxy_event_store_.get()));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetMessageLoopProxyForThread(
+              BrowserThread::UI)));
   data_reduction_proxy_settings_->SetProxyConfigurator(
-      data_reduction_proxy_configurator_.get());
+      data_reduction_proxy_io_data_->configurator());
 
   visitedlink_master_.reset(
       new visitedlink::VisitedLinkMaster(this, this, false));
@@ -219,18 +223,19 @@ AwFormDatabaseService* AwBrowserContext::GetFormDatabaseService() {
   return form_database_service_.get();
 }
 
-DataReductionProxySettings* AwBrowserContext::GetDataReductionProxySettings() {
+data_reduction_proxy::DataReductionProxySettings*
+AwBrowserContext::GetDataReductionProxySettings() {
   return data_reduction_proxy_settings_.get();
 }
 
-DataReductionProxyEventStore*
-    AwBrowserContext::GetDataReductionProxyEventStore() {
-  return data_reduction_proxy_event_store_.get();
+data_reduction_proxy::DataReductionProxyIOData*
+AwBrowserContext::GetDataReductionProxyIOData() {
+  return data_reduction_proxy_io_data_.get();
 }
 
 data_reduction_proxy::DataReductionProxyConfigurator*
 AwBrowserContext::GetDataReductionProxyConfigurator() {
-  return data_reduction_proxy_configurator_.get();
+  return data_reduction_proxy_io_data_->configurator();
 }
 
 AwURLRequestContextGetter* AwBrowserContext::GetAwURLRequestContext() {
@@ -269,12 +274,12 @@ void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
 
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 
-  if (data_reduction_proxy_settings_.get()) {
+  if (data_reduction_proxy_settings_) {
     data_reduction_proxy_settings_->InitDataReductionProxySettings(
         user_pref_service_.get(),
         GetRequestContext(),
         GetAwURLRequestContext()->GetNetLog(),
-        GetDataReductionProxyEventStore());
+        data_reduction_proxy_io_data_->event_store());
     data_reduction_proxy_settings_->MaybeActivateDataReductionProxy(true);
 
     SetDataReductionProxyEnabled(data_reduction_proxy_enabled_);
@@ -368,17 +373,13 @@ void AwBrowserContext::RebuildTable(
 
 void AwBrowserContext::CreateDataReductionProxyStatisticsIfNecessary() {
   DCHECK(user_pref_service_.get());
-
-  if (!data_reduction_proxy_statistics_.get()) {
-    // We don't care about commit_delay for now. It is just a dummy value.
-    base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
-    data_reduction_proxy_statistics_ =
-        scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>(
-            new data_reduction_proxy::DataReductionProxyStatisticsPrefs(
-                user_pref_service_.get(),
-                base::MessageLoopProxy::current(),
-                commit_delay));
-  }
+  DCHECK(GetDataReductionProxyIOData());
+  if (GetDataReductionProxyIOData()->statistics_prefs())
+    return;
+  // We don't care about commit_delay for now. It is just a dummy value.
+  base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
+  GetDataReductionProxyIOData()->EnableCompressionStatisticsLogging(
+      user_pref_service_.get(), commit_delay);
 }
 
 }  // namespace android_webview

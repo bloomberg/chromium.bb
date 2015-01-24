@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "net/base/load_flags.h"
@@ -74,7 +75,7 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     scoped_ptr<net::NetworkDelegate> network_delegate,
     DataReductionProxyParams* params,
     DataReductionProxyAuthRequestHandler* handler,
-    const ProxyConfigGetter& getter)
+    const DataReductionProxyConfigurator* configurator)
     : LayeredNetworkDelegate(network_delegate.Pass()),
       ui_task_runner_(NULL),
       received_content_length_(0),
@@ -84,18 +85,12 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       data_reduction_proxy_usage_stats_(NULL),
       data_reduction_proxy_auth_request_handler_(handler),
       data_reduction_proxy_statistics_prefs_(NULL),
-      proxy_config_getter_(getter) {
+      configurator_(configurator) {
   DCHECK(data_reduction_proxy_params_);
   DCHECK(data_reduction_proxy_auth_request_handler_);
 }
 
 DataReductionProxyNetworkDelegate::~DataReductionProxyNetworkDelegate() {
-}
-
-void DataReductionProxyNetworkDelegate::InitProxyConfigOverrider(
-    const OnResolveProxyHandler& proxy_handler) {
-  DCHECK(!proxy_config_getter_.is_null());
-  on_resolve_proxy_handler_ = proxy_handler;
 }
 
 void DataReductionProxyNetworkDelegate::InitStatisticsPrefsAndUMA(
@@ -147,12 +142,9 @@ void DataReductionProxyNetworkDelegate::OnResolveProxyInternal(
     int load_flags,
     const net::ProxyService& proxy_service,
     net::ProxyInfo* result) {
-  // TODO(sclittle): Call OnResolveProxyHandler directly, see
-  // http://crbug.com/447346.
-  if (!on_resolve_proxy_handler_.is_null() &&
-      !proxy_config_getter_.is_null()) {
-    on_resolve_proxy_handler_.Run(
-        url, load_flags, proxy_config_getter_.Run(),
+  if (configurator_) {
+    OnResolveProxyHandler(
+        url, load_flags, configurator_->GetProxyConfigOnIOThread(),
         proxy_service.proxy_retry_info(), data_reduction_proxy_params_, result);
   }
 }
@@ -194,11 +186,10 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   // specified with the Content-Length header, which may be inaccurate,
   // or missing, as is the case with chunked encoding.
   int64 received_content_length = request->received_response_content_length();
-
   if (!request->was_cached() &&          // Don't record cached content
       received_content_length &&         // Zero-byte responses aren't useful.
       (is_http || is_https) &&           // Only record for HTTP or HTTPS urls.
-      !proxy_config_getter_.is_null()) { // Used by request type and histograms.
+      configurator_) {                   // Used by request type and histograms.
     int64 original_content_length =
         request->response_info().headers->GetInt64HeaderValue(
             "x-original-content-length");
@@ -206,9 +197,10 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
         request->response_info().headers->GetFreshnessLifetimes(
             request->response_info().response_time).freshness;
     DataReductionProxyRequestType request_type =
-        GetDataReductionProxyRequestType(*request,
-                                         proxy_config_getter_.Run(),
-                                         *data_reduction_proxy_params_);
+        GetDataReductionProxyRequestType(
+            *request,
+            configurator_->GetProxyConfigOnIOThread(),
+            *data_reduction_proxy_params_);
 
     int64 adjusted_original_content_length =
         GetAdjustedOriginalContentLength(request_type,
@@ -226,7 +218,7 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
       data_reduction_proxy_usage_stats_->RecordBytesHistograms(
           *request,
           *data_reduction_proxy_enabled_,
-          proxy_config_getter_.Run());
+          configurator_->GetProxyConfigOnIOThread());
     }
     DVLOG(2) << __FUNCTION__
         << " received content length: " << received_content_length

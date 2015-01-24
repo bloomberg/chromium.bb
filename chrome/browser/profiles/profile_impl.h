@@ -41,12 +41,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace data_reduction_proxy {
-class DataReductionProxyParams;
-}
-
-class DataReductionProxyChromeSettings;
-
 namespace domain_reliability {
 class DomainReliabilityMonitor;
 }

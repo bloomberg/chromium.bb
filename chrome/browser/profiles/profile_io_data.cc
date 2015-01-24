@@ -54,9 +54,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/sync_driver/pref_names.h"
@@ -109,9 +107,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "content/public/browser/android/content_protocol_handler.h"
 #endif  // defined(OS_ANDROID)
 
@@ -883,7 +878,13 @@ bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
 }
 
 bool ProfileIOData::IsDataReductionProxyEnabled() const {
-  return false;
+  return data_reduction_proxy_io_data()->IsEnabled();
+}
+
+void ProfileIOData::set_data_reduction_proxy_io_data(
+    scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
+        data_reduction_proxy_io_data) const {
+  data_reduction_proxy_io_data_ = data_reduction_proxy_io_data.Pass();
 }
 
 base::WeakPtr<net::HttpServerProperties>
@@ -1253,8 +1254,6 @@ void ProfileIOData::ShutdownOnUIThread(
   quick_check_enabled_.Destroy();
   if (media_device_id_salt_.get())
     media_device_id_salt_->ShutdownOnUIThread();
-  if (data_reduction_proxy_statistics_prefs_.get())
-    data_reduction_proxy_statistics_prefs_->ShutdownOnUIThread();
   session_startup_pref_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (url_blacklist_manager_)
@@ -1309,6 +1308,8 @@ scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
   params.network_delegate = context->network_delegate();
   params.http_server_properties = context->http_server_properties();
   params.net_log = context->net_log();
+  if (data_reduction_proxy_io_data_.get())
+    params.proxy_delegate = data_reduction_proxy_io_data_->proxy_delegate();
 
   network_controller_.reset(new DevToolsNetworkController());
 

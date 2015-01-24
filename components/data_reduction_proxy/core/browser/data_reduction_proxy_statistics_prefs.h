@@ -30,6 +30,7 @@ namespace data_reduction_proxy {
 // |delay| amount of time. If |delay| is zero, the delayed pref service writes
 // directly to the PrefService and does not store the prefs in memory. All
 // prefs must be stored and read on the UI thread.
+// TODO(bengr): Rename as DataReductionProxyCompressionStats.
 class DataReductionProxyStatisticsPrefs {
 public:
   // Constructs a data reduction proxy delayed pref service object using

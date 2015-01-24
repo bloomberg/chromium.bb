@@ -22,11 +22,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "net/cookies/cookie_monster.h"
@@ -48,6 +43,10 @@ class SupervisedUserURLFilter;
 
 namespace chrome_browser_net {
 class ResourcePrefetchPredictorObserver;
+}
+
+namespace data_reduction_proxy {
+class DataReductionProxyIOData;
 }
 
 namespace extensions {
@@ -250,14 +249,12 @@ class ProfileIOData {
   // should only be called from there.
   bool GetMetricsEnabledStateOnIOThread() const;
 
-  // Returns whether or not data reduction proxy is enabled in the browser
-  // instance on which this profile resides.
-  virtual bool IsDataReductionProxyEnabled() const;
-
   void set_client_cert_store_factory_for_testing(
     const base::Callback<scoped_ptr<net::ClientCertStore>()>& factory) {
       client_cert_store_factory_ = factory;
   }
+
+  bool IsDataReductionProxyEnabled() const;
 
  protected:
   // A URLRequestContext for media that owns its HTTP factory, to ensure
@@ -367,84 +364,13 @@ class ProfileIOData {
   void set_channel_id_service(
       net::ChannelIDService* channel_id_service) const;
 
-  data_reduction_proxy::DataReductionProxyParams* data_reduction_proxy_params()
-      const {
-    return data_reduction_proxy_params_.get();
-  }
+  void set_data_reduction_proxy_io_data(
+      scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
+          data_reduction_proxy_io_data) const;
 
-  void set_data_reduction_proxy_params(
-      scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-          data_reduction_proxy_params) const {
-    data_reduction_proxy_params_ = data_reduction_proxy_params.Pass();
-  }
-
-  data_reduction_proxy::DataReductionProxyUsageStats*
-      data_reduction_proxy_usage_stats() const {
-    return data_reduction_proxy_usage_stats_.get();
-  }
-
-  void set_data_reduction_proxy_statistics_prefs(
-      scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
-          data_reduction_proxy_statistics_prefs) {
-    data_reduction_proxy_statistics_prefs_ =
-        data_reduction_proxy_statistics_prefs.Pass();
-  }
-
-  data_reduction_proxy::DataReductionProxyStatisticsPrefs*
-      data_reduction_proxy_statistics_prefs() const {
-    return data_reduction_proxy_statistics_prefs_.get();
-  }
-
-  void set_data_reduction_proxy_usage_stats(
-      scoped_ptr<data_reduction_proxy::DataReductionProxyUsageStats>
-          data_reduction_proxy_usage_stats) const {
-     data_reduction_proxy_usage_stats_ =
-         data_reduction_proxy_usage_stats.Pass();
-  }
-
-  base::Callback<void(bool)> data_reduction_proxy_unavailable_callback() const {
-    return data_reduction_proxy_unavailable_callback_;
-  }
-
-  void set_data_reduction_proxy_unavailable_callback(
-      const base::Callback<void(bool)>& unavailable_callback) const {
-    data_reduction_proxy_unavailable_callback_ = unavailable_callback;
-  }
-
-  data_reduction_proxy::DataReductionProxyConfigurator*
-  data_reduction_proxy_configurator() const {
-    return data_reduction_proxy_configurator_.get();
-  }
-
-  void set_data_reduction_proxy_configurator(
-      scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
-          data_reduction_proxy_configurator) const {
-    data_reduction_proxy_configurator_ =
-        data_reduction_proxy_configurator.Pass();
-  }
-
-  data_reduction_proxy::DataReductionProxyAuthRequestHandler*
-      data_reduction_proxy_auth_request_handler() const {
-    return data_reduction_proxy_auth_request_handler_.get();
-  }
-
-  void set_data_reduction_proxy_auth_request_handler(
-      scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
-          data_reduction_proxy_auth_request_handler) const {
-    data_reduction_proxy_auth_request_handler_ =
-        data_reduction_proxy_auth_request_handler.Pass();
-  }
-
-  data_reduction_proxy::DataReductionProxyEventStore*
-      data_reduction_proxy_event_store() const {
-    return data_reduction_proxy_event_store_.get();
-  }
-
-  void set_data_reduction_proxy_event_store(
-      scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
-          data_reduction_proxy_event_store) const {
-    data_reduction_proxy_event_store_ =
-        data_reduction_proxy_event_store.Pass();
+  data_reduction_proxy::DataReductionProxyIOData*
+  data_reduction_proxy_io_data() const {
+    return data_reduction_proxy_io_data_.get();
   }
 
   net::FraudulentCertificateReporter* fraudulent_certificate_reporter() const {
@@ -645,23 +571,8 @@ class ProfileIOData {
 #endif
   mutable scoped_ptr<net::ChannelIDService> channel_id_service_;
 
-  // data_reduction_proxy_* classes must be declared before |network_delegate_|.
-  // The data_reduction_proxy_* classes are passed in to |network_delegate_|,
-  // so this ordering ensures that the |network_delegate_| never references
-  // freed objects.
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-      data_reduction_proxy_params_;
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyUsageStats>
-      data_reduction_proxy_usage_stats_;
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
-      data_reduction_proxy_statistics_prefs_;
-  mutable base::Callback<void(bool)> data_reduction_proxy_unavailable_callback_;
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
-      data_reduction_proxy_configurator_;
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
-      data_reduction_proxy_auth_request_handler_;
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
-      data_reduction_proxy_event_store_;
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
+      data_reduction_proxy_io_data_;
 
   mutable scoped_ptr<net::FraudulentCertificateReporter>
       fraudulent_certificate_reporter_;

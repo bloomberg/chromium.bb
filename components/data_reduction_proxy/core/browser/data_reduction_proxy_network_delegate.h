@@ -38,6 +38,7 @@ class URLRequest;
 namespace data_reduction_proxy {
 
 class DataReductionProxyAuthRequestHandler;
+class DataReductionProxyConfigurator;
 class DataReductionProxyParams;
 class DataReductionProxyStatisticsPrefs;
 class DataReductionProxyUsageStats;
@@ -46,20 +47,6 @@ class DataReductionProxyUsageStats;
 // NetworkDelegate and adds Data Reduction Proxy specific logic.
 class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
  public:
-  // Provides an opportunity to interpose on proxy resolution. Called before
-  // ProxyService.ResolveProxy() returns. The Data Reduction Proxy's
-  // configuration is provided along with the resolution for this URL, in
-  // |result|, whch may be modified. Retry info is presumed to be from the proxy
-  // service.
-  // TODO(sclittle): Remove this, see http://crbug.com/447346.
-  typedef base::Callback<void(
-      const GURL& url,
-      int load_flags,
-      const net::ProxyConfig& data_reduction_proxy_config,
-      const net::ProxyRetryInfoMap& proxy_retry_info_map,
-      const DataReductionProxyParams* params,
-      net::ProxyInfo* result)> OnResolveProxyHandler;
-
   // Provides an additional proxy configuration that can be consulted after
   // proxy resolution. Used to get the Data Reduction Proxy config and give it
   // to the OnResolveProxyHandler and RecordBytesHistograms.
@@ -74,12 +61,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       scoped_ptr<net::NetworkDelegate> network_delegate,
       DataReductionProxyParams* params,
       DataReductionProxyAuthRequestHandler* handler,
-      const ProxyConfigGetter& getter);
+      const DataReductionProxyConfigurator* configurator);
   ~DataReductionProxyNetworkDelegate() override;
-
-  // Initializes member variables used for overriding the proxy config.
-  // |proxy_config_getter_| must be non-NULL when this is called.
-  void InitProxyConfigOverrider(const OnResolveProxyHandler& proxy_handler);
 
   // Initializes member variables to record data reduction proxy prefs and
   // report UMA.
@@ -159,10 +142,7 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
 
   DataReductionProxyStatisticsPrefs* data_reduction_proxy_statistics_prefs_;
 
-  // TODO(sclittle): Factor this out, see http://crbug.com/447346.
-  OnResolveProxyHandler on_resolve_proxy_handler_;
-
-  ProxyConfigGetter proxy_config_getter_;
+  const DataReductionProxyConfigurator* configurator_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyNetworkDelegate);
 };

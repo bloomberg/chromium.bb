@@ -31,9 +31,8 @@ class WebContents;
 
 namespace data_reduction_proxy {
 class DataReductionProxyConfigurator;
-class DataReductionProxyEventStore;
+class DataReductionProxyIOData;
 class DataReductionProxySettings;
-class DataReductionProxyStatisticsPrefs;
 }
 
 namespace net {
@@ -92,8 +91,8 @@ class AwBrowserContext : public content::BrowserContext,
   data_reduction_proxy::DataReductionProxySettings*
       GetDataReductionProxySettings();
 
-  data_reduction_proxy::DataReductionProxyEventStore*
-      GetDataReductionProxyEventStore();
+  data_reduction_proxy::DataReductionProxyIOData*
+      GetDataReductionProxyIOData();
 
   data_reduction_proxy::DataReductionProxyConfigurator*
       GetDataReductionProxyConfigurator();
@@ -155,15 +154,11 @@ class AwBrowserContext : public content::BrowserContext,
 
   scoped_ptr<PrefService> user_pref_service_;
 
-  scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
-      data_reduction_proxy_configurator_;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
-      data_reduction_proxy_statistics_;
   scoped_ptr<data_reduction_proxy::DataReductionProxySettings>
       data_reduction_proxy_settings_;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
-      data_reduction_proxy_event_store_;
   scoped_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
+      data_reduction_proxy_io_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

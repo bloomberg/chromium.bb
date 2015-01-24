@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -58,18 +59,16 @@ DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {
 }
 
 void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
-    data_reduction_proxy::DataReductionProxyConfigurator* configurator,
+    data_reduction_proxy::DataReductionProxyIOData* io_data,
     PrefService* profile_prefs,
     PrefService* local_state_prefs,
-    net::URLRequestContextGetter* request_context,
-    net::NetLog* net_log,
-    data_reduction_proxy::DataReductionProxyEventStore* event_store) {
-  SetProxyConfigurator(configurator);
+    net::URLRequestContextGetter* request_context) {
+  SetProxyConfigurator(io_data->configurator());
   DataReductionProxySettings::InitDataReductionProxySettings(
       profile_prefs,
       request_context,
-      net_log,
-      event_store);
+      io_data->net_log(),
+      io_data->event_store());
   DataReductionProxySettings::SetOnDataReductionEnabledCallback(
       base::Bind(&DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial,
                  base::Unretained(this)));

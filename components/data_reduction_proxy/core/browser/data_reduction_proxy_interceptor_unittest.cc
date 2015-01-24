@@ -9,7 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -161,6 +163,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
   }
 
   ~DataReductionProxyInterceptorWithServerTest() override {
+    io_data_->ShutdownOnUIThread();
     // URLRequestJobs may post clean-up tasks on destruction.
     base::RunLoop().RunUntilIdle();
   }
@@ -177,38 +180,42 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     ASSERT_TRUE(proxy_.InitializeAndWaitUntilReady());
     ASSERT_TRUE(direct_.InitializeAndWaitUntilReady());
 
-    params_.reset(
+    // Owned by settings_.
+    TestDataReductionProxyParams* params =
         new TestDataReductionProxyParams(
             DataReductionProxyParams::kAllowed,
             TestDataReductionProxyParams::HAS_EVERYTHING &
             ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
-    params_->set_origin(proxy_.GetURL("/"));
+            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
+    params->set_origin(proxy_.GetURL("/"));
     std::string proxy_name =
-        net::HostPortPair::FromURL(GURL(params_->origin())).ToString();
+        net::HostPortPair::FromURL(GURL(params->origin())).ToString();
     proxy_service_.reset(
         net::ProxyService::CreateFixedFromPacResult(
             "PROXY " + proxy_name + "; DIRECT"));
 
     context_.set_proxy_service(proxy_service_.get());
 
-    event_store_.reset(
-        new DataReductionProxyEventStore(loop_.message_loop_proxy()));
-
-    DataReductionProxyInterceptor* interceptor =
-        new DataReductionProxyInterceptor(params_.get(), NULL,
-                                          event_store_.get());
+    settings_.reset(new DataReductionProxySettings(params));
+    io_data_.reset(
+        new DataReductionProxyIOData(
+            data_reduction_proxy::Client::UNKNOWN,
+            scoped_ptr<
+                data_reduction_proxy::DataReductionProxyStatisticsPrefs>(),
+            settings_.get(),
+            &net_log_,
+            loop_.message_loop_proxy(),
+            loop_.message_loop_proxy()));
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
     job_factory_.reset(
         new net::URLRequestInterceptingJobFactory(
             job_factory_impl.Pass(),
-            make_scoped_ptr(interceptor)));
+            io_data_->CreateInterceptor()));
     context_.set_job_factory(job_factory_.get());
     context_.Init();
   }
-
 
   const net::TestURLRequestContext& context() {
     return context_;
@@ -219,18 +226,16 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO loop_;
   net::CapturingNetLog net_log_;
   net::TestNetworkDelegate network_delegate_;
-
   net::TestURLRequestContext context_;
   net::test_server::EmbeddedTestServer proxy_;
   net::test_server::EmbeddedTestServer direct_;
-  scoped_ptr<TestDataReductionProxyParams> params_;
   scoped_ptr<net::ProxyService> proxy_service_;
-  scoped_ptr<DataReductionProxyEventStore> event_store_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
-
-  base::MessageLoopForIO loop_;
+  scoped_ptr<DataReductionProxySettings> settings_;
+  scoped_ptr<DataReductionProxyIOData> io_data_;
 };
 
 TEST_F(DataReductionProxyInterceptorWithServerTest, TestBypass) {

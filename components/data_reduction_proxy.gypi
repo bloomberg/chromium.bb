@@ -40,6 +40,8 @@
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_io_data.cc',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_metrics.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.cc',

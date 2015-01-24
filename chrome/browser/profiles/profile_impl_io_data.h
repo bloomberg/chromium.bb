@@ -23,7 +23,6 @@ class CookieCryptoDelegate;
 }  // namespace content
 
 namespace data_reduction_proxy {
-class DataReductionProxyConfigurator;
 class DataReductionProxyNetworkDelegate;
 }  // namespace data_reduction_proxy
 
@@ -68,16 +67,7 @@ class ProfileImplIOData : public ProfileIOData {
         content::CookieStoreConfig::SessionCookieMode session_cookie_mode,
         storage::SpecialStoragePolicy* special_storage_policy,
         scoped_ptr<domain_reliability::DomainReliabilityMonitor>
-            domain_reliability_monitor,
-        const base::Callback<void(bool)>& data_reduction_proxy_unavailable,
-        scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
-            data_reduction_proxy_configurator,
-        scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-            data_reduction_proxy_params,
-        scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
-            data_reduction_proxy_statistics_prefs,
-        scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
-            data_reduction_proxy_event_store);
+            domain_reliability_monitor);
 
     // These Create*ContextGetter() functions are only exposed because the
     // circular relationship between Profile, ProfileIOData::Handle, and the
@@ -156,8 +146,6 @@ class ProfileImplIOData : public ProfileIOData {
 
     DISALLOW_COPY_AND_ASSIGN(Handle);
   };
-
-  bool IsDataReductionProxyEnabled() const override;
 
  private:
   friend class base::RefCountedThreadSafe<ProfileImplIOData>;
@@ -246,8 +234,6 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_ptr<net::SdchManager> sdch_manager_;
   mutable scoped_ptr<net::SdchOwner> sdch_policy_;
-
-  mutable BooleanPrefMember data_reduction_proxy_enabled_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;

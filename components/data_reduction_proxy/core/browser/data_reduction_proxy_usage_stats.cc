@@ -6,10 +6,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_member.h"
+#include "base/single_thread_task_runner.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -103,16 +104,18 @@ void DataReductionProxyUsageStats::DetectAndRecordMissingViaHeaderResponseCode(
 
 DataReductionProxyUsageStats::DataReductionProxyUsageStats(
     DataReductionProxyParams* params,
-    const scoped_refptr<MessageLoopProxy>& ui_thread_proxy)
+    DataReductionProxySettings* settings,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : data_reduction_proxy_params_(params),
+      settings_(settings),
       last_bypass_type_(BYPASS_EVENT_TYPE_MAX),
       triggering_request_(true),
-      ui_thread_proxy_(ui_thread_proxy),
+      ui_task_runner_(ui_task_runner),
       successful_requests_through_proxy_count_(0),
       proxy_net_errors_count_(0),
       unavailable_(false) {
   DCHECK(params);
-
+  DCHECK(settings);
   NetworkChangeNotifier::AddNetworkChangeObserver(this);
 };
 
@@ -156,39 +159,6 @@ void DataReductionProxyUsageStats::OnUrlRequestCompleted(
   }
 }
 
-void DataReductionProxyUsageStats::OnNetworkChanged(
-    NetworkChangeNotifier::ConnectionType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ClearRequestCounts();
-}
-
-void DataReductionProxyUsageStats::ClearRequestCounts() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  successful_requests_through_proxy_count_ = 0;
-  proxy_net_errors_count_ = 0;
-}
-
-void DataReductionProxyUsageStats::NotifyUnavailabilityIfChanged() {
-  bool prev_unavailable = unavailable_;
-  unavailable_ =
-      (proxy_net_errors_count_ >= kMinFailedRequestsWhenUnavailable &&
-          successful_requests_through_proxy_count_ <=
-              kMaxSuccessfulRequestsWhenUnavailable);
-  if (prev_unavailable != unavailable_) {
-    ui_thread_proxy_->PostTask(FROM_HERE, base::Bind(
-        &DataReductionProxyUsageStats::NotifyUnavailabilityOnUIThread,
-        base::Unretained(this),
-        unavailable_));
-  }
-}
-
-void DataReductionProxyUsageStats::NotifyUnavailabilityOnUIThread(
-    bool unavailable) {
-  DCHECK(ui_thread_proxy_->BelongsToCurrentThread());
-  if (!unavailable_callback_.is_null())
-    unavailable_callback_.Run(unavailable);
-}
-
 void DataReductionProxyUsageStats::SetBypassType(
     DataReductionProxyBypassType type) {
   last_bypass_type_ = type;
@@ -207,6 +177,53 @@ void DataReductionProxyUsageStats::RecordBytesHistograms(
   RecordBypassedBytesHistograms(request, data_reduction_proxy_enabled,
                                 data_reduction_proxy_config);
   RecordMissingViaHeaderBytes(request);
+}
+
+void DataReductionProxyUsageStats::OnProxyFallback(
+    const net::ProxyServer& bypassed_proxy,
+    int net_error) {
+  DataReductionProxyTypeInfo data_reduction_proxy_info;
+  if (bypassed_proxy.is_valid() && !bypassed_proxy.is_direct() &&
+      data_reduction_proxy_params_->IsDataReductionProxy(
+      bypassed_proxy.host_port_pair(), &data_reduction_proxy_info)) {
+    if (data_reduction_proxy_info.is_ssl)
+      return;
+
+    proxy_net_errors_count_++;
+
+    // To account for the case when the proxy is reachable for sometime, and
+    // then gets blocked, we reset counts when number of errors exceed
+    // the threshold.
+    if (proxy_net_errors_count_ >= kMaxFailedRequestsBeforeReset &&
+        successful_requests_through_proxy_count_ >
+            kMaxSuccessfulRequestsWhenUnavailable) {
+      ClearRequestCounts();
+    } else {
+      NotifyUnavailabilityIfChanged();
+    }
+
+    if (!data_reduction_proxy_info.is_fallback) {
+      RecordDataReductionProxyBypassInfo(
+          true, false, bypassed_proxy, BYPASS_EVENT_TYPE_NETWORK_ERROR);
+      RecordDataReductionProxyBypassOnNetworkError(
+          true, bypassed_proxy, net_error);
+    } else {
+      RecordDataReductionProxyBypassInfo(
+          false, false, bypassed_proxy, BYPASS_EVENT_TYPE_NETWORK_ERROR);
+      RecordDataReductionProxyBypassOnNetworkError(
+          false, bypassed_proxy, net_error);
+    }
+  }
+}
+
+void DataReductionProxyUsageStats::OnConnectComplete(
+    const net::HostPortPair& proxy_server,
+    int net_error) {
+  if (data_reduction_proxy_params_->IsDataReductionProxy(proxy_server, NULL)) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "DataReductionProxy.HTTPConnectCompleted",
+      std::abs(net_error));
+  }
 }
 
 void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
@@ -309,51 +326,61 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
   }
 }
 
-void DataReductionProxyUsageStats::OnProxyFallback(
-    const net::ProxyServer& bypassed_proxy,
-    int net_error) {
-  DataReductionProxyTypeInfo data_reduction_proxy_info;
-  if (bypassed_proxy.is_valid() && !bypassed_proxy.is_direct() &&
-      data_reduction_proxy_params_->IsDataReductionProxy(
-      bypassed_proxy.host_port_pair(), &data_reduction_proxy_info)) {
-    if (data_reduction_proxy_info.is_ssl)
-      return;
+void DataReductionProxyUsageStats::RecordMissingViaHeaderBytes(
+    const URLRequest& request) {
+  // Responses that were served from cache should have been filtered out
+  // already.
+  DCHECK(!request.was_cached());
 
-    proxy_net_errors_count_++;
+  if (!data_reduction_proxy_params_->WasDataReductionProxyUsed(&request,
+                                                               NULL) ||
+      HasDataReductionProxyViaHeader(request.response_headers(), NULL)) {
+    // Only track requests that used the data reduction proxy and had responses
+    // that were missing the data reduction proxy via header.
+    return;
+  }
 
-    // To account for the case when the proxy is reachable for sometime, and
-    // then gets blocked, we reset counts when number of errors exceed
-    // the threshold.
-    if (proxy_net_errors_count_ >= kMaxFailedRequestsBeforeReset &&
-        successful_requests_through_proxy_count_ >
-            kMaxSuccessfulRequestsWhenUnavailable) {
-      ClearRequestCounts();
-    } else {
-      NotifyUnavailabilityIfChanged();
-    }
-
-    if (!data_reduction_proxy_info.is_fallback) {
-      RecordDataReductionProxyBypassInfo(
-          true, false, bypassed_proxy, BYPASS_EVENT_TYPE_NETWORK_ERROR);
-      RecordDataReductionProxyBypassOnNetworkError(
-          true, bypassed_proxy, net_error);
-    } else {
-      RecordDataReductionProxyBypassInfo(
-          false, false, bypassed_proxy, BYPASS_EVENT_TYPE_NETWORK_ERROR);
-      RecordDataReductionProxyBypassOnNetworkError(
-          false, bypassed_proxy, net_error);
-    }
+  if (request.GetResponseCode() >= net::HTTP_BAD_REQUEST &&
+      request.GetResponseCode() < net::HTTP_INTERNAL_SERVER_ERROR) {
+    // Track 4xx responses that are missing via headers separately.
+    UMA_HISTOGRAM_COUNTS("DataReductionProxy.MissingViaHeader.Bytes.4xx",
+                         request.received_response_content_length());
+  } else {
+    UMA_HISTOGRAM_COUNTS("DataReductionProxy.MissingViaHeader.Bytes.Other",
+                         request.received_response_content_length());
   }
 }
 
-void DataReductionProxyUsageStats::OnConnectComplete(
-    const net::HostPortPair& proxy_server,
-    int net_error) {
-  if (data_reduction_proxy_params_->IsDataReductionProxy(proxy_server, NULL)) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "DataReductionProxy.HTTPConnectCompleted",
-      std::abs(net_error));
+void DataReductionProxyUsageStats::OnNetworkChanged(
+    NetworkChangeNotifier::ConnectionType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ClearRequestCounts();
+}
+
+void DataReductionProxyUsageStats::ClearRequestCounts() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  successful_requests_through_proxy_count_ = 0;
+  proxy_net_errors_count_ = 0;
+}
+
+void DataReductionProxyUsageStats::NotifyUnavailabilityIfChanged() {
+  bool prev_unavailable = unavailable_;
+  unavailable_ =
+      (proxy_net_errors_count_ >= kMinFailedRequestsWhenUnavailable &&
+          successful_requests_through_proxy_count_ <=
+              kMaxSuccessfulRequestsWhenUnavailable);
+  if (prev_unavailable != unavailable_) {
+    ui_task_runner_->PostTask(FROM_HERE, base::Bind(
+        &DataReductionProxyUsageStats::NotifyUnavailabilityOnUIThread,
+        base::Unretained(this),
+        unavailable_));
   }
+}
+
+void DataReductionProxyUsageStats::NotifyUnavailabilityOnUIThread(
+    bool unavailable) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  settings_->SetUnreachable(unavailable);
 }
 
 void DataReductionProxyUsageStats::RecordBypassedBytes(
@@ -468,31 +495,6 @@ void DataReductionProxyUsageStats::RecordBypassedBytes(
           break;
       }
       break;
-  }
-}
-
-void DataReductionProxyUsageStats::RecordMissingViaHeaderBytes(
-    const URLRequest& request) {
-  // Responses that were served from cache should have been filtered out
-  // already.
-  DCHECK(!request.was_cached());
-
-  if (!data_reduction_proxy_params_->WasDataReductionProxyUsed(&request,
-                                                               NULL) ||
-      HasDataReductionProxyViaHeader(request.response_headers(), NULL)) {
-    // Only track requests that used the data reduction proxy and had responses
-    // that were missing the data reduction proxy via header.
-    return;
-  }
-
-  if (request.GetResponseCode() >= net::HTTP_BAD_REQUEST &&
-      request.GetResponseCode() < net::HTTP_INTERNAL_SERVER_ERROR) {
-    // Track 4xx responses that are missing via headers separately.
-    UMA_HISTOGRAM_COUNTS("DataReductionProxy.MissingViaHeader.Bytes.4xx",
-                         request.received_response_content_length());
-  } else {
-    UMA_HISTOGRAM_COUNTS("DataReductionProxy.MissingViaHeader.Bytes.Other",
-                         request.received_response_content_length());
   }
 }
 

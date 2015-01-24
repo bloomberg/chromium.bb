@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/test/histogram_tester.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -57,8 +58,7 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
  public:
   DataReductionProxyUsageStatsTest()
       : loop_proxy_(base::MessageLoopProxy::current().get()),
-        context_(true),
-        unavailable_(false) {
+        context_(true) {
     context_.Init();
 
     // The |test_job_factory_| takes ownership of the interceptor.
@@ -70,10 +70,8 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
 
     mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_,
                                                NULL);
-  }
-
-  void NotifyUnavailable(bool unavailable) {
-    unavailable_ = unavailable;
+    settings_.reset(new DataReductionProxySettings(
+        new DataReductionProxyParamsMock()));
   }
 
   scoped_ptr<net::URLRequest> CreateURLRequestWithResponseHeaders(
@@ -98,6 +96,10 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
     return fake_request.Pass();
   }
 
+  bool IsUnreachable() const {
+    return settings_->IsDataReductionProxyUnreachable();
+  }
+
   // Required for base::MessageLoopProxy::current().
   base::MessageLoopForUI loop_;
   base::MessageLoopProxy* loop_proxy_;
@@ -110,7 +112,7 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
   // |test_job_interceptor_| is owned by |test_job_factory_|.
   net::TestJobInterceptor* test_job_interceptor_;
   net::URLRequestJobFactoryImpl test_job_factory_;
-  bool unavailable_;
+  scoped_ptr<DataReductionProxySettings> settings_;
 };
 
 TEST_F(DataReductionProxyUsageStatsTest, IsDataReductionProxyUnreachable) {
@@ -155,18 +157,15 @@ TEST_F(DataReductionProxyUsageStatsTest, IsDataReductionProxyUnreachable) {
         .WillRepeatedly(testing::Return(test_case.was_proxy_used));
 
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
-        new DataReductionProxyUsageStats(
-            &mock_params_, loop_proxy_));
-    usage_stats->set_unavailable_callback(
-        base::Bind(&DataReductionProxyUsageStatsTest::NotifyUnavailable,
-                   base::Unretained(this)));
+        new DataReductionProxyUsageStats(&mock_params_, settings_.get(),
+                                         loop_proxy_));
 
     usage_stats->OnProxyFallback(fallback_proxy_server,
                                  net::ERR_PROXY_CONNECTION_FAILED);
     usage_stats->OnUrlRequestCompleted(mock_url_request_.get(), false);
     base::MessageLoop::current()->RunUntilIdle();
 
-    EXPECT_EQ(test_case.is_unreachable, unavailable_);
+    EXPECT_EQ(test_case.is_unreachable, IsUnreachable());
   }
 }
 
@@ -174,12 +173,8 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyUnreachableThenReachable) {
   net::ProxyServer fallback_proxy_server =
       net::ProxyServer::FromURI("foo.com", net::ProxyServer::SCHEME_HTTP);
   scoped_ptr<DataReductionProxyUsageStats> usage_stats(
-      new DataReductionProxyUsageStats(
-          &mock_params_, loop_proxy_));
-  usage_stats->set_unavailable_callback(
-      base::Bind(&DataReductionProxyUsageStatsTest::NotifyUnavailable,
-                 base::Unretained(this)));
-
+      new DataReductionProxyUsageStats(&mock_params_, settings_.get(),
+                                       loop_proxy_));
   EXPECT_CALL(mock_params_, IsDataReductionProxy(testing::_, testing::_))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(mock_params_,
@@ -190,23 +185,20 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyUnreachableThenReachable) {
   usage_stats->OnProxyFallback(fallback_proxy_server,
                                net::ERR_PROXY_CONNECTION_FAILED);
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_TRUE(unavailable_);
+  EXPECT_TRUE(IsUnreachable());
 
   // proxy succeeds
   usage_stats->OnUrlRequestCompleted(mock_url_request_.get(), false);
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_FALSE(unavailable_);
+  EXPECT_FALSE(IsUnreachable());
 }
 
 TEST_F(DataReductionProxyUsageStatsTest, ProxyReachableThenUnreachable) {
   net::ProxyServer fallback_proxy_server =
       net::ProxyServer::FromURI("foo.com", net::ProxyServer::SCHEME_HTTP);
   scoped_ptr<DataReductionProxyUsageStats> usage_stats(
-      new DataReductionProxyUsageStats(
-          &mock_params_, loop_proxy_));
-  usage_stats->set_unavailable_callback(
-      base::Bind(&DataReductionProxyUsageStatsTest::NotifyUnavailable,
-                 base::Unretained(this)));
+      new DataReductionProxyUsageStats(&mock_params_, settings_.get(),
+                                       loop_proxy_));
   EXPECT_CALL(mock_params_,
               WasDataReductionProxyUsed(mock_url_request_.get(), testing::_))
       .WillOnce(testing::Return(true));
@@ -216,19 +208,19 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyReachableThenUnreachable) {
   // Proxy succeeds.
   usage_stats->OnUrlRequestCompleted(mock_url_request_.get(), false);
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_FALSE(unavailable_);
+  EXPECT_FALSE(IsUnreachable());
 
   // Then proxy falls back indefinitely.
   usage_stats->OnProxyFallback(fallback_proxy_server,
                                net::ERR_PROXY_CONNECTION_FAILED);
   usage_stats->OnProxyFallback(fallback_proxy_server,
-                                 net::ERR_PROXY_CONNECTION_FAILED);
+                               net::ERR_PROXY_CONNECTION_FAILED);
   usage_stats->OnProxyFallback(fallback_proxy_server,
-                                 net::ERR_PROXY_CONNECTION_FAILED);
+                               net::ERR_PROXY_CONNECTION_FAILED);
   usage_stats->OnProxyFallback(fallback_proxy_server,
-                                 net::ERR_PROXY_CONNECTION_FAILED);
+                               net::ERR_PROXY_CONNECTION_FAILED);
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_TRUE(unavailable_);
+  EXPECT_TRUE(IsUnreachable());
 }
 
 TEST_F(DataReductionProxyUsageStatsTest,
@@ -410,7 +402,8 @@ TEST_F(DataReductionProxyUsageStatsTest, RecordMissingViaHeaderBytes) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::HistogramTester histogram_tester;
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
-        new DataReductionProxyUsageStats(&mock_params_, loop_proxy_));
+        new DataReductionProxyUsageStats(&mock_params_, settings_.get(),
+                                         loop_proxy_));
 
     std::string raw_headers(test_cases[i].headers);
     HeadersToRaw(&raw_headers);
@@ -475,7 +468,8 @@ TEST_F(DataReductionProxyUsageStatsTest, RequestCompletionErrorCodes) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::HistogramTester histogram_tester;
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
-        new DataReductionProxyUsageStats(&mock_params_, loop_proxy_));
+        new DataReductionProxyUsageStats(&mock_params_, settings_.get(),
+                                         loop_proxy_));
 
     std::string raw_headers("HTTP/1.1 200 OK\n"
                             "Via: 1.1 Chrome-Compression-Proxy\n");

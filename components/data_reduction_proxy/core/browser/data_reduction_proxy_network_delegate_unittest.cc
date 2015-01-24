@@ -15,11 +15,15 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "net/base/capturing_net_log.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_log.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_config.h"
 #include "net/url_request/url_request.h"
@@ -71,6 +75,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     EXPECT_TRUE(test_job_factory_.SetProtocolHandler(url::kHttpScheme,
                                                      test_job_interceptor_));
     context_.set_job_factory(&test_job_factory_);
+    event_store_.reset(new DataReductionProxyEventStore(message_loop_proxy()));
   }
 
   const net::ProxyConfig& GetProxyConfig() const {
@@ -115,6 +120,14 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     return loop_.message_loop_proxy();
   }
 
+  net::NetLog* net_log() {
+    return &net_log_;
+  }
+
+  DataReductionProxyEventStore* event_store() {
+    return event_store_.get();
+  }
+
  private:
   base::MessageLoopForIO loop_;
   net::TestURLRequestContext context_;
@@ -125,6 +138,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
   net::ProxyConfig config_;
   net::NetworkDelegate* network_delegate_;
+  net::CapturingNetLog net_log_;
+  scoped_ptr<DataReductionProxyEventStore> event_store_;
 };
 
 TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
@@ -141,11 +156,15 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
   DataReductionProxyAuthRequestHandler auth_handler(
       kClient, params.get(), message_loop_proxy());
 
+  scoped_ptr<DataReductionProxyConfigurator> configurator(
+      new DataReductionProxyConfigurator(message_loop_proxy(), net_log(),
+                                         event_store()));
+
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate(
       new DataReductionProxyNetworkDelegate(
           scoped_ptr<net::NetworkDelegate>(new TestNetworkDelegate()),
           params.get(), &auth_handler,
-          DataReductionProxyNetworkDelegate::ProxyConfigGetter()));
+          configurator.get()));
 
   set_network_delegate(network_delegate.get());
   scoped_ptr<net::URLRequest> fake_request(
@@ -202,13 +221,14 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
       kClient, params.get(), message_loop_proxy());
 
   base::HistogramTester histogram_tester;
+  scoped_ptr<DataReductionProxyConfigurator> configurator(
+      new DataReductionProxyConfigurator(message_loop_proxy(), net_log(),
+                                         event_store()));
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate(
       new DataReductionProxyNetworkDelegate(
           scoped_ptr<net::NetworkDelegate>(
               new TestNetworkDelegate()), params.get(), &auth_handler,
-              base::Bind(
-                  &DataReductionProxyNetworkDelegateTest::GetProxyConfig,
-                  base::Unretained(this))));
+              configurator.get()));
 
   set_network_delegate(network_delegate.get());
 

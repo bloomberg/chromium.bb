@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -79,14 +80,9 @@ class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
 class DataReductionProxyProtocolTest : public testing::Test {
  public:
   DataReductionProxyProtocolTest() : http_user_agent_settings_("", "") {
-    proxy_params_.reset(
-        new TestDataReductionProxyParams(
-            DataReductionProxyParams::kAllowed |
-            DataReductionProxyParams::kFallbackAllowed |
-            DataReductionProxyParams::kPromoAllowed,
-            TestDataReductionProxyParams::HAS_EVERYTHING &
-            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
+    settings_.reset(
+        new DataReductionProxySettings(CreateTestDataReductionProxyParams()));
+    proxy_params_.reset(CreateTestDataReductionProxyParams());
     simple_interceptor_.reset(new SimpleURLRequestInterceptor());
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         "http", "www.google.com", simple_interceptor_.Pass());
@@ -96,6 +92,16 @@ class DataReductionProxyProtocolTest : public testing::Test {
     net::URLRequestFilter::GetInstance()->RemoveHostnameHandler(
             "http", "www.google.com");
     base::RunLoop().RunUntilIdle();
+  }
+
+  TestDataReductionProxyParams* CreateTestDataReductionProxyParams() {
+    return new TestDataReductionProxyParams(
+        DataReductionProxyParams::kAllowed |
+        DataReductionProxyParams::kFallbackAllowed |
+        DataReductionProxyParams::kPromoAllowed,
+        TestDataReductionProxyParams::HAS_EVERYTHING &
+        ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+        ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
   }
 
   void SetUp() override {
@@ -118,13 +124,14 @@ class DataReductionProxyProtocolTest : public testing::Test {
     // to requests.
     context_->set_http_user_agent_settings(&http_user_agent_settings_);
     usage_stats_.reset(new DataReductionProxyUsageStats(
-        proxy_params_.get(), base::MessageLoopProxy::current()));
+       settings_->params(), settings_.get(),
+       base::MessageLoopProxy::current()));
 
     event_store_.reset(
         new DataReductionProxyEventStore(base::MessageLoopProxy::current()));
     DataReductionProxyInterceptor* interceptor =
         new DataReductionProxyInterceptor(
-            proxy_params_.get(), usage_stats_.get(), event_store_.get());
+            settings_->params(), usage_stats_.get(), event_store_.get());
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
     job_factory_.reset(new net::URLRequestInterceptingJobFactory(
@@ -330,6 +337,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
   scoped_ptr<net::TestNetworkDelegate> network_delegate_;
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<TestDataReductionProxyParams> proxy_params_;
+  scoped_ptr<DataReductionProxySettings> settings_;
   scoped_ptr<DataReductionProxyUsageStats> usage_stats_;
   scoped_ptr<DataReductionProxyEventStore> event_store_;
   net::StaticHttpUserAgentSettings http_user_agent_settings_;
