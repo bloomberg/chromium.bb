@@ -112,12 +112,12 @@
 //<include src="spinner_controller.js">
 //<include src="task_controller.js">
 //<include src="thumbnail_loader.js">
+//<include src="ui/banners.js" >
 //<include src="ui/conflict_dialog.js">
 //<include src="ui/default_action_dialog.js">
 //<include src="ui/dialog_footer.js">
 //<include src="ui/directory_tree.js">
 //<include src="ui/drag_selector.js">
-//<include src="ui/drive_banners.js" >
 //<include src="ui/error_dialog.js">
 //<include src="ui/file_grid.js">
 //<include src="ui/file_manager_ui.js">

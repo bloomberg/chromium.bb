@@ -226,6 +226,12 @@ function FileManagerUI(element, launchParam) {
   };
 
   /**
+   * Banners in the file list.
+   * @type {Banners}
+   */
+  this.banners = null;
+
+  /**
    * Dialog footer.
    * @type {!DialogFooter}
    */
@@ -328,6 +334,15 @@ FileManagerUI.prototype.initDirectoryTree = function(directoryTree) {
   observer.observe(this.progressCenterPanel.element,
                    /** @type {MutationObserverInit} */
                    ({subtree: true, attributes: true, childList: true}));
+};
+
+/**
+ * TODO(mtomasz): Merge the method into initAdditionalUI if possible.
+ * @param {!Banners} banners
+ */
+FileManagerUI.prototype.initBanners = function(banners) {
+  this.banners = banners;
+  this.banners.addEventListener('relayout', this.relayout.bind(this));
 };
 
 /**

@@ -170,13 +170,6 @@ function FileManager() {
   this.spinnerController_ = null;
 
   /**
-   * Banners in the file list.
-   * @type {FileListBannerController}
-   * @private
-   */
-  this.bannersController_ = null;
-
-  /**
    * Gear menu controller.
    * @type {GearMenuController}
    * @private
@@ -389,18 +382,6 @@ FileManager.prototype = /** @struct */ {
 
     var self = this;
 
-    // Get the 'allowRedeemOffers' preference before launching
-    // FileListBannerController.
-    chrome.fileManagerPrivate.getPreferences(function(pref) {
-      self.bannersController_ = new FileListBannerController(
-          self.directoryModel_,
-          self.volumeManager_,
-          self.document_,
-          pref.allowRedeemOffers);
-      self.bannersController_.addEventListener(
-          'relayout', self.ui_.relayout.bind(self.ui_));
-    });
-
     var listBeingUpdated = null;
     this.directoryModel_.addEventListener('begin-update-files', function() {
       self.ui_.listContainer.currentList.startBatchUpdates();
@@ -455,7 +436,16 @@ FileManager.prototype = /** @struct */ {
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.listContainer.endBatchUpdates();
 
-    callback();
+    // Get the 'allowRedeemOffers' preference for banners.
+    chrome.fileManagerPrivate.getPreferences(function(pref) {
+      this.ui_.initBanners(
+          new Banners(
+              this.directoryModel_,
+              this.volumeManager_,
+              this.document_,
+              pref.allowRedeemOffers));
+      callback();
+    }.bind(this));
   };
 
   /**
