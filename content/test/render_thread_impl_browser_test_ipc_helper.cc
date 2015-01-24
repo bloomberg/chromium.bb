@@ -23,18 +23,7 @@ RenderThreadImplBrowserIPCTestHelper::RenderThreadImplBrowserIPCTestHelper() {
 
   SetupIpcThread();
 
-  // TODO(crbug.com/451221): Mojo should be used here even for Android.
-  // Currently SetupMojo() calls InitializeMojo() which can be called at most
-  // once for each process. This implices that every test case using
-  // RenderThreadImplBrowserIPCTestHelper has to run in a dedicated process, but
-  // that is false on OS_ANDROID. There is no way to call InitializeMojo() only
-  // if it isn't initialized yet.
-#if defined(OS_ANDROID)
-  bool use_mojo_channel = false;
-#else
-  bool use_mojo_channel = IPC::ChannelMojo::ShouldBeUsed();
-#endif
-  if (use_mojo_channel) {
+  if (IPC::ChannelMojo::ShouldBeUsed()) {
     SetupMojo();
   } else {
     channel_ = IPC::ChannelProxy::Create(channel_id_, IPC::Channel::MODE_SERVER,
