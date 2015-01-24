@@ -4,11 +4,10 @@
 
 {
   'variables': {
-    'chromium_code': 1,
     'enable_coverage%': 0,
   },
   'conditions': [
-    ['OS=="ios" and enable_coverage', {
+    ['enable_coverage', {
         'target_defaults': {
           'defines': [
             'ENABLE_TEST_CODE_COVERAGE=1'

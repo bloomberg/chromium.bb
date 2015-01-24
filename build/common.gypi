@@ -5159,6 +5159,9 @@
       },  # target_defaults
     }],  # OS=="mac"
     ['OS=="ios"', {
+      'includes': [
+        'ios/coverage.gypi',
+      ],
       'target_defaults': {
         'xcode_settings' : {
           'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
