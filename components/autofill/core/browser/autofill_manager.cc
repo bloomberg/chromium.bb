@@ -145,6 +145,7 @@ AutofillManager::AutofillManager(
     AutofillDownloadManagerState enable_download_manager)
     : driver_(driver),
       client_(client),
+      real_pan_client_(driver->GetURLRequestContext(), this),
       app_locale_(app_locale),
       personal_data_(client->GetPersonalDataManager()),
       autocomplete_history_manager_(
@@ -681,6 +682,10 @@ void AutofillManager::OnLoadedServerPredictions(
 }
 
 void AutofillManager::OnUnmaskResponse(const base::string16& cvc) {
+  // Most of this function is demo code. The real code should look something
+  // like:
+  //   real_pan_client_.UnmaskCard(unmasking_card_, cvc);
+
   unmasking_cvc_ = cvc;
   // TODO(estade): fake verification: assume 123/1234 is the correct cvc.
   if (StartsWithASCII(base::UTF16ToASCII(cvc), "123", true)) {
@@ -697,9 +702,19 @@ void AutofillManager::OnUnmaskResponse(const base::string16& cvc) {
 }
 
 void AutofillManager::OnUnmaskPromptClosed() {
+  real_pan_client_.CancelRequest();
   driver_->RendererShouldClearPreviewedForm();
   unmasking_card_ = CreditCard();
   unmasking_cvc_.clear();
+}
+
+void AutofillManager::OnDidGetRealPan(const std::string& real_pan) {
+  NOTIMPLEMENTED();
+}
+
+std::string AutofillManager::GetOAuth2Token() {
+  NOTIMPLEMENTED();
+  return "would_I_lie_to_you?";
 }
 
 void AutofillManager::OnUnmaskVerificationResult(bool success) {
@@ -847,6 +862,7 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
                                  PersonalDataManager* personal_data)
     : driver_(driver),
       client_(client),
+      real_pan_client_(driver->GetURLRequestContext(), this),
       app_locale_("en-US"),
       personal_data_(personal_data),
       autocomplete_history_manager_(

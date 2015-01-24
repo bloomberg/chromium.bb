@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/wallet/real_pan_wallet_client.h"
 #include "components/autofill/core/common/form_data.h"
 
 namespace gfx {
@@ -56,7 +57,8 @@ struct FormFieldData;
 // Manages saving and restoring the user's personal information entered into web
 // forms. One per frame; owned by the AutofillDriver.
 class AutofillManager : public AutofillDownloadManager::Observer,
-                        public CardUnmaskDelegate {
+                        public CardUnmaskDelegate,
+                        public wallet::RealPanWalletClient::Delegate {
  public:
   enum AutofillDownloadManagerState {
     ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
@@ -227,6 +229,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnUnmaskResponse(const base::string16& cvc) override;
   void OnUnmaskPromptClosed() override;
 
+  // wallet::RealPanWalletClient::Delegate:
+  void OnDidGetRealPan(const std::string& real_pan) override;
+  std::string GetOAuth2Token() override;
+
   // A toy method called when the (fake) unmasking process has finished.
   void OnUnmaskVerificationResult(bool success);
 
@@ -314,6 +320,9 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   AutofillDriver* driver_;
 
   AutofillClient* const client_;
+
+  // Handles real PAN requests.
+  wallet::RealPanWalletClient real_pan_client_;
 
   std::string app_locale_;
 

@@ -187,6 +187,8 @@
         'autofill/core/browser/suggestion.h',
         'autofill/core/browser/validation.cc',
         'autofill/core/browser/validation.h',
+        'autofill/core/browser/wallet/real_pan_wallet_client.cc',
+        'autofill/core/browser/wallet/real_pan_wallet_client.h',
         'autofill/core/browser/webdata/autocomplete_syncable_service.cc',
         'autofill/core/browser/webdata/autocomplete_syncable_service.h',
         'autofill/core/browser/webdata/autofill_change.cc',

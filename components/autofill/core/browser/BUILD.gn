@@ -119,6 +119,8 @@ static_library("browser") {
     "suggestion.h",
     "validation.cc",
     "validation.h",
+    "wallet/real_pan_wallet_client.cc",
+    "wallet/real_pan_wallet_client.h",
     "webdata/autocomplete_syncable_service.cc",
     "webdata/autocomplete_syncable_service.h",
     "webdata/autofill_change.cc",
