@@ -9,24 +9,22 @@
 #include "cc/resources/picture_layer_tiling_set.h"
 #include "cc/resources/raster_tile_priority_queue.h"
 #include "cc/resources/tile.h"
-#include "cc/resources/tiling_set_raster_queue.h"
 
 namespace cc {
 
 // This queue only returns tiles that are required for either activation or
 // draw, as specified by RasterTilePriorityQueue::Type passed in the
 // constructor.
-class CC_EXPORT TilingSetRasterQueueRequired
-    : public NON_EXPORTED_BASE(TilingSetRasterQueue) {
+class CC_EXPORT TilingSetRasterQueueRequired {
  public:
   TilingSetRasterQueueRequired(PictureLayerTilingSet* tiling_set,
                                RasterTilePriorityQueue::Type type);
-  ~TilingSetRasterQueueRequired() override;
+  ~TilingSetRasterQueueRequired();
 
-  Tile* Top() override;
-  const Tile* Top() const override;
-  void Pop() override;
-  bool IsEmpty() const override;
+  Tile* Top();
+  const Tile* Top() const;
+  void Pop();
+  bool IsEmpty() const;
 
  private:
   // This iterator will return all tiles that are in the NOW bin on the given

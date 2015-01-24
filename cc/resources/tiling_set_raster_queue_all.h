@@ -9,23 +9,21 @@
 #include "cc/resources/picture_layer_tiling_set.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
-#include "cc/resources/tiling_set_raster_queue.h"
 
 namespace cc {
 
 // This queue returns all tiles required to be rasterized from HIGH_RESOLUTION
 // and LOW_RESOLUTION tilings.
-class CC_EXPORT TilingSetRasterQueueAll
-    : public NON_EXPORTED_BASE(TilingSetRasterQueue) {
+class CC_EXPORT TilingSetRasterQueueAll {
  public:
   TilingSetRasterQueueAll(PictureLayerTilingSet* tiling_set,
                           bool prioritize_low_res);
-  ~TilingSetRasterQueueAll() override;
+  ~TilingSetRasterQueueAll();
 
-  Tile* Top() override;
-  const Tile* Top() const override;
-  void Pop() override;
-  bool IsEmpty() const override;
+  Tile* Top();
+  const Tile* Top() const;
+  void Pop();
+  bool IsEmpty() const;
 
  private:
   class TilingIterator {

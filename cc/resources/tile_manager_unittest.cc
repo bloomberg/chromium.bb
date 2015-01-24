@@ -1104,7 +1104,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   // 3. Third iteration ensures that no tiles are returned, since they were all
   //    marked as ready to draw.
   for (int i = 0; i < 3; ++i) {
-    scoped_ptr<TilingSetRasterQueue> queue(
+    scoped_ptr<TilingSetRasterQueueAll> queue(
         new TilingSetRasterQueueAll(tiling_set.get(), false));
 
     // There are 3 bins in TilePriority.
@@ -1214,7 +1214,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   Tile* last_tile = NULL;
   int eventually_bin_order_correct_count = 0;
   int eventually_bin_order_incorrect_count = 0;
-  scoped_ptr<TilingSetRasterQueue> queue(
+  scoped_ptr<TilingSetRasterQueueAll> queue(
       new TilingSetRasterQueueAll(tiling_set.get(), false));
   for (; !queue->IsEmpty(); queue->Pop()) {
     if (!last_tile)

@@ -28,7 +28,7 @@ void RasterTilePriorityQueueRequired::Build(
     if (!tiling_set)
       continue;
 
-    scoped_ptr<TilingSetRasterQueue> tiling_set_queue(
+    scoped_ptr<TilingSetRasterQueueRequired> tiling_set_queue(
         new TilingSetRasterQueueRequired(tiling_set, type));
     if (tiling_set_queue->IsEmpty())
       continue;

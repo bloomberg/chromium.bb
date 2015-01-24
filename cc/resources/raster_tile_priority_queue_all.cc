@@ -5,7 +5,6 @@
 #include "cc/resources/raster_tile_priority_queue_all.h"
 
 #include "cc/resources/tiling_set_raster_queue_all.h"
-#include "cc/resources/tiling_set_raster_queue_required.h"
 
 namespace cc {
 
@@ -26,11 +25,11 @@ class RasterOrderComparator {
       return b->IsEmpty() < a->IsEmpty();
 
     WhichTree a_tree = a->NextTileIteratorTree(tree_priority_);
-    const TilingSetRasterQueue* a_queue =
+    const TilingSetRasterQueueAll* a_queue =
         a_tree == ACTIVE_TREE ? a->active_queue() : a->pending_queue();
 
     WhichTree b_tree = b->NextTileIteratorTree(tree_priority_);
-    const TilingSetRasterQueue* b_queue =
+    const TilingSetRasterQueueAll* b_queue =
         b_tree == ACTIVE_TREE ? b->active_queue() : b->pending_queue();
 
     const Tile* a_tile = a_queue->Top();
@@ -84,8 +83,8 @@ class RasterOrderComparator {
 };
 
 WhichTree HigherPriorityTree(TreePriority tree_priority,
-                             const TilingSetRasterQueue* active_queue,
-                             const TilingSetRasterQueue* pending_queue,
+                             const TilingSetRasterQueueAll* active_queue,
+                             const TilingSetRasterQueueAll* pending_queue,
                              const Tile* shared_tile) {
   switch (tree_priority) {
     case SMOOTHNESS_TAKES_PRIORITY: {
@@ -127,7 +126,7 @@ WhichTree HigherPriorityTree(TreePriority tree_priority,
   }
 }
 
-scoped_ptr<TilingSetRasterQueue> CreateTilingSetRasterQueue(
+scoped_ptr<TilingSetRasterQueueAll> CreateTilingSetRasterQueue(
     PictureLayerImpl* layer,
     TreePriority tree_priority) {
   if (!layer)
@@ -211,7 +210,7 @@ Tile* RasterTilePriorityQueueAll::PairedTilingSetQueue::Top(
   DCHECK(!IsEmpty());
 
   WhichTree next_tree = NextTileIteratorTree(tree_priority);
-  TilingSetRasterQueue* next_queue =
+  TilingSetRasterQueueAll* next_queue =
       next_tree == ACTIVE_TREE ? active_queue_.get() : pending_queue_.get();
   DCHECK(next_queue && !next_queue->IsEmpty());
   Tile* tile = next_queue->Top();
@@ -225,7 +224,7 @@ void RasterTilePriorityQueueAll::PairedTilingSetQueue::Pop(
   DCHECK(!IsEmpty());
 
   WhichTree next_tree = NextTileIteratorTree(tree_priority);
-  TilingSetRasterQueue* next_queue =
+  TilingSetRasterQueueAll* next_queue =
       next_tree == ACTIVE_TREE ? active_queue_.get() : pending_queue_.get();
   DCHECK(next_queue && !next_queue->IsEmpty());
   DCHECK(returned_tiles_for_debug_.insert(next_queue->Top()).second);
@@ -246,7 +245,7 @@ void RasterTilePriorityQueueAll::PairedTilingSetQueue::SkipTilesReturnedByTwin(
   // tiles twice (from the active iterator and from the pending iterator).
   while (!IsEmpty()) {
     WhichTree next_tree = NextTileIteratorTree(tree_priority);
-    TilingSetRasterQueue* next_queue =
+    TilingSetRasterQueueAll* next_queue =
         next_tree == ACTIVE_TREE ? active_queue_.get() : pending_queue_.get();
     DCHECK(next_queue && !next_queue->IsEmpty());
 

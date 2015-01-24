@@ -9,7 +9,7 @@
 
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/raster_tile_priority_queue.h"
-#include "cc/resources/tiling_set_raster_queue.h"
+#include "cc/resources/tiling_set_raster_queue_required.h"
 
 namespace cc {
 class Tile;
@@ -29,7 +29,7 @@ class RasterTilePriorityQueueRequired : public RasterTilePriorityQueue {
   void Build(const std::vector<PictureLayerImpl::Pair>& paired_layers,
              Type type);
 
-  ScopedPtrVector<TilingSetRasterQueue> tiling_set_queues_;
+  ScopedPtrVector<TilingSetRasterQueueRequired> tiling_set_queues_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTilePriorityQueueRequired);
 };

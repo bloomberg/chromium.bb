@@ -1670,7 +1670,7 @@ TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
   int num_visible = 0;
   int num_offscreen = 0;
 
-  scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueAll(
+  scoped_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
       pending_layer_->picture_layer_tiling_set(), false));
   for (; !queue->IsEmpty(); queue->Pop()) {
     const Tile* tile = queue->Top();
@@ -2816,7 +2816,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   int low_res_tile_count = 0u;
   int high_res_tile_count = 0u;
   int high_res_now_tiles = 0u;
-  scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueAll(
+  scoped_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
       pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
@@ -2855,22 +2855,23 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   EXPECT_EQ(low_res_tile_count + high_res_tile_count + non_ideal_tile_count,
             static_cast<int>(unique_tiles.size()));
 
-  queue.reset(new TilingSetRasterQueueRequired(
-      pending_layer_->picture_layer_tiling_set(),
-      RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW));
-  EXPECT_TRUE(queue->IsEmpty());
+  scoped_ptr<TilingSetRasterQueueRequired> required_queue(
+      new TilingSetRasterQueueRequired(
+          pending_layer_->picture_layer_tiling_set(),
+          RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW));
+  EXPECT_TRUE(required_queue->IsEmpty());
 
-  queue.reset(new TilingSetRasterQueueRequired(
+  required_queue.reset(new TilingSetRasterQueueRequired(
       pending_layer_->picture_layer_tiling_set(),
       RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
-  EXPECT_FALSE(queue->IsEmpty());
+  EXPECT_FALSE(required_queue->IsEmpty());
   int required_for_activation_count = 0;
-  while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
+  while (!required_queue->IsEmpty()) {
+    Tile* tile = required_queue->Top();
     EXPECT_TRUE(tile->required_for_activation());
     EXPECT_FALSE(tile->IsReadyToDraw());
     ++required_for_activation_count;
-    queue->Pop();
+    required_queue->Pop();
   }
 
   // All of the high res tiles should be required for activation, since there is
@@ -2968,9 +2969,10 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueueActiveTree) {
   ActivateTree();
   EXPECT_EQ(2u, active_layer_->num_tilings());
 
-  scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueRequired(
-      active_layer_->picture_layer_tiling_set(),
-      RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW));
+  scoped_ptr<TilingSetRasterQueueRequired> queue(
+      new TilingSetRasterQueueRequired(
+          active_layer_->picture_layer_tiling_set(),
+          RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW));
   EXPECT_FALSE(queue->IsEmpty());
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
@@ -2996,9 +2998,10 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueueRequiredNoHighRes) {
       pending_layer_->picture_layer_tiling_set()->FindTilingWithResolution(
           HIGH_RESOLUTION));
 
-  scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueRequired(
-      pending_layer_->picture_layer_tiling_set(),
-      RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
+  scoped_ptr<TilingSetRasterQueueRequired> queue(
+      new TilingSetRasterQueueRequired(
+          pending_layer_->picture_layer_tiling_set(),
+          RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
   EXPECT_TRUE(queue->IsEmpty());
 }
 
@@ -3973,7 +3976,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // No occlusion.
   int unoccluded_tile_count = 0;
-  scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueAll(
+  scoped_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
       pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();

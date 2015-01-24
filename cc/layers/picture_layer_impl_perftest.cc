@@ -77,7 +77,7 @@ class PictureLayerImplPerfTest : public testing::Test {
     timer_.Reset();
     do {
       int count = num_tiles;
-      scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueAll(
+      scoped_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
           pending_layer_->picture_layer_tiling_set(), false));
       while (count--) {
         ASSERT_TRUE(!queue->IsEmpty()) << "count: " << count;
@@ -100,7 +100,7 @@ class PictureLayerImplPerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueAll(
+      scoped_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
           pending_layer_->picture_layer_tiling_set(), false));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());

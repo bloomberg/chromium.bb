@@ -494,7 +494,6 @@
         'resources/tiling_set_raster_queue_all.h',
         'resources/tiling_set_raster_queue_required.cc',
         'resources/tiling_set_raster_queue_required.h',
-        'resources/tiling_set_raster_queue.h',
         'resources/transferable_resource.cc',
         'resources/transferable_resource.h',
         'resources/transform_display_item.cc',

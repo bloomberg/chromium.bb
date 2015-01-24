@@ -13,7 +13,7 @@
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/raster_tile_priority_queue.h"
 #include "cc/resources/tile_priority.h"
-#include "cc/resources/tiling_set_raster_queue.h"
+#include "cc/resources/tiling_set_raster_queue_all.h"
 
 namespace cc {
 
@@ -35,16 +35,16 @@ class CC_EXPORT RasterTilePriorityQueueAll : public RasterTilePriorityQueue {
 
     scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
 
-    const TilingSetRasterQueue* active_queue() const {
+    const TilingSetRasterQueueAll* active_queue() const {
       return active_queue_.get();
     }
-    const TilingSetRasterQueue* pending_queue() const {
+    const TilingSetRasterQueueAll* pending_queue() const {
       return pending_queue_.get();
     }
 
    private:
-    scoped_ptr<TilingSetRasterQueue> active_queue_;
-    scoped_ptr<TilingSetRasterQueue> pending_queue_;
+    scoped_ptr<TilingSetRasterQueueAll> active_queue_;
+    scoped_ptr<TilingSetRasterQueueAll> pending_queue_;
     bool has_both_layers_;
 
     // Set of returned tiles (excluding the current one) for DCHECKing.
