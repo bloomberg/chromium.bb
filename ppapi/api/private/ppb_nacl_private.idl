@@ -168,8 +168,7 @@ struct PP_NaClFileInfo {
 interface PPB_NaCl_Private {
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
    * and writes a NaClHandle to imc_handle. Returns PP_EXTERNAL_PLUGIN_FAILED on
-   * failure. The |enable_ppapi_dev| parameter controls whether GetInterface
-   * returns 'Dev' interfaces to the NaCl plugin.
+   * failure.
    * The |nexe_file_info| is currently used only in non-SFI mode. It is the
    * file handle for the main nexe file, which should be initially loaded.
    * LaunchSelLdr takes the ownership of the file handle.
@@ -181,7 +180,6 @@ interface PPB_NaCl_Private {
                     [in] str_t alleged_url,
                     [in] PP_NaClFileInfo nexe_file_info,
                     [in] PP_Bool uses_nonsfi_mode,
-                    [in] PP_Bool enable_ppapi_dev,
                     [in] PP_NaClAppProcessType process_type,
                     [out] mem_t imc_handle,
                     [in] PP_CompletionCallback callback);
@@ -280,8 +278,6 @@ interface PPB_NaCl_Private {
    */
   void ProcessNaClManifest([in] PP_Instance instance,
                            [in] str_t program_url);
-
-  PP_Bool DevInterfacesEnabled([in] PP_Instance instance);
 
   PP_Bool GetManifestProgramURL([in] PP_Instance instance,
                                 [out] PP_Var full_url,

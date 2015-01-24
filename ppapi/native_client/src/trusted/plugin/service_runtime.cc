@@ -144,16 +144,12 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
     return;
   }
 
-  bool enable_dev_interfaces =
-      GetNaClInterface()->DevInterfacesEnabled(pp_instance_);
-
   GetNaClInterface()->LaunchSelLdr(
       pp_instance_,
       PP_FromBool(main_service_runtime_),
       params.url.c_str(),
       &params.file_info,
       PP_FromBool(uses_nonsfi_mode_),
-      PP_FromBool(enable_dev_interfaces),
       params.process_type,
       &bootstrap_channel_,
       callback.pp_completion_callback());

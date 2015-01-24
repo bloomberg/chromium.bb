@@ -358,7 +358,6 @@ void LaunchSelLdr(PP_Instance instance,
                   const char* alleged_url,
                   const PP_NaClFileInfo* nexe_file_info,
                   PP_Bool uses_nonsfi_mode,
-                  PP_Bool enable_ppapi_dev,
                   PP_NaClAppProcessType pp_process_type,
                   void* imc_handle,
                   PP_CompletionCallback callback) {
@@ -374,7 +373,9 @@ void LaunchSelLdr(PP_Instance instance,
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
   int routing_id = GetRoutingID(instance);
-  if (!routing_id) {
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (!routing_id || !load_manager) {
     if (nexe_file_info->handle != PP_kInvalidFileHandle) {
       base::File closer(nexe_file_info->handle);
     }
@@ -391,7 +392,7 @@ void LaunchSelLdr(PP_Instance instance,
   // Conditionally block 'Dev' interfaces. We do this for the NaCl process, so
   // it's clearer to developers when they are using 'Dev' inappropriately. We
   // must also check on the trusted side of the proxy.
-  if (enable_ppapi_dev)
+  if (load_manager->DevInterfacesEnabled())
     perm_bits |= ppapi::PERMISSION_DEV;
   instance_info.permissions =
       ppapi::PpapiPermissions::GetForCommandLine(perm_bits);
@@ -430,13 +431,6 @@ void LaunchSelLdr(PP_Instance instance,
     return;
   }
 
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (!load_manager) {
-    PostPPCompletionCallback(callback, PP_ERROR_FAILED);
-    base::SharedMemory::CloseHandle(launch_result.crash_info_shmem_handle);
-    return;
-  }
   load_manager->set_nonsfi(PP_ToBool(uses_nonsfi_mode));
 
   if (!error_message_string.empty()) {
@@ -901,13 +895,6 @@ void ProcessNaClManifest(PP_Instance instance, const char* program_url) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
     load_manager->ProcessNaClManifest(program_url);
-}
-
-PP_Bool DevInterfacesEnabled(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  if (load_manager)
-    return PP_FromBool(load_manager->DevInterfacesEnabled());
-  return PP_FALSE;
 }
 
 void DownloadManifestToBufferCompletion(PP_Instance instance,
@@ -1654,7 +1641,6 @@ const PPB_NaCl_Private nacl_interface = {
   &RequestNaClManifest,
   &GetManifestBaseURL,
   &ProcessNaClManifest,
-  &DevInterfacesEnabled,
   &ManifestGetProgramURL,
   &GetPNaClResourceInfo,
   &GetCpuFeatureAttrs,
