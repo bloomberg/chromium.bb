@@ -16,7 +16,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/component_updater/component_updater_service.h"
-#include "components/component_updater/crx_update_item.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -167,7 +166,7 @@ base::ListValue* ComponentsUI::LoadComponents() {
   // Construct DictionaryValues to return to UI.
   base::ListValue* component_list = new base::ListValue();
   for (size_t j = 0; j < component_ids.size(); ++j) {
-    component_updater::CrxUpdateItem item;
+    update_client::CrxUpdateItem item;
     if (cus->GetComponentDetails(component_ids[j], &item)) {
       base::DictionaryValue* component_entry = new base::DictionaryValue();
       component_entry->SetString("id", component_ids[j]);
@@ -209,29 +208,29 @@ base::string16 ComponentsUI::ComponentEventToString(Events event) {
 }
 
 base::string16 ComponentsUI::ServiceStatusToString(
-    component_updater::CrxUpdateItem::Status status) {
+    update_client::CrxUpdateItem::Status status) {
   switch (status) {
-    case component_updater::CrxUpdateItem::kNew:
+    case update_client::CrxUpdateItem::kNew:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_NEW);
-    case component_updater::CrxUpdateItem::kChecking:
+    case update_client::CrxUpdateItem::kChecking:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_CHECKING);
-    case component_updater::CrxUpdateItem::kCanUpdate:
+    case update_client::CrxUpdateItem::kCanUpdate:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATE);
-    case component_updater::CrxUpdateItem::kDownloadingDiff:
+    case update_client::CrxUpdateItem::kDownloadingDiff:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_DNL_DIFF);
-    case component_updater::CrxUpdateItem::kDownloading:
+    case update_client::CrxUpdateItem::kDownloading:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_DNL);
-    case component_updater::CrxUpdateItem::kUpdatingDiff:
+    case update_client::CrxUpdateItem::kUpdatingDiff:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDT_DIFF);
-    case component_updater::CrxUpdateItem::kUpdating:
+    case update_client::CrxUpdateItem::kUpdating:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATING);
-    case component_updater::CrxUpdateItem::kUpdated:
+    case update_client::CrxUpdateItem::kUpdated:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATED);
-    case component_updater::CrxUpdateItem::kUpToDate:
+    case update_client::CrxUpdateItem::kUpToDate:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPTODATE);
-    case component_updater::CrxUpdateItem::kNoUpdate:
+    case update_client::CrxUpdateItem::kNoUpdate:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_NOUPDATE);
-    case component_updater::CrxUpdateItem::kLastStatus:
+    case update_client::CrxUpdateItem::kLastStatus:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
   }
   return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
@@ -244,7 +243,7 @@ void ComponentsUI::OnEvent(Events event, const std::string& id) {
     using component_updater::ComponentUpdateService;
     if (event == ComponentUpdateService::Observer::COMPONENT_UPDATED) {
       ComponentUpdateService* cus = g_browser_process->component_updater();
-      component_updater::CrxUpdateItem item;
+      update_client::CrxUpdateItem item;
       if (cus->GetComponentDetails(id, &item))
         parameters.SetString("version", item.component.version.GetString());
     }

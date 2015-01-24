@@ -24,69 +24,25 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace content {
+class ResourceThrottle;
+}
+
 namespace net {
 class URLRequestContextGetter;
 class URLRequest;
 }
 
-namespace content {
-class ResourceThrottle;
+namespace update_client {
+class ComponentInstaller;
+class Configurator;
+struct CrxComponent;
+struct CrxUpdateItem;
 }
 
 namespace component_updater {
 
-class Configurator;
 class OnDemandUpdater;
-
-// Component specific installers must derive from this class and implement
-// OnUpdateError() and Install(). A valid instance of this class must be
-// given to ComponentUpdateService::RegisterComponent().
-class ComponentInstaller {
- public:
-  // Called by the component updater on the main thread when there was a
-  // problem unpacking or verifying the component. |error| is a non-zero
-  // value which is only meaningful to the component updater.
-  virtual void OnUpdateError(int error) = 0;
-
-  // Called by the component updater when a component has been unpacked
-  // and is ready to be installed. |manifest| contains the CRX manifest
-  // json dictionary and |unpack_path| contains the temporary directory
-  // with all the unpacked CRX files. This method may be called from
-  // a thread other than the main thread.
-  virtual bool Install(const base::DictionaryValue& manifest,
-                       const base::FilePath& unpack_path) = 0;
-
-  // Set |installed_file| to the full path to the installed |file|. |file| is
-  // the filename of the file in this component's CRX. Returns false if this is
-  // not possible (the file has been removed or modified, or its current
-  // location is unknown). Otherwise, returns true.
-  virtual bool GetInstalledFile(const std::string& file,
-                                base::FilePath* installed_file) = 0;
-
-  virtual ~ComponentInstaller() {}
-};
-
-// Describes a particular component that can be installed or updated. This
-// structure is required to register a component with the component updater.
-// |pk_hash| is the SHA256 hash of the component's public key. If the component
-// is to be installed then version should be "0" or "0.0", else it should be
-// the current version. |fingerprint|, and |name| are optional.
-// |allow_background_download| specifies that the component can be background
-// downloaded in some cases. The default for this value is |true| and the value
-// can be overriden at the registration time. This is a temporary change until
-// the issue 340448 is resolved.
-struct CrxComponent {
-  std::vector<uint8_t> pk_hash;
-  ComponentInstaller* installer;
-  Version version;
-  std::string fingerprint;
-  std::string name;
-  bool allow_background_download;
-  CrxComponent();
-  ~CrxComponent();
-};
-
-struct CrxUpdateItem;
 
 // The component update service is in charge of installing or upgrading
 // select parts of chrome. Each part is called a component and managed by
@@ -165,7 +121,8 @@ class ComponentUpdateService {
 
   // Add component to be checked for updates. You can call this method
   // before calling Start().
-  virtual Status RegisterComponent(const CrxComponent& component) = 0;
+  virtual Status RegisterComponent(
+      const update_client::CrxComponent& component) = 0;
 
   // Returns a list of registered components.
   virtual std::vector<std::string> GetComponentIDs() const = 0;
@@ -197,8 +154,9 @@ class ComponentUpdateService {
  private:
   // Returns details about registered component in the |item| parameter. The
   // function returns true in case of success and false in case of errors.
-  virtual bool GetComponentDetails(const std::string& component_id,
-                                   CrxUpdateItem* item) const = 0;
+  virtual bool GetComponentDetails(
+      const std::string& component_id,
+      update_client::CrxUpdateItem* item) const = 0;
 
   friend class ::ComponentsUI;
 };
@@ -226,7 +184,8 @@ class OnDemandUpdater {
 
 // Creates the component updater. You must pass a valid |config| allocated on
 // the heap which the component updater will own.
-ComponentUpdateService* ComponentUpdateServiceFactory(Configurator* config);
+ComponentUpdateService* ComponentUpdateServiceFactory(
+    update_client::Configurator* config);
 
 }  // namespace component_updater
 

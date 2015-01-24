@@ -37,10 +37,11 @@
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
-#include "components/component_updater/component_updater_utils.h"
 #include "components/component_updater/default_component_installer.h"
 #include "components/component_updater/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/update_client/update_client.h"
+#include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -304,10 +305,10 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
   }
 
   static std::string ID() {
-    CrxComponent component;
+    update_client::CrxComponent component;
     component.version = Version("0.0.0.0");
     GetPkHash(&component.pk_hash);
-    return component_updater::GetCrxComponentID(component);
+    return update_client::GetCrxComponentID(component);
   }
 
   static base::FilePath VersionPath() { return base::FilePath(version_dir_); }

@@ -14,9 +14,12 @@
 #include "base/values.h"
 #include "base/version.h"
 // TODO(ddorwin): Find a better place for ReadManifest.
-#include "components/component_updater/component_unpacker.h"
-#include "components/component_updater/component_updater_configurator.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/default_component_installer.h"
+#include "components/update_client/component_unpacker.h"
+#include "components/update_client/update_client.h"
+
+using update_client::CrxComponent;
 
 namespace component_updater {
 
@@ -155,7 +158,8 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
       continue;
     }
 
-    scoped_ptr<base::DictionaryValue> manifest = ReadManifest(path);
+    scoped_ptr<base::DictionaryValue> manifest =
+        update_client::ReadManifest(path);
     if (!manifest || !installer_traits_->VerifyInstallation(*manifest, path)) {
       DLOG(ERROR) << "Failed to read manifest or verify installation for "
                   << installer_traits_->GetName() << " ("

@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pepper_flash.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/update_client/update_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_constants.h"
@@ -330,7 +331,7 @@ bool CheckPepperFlashInterfaces(const base::DictionaryValue& manifest) {
 
 }  // namespace
 
-class PepperFlashComponentInstaller : public ComponentInstaller {
+class PepperFlashComponentInstaller : public update_client::ComponentInstaller {
  public:
   explicit PepperFlashComponentInstaller(const Version& version);
 
@@ -438,7 +439,7 @@ namespace {
 void FinishPepperFlashUpdateRegistration(ComponentUpdateService* cus,
                                          const Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CrxComponent pepflash;
+  update_client::CrxComponent pepflash;
   pepflash.name = "pepper_flash";
   pepflash.installer = new PepperFlashComponentInstaller(version);
   pepflash.version = version;

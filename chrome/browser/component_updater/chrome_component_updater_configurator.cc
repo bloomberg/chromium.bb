@@ -19,11 +19,14 @@
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/chrome_version_info.h"
-#include "components/component_updater/component_updater_configurator.h"
 #include "components/component_updater/component_updater_switches.h"
+#include "components/update_client/configurator.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
+
+using update_client::Configurator;
+using update_client::OutOfProcessPatcher;
 
 namespace component_updater {
 

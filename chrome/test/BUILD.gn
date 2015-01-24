@@ -95,7 +95,6 @@ source_set("test_support") {
     "//chrome/common:test_support",
     "//chrome/renderer:test_support",
     "//components/bookmarks/test",
-    "//components/component_updater:test_support",
     "//components/gcm_driver:test_support",
     "//components/history/core/test:test",
     "//components/metrics:test_support",
@@ -106,6 +105,7 @@ source_set("test_support") {
     "//components/search_engines:test_support",
     "//components/signin/core/browser:test_support",
     "//components/sync_driver:test_support",
+    "//components/update_client:test_support",
     "//content/public/app:both",
     "//ui/gfx:test_support",
     "//net",
@@ -157,9 +157,7 @@ source_set("test_support") {
     deps += [ "//crypto:platform" ]
   }
   if (is_win) {
-    deps += [
-      "//third_party/wtl",
-    ]
+    deps += [ "//third_party/wtl" ]
     if (use_aura) {
       deps += [
         "//win8:test_registrar_constants",

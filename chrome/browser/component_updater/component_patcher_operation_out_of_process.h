@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/component_updater/component_patcher_operation.h"
+#include "components/update_client/component_patcher_operation.h"
 
 namespace base {
 class FilePath;
@@ -22,7 +22,7 @@ namespace component_updater {
 class PatchHost;
 
 // Implements the DeltaUpdateOpPatch out-of-process patching.
-class ChromeOutOfProcessPatcher : public OutOfProcessPatcher {
+class ChromeOutOfProcessPatcher : public update_client::OutOfProcessPatcher {
  public:
   ChromeOutOfProcessPatcher();
 

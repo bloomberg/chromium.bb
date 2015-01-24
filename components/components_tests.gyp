@@ -81,12 +81,6 @@
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
             'cloud_devices/common/printer_description_unittest.cc',
-            'component_updater/test/component_patcher_unittest.cc',
-            'component_updater/test/component_updater_ping_manager_unittest.cc',
-            'component_updater/test/crx_downloader_unittest.cc',
-            'component_updater/test/request_sender_unittest.cc',
-            'component_updater/test/update_checker_unittest.cc',
-            'component_updater/test/update_response_unittest.cc',
             'content_settings/core/browser/content_settings_mock_provider.cc',
             'content_settings/core/browser/content_settings_mock_provider.h',
             'content_settings/core/browser/content_settings_provider_unittest.cc',
@@ -283,6 +277,12 @@
             'translate/ios/browser/language_detection_controller_unittest.mm',
             'translate/ios/browser/translate_controller_unittest.mm',
             'ui/zoom/page_zoom_unittests.cc',
+            'update_client/test/component_patcher_unittest.cc',
+            'update_client/test/crx_downloader_unittest.cc',
+            'update_client/test/ping_manager_unittest.cc',
+            'update_client/test/request_sender_unittest.cc',
+            'update_client/test/update_checker_unittest.cc',
+            'update_client/test/update_response_unittest.cc',
             'update_client/update_query_params_unittest.cc',
             'url_matcher/regex_set_matcher_unittest.cc',
             'url_matcher/string_pattern_unittest.cc',
@@ -350,11 +350,6 @@
 
             # Dependencies of cloud_devices
             'components.gyp:cloud_devices_common',
-
-            # Dependencies of component_updater
-            'components.gyp:component_updater',
-            'components.gyp:component_updater_test_support',
-            '../third_party/libxml/libxml.gyp:libxml',
 
             # Dependencies of content_settings
             'components.gyp:content_settings_core_browser',
@@ -503,6 +498,9 @@
 
             # Dependencies of update_client
             'components.gyp:update_client',
+            'components.gyp:update_client_test_support',
+            '../third_party/libxml/libxml.gyp:libxml',
+
 
             # Dependencies of url_fixer
             'components.gyp:url_fixer',
@@ -853,7 +851,7 @@
                 'storage_monitor/storage_monitor_linux_unittest.cc',
               ],
               'dependencies': [
-	        # Dependencies of wifi_sync
+                # Dependencies of wifi_sync
                 'components.gyp:wifi_sync',
 
                 'components.gyp:pairing',

@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "components/component_updater/component_updater_service.h"
+#include "components/update_client/update_client.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,7 +21,11 @@ namespace net {
 class CRLSet;
 }
 
-class CRLSetFetcher : public component_updater::ComponentInstaller,
+namespace component_updater {
+class ComponentUpdateService;
+}
+
+class CRLSetFetcher : public update_client::ComponentInstaller,
                       public base::RefCountedThreadSafe<CRLSetFetcher> {
  public:
   CRLSetFetcher();

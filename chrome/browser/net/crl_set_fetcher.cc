@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/update_client/update_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/crl_set_storage.h"
@@ -138,7 +139,7 @@ static const uint8 kPublicKeySHA256[32] = {
 void CRLSetFetcher::RegisterComponent(uint32 sequence_of_loaded_crl) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  component_updater::CrxComponent component;
+  update_client::CrxComponent component;
   component.pk_hash.assign(kPublicKeySHA256,
                            kPublicKeySHA256 + sizeof(kPublicKeySHA256));
   component.installer = this;

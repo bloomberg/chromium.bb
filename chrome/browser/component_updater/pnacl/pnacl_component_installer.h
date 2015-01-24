@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/version.h"
-#include "components/component_updater/component_updater_service.h"
+#include "components/update_client/update_client.h"
 
 namespace base {
 class DictionaryValue;
@@ -32,10 +32,12 @@ bool NeedsOnDemandUpdate();
 
 namespace component_updater {
 
+class ComponentUpdateService;
+
 // Component installer responsible for Portable Native Client files.
 // Files can be installed to a shared location, or be installed to
 // a per-user location.
-class PnaclComponentInstaller : public ComponentInstaller {
+class PnaclComponentInstaller : public update_client::ComponentInstaller {
  public:
   PnaclComponentInstaller();
 
@@ -52,7 +54,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
   // Register a PNaCl component for the first time.
   void RegisterPnaclComponent(ComponentUpdateService* cus);
 
-  CrxComponent GetCrxComponent();
+  update_client::CrxComponent GetCrxComponent();
 
   // Determine the base directory for storing each version of PNaCl.
   base::FilePath GetPnaclBaseDirectory();

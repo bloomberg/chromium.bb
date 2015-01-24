@@ -29,6 +29,7 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/pref_names.h"
+#include "components/update_client/update_client.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -172,7 +173,7 @@ void ElevatedInstallRecoveryComponent(const base::FilePath& installer_path) {
 // There is a global error service monitors this flag and will pop up
 // bubble if the flag is set to true.
 // See chrome/browser/recovery/recovery_install_global_error.cc for details.
-class RecoveryComponentInstaller : public ComponentInstaller {
+class RecoveryComponentInstaller : public update_client::ComponentInstaller {
  public:
   RecoveryComponentInstaller(const Version& version, PrefService* prefs);
   ~RecoveryComponentInstaller() override {}
@@ -205,7 +206,7 @@ void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
     return;
   }
 
-  CrxComponent recovery;
+  update_client::CrxComponent recovery;
   recovery.name = "recovery";
   recovery.installer = new RecoveryComponentInstaller(version, prefs);
   recovery.version = version;

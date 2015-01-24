@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/update_client/update_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -95,7 +96,7 @@ void RegisterSwiftShaderWithChrome(const base::FilePath& path) {
   GpuDataManager::GetInstance()->RegisterSwiftShaderPath(path);
 }
 
-class SwiftShaderComponentInstaller : public ComponentInstaller {
+class SwiftShaderComponentInstaller : public update_client::ComponentInstaller {
  public:
   explicit SwiftShaderComponentInstaller(const Version& version);
 
@@ -165,7 +166,7 @@ void FinishSwiftShaderUpdateRegistration(ComponentUpdateService* cus,
                                          const Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  CrxComponent swiftshader;
+  update_client::CrxComponent swiftshader;
   swiftshader.name = "Swift Shader";
   swiftshader.installer = new SwiftShaderComponentInstaller(version);
   swiftshader.version = version;

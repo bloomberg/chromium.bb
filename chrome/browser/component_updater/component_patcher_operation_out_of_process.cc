@@ -96,10 +96,10 @@ void ChromeOutOfProcessPatcher::Patch(
     base::Callback<void(int result)> callback) {
   host_ = new PatchHost(callback, task_runner);
   scoped_ptr<IPC::Message> patch_message;
-  if (operation == kBsdiff) {
+  if (operation == update_client::kBsdiff) {
     patch_message.reset(new ChromeUtilityMsg_PatchFileBsdiff(
         input_abs_path, patch_abs_path, output_abs_path));
-  } else if (operation == kCourgette) {
+  } else if (operation == update_client::kCourgette) {
     patch_message.reset(new ChromeUtilityMsg_PatchFileCourgette(
         input_abs_path, patch_abs_path, output_abs_path));
   } else {

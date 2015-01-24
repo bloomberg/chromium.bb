@@ -20,12 +20,15 @@ namespace net {
 class LocalHostTestURLRequestInterceptor;
 }
 
-namespace component_updater {
-
+namespace update_client {
+struct CrxComponent;
 class InterceptorFactory;
 class TestConfigurator;
 class TestInstaller;
 class URLRequestPostInterceptor;
+}
+
+namespace component_updater {
 
 // Intercepts HTTP GET requests sent to "localhost".
 typedef net::LocalHostTestURLRequestInterceptor GetInterceptor;
@@ -51,24 +54,27 @@ class ComponentUpdaterTest : public testing::Test {
   // Makes the full path to a component updater test file.
   const base::FilePath test_file(const char* file);
 
-  TestConfigurator* test_configurator();
+  update_client::TestConfigurator* test_configurator();
 
-  ComponentUpdateService::Status RegisterComponent(CrxComponent* com,
-                                                   TestComponents component,
-                                                   const Version& version,
-                                                   TestInstaller* installer);
+  ComponentUpdateService::Status RegisterComponent(
+      update_client::CrxComponent* com,
+      TestComponents component,
+      const Version& version,
+      update_client::TestInstaller* installer);
 
  protected:
   void RunThreads();
   void RunThreadsUntilIdle();
 
-  scoped_ptr<InterceptorFactory> interceptor_factory_;
-  URLRequestPostInterceptor* post_interceptor_;  // Owned by the factory.
+  scoped_ptr<update_client::InterceptorFactory> interceptor_factory_;
+
+  // Owned by the factory.
+  update_client::URLRequestPostInterceptor* post_interceptor_;
 
   scoped_ptr<GetInterceptor> get_interceptor_;
 
  private:
-  TestConfigurator* test_config_;
+  update_client::TestConfigurator* test_config_;
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<ComponentUpdateService> component_updater_;
 };

@@ -32,6 +32,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using update_client::CrxComponent;
 using update_client::UpdateQueryParams;
 
 namespace component_updater {

@@ -4,96 +4,23 @@
 
 source_set("component_updater") {
   sources = [
-    "background_downloader_win.cc",
-    "background_downloader_win.h",
-    "component_patcher.cc",
-    "component_patcher.h",
-    "component_patcher_operation.cc",
-    "component_patcher_operation.h",
     "component_updater_configurator.h",
-    "component_unpacker.cc",
-    "component_unpacker.h",
     "component_updater_paths.cc",
     "component_updater_paths.h",
-    "component_updater_ping_manager.cc",
-    "component_updater_ping_manager.h",
     "component_updater_service.cc",
     "component_updater_service.h",
     "component_updater_switches.cc",
     "component_updater_switches.h",
-    "component_updater_utils.cc",
-    "component_updater_utils.h",
-    "crx_update_item.h",
-    "crx_downloader.cc",
-    "crx_downloader.h",
     "default_component_installer.cc",
     "default_component_installer.h",
     "pref_names.cc",
     "pref_names.h",
-    "request_sender.cc",
-    "request_sender.h",
-    "update_checker.cc",
-    "update_checker.h",
-    "update_response.cc",
-    "update_response.h",
-    "url_fetcher_downloader.cc",
-    "url_fetcher_downloader.h",
   ]
 
   deps = [
     "//base",
-    "//components/crx_file",
     "//components/update_client",
-    "//courgette:courgette_lib",
-    "//crypto",
-    "//third_party/libxml",
-    "//third_party/zlib:zip",
-    "//net",
     "//ui/base",
     "//url",
-  ]
-}
-
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "test/test_configurator.cc",
-    "test/test_configurator.h",
-    "test/test_installer.cc",
-    "test/test_installer.h",
-    "test/url_request_post_interceptor.cc",
-    "test/url_request_post_interceptor.h",
-  ]
-
-  deps = [
-    ":component_updater",
-    "//base",
-    "//net:test_support",
-    "//testing/gtest",
-    "//testing/gmock",
-    "//url",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "test/component_patcher_unittest.cc",
-    "test/component_updater_ping_manager_unittest.cc",
-    "test/crx_downloader_unittest.cc",
-    "test/request_sender_unittest.cc",
-    "test/update_checker_unittest.cc",
-    "test/update_response_unittest.cc",
-  ]
-
-  deps = [
-    ":component_updater",
-    ":test_support",
-    "//base",
-    "//courgette:courgette_lib",
-    "//net:test_support",
-    "//testing/gtest",
-    "//testing/gmock",
-    "//third_party/libxml",
   ]
 }

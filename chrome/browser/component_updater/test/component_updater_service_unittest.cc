@@ -16,10 +16,10 @@
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_resource_throttle.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/component_updater/component_updater_utils.h"
-#include "components/component_updater/test/test_configurator.h"
-#include "components/component_updater/test/test_installer.h"
-#include "components/component_updater/test/url_request_post_interceptor.h"
+#include "components/update_client/test/test_configurator.h"
+#include "components/update_client/test/test_installer.h"
+#include "components/update_client/test/url_request_post_interceptor.h"
+#include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
@@ -34,10 +34,22 @@
 using content::BrowserThread;
 using std::string;
 
+using update_client::CrxComponent;
+using update_client::PartialMatch;
+using update_client::InterceptorFactory;
+using update_client::TestConfigurator;
+using update_client::TestInstaller;
+using update_client::URLRequestPostInterceptor;
+using update_client::VersionedTestInstaller;
+
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::InSequence;
 using ::testing::Mock;
+
+using update_client::abag_hash;
+using update_client::ihfo_hash;
+using update_client::jebg_hash;
 
 namespace component_updater {
 
@@ -89,8 +101,11 @@ ComponentUpdateService* ComponentUpdaterTest::component_updater() {
 const base::FilePath ComponentUpdaterTest::test_file(const char* file) {
   base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
-  return path.AppendASCII("components").AppendASCII("test").AppendASCII("data")
-      .AppendASCII("component_updater").AppendASCII(file);
+  return path.AppendASCII("components")
+      .AppendASCII("test")
+      .AppendASCII("data")
+      .AppendASCII("update_client")
+      .AppendASCII(file);
 }
 
 TestConfigurator* ComponentUpdaterTest::test_configurator() {

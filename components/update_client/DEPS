@@ -1,4 +1,12 @@
 include_rules = [
   "+base",
+  "+components/crx_file",
+  "+courgette",
+  "+crypto",
+  "+libxml",
+  "+net",
+  "+ui/base/win",
+  "+third_party/libxml",
+  "+third_party/zlib",
   "+testing",
 ]

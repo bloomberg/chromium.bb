@@ -25,16 +25,27 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "components/component_updater/component_patcher_operation.h"
-#include "components/component_updater/component_unpacker.h"
-#include "components/component_updater/component_updater_configurator.h"
-#include "components/component_updater/component_updater_ping_manager.h"
-#include "components/component_updater/component_updater_utils.h"
-#include "components/component_updater/crx_downloader.h"
-#include "components/component_updater/crx_update_item.h"
-#include "components/component_updater/update_checker.h"
-#include "components/component_updater/update_response.h"
+#include "components/update_client/component_patcher_operation.h"
+#include "components/update_client/component_unpacker.h"
+#include "components/update_client/configurator.h"
+#include "components/update_client/crx_downloader.h"
+#include "components/update_client/crx_update_item.h"
+#include "components/update_client/ping_manager.h"
+#include "components/update_client/update_checker.h"
+#include "components/update_client/update_client.h"
+#include "components/update_client/update_response.h"
+#include "components/update_client/utils.h"
 #include "url/gurl.h"
+
+using update_client::ComponentInstaller;
+using update_client::ComponentUnpacker;
+using update_client::Configurator;
+using update_client::CrxComponent;
+using update_client::CrxDownloader;
+using update_client::CrxUpdateItem;
+using update_client::PingManager;
+using update_client::UpdateChecker;
+using update_client::UpdateResponse;
 
 namespace component_updater {
 
@@ -64,28 +75,6 @@ void AppendDownloadMetrics(
 }
 
 }  // namespace
-
-CrxUpdateItem::CrxUpdateItem()
-    : status(kNew),
-      on_demand(false),
-      diff_update_failed(false),
-      error_category(0),
-      error_code(0),
-      extra_code1(0),
-      diff_error_category(0),
-      diff_error_code(0),
-      diff_extra_code1(0) {
-}
-
-CrxUpdateItem::~CrxUpdateItem() {
-}
-
-CrxComponent::CrxComponent()
-    : installer(NULL), allow_background_download(true) {
-}
-
-CrxComponent::~CrxComponent() {
-}
 
 //////////////////////////////////////////////////////////////////////////////
 // The one and only implementation of the ComponentUpdateService interface. In
@@ -869,7 +858,7 @@ void CrxUpdateService::EndUnpacking(const std::string& component_id,
                                     const base::FilePath& crx_path,
                                     ComponentUnpacker::Error error,
                                     int extended_error) {
-  if (!DeleteFileAndEmptyParentDirectory(crx_path))
+  if (!update_client::DeleteFileAndEmptyParentDirectory(crx_path))
     NOTREACHED() << crx_path.value();
   main_task_runner_->PostDelayedTask(
       FROM_HERE,

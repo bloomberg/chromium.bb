@@ -4,13 +4,89 @@
 
 source_set("update_client") {
   sources = [
+    "background_downloader_win.cc",
+    "background_downloader_win.h",
+    "component_patcher.cc",
+    "component_patcher.h",
+    "component_patcher_operation.cc",
+    "component_patcher_operation.h",
+    "component_unpacker.cc",
+    "component_unpacker.h",
+    "ping_manager.cc",
+    "ping_manager.h",
+    "utils.cc",
+    "utils.h",
+    "crx_update_item.h",
+    "crx_downloader.cc",
+    "crx_downloader.h",
+    "request_sender.cc",
+    "request_sender.h",
+    "update_checker.cc",
+    "update_checker.h",
+    "update_client.cc",
+    "update_client.h",
     "update_query_params.cc",
     "update_query_params.h",
     "update_query_params_delegate.cc",
     "update_query_params_delegate.h",
+    "update_response.cc",
+    "update_response.h",
+    "url_fetcher_downloader.cc",
+    "url_fetcher_downloader.h",
   ]
 
   deps = [
     "//base",
+    "//components/crx_file",
+    "//courgette:courgette_lib",
+    "//crypto",
+    "//third_party/libxml",
+    "//third_party/zlib:zip",
+    "//net",
+    "//url",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test/test_configurator.cc",
+    "test/test_configurator.h",
+    "test/test_installer.cc",
+    "test/test_installer.h",
+    "test/url_request_post_interceptor.cc",
+    "test/url_request_post_interceptor.h",
+  ]
+
+  deps = [
+    ":update_client",
+    "//base",
+    "//net:test_support",
+    "//testing/gtest",
+    "//testing/gmock",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "test/component_patcher_unittest.cc",
+    "test/ping_manager_unittest.cc",
+    "test/crx_downloader_unittest.cc",
+    "test/request_sender_unittest.cc",
+    "test/update_checker_unittest.cc",
+    "test/update_response_unittest.cc",
+  ]
+
+  deps = [
+    ":update_client",
+    ":test_support",
+    "//base",
+    "//courgette:courgette_lib",
+    "//net:test_support",
+    "//testing/gtest",
+    "//testing/gmock",
+    "//third_party/libxml",
   ]
 }
