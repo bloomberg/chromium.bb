@@ -1040,30 +1040,6 @@
       ],
     }],
     ['OS!="ios"', {
-      'conditions': [
-        ['test_isolation_mode != "noop"', {
-          'targets': [
-            {
-              'target_name': 'components_browsertests_run',
-              'type': 'none',
-              'dependencies': [ 'components_browsertests' ],
-              'includes': [
-                '../build/isolate.gypi',
-              ],
-              'sources': [
-                'components_browsertests.isolate',
-              ],
-              'conditions': [
-                ['use_x11==1', {
-                  'dependencies': [
-                    '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-                  ],
-                }],
-              ],
-            },
-          ],
-        }],
-      ],
       'targets': [
         {
           'target_name': 'components_browsertests',

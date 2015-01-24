@@ -33,12 +33,6 @@
       "cc_unittests",
       "chromedriver_unittests",
       {
-        "test": "components_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
         "test": "components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true

@@ -66,12 +66,7 @@
       "test": "chrome_elf_unittests",
       "platforms": ["win"]
     },
-    {
-      "test": "components_browsertests",
-      "swarming": {
-        "can_use_on_swarming_builders": true
-      }
-    },
+    "components_browsertests",
     {
       "test": "components_unittests",
       "swarming": {
