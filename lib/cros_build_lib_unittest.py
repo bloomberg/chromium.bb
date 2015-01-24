@@ -681,7 +681,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     sleep_mock = self.PatchObject(time, 'sleep')
 
     _setup_counters(0, 0)
-    command = ['python', path]
+    command = ['python2', path]
     kwargs = {'redirect_stdout': True, 'print_cmd': False}
     self.assertEqual(cros_build_lib.RunCommand(command, **kwargs).output, '0\n')
     _check_counters(0, 0)

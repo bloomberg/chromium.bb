@@ -702,7 +702,7 @@ You can fix this with one of the following three options:
     self._RunCommand(['cat', '/dev/null', '>|', self.log_file])
 
     port = self.port if self.port else 0
-    cmd = ['python', self.devserver_bin,
+    cmd = ['python2', self.devserver_bin,
            '--logfile=%s' % self.log_file,
            '--pidfile', self._pid_file,
            '--port=%d' % port]

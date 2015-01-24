@@ -784,13 +784,13 @@ class ChromeSDKCommand(cros.CrosCommand):
        #  1. Goobuntu  2. Precise (32bit)  3. Lucid (32bit)  4. Debian
        #  5. Chrome OS  6. MacOS ? -->
         cros_build_lib.DebugRunCommand(
-            ['python', 'goma_ctl.py', 'update'], cwd=goma_dir, input='1\n')
+            ['python2', 'goma_ctl.py', 'update'], cwd=goma_dir, input='1\n')
         ref.SetDefault(goma_dir)
     goma_dir = ref.path
 
     Log('Starting Goma.', silent=self.silent)
     cros_build_lib.DebugRunCommand(
-        ['python', 'goma_ctl.py', 'ensure_start'], cwd=goma_dir)
+        ['python2', 'goma_ctl.py', 'ensure_start'], cwd=goma_dir)
     port = self._GomaPort(goma_dir)
     Log('Goma is started on port %s', port, silent=self.silent)
     if not port:
