@@ -18,7 +18,8 @@ sys.path.extend([
 
 import find_depot_tools # pylint: disable=W0611
 from testing_support.super_mox import SuperMoxTestBase
-from web_dev_style import resource_checker, css_checker, js_checker # pylint: disable=F0401
+from web_dev_style import css_checker, html_checker, js_checker, \
+     resource_checker  # pylint: disable=F0401
 
 
 def GetHighlight(line, error):
@@ -26,6 +27,47 @@ def GetHighlight(line, error):
   error_lines = error.split('\n')
   highlight = error_lines[error_lines.index(line) + 1]
   return ''.join(ch1 for (ch1, ch2) in zip(line, highlight) if ch2 == '^')
+
+
+class HtmlStyleTest(SuperMoxTestBase):
+  def setUp(self):
+    SuperMoxTestBase.setUp(self)
+
+    input_api = self.mox.CreateMockAnything()
+    input_api.re = re
+    output_api = self.mox.CreateMockAnything()
+    self.checker = html_checker.HtmlChecker(input_api, output_api)
+
+  def ShouldFailLabelCheck(self, line):
+    """Checks that the label checker flags |line| as a style error."""
+    error = self.checker.LabelCheck(1, line)
+    self.assertNotEqual('', error, 'Should be flagged as style error: ' + line)
+    highlight = GetHighlight(line, error).strip()
+    self.assertEqual('for=', highlight)
+
+  def ShouldPassLabelCheck(self, line):
+    """Checks that the label checker doesn't flag |line| as a style error."""
+    error = self.checker.LabelCheck(1, line)
+    self.assertEqual('', error, 'Should not be flagged as style error: ' + line)
+
+  def testForAttributeFails(self):
+    lines = [
+      " for=\"abc\"",
+      "for=    ",
+      " \tfor=    ",
+      "   for="
+    ]
+    for line in lines:
+      self.ShouldFailLabelCheck(line)
+
+  def testOtherAttributesPass(self):
+    lines = [
+      " my-for=\"abc\" ",
+      " myfor=\"abc\" ",
+      " <for",
+    ]
+    for line in lines:
+      self.ShouldPassLabelCheck(line)
 
 
 class ResourceStyleGuideTest(SuperMoxTestBase):

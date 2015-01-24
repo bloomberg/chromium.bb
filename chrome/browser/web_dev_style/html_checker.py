@@ -17,7 +17,7 @@ class HtmlChecker(object):
 
   def LabelCheck(self, line_number, line):
     return regex_check.RegexCheck(self.input_api.re, line_number, line,
-        "(for=)",
+        r"(?:^|\s)(for=)",
         "Avoid 'for' attribute on <label>. Place the input within the <label>, "
         "or use aria-labelledby for <select>.")
 
