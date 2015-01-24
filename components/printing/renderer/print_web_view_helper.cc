@@ -829,6 +829,9 @@ void PrintWebViewHelper::PrintPage(blink::WebLocalFrame* frame,
   if (!IsScriptInitiatedPrintAllowed(frame, user_initiated))
     return;
 
+  if (delegate_->OverridePrint(frame))
+    return;
+
   if (!g_is_preview_enabled_) {
     Print(frame, blink::WebNode(), true);
   } else {

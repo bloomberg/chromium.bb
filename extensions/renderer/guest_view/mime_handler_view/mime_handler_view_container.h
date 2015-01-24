@@ -5,6 +5,9 @@
 #ifndef EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_CONTAINER_H_
 #define EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_CONTAINER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/renderer/guest_view/guest_view_container.h"
@@ -41,6 +44,9 @@ class MimeHandlerViewContainer : public GuestViewContainer,
                            const GURL& original_url);
   ~MimeHandlerViewContainer() override;
 
+  static std::vector<MimeHandlerViewContainer*> FromRenderFrame(
+      content::RenderFrame* render_frame);
+
   // BrowserPluginDelegate implementation.
   void Ready() override;
   void DidFinishLoading() override;
@@ -62,6 +68,9 @@ class MimeHandlerViewContainer : public GuestViewContainer,
   // Post a JavaScript message to the guest.
   void PostMessage(v8::Isolate* isolate,
                    v8::Handle<v8::Value> message);
+
+  // Post |message| to the guest.
+  void PostMessageFromValue(const base::Value& message);
 
  private:
   // Message handlers.

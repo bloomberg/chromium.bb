@@ -21,6 +21,7 @@ class ChromePrintWebViewHelperDelegate
 
   bool IsPrintPreviewEnabled() override;
 
+  bool OverridePrint(blink::WebLocalFrame* frame) override;
 };  // class ChromePrintWebViewHelperDelegate
 
 #endif  // CHROME_RENDERER_PRINTING_CHROME_PRINT_WEB_VIEW_HELPER_DELEGATE_H_

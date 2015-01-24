@@ -4,8 +4,12 @@
 
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 
+#include <map>
+#include <set>
+
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
@@ -71,6 +75,12 @@ class ScriptableObject : public gin::Wrappable<ScriptableObject>,
 // static
 gin::WrapperInfo ScriptableObject::kWrapperInfo = { gin::kEmbedderNativeGin };
 
+// Maps from content::RenderFrame to the set of MimeHandlerViewContainers within
+// it.
+base::LazyInstance<
+    std::map<content::RenderFrame*, std::set<MimeHandlerViewContainer*>>>
+    g_mime_handler_view_container_map = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 MimeHandlerViewContainer::MimeHandlerViewContainer(
@@ -85,11 +95,27 @@ MimeHandlerViewContainer::MimeHandlerViewContainer(
       weak_factory_(this) {
   DCHECK(!mime_type_.empty());
   is_embedded_ = !render_frame->GetWebFrame()->document().isPluginDocument();
+  g_mime_handler_view_container_map.Get()[render_frame].insert(this);
 }
 
 MimeHandlerViewContainer::~MimeHandlerViewContainer() {
   if (loader_)
     loader_->cancel();
+
+  g_mime_handler_view_container_map.Get()[render_frame()].erase(this);
+  if (g_mime_handler_view_container_map.Get()[render_frame()].empty())
+    g_mime_handler_view_container_map.Get().erase(render_frame());
+}
+
+// static
+std::vector<MimeHandlerViewContainer*>
+MimeHandlerViewContainer::FromRenderFrame(content::RenderFrame* render_frame) {
+  auto it = g_mime_handler_view_container_map.Get().find(render_frame);
+  if (it == g_mime_handler_view_container_map.Get().end())
+    return std::vector<MimeHandlerViewContainer*>();
+
+  return std::vector<MimeHandlerViewContainer*>(it->second.begin(),
+                                                it->second.end());
 }
 
 void MimeHandlerViewContainer::Ready() {
@@ -195,6 +221,21 @@ void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
       guest_proxy_window,
       arraysize(args),
       args);
+}
+
+void MimeHandlerViewContainer::PostMessageFromValue(
+    const base::Value& message) {
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  if (!frame)
+    return;
+
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(frame->mainWorldScriptContext());
+  scoped_ptr<content::V8ValueConverter> converter(
+      content::V8ValueConverter::create());
+  PostMessage(isolate,
+              converter->ToV8Value(&message, frame->mainWorldScriptContext()));
 }
 
 void MimeHandlerViewContainer::OnCreateMimeHandlerViewGuestACK(

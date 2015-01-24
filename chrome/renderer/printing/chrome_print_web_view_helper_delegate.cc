@@ -4,10 +4,13 @@
 
 #include "chrome/renderer/printing/chrome_print_web_view_helper_delegate.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -17,6 +20,7 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
+#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #endif  // defined(ENABLE_EXTENSIONS)
 
 ChromePrintWebViewHelperDelegate::~ChromePrintWebViewHelperDelegate(){
@@ -58,4 +62,27 @@ bool ChromePrintWebViewHelperDelegate::IsOutOfProcessPdfEnabled() {
 bool ChromePrintWebViewHelperDelegate::IsPrintPreviewEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(switches::kDisablePrintPreview);
+}
+
+bool ChromePrintWebViewHelperDelegate::OverridePrint(
+    blink::WebLocalFrame* frame) {
+#if defined(ENABLE_EXTENSIONS)
+  if (!frame->document().isPluginDocument())
+    return false;
+
+  std::vector<extensions::MimeHandlerViewContainer*> mime_handlers =
+      extensions::MimeHandlerViewContainer::FromRenderFrame(
+          content::RenderFrame::FromWebFrame(frame));
+  if (!mime_handlers.empty()) {
+    // This message is handled in chrome/browser/resources/pdf/pdf.js and
+    // instructs the PDF plugin to print. This is to make window.print() on a
+    // PDF plugin document correctly print the PDF. See
+    // https://crbug.com/448720.
+    base::DictionaryValue message;
+    message.SetString("type", "print");
+    mime_handlers.front()->PostMessageFromValue(message);
+    return true;
+  }
+#endif  // defined(ENABLE_EXTENSIONS)
+  return false;
 }

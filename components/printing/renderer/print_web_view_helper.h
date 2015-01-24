@@ -84,6 +84,10 @@ class PrintWebViewHelper
     virtual bool IsOutOfProcessPdfEnabled() = 0;
 
     virtual bool IsPrintPreviewEnabled() = 0;
+
+    // Returns true if printing is overridden and the default behavior should be
+    // skipped for |frame|.
+    virtual bool OverridePrint(blink::WebLocalFrame* frame) = 0;
   };
 
   PrintWebViewHelper(content::RenderView* render_view,
