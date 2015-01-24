@@ -18,6 +18,8 @@ import android.widget.Switch;
  * TalkBack doesn't recognize the SwitchCompat class, so it reads events with that classname as
  * "Checkbox". This works around the bug by marking accessibility events from SwitchCompat with the
  * Switch class name, which TalkBack recognizes.
+ *
+ * TODO(newt): Delete this class once the support library is fixed. http://b/19110477
  */
 public class ChromeSwitchCompat extends SwitchCompat {
 
