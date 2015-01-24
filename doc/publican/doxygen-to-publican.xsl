@@ -134,7 +134,8 @@
 
 <!-- methods -->
 <xsl:template match="memberdef" >
-  <xsl:if test="@kind = 'function' and @static = 'no'">
+  <xsl:if test="@kind = 'function' and @static = 'no' or
+                @kind !='function' and normalize-space(briefdescription) != ''">
     <varlistentry id="{$which}-{@id}">
         <term>
           <xsl:value-of select="name"/>
