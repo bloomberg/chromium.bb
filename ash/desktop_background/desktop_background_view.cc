@@ -22,6 +22,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/transform.h"
@@ -35,11 +36,6 @@ using wallpaper::WALLPAPER_LAYOUT_TILE;
 
 namespace ash {
 namespace {
-
-// For our scaling ratios we need to round positive numbers.
-int RoundPositive(double x) {
-  return static_cast<int>(floor(x + 0.5));
-}
 
 // A view that controls the child view's layer so that the layer
 // always has the same size as the display's original, un-scaled size
@@ -63,7 +59,7 @@ class LayerControlView : public views::View {
     float ui_scale = info.GetEffectiveUIScale();
     gfx::SizeF pixel_size = display.size();
     pixel_size.Scale(1.0f / ui_scale);
-    gfx::Size rounded_size = gfx::ToCeiledSize(pixel_size);
+    gfx::Size rounded_size = gfx::ToFlooredSize(pixel_size);
     DCHECK_EQ(1, child_count());
     views::View* child = child_at(0);
     child->SetBounds(0, 0, rounded_size.width(), rounded_size.height());
@@ -169,11 +165,12 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
     gfx::Size cropped_size;
     if (vertical_ratio > horizontal_ratio) {
       cropped_size = gfx::Size(
-          RoundPositive(static_cast<double>(width()) / vertical_ratio),
+          gfx::ToFlooredInt(static_cast<double>(width()) / vertical_ratio),
           wallpaper.height());
     } else {
-      cropped_size = gfx::Size(wallpaper.width(),
-          RoundPositive(static_cast<double>(height()) / horizontal_ratio));
+      cropped_size = gfx::Size(
+          wallpaper.width(),
+          gfx::ToFlooredInt(static_cast<double>(height()) / horizontal_ratio));
     }
 
     gfx::Rect wallpaper_cropped_rect(
