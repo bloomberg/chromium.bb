@@ -44,7 +44,5 @@ executable("irt_core") {
     "//native_client/build/config/nacl:nacl_base",
     "//native_client/src/shared/gio:gio",
     "//native_client/src/shared/platform:platform",
-    "//native_client/src/shared/srpc:srpc",
-    "//native_client/src/untrusted/nacl:imc_syscalls",
   ]
 }

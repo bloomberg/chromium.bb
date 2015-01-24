@@ -59,8 +59,6 @@
       },
       'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
       'link_flags': [
-        '-lsrpc',
-        '-limc_syscalls',
         '-lplatform',
         '-lgio',
         '-lm',
@@ -68,9 +66,7 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
-        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:srpc_lib',
         '<(DEPTH)/native_client/src/tools/tls_edit/tls_edit.gyp:tls_edit#host',
-        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],

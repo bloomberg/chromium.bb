@@ -12,7 +12,6 @@
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
@@ -42,16 +41,6 @@ void nacl_irt_init(uint32_t *info) {
 
   __libc_init_array();
 
-  /*
-   * SRPC is initialized for use by Chromium's
-   * ppapi/nacl_irt/plugin_main.cc (though it should be possible to remove
-   * that usage).
-   */
-  if (!NaClSrpcModuleInit()) {
-    static const char fatal_msg[] = "NaClSrpcModuleInit() failed\n";
-    write(2, fatal_msg, sizeof(fatal_msg) - 1);
-    _exit(-1);
-  }
   NaClLogModuleInit();  /* Enable NaClLog'ing used by CHECK(). */
 }
 
