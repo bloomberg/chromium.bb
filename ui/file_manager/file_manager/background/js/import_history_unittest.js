@@ -243,6 +243,27 @@ function testRecordStorageRemembersPreviouslyWrittenRecords(callback) {
   reportPromise(testPromise, callback);
 }
 
+function testRecordStorageSerializingOperations(callback) {
+  testPromise = createRealStorage('recordStorageTestForSerializing.data')
+      .then(
+          function(storage) {
+            var writePromises = [];
+            var WRITES_COUNT = 20;
+            for (var i = 0; i < WRITES_COUNT; i++)
+              writePromises.push(storage.write(['abc', '123']));
+            var readAllPromise = storage.readAll().then(
+              function(records) {
+                assertEquals(WRITES_COUNT, records.length);
+              });
+            // Write an extra record, which must be executed afte reading is
+            // completed.
+            writePromises.push(storage.write(['abc', '123']));
+            return Promise.all(writePromises.concat([readAllPromise]));
+          });
+
+  reportPromise(testPromise, callback);
+}
+
 function testHistoryLoaderIntegration(callback) {
 
   /** @type {!SyncFileEntryProvider|undefined} */

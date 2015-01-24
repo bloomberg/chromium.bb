@@ -763,13 +763,27 @@ importer.RecordStorage.prototype.readAll;
 importer.FileEntryRecordStorage = function(fileEntry) {
   /** @private {!importer.PromisingFileEntry} */
   this.fileEntry_ = new importer.PromisingFileEntry(fileEntry);
+
+  /**
+   * Serializes all writes and reads.
+   * @private {!Promise.<?>}
+   * */
+  this.latestOperation_ = Promise.resolve(null);
 };
 
 /** @override */
 importer.FileEntryRecordStorage.prototype.write = function(record) {
-  // TODO(smckay): should we make an effort to reuse a file writer?
-  return this.fileEntry_.createWriter()
-      .then(this.writeRecord_.bind(this, record));
+  return this.latestOperation_ = this.latestOperation_
+      .then(
+          /**
+           * @param {?} ignore
+           * @this {importer.FileEntryRecordStorage}
+           */
+          function(ignore) {
+            return this.fileEntry_.createWriter();
+          }.bind(this))
+      .then(this.writeRecord_.bind(this, record))
+      .catch(importer.getLogger().catcher('record-writing'));
 };
 
 /**
@@ -802,26 +816,35 @@ importer.FileEntryRecordStorage.prototype.writeRecord_ =
 
 /** @override */
 importer.FileEntryRecordStorage.prototype.readAll = function() {
-  return this.fileEntry_.file()
-      .then(
-          this.readFileAsText_.bind(this),
-          /**
-           * @return {string}
-           * @this {importer.FileEntryRecordStorage}
-           */
-          function() {
-            console.error('Unable to read from history file.');
-            return '';
-          }.bind(this))
-      .then(
-          /**
-           * @param {string} fileContents
-           * @this {importer.FileEntryRecordStorage}
-           */
-          function(fileContents) {
-            return this.parse_(fileContents);
-          }.bind(this))
-      .catch(importer.getLogger().catcher('record-reading'));
+  return /** @type {!Promise.<!Array.<!Array.<*>>>} */ (this.latestOperation_ =
+      this.latestOperation_
+          .then(
+              /**
+               * @param {?} ignore
+               * @this {importer.FileEntryRecordStorage}
+               */
+              function(ignore) {
+                return this.fileEntry_.file();
+              }.bind(this))
+          .then(
+              this.readFileAsText_.bind(this),
+              /**
+               * @return {string}
+               * @this {importer.FileEntryRecordStorage}
+               */
+              function() {
+                console.error('Unable to read from history file.');
+                return '';
+              }.bind(this))
+          .then(
+              /**
+               * @param {string} fileContents
+               * @this {importer.FileEntryRecordStorage}
+               */
+              function(fileContents) {
+                return this.parse_(fileContents);
+              }.bind(this))
+          .catch(importer.getLogger().catcher('record-reading')));
 };
 
 /**
