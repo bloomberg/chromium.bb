@@ -297,11 +297,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
         m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer.textureId, frontColorBufferMailbox->textureInfo.textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE);
     }
 
-    if (m_multisampleMode != None && !m_framebufferBinding)
-        bind();
-    else
-        restoreFramebufferBinding();
-
+    restoreFramebufferBinding();
     m_contentsChanged = false;
 
     m_context->produceTextureDirectCHROMIUM(frontColorBufferMailbox->textureInfo.textureId, GL_TEXTURE_2D, frontColorBufferMailbox->mailbox.name);
@@ -477,10 +473,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
     if (m_contentsChanged) {
         if (m_multisampleMode != None) {
             commit();
-            if (!m_framebufferBinding)
-                bind();
-            else
-                restoreFramebufferBinding();
+            restoreFramebufferBinding();
         }
         m_context->flush();
     }
@@ -848,13 +841,8 @@ bool DrawingBuffer::reset(const IntSize& newSize)
     return true;
 }
 
-void DrawingBuffer::commit(long x, long y, long width, long height)
+void DrawingBuffer::commit()
 {
-    if (width < 0)
-        width = m_size.width();
-    if (height < 0)
-        height = m_size.height();
-
     if (m_multisampleFBO && !m_contentsChangeCommitted) {
         m_context->bindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, m_multisampleFBO);
         m_context->bindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, m_fbo);
@@ -862,8 +850,10 @@ void DrawingBuffer::commit(long x, long y, long width, long height)
         if (m_scissorEnabled)
             m_context->disable(GL_SCISSOR_TEST);
 
+        int width = m_size.width();
+        int height = m_size.height();
         // Use NEAREST, because there is no scale performed during the blit.
-        m_context->blitFramebufferCHROMIUM(x, y, width, height, x, y, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        m_context->blitFramebufferCHROMIUM(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
         if (m_scissorEnabled)
             m_context->enable(GL_SCISSOR_TEST);
@@ -875,9 +865,10 @@ void DrawingBuffer::commit(long x, long y, long width, long height)
 
 void DrawingBuffer::restoreFramebufferBinding()
 {
-    if (!m_framebufferBinding)
+    if (!m_framebufferBinding) {
+        bind();
         return;
-
+    }
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_framebufferBinding);
 }
 
@@ -903,9 +894,7 @@ void DrawingBuffer::paintRenderingResultsToCanvas(ImageBuffer* imageBuffer)
 
 bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, SourceDrawingBuffer sourceBuffer, WTF::ArrayBufferContents& contents)
 {
-    if (m_actualAttributes.premultipliedAlpha)
-        return false;
-
+    ASSERT(!m_actualAttributes.premultipliedAlpha);
     width = size().width();
     height = size().height();
 
@@ -934,11 +923,7 @@ bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, So
         m_context->deleteFramebuffer(fbo);
     }
 
-    if (m_framebufferBinding) {
-        restoreFramebufferBinding();
-    } else {
-        bind();
-    }
+    restoreFramebufferBinding();
 
     pixels.transfer(contents);
     return true;

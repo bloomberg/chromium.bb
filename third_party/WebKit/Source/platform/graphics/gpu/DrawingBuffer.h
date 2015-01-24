@@ -119,7 +119,7 @@ public:
     IntSize size() const { return m_size; }
 
     // Copies the multisample color buffer to the normal color buffer and leaves m_fbo bound.
-    void commit(long x = 0, long y = 0, long width = -1, long height = -1);
+    void commit();
 
     // commit should copy the full multisample buffer, and not respect the
     // current scissor bounds. Track the state of the scissor test so that it
@@ -197,7 +197,7 @@ private:
     bool resizeMultisampleFramebuffer(const IntSize&);
     void resizeDepthStencil(const IntSize&);
 
-    // Bind to the m_framebufferBinding if it's not 0.
+    // Bind to the m_framebufferBinding if it's not 0. Otherwise, bind to the default FBO.
     void restoreFramebufferBinding();
 
     void clearPlatformLayer();
