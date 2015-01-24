@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../editor/editor-test.js"></script>
+<script src="./debugger/resources/edit-me.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.showScriptSource("edit-me.js", onSourceFrame);
+
+    function onSourceFrame(sourceFrame)
+    {
+        InspectorTest.addSniffer(WebInspector.JavaScriptCompiler.prototype, "_compilationFinishedForTest", onCompilationFinished.bind(null, sourceFrame));
+        sourceFrame.textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 0));
+        InspectorTest.typeIn(sourceFrame.textEditor, "test!");
+    }
+
+    function onCompilationFinished(sourceFrame)
+    {
+        for (var line in sourceFrame._rowMessageBuckets) {
+            var bubble = sourceFrame._rowMessageBuckets[line];
+            for (var rowMessage of bubble._messages) {
+                var message = rowMessage.message();
+                InspectorTest.addResult(String.sprintf("%d:%d [%s] %s", message.lineNumber(), message.columnNumber(), message.level(), message.messageText()));
+            }
+        }
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verifies proactive javascript compilation.</p>
+</body>
+</html>

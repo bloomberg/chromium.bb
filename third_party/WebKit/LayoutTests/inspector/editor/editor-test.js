@@ -59,6 +59,7 @@ InspectorTest.setLineSelections = function(editor, selections)
 
 InspectorTest.typeIn = function(editor, typeText, callback)
 {
+    callback = callback || new Function();
     var noop = new Function();
     for(var charIndex = 0; charIndex < typeText.length; ++charIndex) {
         // As soon as the last key event was processed, the whole text was processed.
