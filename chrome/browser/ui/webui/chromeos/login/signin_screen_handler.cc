@@ -365,6 +365,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("signedIn", IDS_SCREEN_LOCK_ACTIVE_USER);
   builder->Add("signinButton", IDS_LOGIN_BUTTON);
   builder->Add("launchAppButton", IDS_LAUNCH_APP_BUTTON);
+  builder->Add("restart", IDS_RESTART_BUTTON);
   builder->Add("shutDown", IDS_SHUTDOWN_BUTTON);
   builder->Add("addUser", IDS_ADD_USER_BUTTON);
   builder->Add("browseAsGuest", IDS_GO_INCOGNITO_BUTTON);

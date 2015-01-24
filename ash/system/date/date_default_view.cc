@@ -102,6 +102,10 @@ views::View* DateDefaultView::GetHelpButtonView() {
   return help_button_;
 }
 
+const views::View* DateDefaultView::GetShutdownButtonViewForTest() const {
+  return shutdown_button_;
+}
+
 tray::DateView* DateDefaultView::GetDateView() {
   return date_view_;
 }

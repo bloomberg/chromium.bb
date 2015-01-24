@@ -113,6 +113,16 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * When |showShutdown| is set to "true", the shutdown button is shown and the
+   * reboot button hidden. If set to "false", the reboot button is visible and
+   * the shutdown button hidden.
+   */
+  Oobe.showShutdown = function(showShutdown) {
+    $('login-header-bar').showShutdownButton = showShutdown;
+    $('login-header-bar').showRebootButton = !showShutdown;
+  };
+
+  /**
    * Enables keyboard driven flow.
    */
   Oobe.enableKeyboardFlow = function(value) {

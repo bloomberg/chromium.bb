@@ -321,6 +321,11 @@ void CoreOobeHandler::ShowOobeUI(bool show) {
     UpdateOobeUIVisibility();
 }
 
+void CoreOobeHandler::UpdateShutdownAndRebootVisibility(
+    bool reboot_on_shutdown) {
+  CallJS("showShutdown", !reboot_on_shutdown);
+}
+
 void CoreOobeHandler::UpdateA11yState() {
   // TODO(dpolukhin): crbug.com/412891
   DCHECK(MagnificationManager::Get());

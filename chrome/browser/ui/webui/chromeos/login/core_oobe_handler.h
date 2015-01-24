@@ -61,6 +61,11 @@ class CoreOobeHandler : public BaseScreenHandler,
     return show_oobe_ui_;
   }
 
+  // If |reboot_on_shutdown| is true, the reboot button becomes visible
+  // and the shutdown button is hidden. Vice versa if |reboot_on_shutdown| is
+  // false.
+  void UpdateShutdownAndRebootVisibility(bool reboot_on_shutdown);
+
  private:
   // CoreOobeActor implementation:
   void ShowSignInError(int login_attempts,

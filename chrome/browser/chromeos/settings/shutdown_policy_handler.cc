@@ -22,8 +22,7 @@ ShutdownPolicyHandler::ShutdownPolicyHandler(CrosSettings* cros_settings,
   }
 }
 
-ShutdownPolicyHandler::~ShutdownPolicyHandler() {
-}
+ShutdownPolicyHandler::~ShutdownPolicyHandler() {}
 
 void ShutdownPolicyHandler::Shutdown() {
   shutdown_policy_subscription_.reset();

@@ -21,6 +21,14 @@ cr.define('login', function() {
     // Whether guest button should be shown when header bar is in normal mode.
     showGuest_: false,
 
+    // Whether the reboot button should be shown the when header bar is in
+    // normal mode.
+    showReboot_: false,
+
+    // Whether the shutdown button should be shown when the header bar is in
+    // normal mode.
+    showShutdown_: true,
+
     // Current UI state of the sign-in screen.
     signinUIState_: SIGNIN_UI_STATE.HIDDEN,
 
@@ -32,6 +40,10 @@ cr.define('login', function() {
       $('shutdown-header-bar-item').addEventListener('click',
           this.handleShutdownClick_);
       $('shutdown-button').addEventListener('click',
+          this.handleShutdownClick_);
+      $('restart-header-bar-item').addEventListener('click',
+          this.handleShutdownClick_);
+      $('restart-button').addEventListener('click',
           this.handleShutdownClick_);
       $('add-user-button').addEventListener('click',
           this.handleAddUserClick_);
@@ -177,6 +189,26 @@ cr.define('login', function() {
     },
 
     /**
+     * If true the "Restart" button is shown.
+     *
+     * @type {boolean}
+     */
+    set showRebootButton(value) {
+      this.showReboot_ = value;
+      this.updateUI_();
+    },
+
+    /**
+     * If true the "Shutdown" button is shown.
+     *
+     * @type {boolean}
+     */
+    set showShutdownButton(value) {
+      this.showShutdown_ = value;
+      this.updateUI_();
+    },
+
+    /**
      * Current header bar UI / sign in state.
      *
      * @type {number} state Current state of the sign-in screen (see
@@ -245,6 +277,8 @@ cr.define('login', function() {
           wrongHWIDWarningIsActive ||
           isSamlPasswordConfirm ||
           isMultiProfilesUI;
+      $('restart-header-bar-item').hidden = !this.showReboot_;
+      $('shutdown-header-bar-item').hidden = !this.showShutdown_;
       $('sign-out-user-item').hidden = !isLockScreen;
 
       $('add-user-header-bar-item').hidden =

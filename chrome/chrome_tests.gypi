@@ -728,6 +728,7 @@
       'browser/chromeos/power/peripheral_battery_observer_browsertest.cc',
       'browser/chromeos/preferences_browsertest.cc',
       'browser/chromeos/profiles/profile_helper_browsertest.cc',
+      'browser/chromeos/shutdown_policy_browsertest.cc',
       'browser/chromeos/system/device_disabling_browsertest.cc',
       'browser/chromeos/system/tray_accessibility_browsertest.cc',
       'browser/ui/webui/options/chromeos/accounts_options_browsertest.cc',

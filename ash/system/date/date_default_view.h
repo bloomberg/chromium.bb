@@ -29,6 +29,7 @@ class ASH_EXPORT DateDefaultView : public views::View,
   ~DateDefaultView() override;
 
   views::View* GetHelpButtonView();
+  const views::View* GetShutdownButtonViewForTest() const;
 
   tray::DateView* GetDateView();
   const tray::DateView* GetDateView() const;

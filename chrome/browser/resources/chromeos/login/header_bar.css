@@ -4,6 +4,7 @@
  */
 
 #login-header-bar {
+  -webkit-padding-start: 15px;
   border-bottom: 3px solid black;
   bottom: 0;
   left: 0;
@@ -34,10 +35,6 @@ html[screen=oobe] .login-header-bar-animate-fast {
 html[screen=lock] .login-header-bar-animate-slow,
 html[screen=oobe] .login-header-bar-animate-slow {
   -webkit-transition: opacity 2s ease-out;
-}
-
-.header-bar-item:first-child {
-  -webkit-padding-start: 15px;
 }
 
 #login-header-bar button,
@@ -73,6 +70,7 @@ html[dir=rtl] .header-bar-item {
 }
 
 #login-header-bar #shutdown-button,
+#login-header-bar #restart-button,
 #login-header-bar #add-user-button,
 #login-header-bar #guest-user-button,
 #login-header-bar #cancel-multiple-sign-in-button {
@@ -83,6 +81,7 @@ html[dir=rtl] .header-bar-item {
 }
 
 html[dir=rtl] #login-header-bar #shutdown-button,
+html[dir=rtl] #login-header-bar #restart-button,
 html[dir=rtl] #login-header-bar #add-user-button,
 html[dir=rtl] #login-header-bar #guest-user-button,
 html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button {
@@ -90,6 +89,10 @@ html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button {
 }
 
 #login-header-bar #shutdown-button {
+  background-image: url(chrome://theme/IDR_ICON_POWER_WHITE);
+}
+
+#login-header-bar #restart-button {
   background-image: url(chrome://theme/IDR_ICON_POWER_WHITE);
 }
 

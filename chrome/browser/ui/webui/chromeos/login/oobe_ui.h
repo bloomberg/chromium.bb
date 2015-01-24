@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/ui/oobe_display.h"
+#include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "content/public/browser/web_ui_controller.h"
 
@@ -47,7 +48,8 @@ class UserBoardScreenHandler;
 // - update screen.
 class OobeUI : public OobeDisplay,
                public content::WebUIController,
-               public CoreOobeHandler::Delegate {
+               public CoreOobeHandler::Delegate,
+               public ShutdownPolicyHandler::Delegate {
  public:
   class Observer {
    public:
@@ -121,6 +123,9 @@ class OobeUI : public OobeDisplay,
   DeviceDisabledScreenActor* GetDeviceDisabledScreenActor() override;
   GaiaScreenHandler* GetGaiaScreenActor() override;
   UserBoardView* GetUserBoardScreenActor() override;
+
+  // ShutdownPolicyObserver::Delegate
+  void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -247,6 +252,9 @@ class OobeUI : public OobeDisplay,
 
   // List of registered observers.
   ObserverList<Observer> observer_list_;
+
+  // Observer of CrosSettings watching the kRebootOnShutdown policy.
+  scoped_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

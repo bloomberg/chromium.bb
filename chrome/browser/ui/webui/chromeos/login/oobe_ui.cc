@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
+#include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -484,6 +486,10 @@ UserBoardView* OobeUI::GetUserBoardScreenActor() {
   return user_board_screen_handler_;
 }
 
+void OobeUI::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
+  core_handler_->UpdateShutdownAndRebootVisibility(reboot_on_shutdown);
+}
+
 AppLaunchSplashScreenActor*
       OobeUI::GetAppLaunchSplashScreenActor() {
   return app_launch_splash_screen_actor_;
@@ -570,6 +576,14 @@ void OobeUI::InitializeHandlers() {
     if (handlers_[i]->async_assets_load_id().empty())
       handlers_[i]->InitializeBase();
   }
+
+  // Instantiate the ShutdownPolicyHandler.
+  shutdown_policy_handler_.reset(
+      new ShutdownPolicyHandler(CrosSettings::Get(), this));
+
+  // Trigger an initial update.
+  shutdown_policy_handler_->CheckIfRebootOnShutdown(
+      base::Bind(&OobeUI::OnShutdownPolicyChanged, base::Unretained(this)));
 }
 
 void OobeUI::OnScreenAssetsLoaded(const std::string& async_assets_load_id) {
