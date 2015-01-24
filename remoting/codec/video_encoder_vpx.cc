@@ -383,13 +383,16 @@ void VideoEncoderVpx::PrepareImage(const webrtc::DesktopFrame& frame,
     return;
   }
 
-  // Align the region to macroblocks, to avoid encoding artefacts.
-  // If VP9 is in use then we also pad the rectangles before aligning them, to
-  // avoid edge artefacts.
-  // This also ensures that all rectangles have even-aligned top-left, which
-  // is required for ConvertRGBToYUVWithRect() to work.
+  // Pad each rectangle to avoid the block-artefact filters in libvpx from
+  // introducing artefacts; VP9 includes up to 8px either side, and VP8 up to
+  // 3px, so unchanged pixels up to that far out may still be affected by the
+  // changes in the updated region, and so must be listed in the active map.
+  // After padding we align each rectangle to 16x16 active-map macroblocks.
+  // This implicitly ensures all rects have even top-left coords, which is
+  // is required by ConvertRGBToYUVWithRect().
+  // TODO(wez): Do we still need 16x16 align, or is even alignment sufficient?
   updated_region->Clear();
-  int padding = use_vp9_ ? 8 : 0;
+  int padding = use_vp9_ ? 8 : 3;
   for (webrtc::DesktopRegion::Iterator r(frame.updated_region());
        !r.IsAtEnd(); r.Advance()) {
     const webrtc::DesktopRect& rect = r.rect();
