@@ -173,7 +173,7 @@ remoting.AppRemoting.prototype.init = function(connector) {
       } else if (xhr.status == 401) {
         that.handleError(remoting.Error.AUTHENTICATION_FAILED);
       } else if (xhr.status == 403) {
-        that.handleError(remoting.Error.NOT_AUTHORIZED);
+        that.handleError(remoting.Error.APP_NOT_AUTHORIZED);
       } else if (xhr.status == 502 || xhr.status == 503) {
         that.handleError(remoting.Error.SERVICE_UNAVAILABLE);
       } else {
@@ -343,7 +343,7 @@ remoting.AppRemoting.prototype.handleError = function(errorTag) {
   console.error('Connection failed: ' + errorTag);
   remoting.LoadingWindow.close();
   remoting.MessageWindow.showErrorMessage(
-      chrome.i18n.getMessage(/**i18n-content*/'CONNECTION_FAILED'),
+      chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
       chrome.i18n.getMessage(/** @type {string} */ (errorTag)));
 };
 

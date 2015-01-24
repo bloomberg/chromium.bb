@@ -32,7 +32,10 @@ remoting.Error = {
   INVALID_HOST_DOMAIN: /*i18n-content*/'ERROR_INVALID_HOST_DOMAIN',
   P2P_FAILURE: /*i18n-content*/'ERROR_P2P_FAILURE',
   REGISTRATION_FAILED: /*i18n-content*/'ERROR_HOST_REGISTRATION_FAILED',
-  NOT_AUTHORIZED: /*i18n-content*/'ERROR_NOT_AUTHORIZED'
+  NOT_AUTHORIZED: /*i18n-content*/'ERROR_NOT_AUTHORIZED',
+
+  // TODO(garykac): Move app-specific errors into separate location.
+  APP_NOT_AUTHORIZED: /*i18n-content*/'ERROR_APP_NOT_AUTHORIZED'
 };
 
 /**

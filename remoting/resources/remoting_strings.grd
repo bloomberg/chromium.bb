@@ -261,6 +261,7 @@
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
+
       <if expr="_google_chrome">
         <if expr="is_android or is_ios">
           <message desc="Message shown in popup dialog on Android when there are no Google accounts on the device" name="IDS_NOACCOUNTS_MESSAGE" formatter_data="android_java">
@@ -269,13 +270,10 @@
           <message desc="The product name, as displayed on Android devices. Ideally this would be 'Chrome Remote Desktop', but that name is too long to be displayed in the Android Launcher. Try to keep the translation below 16 characters if possible." name="IDS_PRODUCT_NAME_ANDROID" formatter_data="android_java">
             Remote Desktop
           </message>
-        </if>
+        </if>  <!-- is_android or is_ios -->
 
         <message desc="Message shown when the Chrome Remote Desktop client tab is closed while a connection is active." name="IDS_CLOSE_PROMPT">
           Leaving this page will end your Chrome Remote Desktop session.
-        </message>
-        <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chrome Remote Desktop app before use." name="IDS_DESCRIPTION_AUTHORIZE">
-          To use Chrome Remote Desktop you must grant extended access permissions to your computer. You only have to do this once.
         </message>
         <message desc="Confirmation prompt shown when a user needs to authenticate against a third party, explaining the need to authorize the Chrome Remote Desktop app to access the authentication URL." name="IDS_DESCRIPTION_THIRD_PARTY_AUTH">
           The remote host requires you to authenticate to a third-party website. To continue, you must grant Chrome Remote Desktop additional permissions to access this address:
@@ -286,23 +284,11 @@
         <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED" formatter_data="android_java">
           Authentication failed. Please sign in to Chrome Remote Desktop again.
         </message>
-        <message desc="Error displayed if the client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
-          Some components required for Chrome Remote Desktop are missing. Please make sure you have installed the latest version and try again.
-        </message>
-        <message desc="Error that is shown on the client side when incompatible Chrome Remote Desktop versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL" formatter_data="android_java">
-          An incompatible version of Chrome Remote Desktop was detected. Please make sure that you have the latest version of Chrome and Chrome Remote Desktop on both computers and try again.
-        </message>
         <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chrome Remote Desktop host, and a user in a different domain is trying to use it as a Chrome Remote Desktop host." name="IDS_ERROR_INVALID_HOST_DOMAIN">
           Policy settings do not permit sharing this computer as a Chrome Remote Desktop host. Contact your system administrator for assistance.
         </message>
         <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDS_ERROR_NOT_AUTHENTICATED">
           You are not signed in to Chrome Remote Desktop. Please sign in and try again.
-        </message>
-        <message desc="Error displayed when a user attempts to connect to an application that they have not been authorized to access." name="IDS_ERROR_NOT_AUTHORIZED">
-          You are not authorized to access this application.
-        </message>
-        <message desc="Error displayed if the client plugin fails to load." name="IDS_ERROR_MISSING_PLUGIN">
-          Some components required for Chrome Remote Desktop are missing. Please make sure you're running the latest version of Chrome and try again.
         </message>
         <message desc="Message displayed when the current computer is accepting remote connections." name="IDS_HOME_DAEMON_ACTIVE_MESSAGE">
           You may securely access this computer using Chrome Remote Desktop.
@@ -330,6 +316,9 @@
         </message>
         <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDS_PRODUCT_NAME">
           Chrome Remote Desktop
+        </message>
+        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDS_PRODUCT_NAME_APP_STREAMING">
+          Chrome App Streaming
         </message>
         <message desc="Message displayed at the bottom of the client connect dialog if Chrome Remote Desktop is running in the wrong start-up mode." name="IDS_WARNING_NOT_WINDOWED">
           NOTE: To ensure that all keyboard shortcuts are available, you can configure Chrome Remote Desktop to ‘Open as window’.
@@ -367,7 +356,7 @@
         <message name="IDS_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Uninstaller bundle on MacOS.">
           Chrome Remote Desktop Host Uninstaller
         </message>
-      </if>
+      </if>  <!-- _google_chrome -->
 
       <if expr="not _google_chrome">
         <if expr="is_android or is_ios">
@@ -377,13 +366,10 @@
           <message desc="The product name, as displayed on Android devices. Try to keep the translation below 16 characters if possible." name="IDS_PRODUCT_NAME_ANDROID" formatter_data="android_java">
             Chromoting
           </message>
-        </if>
+        </if>  <!-- is_android or is_ios -->
 
         <message desc="Message shown when the Chromoting client tab is closed while a connection is active." name="IDS_CLOSE_PROMPT">
           Leaving this page will end your Chromoting session.
-        </message>
-        <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use." name="IDS_DESCRIPTION_AUTHORIZE">
-          To use Chromoting you must grant extended access permissions to your computer. You only have to do this once.
         </message>
         <message desc="Confirmation prompt shown when a user needs to authenticate against a third party, explaining the need to authorize the Chromoting app to access the authentication URL." name="IDS_DESCRIPTION_THIRD_PARTY_AUTH">
           The remote host requires you to authenticate to a third-party website. To continue, you must grant Chromoting additional permissions to access this address:
@@ -394,20 +380,11 @@
         <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED" formatter_data="android_java">
           Authentication failed. Please sign in to Chromoting again.
         </message>
-        <message desc="Error displayed if the client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
-          Some components required for Chromoting are missing. Please make sure you have installed the latest version and try again.
-        </message>
-        <message desc="Error that is shown on the client side when incompatible Chromoting versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL" formatter_data="android_java">
-          An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chrome and Chromoting on both computers and try again.
-        </message>
         <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chromoting host, and a user in a different domain is trying to use it as a Chromoting host." name="IDS_ERROR_INVALID_HOST_DOMAIN">
           Policy settings do not permit sharing this computer as a Chromoting host. Contact your system administrator for assistance.
         </message>
         <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDS_ERROR_NOT_AUTHENTICATED">
           You are not signed in to Chromoting. Please sign in and try again.
-        </message>
-        <message desc="Error displayed if the client plugin fails to load." name="IDS_ERROR_MISSING_PLUGIN">
-          Some components required for Chromoting are missing. Please make sure you're running the latest version of Chrome and try again.
         </message>
         <message desc="Message displayed when the current computer is accepting remote connections." name="IDS_HOME_DAEMON_ACTIVE_MESSAGE">
           You may securely access this computer using Chromoting.
@@ -435,6 +412,9 @@
         </message>
         <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDS_PRODUCT_NAME">
           Chromoting
+        </message>
+        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDS_PRODUCT_NAME_APP_STREAMING">
+          Chromium App Streaming
         </message>
         <message desc="Message displayed at the bottom of the client connect dialog if Chromoting is running in the wrong start-up mode." name="IDS_WARNING_NOT_WINDOWED">
           NOTE: To ensure that all keyboard shortcuts are available, you can configure Chromoting to ‘Open as window’.
@@ -472,7 +452,91 @@
         <message name="IDS_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Uninstaller bundle on MacOS.">
           Chromoting Host Uninstaller
         </message>
-      </if>
+      </if>  <!-- not _google_chrome -->
+
+      <message desc="Error that is shown on the client side when incompatible Chrome Remote Desktop versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL" formatter_data="android_java">
+        An incompatible protocol version was detected. Please make sure that you have the latest version of the software installed on both computers and try again.
+      </message>
+      <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use." name="IDS_DESCRIPTION_AUTHORIZE">
+        To continue you must first grant extended access permissions to your computer. You only have to do this once.
+      </message>
+      <message desc="Error displayed if the client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
+        Some required components are missing. Please make sure you have installed the latest version of the software and try again.
+      </message>
+      <message desc="Error displayed if the client plugin fails to load." name="IDS_ERROR_MISSING_PLUGIN">
+        Some required components are missing. Please make sure you're running the latest version of Chrome and try again.
+      </message>
+      <message desc="Message shown if the user is not authorized to perform the requested action." name="IDS_ERROR_NOT_AUTHORIZED">
+        You do not have permission to perform that action.
+      </message>
+
+      <!-- The following strings are AppRemoting-specific -->
+      <message desc="Message shown if the user is not authorized to run the app." name="IDS_ERROR_APP_NOT_AUTHORIZED">
+        You do not have permission to run this application.
+      </message>
+      <message desc="Menu option to toggle the debugging stats." name="IDS_SHOW_STATS">
+        Show statistics
+      </message>
+      <message desc="Menu option to toggle the debugging stats, including a summary of the current connection quality." name="IDS_SHOW_STATS_WITH_RTT">
+        Show statistics (connection: <ph name="QUALITY">$1<ex>Good</ex></ph>)
+      </message>
+      <message desc="Indicates a 'good' quality connection." name="IDS_CONNECTION_QUALITY_GOOD">
+        Good
+      </message>
+      <message desc="Indicates a 'fair' quality connection." name="IDS_CONNECTION_QUALITY_FAIR">
+        Fair
+      </message>
+      <message desc="Indicates a 'poor' quality connection." name="IDS_CONNECTION_QUALITY_POOR">
+        Poor
+      </message>
+      <message desc="Menu option to submit feedback about the product." name="IDS_SEND_FEEDBACK">
+        Report an issue…
+      </message>
+      <message desc="Title for the dialog prompting the user to consent to their email address being included as part of their feedback." name="IDS_FEEDBACK_CONSENT_TITLE">
+        Report an issue
+      </message>
+      <message desc="Text asking the user for consent to their email address being included as part of their feedback." name="IDS_FEEDBACK_CONSENT">
+        To allow us to contact you for further information, your email address will be included in any feedback you submit.
+      </message>
+      <message desc="Title for the submenu item containing a list of windows opened by the remote app." name="IDS_WINDOWS_SUBMENU_TITLE">
+        Windows
+      </message>
+      <message desc="Checkbox allowing the user to request that their virtual machine be rebooted if it becomes unconnectable." name="IDS_FEEDBACK_ABANDON_HOST">
+        Reset the application. You will lose any unsaved work.
+      </message>
+      <message desc="Checkbox allowing the user to request that logs be included in their feedback." name="IDS_FEEDBACK_INCLUDE_LOGS">
+        Include application logs to help us resolve your problem (logs may include private information).
+      </message>
+      <message desc="Link allowing the user to get additional information." name="IDS_LEARN_MORE">
+        Learn more.
+      </message>
+      <message desc="Detailed privacy information for the feedback feature." name="IDS_FEEDBACK_PRIVACY_INFORMATION1">
+        Application logs may include private information, including your identity (email address) and the names and properties of files and folders in Google Drive.
+      </message>
+      <message desc="Detailed privacy information for the feedback feature." name="IDS_FEEDBACK_PRIVACY_INFORMATION2">
+        This information is used only for diagnosing the problem you are reporting, is available only to someone investigating your report, and is retained for no more than 30 days.
+      </message>
+      <message desc="Error message displayed if the reset attempt fails." name="IDS_FEEDBACK_ABANDON_FAILED">
+        Could not reset the application. You can still send a bug report.
+      </message>
+      <message desc="Title for the submenu item containing a list of windows opened by the remote app." name="IDS_KEYBOARD_LAYOUTS_SUBMENU_TITLE">
+        Keyboard layouts
+      </message>
+      <message desc="Title for the connection error dialog." name="IDS_CONNECTION_FAILED">
+        Connection failed
+      </message>
+      <message desc="Warning shown if the platform does not support transparency." name="IDS_NO_TRANSPARENCY_WARNING">
+        Desktop integration is not supported on this platform. You can still use the application, but the user experience will be degraded.
+      </message>
+      <message desc="Message shown if the user has been idle for a long time, informing them that their session will be disconnected shortly." name="IDS_IDLE_TIMEOUT_WARNING">
+        Your <ph name="APPLICATION_NAME">$1<ex>SampleApp Streaming</ex></ph> session has been inactive for a while and will be disconnected shortly.
+      </message>
+      <message desc="Button to allow the user to indicate that they are still using the service" name="IDS_IDLE_CONTINUE">
+        Continue
+      </message>
+      <message desc="Button to allow the user to indicate that they are no longer using the service." name="IDS_IDLE_DISCONNECT">
+        Disconnect now
+      </message>
 
       <if expr="is_android or is_ios">
         <message desc="Button to show or hide the on-screen keyboard." name="IDS_SHOW_HIDE_KEYBOARD" formatter_data="android_java">
@@ -546,7 +610,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         <message name="IDS_PLAY_STORE_CHANGES" desc="List of what's changed in this release of Chrome Remote Desktop for Android. [CHAR-LIMIT=500] [NAME=play_store_changes]">
 • Fixes for Android Lollipop.
         </message>
-      </if>
+      </if>  <!-- is_android or is_ios -->
 
       <if expr="is_ios">
         <message desc="Initial screen's title, welcoming the user." name="IDS_WELCOME">
@@ -567,7 +631,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         <message desc="Menu item to select the Trackpad input mode. In this mode, the mouse cursor is visible and the screen acts as a laptop's trackpad." name ="IDS_SELECT_TRACKPAD_MODE">
           Trackpad mode
         </message>
-      </if>
+      </if> <!-- is_ios -->
 
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDS_ACCESS_CODE">
         Access code
@@ -899,6 +963,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message name="IDS_REMOTING_REMOTE_ASSISTANCE_HOST_DESCRIPTION" desc="The file description specified in the version information of remote_assistance_host.exe.">
         Native messaging host for remote assistance
       </message>
+      <message name="IDS_REMOTING_HOST_COMMAND_DESCRIPTION" desc="The file description specified in the version information of remoting_host_command.exe.">
+        Application to issue commands to Chrome remote desktop host.
+      </message>
       <message name="IDS_VERIFY_PIN_DIALOG_EMAIL_LABEL" desc="The message displayed by the PIN verification dialog.">
         Account
       </message>
@@ -919,6 +986,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       </message>
       <message name="IDS_HOST_STARTED" desc="The message reported to the EventLog by Chromoting Host every time it is started.">
         Host started for user: <ph name="HOST_USERNAME">%1<ex>host@email.com</ex></ph>.
+      </message>
+      <message name="IDS_HOST_STOPPED" desc="The message reported to the EventLog by Chromoting Host every time it is stopped.">
+        Host stopped.
       </message>
       <message desc="Link to allow a host's paired clients to be viewed or edited." name="IDS_HOME_DAEMON_MANAGE_PAIRINGS">
         View/edit
@@ -980,6 +1050,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Label for the button to decline sharing the computer in 'It2Me' mode." name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" >
         Cancel
       </message>
+
     </messages>
   </release>
 </grit>

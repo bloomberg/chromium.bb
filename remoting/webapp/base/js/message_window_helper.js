@@ -251,7 +251,7 @@ remoting.MessageWindow.showErrorMessage = function(title, message) {
   var options = /** @type {remoting.MessageWindowOptions} */ ({
     title: title,
     message: message,
-    buttonLabel: chrome.i18n.getMessage(/**i18n-content*/'OK'),
+    buttonLabel: chrome.i18n.getMessage(/*i18n-content*/'OK'),
     onResult: remoting.MessageWindow.quitApp
   });
   return new remoting.MessageWindow(options);
