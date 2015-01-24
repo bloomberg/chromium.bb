@@ -89,21 +89,13 @@ $(builddir)/en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(s
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-interfaces-to-docbook.xsl \
 		$(top_srcdir)/protocol/wayland.xml > $@
 
-# * we don't want wayland-{server|client}_8h.xml to avoid duplicating output methods,
-#   move it out of the way first.
 # * use doxygen's combine.xslt to merge the xml files into one single file
 # * pipe that through the doxygen-to-publican stylesheet
-# * move wayland-<foo>_8h.xml back to its original location
 $(builddir)/en-US/%API.xml: $(doxydir)/xml/%/index.xml $(srcdir)/doxygen-to-publican.xsl | $(builddir)/en-US
-	$(AM_V_at)$(MKDIR_P) $(doxydir)/xml/$*/saved
-	$(AM_V_at)mv $(doxydir)/xml/$*/wayland-*_8h.xml \
-		$(doxydir)/xml/$*/saved
 	$(AM_V_GEN)$(XSLTPROC) $(doxydir)/xml/$*/combine.xslt \
 		$(doxydir)/xml/$*/index.xml | \
 		$(XSLTPROC) --stringparam which $* \
 		$(srcdir)/doxygen-to-publican.xsl - > $@
-	$(AM_V_at)mv $(doxydir)/xml/$*/saved/* \
-		$(doxydir)/xml/$*
 
 # Copy the sources source files into en-US destination
 # This is required for out-of-source-tree build as publican does not allow us
