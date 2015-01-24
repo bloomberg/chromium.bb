@@ -217,7 +217,8 @@ def UpdateClang():
               '-DLLVM_ENABLE_ASSERTIONS=ON', LLVM_DIR])
   RunCommand(GetVSVersion().SetupScript('x86') + ['&&', 'ninja', 'compiler-rt'])
 
-  # TODO(hans): Make this (and the .gypi file) version number independent.
+  # TODO(hans): Make this (and the .gypi and .isolate file) version number
+  # independent.
   asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
                                      VERSION, 'lib', 'windows')
   asan_rt_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',

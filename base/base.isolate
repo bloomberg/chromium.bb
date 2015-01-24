@@ -23,9 +23,17 @@
         ],
       },
     }],
+    ['OS=="win" and asan==1', {
+      'variables': {
+        'files': [
+          '../third_party/llvm-build/Release+Asserts/lib/clang/3.7.0/lib/windows/clang_rt.asan_dynamic-i386.dll',
+        ],
+      },
+    }],
     ['OS=="linux" and asan==1', {
       'variables': {
         'files': [
+          # For llvm-symbolizer.
           '../third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6',
         ],
       },
