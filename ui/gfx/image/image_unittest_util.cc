@@ -21,6 +21,7 @@
 #include "skia/ext/skia_utils_ios.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
@@ -187,7 +188,8 @@ PlatformImage CreatePlatformImage() {
   base::mac::NSObjectRetain(image);
   return image;
 #elif defined(OS_MACOSX)
-  NSImage* image = gfx::SkBitmapToNSImage(bitmap);
+  NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
+      bitmap, base::mac::GetGenericRGBColorSpace());
   base::mac::NSObjectRetain(image);
   return image;
 #else
