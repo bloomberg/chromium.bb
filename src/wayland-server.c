@@ -1330,6 +1330,58 @@ wl_log_set_handler_server(wl_log_func_t handler)
 	wl_log_handler = handler;
 }
 
+/** Add support for a wl_shm pixel format
+ *
+ * \param display The display object
+ * \param format The wl_shm pixel format to advertise
+ * \return A pointer to the wl_shm format that was added to the list
+ * or NULL if adding it to the list failed.
+ *
+ * Add the specified wl_shm format to the list of formats the wl_shm
+ * object advertises when a client binds to it.  Adding a format to
+ * the list means that clients will know that the compositor supports
+ * this format and may use it for creating wl_shm buffers.  The
+ * compositor must be able to handle the pixel format when a client
+ * requests it.
+ *
+ * The compositor by default supports WL_SHM_FORMAT_ARGB8888 and
+ * WL_SHM_FORMAT_XRGB8888.
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT uint32_t *
+wl_display_add_shm_format(struct wl_display *display, uint32_t format)
+{
+	uint32_t *p = NULL;
+
+	p = wl_array_add(&display->additional_shm_formats, sizeof *p);
+
+	if (p != NULL)
+		*p = format;
+	return p;
+}
+
+/**
+ * Get list of additional wl_shm pixel formats
+ *
+ * \param display The display object
+ *
+ * This function returns the list of addition wl_shm pixel formats
+ * that the compositor supports.  WL_SHM_FORMAT_ARGB8888 and
+ * WL_SHM_FORMAT_XRGB8888 are always supported and not included in the
+ * array, but all formats added through wl_display_add_shm_format()
+ * will be in the array.
+ * 
+ * \sa wl_display_add_shm_format()
+ * 
+ * \memberof wl_display
+ */
+struct wl_array *
+wl_display_get_additional_shm_formats(struct wl_display *display)
+{
+	return &display->additional_shm_formats;
+}
+
 /** \cond */ /* Deprecated functions below. */
 
 uint32_t
@@ -1429,54 +1481,7 @@ wl_display_remove_global(struct wl_display *display, struct wl_global *global)
 
 /** \endcond */
 
-/** Add support for a wl_shm pixel format
- *
- * \param display The display object
- * \param format The wl_shm pixel format to advertise
- * \return A pointer to the wl_shm format that was added to the list
- * or NULL if adding it to the list failed.
- *
- * Add the specified wl_shm format to the list of formats the wl_shm
- * object advertises when a client binds to it.  Adding a format to
- * the list means that clients will know that the compositor supports
- * this format and may use it for creating wl_shm buffers.  The
- * compositor must be able to handle the pixel format when a client
- * requests it.
- *
- * The compositor by default supports WL_SHM_FORMAT_ARGB8888 and
- * WL_SHM_FORMAT_XRGB8888.
- *
- * \memberof wl_display
+/* Functions at the end of this file are deprecated.  Instead of adding new
+ * code here, add it before the comment above that states:
+ * Deprecated functions below.
  */
-WL_EXPORT uint32_t *
-wl_display_add_shm_format(struct wl_display *display, uint32_t format)
-{
-	uint32_t *p = NULL;
-
-	p = wl_array_add(&display->additional_shm_formats, sizeof *p);
-
-	if (p != NULL)
-		*p = format;
-	return p;
-}
-
-/**
- * Get list of additional wl_shm pixel formats
- *
- * \param display The display object
- *
- * This function returns the list of addition wl_shm pixel formats
- * that the compositor supports.  WL_SHM_FORMAT_ARGB8888 and
- * WL_SHM_FORMAT_XRGB8888 are always supported and not included in the
- * array, but all formats added through wl_display_add_shm_format()
- * will be in the array.
- * 
- * \sa wl_display_add_shm_format()
- * 
- * \memberof wl_display
- */
-struct wl_array *
-wl_display_get_additional_shm_formats(struct wl_display *display)
-{
-	return &display->additional_shm_formats;
-}
