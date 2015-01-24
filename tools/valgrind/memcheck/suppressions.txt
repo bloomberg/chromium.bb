@@ -1767,17 +1767,6 @@
    fun:_ZN4base5files12_GLOBAL__N_121InotifyReaderCallbackEPNS1_13InotifyReaderEii
 }
 {
-   bug_146464
-   Memcheck:Leak
-   fun:realloc
-   fun:add_codeset.isra.10
-   ...
-   fun:XCreatePixmap
-   fun:XCreateBitmapFromData
-   ...
-   fun:_ZN4aura19RootWindowHostLinuxC1EPNS_22RootWindowHostDelegateERKN3gfx4RectE
-}
-{
    bug_146950
    Memcheck:Leak
    fun:malloc
