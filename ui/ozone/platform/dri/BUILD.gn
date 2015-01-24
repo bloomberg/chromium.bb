@@ -83,6 +83,7 @@ source_set("dri_common") {
     "//ipc",
     "//ui/base",
     "//ui/display/types",
+    "//ui/display/util",
     "//ui/events",
     "//ui/events/ozone:events_ozone_evdev",
     "//ui/events/ozone:events_ozone_layout",
