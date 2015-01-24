@@ -87,9 +87,9 @@
     <term><xsl:value-of select="@name"/></term>
     <listitem>
       <simpara>
-        (<xsl:value-of select="@value"/>)
+        <xsl:value-of select="@value"/>
         <xsl:if test="@summary" >
-          <xsl:value-of select="@summary"/>
+          - <xsl:value-of select="@summary"/>
         </xsl:if>
       </simpara>
     </listitem>
@@ -104,7 +104,7 @@
         <simpara>
           <xsl:value-of select="@type"/>
           <xsl:if test="@summary" >
-            <xsl:text> </xsl:text><xsl:value-of select="@summary"/>
+            - <xsl:value-of select="@summary"/>
           </xsl:if>
         </simpara>
     </listitem>
@@ -121,7 +121,7 @@
             <xsl:value-of select="@interface"/>
           </link>
           <xsl:if test="@summary" >
-            <xsl:text> </xsl:text><xsl:value-of select="@summary"/>
+            - <xsl:value-of select="@summary"/>
           </xsl:if>
         </simpara>
     </listitem>
@@ -139,7 +139,7 @@
             <xsl:value-of select="@interface"/>
           </link>
           <xsl:if test="@summary" >
-            <xsl:text> </xsl:text><xsl:value-of select="@summary"/>
+            - <xsl:value-of select="@summary"/>
           </xsl:if>
         </simpara>
     </listitem>
