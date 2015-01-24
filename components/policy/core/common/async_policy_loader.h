@@ -34,7 +34,7 @@ class PolicyBundle;
 class POLICY_EXPORT AsyncPolicyLoader {
  public:
   explicit AsyncPolicyLoader(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~AsyncPolicyLoader();
 
   // Gets a SequencedTaskRunner backed by the background thread.

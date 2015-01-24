@@ -9,6 +9,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../components/components.gyp:policy_component_test_support',
         '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -26,8 +27,6 @@
         'host/fake_host_status_monitor.h',
         'host/fake_mouse_cursor_monitor.cc',
         'host/fake_mouse_cursor_monitor.h',
-        'host/policy_hack/fake_policy_watcher.cc',
-        'host/policy_hack/fake_policy_watcher.h',
         'host/policy_hack/mock_policy_callback.cc',
         'host/policy_hack/mock_policy_callback.h',
         'protocol/fake_authenticator.cc',

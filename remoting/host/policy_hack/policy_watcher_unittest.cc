@@ -4,13 +4,15 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/policy/core/common/fake_async_policy_loader.h"
 #include "policy/policy_constants.h"
 #include "remoting/host/dns_blackhole_checker.h"
-#include "remoting/host/policy_hack/fake_policy_watcher.h"
 #include "remoting/host/policy_hack/mock_policy_callback.h"
+#include "remoting/host/policy_hack/policy_service_watcher.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +32,12 @@ class PolicyWatcherTest : public testing::Test {
     policy_error_callback_ = base::Bind(
         &MockPolicyCallback::OnPolicyError,
         base::Unretained(&mock_policy_callback_));
-    policy_watcher_.reset(new FakePolicyWatcher(message_loop_proxy_));
+
+    // Retaining a raw pointer to keep control over policy contents.
+    policy_loader_ = new policy::FakeAsyncPolicyLoader(message_loop_proxy_);
+    policy_watcher_ = PolicyServiceWatcher::CreateFromPolicyLoader(
+        message_loop_proxy_, make_scoped_ptr(policy_loader_));
+
     nat_true_.SetBoolean(policy::key::kRemoteAccessHostFirewallTraversal, true);
     nat_false_.SetBoolean(policy::key::kRemoteAccessHostFirewallTraversal,
                           false);
@@ -108,6 +115,12 @@ class PolicyWatcherTest : public testing::Test {
 #endif
   }
 
+  void TearDown() override {
+    policy_watcher_.reset();
+    policy_loader_ = nullptr;
+    base::RunLoop().RunUntilIdle();
+  }
+
  protected:
   void StartWatching() {
     policy_watcher_->StartWatching(
@@ -123,6 +136,25 @@ class PolicyWatcherTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetPolicies(const base::DictionaryValue& dict) {
+    // Copy |dict| into |policy_bundle|.
+    policy::PolicyNamespace policy_namespace =
+        policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
+    policy::PolicyBundle policy_bundle;
+    policy::PolicyMap& policy_map = policy_bundle.Get(policy_namespace);
+    policy_map.LoadFrom(&dict, policy::POLICY_LEVEL_MANDATORY,
+                        policy::POLICY_SCOPE_MACHINE);
+
+    // Simulate a policy file/registry/preference update.
+    policy_loader_->SetPolicies(policy_bundle);
+    policy_loader_->PostReloadOnBackgroundThread(true /* force reload asap */);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SignalTransientErrorForTest() {
+    policy_watcher_->SignalTransientPolicyError();
+  }
+
   MOCK_METHOD0(PostPolicyWatcherShutdown, void());
 
   static const char* kHostDomain;
@@ -132,7 +164,13 @@ class PolicyWatcherTest : public testing::Test {
   MockPolicyCallback mock_policy_callback_;
   PolicyWatcher::PolicyUpdatedCallback policy_updated_callback_;
   PolicyWatcher::PolicyErrorCallback policy_error_callback_;
-  scoped_ptr<FakePolicyWatcher> policy_watcher_;
+
+  // |policy_loader_| is owned by |policy_watcher_|. PolicyWatcherTest retains
+  // a raw pointer to |policy_loader_| in order to control the simulated / faked
+  // policy contents.
+  policy::FakeAsyncPolicyLoader* policy_loader_;
+  scoped_ptr<PolicyWatcher> policy_watcher_;
+
   base::DictionaryValue empty_;
   base::DictionaryValue nat_true_;
   base::DictionaryValue nat_false_;
@@ -189,15 +227,29 @@ const char* PolicyWatcherTest::kHostDomain = "google.com";
 const char* PolicyWatcherTest::kPortRange = "12400-12409";
 
 MATCHER_P(IsPolicies, dict, "") {
-  return arg->Equals(dict);
+  bool equal = arg->Equals(dict);
+  if (!equal) {
+    std::string actual_value;
+    base::JSONWriter::WriteWithOptions(
+        arg, base::JSONWriter::OPTIONS_PRETTY_PRINT, &actual_value);
+
+    std::string expected_value;
+    base::JSONWriter::WriteWithOptions(
+        dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &expected_value);
+
+    *result_listener << "Policies are not equal. ";
+    *result_listener << "Expected policy: " << expected_value << ". ";
+    *result_listener << "Actual policy: " << actual_value << ".";
+  }
+  return equal;
 }
 
 TEST_F(PolicyWatcherTest, None) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
   StopWatching();
 }
 
@@ -205,8 +257,8 @@ TEST_F(PolicyWatcherTest, NatTrue) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
 
+  SetPolicies(nat_true_);
   StartWatching();
-  policy_watcher_->SetPolicies(&nat_true_);
   StopWatching();
 }
 
@@ -214,8 +266,8 @@ TEST_F(PolicyWatcherTest, NatFalse) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_false_others_default_)));
 
+  SetPolicies(nat_false_);
   StartWatching();
-  policy_watcher_->SetPolicies(&nat_false_);
   StopWatching();
 }
 
@@ -223,8 +275,8 @@ TEST_F(PolicyWatcherTest, NatOne) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_false_others_default_)));
 
+  SetPolicies(nat_one_);
   StartWatching();
-  policy_watcher_->SetPolicies(&nat_one_);
   StopWatching();
 }
 
@@ -232,8 +284,8 @@ TEST_F(PolicyWatcherTest, DomainEmpty) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&domain_empty_others_default_)));
 
+  SetPolicies(domain_empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&domain_empty_);
   StopWatching();
 }
 
@@ -241,8 +293,8 @@ TEST_F(PolicyWatcherTest, DomainFull) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&domain_full_others_default_)));
 
+  SetPolicies(domain_full_);
   StartWatching();
-  policy_watcher_->SetPolicies(&domain_full_);
   StopWatching();
 }
 
@@ -250,9 +302,9 @@ TEST_F(PolicyWatcherTest, NatNoneThenTrue) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
-  policy_watcher_->SetPolicies(&nat_true_);
+  SetPolicies(nat_true_);
   StopWatching();
 }
 
@@ -260,10 +312,10 @@ TEST_F(PolicyWatcherTest, NatNoneThenTrueThenTrue) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
-  policy_watcher_->SetPolicies(&nat_true_);
-  policy_watcher_->SetPolicies(&nat_true_);
+  SetPolicies(nat_true_);
+  SetPolicies(nat_true_);
   StopWatching();
 }
 
@@ -274,11 +326,11 @@ TEST_F(PolicyWatcherTest, NatNoneThenTrueThenTrueThenFalse) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_false_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
-  policy_watcher_->SetPolicies(&nat_true_);
-  policy_watcher_->SetPolicies(&nat_true_);
-  policy_watcher_->SetPolicies(&nat_false_);
+  SetPolicies(nat_true_);
+  SetPolicies(nat_true_);
+  SetPolicies(nat_false_);
   StopWatching();
 }
 
@@ -289,9 +341,9 @@ TEST_F(PolicyWatcherTest, NatNoneThenFalse) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_false_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
-  policy_watcher_->SetPolicies(&nat_false_);
+  SetPolicies(nat_false_);
   StopWatching();
 }
 
@@ -304,10 +356,10 @@ TEST_F(PolicyWatcherTest, NatNoneThenFalseThenTrue) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_true_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
-  policy_watcher_->SetPolicies(&nat_false_);
-  policy_watcher_->SetPolicies(&nat_true_);
+  SetPolicies(nat_false_);
+  SetPolicies(nat_true_);
   StopWatching();
 }
 
@@ -325,12 +377,12 @@ TEST_F(PolicyWatcherTest, ChangeOneRepeatedlyThenTwo) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_true_domain_full_)));
 
+  SetPolicies(nat_true_domain_empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&nat_true_domain_empty_);
-  policy_watcher_->SetPolicies(&nat_true_domain_full_);
-  policy_watcher_->SetPolicies(&nat_false_domain_full_);
-  policy_watcher_->SetPolicies(&nat_false_domain_empty_);
-  policy_watcher_->SetPolicies(&nat_true_domain_full_);
+  SetPolicies(nat_true_domain_full_);
+  SetPolicies(nat_false_domain_full_);
+  SetPolicies(nat_false_domain_empty_);
+  SetPolicies(nat_true_domain_full_);
   StopWatching();
 }
 
@@ -339,24 +391,25 @@ TEST_F(PolicyWatcherTest, FilterUnknownPolicies) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
-  policy_watcher_->SetPolicies(&unknown_policies_);
-  policy_watcher_->SetPolicies(&empty_);
+  SetPolicies(unknown_policies_);
+  SetPolicies(empty_);
   StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, DebugOverrideNatPolicy) {
 #if !defined(NDEBUG)
-  EXPECT_CALL(mock_policy_callback_,
+  EXPECT_CALL(
+      mock_policy_callback_,
       OnPolicyUpdatePtr(IsPolicies(&nat_false_overridden_others_default_)));
 #else
   EXPECT_CALL(mock_policy_callback_,
-      OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
 #endif
 
+  SetPolicies(nat_true_and_overridden_);
   StartWatching();
-  policy_watcher_->SetPolicies(&nat_true_and_overridden_);
   StopWatching();
 }
 
@@ -369,10 +422,10 @@ TEST_F(PolicyWatcherTest, PairingFalseThenTrue) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&pairing_true_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
-  policy_watcher_->SetPolicies(&pairing_false_);
-  policy_watcher_->SetPolicies(&pairing_true_);
+  SetPolicies(pairing_false_);
+  SetPolicies(pairing_true_);
   StopWatching();
 }
 
@@ -385,10 +438,10 @@ TEST_F(PolicyWatcherTest, GnubbyAuth) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&gnubby_auth_true_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
-  policy_watcher_->SetPolicies(&gnubby_auth_false_);
-  policy_watcher_->SetPolicies(&gnubby_auth_true_);
+  SetPolicies(gnubby_auth_false_);
+  SetPolicies(gnubby_auth_true_);
   StopWatching();
 }
 
@@ -401,10 +454,10 @@ TEST_F(PolicyWatcherTest, Relay) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&relay_true_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
-  policy_watcher_->SetPolicies(&relay_false_);
-  policy_watcher_->SetPolicies(&relay_true_);
+  SetPolicies(relay_false_);
+  SetPolicies(relay_true_);
   StopWatching();
 }
 
@@ -417,10 +470,10 @@ TEST_F(PolicyWatcherTest, UdpPortRange) {
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&port_range_empty_)));
 
+  SetPolicies(empty_);
   StartWatching();
-  policy_watcher_->SetPolicies(&empty_);
-  policy_watcher_->SetPolicies(&port_range_full_);
-  policy_watcher_->SetPolicies(&port_range_empty_);
+  SetPolicies(port_range_full_);
+  SetPolicies(port_range_empty_);
   StopWatching();
 }
 
@@ -430,7 +483,7 @@ TEST_F(PolicyWatcherTest, SingleTransientErrorDoesntTriggerErrorCallback) {
   EXPECT_CALL(mock_policy_callback_, OnPolicyErrorPtr()).Times(0);
 
   StartWatching();
-  policy_watcher_->SignalTransientErrorForTest();
+  SignalTransientErrorForTest();
   StopWatching();
 }
 
@@ -439,24 +492,23 @@ TEST_F(PolicyWatcherTest, MultipleTransientErrorsTriggerErrorCallback) {
 
   StartWatching();
   for (int i = 0; i < kMaxTransientErrorRetries; i++) {
-    policy_watcher_->SignalTransientErrorForTest();
+    SignalTransientErrorForTest();
   }
   StopWatching();
 }
 
 TEST_F(PolicyWatcherTest, PolicyUpdateResetsTransientErrorsCounter) {
   testing::InSequence s;
-  EXPECT_CALL(mock_policy_callback_,
-              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+  EXPECT_CALL(mock_policy_callback_, OnPolicyUpdatePtr(testing::_));
   EXPECT_CALL(mock_policy_callback_, OnPolicyErrorPtr()).Times(0);
 
   StartWatching();
   for (int i = 0; i < (kMaxTransientErrorRetries - 1); i++) {
-    policy_watcher_->SignalTransientErrorForTest();
+    SignalTransientErrorForTest();
   }
-  policy_watcher_->SetPolicies(&nat_true_);
+  SetPolicies(nat_true_);
   for (int i = 0; i < (kMaxTransientErrorRetries - 1); i++) {
-    policy_watcher_->SignalTransientErrorForTest();
+    SignalTransientErrorForTest();
   }
   StopWatching();
 }
@@ -529,9 +581,6 @@ TEST_F(PolicyWatcherTest, TestRealChromotingPolicy) {
 }
 
 #endif
-
-// TODO(lukasza): We should consider adding a test against a
-// MockConfigurationPolicyProvider.
 
 }  // namespace policy_hack
 }  // namespace remoting

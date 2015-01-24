@@ -188,6 +188,8 @@ if (enable_configuration_policy) {
       "core/common/cloud/policy_builder.h",
       "core/common/configuration_policy_provider_test.cc",
       "core/common/configuration_policy_provider_test.h",
+      "core/common/fake_async_policy_loader.cc",
+      "core/common/fake_async_policy_loader.h",
       "core/common/mock_configuration_policy_provider.cc",
       "core/common/mock_configuration_policy_provider.h",
       "core/common/mock_policy_service.cc",

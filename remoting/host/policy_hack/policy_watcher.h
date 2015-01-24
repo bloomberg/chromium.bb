@@ -114,6 +114,8 @@ class PolicyWatcher {
   // The counter is reset whenever policy has been successfully read.
   void SignalTransientPolicyError();
 
+  friend class PolicyWatcherTest;
+
   // Returns a DictionaryValue containing the default values for each policy.
   const base::DictionaryValue& Defaults() const;
 
