@@ -308,4 +308,9 @@ void WebRuntimeFeatures::enableReducedReferrerGranularity(bool enable)
     RuntimeEnabledFeatures::setReducedReferrerGranularityEnabled(enable);
 }
 
+void WebRuntimeFeatures::enablePushMessagingData(bool enable)
+{
+    RuntimeEnabledFeatures::setPushMessagingDataEnabled(enable);
+}
+
 } // namespace blink

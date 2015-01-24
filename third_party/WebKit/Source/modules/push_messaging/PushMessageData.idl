@@ -10,7 +10,7 @@ typedef object JSON;
     Constructor(USVString message),
     Exposed=ServiceWorker,
     GarbageCollected,
-    RuntimeEnabled=PushMessaging,
+    RuntimeEnabled=PushMessagingData,
 ] interface PushMessageData {
     ArrayBuffer arrayBuffer();
     Blob blob();

@@ -146,6 +146,8 @@ public:
 
     BLINK_EXPORT static void enableReducedReferrerGranularity(bool);
 
+    BLINK_EXPORT static void enablePushMessagingData(bool);
+
 private:
     WebRuntimeFeatures();
 };
