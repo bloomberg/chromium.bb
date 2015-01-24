@@ -33,16 +33,16 @@ test(function() {
     }, 'TypeError: Failed to construct \'URL\': 1 argument required, but only 0 present.');
     assertThrows(function() {
         new URL('abc');
-    }, 'SyntaxError: Failed to construct \'URL\': Invalid URL');
+    }, 'TypeError: Failed to construct \'URL\': Invalid URL');
     assertThrows(function() {
         new URL('//abc');
-    }, 'SyntaxError: Failed to construct \'URL\': Invalid URL');
+    }, 'TypeError: Failed to construct \'URL\': Invalid URL');
     assertThrows(function() {
         new URL('http:///www.domain.com/', 'abc');
-    }, 'SyntaxError: Failed to construct \'URL\': Invalid base URL');
+    }, 'TypeError: Failed to construct \'URL\': Invalid base URL');
     assertThrows(function() {
         new URL('http:///www.domain.com/', null);
-    }, 'SyntaxError: Failed to construct \'URL\': Invalid base URL');
+    }, 'TypeError: Failed to construct \'URL\': Invalid base URL');
 }, 'Invalid URL parameters');
 
 </script>

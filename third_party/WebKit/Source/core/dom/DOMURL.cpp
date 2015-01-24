@@ -43,11 +43,11 @@ namespace blink {
 DOMURL::DOMURL(const String& url, const KURL& base, ExceptionState& exceptionState)
 {
     if (!base.isValid())
-        exceptionState.throwDOMException(SyntaxError, "Invalid base URL");
+        exceptionState.throwTypeError("Invalid base URL");
 
     m_url = KURL(base, url);
     if (!m_url.isValid())
-        exceptionState.throwDOMException(SyntaxError, "Invalid URL");
+        exceptionState.throwTypeError("Invalid URL");
 }
 
 void DOMURL::setInput(const String& value)
