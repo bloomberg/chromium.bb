@@ -95,7 +95,9 @@ const char kSRTPromptOnGroup[] = "On";
 
 // Exit codes that identify that a cleanup is needed.
 const int kCleanupNeeded = 0;
+const int kNothingFound = 2;
 const int kPostRebootCleanupNeeded = 4;
+const int kDelayedPostRebootCleanupNeeded = 15;
 
 void ReportUmaStep(SwReporterUmaValue value) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Step", value, SW_REPORTER_MAX);
@@ -115,14 +117,14 @@ void ReportVersionWithUma(const base::Version& version) {
   // The major version for X.Y.Z is X*256^3+Y*256+Z. If there are additional
   // components, only the first three count, and if there are less than 3, the
   // missing values are just replaced by zero. So 1 is equivalent 1.0.0.
-  DCHECK(version.components()[0] < 0x100);
+  DCHECK_LT(version.components()[0], 0x100);
   uint32_t major_version = 0x1000000 * version.components()[0];
   if (version.components().size() >= 2) {
-    DCHECK(version.components()[1] < 0x10000);
+    DCHECK_LT(version.components()[1], 0x10000);
     major_version += 0x100 * version.components()[1];
   }
   if (version.components().size() >= 3) {
-    DCHECK(version.components()[2] < 0x100);
+    DCHECK_LT(version.components()[2], 0x100);
     major_version += version.components()[2];
   }
   UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MajorVersion", major_version);
@@ -353,12 +355,13 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
       cleaner_key.DeleteValue(kVersionRegistryValueName);
     }
     // Get start & end time. If we don't have an end time, we can assume the
-    // cleaner has crashed.
+    // cleaner has not completed.
+    int64 start_time_value;
+    cleaner_key.ReadInt64(kStartTimeRegistryValueName, &start_time_value);
+
     bool completed = cleaner_key.HasValue(kEndTimeRegistryValueName);
     UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.Cleaner.HasCompleted", completed);
     if (completed) {
-      int64 start_time_value;
-      cleaner_key.ReadInt64(kStartTimeRegistryValueName, &start_time_value);
       int64 end_time_value;
       cleaner_key.ReadInt64(kEndTimeRegistryValueName, &end_time_value);
       cleaner_key.DeleteValue(kEndTimeRegistryValueName);
@@ -367,15 +370,26 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
       UMA_HISTOGRAM_LONG_TIMES("SoftwareReporter.Cleaner.RunningTime",
           run_time);
     }
-    // Get exit code.
+    // Get exit code. Assume nothing was found if we can't read the exit code.
+    DWORD exit_code = kNothingFound;
     if (cleaner_key.HasValue(kExitCodeRegistryValueName)) {
-      DWORD exit_code;
       cleaner_key.ReadValueDW(kExitCodeRegistryValueName, &exit_code);
       UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.ExitCode",
           exit_code);
       cleaner_key.DeleteValue(kExitCodeRegistryValueName);
     }
     cleaner_key.DeleteValue(kStartTimeRegistryValueName);
+
+    if (exit_code == kPostRebootCleanupNeeded ||
+        exit_code == kDelayedPostRebootCleanupNeeded) {
+      // Check if we are running after the user has rebooted.
+      base::TimeDelta elapsed(base::Time::Now() -
+                              base::Time::FromInternalValue(start_time_value));
+      DCHECK_GT(elapsed.InMilliseconds(), 0);
+      UMA_HISTOGRAM_BOOLEAN(
+          "SoftwareReporter.Cleaner.HasRebooted",
+          static_cast<uint64>(elapsed.InMilliseconds()) > ::GetTickCount());
+    }
   }
 
   // Install the component.
