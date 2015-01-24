@@ -12,6 +12,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -25,8 +26,14 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderView);
 
     // This avoids painting garbage between columns if there is a column gap.
-    if (m_renderView.frameView() && m_renderView.style()->isOverflowPaged())
-        paintInfo.context->fillRect(paintInfo.rect, m_renderView.frameView()->baseBackgroundColor());
+    if (m_renderView.frameView() && m_renderView.style()->isOverflowPaged()) {
+        LayoutRect paintRect = paintInfo.rect;
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+            paintRect = m_renderView.viewRect();
+
+        DrawingRecorder recorder(paintInfo.context, m_renderView.displayItemClient(), DisplayItem::ViewBackground, paintRect);
+        paintInfo.context->fillRect(paintRect, m_renderView.frameView()->baseBackgroundColor());
+    }
 
     m_renderView.paintObject(paintInfo, paintOffset);
     BlockPainter(m_renderView).paintOverflowControlsIfNeeded(paintInfo, paintOffset);

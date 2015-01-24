@@ -76,6 +76,7 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case LinkHighlight: return "LinkHighlight";
     case PageWidgetDelegateClip: return "PageWidgetDelegateClip";
     case PageWidgetDelegateBackgroundFallback: return "PageWidgetDelegateBackgroundFallback";
+    case ViewBackground: return "ViewBackground";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";
