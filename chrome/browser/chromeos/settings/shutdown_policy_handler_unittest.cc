@@ -111,7 +111,7 @@ TEST_F(ShutdownPolicyHandlerTest, CheckIfRebootOnShutdown) {
                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(true, reboot_on_shutdown_);
+  EXPECT_TRUE(reboot_on_shutdown_);
   // Forbid shutdown.
   SetRebootOnShutdown(false);
   callback_called_ = false;
@@ -120,7 +120,7 @@ TEST_F(ShutdownPolicyHandlerTest, CheckIfRebootOnShutdown) {
                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(false, reboot_on_shutdown_);
+  EXPECT_FALSE(reboot_on_shutdown_);
 }
 
 }  // namespace chromeos
