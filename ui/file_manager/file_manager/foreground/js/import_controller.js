@@ -59,7 +59,12 @@ importer.ImportController =
    */
   this.cachedScans_ = {};
 
-  this.scanner_.addObserver(this.onScanEvent_.bind(this));
+  var listener = this.onScanEvent_.bind(this);
+  this.scanner_.addObserver(listener);
+  // Remove the observer when the foreground window is closed.
+  window.addEventListener('pagehide', function() {
+    this.scanner_.removeObserver(listener);
+  }.bind(this));
   this.environment_.addVolumeUnmountListener(
       this.onVolumeUnmounted_.bind(this));
 };
