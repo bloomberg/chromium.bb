@@ -61,6 +61,7 @@
         'layer_tree_owner.cc',
         'layer_tree_owner.h',
         'layer_type.h',
+        'reflector.cc',
         'reflector.h',
         'scoped_animation_duration_scale_mode.cc',
         'scoped_animation_duration_scale_mode.h',
