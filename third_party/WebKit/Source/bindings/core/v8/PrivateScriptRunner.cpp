@@ -75,17 +75,25 @@ static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, St
     return result;
 }
 
+// Private scripts can use privateScriptController.import(bundledResource, compileAndRunScript) to import dependent resources.
+// |bundledResource| is a string resource name.
+// |compileAndRunScript| optional boolean representing if the javascript should be executed. Default: true.
 void importFunction(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     v8::Isolate* isolate = args.GetIsolate();
-    RELEASE_ASSERT(isolate && (args.Length() == 1));
+    RELEASE_ASSERT(isolate && (args.Length() >= 1));
     String resourceFileName = toCoreString(args[0]->ToString());
     String resourceData = loadResourceAsASCIIString(resourceFileName.utf8().data());
     RELEASE_ASSERT(resourceData.length());
-    if (resourceFileName.endsWith(".js"))
+    bool compileAndRunScript = true;
+    if (args.Length() == 2) {
+        RELEASE_ASSERT(args[1]->IsBoolean());
+        compileAndRunScript = args[1]->ToBoolean()->Value();
+    }
+
+    if (resourceFileName.endsWith(".js") && compileAndRunScript)
         compileAndRunPrivateScript(isolate, resourceFileName.replace(".js", ""), resourceData.utf8().data(), resourceData.length());
-    else if (resourceFileName.endsWith(".css"))
-        args.GetReturnValue().Set(v8String(isolate, resourceData));
+    args.GetReturnValue().Set(v8String(isolate, resourceData));
 }
 
 // FIXME: If we have X.js, XPartial-1.js and XPartial-2.js, currently all of the JS files
