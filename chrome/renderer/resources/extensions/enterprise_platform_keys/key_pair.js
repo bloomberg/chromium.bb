@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 var utils = require('utils');
-var intersect = require('enterprise.platformKeys.utils').intersect;
-var keyModule = require('enterprise.platformKeys.Key');
+var intersect = require('platformKeys.utils').intersect;
+var keyModule = require('platformKeys.Key');
 var Key = keyModule.Key;
 var KeyType = keyModule.KeyType;
 var KeyUsage = keyModule.KeyUsage;

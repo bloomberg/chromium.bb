@@ -4,14 +4,15 @@
 
 var utils = require('utils');
 var internalAPI = require('enterprise.platformKeys.internalAPI');
-var intersect = require('enterprise.platformKeys.utils').intersect;
+var intersect = require('platformKeys.utils').intersect;
+var subtleCryptoModule = require('platformKeys.SubtleCrypto');
+var SubtleCrypto = subtleCryptoModule.SubtleCrypto;
+var SubtleCryptoImpl = subtleCryptoModule.SubtleCryptoImpl;
 var KeyPair = require('enterprise.platformKeys.KeyPair').KeyPair;
-var keyModule = require('enterprise.platformKeys.Key');
-var getSpki = keyModule.getSpki;
-var KeyUsage = keyModule.KeyUsage;
+var KeyUsage = require('platformKeys.Key').KeyUsage;
 
 var normalizeAlgorithm =
-    requireNative('enterprise_platform_keys_natives').NormalizeAlgorithm;
+    requireNative('platform_keys_natives').NormalizeAlgorithm;
 
 // This error is thrown by the internal and public API's token functions and
 // must be rethrown by this custom binding. Keep this in sync with the C++ part
@@ -72,14 +73,18 @@ function equalsStandardPublicExponent(array) {
 
 /**
  * Implementation of WebCrypto.SubtleCrypto used in enterprise.platformKeys.
+ * Derived from platformKeys.SubtleCrypto.
  * @param {string} tokenId The id of the backing Token.
  * @constructor
  */
-var SubtleCryptoImpl = function(tokenId) {
-  this.tokenId = tokenId;
+var EnterpriseSubtleCryptoImpl = function(tokenId) {
+  SubtleCryptoImpl.call(this, tokenId);
 };
 
-SubtleCryptoImpl.prototype.generateKey =
+EnterpriseSubtleCryptoImpl.prototype =
+    Object.create(SubtleCryptoImpl.prototype);
+
+EnterpriseSubtleCryptoImpl.prototype.generateKey =
     function(algorithm, extractable, keyUsages) {
   var subtleCrypto = this;
   return new Promise(function(resolve, reject) {
@@ -128,58 +133,11 @@ SubtleCryptoImpl.prototype.generateKey =
   });
 };
 
-SubtleCryptoImpl.prototype.sign = function(algorithm, key, dataView) {
-  var subtleCrypto = this;
-  return new Promise(function(resolve, reject) {
-    if (key.type != 'private' || key.usages.indexOf(KeyUsage.sign) == -1)
-      throw CreateInvalidAccessError();
-
-    var normalizedAlgorithmParameters =
-        normalizeAlgorithm(algorithm, 'Sign');
-    if (!normalizedAlgorithmParameters) {
-      // TODO(pneubeck): It's not clear from the WebCrypto spec which error to
-      // throw here.
-      throw CreateSyntaxError();
-    }
-
-    // Create an ArrayBuffer that equals the dataView. Note that dataView.buffer
-    // might contain more data than dataView.
-    var data = dataView.buffer.slice(dataView.byteOffset,
-                                     dataView.byteOffset + dataView.byteLength);
-    internalAPI.sign(subtleCrypto.tokenId,
-                     getSpki(key),
-                     key.algorithm.hash.name,
-                     data,
-                     function(signature) {
-      if (catchInvalidTokenError(reject))
-        return;
-      if (chrome.runtime.lastError) {
-        reject(CreateOperationError());
-        return;
-      }
-      resolve(signature);
-    });
-  });
-};
-
-SubtleCryptoImpl.prototype.exportKey = function(format, key) {
-  return new Promise(function(resolve, reject) {
-    if (format == 'pkcs8') {
-      // Either key.type is not 'private' or the key is not extractable. In both
-      // cases the error is the same.
-      throw CreateInvalidAccessError();
-    } else if (format == 'spki') {
-      if (key.type != 'public')
-        throw CreateInvalidAccessError();
-      resolve(getSpki(key));
-    } else {
-      // TODO(pneubeck): It should be possible to export to format 'jwk'.
-      throw CreateNotSupportedError();
-    }
-  });
-};
-
 exports.SubtleCrypto =
     utils.expose('SubtleCrypto',
-                 SubtleCryptoImpl,
-                 {functions:['generateKey', 'sign', 'exportKey']});
+                 EnterpriseSubtleCryptoImpl,
+                 {
+                   superclass: SubtleCrypto,
+                   functions: ['generateKey']
+                   // ['sign', 'exportKey'] are exposed by the base class
+                 });

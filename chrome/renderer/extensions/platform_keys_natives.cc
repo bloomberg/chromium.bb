@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/enterprise_platform_keys_natives.h"
+#include "chrome/renderer/extensions/platform_keys_natives.h"
 
 #include <string>
 
@@ -73,15 +73,14 @@ scoped_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
 
 }  // namespace
 
-EnterprisePlatformKeysNatives::EnterprisePlatformKeysNatives(
-    ScriptContext* context)
+PlatformKeysNatives::PlatformKeysNatives(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
   RouteFunction("NormalizeAlgorithm",
-                base::Bind(&EnterprisePlatformKeysNatives::NormalizeAlgorithm,
+                base::Bind(&PlatformKeysNatives::NormalizeAlgorithm,
                            base::Unretained(this)));
 }
 
-void EnterprisePlatformKeysNatives::NormalizeAlgorithm(
+void PlatformKeysNatives::NormalizeAlgorithm(
     const v8::FunctionCallbackInfo<v8::Value>& call_info) {
   DCHECK_EQ(call_info.Length(), 2);
   DCHECK(call_info[0]->IsObject());

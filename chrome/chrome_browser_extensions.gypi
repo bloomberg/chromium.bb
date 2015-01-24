@@ -26,6 +26,8 @@
       'browser/extensions/api/messaging/native_message_host_chromeos.cc',
       'browser/extensions/api/networking_private/crypto_verify_impl.cc',
       'browser/extensions/api/networking_private/crypto_verify_impl.h',
+      'browser/extensions/api/platform_keys/platform_keys_api.cc',
+      'browser/extensions/api/platform_keys/platform_keys_api.h',
       'browser/extensions/api/terminal/terminal_extension_helper.cc',
       'browser/extensions/api/terminal/terminal_extension_helper.h',
       'browser/extensions/api/terminal/terminal_private_api.cc',

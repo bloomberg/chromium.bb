@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
+#include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys_internal.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,39 +25,10 @@ namespace api_epki = api::enterprise_platform_keys_internal;
 
 // This error will occur if a token is removed and will be exposed to the
 // extension. Keep this in sync with the custom binding in Javascript.
-const char kErrorInvalidToken[] = "The token is not valid.";
-
 const char kErrorInternal[] = "Internal Error.";
-const char kErrorAlgorithmNotSupported[] = "Algorithm not supported.";
+
 const char kErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
-const char kTokenIdUser[] = "user";
-const char kTokenIdSystem[] = "system";
-
-// Returns whether |token_id| references a known Token.
-bool ValidateToken(const std::string& token_id,
-                   std::string* platform_keys_token_id) {
-  platform_keys_token_id->clear();
-  if (token_id == kTokenIdUser) {
-    *platform_keys_token_id = chromeos::platform_keys::kTokenIdUser;
-    return true;
-  }
-  if (token_id == kTokenIdSystem) {
-    *platform_keys_token_id = chromeos::platform_keys::kTokenIdSystem;
-    return true;
-  }
-  return false;
-}
-
-std::string PlatformKeysTokenIdToApiId(
-    const std::string& platform_keys_token_id) {
-  if (platform_keys_token_id == chromeos::platform_keys::kTokenIdUser)
-    return kTokenIdUser;
-  if (platform_keys_token_id == chromeos::platform_keys::kTokenIdSystem)
-    return kTokenIdSystem;
-
-  return std::string();
-}
 
 }  // namespace
 
@@ -71,8 +43,8 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
   // TODO(pneubeck): Add support for unsigned integers to IDL.
   EXTENSION_FUNCTION_VALIDATE(params && params->modulus_length >= 0);
   std::string platform_keys_token_id;
-  if (!ValidateToken(params->token_id, &platform_keys_token_id))
-    return RespondNow(Error(kErrorInvalidToken));
+  if (!platform_keys::ValidateToken(params->token_id, &platform_keys_token_id))
+    return RespondNow(Error(platform_keys::kErrorInvalidToken));
 
   chromeos::PlatformKeysService* service =
       chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
@@ -101,57 +73,6 @@ void EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey(
   }
 }
 
-EnterprisePlatformKeysInternalSignFunction::
-    ~EnterprisePlatformKeysInternalSignFunction() {
-}
-
-ExtensionFunction::ResponseAction
-EnterprisePlatformKeysInternalSignFunction::Run() {
-  scoped_ptr<api_epki::Sign::Params> params(
-      api_epki::Sign::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-  std::string platform_keys_token_id;
-  if (!ValidateToken(params->token_id, &platform_keys_token_id))
-    return RespondNow(Error(kErrorInvalidToken));
-
-  chromeos::platform_keys::HashAlgorithm hash_algorithm;
-  if (params->hash_algorithm_name == "SHA-1")
-    hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA1;
-  else if (params->hash_algorithm_name == "SHA-256")
-    hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA256;
-  else if (params->hash_algorithm_name == "SHA-384")
-    hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA384;
-  else if (params->hash_algorithm_name == "SHA-512")
-    hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA512;
-  else
-    return RespondNow(Error(kErrorAlgorithmNotSupported));
-
-  chromeos::PlatformKeysService* service =
-      chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
-          browser_context());
-  DCHECK(service);
-
-  service->Sign(
-      platform_keys_token_id,
-      std::string(params->public_key.begin(), params->public_key.end()),
-      hash_algorithm, std::string(params->data.begin(), params->data.end()),
-      extension_id(),
-      base::Bind(&EnterprisePlatformKeysInternalSignFunction::OnSigned, this));
-  return RespondLater();
-}
-
-void EnterprisePlatformKeysInternalSignFunction::OnSigned(
-    const std::string& signature,
-    const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (error_message.empty()) {
-    Respond(ArgumentList(api_epki::Sign::Results::Create(
-        std::vector<char>(signature.begin(), signature.end()))));
-  } else {
-    Respond(Error(error_message));
-  }
-}
-
 EnterprisePlatformKeysGetCertificatesFunction::
     ~EnterprisePlatformKeysGetCertificatesFunction() {
 }
@@ -162,8 +83,8 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
       api_epk::GetCertificates::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   std::string platform_keys_token_id;
-  if (!ValidateToken(params->token_id, &platform_keys_token_id))
-    return RespondNow(Error(kErrorInvalidToken));
+  if (!platform_keys::ValidateToken(params->token_id, &platform_keys_token_id))
+    return RespondNow(Error(platform_keys::kErrorInvalidToken));
 
   chromeos::platform_keys::GetCertificates(
       platform_keys_token_id,
@@ -208,8 +129,8 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
       api_epk::ImportCertificate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   std::string platform_keys_token_id;
-  if (!ValidateToken(params->token_id, &platform_keys_token_id))
-    return RespondNow(Error(kErrorInvalidToken));
+  if (!platform_keys::ValidateToken(params->token_id, &platform_keys_token_id))
+    return RespondNow(Error(platform_keys::kErrorInvalidToken));
 
   const std::vector<char>& cert_der = params->certificate;
   scoped_refptr<net::X509Certificate> cert_x509 =
@@ -247,8 +168,8 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
       api_epk::RemoveCertificate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   std::string platform_keys_token_id;
-  if (!ValidateToken(params->token_id, &platform_keys_token_id))
-    return RespondNow(Error(kErrorInvalidToken));
+  if (!platform_keys::ValidateToken(params->token_id, &platform_keys_token_id))
+    return RespondNow(Error(platform_keys::kErrorInvalidToken));
 
   const std::vector<char>& cert_der = params->certificate;
   scoped_refptr<net::X509Certificate> cert_x509 =
@@ -305,7 +226,7 @@ void EnterprisePlatformKeysInternalGetTokensFunction::OnGotTokens(
            platform_keys_token_ids->begin();
        it != platform_keys_token_ids->end();
        ++it) {
-    std::string token_id = PlatformKeysTokenIdToApiId(*it);
+    std::string token_id = platform_keys::PlatformKeysTokenIdToApiId(*it);
     if (token_id.empty()) {
       Respond(Error(kErrorInternal));
       return;

@@ -16,12 +16,12 @@
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/enterprise_platform_keys_natives.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_manager_private_custom_bindings.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
 #include "chrome/renderer/extensions/notifications_native_handler.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
+#include "chrome/renderer/extensions/platform_keys_natives.h"
 #include "chrome/renderer/extensions/sync_file_system_custom_bindings.h"
 #include "chrome/renderer/extensions/tab_finder.h"
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
@@ -100,10 +100,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       scoped_ptr<NativeHandler>(
           new extensions::SyncFileSystemCustomBindings(context)));
   module_system->RegisterNativeHandler(
-      "enterprise_platform_keys_natives",
-      scoped_ptr<NativeHandler>(
-          new extensions::EnterprisePlatformKeysNatives(context)));
-  module_system->RegisterNativeHandler(
       "file_browser_handler",
       scoped_ptr<NativeHandler>(
           new extensions::FileBrowserHandlerCustomBindings(context)));
@@ -123,6 +119,9 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "page_capture",
       scoped_ptr<NativeHandler>(
           new extensions::PageCaptureCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "platform_keys_natives",
+      scoped_ptr<NativeHandler>(new extensions::PlatformKeysNatives(context)));
   module_system->RegisterNativeHandler(
       "tabs",
       scoped_ptr<NativeHandler>(new extensions::TabsCustomBindings(context)));
@@ -161,16 +160,12 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_ENTERPRISE_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("enterprise.platformKeys.internalAPI",
                              IDR_ENTERPRISE_PLATFORM_KEYS_INTERNAL_API_JS);
-  source_map->RegisterSource("enterprise.platformKeys.Key",
-                             IDR_ENTERPRISE_PLATFORM_KEYS_KEY_JS);
   source_map->RegisterSource("enterprise.platformKeys.KeyPair",
                              IDR_ENTERPRISE_PLATFORM_KEYS_KEY_PAIR_JS);
   source_map->RegisterSource("enterprise.platformKeys.SubtleCrypto",
                              IDR_ENTERPRISE_PLATFORM_KEYS_SUBTLE_CRYPTO_JS);
   source_map->RegisterSource("enterprise.platformKeys.Token",
                              IDR_ENTERPRISE_PLATFORM_KEYS_TOKEN_JS);
-  source_map->RegisterSource("enterprise.platformKeys.utils",
-                             IDR_ENTERPRISE_PLATFORM_KEYS_UTILS_JS);
   source_map->RegisterSource("feedbackPrivate",
                              IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("fileBrowserHandler",
@@ -194,6 +189,12 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("pageAction", IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("pageCapture",
                              IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("platformKeys.internalAPI",
+                             IDR_PLATFORM_KEYS_INTERNAL_API_JS);
+  source_map->RegisterSource("platformKeys.Key", IDR_PLATFORM_KEYS_KEY_JS);
+  source_map->RegisterSource("platformKeys.SubtleCrypto",
+                             IDR_PLATFORM_KEYS_SUBTLE_CRYPTO_JS);
+  source_map->RegisterSource("platformKeys.utils", IDR_PLATFORM_KEYS_UTILS_JS);
   source_map->RegisterSource("syncFileSystem",
                              IDR_SYNC_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("systemIndicator",

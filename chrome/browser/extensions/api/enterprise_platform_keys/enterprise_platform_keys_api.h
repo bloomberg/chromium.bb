@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -33,20 +32,6 @@ class EnterprisePlatformKeysInternalGenerateKeyFunction
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.generateKey",
                              ENTERPRISE_PLATFORMKEYSINTERNAL_GENERATEKEY);
-};
-
-class EnterprisePlatformKeysInternalSignFunction
-    : public ChromeUIThreadExtensionFunction {
- private:
-  ~EnterprisePlatformKeysInternalSignFunction() override;
-  ResponseAction Run() override;
-
-  // Called when the signature was generated. If an error occurred,
-  // |signature| will be empty and instead |error_message| be set.
-  void OnSigned(const std::string& signature, const std::string& error_message);
-
-  DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.sign",
-                             ENTERPRISE_PLATFORMKEYSINTERNAL_SIGN);
 };
 
 class EnterprisePlatformKeysGetCertificatesFunction
