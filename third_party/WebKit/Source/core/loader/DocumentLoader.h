@@ -118,6 +118,7 @@ namespace blink {
         void cancelMainResourceLoad(const ResourceError&);
 
         void attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDataReceiver>);
+        void acceptDataFromThreadedReceiver(const char* data, int dataLength, int encodedDataLength);
         DocumentLoadTiming* timing() { return &m_documentLoadTiming; }
 
         ApplicationCacheHost* applicationCacheHost() const { return m_applicationCacheHost.get(); }

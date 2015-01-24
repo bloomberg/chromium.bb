@@ -158,6 +158,7 @@ public:
 #endif
 
     int64_t serviceWorkerID() const;
+    void acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
     enum ResourceLoadStartType {
         ResourceLoadingFromNetwork,

@@ -759,6 +759,11 @@ void DocumentLoader::attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDat
         mainResourceLoader()->attachThreadedDataReceiver(threadedDataReceiver);
 }
 
+void DocumentLoader::acceptDataFromThreadedReceiver(const char* data, int dataLength, int encodedDataLength)
+{
+    m_fetcher->acceptDataFromThreadedReceiver(mainResourceIdentifier(), data, dataLength, encodedDataLength);
+}
+
 void DocumentLoader::endWriting(DocumentWriter* writer)
 {
     ASSERT_UNUSED(writer, m_writer == writer);

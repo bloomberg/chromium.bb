@@ -1366,6 +1366,11 @@ void ResourceFetcher::didDownloadData(const Resource* resource, int dataLength, 
     context().dispatchDidDownloadData(m_documentLoader, resource->identifier(), dataLength, encodedDataLength);
 }
 
+void ResourceFetcher::acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
+{
+    context().dispatchDidReceiveData(m_documentLoader, identifier, data, dataLength, encodedDataLength);
+}
+
 void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)
 {
     if (!m_nonBlockingLoaders)

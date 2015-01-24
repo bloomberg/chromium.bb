@@ -14,6 +14,9 @@ public:
     virtual void acceptData(const char* data, int dataLength) = 0;
     virtual WebThread* backgroundThread() = 0;
 
+    virtual bool needsMainthreadDataCopy() = 0;
+    virtual void acceptMainthreadDataNotification(const char* data, int dataLength, int encodedDataLength) = 0;
+
     virtual ~WebThreadedDataReceiver() { }
 };
 

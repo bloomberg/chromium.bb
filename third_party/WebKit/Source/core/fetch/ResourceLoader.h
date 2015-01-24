@@ -37,10 +37,6 @@
 #include "wtf/RefCounted.h"
 
 namespace blink {
-class WebThreadedDataReceiver;
-}
-
-namespace blink {
 
 class Resource;
 class KURL;

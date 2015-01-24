@@ -57,7 +57,7 @@ public:
     void progressCompleted();
 
     void incrementProgress(unsigned long identifier, const ResourceResponse&);
-    void incrementProgress(unsigned long identifier, const char*, int);
+    void incrementProgress(unsigned long identifier, int);
     void completeProgress(unsigned long identifier);
 
     long long totalPageAndResourceBytesToLoad() const { return m_totalPageAndResourceBytesToLoad; }

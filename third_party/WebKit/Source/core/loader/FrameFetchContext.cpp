@@ -158,7 +158,7 @@ void FrameFetchContext::dispatchDidReceiveResponse(DocumentLoader* loader, unsig
 
 void FrameFetchContext::dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
 {
-    m_frame->loader().progress().incrementProgress(identifier, data, dataLength);
+    m_frame->loader().progress().incrementProgress(identifier, dataLength);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceivedData", "data", InspectorReceiveDataEvent::data(identifier, m_frame, encodedDataLength));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didReceiveData(m_frame, identifier, data, dataLength, encodedDataLength);
@@ -166,7 +166,7 @@ void FrameFetchContext::dispatchDidReceiveData(DocumentLoader*, unsigned long id
 
 void FrameFetchContext::dispatchDidDownloadData(DocumentLoader*, unsigned long identifier, int dataLength, int encodedDataLength)
 {
-    m_frame->loader().progress().incrementProgress(identifier, 0, dataLength);
+    m_frame->loader().progress().incrementProgress(identifier, dataLength);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceivedData", "data", InspectorReceiveDataEvent::data(identifier, m_frame, encodedDataLength));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didReceiveData(m_frame, identifier, 0, dataLength, encodedDataLength);

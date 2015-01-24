@@ -155,7 +155,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const Resource
         m_progressItems.set(identifier, adoptPtr(new ProgressItem(estimatedLength)));
 }
 
-void ProgressTracker::incrementProgress(unsigned long identifier, const char*, int length)
+void ProgressTracker::incrementProgress(unsigned long identifier, int length)
 {
     ProgressItem* item = m_progressItems.get(identifier);
 
