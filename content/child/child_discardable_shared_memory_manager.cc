@@ -72,10 +72,11 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 
     // Attempt to lock |free_span|. Delete span and search free list again
     // if locking failed.
-    if (!free_span->shared_memory()->Lock(
+    if (free_span->shared_memory()->Lock(
             free_span->start() * base::GetPageSize() -
                 reinterpret_cast<size_t>(free_span->shared_memory()->memory()),
-            free_span->length() * base::GetPageSize())) {
+            free_span->length() * base::GetPageSize()) !=
+        base::DiscardableSharedMemory::SUCCESS) {
       heap_.DeleteSpan(free_span.Pass());
       continue;
     }
@@ -114,19 +115,34 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 bool ChildDiscardableSharedMemoryManager::LockSpan(
     DiscardableSharedMemoryHeap::Span* span) {
   base::AutoLock lock(lock_);
-  return span->shared_memory()->Lock(
-      span->start() * base::GetPageSize() -
-          reinterpret_cast<size_t>(span->shared_memory()->memory()),
-      span->length() * base::GetPageSize());
+
+  size_t offset = span->start() * base::GetPageSize() -
+      reinterpret_cast<size_t>(span->shared_memory()->memory());
+  size_t length = span->length() * base::GetPageSize();
+
+  switch (span->shared_memory()->Lock(offset, length)) {
+    case base::DiscardableSharedMemory::SUCCESS:
+      return true;
+    case base::DiscardableSharedMemory::PURGED:
+      span->shared_memory()->Unlock(offset, length);
+      return false;
+    case base::DiscardableSharedMemory::FAILED:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 void ChildDiscardableSharedMemoryManager::UnlockSpan(
     DiscardableSharedMemoryHeap::Span* span) {
   base::AutoLock lock(lock_);
-  return span->shared_memory()->Unlock(
-      span->start() * base::GetPageSize() -
-          reinterpret_cast<size_t>(span->shared_memory()->memory()),
-      span->length() * base::GetPageSize());
+
+  size_t offset = span->start() * base::GetPageSize() -
+      reinterpret_cast<size_t>(span->shared_memory()->memory());
+  size_t length = span->length() * base::GetPageSize();
+
+  return span->shared_memory()->Unlock(offset, length);
 }
 
 bool ChildDiscardableSharedMemoryManager::IsSpanResident(

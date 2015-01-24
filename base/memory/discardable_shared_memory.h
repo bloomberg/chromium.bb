@@ -23,6 +23,8 @@ namespace base {
 // access to an instance of this class.
 class BASE_EXPORT DiscardableSharedMemory {
  public:
+  enum LockResult { SUCCESS, PURGED, FAILED };
+
   DiscardableSharedMemory();
 
   // Create a new DiscardableSharedMemory object from an existing, open shared
@@ -47,16 +49,18 @@ class BASE_EXPORT DiscardableSharedMemory {
   SharedMemoryHandle handle() const { return shared_memory_.handle(); }
 
   // Locks a range of memory so that it will not be purged by the system.
-  // Returns true if successful and the memory is still resident. Locking can
-  // fail for three reasons; object might have been purged, our last known usage
-  // timestamp might be out of date or memory might already be locked. Last
-  // know usage time is updated to the actual last usage timestamp if memory
-  // is still resident or 0 if not. The range of memory must be unlocked. The
-  // result of trying to lock an already locked range is undefined.
-  // |offset| and |length| must both be a multiple of the page size as returned
-  // by GetPageSize().
+  // The range of memory must be unlocked. The result of trying to lock an
+  // already locked range is undefined. |offset| and |length| must both be
+  // a multiple of the page size as returned by GetPageSize().
   // Passing 0 for |length| means "everything onward".
-  bool Lock(size_t offset, size_t length);
+  // Returns SUCCESS if range was successfully locked and the memory is still
+  // resident, PURGED if range was successfully locked but has been purged
+  // since last time it was locked and FAILED if range could not be locked.
+  // Locking can fail for two reasons; object might have been purged, our
+  // last known usage timestamp might be out of date. Last known usage time
+  // is updated to the actual last usage timestamp if memory is still resident
+  // or 0 if not.
+  LockResult Lock(size_t offset, size_t length);
 
   // Unlock a previously successfully locked range of memory. The range of
   // memory must be locked. The result of trying to unlock a not

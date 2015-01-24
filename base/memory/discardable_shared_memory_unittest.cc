@@ -64,14 +64,14 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlock) {
   memory1.Unlock(0, 0);
 
   // Lock and unlock memory.
-  rv = memory1.Lock(0, 0);
-  EXPECT_TRUE(rv);
+  auto lock_rv = memory1.Lock(0, 0);
+  EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
   memory1.SetNow(Time::FromDoubleT(2));
   memory1.Unlock(0, 0);
 
   // Lock again before duplicating and passing ownership to new instance.
-  rv = memory1.Lock(0, 0);
-  EXPECT_TRUE(rv);
+  lock_rv = memory1.Lock(0, 0);
+  EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
 
   SharedMemoryHandle shared_handle;
   ASSERT_TRUE(
@@ -87,8 +87,8 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlock) {
   memory2.Unlock(0, 0);
 
   // Lock second instance before passing ownership back to first instance.
-  rv = memory2.Lock(0, 0);
-  EXPECT_TRUE(rv);
+  lock_rv = memory2.Lock(0, 0);
+  EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
 
   // Memory should still be resident.
   rv = memory1.IsMemoryResident();
@@ -135,8 +135,8 @@ TEST(DiscardableSharedMemoryTest, Purge) {
   EXPECT_TRUE(rv);
 
   // Lock should fail as memory has been purged.
-  rv = memory2.Lock(0, 0);
-  EXPECT_FALSE(rv);
+  auto lock_rv = memory2.Lock(0, 0);
+  EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
 
   ASSERT_FALSE(memory2.IsMemoryResident());
 }
@@ -162,8 +162,8 @@ TEST(DiscardableSharedMemoryTest, LastUsed) {
 
   EXPECT_EQ(memory2.last_known_usage(), Time::FromDoubleT(1));
 
-  rv = memory2.Lock(0, 0);
-  EXPECT_TRUE(rv);
+  auto lock_rv = memory2.Lock(0, 0);
+  EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
 
   // This should fail as memory is locked.
   rv = memory1.Purge(Time::FromDoubleT(2));
@@ -232,10 +232,10 @@ TEST(DiscardableSharedMemoryTest, LockShouldAlwaysFailAfterSuccessfulPurge) {
   EXPECT_TRUE(rv);
 
   // Lock should fail as memory has been purged.
-  rv = memory2.Lock(0, 0);
-  EXPECT_FALSE(rv);
-  rv = memory1.Lock(0, 0);
-  EXPECT_FALSE(rv);
+  auto lock_rv = memory2.Lock(0, 0);
+  EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
+  lock_rv = memory1.Lock(0, 0);
+  EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
 }
 
 TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {

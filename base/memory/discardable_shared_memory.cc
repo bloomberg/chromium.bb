@@ -157,7 +157,8 @@ bool DiscardableSharedMemory::Map(size_t size) {
   return true;
 }
 
-bool DiscardableSharedMemory::Lock(size_t offset, size_t length) {
+DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
+    size_t offset, size_t length) {
   DCHECK_EQ(AlignToPageSize(offset), offset);
   DCHECK_EQ(AlignToPageSize(length), length);
 
@@ -167,7 +168,7 @@ bool DiscardableSharedMemory::Lock(size_t offset, size_t length) {
   // Return false when instance has been purged or not initialized properly by
   // checking if |last_known_usage_| is NULL.
   if (last_known_usage_.is_null())
-    return false;
+    return FAILED;
 
   DCHECK(shared_memory_.memory());
 
@@ -184,7 +185,7 @@ bool DiscardableSharedMemory::Lock(size_t offset, size_t length) {
       // Update |last_known_usage_| in case the above CAS failed because of
       // an incorrect timestamp.
       last_known_usage_ = result.GetTimestamp();
-      return false;
+      return FAILED;
     }
   }
 
@@ -214,11 +215,11 @@ bool DiscardableSharedMemory::Lock(size_t offset, size_t length) {
   DCHECK(SharedMemory::IsHandleValid(handle));
   if (ashmem_pin_region(
           handle.fd, AlignToPageSize(sizeof(SharedState)) + offset, length)) {
-    return false;
+    return PURGED;
   }
 #endif
 
-  return true;
+  return SUCCESS;
 }
 
 void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
