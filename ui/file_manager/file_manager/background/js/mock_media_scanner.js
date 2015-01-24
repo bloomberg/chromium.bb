@@ -154,3 +154,31 @@ TestScanResult.prototype.whenFinal = function() {
 TestScanResult.prototype.isFinal = function() {
   return this.settled_;
 };
+
+/** @override */
+TestScanResult.prototype.isInvalidated = function() {
+  return false;
+};
+
+/**
+ * @constructor
+ * @implements {importer.DirectoryWatcher}
+ */
+function TestDirectoryWatcher(callback) {
+  /**
+   * @public {function()}
+   * @const
+   */
+  this.callback = callback;
+
+  /**
+   * @public {boolean}
+   */
+  this.triggered = false;
+};
+
+/**
+ * @override
+ */
+TestDirectoryWatcher.prototype.addDirectory = function() {
+};

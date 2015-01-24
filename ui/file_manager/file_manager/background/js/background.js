@@ -79,7 +79,8 @@ function FileBrowserBackground() {
    */
   this.mediaScanner = new importer.DefaultMediaScanner(
       importer.createMetadataHashcode,
-      this.historyLoader);
+      this.historyLoader,
+      importer.DefaultDirectoryWatcher.create);
 
   /**
    * Handles importing of user media (e.g. photos, videos) from removable

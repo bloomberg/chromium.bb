@@ -60,7 +60,6 @@ importer.ImportController =
   this.cachedScans_ = {};
 
   this.scanner_.addObserver(this.onScanEvent_.bind(this));
-
   this.environment_.addVolumeUnmountListener(
       this.onVolumeUnmounted_.bind(this));
 };
@@ -72,8 +71,17 @@ importer.ImportController =
  * @private
  */
 importer.ImportController.prototype.onScanEvent_ = function(event, result) {
-  // TODO(smckay): only do this if this is a directory scan.
-  if (event === importer.ScanEvent.FINALIZED) {
+  if (event === importer.ScanEvent.INVALIDATED) {
+    for (var key in this.cachedScans_) {
+      for (var url in this.cachedScans_[key]) {
+        if (this.cachedScans_[key][url].isInvalidated()) {
+          delete this.cachedScans_[key][url];
+        }
+      }
+    }
+  }
+  if (event === importer.ScanEvent.FINALIZED ||
+      event === importer.ScanEvent.INVALIDATED) {
     this.updateCommands_();
   }
 };
@@ -104,7 +112,6 @@ importer.ImportController.prototype.execute = function() {
  * @return {!importer.CommandUpdate} response
  */
 importer.ImportController.prototype.getCommandUpdate = function() {
-
   // If there is no Google Drive mount, Drive may be disabled
   // or the machine may be running in guest mode.
   if (this.environment_.isGoogleDriveMounted()) {
@@ -240,6 +247,7 @@ importer.ImportController.prototype.getCurrentDirectoryScan_ = function() {
     scan = this.scanner_.scan([directory]);
     this.cachedScans_[volumeId][url] = scan;
   }
+  assert(!scan.isInvalidated());
   return scan;
 };
 

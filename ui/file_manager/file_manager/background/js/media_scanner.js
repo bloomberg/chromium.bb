@@ -45,6 +45,11 @@ importer.ScanResult = function() {};
 importer.ScanResult.prototype.isFinal;
 
 /**
+ * @return {boolean} true if scanning is invalidated.
+ */
+importer.ScanResult.prototype.isInvalidated;
+
+/**
  * Returns all files entries discovered so far. The list will be
  * complete only after scanning has completed and {@code isFinal}
  * returns {@code true}.
@@ -85,12 +90,14 @@ importer.ScanResult.prototype.whenFinal;
  *
  * @param {function(!FileEntry): !Promise.<string>} hashGenerator
  * @param {!importer.HistoryLoader} historyLoader
+ * @param {!importer.DirectoryWatcherFactory} watcherFactory
  */
-importer.DefaultMediaScanner = function(hashGenerator, historyLoader) {
+importer.DefaultMediaScanner = function(
+    hashGenerator, historyLoader, watcherFactory) {
   /**
    * A little factory for DefaultScanResults which allows us to forgo
    * the saving it's dependencies in our fields.
-   * @private {function(): !importer.DefaultScanResult}
+   * @return {!importer.DefaultScanResult}
    */
   this.createScanResult_ = function() {
     return new importer.DefaultScanResult(hashGenerator, historyLoader);
@@ -98,6 +105,12 @@ importer.DefaultMediaScanner = function(hashGenerator, historyLoader) {
 
   /** @private {!Array.<!importer.ScanObserver>} */
   this.observers_ = [];
+
+  /**
+   * @private {!importer.DirectoryWatcherFactory}
+   * @const
+   */
+  this.watcherFactory_ = watcherFactory;
 };
 
 /** @override */
@@ -122,7 +135,16 @@ importer.DefaultMediaScanner.prototype.scan = function(entries) {
   }
 
   var scanResult = this.createScanResult_();
-  var scanPromises = entries.map(this.scanEntry_.bind(this, scanResult));
+  var watcher = this.watcherFactory_(function() {
+    scanResult.invalidateScan();
+    this.observers_.forEach(
+        /** @param {!importer.ScanObserver} observer */
+        function(observer) {
+          observer(importer.ScanEvent.INVALIDATED, scanResult);
+        });
+  }.bind(this));
+  var scanPromises = entries.map(
+      this.scanEntry_.bind(this, scanResult, watcher));
 
   Promise.all(scanPromises)
       .then(scanResult.resolveScan.bind(scanResult))
@@ -155,45 +177,50 @@ importer.DefaultMediaScanner.prototype.onScanFinished_ = function(result) {
  * Resolves the entry to a list of {@code FileEntry}.
  *
  * @param {!importer.DefaultScanResult} result
+ * @param {!importer.DirectoryWatcher} watcher
  * @param {!Entry} entry
  * @return {!Promise}
  * @private
  */
 importer.DefaultMediaScanner.prototype.scanEntry_ =
-    function(result, entry) {
+    function(result, watcher, entry) {
   return entry.isFile ?
       result.onFileEntryFound(/** @type {!FileEntry} */ (entry)) :
-      this.scanDirectory_(result, /** @type {!DirectoryEntry} */ (entry));
+      this.scanDirectory_(
+          result, watcher, /** @type {!DirectoryEntry} */ (entry));
 };
 
 /**
  * Finds all files beneath directory.
  *
  * @param {!importer.DefaultScanResult} result
+ * @param {!importer.DirectoryWatcher} watcher
  * @param {!DirectoryEntry} entry
  * @return {!Promise}
  * @private
  */
 importer.DefaultMediaScanner.prototype.scanDirectory_ =
-    function(result, entry) {
-  return new Promise(
-      function(resolve, reject) {
-        // Collect promises for all files being added to results.
-        // The directory scan promise can't resolve until all
-        // file entries are completely promised.
-        var promises = [];
-        fileOperationUtil.findFilesRecursively(
-            entry,
-            /** @param  {!FileEntry} fileEntry */
-            function(fileEntry) {
-              promises.push(result.onFileEntryFound(fileEntry));
-            })
-            .then(
-                /** @this {importer.DefaultScanResult} */
-                function() {
-                  Promise.all(promises).then(resolve).catch(reject);
-                });
-      });
+    function(result, watcher, entry) {
+  // Collect promises for all files being added to results.
+  // The directory scan promise can't resolve until all
+  // file entries are completely promised.
+  var promises = [];
+
+  return fileOperationUtil.findEntriesRecursively(
+      entry,
+      /** @param  {!Entry} entry */
+      function(entry) {
+        if (watcher.triggered) {
+          return;
+        }
+        if (entry.isDirectory) {
+          watcher.addDirectory(/** @type {!DirectoryEntry} */(entry));
+        } else {
+          promises.push(
+              result.onFileEntryFound(/** @type {!FileEntry} */(entry)));
+        }
+      })
+      .then(Promise.all.bind(Promise, promises));
 };
 
 /**
@@ -223,6 +250,11 @@ importer.DefaultScanResult = function(hashGenerator, historyLoader) {
    * @private {!Array.<!FileEntry>}
    */
   this.fileEntries_ = [];
+
+  /**
+   * @private {boolean}
+   */
+  this.invalidated_ = false;
 
   /**
    * Hashcodes of all files included captured by this result object so-far.
@@ -276,6 +308,10 @@ importer.DefaultScanResult.prototype.isFinal = function() {
   return this.settled_;
 };
 
+importer.DefaultScanResult.prototype.isInvalidated = function() {
+  return this.invalidated_;
+};
+
 /** @override */
 importer.DefaultScanResult.prototype.getFileEntries = function() {
   return this.fileEntries_;
@@ -294,6 +330,13 @@ importer.DefaultScanResult.prototype.getScanDurationMs = function() {
 /** @override */
 importer.DefaultScanResult.prototype.whenFinal = function() {
   return this.finishedPromise_;
+};
+
+/**
+ * Invalidates this scan.
+ */
+importer.DefaultScanResult.prototype.invalidateScan = function() {
+  this.invalidated_ = true;
 };
 
 /**
@@ -385,3 +428,80 @@ importer.DefaultScanResult.prototype.addFileEntry_ = function(entry) {
       }.bind(this));
 };
 
+/**
+ * Watcher for directories.
+ * @interface
+ */
+importer.DirectoryWatcher = function() {};
+
+/**
+ * Registers new directory to be watched.
+ * @param {!DirectoryEntry} entry
+ */
+importer.DirectoryWatcher.prototype.addDirectory = function(entry) {};
+
+/**
+ * @typedef {function()}
+ */
+importer.DirectoryWatcherFactoryCallback;
+
+/**
+ * @typedef {function(importer.DirectoryWatcherFactoryCallback):
+ *     !importer.DirectoryWatcher}
+ */
+importer.DirectoryWatcherFactory;
+
+/**
+ * Watcher for directories.
+ * @param {function()} callback Callback to be invoked when one of watched
+ *     directories is changed.
+ * @implements {importer.DirectoryWatcher}
+ * @constructor
+ */
+importer.DefaultDirectoryWatcher = function(callback) {
+  this.callback_ = callback;
+  this.watchedDirectories_ = {};
+  this.triggered = false;
+  this.listener_ = null;
+};
+
+/**
+ * Creates new directory watcher.
+ * @param {function()} callback Callback to be invoked when one of watched
+ *     directories is changed.
+ * @return {!importer.DirectoryWatcher}
+ */
+importer.DefaultDirectoryWatcher.create = function(callback) {
+  return new importer.DefaultDirectoryWatcher(callback);
+};
+
+/**
+ * Registers new directory to be watched.
+ * @param {!DirectoryEntry} entry
+ */
+importer.DefaultDirectoryWatcher.prototype.addDirectory = function(entry) {
+  if (!this.listener_) {
+    this.listener_ = this.onWatchedDirectoryModified_.bind(this);
+    chrome.fileManagerPrivate.onDirectoryChanged.addListener(
+        assert(this.listener_));
+  }
+  this.watchedDirectories_[entry.toURL()] = true;
+  chrome.fileManagerPrivate.addFileWatch(entry.toURL(), function() {});
+};
+
+/**
+ * @param {FileWatchEvent} event
+ * @private
+ */
+importer.DefaultDirectoryWatcher.prototype.onWatchedDirectoryModified_ =
+    function(event) {
+  if (!this.watchedDirectories_[event.entry.toURL()])
+    return;
+  this.triggered = true;
+  for (var url in this.watchedDirectories_) {
+    chrome.fileManagerPrivate.removeFileWatch(url, function() {});
+  }
+  chrome.fileManagerPrivate.onDirectoryChanged.removeListener(
+      assert(this.listener_));
+  this.callback_();
+};

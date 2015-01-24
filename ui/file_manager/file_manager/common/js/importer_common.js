@@ -7,7 +7,8 @@ var importer = importer || {};
 
 /** @enum {string} */
 importer.ScanEvent = {
-  FINALIZED: 'finalized'
+  FINALIZED: 'finalized',
+  INVALIDATED: 'invalidated'
 };
 
 /**

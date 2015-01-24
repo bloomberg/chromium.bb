@@ -17,6 +17,9 @@ var scanner;
 /** @type {!importer.TestImportHistory} */
 var importHistory;
 
+/** @type {!importer.TestDirectoryWatcher} */
+var watcher;
+
 // Set up the test components.
 function setUp() {
 
@@ -26,7 +29,11 @@ function setUp() {
       function(entry) {
         return Promise.resolve(entry.name);
       },
-      importHistory);
+      importHistory,
+      function(callback) {
+        watcher = new TestDirectoryWatcher(callback);
+        return watcher;
+      });
 }
 
 /**
@@ -311,6 +318,25 @@ function testDedupesFiles(callback) {
       callback);
 }
 
+function testInvalidation(callback) {
+  var invalidatePromise = new Promise(function(fulfill) {
+    scanner.addObserver(fulfill);
+  });
+  reportPromise(
+      makeTestFileSystemRoot('testInvalidation')
+          .then(populateDir.bind(null, ['DCIM']))
+          .then(
+              /**
+               * Scans the directories.
+               * @param {!DirectoryEntry} root
+               */
+              function(root) {
+                scan = scanner.scan([root]);
+                watcher.callback();
+                return invalidatePromise;
+              }),
+              callback);
+}
 
 /**
  * Verifies the results of the media scan are as expected.
