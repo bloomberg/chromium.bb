@@ -394,41 +394,56 @@ namespace content {
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, public:
 
-ui::Layer* RenderWidgetHostViewMac::GetLayer() {
+ui::Layer* RenderWidgetHostViewMac::DelegatedFrameHostGetLayer() const {
   return root_layer_.get();
 }
 
-RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
-  return render_widget_host_;
-}
-
-bool RenderWidgetHostViewMac::IsVisible() {
+bool RenderWidgetHostViewMac::DelegatedFrameHostIsVisible() const {
   return !render_widget_host_->is_hidden();
 }
 
-gfx::Size RenderWidgetHostViewMac::DesiredFrameSize() {
+gfx::Size RenderWidgetHostViewMac::DelegatedFrameHostDesiredSizeInDIP() const {
   return GetViewBounds().size();
 }
 
-float RenderWidgetHostViewMac::CurrentDeviceScaleFactor() {
-  return ViewScaleFactor();
+bool RenderWidgetHostViewMac::DelegatedFrameCanCreateResizeLock() const {
+  // Mac uses the RenderWidgetResizeHelper instead of a resize lock.
+  return false;
 }
 
-gfx::Size RenderWidgetHostViewMac::ConvertViewSizeToPixel(
-    const gfx::Size& size) {
-  return gfx::ToEnclosingRect(gfx::ScaleRect(gfx::Rect(size),
-                                             ViewScaleFactor())).size();
-}
-
-scoped_ptr<ResizeLock> RenderWidgetHostViewMac::CreateResizeLock(
+scoped_ptr<ResizeLock>
+RenderWidgetHostViewMac::DelegatedFrameHostCreateResizeLock(
     bool defer_compositor_lock) {
   NOTREACHED();
-  ResizeLock* lock = NULL;
-  return scoped_ptr<ResizeLock>(lock);
+  return scoped_ptr<ResizeLock>();
 }
 
-DelegatedFrameHost* RenderWidgetHostViewMac::GetDelegatedFrameHost() const {
-  return delegated_frame_host_.get();
+void RenderWidgetHostViewMac::DelegatedFrameHostResizeLockWasReleased() {
+  NOTREACHED();
+}
+
+void RenderWidgetHostViewMac::DelegatedFrameHostSendCompositorSwapAck(
+    int output_surface_id,
+    const cc::CompositorFrameAck& ack) {
+  render_widget_host_->Send(new ViewMsg_SwapCompositorFrameAck(
+      render_widget_host_->GetRoutingID(), output_surface_id, ack));
+}
+
+void RenderWidgetHostViewMac::DelegatedFrameHostSendReclaimCompositorResources(
+    int output_surface_id,
+    const cc::CompositorFrameAck& ack) {
+  render_widget_host_->Send(new ViewMsg_ReclaimCompositorResources(
+      render_widget_host_->GetRoutingID(), output_surface_id, ack));
+}
+
+void RenderWidgetHostViewMac::DelegatedFrameHostOnLostCompositorResources() {
+  render_widget_host_->ScheduleComposite();
+}
+
+void RenderWidgetHostViewMac::DelegatedFrameHostUpdateVSyncParameters(
+    const base::TimeTicks& timebase,
+    const base::TimeDelta& interval) {
+  render_widget_host_->UpdateVSyncParameters(timebase, interval);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -813,7 +828,6 @@ void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
 RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
   return render_widget_host_;
 }
-
 
 void RenderWidgetHostViewMac::Show() {
   [cocoa_view_ setHidden:NO];
@@ -2551,7 +2565,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->GetHost()->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->render_widget_host_
+          ->GetRootBrowserAccessibilityManager();
 
   // Contents specifies document view of RenderWidgetHostViewCocoa provided by
   // BrowserAccessibilityManager. Children includes all subviews in addition to
@@ -2577,7 +2592,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 - (id)accessibilityHitTest:(NSPoint)point {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->GetHost()->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->render_widget_host_
+          ->GetRootBrowserAccessibilityManager();
   if (!manager)
     return self;
   NSPoint pointInWindow = [[self window] convertScreenToBase:point];
@@ -2591,13 +2607,15 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 - (BOOL)accessibilityIsIgnored {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->GetHost()->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->render_widget_host_
+          ->GetRootBrowserAccessibilityManager();
   return !manager;
 }
 
 - (NSUInteger)accessibilityGetIndexOf:(id)child {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->GetHost()->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->render_widget_host_
+          ->GetRootBrowserAccessibilityManager();
   // Only child is root.
   if (manager &&
       manager->GetRoot()->ToBrowserAccessibilityCocoa() == child) {
@@ -2609,7 +2627,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 - (id)accessibilityFocusedUIElement {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->GetHost()->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->render_widget_host_
+          ->GetRootBrowserAccessibilityManager();
   if (manager) {
     BrowserAccessibility* focused_item = manager->GetFocus(NULL);
     DCHECK(focused_item);

@@ -217,22 +217,21 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   ~FakeRenderWidgetHostViewAura() override {}
 
-  scoped_ptr<ResizeLock> CreateResizeLock(bool defer_compositor_lock) override {
+  scoped_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
+      bool defer_compositor_lock) override {
     gfx::Size desired_size = window()->bounds().size();
     return scoped_ptr<ResizeLock>(
         new FakeResizeLock(desired_size, defer_compositor_lock));
   }
+
+  bool DelegatedFrameCanCreateResizeLock() const override { return true; }
 
   void RunOnCompositingDidCommit() {
     GetDelegatedFrameHost()->OnCompositingDidCommitForTesting(
         window()->GetHost()->compositor());
   }
 
-  bool ShouldCreateResizeLock() override {
-    return GetDelegatedFrameHost()->ShouldCreateResizeLockForTesting();
-  }
-
-  void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) override {
+  void InterceptCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
     last_copy_request_ = request.Pass();
     if (last_copy_request_->has_texture_mailbox()) {
       // Give the resulting texture a size.
@@ -2042,6 +2041,9 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   scoped_ptr<cc::CopyOutputRequest> request;
 
   view_->InitAsChild(NULL);
+  view_->GetDelegatedFrameHost()->SetRequestCopyOfOutputCallbackForTesting(
+      base::Bind(&FakeRenderWidgetHostViewAura::InterceptCopyOfOutput,
+                 base::Unretained(view_)));
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(),
       parent_view_->GetNativeView()->GetRootWindow(),

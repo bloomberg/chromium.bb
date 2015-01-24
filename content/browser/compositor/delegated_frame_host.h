@@ -44,25 +44,26 @@ class ResizeLock;
 // display them.
 class CONTENT_EXPORT DelegatedFrameHostClient {
  public:
-  virtual ui::Layer* GetLayer() = 0;
-  virtual RenderWidgetHostImpl* GetHost() = 0;
-  virtual bool IsVisible() = 0;
-  virtual scoped_ptr<ResizeLock> CreateResizeLock(
+  virtual ui::Layer* DelegatedFrameHostGetLayer() const = 0;
+  virtual bool DelegatedFrameHostIsVisible() const = 0;
+  virtual gfx::Size DelegatedFrameHostDesiredSizeInDIP() const = 0;
+
+  virtual bool DelegatedFrameCanCreateResizeLock() const = 0;
+  virtual scoped_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
       bool defer_compositor_lock) = 0;
-  virtual gfx::Size DesiredFrameSize() = 0;
+  virtual void DelegatedFrameHostResizeLockWasReleased() = 0;
 
-  // TODO(ccameron): It is likely that at least one of these two functions is
-  // redundant. Find which one, and delete it.
-  virtual float CurrentDeviceScaleFactor() = 0;
-  virtual gfx::Size ConvertViewSizeToPixel(const gfx::Size& size) = 0;
+  virtual void DelegatedFrameHostSendCompositorSwapAck(
+      int output_surface_id,
+      const cc::CompositorFrameAck& ack) = 0;
+  virtual void DelegatedFrameHostSendReclaimCompositorResources(
+      int output_surface_id,
+      const cc::CompositorFrameAck& ack) = 0;
+  virtual void DelegatedFrameHostOnLostCompositorResources() = 0;
 
-  // These are to be overridden for testing only.
-  // TODO(ccameron): This is convoluted. Make the tests that need to override
-  // these functions test DelegatedFrameHost directly (rather than do it
-  // through RenderWidgetHostViewAura).
-  virtual DelegatedFrameHost* GetDelegatedFrameHost() const = 0;
-  virtual bool ShouldCreateResizeLock();
-  virtual void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request);
+  virtual void DelegatedFrameHostUpdateVSyncParameters(
+      const base::TimeTicks& timebase,
+      const base::TimeDelta& interval) = 0;
 };
 
 // The DelegatedFrameHost is used to host all of the RenderWidgetHostView state
@@ -120,9 +121,12 @@ class CONTENT_EXPORT DelegatedFrameHost
   void OnCompositingDidCommitForTesting(ui::Compositor* compositor) {
     OnCompositingDidCommit(compositor);
   }
-  bool ShouldCreateResizeLockForTesting() { return ShouldCreateResizeLock(); }
   bool ReleasedFrontLockActiveForTesting() const {
     return !!released_front_lock_.get();
+  }
+  void SetRequestCopyOfOutputCallbackForTesting(
+      const base::Callback<void(scoped_ptr<cc::CopyOutputRequest>)>& callback) {
+    request_copy_of_output_callback_for_testing_ = callback;
   }
 
  private:
@@ -138,10 +142,9 @@ class CONTENT_EXPORT DelegatedFrameHost
     return frame_subscriber_.get();
   }
   bool ShouldCreateResizeLock();
-  void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request);
-
   void LockResources();
   void UnlockResources();
+  void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request);
 
   // Overridden from ui::CompositorObserver:
   void OnCompositingDidCommit(ui::Compositor* compositor) override;
@@ -226,8 +229,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   void DidReceiveFrameFromRenderer(const gfx::Rect& damage_rect);
 
-  DelegatedFrameHostClient* client_;
-
+  DelegatedFrameHostClient* const client_;
   ui::Compositor* compositor_;
 
   // True if this renders into a Surface, false if it renders into a delegated
@@ -304,6 +306,11 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Subscriber that listens to frame presentation events.
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
   std::vector<scoped_refptr<OwnedMailbox> > idle_frame_subscriber_textures_;
+
+  // Callback used to pass the output request to the layer or to a function
+  // specified by a test.
+  base::Callback<void(scoped_ptr<cc::CopyOutputRequest>)>
+      request_copy_of_output_callback_for_testing_;
 
   // YUV readback pipeline.
   scoped_ptr<content::ReadbackYUVInterface>

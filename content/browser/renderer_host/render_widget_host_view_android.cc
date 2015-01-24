@@ -1017,10 +1017,8 @@ void RenderWidgetHostViewAndroid::SendDelegatedFrameAck(
   cc::CompositorFrameAck ack;
   if (resource_collection_.get())
     resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(host_->GetRoutingID(),
-                                                   output_surface_id,
-                                                   host_->GetProcess()->GetID(),
-                                                   ack);
+  host_->Send(new ViewMsg_SwapCompositorFrameAck(host_->GetRoutingID(),
+                                                 output_surface_id, ack));
 }
 
 void RenderWidgetHostViewAndroid::SendReturnedDelegatedResources(
@@ -1031,11 +1029,8 @@ void RenderWidgetHostViewAndroid::SendReturnedDelegatedResources(
   resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
   DCHECK(!ack.resources.empty());
 
-  RenderWidgetHostImpl::SendReclaimCompositorResources(
-      host_->GetRoutingID(),
-      output_surface_id,
-      host_->GetProcess()->GetID(),
-      ack);
+  host_->Send(new ViewMsg_ReclaimCompositorResources(host_->GetRoutingID(),
+                                                     output_surface_id, ack));
 }
 
 void RenderWidgetHostViewAndroid::UnusedResourcesAreAvailable() {

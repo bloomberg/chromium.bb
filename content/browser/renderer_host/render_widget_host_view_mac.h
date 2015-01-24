@@ -450,14 +450,23 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void PauseForPendingResizeOrRepaintsAndDraw();
 
   // DelegatedFrameHostClient implementation.
-  ui::Layer* GetLayer() override;
-  RenderWidgetHostImpl* GetHost() override;
-  bool IsVisible() override;
-  scoped_ptr<ResizeLock> CreateResizeLock(bool defer_compositor_lock) override;
-  gfx::Size DesiredFrameSize() override;
-  float CurrentDeviceScaleFactor() override;
-  gfx::Size ConvertViewSizeToPixel(const gfx::Size& size) override;
-  DelegatedFrameHost* GetDelegatedFrameHost() const override;
+  ui::Layer* DelegatedFrameHostGetLayer() const override;
+  bool DelegatedFrameHostIsVisible() const override;
+  gfx::Size DelegatedFrameHostDesiredSizeInDIP() const override;
+  bool DelegatedFrameCanCreateResizeLock() const override;
+  scoped_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
+      bool defer_compositor_lock) override;
+  void DelegatedFrameHostResizeLockWasReleased() override;
+  void DelegatedFrameHostSendCompositorSwapAck(
+      int output_surface_id,
+      const cc::CompositorFrameAck& ack) override;
+  void DelegatedFrameHostSendReclaimCompositorResources(
+      int output_surface_id,
+      const cc::CompositorFrameAck& ack) override;
+  void DelegatedFrameHostOnLostCompositorResources() override;
+  void DelegatedFrameHostUpdateVSyncParameters(
+      const base::TimeTicks& timebase,
+      const base::TimeDelta& interval) override;
 
   // AcceleratedWidgetMacNSView implementation.
   NSView* AcceleratedWidgetGetNSView() const override;

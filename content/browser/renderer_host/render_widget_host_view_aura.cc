@@ -2583,32 +2583,35 @@ SkColorType RenderWidgetHostViewAura::PreferredReadbackFormat() {
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, public:
 
-ui::Layer* RenderWidgetHostViewAura::GetLayer() {
+ui::Layer* RenderWidgetHostViewAura::DelegatedFrameHostGetLayer() const {
   return window_->layer();
 }
 
-RenderWidgetHostImpl* RenderWidgetHostViewAura::GetHost() {
-  return host_;
+bool RenderWidgetHostViewAura::DelegatedFrameHostIsVisible() const {
+  return !host_->is_hidden();
 }
 
-bool RenderWidgetHostViewAura::IsVisible() {
-  return IsShowing();
-}
-
-gfx::Size RenderWidgetHostViewAura::DesiredFrameSize() {
+gfx::Size RenderWidgetHostViewAura::DelegatedFrameHostDesiredSizeInDIP() const {
   return window_->bounds().size();
 }
 
-float RenderWidgetHostViewAura::CurrentDeviceScaleFactor() {
-  return current_device_scale_factor_;
+bool RenderWidgetHostViewAura::DelegatedFrameCanCreateResizeLock() const {
+#if !defined(OS_CHROMEOS)
+  // On Windows and Linux, holding pointer moves will not help throttling
+  // resizes.
+  // TODO(piman): on Windows we need to block (nested message loop?) the
+  // WM_SIZE event. On Linux we need to throttle at the WM level using
+  // _NET_WM_SYNC_REQUEST.
+  return false;
+#else
+  if (host_->auto_resize_enabled())
+    return false;
+  return true;
+#endif
 }
 
-gfx::Size RenderWidgetHostViewAura::ConvertViewSizeToPixel(
-    const gfx::Size& size) {
-  return content::ConvertViewSizeToPixel(this, size);
-}
-
-scoped_ptr<ResizeLock> RenderWidgetHostViewAura::CreateResizeLock(
+scoped_ptr<ResizeLock>
+RenderWidgetHostViewAura::DelegatedFrameHostCreateResizeLock(
     bool defer_compositor_lock) {
   gfx::Size desired_size = window_->bounds().size();
   return scoped_ptr<ResizeLock>(new CompositorResizeLock(
@@ -2618,8 +2621,32 @@ scoped_ptr<ResizeLock> RenderWidgetHostViewAura::CreateResizeLock(
       base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs)));
 }
 
-DelegatedFrameHost* RenderWidgetHostViewAura::GetDelegatedFrameHost() const {
-  return delegated_frame_host_.get();
+void RenderWidgetHostViewAura::DelegatedFrameHostResizeLockWasReleased() {
+  host_->WasResized();
+}
+
+void RenderWidgetHostViewAura::DelegatedFrameHostSendCompositorSwapAck(
+    int output_surface_id,
+    const cc::CompositorFrameAck& ack) {
+  host_->Send(new ViewMsg_SwapCompositorFrameAck(host_->GetRoutingID(),
+                                                 output_surface_id, ack));
+}
+
+void RenderWidgetHostViewAura::DelegatedFrameHostSendReclaimCompositorResources(
+    int output_surface_id,
+    const cc::CompositorFrameAck& ack) {
+  host_->Send(new ViewMsg_ReclaimCompositorResources(host_->GetRoutingID(),
+                                                     output_surface_id, ack));
+}
+
+void RenderWidgetHostViewAura::DelegatedFrameHostOnLostCompositorResources() {
+  host_->ScheduleComposite();
+}
+
+void RenderWidgetHostViewAura::DelegatedFrameHostUpdateVSyncParameters(
+    const base::TimeTicks& timebase,
+    const base::TimeDelta& interval) {
+  host_->UpdateVSyncParameters(timebase, interval);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

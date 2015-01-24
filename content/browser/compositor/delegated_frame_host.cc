@@ -53,28 +53,6 @@ void RequireCallback(cc::SurfaceManager* manager,
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// DelegatedFrameHostClient
-
-bool DelegatedFrameHostClient::ShouldCreateResizeLock() {
-  // On Windows and Linux, holding pointer moves will not help throttling
-  // resizes.
-  // TODO(piman): on Windows we need to block (nested message loop?) the
-  // WM_SIZE event. On Linux we need to throttle at the WM level using
-  // _NET_WM_SYNC_REQUEST.
-  // TODO(ccameron): Mac browser window resizing is incompletely implemented.
-#if !defined(OS_CHROMEOS)
-  return false;
-#else
-  return GetDelegatedFrameHost()->ShouldCreateResizeLock();
-#endif
-}
-
-void DelegatedFrameHostClient::RequestCopyOfOutput(
-    scoped_ptr<cc::CopyOutputRequest> request) {
-  GetDelegatedFrameHost()->RequestCopyOfOutput(request.Pass());
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost
 
 DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
@@ -114,7 +92,7 @@ void DelegatedFrameHost::WasHidden() {
 }
 
 void DelegatedFrameHost::MaybeCreateResizeLock() {
-  if (!client_->ShouldCreateResizeLock())
+  if (!ShouldCreateResizeLock())
     return;
   DCHECK(compositor_);
 
@@ -125,19 +103,18 @@ void DelegatedFrameHost::MaybeCreateResizeLock() {
   if (can_lock_compositor_ == YES_CAN_LOCK)
     can_lock_compositor_ = YES_DID_LOCK;
 
-  resize_lock_ = client_->CreateResizeLock(defer_compositor_lock);
+  resize_lock_ =
+      client_->DelegatedFrameHostCreateResizeLock(defer_compositor_lock);
 }
 
 bool DelegatedFrameHost::ShouldCreateResizeLock() {
-  RenderWidgetHostImpl* host = client_->GetHost();
+  if (!client_->DelegatedFrameCanCreateResizeLock())
+    return false;
 
   if (resize_lock_)
     return false;
 
-  if (host->auto_resize_enabled())
-    return false;
-
-  gfx::Size desired_size = client_->DesiredFrameSize();
+  gfx::Size desired_size = client_->DelegatedFrameHostDesiredSizeInDIP();
   if (desired_size == current_frame_size_in_dip_ || desired_size.IsEmpty())
     return false;
 
@@ -145,11 +122,6 @@ bool DelegatedFrameHost::ShouldCreateResizeLock() {
     return false;
 
   return true;
-}
-
-void DelegatedFrameHost::RequestCopyOfOutput(
-    scoped_ptr<cc::CopyOutputRequest> request) {
-  client_->GetLayer()->RequestCopyOfOutput(request.Pass());
 }
 
 void DelegatedFrameHost::CopyFromCompositingSurface(
@@ -175,7 +147,7 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
           callback));
   if (!src_subrect.IsEmpty())
     request->set_area(src_subrect);
-  client_->RequestCopyOfOutput(request.Pass());
+  RequestCopyOfOutput(request.Pass());
 }
 
 void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
@@ -214,15 +186,17 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
                            subscriber_texture->target(),
                            subscriber_texture->sync_point()));
   }
-  client_->RequestCopyOfOutput(request.Pass());
+  RequestCopyOfOutput(request.Pass());
 }
 
 bool DelegatedFrameHost::CanCopyToBitmap() const {
-  return compositor_ && client_->GetLayer()->has_external_content();
+  return compositor_ &&
+         client_->DelegatedFrameHostGetLayer()->has_external_content();
 }
 
 bool DelegatedFrameHost::CanCopyToVideoFrame() const {
-  return compositor_ && client_->GetLayer()->has_external_content();
+  return compositor_ &&
+         client_->DelegatedFrameHostGetLayer()->has_external_content();
 }
 
 bool DelegatedFrameHost::CanSubscribeFrame() const {
@@ -252,8 +226,9 @@ bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {
 }
 
 void DelegatedFrameHost::WasResized() {
-  if (client_->DesiredFrameSize() != current_frame_size_in_dip_ &&
-      client_->GetHost()->is_hidden())
+  if (client_->DelegatedFrameHostDesiredSizeInDIP() !=
+          current_frame_size_in_dip_ &&
+      !client_->DelegatedFrameHostIsVisible())
     EvictDelegatedFrame();
   MaybeCreateResizeLock();
 }
@@ -262,7 +237,7 @@ gfx::Size DelegatedFrameHost::GetRequestedRendererSize() const {
   if (resize_lock_)
     return resize_lock_->expected_size();
   else
-    return client_->DesiredFrameSize();
+    return client_->DelegatedFrameHostDesiredSizeInDIP();
 }
 
 void DelegatedFrameHost::CheckResizeLock() {
@@ -306,7 +281,6 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     scoped_ptr<cc::DelegatedFrameData> frame_data,
     float frame_device_scale_factor,
     const std::vector<ui::LatencyInfo>& latency_info) {
-  RenderWidgetHostImpl* host = client_->GetHost();
   DCHECK(!frame_data->render_pass_list.empty());
 
   cc::RenderPass* root_pass = frame_data->render_pass_list.back();
@@ -328,9 +302,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     skipped_latency_info_list_.insert(skipped_latency_info_list_.end(),
         latency_info.begin(), latency_info.end());
 
-    RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-        host->GetRoutingID(), output_surface_id,
-        host->GetProcess()->GetID(), ack);
+    client_->DelegatedFrameHostSendCompositorSwapAck(output_surface_id, ack);
     skipped_frames_ = true;
     return;
   }
@@ -392,7 +364,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
         surface_id_ = id_allocator_->GenerateId();
         surface_factory_->Create(surface_id_);
         // manager must outlive compositors using it.
-        client_->GetLayer()->SetShowSurface(
+        client_->DelegatedFrameHostGetLayer()->SetShowSurface(
             surface_id_,
             base::Bind(&SatisfyCallback, base::Unretained(manager)),
             base::Bind(&RequireCallback, base::Unretained(manager)), frame_size,
@@ -410,7 +382,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
           latency_info.begin(),
           latency_info.end());
 
-      gfx::Size desired_size = client_->DesiredFrameSize();
+      gfx::Size desired_size = client_->DelegatedFrameHostDesiredSizeInDIP();
       if (desired_size != frame_size_in_dip && !desired_size.IsEmpty())
         immediate_ack = true;
 
@@ -436,8 +408,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
           frame_size_in_dip != current_frame_size_in_dip_) {
         frame_provider_ = new cc::DelegatedFrameProvider(
             resource_collection_.get(), frame_data.Pass());
-        client_->GetLayer()->SetShowDelegatedContent(frame_provider_.get(),
-                                                     frame_size_in_dip);
+        client_->DelegatedFrameHostGetLayer()->SetShowDelegatedContent(
+            frame_provider_.get(), frame_size_in_dip);
       } else {
         frame_provider_->SetFrameData(frame_data.Pass());
       }
@@ -448,7 +420,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   CheckResizeLock();
 
   if (!damage_rect_in_dip.IsEmpty())
-    client_->GetLayer()->OnDelegatedFrameDamage(damage_rect_in_dip);
+    client_->DelegatedFrameHostGetLayer()->OnDelegatedFrameDamage(
+        damage_rect_in_dip);
 
   pending_delegated_ack_count_++;
 
@@ -473,21 +446,18 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   }
   DidReceiveFrameFromRenderer(damage_rect);
   if (frame_provider_.get() || !surface_id_.is_null())
-    delegated_frame_evictor_->SwappedFrame(!host->is_hidden());
+    delegated_frame_evictor_->SwappedFrame(
+        client_->DelegatedFrameHostIsVisible());
   // Note: the frame may have been evicted immediately.
 }
 
 void DelegatedFrameHost::SendDelegatedFrameAck(uint32 output_surface_id) {
-  RenderWidgetHostImpl* host = client_->GetHost();
   cc::CompositorFrameAck ack;
   if (!surface_returned_resources_.empty())
     ack.resources.swap(surface_returned_resources_);
   if (resource_collection_.get())
     resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(host->GetRoutingID(),
-                                                   output_surface_id,
-                                                   host->GetProcess()->GetID(),
-                                                   ack);
+  client_->DelegatedFrameHostSendCompositorSwapAck(output_surface_id, ack);
   DCHECK_GT(pending_delegated_ack_count_, 0);
   pending_delegated_ack_count_--;
 }
@@ -505,8 +475,6 @@ void DelegatedFrameHost::UnusedResourcesAreAvailable() {
 
 void DelegatedFrameHost::SendReturnedDelegatedResources(
     uint32 output_surface_id) {
-  RenderWidgetHostImpl* host = client_->GetHost();
-
   cc::CompositorFrameAck ack;
   if (!surface_returned_resources_.empty()) {
     ack.resources.swap(surface_returned_resources_);
@@ -516,11 +484,8 @@ void DelegatedFrameHost::SendReturnedDelegatedResources(
   }
   DCHECK(!ack.resources.empty());
 
-  RenderWidgetHostImpl::SendReclaimCompositorResources(
-      host->GetRoutingID(),
-      output_surface_id,
-      host->GetProcess()->GetID(),
-      ack);
+  client_->DelegatedFrameHostSendReclaimCompositorResources(output_surface_id,
+                                                            ack);
 }
 
 void DelegatedFrameHost::ReturnResources(
@@ -535,7 +500,7 @@ void DelegatedFrameHost::ReturnResources(
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
-  client_->GetLayer()->SetShowSolidColorContent();
+  client_->DelegatedFrameHostGetLayer()->SetShowSolidColorContent();
   frame_provider_ = NULL;
   if (!surface_id_.is_null()) {
     surface_factory_->Destroy(surface_id_);
@@ -870,7 +835,6 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
 
 void DelegatedFrameHost::OnCompositingDidCommit(
     ui::Compositor* compositor) {
-  RenderWidgetHostImpl* host = client_->GetHost();
   if (can_lock_compositor_ == NO_PENDING_COMMIT) {
     can_lock_compositor_ = YES_CAN_LOCK;
     if (resize_lock_.get() && resize_lock_->GrabDeferredLock())
@@ -880,7 +844,7 @@ void DelegatedFrameHost::OnCompositingDidCommit(
   if (resize_lock_ &&
       resize_lock_->expected_size() == current_frame_size_in_dip_) {
     resize_lock_.reset();
-    host->WasResized();
+    client_->DelegatedFrameHostResizeLockWasReleased();
     // We may have had a resize while we had the lock (e.g. if the lock expired,
     // or if the UI still gave us some resizes), so make sure we grab a new lock
     // if necessary.
@@ -920,22 +884,20 @@ void DelegatedFrameHost::OnUpdateVSyncParameters(
     base::TimeDelta interval) {
   vsync_timebase_ = timebase;
   vsync_interval_ = interval;
-  RenderWidgetHostImpl* host = client_->GetHost();
-  if (client_->IsVisible())
-    host->UpdateVSyncParameters(timebase, interval);
+  if (client_->DelegatedFrameHostIsVisible())
+    client_->DelegatedFrameHostUpdateVSyncParameters(timebase, interval);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, ImageTransportFactoryObserver implementation:
+// DelegatedFrameHost, ImageTransportFactoryObserver implementation:
 
 void DelegatedFrameHost::OnLostResources() {
-  RenderWidgetHostImpl* host = client_->GetHost();
   if (frame_provider_.get() || !surface_id_.is_null())
     EvictDelegatedFrame();
   idle_frame_subscriber_textures_.clear();
   yuv_readback_pipeline_.reset();
 
-  host->ScheduleComposite();
+  client_->DelegatedFrameHostOnLostCompositorResources();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -986,8 +948,10 @@ void DelegatedFrameHost::ResetCompositor() {
   if (!compositor_)
     return;
   RunOnCommitCallbacks();
-  resize_lock_.reset();
-  client_->GetHost()->WasResized();
+  if (resize_lock_) {
+    resize_lock_.reset();
+    client_->DelegatedFrameHostResizeLockWasReleased();
+  }
   if (compositor_->HasObserver(this))
     compositor_->RemoveObserver(this);
   if (vsync_manager_.get()) {
@@ -1000,6 +964,14 @@ void DelegatedFrameHost::ResetCompositor() {
 void DelegatedFrameHost::LockResources() {
   DCHECK(frame_provider_.get() || !surface_id_.is_null());
   delegated_frame_evictor_->LockFrame();
+}
+
+void DelegatedFrameHost::RequestCopyOfOutput(
+    scoped_ptr<cc::CopyOutputRequest> request) {
+  if (!request_copy_of_output_callback_for_testing_.is_null())
+    request_copy_of_output_callback_for_testing_.Run(request.Pass());
+  else
+    client_->DelegatedFrameHostGetLayer()->RequestCopyOfOutput(request.Pass());
 }
 
 void DelegatedFrameHost::UnlockResources() {
