@@ -84,12 +84,12 @@ namespace disk_cache {
 NET_EXPORT_PRIVATE extern RankCrashes g_rankings_crash;
 }
 
-const char* kCrashEntryName = "the first key";
+const char kCrashEntryName[] = "the first key";
 
 // Creates the destinaton folder for this run, and returns it on full_path.
 bool CreateTargetFolder(const base::FilePath& path, RankCrashes action,
                         base::FilePath* full_path) {
-  const char* folders[] = {
+  const char* const folders[] = {
     "",
     "insert_empty1",
     "insert_empty2",

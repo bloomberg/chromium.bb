@@ -47,7 +47,7 @@ TEST_F(FtpDirectoryListingParserNetwareTest, Good) {
 }
 
 TEST_F(FtpDirectoryListingParserNetwareTest, Bad) {
-  const char* bad_cases[] = {
+  const char* const bad_cases[] = {
     " foo",
     "garbage",
     "d [] ftpadmin 512 Jan 29  2004 pub",

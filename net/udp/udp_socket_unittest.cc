@@ -541,7 +541,7 @@ TEST_F(UDPSocketTest, CloseWithPendingRead) {
 
 TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
   const uint16 kPort = 9999;
-  const char* const kGroup = "237.132.100.17";
+  const char kGroup[] = "237.132.100.17";
 
   IPEndPoint bind_address;
   CreateUDPAddress("0.0.0.0", kPort, &bind_address);

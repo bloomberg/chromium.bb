@@ -15,7 +15,7 @@ namespace net {
 namespace {
 
 // MAXNS is normally 3, but let's test 4 if possible.
-const char* kNameserversIPv4[] = {
+const char* const kNameserversIPv4[] = {
     "8.8.8.8",
     "192.168.1.1",
     "63.1.2.4",
@@ -23,7 +23,7 @@ const char* kNameserversIPv4[] = {
 };
 
 #if defined(OS_LINUX)
-const char* kNameserversIPv6[] = {
+const char* const kNameserversIPv6[] = {
     NULL,
     "2001:DB8:0::42",
     NULL,

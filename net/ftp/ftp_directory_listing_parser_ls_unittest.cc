@@ -167,7 +167,7 @@ TEST_F(FtpDirectoryListingParserLsTest, Good) {
 }
 
 TEST_F(FtpDirectoryListingParserLsTest, Ignored) {
-  const char* ignored_cases[] = {
+  const char* const ignored_cases[] = {
     "drwxr-xr-x 2 0 0 4096 Mar 18  2007  ",  // http://crbug.com/60065
 
     "ftpd: .: Permission denied",
@@ -194,7 +194,7 @@ TEST_F(FtpDirectoryListingParserLsTest, Ignored) {
 }
 
 TEST_F(FtpDirectoryListingParserLsTest, Bad) {
-  const char* bad_cases[] = {
+  const char* const bad_cases[] = {
     " foo",
     "garbage",
     "-rw-r--r-- ftp ftp",

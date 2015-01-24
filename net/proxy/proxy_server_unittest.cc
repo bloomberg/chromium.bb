@@ -11,12 +11,12 @@
 // was labelled correctly, and the accessors all give the right data.
 TEST(ProxyServerTest, FromURI) {
   const struct {
-    const char* input_uri;
-    const char* expected_uri;
+    const char* const input_uri;
+    const char* const expected_uri;
     net::ProxyServer::Scheme expected_scheme;
-    const char* expected_host;
+    const char* const expected_host;
     int expected_port;
-    const char* expected_pac_string;
+    const char* const expected_pac_string;
   } tests[] = {
     // HTTP proxy URIs:
     {
@@ -191,7 +191,7 @@ TEST(ProxyServerTest, Direct) {
 
 // Test parsing some invalid inputs.
 TEST(ProxyServerTest, Invalid) {
-  const char* tests[] = {
+  const char* const tests[] = {
     "",
     "   ",
     "dddf:",   // not a valid port
@@ -214,7 +214,7 @@ TEST(ProxyServerTest, Invalid) {
 
 // Test that LWS (SP | HT) is disregarded from the ends.
 TEST(ProxyServerTest, Whitespace) {
-  const char* tests[] = {
+  const char* const tests[] = {
     "  foopy:80",
     "foopy:80   \t",
     "  \tfoopy:80  ",
@@ -230,8 +230,8 @@ TEST(ProxyServerTest, Whitespace) {
 // Test parsing a ProxyServer from a PAC representation.
 TEST(ProxyServerTest, FromPACString) {
   const struct {
-    const char* input_pac;
-    const char* expected_uri;
+    const char* const input_pac;
+    const char* const expected_uri;
   } tests[] = {
     {
        "PROXY foopy:10",
@@ -288,7 +288,7 @@ TEST(ProxyServerTest, FromPACString) {
 
 // Test parsing a ProxyServer from an invalid PAC representation.
 TEST(ProxyServerTest, FromPACStringInvalid) {
-  const char* tests[] = {
+  const char* const tests[] = {
     "PROXY",  // missing host/port.
     "HTTPS",  // missing host/port.
     "SOCKS",  // missing host/port.
@@ -304,8 +304,8 @@ TEST(ProxyServerTest, FromPACStringInvalid) {
 TEST(ProxyServerTest, ComparatorAndEquality) {
   struct {
     // Inputs.
-    const char* server1;
-    const char* server2;
+    const char* const server1;
+    const char* const server2;
 
     // Expectation.
     //   -1 means server1 is less than server2

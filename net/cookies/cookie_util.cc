@@ -92,8 +92,9 @@ bool GetCookieDomainWithString(const GURL& url,
 // An average cookie expiration will look something like this:
 //   Sat, 15-Apr-17 21:01:22 GMT
 base::Time ParseCookieTime(const std::string& time_string) {
-  static const char* kMonths[] = { "jan", "feb", "mar", "apr", "may", "jun",
-                                   "jul", "aug", "sep", "oct", "nov", "dec" };
+  static const char* const kMonths[] = {
+    "jan", "feb", "mar", "apr", "may", "jun",
+    "jul", "aug", "sep", "oct", "nov", "dec" };
   static const int kMonthsLen = arraysize(kMonths);
   // We want to be pretty liberal, and support most non-ascii and non-digit
   // characters as a delimiter.  We can't treat : as a delimiter, because it
@@ -102,7 +103,7 @@ base::Time ParseCookieTime(const std::string& time_string) {
   // If the cookie attribute came in in quotes (ex expires="XXX"), the quotes
   // will be preserved, and we will get them here.  So we make sure to include
   // quote characters, and also \ for anything that was internally escaped.
-  static const char* kDelimiters = "\t !\"#$%&'()*+,-./;<=>?@[\\]^_`{|}~";
+  static const char kDelimiters[] = "\t !\"#$%&'()*+,-./;<=>?@[\\]^_`{|}~";
 
   base::Time::Exploded exploded = {0};
 

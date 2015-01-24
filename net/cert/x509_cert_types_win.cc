@@ -21,7 +21,7 @@ namespace {
 
 // A list of OIDs to decode. Any OID not on this list will be ignored for
 // purposes of parsing.
-const char* kOIDs[] = {
+const char* const kOIDs[] = {
   szOID_COMMON_NAME,
   szOID_LOCALITY_NAME,
   szOID_STATE_OR_PROVINCE_NAME,

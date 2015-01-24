@@ -278,7 +278,7 @@ TEST_F(HttpServerTest, Request) {
 TEST_F(HttpServerTest, RequestWithHeaders) {
   TestHttpClient client;
   ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
-  const char* kHeaders[][3] = {
+  const char* const kHeaders[][3] = {
       {"Header", ": ", "1"},
       {"HeaderWithNoWhitespace", ":", "1"},
       {"HeaderWithWhitespace", "   :  \t   ", "1 1 1 \t  "},
@@ -308,7 +308,7 @@ TEST_F(HttpServerTest, RequestWithHeaders) {
 TEST_F(HttpServerTest, RequestWithDuplicateHeaders) {
   TestHttpClient client;
   ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
-  const char* kHeaders[][3] = {
+  const char* const kHeaders[][3] = {
       {"FirstHeader", ": ", "1"},
       {"DuplicateHeader", ": ", "2"},
       {"MiddleHeader", ": ", "3"},
@@ -336,7 +336,7 @@ TEST_F(HttpServerTest, RequestWithDuplicateHeaders) {
 TEST_F(HttpServerTest, HasHeaderValueTest) {
   TestHttpClient client;
   ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
-  const char* kHeaders[] = {
+  const char* const kHeaders[] = {
       "Header: Abcd",
       "HeaderWithNoWhitespace:E",
       "HeaderWithWhitespace   :  \t   f \t  ",

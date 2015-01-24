@@ -555,7 +555,7 @@ void NetworkChangeNotifier::GetDnsConfig(DnsConfig* config) {
 // static
 const char* NetworkChangeNotifier::ConnectionTypeToString(
     ConnectionType type) {
-  static const char* kConnectionTypeNames[] = {
+  static const char* const kConnectionTypeNames[] = {
     "CONNECTION_UNKNOWN",
     "CONNECTION_ETHERNET",
     "CONNECTION_WIFI",

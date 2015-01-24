@@ -186,7 +186,7 @@ TEST_F(CookieMonsterTest, TestDomainTree) {
   scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
   GetCookiesCallback getCookiesCallback;
   SetCookieCallback setCookieCallback;
-  const char* domain_cookie_format_tree = "a=b; domain=%s";
+  const char domain_cookie_format_tree[] = "a=b; domain=%s";
   const std::string domain_base("top.com");
 
   std::vector<std::string> domain_list;
@@ -256,7 +256,7 @@ TEST_F(CookieMonsterTest, TestDomainLine) {
   domain_list.push_back("b.a.b.a.top.com");
   EXPECT_EQ(4u, domain_list.size());
 
-  const char* domain_cookie_format_line = "a%03d=b; domain=%s";
+  const char domain_cookie_format_line[] = "a%03d=b; domain=%s";
   for (int i = 0; i < 8; i++) {
     for (std::vector<std::string>::const_iterator it = domain_list.begin();
          it != domain_list.end(); it++) {
@@ -331,7 +331,7 @@ TEST_F(CookieMonsterTest, TestGCTimes) {
   SetCookieCallback setCookieCallback;
 
   const struct TestCase {
-    const char* name;
+    const char* const name;
     size_t num_cookies;
     size_t num_old_cookies;
   } test_cases[] = {

@@ -372,13 +372,13 @@ TEST_F(RegistryControlledDomainTest, TestDafsaTwoByteOffsets) {
   // is about 100 bytes and a one byte offset can at most add 64 bytes to
   // previous offset. Thus the paths must go over two byte offsets.
 
-  const char* key0 =
+  const char key0[] =
       "a.b.6____________________________________________________"
       "________________________________________________6";
-  const char* key1 =
+  const char key1[] =
       "a.b.7____________________________________________________"
       "________________________________________________7";
-  const char* key2 =
+  const char key2[] =
       "a.b.a____________________________________________________"
       "________________________________________________8";
 
@@ -405,13 +405,13 @@ TEST_F(RegistryControlledDomainTest, TestDafsaThreeByteOffsets) {
   // probability at least one of the tested paths has go over a three byte
   // offset.
 
-  const char* key0 =
+  const char key0[] =
       "a.b.Z6___________________________________________________"
       "_________________________________________________Z6";
-  const char* key1 =
+  const char key1[] =
       "a.b.Z7___________________________________________________"
       "_________________________________________________Z7";
-  const char* key2 =
+  const char key2[] =
       "a.b.Za___________________________________________________"
       "_________________________________________________Z8";
 
@@ -431,14 +431,14 @@ TEST_F(RegistryControlledDomainTest, TestDafsaJoinedPrefixes) {
   // suffixes. The DAFSA will then form a trie with the implicit source node
   // as root.
 
-  const char* key0 = "a.b.ai";
-  const char* key1 = "a.b.bj";
-  const char* key2 = "a.b.aak";
-  const char* key3 = "a.b.bbl";
-  const char* key4 = "a.b.aaa";
-  const char* key5 = "a.b.bbb";
-  const char* key6 = "a.b.aaaam";
-  const char* key7 = "a.b.bbbbn";
+  const char key0[] = "a.b.ai";
+  const char key1[] = "a.b.bj";
+  const char key2[] = "a.b.aak";
+  const char key3[] = "a.b.bbl";
+  const char key4[] = "a.b.aaa";
+  const char key5[] = "a.b.bbb";
+  const char key6[] = "a.b.aaaam";
+  const char key7[] = "a.b.bbbbn";
 
   EXPECT_EQ(2U, GetRegistryLengthFromHost(key0, EXCLUDE_UNKNOWN_REGISTRIES));
   EXPECT_EQ(0U, GetRegistryLengthFromHost(key1, EXCLUDE_UNKNOWN_REGISTRIES));
@@ -468,14 +468,14 @@ TEST_F(RegistryControlledDomainTest, TestDafsaJoinedSuffixes) {
   // prefixes. The DAFSA will then form a trie with the implicit sink node as
   // root.
 
-  const char* key0 = "a.b.ia";
-  const char* key1 = "a.b.jb";
-  const char* key2 = "a.b.kaa";
-  const char* key3 = "a.b.lbb";
-  const char* key4 = "a.b.aaa";
-  const char* key5 = "a.b.bbb";
-  const char* key6 = "a.b.maaaa";
-  const char* key7 = "a.b.nbbbb";
+  const char key0[] = "a.b.ia";
+  const char key1[] = "a.b.jb";
+  const char key2[] = "a.b.kaa";
+  const char key3[] = "a.b.lbb";
+  const char key4[] = "a.b.aaa";
+  const char key5[] = "a.b.bbb";
+  const char key6[] = "a.b.maaaa";
+  const char key7[] = "a.b.nbbbb";
 
   EXPECT_EQ(2U, GetRegistryLengthFromHost(key0, EXCLUDE_UNKNOWN_REGISTRIES));
   EXPECT_EQ(0U, GetRegistryLengthFromHost(key1, EXCLUDE_UNKNOWN_REGISTRIES));

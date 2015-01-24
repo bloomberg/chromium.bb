@@ -405,7 +405,7 @@ bool HttpUtil::IsNonCoalescingHeader(std::string::const_iterator name_begin,
                                      std::string::const_iterator name_end) {
   // NOTE: "set-cookie2" headers do not support expires attributes, so we don't
   // have to list them here.
-  const char* kNonCoalescingHeaders[] = {
+  const char* const kNonCoalescingHeaders[] = {
     "date",
     "expires",
     "last-modified",

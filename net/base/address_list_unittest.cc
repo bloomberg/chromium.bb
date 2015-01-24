@@ -13,7 +13,7 @@
 namespace net {
 namespace {
 
-static const char* kCanonicalHostname = "canonical.bar.com";
+const char kCanonicalHostname[] = "canonical.bar.com";
 
 TEST(AddressListTest, Canonical) {
   // Create an addrinfo with a canonical name.

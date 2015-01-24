@@ -70,8 +70,8 @@ namespace tools {
 namespace test {
 namespace {
 
-const char* kFooResponseBody = "Artichoke hearts make me happy.";
-const char* kBarResponseBody = "Palm hearts are pretty delicious, also.";
+const char kFooResponseBody[] = "Artichoke hearts make me happy.";
+const char kBarResponseBody[] = "Palm hearts are pretty delicious, also.";
 
 // Run all tests with the cross products of all versions.
 struct TestParams {

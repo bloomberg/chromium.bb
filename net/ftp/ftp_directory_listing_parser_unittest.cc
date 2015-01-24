@@ -104,7 +104,7 @@ TEST_P(FtpDirectoryListingParserTest, Parse) {
   }
 }
 
-const char* kTestFiles[] = {
+const char* const kTestFiles[] = {
   "dir-listing-ls-1",
   "dir-listing-ls-1-utf8",
   "dir-listing-ls-2",

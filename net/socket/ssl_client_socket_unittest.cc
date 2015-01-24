@@ -2322,15 +2322,15 @@ TEST_F(SSLClientSocketTest, ExportKeyingMaterial) {
   EXPECT_TRUE(sock->IsConnected());
 
   const int kKeyingMaterialSize = 32;
-  const char* kKeyingLabel1 = "client-socket-test-1";
-  const char* kKeyingContext = "";
+  const char kKeyingLabel1[] = "client-socket-test-1";
+  const char kKeyingContext[] = "";
   unsigned char client_out1[kKeyingMaterialSize];
   memset(client_out1, 0, sizeof(client_out1));
   rv = sock->ExportKeyingMaterial(
       kKeyingLabel1, false, kKeyingContext, client_out1, sizeof(client_out1));
   EXPECT_EQ(rv, OK);
 
-  const char* kKeyingLabel2 = "client-socket-test-2";
+  const char kKeyingLabel2[] = "client-socket-test-2";
   unsigned char client_out2[kKeyingMaterialSize];
   memset(client_out2, 0, sizeof(client_out2));
   rv = sock->ExportKeyingMaterial(

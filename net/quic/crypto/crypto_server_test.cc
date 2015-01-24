@@ -302,7 +302,7 @@ INSTANTIATE_TEST_CASE_P(CryptoServerTests,
                         ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(CryptoServerTest, BadSNI) {
-  static const char* kBadSNIs[] = {
+  static const char* const kBadSNIs[] = {
     "",
     "foo",
     "#00",
@@ -368,7 +368,7 @@ TEST_P(CryptoServerTest, TooSmall) {
 
 TEST_P(CryptoServerTest, BadSourceAddressToken) {
   // Invalid source-address tokens should be ignored.
-  static const char* kBadSourceAddressTokens[] = {
+  static const char* const kBadSourceAddressTokens[] = {
     "",
     "foo",
     "#0000",
@@ -390,7 +390,7 @@ TEST_P(CryptoServerTest, BadSourceAddressToken) {
 
 TEST_P(CryptoServerTest, BadClientNonce) {
   // Invalid nonces should be ignored.
-  static const char* kBadNonces[] = {
+  static const char* const kBadNonces[] = {
     "",
     "#0000",
     "#0000000000000000000000000000000000000000",

@@ -450,8 +450,8 @@ void SplitPushedHeadersToRequestAndResponse(const SpdyHeaderBlock& headers,
         to_insert = request_headers;
     } else {
       const char* host = protocol_version >= SPDY4 ? ":authority" : ":host";
-      static const char* scheme = ":scheme";
-      static const char* path = ":path";
+      static const char scheme[] = ":scheme";
+      static const char path[] = ":path";
       if (it->first == host || it->first == scheme || it->first == path)
         to_insert = request_headers;
     }

@@ -21,8 +21,8 @@
 
 namespace net {
 
-static const char* kSampleBufferContext = "This is a sample buffer.";
-static const char* kTestDomain = "top.domain.test";
+static const char kSampleBufferContext[] = "This is a sample buffer.";
+static const char kTestDomain[] = "top.domain.test";
 
 class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
  public:

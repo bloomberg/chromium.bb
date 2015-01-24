@@ -17,7 +17,7 @@ namespace net {
 TEST(MimeUtilTest, ExtensionTest) {
   const struct {
     const base::FilePath::CharType* extension;
-    const char* mime_type;
+    const char* const mime_type;
     bool valid;
   } tests[] = {
     { FILE_PATH_LITERAL("png"), "image/png", true },
@@ -44,7 +44,7 @@ TEST(MimeUtilTest, ExtensionTest) {
 TEST(MimeUtilTest, FileTest) {
   const struct {
     const base::FilePath::CharType* file_path;
-    const char* mime_type;
+    const char* const mime_type;
     bool valid;
   } tests[] = {
     { FILE_PATH_LITERAL("c:\\foo\\bar.css"), "text/css", true },
@@ -258,9 +258,9 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
 // results' length to 2.
 TEST(MimeUtilTest, ParseCodecString) {
   const struct {
-    const char* original;
+    const char* const original;
     size_t expected_size;
-    const char* results[2];
+    const char* const results[2];
   } tests[] = {
     { "\"bogus\"",                  1, { "bogus" }            },
     { "0",                          1, { "0" }                },
@@ -365,9 +365,9 @@ TEST(MimeUtilTest, TestIsValidTopLevelMimeType) {
 
 TEST(MimeUtilTest, TestGetExtensionsForMimeType) {
   const struct {
-    const char* mime_type;
+    const char* const mime_type;
     size_t min_expected_size;
-    const char* contained_result;
+    const char* const contained_result;
   } tests[] = {
     { "text/plain", 2, "txt" },
     { "*",          0, NULL  },
@@ -427,12 +427,13 @@ TEST(MimeUtilTest, TestGetCertificateMimeTypeForMimeType) {
 }
 
 TEST(MimeUtilTest, TestAddMultipartValueForUpload) {
-  const char* ref_output = "--boundary\r\nContent-Disposition: form-data;"
-                           " name=\"value name\"\r\nContent-Type: content type"
-                           "\r\n\r\nvalue\r\n"
-                           "--boundary\r\nContent-Disposition: form-data;"
-                           " name=\"value name\"\r\n\r\nvalue\r\n"
-                           "--boundary--\r\n";
+  const char ref_output[] =
+      "--boundary\r\nContent-Disposition: form-data;"
+      " name=\"value name\"\r\nContent-Type: content type"
+      "\r\n\r\nvalue\r\n"
+      "--boundary\r\nContent-Disposition: form-data;"
+      " name=\"value name\"\r\n\r\nvalue\r\n"
+      "--boundary--\r\n";
   std::string post_data;
   AddMultipartValueForUpload("value name", "value", "boundary",
                              "content type", &post_data);

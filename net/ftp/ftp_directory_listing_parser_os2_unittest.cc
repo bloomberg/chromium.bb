@@ -64,7 +64,7 @@ TEST_F(FtpDirectoryListingParserOS2Test, Good) {
 }
 
 TEST_F(FtpDirectoryListingParserOS2Test, Ignored) {
-  const char* ignored_cases[] = {
+  const char* const ignored_cases[] = {
     "1234 A 12-07-10  12:05",
     "0 DIR 11-02-09  05:32",
   };
@@ -81,7 +81,7 @@ TEST_F(FtpDirectoryListingParserOS2Test, Ignored) {
 }
 
 TEST_F(FtpDirectoryListingParserOS2Test, Bad) {
-  const char* bad_cases[] = {
+  const char* const bad_cases[] = {
     "garbage",
     "0 GARBAGE 11-02-09  05:32",
     "0 GARBAGE 11-02-09  05:32       NT",

@@ -19,7 +19,7 @@ namespace net {
 
 namespace {
 
-const char* kData[] = {
+const char* const kData[] = {
   "abc12345678",
   "987defg",
   "ghi12345",

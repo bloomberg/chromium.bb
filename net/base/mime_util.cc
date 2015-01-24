@@ -174,8 +174,8 @@ static base::LazyInstance<MimeUtil>::Leaky g_mime_util =
     LAZY_INSTANCE_INITIALIZER;
 
 struct MimeInfo {
-  const char* mime_type;
-  const char* extensions;  // comma separated list
+  const char* const mime_type;
+  const char* const extensions;  // comma separated list
 };
 
 static const MimeInfo primary_mappings[] = {
@@ -385,7 +385,7 @@ static const char* const supported_non_image_types[] = {
 
 // Dictionary of cryptographic file mime types.
 struct CertificateMimeTypeInfo {
-  const char* mime_type;
+  const char* const mime_type;
   CertificateMimeType cert_type;
 };
 
@@ -498,8 +498,8 @@ static bool IsMimeTypeSupportedOnAndroid(const std::string& mimeType) {
 #endif
 
 struct MediaFormatStrict {
-  const char* mime_type;
-  const char* codecs_list;
+  const char* const mime_type;
+  const char* const codecs_list;
 };
 
 // Following is the list of RFC 6381 compliant codecs:
@@ -799,7 +799,7 @@ bool MimeUtil::MatchesMimeType(const std::string& mime_type_pattern,
 }
 
 // See http://www.iana.org/assignments/media-types/media-types.xhtml
-static const char* legal_top_level_types[] = {
+static const char* const legal_top_level_types[] = {
   "application",
   "audio",
   "example",
@@ -1223,7 +1223,7 @@ static const char* const kStandardVideoTypes[] = {
 };
 
 struct StandardType {
-  const char* leading_mime_type;
+  const char* const leading_mime_type;
   const char* const* standard_types;
   size_t standard_types_len;
 };

@@ -22,45 +22,45 @@ namespace websockets {
 // "HTTP/1.1"
 // RFC6455 only requires HTTP/1.1 "or better" but in practice an HTTP version
 // other than 1.1 should not occur in a WebSocket handshake.
-extern const char* const kHttpProtocolVersion;
+extern const char kHttpProtocolVersion[];
 
 // The Sec-WebSockey-Key challenge is 16 random bytes, base64 encoded.
 extern const size_t kRawChallengeLength;
 
 // "Sec-WebSocket-Protocol"
-extern const char* const kSecWebSocketProtocol;
+extern const char kSecWebSocketProtocol[];
 
 // "Sec-WebSocket-Extensions"
-extern const char* const kSecWebSocketExtensions;
+extern const char kSecWebSocketExtensions[];
 
 // "Sec-WebSocket-Key"
-extern const char* const kSecWebSocketKey;
+extern const char kSecWebSocketKey[];
 
 // "Sec-WebSocket-Accept"
-extern const char* const kSecWebSocketAccept;
+extern const char kSecWebSocketAccept[];
 
 // "Sec-WebSocket-Version"
-extern const char* const kSecWebSocketVersion;
+extern const char kSecWebSocketVersion[];
 
 // This implementation only supports one version of the WebSocket protocol,
 // "13", as specified in RFC6455. If support for multiple versions is added in
 // future, it will probably no longer be worth having a constant for this.
-extern const char* const kSupportedVersion;
+extern const char kSupportedVersion[];
 
 // "Upgrade"
-extern const char* const kUpgrade;
+extern const char kUpgrade[];
 
 // "258EAFA5-E914-47DA-95CA-C5AB0DC85B11" as defined in section 4.1 of
 // RFC6455.
-extern const char* const kWebSocketGuid;
+extern const char kWebSocketGuid[];
 
 // Colon-prefixed lowercase headers for SPDY3.
 
 // ":sec-websocket-protocol"
-extern const char* const kSecWebSocketProtocolSpdy3;
+extern const char kSecWebSocketProtocolSpdy3[];
 
 // ":sec-websocket-extensions"
-extern const char* const kSecWebSocketExtensionsSpdy3;
+extern const char kSecWebSocketExtensionsSpdy3[];
 
 // Some parts of the code require lowercase versions of the header names in
 // order to do case-insensitive comparisons, or because of SPDY.
@@ -71,17 +71,17 @@ extern const char* const kSecWebSocketProtocolLowercase;
 extern const char* const kSecWebSocketExtensionsLowercase;
 
 // "sec-webSocket-key"
-extern const char* const kSecWebSocketKeyLowercase;
+extern const char kSecWebSocketKeyLowercase[];
 
 // "sec-websocket-version"
-extern const char* const kSecWebSocketVersionLowercase;
+extern const char kSecWebSocketVersionLowercase[];
 
 // "upgrade"
-extern const char* const kUpgradeLowercase;
+extern const char kUpgradeLowercase[];
 
 // "websocket", as used in the "Upgrade:" header. This is always lowercase
 // (except in obsolete versions of the protocol).
-extern const char* const kWebSocketLowercase;
+extern const char kWebSocketLowercase[];
 
 }  // namespace websockets
 }  // namespace net

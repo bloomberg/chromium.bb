@@ -61,12 +61,12 @@ class NewMockPersistentCookieStore
   virtual ~NewMockPersistentCookieStore() {}
 };
 
-const char* kTopLevelDomainPlus1 = "http://www.harvard.edu";
-const char* kTopLevelDomainPlus2 = "http://www.math.harvard.edu";
-const char* kTopLevelDomainPlus2Secure = "https://www.math.harvard.edu";
-const char* kTopLevelDomainPlus3 =
+const char kTopLevelDomainPlus1[] = "http://www.harvard.edu";
+const char kTopLevelDomainPlus2[] = "http://www.math.harvard.edu";
+const char kTopLevelDomainPlus2Secure[] = "https://www.math.harvard.edu";
+const char kTopLevelDomainPlus3[] =
     "http://www.bourbaki.math.harvard.edu";
-const char* kOtherDomain = "http://www.mit.edu";
+const char kOtherDomain[] = "http://www.mit.edu";
 const char kUrlGoogleSpecific[] = "http://www.gmail.google.izzle";
 
 class GetCookieListCallback : public CookieCallback {
@@ -1252,7 +1252,7 @@ TEST_F(CookieMonsterTest, SetCookieableSchemes) {
   scoped_refptr<CookieMonster> cm_foo(new CookieMonster(NULL, NULL));
 
   // Only cm_foo should allow foo:// cookies.
-  const char* kSchemes[] = {"foo"};
+  const char* const kSchemes[] = {"foo"};
   cm_foo->SetCookieableSchemes(kSchemes, 1);
 
   GURL foo_url("foo://host/path");

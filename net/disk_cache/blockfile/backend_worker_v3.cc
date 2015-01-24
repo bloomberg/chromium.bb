@@ -26,7 +26,7 @@ namespace {
 
 #if defined(V3_NOT_JUST_YET_READY)
 
-const char* kIndexName = "index";
+const char kIndexName[] = "index";
 
 // Seems like ~240 MB correspond to less than 50k entries for 99% of the people.
 // Note that the actual target is to keep the index table load factor under 55%

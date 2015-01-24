@@ -11,7 +11,7 @@ namespace net {
 
 namespace {
 
-const char* kSourceNames[] = {
+const char* const kSourceNames[] = {
   "UNKNOWN",
   "SYSTEM",
   "SYSTEM FAILED",

@@ -349,8 +349,8 @@ TEST_F(DiskCacheBackendTest, ShaderCacheBasics) {
 
 void DiskCacheBackendTest::BackendKeying() {
   InitCache();
-  const char* kName1 = "the first key";
-  const char* kName2 = "the first Key";
+  const char kName1[] = "the first key";
+  const char kName2[] = "the first Key";
   disk_cache::Entry *entry1, *entry2;
   ASSERT_EQ(net::OK, CreateEntry(kName1, &entry1));
 
@@ -3231,7 +3231,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenMissingFile) {
   SetSimpleCacheMode();
   InitCache();
 
-  const char* key = "the first key";
+  const char key[] = "the first key";
   disk_cache::Entry* entry = NULL;
 
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));
@@ -3267,7 +3267,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenBadFile) {
   SetSimpleCacheMode();
   InitCache();
 
-  const char* key = "the first key";
+  const char key[] = "the first key";
   disk_cache::Entry* entry = NULL;
 
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));

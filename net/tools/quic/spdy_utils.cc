@@ -24,14 +24,14 @@ using std::string;
 namespace net {
 namespace tools {
 
-const char* const kV4Host = ":authority";
+const char kV4Host[] = ":authority";
 
-const char* const kV3Host = ":host";
-const char* const kV3Path = ":path";
-const char* const kV3Scheme = ":scheme";
-const char* const kV3Status = ":status";
-const char* const kV3Method = ":method";
-const char* const kV3Version = ":version";
+const char kV3Host[] = ":host";
+const char kV3Path[] = ":path";
+const char kV3Scheme[] = ":scheme";
+const char kV3Status[] = ":status";
+const char kV3Method[] = ":method";
+const char kV3Version[] = ":version";
 
 void PopulateSpdyHeaderBlock(const BalsaHeaders& headers,
                              SpdyHeaderBlock* block,

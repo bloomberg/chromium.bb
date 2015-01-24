@@ -43,7 +43,7 @@ int LogBase2(int32 number) {
 }
 
 // WARNING: Add new stats only at the end, or change LoadStats().
-static const char* kCounterNames[] = {
+const char* const kCounterNames[] = {
   "Open miss",
   "Open hit",
   "Create miss",

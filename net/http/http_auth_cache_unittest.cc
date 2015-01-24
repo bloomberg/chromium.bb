@@ -55,11 +55,11 @@ class MockAuthHandler : public HttpAuthHandler {
   ~MockAuthHandler() override {}
 };
 
-const char* kRealm1 = "Realm1";
-const char* kRealm2 = "Realm2";
-const char* kRealm3 = "Realm3";
-const char* kRealm4 = "Realm4";
-const char* kRealm5 = "Realm5";
+const char kRealm1[] = "Realm1";
+const char kRealm2[] = "Realm2";
+const char kRealm3[] = "Realm3";
+const char kRealm4[] = "Realm4";
+const char kRealm5[] = "Realm5";
 const base::string16 k123(ASCIIToUTF16("123"));
 const base::string16 k1234(ASCIIToUTF16("1234"));
 const base::string16 kAdmin(ASCIIToUTF16("admin"));

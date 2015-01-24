@@ -477,7 +477,7 @@ class BeforeProxyHeadersSentHandler {
 
 // Fill |str| with a long header list that consumes >= |size| bytes.
 void FillLargeHeadersString(std::string* str, int size) {
-  const char* row =
+  const char row[] =
       "SomeHeaderName: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n";
   const int sizeof_row = strlen(row);
   const int num_rows = static_cast<int>(
@@ -1313,7 +1313,7 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
   StaticSocketDataProvider data2(data2_reads, arraysize(data2_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
-  const char* kExpectedResponseData[] = {
+  const char* const kExpectedResponseData[] = {
     "hello", "world"
   };
 
@@ -3425,7 +3425,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   scoped_ptr<SpdyFrame> connect(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.google.com", 443)));
   // fetch https://www.google.com/ via SPDY
-  const char* const kMyUrl = "https://www.google.com/";
+  const char kMyUrl[] = "https://www.google.com/";
   scoped_ptr<SpdyFrame> get(
       spdy_util_.ConstructSpdyGet(kMyUrl, false, 1, LOWEST));
   scoped_ptr<SpdyFrame> wrapped_get(
@@ -5150,7 +5150,7 @@ TEST_P(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
-  const char* kExpectedResponseData[] = {
+  const char* const kExpectedResponseData[] = {
     "hello world", "welcome"
   };
 
@@ -6498,7 +6498,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 
   // The proxy responds to the connect with a 407, using a persistent
   // connection.
-  const char* const kAuthStatus = "407";
+  const char kAuthStatus[] = "407";
   const char* const kAuthChallenge[] = {
     "proxy-authenticate", "Basic realm=\"MyRealm1\"",
   };
@@ -9549,10 +9549,10 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
   static const int kNoSSL = 500;
 
   struct TestConfig {
-    const char* proxy_url;
+    const char* const proxy_url;
     AuthTiming proxy_auth_timing;
     int proxy_auth_rv;
-    const char* server_url;
+    const char* const server_url;
     AuthTiming server_auth_timing;
     int server_auth_rv;
     int num_auth_rounds;
@@ -9934,7 +9934,7 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
                                          writes, arraysize(writes));
   session_deps_.socket_factory->AddSocketDataProvider(&data_provider);
 
-  const char* const kSocketGroup = "www.example.com:80";
+  const char kSocketGroup[] = "www.example.com:80";
 
   // First round of authentication.
   auth_handler->SetGenerateExpectation(false, OK);

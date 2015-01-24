@@ -61,8 +61,8 @@ namespace net {
 namespace {
 
 struct HeaderCase {
-  const char* header_name;
-  const char* expected;
+  const char* const header_name;
+  const char* const expected;
 };
 
 // Fills in sockaddr for the given 32-bit address (IPv4.)
@@ -154,9 +154,9 @@ bool FillIfaddrs(ifaddrs* interfaces,
 
 TEST(NetUtilTest, GetIdentityFromURL) {
   struct {
-    const char* input_url;
-    const char* expected_username;
-    const char* expected_password;
+    const char* const input_url;
+    const char* const expected_username;
+    const char* const expected_password;
   } tests[] = {
     {
       "http://username:password@google.com",
@@ -224,7 +224,7 @@ TEST(NetUtilTest, GetIdentityFromURL_UTF8) {
 }
 
 // Just a bunch of fake headers.
-const char* google_headers =
+const char google_headers[] =
     "HTTP/1.1 200 OK\n"
     "Content-TYPE: text/html; charset=utf-8\n"
     "Content-disposition: attachment; filename=\"download.pdf\"\n"
@@ -271,7 +271,7 @@ TEST(NetUtilTest, GetSpecificHeader) {
 
 TEST(NetUtilTest, CompliantHost) {
   struct CompliantHostCase {
-    const char* host;
+    const char* const host;
     bool expected_output;
   };
 
@@ -308,9 +308,9 @@ TEST(NetUtilTest, CompliantHost) {
 
 TEST(NetUtilTest, ParseHostAndPort) {
   const struct {
-    const char* input;
+    const char* const input;
     bool success;
-    const char* expected_host;
+    const char* const expected_host;
     int expected_port;
   } tests[] = {
     // Valid inputs:
@@ -367,7 +367,7 @@ TEST(NetUtilTest, ParseHostAndPort) {
 TEST(NetUtilTest, GetHostAndPort) {
   const struct {
     GURL url;
-    const char* expected_host_and_port;
+    const char* const expected_host_and_port;
   } tests[] = {
     { GURL("http://www.foo.com/x"), "www.foo.com:80"},
     { GURL("http://www.foo.com:21/x"), "www.foo.com:21"},
@@ -385,7 +385,7 @@ TEST(NetUtilTest, GetHostAndPort) {
 TEST(NetUtilTest, GetHostAndOptionalPort) {
   const struct {
     GURL url;
-    const char* expected_host_and_port;
+    const char* const expected_host_and_port;
   } tests[] = {
     { GURL("http://www.foo.com/x"), "www.foo.com"},
     { GURL("http://www.foo.com:21/x"), "www.foo.com:21"},
@@ -427,7 +427,7 @@ TEST(NetUtilTest, IPAddressToStringWithPort) {
 TEST(NetUtilTest, NetAddressToString_IPv4) {
   const struct {
     uint8 addr[4];
-    const char* result;
+    const char* const result;
   } tests[] = {
     {{0, 0, 0, 0}, "0.0.0.0"},
     {{127, 0, 0, 1}, "127.0.0.1"},
@@ -445,7 +445,7 @@ TEST(NetUtilTest, NetAddressToString_IPv4) {
 TEST(NetUtilTest, NetAddressToString_IPv6) {
   const struct {
     uint8 addr[16];
-    const char* result;
+    const char* const result;
   } tests[] = {
     {{0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10, 0xFE, 0xDC, 0xBA,
       0x98, 0x76, 0x54, 0x32, 0x10},
@@ -494,8 +494,8 @@ TEST(NetUtilTest, GetHostName) {
 
 TEST(NetUtilTest, SimplifyUrlForRequest) {
   struct {
-    const char* input_url;
-    const char* expected_simplified_url;
+    const char* const input_url;
+    const char* const expected_simplified_url;
   } tests[] = {
     {
       // Reference section should be stripped.
@@ -661,7 +661,7 @@ TEST(NetUtilTest, ConvertIPv4MappedToIPv4) {
 
 // Test parsing invalid CIDR notation literals.
 TEST(NetUtilTest, ParseCIDRBlock_Invalid) {
-  const char* bad_literals[] = {
+  const char* const bad_literals[] = {
       "foobar",
       "",
       "192.168.0.1",
@@ -702,8 +702,8 @@ TEST(NetUtilTest, ParseCIDRBlock_Valid) {
 
 TEST(NetUtilTest, IPNumberMatchesPrefix) {
   struct {
-    const char* cidr_literal;
-    const char* ip_literal;
+    const char* const cidr_literal;
+    const char* const ip_literal;
     bool expected_to_match;
   } tests[] = {
     // IPv4 prefix with IPv4 inputs.
@@ -1417,7 +1417,7 @@ TEST(NetUtilTest, SetWifiOptionsTest) {
 
 struct NonUniqueNameTestData {
   bool is_unique;
-  const char* hostname;
+  const char* const hostname;
 };
 
 // Google Test pretty-printer.

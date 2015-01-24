@@ -535,8 +535,8 @@ TEST_F(SSLServerSocketTest, ExportKeyingMaterial) {
   }
 
   const int kKeyingMaterialSize = 32;
-  const char* kKeyingLabel = "EXPERIMENTAL-server-socket-test";
-  const char* kKeyingContext = "";
+  const char kKeyingLabel[] = "EXPERIMENTAL-server-socket-test";
+  const char kKeyingContext[] = "";
   unsigned char server_out[kKeyingMaterialSize];
   int rv = server_socket_->ExportKeyingMaterial(kKeyingLabel,
                                                 false, kKeyingContext,
@@ -550,7 +550,7 @@ TEST_F(SSLServerSocketTest, ExportKeyingMaterial) {
   ASSERT_EQ(OK, rv);
   EXPECT_EQ(0, memcmp(server_out, client_out, sizeof(server_out)));
 
-  const char* kKeyingLabelBad = "EXPERIMENTAL-server-socket-test-bad";
+  const char kKeyingLabelBad[] = "EXPERIMENTAL-server-socket-test-bad";
   unsigned char client_bad[kKeyingMaterialSize];
   rv = client_socket_->ExportKeyingMaterial(kKeyingLabelBad,
                                             false, kKeyingContext,

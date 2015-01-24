@@ -70,7 +70,7 @@ TEST_F(FtpDirectoryListingParserWindowsTest, Good) {
 }
 
 TEST_F(FtpDirectoryListingParserWindowsTest, Ignored) {
-  const char* ignored_cases[] = {
+  const char* const ignored_cases[] = {
     "12-07-10  12:05AM       <DIR>    ",  // http://crbug.com/66097
     "12-07-10  12:05AM       1234    ",
     "11-02-09  05:32         <DIR>",
@@ -89,7 +89,7 @@ TEST_F(FtpDirectoryListingParserWindowsTest, Ignored) {
 }
 
 TEST_F(FtpDirectoryListingParserWindowsTest, Bad) {
-  const char* bad_cases[] = {
+  const char* const bad_cases[] = {
     "garbage",
     "11-02-09  05:32PM       <GARBAGE>",
     "11-02-09  05:32PM       <GARBAGE>      NT",

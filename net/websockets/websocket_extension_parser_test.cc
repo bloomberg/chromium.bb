@@ -65,7 +65,7 @@ TEST(WebSocketExtensionParserTest, ParseOneExtensionWithParams) {
 }
 
 TEST(WebSocketExtensionParserTest, InvalidPatterns) {
-  const char* patterns[] = {
+  const char* const patterns[] = {
     "fo\ao",  // control in extension name
     "fo\x01o",  // control in extension name
     "fo<o",  // separator in extension name

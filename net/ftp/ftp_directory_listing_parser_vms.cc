@@ -133,7 +133,7 @@ bool LooksLikeVmsUserIdentificationCode(const base::string16& input) {
 }
 
 bool LooksLikeVMSError(const base::string16& text) {
-  static const char* kPermissionDeniedMessages[] = {
+  static const char* const kPermissionDeniedMessages[] = {
     "%RMS-E-FNF",  // File not found.
     "%RMS-E-PRV",  // Access denied.
     "%SYSTEM-F-NOPRIV",

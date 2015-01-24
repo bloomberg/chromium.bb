@@ -1214,9 +1214,10 @@ bool HttpResponseHeaders::IsKeepAlive() const {
   // NOTE: It is perhaps risky to assume that a Proxy-Connection header is
   // meaningful when we don't know that this response was from a proxy, but
   // Mozilla also does this, so we'll do the same.
-  static const char* kConnectionHeaders[] = {"connection", "proxy-connection"};
+  static const char* const kConnectionHeaders[] = {
+    "connection", "proxy-connection"};
   struct KeepAliveToken {
-    const char* token;
+    const char* const token;
     bool keep_alive;
   };
   static const KeepAliveToken kKeepAliveTokens[] = {{"keep-alive", true},

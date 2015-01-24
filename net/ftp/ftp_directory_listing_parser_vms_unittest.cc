@@ -75,7 +75,7 @@ TEST_F(FtpDirectoryListingParserVmsTest, Good) {
 }
 
 TEST_F(FtpDirectoryListingParserVmsTest, Bad) {
-  const char* bad_cases[] = {
+  const char* const bad_cases[] = {
     "garbage",
 
     // Missing file version number.
@@ -128,7 +128,7 @@ TEST_F(FtpDirectoryListingParserVmsTest, Bad) {
 }
 
 TEST_F(FtpDirectoryListingParserVmsTest, BadDataAfterFooter) {
-  const char* bad_cases[] = {
+  const char* const bad_cases[] = {
     "garbage",
     "Total of 1 file, 2 blocks.",
     "Directory ANYNYMOUS_ROOT:[000000]",

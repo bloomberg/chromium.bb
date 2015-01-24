@@ -2323,7 +2323,7 @@ static void ConditionalizedRequestUpdatesCacheHelper(
   MockHttpCache cache;
 
   // The URL we will be requesting.
-  const char* kUrl = "http://foobar.com/main.css";
+  const char kUrl[] = "http://foobar.com/main.css";
 
   // Junk network response.
   static const Response kUnexpectedResponse = {
@@ -2434,7 +2434,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache1) {
     "body2"
   };
 
-  const char* extra_headers =
+  const char extra_headers[] =
       "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
@@ -2462,7 +2462,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache2) {
     "body2"
   };
 
-  const char* extra_headers = "If-None-Match: \"ETAG1\"\r\n";
+  const char extra_headers[] = "If-None-Match: \"ETAG1\"\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
       kNetResponse1, kNetResponse2, kNetResponse2, extra_headers);
@@ -2498,7 +2498,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache3) {
     "body1"
   };
 
-  const char* extra_headers =
+  const char extra_headers[] =
       "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
@@ -2511,7 +2511,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache3) {
 TEST(HttpCache, ConditionalizedRequestUpdatesCache4) {
   MockHttpCache cache;
 
-  const char* kUrl = "http://foobar.com/main.css";
+  const char kUrl[] = "http://foobar.com/main.css";
 
   static const Response kNetResponse = {
     "HTTP/1.1 304 Not Modified",
@@ -2520,7 +2520,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache4) {
     ""
   };
 
-  const char* kExtraRequestHeaders =
+  const char kExtraRequestHeaders[] =
       "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n";
 
   // We will control the network layer's responses for |kUrl| using
@@ -2555,7 +2555,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache4) {
 TEST(HttpCache, ConditionalizedRequestUpdatesCache5) {
   MockHttpCache cache;
 
-  const char* kUrl = "http://foobar.com/main.css";
+  const char kUrl[] = "http://foobar.com/main.css";
 
   static const Response kNetResponse = {
     "HTTP/1.1 200 OK",
@@ -2564,7 +2564,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache5) {
     "foobar!!!"
   };
 
-  const char* kExtraRequestHeaders =
+  const char kExtraRequestHeaders[] =
       "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n";
 
   // We will control the network layer's responses for |kUrl| using
@@ -2617,7 +2617,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache6) {
 
   // This is two days in the future from the original response's last-modified
   // date!
-  const char* kExtraRequestHeaders =
+  const char kExtraRequestHeaders[] =
       "If-Modified-Since: Fri, 08 Feb 2008 22:38:21 GMT\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
@@ -2646,7 +2646,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache7) {
   };
 
   // Different etag from original response.
-  const char* kExtraRequestHeaders = "If-None-Match: \"Foo2\"\r\n";
+  const char kExtraRequestHeaders[] = "If-None-Match: \"Foo2\"\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
       kNetResponse1, kNetResponse2, kNetResponse1, kExtraRequestHeaders);
@@ -2672,7 +2672,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache8) {
     "body2"
   };
 
-  const char* kExtraRequestHeaders =
+  const char kExtraRequestHeaders[] =
       "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n"
       "If-None-Match: \"Foo1\"\r\n";
 
@@ -2701,7 +2701,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache9) {
   };
 
   // The etag doesn't match what we have stored.
-  const char* kExtraRequestHeaders =
+  const char kExtraRequestHeaders[] =
       "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n"
       "If-None-Match: \"Foo2\"\r\n";
 
@@ -2730,7 +2730,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache10) {
   };
 
   // The modification date doesn't match what we have stored.
-  const char* kExtraRequestHeaders =
+  const char kExtraRequestHeaders[] =
       "If-Modified-Since: Fri, 08 Feb 2008 22:38:21 GMT\r\n"
       "If-None-Match: \"Foo1\"\r\n";
 
@@ -6366,8 +6366,8 @@ TEST(HttpCache, CacheDisabledMode) {
 TEST(HttpCache, UpdatesRequestResponseTimeOn304) {
   MockHttpCache cache;
 
-  const char* kUrl = "http://foobar";
-  const char* kData = "body";
+  const char kUrl[] = "http://foobar";
+  const char kData[] = "body";
 
   MockTransaction mock_network_response = { 0 };
   mock_network_response.url = kUrl;

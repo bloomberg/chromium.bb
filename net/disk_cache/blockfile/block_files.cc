@@ -20,7 +20,7 @@ using base::TimeTicks;
 
 namespace {
 
-const char* kBlockName = "data_";
+const char kBlockName[] = "data_";
 
 // This array is used to perform a fast lookup of the nibble bit pattern to the
 // type of entry that can be stored there (number of consecutive blocks).

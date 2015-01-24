@@ -21,7 +21,7 @@ namespace net {
 
 namespace {
 
-const char* const kPacUrl = "http://pacserver/script.pac";
+const char kPacUrl[] = "http://pacserver/script.pac";
 
 // In net/proxy/dhcp_proxy_script_fetcher_win_unittest.cc there are a few
 // tests that exercise DhcpProxyScriptAdapterFetcher end-to-end along with

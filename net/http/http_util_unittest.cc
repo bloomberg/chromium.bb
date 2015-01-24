@@ -16,7 +16,7 @@ class HttpUtilTest : public testing::Test {};
 }
 
 TEST(HttpUtilTest, IsSafeHeader) {
-  static const char* unsafe_headers[] = {
+  static const char* const unsafe_headers[] = {
     "sec-",
     "sEc-",
     "sec-foo",
@@ -53,7 +53,7 @@ TEST(HttpUtilTest, IsSafeHeader) {
     EXPECT_FALSE(HttpUtil::IsSafeHeader(StringToUpperASCII(std::string(
         unsafe_headers[i])))) << unsafe_headers[i];
   }
-  static const char* safe_headers[] = {
+  static const char* const safe_headers[] = {
     "foo",
     "x-",
     "x-foo",
@@ -102,8 +102,8 @@ TEST(HttpUtilTest, IsSafeHeader) {
 
 TEST(HttpUtilTest, HasHeader) {
   static const struct {
-    const char* headers;
-    const char* name;
+    const char* const headers;
+    const char* const name;
     bool expected_result;
   } tests[] = {
     { "", "foo", false },
@@ -121,7 +121,7 @@ TEST(HttpUtilTest, HasHeader) {
 }
 
 TEST(HttpUtilTest, StripHeaders) {
-  static const char* headers =
+  static const char* const headers =
       "Origin: origin\r\n"
       "Content-Type: text/plain\r\n"
       "Cookies: foo1\r\n"
@@ -130,11 +130,11 @@ TEST(HttpUtilTest, StripHeaders) {
       "Server: Apache\r\n"
       "OrIGin: origin2\r\n";
 
-  static const char* header_names[] = {
+  static const char* const header_names[] = {
     "origin", "content-type", "cookies"
   };
 
-  static const char* expected_stripped_headers =
+  static const char* const expected_stripped_headers =
       "Custom: baz\r\n"
       "Server: Apache\r\n";
 
@@ -262,7 +262,7 @@ TEST(HttpUtilTest, Quote) {
 
 TEST(HttpUtilTest, LocateEndOfHeaders) {
   struct {
-    const char* input;
+    const char* const input;
     int expected_result;
   } tests[] = {
     { "foo\r\nbar\r\n\r\n", 12 },
@@ -281,8 +281,8 @@ TEST(HttpUtilTest, LocateEndOfHeaders) {
 
 TEST(HttpUtilTest, AssembleRawHeaders) {
   struct {
-    const char* input;  // with '|' representing '\0'
-    const char* expected_result;  // with '\0' changed to '|'
+    const char* const input;  // with '|' representing '\0'
+    const char* const expected_result;  // with '\0' changed to '|'
   } tests[] = {
     { "HTTP/1.0 200 OK\r\nFoo: 1\r\nBar: 2\r\n\r\n",
       "HTTP/1.0 200 OK|Foo: 1|Bar: 2||" },
@@ -594,9 +594,9 @@ TEST(HttpUtilTest, AssembleRawHeaders) {
 // Test SpecForRequest() and PathForRequest().
 TEST(HttpUtilTest, RequestUrlSanitize) {
   struct {
-    const char* url;
-    const char* expected_spec;
-    const char* expected_path;
+    const char* const url;
+    const char* const expected_spec;
+    const char* const expected_path;
   } tests[] = {
     { // Check that #hash is removed.
       "http://www.google.com:78/foobar?query=1#hash",
@@ -657,11 +657,11 @@ TEST(HttpUtilTest, GenerateAcceptLanguageHeader) {
 // HttpResponseHeadersTest.GetMimeType also tests ParseContentType.
 TEST(HttpUtilTest, ParseContentType) {
   const struct {
-    const char* content_type;
-    const char* expected_mime_type;
-    const char* expected_charset;
+    const char* const content_type;
+    const char* const expected_mime_type;
+    const char* const expected_charset;
     const bool expected_had_charset;
-    const char* expected_boundary;
+    const char* const expected_boundary;
   } tests[] = {
     { "text/html; charset=utf-8",
       "text/html",
@@ -741,7 +741,7 @@ TEST(HttpUtilTest, ParseContentType) {
 
 TEST(HttpUtilTest, ParseRanges) {
   const struct {
-    const char* headers;
+    const char* const headers;
     bool expected_return_value;
     size_t expected_ranges_size;
     const struct {

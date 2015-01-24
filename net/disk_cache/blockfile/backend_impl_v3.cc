@@ -230,7 +230,8 @@ bool BackendImplV3::IsLoaded() const {
 }
 
 std::string BackendImplV3::HistogramName(const char* name) const {
-  static const char* names[] = { "Http", "", "Media", "AppCache", "Shader" };
+  static const char* const names[] = {
+    "Http", "", "Media", "AppCache", "Shader" };
   DCHECK_NE(cache_type_, net::MEMORY_CACHE);
   return base::StringPrintf("DiskCache3.%s_%s", name, names[cache_type_]);
 }

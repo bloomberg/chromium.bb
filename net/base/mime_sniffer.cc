@@ -110,11 +110,11 @@ namespace net {
 static const size_t kBytesRequiredForMagic = 42;
 
 struct MagicNumber {
-  const char* mime_type;
-  const char* magic;
+  const char* const mime_type;
+  const char* const magic;
   size_t magic_len;
   bool is_string;
-  const char* mask;  // if set, must have same length as |magic|
+  const char* const mask;  // if set, must have same length as |magic|
 };
 
 #define MAGIC_NUMBER(mime_type, magic) \
@@ -209,7 +209,7 @@ enum OfficeDocType {
 
 struct OfficeExtensionType {
   OfficeDocType doc_type;
-  const char* extension;
+  const char* const extension;
   size_t extension_len;
 };
 
@@ -724,7 +724,7 @@ static bool SniffBinary(const char* content,
 static bool IsUnknownMimeType(const std::string& mime_type) {
   // TODO(tc): Maybe reuse some code in net/http/http_response_headers.* here.
   // If we do, please be careful not to alter the semantics at all.
-  static const char* kUnknownMimeTypes[] = {
+  static const char* const kUnknownMimeTypes[] = {
     // Empty mime types are as unknown as they get.
     "",
     // The unknown/unknown type is popular and uninformative
@@ -819,7 +819,7 @@ bool ShouldSniffMimeType(const GURL& url, const std::string& mime_type) {
     return false;
   }
 
-  static const char* kSniffableTypes[] = {
+  static const char* const kSniffableTypes[] = {
     // Many web servers are misconfigured to send text/plain for many
     // different types of content.
     "text/plain",

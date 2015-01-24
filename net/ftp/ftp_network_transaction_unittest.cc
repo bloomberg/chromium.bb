@@ -72,8 +72,9 @@ class FtpSocketDataProvider : public DynamicSocketDataProvider {
                       "331 Password needed\r\n");
       case PRE_PASSWD:
         {
-          const char* response_one = "230 Welcome\r\n";
-          const char* response_multi = "230- One\r\n230- Two\r\n230 Three\r\n";
+          static const char response_one[] = "230 Welcome\r\n";
+          static const char response_multi[] =
+              "230- One\r\n230- Two\r\n230 Three\r\n";
           return Verify("PASS chrome@example.com\r\n", data, PRE_SYST,
                         multiline_welcome_ ? response_multi : response_one);
         }

@@ -32,7 +32,7 @@ struct TestTransaction {
 
 TEST(HttpVaryDataTest, IsInvalid) {
   // All of these responses should result in an invalid vary data object.
-  const char* kTestResponses[] = {
+  const char* const kTestResponses[] = {
     "HTTP/1.1 200 OK\n\n",
     "HTTP/1.1 200 OK\nVary: *\n\n",
     "HTTP/1.1 200 OK\nVary: cookie, *, bar\n\n",

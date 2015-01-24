@@ -15,12 +15,12 @@ namespace net {
 namespace {
 
 struct TestData {
-  const char* url;
+  const char* const url;
   bool succeds_in_windows_default;
   bool succeeds_in_whitelist;
 };
 
-const char* kTestAuthWhitelist = "*example.com,*foobar.com,baz";
+const char kTestAuthWhitelist[] = "*example.com,*foobar.com,baz";
 
 // Under Windows the following will be allowed by default:
 //    localhost

@@ -66,7 +66,7 @@ ScopedJavaLocalRef<jstring> ConvertToJstringWithSubstitutions(
 
 }  // namespace
 
-const char* const kCharsetLatin1 = "ISO-8859-1";
+const char kCharsetLatin1[] = "ISO-8859-1";
 
 bool ConvertToUtf8(const std::string& text, const char* charset,
                    std::string* output) {

@@ -38,7 +38,7 @@ TEST(ParsedCookieTest, TestQuoted) {
   // handle differently.  I've tested Internet Explorer 6, Opera 9.6,
   // Firefox 3, and Safari Windows 3.2.1.  We originally tried to match
   // Firefox closely, however we now match Internet Explorer and Safari.
-  const char* values[] = {
+  const char* const values[] = {
     // Trailing whitespace after a quoted value.  The whitespace after
     // the quote is stripped in all browsers.
     "\"zzz \"  ",              "\"zzz \"",
@@ -471,14 +471,14 @@ TEST(ParsedCookieTest, InvalidNonAlphanumericChars) {
 TEST(ParsedCookieTest, ValidNonAlphanumericChars) {
   // Note that some of these words are pasted backwords thanks to poor vim bidi
   // support. This should not affect the tests, however.
-  const char* pc1_literal = "name=العربية";
-  const char* pc2_literal = "name=普通話";
-  const char* pc3_literal = "name=ภาษาไทย";
-  const char* pc4_literal = "name=עִבְרִית";
-  const char* pc5_literal = "العربية=value";
-  const char* pc6_literal = "普通話=value";
-  const char* pc7_literal = "ภาษาไทย=value";
-  const char* pc8_literal = "עִבְרִית=value";
+  const char pc1_literal[] = "name=العربية";
+  const char pc2_literal[] = "name=普通話";
+  const char pc3_literal[] = "name=ภาษาไทย";
+  const char pc4_literal[] = "name=עִבְרִית";
+  const char pc5_literal[] = "العربية=value";
+  const char pc6_literal[] = "普通話=value";
+  const char pc7_literal[] = "ภาษาไทย=value";
+  const char pc8_literal[] = "עִבְרִית=value";
   ParsedCookie pc1(pc1_literal);
   ParsedCookie pc2(pc2_literal);
   ParsedCookie pc3(pc3_literal);

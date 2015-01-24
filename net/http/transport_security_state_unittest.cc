@@ -786,7 +786,7 @@ static bool AddHash(const std::string& type_and_base64,
 
 TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
   // kGoodPath is blog.torproject.org.
-  static const char* kGoodPath[] = {
+  static const char* const kGoodPath[] = {
     "sha1/m9lHYJYke9k0GtVZ+bXSQYE8nDI=",
     "sha1/o5OZxATDsgmwgcIfIWIneMJ0jkw=",
     "sha1/wHqYaI2J+6sFZAwRfap9ZbjKzE4=",
@@ -795,7 +795,7 @@ TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
 
   // kBadPath is plus.google.com via Trustcenter, which is utterly wrong for
   // torproject.org.
-  static const char* kBadPath[] = {
+  static const char* const kBadPath[] = {
     "sha1/4BjDjn8v2lWeUFQnqSs0BgbIcrU=",
     "sha1/gzuEEAB/bkqdQS3EIjk2by7lW+k=",
     "sha1/SOZo+SvSspXXR9gjIBBPM5iQn9Q=",
