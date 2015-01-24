@@ -40,6 +40,24 @@ std::string GetThemePath() {
 static const char* kNewTabCSSPath = "css/new_tab_theme.css";
 static const char* kNewIncognitoTabCSSPath = "css/incognito_new_tab_theme.css";
 
+void ProcessImageOnUIThread(const gfx::ImageSkia& image,
+                            float scale_factor,
+                            scoped_refptr<base::RefCountedBytes> data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const gfx::ImageSkiaRep& rep = image.GetRepresentation(scale_factor);
+  gfx::PNGCodec::EncodeBGRASkBitmap(
+      rep.sk_bitmap(), false /* discard transparency */, &data->data());
+}
+
+void ProcessResourceOnUIThread(int resource_id,
+                               float scale_factor,
+                               scoped_refptr<base::RefCountedBytes> data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ProcessImageOnUIThread(
+      *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id),
+      scale_factor, data);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,24 +197,23 @@ void ThemeSource::SendThemeImage(
   // rescale the bitmap if its backend doesn't contain the representation for
   // the specified scale factor. This is the fallback path in case chrome is
   // shipped without 2x resource pack but needs to use HighDPI display, which
-  // can happen in ChromeOS.
-  // TODO(mukai): remove this method itself when we ship 2x resource to all
-  // ChromeOS devices.
-  gfx::ImageSkia image;
+  // can happen in ChromeOS or Linux.
+  scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
   if (BrowserThemePack::IsPersistentImageID(resource_id)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
     DCHECK(tp);
 
-    image = *tp->GetImageSkiaNamed(resource_id);
+    ProcessImageOnUIThread(*tp->GetImageSkiaNamed(resource_id), scale_factor,
+                           data);
+    callback.Run(data.get());
   } else {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    image = *rb.GetImageSkiaNamed(resource_id);
+    // Fetching image data in ResourceBundle should happen on the UI thread. See
+    // crbug.com/449277
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&ProcessResourceOnUIThread, resource_id, scale_factor, data),
+        base::Bind(callback, data));
   }
-
-  const gfx::ImageSkiaRep& rep = image.GetRepresentation(scale_factor);
-  scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
-  gfx::PNGCodec::EncodeBGRASkBitmap(
-      rep.sk_bitmap(), false /* discard transparency */, &data->data());
-  callback.Run(data.get());
 }
