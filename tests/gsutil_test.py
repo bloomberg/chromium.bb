@@ -7,16 +7,17 @@
 
 
 import __builtin__
-import unittest
-import hashlib
-import zipfile
-import shutil
-import sys
 import base64
-import tempfile
+import hashlib
 import json
 import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
 import urllib2
+import zipfile
 
 
 # Add depot_tools to path
@@ -62,8 +63,6 @@ class FakeCall(object):
       message = 'Expected:\n  args: %s\n  kwargs: %s\n' % (exp_args, exp_kwargs)
       message += 'Got:\n  args: %s\n  kwargs: %s\n' % (args, kwargs)
       raise TestError(message)
-    if isinstance(exp_returns, Exception):
-      raise exp_returns
     return exp_returns
 
 
@@ -72,15 +71,15 @@ class GsutilUnitTests(unittest.TestCase):
     self.fake = FakeCall()
     self.tempdir = tempfile.mkdtemp()
     self.old_urlopen = getattr(urllib2, 'urlopen')
-    self.old_call = getattr(gsutil, 'call')
+    self.old_call = getattr(subprocess, 'call')
     setattr(urllib2, 'urlopen', self.fake)
-    setattr(gsutil, 'call', self.fake)
+    setattr(subprocess, 'call', self.fake)
 
   def tearDown(self):
     self.assertEqual(self.fake.expectations, [])
     shutil.rmtree(self.tempdir)
     setattr(urllib2, 'urlopen', self.old_urlopen)
-    setattr(gsutil, 'call', self.old_call)
+    setattr(subprocess, 'call', self.old_call)
 
   def test_download_gsutil(self):
     version = '4.2'
@@ -126,8 +125,8 @@ class GsutilUnitTests(unittest.TestCase):
     os.makedirs(gsutil_dir)
 
     self.fake.add_expectation(
-        [sys.executable, gsutil_bin, 'version'], verbose=False,
-        _returns=gsutil.SubprocessError())
+        [sys.executable, gsutil_bin, 'version'], stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, _returns=1)
 
     with open(gsutil_bin, 'w') as f:
       f.write('Foobar')
@@ -140,8 +139,8 @@ class GsutilUnitTests(unittest.TestCase):
     with open(tempzip, 'rb') as f:
       self.fake.add_expectation(url, _returns=Buffer(f.read()))
     self.fake.add_expectation(
-        [sys.executable, gsutil_bin, 'version'], verbose=False,
-        _returns=gsutil.SubprocessError())
+        [sys.executable, gsutil_bin, 'version'], stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, _returns=1)
 
     # This should delete the old bin and rewrite it with 'Fake gsutil'
     self.assertRaises(
@@ -160,7 +159,8 @@ class GsutilUnitTests(unittest.TestCase):
 
     # Mock out call().
     self.fake.add_expectation(
-        [sys.executable, gsutil_bin, 'version'], verbose=False, _returns=True)
+        [sys.executable, gsutil_bin, 'version'],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, _returns=0)
 
     with open(gsutil_bin, 'w') as f:
       f.write('Foobar')

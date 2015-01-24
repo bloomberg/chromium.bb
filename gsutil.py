@@ -27,29 +27,8 @@ DEFAULT_FALLBACK_GSUTIL = os.path.join(
     THIS_DIR, 'third_party', 'gsutil', 'gsutil')
 
 
-class SubprocessError(Exception):
-  def __init__(self, message=None, code=0):
-    super(SubprocessError, self).__init__(message)
-    self.code = code
-
-
 class InvalidGsutilError(Exception):
   pass
-
-
-def call(args, verbose=True, **kwargs):
-  kwargs['stdout'] = subprocess.PIPE
-  kwargs['stderr'] = subprocess.STDOUT
-  proc = subprocess.Popen(args, **kwargs)
-  out = []
-  for line in proc.stdout:
-    out.append(line)
-    if verbose:
-      sys.stdout.write(line)
-  code = proc.wait()
-  if code:
-    raise SubprocessError('%s failed with %s' % (args, code), code)
-  return ''.join(out)
 
 
 def download_gsutil(version, target_dir):
@@ -90,12 +69,9 @@ def download_gsutil(version, target_dir):
 
 def check_gsutil(gsutil_bin):
   """Run gsutil version and make sure it runs."""
-  try:
-    call([sys.executable, gsutil_bin, 'version'], verbose=False)
-    return True
-  except SubprocessError:
-    return False
-
+  return subprocess.call(
+      [sys.executable, gsutil_bin, 'version'],
+      stdout=subprocess.PIPE, stderr=subprocess.STDOUT) == 0
 
 def ensure_gsutil(version, target):
   bin_dir = os.path.join(target, 'gsutil_%s' % version)
@@ -127,11 +103,7 @@ def run_gsutil(force_version, fallback, target, args):
   else:
     gsutil_bin = fallback
   cmd = [sys.executable, gsutil_bin] + args
-  try:
-    call(cmd)
-  except SubprocessError as e:
-    return e.code
-  return 0
+  return subprocess.call(cmd)
 
 
 def parse_args():
