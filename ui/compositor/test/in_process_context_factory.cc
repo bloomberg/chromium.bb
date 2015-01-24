@@ -13,14 +13,14 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
-#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/reflector.h"
+#include "ui/compositor/test/in_process_context_provider.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
-#include "webkit/common/gpu/context_provider_in_process.h"
 
 namespace ui {
 namespace {
@@ -86,22 +86,22 @@ void InProcessContextFactory::CreateOutputSurface(
     base::WeakPtr<Compositor> compositor,
     bool software_fallback) {
   DCHECK(!software_fallback);
-  blink::WebGraphicsContext3D::Attributes attrs;
-  attrs.depth = false;
-  attrs.stencil = false;
-  attrs.antialias = false;
-  attrs.shareResources = true;
+  gpu::gles2::ContextCreationAttribHelper attribs;
+  attribs.alpha_size = 8;
+  attribs.blue_size = 8;
+  attribs.green_size = 8;
+  attribs.red_size = 8;
+  attribs.depth_size = 0;
+  attribs.stencil_size = 0;
+  attribs.samples = 0;
+  attribs.sample_buffers = 0;
+  attribs.fail_if_major_perf_caveat = false;
+  attribs.bind_generates_resource = false;
   bool lose_context_when_out_of_memory = true;
 
-  using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
-      WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
-          attrs, lose_context_when_out_of_memory, compositor->widget()));
-  CHECK(context3d);
-
-  using webkit::gpu::ContextProviderInProcess;
-  scoped_refptr<ContextProviderInProcess> context_provider =
-      ContextProviderInProcess::Create(context3d.Pass(), "UICompositor");
+  scoped_refptr<InProcessContextProvider> context_provider =
+      InProcessContextProvider::Create(attribs, lose_context_when_out_of_memory,
+                                       compositor->widget(), "UICompositor");
 
   if (use_test_surface_) {
     bool flipped_output_surface = false;
@@ -129,9 +129,8 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
     return shared_main_thread_contexts_;
 
   bool lose_context_when_out_of_memory = false;
-  shared_main_thread_contexts_ =
-      webkit::gpu::ContextProviderInProcess::CreateOffscreen(
-          lose_context_when_out_of_memory);
+  shared_main_thread_contexts_ = InProcessContextProvider::CreateOffscreen(
+      lose_context_when_out_of_memory);
   if (shared_main_thread_contexts_.get() &&
       !shared_main_thread_contexts_->BindToCurrentThread())
     shared_main_thread_contexts_ = NULL;
