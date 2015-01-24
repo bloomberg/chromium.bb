@@ -12,6 +12,7 @@
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/RoundedInnerRectClipper.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
@@ -263,38 +264,6 @@ FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(Rend
     return BoxPainter::getBackgroundRoundedRect(obj, borderRect, box, boxSize.width(), boxSize.height(), includeLogicalLeftEdge, includeLogicalRightEdge);
 }
 
-void BoxPainter::clipRoundedInnerRect(GraphicsContext * context, const LayoutRect& rect, const FloatRoundedRect& clipRect)
-{
-    if (clipRect.isRenderable()) {
-        context->clipRoundedRect(clipRect);
-    } else {
-        // We create a rounded rect for each of the corners and clip it, while making sure we clip opposing corners together.
-        if (!clipRect.radii().topLeft().isEmpty() || !clipRect.radii().bottomRight().isEmpty()) {
-            FloatRect topCorner(clipRect.rect().x(), clipRect.rect().y(), rect.maxX() - clipRect.rect().x(), rect.maxY() - clipRect.rect().y());
-            FloatRoundedRect::Radii topCornerRadii;
-            topCornerRadii.setTopLeft(clipRect.radii().topLeft());
-            context->clipRoundedRect(FloatRoundedRect(topCorner, topCornerRadii));
-
-            FloatRect bottomCorner(rect.x().toFloat(), rect.y().toFloat(), clipRect.rect().maxX() - rect.x().toFloat(), clipRect.rect().maxY() - rect.y().toFloat());
-            FloatRoundedRect::Radii bottomCornerRadii;
-            bottomCornerRadii.setBottomRight(clipRect.radii().bottomRight());
-            context->clipRoundedRect(FloatRoundedRect(bottomCorner, bottomCornerRadii));
-        }
-
-        if (!clipRect.radii().topRight().isEmpty() || !clipRect.radii().bottomLeft().isEmpty()) {
-            FloatRect topCorner(rect.x().toFloat(), clipRect.rect().y(), clipRect.rect().maxX() - rect.x().toFloat(), rect.maxY() - clipRect.rect().y());
-            FloatRoundedRect::Radii topCornerRadii;
-            topCornerRadii.setTopRight(clipRect.radii().topRight());
-            context->clipRoundedRect(FloatRoundedRect(topCorner, topCornerRadii));
-
-            FloatRect bottomCorner(clipRect.rect().x(), rect.y().toFloat(), rect.maxX() - clipRect.rect().x(), clipRect.rect().maxY() - rect.y().toFloat());
-            FloatRoundedRect::Radii bottomCornerRadii;
-            bottomCornerRadii.setBottomLeft(clipRect.radii().bottomLeft());
-            context->clipRoundedRect(FloatRoundedRect(bottomCorner, bottomCornerRadii));
-        }
-    }
-}
-
 void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect,
     BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, SkXfermode::Mode op, RenderObject* backgroundObject, bool skipBaseColor)
 {
@@ -356,10 +325,8 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
             if (border.isRenderable()) {
                 context->fillRoundedRect(border, bgColor);
             } else {
-                context->save();
-                clipRoundedInnerRect(context, rect, border);
+                RoundedInnerRectClipper clipper(obj, paintInfo, rect, border, ApplyToContext);
                 context->fillRect(border.rect(), bgColor);
-                context->restore();
             }
         } else {
             context->fillRect(pixelSnappedIntRect(rect), bgColor);
@@ -370,7 +337,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
 
     // BorderFillBox radius clipping is taken care of by BackgroundBleedClipBackground
     bool clipToBorderRadius = hasRoundedBorder && !(isBorderFill && bleedAvoidance == BackgroundBleedClipBackground);
-    GraphicsContextStateSaver clipToBorderStateSaver(*context, clipToBorderRadius);
+    OwnPtr<RoundedInnerRectClipper> clipToBorder;
     if (clipToBorderRadius) {
         FloatRoundedRect border = isBorderFill ? backgroundRoundedRectAdjustedForBleedAvoidance(obj, context, rect, bleedAvoidance, box, boxSize, includeLeftEdge, includeRightEdge) : getBackgroundRoundedRect(obj, rect, box, boxSize.width(), boxSize.height(), includeLeftEdge, includeRightEdge);
 
@@ -383,7 +350,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
             border = obj.style()->getRoundedInnerBorderFor(LayoutRect(border.rect()), includeLeftEdge, includeRightEdge);
         }
 
-        clipRoundedInnerRect(context, rect, border);
+        clipToBorder = adoptPtr(new RoundedInnerRectClipper(obj, paintInfo, rect, border, ApplyToContext));
     }
 
     int bLeft = includeLeftEdge ? obj.borderLeft() : 0;

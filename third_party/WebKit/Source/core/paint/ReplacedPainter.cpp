@@ -9,6 +9,7 @@
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/RoundedInnerRectClipper.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderReplaced.h"
@@ -60,30 +61,30 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     if (renderDrawingRecorder && renderDrawingRecorder->canUseCachedDrawing())
         return;
 
-    bool completelyClippedOut = false;
-    if (m_renderReplaced.style()->hasBorderRadius()) {
-        LayoutRect borderRect = LayoutRect(adjustedPaintOffset, m_renderReplaced.size());
+    {
+        OwnPtr<RoundedInnerRectClipper> clipper;
+        bool completelyClippedOut = false;
+        if (m_renderReplaced.style()->hasBorderRadius()) {
+            LayoutRect borderRect = LayoutRect(adjustedPaintOffset, m_renderReplaced.size());
 
-        if (borderRect.isEmpty()) {
-            completelyClippedOut = true;
-        } else {
-            // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
-            paintInfo.context->save();
-            FloatRoundedRect roundedInnerRect = m_renderReplaced.style()->getRoundedInnerBorderFor(paintRect,
-                m_renderReplaced.paddingTop() + m_renderReplaced.borderTop(), m_renderReplaced.paddingBottom() + m_renderReplaced.borderBottom(), m_renderReplaced.paddingLeft() + m_renderReplaced.borderLeft(), m_renderReplaced.paddingRight() + m_renderReplaced.borderRight(), true, true);
-            BoxPainter::clipRoundedInnerRect(paintInfo.context, paintRect, roundedInnerRect);
-        }
-    }
+            if (borderRect.isEmpty()) {
+                completelyClippedOut = true;
+            } else {
+                // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
+                FloatRoundedRect roundedInnerRect = m_renderReplaced.style()->getRoundedInnerBorderFor(paintRect,
+                    m_renderReplaced.paddingTop() + m_renderReplaced.borderTop(), m_renderReplaced.paddingBottom() + m_renderReplaced.borderBottom(), m_renderReplaced.paddingLeft() + m_renderReplaced.borderLeft(), m_renderReplaced.paddingRight() + m_renderReplaced.borderRight(), true, true);
 
-    if (!completelyClippedOut) {
-        if (paintInfo.phase == PaintPhaseClippingMask) {
-            m_renderReplaced.paintClippingMask(paintInfo, adjustedPaintOffset);
-        } else {
-            m_renderReplaced.paintReplaced(paintInfo, adjustedPaintOffset);
+                clipper = adoptPtr(new RoundedInnerRectClipper(m_renderReplaced, paintInfo, paintRect, roundedInnerRect, ApplyToContext));
+            }
         }
 
-        if (m_renderReplaced.style()->hasBorderRadius())
-            paintInfo.context->restore();
+        if (!completelyClippedOut) {
+            if (paintInfo.phase == PaintPhaseClippingMask) {
+                m_renderReplaced.paintClippingMask(paintInfo, adjustedPaintOffset);
+            } else {
+                m_renderReplaced.paintReplaced(paintInfo, adjustedPaintOffset);
+            }
+        }
     }
 
     // The selection tint never gets clipped by border-radius rounding, since we want it to run right up to the edges of

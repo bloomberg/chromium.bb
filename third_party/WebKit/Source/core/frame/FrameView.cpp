@@ -84,6 +84,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/text/TextStream.h"
 #include "wtf/CurrentTime.h"
@@ -1387,6 +1388,14 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     }
     if (RenderPart* frameRenderer = m_frame->ownerRenderer()) {
         if (isEnclosedInCompositingLayer()) {
+            // FIXME: This block is needed for the display list merge algorithm to work correctly.
+            //        Remove this once https://codereview.chromium.org/847783003/ lands.
+            if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+                RenderView* renderView = this->renderView();
+                ASSERT(renderView);
+                renderView->layer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries()->graphicsLayerBacking()->displayItemList()->invalidate(renderView->displayItemClient());
+            }
+
             LayoutRect rect(frameRenderer->borderLeft() + frameRenderer->paddingLeft(),
                             frameRenderer->borderTop() + frameRenderer->paddingTop(),
                             visibleWidth(), visibleHeight());

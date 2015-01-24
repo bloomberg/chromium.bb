@@ -1574,6 +1574,8 @@
             'paint/ReplicaPainter.h',
             'paint/RootInlineBoxPainter.cpp',
             'paint/RootInlineBoxPainter.h',
+            'paint/RoundedInnerRectClipper.cpp',
+            'paint/RoundedInnerRectClipper.h',
             'paint/SVGContainerPainter.cpp',
             'paint/SVGContainerPainter.h',
             'paint/SVGForeignObjectPainter.cpp',
