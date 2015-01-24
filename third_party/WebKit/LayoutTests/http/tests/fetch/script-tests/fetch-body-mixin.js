@@ -142,4 +142,45 @@ promise_test(function(test) {
         })
     }, 'TextTest');
 
+promise_test(function(test) {
+    var expectedText = '';
+    for (var i = 0; i < 100; ++i)
+        expectedText += i;
+
+    var values = [];
+    function partialReadResponse(response, read_count) {
+      function read(resolve, reject) {
+        while (response.body.state === 'readable') {
+          values.push(response.body.read());
+          if (values.length > read_count) {
+            resolve();
+            return;
+          }
+        }
+        if (response.body.state === 'closed') {
+          resolve();
+          return;
+        }
+        response.body.ready.then(function() {
+            read(resolve, reject);
+          }).catch(reject);
+      }
+      return new Promise(read);
+    }
+    var response;
+    return fetch('/fetch/resources/progressive.php')
+      .then(function(res) {
+          response = res;
+          return partialReadResponse(response, 10);
+        })
+      .then(function() {
+          return Promise.all(
+              values.map(arrayBufferToString).concat(response.text()));
+        })
+      .then(function(strings) {
+          var string = String.prototype.concat.apply('', strings);
+          assert_equals(string, expectedText);
+        })
+    }, 'PartiallyReadFromStreamAndReadTextTest');
+
 done();

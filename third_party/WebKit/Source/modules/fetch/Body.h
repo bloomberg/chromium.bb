@@ -29,8 +29,6 @@ class Body
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Body);
 public:
-    explicit Body(ExecutionContext*);
-    virtual ~Body() { }
     enum ResponseType {
         ResponseUnknown,
         ResponseAsArrayBuffer,
@@ -39,6 +37,8 @@ public:
         ResponseAsJSON,
         ResponseAsText
     };
+    explicit Body(ExecutionContext*);
+    virtual ~Body() { }
 
     ScriptPromise arrayBuffer(ScriptState*);
     ScriptPromise blob(ScriptState*);
@@ -94,7 +94,6 @@ private:
 
     OwnPtr<FileReaderLoader> m_loader;
     bool m_bodyUsed;
-    bool m_streamAccessed;
     ResponseType m_responseType;
     RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
     Member<ReadableStreamSource> m_streamSource;
