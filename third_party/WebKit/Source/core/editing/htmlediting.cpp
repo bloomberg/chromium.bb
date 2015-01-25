@@ -52,8 +52,8 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLUListElement.h"
+#include "core/layout/LayoutTableCell.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderTableCell.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -414,7 +414,7 @@ String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfP
 bool isTableStructureNode(const Node *node)
 {
     RenderObject* renderer = node->renderer();
-    return (renderer && (renderer->isTableCell() || renderer->isTableRow() || renderer->isTableSection() || renderer->isRenderTableCol()));
+    return (renderer && (renderer->isTableCell() || renderer->isTableRow() || renderer->isTableSection() || renderer->isLayoutTableCol()));
 }
 
 const String& nonBreakingSpaceString()
@@ -788,7 +788,7 @@ bool isEmptyTableCell(const Node* node)
         return false;
 
     // Check that the table cell contains no child renderers except for perhaps a single <br>.
-    RenderObject* childRenderer = toRenderTableCell(renderer)->firstChild();
+    RenderObject* childRenderer = toLayoutTableCell(renderer)->firstChild();
     if (!childRenderer)
         return true;
     if (!childRenderer->isBR())

@@ -22,15 +22,15 @@
 #include "config.h"
 #include "core/rendering/AutoTableLayout.h"
 
-#include "core/rendering/RenderTable.h"
-#include "core/rendering/RenderTableCell.h"
-#include "core/rendering/RenderTableCol.h"
-#include "core/rendering/RenderTableSection.h"
+#include "core/layout/LayoutTable.h"
+#include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutTableCol.h"
+#include "core/layout/LayoutTableSection.h"
 #include "core/rendering/TextAutosizer.h"
 
 namespace blink {
 
-AutoTableLayout::AutoTableLayout(RenderTable* table)
+AutoTableLayout::AutoTableLayout(LayoutTable* table)
     : TableLayout(table)
     , m_hasPercent(false)
     , m_effectiveLogicalWidthDirty(true)
@@ -45,21 +45,21 @@ void AutoTableLayout::recalcColumn(unsigned effCol)
 {
     Layout& columnLayout = m_layoutStruct[effCol];
 
-    RenderTableCell* fixedContributor = 0;
-    RenderTableCell* maxContributor = 0;
+    LayoutTableCell* fixedContributor = 0;
+    LayoutTableCell* maxContributor = 0;
 
     for (RenderObject* child = m_table->children()->firstChild(); child; child = child->nextSibling()) {
-        if (child->isRenderTableCol()){
-            // RenderTableCols don't have the concept of preferred logical width, but we need to clear their dirty bits
+        if (child->isLayoutTableCol()) {
+            // LayoutTableCols don't have the concept of preferred logical width, but we need to clear their dirty bits
             // so that if we call setPreferredWidthsDirty(true) on a col or one of its descendants, we'll mark it's
             // ancestors as dirty.
-            toRenderTableCol(child)->clearPreferredLogicalWidthsDirtyBits();
+            toLayoutTableCol(child)->clearPreferredLogicalWidthsDirtyBits();
         } else if (child->isTableSection()) {
-            RenderTableSection* section = toRenderTableSection(child);
+            LayoutTableSection* section = toLayoutTableSection(child);
             unsigned numRows = section->numRows();
             for (unsigned i = 0; i < numRows; i++) {
-                RenderTableSection::CellStruct current = section->cellAt(i, effCol);
-                RenderTableCell* cell = current.primaryCell();
+                LayoutTableSection::CellStruct current = section->cellAt(i, effCol);
+                LayoutTableCell* cell = current.primaryCell();
 
                 if (current.inColSpan || !cell)
                     continue;
@@ -149,7 +149,7 @@ void AutoTableLayout::fullRecalc()
 
     Length groupLogicalWidth;
     unsigned currentColumn = 0;
-    for (RenderTableCol* column = m_table->firstColumn(); column; column = column->nextColumn()) {
+    for (LayoutTableCol* column = m_table->firstColumn(); column; column = column->nextColumn()) {
         if (column->isTableColumnGroupWithColumnChildren())
             groupLogicalWidth = column->style()->logicalWidth();
         else {
@@ -178,7 +178,7 @@ void AutoTableLayout::fullRecalc()
 }
 
 // FIXME: This needs to be adapted for vertical writing modes.
-static bool shouldScaleColumns(RenderTable* table)
+static bool shouldScaleColumns(LayoutTable* table)
 {
     // A special case.  If this table is not fixed width and contained inside
     // a cell, then don't bloat the maxwidth by examining percentage growth.
@@ -194,7 +194,7 @@ static bool shouldScaleColumns(RenderTable* table)
             table = 0;
             if (cb && cb->isTableCell() &&
                 (cb->style()->width().isAuto() || cb->style()->width().isPercent())) {
-                RenderTableCell* cell = toRenderTableCell(cb);
+                LayoutTableCell* cell = toLayoutTableCell(cb);
                 if (cell->colSpan() > 1 || cell->table()->style()->width().isAuto())
                     scale = false;
                 else
@@ -287,7 +287,7 @@ int AutoTableLayout::calcEffectiveLogicalWidth()
     }
 
     for (size_t i = 0; i < m_spanCells.size(); ++i) {
-        RenderTableCell* cell = m_spanCells[i];
+        LayoutTableCell* cell = m_spanCells[i];
         if (!cell)
             break;
 
@@ -467,7 +467,7 @@ int AutoTableLayout::calcEffectiveLogicalWidth()
 /* gets all cells that originate in a column and have a cellspan > 1
    Sorts them by increasing cellspan
 */
-void AutoTableLayout::insertSpanCell(RenderTableCell *cell)
+void AutoTableLayout::insertSpanCell(LayoutTableCell *cell)
 {
     ASSERT_ARG(cell, cell && cell->colSpan() != 1);
     if (!cell || cell->colSpan() == 1)
@@ -486,7 +486,7 @@ void AutoTableLayout::insertSpanCell(RenderTableCell *cell)
     unsigned span = cell->colSpan();
     while (pos < m_spanCells.size() && m_spanCells[pos] && span > m_spanCells[pos]->colSpan())
         pos++;
-    memmove(m_spanCells.data()+pos+1, m_spanCells.data()+pos, (size-pos-1)*sizeof(RenderTableCell *));
+    memmove(m_spanCells.data()+pos+1, m_spanCells.data()+pos, (size-pos-1)*sizeof(LayoutTableCell *));
     m_spanCells[pos] = cell;
 }
 

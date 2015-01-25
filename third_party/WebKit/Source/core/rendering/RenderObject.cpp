@@ -48,6 +48,10 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/layout/LayoutTableCaption.h"
+#include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutTableCol.h"
+#include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
@@ -69,10 +73,6 @@
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbarPart.h"
-#include "core/rendering/RenderTableCaption.h"
-#include "core/rendering/RenderTableCell.h"
-#include "core/rendering/RenderTableCol.h"
-#include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -190,20 +190,20 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         return new RenderListItem(element);
     case TABLE:
     case INLINE_TABLE:
-        return new RenderTable(element);
+        return new LayoutTable(element);
     case TABLE_ROW_GROUP:
     case TABLE_HEADER_GROUP:
     case TABLE_FOOTER_GROUP:
-        return new RenderTableSection(element);
+        return new LayoutTableSection(element);
     case TABLE_ROW:
-        return new RenderTableRow(element);
+        return new LayoutTableRow(element);
     case TABLE_COLUMN_GROUP:
     case TABLE_COLUMN:
-        return new RenderTableCol(element);
+        return new LayoutTableCol(element);
     case TABLE_CELL:
-        return new RenderTableCell(element);
+        return new LayoutTableCell(element);
     case TABLE_CAPTION:
-        return new RenderTableCaption(element);
+        return new LayoutTableCaption(element);
     case BOX:
     case INLINE_BOX:
         return new RenderDeprecatedFlexibleBox(*element);
@@ -311,17 +311,18 @@ bool RenderObject::requiresAnonymousTableWrappers(const RenderObject* newChild) 
     // Check should agree with:
     // CSS 2.1 Tables: 17.2.1 Anonymous table objects
     // http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes
-    if (newChild->isRenderTableCol()) {
-        const RenderTableCol* newTableColumn = toRenderTableCol(newChild);
-        bool isColumnInColumnGroup = newTableColumn->isTableColumn() && isRenderTableCol();
+    if (newChild->isLayoutTableCol()) {
+        const LayoutTableCol* newTableColumn = toLayoutTableCol(newChild);
+        bool isColumnInColumnGroup = newTableColumn->isTableColumn() && isLayoutTableCol();
         return !isTable() && !isColumnInColumnGroup;
-    } else if (newChild->isTableCaption())
+    }
+    if (newChild->isTableCaption())
         return !isTable();
-    else if (newChild->isTableSection())
+    if (newChild->isTableSection())
         return !isTable();
-    else if (newChild->isTableRow())
+    if (newChild->isTableRow())
         return !isTableSection();
-    else if (newChild->isTableCell())
+    if (newChild->isTableCell())
         return !isTableRow();
     return false;
 }
@@ -339,12 +340,12 @@ void RenderObject::addChild(RenderObject* newChild, RenderObject* beforeChild)
         // Generate an anonymous table or reuse existing one from previous child
         // Per: 17.2.1 Anonymous table objects 3. Generate missing parents
         // http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes
-        RenderTable* table;
+        LayoutTable* table;
         RenderObject* afterChild = beforeChild ? beforeChild->previousSibling() : children->lastChild();
         if (afterChild && afterChild->isAnonymous() && afterChild->isTable() && !afterChild->isBeforeContent())
-            table = toRenderTable(afterChild);
+            table = toLayoutTable(afterChild);
         else {
-            table = RenderTable::createAnonymousWithParentRenderer(this);
+            table = LayoutTable::createAnonymousWithParentRenderer(this);
             addChild(table, beforeChild);
         }
         table->addChild(newChild);
@@ -2875,7 +2876,7 @@ bool RenderObject::supportsTouchAction() const
 {
     if (isInline() && !isReplaced())
         return false;
-    if (isTableRow() || isRenderTableCol())
+    if (isTableRow() || isLayoutTableCol())
         return false;
 
     return true;

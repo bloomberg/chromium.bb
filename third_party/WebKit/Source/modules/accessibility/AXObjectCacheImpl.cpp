@@ -40,6 +40,9 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/layout/LayoutSlider.h"
+#include "core/layout/LayoutTable.h"
+#include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutTableRow.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -48,9 +51,6 @@
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderProgress.h"
-#include "core/rendering/RenderTable.h"
-#include "core/rendering/RenderTableCell.h"
-#include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderView.h"
 #include "modules/accessibility/AXARIAGrid.h"
 #include "modules/accessibility/AXARIAGridCell.h"
@@ -290,11 +290,11 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(RenderObject* rendere
 
         // standard tables
         if (cssBox->isTable())
-            return AXTable::create(toRenderTable(cssBox), this);
+            return AXTable::create(toLayoutTable(cssBox), this);
         if (cssBox->isTableRow())
-            return AXTableRow::create(toRenderTableRow(cssBox), this);
+            return AXTableRow::create(toLayoutTableRow(cssBox), this);
         if (cssBox->isTableCell())
-            return AXTableCell::create(toRenderTableCell(cssBox), this);
+            return AXTableCell::create(toLayoutTableCell(cssBox), this);
 
         // progress bar
         if (cssBox->isProgress())

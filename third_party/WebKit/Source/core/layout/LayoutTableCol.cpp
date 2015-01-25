@@ -24,18 +24,18 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderTableCol.h"
+#include "core/layout/LayoutTableCol.h"
 
 #include "core/HTMLNames.h"
 #include "core/html/HTMLTableColElement.h"
-#include "core/rendering/RenderTable.h"
-#include "core/rendering/RenderTableCell.h"
+#include "core/layout/LayoutTable.h"
+#include "core/layout/LayoutTableCell.h"
 
 namespace blink {
 
 using namespace HTMLNames;
 
-RenderTableCol::RenderTableCol(Element* element)
+LayoutTableCol::LayoutTableCol(Element* element)
     : RenderBox(element)
     , m_span(1)
 {
@@ -44,19 +44,19 @@ RenderTableCol::RenderTableCol(Element* element)
     updateFromElement();
 }
 
-void RenderTableCol::trace(Visitor* visitor)
+void LayoutTableCol::trace(Visitor* visitor)
 {
     visitor->trace(m_children);
     RenderBox::trace(visitor);
 }
 
-void RenderTableCol::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void LayoutTableCol::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderBox::styleDidChange(diff, oldStyle);
 
     // If border was changed, notify table.
     if (parent()) {
-        RenderTable* table = this->table();
+        LayoutTable* table = this->table();
         if (table && !table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle && oldStyle->border() != style()->border()) {
             table->invalidateCollapsedBorders();
         } else if (oldStyle && oldStyle->logicalWidth() != style()->logicalWidth()) {
@@ -66,9 +66,9 @@ void RenderTableCol::styleDidChange(StyleDifference diff, const RenderStyle* old
             for (RenderObject* child = table->children()->firstChild(); child; child = child->nextSibling()) {
                 if (!child->isTableSection())
                     continue;
-                RenderTableSection* section = toRenderTableSection(child);
-                for (RenderTableRow* row = section->firstRow(); row; row = row->nextRow()) {
-                    for (RenderTableCell* cell = row->firstCell(); cell; cell = cell->nextCell())
+                LayoutTableSection* section = toLayoutTableSection(child);
+                for (LayoutTableRow* row = section->firstRow(); row; row = row->nextRow()) {
+                    for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell())
                         cell->setPreferredLogicalWidthsDirty();
                 }
             }
@@ -76,64 +76,65 @@ void RenderTableCol::styleDidChange(StyleDifference diff, const RenderStyle* old
     }
 }
 
-void RenderTableCol::updateFromElement()
+void LayoutTableCol::updateFromElement()
 {
     unsigned oldSpan = m_span;
     Node* n = node();
     if (isHTMLTableColElement(n)) {
         HTMLTableColElement& tc = toHTMLTableColElement(*n);
         m_span = tc.span();
-    } else
+    } else {
         m_span = !(style() && style()->display() == TABLE_COLUMN_GROUP);
+    }
     if (m_span != oldSpan && style() && parent())
         setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
-void RenderTableCol::insertedIntoTree()
+void LayoutTableCol::insertedIntoTree()
 {
     RenderBox::insertedIntoTree();
     table()->addColumn(this);
 }
 
-void RenderTableCol::willBeRemovedFromTree()
+void LayoutTableCol::willBeRemovedFromTree()
 {
     RenderBox::willBeRemovedFromTree();
     table()->removeColumn(this);
 }
 
-bool RenderTableCol::isChildAllowed(RenderObject* child, RenderStyle* style) const
+bool LayoutTableCol::isChildAllowed(RenderObject* child, RenderStyle* style) const
 {
     // We cannot use isTableColumn here as style() may return 0.
-    return child->isRenderTableCol() && style->display() == TABLE_COLUMN;
+    return child->isLayoutTableCol() && style->display() == TABLE_COLUMN;
 }
 
-bool RenderTableCol::canHaveChildren() const
+bool LayoutTableCol::canHaveChildren() const
 {
     // Cols cannot have children. This is actually necessary to fix a bug
     // with libraries.uc.edu, which makes a <p> be a table-column.
     return isTableColumnGroup();
 }
 
-LayoutRect RenderTableCol::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutTableCol::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // For now, just paint invalidate the whole table.
     // FIXME: Find a better way to do this, e.g., need to paint invalidate all the cells that we
     // might have propagated a background color or borders into.
     // FIXME: check for paintInvalidationContainer each time here?
 
-    RenderTable* parentTable = table();
+    LayoutTable* parentTable = table();
     if (!parentTable)
         return LayoutRect();
     return parentTable->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 }
 
-void RenderTableCol::imageChanged(WrappedImagePtr, const IntRect*)
+void LayoutTableCol::imageChanged(WrappedImagePtr, const IntRect*)
 {
     // FIXME: Issue paint invalidation of only the rect the image paints in.
     setShouldDoFullPaintInvalidation();
 }
 
-void RenderTableCol::clearPreferredLogicalWidthsDirtyBits()
+void LayoutTableCol::clearPreferredLogicalWidthsDirtyBits()
 {
     clearPreferredLogicalWidthsDirty();
 
@@ -141,60 +142,60 @@ void RenderTableCol::clearPreferredLogicalWidthsDirtyBits()
         child->clearPreferredLogicalWidthsDirty();
 }
 
-RenderTable* RenderTableCol::table() const
+LayoutTable* LayoutTableCol::table() const
 {
     RenderObject* table = parent();
     if (table && !table->isTable())
         table = table->parent();
-    return table && table->isTable() ? toRenderTable(table) : 0;
+    return table && table->isTable() ? toLayoutTable(table) : 0;
 }
 
-RenderTableCol* RenderTableCol::enclosingColumnGroup() const
+LayoutTableCol* LayoutTableCol::enclosingColumnGroup() const
 {
-    if (!parent()->isRenderTableCol())
+    if (!parent()->isLayoutTableCol())
         return 0;
 
-    RenderTableCol* parentColumnGroup = toRenderTableCol(parent());
+    LayoutTableCol* parentColumnGroup = toLayoutTableCol(parent());
     ASSERT(parentColumnGroup->isTableColumnGroup());
     ASSERT(isTableColumn());
     return parentColumnGroup;
 }
 
-RenderTableCol* RenderTableCol::nextColumn() const
+LayoutTableCol* LayoutTableCol::nextColumn() const
 {
     // If |this| is a column-group, the next column is the colgroup's first child column.
     if (RenderObject* firstChild = this->firstChild())
-        return toRenderTableCol(firstChild);
+        return toLayoutTableCol(firstChild);
 
     // Otherwise it's the next column along.
     RenderObject* next = nextSibling();
 
     // Failing that, the child is the last column in a column-group, so the next column is the next column/column-group after its column-group.
-    if (!next && parent()->isRenderTableCol())
+    if (!next && parent()->isLayoutTableCol())
         next = parent()->nextSibling();
 
-    for (; next && !next->isRenderTableCol(); next = next->nextSibling()) { }
+    for (; next && !next->isLayoutTableCol(); next = next->nextSibling()) { }
 
-    return toRenderTableCol(next);
+    return toLayoutTableCol(next);
 }
 
-const BorderValue& RenderTableCol::borderAdjoiningCellStartBorder(const RenderTableCell*) const
+const BorderValue& LayoutTableCol::borderAdjoiningCellStartBorder(const LayoutTableCell*) const
 {
     return style()->borderStart();
 }
 
-const BorderValue& RenderTableCol::borderAdjoiningCellEndBorder(const RenderTableCell*) const
+const BorderValue& LayoutTableCol::borderAdjoiningCellEndBorder(const LayoutTableCell*) const
 {
     return style()->borderEnd();
 }
 
-const BorderValue& RenderTableCol::borderAdjoiningCellBefore(const RenderTableCell* cell) const
+const BorderValue& LayoutTableCol::borderAdjoiningCellBefore(const LayoutTableCell* cell) const
 {
     ASSERT_UNUSED(cell, table()->colElement(cell->col() + cell->colSpan()) == this);
     return style()->borderStart();
 }
 
-const BorderValue& RenderTableCol::borderAdjoiningCellAfter(const RenderTableCell* cell) const
+const BorderValue& LayoutTableCol::borderAdjoiningCellAfter(const LayoutTableCell* cell) const
 {
     ASSERT_UNUSED(cell, table()->colElement(cell->col() - 1) == this);
     return style()->borderEnd();

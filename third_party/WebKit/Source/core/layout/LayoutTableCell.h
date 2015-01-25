@@ -22,12 +22,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderTableCell_h
-#define RenderTableCell_h
+#ifndef LayoutTableCell_h
+#define LayoutTableCell_h
 
+#include "core/layout/LayoutTableRow.h"
+#include "core/layout/LayoutTableSection.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderTableRow.h"
-#include "core/rendering/RenderTableSection.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -39,9 +39,9 @@ enum IncludeBorderColorOrNot { DoNotIncludeBorderColor, IncludeBorderColor };
 
 class SubtreeLayoutScope;
 
-class RenderTableCell final : public RenderBlockFlow {
+class LayoutTableCell final : public RenderBlockFlow {
 public:
-    explicit RenderTableCell(Element*);
+    explicit LayoutTableCell(Element*);
 
     unsigned colSpan() const
     {
@@ -73,12 +73,12 @@ public:
         return m_column;
     }
 
-    RenderTableRow* row() const { return toRenderTableRow(parent()); }
-    RenderTableSection* section() const { return toRenderTableSection(parent()->parent()); }
-    RenderTable* table() const { return toRenderTable(parent()->parent()->parent()); }
+    LayoutTableRow* row() const { return toLayoutTableRow(parent()); }
+    LayoutTableSection* section() const { return toLayoutTableSection(parent()->parent()); }
+    LayoutTable* table() const { return toLayoutTable(parent()->parent()->parent()); }
 
-    RenderTableCell* previousCell() const;
-    RenderTableCell* nextCell() const;
+    LayoutTableCell* previousCell() const;
+    LayoutTableCell* nextCell() const;
 
     unsigned rowIndex() const
     {
@@ -92,7 +92,7 @@ public:
         Length styleWidth = style()->logicalWidth();
         if (!styleWidth.isAuto())
             return styleWidth;
-        if (RenderTableCol* firstColumn = table()->colElement(col()))
+        if (LayoutTableCol* firstColumn = table()->colElement(col()))
             return logicalWidthFromColumns(firstColumn, styleWidth);
         return styleWidth;
     }
@@ -121,8 +121,8 @@ public:
     virtual int borderBefore() const override;
     virtual int borderAfter() const override;
 
-    void collectBorderValues(RenderTable::CollapsedBorderValues&) const;
-    static void sortBorderValues(RenderTable::CollapsedBorderValues&);
+    void collectBorderValues(LayoutTable::CollapsedBorderValues&) const;
+    static void sortBorderValues(LayoutTable::CollapsedBorderValues&);
 
     virtual void layout() override;
 
@@ -159,8 +159,8 @@ public:
     bool cellWidthChanged() const { return m_cellWidthChanged; }
     void setCellWidthChanged(bool b = true) { m_cellWidthChanged = b; }
 
-    static RenderTableCell* createAnonymous(Document*);
-    static RenderTableCell* createAnonymousWithParentRenderer(const RenderObject*);
+    static LayoutTableCell* createAnonymous(Document*);
+    static LayoutTableCell* createAnonymousWithParentRenderer(const RenderObject*);
     virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const override
     {
         return createAnonymousWithParentRenderer(parent);
@@ -194,14 +194,14 @@ public:
         return style()->borderStart();
     }
 
-    const BorderValue& borderAdjoiningCellBefore(const RenderTableCell* cell)
+    const BorderValue& borderAdjoiningCellBefore(const LayoutTableCell* cell)
     {
         ASSERT_UNUSED(cell, table()->cellAfter(cell) == this);
         // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at the cell level.
         return style()->borderStart();
     }
 
-    const BorderValue& borderAdjoiningCellAfter(const RenderTableCell* cell)
+    const BorderValue& borderAdjoiningCellAfter(const LayoutTableCell* cell)
     {
         ASSERT_UNUSED(cell, table()->cellBefore(cell) == this);
         // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at the cell level.
@@ -221,7 +221,7 @@ protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
 
 private:
-    virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "RenderTableCell (anonymous)" : "RenderTableCell"; }
+    virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableCell (anonymous)" : "LayoutTableCell"; }
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTableCell || RenderBlockFlow::isOfType(type); }
 
@@ -265,7 +265,7 @@ private:
     CollapsedBorderValue computeCollapsedBeforeBorder(IncludeBorderColorOrNot = IncludeBorderColor) const;
     CollapsedBorderValue computeCollapsedAfterBorder(IncludeBorderColorOrNot = IncludeBorderColor) const;
 
-    Length logicalWidthFromColumns(RenderTableCol* firstColForThisCell, Length widthFromStyle) const;
+    Length logicalWidthFromColumns(LayoutTableCol* firstColForThisCell, Length widthFromStyle) const;
 
     void updateColAndRowSpanFlags();
 
@@ -284,30 +284,30 @@ private:
     int m_intrinsicPaddingAfter;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableCell, isTableCell());
+DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTableCell, isTableCell());
 
-inline RenderTableCell* RenderTableCell::previousCell() const
+inline LayoutTableCell* LayoutTableCell::previousCell() const
 {
-    return toRenderTableCell(RenderObject::previousSibling());
+    return toLayoutTableCell(RenderObject::previousSibling());
 }
 
-inline RenderTableCell* RenderTableCell::nextCell() const
+inline LayoutTableCell* LayoutTableCell::nextCell() const
 {
-    return toRenderTableCell(RenderObject::nextSibling());
+    return toLayoutTableCell(RenderObject::nextSibling());
 }
 
-inline RenderTableCell* RenderTableRow::firstCell() const
+inline LayoutTableCell* LayoutTableRow::firstCell() const
 {
     ASSERT(children() == virtualChildren());
-    return toRenderTableCell(children()->firstChild());
+    return toLayoutTableCell(children()->firstChild());
 }
 
-inline RenderTableCell* RenderTableRow::lastCell() const
+inline LayoutTableCell* LayoutTableRow::lastCell() const
 {
     ASSERT(children() == virtualChildren());
-    return toRenderTableCell(children()->lastChild());
+    return toLayoutTableCell(children()->lastChild());
 }
 
 } // namespace blink
 
-#endif // RenderTableCell_h
+#endif // LayoutTableCell_h

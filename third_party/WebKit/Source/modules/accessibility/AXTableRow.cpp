@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/accessibility/AXTableRow.h"
 
-#include "core/rendering/RenderTableRow.h"
+#include "core/layout/LayoutTableRow.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTableCell.h"
 

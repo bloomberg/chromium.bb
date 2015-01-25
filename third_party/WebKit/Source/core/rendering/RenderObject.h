@@ -343,6 +343,7 @@ public:
     bool isFileUploadControl() const { return isOfType(RenderObjectFileUploadControl); }
     bool isFrame() const { return isOfType(RenderObjectFrame); }
     bool isFrameSet() const { return isOfType(RenderObjectFrameSet); }
+    bool isLayoutTableCol() const { return isOfType(RenderObjectLayoutTableCol); }
     bool isListBox() const { return isOfType(RenderObjectListBox); }
     bool isListItem() const { return isOfType(RenderObjectListItem); }
     bool isListMarker() const { return isOfType(RenderObjectListMarker); }
@@ -361,7 +362,6 @@ public:
     bool isRenderMultiColumnSpannerPlaceholder() const { return isOfType(RenderObjectRenderMultiColumnSpannerPlaceholder); }
     bool isRenderRegion() const { return isOfType(RenderObjectRenderRegion); }
     bool isRenderScrollbarPart() const { return isOfType(RenderObjectRenderScrollbarPart); }
-    bool isRenderTableCol() const { return isOfType(RenderObjectRenderTableCol); }
     bool isRenderView() const { return isOfType(RenderObjectRenderView); }
     bool isReplica() const { return isOfType(RenderObjectReplica); }
     bool isRuby() const { return isOfType(RenderObjectRuby); }
@@ -397,7 +397,7 @@ public:
     bool isHR() const;
     bool isLegend() const;
 
-    bool isTablePart() const { return isTableCell() || isRenderTableCol() || isTableCaption() || isTableRow() || isTableSection(); }
+    bool isTablePart() const { return isTableCell() || isLayoutTableCol() || isTableCaption() || isTableRow() || isTableSection(); }
 
     inline bool isBeforeContent() const;
     inline bool isAfterContent() const;
@@ -1070,6 +1070,7 @@ protected:
         RenderObjectFileUploadControl,
         RenderObjectFrame,
         RenderObjectFrameSet,
+        RenderObjectLayoutTableCol,
         RenderObjectListBox,
         RenderObjectListItem,
         RenderObjectListMarker,
@@ -1091,7 +1092,6 @@ protected:
         RenderObjectRenderPart,
         RenderObjectRenderRegion,
         RenderObjectRenderScrollbarPart,
-        RenderObjectRenderTableCol,
         RenderObjectRenderView,
         RenderObjectReplica,
         RenderObjectRuby,

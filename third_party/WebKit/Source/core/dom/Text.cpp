@@ -244,7 +244,7 @@ static inline bool canHaveWhitespaceChildren(const RenderObject& parent)
         return true;
 
     if (parent.isTable() || parent.isTableRow() || parent.isTableSection()
-        || parent.isRenderTableCol() || parent.isFrameSet()
+        || parent.isLayoutTableCol() || parent.isFrameSet()
         || parent.isFlexibleBox() || parent.isRenderGrid()
         || parent.isSVGRoot()
         || parent.isSVGContainer()

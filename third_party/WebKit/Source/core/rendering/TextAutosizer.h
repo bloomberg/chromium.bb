@@ -31,8 +31,8 @@
 #ifndef TextAutosizer_h
 #define TextAutosizer_h
 
+#include "core/layout/LayoutTable.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderTable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -78,7 +78,7 @@ public:
 
     class TableLayoutScope : LayoutScope {
     public:
-        explicit TableLayoutScope(RenderTable*);
+        explicit TableLayoutScope(LayoutTable*);
     };
 
     class DeferUpdatePageInfo {
@@ -252,7 +252,7 @@ private:
 
     void beginLayout(RenderBlock*);
     void endLayout(RenderBlock*);
-    void inflateAutoTable(RenderTable*);
+    void inflateAutoTable(LayoutTable*);
     float inflate(RenderObject*, InflateBehavior = ThisBlockOnly, float multiplier = 0);
     bool shouldHandleLayout() const;
     IntSize windowSize() const;

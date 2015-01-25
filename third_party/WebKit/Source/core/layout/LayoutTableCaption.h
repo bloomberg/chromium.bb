@@ -17,19 +17,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderTableCaption_h
-#define RenderTableCaption_h
+#ifndef LayoutTableCaption_h
+#define LayoutTableCaption_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
 namespace blink {
 
-class RenderTable;
+class LayoutTable;
 
-class RenderTableCaption final : public RenderBlockFlow {
+class LayoutTableCaption final : public RenderBlockFlow {
 public:
-    explicit RenderTableCaption(Element*);
-    virtual ~RenderTableCaption();
+    explicit LayoutTableCaption(Element*);
+    virtual ~LayoutTableCaption();
     virtual LayoutUnit containingBlockLogicalWidthForContent() const override;
 
 private:
@@ -38,11 +38,11 @@ private:
     virtual void insertedIntoTree() override;
     virtual void willBeRemovedFromTree() override;
 
-    RenderTable* table() const;
+    LayoutTable* table() const;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableCaption, isTableCaption());
+DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTableCaption, isTableCaption());
 
 } // namespace blink
 
-#endif // RenderTableCaption_h
+#endif // LayoutTableCaption_h

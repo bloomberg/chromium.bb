@@ -12,13 +12,13 @@ namespace blink {
 struct PaintInfo;
 class LayoutPoint;
 class LayoutRect;
+class LayoutTableCell;
 class RenderObject;
 class RenderStyle;
-class RenderTableCell;
 
 class TableCellPainter {
 public:
-    TableCellPainter(RenderTableCell& renderTableCell) : m_renderTableCell(renderTableCell) { }
+    TableCellPainter(LayoutTableCell& layoutTableCell) : m_layoutTableCell(layoutTableCell) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
 
@@ -38,7 +38,7 @@ private:
     CollapsedBorderValue cachedCollapsedTopBorder(const RenderStyle*) const;
     CollapsedBorderValue cachedCollapsedBottomBorder(const RenderStyle*) const;
 
-    RenderTableCell& m_renderTableCell;
+    LayoutTableCell& m_layoutTableCell;
 };
 
 } // namespace blink

@@ -135,7 +135,7 @@ bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
     bool parentIsTableElementPart = (parentRenderer->isTable() && isHTMLTableElement(*node))
         || (parentRenderer->isTableRow() && isHTMLTableRowElement(*node))
         || (parentRenderer->isTableSection() && node->hasTagName(tbodyTag))
-        || (parentRenderer->isRenderTableCol() && node->hasTagName(colTag))
+        || (parentRenderer->isLayoutTableCol() && node->hasTagName(colTag))
         || (parentRenderer->isTableCell() && isHTMLTableRowElement(*node));
 
     if (!parentIsTableElementPart)

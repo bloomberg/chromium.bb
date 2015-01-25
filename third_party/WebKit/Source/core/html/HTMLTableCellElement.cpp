@@ -32,7 +32,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/rendering/RenderTableCell.h"
+#include "core/layout/LayoutTableCell.h"
 
 using std::max;
 using std::min;
@@ -116,10 +116,10 @@ void HTMLTableCellElement::parseAttribute(const QualifiedName& name, const Atomi
 {
     if (name == rowspanAttr) {
         if (renderer() && renderer()->isTableCell())
-            toRenderTableCell(renderer())->colSpanOrRowSpanChanged();
+            toLayoutTableCell(renderer())->colSpanOrRowSpanChanged();
     } else if (name == colspanAttr) {
         if (renderer() && renderer()->isTableCell())
-            toRenderTableCell(renderer())->colSpanOrRowSpanChanged();
+            toLayoutTableCell(renderer())->colSpanOrRowSpanChanged();
     } else
         HTMLTablePartElement::parseAttribute(name, value);
 }
@@ -184,8 +184,8 @@ HTMLTableCellElement* HTMLTableCellElement::cellAbove() const
     if (!cellRenderer->isTableCell())
         return nullptr;
 
-    RenderTableCell* tableCellRenderer = toRenderTableCell(cellRenderer);
-    RenderTableCell* cellAboveRenderer = tableCellRenderer->table()->cellAbove(tableCellRenderer);
+    LayoutTableCell* tableCellRenderer = toLayoutTableCell(cellRenderer);
+    LayoutTableCell* cellAboveRenderer = tableCellRenderer->table()->cellAbove(tableCellRenderer);
     if (!cellAboveRenderer)
         return nullptr;
 

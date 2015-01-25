@@ -43,10 +43,10 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
+#include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutTableRow.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderTableCell.h"
-#include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "platform/fonts/Font.h"
@@ -732,8 +732,8 @@ bool TextIterator::shouldEmitTabBeforeNode(Node* node)
         return false;
 
     // Want a tab before every cell other than the first one
-    RenderTableCell* rc = toRenderTableCell(r);
-    RenderTable* t = rc->table();
+    LayoutTableCell* rc = toLayoutTableCell(r);
+    LayoutTable* t = rc->table();
     return t && (t->cellBefore(rc) || t->cellAbove(rc));
 }
 
@@ -786,7 +786,7 @@ static bool shouldEmitNewlinesBeforeAndAfterNode(Node& node)
     // Need to make an exception for table row elements, because they are neither
     // "inline" or "RenderBlock", but we want newlines for them.
     if (r->isTableRow()) {
-        RenderTable* t = toRenderTableRow(r)->table();
+        LayoutTable* t = toLayoutTableRow(r)->table();
         if (t && !t->isInline())
             return true;
     }

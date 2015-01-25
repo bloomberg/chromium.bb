@@ -5,19 +5,19 @@
 #ifndef TableRowPainter_h
 #define TableRowPainter_h
 
-#include "core/rendering/RenderTableRow.h"
+#include "core/layout/LayoutTableRow.h"
 
 namespace blink {
 
 class TableRowPainter {
 public:
-    TableRowPainter(RenderTableRow& renderTableRow) : m_renderTableRow(renderTableRow) { }
+    TableRowPainter(LayoutTableRow& layoutTableRow) : m_layoutTableRow(layoutTableRow) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
     void paintOutlineForRowIfNeeded(const PaintInfo&, const LayoutPoint&);
 
 private:
-    RenderTableRow& m_renderTableRow;
+    LayoutTableRow& m_layoutTableRow;
 };
 
 } // namespace blink

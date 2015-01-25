@@ -38,6 +38,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Page.h"
 #include "core/paint/BlockPainter.h"
@@ -57,7 +58,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderRegion.h"
-#include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
@@ -2959,7 +2959,7 @@ void RenderBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Lay
     adjustIntrinsicLogicalWidthsForColumns(minLogicalWidth, maxLogicalWidth);
 
     if (isTableCell()) {
-        Length tableCellWidth = toRenderTableCell(this)->styleOrColLogicalWidth();
+        Length tableCellWidth = toLayoutTableCell(this)->styleOrColLogicalWidth();
         if (tableCellWidth.isFixed() && tableCellWidth.value() > 0)
             maxLogicalWidth = std::max(minLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(tableCellWidth.value()));
     }

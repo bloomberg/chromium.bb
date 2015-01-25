@@ -44,7 +44,7 @@
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/HTMLTableSectionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/rendering/RenderTable.h"
+#include "core/layout/LayoutTable.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/StdLibExtras.h"
 

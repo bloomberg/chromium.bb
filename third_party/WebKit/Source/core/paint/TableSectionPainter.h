@@ -8,21 +8,21 @@
 namespace blink {
 
 class LayoutPoint;
+class LayoutTableCell;
+class LayoutTableSection;
 struct PaintInfo;
-class RenderTableCell;
-class RenderTableSection;
 
 class TableSectionPainter {
 public:
-    TableSectionPainter(RenderTableSection& renderTableSection) : m_renderTableSection(renderTableSection) { }
+    TableSectionPainter(LayoutTableSection& layoutTableSection) : m_layoutTableSection(layoutTableSection) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
     void paintObject(const PaintInfo&, const LayoutPoint&);
 
 private:
-    void paintCell(RenderTableCell*, const PaintInfo&, const LayoutPoint&);
+    void paintCell(LayoutTableCell*, const PaintInfo&, const LayoutPoint&);
 
-    RenderTableSection& m_renderTableSection;
+    LayoutTableSection& m_layoutTableSection;
 };
 
 } // namespace blink

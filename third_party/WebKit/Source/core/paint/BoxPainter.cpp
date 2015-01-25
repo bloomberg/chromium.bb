@@ -8,6 +8,7 @@
 #include "core/HTMLNames.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
@@ -19,7 +20,6 @@
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/style/BorderEdge.h"
@@ -107,7 +107,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     // The theme will tell us whether or not we should also paint the CSS border.
     if (boxDecorationData.hasBorder && boxDecorationData.bleedAvoidance() != BackgroundBleedBackgroundOverBorder
         && (!boxDecorationData.hasAppearance || (!themePainted && LayoutTheme::theme().paintBorderOnly(&m_renderBox, paintInfo, snappedPaintRect)))
-        && !(m_renderBox.isTable() && toRenderTable(&m_renderBox)->collapseBorders()))
+        && !(m_renderBox.isTable() && toLayoutTable(&m_renderBox)->collapseBorders()))
         paintBorder(m_renderBox, paintInfo, paintRect, style, boxDecorationData.bleedAvoidance());
 }
 

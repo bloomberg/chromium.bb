@@ -28,12 +28,12 @@
 
 namespace blink {
 
-class RenderTable;
-class RenderTableCell;
+class LayoutTable;
+class LayoutTableCell;
 
 class AutoTableLayout final : public TableLayout {
 public:
-    AutoTableLayout(RenderTable*);
+    AutoTableLayout(LayoutTable*);
     virtual ~AutoTableLayout();
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) override;
@@ -47,7 +47,7 @@ private:
 
     int calcEffectiveLogicalWidth();
 
-    void insertSpanCell(RenderTableCell*);
+    void insertSpanCell(LayoutTableCell*);
 
     struct Layout {
         Layout()
@@ -71,7 +71,7 @@ private:
     };
 
     Vector<Layout, 4> m_layoutStruct;
-    Vector<RenderTableCell*, 4> m_spanCells;
+    Vector<LayoutTableCell*, 4> m_spanCells;
     bool m_hasPercent : 1;
     mutable bool m_effectiveLogicalWidthDirty : 1;
 };

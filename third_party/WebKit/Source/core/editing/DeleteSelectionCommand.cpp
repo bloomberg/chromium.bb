@@ -40,7 +40,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLTableRowElement.h"
-#include "core/rendering/RenderTableCell.h"
+#include "core/layout/LayoutTableCell.h"
 #include "core/rendering/RenderText.h"
 
 namespace blink {
@@ -375,7 +375,7 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
         // Make sure empty cell has some height, if a placeholder can be inserted.
         document().updateLayoutIgnorePendingStylesheets();
         RenderObject *r = node->renderer();
-        if (r && r->isTableCell() && toRenderTableCell(r)->contentHeight() <= 0) {
+        if (r && r->isTableCell() && toLayoutTableCell(r)->contentHeight() <= 0) {
             Position firstEditablePosition = firstEditablePositionInNode(node.get());
             if (firstEditablePosition.isNotNull())
                 insertBlockPlaceholder(firstEditablePosition);

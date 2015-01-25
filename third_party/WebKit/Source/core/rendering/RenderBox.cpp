@@ -37,6 +37,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/LayoutTableCell.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
@@ -53,7 +54,6 @@
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderMultiColumnSpannerPlaceholder.h"
-#include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/ShadowList.h"
@@ -2446,7 +2446,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
                 // no size and allow the flexing of the table or the cell to its specified height to cause us
                 // to grow to fill the space. This could end up being wrong in some cases, but it is
                 // preferable to the alternative (sizing intrinsically and making the row end up too big).
-                RenderTableCell* cell = toRenderTableCell(cb);
+                LayoutTableCell* cell = toLayoutTableCell(cb);
                 if (scrollsOverflowY() && (!cell->style()->logicalHeight().isAuto() || !cell->table()->style()->logicalHeight().isAuto()))
                     return LayoutUnit();
                 return -1;
@@ -4444,9 +4444,10 @@ static void markBoxForRelayoutAfterSplit(RenderBox* box)
     if (box->isTable()) {
         // Because we may have added some sections with already computed column structures, we need to
         // sync the table structure with them now. This avoids crashes when adding new cells to the table.
-        toRenderTable(box)->forceSectionsRecalc();
-    } else if (box->isTableSection())
-        toRenderTableSection(box)->setNeedsCellRecalc();
+        toLayoutTable(box)->forceSectionsRecalc();
+    } else if (box->isTableSection()) {
+        toLayoutTableSection(box)->setNeedsCellRecalc();
+    }
 
     box->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
@@ -4467,7 +4468,7 @@ RenderObject* RenderBox::splitAnonymousBoxesAroundChild(RenderObject* beforeChil
             RenderBox* parentBox = toRenderBox(boxToSplit->parent());
             // We need to invalidate the |parentBox| before inserting the new node
             // so that the table paint invalidation logic knows the structure is dirty.
-            // See for example RenderTableCell:clippedOverflowRectForPaintInvalidation.
+            // See for example LayoutTableCell:clippedOverflowRectForPaintInvalidation.
             markBoxForRelayoutAfterSplit(parentBox);
             parentBox->virtualChildren()->insertChildNode(parentBox, postBox, boxToSplit->nextSibling());
             boxToSplit->moveChildrenTo(postBox, beforeChild, 0, true);

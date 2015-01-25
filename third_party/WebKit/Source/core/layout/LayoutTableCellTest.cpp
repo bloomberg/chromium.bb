@@ -24,20 +24,20 @@
  */
 
 #include "config.h"
+#include "core/layout/LayoutTableCell.h"
 
 #include "core/rendering/RenderingTestHelper.h"
-#include "core/rendering/RenderTableCell.h"
 
 namespace blink {
 
 namespace {
 
-class RenderTableCellDeathTest : public RenderingTest {
+class LayoutTableCellDeathTest : public RenderingTest {
 protected:
     virtual void SetUp()
     {
         RenderingTest::SetUp();
-        m_cell = RenderTableCell::createAnonymous(&document());
+        m_cell = LayoutTableCell::createAnonymous(&document());
     }
 
     virtual void TearDown()
@@ -45,17 +45,17 @@ protected:
         m_cell->destroy();
     }
 
-    RawPtrWillBePersistent<RenderTableCell> m_cell;
+    RawPtrWillBePersistent<LayoutTableCell> m_cell;
 };
 
-TEST_F(RenderTableCellDeathTest, CanSetColumn)
+TEST_F(LayoutTableCellDeathTest, CanSetColumn)
 {
     static const unsigned columnIndex = 10;
     m_cell->setCol(columnIndex);
     EXPECT_EQ(columnIndex, m_cell->col());
 }
 
-TEST_F(RenderTableCellDeathTest, CanSetColumnToMaxColumnIndex)
+TEST_F(LayoutTableCellDeathTest, CanSetColumnToMaxColumnIndex)
 {
     m_cell->setCol(maxColumnIndex);
     EXPECT_EQ(maxColumnIndex, m_cell->col());
@@ -65,49 +65,49 @@ TEST_F(RenderTableCellDeathTest, CanSetColumnToMaxColumnIndex)
 // See: https://bugs.webkit.org/show_bug.cgi?id=74089
 #if !OS(ANDROID)
 
-TEST_F(RenderTableCellDeathTest, CrashIfColumnOverflowOnSetting)
+TEST_F(LayoutTableCellDeathTest, CrashIfColumnOverflowOnSetting)
 {
     ASSERT_DEATH(m_cell->setCol(maxColumnIndex + 1), "");
 }
 
-TEST_F(RenderTableCellDeathTest, CrashIfSettingUnsetColumnIndex)
+TEST_F(LayoutTableCellDeathTest, CrashIfSettingUnsetColumnIndex)
 {
     ASSERT_DEATH(m_cell->setCol(unsetColumnIndex), "");
 }
 
 #endif
 
-class RenderTableCellTest : public RenderingTest { };
+class LayoutTableCellTest : public RenderingTest { };
 
-TEST_F(RenderTableCellTest, ResetColspanIfTooBig)
+TEST_F(LayoutTableCellTest, ResetColspanIfTooBig)
 {
     setBodyInnerHTML("<table><td colspan='14000'></td></table>");
 
-    RenderTableCell* cell = toRenderTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
+    LayoutTableCell* cell = toLayoutTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
     ASSERT_EQ(cell->colSpan(), 8190U);
 }
 
-TEST_F(RenderTableCellTest, DoNotResetColspanJustBelowBoundary)
+TEST_F(LayoutTableCellTest, DoNotResetColspanJustBelowBoundary)
 {
     setBodyInnerHTML("<table><td colspan='8190'></td></table>");
 
-    RenderTableCell* cell = toRenderTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
+    LayoutTableCell* cell = toLayoutTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
     ASSERT_EQ(cell->colSpan(), 8190U);
 }
 
-TEST_F(RenderTableCellTest, ResetRowspanIfTooBig)
+TEST_F(LayoutTableCellTest, ResetRowspanIfTooBig)
 {
     setBodyInnerHTML("<table><td rowspan='14000'></td></table>");
 
-    RenderTableCell* cell = toRenderTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
+    LayoutTableCell* cell = toLayoutTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
     ASSERT_EQ(cell->rowSpan(), 8190U);
 }
 
-TEST_F(RenderTableCellTest, DoNotResetRowspanJustBelowBoundary)
+TEST_F(LayoutTableCellTest, DoNotResetRowspanJustBelowBoundary)
 {
     setBodyInnerHTML("<table><td rowspan='8190'></td></table>");
 
-    RenderTableCell* cell = toRenderTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
+    LayoutTableCell* cell = toLayoutTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
     ASSERT_EQ(cell->rowSpan(), 8190U);
 }
 

@@ -38,12 +38,12 @@
 #include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/layout/LayoutTableCell.h"
 #include "core/page/Page.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderListMarker.h"
-#include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
@@ -367,7 +367,7 @@ void TextAutosizer::beginLayout(RenderBlock* block)
         m_clusterStack.append(adoptPtr(cluster));
 
     // Cells in auto-layout tables are handled separately by inflateAutoTable.
-    bool isAutoTableCell = block->isTableCell() && !toRenderTableCell(block)->table()->style()->isFixedTableLayout();
+    bool isAutoTableCell = block->isTableCell() && !toLayoutTableCell(block)->table()->style()->isFixedTableLayout();
     if (!isAutoTableCell && !m_clusterStack.isEmpty())
         inflate(block);
 }
@@ -390,7 +390,7 @@ void TextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMarker* 
     applyMultiplier(listItemMarker, multiplier);
 }
 
-void TextAutosizer::inflateAutoTable(RenderTable* table)
+void TextAutosizer::inflateAutoTable(LayoutTable* table)
 {
     ASSERT(table);
     ASSERT(!table->style()->isFixedTableLayout());
@@ -405,8 +405,8 @@ void TextAutosizer::inflateAutoTable(RenderTable* table)
     for (RenderObject* section = table->firstChild(); section; section = section->nextSibling()) {
         if (!section->isTableSection())
             continue;
-        for (RenderTableRow* row = toRenderTableSection(section)->firstRow(); row; row = row->nextRow()) {
-            for (RenderTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
+        for (LayoutTableRow* row = toLayoutTableSection(section)->firstRow(); row; row = row->nextRow()) {
+            for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
                 if (!cell->needsLayout())
                     continue;
 
@@ -699,7 +699,7 @@ TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(const RenderObject*
     }
 
     // Use nodeIndex as a rough approximation of column number
-    // (it's too early to call RenderTableCell::col).
+    // (it's too early to call LayoutTableCell::col).
     // FIXME: account for colspan
     if (renderer->isTableCell())
         data.m_column = renderer->node()->nodeIndex();
@@ -851,7 +851,7 @@ float TextAutosizer::widthFromBlock(const RenderBlock* block) const
     for (; block; block = block->containingBlock()) {
         float width;
         Length specifiedWidth = block->isTableCell()
-            ? toRenderTableCell(block)->styleOrColLogicalWidth() : block->style()->logicalWidth();
+            ? toLayoutTableCell(block)->styleOrColLogicalWidth() : block->style()->logicalWidth();
         if (specifiedWidth.isFixed()) {
             if ((width = specifiedWidth.value()) > 0)
                 return width;
@@ -1115,7 +1115,7 @@ TextAutosizer::LayoutScope::~LayoutScope()
 }
 
 
-TextAutosizer::TableLayoutScope::TableLayoutScope(RenderTable* table)
+TextAutosizer::TableLayoutScope::TableLayoutScope(LayoutTable* table)
     : LayoutScope(table)
 {
     if (m_textAutosizer) {

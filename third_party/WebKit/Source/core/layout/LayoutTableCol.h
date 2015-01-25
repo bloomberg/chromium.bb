@@ -23,24 +23,24 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderTableCol_h
-#define RenderTableCol_h
+#ifndef LayoutTableCol_h
+#define LayoutTableCol_h
 
 #include "core/rendering/RenderBox.h"
 
 namespace blink {
 
-class RenderTable;
-class RenderTableCell;
+class LayoutTable;
+class LayoutTableCell;
 
-class RenderTableCol final : public RenderBox {
+class LayoutTableCol final : public RenderBox {
 public:
-    explicit RenderTableCol(Element*);
+    explicit LayoutTableCol(Element*);
     virtual void trace(Visitor*) override;
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
 
-    // If you have a RenderTableCol, use firstChild or lastChild instead.
+    // If you have a LayoutTableCol, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
@@ -55,15 +55,15 @@ public:
     bool isTableColumn() const { return style()->display() == TABLE_COLUMN; }
     bool isTableColumnGroup() const { return style()->display() == TABLE_COLUMN_GROUP; }
 
-    RenderTableCol* enclosingColumnGroup() const;
-    RenderTableCol* enclosingColumnGroupIfAdjacentBefore() const
+    LayoutTableCol* enclosingColumnGroup() const;
+    LayoutTableCol* enclosingColumnGroupIfAdjacentBefore() const
     {
         if (previousSibling())
             return 0;
         return enclosingColumnGroup();
     }
 
-    RenderTableCol* enclosingColumnGroupIfAdjacentAfter() const
+    LayoutTableCol* enclosingColumnGroupIfAdjacentAfter() const
     {
         if (nextSibling())
             return 0;
@@ -72,19 +72,19 @@ public:
 
 
     // Returns the next column or column-group.
-    RenderTableCol* nextColumn() const;
+    LayoutTableCol* nextColumn() const;
 
-    const BorderValue& borderAdjoiningCellStartBorder(const RenderTableCell*) const;
-    const BorderValue& borderAdjoiningCellEndBorder(const RenderTableCell*) const;
-    const BorderValue& borderAdjoiningCellBefore(const RenderTableCell*) const;
-    const BorderValue& borderAdjoiningCellAfter(const RenderTableCell*) const;
+    const BorderValue& borderAdjoiningCellStartBorder(const LayoutTableCell*) const;
+    const BorderValue& borderAdjoiningCellEndBorder(const LayoutTableCell*) const;
+    const BorderValue& borderAdjoiningCellBefore(const LayoutTableCell*) const;
+    const BorderValue& borderAdjoiningCellAfter(const LayoutTableCell*) const;
 
 private:
     virtual RenderObjectChildList* virtualChildren() override { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual const char* renderName() const override { return "RenderTableCol"; }
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderTableCol || RenderBox::isOfType(type); }
+    virtual const char* renderName() const override { return "LayoutTableCol"; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectLayoutTableCol || RenderBox::isOfType(type); }
     virtual void updateFromElement() override;
     virtual void computePreferredLogicalWidths() override { ASSERT_NOT_REACHED(); }
 
@@ -100,13 +100,13 @@ private:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
-    RenderTable* table() const;
+    LayoutTable* table() const;
 
     RenderObjectChildList m_children;
     unsigned m_span;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableCol, isRenderTableCol());
+DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTableCol, isLayoutTableCol());
 
 }
 

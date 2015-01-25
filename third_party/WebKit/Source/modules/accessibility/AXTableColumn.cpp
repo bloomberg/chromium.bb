@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/accessibility/AXTableColumn.h"
 
-#include "core/rendering/RenderTableCell.h"
+#include "core/layout/LayoutTableCell.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTableCell.h"
 
@@ -75,21 +75,21 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
     if (!renderer || !renderer->isTable())
         return;
 
-    RenderTable* table = toRenderTable(renderer);
-    RenderTableSection* tableSection = table->topSection();
+    LayoutTable* table = toLayoutTable(renderer);
+    LayoutTableSection* tableSection = table->topSection();
     for (; tableSection; tableSection = table->sectionBelow(tableSection, SkipEmptySections)) {
         unsigned numRows = tableSection->numRows();
         for (unsigned r = 0; r < numRows; r++) {
-            RenderTableCell* renderCell = tableSection->primaryCellAt(r, m_columnIndex);
-            if (!renderCell)
+            LayoutTableCell* layoutCell = tableSection->primaryCellAt(r, m_columnIndex);
+            if (!layoutCell)
                 continue;
 
             // Whenever cell's col is less then current column index, we've found the cell with colspan.
             // We do not need to add this cell, it's already been added.
-            if (renderCell->col() < m_columnIndex)
+            if (layoutCell->col() < m_columnIndex)
                 continue;
 
-            AXObject* cell = axObjectCache()->getOrCreate(renderCell->node());
+            AXObject* cell = axObjectCache()->getOrCreate(layoutCell->node());
             if (!cell)
                 continue;
 
@@ -127,7 +127,7 @@ AXObject* AXTableColumn::headerObject()
     if (!renderer->isTable())
         return 0;
 
-    RenderTable* table = toRenderTable(renderer);
+    LayoutTable* table = toLayoutTable(renderer);
 
     AXObject* headerObject = 0;
 
@@ -143,7 +143,7 @@ AXObject* AXTableColumn::headerObject()
     return headerObject;
 }
 
-AXObject* AXTableColumn::headerObjectForSection(RenderTableSection* section, bool thTagRequired)
+AXObject* AXTableColumn::headerObjectForSection(LayoutTableSection* section, bool thTagRequired)
 {
     if (!section)
         return 0;
@@ -155,10 +155,10 @@ AXObject* AXTableColumn::headerObjectForSection(RenderTableSection* section, boo
     if (!section->numRows())
         return 0;
 
-    RenderTableCell* cell = 0;
+    LayoutTableCell* cell = 0;
     // also account for cells that have a span
     for (int testCol = m_columnIndex; testCol >= 0; --testCol) {
-        RenderTableCell* testCell = section->primaryCellAt(0, testCol);
+        LayoutTableCell* testCell = section->primaryCellAt(0, testCol);
         if (!testCell)
             continue;
 

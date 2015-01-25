@@ -29,7 +29,7 @@
 #include "core/HTMLNames.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/rendering/RenderTableCol.h"
+#include "core/layout/LayoutTableCol.h"
 
 namespace blink {
 
@@ -68,12 +68,12 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name, const Atomic
             newSpan = 1;
         }
         m_span = newSpan;
-        if (renderer() && renderer()->isRenderTableCol())
+        if (renderer() && renderer()->isLayoutTableCol())
             renderer()->updateFromElement();
     } else if (name == widthAttr) {
         if (!value.isEmpty()) {
-            if (renderer() && renderer()->isRenderTableCol()) {
-                RenderTableCol* col = toRenderTableCol(renderer());
+            if (renderer() && renderer()->isLayoutTableCol()) {
+                LayoutTableCol* col = toLayoutTableCol(renderer());
                 int newWidth = width().toInt();
                 if (newWidth != col->size().width())
                     col->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();

@@ -22,8 +22,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderTable_h
-#define RenderTable_h
+#ifndef LayoutTable_h
+#define LayoutTable_h
 
 #include "core/CSSPropertyNames.h"
 #include "core/rendering/RenderBlock.h"
@@ -32,18 +32,18 @@
 
 namespace blink {
 
-class RenderTableCol;
-class RenderTableCaption;
-class RenderTableCell;
-class RenderTableSection;
+class LayoutTableCol;
+class LayoutTableCaption;
+class LayoutTableCell;
+class LayoutTableSection;
 class TableLayout;
 
 enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 
-class RenderTable final : public RenderBlock {
+class LayoutTable final : public RenderBlock {
 public:
-    explicit RenderTable(Element*);
-    virtual ~RenderTable();
+    explicit LayoutTable(Element*);
+    virtual ~LayoutTable();
 
     // Per CSS 3 writing-mode: "The first and second values of the 'border-spacing' property represent spacing between columns
     // and rows respectively, not necessarily the horizontal and vertical spacing respectively".
@@ -149,16 +149,16 @@ public:
         m_columnPos[index] = position;
     }
 
-    RenderTableSection* header() const { return m_head; }
-    RenderTableSection* footer() const { return m_foot; }
-    RenderTableSection* firstBody() const { return m_firstBody; }
+    LayoutTableSection* header() const { return m_head; }
+    LayoutTableSection* footer() const { return m_foot; }
+    LayoutTableSection* firstBody() const { return m_firstBody; }
 
     // This function returns 0 if the table has no section.
-    RenderTableSection* topSection() const;
-    RenderTableSection* bottomSection() const;
+    LayoutTableSection* topSection() const;
+    LayoutTableSection* bottomSection() const;
 
     // This function returns 0 if the table has no non-empty sections.
-    RenderTableSection* topNonEmptySection() const;
+    LayoutTableSection* topNonEmptySection() const;
 
     unsigned lastColumnIndex() const { return numEffCols() - 1; }
 
@@ -198,7 +198,7 @@ public:
         return 0;
     }
 
-    // Override paddingStart/End to return pixel values to match behavor of RenderTableCell.
+    // Override paddingStart/End to return pixel values to match behavor of LayoutTableCell.
     virtual LayoutUnit paddingEnd() const override { return static_cast<int>(RenderBlock::paddingEnd()); }
     virtual LayoutUnit paddingStart() const override { return static_cast<int>(RenderBlock::paddingStart()); }
 
@@ -209,9 +209,9 @@ public:
     }
 
     // Return the first column or column-group.
-    RenderTableCol* firstColumn() const;
+    LayoutTableCol* firstColumn() const;
 
-    RenderTableCol* colElement(unsigned col, bool* startEdge = 0, bool* endEdge = 0) const
+    LayoutTableCol* colElement(unsigned col, bool* startEdge = 0, bool* endEdge = 0) const
     {
         // The common case is to not have columns, make that case fast.
         if (!m_hasColElements)
@@ -228,13 +228,13 @@ public:
         setNeedsLayoutAndFullPaintInvalidation();
     }
 
-    RenderTableSection* sectionAbove(const RenderTableSection*, SkipEmptySectionsValue = DoNotSkipEmptySections) const;
-    RenderTableSection* sectionBelow(const RenderTableSection*, SkipEmptySectionsValue = DoNotSkipEmptySections) const;
+    LayoutTableSection* sectionAbove(const LayoutTableSection*, SkipEmptySectionsValue = DoNotSkipEmptySections) const;
+    LayoutTableSection* sectionBelow(const LayoutTableSection*, SkipEmptySectionsValue = DoNotSkipEmptySections) const;
 
-    RenderTableCell* cellAbove(const RenderTableCell*) const;
-    RenderTableCell* cellBelow(const RenderTableCell*) const;
-    RenderTableCell* cellBefore(const RenderTableCell*) const;
-    RenderTableCell* cellAfter(const RenderTableCell*) const;
+    LayoutTableCell* cellAbove(const LayoutTableCell*) const;
+    LayoutTableCell* cellBelow(const LayoutTableCell*) const;
+    LayoutTableCell* cellBefore(const LayoutTableCell*) const;
+    LayoutTableCell* cellAfter(const LayoutTableCell*) const;
 
     typedef Vector<CollapsedBorderValue> CollapsedBorderValues;
     void invalidateCollapsedBorders()
@@ -255,19 +255,19 @@ public:
             recalcSections();
     }
 
-    static RenderTable* createAnonymousWithParentRenderer(const RenderObject*);
+    static LayoutTable* createAnonymousWithParentRenderer(const RenderObject*);
     virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const override
     {
         return createAnonymousWithParentRenderer(parent);
     }
 
-    const BorderValue& tableStartBorderAdjoiningCell(const RenderTableCell*) const;
-    const BorderValue& tableEndBorderAdjoiningCell(const RenderTableCell*) const;
+    const BorderValue& tableStartBorderAdjoiningCell(const LayoutTableCell*) const;
+    const BorderValue& tableEndBorderAdjoiningCell(const LayoutTableCell*) const;
 
-    void addCaption(const RenderTableCaption*);
-    void removeCaption(const RenderTableCaption*);
-    void addColumn(const RenderTableCol*);
-    void removeColumn(const RenderTableCol*);
+    void addCaption(const LayoutTableCaption*);
+    void removeCaption(const LayoutTableCaption*);
+    void addColumn(const LayoutTableCol*);
+    void removeColumn(const LayoutTableCol*);
 
     virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override final;
 
@@ -282,7 +282,7 @@ protected:
     virtual void simplifiedNormalFlowLayout() override;
 
 private:
-    virtual const char* renderName() const override { return "RenderTable"; }
+    virtual const char* renderName() const override { return "LayoutTable"; }
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTable || RenderBlock::isOfType(type); }
 
@@ -296,7 +296,7 @@ private:
     virtual int firstLineBoxBaseline() const override;
     virtual int inlineBlockBaseline(LineDirectionMode) const override;
 
-    RenderTableCol* slowColElement(unsigned col, bool* startEdge, bool* endEdge) const;
+    LayoutTableCol* slowColElement(unsigned col, bool* startEdge, bool* endEdge) const;
 
     void updateColumnCache() const;
     void invalidateCachedColumns();
@@ -311,18 +311,18 @@ private:
     virtual void addOverflowFromChildren() override;
 
     void recalcSections() const;
-    void layoutCaption(RenderTableCaption&);
+    void layoutCaption(LayoutTableCaption&);
 
     void distributeExtraLogicalHeight(int extraLogicalHeight);
 
     mutable Vector<int> m_columnPos;
     mutable Vector<ColumnStruct> m_columns;
-    mutable Vector<RenderTableCaption*> m_captions;
-    mutable Vector<RenderTableCol*> m_columnRenderers;
+    mutable Vector<LayoutTableCaption*> m_captions;
+    mutable Vector<LayoutTableCol*> m_columnRenderers;
 
-    mutable RenderTableSection* m_head;
-    mutable RenderTableSection* m_foot;
-    mutable RenderTableSection* m_firstBody;
+    mutable LayoutTableSection* m_head;
+    mutable LayoutTableSection* m_foot;
+    mutable LayoutTableSection* m_firstBody;
 
     OwnPtr<TableLayout> m_tableLayout;
 
@@ -351,7 +351,7 @@ private:
     int m_borderEnd;
 };
 
-inline RenderTableSection* RenderTable::topSection() const
+inline LayoutTableSection* LayoutTable::topSection() const
 {
     ASSERT(!needsSectionRecalc());
     if (m_head)
@@ -361,8 +361,8 @@ inline RenderTableSection* RenderTable::topSection() const
     return m_foot;
 }
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTable, isTable());
+DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTable, isTable());
 
 } // namespace blink
 
-#endif // RenderTable_h
+#endif // LayoutTable_h

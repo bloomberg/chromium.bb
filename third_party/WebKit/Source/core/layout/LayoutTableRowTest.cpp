@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderTableRow.h"
+#include "core/layout/LayoutTableRow.h"
 
 #include "core/testing/DummyPageHolder.h"
 
@@ -37,12 +37,12 @@ namespace blink {
 
 namespace {
 
-class RenderTableRowDeathTest : public testing::Test {
+class LayoutTableRowDeathTest : public testing::Test {
 protected:
     virtual void SetUp()
     {
         m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
-        m_row = RenderTableRow::createAnonymous(&m_pageHolder->document());
+        m_row = LayoutTableRow::createAnonymous(&m_pageHolder->document());
     }
 
     virtual void TearDown()
@@ -51,17 +51,17 @@ protected:
     }
 
     OwnPtr<DummyPageHolder> m_pageHolder;
-    RawPtrWillBePersistent<RenderTableRow> m_row;
+    RawPtrWillBePersistent<LayoutTableRow> m_row;
 };
 
-TEST_F(RenderTableRowDeathTest, CanSetRow)
+TEST_F(LayoutTableRowDeathTest, CanSetRow)
 {
     static const unsigned rowIndex = 10;
     m_row->setRowIndex(rowIndex);
     EXPECT_EQ(rowIndex, m_row->rowIndex());
 }
 
-TEST_F(RenderTableRowDeathTest, CanSetRowToMaxRowIndex)
+TEST_F(LayoutTableRowDeathTest, CanSetRowToMaxRowIndex)
 {
     m_row->setRowIndex(maxRowIndex);
     EXPECT_EQ(maxRowIndex, m_row->rowIndex());
@@ -71,12 +71,12 @@ TEST_F(RenderTableRowDeathTest, CanSetRowToMaxRowIndex)
 // See: https://bugs.webkit.org/show_bug.cgi?id=74089
 #if !OS(ANDROID)
 
-TEST_F(RenderTableRowDeathTest, CrashIfRowOverflowOnSetting)
+TEST_F(LayoutTableRowDeathTest, CrashIfRowOverflowOnSetting)
 {
     ASSERT_DEATH(m_row->setRowIndex(maxRowIndex + 1), "");
 }
 
-TEST_F(RenderTableRowDeathTest, CrashIfSettingUnsetRowIndex)
+TEST_F(LayoutTableRowDeathTest, CrashIfSettingUnsetRowIndex)
 {
     ASSERT_DEATH(m_row->setRowIndex(unsetRowIndex), "");
 }

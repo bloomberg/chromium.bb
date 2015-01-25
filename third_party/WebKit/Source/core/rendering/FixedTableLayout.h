@@ -27,11 +27,11 @@
 
 namespace blink {
 
-class RenderTable;
+class LayoutTable;
 
 class FixedTableLayout final : public TableLayout {
 public:
-    FixedTableLayout(RenderTable*);
+    FixedTableLayout(LayoutTable*);
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) override;
     virtual void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;

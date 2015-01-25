@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/accessibility/AXTableCell.h"
 
-#include "core/rendering/RenderTableCell.h"
+#include "core/layout/LayoutTableCell.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
 
@@ -96,7 +96,7 @@ AXObject* AXTableCell::parentTable() const
     // By using only get() implies that the AXTable must be created before AXTableCells. This should
     // always be the case when AT clients access a table.
     // https://bugs.webkit.org/show_bug.cgi?id=42652
-    return axObjectCache()->get(toRenderTableCell(m_renderer)->table());
+    return axObjectCache()->get(toLayoutTableCell(m_renderer)->table());
 }
 
 bool AXTableCell::isTableCell() const
@@ -132,12 +132,12 @@ AccessibilityRole AXTableCell::scanToDecideHeaderRole()
         return ColumnHeaderRole;
 
     // Check the previous cell and the next cell
-    RenderTableCell* renderCell = toRenderTableCell(m_renderer);
+    LayoutTableCell* layoutCell = toLayoutTableCell(m_renderer);
     AccessibilityRole headerRole = CellRole;
 
     // if header is preceded by header cells then it's a column header,
     // if it is preceded by cells then it's a row header.
-    if (RenderTableCell* cell = renderCell->previousCell()) {
+    if (LayoutTableCell* cell = layoutCell->previousCell()) {
         Node* siblingNode = cell->node();
         headerRole = decideRoleFromSibling(siblingNode);
         if (headerRole != CellRole)
@@ -145,7 +145,7 @@ AccessibilityRole AXTableCell::scanToDecideHeaderRole()
     }
     // if header is followed by header cells then it's a column header,
     // if it is followed by cells then it's a row header.
-    if (RenderTableCell* cell = renderCell->nextCell()) {
+    if (LayoutTableCell* cell = layoutCell->nextCell()) {
         Node* siblingNode = cell->node();
         headerRole = decideRoleFromSibling(siblingNode);
     }
@@ -165,17 +165,17 @@ void AXTableCell::rowIndexRange(pair<unsigned, unsigned>& rowRange)
     if (!m_renderer || !m_renderer->isTableCell())
         return;
 
-    RenderTableCell* renderCell = toRenderTableCell(m_renderer);
-    rowRange.first = renderCell->rowIndex();
-    rowRange.second = renderCell->rowSpan();
+    LayoutTableCell* layoutCell = toLayoutTableCell(m_renderer);
+    rowRange.first = layoutCell->rowIndex();
+    rowRange.second = layoutCell->rowSpan();
 
     // since our table might have multiple sections, we have to offset our row appropriately
-    RenderTableSection* section = renderCell->section();
-    RenderTable* table = renderCell->table();
+    LayoutTableSection* section = layoutCell->section();
+    LayoutTable* table = layoutCell->table();
     if (!table || !section)
         return;
 
-    RenderTableSection* tableSection = table->topSection();
+    LayoutTableSection* tableSection = table->topSection();
     unsigned rowOffset = 0;
     while (tableSection) {
         if (tableSection == section)
@@ -192,9 +192,9 @@ void AXTableCell::columnIndexRange(pair<unsigned, unsigned>& columnRange)
     if (!m_renderer || !m_renderer->isTableCell())
         return;
 
-    RenderTableCell* renderCell = toRenderTableCell(m_renderer);
-    columnRange.first = renderCell->col();
-    columnRange.second = renderCell->colSpan();
+    LayoutTableCell* cell = toLayoutTableCell(m_renderer);
+    columnRange.first = cell->col();
+    columnRange.second = cell->colSpan();
 }
 
 AXObject* AXTableCell::titleUIElement() const
@@ -210,21 +210,21 @@ AXObject* AXTableCell::titleUIElement() const
     if (isTableHeaderCell())
         return 0;
 
-    RenderTableCell* renderCell = toRenderTableCell(m_renderer);
+    LayoutTableCell* layoutCell = toLayoutTableCell(m_renderer);
 
     // If this cell is in the first column, there is no need to continue.
-    int col = renderCell->col();
+    int col = layoutCell->col();
     if (!col)
         return 0;
 
-    int row = renderCell->rowIndex();
+    int row = layoutCell->rowIndex();
 
-    RenderTableSection* section = renderCell->section();
+    LayoutTableSection* section = layoutCell->section();
     if (!section)
         return 0;
 
-    RenderTableCell* headerCell = section->primaryCellAt(row, 0);
-    if (!headerCell || headerCell == renderCell)
+    LayoutTableCell* headerCell = section->primaryCellAt(row, 0);
+    if (!headerCell || headerCell == layoutCell)
         return 0;
 
     Node* cellElement = headerCell->node();

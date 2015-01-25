@@ -27,12 +27,12 @@
 namespace blink {
 
 class LayoutUnit;
-class RenderTable;
+class LayoutTable;
 
 class TableLayout {
     WTF_MAKE_NONCOPYABLE(TableLayout); WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit TableLayout(RenderTable* table)
+    explicit TableLayout(LayoutTable* table)
         : m_table(table)
     {
     }
@@ -49,7 +49,7 @@ protected:
     // Until then though, using nearlyMax causes overflow in some tests, so we just pick a large number.
     const static int tableMaxWidth = 1000000;
 
-    RenderTable* m_table;
+    LayoutTable* m_table;
 };
 
 } // namespace blink

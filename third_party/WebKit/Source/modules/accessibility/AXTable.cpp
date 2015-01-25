@@ -38,7 +38,7 @@
 #include "core/html/HTMLTableRowElement.h"
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/HTMLTableSectionElement.h"
-#include "core/rendering/RenderTableCell.h"
+#include "core/layout/LayoutTableCell.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTableCell.h"
 #include "modules/accessibility/AXTableColumn.h"
@@ -119,7 +119,7 @@ bool AXTable::isDataTable() const
     // Unfortunately, there is no good way to determine the difference
     // between a "layout" table and a "data" table.
 
-    RenderTable* table = toRenderTable(m_renderer);
+    LayoutTable* table = toLayoutTable(m_renderer);
     Node* tableNode = table->node();
     if (!isHTMLTableElement(tableNode))
         return false;
@@ -166,7 +166,7 @@ bool AXTable::isDataTable() const
     // go through the cell's and check for tell-tale signs of "data" table status
     // cells have borders, or use attributes like headers, abbr, scope or axis
     table->recalcSectionsIfNeeded();
-    RenderTableSection* firstBody = table->firstBody();
+    LayoutTableSection* firstBody = table->firstBody();
     if (!firstBody)
         return false;
 
@@ -208,7 +208,7 @@ bool AXTable::isDataTable() const
 
         int headersInFirstRowCount = 0;
         for (int col = 0; col < numCols; ++col) {
-            RenderTableCell* cell = firstBody->primaryCellAt(row, col);
+            LayoutTableCell* cell = firstBody->primaryCellAt(row, col);
             if (!cell)
                 continue;
             Node* cellNode = cell->node();
@@ -274,10 +274,10 @@ bool AXTable::isDataTable() const
 
             // For the first 5 rows, cache the background color so we can check if this table has zebra-striped rows.
             if (row < 5 && row == alternatingRowColorCount) {
-                RenderObject* renderRow = cell->parent();
-                if (!renderRow || !renderRow->isBoxModelObject() || !toRenderBoxModelObject(renderRow)->isTableRow())
+                RenderObject* layoutRow = cell->parent();
+                if (!layoutRow || !layoutRow->isBoxModelObject() || !toRenderBoxModelObject(layoutRow)->isTableRow())
                     continue;
-                RenderStyle* rowRenderStyle = renderRow->style();
+                RenderStyle* rowRenderStyle = layoutRow->style();
                 if (!rowRenderStyle)
                     continue;
                 Color rowColor = rowRenderStyle->visitedDependentColor(CSSPropertyBackgroundColor);
@@ -370,7 +370,7 @@ void AXTable::addChildren()
     if (!m_renderer || !m_renderer->isTable())
         return;
 
-    RenderTable* table = toRenderTable(m_renderer);
+    LayoutTable* table = toLayoutTable(m_renderer);
     AXObjectCacheImpl* axCache = axObjectCache();
 
     Node* tableNode = table->node();
@@ -386,22 +386,22 @@ void AXTable::addChildren()
 
     // Go through all the available sections to pull out the rows and add them as children.
     table->recalcSectionsIfNeeded();
-    RenderTableSection* tableSection = table->topSection();
+    LayoutTableSection* tableSection = table->topSection();
     if (!tableSection)
         return;
 
-    RenderTableSection* initialTableSection = tableSection;
+    LayoutTableSection* initialTableSection = tableSection;
     while (tableSection) {
 
         HashSet<AXObject*> appendedRows;
         unsigned numRows = tableSection->numRows();
         for (unsigned rowIndex = 0; rowIndex < numRows; ++rowIndex) {
 
-            RenderTableRow* renderRow = tableSection->rowRendererAt(rowIndex);
-            if (!renderRow)
+            LayoutTableRow* layoutRow = tableSection->rowRendererAt(rowIndex);
+            if (!layoutRow)
                 continue;
 
-            AXObject* rowObject = axCache->getOrCreate(renderRow);
+            AXObject* rowObject = axCache->getOrCreate(layoutRow);
             if (!rowObject->isTableRow())
                 continue;
 

@@ -22,10 +22,10 @@
 #include "config.h"
 #include "core/rendering/FixedTableLayout.h"
 
-#include "core/rendering/RenderTable.h"
-#include "core/rendering/RenderTableCell.h"
-#include "core/rendering/RenderTableCol.h"
-#include "core/rendering/RenderTableSection.h"
+#include "core/layout/LayoutTable.h"
+#include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutTableCol.h"
+#include "core/layout/LayoutTableSection.h"
 #include "platform/LayoutUnit.h"
 
 /*
@@ -71,7 +71,7 @@
 
 namespace blink {
 
-FixedTableLayout::FixedTableLayout(RenderTable* table)
+FixedTableLayout::FixedTableLayout(LayoutTable* table)
     : TableLayout(table)
 {
 }
@@ -87,8 +87,8 @@ int FixedTableLayout::calcWidthArray()
     m_width.fill(Length(Auto));
 
     unsigned currentEffectiveColumn = 0;
-    for (RenderTableCol* col = m_table->firstColumn(); col; col = col->nextColumn()) {
-        // RenderTableCols don't have the concept of preferred logical width, but we need to clear their dirty bits
+    for (LayoutTableCol* col = m_table->firstColumn(); col; col = col->nextColumn()) {
+        // LayoutTableCols don't have the concept of preferred logical width, but we need to clear their dirty bits
         // so that if we call setPreferredWidthsDirty(true) on a col or one of its descendants, we'll mark it's
         // ancestors as dirty.
         col->clearPreferredLogicalWidthsDirtyBits();
@@ -129,14 +129,14 @@ int FixedTableLayout::calcWidthArray()
     }
 
     // Iterate over the first row in case some are unspecified.
-    RenderTableSection* section = m_table->topNonEmptySection();
+    LayoutTableSection* section = m_table->topNonEmptySection();
     if (!section)
         return usedWidth;
 
     unsigned currentColumn = 0;
 
-    RenderTableRow* firstRow = section->firstRow();
-    for (RenderTableCell* cell = firstRow->firstCell(); cell; cell = cell->nextCell()) {
+    LayoutTableRow* firstRow = section->firstRow();
+    for (LayoutTableCell* cell = firstRow->firstCell(); cell; cell = cell->nextCell()) {
         Length logicalWidth = cell->styleOrColLogicalWidth();
 
         // FIXME: calc() on tables should be handled consistently with other lengths. See bug: https://crbug.com/382725
@@ -323,12 +323,12 @@ void FixedTableLayout::willChangeTableLayout()
     // (see calcWidthArray above.) This optimization is preferred to always
     // computing the logical widths we never intended to use.
     m_table->recalcSectionsIfNeeded();
-    for (RenderTableSection* section = m_table->topNonEmptySection(); section; section = m_table->sectionBelow(section)) {
+    for (LayoutTableSection* section = m_table->topNonEmptySection(); section; section = m_table->sectionBelow(section)) {
         for (unsigned i = 0; i < section->numRows(); i++) {
-            RenderTableRow* row = section->rowRendererAt(i);
+            LayoutTableRow* row = section->rowRendererAt(i);
             if (!row)
                 continue;
-            for (RenderTableCell* cell = row->firstCell(); cell; cell = cell->nextCell())
+            for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell())
                 cell->setPreferredLogicalWidthsDirty();
         }
     }

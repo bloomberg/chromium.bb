@@ -5,6 +5,10 @@
 #include "config.h"
 #include "core/paint/TableSectionPainter.h"
 
+#include "core/layout/LayoutTable.h"
+#include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutTableCol.h"
+#include "core/layout/LayoutTableRow.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
@@ -12,46 +16,42 @@
 #include "core/paint/TableCellPainter.h"
 #include "core/paint/TableRowPainter.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderTable.h"
-#include "core/rendering/RenderTableCell.h"
-#include "core/rendering/RenderTableCol.h"
-#include "core/rendering/RenderTableRow.h"
 
 namespace blink {
 
 void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderTableSection);
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutTableSection);
 
-    ASSERT(!m_renderTableSection.needsLayout());
+    ASSERT(!m_layoutTableSection.needsLayout());
     // avoid crashing on bugs that cause us to paint with dirty layout
-    if (m_renderTableSection.needsLayout())
+    if (m_layoutTableSection.needsLayout())
         return;
 
-    unsigned totalRows = m_renderTableSection.numRows();
-    unsigned totalCols = m_renderTableSection.table()->columns().size();
+    unsigned totalRows = m_layoutTableSection.numRows();
+    unsigned totalCols = m_layoutTableSection.table()->columns().size();
 
     if (!totalRows || !totalCols)
         return;
 
-    LayoutPoint adjustedPaintOffset = paintOffset + m_renderTableSection.location();
+    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableSection.location();
     {
-        BoxClipper boxClipper(m_renderTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
+        BoxClipper boxClipper(m_layoutTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
         paintObject(paintInfo, adjustedPaintOffset);
     }
 
-    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_renderTableSection.style()->visibility() == VISIBLE)
-        ObjectPainter(m_renderTableSection).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_renderTableSection.size()));
+    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_layoutTableSection.style()->visibility() == VISIBLE)
+        ObjectPainter(m_layoutTableSection).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_layoutTableSection.size()));
 }
 
-static inline bool compareCellPositions(RenderTableCell* elem1, RenderTableCell* elem2)
+static inline bool compareCellPositions(LayoutTableCell* elem1, LayoutTableCell* elem2)
 {
     return elem1->rowIndex() < elem2->rowIndex();
 }
 
 // This comparison is used only when we have overflowing cells as we have an unsorted array to sort. We thus need
 // to sort both on rows and columns to properly issue paint invalidations.
-static inline bool compareCellPositionsWithOverflowingCells(RenderTableCell* elem1, RenderTableCell* elem2)
+static inline bool compareCellPositionsWithOverflowingCells(LayoutTableCell* elem1, LayoutTableCell* elem2)
 {
     if (elem1->rowIndex() != elem2->rowIndex())
         return elem1->rowIndex() < elem2->rowIndex();
@@ -64,14 +64,14 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
     LayoutRect localPaintInvalidationRect = paintInfo.rect;
     localPaintInvalidationRect.moveBy(-paintOffset);
 
-    LayoutRect tableAlignedRect = m_renderTableSection.logicalRectForWritingModeAndDirection(localPaintInvalidationRect);
+    LayoutRect tableAlignedRect = m_layoutTableSection.logicalRectForWritingModeAndDirection(localPaintInvalidationRect);
 
-    CellSpan dirtiedRows = m_renderTableSection.dirtiedRows(tableAlignedRect);
-    CellSpan dirtiedColumns = m_renderTableSection.dirtiedColumns(tableAlignedRect);
+    CellSpan dirtiedRows = m_layoutTableSection.dirtiedRows(tableAlignedRect);
+    CellSpan dirtiedColumns = m_layoutTableSection.dirtiedColumns(tableAlignedRect);
 
-    WillBeHeapHashSet<RawPtrWillBeMember<RenderTableCell> > overflowingCells = m_renderTableSection.overflowingCells();
+    WillBeHeapHashSet<RawPtrWillBeMember<LayoutTableCell> > overflowingCells = m_layoutTableSection.overflowingCells();
     if (dirtiedColumns.start() < dirtiedColumns.end()) {
-        if (!m_renderTableSection.hasMultipleCellLevels() && !overflowingCells.size()) {
+        if (!m_layoutTableSection.hasMultipleCellLevels() && !overflowingCells.size()) {
             if (paintInfo.phase == PaintPhaseCollapsedTableBorders) {
                 // Collapsed borders are painted from the bottom right to the top left so that precedence
                 // due to cell position is respected.
@@ -79,24 +79,24 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
                     unsigned row = r - 1;
                     for (unsigned c = dirtiedColumns.end(); c > dirtiedColumns.start(); c--) {
                         unsigned col = c - 1;
-                        RenderTableSection::CellStruct& current = m_renderTableSection.cellAt(row, col);
-                        RenderTableCell* cell = current.primaryCell();
-                        if (!cell || (row > dirtiedRows.start() && m_renderTableSection.primaryCellAt(row - 1, col) == cell) || (col > dirtiedColumns.start() && m_renderTableSection.primaryCellAt(row, col - 1) == cell))
+                        LayoutTableSection::CellStruct& current = m_layoutTableSection.cellAt(row, col);
+                        LayoutTableCell* cell = current.primaryCell();
+                        if (!cell || (row > dirtiedRows.start() && m_layoutTableSection.primaryCellAt(row - 1, col) == cell) || (col > dirtiedColumns.start() && m_layoutTableSection.primaryCellAt(row, col - 1) == cell))
                             continue;
-                        LayoutPoint cellPoint = m_renderTableSection.flipForWritingModeForChild(cell, paintOffset);
+                        LayoutPoint cellPoint = m_layoutTableSection.flipForWritingModeForChild(cell, paintOffset);
                         TableCellPainter(*cell).paintCollapsedBorders(paintInfo, cellPoint);
                     }
                 }
             } else {
                 // Draw the dirty cells in the order that they appear.
                 for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
-                    RenderTableRow* row = m_renderTableSection.rowRendererAt(r);
+                    LayoutTableRow* row = m_layoutTableSection.rowRendererAt(r);
                     if (row && !row->hasSelfPaintingLayer())
                         TableRowPainter(*row).paintOutlineForRowIfNeeded(paintInfo, paintOffset);
                     for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
-                        RenderTableSection::CellStruct& current = m_renderTableSection.cellAt(r, c);
-                        RenderTableCell* cell = current.primaryCell();
-                        if (!cell || (r > dirtiedRows.start() && m_renderTableSection.primaryCellAt(r - 1, c) == cell) || (c > dirtiedColumns.start() && m_renderTableSection.primaryCellAt(r, c - 1) == cell))
+                        LayoutTableSection::CellStruct& current = m_layoutTableSection.cellAt(r, c);
+                        LayoutTableCell* cell = current.primaryCell();
+                        if (!cell || (r > dirtiedRows.start() && m_layoutTableSection.primaryCellAt(r - 1, c) == cell) || (c > dirtiedColumns.start() && m_layoutTableSection.primaryCellAt(r, c - 1) == cell))
                             continue;
                         paintCell(cell, paintInfo, paintOffset);
                     }
@@ -105,23 +105,23 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
         } else {
             // The overflowing cells should be scarce to avoid adding a lot of cells to the HashSet.
 #if ENABLE(ASSERT)
-            unsigned totalRows = m_renderTableSection.numRows();
-            unsigned totalCols = m_renderTableSection.table()->columns().size();
+            unsigned totalRows = m_layoutTableSection.numRows();
+            unsigned totalCols = m_layoutTableSection.table()->columns().size();
             ASSERT(overflowingCells.size() < totalRows * totalCols * gMaxAllowedOverflowingCellRatioForFastPaintPath);
 #endif
 
             // To make sure we properly paint invalidate the section, we paint invalidated all the overflowing cells that we collected.
-            Vector<RenderTableCell*> cells;
+            Vector<LayoutTableCell*> cells;
             copyToVector(overflowingCells, cells);
 
-            HashSet<RenderTableCell*> spanningCells;
+            HashSet<LayoutTableCell*> spanningCells;
 
             for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
-                RenderTableRow* row = m_renderTableSection.rowRendererAt(r);
+                LayoutTableRow* row = m_layoutTableSection.rowRendererAt(r);
                 if (row && !row->hasSelfPaintingLayer())
                     TableRowPainter(*row).paintOutlineForRowIfNeeded(paintInfo, paintOffset);
                 for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
-                    RenderTableSection::CellStruct& current = m_renderTableSection.cellAt(r, c);
+                    LayoutTableSection::CellStruct& current = m_layoutTableSection.cellAt(r, c);
                     if (!current.hasCells())
                         continue;
                     for (unsigned i = 0; i < current.cells.size(); ++i) {
@@ -146,7 +146,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
 
             if (paintInfo.phase == PaintPhaseCollapsedTableBorders) {
                 for (unsigned i = cells.size(); i > 0; --i) {
-                    LayoutPoint cellPoint = m_renderTableSection.flipForWritingModeForChild(cells[i - 1], paintOffset);
+                    LayoutPoint cellPoint = m_layoutTableSection.flipForWritingModeForChild(cells[i - 1], paintOffset);
                     TableCellPainter(*cells[i - 1]).paintCollapsedBorders(paintInfo, cellPoint);
                 }
             } else {
@@ -157,21 +157,21 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
     }
 }
 
-void TableSectionPainter::paintCell(RenderTableCell* cell, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableSectionPainter::paintCell(LayoutTableCell* cell, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutPoint cellPoint = m_renderTableSection.flipForWritingModeForChild(cell, paintOffset);
+    LayoutPoint cellPoint = m_layoutTableSection.flipForWritingModeForChild(cell, paintOffset);
     PaintPhase paintPhase = paintInfo.phase;
-    RenderTableRow* row = toRenderTableRow(cell->parent());
+    LayoutTableRow* row = toLayoutTableRow(cell->parent());
 
     if (paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) {
         // We need to handle painting a stack of backgrounds. This stack (from bottom to top) consists of
         // the column group, column, row group, row, and then the cell.
-        RenderTableCol* column = m_renderTableSection.table()->colElement(cell->col());
-        RenderTableCol* columnGroup = column ? column->enclosingColumnGroup() : 0;
+        LayoutTableCol* column = m_layoutTableSection.table()->colElement(cell->col());
+        LayoutTableCol* columnGroup = column ? column->enclosingColumnGroup() : 0;
 
         TableCellPainter tableCellPainter(*cell);
 
-        RenderDrawingRecorder recorder(paintInfo.context, m_renderTableSection, paintPhase, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
+        RenderDrawingRecorder recorder(paintInfo.context, m_layoutTableSection, paintPhase, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
         if (!recorder.canUseCachedDrawing()) {
             // Column groups and columns first.
             // FIXME: Columns and column groups do not currently support opacity, and they are being painted "too late" in
@@ -182,7 +182,7 @@ void TableSectionPainter::paintCell(RenderTableCell* cell, const PaintInfo& pain
             tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, column);
 
             // Paint the row group next.
-            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, &m_renderTableSection);
+            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, &m_layoutTableSection);
 
             // Paint the row next, but only if it doesn't have a layer. If a row has a layer, it will be responsible for
             // painting the row background for the cell.

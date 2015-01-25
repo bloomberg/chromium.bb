@@ -35,7 +35,7 @@
 namespace blink {
 
 class AXObjectCacheImpl;
-class RenderTableSection;
+class LayoutTableSection;
 
 class AXTableColumn final : public AXMockObject {
 
@@ -66,7 +66,7 @@ private:
     LayoutRect m_columnRect;
 
     virtual bool isTableCol() const override { return true; }
-    AXObject* headerObjectForSection(RenderTableSection*, bool thTagRequired);
+    AXObject* headerObjectForSection(LayoutTableSection*, bool thTagRequired);
     virtual bool computeAccessibilityIsIgnored() const override;
 };
 

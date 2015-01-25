@@ -35,6 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/LayoutTableCell.h"
 #include "core/page/PrintContext.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBR.h"
@@ -45,7 +46,6 @@
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderPart.h"
-#include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
@@ -204,7 +204,7 @@ void LayoutTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
         // FIXME: Deliberately dump the "inner" box of table cells, since that is what current results reflect.  We'd like
         // to clean up the results to dump both the outer box and the intrinsic padding so that both bits of information are
         // captured by the results.
-        const RenderTableCell& cell = toRenderTableCell(o);
+        const LayoutTableCell& cell = toLayoutTableCell(o);
         r = LayoutRect(cell.location().x(), cell.location().y() + cell.intrinsicPaddingBefore(), cell.size().width(), cell.size().height() - cell.intrinsicPaddingBefore() - cell.intrinsicPaddingAfter());
     } else if (o.isBox()) {
         r = toRenderBox(&o)->frameRect();
@@ -212,7 +212,7 @@ void LayoutTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
 
     // FIXME: Temporary in order to ensure compatibility with existing layout test results.
     if (adjustForTableCells)
-        r.move(0, -toRenderTableCell(o.containingBlock())->intrinsicPaddingBefore());
+        r.move(0, -toLayoutTableCell(o.containingBlock())->intrinsicPaddingBefore());
 
     if (o.isRenderView()) {
         r.setWidth(toRenderView(o).viewWidth(IncludeScrollbars));
@@ -304,7 +304,7 @@ void LayoutTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
     }
 
     if (o.isTableCell()) {
-        const RenderTableCell& c = toRenderTableCell(o);
+        const LayoutTableCell& c = toLayoutTableCell(o);
         ts << " [r=" << c.rowIndex() << " c=" << c.col() << " rs=" << c.rowSpan() << " cs=" << c.colSpan() << "]";
     }
 
@@ -415,7 +415,7 @@ static void writeTextRun(TextStream& ts, const RenderText& o, const InlineTextBo
 
     // FIXME: Table cell adjustment is temporary until results can be updated.
     if (o.containingBlock()->isTableCell())
-        y -= toRenderTableCell(o.containingBlock())->intrinsicPaddingBefore();
+        y -= toLayoutTableCell(o.containingBlock())->intrinsicPaddingBefore();
 
     ts << "text run at (" << x << "," << y << ") width " << logicalWidth;
     if (!run.isLeftToRightDirection() || run.dirOverride()) {

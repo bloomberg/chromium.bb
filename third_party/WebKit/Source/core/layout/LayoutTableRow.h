@@ -22,35 +22,35 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderTableRow_h
-#define RenderTableRow_h
+#ifndef LayoutTableRow_h
+#define LayoutTableRow_h
 
-#include "core/rendering/RenderTableSection.h"
+#include "core/layout/LayoutTableSection.h"
 
 namespace blink {
 
 static const unsigned unsetRowIndex = 0x7FFFFFFF;
 static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
 
-class RenderTableRow final : public RenderBox {
+class LayoutTableRow final : public RenderBox {
 public:
-    explicit RenderTableRow(Element*);
+    explicit LayoutTableRow(Element*);
     virtual void trace(Visitor*) override;
 
-    RenderTableCell* firstCell() const;
-    RenderTableCell* lastCell() const;
+    LayoutTableCell* firstCell() const;
+    LayoutTableCell* lastCell() const;
 
-    RenderTableRow* previousRow() const;
-    RenderTableRow* nextRow() const;
+    LayoutTableRow* previousRow() const;
+    LayoutTableRow* nextRow() const;
 
     const RenderObjectChildList* children() const { return &m_children; }
     RenderObjectChildList* children() { return &m_children; }
 
-    RenderTableSection* section() const { return toRenderTableSection(parent()); }
-    RenderTable* table() const { return toRenderTable(parent()->parent()); }
+    LayoutTableSection* section() const { return toLayoutTableSection(parent()); }
+    LayoutTable* table() const { return toLayoutTable(parent()->parent()); }
 
-    static RenderTableRow* createAnonymous(Document*);
-    static RenderTableRow* createAnonymousWithParentRenderer(const RenderObject*);
+    static LayoutTableRow* createAnonymous(Document*);
+    static LayoutTableRow* createAnonymousWithParentRenderer(const RenderObject*);
     virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const override
     {
         return createAnonymousWithParentRenderer(parent);
@@ -88,18 +88,18 @@ public:
         return style()->borderStart();
     }
 
-    const BorderValue& borderAdjoiningStartCell(const RenderTableCell*) const;
-    const BorderValue& borderAdjoiningEndCell(const RenderTableCell*) const;
+    const BorderValue& borderAdjoiningStartCell(const LayoutTableCell*) const;
+    const BorderValue& borderAdjoiningEndCell(const LayoutTableCell*) const;
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
-    void addOverflowFromCell(const RenderTableCell*);
+    void addOverflowFromCell(const LayoutTableCell*);
 
 private:
     virtual RenderObjectChildList* virtualChildren() override { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "RenderTableRow (anonymous)" : "RenderTableRow"; }
+    virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "LayoutTableRow (anonymous)" : "LayoutTableRow"; }
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTableRow || RenderBox::isOfType(type); }
 
@@ -132,30 +132,30 @@ private:
     unsigned m_rowIndex : 31;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableRow, isTableRow());
+DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutTableRow, isTableRow());
 
-inline RenderTableRow* RenderTableRow::previousRow() const
+inline LayoutTableRow* LayoutTableRow::previousRow() const
 {
-    return toRenderTableRow(RenderObject::previousSibling());
+    return toLayoutTableRow(RenderObject::previousSibling());
 }
 
-inline RenderTableRow* RenderTableRow::nextRow() const
+inline LayoutTableRow* LayoutTableRow::nextRow() const
 {
-    return toRenderTableRow(RenderObject::nextSibling());
+    return toLayoutTableRow(RenderObject::nextSibling());
 }
 
-inline RenderTableRow* RenderTableSection::firstRow() const
+inline LayoutTableRow* LayoutTableSection::firstRow() const
 {
     ASSERT(children() == virtualChildren());
-    return toRenderTableRow(children()->firstChild());
+    return toLayoutTableRow(children()->firstChild());
 }
 
-inline RenderTableRow* RenderTableSection::lastRow() const
+inline LayoutTableRow* LayoutTableSection::lastRow() const
 {
     ASSERT(children() == virtualChildren());
-    return toRenderTableRow(children()->lastChild());
+    return toLayoutTableRow(children()->lastChild());
 }
 
 } // namespace blink
 
-#endif // RenderTableRow_h
+#endif // LayoutTableRow_h

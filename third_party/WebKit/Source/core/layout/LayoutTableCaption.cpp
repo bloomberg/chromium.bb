@@ -18,44 +18,44 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderTableCaption.h"
+#include "core/layout/LayoutTableCaption.h"
 
-#include "core/rendering/RenderTable.h"
+#include "core/layout/LayoutTable.h"
 
 namespace blink {
 
-RenderTableCaption::RenderTableCaption(Element* element)
+LayoutTableCaption::LayoutTableCaption(Element* element)
     : RenderBlockFlow(element)
 {
 }
 
-RenderTableCaption::~RenderTableCaption()
+LayoutTableCaption::~LayoutTableCaption()
 {
 }
 
-LayoutUnit RenderTableCaption::containingBlockLogicalWidthForContent() const
+LayoutUnit LayoutTableCaption::containingBlockLogicalWidthForContent() const
 {
     RenderBlock* cb = containingBlock();
     return cb->logicalWidth();
 }
 
-void RenderTableCaption::insertedIntoTree()
+void LayoutTableCaption::insertedIntoTree()
 {
     RenderBlockFlow::insertedIntoTree();
 
     table()->addCaption(this);
 }
 
-void RenderTableCaption::willBeRemovedFromTree()
+void LayoutTableCaption::willBeRemovedFromTree()
 {
     RenderBlockFlow::willBeRemovedFromTree();
 
     table()->removeCaption(this);
 }
 
-RenderTable* RenderTableCaption::table() const
+LayoutTable* LayoutTableCaption::table() const
 {
-    return toRenderTable(parent());
+    return toLayoutTable(parent());
 }
 
 }
