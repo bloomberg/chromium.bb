@@ -237,6 +237,7 @@ def task_request_to_raw_request(task_request):
   """
   return {
     'name': task_request.name,
+    'parent_task_id': os.environ.get('SWARMING_TASK_ID', ''),
     'priority': task_request.priority,
     'properties': {
       'commands': [task_request.command],

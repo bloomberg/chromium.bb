@@ -83,6 +83,7 @@ def main(args):
 def gen_request_data(isolated_hash=FILE_HASH, properties=None, **kwargs):
   out = {
     'name': u'unit_tests',
+    'parent_task_id': '',
     'priority': 101,
     'properties': {
       'commands': [
@@ -351,7 +352,13 @@ class TestSwarmingTrigger(NetTestCase):
         user='joe@localhost',
         verbose=False)
 
-    request = swarming.task_request_to_raw_request(task_request)
+    os.environ['SWARMING_TASK_ID'] = '123'
+    try:
+      request = swarming.task_request_to_raw_request(task_request)
+    finally:
+      os.environ.pop('SWARMING_TASK_ID')
+    self.assertEqual('123', request['parent_task_id'])
+
     result = gen_request_response(request)
     result['request']['priority'] = 200
     self.expected_requests(
@@ -368,10 +375,14 @@ class TestSwarmingTrigger(NetTestCase):
           ),
         ])
 
-    tasks = swarming.trigger_task_shards(
-        swarming='https://localhost:1',
-        shards=1,
-        task_request=task_request)
+    os.environ['SWARMING_TASK_ID'] = '123'
+    try:
+      tasks = swarming.trigger_task_shards(
+          swarming='https://localhost:1',
+          shards=1,
+          task_request=task_request)
+    finally:
+      os.environ.pop('SWARMING_TASK_ID')
     expected = {
       u'unit_tests': {
         'shard_index': 0,
@@ -804,6 +815,7 @@ class TestMain(NetTestCase):
     # Minimalist use.
     request = {
       'name': 'None/foo=bar',
+      'parent_task_id': '',
       'priority': 100,
       'properties': {
         'commands': [['python', '-c', 'print(\'hi\')']],
@@ -1375,6 +1387,6 @@ if __name__ == '__main__':
       level=logging.DEBUG if '-v' in sys.argv else logging.CRITICAL)
   if '-v' in sys.argv:
     unittest.TestCase.maxDiff = None
-  for e in ('ISOLATE_SERVER', 'SWARMING_SERVER'):
+  for e in ('ISOLATE_SERVER', 'SWARMING_TASK_ID', 'SWARMING_SERVER'):
     os.environ.pop(e, None)
   unittest.main()
