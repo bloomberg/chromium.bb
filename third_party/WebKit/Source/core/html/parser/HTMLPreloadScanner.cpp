@@ -167,7 +167,6 @@ public:
         if (!shouldPreload() || !m_matchedMediaAttribute)
             return nullptr;
 
-        TRACE_EVENT_INSTANT1("net", "PreloadRequest", "url", m_urlToLoad.ascii());
         TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
         OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType());
         if (isCORSEnabled())
