@@ -19,7 +19,7 @@ you with a zip file containing a starting point.
 
 Download the codelab::
 
-  curl https://nacltools.storage.googleapis.com/cds2014/cds2014_cpp.zip -O
+  curl http://nacltools.storage.googleapis.com/cds2014/cds2014_cpp.zip -O
 
 Unzip it::
 
