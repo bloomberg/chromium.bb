@@ -355,6 +355,8 @@
       'renderer/sad_plugin.h',
       'renderer/savable_resources.cc',
       'renderer/savable_resources.h',
+      'renderer/scheduler/cancelable_closure_holder.cc',
+      'renderer/scheduler/cancelable_closure_holder.h',
       'renderer/scheduler/null_renderer_scheduler.cc',
       'renderer/scheduler/null_renderer_scheduler.h',
       'renderer/scheduler/renderer_scheduler.cc',

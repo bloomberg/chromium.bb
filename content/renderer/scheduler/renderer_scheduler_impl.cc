@@ -35,8 +35,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
   weak_renderer_scheduler_ptr_ = weak_factory_.GetWeakPtr();
   update_policy_closure_ = base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                                       weak_renderer_scheduler_ptr_);
-  end_idle_period_closure_ = base::Bind(&RendererSchedulerImpl::EndIdlePeriod,
-                                        weak_renderer_scheduler_ptr_);
+  end_idle_period_closure_.Reset(base::Bind(
+      &RendererSchedulerImpl::EndIdlePeriod, weak_renderer_scheduler_ptr_));
   idle_task_runner_ = make_scoped_refptr(new SingleThreadIdleTaskRunner(
       task_queue_manager_->TaskRunnerForQueue(IDLE_TASK_QUEUE),
       base::Bind(&RendererSchedulerImpl::CurrentIdleTaskDeadlineCallback,
@@ -111,7 +111,8 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
   base::TimeTicks now(Now());
   if (now < estimated_next_frame_begin_) {
     StartIdlePeriod();
-    control_task_runner_->PostDelayedTask(FROM_HERE, end_idle_period_closure_,
+    control_task_runner_->PostDelayedTask(FROM_HERE,
+                                          end_idle_period_closure_.callback(),
                                           estimated_next_frame_begin_ - now);
   }
 }
@@ -178,8 +179,8 @@ void RendererSchedulerImpl::MaybeUpdatePolicy() {
 
 void RendererSchedulerImpl::PostUpdatePolicyOnControlRunner(
     base::TimeDelta delay) {
-  control_task_runner_->PostDelayedTask(FROM_HERE, update_policy_closure_,
-                                        delay);
+  control_task_runner_->PostDelayedTask(
+      FROM_HERE, update_policy_closure_, delay);
 }
 
 void RendererSchedulerImpl::UpdatePolicy() {
@@ -250,6 +251,7 @@ void RendererSchedulerImpl::EndIdlePeriod() {
   TRACE_EVENT_ASYNC_END0("renderer.scheduler",
                          "RendererSchedulerIdlePeriod", this);
   main_thread_checker_.CalledOnValidThread();
+  end_idle_period_closure_.Cancel();
   renderer_task_queue_selector_->DisableQueue(IDLE_TASK_QUEUE);
 }
 

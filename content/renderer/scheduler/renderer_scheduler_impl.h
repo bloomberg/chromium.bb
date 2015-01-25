@@ -8,6 +8,7 @@
 #include "base/atomicops.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "content/renderer/scheduler/cancelable_closure_holder.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
 #include "content/renderer/scheduler/single_thread_idle_task_runner.h"
 #include "content/renderer/scheduler/task_queue_manager.h"
@@ -125,7 +126,7 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 
   base::Closure update_policy_closure_;
-  base::Closure end_idle_period_closure_;
+  CancelableClosureHolder end_idle_period_closure_;
 
   // Don't access current_policy_ directly, instead use SchedulerPolicy().
   Policy current_policy_;

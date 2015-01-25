@@ -256,6 +256,43 @@ TEST_F(RendererSchedulerImplTest, TestIdleTaskExceedsDeadline) {
   EXPECT_EQ(2, run_count);
 }
 
+TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
+  bool task_run = false;
+
+  base::TimeTicks deadline_in_task;
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &task_run, &deadline_in_task));
+
+  // Trigger the beginning of an idle period for 1000ms.
+  scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
+  scheduler_->DidCommitFrameToCompositor();
+
+  // End the idle period early (after 500ms), and send a WillBeginFrame which
+  // specifies that the next idle period should end 1000ms from now.
+  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(500));
+  scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
+
+  RunUntilIdle();
+  EXPECT_FALSE(task_run);  // Not currently in an idle period.
+
+  // Trigger the start of the idle period before the task to end the previous
+  // idle period has been triggered.
+  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(400));
+  scheduler_->DidCommitFrameToCompositor();
+
+  // Post a task which simulates running until after the previous end idle
+  // period delayed task was scheduled for
+  scheduler_->DefaultTaskRunner()->PostTask(FROM_HERE, base::Bind(NullTask));
+  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(300));
+
+  RunUntilIdle();
+  EXPECT_TRUE(task_run);  // We should still be in the new idle period.
+}
+
 TEST_F(RendererSchedulerImplTest, TestDefaultPolicy) {
   std::vector<std::string> order;
 
