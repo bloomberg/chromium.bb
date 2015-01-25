@@ -19,7 +19,6 @@ public:
     static TrackDefaultList* create(); // Creates an empty TrackDefaultList.
 
     // Implement the IDL
-    static TrackDefaultList* create(ExceptionState&);
     static TrackDefaultList* create(const HeapVector<Member<TrackDefault>>&, ExceptionState&);
 
     unsigned length() const { return m_trackDefaults.size(); }
