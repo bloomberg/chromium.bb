@@ -614,7 +614,10 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
     int32 ipc_object_id) {
   DCHECK(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection = map_.Lookup(ipc_object_id);
+  IndexedDBConnection* connection =
+      parent_->GetOrTerminateProcess(&map_, ipc_object_id);
+  if (!connection)
+    return;
   if (connection->IsConnected())
     connection->Close();
   parent_->Context()
