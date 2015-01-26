@@ -769,9 +769,9 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
       &root_delegated_shared_quad_state,
       &contrib_delegated_shared_quad_state);
 
-  // When the layer owns a surface, then its position and translation are not
-  // a part of its draw transform.
-  EXPECT_EQ(gfx::Rect(10, 10, 35, 35).ToString(),
+  // When the layer owns a surface, then its translation is not part of its
+  // draw transform, but its scale is.
+  EXPECT_EQ(gfx::Rect(20, 20, 70, 70).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
   // Since the layer owns a surface it doesn't need to clip its quads, so
@@ -779,8 +779,9 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
   EXPECT_FALSE(root_delegated_shared_quad_state->is_clipped);
 
   gfx::Transform expected;
-  // This is the transform within the source frame.
-  expected.Scale(1.5, 1.5);
+  // This is the transform within the source frame scaled by the delegated
+  // render layer transform.
+  expected.Scale(3.0, 3.0);
   expected.Translate(7.0, 7.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, root_delegated_shared_quad_state->content_to_target_transform);
@@ -817,17 +818,18 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
       &root_delegated_shared_quad_state,
       &contrib_delegated_shared_quad_state);
 
-  // When the layer owns a surface, then its position and translation are not
-  // a part of its draw transform. The clip_rect should be preserved.
-  EXPECT_EQ(gfx::Rect(10, 10, 35, 35).ToString(),
+  // When the layer owns a surface, then its translation is not part of its
+  // draw transform, but its scale is.
+  EXPECT_EQ(gfx::Rect(20, 20, 70, 70).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
   // The quads had a clip and it should be preserved.
   EXPECT_TRUE(root_delegated_shared_quad_state->is_clipped);
 
   gfx::Transform expected;
-  // This is the transform within the source frame.
-  expected.Scale(1.5, 1.5);
+  // This is the transform within the source frame scaled by the delegated
+  // render layer transform.
+  expected.Scale(3.0, 3.0);
   expected.Translate(7.0, 7.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, root_delegated_shared_quad_state->content_to_target_transform);

@@ -5157,75 +5157,81 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_FLOAT_EQ(initial_parent_scale,
                   parent->draw_transform().matrix().get(1, 1));
 
-  // The child surface is scaled up during draw since its subtree is not scaled
+  // The child surface is not scaled up during draw since its subtree is scaled
   // by the transform hierarchy.
   EXPECT_FLOAT_EQ(
-      initial_parent_scale * initial_child_scale,
+      1.f,
       surface_scale->render_surface()->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
-      initial_parent_scale * initial_child_scale,
+      1.f,
       surface_scale->render_surface()->draw_transform().matrix().get(1, 1));
 
-  // The surface_scale's RenderSurface is scaled during draw, so the layer does
-  // not need to be scaled when drawing into its surface.
-  EXPECT_FLOAT_EQ(1.0, surface_scale->draw_transform().matrix().get(0, 0));
-  EXPECT_FLOAT_EQ(1.0, surface_scale->draw_transform().matrix().get(1, 1));
+  // The surface_scale's RenderSurface is not scaled during draw, so the layer
+  // needs to be scaled when drawing into its surface.
+  EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale,
+                  surface_scale->draw_transform().matrix().get(0, 0));
+  EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale,
+                  surface_scale->draw_transform().matrix().get(1, 1));
 
-  // The surface_scale_child_scale is scaled when drawing into its surface,
-  // since its content bounds are not scaled by the transform hierarchy.
+  // The surface_scale_child_scale is not scaled when drawing into its surface,
+  // since its content bounds are scaled by the transform hierarchy.
   EXPECT_FLOAT_EQ(
-      initial_child_scale,
+      initial_child_scale * initial_child_scale * initial_parent_scale,
       surface_scale_child_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
-      initial_child_scale,
+      initial_child_scale * initial_child_scale * initial_parent_scale,
       surface_scale_child_scale->draw_transform().matrix().get(1, 1));
 
-  // The surface_scale_child_no_scale has a fixed contents scale of 1, so it
-  // needs to be scaled by the device and page scale factors, along with the
-  // transform hierarchy.
+  // The surface_scale_child_no_scale is scaled by the device scale, page scale
+  // and transform hierarchy.
   EXPECT_FLOAT_EQ(
-      device_scale_factor * page_scale_factor * initial_child_scale,
+      device_scale_factor * page_scale_factor * initial_parent_scale *
+          initial_child_scale * initial_child_scale,
       surface_scale_child_no_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
-      device_scale_factor * page_scale_factor * initial_child_scale,
+      device_scale_factor * page_scale_factor * initial_parent_scale *
+          initial_child_scale * initial_child_scale,
       surface_scale_child_no_scale->draw_transform().matrix().get(1, 1));
 
-  // The child surface is scaled up during draw since its subtree is not scaled
+  // The child surface is not scaled up during draw since its subtree is scaled
   // by the transform hierarchy.
   EXPECT_FLOAT_EQ(
-      initial_parent_scale * initial_child_scale,
+      1.f,
       surface_no_scale->render_surface()->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
-      initial_parent_scale * initial_child_scale,
+      1.f,
       surface_no_scale->render_surface()->draw_transform().matrix().get(1, 1));
 
   // The surface_no_scale layer has a fixed contents scale of 1, so it needs to
   // be scaled by the device and page scale factors. Its surface is already
   // scaled by the transform hierarchy so those don't need to scale the layer's
   // drawing.
-  EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor,
+  EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale *
+                      device_scale_factor * page_scale_factor,
                   surface_no_scale->draw_transform().matrix().get(0, 0));
-  EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor,
+  EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale *
+                      device_scale_factor * page_scale_factor,
                   surface_no_scale->draw_transform().matrix().get(1, 1));
 
   // The surface_no_scale_child_scale has its contents scaled by the page and
   // device scale factors, but needs to be scaled by the transform hierarchy
   // when drawing.
   EXPECT_FLOAT_EQ(
-      initial_child_scale,
+      initial_parent_scale * initial_child_scale * initial_child_scale,
       surface_no_scale_child_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
-      initial_child_scale,
+      initial_parent_scale * initial_child_scale * initial_child_scale,
       surface_no_scale_child_scale->draw_transform().matrix().get(1, 1));
 
-  // The surface_no_scale_child_no_scale has a fixed contents scale of 1, so it
-  // needs to be scaled by the device and page scale factors. It also needs to
-  // be scaled by any transform heirarchy below its target surface.
+  // The surface_no_scale_child_no_scale needs to be scaled by the device and
+  // page scale factors and by any transform heirarchy below its target surface.
   EXPECT_FLOAT_EQ(
-      device_scale_factor * page_scale_factor * initial_child_scale,
+      device_scale_factor * page_scale_factor * initial_parent_scale *
+          initial_child_scale * initial_child_scale,
       surface_no_scale_child_no_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
-      device_scale_factor * page_scale_factor * initial_child_scale,
+      device_scale_factor * page_scale_factor * initial_parent_scale *
+          initial_child_scale * initial_child_scale,
       surface_no_scale_child_no_scale->draw_transform().matrix().get(1, 1));
 }
 

@@ -1831,14 +1831,6 @@ static void CalculateDrawPropertiesInternal(
   data_for_children.full_hierarchy_matrix =
       data_from_ancestor.full_hierarchy_matrix;
 
-  // If the subtree will scale layer contents by the transform hierarchy, then
-  // we should scale things into the render surface by the transform hierarchy
-  // to take advantage of that.
-  gfx::Vector2dF render_surface_sublayer_scale =
-      globals.can_adjust_raster_scales
-      ? combined_transform_scales
-      : gfx::Vector2dF(layer_scale_factors, layer_scale_factors);
-
   bool render_to_separate_surface =
       IsRootLayer(layer) ||
       (globals.can_render_to_separate_surface && layer->render_surface());
@@ -1873,17 +1865,19 @@ static void CalculateDrawPropertiesInternal(
       // space which we do not want; so here we use the combined_transform
       // instead of the draw_transform. However, we do need to add a different
       // scale factor that accounts for the surface's pixel dimensions.
-      combined_transform.Scale(1.0 / render_surface_sublayer_scale.x(),
-                               1.0 / render_surface_sublayer_scale.y());
-      render_surface->SetDrawTransform(combined_transform);
+      // Remove the combined_transform scale from the draw transform.
+      gfx::Transform draw_transform = combined_transform;
+      draw_transform.Scale(1.0 / combined_transform_scales.x(),
+                           1.0 / combined_transform_scales.y());
+      render_surface->SetDrawTransform(draw_transform);
 
       // The owning layer's transform was re-parented by the surface, so the
       // layer's new draw_transform only needs to scale the layer to surface
       // space.
       layer_draw_properties.target_space_transform.MakeIdentity();
-      layer_draw_properties.target_space_transform.
-          Scale(render_surface_sublayer_scale.x() / layer->contents_scale_x(),
-                render_surface_sublayer_scale.y() / layer->contents_scale_y());
+      layer_draw_properties.target_space_transform.Scale(
+          combined_transform_scales.x() / layer->contents_scale_x(),
+          combined_transform_scales.y() / layer->contents_scale_y());
 
       // Inside the surface's subtree, we scale everything to the owning layer's
       // scale.  The sublayer matrix transforms layer rects into target surface
@@ -1892,8 +1886,8 @@ static void CalculateDrawPropertiesInternal(
       // but we apply it explicitly to the owning layer and the remainder of the
       // subtree independently.
       DCHECK(data_for_children.parent_matrix.IsIdentity());
-      data_for_children.parent_matrix.Scale(render_surface_sublayer_scale.x(),
-                            render_surface_sublayer_scale.y());
+      data_for_children.parent_matrix.Scale(combined_transform_scales.x(),
+                                            combined_transform_scales.y());
 
       // Even if the |layer_is_drawn|, it only contributes to a drawn surface
       // when the |layer_is_visible|.
@@ -2311,14 +2305,14 @@ static void CalculateDrawPropertiesInternal(
     // surface's subtree into layer space.
     gfx::Transform screen_space_transform = layer->screen_space_transform();
     screen_space_transform.Scale(
-        layer->contents_scale_x() / render_surface_sublayer_scale.x(),
-        layer->contents_scale_y() / render_surface_sublayer_scale.y());
+        layer->contents_scale_x() / combined_transform_scales.x(),
+        layer->contents_scale_y() / combined_transform_scales.y());
     render_surface->SetScreenSpaceTransform(screen_space_transform);
 
     if (layer->replica_layer()) {
       gfx::Transform surface_origin_to_replica_origin_transform;
       surface_origin_to_replica_origin_transform.Scale(
-          render_surface_sublayer_scale.x(), render_surface_sublayer_scale.y());
+          combined_transform_scales.x(), combined_transform_scales.y());
       surface_origin_to_replica_origin_transform.Translate(
           layer->replica_layer()->position().x() +
               layer->replica_layer()->transform_origin().x(),
@@ -2330,8 +2324,8 @@ static void CalculateDrawPropertiesInternal(
           -layer->replica_layer()->transform_origin().x(),
           -layer->replica_layer()->transform_origin().y());
       surface_origin_to_replica_origin_transform.Scale(
-          1.0 / render_surface_sublayer_scale.x(),
-          1.0 / render_surface_sublayer_scale.y());
+          1.0 / combined_transform_scales.x(),
+          1.0 / combined_transform_scales.y());
 
       // Compute the replica's "originTransform" that maps from the replica's
       // origin space to the target surface origin space.

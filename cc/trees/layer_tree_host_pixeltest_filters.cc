@@ -283,7 +283,7 @@ TEST_F(LayerTreeHostFiltersPixelTest, ImageFilterScaled_GL) {
 
   gfx::Rect rect(50, 50, 100, 100);
 
-  static const int kInset = 3;
+  const int kInset = 3;
   for (int i = 0; !rect.IsEmpty(); ++i) {
     scoped_refptr<SolidColorLayer> layer =
         CreateSolidColorLayer(rect, (i & 1) ? SK_ColorWHITE : SK_ColorRED);
@@ -332,6 +332,67 @@ TEST_F(LayerTreeHostFiltersPixelTest, ImageFilterScaled_GL) {
   // TODO(hendrikw): Enable test in software as well: crbug.com/432157
   RunPixelTest(PIXEL_TEST_GL, background,
                base::FilePath(FILE_PATH_LITERAL("filter_on_scaled_layer.png")));
+}
+
+class ImageScaledRenderSurface : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(PixelTestType test_type, base::FilePath image_name) {
+    // A filter will cause a render surface to be used.  Here we force the
+    // render surface on, and scale the result to make sure that we rasterize at
+    // the correct resolution.
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorBLUE);
+
+    scoped_refptr<SolidColorLayer> render_surface_layer =
+        CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
+
+    gfx::Rect rect(50, 50, 100, 100);
+
+    scoped_refptr<SolidColorLayer> child =
+        CreateSolidColorLayer(rect, SK_ColorRED);
+
+    gfx::Transform transform;
+    transform.Translate(rect.width() / 2.0, rect.height() / 2.0);
+    transform.RotateAboutZAxis(30.0);
+    transform.Translate(-rect.width() / 2.0, -rect.height() / 2.0);
+    child->SetTransform(transform);
+
+    render_surface_layer->AddChild(child);
+
+    gfx::Transform render_surface_transform;
+    render_surface_transform.Scale(1.5f, 1.5f);
+    render_surface_layer->SetTransform(render_surface_transform);
+    render_surface_layer->SetForceRenderSurface(true);
+
+    background->AddChild(render_surface_layer);
+
+    // Software has some huge differences in the AA'd pixels on the different
+    // trybots. See crbug.com/452198.
+    float percentage_pixels_large_error = 0.686f;
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 16.f;
+    int large_error_allowed = 17;
+    int small_error_allowed = 0;
+    pixel_comparator_.reset(new FuzzyPixelComparator(
+        true,  // discard_alpha
+        percentage_pixels_large_error, percentage_pixels_small_error,
+        average_error_allowed_in_bad_pixels, large_error_allowed,
+        small_error_allowed));
+
+    RunPixelTest(test_type, background, image_name);
+  }
+};
+
+TEST_F(ImageScaledRenderSurface, ImageRenderSurfaceScaled_GL) {
+  RunPixelTestType(
+      PIXEL_TEST_GL,
+      base::FilePath(FILE_PATH_LITERAL("scaled_render_surface_layer_gl.png")));
+}
+
+TEST_F(ImageScaledRenderSurface, ImageRenderSurfaceScaled_Software) {
+  RunPixelTestType(
+      PIXEL_TEST_SOFTWARE,
+      base::FilePath(FILE_PATH_LITERAL("scaled_render_surface_layer_sw.png")));
 }
 
 }  // namespace
