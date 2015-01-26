@@ -269,8 +269,11 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
 
   webui::SetFontAndTextDirection(&strings);
 
-  base::StringPiece html(ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML));
+  std::string html =
+      ResourceBundle::GetSharedInstance()
+          .GetRawDataResource(IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML)
+          .as_string();
+  webui::AppendWebUiCssTextDefaults(&html);
 
   return webui::GetI18nTemplateHtml(html, &strings);
 }

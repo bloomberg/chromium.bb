@@ -85,17 +85,8 @@ void SharedResourcesDataSource::StartDataRequest(
   scoped_refptr<base::RefCountedMemory> bytes;
 
   if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS) {
-    std::vector<std::string> placeholders;
-    placeholders.push_back(webui::GetTextDirection());  // $1
-    placeholders.push_back(webui::GetFontFamily());  // $2
-    placeholders.push_back(webui::GetFontSize());  // $3
-
-    ContentClient* content_client = GetContentClient();
-    const std::string& chrome_shared =
-        content_client->GetDataResource(idr, ui::SCALE_FACTOR_NONE).as_string();
-    std::string replaced =
-        ReplaceStringPlaceholders(chrome_shared, placeholders, nullptr);
-    bytes = base::RefCountedString::TakeString(&replaced);
+    std::string css = webui::GetWebUiCssTextDefaults();
+    bytes = base::RefCountedString::TakeString(&css);
   } else {
     bytes = GetContentClient()->GetDataResourceBytes(idr);
   }

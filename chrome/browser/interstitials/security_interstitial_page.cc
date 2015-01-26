@@ -64,8 +64,9 @@ std::string SecurityInterstitialPage::GetHTMLContents() {
   base::DictionaryValue load_time_data;
   PopulateInterstitialStrings(&load_time_data);
   webui::SetFontAndTextDirection(&load_time_data);
-  base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_SECURITY_INTERSTITIAL_HTML));
+  std::string html = ResourceBundle::GetSharedInstance()
+                         .GetRawDataResource(IDR_SECURITY_INTERSTITIAL_HTML)
+                         .as_string();
+  webui::AppendWebUiCssTextDefaults(&html);
   return webui::GetI18nTemplateHtml(html, &load_time_data);
 }

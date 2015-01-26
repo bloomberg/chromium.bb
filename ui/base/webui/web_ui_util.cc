@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/app_locale_settings.h"
 #include "url/gurl.h"
 
@@ -129,6 +131,33 @@ void ParsePathAndScale(const GURL& url,
   }
 }
 
+void SetFontAndTextDirection(base::DictionaryValue* localized_strings) {
+  localized_strings->SetString("fontfamily", GetFontFamily());
+  localized_strings->SetString("fontsize", GetFontSize());
+  localized_strings->SetString("textdirection", GetTextDirection());
+}
+
+std::string GetWebUiCssTextDefaults() {
+  std::vector<std::string> placeholders;
+  placeholders.push_back(GetTextDirection());  // $1
+  placeholders.push_back(GetFontFamily());  // $2
+  placeholders.push_back(GetFontSize());  // $3
+
+  const ui::ResourceBundle& resource_bundle =
+      ui::ResourceBundle::GetSharedInstance();
+  const std::string& css_template =
+      resource_bundle.GetRawDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS)
+          .as_string();
+
+  return ReplaceStringPlaceholders(css_template, placeholders, nullptr);
+}
+
+void AppendWebUiCssTextDefaults(std::string* html) {
+  html->append("<style>");
+  html->append(GetWebUiCssTextDefaults());
+  html->append("</style>");
+}
+
 std::string GetFontFamily() {
   std::string font_family = l10n_util::GetStringUTF8(
 #if defined(OS_WIN)
@@ -162,12 +191,6 @@ std::string GetFontSize() {
 
 std::string GetTextDirection() {
   return base::i18n::IsRTL() ? "rtl" : "ltr";
-}
-
-void SetFontAndTextDirection(base::DictionaryValue* localized_strings) {
-  localized_strings->SetString("fontfamily", GetFontFamily());
-  localized_strings->SetString("fontsize", GetFontSize());
-  localized_strings->SetString("textdirection", GetTextDirection());
 }
 
 }  // namespace webui
