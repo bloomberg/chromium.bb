@@ -34,7 +34,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   IAccessible* GetParentIAccessible();
 
   // Calls NotifyWinEvent if the parent window's IAccessible pointer is known.
-  void MaybeCallNotifyWinEvent(DWORD event, LONG child_id);
+  void MaybeCallNotifyWinEvent(DWORD event, BrowserAccessibility* node);
 
   // AXTree methods
   virtual void OnNodeWillBeDeleted(ui::AXNode* node) override;

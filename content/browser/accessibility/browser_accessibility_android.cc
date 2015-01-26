@@ -330,16 +330,17 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
 
   // First, always return the |value| attribute if this is an
   // input field.
-  if (!value().empty()) {
+  base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
+  if (!value.empty()) {
     if (HasState(ui::AX_STATE_EDITABLE))
-      return base::UTF8ToUTF16(value());
+      return value;
 
     switch (GetRole()) {
       case ui::AX_ROLE_COMBO_BOX:
       case ui::AX_ROLE_POP_UP_BUTTON:
       case ui::AX_ROLE_TEXT_AREA:
       case ui::AX_ROLE_TEXT_FIELD:
-        return base::UTF8ToUTF16(value());
+        return value;
     }
   }
 
@@ -356,8 +357,9 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   // Always prefer visible text if this is a link. Sites sometimes add
   // a "title" attribute to a link with more information, but we can't
   // lose the link text.
-  if (!name().empty() && GetRole() == ui::AX_ROLE_LINK)
-    return base::UTF8ToUTF16(name());
+  base::string16 name = GetString16Attribute(ui::AX_ATTR_NAME);
+  if (!name.empty() && GetRole() == ui::AX_ROLE_LINK)
+    return name;
 
   // If there's no text value, the basic rule is: prefer description
   // (aria-labelledby or aria-label), then help (title), then name
@@ -383,16 +385,16 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   base::string16 text;
   if (!description.empty())
     text = description;
-  else if (title_elem_id && !name().empty())
-    text = base::UTF8ToUTF16(name());
+  else if (title_elem_id && !name.empty())
+    text = name;
   else if (!help.empty())
     text = help;
-  else if (!name().empty())
-    text = base::UTF8ToUTF16(name());
+  else if (!name.empty())
+    text = name;
   else if (!placeholder.empty())
     text = placeholder;
-  else if (!value().empty())
-    text = base::UTF8ToUTF16(value());
+  else if (!value.empty())
+    text = value;
   else if (title_elem_id) {
     BrowserAccessibility* title_elem =
           manager()->GetFromID(title_elem_id);
@@ -563,7 +565,8 @@ int BrowserAccessibilityAndroid::GetSelectionEnd() const {
 }
 
 int BrowserAccessibilityAndroid::GetEditableTextLength() const {
-  return value().length();
+  base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
+  return value.length();
 }
 
 int BrowserAccessibilityAndroid::AndroidInputType() const {
@@ -831,9 +834,10 @@ void BrowserAccessibilityAndroid::OnDataChanged() {
   BrowserAccessibility::OnDataChanged();
 
   if (IsEditableText()) {
-    if (base::UTF8ToUTF16(value()) != new_value_) {
+    base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
+    if (value != new_value_) {
       old_value_ = new_value_;
-      new_value_ = base::UTF8ToUTF16(value());
+      new_value_ = value;
     }
   }
 

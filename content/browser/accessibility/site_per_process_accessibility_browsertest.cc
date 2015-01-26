@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -146,7 +147,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAccessibilityBrowserTest,
       ax_scroll_area->PlatformGetChild(0);
   EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, ax_child_frame_root->GetRole());
   ASSERT_EQ(1U, ax_child_frame_root->PlatformChildCount());
-  EXPECT_EQ("Title Of Awesomeness", ax_child_frame_root->name());
+  EXPECT_EQ("Title Of Awesomeness",
+            ax_child_frame_root->GetStringAttribute(ui::AX_ATTR_NAME));
 
   BrowserAccessibility* ax_child_frame_group =
       ax_child_frame_root->PlatformGetChild(0);

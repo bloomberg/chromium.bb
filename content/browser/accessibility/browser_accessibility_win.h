@@ -97,11 +97,15 @@ BrowserAccessibilityWin
   // like NotifyWinEvent, and as the unique ID for IAccessible2 and ISimpleDOM.
   LONG unique_id_win() const { return unique_id_win_; }
 
+  CONTENT_EXPORT void UpdateIAccessibleText();
+
   //
   // BrowserAccessibility methods.
   //
   CONTENT_EXPORT virtual void OnDataChanged() override;
   CONTENT_EXPORT virtual void OnUpdateFinished() override;
+  CONTENT_EXPORT virtual void OnSubtreeWillBeDeleted() override;
+  CONTENT_EXPORT virtual void OnSubtreeCreationFinished() override;
   CONTENT_EXPORT virtual void NativeAddReference() override;
   CONTENT_EXPORT virtual void NativeReleaseReference() override;
   CONTENT_EXPORT virtual bool IsNative() const override;
@@ -775,14 +779,18 @@ BrowserAccessibilityWin
                          void** object);
 
   // Accessors.
-  int32 ia_role() const { return ia_role_; }
-  int32 ia_state() const { return ia_state_; }
-  const base::string16& role_name() const { return role_name_; }
-  int32 ia2_role() const { return ia2_role_; }
-  int32 ia2_state() const { return ia2_state_; }
+  int32 ia_role() const { return win_attributes_->ia_role; }
+  int32 ia_state() const { return win_attributes_->ia_state; }
+  const base::string16& role_name() const { return win_attributes_->role_name; }
+  int32 ia2_role() const { return win_attributes_->ia2_role; }
+  int32 ia2_state() const { return win_attributes_->ia2_state; }
   const std::vector<base::string16>& ia2_attributes() const {
-    return ia2_attributes_;
+    return win_attributes_->ia2_attributes;
   }
+  base::string16 name() const { return win_attributes_->name; }
+  base::string16 description() const { return win_attributes_->description; }
+  base::string16 help() const { return win_attributes_->help; }
+  base::string16 value() const { return win_attributes_->value; }
 
  private:
   // Add one to the reference count and return the same object. Always
@@ -823,6 +831,9 @@ BrowserAccessibilityWin
   void IntAttributeToIA2(ui::AXIntAttribute attribute,
                          const char* ia2_attr);
 
+  // Append the accessible name from this node and its children.
+  base::string16 GetNameRecursive() const;
+
   // Get the value text, which might come from the floating-point
   // value for some roles.
   base::string16 GetValueText();
@@ -830,6 +841,9 @@ BrowserAccessibilityWin
   // Get the text of this node for the purposes of IAccessibleText - it may
   // be the name, it may be the value, etc. depending on the role.
   base::string16 TextForIAccessibleText();
+
+  void ComputeHypertextRemovedAndInserted(
+      int* start, int* old_len, int* new_len);
 
   // If offset is a member of IA2TextSpecialOffsets this function updates the
   // value of offset and returns, otherwise offset remains unchanged.
@@ -855,37 +869,40 @@ BrowserAccessibilityWin
   // IAccessible2 and ISimpleDOM.
   LONG unique_id_win_;
 
-  // IAccessible role and state.
-  int32 ia_role_;
-  int32 ia_state_;
-  base::string16 role_name_;
+  struct WinAttributes {
+    WinAttributes();
 
-  // IAccessible2 role and state.
-  int32 ia2_role_;
-  int32 ia2_state_;
+    // IAccessible role and state.
+    int32 ia_role;
+    int32 ia_state;
+    base::string16 role_name;
 
-  // IAccessible2 attributes.
-  std::vector<base::string16> ia2_attributes_;
+    // IAccessible name, description, help, value.
+    base::string16 name;
+    base::string16 description;
+    base::string16 help;
+    base::string16 value;
 
-  // True in Initialize when the object is first created, and false
-  // subsequent times.
-  bool first_time_;
+    // IAccessible2 role and state.
+    int32 ia2_role;
+    int32 ia2_state;
 
-  // The previous text, before the last update to this object.
-  base::string16 previous_text_;
+    // IAccessible2 attributes.
+    std::vector<base::string16> ia2_attributes;
+  };
 
-  // The old text to return in IAccessibleText::get_oldText - this is like
-  // previous_text_ except that it's NOT updated when the object
-  // is initialized again but the text doesn't change.
-  base::string16 old_text_;
+  scoped_ptr<WinAttributes> win_attributes_;
 
-  // The previous state, used to see if there was a state change.
-  int32 old_ia_state_;
+  // Only valid during the scope of a IA2_EVENT_TEXT_REMOVED or
+  // IA2_EVENT_TEXT_INSERTED event.
+  scoped_ptr<WinAttributes> old_win_attributes_;
 
   // Relationships between this node and other nodes.
   std::vector<BrowserAccessibilityRelation*> relations_;
 
-  // The text of this node including embedded hyperlink characters.
+  // IAccessibleText text of this node including
+  // embedded hyperlink characters.
+  base::string16 old_hypertext_;
   base::string16 hypertext_;
 
   // Maps the |hypertext_| embedded character offset to an index in
