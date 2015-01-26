@@ -212,6 +212,8 @@ int drm_intel_bufmgr_gem_get_devid(drm_intel_bufmgr *bufmgr);
 int drm_intel_gem_bo_wait(drm_intel_bo *bo, int64_t timeout_ns);
 
 drm_intel_context *drm_intel_gem_context_create(drm_intel_bufmgr *bufmgr);
+int drm_intel_gem_context_get_id(drm_intel_context *ctx,
+                                 uint32_t *ctx_id);
 void drm_intel_gem_context_destroy(drm_intel_context *ctx);
 int drm_intel_gem_bo_context_exec(drm_intel_bo *bo, drm_intel_context *ctx,
 				  int used, unsigned int flags);
