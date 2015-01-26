@@ -72,6 +72,7 @@ MenuButton::MenuButton(ButtonListener* listener,
           IDR_MENU_DROPARROW).ToImageSkia()),
       destroyed_flag_(NULL),
       pressed_lock_count_(0),
+      should_disable_after_press_(false),
       weak_factory_(this) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 }
@@ -308,8 +309,22 @@ bool MenuButton::ShouldEnterPushedState(const ui::Event& event) {
   return event.type() == ui::ET_GESTURE_TAP;
 }
 
+void MenuButton::StateChanged() {
+  if (pressed_lock_count_ != 0) {
+    // The button's state was changed while it was supposed to be locked in a
+    // pressed state. This shouldn't happen, but conceivably could if a caller
+    // tries to switch from enabled to disabled or vice versa while the button
+    // is pressed.
+    if (state() == STATE_NORMAL)
+      should_disable_after_press_ = false;
+    else if (state() == STATE_DISABLED)
+      should_disable_after_press_ = true;
+  }
+}
+
 void MenuButton::IncrementPressedLocked() {
   ++pressed_lock_count_;
+  should_disable_after_press_ = state() == STATE_DISABLED;
   SetState(STATE_PRESSED);
 }
 
@@ -317,13 +332,17 @@ void MenuButton::DecrementPressedLocked() {
   --pressed_lock_count_;
   DCHECK_GE(pressed_lock_count_, 0);
 
-  // If this was the last lock, manually reset state to "normal". We set
-  // "normal" and not "hot" because the likelihood is that the mouse is now
-  // somewhere else (user clicked elsewhere on screen to close the menu or
-  // selected an item) and we will inevitably refresh the hot state in the event
-  // the mouse _is_ over the view.
-  if (pressed_lock_count_ == 0)
-    SetState(STATE_NORMAL);
+  // If this was the last lock, manually reset state to the desired state.
+  if (pressed_lock_count_ == 0) {
+    ButtonState desired_state = STATE_NORMAL;
+    if (should_disable_after_press_) {
+      desired_state = STATE_DISABLED;
+      should_disable_after_press_ = false;
+    } else if (IsMouseHovered()) {
+      desired_state = STATE_HOVERED;
+    }
+    SetState(desired_state);
+  }
 }
 
 int MenuButton::GetMaximumScreenXCoordinate() {

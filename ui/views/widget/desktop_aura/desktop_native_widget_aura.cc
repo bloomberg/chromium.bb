@@ -870,7 +870,10 @@ void DesktopNativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
 }
 
 bool DesktopNativeWidgetAura::IsMouseEventsEnabled() const {
-  if (!content_window_)
+  // We explicitly check |host_| here because it can be null during the process
+  // of widget shutdown (even if |content_window_| is not), and must be valid to
+  // determine if mouse events are enabled.
+  if (!content_window_ || !host_)
     return false;
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(host_->window());

@@ -87,6 +87,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
 
   // Overridden from CustomButton:
   bool ShouldEnterPushedState(const ui::Event& event) override;
+  void StateChanged() override;
 
   // Offset of the associated menu position.
   gfx::Point menu_offset_;
@@ -126,6 +127,11 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
 
   // The current number of "pressed" locks this button has.
   int pressed_lock_count_;
+
+  // True if the button was in a disabled state when a menu was run, and should
+  // return to it once the press is complete. This can happen if, e.g., we
+  // programmatically show a menu on a disabled button.
+  bool should_disable_after_press_;
 
   base::WeakPtrFactory<MenuButton> weak_factory_;
 

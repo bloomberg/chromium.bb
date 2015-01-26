@@ -348,6 +348,31 @@ TEST_F(MenuButtonTest, MenuButtonPressedLock) {
   // ...And it should respond to mouse movement again.
   generator.MoveMouseTo(gfx::Point(10, 10));
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+
+  // Test that the button returns to the appropriate state after the press; if
+  // the mouse ends over the button, the button should be hovered.
+  pressed_lock1.reset(new MenuButton::PressedLock(button()));
+  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+  pressed_lock1.reset();
+  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+
+  // If the button is disabled before the pressed lock, it should be disabled
+  // after the pressed lock.
+  button()->SetState(Button::STATE_DISABLED);
+  pressed_lock1.reset(new MenuButton::PressedLock(button()));
+  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+  pressed_lock1.reset();
+  EXPECT_EQ(Button::STATE_DISABLED, button()->state());
+
+  generator.MoveMouseTo(gfx::Point(300, 10));
+
+  // Edge case: the button is disabled, a pressed lock is added, and then the
+  // button is re-enabled. It should be enabled after the lock is removed.
+  pressed_lock1.reset(new MenuButton::PressedLock(button()));
+  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+  button()->SetState(Button::STATE_NORMAL);
+  pressed_lock1.reset();
+  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
 }
 
 // Test that the MenuButton does not become pressed if it can be dragged, until
