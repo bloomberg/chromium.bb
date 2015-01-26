@@ -190,14 +190,6 @@ public class ContentViewRenderView extends FrameLayout {
         nativeSetOverlayVideoMode(mNativeContentViewRenderView, enabled);
     }
 
-    /**
-     * Set the native layer tree helper for this {@link ContentViewRenderView}.
-     * @param layerTreeBuildHelperNativePtr Native pointer to the layer tree build helper.
-     */
-    public void setLayerTreeBuildHelper(long layerTreeBuildHelperNativePtr) {
-        nativeSetLayerTreeBuildHelper(mNativeContentViewRenderView, layerTreeBuildHelperNativePtr);
-    }
-
     @CalledByNative
     protected void onCompositorLayout() {
     }
@@ -225,8 +217,6 @@ public class ContentViewRenderView extends FrameLayout {
     private native void nativeDestroy(long nativeContentViewRenderView);
     private native void nativeSetCurrentContentViewCore(long nativeContentViewRenderView,
             long nativeContentViewCore);
-    private native void nativeSetLayerTreeBuildHelper(long nativeContentViewRenderView,
-            long buildHelperNativePtr);
     private native void nativeSurfaceCreated(long nativeContentViewRenderView);
     private native void nativeSurfaceDestroyed(long nativeContentViewRenderView);
     private native void nativeSurfaceChanged(long nativeContentViewRenderView,

@@ -15,7 +15,6 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_layer_renderer.h"
-#include "content/public/browser/android/layer_tree_build_helper.h"
 #include "jni/ContentViewRenderView_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -27,24 +26,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
-namespace {
-
-class LayerTreeBuildHelperImpl : public LayerTreeBuildHelper {
- public:
-  LayerTreeBuildHelperImpl() {}
-  virtual ~LayerTreeBuildHelperImpl() {}
-
-  virtual scoped_refptr<cc::Layer> GetLayerTree(
-      scoped_refptr<cc::Layer> content_root_layer) override {
-    return content_root_layer;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LayerTreeBuildHelperImpl);
-};
-
-}  // anonymous namespace
-
 // static
 bool ContentViewRenderView::RegisterContentViewRenderView(JNIEnv* env) {
   return RegisterNativesImpl(env);
@@ -53,25 +34,13 @@ bool ContentViewRenderView::RegisterContentViewRenderView(JNIEnv* env) {
 ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
                                              jobject obj,
                                              gfx::NativeWindow root_window)
-    : layer_tree_build_helper_(new LayerTreeBuildHelperImpl()),
-      root_window_(root_window),
-      current_surface_format_(0) {
+    : root_window_(root_window), current_surface_format_(0) {
   java_obj_.Reset(env, obj);
 }
 
 ContentViewRenderView::~ContentViewRenderView() {
 }
 
-void ContentViewRenderView::SetLayerTreeBuildHelper(JNIEnv* env,
-                                                    jobject obj,
-                                                    jlong native_build_helper) {
-  CHECK(native_build_helper);
-
-  LayerTreeBuildHelper* build_helper =
-      reinterpret_cast<LayerTreeBuildHelper*>(native_build_helper);
-  layer_tree_build_helper_.reset(build_helper);
-  InitCompositor();
-}
 // static
 static jlong Init(JNIEnv* env,
                   jobject obj,
@@ -92,10 +61,8 @@ void ContentViewRenderView::SetCurrentContentViewCore(
   InitCompositor();
   ContentViewCoreImpl* content_view_core =
       reinterpret_cast<ContentViewCoreImpl*>(native_content_view_core);
-  compositor_->SetRootLayer(content_view_core
-                                ? layer_tree_build_helper_->GetLayerTree(
-                                      content_view_core->GetLayer())
-                                : scoped_refptr<cc::Layer>());
+  compositor_->SetRootLayer(content_view_core ? content_view_core->GetLayer()
+                                              : scoped_refptr<cc::Layer>());
 }
 
 void ContentViewRenderView::SurfaceCreated(
