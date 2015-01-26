@@ -56,7 +56,7 @@ def SystemIncludeDirectoryFlags():
     with open(os.devnull, 'rb') as DEVNULL:
       output = subprocess.check_output(['clang', '-v', '-E', '-x', 'c++', '-'],
                                        stdin=DEVNULL, stderr=subprocess.STDOUT)
-  except (FileNotFoundError, subprocess.CalledProcessError):
+  except:
     return []
   includes_regex = r'#include <\.\.\.> search starts here:\s*' \
                    r'(.*?)End of search list\.'
