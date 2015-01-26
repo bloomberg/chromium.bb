@@ -304,9 +304,16 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     // with SharedWorker.
     ASSERT(!m_webView);
     m_webView = WebView::create(0);
+    WebSettings* settings = m_webView->settings();
     // FIXME: http://crbug.com/363843. This needs to find a better way to
     // not create graphics layers.
-    m_webView->settings()->setAcceleratedCompositingEnabled(false);
+    settings->setAcceleratedCompositingEnabled(false);
+    // Currently we block all mixed-content requests from a ServiceWorker.
+    // FIXME: When we support FetchEvent.default(), we should relax this
+    // restriction.
+    settings->setStrictMixedContentChecking(true);
+    settings->setAllowDisplayOfInsecureContent(false);
+    settings->setAllowRunningOfInsecureContent(false);
     m_mainFrame = WebLocalFrame::create(this);
     m_webView->setMainFrame(m_mainFrame);
     m_webView->setDevToolsAgentClient(this);
