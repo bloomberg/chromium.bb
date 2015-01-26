@@ -75,6 +75,7 @@ TEST(GraphicsContextTest, trackDisplayListRecording)
 {
     SkBitmap bitmap;
     bitmap.allocN32Pixels(100, 100);
+    bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
     GraphicsContext context(&canvas, nullptr);
