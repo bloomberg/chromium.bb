@@ -4,8 +4,11 @@
 
 #include "ipc/ipc_message_attachment_set.h"
 
+#include <algorithm>
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "ipc/ipc_message_attachment.h"
+#include "ipc/ipc_platform_file_attachment.h"
 
 #if defined(OS_POSIX)
 #include <sys/types.h>
@@ -35,46 +38,27 @@ MessageAttachmentSet::~MessageAttachmentSet() {
                << consumed_descriptor_highwater_ << "/" << size();
 }
 
+unsigned MessageAttachmentSet::num_descriptors() const {
+  return std::count_if(attachments_.begin(), attachments_.end(),
+                       [](scoped_refptr<MessageAttachment> i) {
+    return i->GetType() == MessageAttachment::TYPE_PLATFORM_FILE;
+  });
+}
+
 unsigned MessageAttachmentSet::size() const {
-#if defined(OS_POSIX)
-  return descriptors_.size();
-#else
-  return 0;
-#endif
+  return static_cast<unsigned>(attachments_.size());
 }
 
-#if defined(OS_POSIX)
-
-bool MessageAttachmentSet::AddToBorrow(base::PlatformFile fd) {
-  DCHECK_EQ(consumed_descriptor_highwater_, 0u);
-
-  if (size() == kMaxDescriptorsPerMessage) {
-    DLOG(WARNING) << "Cannot add file descriptor. MessageAttachmentSet full.";
-    return false;
-  }
-
-  descriptors_.push_back(fd);
-  return true;
+void MessageAttachmentSet::AddAttachment(
+    scoped_refptr<MessageAttachment> attachment) {
+  attachments_.push_back(attachment);
 }
 
-bool MessageAttachmentSet::AddToOwn(base::ScopedFD fd) {
-  DCHECK_EQ(consumed_descriptor_highwater_, 0u);
-
-  if (size() == kMaxDescriptorsPerMessage) {
-    DLOG(WARNING) << "Cannot add file descriptor. MessageAttachmentSet full.";
-    return false;
-  }
-
-  descriptors_.push_back(fd.get());
-  owned_descriptors_.push_back(new base::ScopedFD(fd.Pass()));
-  DCHECK(size() <= kMaxDescriptorsPerMessage);
-  return true;
-}
-
-base::PlatformFile MessageAttachmentSet::TakeDescriptorAt(unsigned index) {
+scoped_refptr<MessageAttachment> MessageAttachmentSet::GetAttachmentAt(
+    unsigned index) {
   if (index >= size()) {
     DLOG(WARNING) << "Accessing out of bound index:" << index << "/" << size();
-    return -1;
+    return scoped_refptr<MessageAttachment>();
   }
 
   // We should always walk the descriptors in order, so it's reasonable to
@@ -98,17 +82,53 @@ base::PlatformFile MessageAttachmentSet::TakeDescriptorAt(unsigned index) {
   // end of the array and index 0 is requested, we reset the highwater value.
   // TODO(morrita): This is absurd. This "wringle" disallow to introduce clearer
   // ownership model. Only client is NaclIPCAdapter. See crbug.com/415294
-  if (index == 0 && consumed_descriptor_highwater_ == descriptors_.size())
+  if (index == 0 && consumed_descriptor_highwater_ == size())
     consumed_descriptor_highwater_ = 0;
 
   if (index != consumed_descriptor_highwater_)
-    return -1;
+    return scoped_refptr<MessageAttachment>();
 
   consumed_descriptor_highwater_ = index + 1;
 
-  base::PlatformFile file = descriptors_[index];
+  return attachments_[index];
+}
 
-  // TODO(morrita): In production, descriptors_.size() should be same as
+#if defined(OS_POSIX)
+
+bool MessageAttachmentSet::AddToBorrow(base::PlatformFile fd) {
+  DCHECK_EQ(consumed_descriptor_highwater_, 0u);
+
+  if (num_descriptors() == kMaxDescriptorsPerMessage) {
+    DLOG(WARNING) << "Cannot add file descriptor. MessageAttachmentSet full.";
+    return false;
+  }
+
+  AddAttachment(new internal::PlatformFileAttachment(fd));
+  return true;
+}
+
+bool MessageAttachmentSet::AddToOwn(base::ScopedFD fd) {
+  DCHECK_EQ(consumed_descriptor_highwater_, 0u);
+
+  if (num_descriptors() == kMaxDescriptorsPerMessage) {
+    DLOG(WARNING) << "Cannot add file descriptor. MessageAttachmentSet full.";
+    return false;
+  }
+
+  AddAttachment(new internal::PlatformFileAttachment(fd.get()));
+  owned_descriptors_.push_back(new base::ScopedFD(fd.Pass()));
+  DCHECK(num_descriptors() <= kMaxDescriptorsPerMessage);
+  return true;
+}
+
+base::PlatformFile MessageAttachmentSet::TakeDescriptorAt(unsigned index) {
+  scoped_refptr<MessageAttachment> attachment = GetAttachmentAt(index);
+  if (!attachment)
+    return -1;
+
+  base::PlatformFile file = internal::GetPlatformFile(attachment);
+
+  // TODO(morrita): In production, attachments_.size() should be same as
   // owned_descriptors_.size() as all read descriptors are owned by Message.
   // We have to do this because unit test breaks this assumption. It should be
   // changed to exercise with own-able descriptors.
@@ -125,15 +145,15 @@ base::PlatformFile MessageAttachmentSet::TakeDescriptorAt(unsigned index) {
 }
 
 void MessageAttachmentSet::PeekDescriptors(base::PlatformFile* buffer) const {
-  std::copy(descriptors_.begin(), descriptors_.end(), buffer);
+  for (size_t i = 0; i != attachments_.size(); ++i)
+    buffer[i] = internal::GetPlatformFile(attachments_[i]);
 }
 
 bool MessageAttachmentSet::ContainsDirectoryDescriptor() const {
   struct stat st;
 
-  for (std::vector<base::PlatformFile>::const_iterator i = descriptors_.begin();
-       i != descriptors_.end(); ++i) {
-    if (fstat(*i, &st) == 0 && S_ISDIR(st.st_mode))
+  for (auto i = attachments_.begin(); i != attachments_.end(); ++i) {
+    if (fstat(internal::GetPlatformFile(*i), &st) == 0 && S_ISDIR(st.st_mode))
       return true;
   }
 
@@ -141,7 +161,7 @@ bool MessageAttachmentSet::ContainsDirectoryDescriptor() const {
 }
 
 void MessageAttachmentSet::CommitAll() {
-  descriptors_.clear();
+  attachments_.clear();
   owned_descriptors_.clear();
   consumed_descriptor_highwater_ = 0;
 }
@@ -159,13 +179,13 @@ void MessageAttachmentSet::ReleaseFDsToClose(
 void MessageAttachmentSet::AddDescriptorsToOwn(const base::PlatformFile* buffer,
                                                unsigned count) {
   DCHECK(count <= kMaxDescriptorsPerMessage);
-  DCHECK_EQ(size(), 0u);
+  DCHECK_EQ(num_descriptors(), 0u);
   DCHECK_EQ(consumed_descriptor_highwater_, 0u);
 
-  descriptors_.reserve(count);
+  attachments_.reserve(count);
   owned_descriptors_.reserve(count);
   for (unsigned i = 0; i < count; ++i) {
-    descriptors_.push_back(buffer[i]);
+    AddAttachment(new internal::PlatformFileAttachment(buffer[i]));
     owned_descriptors_.push_back(new base::ScopedFD(buffer[i]));
   }
 }

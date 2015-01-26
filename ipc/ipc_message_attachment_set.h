@@ -18,6 +18,8 @@
 
 namespace IPC {
 
+class MessageAttachment;
+
 // -----------------------------------------------------------------------------
 // A MessageAttachmentSet is an ordered set of POSIX file descriptors. These are
 // associated with IPC messages so that descriptors can be transmitted over a
@@ -28,10 +30,15 @@ class IPC_EXPORT MessageAttachmentSet
  public:
   MessageAttachmentSet();
 
-  // Return the number of descriptors
+  // Return the number of attachments
   unsigned size() const;
+  // Return the number of file descriptors
+  unsigned num_descriptors() const;
   // Return true if no unconsumed descriptors remain
   bool empty() const { return 0 == size(); }
+
+  void AddAttachment(scoped_refptr<MessageAttachment> attachment);
+  scoped_refptr<MessageAttachment> GetAttachmentAt(unsigned index);
 
 #if defined(OS_POSIX)
   // This is the maximum number of descriptors per message. We need to know this
@@ -105,12 +112,15 @@ class IPC_EXPORT MessageAttachmentSet
 
   ~MessageAttachmentSet();
 
+  // A vector of attachments of the message, which might be |PlatformFile| or
+  // |MessagePipe|.
+  std::vector<scoped_refptr<MessageAttachment>> attachments_;
+
 #if defined(OS_POSIX)
-  // A vector of descriptors and close flags. If this message is sent, then
-  // these descriptors are sent as control data. After sending, any descriptors
-  // with a true flag are closed. If this message has been received, then these
-  // are the descriptors which were received and all close flags are true.
-  std::vector<base::PlatformFile> descriptors_;
+  // A vector of owning descriptors. If this message is sent, then file
+  // descriptors are sent as control data. After sending, any owning descriptors
+  // are closed. If this message has been received then all received
+  // descriptors are owned by this message.
   ScopedVector<base::ScopedFD> owned_descriptors_;
 #endif
 
