@@ -11,10 +11,10 @@ layer at (0,0) size 785x1386 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (250,32) width 161: "Linux.com"
         RenderText {#text} at (410,32) size 239x36
           text run at (410,32) width 239: " Table Testcase"
-      RenderTable {TABLE} at (16,159.88) size 737x1194
-        RenderTableSection {TBODY} at (0,0) size 737x1194
-          RenderTableRow {TR} at (0,2) size 737x837
-            RenderTableCell {TD} at (2,2) size 135x714.13 [bgcolor=#FFFFFF] [r=0 c=0 rs=2 cs=1]
+      LayoutTable {TABLE} at (16,159.88) size 737x1194
+        LayoutTableSection {TBODY} at (0,0) size 737x1194
+          LayoutTableRow {TR} at (0,2) size 737x837
+            LayoutTableCell {TD} at (2,2) size 135x714.13 [bgcolor=#FFFFFF] [r=0 c=0 rs=2 cs=1]
               RenderBlock {H2} at (5,18.27) size 125x18
                 RenderText {#text} at (0,0) size 118x17
                   text run at (0,0) width 118: "Weekly Feature"
@@ -73,7 +73,7 @@ layer at (0,0) size 785x1386 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 RenderText {#text} at (0,0) size 108x32
                   text run at (0,0) width 108: "blah blah blah blah"
                   text run at (0,16) width 108: "blah blah blah blah"
-            RenderTableCell {TD} at (139,2) size 459x1190.13 [bgcolor=#FFFFFF] [r=0 c=1 rs=2 cs=1]
+            LayoutTableCell {TD} at (139,2) size 459x1190.13 [bgcolor=#FFFFFF] [r=0 c=1 rs=2 cs=1]
               RenderBlock {H2} at (5,18.27) size 449x18
                 RenderText {#text} at (0,0) size 190x17
                   text run at (0,0) width 190: "The Latest of Linux.com!"
@@ -157,7 +157,7 @@ layer at (0,0) size 785x1386 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {P} at (5,1156.13) size 449x16
                 RenderText {#text} at (0,0) size 307x16
                   text run at (0,0) width 307: "This stuff is cropped off in Mozilla for whatever reason"
-            RenderTableCell {TD} at (600,2) size 135x396.59 [bgcolor=#FFFFFF] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (600,2) size 135x396.59 [bgcolor=#FFFFFF] [r=0 c=2 rs=1 cs=1]
               RenderBlock {H2} at (5,18.27) size 125x18
                 RenderText {#text} at (0,0) size 47x17
                   text run at (0,0) width 47: "OSDN"
@@ -188,8 +188,8 @@ layer at (0,0) size 785x1386 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,32) width 108: "blah blah blah blah"
                   text run at (0,48) width 108: "blah blah blah blah"
                   text run at (0,64) width 52: "blah blah"
-          RenderTableRow {TR} at (0,841) size 737x351
-            RenderTableCell {TD} at (600,1026) size 135x165.53 [bgcolor=#FFFFFF] [r=1 c=2 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,841) size 737x351
+            LayoutTableCell {TD} at (600,1026) size 135x165.53 [bgcolor=#FFFFFF] [r=1 c=2 rs=1 cs=1]
               RenderBlock {H2} at (5,18.27) size 125x36
                 RenderText {#text} at (0,0) size 88x35
                   text run at (0,0) width 88: "Community"

@@ -5,27 +5,27 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
       RenderBlock {BLOCKQUOTE} at (40,0) size 704x108
         RenderBlock {CENTER} at (0,0) size 704x108
-          RenderTable {TABLE} at (297.50,0) size 109x74 [border: (2px none #808080)]
-            RenderTableSection {TBODY} at (2,2) size 104x69
-              RenderTableRow {TR} at (0,0) size 104x23
-                RenderTableCell {TD} at (0,0) size 37x23 [border: (3px groove #0000FF)] [r=0 c=0 rs=1 cs=1]
+          LayoutTable {TABLE} at (297.50,0) size 109x74 [border: (2px none #808080)]
+            LayoutTableSection {TBODY} at (2,2) size 104x69
+              LayoutTableRow {TR} at (0,0) size 104x23
+                LayoutTableCell {TD} at (0,0) size 37x23 [border: (3px groove #0000FF)] [r=0 c=0 rs=1 cs=1]
                   RenderText {#text} at (4,4) size 29x16
                     text run at (4,4) width 29: "EST"
-                RenderTableCell {TD} at (37,0) size 67x23 [border: (3px groove #0000FF)] [r=0 c=1 rs=1 cs=1]
+                LayoutTableCell {TD} at (37,0) size 67x23 [border: (3px groove #0000FF)] [r=0 c=1 rs=1 cs=1]
                   RenderText {#text} at (4,4) size 60x16
                     text run at (4,4) width 60: "9:00 a.m."
-              RenderTableRow {TR} at (0,23) size 104x23
-                RenderTableCell {TD} at (0,23) size 37x23 [border: (3px groove #0000FF)] [r=1 c=0 rs=1 cs=1]
+              LayoutTableRow {TR} at (0,23) size 104x23
+                LayoutTableCell {TD} at (0,23) size 37x23 [border: (3px groove #0000FF)] [r=1 c=0 rs=1 cs=1]
                   RenderText {#text} at (4,4) size 30x16
                     text run at (4,4) width 30: "CST"
-                RenderTableCell {TD} at (37,23) size 67x23 [border: (3px groove #0000FF)] [r=1 c=1 rs=1 cs=1]
+                LayoutTableCell {TD} at (37,23) size 67x23 [border: (3px groove #0000FF)] [r=1 c=1 rs=1 cs=1]
                   RenderText {#text} at (4,4) size 60x16
                     text run at (4,4) width 60: "8:00 a.m."
-              RenderTableRow {TR} at (0,46) size 104x23
-                RenderTableCell {TD} at (0,46) size 37x23 [border: (3px groove #0000FF)] [r=2 c=0 rs=1 cs=1]
+              LayoutTableRow {TR} at (0,46) size 104x23
+                LayoutTableCell {TD} at (0,46) size 37x23 [border: (3px groove #0000FF)] [r=2 c=0 rs=1 cs=1]
                   RenderText {#text} at (4,4) size 28x16
                     text run at (4,4) width 28: "PST"
-                RenderTableCell {TD} at (37,46) size 67x23 [border: (3px groove #0000FF)] [r=2 c=1 rs=1 cs=1]
+                LayoutTableCell {TD} at (37,46) size 67x23 [border: (3px groove #0000FF)] [r=2 c=1 rs=1 cs=1]
                   RenderText {#text} at (4,4) size 60x16
                     text run at (4,4) width 60: "6:00 a.m."
           RenderBlock {P} at (0,90) size 704x18
