@@ -42,6 +42,7 @@ class InlineBox;
 class Node;
 class RenderObject;
 class Text;
+class TreeScope;
 
 enum PositionMoveType {
     CodePoint,       // Move by a single code point.
@@ -79,6 +80,9 @@ public:
 
         int m_offset;
     };
+
+    static const TreeScope* commonAncestorTreeScope(const Position&, const Position&);
+
     Position(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset);
 
     // For creating before/after positions:

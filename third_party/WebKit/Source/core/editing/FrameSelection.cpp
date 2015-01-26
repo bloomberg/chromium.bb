@@ -343,7 +343,7 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
         if (endRemoved)
             updatePositionForNodeRemoval(end, node);
 
-        if (start.isNotNull() && end.isNotNull()) {
+        if (Position::commonAncestorTreeScope(start, end) && start.isNotNull() && end.isNotNull()) {
             if (m_selection.isBaseFirst())
                 m_selection.setWithoutValidation(start, end);
             else

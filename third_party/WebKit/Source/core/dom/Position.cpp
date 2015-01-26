@@ -79,6 +79,13 @@ static Node* previousRenderedEditable(Node* node)
     return 0;
 }
 
+const TreeScope* Position::commonAncestorTreeScope(const Position& a, const Position& b)
+{
+    if (!a.containerNode() || !b.containerNode())
+        return nullptr;
+    return a.containerNode()->treeScope().commonAncestorTreeScope(b.containerNode()->treeScope());
+}
+
 Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset offset)
     : m_anchorNode(anchorNode)
     , m_offset(offset.value())

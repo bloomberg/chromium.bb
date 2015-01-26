@@ -75,7 +75,7 @@ int comparePositions(const Position& a, const Position& b)
 {
     ASSERT(a.isNotNull());
     ASSERT(b.isNotNull());
-    const TreeScope* commonScope = a.containerNode()->treeScope().commonAncestorTreeScope(b.containerNode()->treeScope());
+    const TreeScope* commonScope = Position::commonAncestorTreeScope(a, b);
 
     ASSERT(commonScope);
     if (!commonScope)

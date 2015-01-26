@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div id="div">PASS if not crashed.</div>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+window.onload = function () {
+    document.execCommand("SelectAll", false);
+
+    window.requestAnimationFrame(function () {
+        div.remove();
+    });
+};
+
+var iframe = document.createElement('iframe');
+iframe.srcdoc = "<div></div>"
+iframe.onload = function () {
+    window.parent.document.querySelector('iframe').remove();
+}
+
+document.body.appendChild(iframe);
+</script>
+</body>
+</html>
