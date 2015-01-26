@@ -5,12 +5,14 @@
 #include "media/cast/sender/h264_vt_encoder.h"
 
 #include <string>
+#include <vector>
 
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/base/mac/corevideo_glue.h"
 #include "media/base/mac/video_frame_mac.h"
 #include "media/cast/sender/video_frame_factory.h"
@@ -41,6 +43,21 @@ base::ScopedCFTypeRef<CFDictionaryRef> DictionaryWithKeyValue(CFTypeRef key,
   return base::ScopedCFTypeRef<CFDictionaryRef>(CFDictionaryCreate(
       kCFAllocatorDefault, keys, values, 1, &kCFTypeDictionaryKeyCallBacks,
       &kCFTypeDictionaryValueCallBacks));
+}
+
+base::ScopedCFTypeRef<CFArrayRef> ArrayWithIntegers(const std::vector<int>& v) {
+  std::vector<CFNumberRef> numbers;
+  numbers.reserve(v.size());
+  for (const int i : v) {
+    numbers.push_back(CFNumberCreate(nullptr, kCFNumberSInt32Type, &i));
+  }
+  base::ScopedCFTypeRef<CFArrayRef> array(CFArrayCreate(
+      kCFAllocatorDefault, reinterpret_cast<const void**>(&numbers[0]),
+      numbers.size(), &kCFTypeArrayCallBacks));
+  for (CFNumberRef number : numbers) {
+    CFRelease(number);
+  }
+  return array;
 }
 
 template <typename NalSizeType>
@@ -257,11 +274,20 @@ bool H264VideoToolboxEncoder::Initialize(
       kCFBooleanTrue);
 #endif
 
+  // Certain encoders prefer kCVPixelFormatType_422YpCbCr8, which is not
+  // supported through VideoFrame. We can force 420 formats to be used instead.
+  const int formats[] = {
+      kCVPixelFormatType_420YpCbCr8Planar,
+      CoreVideoGlue::kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange};
+  base::ScopedCFTypeRef<CFArrayRef> formats_array = ArrayWithIntegers(
+      std::vector<int>(formats, formats + arraysize(formats)));
+  base::ScopedCFTypeRef<CFDictionaryRef> buffer_attributes =
+      DictionaryWithKeyValue(kCVPixelBufferPixelFormatTypeKey, formats_array);
+
   VTCompressionSessionRef session;
   OSStatus status = videotoolbox_glue_->VTCompressionSessionCreate(
       kCFAllocatorDefault, video_config.width, video_config.height,
-      CoreMediaGlue::kCMVideoCodecType_H264, encoder_spec,
-      nullptr /* sourceImageBufferAttributes */,
+      CoreMediaGlue::kCMVideoCodecType_H264, encoder_spec, buffer_attributes,
       nullptr /* compressedDataAllocator */,
       &H264VideoToolboxEncoder::CompressionCallback,
       reinterpret_cast<void*>(this), &session);
