@@ -820,6 +820,16 @@ def Main(argv):
   options.cmd_file = options.name + '.cmd'
   UpdateBuildArgs(argv, options.cmd_file)
 
+  if options.product_directory is None:
+    parser.error('--product-dir is required')
+  product_dir = options.product_directory
+  # Normalize to forward slashes because re.sub interprets backslashes
+  # as escape characters. This also simplifies the subsequent regexes.
+  product_dir = product_dir.replace('\\', '/')
+  # Remove fake child that may be apended to the path.
+  # See untrusted.gypi.
+  product_dir = re.sub(r'/+xyz$', '', product_dir)
+
   try:
     if options.source_list:
       source_list_handle = open(options.source_list, 'r')
@@ -829,18 +839,6 @@ def Main(argv):
       for file_name in source_list:
         file_name = RemoveQuotes(file_name)
         if "$" in file_name:
-          # Only require product directory if we need to interpolate it.  This
-          # provides backwards compatibility in the cases where we don't need to
-          # interpolate.  The downside is this creates a subtle landmine.
-          if options.product_directory is None:
-            parser.error('--product-dir is required')
-          product_dir = options.product_directory
-          # Normalize to forward slashes because re.sub interprets backslashes
-          # as escape characters. This also simplifies the subsequent regexes.
-          product_dir = product_dir.replace('\\', '/')
-          # Remove fake child that may be apended to the path.
-          # See untrusted.gypi.
-          product_dir = re.sub(r'/+xyz$', '', product_dir)
           # The "make" backend can have an "obj" interpolation variable.
           file_name = re.sub(r'\$!?[({]?obj[)}]?', product_dir + '/obj',
                              file_name)
