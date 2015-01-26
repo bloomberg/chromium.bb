@@ -42,6 +42,10 @@ var expectations = [
 ];
 var expected;
 
+function allTestsCompleted() {
+    return eventCounter == expectations.length;
+}
+
 function testWithPageVisibleAgain() {
     shouldBeEqualToString('document.visibilityState', 'hidden');
     removeListeners();
@@ -55,7 +59,7 @@ function testWithPageVisibleAgain() {
         if (expected.check)
             expected.check(event);
 
-        if (eventCounter == expectations.length)
+        if (allTestsCompleted())
             finishSoon(); // Give some time to fail if unexpecteds events are coming.
     });
     window.addEventListener('gamepaddisconnected', function(event) {
@@ -67,16 +71,11 @@ function testWithPageVisibleAgain() {
         if (expected.check)
             expected.check(event);
 
-        if (eventCounter == expectations.length)
+        if (allTestsCompleted())
             finishSoon(); // Give some time to fail if unexpecteds events are coming.
     });
 
     testRunner.setPageVisibility('visible');
-
-    setTimeout(function() {
-        testFailed('More gamepad events should have been received');
-        finishJSTest();
-    }, 100);
 }
 
 function testWithPageHidden() {
