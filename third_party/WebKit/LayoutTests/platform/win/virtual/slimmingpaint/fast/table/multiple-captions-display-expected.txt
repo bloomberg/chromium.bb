@@ -3,34 +3,34 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x280
   RenderBlock {html} at (0,0) size 800x280
     RenderBody {body} at (8,8) size 784x264
-      RenderTable {table} at (0,0) size 128x264
-        RenderTableSection (anonymous) at (0,148) size 128x2
-          RenderTableRow (anonymous) at (0,0) size 128x0
-            RenderTableCell (anonymous) at (2,0) size 124x0 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {table} at (0,0) size 128x264
+        LayoutTableSection (anonymous) at (0,148) size 128x2
+          LayoutTableRow (anonymous) at (0,0) size 128x0
+            LayoutTableCell (anonymous) at (2,0) size 124x0 [r=0 c=0 rs=1 cs=1]
         RenderBlock {caption} at (0,36) size 128x36
           RenderText {#text} at (16,0) size 96x35
             text run at (16,0) width 96: "PASS: Normal"
             text run at (38,18) width 52: "Caption"
-        RenderTableSection {thead} at (0,126) size 128x22
-          RenderTableRow (anonymous) at (0,2) size 128x18
-            RenderTableCell (anonymous) at (2,2) size 124x18 [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection {thead} at (0,126) size 128x22
+          LayoutTableRow (anonymous) at (0,2) size 128x18
+            LayoutTableCell (anonymous) at (2,2) size 124x18 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 65x17
                 text run at (0,0) width 65: "HEADER"
-        RenderTableSection {tbody} at (0,150) size 128x38
-          RenderTableRow (anonymous) at (0,0) size 128x36
-            RenderTableCell (anonymous) at (2,0) size 124x36 [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection {tbody} at (0,150) size 128x38
+          LayoutTableRow (anonymous) at (0,0) size 128x36
+            LayoutTableCell (anonymous) at (2,0) size 124x36 [r=0 c=0 rs=1 cs=1]
               RenderBR {br} at (0,0) size 0x17
               RenderText {#text} at (0,18) size 124x17
                 text run at (0,18) width 124: "Some body content"
               RenderBR {br} at (123,18) size 1x17
-        RenderTableSection {tfoot} at (0,190) size 128x20
-          RenderTableRow (anonymous) at (0,0) size 128x18
-            RenderTableCell (anonymous) at (2,0) size 124x18 [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection {tfoot} at (0,190) size 128x20
+          LayoutTableRow (anonymous) at (0,0) size 128x18
+            LayoutTableCell (anonymous) at (2,0) size 124x18 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 63x17
                 text run at (0,0) width 63: "FOOTER"
-        RenderTableSection (anonymous) at (0,188) size 128x2
-          RenderTableRow (anonymous) at (0,0) size 128x0
-            RenderTableCell (anonymous) at (2,0) size 124x0 [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection (anonymous) at (0,188) size 128x2
+          LayoutTableRow (anonymous) at (0,0) size 128x0
+            LayoutTableCell (anonymous) at (2,0) size 124x0 [r=0 c=0 rs=1 cs=1]
         RenderBlock {caption} at (0,72) size 128x54
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {caption} at (0,126) size 128x0
