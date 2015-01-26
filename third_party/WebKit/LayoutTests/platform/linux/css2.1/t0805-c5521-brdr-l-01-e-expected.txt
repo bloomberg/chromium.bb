@@ -11,24 +11,24 @@ layer at (0,0) size 800x256
             text run at (457,2) width 130: "\x{21E6}THERE"
         RenderText {#text} at (587,15) size 9x19
           text run at (587,15) width 9: "\"."
-      RenderTable {TABLE} at (0,55) size 282x133
-        RenderTableSection {TBODY} at (0,0) size 282x133
-          RenderTableRow {TR} at (0,2) size 282x41
-            RenderTableCell {TD} at (2,2) size 278x41 [border: none (2px solid #0000FF)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,55) size 282x133
+        LayoutTableSection {TBODY} at (0,0) size 282x133
+          LayoutTableRow {TR} at (0,2) size 282x41
+            LayoutTableCell {TD} at (2,2) size 278x41 [border: none (2px solid #0000FF)] [r=0 c=0 rs=1 cs=2]
               RenderText {#text} at (3,3) size 130x36
                 text run at (3,3) width 130: "\x{21E6}THERE"
-          RenderTableRow {TR} at (0,45) size 282x86
-            RenderTableCell {TD} at (2,67) size 134x41 [border: none (2px solid #0000FF)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,45) size 282x86
+            LayoutTableCell {TD} at (2,67) size 134x41 [border: none (2px solid #0000FF)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (3,3) size 130x36
                 text run at (3,3) width 130: "\x{21E6}THERE"
-            RenderTableCell {TD} at (138,45) size 142x86 [border: none (2px solid #0000FF)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (138,45) size 142x86 [border: none (2px solid #0000FF)] [r=1 c=1 rs=1 cs=1]
               RenderBlock (anonymous) at (3,1) size 138x39
                 RenderText {#text} at (0,2) size 130x36
                   text run at (0,2) width 130: "\x{21E6}THERE"
-              RenderTable {TABLE} at (3,40) size 138x45
-                RenderTableSection {TBODY} at (0,0) size 138x45
-                  RenderTableRow {TR} at (0,2) size 138x41
-                    RenderTableCell {TD} at (2,2) size 134x41 [border: none (2px solid #0000FF)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (3,40) size 138x45
+                LayoutTableSection {TBODY} at (0,0) size 138x45
+                  LayoutTableRow {TR} at (0,2) size 138x41
+                    LayoutTableCell {TD} at (2,2) size 134x41 [border: none (2px solid #0000FF)] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (3,3) size 130x36
                         text run at (3,3) width 130: "\x{21E6}THERE"
       RenderBlock {P} at (0,204) size 784x20

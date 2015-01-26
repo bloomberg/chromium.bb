@@ -14,4 +14,4 @@ layer at (0,0) size 800x156 layerType: foreground only
             text run at (302,0) width 45: "no red"
         RenderText {#text} at (346,0) size 5x16
           text run at (346,0) width 5: "."
-      RenderTable {DIV} at (0,32) size 100x100 [bgcolor=#008000] [border: (25px solid #008000)]
+      LayoutTable {DIV} at (0,32) size 100x100 [bgcolor=#008000] [border: (25px solid #008000)]

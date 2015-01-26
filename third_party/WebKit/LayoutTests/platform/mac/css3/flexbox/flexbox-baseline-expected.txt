@@ -158,19 +158,19 @@ layer at (400,0) size 360x405
               text run at (0,0) width 53: "baseline"
       RenderText {#text} at (125,10) size 62x16
         text run at (125,10) width 62: " after text"
-    RenderTable {TABLE} at (0,186) size 248x64 [bgcolor=#D3D3D3]
-      RenderTableSection {TBODY} at (0,0) size 248x64
-        RenderTableRow {TR} at (0,2) size 248x60
-          RenderTableCell {TD} at (2,44) size 48x18 [r=0 c=0 rs=1 cs=1]
+    LayoutTable {TABLE} at (0,186) size 248x64 [bgcolor=#D3D3D3]
+      LayoutTableSection {TBODY} at (0,0) size 248x64
+        LayoutTableRow {TR} at (0,2) size 248x60
+          LayoutTableCell {TD} at (2,44) size 48x18 [r=0 c=0 rs=1 cs=1]
             RenderText {#text} at (1,1) size 46x16
               text run at (1,1) width 46: "bottom"
-          RenderTableCell {TD} at (52,28) size 55x18 [r=0 c=1 rs=1 cs=1]
+          LayoutTableCell {TD} at (52,28) size 55x18 [r=0 c=1 rs=1 cs=1]
             RenderText {#text} at (1,1) size 53x16
               text run at (1,1) width 53: "baseline"
-          RenderTableCell {TD} at (109,2) size 23x18 [r=0 c=2 rs=1 cs=1]
+          LayoutTableCell {TD} at (109,2) size 23x18 [r=0 c=2 rs=1 cs=1]
             RenderText {#text} at (1,1) size 21x16
               text run at (1,1) width 21: "top"
-          RenderTableCell {TD} at (134,18) size 55x44 [r=0 c=3 rs=1 cs=1]
+          LayoutTableCell {TD} at (134,18) size 55x44 [r=0 c=3 rs=1 cs=1]
             RenderFlexibleBox {DIV} at (1,11) size 53x32 [bgcolor=#808080]
               RenderBlock {DIV} at (0,0) size 53x16
                 RenderText {#text} at (0,0) size 53x16
@@ -178,7 +178,7 @@ layer at (400,0) size 360x405
               RenderBlock {DIV} at (0,16) size 53x16
                 RenderText {#text} at (0,0) size 40x16
                   text run at (0,0) width 40: "below"
-          RenderTableCell {TD} at (191,2) size 55x44 [r=0 c=4 rs=1 cs=1]
+          LayoutTableCell {TD} at (191,2) size 55x44 [r=0 c=4 rs=1 cs=1]
             RenderFlexibleBox {DIV} at (1,11) size 53x32 [bgcolor=#808080]
               RenderBlock {DIV} at (0,16) size 53x16
                 RenderText {#text} at (0,0) size 53x16
@@ -186,19 +186,19 @@ layer at (400,0) size 360x405
               RenderBlock {DIV} at (0,0) size 53x16
                 RenderText {#text} at (0,0) size 39x16
                   text run at (0,0) width 39: "above"
-    RenderTable {TABLE} at (0,255) size 291x80 [bgcolor=#D3D3D3]
-      RenderTableSection {TBODY} at (0,0) size 291x80
-        RenderTableRow {TR} at (0,2) size 291x76
-          RenderTableCell {TD} at (2,60) size 48x18 [r=0 c=0 rs=1 cs=1]
+    LayoutTable {TABLE} at (0,255) size 291x80 [bgcolor=#D3D3D3]
+      LayoutTableSection {TBODY} at (0,0) size 291x80
+        LayoutTableRow {TR} at (0,2) size 291x76
+          LayoutTableCell {TD} at (2,60) size 48x18 [r=0 c=0 rs=1 cs=1]
             RenderText {#text} at (1,1) size 46x16
               text run at (1,1) width 46: "bottom"
-          RenderTableCell {TD} at (52,37) size 55x18 [r=0 c=1 rs=1 cs=1]
+          LayoutTableCell {TD} at (52,37) size 55x18 [r=0 c=1 rs=1 cs=1]
             RenderText {#text} at (1,1) size 53x16
               text run at (1,1) width 53: "baseline"
-          RenderTableCell {TD} at (109,2) size 23x18 [r=0 c=2 rs=1 cs=1]
+          LayoutTableCell {TD} at (109,2) size 23x18 [r=0 c=2 rs=1 cs=1]
             RenderText {#text} at (1,1) size 21x16
               text run at (1,1) width 21: "top"
-          RenderTableCell {TD} at (134,2) size 155x75.81 [r=0 c=3 rs=1 cs=1]
+          LayoutTableCell {TD} at (134,2) size 155x75.81 [r=0 c=3 rs=1 cs=1]
             RenderFlexibleBox {DIV} at (1,11) size 153x63.81 [bgcolor=#808080]
               RenderBlock {H2} at (0,19.91) size 114.02x24
                 RenderText {#text} at (0,0) size 115x24

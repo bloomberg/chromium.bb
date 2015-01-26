@@ -49,18 +49,18 @@ layer at (0,0) size 785x645 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,56) width 628: "quote mark and a capital 'W'-- should be 350% bigger than the rest of the paragraph, and maroon. "
           text run at (627,56) width 127: "Note that this is not"
           text run at (0,72) width 289: "required under CSS1, but it is recommended."
-      RenderTable {TABLE} at (0,363) size 769x266 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 767x264
-          RenderTableRow {TR} at (0,0) size 767x24
-            RenderTableCell {TD} at (0,0) size 767x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,363) size 769x266 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x264
+          LayoutTableRow {TR} at (0,0) size 767x24
+            LayoutTableCell {TD} at (0,0) size 767x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 163x16
                 RenderText {#text} at (4,4) size 163x16
                   text run at (4,4) width 163: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,24) size 767x240
-            RenderTableCell {TD} at (0,132) size 12x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,24) size 767x240
+            LayoutTableCell {TD} at (0,132) size 12x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,4) size 4x16
                 text run at (4,4) width 4: " "
-            RenderTableCell {TD} at (12,24) size 755x240 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,24) size 755x240 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 747x48
                 RenderInline {<pseudo:first-letter>} at (0,0) size 10x16 [color=#800000]
                   RenderTextFragment at (0,0) size 10x16

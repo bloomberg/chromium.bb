@@ -12,21 +12,21 @@ layer at (0,0) size 800x312
         RenderText {#text} at (526,0) size 771x39
           text run at (526,0) width 245: "\". (So there should be 8 blue lines on this"
           text run at (0,20) width 38: "page.)"
-      RenderTable {TABLE} at (0,56) size 128x82
-        RenderTableSection {TBODY} at (0,0) size 128x82
-          RenderTableRow {TR} at (0,2) size 128x24
-            RenderTableCell {TD} at (2,2) size 124x24 [border: none (2px solid #0000FF) none] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,56) size 128x82
+        LayoutTableSection {TBODY} at (0,0) size 128x82
+          LayoutTableRow {TR} at (0,2) size 128x24
+            LayoutTableCell {TD} at (2,2) size 124x24 [border: none (2px solid #0000FF) none] [r=0 c=0 rs=1 cs=2]
               RenderText {#text} at (34,1) size 56x19
                 text run at (34,1) width 56: "HERE \x{21E9}"
-          RenderTableRow {TR} at (0,28) size 128x52
-            RenderTableCell {TD} at (2,42) size 58x24 [border: none (2px solid #0000FF) none] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,28) size 128x52
+            LayoutTableCell {TD} at (2,42) size 58x24 [border: none (2px solid #0000FF) none] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 56x19
                 text run at (1,1) width 56: "HERE \x{21E9}"
-            RenderTableCell {TD} at (62,28) size 64x52 [border: none (2px solid #0000FF) none] [r=1 c=1 rs=1 cs=1]
-              RenderTable {TABLE} at (1,1) size 62x28
-                RenderTableSection {TBODY} at (0,0) size 62x28
-                  RenderTableRow {TR} at (0,2) size 62x24
-                    RenderTableCell {TD} at (2,2) size 58x24 [border: none (2px solid #0000FF) none] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (62,28) size 64x52 [border: none (2px solid #0000FF) none] [r=1 c=1 rs=1 cs=1]
+              LayoutTable {TABLE} at (1,1) size 62x28
+                LayoutTableSection {TBODY} at (0,0) size 62x28
+                  LayoutTableRow {TR} at (0,2) size 62x24
+                    LayoutTableCell {TD} at (2,2) size 58x24 [border: none (2px solid #0000FF) none] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (1,1) size 56x19
                         text run at (1,1) width 56: "HERE \x{21E9}"
               RenderBlock (anonymous) at (1,29) size 62x20

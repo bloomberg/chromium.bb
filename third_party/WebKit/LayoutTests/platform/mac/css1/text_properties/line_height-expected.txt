@@ -102,18 +102,18 @@ layer at (0,0) size 785x2579 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,31) width 760: "This sentence should have a line-height of two centimeters, which should cause extra spacing between the lines. The text has a background color of silver, but"
             text run at (0,106) width 694: "no padding or border. The background color has been set on an inline element and should therefore only cover the text, not the interline spacing."
         RenderText {#text} at (0,0) size 0x0
-      RenderTable {TABLE} at (0,1429) size 769x1134 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 767x1132
-          RenderTableRow {TR} at (0,0) size 767x24
-            RenderTableCell {TD} at (0,0) size 767x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,1429) size 769x1134 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x1132
+          LayoutTableRow {TR} at (0,0) size 767x24
+            LayoutTableCell {TD} at (0,0) size 767x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 163x16
                 RenderText {#text} at (4,4) size 163x16
                   text run at (4,4) width 163: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,24) size 767x1108
-            RenderTableCell {TD} at (0,566) size 12x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,24) size 767x1108
+            LayoutTableCell {TD} at (0,566) size 12x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,4) size 4x16
                 text run at (4,4) width 4: " "
-            RenderTableCell {TD} at (12,24) size 755x1108 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,24) size 755x1108 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 747x48
                 RenderText {#text} at (0,18) size 519x12
                   text run at (0,18) width 519: "This sentence should have a line-height of half an inch, which should cause extra spacing between the lines."

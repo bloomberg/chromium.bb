@@ -94,18 +94,18 @@ layer at (0,0) size 785x1456 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (18,80) width 673: "This should make the left border the same"
           text run at (18,120) width 710: "number of pixels as the lower-case 'x' in this"
           text run at (18,160) width 610: "element's font, as well as solid purple."
-      RenderTable {TABLE} at (0,806) size 769x634 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 767x632
-          RenderTableRow {TR} at (0,0) size 767x24
-            RenderTableCell {TD} at (0,0) size 767x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,806) size 769x634 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x632
+          LayoutTableRow {TR} at (0,0) size 767x24
+            LayoutTableCell {TD} at (0,0) size 767x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 163x16
                 RenderText {#text} at (4,4) size 163x16
                   text run at (4,4) width 163: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,24) size 767x608
-            RenderTableCell {TD} at (0,316) size 12x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,24) size 767x608
+            LayoutTableCell {TD} at (0,316) size 12x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,4) size 4x16
                 text run at (4,4) width 4: " "
-            RenderTableCell {TD} at (12,24) size 755x608 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,24) size 755x608 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 747x32
                 RenderText {#text} at (0,0) size 737x32
                   text run at (0,0) width 737: "This paragraph has no left margin. The following paragraphs have all been given a left margin and their left (outer)"

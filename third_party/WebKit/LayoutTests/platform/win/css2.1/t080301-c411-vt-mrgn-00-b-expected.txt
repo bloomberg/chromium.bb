@@ -6,10 +6,10 @@ layer at (0,0) size 785x869 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       RenderBlock {P} at (0,0) size 769x18
         RenderText {#text} at (0,0) size 284x17
           text run at (0,0) width 284: "The two columns below should be identical."
-      RenderTable {TABLE} at (0,34) size 178x811
-        RenderTableSection {TBODY} at (0,0) size 178x811
-          RenderTableRow {TR} at (0,2) size 178x807
-            RenderTableCell {TD} at (2,2) size 86x806.78 [bgcolor=#008080] [border: (3px solid #000000)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,34) size 178x811
+        LayoutTableSection {TBODY} at (0,0) size 178x811
+          LayoutTableRow {TR} at (0,2) size 178x807
+            LayoutTableCell {TD} at (2,2) size 86x806.78 [bgcolor=#008080] [border: (3px solid #000000)] [r=0 c=0 rs=1 cs=1]
               RenderBlock {P} at (3,3) size 80x18 [bgcolor=#FFFF00]
                 RenderText {#text} at (0,0) size 6x17
                   text run at (0,0) width 6: "-"
@@ -53,7 +53,7 @@ layer at (0,0) size 785x869 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               RenderBlock {P} at (3,748) size 80x55.78 [bgcolor=#FFFF00]
                 RenderText {#text} at (0,38) size 6x17
                   text run at (0,38) width 6: "-"
-            RenderTableCell {TD} at (90,2) size 86x806.77 [border: (3px solid #000000)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (90,2) size 86x806.77 [border: (3px solid #000000)] [r=0 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (3,3) size 80x18 [bgcolor=#FFFF00]
                 RenderText {#text} at (0,0) size 6x17
                   text run at (0,0) width 6: "-"

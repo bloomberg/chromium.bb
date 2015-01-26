@@ -79,18 +79,18 @@ layer at (0,0) size 785x720 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       RenderBlock {P} at (0,414) size 769x16
         RenderText {#text} at (0,0) size 697x16
           text run at (0,0) width 697: "This text should be stricken (overriding the imported underline; only works if LINKed sheets are supported)."
-      RenderTable {TABLE} at (0,446) size 719x258 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 717x256
-          RenderTableRow {TR} at (0,0) size 717x24
-            RenderTableCell {TD} at (0,0) size 717x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,446) size 719x258 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 717x256
+          LayoutTableRow {TR} at (0,0) size 717x24
+            LayoutTableCell {TD} at (0,0) size 717x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 163x16
                 RenderText {#text} at (4,4) size 163x16
                   text run at (4,4) width 163: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,24) size 717x232
-            RenderTableCell {TD} at (0,128) size 12x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,24) size 717x232
+            LayoutTableCell {TD} at (0,128) size 12x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,4) size 4x16
                 text run at (4,4) width 4: " "
-            RenderTableCell {TD} at (12,24) size 705x232 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,24) size 705x232 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {UL} at (4,4) size 697x128
                 RenderListItem {LI} at (40,0) size 657x16 [color=#0000FF]
                   RenderListMarker at (-16,0) size 6x16: bullet

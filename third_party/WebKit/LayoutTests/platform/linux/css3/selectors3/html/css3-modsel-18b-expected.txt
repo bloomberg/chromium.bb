@@ -14,14 +14,14 @@ layer at (0,0) size 800x307
         RenderBlock {P} at (0,56) size 784x20
           RenderText {#text} at (0,0) size 55x19
             text run at (0,0) width 55: "This text."
-        RenderTable {TABLE} at (0,92) size 107x108
-          RenderTableSection {TBODY} at (0,0) size 107x108
-            RenderTableRow {TR} at (0,2) size 107x80
-              RenderTableCell {TD} at (2,2) size 103x80 [r=0 c=0 rs=1 cs=1]
-                RenderTable {TABLE} at (1,1) size 101x78
-                  RenderTableSection {TBODY} at (0,0) size 101x78
-                    RenderTableRow {TR} at (0,2) size 101x74
-                      RenderTableCell {TD} at (2,2) size 97x74 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,92) size 107x108
+          LayoutTableSection {TBODY} at (0,0) size 107x108
+            LayoutTableRow {TR} at (0,2) size 107x80
+              LayoutTableCell {TD} at (2,2) size 103x80 [r=0 c=0 rs=1 cs=1]
+                LayoutTable {TABLE} at (1,1) size 101x78
+                  LayoutTableSection {TBODY} at (0,0) size 101x78
+                    LayoutTableRow {TR} at (0,2) size 101x74
+                      LayoutTableCell {TD} at (2,2) size 97x74 [r=0 c=0 rs=1 cs=1]
                         RenderBlock {DL} at (1,17) size 95x40
                           RenderBlock {DT} at (0,0) size 95x20
                             RenderText {#text} at (0,0) size 55x19
@@ -29,8 +29,8 @@ layer at (0,0) size 800x307
                           RenderBlock {DD} at (40,20) size 55x20
                             RenderText {#text} at (0,0) size 55x19
                               text run at (0,0) width 55: "This text."
-            RenderTableRow {TR} at (0,84) size 107x22
-              RenderTableCell {TD} at (2,84) size 103x22 [r=1 c=0 rs=1 cs=1]
+            LayoutTableRow {TR} at (0,84) size 107x22
+              LayoutTableCell {TD} at (2,84) size 103x22 [r=1 c=0 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 55x19
                   text run at (1,1) width 55: "This text."
         RenderBlock {P} at (0,216) size 784x23
