@@ -29,6 +29,7 @@ class WebDataSource;
 
 namespace content {
 
+class ServiceWorkerProviderContext;
 class ServiceWorkerScriptContext;
 class ThreadSafeSender;
 
@@ -130,6 +131,7 @@ class EmbeddedWorkerContextClient
                          int embedded_worker_id,
                          const IPC::Message& message);
   void SendWorkerStarted();
+  void SetRegistrationInServiceWorkerGlobalScope();
 
   const int embedded_worker_id_;
   const int64 service_worker_version_id_;
@@ -141,6 +143,7 @@ class EmbeddedWorkerContextClient
   scoped_refptr<base::TaskRunner> worker_task_runner_;
 
   scoped_ptr<ServiceWorkerScriptContext> script_context_;
+  scoped_refptr<ServiceWorkerProviderContext> provider_context_;
 
   base::WeakPtrFactory<EmbeddedWorkerContextClient> weak_factory_;
 

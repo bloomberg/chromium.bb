@@ -36,8 +36,9 @@ class Message;
 
 namespace content {
 
-struct CrossOriginServiceWorkerClient;
 class EmbeddedWorkerContextClient;
+class WebServiceWorkerRegistrationImpl;
+struct CrossOriginServiceWorkerClient;
 struct PlatformNotificationData;
 
 // TODO(kinuko): This should implement WebServiceWorkerContextClient
@@ -53,6 +54,8 @@ class ServiceWorkerScriptContext {
 
   void OnMessageReceived(const IPC::Message& message);
 
+  void SetRegistrationInServiceWorkerGlobalScope(
+      scoped_ptr<WebServiceWorkerRegistrationImpl> registration);
   void DidHandleActivateEvent(int request_id,
                               blink::WebServiceWorkerEventResult);
   void DidHandleInstallEvent(int request_id,

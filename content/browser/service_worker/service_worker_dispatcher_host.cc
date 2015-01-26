@@ -552,6 +552,22 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
     return;
   if (!provider_host->SetHostedVersionId(version_id))
     BadMessageReceived();
+
+  // Retrieve the registration associated with |version_id|.
+  ServiceWorkerVersion* version = GetContext()->GetLiveVersion(version_id);
+  if (!version)
+    return;
+  ServiceWorkerRegistration* registration =
+      GetContext()->GetLiveRegistration(version->registration_id());
+  DCHECK(registration);
+
+  ServiceWorkerRegistrationObjectInfo info;
+  ServiceWorkerVersionAttributes attrs;
+  GetRegistrationObjectInfoAndVersionAttributes(
+      provider_host->AsWeakPtr(), registration, &info, &attrs);
+
+  Send(new ServiceWorkerMsg_AssociateRegistrationWithServiceWorker(
+      kDocumentMainThreadId, provider_id, info, attrs));
 }
 
 ServiceWorkerRegistrationHandle*

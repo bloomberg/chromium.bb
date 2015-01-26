@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "content/child/notifications/notification_data_conversions.h"
+#include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/message_port_messages.h"
@@ -113,6 +114,11 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     handled = cache_storage_dispatcher_->OnMessageReceived(message);
 
   DCHECK(handled);
+}
+
+void ServiceWorkerScriptContext::SetRegistrationInServiceWorkerGlobalScope(
+    scoped_ptr<WebServiceWorkerRegistrationImpl> registration) {
+  proxy_->setRegistration(registration.release());
 }
 
 void ServiceWorkerScriptContext::DidHandleActivateEvent(

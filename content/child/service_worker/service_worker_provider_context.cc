@@ -33,6 +33,7 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(int provider_id)
 ServiceWorkerProviderContext::~ServiceWorkerProviderContext() {
   if (ServiceWorkerDispatcher* dispatcher =
           ServiceWorkerDispatcher::GetThreadSpecificInstance()) {
+    // Remove this context from the dispatcher living on the main thread.
     dispatcher->RemoveProviderContext(this);
   }
 }
@@ -44,12 +45,15 @@ ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
 
 ServiceWorkerRegistrationHandleReference*
 ServiceWorkerProviderContext::registration() {
-  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
+  base::AutoLock lock(lock_);
   return registration_.get();
 }
 
 ServiceWorkerVersionAttributes
 ServiceWorkerProviderContext::GetVersionAttributes() {
+  base::AutoLock lock(lock_);
+  DCHECK(registration_);
+
   ServiceWorkerVersionAttributes attrs;
   if (installing_)
     attrs.installing = installing_->info();
@@ -63,6 +67,7 @@ ServiceWorkerProviderContext::GetVersionAttributes() {
 void ServiceWorkerProviderContext::SetVersionAttributes(
     ChangedVersionAttributesMask mask,
     const ServiceWorkerVersionAttributes& attrs) {
+  base::AutoLock lock(lock_);
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   DCHECK(registration_);
 
@@ -83,6 +88,7 @@ void ServiceWorkerProviderContext::SetVersionAttributes(
 void ServiceWorkerProviderContext::OnAssociateRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
+  base::AutoLock lock(lock_);
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   DCHECK(!registration_);
   DCHECK_NE(kInvalidServiceWorkerRegistrationId, info.registration_id);
@@ -99,7 +105,9 @@ void ServiceWorkerProviderContext::OnAssociateRegistration(
 }
 
 void ServiceWorkerProviderContext::OnDisassociateRegistration() {
+  base::AutoLock lock(lock_);
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
+
   controller_.reset();
   active_.reset();
   waiting_.reset();
@@ -110,6 +118,7 @@ void ServiceWorkerProviderContext::OnDisassociateRegistration() {
 void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
     int handle_id,
     blink::WebServiceWorkerState state) {
+  base::AutoLock lock(lock_);
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
 
   ServiceWorkerHandleReference* which = NULL;
@@ -174,6 +183,14 @@ int ServiceWorkerProviderContext::registration_handle_id() const {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   return registration_ ? registration_->info().handle_id
                        : kInvalidServiceWorkerRegistrationHandleId;
+}
+
+void ServiceWorkerProviderContext::DestructOnMainThread() const {
+  if (!main_thread_loop_proxy_->RunsTasksOnCurrentThread() &&
+      main_thread_loop_proxy_->DeleteSoon(FROM_HERE, this)) {
+    return;
+  }
+  delete this;
 }
 
 }  // namespace content

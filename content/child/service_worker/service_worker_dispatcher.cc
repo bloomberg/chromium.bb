@@ -57,6 +57,8 @@ ServiceWorkerDispatcher::~ServiceWorkerDispatcher() {
 void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcher, msg)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_AssociateRegistrationWithServiceWorker,
+                        OnAssociateRegistrationWithServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_AssociateRegistration,
                         OnAssociateRegistration)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DisassociateRegistration,
@@ -298,6 +300,27 @@ ServiceWorkerDispatcher::CreateServiceWorkerRegistration(
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration.
   return new WebServiceWorkerRegistrationImpl(handle_ref.Pass());
+}
+
+// We can assume that this message handler is called before the worker context
+// starts because script loading happens after this association.
+// TODO(nhiroki): This association information could be pushed into
+// EmbeddedWorkerMsg_StartWorker message and handed over to the worker thread
+// without a lock in ServiceWorkerProviderContext.
+void ServiceWorkerDispatcher::OnAssociateRegistrationWithServiceWorker(
+    int thread_id,
+    int provider_id,
+    const ServiceWorkerRegistrationObjectInfo& info,
+    const ServiceWorkerVersionAttributes& attrs) {
+  DCHECK_EQ(kDocumentMainThreadId, thread_id);
+
+  ProviderContextMap::iterator context = provider_contexts_.find(provider_id);
+  if (context == provider_contexts_.end())
+    return;
+  context->second->OnAssociateRegistration(info, attrs);
+
+  // We don't have to add entries into |worker_to_provider_| because state
+  // change events for the workers will be notified on the worker thread.
 }
 
 void ServiceWorkerDispatcher::OnAssociateRegistration(

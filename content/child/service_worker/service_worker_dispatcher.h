@@ -151,6 +151,11 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   // WorkerTaskRunner::Observer implementation.
   void OnWorkerRunLoopStopped() override;
 
+  void OnAssociateRegistrationWithServiceWorker(
+      int thread_id,
+      int provider_id,
+      const ServiceWorkerRegistrationObjectInfo& info,
+      const ServiceWorkerVersionAttributes& attrs);
   void OnAssociateRegistration(int thread_id,
                                int provider_id,
                                const ServiceWorkerRegistrationObjectInfo& info,

@@ -15,7 +15,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
 #include "content/child/request_extra_data.h"
+#include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
+#include "content/child/service_worker/service_worker_provider_context.h"
+#include "content/child/service_worker/service_worker_registration_handle_reference.h"
+#include "content/child/service_worker/web_service_worker_impl.h"
+#include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
 #include "content/child/worker_thread_task_runner.h"
@@ -175,6 +180,13 @@ void EmbeddedWorkerContextClient::workerContextStarted(
   g_worker_client_tls.Pointer()->Set(this);
   script_context_.reset(new ServiceWorkerScriptContext(this, proxy));
 
+  // This can be nullptr on EmbeddedWorkerBrowserTests.
+  // TODO(nhiroki): Remove this workaround. |registration()| should always be
+  // valid other than the test because the registration association message
+  // arrives before starting the worker context.
+  if (provider_context_->registration())
+    SetRegistrationInServiceWorkerGlobalScope();
+
   Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(
       embedded_worker_id_,
       WorkerTaskRunner::Instance()->CurrentWorkerId()));
@@ -332,10 +344,13 @@ void EmbeddedWorkerContextClient::didHandleCrossOriginConnectEvent(
 blink::WebServiceWorkerNetworkProvider*
 EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
     blink::WebDataSource* data_source) {
+  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
   scoped_ptr<ServiceWorkerNetworkProvider> provider(
       new ServiceWorkerNetworkProvider(MSG_ROUTING_NONE));
+  provider_context_ = provider->context();
 
   // Tell the network provider about which version to load.
   provider->SetServiceWorkerVersionId(service_worker_version_id_);
@@ -397,6 +412,35 @@ void EmbeddedWorkerContextClient::SendWorkerStarted() {
                          "EmbeddedWorkerContextClient::StartingWorkerContext",
                          this);
   Send(new EmbeddedWorkerHostMsg_WorkerStarted(embedded_worker_id_));
+}
+
+void EmbeddedWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope() {
+  DCHECK(worker_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(provider_context_);
+  DCHECK(script_context_);
+
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+          thread_safe_sender());
+
+  // Register a registration with the dispatcher living on the worker thread.
+  DCHECK(provider_context_->registration());
+  scoped_ptr<WebServiceWorkerRegistrationImpl> registration(
+      dispatcher->CreateServiceWorkerRegistration(
+          provider_context_->registration()->info(), false));
+
+  // Register workers with the dispatcher living on the worker thread.
+  ServiceWorkerVersionAttributes attrs =
+      provider_context_->GetVersionAttributes();
+  registration->SetInstalling(
+      dispatcher->GetServiceWorker(attrs.installing, false));
+  registration->SetWaiting(
+      dispatcher->GetServiceWorker(attrs.waiting, false));
+  registration->SetActive(
+      dispatcher->GetServiceWorker(attrs.active, false));
+
+  script_context_->SetRegistrationInServiceWorkerGlobalScope(
+      registration.Pass());
 }
 
 }  // namespace content
