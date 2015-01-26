@@ -456,8 +456,10 @@ class LogFilter(logging.Filter):
 class LoggingCapturer(object):
   """Captures all messages emitted by the logging module."""
 
-  def __init__(self, logger_name=''):
+  def __init__(self, logger_name='', log_level=logging.DEBUG):
     self._log_filter = LogFilter()
+    self._old_level = None
+    self._log_level = log_level
     self.logger_name = logger_name
 
   def __enter__(self):
@@ -469,11 +471,16 @@ class LoggingCapturer(object):
 
   def StartCapturing(self):
     """Begin capturing logging messages."""
-    logging.getLogger(self.logger_name).addFilter(self._log_filter)
+    logger = logging.getLogger(self.logger_name)
+    self._old_level = logger.getEffectiveLevel()
+    logger.setLevel(self._log_level)
+    logger.addFilter(self._log_filter)
 
   def StopCapturing(self):
     """Stop capturing logging messages."""
-    logging.getLogger(self.logger_name).removeFilter(self._log_filter)
+    logger = logging.getLogger(self.logger_name)
+    logger.setLevel(self._old_level)
+    logger.removeFilter(self._log_filter)
 
   @property
   def messages(self):
