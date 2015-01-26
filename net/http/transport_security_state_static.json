@@ -1367,7 +1367,6 @@
     { "name": "onedot.nl", "include_subdomains": true, "mode": "force-https" },
     { "name": "powerplannerapp.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "ru-sprachstudio.ch", "include_subdomains": true, "mode": "force-https" },
-    { "name": "segu-info.com.ar", "include_subdomains": true, "mode": "force-https" },
     { "name": "slattery.co", "include_subdomains": true, "mode": "force-https" },
     { "name": "slidebatch.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "smartship.co.jp", "include_subdomains": true, "mode": "force-https" },
