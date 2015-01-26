@@ -50,7 +50,6 @@ class Page3(SmokePage):
       url='http://aws1.mdw.la/bypass/',
       page_set=page_set,
       name='bypass')
-    self.restart_after = True
 
 
 class Page4(SmokePage):
