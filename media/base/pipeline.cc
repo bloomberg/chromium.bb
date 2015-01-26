@@ -606,6 +606,7 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
 
 void Pipeline::SetCdmTask(CdmContext* cdm_context,
                           const CdmAttachedCB& cdm_attached_cb) {
+  base::AutoLock auto_lock(lock_);
   if (!renderer_) {
     pending_cdm_context_ = cdm_context;
     cdm_attached_cb.Run(true);
