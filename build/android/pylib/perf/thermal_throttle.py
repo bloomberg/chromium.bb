@@ -34,7 +34,7 @@ class OmapThrottlingDetector(object):
 
   def GetCurrentTemperature(self):
     tempdata = self._device.ReadFile(OmapThrottlingDetector.OMAP_TEMP_FILE)
-    return float(tempdata[0]) / 1000.0
+    return float(tempdata) / 1000.0
 
 
 class ExynosThrottlingDetector(object):

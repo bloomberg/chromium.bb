@@ -7,6 +7,8 @@ import logging
 import pylib.android_commands
 import pylib.device.device_utils
 
+from pylib.device import device_errors
+
 
 class FlagChanger(object):
   """Changes the flags Chrome runs with.
@@ -32,9 +34,10 @@ class FlagChanger(object):
     self._cmdline_file = cmdline_file
 
     # Save the original flags.
-    self._orig_line = self._device.ReadFile(self._cmdline_file)
-    if self._orig_line:
-      self._orig_line = self._orig_line[0].strip()
+    try:
+      self._orig_line = self._device.ReadFile(self._cmdline_file).strip()
+    except device_errors.CommandFailedError:
+      self._orig_line = ''
 
     # Parse out the flags into a list to facilitate adding and removing flags.
     self._current_flags = self._TokenizeFlags(self._orig_line)
@@ -104,8 +107,8 @@ class FlagChanger(object):
       self._device.WriteFile(
           self._cmdline_file, cmd_line, as_root=use_root)
       file_contents = self._device.ReadFile(
-          self._cmdline_file, as_root=use_root)
-      assert len(file_contents) == 1 and file_contents[0] == cmd_line, (
+          self._cmdline_file, as_root=use_root).rstrip()
+      assert file_contents == cmd_line, (
           'Failed to set the command line file at %s' % self._cmdline_file)
     else:
       self._device.RunShellCommand('rm ' + self._cmdline_file,
