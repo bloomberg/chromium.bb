@@ -1718,6 +1718,7 @@
       'websockets/websocket_deflate_predictor_impl_test.cc',
       'websockets/websocket_deflate_stream_test.cc',
       'websockets/websocket_deflater_test.cc',
+      'websockets/websocket_end_to_end_test.cc',
       'websockets/websocket_errors_test.cc',
       'websockets/websocket_extension_parser_test.cc',
       'websockets/websocket_frame_parser_test.cc',
