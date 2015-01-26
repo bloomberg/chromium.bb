@@ -20,6 +20,35 @@ InspectorTest.completeDebuggerTest = function()
     InspectorTest.resumeExecution(InspectorTest.completeTest.bind(InspectorTest));
 };
 
+(function() {
+    // FIXME: Until there is no window.onerror() for uncaught exceptions in promises
+    // we use this hack to print the exceptions instead of just timing out.
+
+    var origThen = Promise.prototype.then;
+    var origCatch = Promise.prototype.catch;
+
+    Promise.prototype.then = function()
+    {
+        var result = origThen.apply(this, arguments);
+        origThen.call(result, undefined, onUncaughtPromiseReject);
+        return result;
+    }
+
+    Promise.prototype.catch = function()
+    {
+        var result = origCatch.apply(this, arguments);
+        origThen.call(result, undefined, onUncaughtPromiseReject);
+        return result;
+    }
+
+    function onUncaughtPromiseReject(e)
+    {
+        var message = (typeof e === "object" && e.stack) || e;
+        InspectorTest.addResult("FAIL: Uncaught exception in promise: " + message);
+        InspectorTest.completeDebuggerTest();
+    }
+})();
+
 InspectorTest.runDebuggerTestSuite = function(testSuite)
 {
     var testSuiteTests = testSuite.slice();
