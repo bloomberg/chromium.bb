@@ -150,8 +150,13 @@ void GCMAccountTracker::OnGetTokenFailure(
            iter->second.state == ACCOUNT_REMOVED);
     // If OnAccountSignedOut(..) was called most recently, account is kept in
     // ACCOUNT_REMOVED state.
-    if (iter->second.state == GETTING_TOKEN)
-      iter->second.state = TOKEN_NEEDED;
+    if (iter->second.state == GETTING_TOKEN) {
+      // Given the fetcher has a built in retry logic, consider this situation
+      // to be invalid refresh token, that is only fixed when user signs in.
+      // Once the users signs in properly the minting will retry.
+      iter->second.access_token.clear();
+      iter->second.state = ACCOUNT_REMOVED;
+    }
   }
 
   DeleteTokenRequest(request);

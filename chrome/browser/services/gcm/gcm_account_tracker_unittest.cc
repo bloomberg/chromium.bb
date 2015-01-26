@@ -359,16 +359,13 @@ TEST_F(GCMAccountTrackerTest, GetTokenFailed) {
   EXPECT_FALSE(driver()->update_accounts_called());
 
   IssueError(kAccountId2);
-  EXPECT_FALSE(driver()->update_accounts_called());
 
-  EXPECT_EQ(1UL, tracker()->get_pending_token_request_count());
-
-  IssueAccessToken(kAccountId2);
+  // Failed token is not retried any more. Account marked as removed.
+  EXPECT_EQ(0UL, tracker()->get_pending_token_request_count());
   EXPECT_TRUE(driver()->update_accounts_called());
 
   std::vector<GCMClient::AccountTokenInfo> expected_accounts;
   expected_accounts.push_back(MakeAccountToken(kAccountId1));
-  expected_accounts.push_back(MakeAccountToken(kAccountId2));
   VerifyAccountTokens(expected_accounts, driver()->accounts());
 }
 
@@ -378,7 +375,6 @@ TEST_F(GCMAccountTrackerTest, GetTokenFailedAccountRemoved) {
 
   tracker()->Start();
   IssueAccessToken(kAccountId1);
-  IssueError(kAccountId2);
 
   driver()->ResetResults();
   SignOutAccount(kAccountId2);
