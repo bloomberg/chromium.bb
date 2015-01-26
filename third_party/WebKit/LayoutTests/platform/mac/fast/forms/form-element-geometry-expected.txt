@@ -12,93 +12,93 @@ layer at (0,0) size 800x600
       RenderBlock {H2} at (0,89.34) size 784x24
         RenderText {#text} at (0,0) size 167x24
           text run at (0,0) width 167: "Bounding Boxes"
-      RenderTable {TABLE} at (0,133.25) size 172x28
-        RenderTableSection {TBODY} at (0,0) size 172x28
-          RenderTableRow {TR} at (0,2) size 172x24
-            RenderTableCell {TD} at (2,2) size 58x24 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,133.25) size 172x28
+        LayoutTableSection {TBODY} at (0,0) size 172x28
+          LayoutTableRow {TR} at (0,2) size 172x24
+            LayoutTableCell {TD} at (2,2) size 58x24 [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 56x22 [border: (2px solid #0000FF)]
                 RenderInline {FONT} at (0,0) size 52x24
                   RenderButton {INPUT} at (2,2) size 51.55x18 [bgcolor=#C0C0C0]
                     RenderBlock (anonymous) at (8,2) size 35.55x13
                       RenderText {#text} at (0,0) size 36x13
                         text run at (0,0) width 36: "button"
-            RenderTableCell {TD} at (62,2) size 68x24 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (62,2) size 68x24 [r=0 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 66x22 [border: (2px solid #0000FF)]
                 RenderInline {FONT} at (0,0) size 62x24
                   RenderMenuList {SELECT} at (2,2) size 62x18 [bgcolor=#F8F8F8]
                     RenderBlock (anonymous) at (0,0) size 62x18
                       RenderText at (8,2) size 31x13
                         text run at (8,2) width 31: "menu"
-            RenderTableCell {TD} at (132,4) size 18x19 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (132,4) size 18x19 [r=0 c=2 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 16x17 [border: (2px solid #0000FF)]
                 RenderInline {FONT} at (0,0) size 12x24
                   RenderBlock {INPUT} at (2,2) size 12x13
-            RenderTableCell {TD} at (152,5) size 18x18 [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (152,5) size 18x18 [r=0 c=3 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 16x16 [border: (2px solid #0000FF)]
                 RenderInline {FONT} at (0,0) size 12x24
                   RenderBlock {INPUT} at (2,2) size 12x12
-      RenderTable {TABLE} at (0,161.25) size 172x28
-        RenderTableSection {TBODY} at (0,0) size 172x28
-          RenderTableRow {TR} at (0,2) size 172x24
-            RenderTableCell {TD} at (2,2) size 58x24 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,161.25) size 172x28
+        LayoutTableSection {TBODY} at (0,0) size 172x28
+          LayoutTableRow {TR} at (0,2) size 172x24
+            LayoutTableCell {TD} at (2,2) size 58x24 [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 56x22 [border: (2px solid #0000FF)]
                 RenderButton {INPUT} at (2,2) size 51.55x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 35.55x13
                     RenderText {#text} at (0,0) size 36x13
                       text run at (0,0) width 36: "button"
-            RenderTableCell {TD} at (62,2) size 68x24 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (62,2) size 68x24 [r=0 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 66x22 [border: (2px solid #0000FF)]
                 RenderMenuList {SELECT} at (2,2) size 62x18 [bgcolor=#F8F8F8]
                   RenderBlock (anonymous) at (0,0) size 62x18
                     RenderText at (8,2) size 31x13
                       text run at (8,2) width 31: "menu"
-            RenderTableCell {TD} at (132,4) size 18x19 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (132,4) size 18x19 [r=0 c=2 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 16x17 [border: (2px solid #0000FF)]
                 RenderBlock {INPUT} at (2,2) size 12x13
-            RenderTableCell {TD} at (152,5) size 18x18 [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (152,5) size 18x18 [r=0 c=3 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 16x16 [border: (2px solid #0000FF)]
                 RenderBlock {INPUT} at (2,2) size 12x12
-      RenderTable {TABLE} at (0,189.25) size 172x28
-        RenderTableSection {TBODY} at (0,0) size 172x28
-          RenderTableRow {TR} at (0,2) size 172x24
-            RenderTableCell {TD} at (2,2) size 58x24 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,189.25) size 172x28
+        LayoutTableSection {TBODY} at (0,0) size 172x28
+          LayoutTableRow {TR} at (0,2) size 172x24
+            LayoutTableCell {TD} at (2,2) size 58x24 [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 56x22 [border: (2px solid #0000FF)]
                 RenderInline {FONT} at (0,0) size 52x11
                   RenderButton {INPUT} at (2,2) size 51.55x18 [bgcolor=#C0C0C0]
                     RenderBlock (anonymous) at (8,2) size 35.55x13
                       RenderText {#text} at (0,0) size 36x13
                         text run at (0,0) width 36: "button"
-            RenderTableCell {TD} at (62,2) size 68x24 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (62,2) size 68x24 [r=0 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 66x22 [border: (2px solid #0000FF)]
                 RenderInline {FONT} at (0,0) size 62x11
                   RenderMenuList {SELECT} at (2,2) size 62x18 [bgcolor=#F8F8F8]
                     RenderBlock (anonymous) at (0,0) size 62x18
                       RenderText at (8,2) size 31x13
                         text run at (8,2) width 31: "menu"
-            RenderTableCell {TD} at (132,4) size 18x19 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (132,4) size 18x19 [r=0 c=2 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 16x17 [border: (2px solid #0000FF)]
                 RenderInline {FONT} at (0,0) size 12x11
                   RenderBlock {INPUT} at (2,2) size 12x13
-            RenderTableCell {TD} at (152,5) size 18x18 [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (152,5) size 18x18 [r=0 c=3 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 16x16 [border: (2px solid #0000FF)]
                 RenderInline {FONT} at (0,0) size 12x11
                   RenderBlock {INPUT} at (2,2) size 12x12
-      RenderTable {TABLE} at (0,217.25) size 539x67
-        RenderTableSection {TBODY} at (0,0) size 539x67
-          RenderTableRow {TR} at (0,2) size 539x63
-            RenderTableCell {TD} at (2,2) size 79x25 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,217.25) size 539x67
+        LayoutTableSection {TBODY} at (0,0) size 539x67
+          LayoutTableRow {TR} at (0,2) size 539x63
+            LayoutTableCell {TD} at (2,2) size 79x25 [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 77x23 [border: (2px solid #0000FF)]
                 RenderTextControl {INPUT} at (2,2) size 73x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-            RenderTableCell {TD} at (83,2) size 40x63 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (83,2) size 40x63 [r=0 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 38x61 [border: (2px solid #0000FF)]
-            RenderTableCell {TD} at (125,2) size 243x24 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (125,2) size 243x24 [r=0 c=2 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 241x22 [border: (2px solid #0000FF)]
                 RenderFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
                   RenderButton {INPUT} at (0,0) size 77.55x18 [bgcolor=#C0C0C0]
                     RenderBlock (anonymous) at (8,2) size 61.55x13
                       RenderText {#text} at (0,0) size 62x13
                         text run at (0,0) width 62: "Choose File"
-            RenderTableCell {TD} at (370,2) size 167x38 [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (370,2) size 167x38 [r=0 c=3 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 165x36 [border: (2px solid #0000FF)]
       RenderBlock {H2} at (0,304.16) size 784x24
         RenderText {#text} at (0,0) size 200x24

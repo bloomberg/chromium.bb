@@ -5,7 +5,7 @@ layer at (0,0) size 800x514
     RenderBody {BODY} at (8,8) size 784x0
       RenderBlock (floating) {DIV} at (0,0) size 123.53x506
         RenderBlock {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
-        RenderTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
+        LayoutTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
         RenderBlock (anonymous) at (0,340) size 123.53x64
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,420) size 123.53x18
@@ -24,7 +24,7 @@ layer at (0,0) size 800x514
             text run at (0,18) width 88: "dolor sit amet"
       RenderBlock (floating) {DIV} at (133.53,0) size 123.53x454
         RenderBlock {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
-        RenderTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
+        LayoutTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
         RenderBlock (anonymous) at (0,340) size 123.53x64
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,420) size 123.53x18
@@ -37,7 +37,7 @@ layer at (0,0) size 800x514
             text run at (85,0) width 39: " dolor"
       RenderBlock (floating) {DIV} at (267.06,0) size 123.53x454
         RenderBlock {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
-        RenderTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
+        LayoutTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
         RenderBlock (anonymous) at (0,340) size 123.53x64
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,420) size 123.53x18
@@ -50,7 +50,7 @@ layer at (0,0) size 800x514
             text run at (85,0) width 39: " dolor"
       RenderBlock (floating) {DIV} at (400.59,0) size 123.53x454
         RenderBlock {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
-        RenderTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
+        LayoutTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
         RenderBlock (anonymous) at (0,340) size 123.53x64
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,420) size 123.53x18
@@ -63,7 +63,7 @@ layer at (0,0) size 800x514
             text run at (85,0) width 39: " dolor"
       RenderBlock (floating) {DIV} at (534.13,0) size 123.53x454
         RenderBlock {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
-        RenderTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
+        LayoutTable {TABLE} at (10,290) size 40x40 [bgcolor=#FFFF77]
         RenderBlock (anonymous) at (0,340) size 123.53x64
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {P} at (0,420) size 123.53x18

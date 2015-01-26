@@ -21,22 +21,22 @@ layer at (0,0) size 800x600
           text run at (0,0) width 587: "If the browser does not crash as you click to the right of each of the lines below, it passes the test."
       RenderBlock {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {DIV} at (0,102) size 784x80
-        RenderTable at (0,0) size 166x80
-          RenderTableSection (anonymous) at (0,20) size 166x40
-            RenderTableRow {DIV} at (0,0) size 166x20
-              RenderTableCell (anonymous) at (0,0) size 166x20 [r=0 c=0 rs=1 cs=1]
+        LayoutTable at (0,0) size 166x80
+          LayoutTableSection (anonymous) at (0,20) size 166x40
+            LayoutTableRow {DIV} at (0,0) size 166x20
+              LayoutTableCell (anonymous) at (0,0) size 166x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 166x19
                   text run at (0,0) width 166: "Click to the right of this text"
-            RenderTableRow (anonymous) at (0,20) size 166x20
-              RenderTableCell {DIV} at (0,20) size 166x20 [r=1 c=0 rs=1 cs=1]
+            LayoutTableRow (anonymous) at (0,20) size 166x20
+              LayoutTableCell {DIV} at (0,20) size 166x20 [r=1 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 166x19
                   text run at (0,0) width 166: "Click to the right of this text"
           RenderBlock {DIV} at (0,0) size 166x20
             RenderText {#text} at (0,0) size 166x19
               text run at (0,0) width 166: "Click to the right of this text"
-          RenderTableSection {DIV} at (0,60) size 166x20
-            RenderTableRow (anonymous) at (0,0) size 166x20
-              RenderTableCell (anonymous) at (0,0) size 166x20 [r=0 c=0 rs=1 cs=1]
+          LayoutTableSection {DIV} at (0,60) size 166x20
+            LayoutTableRow (anonymous) at (0,0) size 166x20
+              LayoutTableCell (anonymous) at (0,0) size 166x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 166x19
                   text run at (0,0) width 166: "Click to the right of this text"
 caret: position 40 of child 0 {#text} of child 7 {DIV} of child 7 {DIV} of body

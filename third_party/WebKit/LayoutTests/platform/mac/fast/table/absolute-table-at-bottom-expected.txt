@@ -27,24 +27,24 @@ layer at (0,0) size 800x171
           text run at (32,48) width 487: "which should be 50px tall. The other two boxes should both be shorter than "
           text run at (518,48) width 207: "50px, and have the same height."
 layer at (120,550) size 120x50
-  RenderTable {TABLE} at (120,550) size 120x50 [border: (1px solid #FF0000)]
-    RenderTableSection {TBODY} at (1,1) size 118x48
-      RenderTableRow {TR} at (0,2) size 118x44
-        RenderTableCell {TD} at (2,15) size 114x18 [r=0 c=0 rs=1 cs=1]
+  LayoutTable {TABLE} at (120,550) size 120x50 [border: (1px solid #FF0000)]
+    LayoutTableSection {TBODY} at (1,1) size 118x48
+      LayoutTableRow {TR} at (0,2) size 118x44
+        LayoutTableCell {TD} at (2,15) size 114x18 [r=0 c=0 rs=1 cs=1]
           RenderText {#text} at (1,1) size 61x16
             text run at (1,1) width 61: "Tall table"
 layer at (240,576) size 120x24
-  RenderTable {TABLE} at (240,576) size 120x24 [border: (1px solid #FF0000)]
-    RenderTableSection {TBODY} at (1,1) size 118x22
-      RenderTableRow {TR} at (0,2) size 118x18
-        RenderTableCell {TD} at (2,2) size 114x18 [r=0 c=0 rs=1 cs=1]
+  LayoutTable {TABLE} at (240,576) size 120x24 [border: (1px solid #FF0000)]
+    LayoutTableSection {TBODY} at (1,1) size 118x22
+      LayoutTableRow {TR} at (0,2) size 118x18
+        LayoutTableCell {TD} at (2,2) size 114x18 [r=0 c=0 rs=1 cs=1]
           RenderText {#text} at (1,1) size 84x16
             text run at (1,1) width 84: "Normal table"
 layer at (360,576) size 120x24
-  RenderTable {TABLE} at (360,576) size 120x24 [border: (1px solid #FF0000)]
-    RenderTableSection {TBODY} at (1,1) size 118x22
-      RenderTableRow {TR} at (0,2) size 118x18
-        RenderTableCell {TD} at (2,2) size 114x18 [r=0 c=0 rs=1 cs=1]
+  LayoutTable {TABLE} at (360,576) size 120x24 [border: (1px solid #FF0000)]
+    LayoutTableSection {TBODY} at (1,1) size 118x22
+      LayoutTableRow {TR} at (0,2) size 118x18
+        LayoutTableCell {TD} at (2,2) size 114x18 [r=0 c=0 rs=1 cs=1]
           RenderText {#text} at (1,1) size 70x16
             text run at (1,1) width 70: "Short table"
 layer at (0,584) size 65x16

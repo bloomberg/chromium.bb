@@ -20,9 +20,9 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,66) size 784x16
         RenderText {#text} at (0,0) size 260x16
           text run at (0,0) width 260: "No assertion failure means TEST PASS."
-      RenderTable {TABLE} at (0,98) size 51x24 [border: (1px solid #008000)]
-        RenderTableSection {TBODY} at (1,1) size 49x22
-          RenderTableRow {TR} at (0,2) size 49x18
-            RenderTableCell {TD} at (2,2) size 45x18 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,98) size 51x24 [border: (1px solid #008000)]
+        LayoutTableSection {TBODY} at (1,1) size 49x22
+          LayoutTableRow {TR} at (0,2) size 49x18
+            LayoutTableCell {TD} at (2,2) size 45x18 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 43x16
                 text run at (1,1) width 43: "Lorem"

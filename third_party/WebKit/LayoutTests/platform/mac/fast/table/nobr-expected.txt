@@ -7,10 +7,10 @@ layer at (0,0) size 800x600
         RenderInline {NOBR} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,0) size 784x314
-        RenderTable {TABLE} at (0,0) size 70x314 [border: (1px outset #808080)]
-          RenderTableSection {TBODY} at (1,1) size 68x312
-            RenderTableRow {TR} at (0,2) size 68x308
-              RenderTableCell {TD} at (2,2) size 64x308 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,0) size 70x314 [border: (1px outset #808080)]
+          LayoutTableSection {TBODY} at (1,1) size 68x312
+            LayoutTableRow {TR} at (0,2) size 68x308
+              LayoutTableCell {TD} at (2,2) size 64x308 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (2,2) size 60x304
                   text run at (2,2) width 55: "This is a"
                   text run at (2,18) width 54: "test case"

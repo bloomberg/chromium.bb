@@ -28,11 +28,11 @@ layer at (0,0) size 340x600
           RenderListMarker at (0,-18) size 19x7: bullet
           RenderText {#text} at (0,0) size 19x307
             text run at (0,0) width 307: "which letters are visible initially and when you scroll"
-      RenderTable {TABLE} at (168,0) size 148x256
-        RenderTableSection {TBODY} at (0,0) size 148x256
-          RenderTableRow {TR} at (0,2) size 144x256
-            RenderTableCell {TD} at (2,2) size 144x125 [r=0 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (2,129) size 144x125 [r=0 c=1 rs=1 cs=1]
+      LayoutTable {TABLE} at (168,0) size 148x256
+        LayoutTableSection {TBODY} at (0,0) size 148x256
+          LayoutTableRow {TR} at (0,2) size 144x256
+            LayoutTableCell {TD} at (2,2) size 144x125 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,129) size 144x125 [r=0 c=1 rs=1 cs=1]
 layer at (191,15) size 42x115 clip at (191,25) size 27x100 scrollHeight 175
   RenderBlock {DIV} at (5,5) size 42x115 [bgcolor=#FFFF00] [border: (10px solid #FF0000) none (5px solid #008000) none]
     RenderText {#text} at (0,10) size 19x175

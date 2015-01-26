@@ -32,11 +32,11 @@ layer at (0,0) size 800x443
           RenderListMarker at (-17,0) size 7x17: bullet
           RenderText {#text} at (0,0) size 591x17
             text run at (0,0) width 591: "the position of the blue and olive boxes, initially and when you scroll (in the bottom 2 rows)"
-      RenderTable {TABLE} at (0,174) size 256x245
-        RenderTableSection {TBODY} at (0,0) size 256x245
-          RenderTableRow {TR} at (0,2) size 256x241
-            RenderTableCell {TD} at (2,2) size 125x240.69 [r=0 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (129,2) size 125x240.69 [r=0 c=1 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,174) size 256x245
+        LayoutTableSection {TBODY} at (0,0) size 256x245
+          LayoutTableRow {TR} at (0,2) size 256x241
+            LayoutTableCell {TD} at (2,2) size 125x240.69 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (129,2) size 125x240.69 [r=0 c=1 rs=1 cs=1]
 layer at (15,197) size 115x43 clip at (25,197) size 100x28 scrollWidth 191 scrollHeight 27
   RenderBlock {DIV} at (5,5) size 115x42.94 [bgcolor=#FFFF00] [border: none (5px solid #008000) none (10px solid #FF0000)]
     RenderText {#text} at (10,0) size 192x17

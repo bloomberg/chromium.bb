@@ -6,13 +6,13 @@ layer at (0,0) size 785x2350 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       RenderBlock {H1} at (0,0) size 769x37
         RenderText {#text} at (0,0) size 613x36
           text run at (0,0) width 613: "Fixed Columns, Auto Span, Minheight Table"
-      RenderTable {TABLE} at (0,58.44) size 40x100
-        RenderTableSection {TBODY} at (0,0) size 40x100
-          RenderTableRow {TR} at (0,0) size 20x100
-            RenderTableCell {TD} at (0,10) size 20x13 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (0,43) size 20x47 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
-          RenderTableRow {TR} at (0,20) size 20x100
-            RenderTableCell {TD} at (20,10) size 20x80 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,58.44) size 40x100
+        LayoutTableSection {TBODY} at (0,0) size 40x100
+          LayoutTableRow {TR} at (0,0) size 20x100
+            LayoutTableCell {TD} at (0,10) size 20x13 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (0,43) size 20x47 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,20) size 20x100
+            LayoutTableCell {TD} at (20,10) size 20x80 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
               RenderBlock {DIV} at (10,-10) size 0x100
       RenderBlock {P} at (0,174.44) size 769x54
         RenderText {#text} at (0,0) size 152x17
@@ -24,13 +24,13 @@ layer at (0,0) size 785x2350 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,36) size 138x17
           text run at (0,36) width 138: "Column Two is: 67%"
       RenderBlock {HR} at (0,244.44) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderTable {TABLE} at (0,254.44) size 40x600
-        RenderTableSection {TBODY} at (0,0) size 40x600
-          RenderTableRow {TR} at (0,0) size 20x600
-            RenderTableCell {TD} at (0,10) size 20x180 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (0,210) size 20x380 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
-          RenderTableRow {TR} at (0,20) size 20x600
-            RenderTableCell {TD} at (20,10) size 20x580 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,254.44) size 40x600
+        LayoutTableSection {TBODY} at (0,0) size 40x600
+          LayoutTableRow {TR} at (0,0) size 20x600
+            LayoutTableCell {TD} at (0,10) size 20x180 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (0,210) size 20x380 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,20) size 20x600
+            LayoutTableCell {TD} at (20,10) size 20x580 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
               RenderBlock {DIV} at (10,-10) size 0x600
       RenderBlock {P} at (0,870.44) size 769x54
         RenderText {#text} at (0,0) size 152x17
@@ -42,19 +42,19 @@ layer at (0,0) size 785x2350 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,36) size 138x17
           text run at (0,36) width 138: "Column Two is: 67%"
       RenderBlock {HR} at (0,940.44) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderTable {TABLE} at (0,950.44) size 56x600
-        RenderTableSection {TBODY} at (0,0) size 56x600
-          RenderTableRow {TR} at (0,0) size 36x600
-            RenderTableCell {TD} at (0,0) size 36x200 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,950.44) size 56x600
+        LayoutTableSection {TBODY} at (0,0) size 56x600
+          LayoutTableRow {TR} at (0,0) size 36x600
+            LayoutTableCell {TD} at (0,0) size 36x200 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 35x192
                 text run at (0,0) width 192: "Fixed cell in column one with"
                 text run at (18,0) width 66: "some text."
-            RenderTableCell {TD} at (0,200) size 36x400 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (0,200) size 36x400 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (0,0) size 35x388
                 text run at (0,0) width 388: "Fixed cell in column two with a lot more text. Will the ratios"
                 text run at (18,0) width 89: "be preserved?"
-          RenderTableRow {TR} at (0,36) size 20x600
-            RenderTableCell {TD} at (36,10) size 20x580 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
+          LayoutTableRow {TR} at (0,36) size 20x600
+            LayoutTableCell {TD} at (36,10) size 20x580 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
               RenderBlock {DIV} at (10,-10) size 0x600
       RenderBlock {P} at (0,1566.44) size 769x54
         RenderText {#text} at (0,0) size 152x17
@@ -66,15 +66,15 @@ layer at (0,0) size 785x2350 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,36) size 138x17
           text run at (0,36) width 138: "Column Two is: 67%"
       RenderBlock {HR} at (0,1636.44) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderTable {TABLE} at (0,1646.44) size 40x600
-        RenderTableSection {TBODY} at (0,0) size 40x600
-          RenderTableRow {TR} at (0,0) size 20x600
-            RenderTableCell {TD} at (0,10) size 20x180 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,1646.44) size 40x600
+        LayoutTableSection {TBODY} at (0,0) size 40x600
+          LayoutTableRow {TR} at (0,0) size 20x600
+            LayoutTableCell {TD} at (0,10) size 20x180 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (10,-10) size 0x100
-            RenderTableCell {TD} at (0,210) size 20x380 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (0,210) size 20x380 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (10,-10) size 0x250
-          RenderTableRow {TR} at (0,20) size 20x600
-            RenderTableCell {TD} at (20,10) size 20x580 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
+          LayoutTableRow {TR} at (0,20) size 20x600
+            LayoutTableCell {TD} at (20,10) size 20x580 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
               RenderBlock {DIV} at (10,-10) size 0x600
       RenderBlock {P} at (0,2262.44) size 769x54
         RenderText {#text} at (0,0) size 152x17

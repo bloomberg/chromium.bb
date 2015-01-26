@@ -9,49 +9,49 @@ layer at (0,0) size 800x392
         RenderBR {BR} at (614,0) size 1x16
         RenderText {#text} at (0,16) size 438x16
           text run at (0,16) width 438: "All the items in the following select elements should be left-aligned."
-      RenderTable {TABLE} at (0,32) size 650x98
-        RenderTableSection {TBODY} at (0,0) size 650x98
-          RenderTableRow {TR} at (0,2) size 650x46
-            RenderTableCell {TD} at (2,2) size 156x46 [r=0 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (160,2) size 164x46 [r=0 c=1 rs=1 cs=1]
-            RenderTableCell {TD} at (326,2) size 156x46 [r=0 c=2 rs=1 cs=1]
-            RenderTableCell {TD} at (484,2) size 164x46 [r=0 c=3 rs=1 cs=1]
-          RenderTableRow {TR} at (0,50) size 650x46
-            RenderTableCell {TD} at (2,50) size 156x46 [r=1 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (160,50) size 164x46 [r=1 c=1 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,32) size 650x98
+        LayoutTableSection {TBODY} at (0,0) size 650x98
+          LayoutTableRow {TR} at (0,2) size 650x46
+            LayoutTableCell {TD} at (2,2) size 156x46 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (160,2) size 164x46 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (326,2) size 156x46 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (484,2) size 164x46 [r=0 c=3 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,50) size 650x46
+            LayoutTableCell {TD} at (2,50) size 156x46 [r=1 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (160,50) size 164x46 [r=1 c=1 rs=1 cs=1]
       RenderBlock (anonymous) at (0,130) size 784x16
         RenderText {#text} at (0,0) size 447x16
           text run at (0,0) width 447: "All the items in the following select elements should be right-aligned."
-      RenderTable {TABLE} at (0,146) size 644x98
-        RenderTableSection {TBODY} at (0,0) size 644x98
-          RenderTableRow {TR} at (0,2) size 644x46
-            RenderTableCell {TD} at (2,2) size 164x46 [r=0 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (168,2) size 153x46 [r=0 c=1 rs=1 cs=1]
-            RenderTableCell {TD} at (323,2) size 164x46 [r=0 c=2 rs=1 cs=1]
-            RenderTableCell {TD} at (489,2) size 153x46 [r=0 c=3 rs=1 cs=1]
-          RenderTableRow {TR} at (0,50) size 644x46
-            RenderTableCell {TD} at (2,50) size 164x46 [r=1 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (168,50) size 153x46 [r=1 c=1 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,146) size 644x98
+        LayoutTableSection {TBODY} at (0,0) size 644x98
+          LayoutTableRow {TR} at (0,2) size 644x46
+            LayoutTableCell {TD} at (2,2) size 164x46 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (168,2) size 153x46 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (323,2) size 164x46 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (489,2) size 153x46 [r=0 c=3 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,50) size 644x46
+            LayoutTableCell {TD} at (2,50) size 164x46 [r=1 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (168,50) size 153x46 [r=1 c=1 rs=1 cs=1]
       RenderBlock (anonymous) at (0,244) size 784x16
         RenderText {#text} at (0,0) size 456x16
           text run at (0,0) width 456: "All the items in the following select elements should be center-aligned."
-      RenderTable {TABLE} at (0,260) size 680x50
-        RenderTableSection {TBODY} at (0,0) size 680x50
-          RenderTableRow {TR} at (0,2) size 680x46
-            RenderTableCell {TD} at (2,2) size 172x46 [r=0 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (176,2) size 163x46 [r=0 c=1 rs=1 cs=1]
-            RenderTableCell {TD} at (341,2) size 172x46 [r=0 c=2 rs=1 cs=1]
-            RenderTableCell {TD} at (515,2) size 163x46 [r=0 c=3 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,260) size 680x50
+        LayoutTableSection {TBODY} at (0,0) size 680x50
+          LayoutTableRow {TR} at (0,2) size 680x46
+            LayoutTableCell {TD} at (2,2) size 172x46 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (176,2) size 163x46 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (341,2) size 172x46 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (515,2) size 163x46 [r=0 c=3 rs=1 cs=1]
       RenderBlock (anonymous) at (0,310) size 784x16
         RenderText {#text} at (0,0) size 296x16
           text run at (0,0) width 296: "The following tables check mixed alignments."
-      RenderTable {TABLE} at (0,326) size 728x50
-        RenderTableSection {TBODY} at (0,0) size 728x50
-          RenderTableRow {TR} at (0,2) size 728x46
-            RenderTableCell {TD} at (2,2) size 170x46 [r=0 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (174,2) size 170x46 [r=0 c=1 rs=1 cs=1]
-            RenderTableCell {TD} at (346,2) size 189x46 [r=0 c=2 rs=1 cs=1]
-            RenderTableCell {TD} at (537,2) size 189x46 [r=0 c=3 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,326) size 728x50
+        LayoutTableSection {TBODY} at (0,0) size 728x50
+          LayoutTableRow {TR} at (0,2) size 728x46
+            LayoutTableCell {TD} at (2,2) size 170x46 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (174,2) size 170x46 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (346,2) size 189x46 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (537,2) size 189x46 [r=0 c=3 rs=1 cs=1]
 layer at (11,42) size 154x45 clip at (12,43) size 141x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 153.86x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 140.86x14.19

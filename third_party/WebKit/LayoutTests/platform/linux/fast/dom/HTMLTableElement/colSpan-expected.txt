@@ -26,79 +26,79 @@ layer at (0,0) size 800x600
       RenderBlock {HR} at (0,208) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,218) size 784x20
         RenderBR {BR} at (0,0) size 0x19
-      RenderTable {TABLE} at (0,238) size 255x76 [border: (1px outset #808080)]
+      LayoutTable {TABLE} at (0,238) size 255x76 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,0) size 255x20
           RenderText {#text} at (27,0) size 201x19
             text run at (27,0) width 201: "Testing Default and Regular Input"
-        RenderTableSection {TBODY} at (1,21) size 253x54
-          RenderTableRow {TR} at (0,2) size 253x24
-            RenderTableCell {TD} at (2,2) size 31x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection {TBODY} at (1,21) size 253x54
+          LayoutTableRow {TR} at (0,2) size 253x24
+            LayoutTableCell {TD} at (2,2) size 31x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 27x19
                 text run at (2,2) width 27: "First"
-            RenderTableCell {TD} at (35,2) size 216x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=7]
+            LayoutTableCell {TD} at (35,2) size 216x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=7]
               RenderText {#text} at (2,2) size 70x19
                 text run at (2,2) width 70: "All the Rest"
-          RenderTableRow {TR} at (0,28) size 253x24
-            RenderTableCell {TD} at (2,28) size 31x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,28) size 253x24
+            LayoutTableCell {TD} at (2,28) size 31x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 22x19
                 text run at (2,2) width 22: "one"
-            RenderTableCell {TD} at (35,28) size 27x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (35,28) size 27x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 23x19
                 text run at (2,2) width 23: "two"
-            RenderTableCell {TD} at (64,28) size 34x24 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (64,28) size 34x24 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 30x19
                 text run at (2,2) width 30: "three"
-            RenderTableCell {TD} at (100,28) size 28x24 [border: (1px inset #808080)] [r=1 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (100,28) size 28x24 [border: (1px inset #808080)] [r=1 c=3 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x19
                 text run at (2,2) width 24: "four"
-            RenderTableCell {TD} at (130,28) size 25x24 [border: (1px inset #808080)] [r=1 c=4 rs=1 cs=1]
+            LayoutTableCell {TD} at (130,28) size 25x24 [border: (1px inset #808080)] [r=1 c=4 rs=1 cs=1]
               RenderText {#text} at (2,2) size 21x19
                 text run at (2,2) width 21: "five"
-            RenderTableCell {TD} at (157,28) size 20x24 [border: (1px inset #808080)] [r=1 c=5 rs=1 cs=1]
+            LayoutTableCell {TD} at (157,28) size 20x24 [border: (1px inset #808080)] [r=1 c=5 rs=1 cs=1]
               RenderText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "six"
-            RenderTableCell {TD} at (179,28) size 38x24 [border: (1px inset #808080)] [r=1 c=6 rs=1 cs=1]
+            LayoutTableCell {TD} at (179,28) size 38x24 [border: (1px inset #808080)] [r=1 c=6 rs=1 cs=1]
               RenderText {#text} at (2,2) size 34x19
                 text run at (2,2) width 34: "seven"
-            RenderTableCell {TD} at (219,28) size 32x24 [border: (1px inset #808080)] [r=1 c=7 rs=1 cs=1]
+            LayoutTableCell {TD} at (219,28) size 32x24 [border: (1px inset #808080)] [r=1 c=7 rs=1 cs=1]
               RenderText {#text} at (2,2) size 28x19
                 text run at (2,2) width 28: "eight"
       RenderBlock (anonymous) at (0,314) size 784x20
         RenderBR {BR} at (0,0) size 0x19
-      RenderTable {TABLE} at (0,334) size 189x76 [border: (1px outset #808080)]
+      LayoutTable {TABLE} at (0,334) size 189x76 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,0) size 189x20
           RenderText {#text} at (15,0) size 159x19
             text run at (15,0) width 159: "Testing Zero Special Case"
-        RenderTableSection {TBODY} at (1,21) size 187x54
-          RenderTableRow {TR} at (0,2) size 187x24
-            RenderTableCell {TD} at (2,2) size 42x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection {TBODY} at (1,21) size 187x54
+          LayoutTableRow {TR} at (0,2) size 187x24
+            LayoutTableCell {TD} at (2,2) size 42x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 38x19
                 text run at (2,2) width 38: "Just A"
-            RenderTableCell {TD} at (46,2) size 41x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (46,2) size 41x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 37x19
                 text run at (2,2) width 37: "Just B"
-          RenderTableRow {TR} at (0,28) size 187x24
-            RenderTableCell {TD} at (2,28) size 42x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,28) size 187x24
+            LayoutTableCell {TD} at (2,28) size 42x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 11x19
                 text run at (2,2) width 11: "A"
-            RenderTableCell {TD} at (46,28) size 41x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (46,28) size 41x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 10x19
                 text run at (2,2) width 10: "B"
-            RenderTableCell {TD} at (89,28) size 15x24 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (89,28) size 15x24 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 11x19
                 text run at (2,2) width 11: "C"
-            RenderTableCell {TD} at (106,28) size 15x24 [border: (1px inset #808080)] [r=1 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (106,28) size 15x24 [border: (1px inset #808080)] [r=1 c=3 rs=1 cs=1]
               RenderText {#text} at (2,2) size 11x19
                 text run at (2,2) width 11: "D"
-            RenderTableCell {TD} at (123,28) size 13x24 [border: (1px inset #808080)] [r=1 c=4 rs=1 cs=1]
+            LayoutTableCell {TD} at (123,28) size 13x24 [border: (1px inset #808080)] [r=1 c=4 rs=1 cs=1]
               RenderText {#text} at (2,2) size 9x19
                 text run at (2,2) width 9: "E"
-            RenderTableCell {TD} at (138,28) size 13x24 [border: (1px inset #808080)] [r=1 c=5 rs=1 cs=1]
+            LayoutTableCell {TD} at (138,28) size 13x24 [border: (1px inset #808080)] [r=1 c=5 rs=1 cs=1]
               RenderText {#text} at (2,2) size 9x19
                 text run at (2,2) width 9: "F"
-            RenderTableCell {TD} at (153,28) size 15x24 [border: (1px inset #808080)] [r=1 c=6 rs=1 cs=1]
+            LayoutTableCell {TD} at (153,28) size 15x24 [border: (1px inset #808080)] [r=1 c=6 rs=1 cs=1]
               RenderText {#text} at (2,2) size 11x19
                 text run at (2,2) width 11: "G"
-            RenderTableCell {TD} at (170,28) size 15x24 [border: (1px inset #808080)] [r=1 c=7 rs=1 cs=1]
+            LayoutTableCell {TD} at (170,28) size 15x24 [border: (1px inset #808080)] [r=1 c=7 rs=1 cs=1]
               RenderText {#text} at (2,2) size 11x19
                 text run at (2,2) width 11: "H"

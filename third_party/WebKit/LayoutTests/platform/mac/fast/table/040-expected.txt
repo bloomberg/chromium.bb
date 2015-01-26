@@ -6,13 +6,13 @@ layer at (0,0) size 800x600
       RenderBlock {H1} at (0,0) size 784x32
         RenderText {#text} at (0,0) size 606x32
           text run at (0,0) width 606: "Fixed Columns, Auto Span, Minwidth Table"
-      RenderTable {TABLE} at (0,53.44) size 100x40
-        RenderTableSection {TBODY} at (0,0) size 100x40
-          RenderTableRow {TR} at (0,0) size 100x20
-            RenderTableCell {TD} at (0,10) size 33x0 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (33,10) size 67x0 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
-          RenderTableRow {TR} at (0,20) size 100x20
-            RenderTableCell {TD} at (0,30) size 100x0 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,53.44) size 100x40
+        LayoutTableSection {TBODY} at (0,0) size 100x40
+          LayoutTableRow {TR} at (0,0) size 100x20
+            LayoutTableCell {TD} at (0,10) size 33x0 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (33,10) size 67x0 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,20) size 100x20
+            LayoutTableCell {TD} at (0,30) size 100x0 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
               RenderBlock {DIV} at (0,0) size 100x0
       RenderBlock {P} at (0,109.44) size 784x48
         RenderText {#text} at (0,0) size 148x16
@@ -24,13 +24,13 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,32) size 138x16
           text run at (0,32) width 138: "Column Two is: 67%"
       RenderBlock {HR} at (0,173.44) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderTable {TABLE} at (0,183.44) size 600x40
-        RenderTableSection {TBODY} at (0,0) size 600x40
-          RenderTableRow {TR} at (0,0) size 600x20
-            RenderTableCell {TD} at (0,10) size 200x0 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
-            RenderTableCell {TD} at (200,10) size 400x0 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
-          RenderTableRow {TR} at (0,20) size 600x20
-            RenderTableCell {TD} at (0,30) size 600x0 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,183.44) size 600x40
+        LayoutTableSection {TBODY} at (0,0) size 600x40
+          LayoutTableRow {TR} at (0,0) size 600x20
+            LayoutTableCell {TD} at (0,10) size 200x0 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (200,10) size 400x0 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,20) size 600x20
+            LayoutTableCell {TD} at (0,30) size 600x0 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
               RenderBlock {DIV} at (0,0) size 600x0
       RenderBlock {P} at (0,239.44) size 784x48
         RenderText {#text} at (0,0) size 148x16
@@ -42,19 +42,19 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,32) size 138x16
           text run at (0,32) width 138: "Column Two is: 67%"
       RenderBlock {HR} at (0,303.44) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderTable {TABLE} at (0,313.44) size 600x52
-        RenderTableSection {TBODY} at (0,0) size 600x52
-          RenderTableRow {TR} at (0,0) size 600x32
-            RenderTableCell {TD} at (0,0) size 200x32 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,313.44) size 600x52
+        LayoutTableSection {TBODY} at (0,0) size 600x52
+          LayoutTableRow {TR} at (0,0) size 600x32
+            LayoutTableCell {TD} at (0,0) size 200x32 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 192x32
                 text run at (0,0) width 192: "Fixed cell in column one with"
                 text run at (0,16) width 66: "some text."
-            RenderTableCell {TD} at (200,0) size 400x32 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (200,0) size 400x32 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (0,0) size 389x32
                 text run at (0,0) width 389: "Fixed cell in column two with a lot more text. Will the ratios"
                 text run at (0,16) width 89: "be preserved?"
-          RenderTableRow {TR} at (0,32) size 600x20
-            RenderTableCell {TD} at (0,42) size 600x0 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
+          LayoutTableRow {TR} at (0,32) size 600x20
+            LayoutTableCell {TD} at (0,42) size 600x0 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
               RenderBlock {DIV} at (0,0) size 600x0
       RenderBlock {P} at (0,381.44) size 784x48
         RenderText {#text} at (0,0) size 148x16
@@ -66,15 +66,15 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,32) size 138x16
           text run at (0,32) width 138: "Column Two is: 67%"
       RenderBlock {HR} at (0,445.44) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderTable {TABLE} at (0,455.44) size 600x40
-        RenderTableSection {TBODY} at (0,0) size 600x40
-          RenderTableRow {TR} at (0,0) size 600x20
-            RenderTableCell {TD} at (0,10) size 200x0 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,455.44) size 600x40
+        LayoutTableSection {TBODY} at (0,0) size 600x40
+          LayoutTableRow {TR} at (0,0) size 600x20
+            LayoutTableCell {TD} at (0,10) size 200x0 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (0,0) size 100x0
-            RenderTableCell {TD} at (200,10) size 400x0 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (200,10) size 400x0 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (0,0) size 250x0
-          RenderTableRow {TR} at (0,20) size 600x20
-            RenderTableCell {TD} at (0,30) size 600x0 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
+          LayoutTableRow {TR} at (0,20) size 600x20
+            LayoutTableCell {TD} at (0,30) size 600x0 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
               RenderBlock {DIV} at (0,0) size 600x0
       RenderBlock {P} at (0,511.44) size 784x48
         RenderText {#text} at (0,0) size 148x16

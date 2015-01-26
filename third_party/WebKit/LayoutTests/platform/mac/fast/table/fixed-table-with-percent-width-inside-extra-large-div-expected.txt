@@ -10,13 +10,13 @@ layer at (0,0) size 800x600
       RenderText {#text} at (0,0) size 0x0
 layer at (-9000,8) size 2000x28 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (-9000,8) size 2000x28
-    RenderTable {TABLE} at (0,0) size 2000x28 [bgcolor=#0000FF]
-      RenderTableSection {TBODY} at (0,0) size 2000x28
-        RenderTableRow {TR} at (0,2) size 2000x24
-          RenderTableCell {TD} at (2,2) size 1996x24 [r=0 c=0 rs=1 cs=1]
-            RenderTable {TABLE} at (1,1) size 1994x22 [bgcolor=#008000]
-              RenderTableSection {TBODY} at (0,0) size 1994x22
-                RenderTableRow {TR} at (0,2) size 1994x18
-                  RenderTableCell {TD} at (2,2) size 1990x18 [r=0 c=0 rs=1 cs=1]
+    LayoutTable {TABLE} at (0,0) size 2000x28 [bgcolor=#0000FF]
+      LayoutTableSection {TBODY} at (0,0) size 2000x28
+        LayoutTableRow {TR} at (0,2) size 2000x24
+          LayoutTableCell {TD} at (2,2) size 1996x24 [r=0 c=0 rs=1 cs=1]
+            LayoutTable {TABLE} at (1,1) size 1994x22 [bgcolor=#008000]
+              LayoutTableSection {TBODY} at (0,0) size 1994x22
+                LayoutTableRow {TR} at (0,2) size 1994x18
+                  LayoutTableCell {TD} at (2,2) size 1990x18 [r=0 c=0 rs=1 cs=1]
                     RenderText {#text} at (1,1) size 51x16
                       text run at (1,1) width 51: "Content"

@@ -8,10 +8,10 @@ layer at (0,0) size 800x150
           text run at (0,0) width 756: "This tests the interaction of overflow on some very wide text with auto table layout. The CSS 2.1 spec does not define"
           text run at (0,16) width 763: "how overflow interacts with intrinsic width, so we copy the IE behavior. Therefore the lines should come out very very"
           text run at (0,32) width 244: "wide and scroll along with the border."
-      RenderTable {TABLE} at (0,64) size 7422x62 [border: (1px solid #FF0000)]
-        RenderTableSection {TBODY} at (1,1) size 7420x60
-          RenderTableRow {TR} at (0,2) size 7420x56
-            RenderTableCell {TD} at (2,2) size 7416x56 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,64) size 7422x62 [border: (1px solid #FF0000)]
+        LayoutTableSection {TBODY} at (1,1) size 7420x60
+          LayoutTableRow {TR} at (0,2) size 7420x56
+            LayoutTableCell {TD} at (2,2) size 7416x56 [r=0 c=0 rs=1 cs=1]
 layer at (12,97) size 7414x28 backgroundClip at (12,97) size 788x28 clip at (13,98) size 787x26 outlineClip at (0,0) size 800x600
   RenderBlock {PRE} at (1,14) size 7414x28 [border: (1px solid #0000FF)]
     RenderText {#text} at (1,1) size 7412x26

@@ -12,10 +12,10 @@ layer at (0,0) size 800x600
           text run at (409,0) width 354: "It appears that any percentage heights cause cells to fill"
           text run at (0,16) width 148: "the entire table height. "
           text run at (147,16) width 546: "Note how cell 8 is correct but 2-7 are not, despite the cells all specifying height:30%."
-      RenderTable {TABLE} at (0,85.72) size 784x88 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 782x86
-          RenderTableRow {TR} at (0,0) size 782x86
-            RenderTableCell {TD} at (0,0) size 474x86 [bgcolor=#FFFF00] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,85.72) size 784x88 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x86
+          LayoutTableRow {TR} at (0,0) size 782x86
+            LayoutTableCell {TD} at (0,0) size 474x86 [bgcolor=#FFFF00] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (191,11) size 92x16
                 text run at (191,11) width 92: "Table Data #1"
               RenderBR {BR} at (282,23) size 1x0
@@ -27,31 +27,31 @@ layer at (0,0) size 800x600
               RenderBR {BR} at (301,55) size 1x0
               RenderText {#text} at (203,59) size 68x16
                 text run at (203,59) width 68: "of this cell"
-            RenderTableCell {TD} at (474,16) size 44x54 [bgcolor=#006000] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (474,16) size 44x54 [bgcolor=#006000] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (11,11) size 22x32
                 text run at (11,11) width 22: "TD"
                 text run at (14,27) width 16: "#2"
-            RenderTableCell {TD} at (518,16) size 44x54 [bgcolor=#00FFFF] [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (518,16) size 44x54 [bgcolor=#00FFFF] [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (11,11) size 22x32
                 text run at (11,11) width 22: "TD"
                 text run at (14,27) width 16: "#3"
-            RenderTableCell {TD} at (562,16) size 44x54 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (562,16) size 44x54 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
               RenderText {#text} at (11,11) size 22x32
                 text run at (11,11) width 22: "TD"
                 text run at (14,27) width 16: "#4"
-            RenderTableCell {TD} at (606,16) size 44x54 [bgcolor=#008000] [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
+            LayoutTableCell {TD} at (606,16) size 44x54 [bgcolor=#008000] [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
               RenderText {#text} at (11,11) size 22x32
                 text run at (11,11) width 22: "TD"
                 text run at (14,27) width 16: "#5"
-            RenderTableCell {TD} at (650,16) size 44x54 [bgcolor=#000080] [border: (1px inset #808080)] [r=0 c=5 rs=1 cs=1]
+            LayoutTableCell {TD} at (650,16) size 44x54 [bgcolor=#000080] [border: (1px inset #808080)] [r=0 c=5 rs=1 cs=1]
               RenderText {#text} at (11,11) size 22x32
                 text run at (11,11) width 22: "TD"
                 text run at (14,27) width 16: "#6"
-            RenderTableCell {TD} at (694,16) size 44x54 [bgcolor=#CACACA] [border: (1px inset #808080)] [r=0 c=6 rs=1 cs=1]
+            LayoutTableCell {TD} at (694,16) size 44x54 [bgcolor=#CACACA] [border: (1px inset #808080)] [r=0 c=6 rs=1 cs=1]
               RenderText {#text} at (11,11) size 22x32
                 text run at (11,11) width 22: "TD"
                 text run at (14,27) width 16: "#7"
-            RenderTableCell {TD} at (738,16) size 44x54 [bgcolor=#000000] [border: (1px inset #808080)] [r=0 c=7 rs=1 cs=1]
+            LayoutTableCell {TD} at (738,16) size 44x54 [bgcolor=#000000] [border: (1px inset #808080)] [r=0 c=7 rs=1 cs=1]
               RenderInline {FONT} at (0,0) size 22x32 [color=#FFFFFF]
                 RenderText {#text} at (11,11) size 22x32
                   text run at (11,11) width 22: "TD"

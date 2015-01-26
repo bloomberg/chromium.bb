@@ -19,10 +19,10 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,52) size 784x18
         RenderText {#text} at (0,0) size 209x17
           text run at (0,0) width 209: "This should say \x{201C}Lorem ipsum\x{201D}:"
-      RenderTable {DIV} at (0,86) size 86x18
-        RenderTableSection (anonymous) at (0,0) size 86x18
-          RenderTableRow (anonymous) at (0,0) size 86x18
-            RenderTableCell (anonymous) at (0,0) size 86x18 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (0,86) size 86x18
+        LayoutTableSection (anonymous) at (0,0) size 86x18
+          LayoutTableRow (anonymous) at (0,0) size 86x18
+            LayoutTableCell (anonymous) at (0,0) size 86x18 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 43x17
                 text run at (0,0) width 43: "Lorem"
               RenderText {#text} at (42,0) size 44x17
