@@ -11,7 +11,6 @@
  * - 525: spinner
  * - 550: autocomplete-suggestions
  * - 600: menus
- * - 600: tooltip
  * - 1000: preview thumbnail popup
  * - 1000: overlay panel (ie. image editor)
  */
@@ -300,52 +299,94 @@ div.splitter {
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
   align-items: center;
+  background: rgb(27, 168, 243);
+  color: white;
   display: flex;
   flex: none;
   flex-direction: row;
   height: 48px;
   margin: 0;
-  transition: all 180ms ease;
-}
-
-.dialog-header .volume-icon {
-  -webkit-margin-start: 10px;
-  background-position: center center;
-  background-repeat: no-repeat;
-  flex: none;
-  height: 24px;
-  width: 24px;
 }
 
 .dialog-header > .spacer {
   flex: auto;
 }
 
-/* Search box */
+.dialog-header button,
+.dialog-header paper-button {
+  height: 32px;
+  margin-right: 4px;
+  min-width: 32px;
+  width: 32px;
+}
 
+.dialog-header button,
+.dialog-header button:hover {
+  color: white;
+}
+
+.dialog-header button > core-icon,
+.dialog-header paper-button > core-icon {
+  height: 16px;
+  width: 16px;
+}
+
+.dialog-header paper-button::shadow > .button-content {
+  padding: 8px;
+}
+
+#gear-button {
+  -webkit-app-region: no-drag;
+  -webkit-margin-end: 10px;
+  background-color: transparent;
+  background-image: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 0;
+  box-shadow: none;
+  display: block;
+  height: 32px;
+  min-width: 0;
+  outline: none;
+  padding: 0;
+  width: 32px;
+}
+
+#gear-button > core-icon {
+  margin: 8px;
+}
+
+/* Search box */
 #search-box {
   display: flex;
   flex: none;
 }
 
 #search-box input {
-  background-color: #fff;
-  border-style: none;
-  color: #333;
   cursor: default;
-  display: block;
-  height: 48px;
-  line-height: 1em;
-  margin: 0;
-  max-width: 100%;
-  outline: none;
-  padding: 0;
+  display: inline-block;
   transition: width 0.2s ease;
   width: 0;
 }
 
 #search-box input::-webkit-search-cancel-button {
   -webkit-appearance: none;
+}
+
+#search-box paper-input-decorator {
+  margin-top: -4px;
+}
+
+#search-box paper-input-decorator /deep/ ::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+#search-box paper-input-decorator /deep/ .unfocused-underline {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+#search-box paper-input-decorator /deep/ .focused-underline {
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 #search-box.has-cursor input,
@@ -391,28 +432,6 @@ div.splitter {
   background-image: -webkit-image-set(
       url(../images/files/ui/search_clear_pressed.png) 1x,
       url(../images/files/ui/2x/search_clear_pressed.png) 2x);
-}
-
-.topbutton-bar {
-  flex: none;
-}
-
-.topbutton-bar .search-button {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/search_icon_active.png) 1x,
-      url(../images/files/ui/2x/search_icon_active.png) 2x);
-}
-
-.topbutton-bar .view-button.table {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/button_list_view.png) 1x,
-      url(../images/files/ui/2x/button_list_view.png) 2x);
-}
-
-.topbutton-bar .view-button.grid {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/button_mosaic_view.png) 1x,
-      url(../images/files/ui/2x/button_mosaic_view.png) 2x);
 }
 
 /* Container for the detail and thumbnail list views. */
@@ -477,6 +496,7 @@ div.splitter {
   flex: auto;
   flex-direction: row;
   line-height: 20px;
+  margin-left: 16px;
   overflow: hidden;
   padding-top: 1px;
 }
@@ -491,7 +511,6 @@ div.splitter {
 
 /* A single directory name in the list of path breadcrumbs. */
 .breadcrumb-path {
-  color: #141414;
   cursor: pointer;
   flex: none;
   overflow: hidden;
@@ -500,23 +519,14 @@ div.splitter {
 }
 
 /* The final breadcrumb, representing the current directory. */
-#search-breadcrumbs .breadcrumb-path.breadcrumb-last {
-  color: #141414;
+.breadcrumb-path.breadcrumb-last {
   cursor: default;
 }
 
 /* The > arrow between breadcrumbs. */
-
 .breadcrumbs .separator {
-  background-image: -webkit-image-set(
-    url(../images/files/ui/breadcrumb-separator.png) 1x,
-    url(../images/files/ui/2x/breadcrumb-separator.png) 2x);
-  background-position: center center;
-  background-repeat: no-repeat;
-  flex: none;
-  height: 10px;
-  overflow: hidden;
-  width: 25px;
+  height: 16px;
+  width: 16px;
 }
 
 html[dir='rtl'] .breadcrumbs .separator {
@@ -1354,73 +1364,6 @@ body[drive='error'] #unmounted-panel > .error,
   position: relative;
 }
 
-.buttonbar .tooltip,
-.topbutton-bar .tooltip {
-  right: -12px;
-  top: 35px;
-}
-
-/* Tooltips */
-.tooltip {
-  background: #2d2d2d;
-  border-radius: 0;
-  box-shadow: 1px 2px 4px #ccc;
-  box-sizing: border-box;
-  color: white;
-  display: block;
-  font-size: 11px;
-  font-weight: bold;
-  height: 29px;
-  line-height: 29px;
-  margin-left: -20px;
-  min-width: 50px;
-  opacity: 0;
-  outline: 1px solid rgba(255, 255, 255, 0.5);
-  padding: 0 10px;
-  pointer-events: none;
-  position: absolute;
-  text-align: center;
-  top: 5px;
-  white-space: nowrap;
-  z-index: 600;  /* Must be below the overlay pane (1000). */
-}
-
-.tooltip::after,
-.tooltip::before {
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: transparent;
-  content: '';
-  display: block;
-  margin-left: -5px;
-  position: absolute;
-  right: 24px;
-  top: -5px;
-}
-
-.tooltip::after {
-  border-bottom: 5px solid #2d2d2d;
-}
-
-.tooltip::before {
-  border-bottom: 5px solid rgba(255, 255, 255, 0.5);
-}
-
-/* Show with delay, disappear instantly */
-@-webkit-keyframes tooltip-show {
-  0% { opacity: 0; }
-  90% { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-:hover > .tooltip {
-  -webkit-animation-duration: 800ms;
-  -webkit-animation-iteration-count: 1;
-  -webkit-animation-name: tooltip-show;
-  -webkit-animation-timing-function: linear;
-  opacity: 1;
-}
-
 #no-search-results {
   bottom: 0;
   display: none;
@@ -1483,7 +1426,7 @@ list.autocomplete-suggestions {
   box-sizing: border-box;  /* To match the width with the search box's. */
   color: rgb(34, 34, 34);
   flex: none;
-  margin-top: -7px;
+  margin-top: 10px;
   overflow: hidden;
   padding: 5px 0;
   position: fixed;

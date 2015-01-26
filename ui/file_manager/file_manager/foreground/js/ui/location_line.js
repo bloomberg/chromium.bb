@@ -7,14 +7,12 @@
  * class.
  * @extends {cr.EventTarget}
  * @param {!Element} breadcrumbs Container element for breadcrumbs.
- * @param {!Element} volumeIcon Volume icon.
  * @param {!MetadataCache} metadataCache To retrieve metadata.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @constructor
  */
-function LocationLine(breadcrumbs, volumeIcon, metadataCache, volumeManager) {
+function LocationLine(breadcrumbs, metadataCache, volumeManager) {
   this.breadcrumbs_ = breadcrumbs;
-  this.volumeIcon_ = volumeIcon;
   this.metadataCache_ = metadataCache;
   this.volumeManager_ = volumeManager;
   this.entry_ = null;
@@ -46,31 +44,6 @@ LocationLine.prototype.show = function(entry) {
 
   this.entry_ = entry;
   this.showSequence_++;
-
-  // Clear the background image for the icon and the sub type (if any).
-  this.volumeIcon_.removeAttribute('style');
-  this.volumeIcon_.removeAttribute('volume-subtype');
-
-  // Updates volume icon.
-  var locationInfo = this.volumeManager_.getLocationInfo(entry);
-  if (locationInfo && locationInfo.rootType && locationInfo.isRootEntry) {
-    if (locationInfo.volumeInfo.volumeType ===
-            VolumeManagerCommon.VolumeType.PROVIDED) {
-      var extensionId = locationInfo.volumeInfo.extensionId;
-      var backgroundImage = '-webkit-image-set(' +
-          'url(chrome://extension-icon/' + extensionId + '/16/1) 1x, ' +
-          'url(chrome://extension-icon/' + extensionId + '/32/1) 2x);';
-      this.volumeIcon_.setAttribute(
-          'style', 'background-image: ' + backgroundImage);
-    }
-    this.volumeIcon_.setAttribute(
-        'volume-type-icon', locationInfo.rootType);
-  } else {
-    this.volumeIcon_.setAttribute(
-        'volume-type-icon', locationInfo.volumeInfo.volumeType);
-    this.volumeIcon_.setAttribute(
-        'volume-subtype', locationInfo.volumeInfo.deviceType || '');
-  }
 
   var queue = new AsyncUtil.Queue();
   var entries = [];
@@ -177,7 +150,8 @@ LocationLine.prototype.updateInternal_ = function(entries) {
     }
 
     // Add a separator.
-    var separator = doc.createElement('div');
+    var separator = doc.createElement('core-icon');
+    separator.setAttribute('icon', 'chevron-right');
     separator.className = 'separator';
     this.breadcrumbs_.appendChild(separator);
   }

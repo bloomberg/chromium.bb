@@ -366,15 +366,14 @@ FileManagerUI.prototype.relayout = function() {
 FileManagerUI.prototype.setCurrentListType = function(listType) {
   this.listContainer.setCurrentListType(listType);
 
+  var iconElement = queryRequiredElement(this.toggleViewButton, 'core-icon');
   switch (listType) {
     case ListContainer.ListType.DETAIL:
-      this.toggleViewButton.classList.remove('table');
-      this.toggleViewButton.classList.add('grid');
+      iconElement.icon = 'view-module';
       break;
 
     case ListContainer.ListType.THUMBNAIL:
-      this.toggleViewButton.classList.remove('grid');
-      this.toggleViewButton.classList.add('table');
+      iconElement.icon = 'view-list';
       break;
 
     default:

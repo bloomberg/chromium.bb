@@ -15,8 +15,6 @@
     <meta name="google" value="notranslate">
 
     <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
-    <link rel="stylesheet" href="chrome://resources/css/apps/topbutton_bar.css">
-
     <link rel="stylesheet" href="foreground/css/list.css">
     <link rel="stylesheet" href="foreground/css/table.css">
     <link rel="stylesheet" href="foreground/css/tree.css">
@@ -27,6 +25,13 @@
     <link rel="stylesheet" href="foreground/css/file_status.css">
     <link rel="stylesheet" href="foreground/css/file_types.css">
     <link rel="stylesheet" href="foreground/css/common.css">
+
+    <link rel="import" href="chrome://resources/polymer/core-icon/core-icon.html">
+    <link rel="import" href="chrome://resources/polymer/core-icons/core-icons.html">
+    <link rel="import" href="chrome://resources/polymer/core-input/core-input.html">
+    <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
+    <link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
+    <link rel="import" href="chrome://resources/polymer/paper-ripple/paper-ripple.html">
 
     <!-- Don't load main_scripts.js when flattening is disabled. -->
     <if expr="False"><!-- </if>
@@ -300,6 +305,29 @@
       <cr-menu-item command="#delete" i18n-content="DELETE_BUTTON_LABEL"></cr-menu-item>
     </cr-menu>
 
+    <div class="dialog-header">
+      <div id="location-breadcrumbs" class="breadcrumbs"></div>
+      <div class="spacer"></div>
+      <paper-button id="search-button" tabindex="7">
+        <core-icon icon="search"></core-icon>
+      </paper-button>
+      <div id="search-box">
+        <paper-input-decorator i18n-values="label:SEARCH_TEXT_LABEL">
+          <input is="core-input" type="search" tabindex="-1" i18n-values="aria-label:SEARCH_TEXT_LABEL">
+        </paper-input-decorator>
+        <button class="clear" tabindex="-1"></button>
+      </div>
+      <paper-button id="view-button" tabindex="8">
+        <core-icon icon="view-module"></core-icon>
+      </paper-button>
+      <button id="gear-button" tabindex="9" menu="#gear-menu"
+              i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
+              aria-activedescendant="gear-menu">
+        <core-icon icon="more-vert"></core-icon>
+        <paper-ripple fit></paper-ripple>
+      </button>
+    </div>
+
     <div class="dialog-container">
       <div class="dialog-navigation-list">
         <div class="dialog-navigation-list-contents">
@@ -327,25 +355,6 @@
       </div>
       <div class="splitter" id="navigation-list-splitter"></div>
       <div class="dialog-main">
-        <div class="dialog-header">
-          <span id="location-volume-icon" class="icon volume-icon"></span>
-          <div id="location-breadcrumbs" class="breadcrumbs"></div>
-          <div class="spacer"></div>
-          <div class="topbutton-bar">
-            <button class="menubutton icon search-button" id="search-button" tabindex="7"></button>
-            <div id="search-box">
-              <input type="search" tabindex="-1"
-                     i18n-values="aria-label:SEARCH_TEXT_LABEL;placeholder:SEARCH_TEXT_LABEL">
-              <button class="clear" tabindex="-1"></button>
-            </div>
-            <button class="menubutton view-button" id="view-button" tabindex="8"></button>
-            <button class="menubutton gear-button" id="gear-button" tabindex="9"
-                    menu="#gear-menu"
-                    i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
-                    aria-activedescendant="gear-menu">
-            </button>
-          </div>
-        </div>
         <div class="dialog-body">
           <div class="main-panel">
             <div class="filelist-panel">

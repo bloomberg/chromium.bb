@@ -749,7 +749,6 @@ FileManager.prototype = /** @struct */ {
             this.historyLoader_),
         new LocationLine(
             queryRequiredElement(dom, '#location-breadcrumbs'),
-            queryRequiredElement(dom, '#location-volume-icon'),
             this.metadataCache_,
             this.volumeManager_));
 
