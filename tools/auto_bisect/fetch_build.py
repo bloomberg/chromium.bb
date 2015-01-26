@@ -30,11 +30,12 @@ import bisect_utils
 # Possible builder types.
 PERF_BUILDER = 'perf'
 FULL_BUILDER = 'full'
+ANDROID_CHROME_PERF_BUILDER = 'android-chrome-perf'
 
 
 def GetBucketAndRemotePath(revision, builder_type=PERF_BUILDER,
                            target_arch='ia32', target_platform='chromium',
-                           deps_patch_sha=None):
+                           deps_patch_sha=None, extra_src=None):
   """Returns the location where a build archive is expected to be.
 
   Args:
@@ -44,12 +45,15 @@ def GetBucketAndRemotePath(revision, builder_type=PERF_BUILDER,
     target_platform: Platform name, e.g. "chromium" or "android".
     deps_patch_sha: SHA1 hash which identifies a particular combination of
         custom revisions for dependency repositories.
+    extra_src: Path to a script which can be used to modify the bisect script's
+        behavior.
 
   Returns:
     A pair of strings (bucket, path), where the archive is expected to be.
   """
   build_archive = BuildArchive.Create(
-      builder_type, target_arch=target_arch, target_platform=target_platform)
+      builder_type, target_arch=target_arch, target_platform=target_platform,
+      extra_src=extra_src)
   bucket = build_archive.BucketName()
   remote_path = build_archive.FilePath(revision, deps_patch_sha=deps_patch_sha)
   return bucket, remote_path
@@ -65,14 +69,26 @@ class BuildArchive(object):
   """
 
   @staticmethod
-  def Create(builder_type, target_arch='ia32', target_platform='chromium'):
+  def Create(builder_type, target_arch='ia32', target_platform='chromium',
+        extra_src=None):
     if builder_type == PERF_BUILDER:
       return PerfBuildArchive(target_arch, target_platform)
     if builder_type == FULL_BUILDER:
       return FullBuildArchive(target_arch, target_platform)
+    if builder_type == ANDROID_CHROME_PERF_BUILDER:
+      try:
+        # Load and initialize a module in extra source file and
+        # return its module object to access android-chrome specific data.
+        loaded_extra_src = bisect_utils.LoadExtraSrc(extra_src)
+        return AndroidChromeBuildArchive(
+            target_arch, target_platform, loaded_extra_src)
+      except (IOError, TypeError, ImportError):
+        raise RuntimeError('Invalid or missing --extra_src. [%s]' % extra_src)
     raise NotImplementedError('Builder type "%s" not supported.' % builder_type)
 
-  def __init__(self, target_arch='ia32', target_platform='chromium'):
+  def __init__(self, target_arch='ia32', target_platform='chromium',
+               extra_src=None):
+    self._extra_src = extra_src
     if bisect_utils.IsLinuxHost() and target_platform == 'android':
       self._platform = 'android'
     elif bisect_utils.IsLinuxHost():
@@ -185,6 +201,43 @@ class FullBuildArchive(BuildArchive):
     }
     assert self._platform in platform_to_directory
     return platform_to_directory.get(self._platform)
+
+
+class AndroidChromeBuildArchive(BuildArchive):
+  """Represents a place where builds of android-chrome type are stored.
+
+  If AndroidChromeBuildArchive is used, it is assumed that the --extra_src
+  is a valid Python module which contains the module-level functions
+  GetBucketName and GetArchiveDirectory.
+  """
+
+  def BucketName(self):
+    return self._extra_src.GetBucketName()
+
+  def _ZipFileName(self, revision, deps_patch_sha=None):
+    """Gets the file name of a zip archive on android-chrome.
+
+    This returns a file name of the form build_product_<revision>.zip,
+    which is a format used by android-chrome.
+
+    Args:
+      revision: A git commit hash or other revision string.
+      deps_patch_sha: SHA1 hash of a DEPS file patch.
+
+    Returns:
+      The archive file name.
+    """
+    if deps_patch_sha:
+      revision = '%s_%s' % (revision, deps_patch_sha)
+    return 'build_product_%s.zip' % revision
+
+  def FilePath(self, revision, deps_patch_sha=None):
+    return '%s/%s' % (self._ArchiveDirectory(),
+                      self._ZipFileName(revision, deps_patch_sha))
+
+  def _ArchiveDirectory(self):
+    """Returns the directory name to download builds from."""
+    return self._extra_src.GetArchiveDirectory()
 
 
 def BuildIsAvailable(bucket_name, remote_path):
