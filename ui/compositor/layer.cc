@@ -729,7 +729,7 @@ void Layer::RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
 void Layer::PaintContents(SkCanvas* sk_canvas,
                           const gfx::Rect& clip,
                           ContentLayerClient::GraphicsContextStatus gc_status) {
-  TRACE_EVENT0("ui", "Layer::PaintContents");
+  TRACE_EVENT1("ui", "Layer::PaintContents", "name", name_);
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
       sk_canvas, device_scale_factor_));
   if (delegate_)
