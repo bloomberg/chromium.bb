@@ -51,6 +51,9 @@ enum BorderElements {
 
 namespace views {
 
+// static
+const char Slider::kViewClassName[] = "Slider";
+
 Slider::Slider(SliderListener* listener, Orientation orientation)
     : listener_(listener),
       orientation_(orientation),
@@ -184,6 +187,10 @@ void Slider::OnPaintFocus(gfx::Canvas* canvas) {
         gfx::Rect(1, 1, width() - 3, height() - 3),
         focus_border_color_);
   }
+}
+
+const char* Slider::GetClassName() const {
+  return kViewClassName;
 }
 
 gfx::Size Slider::GetPreferredSize() const {

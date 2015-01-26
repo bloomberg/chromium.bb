@@ -28,6 +28,9 @@ class Painter;
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT ImageView : public View {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   enum Alignment {
     LEADING = 0,
     CENTER,
@@ -85,6 +88,7 @@ class VIEWS_EXPORT ImageView : public View {
   void OnBlur() override;
   void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleState(ui::AXViewState* state) override;
+  const char* GetClassName() const override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
   bool CanProcessEventsWithinSubtree() const override;

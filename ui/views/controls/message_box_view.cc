@@ -66,6 +66,9 @@ namespace views {
 ///////////////////////////////////////////////////////////////////////////////
 // MessageBoxView, public:
 
+// static
+const char MessageBoxView::kViewClassName[] = "MessageBoxView";
+
 MessageBoxView::InitParams::InitParams(const base::string16& message)
     : options(NO_OPTIONS),
       message(message),
@@ -156,6 +159,10 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
     text += message_labels_[i]->text();
   scw.WriteText(text);
   return true;
+}
+
+const char* MessageBoxView::GetClassName() const {
+  return kViewClassName;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

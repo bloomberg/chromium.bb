@@ -52,6 +52,9 @@ class VIEWS_EXPORT TableView
     : public views::View,
       public ui::TableModelObserver {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   // Used to track a visible column. Useful only for the header.
   struct VIEWS_EXPORT VisibleColumn {
     VisibleColumn();
@@ -166,6 +169,7 @@ class VIEWS_EXPORT TableView
 
   // View overrides:
   void Layout() override;
+  const char* GetClassName() const override;
   gfx::Size GetPreferredSize() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

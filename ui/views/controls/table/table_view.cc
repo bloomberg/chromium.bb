@@ -118,6 +118,9 @@ TableView::PaintRegion::PaintRegion()
 
 TableView::PaintRegion::~PaintRegion() {}
 
+// static
+const char TableView::kViewClassName[] = "TableView";
+
 TableView::TableView(ui::TableModel* model,
                      const std::vector<ui::TableColumn>& columns,
                      TableTypes table_type,
@@ -319,6 +322,10 @@ void TableView::Layout() {
     height = std::max(parent()->height(), height);
   }
   SetBounds(x(), y(), width, height);
+}
+
+const char* TableView::GetClassName() const {
+  return kViewClassName;
 }
 
 gfx::Size TableView::GetPreferredSize() const {

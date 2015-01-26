@@ -29,6 +29,9 @@ class StyledLabelListener;
 // In this case, leading whitespace is ignored.
 class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   // Parameters that define label style for a styled label's text range.
   struct VIEWS_EXPORT RangeStyleInfo {
     RangeStyleInfo();
@@ -90,7 +93,8 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
     auto_color_readability_enabled_ = auto_color_readability;
   }
 
-  // View implementation:
+  // views::View:
+  const char* GetClassName() const override;
   gfx::Insets GetInsets() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;

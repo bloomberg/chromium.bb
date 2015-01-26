@@ -26,6 +26,9 @@ void* GetBitmapPixels(const gfx::ImageSkia& img, float image_scale) {
 
 }  // namespace
 
+// static
+const char ImageView::kViewClassName[] = "ImageView";
+
 ImageView::ImageView()
     : image_size_set_(false),
       horiz_alignment_(CENTER),
@@ -164,6 +167,10 @@ void ImageView::OnPaint(gfx::Canvas* canvas) {
 void ImageView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_IMAGE;
   state->name = tooltip_text_;
+}
+
+const char* ImageView::GetClassName() const {
+  return kViewClassName;
 }
 
 void ImageView::SetHorizontalAlignment(Alignment ha) {

@@ -40,6 +40,8 @@ const int kSortIndicatorSize = 8;
 }  // namespace
 
 // static
+const char TableHeader::kViewClassName[] = "TableHeader";
+// static
 const int TableHeader::kHorizontalPadding = 7;
 // static
 const int TableHeader::kSortIndicatorWidth = kSortIndicatorSize +
@@ -157,6 +159,10 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
       canvas->DrawPath(indicator_path, paint);
     }
   }
+}
+
+const char* TableHeader::GetClassName() const {
+  return kViewClassName;
 }
 
 gfx::Size TableHeader::GetPreferredSize() const {

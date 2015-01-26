@@ -16,6 +16,9 @@ class TableView;
 // Views used to render the header for the table.
 class VIEWS_EXPORT TableHeader : public views::View {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   // Amount the text is padded on the left/right side.
   static const int kHorizontalPadding;
 
@@ -30,6 +33,7 @@ class VIEWS_EXPORT TableHeader : public views::View {
   // views::View overrides.
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
   gfx::Size GetPreferredSize() const override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

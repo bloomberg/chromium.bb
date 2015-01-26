@@ -47,6 +47,9 @@ class VIEWS_EXPORT SliderListener {
 
 class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   enum Orientation {
     HORIZONTAL,
     VERTICAL
@@ -94,6 +97,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   void OnSliderDragEnded();
 
   // views::View overrides:
+  const char* GetClassName() const override;
   gfx::Size GetPreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

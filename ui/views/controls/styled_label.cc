@@ -92,6 +92,9 @@ bool StyledLabel::StyleRange::operator<(
 
 // StyledLabel ----------------------------------------------------------------
 
+// static
+const char StyledLabel::kViewClassName[] = "StyledLabel";
+
 StyledLabel::StyledLabel(const base::string16& text,
                          StyledLabelListener* listener)
     : specified_line_height_(0),
@@ -154,6 +157,10 @@ void StyledLabel::SetDisplayedOnBackgroundColor(SkColor color) {
            (child_at(i)->GetClassName() == Link::kViewClassName));
     static_cast<Label*>(child_at(i))->SetBackgroundColor(color);
   }
+}
+
+const char* StyledLabel::GetClassName() const {
+  return kViewClassName;
 }
 
 gfx::Insets StyledLabel::GetInsets() const {
