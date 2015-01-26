@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "third_party/WebKit/public/platform/WebScheduler.h"
+#include "third_party/WebKit/public/platform/WebThread.h"
 
 namespace content {
 
@@ -23,11 +24,14 @@ class WebSchedulerImpl : public blink::WebScheduler {
   virtual bool shouldYieldForHighPriorityWork();
   virtual void postIdleTask(const blink::WebTraceLocation& location,
                             blink::WebScheduler::IdleTask* task);
+  virtual void postLoadingTask(const blink::WebTraceLocation& location,
+                               blink::WebThread::Task* task);
   virtual void shutdown();
 
  private:
   static void runIdleTask(scoped_ptr<blink::WebScheduler::IdleTask> task,
                           base::TimeTicks deadline);
+  static void runTask(scoped_ptr<blink::WebThread::Task> task);
 
   RendererScheduler* renderer_scheduler_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
