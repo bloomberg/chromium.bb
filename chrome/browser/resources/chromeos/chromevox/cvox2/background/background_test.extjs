@@ -166,7 +166,8 @@ TEST_F('BackgroundTest', 'CaretNavigation', function() {
   }.bind(this));
 });
 
-TEST_F('BackgroundTest', 'SelectSingleBasic', function() {
+// Flaky: http://crbug.com/451362
+TEST_F('BackgroundTest', 'DISABLED_SelectSingleBasic', function() {
   this.runWithDocument(this.formsDoc, function(tabId) {
     var sendDownToSelect =
         this.sendKeyToElement.bind(this, tabId, 'Down', '#fruitSelect');
