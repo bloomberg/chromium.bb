@@ -205,7 +205,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const RenderO
     // Optimizing this fully would avoid layer explosion in pathological cases like '*' rules.
     // We could consider tracking the current state in CompositingRequirementsUpdater::update.
 
-    // Ensure iframes don't get composited when they require no more blocking than the root.
+    // Ensure iframes don't get composited when they require no more blocking than their parent.
     if (renderer->isRenderView()) {
         if (const FrameView* parentFrame = toRenderView(renderer)->frameView()->parentFrameView()) {
             if (const RenderView* parentRenderer = parentFrame->renderView()) {
@@ -213,6 +213,11 @@ bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const RenderO
                 if (!(style->scrollBlocksOn() & ~parentRenderer->style()->scrollBlocksOn()))
                     return false;
             }
+        } else {
+            // The root frame will either always already be composited, or compositing will be disabled.
+            // Either way, we don't need to require compositing for scroll blocks on.  This avoids
+            // enabling compositing by default, and avoids cluttering the root layers compositing reasons.
+            return false;
         }
     }
 
