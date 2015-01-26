@@ -2,19 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Stage the image on a Moblab device."""
+"""Stage a custom image on a Moblab device or in Google Storage."""
 
 from __future__ import print_function
 
 import httplib
 import logging
 import os
+import shutil
 import urllib2
 
 from chromite import cros
 from chromite.cbuildbot import commands, constants
 from chromite.lib import cros_build_lib
 from chromite.lib import dev_server_wrapper
+from chromite.lib import gs
 from chromite.lib import remote_access
 from chromite.lib import osutils
 
@@ -29,12 +31,14 @@ DEVSERVER_STAGE_URL = ('http://%(moblab)s:8080/stage?local_path=%(staged_dir)s'
 
 
 class CustomImageStagingException(Exception):
-  """Thrown when there is an error staging an custom image on Moblab"""
+  """Thrown when there is an error staging an custom image."""
 
 
-@cros.CommandDecorator('stage-on-moblab')
-class StageOnMoblabCommand(cros.CrosCommand):
-  """Converts a locally generated image so that it can be staged on a Moblab.
+@cros.CommandDecorator('stage')
+class StageCommand(cros.CrosCommand):
+  """Converts a locally generated image so that it can be staged remotely.
+
+  The image can be staged either on Google Storage or on a local Moblab device.
 
   Moblab can only reimage and test devices if the specified image has:
     * stateful.tgz
@@ -47,7 +51,7 @@ class StageOnMoblabCommand(cros.CrosCommand):
   generated.
 
   Once generated, the artifacts need to be simply copied over to the Moblab's
-  devserver's static directory.
+  devserver's static directory or into the specified Google Storage Bucket.
 
   The image name to then use for testing is output at the end of this
   script.
@@ -55,7 +59,11 @@ class StageOnMoblabCommand(cros.CrosCommand):
 
   EPILOG = """
 To stage a local image path onto a moblab device:
-  cros stage-on-moblab <moblab> /path/to/board/build/chromiumos-test-image.bin
+  cros stage /path/to/board/build/chromiumos-test-image.bin <moblab>
+
+To stage a local image path into a Google Storage Bucket:
+  cros stage /path/to/board/build/chromiumos-test-image.bin <gs_base_path>
+    --boto_file=<boto_file_path>
 
 NOTES:
 * The autotest bits used to test this image will be the latest in your
@@ -68,22 +76,30 @@ NOTES:
   @classmethod
   def AddParser(cls, parser):
     """Add parser arguments."""
-    super(StageOnMoblabCommand, cls).AddParser(parser)
-    parser.add_argument(
-        'moblab', help='ssh://device_hostname[:port] or usb://{device_path}. '
-        'If no device_path is given (i.e. usb://), user will be prompted to '
-        'choose from a list of removable devices.')
+    super(StageCommand, cls).AddParser(parser)
     parser.add_argument(
         'image', nargs='?', default='latest', help='Path to image we want to '
         'stage. It should be in the format of '
         '/.../.../board/build/<image>.bin')
+    parser.add_argument(
+        'remote', help='MobLab device that has password-less SSH set up via '
+        'the chroot already. Or Google Storage Bucket in the form of '
+        'gs://bucket-name/')
+    parser.add_argument(
+        '--boto_file', dest='boto_file', default=None,
+        help='Path to boto file to use when uploading to Google Storage. If '
+        'none the default chroot boto file is used.')
 
   def __init__(self, options):
-    """Initializes cros stage-on-moblab."""
+    """Initializes cros stage."""
     cros.CrosCommand.__init__(self, options)
     self.board = None
     self.staged_image_name = self._GenerateImageName(self.options.image)
     self.stage_directory = os.path.join(MOBLAB_TMP_DIR, self.staged_image_name)
+    if self.options.remote.startswith('gs://'):
+      self._remote_is_moblab = False
+    else:
+      self._remote_is_moblab = True
 
   def _GenerateImageName(self, image):
     """Generate the name as which |image| will be staged onto Moblab.
@@ -112,27 +128,22 @@ NOTES:
     self.board = os.path.basename(os.path.dirname(os.path.dirname(realpath)))
     return '%s-custom/%s' % (self.board, build_name)
 
-  def _GeneratePayloads(self, device, tempdir):
-    """Generate the Payloads we require and copy them to the Moblab.
+  def _GeneratePayloads(self, tempdir):
+    """Generate the update payloads we require.
 
     Args:
-      device: ChromiumOSDevice instance of the Moblab host.
       tempdir: Temporary Directory to store the generated payloads.
     """
     dev_server_wrapper.GetUpdatePayloadsFromLocalPath(
         self.options.image, tempdir, static_dir=DEVSERVER_STATIC_DIR)
     rootfs_payload = os.path.join(tempdir, dev_server_wrapper.ROOTFS_FILENAME)
-    stateful_payload = os.path.join(tempdir,
-                                    dev_server_wrapper.STATEFUL_FILENAME)
-    device.CopyToDevice(stateful_payload, self.stage_directory)
-    device.CopyToDevice(rootfs_payload, os.path.join(self.stage_directory,
-                                                     'update_full_dev.bin'))
+    # Devservers will look for a file named *_full_*.
+    shutil.move(rootfs_payload, os.path.join(tempdir, 'update_full_dev.bin'))
 
-  def _GenerateTestBits(self, device, tempdir):
+  def _GenerateTestBits(self, tempdir):
     """Generate and transfer to the Moblab the test bits we require.
 
     Args:
-      device: ChromiumOSDevice instance of the Moblab host.
       tempdir: Temporary Directory to store the generated test artifacts.
     """
     build_root = cros_build_lib.GetSysroot(board=self.board)
@@ -141,24 +152,23 @@ NOTES:
                      commands.BuildAutotestPackagesTarball,
                      commands.BuildAutotestTestSuitesTarball]
     for tarball_func in tarball_funcs:
-      tarball_path = tarball_func(build_root, cwd, tempdir)
-      device.CopyToDevice(tarball_path, self.stage_directory)
+      tarball_func(build_root, cwd, tempdir)
 
-  def Run(self):
-    """Perform the cros stage-on-moblab command."""
-    logging.info('Attempting to stage: %s on Moblab: %s as Image: %s',
-                 self.options.image, self.options.moblab,
-                 self.staged_image_name)
-    with remote_access.ChromiumOSDeviceHandler(
-        self.options.moblab) as device:
+  def _StageOnMoblab(self, tempdir):
+    """Stage the generated payloads and test bits on a moblab device.
+
+    Args:
+      tempdir: Temporary Directory that contains the generated payloads and
+               test bits.
+    """
+    with remote_access.ChromiumOSDeviceHandler(self.options.remote) as device:
       device.RunCommand(['mkdir', '-p', self.stage_directory])
-      with osutils.TempDir() as tempdir:
-        self._GeneratePayloads(device, tempdir)
-        self._GenerateTestBits(device, tempdir)
+      for f in os.listdir(tempdir):
+        device.CopyToDevice(os.path.join(tempdir, f), self.stage_directory)
       device.RunCommand(['chown', '-R', 'moblab:moblab',
                          MOBLAB_TMP_DIR])
       try:
-        stage_url = DEVSERVER_STAGE_URL % dict(moblab=self.options.moblab,
+        stage_url = DEVSERVER_STAGE_URL % dict(moblab=self.options.remote,
                                                staged_dir=self.stage_directory)
         res = urllib2.urlopen(stage_url).read()
       except (urllib2.HTTPError, httplib.HTTPException, urllib2.URLError) as e:
@@ -172,3 +182,31 @@ NOTES:
           logging.info('Staging failed. Error Message: %s', res)
       finally:
         device.RunCommand(['rm', '-rf', self.stage_directory])
+
+  def _StageOnGS(self, tempdir):
+    """Stage the generated payloads and test bits into a Google Storage bucket.
+
+    Args:
+      tempdir: Temporary Directory that contains the generated payloads and
+               test bits.
+    """
+    gs_context = gs.GSContext(boto_file=self.options.boto_file)
+    for f in os.listdir(tempdir):
+      gs_context.CopyInto(os.path.join(tempdir, f), os.path.join(
+          self.options.remote, self.staged_image_name))
+    logging.info('\n\nStaging Completed!')
+    logging.info('Image is staged in Google Storage as %s',
+                 self.staged_image_name)
+
+  def Run(self):
+    """Perform the cros stage command."""
+    logging.info('Attempting to stage: %s as Image: %s at Location: %s',
+                 self.options.image, self.staged_image_name,
+                 self.options.remote)
+    with osutils.TempDir() as tempdir:
+      self._GeneratePayloads(tempdir)
+      self._GenerateTestBits(tempdir)
+      if self._remote_is_moblab:
+        self._StageOnMoblab(tempdir)
+      else:
+        self._StageOnGS(tempdir)
