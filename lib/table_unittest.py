@@ -31,6 +31,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
   ROW2 = {COL0: 'Abc', COL1: 'Nop', COL2: 'Wxy', COL3: 'Bar'}
 
   EXTRAROW = {COL1: 'Walk', COL2: 'The', COL3: 'Line'}
+  EXTRAROWOUT = {COL0: '', COL1: 'Walk', COL2: 'The', COL3: 'Line'}
 
   ROW0a = {COL0: 'Xyz', COL1: 'Bcd', COL2: 'Cde', COL3: 'Yay'}
   ROW0b = {COL0: 'Xyz', COL1: 'Bcd', COL2: 'Cde', COL3: 'Boo'}
@@ -125,24 +126,24 @@ class TableTest(cros_test_lib.TempDirTestCase):
     self.assertEquals([1], indices)
 
   def testAppendRowDict(self):
-    self._table.AppendRow(self.EXTRAROW)
+    self._table.AppendRow(dict(self.EXTRAROW))
     self.assertEquals(4, self._table.GetNumRows())
-    self.assertEquals(self.EXTRAROW, self._table[len(self._table) - 1])
+    self.assertEquals(self.EXTRAROWOUT, self._table[len(self._table) - 1])
 
   def testAppendRowList(self):
     self._table.AppendRow(self._GetRowValsInOrder(self.EXTRAROW))
     self.assertEquals(4, self._table.GetNumRows())
-    self.assertEquals(self.EXTRAROW, self._table[len(self._table) - 1])
+    self.assertEquals(self.EXTRAROWOUT, self._table[len(self._table) - 1])
 
   def testSetRowDictByIndex(self):
-    self._table.SetRowByIndex(1, self.EXTRAROW)
+    self._table.SetRowByIndex(1, dict(self.EXTRAROW))
     self.assertEquals(3, self._table.GetNumRows())
-    self.assertEquals(self.EXTRAROW, self._table[1])
+    self.assertEquals(self.EXTRAROWOUT, self._table[1])
 
   def testSetRowListByIndex(self):
     self._table.SetRowByIndex(1, self._GetRowValsInOrder(self.EXTRAROW))
     self.assertEquals(3, self._table.GetNumRows())
-    self.assertEquals(self.EXTRAROW, self._table[1])
+    self.assertEquals(self.EXTRAROWOUT, self._table[1])
 
   def testRemoveRowByIndex(self):
     self._table.RemoveRowByIndex(1)
