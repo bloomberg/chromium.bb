@@ -11,21 +11,20 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
-#include "components/cloud_devices/common/printer_description.h"
 #include "net/base/url_util.h"
-#include "printing/pwg_raster_settings.h"
-#include "printing/units.h"
-#include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/local_discovery/pwg_raster_converter.h"
+#include "components/cloud_devices/common/printer_description.h"
+#include "printing/pdf_render_settings.h"
+#include "printing/pwg_raster_settings.h"
+#include "printing/units.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/text_elider.h"
 #endif  // ENABLE_PRINT_PREVIEW
-
-using namespace cloud_devices::printer;
 
 namespace cloud_print {
 extern const char kContentTypeJSON[];
@@ -390,81 +389,6 @@ void PrivetJSONOperationImpl::OnNeedPrivetToken(
   privet_client_->RefreshPrivetToken(callback);
 }
 
-PrivetDataReadOperationImpl::PrivetDataReadOperationImpl(
-    PrivetHTTPClient* privet_client,
-    const std::string& path,
-    const std::string& query_params,
-    const PrivetDataReadOperation::ResultCallback& callback)
-    : privet_client_(privet_client),
-      path_(path),
-      query_params_(query_params),
-      callback_(callback),
-      has_range_(false),
-      save_to_file_(false) {
-}
-
-PrivetDataReadOperationImpl::~PrivetDataReadOperationImpl() {
-}
-
-
-void PrivetDataReadOperationImpl::Start() {
-  url_fetcher_ = privet_client_->CreateURLFetcher(
-      CreatePrivetParamURL(path_, query_params_), net::URLFetcher::GET, this);
-  url_fetcher_->DoNotRetryOnTransientError();
-
-  if (has_range_) {
-    url_fetcher_->SetByteRange(range_start_, range_end_);
-  }
-
-  if (save_to_file_) {
-    url_fetcher_->SaveResponseToFile();
-  }
-
-  url_fetcher_->Start();
-}
-
-void PrivetDataReadOperationImpl::SetDataRange(int range_start, int range_end) {
-  has_range_ = true;
-  range_start_ = range_start;
-  range_end_ = range_end;
-}
-
-void PrivetDataReadOperationImpl::SaveDataToFile() {
-  save_to_file_ = false;
-}
-
-PrivetHTTPClient* PrivetDataReadOperationImpl::GetHTTPClient() {
-  return privet_client_;
-}
-
-void PrivetDataReadOperationImpl::OnError(
-    PrivetURLFetcher* fetcher,
-    PrivetURLFetcher::ErrorType error) {
-  callback_.Run(RESPONSE_TYPE_ERROR, std::string(), base::FilePath());
-}
-
-void PrivetDataReadOperationImpl::OnParsedJson(
-    PrivetURLFetcher* fetcher,
-    const base::DictionaryValue& value,
-    bool has_error) {
-  NOTREACHED();
-}
-
-void PrivetDataReadOperationImpl::OnNeedPrivetToken(
-    PrivetURLFetcher* fetcher,
-    const PrivetURLFetcher::TokenCallback& callback) {
-  privet_client_->RefreshPrivetToken(callback);
-}
-
-bool PrivetDataReadOperationImpl::OnRawData(PrivetURLFetcher* fetcher,
-                                            bool is_file,
-                                            const std::string& data_str,
-                                            const base::FilePath& file_path) {
-  ResponseType type = (is_file) ? RESPONSE_TYPE_FILE : RESPONSE_TYPE_STRING;
-  callback_.Run(type, data_str, file_path);
-  return true;
-}
-
 #if defined(ENABLE_PRINT_PREVIEW)
 PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
     PrivetHTTPClient* privet_client,
@@ -528,6 +452,7 @@ void PrivetLocalPrintOperationImpl::OnPrivetInfoDone(
 
 void PrivetLocalPrintOperationImpl::StartInitialRequest() {
   use_pdf_ = false;
+  using namespace cloud_devices::printer;
   ContentTypesCapability content_types;
   if (content_types.LoadFrom(capabilities_)) {
     use_pdf_ = content_types.Contains(kPrivetContentTypePDF) ||
@@ -550,7 +475,7 @@ void PrivetLocalPrintOperationImpl::DoCreatejob() {
       &PrivetLocalPrintOperationImpl::OnCreatejobResponse,
       base::Unretained(this));
 
-  url_fetcher_= privet_client_->CreateURLFetcher(
+  url_fetcher_ = privet_client_->CreateURLFetcher(
       CreatePrivetURL(kPrivetCreatejobPath), net::URLFetcher::POST, this);
   url_fetcher_->SetUploadData(cloud_print::kContentTypeJSON,
                               ticket_.ToString());
@@ -598,8 +523,8 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
                                     kPrivetURLValueOffline);
   }
 
-  url_fetcher_= privet_client_->CreateURLFetcher(
-      url, net::URLFetcher::POST, this);
+  url_fetcher_ =
+      privet_client_->CreateURLFetcher(url, net::URLFetcher::POST, this);
 
   if (!use_pdf_) {
     url_fetcher_->SetUploadFilePath(kPrivetContentTypePWGRaster,
@@ -623,6 +548,7 @@ void PrivetLocalPrintOperationImpl::StartPrinting() {
 
 void PrivetLocalPrintOperationImpl::FillPwgRasterSettings(
     printing::PwgRasterSettings* transform_settings) {
+  using namespace cloud_devices::printer;
   PwgRasterConfigCapability raster_capability;
   // If the raster capability fails to load, raster_capability will contain
   // the default value.
@@ -803,7 +729,7 @@ void PrivetLocalPrintOperationImpl::SetCapabilities(
 
 void PrivetLocalPrintOperationImpl::SetUsername(const std::string& user) {
   DCHECK(!started_);
-  user_= user;
+  user_ = user;
 }
 
 void PrivetLocalPrintOperationImpl::SetJobname(const std::string& jobname) {

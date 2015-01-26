@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/local_discovery/privet_url_fetcher.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/extensions/api/gcd_private.h"
 
 namespace base {
@@ -54,21 +54,6 @@ class PrivetV3Session {
                    const MessageCallback& callback);
 
  private:
-  // Represents request in progress using secure session.
-  class Request {
-   public:
-    Request();
-    virtual ~Request();
-
-    virtual void OnError() = 0;
-    virtual void OnParsedJson(const base::DictionaryValue& value,
-                              bool has_error) = 0;
-
-   private:
-    friend class PrivetV3Session;
-    scoped_ptr<FetcherDelegate> fetcher_delegate_;
-  };
-
   void RunCallback(const base::Closure& callback);
   void DeleteFetcher(const FetcherDelegate* fetcher);
 

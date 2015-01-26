@@ -8,7 +8,9 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/privet_http.h"
+#include "chrome/browser/local_discovery/privet_url_fetcher.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
+#include "url/gurl.h"
 
 namespace local_discovery {
 
@@ -91,12 +93,6 @@ void PrivetV3Session::FetcherDelegate::DeleteThis() {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&PrivetV3Session::DeleteFetcher, session_,
                             base::Unretained(this)));
-}
-
-PrivetV3Session::Request::Request() {
-}
-
-PrivetV3Session::Request::~Request() {
 }
 
 PrivetV3Session::PrivetV3Session(scoped_ptr<PrivetHTTPClient> client)
