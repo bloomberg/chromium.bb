@@ -661,37 +661,6 @@ struct GenerateTraits<base::DictionaryValue> {
 };
 
 template <>
-struct GenerateTraits<GURL> {
-  static bool Generate(GURL *p, Generator* generator) {
-    const char url_chars[] = "Ahtp0:/.?+\\%&#";
-    size_t count = RandInRange(100);
-    std::string random_url;
-    for (size_t i = 0; i < count; ++i)
-      random_url += url_chars[RandInRange(sizeof(url_chars) - 1)];
-    int selector = RandInRange(10);
-    if (selector == 0)
-      random_url = std::string("http://") + random_url;
-    else if (selector == 1)
-      random_url = std::string("file://") + random_url;
-    else if (selector == 2)
-      random_url = std::string("javascript:") + random_url;
-    else if (selector == 2)
-      random_url = std::string("data:") + random_url;
-    *p = GURL(random_url);
-    return true;
-  }
-};
-
-// FIXME: Actually generate something.
-template <>
-struct GenerateTraits<SkBitmap> {
-  static bool Generate(SkBitmap* p, Generator* generator) {
-    *p = SkBitmap();
-    return true;
-  }
-};
-
-template <>
 struct GenerateTraits<cc::CompositorFrame> {
   // FIXME: this should actually generate something
   static bool Generate(cc::CompositorFrame* p, Generator* generator) {
@@ -827,9 +796,85 @@ struct GenerateTraits<content::PageState> {
 };
 
 template <>
+struct GenerateTraits<dns_prefetch::LookupRequest> {
+  static bool Generate(dns_prefetch::LookupRequest* p, Generator* generator) {
+    dns_prefetch::LookupRequest request;
+    if (!GenerateParam(&request.hostname_list, generator))
+      return false;
+    *p = request;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<extensions::URLPatternSet> {
+  static bool Generate(extensions::URLPatternSet* p, Generator* generator) {
+    std::set<URLPattern> patterns;
+    if (!GenerateParam(&patterns, generator))
+      return false;
+    *p = extensions::URLPatternSet(patterns);
+    return true;
+  }
+};
+
+template <>
 struct GenerateTraits<gpu::Mailbox> {
   static bool Generate(gpu::Mailbox *p, Generator* generator) {
     generator->GenerateBytes(p->name, sizeof(p->name));
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<gpu::MailboxHolder> {
+  static bool Generate(gpu::MailboxHolder *p, Generator* generator) {
+    gpu::Mailbox mailbox;
+    uint32_t texture_target;
+    uint32_t sync_point;
+    if (!GenerateParam(&mailbox, generator))
+      return false;
+    if (!GenerateParam(&texture_target, generator))
+      return false;
+    if (!GenerateParam(&sync_point, generator))
+      return false;
+    *p = gpu::MailboxHolder(mailbox, texture_target, sync_point);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<gpu::ValueState> {
+  static bool Generate(gpu::ValueState* p, Generator* generator) {
+    gpu::ValueState state;
+    for (int i = 0; i < 4; i++) {
+      if (!GenerateParam(&state.float_value[i], generator))
+        return false;
+      if (!GenerateParam(&state.int_value[i], generator))
+        return false;
+    }
+    *p = state;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<GURL> {
+  static bool Generate(GURL *p, Generator* generator) {
+    const char url_chars[] = "Ahtp0:/.?+\\%&#";
+    size_t count = RandInRange(100);
+    std::string random_url;
+    for (size_t i = 0; i < count; ++i)
+      random_url += url_chars[RandInRange(sizeof(url_chars) - 1)];
+    int selector = RandInRange(10);
+    if (selector == 0)
+      random_url = std::string("http://") + random_url;
+    else if (selector == 1)
+      random_url = std::string("file://") + random_url;
+    else if (selector == 2)
+      random_url = std::string("javascript:") + random_url;
+    else if (selector == 2)
+      random_url = std::string("data:") + random_url;
+    *p = GURL(random_url);
     return true;
   }
 };
@@ -1153,6 +1198,26 @@ struct GenerateTraits<remoting::ScreenResolution> {
     if (!GenerateParam(&vector, generator))
       return false;
     *p = remoting::ScreenResolution(size, vector);
+    return true;
+  }
+};
+
+// FIXME: Actually generate something.
+template <>
+struct GenerateTraits<SkBitmap> {
+  static bool Generate(SkBitmap* p, Generator* generator) {
+    *p = SkBitmap();
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<url::Origin> {
+  static bool Generate(url::Origin* p, Generator* generator) {
+    std::string origin;
+    if (!GenerateParam(&origin, generator))
+        return false;
+    *p = url::Origin(origin);
     return true;
   }
 };
