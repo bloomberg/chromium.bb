@@ -47,6 +47,7 @@ TouchEmulator::TouchEmulator(TouchEmulatorClient* client)
     : client_(client),
       gesture_provider_config_type_(
           ui::GestureProviderConfigType::CURRENT_PLATFORM),
+      double_tap_enabled_(true),
       emulated_stream_active_sequence_count_(0),
       native_stream_active_sequence_count_(0) {
   DCHECK(client_);
@@ -92,9 +93,7 @@ void TouchEmulator::Enable(ui::GestureProviderConfigType config_type) {
         GetEmulatorGestureProviderConfig(config_type), this));
     // TODO(dgozman): Use synthetic secondary touch to support multi-touch.
     gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
-    // TODO(dgozman): Enable double tap if requested by the renderer.
-    // TODO(dgozman): Don't break double-tap-based pinch with shift handling.
-    gesture_provider_->SetDoubleTapSupportForPlatformEnabled(false);
+    gesture_provider_->SetDoubleTapSupportForPageEnabled(double_tap_enabled_);
   }
   UpdateCursor();
 }
@@ -107,6 +106,12 @@ void TouchEmulator::Disable() {
   gesture_provider_.reset();
   UpdateCursor();
   ResetState();
+}
+
+void TouchEmulator::SetDoubleTapSupportForPageEnabled(bool enabled) {
+  double_tap_enabled_ = enabled;
+  if (gesture_provider_)
+    gesture_provider_->SetDoubleTapSupportForPageEnabled(enabled);
 }
 
 gfx::SizeF TouchEmulator::InitCursorFromResource(

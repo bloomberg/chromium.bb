@@ -24,6 +24,9 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   void Enable(ui::GestureProviderConfigType config_type);
   void Disable();
 
+  // See GestureProvider::SetDoubleTapSupportForPageEnabled.
+  void SetDoubleTapSupportForPageEnabled(bool enabled);
+
   // Note that TouchEmulator should always listen to touch events and their acks
   // (even in disabled state) to track native stream presence.
   bool enabled() const { return gesture_provider_; }
@@ -78,6 +81,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   // emulation. It does not intercept any events.
   scoped_ptr<ui::FilteredGestureProvider> gesture_provider_;
   ui::GestureProviderConfigType gesture_provider_config_type_;
+  bool double_tap_enabled_;
 
   // While emulation is on, default cursor is touch. Pressing shift changes
   // cursor to the pinch one.

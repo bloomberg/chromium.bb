@@ -44,6 +44,7 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/frame_metadata_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
@@ -87,11 +88,6 @@ namespace content {
 namespace {
 
 const int kUndefinedOutputSurfaceId = -1;
-
-// Used to accomodate finite precision when comparing scaled viewport and
-// content widths. While this value may seem large, width=device-width on an N7
-// V1 saw errors of ~0.065 between computed window and content widths.
-const float kMobileViewportWidthEpsilon = 0.15f;
 
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 
@@ -291,19 +287,6 @@ ui::GestureProvider::Config CreateGestureProviderConfig() {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClickDelay);
   return config;
-}
-
-bool HasFixedPageScale(const cc::CompositorFrameMetadata& frame_metadata) {
-  return frame_metadata.min_page_scale_factor ==
-         frame_metadata.max_page_scale_factor;
-}
-
-bool HasMobileViewport(const cc::CompositorFrameMetadata& frame_metadata) {
-  float window_width_dip =
-      frame_metadata.page_scale_factor *
-          frame_metadata.scrollable_viewport_size.width();
-  float content_width_css = frame_metadata.root_layer_size.width();
-  return content_width_css <= window_width_dip + kMobileViewportWidthEpsilon;
 }
 
 }  // anonymous namespace
@@ -1327,15 +1310,8 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
 
 void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     const cc::CompositorFrameMetadata& frame_metadata) {
-
-  // Disable double tap zoom for pages that have a width=device-width or
-  // narrower viewport (indicating that this is a mobile-optimized or responsive
-  // web design, so text will be legible without zooming). Also disable
-  // double tap and pinch for pages that prevent zooming in or out.
-  bool has_mobile_viewport = HasMobileViewport(frame_metadata);
-  bool has_fixed_page_scale = HasFixedPageScale(frame_metadata);
   gesture_provider_.SetDoubleTapSupportForPageEnabled(
-      !has_fixed_page_scale && !has_mobile_viewport);
+      !IsMobileOptimizedFrame(frame_metadata));
 
   if (!content_view_core_)
     return;

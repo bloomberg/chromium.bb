@@ -53,6 +53,7 @@ class TouchEmulatorTest : public testing::Test,
 #endif
 
     emulator_.reset(new TouchEmulator(this));
+    emulator_->SetDoubleTapSupportForPageEnabled(false);
     emulator_->Enable(ui::GestureProviderConfigType::GENERIC_MOBILE);
   }
 
@@ -281,6 +282,20 @@ TEST_F(TouchEmulatorTest, Touch) {
       "TouchMove GestureTapCancel GestureScrollBegin GestureScrollUpdate"
       " TouchEnd GestureScrollEnd",
       ExpectedEvents());
+}
+
+TEST_F(TouchEmulatorTest, DoubleTapSupport) {
+  emulator()->SetDoubleTapSupportForPageEnabled(true);
+  MouseMove(100, 200);
+  EXPECT_EQ("", ExpectedEvents());
+  MouseDown(100, 200);
+  EXPECT_EQ("TouchStart GestureTapDown", ExpectedEvents());
+  MouseUp(100, 200);
+  EXPECT_EQ("TouchEnd GestureTapUnconfirmed", ExpectedEvents());
+  MouseDown(100, 200);
+  EXPECT_EQ("TouchStart GestureTapCancel GestureTapDown", ExpectedEvents());
+  MouseUp(100, 200);
+  EXPECT_EQ("TouchEnd GestureTapCancel GestureDoubleTap", ExpectedEvents());
 }
 
 TEST_F(TouchEmulatorTest, MultipleTouches) {

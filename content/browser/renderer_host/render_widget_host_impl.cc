@@ -32,6 +32,7 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/frame_metadata_util.h"
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
@@ -1451,6 +1452,11 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
 
   input_router_->OnViewUpdated(
       GetInputRouterViewFlagsFromCompositorFrameMetadata(frame->metadata));
+
+  if (touch_emulator_) {
+    touch_emulator_->SetDoubleTapSupportForPageEnabled(
+        !IsMobileOptimizedFrame(frame->metadata));
+  }
 
   if (view_) {
     view_->OnSwapCompositorFrame(output_surface_id, frame.Pass());
