@@ -79,22 +79,6 @@ class Page5(SmokePage):
       name='compression: css')
 
 
-class Page6(SmokePage):
-
-  """
-  Why: Expect 'malware ahead' page. Use a short navigation timeout because no
-  response will be received.
-  """
-
-  def __init__(self, page_set):
-    super(Page6, self).__init__(
-      url='http://www.ianfette.org/',
-      page_set=page_set,
-      name='safebrowsing')
-
-  def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self, timeout_in_seconds=5)
-
 
 class SmokePageSet(page_set_module.PageSet):
 
@@ -109,4 +93,3 @@ class SmokePageSet(page_set_module.PageSet):
     self.AddUserStory(Page3(self))
     self.AddUserStory(Page4(self))
     self.AddUserStory(Page5(self))
-    self.AddUserStory(Page6(self))

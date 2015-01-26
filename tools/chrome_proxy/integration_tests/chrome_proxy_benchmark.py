@@ -7,7 +7,6 @@ from integration_tests import chrome_proxy_pagesets as pagesets
 from telemetry import benchmark
 
 
-@benchmark.Enabled('android')
 class ChromeProxyLatency(benchmark.Benchmark):
   tag = 'latency'
   test = measurements.ChromeProxyLatency
@@ -21,7 +20,6 @@ class ChromeProxyLatency(benchmark.Benchmark):
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
 
-@benchmark.Enabled('android')
 class ChromeProxyLatencyDirect(benchmark.Benchmark):
   tag = 'latency_direct'
   test = measurements.ChromeProxyLatency
@@ -32,7 +30,6 @@ class ChromeProxyLatencyDirect(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.latency_direct.top_20'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyLatencySynthetic(ChromeProxyLatency):
   page_set = pagesets.SyntheticPageSet
 
@@ -41,7 +38,6 @@ class ChromeProxyLatencySynthetic(ChromeProxyLatency):
     return 'chrome_proxy_benchmark.latency.synthetic'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyLatencySyntheticDirect(ChromeProxyLatencyDirect):
   page_set = pagesets.SyntheticPageSet
 
@@ -50,7 +46,6 @@ class ChromeProxyLatencySyntheticDirect(ChromeProxyLatencyDirect):
     return 'chrome_proxy_benchmark.latency_direct.synthetic'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyDataSaving(benchmark.Benchmark):
   tag = 'data_saving'
   test = measurements.ChromeProxyDataSaving
@@ -64,7 +59,6 @@ class ChromeProxyDataSaving(benchmark.Benchmark):
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
 
-@benchmark.Enabled('android')
 class ChromeProxyDataSavingDirect(benchmark.Benchmark):
   tag = 'data_saving_direct'
   test = measurements.ChromeProxyDataSaving
@@ -75,7 +69,6 @@ class ChromeProxyDataSavingDirect(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.data_saving_direct.top_20'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyDataSavingSynthetic(ChromeProxyDataSaving):
   page_set = pagesets.SyntheticPageSet
 
@@ -84,7 +77,6 @@ class ChromeProxyDataSavingSynthetic(ChromeProxyDataSaving):
     return 'chrome_proxy_benchmark.data_saving.synthetic'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyDataSavingSyntheticDirect(ChromeProxyDataSavingDirect):
   page_set = pagesets.SyntheticPageSet
 
@@ -93,7 +85,6 @@ class ChromeProxyDataSavingSyntheticDirect(ChromeProxyDataSavingDirect):
     return 'chrome_proxy_benchmark.data_saving_direct.synthetic'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyHeaderValidation(benchmark.Benchmark):
   tag = 'header_validation'
   test = measurements.ChromeProxyHeaders
@@ -104,7 +95,6 @@ class ChromeProxyHeaderValidation(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.header_validation.top_20'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyClientVersion(benchmark.Benchmark):
   tag = 'client_version'
   test = measurements.ChromeProxyClientVersion
@@ -115,7 +105,6 @@ class ChromeProxyClientVersion(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.client_version.synthetic'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyClientType(benchmark.Benchmark):
   tag = 'client_type'
   test = measurements.ChromeProxyClientType
@@ -126,7 +115,6 @@ class ChromeProxyClientType(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.client_type.client_type'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyBypass(benchmark.Benchmark):
   tag = 'bypass'
   test = measurements.ChromeProxyBypass
@@ -137,7 +125,6 @@ class ChromeProxyBypass(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.bypass.bypass'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyCorsBypass(benchmark.Benchmark):
   tag = 'bypass'
   test = measurements.ChromeProxyCorsBypass
@@ -148,7 +135,6 @@ class ChromeProxyCorsBypass(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.bypass.corsbypass'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyBlockOnce(benchmark.Benchmark):
   tag = 'block_once'
   test = measurements.ChromeProxyBlockOnce
@@ -160,17 +146,27 @@ class ChromeProxyBlockOnce(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class ChromeProxySafeBrowsing(benchmark.Benchmark):
-  tag = 'safebrowsing'
-  test = measurements.ChromeProxySafebrowsing
+# Safebrowsing is enabled for Android and iOS.
+class ChromeProxySafeBrowsingOn(benchmark.Benchmark):
+  tag = 'safebrowsing_on'
+  test = measurements.ChromeProxySafebrowsingOn
   page_set = pagesets.SafebrowsingPageSet
 
   @classmethod
   def Name(cls):
-    return 'chrome_proxy_benchmark.safebrowsing.safebrowsing'
+    return 'chrome_proxy_benchmark.safebrowsing_on.safebrowsing'
 
 
-@benchmark.Enabled('android')
+# Safebrowsing is switched off for Android Webview and all desktop platforms.
+class ChromeProxySafeBrowsingOff(benchmark.Benchmark):
+  tag = 'safebrowsing_off'
+  test = measurements.ChromeProxySafebrowsingOff
+  page_set = pagesets.SafebrowsingPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.safebrowsing_off.safebrowsing'
+
 class ChromeProxyHTTPFallbackProbeURL(benchmark.Benchmark):
   tag = 'fallback_probe'
   test = measurements.ChromeProxyHTTPFallbackProbeURL
@@ -181,7 +177,6 @@ class ChromeProxyHTTPFallbackProbeURL(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.fallback_probe.synthetic'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyHTTPFallbackViaHeader(benchmark.Benchmark):
   tag = 'fallback_viaheader'
   test = measurements.ChromeProxyHTTPFallbackViaHeader
@@ -192,7 +187,6 @@ class ChromeProxyHTTPFallbackViaHeader(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.fallback_viaheader.fallback_viaheader'
 
 
-@benchmark.Enabled('android')
 class ChromeProxyHTTPToDirectFallback(benchmark.Benchmark):
   tag = 'http_to_direct_fallback'
   test = measurements.ChromeProxyHTTPToDirectFallback
@@ -204,7 +198,6 @@ class ChromeProxyHTTPToDirectFallback(benchmark.Benchmark):
             'http_to_direct_fallback')
 
 
-@benchmark.Enabled('android')
 class ChromeProxyReenableAfterBypass(benchmark.Benchmark):
   tag = 'reenable_after_bypass'
   test = measurements.ChromeProxyReenableAfterBypass
@@ -215,7 +208,6 @@ class ChromeProxyReenableAfterBypass(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.reenable_after_bypass.reenable_after_bypass'
 
 
-@benchmark.Enabled('android')
 class ChromeProxySmoke(benchmark.Benchmark):
   tag = 'smoke'
   test = measurements.ChromeProxySmoke

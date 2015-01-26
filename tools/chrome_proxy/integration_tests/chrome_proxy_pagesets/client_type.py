@@ -54,3 +54,21 @@ class ClientTypePageSet(page_set_module.PageSet):
         url='http://check.googlezip.net/chrome-proxy-header/c=IOS',
         page_set=self,
         bypass_for_client_type='ios'))
+
+    # Page that should cause a bypass for Linux clients.
+    self.AddUserStory(ClientTypePage(
+        url='http://check.googlezip.net/chrome-proxy-header/c=LINUX',
+        page_set=self,
+        bypass_for_client_type='linux'))
+
+    # Page that should cause a bypass for Windows clients.
+    self.AddUserStory(ClientTypePage(
+        url='http://check.googlezip.net/chrome-proxy-header/c=WIN',
+        page_set=self,
+        bypass_for_client_type='win'))
+
+    # Page that should cause a bypass for ChromeOS clients.
+    self.AddUserStory(ClientTypePage(
+        url='http://check.googlezip.net/chrome-proxy-header/c=CHROMEOS',
+        page_set=self,
+        bypass_for_client_type='chromeos'))

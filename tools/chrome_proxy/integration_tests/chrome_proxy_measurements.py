@@ -84,6 +84,9 @@ class ChromeProxyValidation(page_test.PageTest):
     # The redirect from safebrowsing causes a timeout. Ignore that.
     try:
       super(ChromeProxyValidation, self).RunNavigateSteps(page, tab)
+      if self._expect_timeout:
+        raise metrics.ChromeProxyMetricException, (
+            'Timeout was expected, but did not occur')
     except exceptions.DevtoolsTargetCrashException, e:
       if self._expect_timeout:
         logging.warning('Navigation timeout on page %s',
@@ -139,19 +142,27 @@ class ChromeProxyBlockOnce(ChromeProxyValidation):
     self._metrics.AddResultsForBlockOnce(tab, results)
 
 
-class ChromeProxySafebrowsing(ChromeProxyValidation):
+class ChromeProxySafebrowsingOn(ChromeProxyValidation):
   """Correctness measurement for safebrowsing."""
 
   def __init__(self):
-    super(ChromeProxySafebrowsing, self).__init__()
+    super(ChromeProxySafebrowsingOn, self).__init__()
 
   def WillNavigateToPage(self, page, tab):
-    super(ChromeProxySafebrowsing, self).WillNavigateToPage(page, tab)
+    super(ChromeProxySafebrowsingOn, self).WillNavigateToPage(page, tab)
     self._expect_timeout = True
 
   def AddResults(self, tab, results):
-    self._metrics.AddResultsForSafebrowsing(tab, results)
+    self._metrics.AddResultsForSafebrowsingOn(tab, results)
 
+class ChromeProxySafebrowsingOff(ChromeProxyValidation):
+  """Correctness measurement for safebrowsing."""
+
+  def __init__(self):
+    super(ChromeProxySafebrowsingOff, self).__init__()
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForSafebrowsingOff(tab, results)
 
 _FAKE_PROXY_AUTH_VALUE = 'aabbccdd3b7579186c1b0620614fdb1f0000ffff'
 _TEST_SERVER = 'chromeproxy-test.appspot.com'
@@ -329,8 +340,6 @@ class ChromeProxySmoke(ChromeProxyValidation):
 
   def WillNavigateToPage(self, page, tab):
     super(ChromeProxySmoke, self).WillNavigateToPage(page, tab)
-    if page.name == 'safebrowsing':
-      self._expect_timeout = True
 
   def AddResults(self, tab, results):
     # Map a page name to its AddResults func.
@@ -349,7 +358,6 @@ class ChromeProxySmoke(ChromeProxyValidation):
             self._metrics.AddResultsForDataSaving,
             ],
         'bypass': [self._metrics.AddResultsForBypass],
-        'safebrowsing': [self._metrics.AddResultsForSafebrowsing],
         }
     if not self._page.name in page_to_metrics:
       raise page_test.MeasurementFailure(

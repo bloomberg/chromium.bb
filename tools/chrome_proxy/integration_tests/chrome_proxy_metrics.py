@@ -54,14 +54,6 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
     return (not self.ShouldHaveChromeProxyViaHeader() or
             self.HasChromeProxyViaHeader())
 
-  def IsSafebrowsingResponse(self):
-    if (self.response.status == 307 and
-        self.response.GetHeader('X-Malware-Url') == '1' and
-        self.IsValidByViaHeader() and
-        self.response.GetHeader('Location') == self.response.url):
-      return True
-    return False
-
   def GetChromeProxyClientType(self):
     """Get the client type directive from the Chrome-Proxy request header.
 
@@ -270,27 +262,29 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
       results.AddValue(scalar.ScalarValue(
           results.current_page, 'bypass', 'count', bypass_count))
 
-  def AddResultsForSafebrowsing(self, tab, results):
-    count = 0
-    safebrowsing_count = 0
+  def AddResultsForSafebrowsingOn(self, tab, results):
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'safebrowsing', 'timeout responses', 1))
 
+  def AddResultsForSafebrowsingOff(self, tab, results):
+    response_count = 0
     for resp in self.IterResponses(tab):
-      count += 1
-      if resp.IsSafebrowsingResponse():
-        safebrowsing_count += 1
-      else:
+      # Data reduction proxy should return the real response for sites with
+      # malware.
+      response_count += 1
+      if not resp.HasChromeProxyViaHeader():
         r = resp.response
         raise ChromeProxyMetricException, (
-            '%s: Not a valid safe browsing response.\n'
+            '%s: Safebrowsing feature should be off for desktop and webview.\n'
             'Reponse: status=(%d, %s)\nHeaders:\n %s' % (
                 r.url, r.status, r.status_text, r.headers))
-    if count == safebrowsing_count:
-      results.AddValue(scalar.ScalarValue(
-          results.current_page, 'safebrowsing', 'boolean', True))
-    else:
+
+    if response_count == 0:
       raise ChromeProxyMetricException, (
-          'Safebrowsing failed (count=%d, safebrowsing_count=%d)\n' % (
-              count, safebrowsing_count))
+          'Safebrowsing test failed: No valid responses received')
+
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'safebrowsing', 'responses', response_count))
 
   def AddResultsForHTTPFallback(self, tab, results):
     via_fallback_count = 0
