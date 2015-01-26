@@ -941,6 +941,30 @@
       ],
     }],
     ['OS!="ios"', {
+      'conditions': [
+        ['test_isolation_mode != "noop"', {
+          'targets': [
+            {
+              'target_name': 'components_browsertests_run',
+              'type': 'none',
+              'dependencies': [ 'components_browsertests' ],
+              'includes': [
+                '../build/isolate.gypi',
+              ],
+              'sources': [
+                'components_browsertests.isolate',
+              ],
+              'conditions': [
+                ['use_x11==1', {
+                  'dependencies': [
+                    '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+                  ],
+                }],
+              ],
+            },
+          ],
+        }],
+      ],
       'targets': [
         {
           'target_name': 'components_browsertests',
@@ -1046,6 +1070,11 @@
             ['OS=="win" and win_use_allocator_shim==1', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+            ['OS=="mac"', {
+              'dependencies': [
+		'../content/content_shell_and_tests.gyp:content_shell',  # Needed for Content Shell.app's Helper.
               ],
             }],
           ],
