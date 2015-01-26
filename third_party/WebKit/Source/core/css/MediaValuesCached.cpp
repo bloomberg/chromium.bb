@@ -162,7 +162,7 @@ const String MediaValuesCached::mediaType() const
     return m_data.mediaType;
 }
 
-DisplayMode MediaValuesCached::displayMode() const
+WebDisplayMode MediaValuesCached::displayMode() const
 {
     return m_data.displayMode;
 }

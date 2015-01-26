@@ -28,11 +28,11 @@
 #define InternalSettings_h
 
 #include "core/InternalSettingsGenerated.h"
-#include "core/css/DisplayModeProperties.h"
 #include "core/editing/EditingBehaviorTypes.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebDisplayMode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -66,7 +66,7 @@ public:
         IntSize m_originalTextAutosizingWindowSizeOverride;
         float m_originalAccessibilityFontScaleFactor;
         String m_originalMediaTypeOverride;
-        DisplayMode m_originalDisplayModeOverride;
+        WebDisplayMode m_originalDisplayModeOverride;
         bool m_originalMockScrollbarsEnabled;
         bool m_originalMockGestureTapHighlightsEnabled;
         bool m_langAttributeAwareFormControlUIEnabled;

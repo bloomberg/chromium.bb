@@ -54,6 +54,7 @@
 #include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
+#include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
@@ -1699,6 +1700,22 @@ WebFrame* CreateChildCounterFrameClient::createChildFrame(WebLocalFrame* parent,
 {
     ++m_count;
     return TestWebFrameClient::createChildFrame(parent, frameName, sandboxFlags);
+}
+
+TEST_F(WebViewTest, ChangeDisplayMode)
+{
+    WebView* webView = m_webViewHelper.initializeAndLoad("about:blank", true);
+
+    WebScriptSource source("document.querySelector('body').innerHTML = window.matchMedia('(display-mode: minimal-ui)').matches");
+
+    webView->mainFrame()->executeScript(source);
+    std::string content = webView->mainFrame()->contentAsText(5).utf8();
+    EXPECT_EQ("false", content);
+
+    webView->setDisplayMode(WebDisplayModeMinimalUi);
+    webView->mainFrame()->executeScript(source);
+    content = webView->mainFrame()->contentAsText(5).utf8();
+    EXPECT_EQ("true", content);
 }
 
 TEST_F(WebViewTest, AddFrameInCloseUnload)

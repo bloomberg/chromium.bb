@@ -127,7 +127,7 @@ const String MediaValuesDynamic::mediaType() const
     return calculateMediaType(m_frame);
 }
 
-DisplayMode MediaValuesDynamic::displayMode() const
+WebDisplayMode MediaValuesDynamic::displayMode() const
 {
     return calculateDisplayMode(m_frame);
 }

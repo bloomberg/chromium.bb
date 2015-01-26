@@ -36,6 +36,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebFloatSize.h"
 #include "public/platform/WebGestureCurveTarget.h"
 #include "public/platform/WebLayer.h"
@@ -203,6 +204,7 @@ public:
     virtual void resetScrollAndScaleState() override;
     virtual void setIgnoreViewportTagScaleLimits(bool) override;
     virtual WebSize contentsPreferredMinimumSize() override;
+    virtual void setDisplayMode(WebDisplayMode) override;
 
     virtual float deviceScaleFactor() const override;
     virtual void setDeviceScaleFactor(float) override;

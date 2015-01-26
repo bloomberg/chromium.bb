@@ -125,7 +125,7 @@ TEST(MediaQueryEvaluatorTest, Cached)
     data.threeDEnabled = true;
     data.mediaType = MediaTypeNames::screen;
     data.strictMode = true;
-    data.displayMode = DisplayModeBrowser;
+    data.displayMode = WebDisplayModeBrowser;
     RefPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
 
     MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);

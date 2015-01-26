@@ -544,6 +544,14 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
     }
 }
 
+void WebViewImpl::setDisplayMode(WebDisplayMode mode)
+{
+    if (!mainFrameImpl() || !mainFrameImpl()->frameView())
+        return;
+
+    mainFrameImpl()->frameView()->setDisplayMode(mode);
+}
+
 void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
 {
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())

@@ -103,6 +103,7 @@ static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
 
 FrameView::FrameView(LocalFrame* frame)
     : m_frame(frame)
+    , m_displayMode(WebDisplayModeBrowser)
     , m_canHaveScrollbars(true)
     , m_slowRepaintObjectCount(0)
     , m_hasPendingLayout(false)
@@ -1183,6 +1184,12 @@ void FrameView::addPartToUpdate(RenderEmbeddedObject& object)
         toHTMLPlugInElement(node)->setNeedsWidgetUpdate(true);
 
     m_partUpdateSet.add(&object);
+}
+
+void FrameView::setDisplayMode(WebDisplayMode mode)
+{
+    m_displayMode = mode;
+    m_frame->document()->mediaQueryAffectingValueChanged();
 }
 
 void FrameView::setMediaType(const AtomicString& mediaType)

@@ -105,15 +105,18 @@ const String MediaValues::calculateMediaType(LocalFrame* frame) const
     return frame->view()->mediaType();
 }
 
-DisplayMode MediaValues::calculateDisplayMode(LocalFrame* frame) const
+WebDisplayMode MediaValues::calculateDisplayMode(LocalFrame* frame) const
 {
     ASSERT(frame);
-    DisplayMode mode = frame->host()->settings().displayModeOverride();
+    WebDisplayMode mode = frame->host()->settings().displayModeOverride();
 
-    if (mode != DisplayModeUndefined)
+    if (mode != WebDisplayModeUndefined)
         return mode;
 
-    return DisplayModeBrowser;
+    if (!frame->view())
+        return WebDisplayModeBrowser;
+
+    return frame->view()->displayMode();
 }
 
 bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) const

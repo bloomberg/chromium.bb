@@ -378,15 +378,15 @@ void InternalSettings::setDisplayModeOverride(const String& displayMode, Excepti
     InternalSettingsGuardForSettings();
     String token = displayMode.stripWhiteSpace();
 
-    DisplayMode mode = DisplayModeBrowser;
+    WebDisplayMode mode = WebDisplayModeBrowser;
     if (token == "browser")
-        mode = DisplayModeBrowser;
+        mode = WebDisplayModeBrowser;
     else if (token == "minimal-ui")
-        mode = DisplayModeMinimalUi;
+        mode = WebDisplayModeMinimalUi;
     else if (token == "standalone")
-        mode = DisplayModeStandalone;
+        mode = WebDisplayModeStandalone;
     else if (token == "fullscreen")
-        mode = DisplayModeFullscreen;
+        mode = WebDisplayModeFullscreen;
     else
         exceptionState.throwDOMException(SyntaxError, "The display-mode token ('" + token + ")' is invalid.");
 

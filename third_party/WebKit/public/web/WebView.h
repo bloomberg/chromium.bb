@@ -32,6 +32,7 @@
 #define WebView_h
 
 #include "../platform/WebColor.h"
+#include "../platform/WebDisplayMode.h"
 #include "../platform/WebPageVisibilityState.h"
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
@@ -274,6 +275,9 @@ public:
     // and the minimum height required to display the main document without scrollbars.
     // The returned size has the page zoom factor applied.
     virtual WebSize contentsPreferredMinimumSize() = 0;
+
+    // Sets the display mode of the web app.
+    virtual void setDisplayMode(WebDisplayMode) = 0;
 
     // The ratio of the current device's screen DPI to the target device's screen DPI.
     virtual float deviceScaleFactor() const = 0;

@@ -35,6 +35,7 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/Scrollbar.h"
+#include "public/platform/WebDisplayMode.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -179,6 +180,9 @@ public:
     AtomicString mediaType() const;
     void setMediaType(const AtomicString&);
     void adjustMediaTypeForPrinting(bool printing);
+
+    WebDisplayMode displayMode() { return m_displayMode; }
+    void setDisplayMode(WebDisplayMode);
 
     void addSlowRepaintObject();
     void removeSlowRepaintObject();
@@ -707,6 +711,8 @@ private:
     // triggers FrameView::dispose(), which performs the operations
     // that cannot be delayed until finalization time.
     RefPtrWillBeMember<LocalFrame> m_frame;
+
+    WebDisplayMode m_displayMode;
 
     bool m_doFullPaintInvalidation;
 

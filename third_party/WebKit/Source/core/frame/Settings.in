@@ -241,7 +241,7 @@ accessibilityFontScaleFactor type=double, initial=1.0, invalidate=TextAutosizing
 
 # Only set by Layout Tests.
 mediaTypeOverride type=String, initial="screen", invalidate=MediaType
-displayModeOverride type=DisplayMode, initial=DisplayModeUndefined, invalidate=MediaQuery
+displayModeOverride type=WebDisplayMode, initial=WebDisplayModeUndefined, invalidate=MediaQuery
 
 # loadsImagesAutomatically only suppresses the network load of
 # the image URL. A cached image will still be rendered if requested.

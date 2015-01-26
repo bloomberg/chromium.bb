@@ -37,7 +37,6 @@
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSToLengthConversionData.h"
-#include "core/css/DisplayModeProperties.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaValuesDynamic.h"
@@ -56,6 +55,7 @@
 #include "platform/PlatformScreen.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatRect.h"
+#include "public/platform/WebDisplayMode.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -226,16 +226,16 @@ static bool displayModeMediaFeatureEval(const MediaQueryExpValue& value, MediaFe
     if (!value.isID)
         return false;
 
-    DisplayMode mode = mediaValues.displayMode();
+    WebDisplayMode mode = mediaValues.displayMode();
     switch (value.id) {
     case CSSValueFullscreen:
-        return mode == DisplayModeFullscreen;
+        return mode == WebDisplayModeFullscreen;
     case CSSValueStandalone:
-        return mode == DisplayModeStandalone;
+        return mode == WebDisplayModeStandalone;
     case CSSValueMinimalUi:
-        return mode == DisplayModeMinimalUi;
+        return mode == WebDisplayModeMinimalUi;
     case CSSValueBrowser:
-        return mode == DisplayModeBrowser;
+        return mode == WebDisplayModeBrowser;
     default:
         ASSERT_NOT_REACHED();
         return false;

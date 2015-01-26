@@ -34,7 +34,7 @@ public:
     virtual bool threeDEnabled() const override;
     virtual bool strictMode() const override;
     virtual const String mediaType() const override;
-    virtual DisplayMode displayMode() const override;
+    virtual WebDisplayMode displayMode() const override;
     virtual Document* document() const override;
     virtual bool hasValues() const override;
 

@@ -28,7 +28,7 @@ public:
         bool threeDEnabled;
         bool strictMode;
         String mediaType;
-        DisplayMode displayMode;
+        WebDisplayMode displayMode;
 
         MediaValuesCachedData()
             : viewportWidth(0)
@@ -45,7 +45,7 @@ public:
             , defaultFontSize(16)
             , threeDEnabled(false)
             , strictMode(true)
-            , displayMode(DisplayModeBrowser)
+            , displayMode(WebDisplayModeBrowser)
         {
         }
     };
@@ -75,7 +75,7 @@ public:
     virtual Document* document() const override;
     virtual bool hasValues() const override;
     virtual const String mediaType() const override;
-    virtual DisplayMode displayMode() const override;
+    virtual WebDisplayMode displayMode() const override;
 
 protected:
     MediaValuesCached();

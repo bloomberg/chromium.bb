@@ -30,7 +30,6 @@
 #include "bindings/core/v8/ScriptStreamingMode.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/SettingsMacros.h"
-#include "core/css/DisplayModeProperties.h"
 #include "core/css/PointerProperties.h"
 #include "core/editing/EditingBehaviorTypes.h"
 #include "core/frame/SettingsDelegate.h"
@@ -39,6 +38,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebDisplayMode.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefCounted.h"
 
