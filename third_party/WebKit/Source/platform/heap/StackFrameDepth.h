@@ -20,8 +20,11 @@ public:
     {
         ASSERT(m_stackFrameLimit);
 
-        // Below comparison assumes callstack to glow downward,
-        // which is true for all ABI Blink currently supports.
+        // Asssume that the stack grows towards lower addresses, which
+        // all the ABIs currently supported do.
+        //
+        // A unit test checks that the assumption holds for a target
+        // (HeapTest.StackGrowthDirection.)
         return currentStackFrame() > m_stackFrameLimit;
     }
 

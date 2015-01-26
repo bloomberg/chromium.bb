@@ -5538,4 +5538,37 @@ TEST(HeapTest, DequeExpand)
     }
 }
 
+namespace {
+
+enum GrowthDirection {
+    GrowsTowardsHigher,
+    GrowsTowardsLower,
+};
+
+NEVER_INLINE NO_SANITIZE_ADDRESS GrowthDirection stackGrowthDirection()
+{
+    // Disable ASan, otherwise its stack checking (use-after-return) will
+    // confuse the direction check.
+    static char* previous = nullptr;
+    char dummy;
+    if (!previous) {
+        previous = &dummy;
+        GrowthDirection result = stackGrowthDirection();
+        previous = nullptr;
+        return result;
+    }
+    ASSERT(&dummy != previous);
+    return &dummy < previous ? GrowsTowardsLower : GrowsTowardsHigher;
+}
+
+} // namespace
+
+TEST(HeapTest, StackGrowthDirection)
+{
+    // The implementation of marking probes stack usage as it runs,
+    // and has a builtin assumption that the stack grows towards
+    // lower addresses.
+    EXPECT_EQ(GrowsTowardsLower, stackGrowthDirection());
+}
+
 } // namespace blink
