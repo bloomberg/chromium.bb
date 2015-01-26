@@ -53,6 +53,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/texparameter-test.html',
         ['win', 'amd', 'd3d9'], bug=839) # angle bug ID
 
+    # Win / D3D9 failures
+    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
+        ['win', 'd3d9'], bug=896) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
+        ['win', 'd3d9'], bug=896) # angle bug ID
+
     # Mac / Intel failures
     # Radar 13499466
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
