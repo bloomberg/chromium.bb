@@ -5,17 +5,17 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderBlock {DIV} at (0,0) size 784x86
         RenderBlock {CENTER} at (0,0) size 784x86
-          RenderTable {TABLE} at (78.50,0) size 627x36 [bgcolor=#000000]
-            RenderTableSection {TBODY} at (0,0) size 627x36
-              RenderTableRow {TR} at (0,5) size 627x26
-                RenderTableCell {TD} at (5,5) size 40x26 [bgcolor=#FFCC33] [r=0 c=0 rs=1 cs=1]
+          LayoutTable {TABLE} at (78.50,0) size 627x36 [bgcolor=#000000]
+            LayoutTableSection {TBODY} at (0,0) size 627x36
+              LayoutTableRow {TR} at (0,5) size 627x26
+                LayoutTableCell {TD} at (5,5) size 40x26 [bgcolor=#FFCC33] [r=0 c=0 rs=1 cs=1]
                   RenderText {#text} at (27,5) size 8x16
                     text run at (27,5) width 8: "1"
-                RenderTableCell {TD} at (50,5) size 516x26 [bgcolor=#FFCC33] [r=0 c=1 rs=1 cs=1]
+                LayoutTableCell {TD} at (50,5) size 516x26 [bgcolor=#FFCC33] [r=0 c=1 rs=1 cs=1]
                   RenderInline {A} at (0,0) size 49x16 [color=#0000EE]
                     RenderText {#text} at (5,5) size 49x16
                       text run at (5,5) width 49: "Believe"
-                RenderTableCell {TD} at (571,5) size 51x26 [bgcolor=#FFCC33] [r=0 c=2 rs=1 cs=1]
+                LayoutTableCell {TD} at (571,5) size 51x26 [bgcolor=#FFCC33] [r=0 c=2 rs=1 cs=1]
                   RenderText {#text} at (17,5) size 29x16
                     text run at (17,5) width 29: "4:53"
           RenderBlock {DIV} at (0,36) size 784x50

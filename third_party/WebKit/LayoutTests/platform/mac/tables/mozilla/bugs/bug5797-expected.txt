@@ -3,34 +3,34 @@ layer at (0,0) size 800x600 scrollWidth 867 scrollHeight 970
 layer at (0,0) size 800x970 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x970
     RenderBody {BODY} at (8,8) size 784x954
-      RenderTable {TABLE} at (0,0) size 784x26 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 782x24
-          RenderTableRow {TR} at (0,2) size 782x20
-            RenderTableCell {TD} at (2,2) size 262x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,0) size 784x26 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x24
+          LayoutTableRow {TR} at (0,2) size 782x20
+            LayoutTableCell {TD} at (2,2) size 262x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 8x16
                 text run at (2,2) width 8: "x"
-            RenderTableCell {TD} at (266,2) size 514x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (266,2) size 514x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 8x16
                 text run at (2,2) width 8: "y"
       RenderBlock (anonymous) at (0,26) size 784x16
         RenderBR {BR} at (0,0) size 0x16
-      RenderTable {TABLE} at (0,42) size 784x26 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 782x24
-          RenderTableRow {TR} at (0,2) size 782x20
-            RenderTableCell {TD} at (2,2) size 388x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,42) size 784x26 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x24
+          LayoutTableRow {TR} at (0,2) size 782x20
+            LayoutTableCell {TD} at (2,2) size 388x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 8x16
                 text run at (2,2) width 8: "x"
-            RenderTableCell {TD} at (392,2) size 388x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (392,2) size 388x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 8x16
                 text run at (2,2) width 8: "y"
       RenderBlock (anonymous) at (0,68) size 784x16
         RenderBR {BR} at (0,0) size 0x16
-      RenderTable {TABLE} at (0,84) size 859x610 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 857x608
-          RenderTableRow {TR} at (0,2) size 857x604
-            RenderTableCell {TD} at (2,2) size 804x604 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,84) size 859x610 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 857x608
+          LayoutTableRow {TR} at (0,2) size 857x604
+            LayoutTableCell {TD} at (2,2) size 804x604 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderImage {IMG} at (2,2) size 800x600
-            RenderTableCell {TD} at (808,262) size 47x84 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (808,262) size 47x84 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 43x80
                 text run at (2,2) width 30: "can't"
                 text run at (2,18) width 39: "we all"
@@ -39,30 +39,30 @@ layer at (0,0) size 800x970 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                 text run at (2,66) width 43: "along?"
       RenderBlock (anonymous) at (0,694) size 784x16
         RenderBR {BR} at (0,0) size 0x16
-      RenderTable {TABLE} at (0,710) size 784x42 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 782x40
-          RenderTableRow {TR} at (0,2) size 782x36
-            RenderTableCell {TD} at (2,10) size 252x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,710) size 784x42 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x40
+          LayoutTableRow {TR} at (0,2) size 782x36
+            LayoutTableCell {TD} at (2,10) size 252x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 119x16
                 text run at (2,2) width 119: "Hello how are you"
-            RenderTableCell {TD} at (256,2) size 122x36 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (256,2) size 122x36 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 88x32
                 text run at (2,2) width 88: "I'am fine, and"
                 text run at (2,18) width 32: "you?"
-            RenderTableCell {TD} at (380,10) size 400x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (380,10) size 400x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 113x16
                 text run at (2,2) width 113: "I great, thank you"
       RenderBlock (anonymous) at (0,752) size 784x16
         RenderBR {BR} at (0,0) size 0x16
-      RenderTable {TABLE} at (0,768) size 784x186 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 782x184
-          RenderTableRow {TR} at (0,2) size 782x180
-            RenderTableCell {TD} at (2,82) size 327x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,768) size 784x186 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x184
+          LayoutTableRow {TR} at (0,2) size 782x180
+            LayoutTableCell {TD} at (2,82) size 327x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 175x16
                 text run at (2,2) width 175: "<../images/pikajumpr.gif\">"
-            RenderTableCell {TD} at (331,19) size 410x146 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (331,19) size 410x146 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderImage {IMG} at (2,2) size 142x142
-            RenderTableCell {TD} at (743,2) size 37x180 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (743,2) size 37x180 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 33x176
                 text run at (2,2) width 29: "This"
                 text run at (2,18) width 22: "is a"

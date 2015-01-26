@@ -44,20 +44,20 @@ layer at (0,0) size 785x2599 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 243x21
           text run at (0,0) width 243: "1.1 Inheritance through a DIV"
       RenderBlock {DIV} at (0,498.78) size 769x80 [color=#FFFFFF] [bgcolor=#000000]
-        RenderTable {TABLE} at (0,0) size 769x80
-          RenderTableSection {TBODY} at (0,0) size 769x80
-            RenderTableRow {TR} at (0,2) size 769x76
-              RenderTableCell {TD} at (2,2) size 765x76 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,0) size 769x80
+          LayoutTableSection {TBODY} at (0,0) size 769x80
+            LayoutTableRow {TR} at (0,2) size 769x76
+              LayoutTableCell {TD} at (2,2) size 765x76 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 761x73
                   text run at (1,1) width 761: "This text should be white on black, bold, twice the"
                   text run at (1,38) width 523: "size of normal text, and sans serif."
       RenderBlock {H3} at (0,597.50) size 769x22
         RenderText {#text} at (0,0) size 260x21
           text run at (0,0) width 260: "1.2 Styles set directly on TABLE"
-      RenderTable {TABLE} at (0,638.22) size 769x80 [color=#FFFFFF] [bgcolor=#000000]
-        RenderTableSection {TBODY} at (0,0) size 769x80
-          RenderTableRow {TR} at (0,2) size 769x76
-            RenderTableCell {TD} at (2,2) size 765x76 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,638.22) size 769x80 [color=#FFFFFF] [bgcolor=#000000]
+        LayoutTableSection {TBODY} at (0,0) size 769x80
+          LayoutTableRow {TR} at (0,2) size 769x76
+            LayoutTableCell {TD} at (2,2) size 765x76 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 761x73
                 text run at (1,1) width 761: "This text should be white on black, bold, twice the"
                 text run at (1,38) width 523: "size of normal text, and sans serif."
@@ -68,40 +68,40 @@ layer at (0,0) size 785x2599 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 243x21
           text run at (0,0) width 243: "2.1 Inheritance through a DIV"
       RenderBlock {DIV} at (0,825.75) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
-        RenderTable {DIV} at (0,0) size 769x74
-          RenderTableSection (anonymous) at (0,0) size 769x74
-            RenderTableRow {DIV} at (0,0) size 769x74
-              RenderTableCell {DIV} at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {DIV} at (0,0) size 769x74
+          LayoutTableSection (anonymous) at (0,0) size 769x74
+            LayoutTableRow {DIV} at (0,0) size 769x74
+              LayoutTableCell {DIV} at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 761x73
                   text run at (0,0) width 761: "This text should be white on black, bold, twice the"
                   text run at (0,37) width 523: "size of normal text, and sans serif."
       RenderBlock {H3} at (0,918.47) size 769x22
         RenderText {#text} at (0,0) size 260x21
           text run at (0,0) width 260: "2.2 Styles set directly on TABLE"
-      RenderTable {DIV} at (0,959.19) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
-        RenderTableSection (anonymous) at (0,0) size 769x74
-          RenderTableRow {DIV} at (0,0) size 769x74
-            RenderTableCell {DIV} at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (0,959.19) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
+        LayoutTableSection (anonymous) at (0,0) size 769x74
+          LayoutTableRow {DIV} at (0,0) size 769x74
+            LayoutTableCell {DIV} at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 761x73
                 text run at (0,0) width 761: "This text should be white on black, bold, twice the"
                 text run at (0,37) width 523: "size of normal text, and sans serif."
       RenderBlock {H3} at (0,1051.91) size 769x22
         RenderText {#text} at (0,0) size 244x21
           text run at (0,0) width 244: "2.3 Styles set directly on ROW"
-      RenderTable {DIV} at (0,1092.63) size 769x74
-        RenderTableSection (anonymous) at (0,0) size 769x74
-          RenderTableRow {DIV} at (0,0) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
-            RenderTableCell {DIV} at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (0,1092.63) size 769x74
+        LayoutTableSection (anonymous) at (0,0) size 769x74
+          LayoutTableRow {DIV} at (0,0) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
+            LayoutTableCell {DIV} at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 761x73
                 text run at (0,0) width 761: "This text should be white on black, bold, twice the"
                 text run at (0,37) width 523: "size of normal text, and sans serif."
       RenderBlock {H3} at (0,1185.34) size 769x22
         RenderText {#text} at (0,0) size 248x21
           text run at (0,0) width 248: "2.4 Styles set directly on CELL"
-      RenderTable {DIV} at (0,1226.06) size 769x74
-        RenderTableSection (anonymous) at (0,0) size 769x74
-          RenderTableRow {DIV} at (0,0) size 769x74
-            RenderTableCell {DIV} at (0,0) size 769x74 [color=#FFFFFF] [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (0,1226.06) size 769x74
+        LayoutTableSection (anonymous) at (0,0) size 769x74
+          LayoutTableRow {DIV} at (0,0) size 769x74
+            LayoutTableCell {DIV} at (0,0) size 769x74 [color=#FFFFFF] [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 761x73
                 text run at (0,0) width 761: "This text should be white on black, bold, twice the"
                 text run at (0,37) width 523: "size of normal text, and sans serif."
@@ -112,20 +112,20 @@ layer at (0,0) size 785x2599 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 243x21
           text run at (0,0) width 243: "3.1 Inheritance through a DIV"
       RenderBlock {DIV} at (0,1407.59) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
-        RenderTable {DIV} at (0,0) size 769x74
-          RenderTableSection (anonymous) at (0,0) size 769x74
-            RenderTableRow (anonymous) at (0,0) size 769x74
-              RenderTableCell (anonymous) at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {DIV} at (0,0) size 769x74
+          LayoutTableSection (anonymous) at (0,0) size 769x74
+            LayoutTableRow (anonymous) at (0,0) size 769x74
+              LayoutTableCell (anonymous) at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 761x73
                   text run at (0,0) width 761: "This text should be white on black, bold, twice the"
                   text run at (0,37) width 523: "size of normal text, and sans serif."
       RenderBlock {H3} at (0,1500.31) size 769x22
         RenderText {#text} at (0,0) size 260x21
           text run at (0,0) width 260: "3.2 Styles set directly on TABLE"
-      RenderTable {DIV} at (0,1541.03) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
-        RenderTableSection (anonymous) at (0,0) size 769x74
-          RenderTableRow (anonymous) at (0,0) size 769x74
-            RenderTableCell (anonymous) at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (0,1541.03) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
+        LayoutTableSection (anonymous) at (0,0) size 769x74
+          LayoutTableRow (anonymous) at (0,0) size 769x74
+            LayoutTableCell (anonymous) at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 761x73
                 text run at (0,0) width 761: "This text should be white on black, bold, twice the"
                 text run at (0,37) width 523: "size of normal text, and sans serif."
@@ -136,20 +136,20 @@ layer at (0,0) size 785x2599 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 243x21
           text run at (0,0) width 243: "4.1 Inheritance through a DIV"
       RenderBlock {DIV} at (0,1722.56) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
-        RenderTable at (0,0) size 769x74
-          RenderTableSection (anonymous) at (0,0) size 769x74
-            RenderTableRow {DIV} at (0,0) size 769x74
-              RenderTableCell (anonymous) at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
+        LayoutTable at (0,0) size 769x74
+          LayoutTableSection (anonymous) at (0,0) size 769x74
+            LayoutTableRow {DIV} at (0,0) size 769x74
+              LayoutTableCell (anonymous) at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 761x73
                   text run at (0,0) width 761: "This text should be white on black, bold, twice the"
                   text run at (0,37) width 523: "size of normal text, and sans serif."
       RenderBlock {H3} at (0,1815.28) size 769x22
         RenderText {#text} at (0,0) size 244x21
           text run at (0,0) width 244: "4.2 Styles set directly on ROW"
-      RenderTable at (0,1856) size 769x74
-        RenderTableSection (anonymous) at (0,0) size 769x74
-          RenderTableRow {DIV} at (0,0) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
-            RenderTableCell (anonymous) at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
+      LayoutTable at (0,1856) size 769x74
+        LayoutTableSection (anonymous) at (0,0) size 769x74
+          LayoutTableRow {DIV} at (0,0) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
+            LayoutTableCell (anonymous) at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 761x73
                 text run at (0,0) width 761: "This text should be white on black, bold, twice the"
                 text run at (0,37) width 523: "size of normal text, and sans serif."
@@ -160,20 +160,20 @@ layer at (0,0) size 785x2599 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 243x21
           text run at (0,0) width 243: "5.1 Inheritance through a DIV"
       RenderBlock {DIV} at (0,2037.53) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
-        RenderTable at (0,0) size 769x74
-          RenderTableSection (anonymous) at (0,0) size 769x74
-            RenderTableRow (anonymous) at (0,0) size 769x74
-              RenderTableCell {DIV} at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
+        LayoutTable at (0,0) size 769x74
+          LayoutTableSection (anonymous) at (0,0) size 769x74
+            LayoutTableRow (anonymous) at (0,0) size 769x74
+              LayoutTableCell {DIV} at (0,0) size 769x74 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 761x73
                   text run at (0,0) width 761: "This text should be white on black, bold, twice the"
                   text run at (0,37) width 523: "size of normal text, and sans serif."
       RenderBlock {H3} at (0,2130.25) size 769x22
         RenderText {#text} at (0,0) size 248x21
           text run at (0,0) width 248: "5.2 Styles set directly on CELL"
-      RenderTable at (0,2170.97) size 769x74
-        RenderTableSection (anonymous) at (0,0) size 769x74
-          RenderTableRow (anonymous) at (0,0) size 769x74
-            RenderTableCell {DIV} at (0,0) size 769x74 [color=#FFFFFF] [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
+      LayoutTable at (0,2170.97) size 769x74
+        LayoutTableSection (anonymous) at (0,0) size 769x74
+          LayoutTableRow (anonymous) at (0,0) size 769x74
+            LayoutTableCell {DIV} at (0,0) size 769x74 [color=#FFFFFF] [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 761x73
                 text run at (0,0) width 761: "This text should be white on black, bold, twice the"
                 text run at (0,37) width 523: "size of normal text, and sans serif."

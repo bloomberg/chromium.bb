@@ -9,22 +9,22 @@ layer at (0,0) size 800x553
           text run at (592,6) width 40: "have"
           text run at (0,38) width 155: "display: table-cell. "
           text run at (154,38) width 131: "They disappear:"
-      RenderTable at (3,67) size 304x19
-        RenderTableSection (anonymous) at (0,0) size 304x19
-          RenderTableRow {UL} at (0,0) size 304x19 [bgcolor=#00CC99]
-            RenderTableCell {LI} at (0,0) size 76x19 [r=0 c=0 rs=1 cs=1]
+      LayoutTable at (3,67) size 304x19
+        LayoutTableSection (anonymous) at (0,0) size 304x19
+          LayoutTableRow {UL} at (0,0) size 304x19 [bgcolor=#00CC99]
+            LayoutTableCell {LI} at (0,0) size 76x19 [r=0 c=0 rs=1 cs=1]
               RenderInline {A} at (0,0) size 54x19 [color=#0000EE]
                 RenderText {#text} at (11,0) size 54x19
                   text run at (11,0) width 54: "people"
-            RenderTableCell {LI} at (76,0) size 76x19 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {LI} at (76,0) size 76x19 [r=0 c=1 rs=1 cs=1]
               RenderInline {A} at (0,0) size 52x19 [color=#0000EE]
                 RenderText {#text} at (12,0) size 52x19
                   text run at (12,0) width 52: "places"
-            RenderTableCell {LI} at (152,0) size 76x19 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {LI} at (152,0) size 76x19 [r=0 c=2 rs=1 cs=1]
               RenderInline {A} at (0,0) size 76x19 [color=#0000EE]
                 RenderText {#text} at (0,0) size 76x19
                   text run at (0,0) width 76: "members"
-            RenderTableCell {LI} at (228,0) size 76x19 [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {LI} at (228,0) size 76x19 [r=0 c=3 rs=1 cs=1]
               RenderInline {A} at (0,0) size 38x19 [color=#0000EE]
                 RenderText {#text} at (19,0) size 38x19
                   text run at (19,0) width 38: "links"
@@ -42,58 +42,58 @@ layer at (0,0) size 800x553
               text run at (0,38) width 373: "has the same table-row/table-cell problem as "
               text run at (372,38) width 55: "above."
           RenderBlock {P} at (0,64) size 568x63
-            RenderTable {SPAN} at (0,3) size 137x60
-              RenderTableSection (anonymous) at (0,0) size 137x60
-                RenderTableRow {SPAN} at (0,0) size 137x28
-                  RenderTableCell (anonymous) at (0,0) size 137x28 [r=0 c=0 rs=1 cs=1]
+            LayoutTable {SPAN} at (0,3) size 137x60
+              LayoutTableSection (anonymous) at (0,0) size 137x60
+                LayoutTableRow {SPAN} at (0,0) size 137x28
+                  LayoutTableCell (anonymous) at (0,0) size 137x28 [r=0 c=0 rs=1 cs=1]
                     RenderText {#text} at (0,6) size 137x16
                       text run at (0,6) width 137: "First Name (required)"
-                RenderTableRow (anonymous) at (0,28) size 137x32
-                  RenderTableCell (anonymous) at (0,28) size 137x32 [r=1 c=0 rs=1 cs=1]
+                LayoutTableRow (anonymous) at (0,28) size 137x32
+                  LayoutTableCell (anonymous) at (0,28) size 137x32 [r=1 c=0 rs=1 cs=1]
                     RenderTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (137,6) size 6x19
               text run at (137,6) width 6: " "
-            RenderTable {SPAN} at (142.63,3) size 137x60
-              RenderTableSection (anonymous) at (0,0) size 137x60
-                RenderTableRow {SPAN} at (0,0) size 137x28
-                  RenderTableCell (anonymous) at (0,0) size 137x28 [r=0 c=0 rs=1 cs=1]
+            LayoutTable {SPAN} at (142.63,3) size 137x60
+              LayoutTableSection (anonymous) at (0,0) size 137x60
+                LayoutTableRow {SPAN} at (0,0) size 137x28
+                  LayoutTableCell (anonymous) at (0,0) size 137x28 [r=0 c=0 rs=1 cs=1]
                     RenderText {#text} at (0,6) size 137x16
                       text run at (0,6) width 137: "Last Name (required)"
-                RenderTableRow (anonymous) at (0,28) size 137x32
-                  RenderTableCell (anonymous) at (0,28) size 137x32 [r=1 c=0 rs=1 cs=1]
+                LayoutTableRow (anonymous) at (0,28) size 137x32
+                  LayoutTableCell (anonymous) at (0,28) size 137x32 [r=1 c=0 rs=1 cs=1]
                     RenderTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (0,0) size 0x0
           RenderBlock {P} at (0,127) size 568x63
-            RenderTable {SPAN} at (0,3) size 223x60
-              RenderTableSection (anonymous) at (0,0) size 223x60
-                RenderTableRow {SPAN} at (0,0) size 223x28
-                  RenderTableCell (anonymous) at (0,0) size 223x28 [r=0 c=0 rs=1 cs=1]
+            LayoutTable {SPAN} at (0,3) size 223x60
+              LayoutTableSection (anonymous) at (0,0) size 223x60
+                LayoutTableRow {SPAN} at (0,0) size 223x28
+                  LayoutTableCell (anonymous) at (0,0) size 223x28 [r=0 c=0 rs=1 cs=1]
                     RenderText {#text} at (0,6) size 93x16
                       text run at (0,6) width 93: "Email Address"
-                RenderTableRow (anonymous) at (0,28) size 223x32
-                  RenderTableCell (anonymous) at (0,28) size 223x32 [r=1 c=0 rs=1 cs=1]
+                LayoutTableRow (anonymous) at (0,28) size 223x32
+                  LayoutTableCell (anonymous) at (0,28) size 223x32 [r=1 c=0 rs=1 cs=1]
                     RenderTextControl {INPUT} at (0,8) size 223x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (0,0) size 0x0
           RenderBlock {P} at (0,190) size 568x63
-            RenderTable {SPAN} at (0,3) size 105x60
-              RenderTableSection (anonymous) at (0,0) size 105x60
-                RenderTableRow {SPAN} at (0,0) size 105x28
-                  RenderTableCell (anonymous) at (0,0) size 105x28 [r=0 c=0 rs=1 cs=1]
+            LayoutTable {SPAN} at (0,3) size 105x60
+              LayoutTableSection (anonymous) at (0,0) size 105x60
+                LayoutTableRow {SPAN} at (0,0) size 105x28
+                  LayoutTableCell (anonymous) at (0,0) size 105x28 [r=0 c=0 rs=1 cs=1]
                     RenderText {#text} at (0,6) size 105x16
                       text run at (0,6) width 105: "Company Name"
-                RenderTableRow (anonymous) at (0,28) size 105x32
-                  RenderTableCell (anonymous) at (0,28) size 105x32 [r=1 c=0 rs=1 cs=1]
+                LayoutTableRow (anonymous) at (0,28) size 105x32
+                  LayoutTableCell (anonymous) at (0,28) size 105x32 [r=1 c=0 rs=1 cs=1]
                     RenderTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (105,6) size 6x19
               text run at (105,6) width 6: " "
-            RenderTable {SPAN} at (110.63,3) size 103x60
-              RenderTableSection (anonymous) at (0,0) size 103x60
-                RenderTableRow {SPAN} at (0,0) size 103x28
-                  RenderTableCell (anonymous) at (0,0) size 103x28 [r=0 c=0 rs=1 cs=1]
+            LayoutTable {SPAN} at (110.63,3) size 103x60
+              LayoutTableSection (anonymous) at (0,0) size 103x60
+                LayoutTableRow {SPAN} at (0,0) size 103x28
+                  LayoutTableCell (anonymous) at (0,0) size 103x28 [r=0 c=0 rs=1 cs=1]
                     RenderText {#text} at (0,6) size 28x16
                       text run at (0,6) width 28: "Title"
-                RenderTableRow (anonymous) at (0,28) size 103x32
-                  RenderTableCell (anonymous) at (0,28) size 103x32 [r=1 c=0 rs=1 cs=1]
+                LayoutTableRow (anonymous) at (0,28) size 103x32
+                  LayoutTableCell (anonymous) at (0,28) size 103x32 [r=1 c=0 rs=1 cs=1]
                     RenderTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (0,0) size 0x0
           RenderBlock {P} at (0,253) size 568x32

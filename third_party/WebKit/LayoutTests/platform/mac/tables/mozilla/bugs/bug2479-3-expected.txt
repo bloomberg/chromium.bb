@@ -25,10 +25,10 @@ layer at (0,0) size 785x618 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderBlock (anonymous) at (13,13) size 743x16
           RenderText {#text} at (0,0) size 240x16
             text run at (0,0) width 240: "If this paragraph breaks the line here:"
-        RenderTable {SPAN} at (13,29) size 60x16
-          RenderTableSection (anonymous) at (0,0) size 60x16
-            RenderTableRow (anonymous) at (0,0) size 60x16
-              RenderTableCell (anonymous) at (0,0) size 60x16 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {SPAN} at (13,29) size 60x16
+          LayoutTableSection (anonymous) at (0,0) size 60x16
+            LayoutTableRow (anonymous) at (0,0) size 60x16
+              LayoutTableCell (anonymous) at (0,0) size 60x16 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 60x16
                   text run at (0,0) width 60: "and here:"
         RenderBlock (anonymous) at (13,45) size 743x32
@@ -50,13 +50,13 @@ layer at (0,0) size 785x618 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,0) size 764x32
           text run at (0,0) width 764: "Below there should be a gray bar, spanning the width of the BODY, with the text \"Left\" to the left and the text \"Right\","
           text run at (0,16) width 223: "on the same line, flush to the right."
-      RenderTable {DIV} at (0,335.25) size 769x16 [bgcolor=#C0C0C0]
-        RenderTableSection (anonymous) at (0,0) size 769x16
-          RenderTableRow (anonymous) at (0,0) size 769x16
-            RenderTableCell {DIV} at (0,0) size 329x16 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (0,335.25) size 769x16 [bgcolor=#C0C0C0]
+        LayoutTableSection (anonymous) at (0,0) size 769x16
+          LayoutTableRow (anonymous) at (0,0) size 769x16
+            LayoutTableCell {DIV} at (0,0) size 329x16 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 27x16
                 text run at (0,0) width 27: "Left"
-            RenderTableCell {DIV} at (329,0) size 440x16 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {DIV} at (329,0) size 440x16 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (404,0) size 36x16
                 text run at (404,0) width 36: "Right"
       RenderBlock {H2} at (0,371.16) size 769x24
