@@ -145,8 +145,11 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override {
+    // The position of the window may have changed. Hence we use SetBounds in
+    // place of SetSize. We need to pass the bounds in screen coordinates to
+    // the Widget::SetBounds function.
     if (top_level_widget_ && window == child_window_)
-      top_level_widget_->SetSize(new_bounds.size());
+      top_level_widget_->SetBounds(window->GetBoundsInScreen());
   }
 
  private:
