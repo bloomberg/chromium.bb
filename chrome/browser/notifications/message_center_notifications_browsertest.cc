@@ -126,7 +126,6 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
                         base::ASCIIToUTF16("title"),
                         base::ASCIIToUTF16("message"),
                         gfx::Image(),
-                        blink::WebTextDirectionDefault,
                         message_center::NotifierId(
                             message_center::NotifierId::APPLICATION,
                             "extension_id"),

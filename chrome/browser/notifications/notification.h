@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/notifications/notification_delegate.h"
-#include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 #include "url/gurl.h"
@@ -38,7 +37,6 @@ class Notification : public message_center::Notification {
       const base::string16& title,
       const base::string16& body,
       const gfx::Image& icon,
-      blink::WebTextDirection dir,
       const message_center::NotifierId& notifier_id,
       const base::string16& display_source,
       const base::string16& replace_id,

@@ -420,7 +420,6 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
           GetScreenshotNotificationText(screenshot_result)),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_SCREENSHOT_NOTIFICATION_ICON),
-      blink::WebTextDirectionDefault,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  ash::system_notifier::kNotifierScreenshot),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME),

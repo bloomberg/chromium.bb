@@ -175,7 +175,6 @@ void SyncErrorNotifier::OnErrorChanged() {
       l10n_util::GetStringUTF16(IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_ALERT),
-      blink::WebTextDirectionDefault,
       notifier_id,
       base::string16(),  // display_source
       base::ASCIIToUTF16(notification_id_),

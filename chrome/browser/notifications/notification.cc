@@ -30,7 +30,6 @@ Notification::Notification(
     const base::string16& title,
     const base::string16& body,
     const gfx::Image& icon,
-    blink::WebTextDirection dir,
     const message_center::NotifierId& notifier_id,
     const base::string16& display_source,
     const base::string16& replace_id,

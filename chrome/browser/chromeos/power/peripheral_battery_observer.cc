@@ -214,7 +214,6 @@ bool PeripheralBatteryObserver::PostNotification(const std::string& address,
       string_text,
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW),
-      blink::WebTextDirectionDefault,
       message_center::NotifierId(GURL(kNotificationOriginUrl)),
       base::string16(),
       base::UTF8ToUTF16(address),

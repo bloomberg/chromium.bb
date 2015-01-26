@@ -171,7 +171,6 @@ void ConsumerManagementNotifier::ShowDesktopNotification(
       l10n_util::GetStringUTF16(body_message_id),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_CONSUMER_MANAGEMENT_NOTIFICATION_ICON),
-      blink::WebTextDirectionDefault,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  notification_id),
       base::string16(),  // display_source

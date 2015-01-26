@@ -183,7 +183,6 @@ void SigninErrorNotifier::OnErrorChanged() {
       GetMessageBody(),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_ALERT),
-      blink::WebTextDirectionDefault,
       notifier_id,
       base::string16(),  // display_source
       base::ASCIIToUTF16(notification_id_),

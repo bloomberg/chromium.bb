@@ -424,7 +424,6 @@ void HotwordService::ShowHotwordNotification() {
       l10n_util::GetStringUTF16(IDS_HOTWORD_NOTIFICATION_DESCRIPTION),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_HOTWORD_NOTIFICATION_ICON),
-      blink::WebTextDirectionDefault,
       message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
           hotword_internal::kHotwordNotifierId),
