@@ -14,7 +14,7 @@ Polymer('viewer-progress-bar', {
     var numVisible = this.progress * this.segments.length / 100.0;
     for (var i = 0; i < this.segments.length; i++) {
       this.segments[i].style.visibility =
-          i < numVisible ? 'auto' : 'hidden';
+          i < numVisible ? 'inherit' : 'hidden';
     }
 
     if (this.progress >= 100 || this.progress < 0)
