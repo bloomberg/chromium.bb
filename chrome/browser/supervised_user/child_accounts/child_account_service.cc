@@ -76,6 +76,7 @@ ChildAccountService::ChildAccountService(Profile* profile)
 ChildAccountService::~ChildAccountService() {}
 
 void ChildAccountService::SetIsChildAccount(bool is_child_account) {
+  PropagateChildStatusToUser(is_child_account);
   if (profile_->IsChild() == is_child_account)
     return;
 
@@ -85,7 +86,6 @@ void ChildAccountService::SetIsChildAccount(bool is_child_account) {
   } else {
     profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserId);
   }
-  PropagateChildStatusToUser(is_child_account);
 }
 
 void ChildAccountService::Init() {

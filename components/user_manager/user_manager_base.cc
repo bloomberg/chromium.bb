@@ -982,10 +982,11 @@ void UserManagerBase::NotifyActiveUserHashChanged(const std::string& hash) {
 
 void UserManagerBase::ChangeUserChildStatus(User* user, bool is_child) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  if (user->IsSupervised() == is_child)
+    return;
   user->SetIsChild(is_child);
-  SaveUserType(user->email(), is_child
-                                  ? user_manager::USER_TYPE_CHILD
-                                  : user_manager::USER_TYPE_REGULAR);
+  SaveUserType(user->email(), is_child ? user_manager::USER_TYPE_CHILD
+                                       : user_manager::USER_TYPE_REGULAR);
   FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
                     session_state_observer_list_,
                     UserChangedChildStatus(user));
