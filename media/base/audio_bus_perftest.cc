@@ -18,22 +18,22 @@ void RunInterleaveBench(AudioBus* bus, const std::string& trace_name) {
   scoped_ptr<T[]> interleaved(new T[frame_size]);
   const int byte_size = sizeof(T);
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeTicks start = base::TimeTicks::Now();
   for (int i = 0; i < kBenchmarkIterations; ++i) {
     bus->ToInterleaved(bus->frames(), byte_size, interleaved.get());
   }
   double total_time_milliseconds =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+      (base::TimeTicks::Now() - start).InMillisecondsF();
   perf_test::PrintResult(
       "audio_bus_to_interleaved", "", trace_name,
       total_time_milliseconds / kBenchmarkIterations, "ms", true);
 
-  start = base::TimeTicks::HighResNow();
+  start = base::TimeTicks::Now();
   for (int i = 0; i < kBenchmarkIterations; ++i) {
     bus->FromInterleaved(interleaved.get(), bus->frames(), byte_size);
   }
   total_time_milliseconds =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+      (base::TimeTicks::Now() - start).InMillisecondsF();
   perf_test::PrintResult(
       "audio_bus_from_interleaved", "", trace_name,
       total_time_milliseconds / kBenchmarkIterations, "ms", true);

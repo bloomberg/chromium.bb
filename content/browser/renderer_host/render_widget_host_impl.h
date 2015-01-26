@@ -403,9 +403,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool GotResponseToLockMouseRequest(bool allowed);
 
   // Tells the RenderWidget about the latest vsync parameters.
-  // Note: Make sure the timebase was obtained using
-  // base::TimeTicks::HighResNow. Using the non-high res timer will result in
-  // incorrect synchronization across processes.
   virtual void UpdateVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval);
 

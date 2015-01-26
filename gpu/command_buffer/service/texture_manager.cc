@@ -1718,13 +1718,13 @@ void TextureManager::DoTexImage2D(
 ScopedTextureUploadTimer::ScopedTextureUploadTimer(
     DecoderTextureState* texture_state)
     : texture_state_(texture_state),
-      begin_time_(base::TimeTicks::HighResNow()) {
+      begin_time_(base::TimeTicks::Now()) {
 }
 
 ScopedTextureUploadTimer::~ScopedTextureUploadTimer() {
   texture_state_->texture_upload_count++;
   texture_state_->total_texture_upload_time +=
-      base::TimeTicks::HighResNow() - begin_time_;
+      base::TimeTicks::Now() - begin_time_;
 }
 
 }  // namespace gles2

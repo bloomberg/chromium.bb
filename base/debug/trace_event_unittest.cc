@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/debug/trace_event_unittest.h"
-
 #include <math.h>
 #include <cstdlib>
 
@@ -870,13 +868,6 @@ void ValidateInstantEventPresentOnEveryThread(const ListValue& trace_parsed,
 }
 
 }  // namespace
-
-void HighResSleepForTraceTest(base::TimeDelta elapsed) {
-  base::TimeTicks end_time = base::TimeTicks::HighResNow() + elapsed;
-  do {
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
-  } while (base::TimeTicks::HighResNow() < end_time);
-}
 
 // Simple Test for emitting data and validating it was received.
 TEST_F(TraceEventTestFixture, DataCaptured) {

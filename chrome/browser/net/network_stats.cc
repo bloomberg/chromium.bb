@@ -417,8 +417,6 @@ bool NetworkStats::UpdateReception(const ProbePacket& probe_packet) {
   TestType test_type = test_sequence_[current_test_index_];
   uint32 received_packets = packets_received_mask_.count();
 
-  // Now() has resolution ~1-15ms. HighResNow() has high resolution but it
-  // is warned not to use it unless necessary.
   base::TimeTicks current_time = base::TimeTicks::Now();
   last_arrival_time_ = current_time;
   if (first_arrival_time_.is_null())

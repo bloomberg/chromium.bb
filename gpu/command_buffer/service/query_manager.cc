@@ -216,12 +216,12 @@ CommandsIssuedQuery::CommandsIssuedQuery(
 }
 
 bool CommandsIssuedQuery::Begin() {
-  begin_time_ = base::TimeTicks::HighResNow();
+  begin_time_ = base::TimeTicks::Now();
   return true;
 }
 
 bool CommandsIssuedQuery::End(base::subtle::Atomic32 submit_count) {
-  base::TimeDelta elapsed = base::TimeTicks::HighResNow() - begin_time_;
+  base::TimeDelta elapsed = base::TimeTicks::Now() - begin_time_;
   MarkAsPending(submit_count);
   return MarkAsCompleted(elapsed.InMicroseconds());
 }
@@ -264,7 +264,7 @@ bool CommandLatencyQuery::Begin() {
 }
 
 bool CommandLatencyQuery::End(base::subtle::Atomic32 submit_count) {
-    base::TimeDelta now = base::TimeTicks::HighResNow() - base::TimeTicks();
+    base::TimeDelta now = base::TimeTicks::Now() - base::TimeTicks();
     MarkAsPending(submit_count);
     return MarkAsCompleted(now.InMicroseconds());
 }
@@ -418,7 +418,7 @@ CommandsCompletedQuery::CommandsCompletedQuery(QueryManager* manager,
     : Query(manager, target, shm_id, shm_offset) {}
 
 bool CommandsCompletedQuery::Begin() {
-  begin_time_ = base::TimeTicks::HighResNow();
+  begin_time_ = base::TimeTicks::Now();
   return true;
 }
 
@@ -435,7 +435,7 @@ bool CommandsCompletedQuery::Process(bool did_finish) {
   if (!did_finish && fence_ && !fence_->HasCompleted())
     return true;
 
-  base::TimeDelta elapsed = base::TimeTicks::HighResNow() - begin_time_;
+  base::TimeDelta elapsed = base::TimeTicks::Now() - begin_time_;
   return MarkAsCompleted(elapsed.InMicroseconds());
 }
 

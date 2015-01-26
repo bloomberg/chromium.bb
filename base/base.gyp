@@ -487,7 +487,6 @@
         'debug/trace_event_synthetic_delay_unittest.cc',
         'debug/trace_event_system_stats_monitor_unittest.cc',
         'debug/trace_event_unittest.cc',
-        'debug/trace_event_unittest.h',
         'debug/trace_event_win_unittest.cc',
         'deferred_sequenced_task_runner_unittest.cc',
         'environment_unittest.cc',

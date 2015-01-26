@@ -116,8 +116,8 @@ TEST(TimeTicks, WinRollover) {
 }
 
 TEST(TimeTicks, SubMillisecondTimers) {
-  // HighResNow doesn't work on some systems.  Since the product still works
-  // even if it doesn't work, it makes this entire test questionable.
+  // IsHighResolution() is false on some systems.  Since the product still works
+  // even if it's false, it makes this entire test questionable.
   if (!TimeTicks::IsHighResolution())
     return;
 
@@ -126,11 +126,11 @@ TEST(TimeTicks, SubMillisecondTimers) {
 
   // Run kRetries attempts to see a sub-millisecond timer.
   for (int index = 0; index < kRetries; index++) {
-    TimeTicks last_time = TimeTicks::HighResNow();
+    TimeTicks last_time = TimeTicks::Now();
     TimeDelta delta;
     // Spin until the clock has detected a change.
     do {
-      delta = TimeTicks::HighResNow() - last_time;
+      delta = TimeTicks::Now() - last_time;
     } while (delta.InMicroseconds() == 0);
     if (delta.InMicroseconds() < 1000) {
       saw_submillisecond_timer = true;
@@ -193,10 +193,10 @@ TEST(TimeTicks, TimerPerformance) {
 
   int test_case = 0;
   while (cases[test_case].func) {
-    TimeTicks start = TimeTicks::HighResNow();
+    TimeTicks start = TimeTicks::Now();
     for (int index = 0; index < kLoops; index++)
       cases[test_case].func();
-    TimeTicks stop = TimeTicks::HighResNow();
+    TimeTicks stop = TimeTicks::Now();
     // Turning off the check for acceptible delays.  Without this check,
     // the test really doesn't do much other than measure.  But the
     // measurements are still useful for testing timers on various platforms.

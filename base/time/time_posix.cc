@@ -338,7 +338,7 @@ TimeTicks TimeTicks::NowFromSystemTraceTime() {
   struct timespec ts;
   if (clock_gettime(kClockSystemTrace, &ts) != 0) {
     // NB: fall-back for a chrome os build running on linux
-    return HighResNow();
+    return Now();
   }
 
   absolute_micro =
@@ -352,7 +352,7 @@ TimeTicks TimeTicks::NowFromSystemTraceTime() {
 
 // static
 TimeTicks TimeTicks::NowFromSystemTraceTime() {
-  return HighResNow();
+  return Now();
 }
 
 #endif  // defined(OS_CHROMEOS)

@@ -3,7 +3,6 @@ TimeTicks.WinRollover
 
 # Very sensitive to slowdown
 TimeTicks.Deltas
-TimeTicks.HighResNow
 TimerTest.RepeatingTimer*
 
 # This Windows-native sampling profiler test does not work under our tools

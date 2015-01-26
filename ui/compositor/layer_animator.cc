@@ -759,10 +759,7 @@ bool LayerAnimator::StartSequenceImmediately(LayerAnimationSequence* sequence) {
       return false;
   }
 
-  // All clear, actually start the sequence. Note: base::TimeTicks::Now has
-  // a resolution that can be as bad as 15ms. If this causes glitches in the
-  // animations, this can be switched to HighResNow() (animation uses Now()
-  // internally).
+  // All clear, actually start the sequence.
   // All LayerAnimators share the same LayerAnimatorCollection. Use the
   // last_tick_time() from there to ensure animations started during the same
   // event complete at the same time.

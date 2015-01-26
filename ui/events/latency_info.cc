@@ -201,7 +201,7 @@ void LatencyInfo::AddLatencyNumber(LatencyComponentType component,
                                    int64 id,
                                    int64 component_sequence_number) {
   AddLatencyNumberWithTimestamp(component, id, component_sequence_number,
-                                base::TimeTicks::HighResNow(), 1);
+                                base::TimeTicks::Now(), 1);
 }
 
 void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
@@ -238,7 +238,7 @@ void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
         // CrOS). So we need to adjust the diff between in CLOCK_MONOTONIC and
         // CLOCK_SYSTEM_TRACE. Note that the diff is drifting overtime so we
         // can't use a static value.
-        int64 diff = base::TimeTicks::HighResNow().ToInternalValue() -
+        int64 diff = base::TimeTicks::Now().ToInternalValue() -
             base::TimeTicks::NowFromSystemTraceTime().ToInternalValue();
         ts = component.event_time.ToInternalValue() - diff;
       } else {

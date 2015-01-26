@@ -184,7 +184,7 @@ TraceEventSyntheticDelay* TraceEventSyntheticDelayRegistry::GetOrCreateDelay(
 }
 
 base::TimeTicks TraceEventSyntheticDelayRegistry::Now() {
-  return base::TimeTicks::HighResNow();
+  return base::TimeTicks::Now();
 }
 
 void TraceEventSyntheticDelayRegistry::ResetAllDelays() {

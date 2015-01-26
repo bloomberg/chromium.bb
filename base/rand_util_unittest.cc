@@ -134,10 +134,10 @@ TEST(RandUtilTest, DISABLED_RandBytesPerf) {
   const size_t kTestBufferSize = 1 * 1024 * 1024;
 
   scoped_ptr<uint8[]> buffer(new uint8[kTestBufferSize]);
-  const base::TimeTicks now = base::TimeTicks::HighResNow();
+  const base::TimeTicks now = base::TimeTicks::Now();
   for (int i = 0; i < kTestIterations; ++i)
     base::RandBytes(buffer.get(), kTestBufferSize);
-  const base::TimeTicks end = base::TimeTicks::HighResNow();
+  const base::TimeTicks end = base::TimeTicks::Now();
 
   LOG(INFO) << "RandBytes(" << kTestBufferSize << ") took: "
             << (end - now).InMicroseconds() << "µs";

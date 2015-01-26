@@ -211,7 +211,7 @@ class SGIVideoSyncProviderThreadShim {
         return;
 
       TRACE_EVENT_INSTANT0("gpu", "vblank", TRACE_EVENT_SCOPE_THREAD);
-      now = base::TimeTicks::HighResNow();
+      now = base::TimeTicks::Now();
 
       glXMakeCurrent(display_, 0, 0);
     }

@@ -141,12 +141,11 @@ void UpdateAbsSendTimeExtensionValue(char* extension_data,
     return;
   }
 
-  // Now() has resolution ~1-15ms, using HighResNow(). But it is warned not to
-  // use it unless necessary, as it is expensive than Now().
+  // Now() has resolution ~1-15ms
   uint32 now_second = abs_send_time;
   if (!now_second) {
     uint64 now_us =
-        (base::TimeTicks::HighResNow() - base::TimeTicks()).InMicroseconds();
+        (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
     // Convert second to 24-bit unsigned with 18 bit fractional part
     now_second =
         ((now_us << 18) / base::Time::kMicrosecondsPerSecond) & 0x00FFFFFF;

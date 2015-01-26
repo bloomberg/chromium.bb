@@ -392,8 +392,7 @@ void MidiManagerAlsa::EventLoop() {
   // Read available incoming MIDI data.
   snd_seq_event_t* event;
   int err = snd_seq_event_input(in_client_, &event);
-  double timestamp =
-      (base::TimeTicks::HighResNow() - base::TimeTicks()).InSecondsF();
+  double timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
   if (err == -ENOSPC) {
     VLOG(1) << "snd_seq_event_input detected buffer overrun";
 

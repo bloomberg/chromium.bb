@@ -70,7 +70,7 @@ class BandwidthMetrics {
     // If we're the only stream, we've finished some idle time.  Record a new
     // timestamp to indicate the start of data flow.
     if (++num_streams_in_progress_ == 1) {
-      last_start_ = base::TimeTicks::HighResNow();
+      last_start_ = base::TimeTicks::Now();
       bytes_since_last_start_ = 0;
     }
   }
@@ -86,7 +86,7 @@ class BandwidthMetrics {
       if (bytes_since_last_start_ < kRecordSizeThreshold)
         return;
 
-      base::TimeDelta delta = base::TimeTicks::HighResNow() - last_start_;
+      base::TimeDelta delta = base::TimeTicks::Now() - last_start_;
       double ms = delta.InMillisecondsF();
       if (ms > 0.0) {
         double kbps = static_cast<double>(bytes_since_last_start_) * 8 / ms;

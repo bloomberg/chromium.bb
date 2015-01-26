@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/debug/trace_event_unittest.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/trace_event_analyzer.h"
+#include "base/threading/platform_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -409,7 +409,7 @@ TEST_F(TraceEventAnalyzerTest, BeginEndDuration) {
       TRACE_EVENT_BEGIN0("cat2", "name3"); // found by duration query
       // next event not searched for, just noise
       TRACE_EVENT_INSTANT0("noise", "name4", TRACE_EVENT_SCOPE_THREAD);
-      base::debug::HighResSleepForTraceTest(kSleepTime);
+      base::PlatformThread::Sleep(kSleepTime);
       TRACE_EVENT_BEGIN0("cat2", "name5"); // not found (duration too short)
       TRACE_EVENT_END0("cat2", "name5"); // not found (duration too short)
       TRACE_EVENT_END0("cat2", "name3"); // found by duration query
@@ -455,7 +455,7 @@ TEST_F(TraceEventAnalyzerTest, CompleteDuration) {
       TRACE_EVENT0("cat2", "name3"); // found by duration query
       // next event not searched for, just noise
       TRACE_EVENT_INSTANT0("noise", "name4", TRACE_EVENT_SCOPE_THREAD);
-      base::debug::HighResSleepForTraceTest(kSleepTime);
+      base::PlatformThread::Sleep(kSleepTime);
       TRACE_EVENT0("cat2", "name5"); // not found (duration too short)
     }
   }

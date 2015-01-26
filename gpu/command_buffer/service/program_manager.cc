@@ -553,7 +553,7 @@ bool Program::Link(ShaderManager* manager,
     return false;
   }
 
-  TimeTicks before_time = TimeTicks::HighResNow();
+  TimeTicks before_time = TimeTicks::Now();
   bool link = true;
   ProgramCache* cache = manager_->program_cache_;
   if (cache) {
@@ -582,7 +582,7 @@ bool Program::Link(ShaderManager* manager,
 
   if (link) {
     ExecuteBindAttribLocationCalls();
-    before_time = TimeTicks::HighResNow();
+    before_time = TimeTicks::Now();
     if (cache && gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary) {
       glProgramParameteri(service_id(),
                           PROGRAM_BINARY_RETRIEVABLE_HINT,
@@ -608,7 +608,7 @@ bool Program::Link(ShaderManager* manager,
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheMissTime",
           static_cast<base::HistogramBase::Sample>(
-              (TimeTicks::HighResNow() - before_time).InMicroseconds()),
+              (TimeTicks::Now() - before_time).InMicroseconds()),
           0,
           static_cast<base::HistogramBase::Sample>(
               TimeDelta::FromSeconds(10).InMicroseconds()),
@@ -617,7 +617,7 @@ bool Program::Link(ShaderManager* manager,
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheHitTime",
           static_cast<base::HistogramBase::Sample>(
-              (TimeTicks::HighResNow() - before_time).InMicroseconds()),
+              (TimeTicks::Now() - before_time).InMicroseconds()),
           0,
           static_cast<base::HistogramBase::Sample>(
               TimeDelta::FromSeconds(1).InMicroseconds()),

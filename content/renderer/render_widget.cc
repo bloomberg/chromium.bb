@@ -1102,8 +1102,8 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
                                                    &latency_info);
 
   base::TimeTicks start_time;
-  if (base::TimeTicks::IsHighResNowFastAndReliable())
-    start_time = base::TimeTicks::HighResNow();
+  if (base::TimeTicks::IsHighResolution())
+    start_time = base::TimeTicks::Now();
 
   TRACE_EVENT1("renderer", "RenderWidget::OnHandleInputEvent",
                "event", WebInputEventTraits::GetName(input_event->type));
@@ -1207,13 +1207,13 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
 
   bool frame_pending = compositor_ && compositor_->BeginMainFrameRequested();
 
-  // If we don't have a fast and accurate HighResNow, we assume the input
-  // handlers are heavy and rate limit them.
+  // If we don't have a fast and accurate Now(), we assume the input handlers
+  // are heavy and rate limit them.
   bool rate_limiting_wanted =
       input_event->type == WebInputEvent::MouseMove ||
       input_event->type == WebInputEvent::MouseWheel;
   if (rate_limiting_wanted && !start_time.is_null()) {
-      base::TimeTicks end_time = base::TimeTicks::HighResNow();
+      base::TimeTicks end_time = base::TimeTicks::Now();
       total_input_handling_time_this_frame_ += (end_time - start_time);
       rate_limiting_wanted =
           total_input_handling_time_this_frame_.InMicroseconds() >

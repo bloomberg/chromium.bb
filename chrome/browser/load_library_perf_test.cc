@@ -29,10 +29,10 @@ void MeasureSizeAndTimeToLoadNativeLibrary(const base::FilePath& library_name) {
                          true);
 
   base::NativeLibraryLoadError error;
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeTicks start = base::TimeTicks::Now();
   base::NativeLibrary native_library =
       base::LoadNativeLibrary(library_path, &error);
-  double delta = (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+  double delta = (base::TimeTicks::Now() - start).InMillisecondsF();
   ASSERT_TRUE(native_library) << "Error loading library: " << error.ToString();
   base::UnloadNativeLibrary(native_library);
   perf_test::PrintResult("time_to_load_library",

@@ -2470,14 +2470,9 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         touch_event_type = ui::ET_TOUCH_MOVED;
       }
       if (touch_event_type != ui::ET_UNKNOWN) {
-        base::TimeTicks now;
         // input[i].dwTime doesn't necessarily relate to the system time at all,
-        // so use base::TimeTicks::HighResNow() if possible, or
-        // base::TimeTicks::Now() otherwise.
-        if (base::TimeTicks::IsHighResNowFastAndReliable())
-          now = base::TimeTicks::HighResNow();
-        else
-          now = base::TimeTicks::Now();
+        // so use base::TimeTicks::Now()
+        const base::TimeTicks now = base::TimeTicks::Now();
         ui::TouchEvent event(touch_event_type,
                              gfx::Point(point.x, point.y),
                              id_generator_.GetGeneratedID(input[i].dwID),

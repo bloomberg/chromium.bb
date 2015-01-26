@@ -17,8 +17,8 @@ namespace base {
 // See DefaultTickClock (base/time/default_tick_clock.h) for the default
 // implementation that simply uses TimeTicks::Now().
 //
-// (Other implementations that use TimeTicks::HighResNow() or
-// TimeTicks::NowFromSystemTime() should be added as needed.)
+// (Other implementations that use TimeTicks::NowFromSystemTime() should
+// be added as needed.)
 //
 // See SimpleTestTickClock (base/test/simple_test_tick_clock.h) for a
 // simple test implementation.

@@ -210,11 +210,11 @@ private:
 
 AutoStamper::AutoStamper(TimingCanvas *timing_canvas)
     : timing_canvas_(timing_canvas) {
-  start_ticks_ = base::TimeTicks::HighResNow();
+  start_ticks_ = base::TimeTicks::Now();
 }
 
 AutoStamper::~AutoStamper() {
-  base::TimeDelta delta = base::TimeTicks::HighResNow() - start_ticks_;
+  base::TimeDelta delta = base::TimeTicks::Now() - start_ticks_;
   int command_index = timing_canvas_->tracking_canvas_->CommandCount() - 1;
   DCHECK_GE(command_index, 0);
   timing_canvas_->timings_map_[command_index] = delta;

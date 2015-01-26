@@ -643,8 +643,8 @@ TEST(TimeTicks, Deltas) {
 }
 
 static void HighResClockTest(TimeTicks (*GetTicks)()) {
-  // HighResNow doesn't work on some systems.  Since the product still works
-  // even if it doesn't work, it makes this entire test questionable.
+  // IsHighResolution() is false on some systems.  Since the product still works
+  // even if it's false, it makes this entire test questionable.
   if (!TimeTicks::IsHighResolution())
     return;
 
@@ -679,8 +679,8 @@ static void HighResClockTest(TimeTicks (*GetTicks)()) {
   EXPECT_TRUE(success);
 }
 
-TEST(TimeTicks, HighResNow) {
-  HighResClockTest(&TimeTicks::HighResNow);
+TEST(TimeTicks, HighRes) {
+  HighResClockTest(&TimeTicks::Now);
 }
 
 // Fails frequently on Android http://crbug.com/352633 with:
@@ -711,7 +711,7 @@ TEST(TimeTicks, MAYBE_ThreadNow) {
 }
 
 TEST(TimeTicks, NowFromSystemTraceTime) {
-  // Re-use HighResNow test for now since clock properties are identical.
+  // Re-use HighRes test for now since clock properties are identical.
   HighResClockTest(&TimeTicks::NowFromSystemTraceTime);
 }
 

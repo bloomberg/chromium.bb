@@ -46,13 +46,13 @@ class LeakyBucket : public RateLimiter {
       : volume_(volume),
         rate_(rate),
         level_(0.0),
-        last_update_(base::TimeTicks::HighResNow()) {
+        last_update_(base::TimeTicks::Now()) {
   }
 
   ~LeakyBucket() override {}
 
   bool DropNextPacket() override {
-    base::TimeTicks now = base::TimeTicks::HighResNow();
+    base::TimeTicks now = base::TimeTicks::Now();
     double interval = (now - last_update_).InSecondsF();
     last_update_ = now;
     level_ = level_ + 1.0 - interval * rate_;

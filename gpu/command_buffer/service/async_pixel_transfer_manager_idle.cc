@@ -144,7 +144,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D(
 
   void* data = mem_params.GetDataAddress();
 
-  base::TimeTicks begin_time(base::TimeTicks::HighResNow());
+  base::TimeTicks begin_time(base::TimeTicks::Now());
   gfx::ScopedTextureBinder texture_binder(tex_params.target, texture_id_);
 
   {
@@ -165,7 +165,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D(
   transfer_in_progress_ = false;
   shared_state_->texture_upload_count++;
   shared_state_->total_texture_upload_time +=
-      base::TimeTicks::HighResNow() - begin_time;
+      base::TimeTicks::Now() - begin_time;
 
   // The texture is already fully bound so just call it now.
   bind_callback.Run();
@@ -180,7 +180,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
 
   void* data = mem_params.GetDataAddress();
 
-  base::TimeTicks begin_time(base::TimeTicks::HighResNow());
+  base::TimeTicks begin_time(base::TimeTicks::Now());
   gfx::ScopedTextureBinder texture_binder(tex_params.target, texture_id_);
 
   // If it's a full texture update, use glTexImage2D as it's faster.
@@ -220,7 +220,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
   transfer_in_progress_ = false;
   shared_state_->texture_upload_count++;
   shared_state_->total_texture_upload_time +=
-      base::TimeTicks::HighResNow() - begin_time;
+      base::TimeTicks::Now() - begin_time;
 }
 
 AsyncPixelTransferManagerIdle::Task::Task(

@@ -11,9 +11,8 @@ namespace cc {
 namespace {
 
 base::TimeTicks Now() {
-  return base::TimeTicks::IsThreadNowSupported()
-             ? base::TimeTicks::ThreadNow()
-             : base::TimeTicks::HighResNow();
+  return base::TimeTicks::IsThreadNowSupported() ? base::TimeTicks::ThreadNow()
+                                                 : base::TimeTicks::Now();
 }
 
 }  // namespace

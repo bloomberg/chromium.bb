@@ -293,7 +293,7 @@ class TransferStateInternal
 
     base::TimeTicks begin_time;
     if (texture_upload_stats.get())
-      begin_time = base::TimeTicks::HighResNow();
+      begin_time = base::TimeTicks::Now();
 
     void* data = mem_params.GetDataAddress();
 
@@ -312,8 +312,7 @@ class TransferStateInternal
     }
 
     if (texture_upload_stats.get()) {
-      texture_upload_stats->AddUpload(base::TimeTicks::HighResNow() -
-                                      begin_time);
+      texture_upload_stats->AddUpload(base::TimeTicks::Now() - begin_time);
     }
   }
 
@@ -331,7 +330,7 @@ class TransferStateInternal
 
     base::TimeTicks begin_time;
     if (texture_upload_stats.get())
-      begin_time = base::TimeTicks::HighResNow();
+      begin_time = base::TimeTicks::Now();
 
     void* data = mem_params.GetDataAddress();
     {
@@ -349,8 +348,7 @@ class TransferStateInternal
     }
 
     if (texture_upload_stats.get()) {
-      texture_upload_stats->AddUpload(base::TimeTicks::HighResNow() -
-                                      begin_time);
+      texture_upload_stats->AddUpload(base::TimeTicks::Now() - begin_time);
     }
   }
 

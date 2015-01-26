@@ -36,7 +36,7 @@ class VectorMathPerfTest : public testing::Test {
                     bool aligned,
                     const std::string& test_name,
                     const std::string& trace_name) {
-    TimeTicks start = TimeTicks::HighResNow();
+    TimeTicks start = TimeTicks::Now();
     for (int i = 0; i < kBenchmarkIterations; ++i) {
       fn(input_vector_.get(),
          kScale,
@@ -44,7 +44,7 @@ class VectorMathPerfTest : public testing::Test {
          output_vector_.get());
     }
     double total_time_milliseconds =
-        (TimeTicks::HighResNow() - start).InMillisecondsF();
+        (TimeTicks::Now() - start).InMillisecondsF();
     perf_test::PrintResult(test_name,
                            "",
                            trace_name,
@@ -58,12 +58,12 @@ class VectorMathPerfTest : public testing::Test {
       int len,
       const std::string& test_name,
       const std::string& trace_name) {
-    TimeTicks start = TimeTicks::HighResNow();
+    TimeTicks start = TimeTicks::Now();
     for (int i = 0; i < kEWMABenchmarkIterations; ++i) {
       fn(0.5f, input_vector_.get(), len, 0.1f);
     }
     double total_time_milliseconds =
-        (TimeTicks::HighResNow() - start).InMillisecondsF();
+        (TimeTicks::Now() - start).InMillisecondsF();
     perf_test::PrintResult(test_name,
                            "",
                            trace_name,

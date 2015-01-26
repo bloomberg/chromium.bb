@@ -32,7 +32,7 @@ static void RunConvolveBenchmark(
     float (*convolve_fn)(const float*, const float*, const float*, double),
     bool aligned,
     const std::string& trace_name) {
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeTicks start = base::TimeTicks::Now();
   for (int i = 0; i < kBenchmarkIterations; ++i) {
     convolve_fn(resampler->get_kernel_for_testing() + (aligned ? 0 : 1),
                 resampler->get_kernel_for_testing(),
@@ -40,7 +40,7 @@ static void RunConvolveBenchmark(
                 kKernelInterpolationFactor);
   }
   double total_time_milliseconds =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+      (base::TimeTicks::Now() - start).InMillisecondsF();
   perf_test::PrintResult("sinc_resampler_convolve",
                          "",
                          trace_name,

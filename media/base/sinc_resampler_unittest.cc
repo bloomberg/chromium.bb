@@ -141,11 +141,10 @@ TEST(SincResamplerTest, DISABLED_SetRatioBench) {
       kSampleRateRatio, SincResampler::kDefaultRequestSize,
       base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeTicks start = base::TimeTicks::Now();
   for (int i = 1; i < 10000; ++i)
     resampler.SetRatio(1.0 / i);
-  double total_time_c_ms =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+  double total_time_c_ms = (base::TimeTicks::Now() - start).InMillisecondsF();
   printf("SetRatio() took %.2fms.\n", total_time_c_ms);
 }
 

@@ -24,7 +24,7 @@ static void RunPlaybackBenchmark(const std::string& filename,
         PIPELINE_OK,
         pipeline.Start(filename, PipelineIntegrationTestBase::kClockless));
 
-    base::TimeTicks start = base::TimeTicks::HighResNow();
+    base::TimeTicks start = base::TimeTicks::Now();
     pipeline.Play();
 
     ASSERT_TRUE(pipeline.WaitUntilOnEnded());
@@ -35,7 +35,7 @@ static void RunPlaybackBenchmark(const std::string& filename,
     if (audio_only) {
       time_seconds += pipeline.GetAudioTime().InSecondsF();
     } else {
-      time_seconds += (base::TimeTicks::HighResNow() - start).InSecondsF();
+      time_seconds += (base::TimeTicks::Now() - start).InSecondsF();
     }
   }
 

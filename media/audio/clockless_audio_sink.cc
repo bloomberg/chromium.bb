@@ -44,10 +44,10 @@ class ClocklessAudioSinkThread : public base::DelegateSimpleThread::Delegate {
          base::PlatformThread::YieldCurrentThread();
        } else if (start.is_null()) {
          // First time we processed some audio, so record the starting time.
-         start = base::TimeTicks::HighResNow();
+         start = base::TimeTicks::Now();
        } else {
          // Keep track of the last time data was rendered.
-         playback_time_ = base::TimeTicks::HighResNow() - start;
+         playback_time_ = base::TimeTicks::Now() - start;
        }
      }
    }

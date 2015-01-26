@@ -56,7 +56,7 @@ void UsbMidiDeviceAndroid::OnData(JNIEnv* env,
 
   const uint8* head = bytes.size() ? &bytes[0] : NULL;
   delegate_->ReceiveUsbMidiData(this, endpoint_number, head, bytes.size(),
-                                base::TimeTicks::HighResNow());
+                                base::TimeTicks::Now());
 }
 
 bool UsbMidiDeviceAndroid::RegisterUsbMidiDevice(JNIEnv* env) {

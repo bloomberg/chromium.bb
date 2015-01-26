@@ -123,7 +123,7 @@ ScopedTrace::ScopedTrace(TraceItem::Type t, const std::string& name)
     : item_(nullptr), done_(false) {
   if (trace_log) {
     item_ = new TraceItem(t, name, base::PlatformThread::CurrentId());
-    item_->set_begin(base::TimeTicks::HighResNow());
+    item_->set_begin(base::TimeTicks::Now());
   }
 }
 
@@ -132,7 +132,7 @@ ScopedTrace::ScopedTrace(TraceItem::Type t, const Label& label)
   if (trace_log) {
     item_ = new TraceItem(t, label.GetUserVisibleName(false),
                           base::PlatformThread::CurrentId());
-    item_->set_begin(base::TimeTicks::HighResNow());
+    item_->set_begin(base::TimeTicks::Now());
   }
 }
 
@@ -154,7 +154,7 @@ void ScopedTrace::Done() {
   if (!done_) {
     done_ = true;
     if (trace_log) {
-      item_->set_end(base::TimeTicks::HighResNow());
+      item_->set_end(base::TimeTicks::Now());
       AddTrace(item_);
     }
   }

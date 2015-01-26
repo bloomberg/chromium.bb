@@ -263,9 +263,9 @@ void SkiaBenchmarking::GetOpTimings(gin::Arguments* args) {
   bitmap.allocN32Pixels(bounds.width(), bounds.height());
   SkCanvas bitmap_canvas(bitmap);
   bitmap_canvas.clear(SK_ColorTRANSPARENT);
-  base::TimeTicks t0 = base::TimeTicks::HighResNow();
+  base::TimeTicks t0 = base::TimeTicks::Now();
   picture->Replay(&bitmap_canvas);
-  base::TimeDelta total_time = base::TimeTicks::HighResNow() - t0;
+  base::TimeDelta total_time = base::TimeTicks::Now() - t0;
 
   // Gather per-op timing info by drawing into a BenchmarkingCanvas.
   skia::BenchmarkingCanvas benchmarking_canvas(bounds.width(), bounds.height());

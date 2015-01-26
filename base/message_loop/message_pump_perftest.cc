@@ -29,7 +29,7 @@ class ScheduleWorkTest : public testing::Test {
   void Increment(uint64_t amount) { counter_ += amount; }
 
   void Schedule(int index) {
-    base::TimeTicks start = base::TimeTicks::HighResNow();
+    base::TimeTicks start = base::TimeTicks::Now();
     base::TimeTicks thread_start;
     if (TimeTicks::IsThreadNowSupported())
       thread_start = base::TimeTicks::ThreadNow();
@@ -42,7 +42,7 @@ class ScheduleWorkTest : public testing::Test {
         target_message_loop()->ScheduleWork();
         schedule_calls++;
       }
-      now = base::TimeTicks::HighResNow();
+      now = base::TimeTicks::Now();
       base::TimeDelta laptime = now - lastnow;
       lastnow = now;
       minimum = std::min(minimum, laptime);
@@ -242,7 +242,7 @@ class FakeMessagePump : public MessagePump {
 class PostTaskTest : public testing::Test {
  public:
   void Run(int batch_size, int tasks_per_reload) {
-    base::TimeTicks start = base::TimeTicks::HighResNow();
+    base::TimeTicks start = base::TimeTicks::Now();
     base::TimeTicks now;
     MessageLoop loop(scoped_ptr<MessagePump>(new FakeMessagePump));
     scoped_refptr<internal::IncomingTaskQueue> queue(
@@ -264,7 +264,7 @@ class PostTaskTest : public testing::Test {
         }
       }
 
-      now = base::TimeTicks::HighResNow();
+      now = base::TimeTicks::Now();
     } while (now - start < base::TimeDelta::FromSeconds(5));
     std::string trace = StringPrintf("%d_tasks_per_reload", tasks_per_reload);
     perf_test::PrintResult(

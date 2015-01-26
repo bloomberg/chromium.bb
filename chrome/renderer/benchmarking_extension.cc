@@ -119,7 +119,7 @@ class BenchmarkingWrapper : public v8::Extension {
 
   static void HiResTime(const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(
-        static_cast<double>(base::TimeTicks::HighResNow().ToInternalValue()));
+        static_cast<double>(base::TimeTicks::Now().ToInternalValue()));
   }
 };
 

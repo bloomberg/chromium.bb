@@ -33,7 +33,7 @@ class CCMessagesPerfTest : public testing::Test {
       IPC::ParamTraits<CompositorFrame>::Write(&msg, frame);
     }
 
-    base::TimeTicks start = base::TimeTicks::HighResNow();
+    base::TimeTicks start = base::TimeTicks::Now();
     base::TimeTicks end =
         start + base::TimeDelta::FromMilliseconds(kTimeLimitMillis);
     base::TimeDelta min_time;
@@ -45,10 +45,10 @@ class CCMessagesPerfTest : public testing::Test {
         ++count;
       }
 
-      base::TimeTicks now = base::TimeTicks::HighResNow();
+      base::TimeTicks now = base::TimeTicks::Now();
       if (now - start < min_time || min_time == base::TimeDelta())
         min_time = now - start;
-      start = base::TimeTicks::HighResNow();
+      start = base::TimeTicks::Now();
     }
 
     perf_test::PrintResult(

@@ -41,7 +41,7 @@ base::TimeTicks RenderingStatsInstrumentation::StartRecording() const {
   if (record_rendering_stats_) {
     if (base::TimeTicks::IsThreadNowSupported())
       return base::TimeTicks::ThreadNow();
-    return base::TimeTicks::HighResNow();
+    return base::TimeTicks::Now();
   }
   return base::TimeTicks();
 }
@@ -51,7 +51,7 @@ base::TimeDelta RenderingStatsInstrumentation::EndRecording(
   if (!start_time.is_null()) {
     if (base::TimeTicks::IsThreadNowSupported())
       return base::TimeTicks::ThreadNow() - start_time;
-    return base::TimeTicks::HighResNow() - start_time;
+    return base::TimeTicks::Now() - start_time;
   }
   return base::TimeDelta();
 }

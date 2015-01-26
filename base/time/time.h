@@ -603,20 +603,11 @@ class BASE_EXPORT TimeTicks {
   // microsecond.
   static TimeTicks Now();
 
-  // DEPRECATED
-  // TODO(miu): Remove this function, and all callpoints should call Now().
-  static TimeTicks HighResNow() { return TimeTicks::Now(); }
-
   // Returns true if the high resolution clock is working on this system and
   // Now() will return high resolution values. Note that, on systems where the
   // high resolution clock works but is deemed inefficient, the low resolution
   // clock will be used instead.
   static bool IsHighResolution();
-
-  // DEPRECATED
-  // TODO(miu): Remove this function, and all callpoints should call
-  // IsHighResolution().
-  static bool IsHighResNowFastAndReliable() { return IsHighResolution(); }
 
   // Returns true if ThreadNow() is supported on this system.
   static bool IsThreadNowSupported() {

@@ -67,7 +67,7 @@ class YUVConvertPerfTest : public testing::Test {
 TEST_F(YUVConvertPerfTest, ConvertYUVToRGB32Row_SSE) {
   ASSERT_TRUE(base::CPU().has_sse());
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeTicks start = base::TimeTicks::Now();
   for (int i = 0; i < kPerfTestIterations; ++i) {
     for (int row = 0; row < kSourceHeight; ++row) {
       int chroma_row = row / 2;
@@ -80,8 +80,7 @@ TEST_F(YUVConvertPerfTest, ConvertYUVToRGB32Row_SSE) {
           GetLookupTable(YV12));
     }
   }
-  double total_time_seconds =
-      (base::TimeTicks::HighResNow() - start).InSecondsF();
+  double total_time_seconds = (base::TimeTicks::Now() - start).InSecondsF();
   perf_test::PrintResult(
       "yuv_convert_perftest", "", "ConvertYUVToRGB32Row_SSE",
       kPerfTestIterations / total_time_seconds, "runs/s", true);
@@ -96,7 +95,7 @@ TEST_F(YUVConvertPerfTest, ScaleYUVToRGB32Row_SSE) {
 
   const int kSourceDx = 80000;  // This value means a scale down.
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeTicks start = base::TimeTicks::Now();
   for (int i = 0; i < kPerfTestIterations; ++i) {
     for (int row = 0; row < kSourceHeight; ++row) {
       int chroma_row = row / 2;
@@ -110,8 +109,7 @@ TEST_F(YUVConvertPerfTest, ScaleYUVToRGB32Row_SSE) {
           GetLookupTable(YV12));
     }
   }
-  double total_time_seconds =
-      (base::TimeTicks::HighResNow() - start).InSecondsF();
+  double total_time_seconds = (base::TimeTicks::Now() - start).InSecondsF();
   perf_test::PrintResult(
       "yuv_convert_perftest", "", "ScaleYUVToRGB32Row_SSE",
       kPerfTestIterations / total_time_seconds, "runs/s", true);
@@ -123,7 +121,7 @@ TEST_F(YUVConvertPerfTest, LinearScaleYUVToRGB32Row_SSE) {
 
   const int kSourceDx = 80000;  // This value means a scale down.
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeTicks start = base::TimeTicks::Now();
   for (int i = 0; i < kPerfTestIterations; ++i) {
     for (int row = 0; row < kSourceHeight; ++row) {
       int chroma_row = row / 2;
@@ -137,8 +135,7 @@ TEST_F(YUVConvertPerfTest, LinearScaleYUVToRGB32Row_SSE) {
           GetLookupTable(YV12));
     }
   }
-  double total_time_seconds =
-      (base::TimeTicks::HighResNow() - start).InSecondsF();
+  double total_time_seconds = (base::TimeTicks::Now() - start).InSecondsF();
   perf_test::PrintResult(
       "yuv_convert_perftest", "", "LinearScaleYUVToRGB32Row_SSE",
       kPerfTestIterations / total_time_seconds, "runs/s", true);

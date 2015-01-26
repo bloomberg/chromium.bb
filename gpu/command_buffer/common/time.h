@@ -12,7 +12,7 @@
 namespace gpu {
 
 inline uint64 MicrosecondsSinceOriginOfTime() {
-  return (base::TimeTicks::HighResNow() - base::TimeTicks()).InMicroseconds();
+  return (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
 }
 
 } // namespace gpu

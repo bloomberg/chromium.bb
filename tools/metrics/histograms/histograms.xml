@@ -7212,9 +7212,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Time between input event creation and the renderer receiving and starting to
     process the event. For touch events on Windows, we measure from when the
     event reaches Chrome, whereas on other platforms we use the timestamp from
-    the kernel. On Windows, this metric is only reported when
-    |IsHighResNowFastAndReliable| is true, which will introduce some sampling
-    bias.
+    the kernel. On Windows, this metric is only reported when |IsHighResolution|
+    is true, which will introduce some sampling bias.
   </summary>
 </histogram>
 
@@ -7225,8 +7224,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     starting to process the event. For touch events on Windows, we measure from
     when the event reaches Chrome, whereas on other platforms we use the
     timestamp from the kernel. On Windows, this metric is only reported when
-    |IsHighResNowFastAndReliable| is true, which will introduce some sampling
-    bias.
+    |IsHighResolution| is true, which will introduce some sampling bias.
   </summary>
 </histogram>
 
@@ -7249,8 +7247,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     reaches the Impl thread. Maximum is 1000ms. On Windows, we measure from when
     the touch event reaches Chrome, whereas on other platforms we use the
     timestamp from the kernel. On Windows, this metric is only reported when
-    |IsHighResNowFastAndReliable| is true, which will introduce some sampling
-    bias. This supersedes the Event.Latency.RendererImpl.GestureScroll metric.
+    |IsHighResolution| is true, which will introduce some sampling bias. This
+    supersedes the Event.Latency.RendererImpl.GestureScroll metric.
   </summary>
 </histogram>
 

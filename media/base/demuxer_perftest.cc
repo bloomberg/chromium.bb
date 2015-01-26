@@ -187,11 +187,11 @@ static void RunDemuxerBenchmark(const std::string& filename) {
     StreamReader stream_reader(&demuxer, false);
 
     // Benchmark.
-    base::TimeTicks start = base::TimeTicks::HighResNow();
+    base::TimeTicks start = base::TimeTicks::Now();
     while (!stream_reader.IsDone()) {
       stream_reader.Read();
     }
-    base::TimeTicks end = base::TimeTicks::HighResNow();
+    base::TimeTicks end = base::TimeTicks::Now();
     total_time += (end - start).InSecondsF();
     demuxer.Stop();
     QuitLoopWithStatus(&message_loop, PIPELINE_OK);

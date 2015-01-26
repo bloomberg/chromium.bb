@@ -76,10 +76,10 @@ class ThreadPerfTest : public testing::Test {
 
     Init();
 
-    base::TimeTicks start = base::TimeTicks::HighResNow();
+    base::TimeTicks start = base::TimeTicks::Now();
     PingPong(kNumRuns);
     done_.Wait();
-    base::TimeTicks end = base::TimeTicks::HighResNow();
+    base::TimeTicks end = base::TimeTicks::Now();
 
     // Gather the cpu-time spent on each thread. This does one extra tasks,
     // but that should be in the noise given enough runs.

@@ -230,7 +230,7 @@ TimeTicks TimeTicks::ThreadNow() {
 
 // static
 TimeTicks TimeTicks::NowFromSystemTraceTime() {
-  return HighResNow();
+  return Now();
 }
 
 }  // namespace base

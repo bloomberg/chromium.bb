@@ -39,12 +39,12 @@ void RunConvertBenchmark(const AudioParameters& in_params,
   converter.AddInput(&fake_input2);
   converter.AddInput(&fake_input3);
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeTicks start = base::TimeTicks::Now();
   for (int i = 0; i < kBenchmarkIterations; ++i) {
     converter.Convert(output_bus.get());
   }
   double runs_per_second = kBenchmarkIterations /
-                           (base::TimeTicks::HighResNow() - start).InSecondsF();
+                           (base::TimeTicks::Now() - start).InSecondsF();
   perf_test::PrintResult(
       "audio_converter", "", trace_name, runs_per_second, "runs/s", true);
 }

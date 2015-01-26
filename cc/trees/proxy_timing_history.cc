@@ -43,11 +43,11 @@ base::TimeDelta ProxyTimingHistory::CommitToActivateDurationEstimate() const {
 }
 
 void ProxyTimingHistory::DidBeginMainFrame() {
-  begin_main_frame_sent_time_ = base::TimeTicks::HighResNow();
+  begin_main_frame_sent_time_ = base::TimeTicks::Now();
 }
 
 void ProxyTimingHistory::DidCommit() {
-  commit_complete_time_ = base::TimeTicks::HighResNow();
+  commit_complete_time_ = base::TimeTicks::Now();
   base::TimeDelta begin_main_frame_to_commit_duration =
       commit_complete_time_ - begin_main_frame_sent_time_;
 
@@ -64,7 +64,7 @@ void ProxyTimingHistory::DidCommit() {
 
 void ProxyTimingHistory::DidActivateSyncTree() {
   base::TimeDelta commit_to_activate_duration =
-      base::TimeTicks::HighResNow() - commit_complete_time_;
+      base::TimeTicks::Now() - commit_complete_time_;
 
   // Before adding the new data point to the timing history, see what we would
   // have predicted for this frame. This allows us to keep track of the accuracy
@@ -77,12 +77,11 @@ void ProxyTimingHistory::DidActivateSyncTree() {
 }
 
 void ProxyTimingHistory::DidStartDrawing() {
-  start_draw_time_ = base::TimeTicks::HighResNow();
+  start_draw_time_ = base::TimeTicks::Now();
 }
 
 void ProxyTimingHistory::DidFinishDrawing() {
-  base::TimeDelta draw_duration =
-      base::TimeTicks::HighResNow() - start_draw_time_;
+  base::TimeDelta draw_duration = base::TimeTicks::Now() - start_draw_time_;
 
   // Before adding the new data point to the timing history, see what we would
   // have predicted for this frame. This allows us to keep track of the accuracy

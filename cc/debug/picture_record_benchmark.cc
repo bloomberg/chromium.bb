@@ -104,12 +104,12 @@ void PictureRecordBenchmark::RunOnLayer(PictureLayer* layer) {
       for (int x = 0; x < x_limit; x += kPositionIncrement) {
         gfx::Rect rect = gfx::Rect(x, y, width, height);
 
-        base::TimeTicks start = base::TimeTicks::HighResNow();
+        base::TimeTicks start = base::TimeTicks::Now();
 
         scoped_refptr<Picture> picture = Picture::Create(
             rect, painter, tile_grid_size, false, Picture::RECORD_NORMALLY);
 
-        base::TimeTicks end = base::TimeTicks::HighResNow();
+        base::TimeTicks end = base::TimeTicks::Now();
         base::TimeDelta duration = end - start;
         TotalTime& total_time = times_[dimensions];
         total_time.first += duration;

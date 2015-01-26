@@ -132,7 +132,7 @@ void ReportInputEventLatencyUma(const WebInputEvent& event,
   if (it == latency_info.latency_components.end())
     return;
 
-  base::TimeDelta delta = base::TimeTicks::HighResNow() - it->second.event_time;
+  base::TimeDelta delta = base::TimeTicks::Now() - it->second.event_time;
   for (size_t i = 0; i < it->second.event_count; ++i) {
     switch (event.type) {
       case blink::WebInputEvent::GestureScrollBegin:
@@ -186,8 +186,7 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       disallow_horizontal_fling_scroll_(false),
       disallow_vertical_fling_scroll_(false),
       has_fling_animation_started_(false),
-      uma_latency_reporting_enabled_(
-          base::TimeTicks::IsHighResNowFastAndReliable()) {
+      uma_latency_reporting_enabled_(base::TimeTicks::IsHighResolution()) {
   DCHECK(client);
   input_handler_->BindToClient(this);
   smooth_scroll_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
