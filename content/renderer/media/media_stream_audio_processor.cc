@@ -528,8 +528,7 @@ void MediaStreamAudioProcessor::ConfigureBeamforming(webrtc::Config* config) {
     enabled = true;
     geometry.push_back(webrtc::Point(0.050f, 0.f, 0.f));
   } else if (board == "swanky") {
-    // TODO(aluebs): Verify beamforming works on Swanky and enable.
-    enabled = false;
+    enabled = true;
     geometry.push_back(webrtc::Point(0.052f, 0.f, 0.f));
   }
 #endif
