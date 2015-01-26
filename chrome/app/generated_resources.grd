@@ -2188,8 +2188,8 @@ Even if you have downloaded files from this website before, the website might ha
         Add shortcut?
       </message>
 
-      <message name="IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TAB" desc="Checkbox text for opening the bookmark app as a tab.">
-        Open as tab
+      <message name="IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW" desc="Checkbox text for opening the bookmark app as a window.">
+        Open as window
       </message>
 
       <!-- Quit all apps confirmation dialog -->

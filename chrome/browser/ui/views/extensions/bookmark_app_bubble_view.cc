@@ -89,7 +89,7 @@ BookmarkAppBubbleView::BookmarkAppBubbleView(
       extension_id_(extension_id),
       add_button_(NULL),
       cancel_button_(NULL),
-      open_as_tab_checkbox_(NULL),
+      open_as_window_checkbox_(NULL),
       title_tf_(NULL),
       remove_app_(true),
       app_icon_loader_(new extensions::AppIconLoaderImpl(profile,
@@ -188,13 +188,13 @@ void BookmarkAppBubbleView::Init() {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, CONTENT_COLUMN_SET_ID);
-  open_as_tab_checkbox_ = new views::Checkbox(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TAB));
-  open_as_tab_checkbox_->SetChecked(
+  open_as_window_checkbox_ = new views::Checkbox(
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
+  open_as_window_checkbox_->SetChecked(
       profile_->GetPrefs()->GetInteger(
           extensions::pref_names::kBookmarkAppCreationLaunchType) ==
-              extensions::LAUNCH_TYPE_REGULAR);
-  layout->AddView(open_as_tab_checkbox_);
+              extensions::LAUNCH_TYPE_WINDOW);
+  layout->AddView(open_as_window_checkbox_);
   layout->AddView(add_button_);
   layout->AddView(cancel_button_);
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
@@ -261,9 +261,9 @@ void BookmarkAppBubbleView::HandleButtonPressed(views::Button* sender) {
 
 void BookmarkAppBubbleView::ApplyEdits() {
   // Set the launch type based on the checkbox.
-  extensions::LaunchType launch_type = open_as_tab_checkbox_->checked()
-      ? extensions::LAUNCH_TYPE_REGULAR
-      : extensions::LAUNCH_TYPE_WINDOW;
+  extensions::LaunchType launch_type = open_as_window_checkbox_->checked()
+      ? extensions::LAUNCH_TYPE_WINDOW
+      : extensions::LAUNCH_TYPE_REGULAR;
   profile_->GetPrefs()->SetInteger(
           extensions::pref_names::kBookmarkAppCreationLaunchType, launch_type);
   extensions::SetLaunchType(profile_, extension_id_, launch_type);

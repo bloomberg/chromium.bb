@@ -93,8 +93,8 @@ class BookmarkAppBubbleView : public views::BubbleDelegateView,
   // Button to close the window.
   views::LabelButton* cancel_button_;
 
-  // Checkbox to launch as a tab.
-  views::Checkbox* open_as_tab_checkbox_;
+  // Checkbox to launch as a window.
+  views::Checkbox* open_as_window_checkbox_;
 
   // Textfield showing the title of the app.
   views::Textfield* title_tf_;

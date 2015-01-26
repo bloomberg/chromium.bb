@@ -517,16 +517,16 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
       [alert addButtonWithTitle:l10n_util::GetNSString(IDS_CANCEL)];
   [cancel_button setKeyEquivalent:kKeyEquivalentEscape];
 
-  base::scoped_nsobject<NSButton> open_as_tab_checkbox(
+  base::scoped_nsobject<NSButton> open_as_window_checkbox(
       [[NSButton alloc] initWithFrame:NSZeroRect]);
-  [open_as_tab_checkbox setButtonType:NSSwitchButton];
-  [open_as_tab_checkbox
-      setTitle:l10n_util::GetNSString(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TAB)];
-  [open_as_tab_checkbox setState:
+  [open_as_window_checkbox setButtonType:NSSwitchButton];
+  [open_as_window_checkbox
+      setTitle:l10n_util::GetNSString(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW)];
+  [open_as_window_checkbox setState:
       profile->GetPrefs()->GetInteger(
           extensions::pref_names::kBookmarkAppCreationLaunchType) ==
-      extensions::LAUNCH_TYPE_REGULAR];
-  [open_as_tab_checkbox sizeToFit];
+      extensions::LAUNCH_TYPE_WINDOW];
+  [open_as_window_checkbox sizeToFit];
 
   base::scoped_nsobject<NSTextField> app_title([[NSTextField alloc]
       initWithFrame:NSMakeRect(0, kAppTextFieldHeight +
@@ -540,7 +540,7 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
   base::scoped_nsobject<NSView> view([[NSView alloc]
       initWithFrame:NSMakeRect(0, 0, kBookmarkAppBubbleViewWidth,
                                kBookmarkAppBubbleViewHeight)]);
-  [view addSubview:open_as_tab_checkbox];
+  [view addSubview:open_as_window_checkbox];
   [view addSubview:app_title];
   [alert setAccessoryView:view];
 
@@ -562,9 +562,9 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
   if ([alert runModal] == NSAlertFirstButtonReturn) {
     // Save launch type preferences for later when creating another hosted app.
     extensions::LaunchType launch_type =
-        [open_as_tab_checkbox state] == NSOnState
-            ? extensions::LAUNCH_TYPE_REGULAR
-            : extensions::LAUNCH_TYPE_WINDOW;
+        [open_as_window_checkbox state] == NSOnState
+            ? extensions::LAUNCH_TYPE_WINDOW
+            : extensions::LAUNCH_TYPE_REGULAR;
     profile->GetPrefs()->SetInteger(
         extensions::pref_names::kBookmarkAppCreationLaunchType, launch_type);
     extensions::SetLaunchType(profile, extension_id, launch_type);
