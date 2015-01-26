@@ -1796,5 +1796,3 @@ crbug.com/451338 [ XP ] http/tests/fetch/window/filtered-response.html [ Timeout
 crbug.com/451338 [ XP ] http/tests/fetch/workers/filtered-response.html [ Timeout ]
 crbug.com/451338 [ XP ] http/tests/fetch/serviceworker/fetch-access-control-cors.html [ Timeout ]
 crbug.com/451338 [ XP ] http/tests/fetch/window/fetch-access-control-cors.html [ Timeout ]
-
-crbug.com/451191 http/tests/security/mixedContent/insecure-image-in-iframe.html [ Pass Failure ]
