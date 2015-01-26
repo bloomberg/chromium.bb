@@ -78,7 +78,8 @@ Layer::Layer()
       clip_parent_(nullptr),
       replica_layer_(nullptr),
       raster_scale_(0.f),
-      client_(nullptr) {
+      client_(nullptr),
+      frame_timing_requests_dirty_(false) {
   layer_animation_controller_ = LayerAnimationController::Create(layer_id_);
   layer_animation_controller_->AddValueObserver(this);
   layer_animation_controller_->set_value_provider(this);
@@ -1013,6 +1014,11 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer_animation_controller_->PushAnimationUpdatesTo(
       layer->layer_animation_controller());
 
+  if (frame_timing_requests_dirty_) {
+    layer->PassFrameTimingRequests(&frame_timing_requests_);
+    frame_timing_requests_dirty_ = false;
+  }
+
   // Reset any state that should be cleared for the next update.
   stacking_order_changed_ = false;
   update_rect_ = gfx::Rect();
@@ -1285,6 +1291,13 @@ gfx::Transform Layer::draw_transform_from_property_trees(
   }
   xform.Scale(1.0 / contents_scale_x(), 1.0 / contents_scale_y());
   return xform;
+}
+
+void Layer::SetFrameTimingRequests(
+    const std::vector<FrameTimingRequest>& requests) {
+  frame_timing_requests_ = requests;
+  frame_timing_requests_dirty_ = true;
+  SetNeedsCommit();
 }
 
 }  // namespace cc

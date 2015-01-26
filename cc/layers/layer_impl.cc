@@ -70,7 +70,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       needs_push_properties_(false),
       num_dependents_need_push_properties_(0),
       sorting_context_id_(0),
-      current_draw_mode_(DRAW_MODE_NONE) {
+      current_draw_mode_(DRAW_MODE_NONE),
+      frame_timing_requests_dirty_(false) {
   DCHECK_GT(layer_id_, 0);
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
@@ -607,6 +608,11 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetStackingOrderChanged(stacking_order_changed_);
   layer->SetDebugInfo(debug_info_);
 
+  if (frame_timing_requests_dirty_) {
+    layer->PassFrameTimingRequests(&frame_timing_requests_);
+    frame_timing_requests_dirty_ = false;
+  }
+
   // Reset any state that should be cleared for the next update.
   stacking_order_changed_ = false;
   update_rect_ = gfx::Rect();
@@ -1022,6 +1028,13 @@ void LayerImpl::Set3dSortingContextId(int id) {
     return;
   sorting_context_id_ = id;
   NoteLayerPropertyChangedForSubtree();
+}
+
+void LayerImpl::PassFrameTimingRequests(
+    std::vector<FrameTimingRequest>* requests) {
+  frame_timing_requests_.swap(*requests);
+  frame_timing_requests_dirty_ = true;
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetTransform(const gfx::Transform& transform) {
@@ -1551,6 +1564,17 @@ void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
     } else {
       NOTREACHED();
     }
+  }
+
+  if (!frame_timing_requests_.empty()) {
+    state->BeginArray("frame_timing_requests");
+    for (const auto& request : frame_timing_requests_) {
+      state->BeginDictionary();
+      state->SetInteger("request_id", request.id());
+      MathUtil::AddToTracedValue("request_rect", request.rect(), state);
+      state->EndDictionary();
+    }
+    state->EndArray();
   }
 }
 

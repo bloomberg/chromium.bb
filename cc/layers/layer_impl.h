@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +19,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/debug/frame_timing_request.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/draw_properties.h"
@@ -566,6 +568,12 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void Set3dSortingContextId(int id);
   int sorting_context_id() { return sorting_context_id_; }
 
+  void PassFrameTimingRequests(
+      std::vector<FrameTimingRequest>* frame_timing_requests);
+  const std::vector<FrameTimingRequest>& frame_timing_requests() const {
+    return frame_timing_requests_;
+  }
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl, int id);
 
@@ -720,6 +728,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> debug_info_;
   scoped_ptr<RenderSurfaceImpl> render_surface_;
+
+  std::vector<FrameTimingRequest> frame_timing_requests_;
+  bool frame_timing_requests_dirty_;
+
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };
 

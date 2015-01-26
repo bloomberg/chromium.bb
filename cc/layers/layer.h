@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -17,6 +18,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/debug/frame_timing_request.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
@@ -505,6 +507,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return has_render_surface_;
   }
 
+  // Sets new frame timing requests for this layer.
+  void SetFrameTimingRequests(const std::vector<FrameTimingRequest>& requests);
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -697,6 +702,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   scoped_ptr<RenderSurface> render_surface_;
 
   gfx::Rect visible_rect_from_property_trees_;
+
+  std::vector<FrameTimingRequest> frame_timing_requests_;
+  bool frame_timing_requests_dirty_;
+
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };
 

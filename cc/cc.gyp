@@ -106,6 +106,8 @@
         'debug/devtools_instrumentation.h',
         'debug/frame_rate_counter.cc',
         'debug/frame_rate_counter.h',
+        'debug/frame_timing_request.cc',
+        'debug/frame_timing_request.h',
         'debug/frame_timing_tracker.cc',
         'debug/frame_timing_tracker.h',
         'debug/frame_viewer_instrumentation.cc',
