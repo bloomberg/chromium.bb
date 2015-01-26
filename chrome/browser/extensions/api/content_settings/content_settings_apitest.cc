@@ -106,6 +106,11 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
                                      example_url,
                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                      std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              map->GetContentSetting(example_url,
+                                     example_url,
+                                     CONTENT_SETTINGS_TYPE_MOUSELOCK,
+                                     std::string()));
 
     // Check content settings for www.google.com
     GURL url("http://www.google.com");
@@ -129,6 +134,9 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
         CONTENT_SETTING_BLOCK,
         map->GetContentSetting(
             url, url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+        map->GetContentSetting(
+            url, url, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string()));
   }
 
   void CheckContentSettingsDefault() {
@@ -161,6 +169,9 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
         CONTENT_SETTING_ASK,
         map->GetContentSetting(
             url, url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+        map->GetContentSetting(
+            url, url, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string()));
   }
 
  private:

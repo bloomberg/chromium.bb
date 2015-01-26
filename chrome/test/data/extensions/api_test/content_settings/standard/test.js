@@ -13,7 +13,8 @@ var default_content_settings = {
   "plugins": "allow",
   "popups": "block",
   "location": "ask",
-  "notifications": "ask"
+  "notifications": "ask",
+  "mouselock": "ask",
 };
 
 var settings = {
@@ -23,7 +24,8 @@ var settings = {
   "plugins": "block",
   "popups": "allow",
   "location": "block",
-  "notifications": "block"
+  "notifications": "block",
+  "mouselock": "block"
 };
 
 Object.prototype.forEach = function(f) {
