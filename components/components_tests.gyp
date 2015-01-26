@@ -311,209 +311,111 @@
             '..',
           ],
           'dependencies': [
+            '../base/base.gyp:base',
             '../base/base.gyp:base_prefs_test_support',
             '../base/base.gyp:test_support_base',
             # TODO(blundell): Eliminate the need for this dependency in code
             # that iOS shares. crbug.com/325243
             '../content/content_shell_and_tests.gyp:test_support_content',
+            '../google_apis/google_apis.gyp:google_apis_test_support',
+            '../jingle/jingle.gyp:notifier_test_util',
+            '../net/net.gyp:net_test_support',
             '../sql/sql.gyp:test_support_sql',
             '../sync/sync.gyp:sync',
             '../sync/sync.gyp:test_support_sync_api',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
+            '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_util',
+            '../third_party/libjingle/libjingle.gyp:libjingle',
+            '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
+            '../third_party/libxml/libxml.gyp:libxml',
+            '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_test_support',
             '../ui/resources/ui_resources.gyp:ui_resources',
             '../ui/strings/ui_strings.gyp:ui_strings',
-
-            'components_resources.gyp:components_resources',
-
-            # Dependencies of auto_login_parser
+            '../url/url.gyp:url_lib',
             'components.gyp:auto_login_parser',
-
-            # Dependencies of autofill
             'components.gyp:autofill_core_browser',
             'components.gyp:autofill_core_common',
             'components.gyp:autofill_core_test_support',
-            'components_strings.gyp:components_strings',
-            '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
-            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_util',
-
-            # Dependencies of bookmarks
             'components.gyp:bookmarks_browser',
             'components.gyp:bookmarks_test_support',
-
-            # Dependencies of captive_portal
             'components.gyp:captive_portal_test_support',
-            '../net/net.gyp:net_test_support',
-
-            # Dependencies of cloud_devices
             'components.gyp:cloud_devices_common',
-
-            # Dependencies of content_settings
             'components.gyp:content_settings_core_browser',
             'components.gyp:content_settings_core_common',
             'components.gyp:content_settings_core_test_support',
-
-            # Dependencies of packed CT EV white list
-            'components.gyp:packed_ct_ev_whitelist',
-
-            # Dependencies of crash
             'components.gyp:crash_test_support',
-
-            # Dependencies of crx_file
             'components.gyp:crx_file',
-
-            # Dependencies of data_reduction_proxy
             'components.gyp:data_reduction_proxy_core_browser',
             'components.gyp:data_reduction_proxy_core_common',
             'components.gyp:data_reduction_proxy_test_support',
-
-            # Dependencies of dom_distiller
             'components.gyp:distilled_page_proto',
             'components.gyp:dom_distiller_core',
             'components.gyp:dom_distiller_test_support',
-
-            # Dependencies of domain_reliability
             'components.gyp:domain_reliability',
-
-            # Dependencies of enhanced_bookmarks
             'components.gyp:enhanced_bookmarks',
             'components.gyp:enhanced_bookmarks_test_support',
-
-            # Dependencies of favicon_base
             'components.gyp:favicon_base',
-
-            # Dependencies of feedback
             'components.gyp:feedback_component',
-
-            # Dependencies of gcm
             'components.gyp:gcm_driver',
             'components.gyp:gcm_driver_test_support',
-
-            # Dependencies of google
             'components.gyp:google_core_browser',
-
-            # Dependencies of history
             'components.gyp:history_core_browser',
             'components.gyp:history_core_common',
-
-            # Dependencies of invalidation
             'components.gyp:invalidation',
             'components.gyp:invalidation_test_support',
-            '../jingle/jingle.gyp:notifier_test_util',
-            '../third_party/libjingle/libjingle.gyp:libjingle',
-
-            # Dependencies of json_schema
             'components.gyp:json_schema',
-
-            # Dependencies of keyed_service
             'components.gyp:keyed_service_core',
-
-            # Dependencies of language_usage_metrics
             'components.gyp:language_usage_metrics',
-
-            # Dependencies of leveldb_proto
-            '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             'components.gyp:leveldb_proto',
             'components.gyp:leveldb_proto_test_support',
-
-            # Dependencies of login
             'components.gyp:login',
-
-            # Dependencies of metrics
             'components.gyp:metrics',
             'components.gyp:metrics_gpu',
             'components.gyp:metrics_net',
             'components.gyp:metrics_profiler',
             'components.gyp:metrics_test_support',
-
-            # Dependencies of network_time
             'components.gyp:network_time',
-
-            # Dependencies of omnibox
             'components.gyp:omnibox',
             'components.gyp:omnibox_test_support',
-
-            # Dependencies of os_crypt
             'components.gyp:os_crypt',
-
-            # Dependencies of ownership
             'components.gyp:ownership',
-
-            # Dependencies of password_manager
+            'components.gyp:packed_ct_ev_whitelist',
+            'components.gyp:password_manager_core_browser',
             'components.gyp:password_manager_core_browser',
             'components.gyp:password_manager_core_browser_test_support',
-
-            # Dependencies of precache/core
-            'components.gyp:password_manager_core_browser',
             'components.gyp:precache_core',
-
-            # Dependencies of pref_registry
             'components.gyp:pref_registry_test_support',
-
-            # Dependencies of query_parser
             'components.gyp:query_parser',
-
-            # Dependencies of rappor
             'components.gyp:rappor',
             'components.gyp:rappor_test_support',
-
-            # Dependencies of search
             'components.gyp:search',
-
-            # Dependencies of search_engines
             'components.gyp:search_engines',
             'components.gyp:search_engines_test_support',
-
-            # Dependencies of search_provider_logos
             'components.gyp:search_provider_logos',
-
-            # Dependencies of sessions
-            '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             'components.gyp:sessions_test_support',
-
-            # Dependencies of signin
             'components.gyp:signin_core_browser',
             'components.gyp:signin_core_browser_test_support',
-            '../google_apis/google_apis.gyp:google_apis_test_support',
-
-            # Dependencies of suggestions
             'components.gyp:suggestions',
-
-            # Dependencies of sync_driver
             'components.gyp:sync_driver_test_support',
-
-            # Dependencies of translate.
             'components.gyp:translate_core_browser',
             'components.gyp:translate_core_common',
             'components.gyp:translate_core_language_detection',
-
-            # Dependencies of wallpaper
-            'components.gyp:wallpaper',
-
-            # Dependencies of ui/zoom
             'components.gyp:ui_zoom',
-
-            # Dependencies of update_client
             'components.gyp:update_client',
             'components.gyp:update_client_test_support',
-            '../third_party/libxml/libxml.gyp:libxml',
-
-
-            # Dependencies of url_fixer
             'components.gyp:url_fixer',
-            '../url/url.gyp:url_lib',
-
-            # Dependencies of variations
             'components.gyp:variations',
             'components.gyp:variations_http_provider',
-
-            # Dependencies of web_resource
+            'components.gyp:wallpaper',
             'components.gyp:web_resource',
             'components.gyp:web_resource_test_support',
-            '../base/base.gyp:base',
+            'components_resources.gyp:components_resources',
+            'components_strings.gyp:components_strings',
           ],
           'actions': [
             {
