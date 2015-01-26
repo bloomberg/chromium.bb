@@ -396,6 +396,18 @@ string DwarfCUToModule::GenericDIEHandler::ComputeQualifiedName() {
       enclosing_name = &parent_context_->name;
   }
 
+  // Prepare the return value before upcoming mutations possibly invalidate the
+  // existing pointers.
+  string return_value;
+  if (qualified_name) {
+    return_value = *qualified_name;
+  } else {
+    // Combine the enclosing name and unqualified name to produce our
+    // own fully-qualified name.
+    return_value = cu_context_->language->MakeQualifiedName(*enclosing_name,
+                                                            *unqualified_name);
+  }
+
   // If this DIE was marked as a declaration, record its names in the
   // specification table.
   if (declaration_) {
@@ -409,13 +421,7 @@ string DwarfCUToModule::GenericDIEHandler::ComputeQualifiedName() {
     cu_context_->file_context->file_private_->specifications[offset_] = spec;
   }
 
-  if (qualified_name)
-    return *qualified_name;
-
-  // Combine the enclosing name and unqualified name to produce our
-  // own fully-qualified name.
-  return cu_context_->language->MakeQualifiedName(*enclosing_name,
-                                                  *unqualified_name);
+  return return_value;
 }
 
 // A handler class for DW_TAG_subprogram DIEs.
