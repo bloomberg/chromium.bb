@@ -3,3 +3,5 @@ DiskCacheEntryTest.SimpleCacheStreamAccess
 DiskCacheEntryTest.SimpleCacheGrowData
 DiskCacheEntryTest.SimpleCacheSizeChanges
 
+# Flaky. crbug.com/451999
+WebSocketEndpointLockManagerTest.UnlockEndpointIsDelayed
