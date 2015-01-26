@@ -691,7 +691,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         render_surface->contributes_to_drawn_surface() ||
         render_surface_layer->HasCopyRequest();
     if (should_draw_into_render_pass)
-      render_surface_layer->render_surface()->AppendRenderPasses(frame);
+      render_surface->AppendRenderPasses(frame);
   }
 
   // When we are displaying the HUD, change the root damage rect to cover the
