@@ -260,7 +260,7 @@ static_library("libjingle") {
     ":jingle_deps",
   ]
   deps = [
-    "//third_party/webrtc/base:webrtc_base",
+    "//third_party/webrtc/base:rtc_base",
     ":libjingle_p2p_constants",
   ]
 
