@@ -33,6 +33,7 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceLoaderHost.h"
 #include "core/fetch/ResourcePtr.h"
+#include "core/html/parser/ThreadedDataReceiver.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -171,15 +172,15 @@ void ResourceLoader::setDefersLoading(bool defers)
     }
 }
 
-void ResourceLoader::attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDataReceiver> threadedDataReceiver)
+void ResourceLoader::attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedDataReceiver> threadedDataReceiver)
 {
     if (m_loader) {
         // The implementor of the WebURLLoader assumes ownership of the
         // threaded data receiver if it signals that it got successfully
         // attached.
-        blink::WebThreadedDataReceiver* rawThreadedDataReceiver = threadedDataReceiver.leakPtr();
-        if (!m_loader->attachThreadedDataReceiver(rawThreadedDataReceiver))
-            delete rawThreadedDataReceiver;
+        WebThreadedDataReceiver* webDataReceiver = new WebThreadedDataReceiver(threadedDataReceiver);
+        if (!m_loader->attachThreadedDataReceiver(webDataReceiver))
+            delete webDataReceiver;
     }
 }
 

@@ -44,6 +44,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "core/html/parser/ThreadedDataReceiver.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -64,7 +65,6 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMimeRegistry.h"
-#include "public/platform/WebThreadedDataReceiver.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 
@@ -753,7 +753,7 @@ void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
     mainReceivedError(error);
 }
 
-void DocumentLoader::attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDataReceiver> threadedDataReceiver)
+void DocumentLoader::attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedDataReceiver> threadedDataReceiver)
 {
     if (mainResourceLoader())
         mainResourceLoader()->attachThreadedDataReceiver(threadedDataReceiver);

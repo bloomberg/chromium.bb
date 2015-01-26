@@ -244,6 +244,7 @@
       'WebTextCheckingResult.cpp',
       'WebTextInputInfo.cpp',
       'WebTextRun.cpp',
+      'WebThreadedDataReceiver.cpp',
       'WebUserGestureIndicator.cpp',
       'WebUserGestureToken.cpp',
       'WebUserMediaRequest.cpp',

@@ -42,6 +42,7 @@ class Resource;
 class KURL;
 class ResourceError;
 class ResourceLoaderHost;
+class ThreadedDataReceiver;
 
 class ResourceLoader final : public RefCountedWillBeGarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
 public:
@@ -62,7 +63,7 @@ public:
     void setDefersLoading(bool);
     bool defersLoading() const { return m_defersLoading; }
 
-    void attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDataReceiver>);
+    void attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedDataReceiver>);
 
     void releaseResources();
 

@@ -2947,6 +2947,7 @@
             'html/parser/TextDocumentParser.h',
             'html/parser/TextResourceDecoder.cpp',
             'html/parser/TextResourceDecoder.h',
+            'html/parser/ThreadedDataReceiver.h',
             'html/parser/XSSAuditor.cpp',
             'html/parser/XSSAuditor.h',
             'html/parser/XSSAuditorDelegate.cpp',

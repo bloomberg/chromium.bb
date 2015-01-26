@@ -46,10 +46,6 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
-class WebThreadedDataReceiver;
-}
-
-namespace blink {
     class ApplicationCacheHost;
     class ArchiveResourceCollection;
     class ResourceFetcher;
@@ -58,6 +54,7 @@ namespace blink {
     class FrameLoader;
     class MHTMLArchive;
     class ResourceLoader;
+    class ThreadedDataReceiver;
 
     class DocumentLoader : public RefCounted<DocumentLoader>, private RawResourceClient {
         WTF_MAKE_FAST_ALLOCATED;
@@ -117,7 +114,7 @@ namespace blink {
         void startLoadingMainResource();
         void cancelMainResourceLoad(const ResourceError&);
 
-        void attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDataReceiver>);
+        void attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedDataReceiver>);
         void acceptDataFromThreadedReceiver(const char* data, int dataLength, int encodedDataLength);
         DocumentLoadTiming* timing() { return &m_documentLoadTiming; }
 

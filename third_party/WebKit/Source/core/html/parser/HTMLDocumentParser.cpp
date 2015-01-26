@@ -39,13 +39,15 @@
 #include "core/html/parser/HTMLParserThread.h"
 #include "core/html/parser/HTMLScriptRunner.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
+#include "core/html/parser/ThreadedDataReceiver.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
-#include "public/platform/WebThreadedDataReceiver.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Functional.h"
+#include "wtf/RefCounted.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -77,23 +79,28 @@ static HTMLTokenizer::State tokenizerStateForContextElement(Element* contextElem
     return HTMLTokenizer::DataState;
 }
 
-class ParserDataReceiver : public WebThreadedDataReceiver, public DocumentLifecycleObserver {
+class ParserDataReceiver final : public RefCountedWillBeGarbageCollectedFinalized<ParserDataReceiver>, public ThreadedDataReceiver, public DocumentLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ParserDataReceiver);
 public:
-    explicit ParserDataReceiver(WeakPtr<BackgroundHTMLParser> backgroundParser, Document* document)
-        : DocumentLifecycleObserver(document)
-        , m_backgroundParser(backgroundParser)
+    static PassRefPtrWillBeRawPtr<ParserDataReceiver> create(WeakPtr<BackgroundHTMLParser> backgroundParser, Document* document)
     {
+        return adoptRefWillBeNoop(new ParserDataReceiver(backgroundParser, document));
     }
 
-    // WebThreadedDataReceiver
-    virtual void acceptData(const char* data, int dataLength) override final
+#if !ENABLE(OILPAN)
+    virtual void ref() override { RefCounted<ParserDataReceiver>::ref(); }
+    virtual void deref() override { RefCounted<ParserDataReceiver>::deref(); }
+#endif
+
+    // ThreadedDataReceiver
+    void acceptData(const char* data, int dataLength) override
     {
         ASSERT(backgroundThread() && backgroundThread()->isCurrentThread());
         if (m_backgroundParser.get())
             m_backgroundParser.get()->appendRawBytesFromParserThread(data, dataLength);
     }
 
-    virtual blink::WebThread* backgroundThread() override final
+    WebThread* backgroundThread() override
     {
         if (HTMLParserThread::shared())
             return &HTMLParserThread::shared()->platformThread();
@@ -101,15 +108,26 @@ public:
         return nullptr;
     }
 
-    virtual bool needsMainthreadDataCopy() override final { return InspectorInstrumentation::hasFrontends(); }
-    virtual void acceptMainthreadDataNotification(const char* data, int dataLength, int encodedDataLength) override final
+    bool needsMainthreadDataCopy() override { return InspectorInstrumentation::hasFrontends(); }
+    void acceptMainthreadDataNotification(const char* data, int dataLength, int encodedDataLength) override
     {
         ASSERT(!data || needsMainthreadDataCopy());
         if (lifecycleContext())
             lifecycleContext()->loader()->acceptDataFromThreadedReceiver(data, dataLength, encodedDataLength);
     }
 
+    void trace(Visitor* visitor) override
+    {
+        DocumentLifecycleObserver::trace(visitor);
+    }
+
 private:
+    ParserDataReceiver(WeakPtr<BackgroundHTMLParser> backgroundParser, Document* document)
+        : DocumentLifecycleObserver(document)
+        , m_backgroundParser(backgroundParser)
+    {
+    }
+
     WeakPtr<BackgroundHTMLParser> m_backgroundParser;
 };
 
@@ -755,7 +773,7 @@ void HTMLDocumentParser::startBackgroundParser()
     // FIXME(oysteine): Disabled due to crbug.com/398076 until a full fix can be implemented.
     if (RuntimeEnabledFeatures::threadedParserDataReceiverEnabled()) {
         if (DocumentLoader* loader = document()->loader())
-            loader->attachThreadedDataReceiver(adoptPtr(new ParserDataReceiver(m_backgroundParser, document()->contextDocument().get())));
+            loader->attachThreadedDataReceiver(ParserDataReceiver::create(m_backgroundParser, document()->contextDocument().get()));
     }
 
     OwnPtr<BackgroundHTMLParser::Configuration> config = adoptPtr(new BackgroundHTMLParser::Configuration);
