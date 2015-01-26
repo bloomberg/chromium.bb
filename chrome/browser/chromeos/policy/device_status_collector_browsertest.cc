@@ -593,7 +593,9 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
 
 TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
   // Test that boot mode data is reported by default.
-  fake_statistics_provider_.SetMachineStatistic("devsw_boot", "0");
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kDevSwitchBootKey,
+      chromeos::system::kDevSwitchBootValueVerified);
   GetStatus();
   EXPECT_EQ("Verified", status_.boot_mode());
 
@@ -607,19 +609,25 @@ TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
   // statistics provider returns valid data.
   cros_settings_->SetBoolean(chromeos::kReportDeviceBootMode, true);
 
-  fake_statistics_provider_.SetMachineStatistic("devsw_boot", "(error)");
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kDevSwitchBootKey, "(error)");
   GetStatus();
   EXPECT_FALSE(status_.has_boot_mode());
 
-  fake_statistics_provider_.SetMachineStatistic("devsw_boot", " ");
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kDevSwitchBootKey, " ");
   GetStatus();
   EXPECT_FALSE(status_.has_boot_mode());
 
-  fake_statistics_provider_.SetMachineStatistic("devsw_boot", "0");
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kDevSwitchBootKey,
+      chromeos::system::kDevSwitchBootValueVerified);
   GetStatus();
   EXPECT_EQ("Verified", status_.boot_mode());
 
-  fake_statistics_provider_.SetMachineStatistic("devsw_boot", "1");
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kDevSwitchBootKey,
+      chromeos::system::kDevSwitchBootValueDev);
   GetStatus();
   EXPECT_EQ("Dev", status_.boot_mode());
 }

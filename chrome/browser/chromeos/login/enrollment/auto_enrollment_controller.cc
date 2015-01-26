@@ -86,7 +86,16 @@ AutoEnrollmentController::Mode AutoEnrollmentController::GetMode() {
         system::StatisticsProvider::GetInstance()->GetMachineStatistic(
             system::kFirmwareTypeKey, &firmware_type) &&
         firmware_type == system::kFirmwareTypeValueNonchrome;
-    return non_chrome_firmware ? MODE_NONE : MODE_FORCED_RE_ENROLLMENT;
+
+    std::string write_protect_switch_boot;
+    const bool write_protect_switch_off =
+        system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+            system::kWriteProtectSwitchBootKey, &write_protect_switch_boot) &&
+        write_protect_switch_boot == system::kWriteProtectSwitchBootValueOff;
+
+    return (non_chrome_firmware || write_protect_switch_off)
+               ? MODE_NONE
+               : MODE_FORCED_RE_ENROLLMENT;
 #else
     return MODE_NONE;
 #endif
