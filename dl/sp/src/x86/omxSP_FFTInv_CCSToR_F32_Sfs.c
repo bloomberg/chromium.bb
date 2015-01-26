@@ -172,7 +172,6 @@ OMXResult omxSP_FFTInv_CCSToR_F32_Sfs(const OMX_F32 *pSrc, OMX_F32 *pDst,
                                       const OMXFFTSpec_R_F32 *pFFTSpec) {
   OMX_INT n;
   OMX_INT n_by_2;
-  OMX_INT n_by_4;
   OMX_INT i;
   const OMX_F32 *twiddle;
   OMX_F32 *buf;
@@ -194,7 +193,6 @@ OMXResult omxSP_FFTInv_CCSToR_F32_Sfs(const OMX_F32 *pSrc, OMX_F32 *pDst,
   }
 
   n_by_2 = n >> 1;
-  n_by_4 = n >> 2;
   buf = pFFTStruct->pBuf1;
 
   twiddle = pFFTStruct->pTwiddle;
