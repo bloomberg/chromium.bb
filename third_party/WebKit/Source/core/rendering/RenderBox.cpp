@@ -520,7 +520,20 @@ void RenderBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
             } else {
                 if (frame()->settings()->pinchVirtualViewportEnabled()) {
                     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
-                    LayoutRect r = ScrollAlignment::getRectToExpose(LayoutRect(pinchViewport.visibleRectInDocument()), rect, alignX, alignY);
+
+                    // We want to move the rect into the viewport that excludes the scrollbars so we intersect
+                    // the pinch viewport with the scrollbar-excluded frameView content rect.
+                    LayoutRect viewRect = intersection(
+                        LayoutRect(pinchViewport.visibleRectInDocument()), frameView->visibleContentRect());
+                    LayoutRect r = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
+
+                    // pinchViewport.scrollIntoView will attempt to center the given rect within the viewport
+                    // so to prevent it from adjusting r's coordinates the rect must match the viewport's size
+                    // i.e. add the subtracted scrollbars from above back in.
+                    // FIXME: This is hacky and required because getRectToExpose doesn't naturally account
+                    // for the two viewports. crbug.com/449340.
+                    r.setSize(LayoutSize(pinchViewport.visibleRectInDocument().size()));
+
                     pinchViewport.scrollIntoView(r);
                 } else {
                     LayoutRect viewRect = frameView->visibleContentRect();

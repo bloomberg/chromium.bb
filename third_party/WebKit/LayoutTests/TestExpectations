@@ -58,8 +58,6 @@ crbug.com/428980 fast/repaint/fixed-right-bottom-in-page-scale.html [ ImageOnlyF
 crbug.com/428980 fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure ]
 crbug.com/428980 fast/transforms/selection-bounds-in-transformed-view.html [ Failure ]
 crbug.com/428980 css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure ]
-crbug.com/428980 fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
-crbug.com/428980 virtual/slimmingpaint/fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
 crbug.com/428980 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
 
 # Failing due to r188554
