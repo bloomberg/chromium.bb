@@ -88,12 +88,7 @@
       "nacl_loader_unittests",
       "app_shell_unittests",
       "chromevox_tests",
-      {
-        "test": "extensions_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "extensions_browsertests",
       "skia_unittests"
     ]
   },
@@ -122,12 +117,7 @@
       "device_unittests",
       "display_unittests",
       "events_unittests",
-      {
-        "test": "extensions_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "extensions_browsertests",
       "extensions_unittests",
       "gcm_unit_tests",
       "google_apis_unittests",
@@ -257,12 +247,7 @@
           "shards": 2
         }
       },
-      {
-        "test": "extensions_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "extensions_browsertests",
       "gcm_unit_tests",
       "skia_unittests",
       {

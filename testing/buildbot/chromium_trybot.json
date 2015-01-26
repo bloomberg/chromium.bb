@@ -234,10 +234,7 @@
     },
     {
       "test": "extensions_browsertests",
-      "platforms": ["linux", "win"],
-      "swarming": {
-        "can_use_on_swarming_builders": true
-      }
+      "platforms": ["linux", "win"]
     },
     {
       "test": "app_shell_unittests",
