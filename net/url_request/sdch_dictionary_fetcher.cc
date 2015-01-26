@@ -60,6 +60,11 @@ void SdchDictionaryFetcher::Schedule(const GURL& dictionary_url) {
   attempted_load_.insert(dictionary_url);
   fetch_queue_.push(dictionary_url);
 
+  // If the loop is already processing, it'll pick up the above in the
+  // normal course of events.
+  if (next_state_ != STATE_NONE)
+    return;
+
   next_state_ = STATE_IDLE;
 
   // There are no callbacks to user code from the dictionary fetcher,

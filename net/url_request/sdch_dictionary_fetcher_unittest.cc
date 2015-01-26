@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -21,33 +21,19 @@
 
 namespace net {
 
-static const char kSampleBufferContext[] = "This is a sample buffer.";
-static const char kTestDomain[] = "top.domain.test";
+namespace {
+
+const char kSampleBufferContext[] = "This is a sample buffer.";
+const char kTestDomain[] = "top.domain.test";
 
 class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
  public:
   URLRequestSpecifiedResponseJob(URLRequest* request,
-                                 NetworkDelegate* network_delegate)
-      : URLRequestSimpleJob(request, network_delegate) {}
-
-  static void AddUrlHandler() {
-    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-    jobs_requested_ = 0;
-    filter->AddHostnameHandler(
-        "http", kTestDomain, &URLRequestSpecifiedResponseJob::Factory);
-  }
-
-  static void RemoveUrlHandler() {
-    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-    filter->RemoveHostnameHandler("http", kTestDomain);
-    jobs_requested_ = 0;
-  }
-
-  static URLRequestJob* Factory(URLRequest* request,
-                                net::NetworkDelegate* network_delegate,
-                                const std::string& scheme) {
-    ++jobs_requested_;
-    return new URLRequestSpecifiedResponseJob(request, network_delegate);
+                                 NetworkDelegate* network_delegate,
+                                 const base::Closure& destruction_callback)
+      : URLRequestSimpleJob(request, network_delegate),
+        destruction_callback_(destruction_callback) {
+    DCHECK(!destruction_callback.is_null());
   }
 
   static std::string ExpectedResponseForURL(const GURL& url) {
@@ -57,13 +43,10 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
                               url.spec().c_str());
   }
 
-  static int jobs_requested() { return jobs_requested_; }
-
  private:
-  ~URLRequestSpecifiedResponseJob() override{};
+  ~URLRequestSpecifiedResponseJob() override { destruction_callback_.Run(); }
 
   // URLRequestSimpleJob implementation:
-
   int GetData(std::string* mime_type,
               std::string* charset,
               std::string* data,
@@ -73,14 +56,70 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
     return OK;
   }
 
-  base::TaskRunner* GetTaskRunner() const override {
-    return base::MessageLoopProxy::current().get();
-  }
-
-  static int jobs_requested_;
+  const base::Closure destruction_callback_;
 };
 
-int URLRequestSpecifiedResponseJob::jobs_requested_(0);
+class SpecifiedResponseJobInterceptor : public URLRequestInterceptor {
+ public:
+  // A callback to be called whenever a URLRequestSpecifiedResponseJob is
+  // created or destroyed.  The argument will be the change in number of
+  // jobs (i.e. +1 for created, -1 for destroyed).
+  typedef base::Callback<void(int outstanding_job_delta)> LifecycleCallback;
+
+  explicit SpecifiedResponseJobInterceptor(
+      const LifecycleCallback& lifecycle_callback)
+      : lifecycle_callback_(lifecycle_callback), factory_(this) {
+    DCHECK(!lifecycle_callback_.is_null());
+  }
+  ~SpecifiedResponseJobInterceptor() override {}
+
+  URLRequestJob* MaybeInterceptRequest(
+      URLRequest* request,
+      NetworkDelegate* network_delegate) const override {
+    if (!lifecycle_callback_.is_null())
+      lifecycle_callback_.Run(1);
+
+    return new URLRequestSpecifiedResponseJob(
+        request, network_delegate, base::Bind(lifecycle_callback_, -1));
+  }
+
+  // The caller must ensure that the callback is valid to call for the
+  // lifetime of the SpecifiedResponseJobInterceptor (i.e. until
+  // Unregister() is called).
+  static void RegisterWithFilter(const LifecycleCallback& lifecycle_callback) {
+    scoped_ptr<SpecifiedResponseJobInterceptor> interceptor(
+        new SpecifiedResponseJobInterceptor(lifecycle_callback));
+
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "http", kTestDomain, interceptor.Pass());
+  }
+
+  static void Unregister() {
+    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
+                                                                kTestDomain);
+  }
+
+ private:
+  void OnSpecfiedResponseJobDestruction() const {
+    if (!lifecycle_callback_.is_null())
+      lifecycle_callback_.Run(-1);
+  }
+
+  LifecycleCallback lifecycle_callback_;
+  mutable base::WeakPtrFactory<SpecifiedResponseJobInterceptor> factory_;
+};
+
+// Local test infrastructure
+// * URLRequestSpecifiedResponseJob: A URLRequestJob that returns
+//   a different but derivable response for each URL (used for all
+//   url requests in this file).  The class provides interfaces to
+//   signal whenever the total number of jobs transitions to zero.
+// * SdchDictionaryFetcherTest: Registers a callback with the above
+//   class, and provides blocking interfaces for a transition to zero jobs.
+//   Contains an SdchDictionaryFetcher, and tracks fetcher dictionary
+//   addition callbacks.
+// Most tests schedule a dictionary fetch, wait for no jobs outstanding,
+// then test that the fetch results are as expected.
 
 class SdchDictionaryFetcherTest : public ::testing::Test {
  public:
@@ -93,17 +132,22 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
     GURL dictionary_url;
   };
 
-  SdchDictionaryFetcherTest() {
-    URLRequestSpecifiedResponseJob::AddUrlHandler();
-    context_.reset(new TestURLRequestContext);
-    fetcher_.reset(new SdchDictionaryFetcher(
-        context_.get(),
-        base::Bind(&SdchDictionaryFetcherTest::OnDictionaryFetched,
-                   base::Unretained(this))));
+  SdchDictionaryFetcherTest()
+      : jobs_requested_(0),
+        jobs_outstanding_(0),
+        context_(new TestURLRequestContext),
+        fetcher_(new SdchDictionaryFetcher(
+            context_.get(),
+            base::Bind(&SdchDictionaryFetcherTest::OnDictionaryFetched,
+                       base::Unretained(this)))),
+        factory_(this) {
+    SpecifiedResponseJobInterceptor::RegisterWithFilter(
+        base::Bind(&SdchDictionaryFetcherTest::OnNumberJobsChanged,
+                   factory_.GetWeakPtr()));
   }
 
   ~SdchDictionaryFetcherTest() override {
-    URLRequestSpecifiedResponseJob::RemoveUrlHandler();
+    SpecifiedResponseJobInterceptor::Unregister();
   }
 
   void OnDictionaryFetched(const std::string& dictionary_text,
@@ -113,6 +157,8 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
         DictionaryAdditions(dictionary_text, dictionary_url));
   }
 
+  // Return (in |*out|) all dictionary additions since the last time
+  // this function was called.
   void GetDictionaryAdditions(std::vector<DictionaryAdditions>* out) {
     out->swap(dictionary_additions);
     dictionary_additions.clear();
@@ -121,9 +167,7 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
   SdchDictionaryFetcher* fetcher() { return fetcher_.get(); }
 
   // May not be called outside the SetUp()/TearDown() interval.
-  int JobsRequested() {
-    return URLRequestSpecifiedResponseJob::jobs_requested();
-  }
+  int jobs_requested() const { return jobs_requested_; }
 
   GURL PathToGurl(const char* path) {
     std::string gurl_string("http://");
@@ -133,19 +177,41 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
     return GURL(gurl_string);
   }
 
+  // Block until there are no outstanding URLRequestSpecifiedResponseJobs.
+  void WaitForNoJobs() {
+    if (jobs_outstanding_ == 0)
+      return;
+
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
  private:
+  void OnNumberJobsChanged(int outstanding_jobs_delta) {
+    if (outstanding_jobs_delta > 0)
+      jobs_requested_ += outstanding_jobs_delta;
+    jobs_outstanding_ += outstanding_jobs_delta;
+    if (jobs_outstanding_ == 0 && run_loop_)
+      run_loop_->Quit();
+  }
+
+  int jobs_requested_;
+  int jobs_outstanding_;
+  scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<TestURLRequestContext> context_;
   scoped_ptr<SdchDictionaryFetcher> fetcher_;
   std::vector<DictionaryAdditions> dictionary_additions;
+  base::WeakPtrFactory<SdchDictionaryFetcherTest> factory_;
 };
 
 // Schedule a fetch and make sure it happens.
 TEST_F(SdchDictionaryFetcherTest, Basic) {
   GURL dictionary_url(PathToGurl("dictionary"));
   fetcher()->Schedule(dictionary_url);
+  WaitForNoJobs();
 
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, JobsRequested());
+  EXPECT_EQ(1, jobs_requested());
   std::vector<DictionaryAdditions> additions;
   GetDictionaryAdditions(&additions);
   ASSERT_EQ(1u, additions.size());
@@ -160,9 +226,9 @@ TEST_F(SdchDictionaryFetcherTest, Multiple) {
   fetcher()->Schedule(dictionary_url);
   fetcher()->Schedule(dictionary_url);
   fetcher()->Schedule(dictionary_url);
-  base::RunLoop().RunUntilIdle();
+  WaitForNoJobs();
 
-  EXPECT_EQ(1, JobsRequested());
+  EXPECT_EQ(1, jobs_requested());
   std::vector<DictionaryAdditions> additions;
   GetDictionaryAdditions(&additions);
   ASSERT_EQ(1u, additions.size());
@@ -181,9 +247,33 @@ TEST_F(SdchDictionaryFetcherTest, Cancel) {
   fetcher()->Schedule(dictionary_url_2);
   fetcher()->Schedule(dictionary_url_3);
   fetcher()->Cancel();
-  base::RunLoop().RunUntilIdle();
+  WaitForNoJobs();
 
   // Synchronous execution may have resulted in a single job being scheduled.
-  EXPECT_GE(1, JobsRequested());
+  EXPECT_GE(1, jobs_requested());
 }
+
+// Attempt to confuse the fetcher loop processing by scheduling a
+// dictionary addition while another fetch is in process.
+TEST_F(SdchDictionaryFetcherTest, LoopRace) {
+  GURL dictionary0_url(PathToGurl("dictionary0"));
+  GURL dictionary1_url(PathToGurl("dictionary1"));
+  fetcher()->Schedule(dictionary0_url);
+  fetcher()->Schedule(dictionary1_url);
+  WaitForNoJobs();
+
+  ASSERT_EQ(2, jobs_requested());
+  std::vector<DictionaryAdditions> additions;
+  GetDictionaryAdditions(&additions);
+  ASSERT_EQ(2u, additions.size());
+  EXPECT_EQ(
+      URLRequestSpecifiedResponseJob::ExpectedResponseForURL(dictionary0_url),
+      additions[0].dictionary_text);
+  EXPECT_EQ(
+      URLRequestSpecifiedResponseJob::ExpectedResponseForURL(dictionary1_url),
+      additions[1].dictionary_text);
 }
+
+}  // namespace
+
+}  // namespace net
