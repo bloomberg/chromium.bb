@@ -2554,7 +2554,7 @@ TEST_F(GestureRecognizerTest, PressDoesNotCrash) {
   // there is at least one case where we need to allow a touch press
   // from a currently used touch id. See crbug.com/373125 for details.
   EXPECT_TRUE(delegate->begin());
-  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_TRUE(delegate->tap_down());
   EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->scroll_begin());
 }

@@ -456,10 +456,20 @@ TEST(MotionEventAuraTest, Flags) {
 
 // Once crbug.com/446852 is fixed, we should ignore redundant presses.
 TEST(MotionEventAuraTest, DoesntIgnoreRedundantPresses) {
-  int id = 7;
+  const int id = 7;
+  const int position_1 = 10;
+  const int position_2 = 23;
+
   MotionEventAura event;
-  EXPECT_TRUE(event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, id)));
-  EXPECT_TRUE(event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, id)));
+  TouchEvent press1 = TouchWithPosition(ET_TOUCH_PRESSED, id, position_1,
+                                        position_1, position_1, position_1);
+  EXPECT_TRUE(event.OnTouch(press1));
+  TouchEvent press2 = TouchWithPosition(ET_TOUCH_PRESSED, id, position_2,
+                                        position_2, position_2, position_2);
+  EXPECT_TRUE(event.OnTouch(press2));
+
+  EXPECT_EQ(1U, event.GetPointerCount());
+  EXPECT_FLOAT_EQ(position_2, event.GetX(0));
 }
 
 TEST(MotionEventAuraTest, IgnoresEventsWithoutPress) {
