@@ -58,16 +58,12 @@ gfx::Size WrenchToolbarButton::GetPreferredSize() const {
       GetImageSkiaNamed(IDR_TOOLBAR_BEZEL_HOVER)->size();
 }
 
-void WrenchToolbarButton::OnPaint(gfx::Canvas* canvas) {
-  views::MenuButton::OnPaint(canvas);
-  wrench_icon_painter_->Paint(canvas,
-                              GetThemeProvider(),
-                              gfx::Rect(size()),
-                              WrenchIconPainter::BEZEL_NONE);
-}
-
 void WrenchToolbarButton::ScheduleWrenchIconPaint() {
   SchedulePaint();
+}
+
+const char* WrenchToolbarButton::GetClassName() const {
+  return "WrenchToolbarButton";
 }
 
 bool WrenchToolbarButton::GetDropFormats(
@@ -115,6 +111,14 @@ void WrenchToolbarButton::OnDragExited() {
 int WrenchToolbarButton::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(allow_extension_dragging_);
   return ui::DragDropTypes::DRAG_MOVE;
+}
+
+void WrenchToolbarButton::OnPaint(gfx::Canvas* canvas) {
+  views::MenuButton::OnPaint(canvas);
+  wrench_icon_painter_->Paint(canvas,
+                              GetThemeProvider(),
+                              gfx::Rect(size()),
+                              WrenchIconPainter::BEZEL_NONE);
 }
 
 void WrenchToolbarButton::ShowOverflowMenu() {

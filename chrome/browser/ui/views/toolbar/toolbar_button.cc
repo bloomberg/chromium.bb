@@ -248,3 +248,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
 }
+
+const char* ToolbarButton::GetClassName() const {
+  return "ToolbarButton";
+}

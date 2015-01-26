@@ -112,3 +112,8 @@ void LoginView::OnLoginModelDestroying() {
   login_model_->RemoveObserver(this);
   login_model_ = NULL;
 }
+
+const char* LoginView::GetClassName() const {
+  return "LoginView";
+}
+

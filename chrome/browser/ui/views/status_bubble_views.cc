@@ -168,6 +168,7 @@ class StatusBubbleViews::StatusView : public views::View {
   void StartShowing();
 
   // views::View:
+  const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
   BubbleState state_;
@@ -348,6 +349,10 @@ void StatusBubbleViews::StatusView::OnAnimationEnded() {
   } else if (state_ == BUBBLE_SHOWING_FADE) {
     state_ = BUBBLE_SHOWN;
   }
+}
+
+const char* StatusBubbleViews::StatusView::GetClassName() const {
+  return "StatusBubbleViews::StatusView";
 }
 
 void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {

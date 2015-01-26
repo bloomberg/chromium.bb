@@ -30,18 +30,20 @@ class BookmarkBarInstructionsView : public views::View,
   explicit BookmarkBarInstructionsView(
       BookmarkBarInstructionsDelegate* delegate);
 
-  // views::View overrides.
+ private:
+  // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
+  const char* GetClassName() const override;
   void OnThemeChanged() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void GetAccessibleState(ui::AXViewState* state) override;
 
-  // views::LinkListener overrides.
+  // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
- private:
+  // views::ContextMenuController:
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;

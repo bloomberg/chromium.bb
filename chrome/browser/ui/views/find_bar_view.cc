@@ -495,6 +495,10 @@ FindBarHost* FindBarView::find_bar_host() const {
   return static_cast<FindBarHost*>(host());
 }
 
+const char* FindBarView::GetClassName() const {
+  return "FindBarView";
+}
+
 void FindBarView::OnThemeChanged() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (GetThemeProvider()) {

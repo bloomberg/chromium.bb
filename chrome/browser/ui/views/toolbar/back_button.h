@@ -29,11 +29,12 @@ class BackButton : public ToolbarButton {
 
   void SetLeadingMargin(int margin);
 
- protected:
-  gfx::Rect GetThemePaintRect() const override;
-  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
-
  private:
+  // ToolbarButton:
+  const char* GetClassName() const override;
+  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
+  gfx::Rect GetThemePaintRect() const override;
+
   // Any leading margin to be applied. Used when the back button is in
   // a maximized state to extend to the full window width.
   int margin_leading_;

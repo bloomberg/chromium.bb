@@ -86,6 +86,20 @@ void ToolbarActionView::DecorateWantsToRunBorder(
                      views::Painter::CreateImageGridPainter(kRaisedImages));
 }
 
+gfx::Size ToolbarActionView::GetPreferredSize() const {
+  return gfx::Size(ToolbarActionsBar::IconWidth(false),
+                   ToolbarActionsBar::IconHeight());
+}
+
+const char* ToolbarActionView::GetClassName() const {
+  return "ToolbarActionView";
+}
+
+void ToolbarActionView::OnDragDone() {
+  views::MenuButton::OnDragDone();
+  delegate_->OnToolbarActionViewDragDone();
+}
+
 void ToolbarActionView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && !called_register_command_ && GetFocusManager()) {
@@ -94,16 +108,6 @@ void ToolbarActionView::ViewHierarchyChanged(
   }
 
   MenuButton::ViewHierarchyChanged(details);
-}
-
-void ToolbarActionView::OnDragDone() {
-  views::MenuButton::OnDragDone();
-  delegate_->OnToolbarActionViewDragDone();
-}
-
-gfx::Size ToolbarActionView::GetPreferredSize() const {
-  return gfx::Size(ToolbarActionsBar::IconWidth(false),
-                   ToolbarActionsBar::IconHeight());
 }
 
 void ToolbarActionView::PaintChildren(gfx::Canvas* canvas,

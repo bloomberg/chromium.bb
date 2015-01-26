@@ -16,7 +16,9 @@ class HomeButton : public ToolbarButton {
   HomeButton(views::ButtonListener* listener, Browser* browser);
   ~HomeButton() override;
 
+ private:
   // ToolbarButton:
+  const char* GetClassName() const override;
   bool GetDropFormats(
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats) override;
@@ -24,7 +26,6 @@ class HomeButton : public ToolbarButton {
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
- private:
   // ToolbarButton:
   void NotifyClick(const ui::Event& event) override;
 

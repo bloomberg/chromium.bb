@@ -146,6 +146,10 @@ HomeButton::HomeButton(
 HomeButton::~HomeButton() {
 }
 
+const char* HomeButton::GetClassName() const {
+  return "HomeButton";
+}
+
 bool HomeButton::GetDropFormats(
     int* formats,
     std::set<OSExchangeData::CustomFormat>* custom_formats) {

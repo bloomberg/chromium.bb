@@ -29,7 +29,9 @@ class PageActionWithBadgeView : public views::View {
   void UpdateVisibility(content::WebContents* contents);
 
  private:
+  // views::View:
   void Layout() override;
+  const char* GetClassName() const override;
 
   // The button this view contains.
   PageActionImageView* image_view_;

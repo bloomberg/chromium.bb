@@ -66,6 +66,7 @@ class IconLabelBubbleView : public views::View {
   static int GetBubbleOuterPadding(bool by_icon);
 
   // views::View:
+  const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
   int GetPreLabelWidth() const;

@@ -74,13 +74,13 @@ class ToolbarActionView : public views::MenuButton,
   // an action wants to run.
   static void DecorateWantsToRunBorder(views::LabelButtonBorder* border);
 
-  // Overridden from views::View:
+  // views::MenuButton:
   void GetAccessibleState(ui::AXViewState* state) override;
 
-  // Overridden from views::ButtonListener:
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Overridden from content::NotificationObserver:
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
@@ -113,11 +113,12 @@ class ToolbarActionView : public views::MenuButton,
   bool wants_to_run_for_testing() const { return wants_to_run_; }
 
  private:
-  // Overridden from views::View:
+  // views::MenuButton:
+  gfx::Size GetPreferredSize() const override;
+  const char* GetClassName() const override;
+  void OnDragDone() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  void OnDragDone() override;
-  gfx::Size GetPreferredSize() const override;
   void PaintChildren(gfx::Canvas* canvas,
                      const views::CullSet& cull_set) override;
   void OnPaintBorder(gfx::Canvas* canvas) override;

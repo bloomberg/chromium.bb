@@ -81,3 +81,7 @@ void SelectedKeywordView::SetKeyword(const base::string16& keyword) {
   partial_label_.SetText(min_string.empty() ?
       full_label_.text() : partial_name);
 }
+
+const char* SelectedKeywordView::GetClassName() const {
+  return "SelectedKeywordView";
+}

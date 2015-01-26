@@ -87,6 +87,10 @@ void BookmarkBarInstructionsView::Layout() {
   }
 }
 
+const char* BookmarkBarInstructionsView::GetClassName() const {
+  return "BookmarkBarInstructionsView";
+}
+
 void BookmarkBarInstructionsView::OnThemeChanged() {
   UpdateColors();
 }

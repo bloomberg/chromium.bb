@@ -23,6 +23,11 @@ gfx::Size PageActionWithBadgeView::GetPreferredSize() const {
                    ExtensionAction::kPageActionIconMaxSize);
 }
 
+void PageActionWithBadgeView::UpdateVisibility(content::WebContents* contents) {
+  image_view_->UpdateVisibility(contents);
+  SetVisible(image_view_->visible());
+}
+
 void PageActionWithBadgeView::Layout() {
   // We have 25 pixels of vertical space in the Omnibox to play with, so even
   // sized icons (such as 16x16) have either a 5 or a 4 pixel whitespace
@@ -33,7 +38,6 @@ void PageActionWithBadgeView::Layout() {
   image_view_->SetBounds(0, y, width(), height());
 }
 
-void PageActionWithBadgeView::UpdateVisibility(content::WebContents* contents) {
-  image_view_->UpdateVisibility(contents);
-  SetVisible(image_view_->visible());
+const char* PageActionWithBadgeView::GetClassName() const {
+  return "PageActionWithBadgeView";
 }

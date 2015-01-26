@@ -118,6 +118,9 @@ class OmniboxResultView : public views::View,
   }
 
  private:
+  // views::View:
+  const char* GetClassName() const override;
+
   gfx::ImageSkia GetIcon() const;
   const gfx::ImageSkia* GetKeywordIcon() const;
 

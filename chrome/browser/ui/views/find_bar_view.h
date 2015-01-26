@@ -67,7 +67,7 @@ class FindBarView : public DropdownBarView,
   // Claims focus for the text field and selects its contents.
   void SetFocusAndSelection(bool select_all) override;
 
-  // views::View:
+  // DropdownBarView:
   void OnPaint(gfx::Canvas* canvas) override;
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
@@ -88,7 +88,8 @@ class FindBarView : public DropdownBarView,
   // Updates the appearance for the match count label.
   void UpdateMatchCountAppearance(bool no_match);
 
-  // views::View:
+  // DropdownBarView:
+  const char* GetClassName() const override;
   void OnThemeChanged() override;
 
   // We use a hidden view to grab mouse clicks and bring focus to the find

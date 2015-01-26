@@ -92,6 +92,10 @@ void KeywordHintView::Layout() {
                              height());
 }
 
+const char* KeywordHintView::GetClassName() const {
+  return "KeywordHintView";
+}
+
 views::Label* KeywordHintView::CreateLabel(const gfx::FontList& font_list,
                                            SkColor text_color,
                                            SkColor background_color) {

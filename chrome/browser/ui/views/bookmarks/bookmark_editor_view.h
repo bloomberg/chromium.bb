@@ -122,9 +122,8 @@ class BookmarkEditorView : public BookmarkEditor,
  private:
   friend class BookmarkEditorViewTest;
 
-  // Creates the necessary sub-views, configures them, adds them to the layout,
-  // and requests the entries to display from the database.
-  void Init();
+  // views::DialogDelegateView:
+  const char* GetClassName() const override;
 
   // bookmarks::BookmarkModelObserver:
   // Any structural change results in resetting the tree model.
@@ -151,6 +150,10 @@ class BookmarkEditorView : public BookmarkEditor,
                                      const BookmarkNode* node) override;
   void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
                                   const BookmarkNode* node) override {}
+
+  // Creates the necessary sub-views, configures them, adds them to the layout,
+  // and requests the entries to display from the database.
+  void Init();
 
   // Resets the model of the tree and updates the various buttons appropriately.
   void Reset();

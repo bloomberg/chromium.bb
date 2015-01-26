@@ -21,9 +21,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+namespace {
+
 // This is the number of pixels in the border image interior to the actual
 // border.
 const int kBorderInterior = 6;
+
+}  // namespace
 
 class OmniboxPopupContentsView::AutocompletePopupWidget
     : public views::Widget,
@@ -406,7 +410,11 @@ OmniboxResultView* OmniboxPopupContentsView::CreateResultView(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxPopupContentsView, views::View overrides, protected:
+// OmniboxPopupContentsView, views::View overrides, private:
+
+const char* OmniboxPopupContentsView::GetClassName() const {
+  return "OmniboxPopupContentsView";
+}
 
 void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect contents_bounds = GetContentsBounds();

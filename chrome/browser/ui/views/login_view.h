@@ -29,7 +29,7 @@ class LoginView : public views::View,
   const base::string16& GetUsername() const;
   const base::string16& GetPassword() const;
 
-  // LoginModelObserver implementation.
+  // password_manager::LoginModelObserver:
   void OnAutofillDataAvailable(const base::string16& username,
                                const base::string16& password) override;
   void OnLoginModelDestroying() override;
@@ -38,6 +38,9 @@ class LoginView : public views::View,
   views::View* GetInitiallyFocusedView();
 
  private:
+  // views::View:
+  const char* GetClassName() const override;
+
   // Non-owning refs to the input text fields.
   views::Textfield* username_field_;
   views::Textfield* password_field_;

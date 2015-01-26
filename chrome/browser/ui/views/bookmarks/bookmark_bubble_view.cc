@@ -109,10 +109,6 @@ BookmarkBubbleView::~BookmarkBubbleView() {
   delete parent_combobox_;
 }
 
-views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
-  return title_tf_;
-}
-
 void BookmarkBubbleView::WindowClosing() {
   // We have to reset |bubble_| here, not in our destructor, because we'll be
   // destroyed asynchronously and the shown state will be checked before then.
@@ -260,6 +256,14 @@ void BookmarkBubbleView::Init() {
   AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
+}
+
+const char* BookmarkBubbleView::GetClassName() const {
+  return "BookmarkBubbleView";
+}
+
+views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
+  return title_tf_;
 }
 
 BookmarkBubbleView::BookmarkBubbleView(

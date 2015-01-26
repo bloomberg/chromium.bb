@@ -25,8 +25,12 @@
 #include "ui/gfx/icon_util.h"
 #endif
 
-static bool g_initialized = false;
-static gfx::ImageSkia* g_default_favicon = NULL;
+namespace {
+
+bool g_initialized = false;
+gfx::ImageSkia* g_default_favicon = nullptr;
+
+}  // namespace
 
 // static
 void TabIconView::InitializeIfNeeded() {
@@ -137,6 +141,14 @@ void TabIconView::PaintIcon(gfx::Canvas* canvas,
                        dest_h, filter);
 }
 
+gfx::Size TabIconView::GetPreferredSize() const {
+  return gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize);
+}
+
+const char* TabIconView::GetClassName() const {
+  return "TabIconView";
+}
+
 void TabIconView::OnPaint(gfx::Canvas* canvas) {
   bool rendered = false;
 
@@ -153,8 +165,4 @@ void TabIconView::OnPaint(gfx::Canvas* canvas) {
 
   if (!rendered)
     PaintFavicon(canvas, *g_default_favicon);
-}
-
-gfx::Size TabIconView::GetPreferredSize() const {
-  return gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize);
 }

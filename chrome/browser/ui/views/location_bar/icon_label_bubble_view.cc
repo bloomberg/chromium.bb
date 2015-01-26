@@ -116,6 +116,10 @@ int IconLabelBubbleView::GetBubbleOuterPadding(bool by_icon) {
       (by_icon ? 0 : LocationBarView::kIconInternalPadding);
 }
 
+const char* IconLabelBubbleView::GetClassName() const {
+  return "IconLabelBubbleView";
+}
+
 void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
   views::Painter* painter = (in_hover_ && hover_background_painter_) ?
       hover_background_painter_.get() : background_painter_.get();

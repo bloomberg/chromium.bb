@@ -26,6 +26,7 @@ class SelectedKeywordView : public IconLabelBubbleView {
                       Profile* profile);
   ~SelectedKeywordView() override;
 
+  // IconLabelBubbleView:
   gfx::Size GetPreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
@@ -35,6 +36,9 @@ class SelectedKeywordView : public IconLabelBubbleView {
   const base::string16& keyword() const { return keyword_; }
 
  private:
+  // IconLabelBubbleView:
+  const char* GetClassName() const override;
+
   // The keyword we're showing. If empty, no keyword is selected.
   // NOTE: we don't cache the TemplateURL as it is possible for it to get
   // deleted out from under us.

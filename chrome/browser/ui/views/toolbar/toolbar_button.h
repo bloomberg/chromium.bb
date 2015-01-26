@@ -66,6 +66,9 @@ class ToolbarButton : public views::LabelButton,
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type);
 
  private:
+  // views::LabelButton:
+  const char* GetClassName() const override;
+
   // The model that populates the attached menu.
   scoped_ptr<ui::MenuModel> model_;
 

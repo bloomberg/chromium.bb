@@ -40,7 +40,7 @@ class OmniboxPopupContentsView : public views::View,
 
   virtual void LayoutChildren();
 
-  // Overridden from OmniboxPopupView:
+  // OmniboxPopupView:
   bool IsOpen() const override;
   void InvalidateLine(size_t line) override;
   void UpdatePopupAppearance() override;
@@ -48,10 +48,10 @@ class OmniboxPopupContentsView : public views::View,
   void PaintUpdatesNow() override;
   void OnDragCanceled() override;
 
-  // Overridden from gfx::AnimationDelegate:
+  // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  // Overridden from views::View:
+  // views::View:
   void Layout() override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -61,8 +61,6 @@ class OmniboxPopupContentsView : public views::View,
   void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
-
-  // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   bool IsSelectedIndex(size_t index) const;
@@ -90,7 +88,11 @@ class OmniboxPopupContentsView : public views::View,
   virtual OmniboxResultView* CreateResultView(int model_index,
                                               const gfx::FontList& font_list);
 
-  // Overridden from views::View:
+ private:
+  class AutocompletePopupWidget;
+
+  // views::View:
+  const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   // This method should not be triggered directly as we paint our children
   // in an un-conventional way inside OnPaint. We use a separate canvas to
@@ -98,11 +100,6 @@ class OmniboxPopupContentsView : public views::View,
   // the view hierarchy does not "accidentally" trigger this.
   void PaintChildren(gfx::Canvas* canvas,
                      const views::CullSet& cull_set) override;
-
-  scoped_ptr<OmniboxPopupModel> model_;
-
- private:
-  class AutocompletePopupWidget;
 
   // views::ViewTargeterDelegate:
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
@@ -136,6 +133,8 @@ class OmniboxPopupContentsView : public views::View,
                         WindowOpenDisposition disposition);
 
   OmniboxResultView* result_view_at(size_t i);
+
+  scoped_ptr<OmniboxPopupModel> model_;
 
   // The popup that contains this view.  We create this, but it deletes itself
   // when its window is destroyed.  This is a WeakPtr because it's possible for

@@ -187,6 +187,10 @@ void ContentSettingImageView::Layout() {
       height());
 }
 
+const char* ContentSettingImageView::GetClassName() const {
+  return "ContentSettingsImageView";
+}
+
 bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.

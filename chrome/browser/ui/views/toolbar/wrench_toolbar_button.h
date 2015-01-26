@@ -28,7 +28,6 @@ class WrenchToolbarButton : public views::MenuButton,
 
   // views::MenuButton:
   gfx::Size GetPreferredSize() const override;
-  void OnPaint(gfx::Canvas* canvas) override;
 
   // WrenchIconPainter::Delegate:
   void ScheduleWrenchIconPaint() override;
@@ -45,7 +44,8 @@ class WrenchToolbarButton : public views::MenuButton,
   static bool g_open_wrench_immediately_for_testing;
 
  private:
-  // views::View:
+  // views::MenuButton:
+  const char* GetClassName() const override;
   bool GetDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
@@ -55,6 +55,7 @@ class WrenchToolbarButton : public views::MenuButton,
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // Show the extension action overflow menu (which is in the app menu).
   void ShowOverflowMenu();

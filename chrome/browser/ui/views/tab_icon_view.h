@@ -33,11 +33,12 @@ class TabIconView : public views::MenuButton {
   // Set the throbber to the light style (for use on dark backgrounds).
   void set_is_light(bool is_light) { is_light_ = is_light; }
 
-  // Overridden from View
-  void OnPaint(gfx::Canvas* canvas) override;
-  gfx::Size GetPreferredSize() const override;
-
  private:
+  // views::MenuButton:
+  gfx::Size GetPreferredSize() const override;
+  const char* GetClassName() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+
   void PaintThrobber(gfx::Canvas* canvas);
   void PaintFavicon(gfx::Canvas* canvas, const gfx::ImageSkia& image);
   void PaintIcon(gfx::Canvas* canvas,

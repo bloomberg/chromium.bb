@@ -70,6 +70,7 @@ class ContentSettingImageView : public gfx::AnimationDelegate,
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
+  const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;

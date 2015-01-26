@@ -424,6 +424,10 @@ int OmniboxResultView::GetDisplayOffset(
 // static
 int OmniboxResultView::default_icon_size_ = 0;
 
+const char* OmniboxResultView::GetClassName() const {
+  return "OmniboxResultView";
+}
+
 gfx::ImageSkia OmniboxResultView::GetIcon() const {
   const gfx::Image image = model_->GetIconIfExtensionMatch(model_index_);
   if (!image.IsEmpty())

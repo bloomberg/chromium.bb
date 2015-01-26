@@ -46,13 +46,8 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
 
   ~BookmarkBubbleView() override;
 
-  // views::BubbleDelegateView method.
-  views::View* GetInitiallyFocusedView() override;
-
-  // views::WidgetDelegate method.
+  // views::WidgetDelegate:
   void WindowClosing() override;
-
-  // views::View method.
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
  protected:
@@ -63,6 +58,10 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   friend class BookmarkBubbleViewTest;
   FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoSignedIn);
   FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoNotSignedIn);
+
+  // views::BubbleDelegateView:
+  const char* GetClassName() const override;
+  views::View* GetInitiallyFocusedView() override;
 
   // Creates a BookmarkBubbleView.
   BookmarkBubbleView(views::View* anchor_view,
