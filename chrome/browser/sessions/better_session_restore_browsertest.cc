@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -377,9 +378,7 @@ class ContinueWhereILeftOffTest : public BetterSessionRestoreTest {
  protected:
   Browser* QuitBrowserAndRestore(Browser* browser,
                                  bool close_all_windows) override {
-    content::WindowedNotificationObserver session_restore_observer(
-        chrome::NOTIFICATION_SESSION_RESTORE_DONE,
-        content::NotificationService::AllSources());
+    SessionRestoreTestHelper session_restore_observer;
     Browser* new_browser = BetterSessionRestoreTest::QuitBrowserAndRestore(
         browser, close_all_windows);
     session_restore_observer.Wait();

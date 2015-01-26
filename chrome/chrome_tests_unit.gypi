@@ -1645,6 +1645,8 @@
         'browser/search_engines/template_url_service_factory_test_util.h',
         'browser/search_engines/template_url_service_test_util.cc',
         'browser/search_engines/template_url_service_test_util.h',
+        'browser/sessions/session_restore_test_helper.cc',
+        'browser/sessions/session_restore_test_helper.h',
         'browser/sessions/session_service_test_helper.cc',
         'browser/sessions/session_service_test_helper.h',
         'browser/signin/fake_account_reconcilor.cc',

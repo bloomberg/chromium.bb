@@ -889,6 +889,8 @@ source_set("test_support") {
     "search_engines/template_url_service_factory_test_util.h",
     "search_engines/template_url_service_test_util.cc",
     "search_engines/template_url_service_test_util.h",
+    "sessions/session_restore_test_helper.cc",
+    "sessions/session_restore_test_helper.h",
     "sessions/session_service_test_helper.cc",
     "sessions/session_service_test_helper.h",
     "signin/fake_account_reconcilor.cc",
