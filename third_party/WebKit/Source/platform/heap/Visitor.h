@@ -765,10 +765,17 @@ public:
             // Assert against deep stacks so as to flush them out,
             // but test and appropriately handle them should they occur
             // in release builds.
+            //
+            // ASan adds extra stack usage, so disable the assert when it is
+            // enabled so as to avoid testing against a much lower & too low,
+            // stack depth threshold.
+            //
             // FIXME: visitor->isMarked(t) exception is to allow empty trace()
             // calls from HashTable weak processing. Remove the condition once
             // it is refactored.
+#if !defined(ADDRESS_SANITIZER)
             ASSERT(visitor->canTraceEagerly() || visitor->isMarked(t));
+#endif
             if (LIKELY(visitor->canTraceEagerly())) {
                 if (visitor->ensureMarked(t)) {
                     TraceTrait<T>::trace(visitor, const_cast<T*>(t));
