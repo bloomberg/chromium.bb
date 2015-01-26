@@ -23,7 +23,6 @@ class ReliableQuicStream;
 
 // Buffers frames until we have something which can be passed
 // up to the next layer.
-// TOOD(alyssar) add some checks for overflow attempts [1, 256,] [2, 256]
 class NET_EXPORT_PRIVATE QuicStreamSequencer {
  public:
   explicit QuicStreamSequencer(ReliableQuicStream* quic_stream);

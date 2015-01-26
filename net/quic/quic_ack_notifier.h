@@ -55,30 +55,20 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
   bool OnAck(QuicPacketSequenceNumber sequence_number,
              QuicTime::Delta delta_largest_observed);
 
-  bool IsEmpty() { return sequence_numbers_.empty(); }
+  bool IsEmpty() { return unacked_packets_ == 0; }
 
-  // If a packet is retransmitted by the connection it will be sent with a
-  // different sequence number. Updates our internal set of sequence_numbers to
-  // track the latest number.
-  void UpdateSequenceNumber(QuicPacketSequenceNumber old_sequence_number,
-                            QuicPacketSequenceNumber new_sequence_number);
+  // If a packet is retransmitted by the connection, it will be sent with a
+  // different sequence number.
+  void OnPacketRetransmitted(int packet_payload_size);
 
  private:
-  struct PacketInfo {
-    PacketInfo();
-    explicit PacketInfo(int payload_size);
-
-    int packet_payload_size;
-  };
-
   // The delegate's OnAckNotification() method will be called once we have been
   // notified of ACKs for all the sequence numbers we are tracking.
   // This is not owned by OnAckNotifier and must outlive it.
   scoped_refptr<DelegateInterface> delegate_;
 
-  // Sequence numbers this notifier is waiting to hear about. The
-  // delegate will not be called until this is empty.
-  base::hash_map<QuicPacketSequenceNumber, PacketInfo> sequence_numbers_;
+  // The number of unacked packets being tracked.
+  int unacked_packets_;
 
   // Number of packets that had to be retransmitted.
   int retransmitted_packet_count_;
@@ -88,6 +78,6 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
   DISALLOW_COPY_AND_ASSIGN(QuicAckNotifier);
 };
 
-};  // namespace net
+}  // namespace net
 
 #endif  // NET_QUIC_QUIC_ACK_NOTIFIER_H_

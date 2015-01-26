@@ -26,6 +26,12 @@ void QuicSentPacketManagerPeer::SetMaxTailLossProbes(
 }
 
 // static
+bool QuicSentPacketManagerPeer::GetUseNewRto(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->use_new_rto_;
+}
+
+// static
 QuicByteCount QuicSentPacketManagerPeer::GetReceiveWindow(
     QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->receive_buffer_bytes_;

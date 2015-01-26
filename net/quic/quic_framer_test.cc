@@ -141,14 +141,6 @@ class TestDecrypter : public QuicDecrypter {
   ~TestDecrypter() override {}
   bool SetKey(StringPiece key) override { return true; }
   bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
-  bool Decrypt(StringPiece nonce,
-               StringPiece associated_data,
-               StringPiece ciphertext,
-               unsigned char* output,
-               size_t* output_length) override {
-    CHECK(false) << "Not implemented";
-    return false;
-  }
   QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
                           StringPiece associated_data,
                           StringPiece ciphertext) override {

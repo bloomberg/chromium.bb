@@ -397,6 +397,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Maximum number of tail loss probes to send before firing an RTO.
   size_t max_tail_loss_probes_;
   bool using_pacing_;
+  // If true, use the new RTO with loss based CWND reduction instead of the send
+  // algorithms's OnRetransmissionTimeout to reduce the congestion window.
+  bool use_new_rto_;
 
   // Vectors packets acked and lost as a result of the last congestion event.
   SendAlgorithmInterface::CongestionVector packets_acked_;

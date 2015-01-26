@@ -14,19 +14,13 @@ using std::make_pair;
 
 namespace net {
 
-QuicAckNotifier::PacketInfo::PacketInfo() : packet_payload_size(0) {
-}
-
-QuicAckNotifier::PacketInfo::PacketInfo(int payload_size)
-    : packet_payload_size(payload_size) {
-}
-
 QuicAckNotifier::DelegateInterface::DelegateInterface() {}
 
 QuicAckNotifier::DelegateInterface::~DelegateInterface() {}
 
 QuicAckNotifier::QuicAckNotifier(DelegateInterface* delegate)
     : delegate_(delegate),
+      unacked_packets_(0),
       retransmitted_packet_count_(0),
       retransmitted_byte_count_(0) {
   DCHECK(delegate);
@@ -38,16 +32,17 @@ QuicAckNotifier::~QuicAckNotifier() {
 void QuicAckNotifier::AddSequenceNumber(
     const QuicPacketSequenceNumber& sequence_number,
     int packet_payload_size) {
-  sequence_numbers_.insert(make_pair(sequence_number,
-                                     PacketInfo(packet_payload_size)));
-
+  ++unacked_packets_;
   DVLOG(1) << "AckNotifier waiting for packet: " << sequence_number;
 }
 
 bool QuicAckNotifier::OnAck(QuicPacketSequenceNumber sequence_number,
                             QuicTime::Delta delta_largest_observed) {
-  DCHECK(ContainsKey(sequence_numbers_, sequence_number));
-  sequence_numbers_.erase(sequence_number);
+  if (unacked_packets_ <= 0) {
+    LOG(DFATAL) << "Acked more packets than were tracked.";
+    return true;
+  }
+  --unacked_packets_;
   if (IsEmpty()) {
     // We have seen all the sequence numbers we were waiting for, trigger
     // callback notification.
@@ -59,26 +54,9 @@ bool QuicAckNotifier::OnAck(QuicPacketSequenceNumber sequence_number,
   return false;
 }
 
-void QuicAckNotifier::UpdateSequenceNumber(
-    QuicPacketSequenceNumber old_sequence_number,
-    QuicPacketSequenceNumber new_sequence_number) {
-  DCHECK(!ContainsKey(sequence_numbers_, new_sequence_number));
-
-  PacketInfo packet_info;
-  auto it = sequence_numbers_.find(old_sequence_number);
-  if (it != sequence_numbers_.end()) {
-    packet_info = it->second;
-    sequence_numbers_.erase(it);
-  } else {
-    DLOG(DFATAL) << "Old sequence number not found.";
-  }
-
+void QuicAckNotifier::OnPacketRetransmitted(int packet_payload_size) {
   ++retransmitted_packet_count_;
-  retransmitted_byte_count_ += packet_info.packet_payload_size;
-  sequence_numbers_.insert(make_pair(new_sequence_number, packet_info));
-
-  DVLOG(1) << "AckNotifier waiting for packet: " << new_sequence_number
-           << " (retransmitted " << old_sequence_number << ").";
+  retransmitted_byte_count_ += packet_payload_size;
 }
 
 };  // namespace net

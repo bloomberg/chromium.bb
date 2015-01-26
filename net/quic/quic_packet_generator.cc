@@ -177,7 +177,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     // We want to track which packet this stream frame ends up in.
     if (FLAGS_quic_attach_ack_notifiers_to_packets) {
       if (notifier != nullptr) {
-        ack_notifiers_.insert(notifier);
+        ack_notifiers_.push_back(notifier);
       }
     } else {
       frame.stream_frame->notifier = notifier;
@@ -227,7 +227,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
 
   // Try to close FEC group since we've either run out of data to send or we're
   // blocked. If not in batch mode, force close the group.
-  MaybeSendFecPacketAndCloseGroup(/*flush=*/false);
+  MaybeSendFecPacketAndCloseGroup(/*force=*/false);
 
   DCHECK(InBatchMode() || !packet_creator_.HasPendingFrames());
   return QuicConsumedData(total_bytes_consumed, fin_consumed);
@@ -317,7 +317,7 @@ void QuicPacketGenerator::OnFecTimeout() {
   // Flush out any pending frames in the generator and the creator, and then
   // send out FEC packet.
   SendQueuedFrames(true);
-  MaybeSendFecPacketAndCloseGroup(/*flush=*/true);
+  MaybeSendFecPacketAndCloseGroup(/*force=*/true);
 }
 
 QuicTime::Delta QuicPacketGenerator::GetFecTimeout(
@@ -407,7 +407,7 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
   }
 
   delegate_->OnSerializedPacket(serialized_packet);
-  MaybeSendFecPacketAndCloseGroup(/*flush=*/false);
+  MaybeSendFecPacketAndCloseGroup(/*force=*/false);
 
   // The packet has now been serialized, safe to delete pending frames.
   pending_ack_frame_.reset();

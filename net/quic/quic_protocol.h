@@ -1033,7 +1033,7 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   RetransmittableFrames* retransmittable_frames;
 
   // Optional notifiers which will be informed when this packet has been ACKed.
-  base::hash_set<QuicAckNotifier*> notifiers;
+  std::list<QuicAckNotifier*> notifiers;
 };
 
 struct NET_EXPORT_PRIVATE TransmissionInfo {

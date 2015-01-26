@@ -255,9 +255,8 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers(),
                                           secure_));
   ssize_t ret = GetOrCreateStream()->SendRequest(
-      munged_headers.get() ? *munged_headers.get() : *message.headers(),
-      message.body(),
-      message.has_complete_message());
+      munged_headers.get() ? *munged_headers : *message.headers(),
+      message.body(), message.has_complete_message());
   WaitForWriteToFlush();
   return ret;
 }

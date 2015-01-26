@@ -53,6 +53,8 @@
 #ifndef NET_QUIC_QUIC_PACKET_GENERATOR_H_
 #define NET_QUIC_QUIC_PACKET_GENERATOR_H_
 
+#include <list>
+
 #include "base/containers/hash_tables.h"
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_packet_creator.h"
@@ -256,7 +258,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   scoped_ptr<QuicStopWaitingFrame> pending_stop_waiting_frame_;
 
   // Stores notifiers that should be attached to the next serialized packet.
-  base::hash_set<QuicAckNotifier*> ack_notifiers_;
+  std::list<QuicAckNotifier*> ack_notifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicPacketGenerator);
 };

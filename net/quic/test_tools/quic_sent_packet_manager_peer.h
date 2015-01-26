@@ -22,6 +22,8 @@ class QuicSentPacketManagerPeer {
   static void SetMaxTailLossProbes(
       QuicSentPacketManager* sent_packet_manager, size_t max_tail_loss_probes);
 
+  static bool GetUseNewRto(QuicSentPacketManager* sent_packet_manager);
+
   static QuicByteCount GetReceiveWindow(
       QuicSentPacketManager* sent_packet_manager);
 

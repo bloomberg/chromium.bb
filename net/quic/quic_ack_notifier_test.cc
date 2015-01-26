@@ -52,8 +52,8 @@ TEST_F(QuicAckNotifierTest, DoesNotTrigger) {
 // new sequeunce numbers.
 TEST_F(QuicAckNotifierTest, UpdateSeqNums) {
   // Update a couple of the sequence numbers (i.e. retransmitted packets)
-  notifier_->UpdateSequenceNumber(99, 3000);
-  notifier_->UpdateSequenceNumber(1234, 3001);
+  notifier_->OnPacketRetransmitted(20);
+  notifier_->OnPacketRetransmitted(3);
 
   EXPECT_CALL(*delegate_, OnAckNotification(2, 20 + 3, _)).Times(1);
   EXPECT_FALSE(notifier_->OnAck(26, zero_));    // original

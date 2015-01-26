@@ -34,8 +34,8 @@ void AckNotifierManager::OnPacketAcked(QuicPacketSequenceNumber sequence_number,
 
   // One or more AckNotifiers are registered as interested in this sequence
   // number. Iterate through them and call OnAck on each.
-  AckNotifierSet& ack_notifier_set = map_it->second;
-  for (QuicAckNotifier* ack_notifier : ack_notifier_set) {
+  AckNotifierList& ack_notifier_list = map_it->second;
+  for (QuicAckNotifier* ack_notifier : ack_notifier_list) {
     ack_notifier->OnAck(sequence_number, delta_largest_observed);
 
     // If this has resulted in an empty AckNotifer, erase it.
@@ -50,9 +50,10 @@ void AckNotifierManager::OnPacketAcked(QuicPacketSequenceNumber sequence_number,
   ack_notifier_map_.erase(map_it);
 }
 
-void AckNotifierManager::UpdateSequenceNumber(
+void AckNotifierManager::OnPacketRetransmitted(
     QuicPacketSequenceNumber old_sequence_number,
-    QuicPacketSequenceNumber new_sequence_number) {
+    QuicPacketSequenceNumber new_sequence_number,
+    int packet_payload_size) {
   auto map_it = ack_notifier_map_.find(old_sequence_number);
   if (map_it == ack_notifier_map_.end()) {
     // No AckNotifiers are interested in the old sequence number.
@@ -60,15 +61,14 @@ void AckNotifierManager::UpdateSequenceNumber(
   }
 
   // Update the existing QuicAckNotifiers to the new sequence number.
-  AckNotifierSet& ack_notifier_set = map_it->second;
-  for (QuicAckNotifier* ack_notifier : ack_notifier_set) {
-    ack_notifier->UpdateSequenceNumber(old_sequence_number,
-                                       new_sequence_number);
+  AckNotifierList& ack_notifier_list = map_it->second;
+  for (QuicAckNotifier* ack_notifier : ack_notifier_list) {
+    ack_notifier->OnPacketRetransmitted(packet_payload_size);
   }
 
   // The old sequence number is no longer of interest, copy the updated
   // AckNotifiers to the new sequence number before deleting the old.
-  ack_notifier_map_[new_sequence_number] = ack_notifier_set;
+  ack_notifier_map_[new_sequence_number] = ack_notifier_list;
   ack_notifier_map_.erase(map_it);
 }
 
@@ -86,7 +86,7 @@ void AckNotifierManager::OnSerializedPacket(
 
       // Update the mapping in the other direction, from sequence number to
       // AckNotifier.
-      ack_notifier_map_[serialized_packet.sequence_number].insert(notifier);
+      ack_notifier_map_[serialized_packet.sequence_number].push_back(notifier);
 
       // Take ownership of the AckNotifier.
       ack_notifiers_.insert(notifier);
@@ -112,7 +112,7 @@ void AckNotifierManager::OnSerializedPacket(
 
       // Update the mapping in the other direction, from sequence number to
       // AckNotifier.
-      ack_notifier_map_[serialized_packet.sequence_number].insert(notifier);
+      ack_notifier_map_[serialized_packet.sequence_number].push_back(notifier);
 
       // Take ownership of the AckNotifier.
       ack_notifiers_.insert(notifier);

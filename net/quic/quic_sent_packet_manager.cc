@@ -100,6 +100,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       pending_timer_transmission_count_(0),
       max_tail_loss_probes_(kDefaultMaxTailLossProbes),
       using_pacing_(false),
+      use_new_rto_(false),
       handshake_confirmed_(false) {
 }
 
@@ -153,6 +154,9 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   }
   if (HasClientSentConnectionOption(config, kNTLP)) {
     max_tail_loss_probes_ = 0;
+  }
+  if (HasClientSentConnectionOption(config, kNRTO)) {
+    use_new_rto_ = true;
   }
   if (config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kTIME)) {
@@ -215,6 +219,10 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
 
   HandleAckForSentPackets(ack_frame);
   InvokeLossDetection(ack_receive_time);
+  // Ignore losses in RTO mode.
+  if (FLAGS_quic_use_new_rto && consecutive_rto_count_ > 0 && !use_new_rto_) {
+    packets_lost_.clear();
+  }
   MaybeInvokeCongestionEvent(rtt_updated, bytes_in_flight);
   unacked_packets_.RemoveObsoletePackets();
 
@@ -243,7 +251,9 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
         // a spurious RTO from happening again.
         rtt_stats_.ExpireSmoothedMetrics();
       } else {
-        send_algorithm_->OnRetransmissionTimeout(true);
+        if (!use_new_rto_) {
+          send_algorithm_->OnRetransmissionTimeout(true);
+        }
       }
     }
     // Reset all retransmit counters any time a new packet is acked.
@@ -566,10 +576,10 @@ bool QuicSentPacketManager::OnPacketSent(
                    << "pending_retransmissions_.  sequence_number: "
                    << original_sequence_number;
     }
-    // A notifier may be waiting to hear about ACKs for the original sequence
-    // number. Inform them that the sequence number has changed.
-    ack_notifier_manager_.UpdateSequenceNumber(original_sequence_number,
-                                               sequence_number);
+    // Inform the ack notifier of retransmissions so it can calculate the
+    // retransmit rate.
+    ack_notifier_manager_.OnPacketRetransmitted(original_sequence_number,
+                                                sequence_number, bytes);
   }
 
   if (pending_timer_transmission_count_ > 0) {

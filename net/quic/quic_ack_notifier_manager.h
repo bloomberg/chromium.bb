@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_QUIC_ACK_NOTIFIER_MANAGER_H_
 #define NET_QUIC_QUIC_ACK_NOTIFIER_MANAGER_H_
 
+#include <list>
 #include <map>
 
 #include "base/containers/hash_tables.h"
@@ -34,8 +35,9 @@ class NET_EXPORT_PRIVATE AckNotifierManager {
   // If a packet has been retransmitted with a new sequence number, then this
   // will be called. It updates the mapping in ack_notifier_map_, and also
   // updates the internal set of sequence numbers in each matching AckNotifier.
-  void UpdateSequenceNumber(QuicPacketSequenceNumber old_sequence_number,
-                            QuicPacketSequenceNumber new_sequence_number);
+  void OnPacketRetransmitted(QuicPacketSequenceNumber old_sequence_number,
+                             QuicPacketSequenceNumber new_sequence_number,
+                             int packet_payload_size);
 
   // This is called after a packet has been serialized, is ready to be sent, and
   // contains retransmittable frames (which may have associated AckNotifiers).
@@ -45,8 +47,11 @@ class NET_EXPORT_PRIVATE AckNotifierManager {
   void OnSerializedPacket(const SerializedPacket& serialized_packet);
 
  private:
+  typedef std::list<QuicAckNotifier*> AckNotifierList;
   typedef base::hash_set<QuicAckNotifier*> AckNotifierSet;
-  typedef std::map<QuicPacketSequenceNumber, AckNotifierSet> AckNotifierMap;
+  // TODO(ianswett): Further improvement may come from changing this to a deque.
+  typedef base::hash_map<QuicPacketSequenceNumber, AckNotifierList>
+      AckNotifierMap;
 
   // On every ACK frame received by the connection, all the ack_notifiers_ will
   // be told which sequeunce numbers were ACKed.

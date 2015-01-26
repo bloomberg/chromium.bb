@@ -75,15 +75,13 @@ QuicData* DecryptWithNonce(ChaCha20Poly1305Decrypter* decrypter,
                            StringPiece nonce,
                            StringPiece associated_data,
                            StringPiece ciphertext) {
-  size_t plaintext_size = ciphertext.length();
-  scoped_ptr<char[]> plaintext(new char[plaintext_size]);
-
-  if (!decrypter->Decrypt(nonce, associated_data, ciphertext,
-                          reinterpret_cast<unsigned char*>(plaintext.get()),
-                          &plaintext_size)) {
-    return nullptr;
-  }
-  return new QuicData(plaintext.release(), plaintext_size, true);
+  QuicPacketSequenceNumber sequence_number;
+  StringPiece nonce_prefix(nonce.data(),
+                           nonce.size() - sizeof(sequence_number));
+  decrypter->SetNoncePrefix(nonce_prefix);
+  memcpy(&sequence_number, nonce.data() + nonce_prefix.size(),
+         sizeof(sequence_number));
+  return decrypter->DecryptPacket(sequence_number, associated_data, ciphertext);
 }
 
 TEST(ChaCha20Poly1305DecrypterTest, Decrypt) {

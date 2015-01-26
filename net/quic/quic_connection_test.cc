@@ -144,22 +144,6 @@ class TaggingDecrypter : public QuicDecrypter {
 
   bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
 
-  bool Decrypt(StringPiece nonce,
-               StringPiece associated_data,
-               StringPiece ciphertext,
-               unsigned char* output,
-               size_t* output_length) override {
-    if (ciphertext.size() < kTagSize) {
-      return false;
-    }
-    if (!CheckTag(ciphertext, GetTag(ciphertext))) {
-      return false;
-    }
-    *output_length = ciphertext.size() - kTagSize;
-    memcpy(output, ciphertext.data(), *output_length);
-    return true;
-  }
-
   QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
                           StringPiece associated_data,
                           StringPiece ciphertext) override {
