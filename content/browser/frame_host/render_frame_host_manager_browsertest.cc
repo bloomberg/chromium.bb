@@ -1562,8 +1562,16 @@ class FileChooserDelegate : public WebContentsDelegate {
 };
 
 // Test for http://crbug.com/262948.
+// Flaky on Mac. http://crbug.com/452018
+#if defined(OS_MACOSX)
+#define MAYBE_RestoreFileAccessForHistoryNavigation \
+  DISABLED_RestoreFileAccessForHistoryNavigation
+#else
+#define MAYBE_RestoreFileAccessForHistoryNavigation \
+  RestoreFileAccessForHistoryNavigation
+#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       RestoreFileAccessForHistoryNavigation) {
+                       MAYBE_RestoreFileAccessForHistoryNavigation) {
   StartServer();
   base::FilePath file;
   EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file));

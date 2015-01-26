@@ -139,7 +139,13 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
 
 // Test that we can navigate away if the previous renderer doesn't clean up its
 // child frames.
-IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateWithLeftoverFrames) {
+// Flaky on Mac. http://crbug.com/452018
+#if defined(OS_MACOSX)
+#define MAYBE_NavigateWithLeftoverFrames DISABLED_NavigateWithLeftoverFrames
+#else
+#define MAYBE_NavigateWithLeftoverFrames NavigateWithLeftoverFrames
+#endif
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, MAYBE_NavigateWithLeftoverFrames) {
   GURL base_url = embedded_test_server()->GetURL("A.com", "/site_isolation/");
 
   NavigateToURL(shell(),
