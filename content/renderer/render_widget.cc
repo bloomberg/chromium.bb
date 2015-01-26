@@ -1105,11 +1105,11 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   if (base::TimeTicks::IsHighResolution())
     start_time = base::TimeTicks::Now();
 
-  TRACE_EVENT1("renderer", "RenderWidget::OnHandleInputEvent",
+  TRACE_EVENT1("renderer,benchmark", "RenderWidget::OnHandleInputEvent",
                "event", WebInputEventTraits::GetName(input_event->type));
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
   TRACE_EVENT_FLOW_STEP0(
-      "input",
+      "input,benchmark",
       "LatencyInfo.Flow",
       TRACE_ID_DONT_MANGLE(latency_info.trace_id),
       "HanldeInputEventMain");
