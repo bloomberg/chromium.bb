@@ -10,22 +10,28 @@
 #include "ash/system/audio/tray_audio_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_item_container.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace {
 const int kVolumeImageWidth = 25;
 const int kVolumeImageHeight = 25;
-const int kBarSeparatorWidth = 25;
-const int kBarSeparatorHeight = 30;
+const int kSeparatorSize = 3;
+const int kSeparatorVerticalInset = 8;
 const int kSliderRightPaddingToVolumeViewEdge = 17;
 const int kExtraPaddingBetweenBarAndMore = 10;
+const int kExtraPaddingBetweenIconAndSlider = 8;
+const int kBoxLayoutPadding = 2;
 
 // IDR_AURA_UBER_TRAY_VOLUME_LEVELS contains 5 images,
 // The one for mute is at the 0 index and the other
@@ -67,15 +73,24 @@ class VolumeButton : public views::ToggleImageButton {
       SetImage(views::CustomButton::STATE_NORMAL, &image_skia);
       image_index_ = image_index;
     }
-    SchedulePaint();
   }
 
  private:
-  // Overridden from views::View.
+  // views::View:
   gfx::Size GetPreferredSize() const override {
     gfx::Size size = views::ToggleImageButton::GetPreferredSize();
     size.set_height(kTrayPopupItemHeight);
     return size;
+  }
+
+  // views::CustomButton:
+  void StateChanged() override {
+    if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+      set_background(
+          views::Background::CreateSolidBackground(kHoverBackgroundColor));
+    } else {
+      set_background(nullptr);
+    }
   }
 
   system::TrayAudioDelegate* audio_delegate_;
@@ -85,52 +100,6 @@ class VolumeButton : public views::ToggleImageButton {
   DISALLOW_COPY_AND_ASSIGN(VolumeButton);
 };
 
-class VolumeSlider : public views::Slider {
- public:
-  VolumeSlider(views::SliderListener* listener,
-               system::TrayAudioDelegate* audio_delegate)
-      : views::Slider(listener, views::Slider::HORIZONTAL),
-        audio_delegate_(audio_delegate) {
-    set_focus_border_color(kFocusBorderColor);
-    SetValue(
-        static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f);
-    SetAccessibleName(
-            ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-                IDS_ASH_STATUS_TRAY_VOLUME));
-    Update();
-  }
-  ~VolumeSlider() override {}
-
-  void Update() {
-    UpdateState(!audio_delegate_->IsOutputAudioMuted());
-  }
-
- private:
-  system::TrayAudioDelegate* audio_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(VolumeSlider);
-};
-
-// Vertical bar separator that can be placed on the VolumeView.
-class BarSeparator : public views::View {
- public:
-  BarSeparator() {}
-  ~BarSeparator() override {}
-
-  // Overriden from views::View.
-  gfx::Size GetPreferredSize() const override {
-    return gfx::Size(kBarSeparatorWidth, kBarSeparatorHeight);
-  }
-
- private:
-  void OnPaint(gfx::Canvas* canvas) override {
-    canvas->FillRect(gfx::Rect(width() / 2, 0, 1, height()),
-                     kButtonStrokeColor);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(BarSeparator);
-};
-
 VolumeView::VolumeView(SystemTrayItem* owner,
                        system::TrayAudioDelegate* audio_delegate,
                        bool is_default_view)
@@ -138,31 +107,53 @@ VolumeView::VolumeView(SystemTrayItem* owner,
       audio_delegate_(audio_delegate),
       icon_(NULL),
       slider_(NULL),
-      bar_(NULL),
       device_type_(NULL),
       more_(NULL),
       is_default_view_(is_default_view) {
   SetFocusable(false);
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-        kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
+  views::BoxLayout* box_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, kBoxLayoutPadding);
+  box_layout->SetDefaultFlex(0);
+  SetLayoutManager(box_layout);
 
   icon_ = new VolumeButton(this, audio_delegate_);
+  icon_->SetBorder(views::Border::CreateEmptyBorder(
+      0, kTrayPopupPaddingHorizontal, 0, kExtraPaddingBetweenIconAndSlider));
   AddChildView(icon_);
 
-  slider_ = new VolumeSlider(this, audio_delegate_);
+  slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
+  slider_->set_focus_border_color(kFocusBorderColor);
+  slider_->SetValue(
+      static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f);
+  slider_->SetAccessibleName(
+      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_VOLUME));
+  slider_->SetBorder(
+      views::Border::CreateEmptyBorder(0, 0, 0, kTrayPopupPaddingBetweenItems));
   AddChildView(slider_);
+  box_layout->SetFlexForView(slider_, 1);
 
-  bar_ = new BarSeparator;
-  AddChildView(bar_);
+  separator_ = new views::Separator(views::Separator::VERTICAL);
+  separator_->SetColor(kButtonStrokeColor);
+  separator_->SetPreferredSize(kSeparatorSize);
+  separator_->SetBorder(views::Border::CreateEmptyBorder(
+      kSeparatorVerticalInset, 0, kSeparatorVerticalInset, kBoxLayoutPadding));
+
+  more_region_ = new TrayPopupItemContainer(separator_, true, false);
+  more_region_->SetBorder(
+      views::Border::CreateEmptyBorder(0, 0, 0, kTrayPopupPaddingBetweenItems));
+  AddChildView(more_region_);
 
   device_type_ = new views::ImageView;
-  AddChildView(device_type_);
+  more_region_->AddChildView(device_type_);
 
   more_ = new views::ImageView;
   more_->EnableCanvasFlippingForRTLUI(true);
   more_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_AURA_UBER_TRAY_MORE).ToImageSkia());
-  AddChildView(more_);
+  more_region_->AddChildView(more_);
+
+  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
   Update();
 }
@@ -172,7 +163,7 @@ VolumeView::~VolumeView() {
 
 void VolumeView::Update() {
   icon_->Update();
-  slider_->Update();
+  slider_->UpdateState(!audio_delegate_->IsOutputAudioMuted());
   UpdateDeviceTypeAndMore();
   Layout();
 }
@@ -196,16 +187,16 @@ void VolumeView::SetVolumeLevel(float percent) {
 }
 
 void VolumeView::UpdateDeviceTypeAndMore() {
-  if (!TrayAudio::ShowAudioDeviceMenu() || !is_default_view_) {
-    more_->SetVisible(false);
-    bar_->SetVisible(false);
-    device_type_->SetVisible(false);
+  bool show_more = is_default_view_ && TrayAudio::ShowAudioDeviceMenu() &&
+                   audio_delegate_->HasAlternativeSources();
+  slider_->SetBorder(views::Border::CreateEmptyBorder(
+      0, 0, 0, show_more ? kTrayPopupPaddingBetweenItems
+                         : kSliderRightPaddingToVolumeViewEdge));
+
+  if (!show_more) {
+    more_region_->SetVisible(false);
     return;
   }
-
-  bool show_more = audio_delegate_->HasAlternativeSources();
-  more_->SetVisible(show_more);
-  bar_->SetVisible(show_more);
 
   // Show output device icon if necessary.
   int device_icon = audio_delegate_->GetActiveOutputDeviceIconId();
@@ -214,9 +205,15 @@ void VolumeView::UpdateDeviceTypeAndMore() {
     device_type_->SetImage(
         ui::ResourceBundle::GetSharedInstance().GetImageNamed(
             device_icon).ToImageSkia());
+    more_region_->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
   } else {
     device_type_->SetVisible(false);
+    more_region_->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 0,
+        kTrayPopupPaddingBetweenItems + kExtraPaddingBetweenBarAndMore));
   }
+  more_region_->SetVisible(true);
 }
 
 void VolumeView::HandleVolumeUp(float level) {
@@ -236,54 +233,6 @@ void VolumeView::HandleVolumeDown(float level) {
              level > audio_delegate_->GetOutputDefaultVolumeMuteLevel()) {
     audio_delegate_->SetOutputAudioIsMuted(false);
   }
-}
-
-void VolumeView::Layout() {
-  views::View::Layout();
-
-  if (!more_->visible()) {
-    int w = width() - slider_->bounds().x() -
-            kSliderRightPaddingToVolumeViewEdge;
-    slider_->SetSize(gfx::Size(w, slider_->height()));
-    return;
-  }
-
-  // Make sure the chevron always has the full size.
-  gfx::Size size = more_->GetPreferredSize();
-  gfx::Rect bounds(size);
-  bounds.set_x(width() - size.width() - kTrayPopupPaddingBetweenItems);
-  bounds.set_y((height() - size.height()) / 2);
-  more_->SetBoundsRect(bounds);
-
-  // Layout either bar_ or device_type_ at the left of the more_ button.
-  views::View* view_left_to_more;
-  if (device_type_->visible())
-    view_left_to_more = device_type_;
-  else
-    view_left_to_more = bar_;
-  gfx::Size view_size = view_left_to_more->GetPreferredSize();
-  gfx::Rect view_bounds(view_size);
-  view_bounds.set_x(more_->bounds().x() - view_size.width() -
-                    kExtraPaddingBetweenBarAndMore);
-  view_bounds.set_y((height() - view_size.height()) / 2);
-  view_left_to_more->SetBoundsRect(view_bounds);
-
-  // Layout vertical bar next to view_left_to_more if device_type_ is visible.
-  if (device_type_->visible()) {
-    gfx::Size bar_size = bar_->GetPreferredSize();
-    gfx::Rect bar_bounds(bar_size);
-    bar_bounds.set_x(view_left_to_more->bounds().x() - bar_size.width());
-    bar_bounds.set_y((height() - bar_size.height()) / 2);
-    bar_->SetBoundsRect(bar_bounds);
-  }
-
-  // Layout slider, calculate slider width.
-  gfx::Rect slider_bounds = slider_->bounds();
-  slider_bounds.set_width(
-      bar_->bounds().x()
-      - (device_type_->visible() ? 0 : kTrayPopupPaddingBetweenItems)
-      - slider_bounds.x());
-  slider_->SetBoundsRect(slider_bounds);
 }
 
 void VolumeView::ButtonPressed(views::Button* sender, const ui::Event& event) {
@@ -319,10 +268,17 @@ void VolumeView::SliderValueChanged(views::Slider* sender,
 }
 
 bool VolumeView::PerformAction(const ui::Event& event) {
-  if (!more_->visible())
+  if (!more_region_->visible())
     return false;
   owner_->TransitionDetailedView();
   return true;
+}
+
+void VolumeView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Separator's prefered size is based on set bounds. When an empty bounds is
+  // set on first layout this causes BoxLayout to ignore the separator. Reset
+  // its height on each bounds change so that it is laid out properly.
+  separator_->SetSize(gfx::Size(kSeparatorSize, bounds().height()));
 }
 
 }  // namespace tray

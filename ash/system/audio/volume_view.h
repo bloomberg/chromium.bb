@@ -13,10 +13,11 @@
 namespace views {
 class View;
 class ImageView;
+class Separator;
+class Slider;
 }
 
 namespace ash {
-class HoverHighlightView;
 class SystemTrayItem;
 
 namespace system {
@@ -24,9 +25,7 @@ class TrayAudioDelegate;
 }
 
 namespace tray {
-class BarSeparator;
 class VolumeButton;
-class VolumeSlider;
 
 class VolumeView : public ActionableView,
                    public views::ButtonListener,
@@ -49,9 +48,6 @@ class VolumeView : public ActionableView,
   void HandleVolumeUp(float percent);
   void HandleVolumeDown(float percent);
 
-  // Overridden from views::View.
-  void Layout() override;
-
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -64,11 +60,15 @@ class VolumeView : public ActionableView,
   // Overriden from ActionableView.
   bool PerformAction(const ui::Event& event) override;
 
+  // views::View:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+
   SystemTrayItem* owner_;
   system::TrayAudioDelegate* audio_delegate_;
+  views::View* more_region_;
   VolumeButton* icon_;
-  VolumeSlider* slider_;
-  BarSeparator* bar_;
+  views::Slider* slider_;
+  views::Separator* separator_;
   views::ImageView* device_type_;
   views::ImageView* more_;
   bool is_default_view_;
