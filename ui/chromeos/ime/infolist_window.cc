@@ -272,6 +272,10 @@ void InfolistWindow::HideImmediately() {
   GetWidget()->Close();
 }
 
+const char* InfolistWindow::GetClassName() const {
+  return "InfolistWindow";
+}
+
 void InfolistWindow::WindowClosing() {
   show_hide_timer_.Stop();
 }

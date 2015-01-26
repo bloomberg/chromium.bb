@@ -41,6 +41,9 @@ class UI_CHROMEOS_EXPORT InfolistWindow : public views::BubbleDelegateView {
   void HideImmediately();
 
  private:
+  // views::BubbleDelegateView:
+  const char* GetClassName() const override;
+
   // views::WidgetDelegate implementation.
   void WindowClosing() override;
 

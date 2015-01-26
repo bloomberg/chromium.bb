@@ -43,6 +43,7 @@ class UI_CHROMEOS_EXPORT CandidateView : public views::CustomButton {
   void StateChanged() override;
 
   // Overridden from View:
+  const char* GetClassName() const override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void Layout() override;
   gfx::Size GetPreferredSize() const override;

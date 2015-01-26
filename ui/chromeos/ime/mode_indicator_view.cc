@@ -74,6 +74,10 @@ gfx::Size ModeIndicatorView::GetPreferredSize() const {
   return size;
 }
 
+const char* ModeIndicatorView::GetClassName() const {
+  return "ModeIndicatorView";
+}
+
 void ModeIndicatorView::Init() {
   SetLayoutManager(new views::FillLayout());
   AddChildView(label_view_);

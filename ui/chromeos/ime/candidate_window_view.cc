@@ -392,6 +392,10 @@ void CandidateWindowView::SelectCandidateAt(int index_in_page) {
   candidate_window_.set_cursor_position(cursor_absolute_index);
 }
 
+const char* CandidateWindowView::GetClassName() const {
+  return "CandidateWindowView";
+}
+
 void CandidateWindowView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   for (size_t i = 0; i < candidate_views_.size(); ++i) {

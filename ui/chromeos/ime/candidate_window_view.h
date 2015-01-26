@@ -18,7 +18,7 @@ class InformationTextArea;
 
 // CandidateWindowView is the main container of the candidate window UI.
 class UI_CHROMEOS_EXPORT CandidateWindowView : public views::BubbleDelegateView,
-                                       public views::ButtonListener {
+                                               public views::ButtonListener {
  public:
   // The object can be monitored by the observer.
   class Observer {
@@ -72,6 +72,9 @@ class UI_CHROMEOS_EXPORT CandidateWindowView : public views::BubbleDelegateView,
 
  private:
   friend class CandidateWindowViewTest;
+
+  // views::BubbleDelegateView:
+  const char* GetClassName() const override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

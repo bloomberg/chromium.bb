@@ -35,6 +35,7 @@ class UI_CHROMEOS_EXPORT ModeIndicatorView : public views::BubbleDelegateView {
 
  protected:
   // views::BubbleDelegateView override:
+  const char* GetClassName() const override;
   void Init() override;
 
   // views::WidgetDelegateView overrides:

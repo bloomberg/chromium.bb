@@ -27,6 +27,7 @@ class VerticalCandidateLabel : public views::Label {
  private:
   ~VerticalCandidateLabel() override {}
 
+  // views::Label:
   // Returns the preferred size, but guarantees that the width has at
   // least kMinCandidateLabelWidth pixels.
   gfx::Size GetPreferredSize() const override {
@@ -35,6 +36,8 @@ class VerticalCandidateLabel : public views::Label {
     size.SetToMin(gfx::Size(kMaxCandidateLabelWidth, size.height()));
     return size;
   }
+
+  const char* GetClassName() const override { return "VerticalCandidateLabel"; }
 
   DISALLOW_COPY_AND_ASSIGN(VerticalCandidateLabel);
 };
@@ -225,6 +228,10 @@ void CandidateView::StateChanged() {
   shortcut_label_->SetEnabled(state() != STATE_DISABLED);
   if (state() == STATE_PRESSED)
     SetHighlighted(true);
+}
+
+const char* CandidateView::GetClassName() const {
+  return "CandidateView";
 }
 
 bool CandidateView::OnMouseDragged(const ui::MouseEvent& event) {
