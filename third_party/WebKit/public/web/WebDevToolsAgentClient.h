@@ -42,19 +42,9 @@ struct WebDeviceEmulationParams;
 
 class WebDevToolsAgentClient {
 public:
-    // Send response message over the protocol, update agent state on the browser side for
-    // potential re-attach.
-    virtual void sendProtocolMessage(int callId, const WebString& response, const WebString& state)
-    {
-        if (!state.isEmpty())
-            saveAgentRuntimeState(state);
-        sendMessageToInspectorFrontend(response);
-    }
-
-    // FIXME: remove sendMessageToInspectorFrontend and saveAgentRuntimeState once embedder
-    // migrates to the methods above.
-    virtual void sendMessageToInspectorFrontend(const WebString&) { }
-    virtual void saveAgentRuntimeState(const WebString&) { }
+    // Sends response message over the protocol, update agent state on the browser side for
+    // potential re-attach. |callId| for notifications is 0, |state| for notifications is empty.
+    virtual void sendProtocolMessage(int callId, const WebString& response, const WebString& state) { }
 
     virtual void sendDebuggerOutput(const WebString&) { }
 

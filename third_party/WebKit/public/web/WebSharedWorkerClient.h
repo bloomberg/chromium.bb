@@ -70,16 +70,7 @@ public:
     // while WebSecurityOrigin is not thread safe.
     virtual WebWorkerPermissionClientProxy* createWorkerPermissionClientProxy(const WebSecurityOrigin&) { return 0; }
 
-    virtual void sendDevToolsMessage(int callId, const WebString& message, const WebString& state)
-    {
-        if (!state.isEmpty())
-            saveDevToolsAgentState(state);
-        dispatchDevToolsMessage(message);
-    }
-
-    // FIXME: remove these once migrated to the ones above.
-    virtual void dispatchDevToolsMessage(const WebString&) { }
-    virtual void saveDevToolsAgentState(const WebString&) { }
+    virtual void sendDevToolsMessage(int callId, const WebString& message, const WebString& state) { }
 };
 
 } // namespace blink

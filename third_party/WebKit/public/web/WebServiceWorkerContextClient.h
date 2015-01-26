@@ -108,16 +108,7 @@ public:
     virtual void reportConsoleMessage(int source, int level, const WebString& message, int lineNumber, const WebString& sourceURL) { }
 
     // Inspector related messages.
-    virtual void sendDevToolsMessage(int callId, const WebString& message, const WebString& state)
-    {
-        if (!state.isEmpty())
-            saveDevToolsAgentState(state);
-        dispatchDevToolsMessage(message);
-    }
-
-    // FIXME: remove these once migrated to the ones above.
-    virtual void dispatchDevToolsMessage(const WebString&) { }
-    virtual void saveDevToolsAgentState(const WebString&) { }
+    virtual void sendDevToolsMessage(int callId, const WebString& message, const WebString& state) { }
 
     // ServiceWorker specific method.
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult result) { }
