@@ -50,6 +50,7 @@
 
 # https://codereview.chromium.org/776673002/
 crbug.com/452219 css3/filters/effect-combined.html [ ImageOnlyFailure Pass ]
+crbug.com/452219 css3/filters/effect-reference-subregion-hw.html [ ImageOnlyFailure Pass ]
 crbug.com/452219 svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ ImageOnlyFailure Pass ]
 crbug.com/452219 svg/custom/feComponentTransfer-Discrete.svg [ ImageOnlyFailure Pass ]
 crbug.com/452219 svg/custom/feComponentTransfer-Gamma.svg [ ImageOnlyFailure Pass ]
