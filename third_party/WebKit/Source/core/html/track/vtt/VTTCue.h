@@ -41,6 +41,15 @@ class ExecutionContext;
 class VTTCue;
 class VTTScanner;
 
+struct VTTDisplayParameters {
+    VTTDisplayParameters();
+
+    FloatPoint position;
+    float size;
+    CSSValueID direction;
+    CSSValueID writingMode;
+};
+
 class VTTCueBox final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<VTTCueBox> create(Document& document, VTTCue* cue)
@@ -49,7 +58,7 @@ public:
     }
 
     VTTCue* getCue() const { return m_cue; }
-    void applyCSSProperties(const IntSize& videoSize);
+    void applyCSSProperties(const VTTDisplayParameters&);
 
     virtual void trace(Visitor*) override;
 
@@ -100,7 +109,7 @@ public:
     const String& regionId() const { return m_regionId; }
     void setRegionId(const String&);
 
-    virtual void updateDisplay(const IntSize& videoSize, HTMLDivElement& container) override;
+    virtual void updateDisplay(HTMLDivElement& container) override;
 
     virtual void updateDisplayTree(double movieTime) override;
     virtual void removeDisplayTree() override;
@@ -108,14 +117,7 @@ public:
 
     void markFutureAndPastNodes(ContainerNode*, double previousTimestamp, double movieTime);
 
-    float calculateComputedLinePosition();
-
-    FloatPoint getCSSPosition() const;
-
-    CSSValueID getCSSAlignment() const;
-    float getCSSSize() const;
-    CSSValueID getCSSWritingDirection() const;
-    CSSValueID getCSSWritingMode() const;
+    float calculateComputedLinePosition() const;
 
     enum WritingDirection {
         Horizontal = 0,
@@ -133,7 +135,7 @@ public:
         Right,
         NumberOfAlignments
     };
-    CueAlignment getAlignment() const { return m_cueAlignment; }
+    CueAlignment cueAlignment() const { return m_cueAlignment; }
 
     virtual ExecutionContext* executionContext() const override;
 
@@ -149,19 +151,18 @@ private:
     Document& document() const;
 
     VTTCueBox& ensureDisplayTree();
-    PassRefPtrWillBeRawPtr<VTTCueBox> getDisplayTree(const IntSize& videoSize);
+    PassRefPtrWillBeRawPtr<VTTCueBox> getDisplayTree();
 
     virtual void cueDidChange() override;
 
     void createVTTNodeTree();
     void copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* root);
 
-    FloatPoint getPositionCoordinates() const;
     bool lineIsAuto() const;
-
-    void calculateDisplayParameters();
-    float calculateComputedTextPosition() const;
     bool textPositionIsAuto() const;
+
+    VTTDisplayParameters calculateDisplayParameters() const;
+    float calculateComputedTextPosition() const;
     CueAlignment calculateComputedCueAlignment() const;
 
     enum CueSetting {
@@ -173,11 +174,10 @@ private:
         Align,
         RegionId
     };
-    CueSetting settingName(VTTScanner&);
+    CueSetting settingName(VTTScanner&) const;
 
     String m_text;
     float m_linePosition;
-    float m_computedLinePosition;
     float m_textPosition;
     float m_cueSize;
     WritingDirection m_writingDirection;
@@ -187,10 +187,6 @@ private:
     RefPtrWillBeMember<DocumentFragment> m_vttNodeTree;
     RefPtrWillBeMember<HTMLDivElement> m_cueBackgroundBox;
     RefPtrWillBeMember<VTTCueBox> m_displayTree;
-
-    CSSValueID m_displayDirection;
-    float m_displaySize;
-    FloatPoint m_displayPosition;
 
     bool m_snapToLines : 1;
     bool m_displayTreeShouldChange : 1;

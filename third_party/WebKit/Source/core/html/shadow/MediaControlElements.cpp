@@ -679,7 +679,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
         if (!cue->track() || !cue->track()->isRendered() || !cue->isActive())
             continue;
 
-        cue->updateDisplay(m_videoDisplaySize.size(), *this);
+        cue->updateDisplay(*this);
     }
 
     // 11. Return output.

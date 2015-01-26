@@ -79,7 +79,7 @@ public:
     bool isActive();
     void setIsActive(bool);
 
-    virtual void updateDisplay(const IntSize& videoSize, HTMLDivElement& container) = 0;
+    virtual void updateDisplay(HTMLDivElement& container) = 0;
 
     // FIXME: Consider refactoring to eliminate or merge the following three members.
     // https://code.google.com/p/chromium/issues/detail?id=322434
