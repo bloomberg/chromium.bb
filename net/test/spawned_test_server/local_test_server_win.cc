@@ -78,60 +78,6 @@ bool ReadData(HANDLE read_fd, HANDLE write_fd,
   return true;
 }
 
-// Class that sets up a temporary path that includes the supplied path
-// at the end.
-//
-// TODO(bratell): By making this more generic we can possibly reuse
-//                it at other places such as
-//                chrome/common/multi_process_lock_unittest.cc.
-class ScopedPath {
- public:
-  // Constructor which sets up the environment to include the path to
-  // |path_to_add|.
-  explicit ScopedPath(const base::FilePath& path_to_add);
-
-  // Destructor that restores the path that were active when the
-  // object was constructed.
-  ~ScopedPath();
-
- private:
-  // The PATH environment variable before it was changed or an empty
-  // string if there was no PATH environment variable.
-  std::string old_path_;
-
-  // The helper object that allows us to read and set environment
-  // variables more easily.
-  scoped_ptr<base::Environment> environment_;
-
-  // A flag saying if we have actually modified the environment.
-  bool path_modified_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedPath);
-};
-
-ScopedPath::ScopedPath(const base::FilePath& path_to_add)
-    : environment_(base::Environment::Create()),
-      path_modified_(false) {
-  environment_->GetVar("PATH", &old_path_);
-
-  std::string new_value = old_path_;
-  if (!new_value.empty())
-    new_value += ";";
-
-  new_value += base::WideToUTF8(path_to_add.value());
-
-  path_modified_ = environment_->SetVar("PATH", new_value);
-}
-
-ScopedPath::~ScopedPath() {
-  if (!path_modified_)
-    return;
-  if (old_path_.empty())
-    environment_->UnSetVar("PATH");
-  else
-    environment_->SetVar("PATH", old_path_);
-}
-
 }  // namespace
 
 namespace net {
