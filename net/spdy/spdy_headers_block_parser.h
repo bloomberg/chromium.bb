@@ -61,7 +61,7 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
                                      const char* headers_data,
                                      size_t len);
   enum ParserError {
-    OK,
+    NO_PARSER_ERROR,
     // Set when parsing failed due to insufficient data.
     // This error is recoverable, by passing in new data.
     NEED_MORE_DATA,

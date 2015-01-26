@@ -129,7 +129,7 @@ TEST_P(SpdyHeadersBlockParserTest, BasicTest) {
 
   EXPECT_TRUE(parser_->
       HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
-  EXPECT_EQ(SpdyHeadersBlockParser::OK, parser_->get_error());
+  EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR, parser_->get_error());
 }
 
 TEST_P(SpdyHeadersBlockParserTest, NullsSupportedTest) {
@@ -147,7 +147,7 @@ TEST_P(SpdyHeadersBlockParserTest, NullsSupportedTest) {
 
   EXPECT_TRUE(parser_->
       HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
-  EXPECT_EQ(SpdyHeadersBlockParser::OK, parser_->get_error());
+  EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR, parser_->get_error());
 }
 
 TEST_P(SpdyHeadersBlockParserTest, MultipleBlocksAndHeadersWithPartialData) {
@@ -178,7 +178,8 @@ TEST_P(SpdyHeadersBlockParserTest, MultipleBlocksAndHeadersWithPartialData) {
       if ((it + 1) == headers.end()) {
         // Last byte completes the block.
         EXPECT_TRUE(parser_->HandleControlFrameHeadersData(i, &(*it), 1));
-        EXPECT_EQ(SpdyHeadersBlockParser::OK, parser_->get_error());
+        EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR,
+                  parser_->get_error());
       } else {
         EXPECT_FALSE(parser_->HandleControlFrameHeadersData(i, &(*it), 1));
         EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_->get_error());
@@ -203,7 +204,7 @@ TEST_P(SpdyHeadersBlockParserTest, HandlesEmptyCallsTest) {
     if ((it + 1) == headers.end()) {
       // Last byte completes the block.
       EXPECT_TRUE(parser_->HandleControlFrameHeadersData(1, &(*it), 1));
-      EXPECT_EQ(SpdyHeadersBlockParser::OK, parser_->get_error());
+      EXPECT_EQ(SpdyHeadersBlockParser::NO_PARSER_ERROR, parser_->get_error());
     } else {
       EXPECT_FALSE(parser_->HandleControlFrameHeadersData(1, &(*it), 1));
       EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_->get_error());

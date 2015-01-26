@@ -26,7 +26,7 @@ SpdyHeadersBlockParser::SpdyHeadersBlockParser(
       remaining_key_value_pairs_for_frame_(0),
       handler_(handler),
       stream_id_(kInvalidStreamId),
-      error_(OK),
+      error_(NO_PARSER_ERROR),
       spdy_version_(spdy_version) {
   // The handler that we set must not be NULL.
   DCHECK(handler_ != NULL);
@@ -39,9 +39,9 @@ bool SpdyHeadersBlockParser::HandleControlFrameHeadersData(
     const char* headers_data,
     size_t headers_data_length) {
   if (error_ == NEED_MORE_DATA) {
-    error_ = OK;
+    error_ = NO_PARSER_ERROR;
   }
-  if (error_ != OK) {
+  if (error_ != NO_PARSER_ERROR) {
     LOG(DFATAL) << "Unexpected error: " << error_;
     return false;
   }
@@ -73,7 +73,7 @@ bool SpdyHeadersBlockParser::HandleControlFrameHeadersData(
   // from last invocation, plus newly-available headers data.
   Reader reader(prefix.buffer(), prefix.length(),
                 headers_data, headers_data_length);
-  while (error_ == OK) {
+  while (error_ == NO_PARSER_ERROR) {
     ParserState next_state(FINISHED_HEADER);
 
     switch (state_) {
@@ -119,7 +119,7 @@ bool SpdyHeadersBlockParser::HandleControlFrameHeadersData(
         break;
     }
 
-    if (error_ == OK) {
+    if (error_ == NO_PARSER_ERROR) {
       state_ = next_state;
 
       if (next_state == READING_HEADER_BLOCK_LEN) {
@@ -138,24 +138,23 @@ bool SpdyHeadersBlockParser::HandleControlFrameHeadersData(
       headers_block_prefix_.Pin();
     }
   }
-  return error_ == OK;
+  return error_ == NO_PARSER_ERROR;
 }
 
 void SpdyHeadersBlockParser::ParseBlockLength(Reader* reader) {
   ParseLength(reader, &remaining_key_value_pairs_for_frame_);
-  if (error_ == OK &&
-    remaining_key_value_pairs_for_frame_ > max_headers_in_block_) {
+  if (error_ == NO_PARSER_ERROR &&
+      remaining_key_value_pairs_for_frame_ > max_headers_in_block_) {
     error_ = HEADER_BLOCK_TOO_LARGE;
   }
-  if (error_ == OK) {
+  if (error_ == NO_PARSER_ERROR) {
     handler_->OnHeaderBlock(remaining_key_value_pairs_for_frame_);
   }
 }
 
 void SpdyHeadersBlockParser::ParseFieldLength(Reader* reader) {
   ParseLength(reader, &next_field_length_);
-  if (error_ == OK &&
-      next_field_length_ > kMaximumFieldLength) {
+  if (error_ == NO_PARSER_ERROR && next_field_length_ > kMaximumFieldLength) {
     error_ = HEADER_FIELD_TOO_LARGE;
   }
 }
