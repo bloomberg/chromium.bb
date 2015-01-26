@@ -1264,7 +1264,6 @@ static FloatRoundedRect calculateAdjustedInnerBorder(const FloatRoundedRect& inn
         // FIXME: once we start pixel-snapping rounded rects after this point, the overshoot concept
         // should disappear.
         if (overshoot > 0.1) {
-            ASSERT(!(newRadii.topLeft().width() && newRadii.topRight().width()));
             newRect.setWidth(newRect.width() + overshoot);
             if (!newRadii.topLeft().width())
                 newRect.move(-overshoot, 0);
@@ -1279,7 +1278,6 @@ static FloatRoundedRect calculateAdjustedInnerBorder(const FloatRoundedRect& inn
     case BSBottom:
         overshoot = newRadii.bottomLeft().width() + newRadii.bottomRight().width() - newRect.width();
         if (overshoot > 0.1) {
-            ASSERT(!(newRadii.bottomLeft().width() && newRadii.bottomRight().width()));
             newRect.setWidth(newRect.width() + overshoot);
             if (!newRadii.bottomLeft().width())
                 newRect.move(-overshoot, 0);
@@ -1296,7 +1294,6 @@ static FloatRoundedRect calculateAdjustedInnerBorder(const FloatRoundedRect& inn
     case BSLeft:
         overshoot = newRadii.topLeft().height() + newRadii.bottomLeft().height() - newRect.height();
         if (overshoot > 0.1) {
-            ASSERT(!(newRadii.topLeft().height() && newRadii.bottomLeft().height()));
             newRect.setHeight(newRect.height() + overshoot);
             if (!newRadii.topLeft().height())
                 newRect.move(0, -overshoot);
@@ -1311,7 +1308,6 @@ static FloatRoundedRect calculateAdjustedInnerBorder(const FloatRoundedRect& inn
     case BSRight:
         overshoot = newRadii.topRight().height() + newRadii.bottomRight().height() - newRect.height();
         if (overshoot > 0.1) {
-            ASSERT(!(newRadii.topRight().height() && newRadii.bottomRight().height()));
             newRect.setHeight(newRect.height() + overshoot);
             if (!newRadii.topRight().height())
                 newRect.move(0, -overshoot);
