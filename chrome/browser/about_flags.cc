@@ -1351,13 +1351,6 @@ const Experiment kExperiments[] = {
                               switches::kDisableDeviceDiscoveryNotifications)
   },
   {
-    "enable-cloud-devices",
-    IDS_FLAGS_ENABLE_CLOUD_DEVICES_NAME,
-    IDS_FLAGS_ENABLE_CLOUD_DEVICES_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableCloudDevices)
-  },
-  {
     "enable-print-preview-register-promos",
     IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_NAME,
     IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION,

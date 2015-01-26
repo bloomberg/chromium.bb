@@ -10,39 +10,30 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/local_discovery/cloud_device_list.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
-#include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/net_util.h"
-#include "net/base/url_util.h"
-#include "net/http/http_status_code.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/page_transition_types.h"
 
 #if defined(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
 #define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
@@ -60,10 +51,6 @@ const char kDictionaryKeyIsWifi[] = "is_wifi";
 const char kDictionaryKeyID[] = "id";
 
 const char kKeyPrefixMDns[] = "MDns:";
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-const char kKeyPrefixWifi[] = "WiFi:";
-#endif  // ENABLE_WIFI_BOOTSTRAPPING
 
 int g_num_visible = 0;
 
@@ -145,10 +132,6 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("registerDevice", base::Bind(
       &LocalDiscoveryUIHandler::HandleRegisterDevice,
       base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "confirmCode",
-      base::Bind(&LocalDiscoveryUIHandler::HandleConfirmCode,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("cancelRegistration", base::Bind(
       &LocalDiscoveryUIHandler::HandleCancelRegistration,
       base::Unretained(this)));
@@ -203,13 +186,6 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
   StartCloudPrintConnector();
 #endif
 
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCloudDevices)) {
-    StartWifiBootstrapping();
-  }
-#endif
-
   CheckUserLoggedIn();
 }
 
@@ -233,10 +209,7 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
     return;
   }
 
-  if (found->second.version == kCloudDevicesPrivetVersion) {
-    current_setup_operation_.reset(new PrivetV3SetupFlow(this));
-    current_setup_operation_->Register(device);
-  } else if (found->second.version <= 2) {
+  if (found->second.version < kCloudDevicesPrivetVersion) {
     privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
         device,
         found->second.address,
@@ -246,10 +219,6 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
   } else {
     OnSetupError();
   }
-}
-
-void LocalDiscoveryUIHandler::HandleConfirmCode(const base::ListValue* args) {
-  device_code_callback_.Run(true);
 }
 
 void LocalDiscoveryUIHandler::HandleCancelRegistration(
@@ -263,20 +232,11 @@ void LocalDiscoveryUIHandler::HandleRequestDeviceList(
   succeded_list_count_ = 0;
   cloud_devices_.clear();
 
-  cloud_print_printer_list_ = CreateApiFlow();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCloudDevices)) {
-    cloud_device_list_ = CreateApiFlow();
-  }
-
   if (cloud_print_printer_list_) {
     cloud_print_printer_list_->Start(
         make_scoped_ptr<GCDApiFlow::Request>(new CloudPrintPrinterList(this)));
   }
-  if (cloud_device_list_) {
-    cloud_device_list_->Start(
-        make_scoped_ptr<GCDApiFlow::Request>(new CloudDeviceList(this)));
-  }
+
   CheckListingDone();
 }
 
@@ -370,40 +330,9 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
     PrivetRegisterOperation* operation,
     const std::string& device_id) {
   std::string name = operation->GetHTTPClient()->GetName();
-  current_setup_operation_.reset();
   current_register_operation_.reset();
   current_http_client_.reset();
   SendRegisterDone(name);
-}
-
-void LocalDiscoveryUIHandler::GetWiFiCredentials(
-    const CredentialsCallback& callback) {
-  callback.Run("", "");
-}
-
-void LocalDiscoveryUIHandler::SwitchToSetupWiFi(
-    const ResultCallback& callback) {
-  callback.Run(true);
-}
-
-void LocalDiscoveryUIHandler::ConfirmSecurityCode(
-    const ResultCallback& callback) {
-  device_code_callback_ = callback;
-  web_ui()->CallJavascriptFunction(
-      "local_discovery.onRegistrationConfirmDeviceCode",
-      base::StringValue("1234"));
-}
-
-void LocalDiscoveryUIHandler::RestoreWifi(const ResultCallback& callback) {
-  callback.Run(true);
-}
-
-void LocalDiscoveryUIHandler::OnSetupDone() {
-  std::string service_name = current_setup_operation_->service_name();
-  current_setup_operation_.reset();
-  current_register_operation_.reset();
-  current_http_client_.reset();
-  SendRegisterDone(service_name);
 }
 
 void LocalDiscoveryUIHandler::OnSetupError() {
@@ -544,16 +473,9 @@ void LocalDiscoveryUIHandler::ResetCurrentRegistration() {
     current_register_operation_.reset();
   }
 
-  current_setup_operation_.reset();
   confirm_api_call_flow_.reset();
   privet_resolution_.reset();
   current_http_client_.reset();
-}
-
-void LocalDiscoveryUIHandler::PrivetClientToV3(
-    const PrivetClientCallback& callback,
-    scoped_ptr<PrivetHTTPClient> client) {
-  callback.Run(client.Pass());
 }
 
 void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
@@ -566,8 +488,6 @@ void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
 void LocalDiscoveryUIHandler::CheckListingDone() {
   int started = 0;
   if (cloud_print_printer_list_)
-    ++started;
-  if (cloud_device_list_)
     ++started;
 
   if (started > failed_list_count_ + succeded_list_count_)
@@ -592,7 +512,6 @@ void LocalDiscoveryUIHandler::CheckListingDone() {
   web_ui()->CallJavascriptFunction(
       "local_discovery.onCloudDeviceListAvailable", devices_list);
   cloud_print_printer_list_.reset();
-  cloud_device_list_.reset();
 }
 
 scoped_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow() {
@@ -610,25 +529,6 @@ scoped_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow() {
   return GCDApiFlow::Create(profile->GetRequestContext(),
                             token_service,
                             signin_manager->GetAuthenticatedAccountId());
-}
-
-void LocalDiscoveryUIHandler::CreatePrivetV3Client(
-    const std::string& device,
-    const PrivetClientCallback& callback) {
-  DeviceDescriptionMap::iterator found = device_descriptions_.find(device);
-  if (found == device_descriptions_.end())
-    return callback.Run(scoped_ptr<PrivetHTTPClient>());
-  PrivetHTTPAsynchronousFactory::ResultCallback new_callback =
-      base::Bind(&LocalDiscoveryUIHandler::PrivetClientToV3,
-                 base::Unretained(this),
-                 callback);
-  privet_resolution_ =
-      privet_http_factory_->CreatePrivetHTTP(device,
-                                             found->second.address,
-                                             new_callback).Pass();
-  if (!privet_resolution_)
-    return callback.Run(scoped_ptr<PrivetHTTPClient>());
-  privet_resolution_->Start();
 }
 
 bool LocalDiscoveryUIHandler::IsUserSupervisedOrOffTheRecord() {
@@ -744,50 +644,5 @@ void LocalDiscoveryUIHandler::RefreshCloudPrintStatusFromService() {
 }
 
 #endif // cloud print connector option stuff
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-
-void LocalDiscoveryUIHandler::StartWifiBootstrapping() {
-  // Since LocalDiscoveryUIHandler isn't destroyed every time the page is
-  // refreshed, reset bootstrapping_device_lister_ so it's destoryed before
-  // wifi_manager_ is.
-  bootstrapping_device_lister_.reset();
-
-  wifi_manager_ = wifi::WifiManager::Create();
-  bootstrapping_device_lister_.reset(new wifi::BootstrappingDeviceLister(
-      wifi_manager_.get(),
-      base::Bind(&LocalDiscoveryUIHandler::OnBootstrappingDeviceChanged,
-                 base::Unretained(this))));
-
-  wifi_manager_->Start();
-  bootstrapping_device_lister_->Start();
-  wifi_manager_->RequestScan();
-}
-
-void LocalDiscoveryUIHandler::OnBootstrappingDeviceChanged(
-    bool available,
-    const wifi::BootstrappingDeviceDescription& description) {
-  base::DictionaryValue info;
-
-  base::StringValue service_key(kKeyPrefixWifi + description.device_ssid);
-
-  if (available) {
-    info.SetString(kDictionaryKeyServiceName, description.device_ssid);
-    info.SetString(kDictionaryKeyDisplayName, description.device_name);
-    info.SetString(kDictionaryKeyDescription, std::string());
-    info.SetString(kDictionaryKeyType, description.device_kind);
-    info.SetBoolean(kDictionaryKeyIsWifi, true);
-
-    web_ui()->CallJavascriptFunction(
-        "local_discovery.onUnregisteredDeviceUpdate", service_key, info);
-  } else {
-    scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
-
-    web_ui()->CallJavascriptFunction(
-        "local_discovery.onUnregisteredDeviceUpdate", service_key, *null_value);
-  }
-}
-
-#endif  // ENABLE_WIFI_BOOTSTRAPPING
 
 }  // namespace local_discovery

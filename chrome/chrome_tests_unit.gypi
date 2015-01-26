@@ -964,7 +964,6 @@
       'browser/local_discovery/privet_http_unittest.cc',
       'browser/local_discovery/privet_url_fetcher_unittest.cc',
       'browser/local_discovery/privetv3_session_unittest.cc',
-      'browser/local_discovery/privetv3_setup_flow_unittest.cc',
       'browser/local_discovery/service_discovery_client_mac_unittest.mm',
     ],
     'chrome_unit_tests_configuration_policy_sources': [
@@ -1536,10 +1535,6 @@
       'browser/ui/app_list/test/fake_profile_store.cc',
       'browser/ui/app_list/test/fake_profile_store.h',
       'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
-    ],
-    'chrome_unit_tests_wifi_bootstrapping_sources': [
-      'browser/local_discovery/wifi/bootstrapping_device_lister_unittest.cc',
-      'browser/local_discovery/wifi/bootstrapping_network_switcher_unittest.cc',
     ],
   },
   'targets': [
@@ -2598,9 +2593,6 @@
           'sources!': [
             'browser/plugins/plugin_installer_unittest.cc',
           ],
-        }],
-        ['enable_wifi_bootstrapping', {
-           'sources' : [ '<@(chrome_unit_tests_wifi_bootstrapping_sources)' ],
         }],
       ],
     },
