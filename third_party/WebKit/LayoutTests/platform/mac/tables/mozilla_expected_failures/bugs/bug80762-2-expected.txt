@@ -3,21 +3,21 @@ layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 672
 layer at (0,0) size 785x672 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x672
     RenderBody {BODY} at (8,8) size 769x656
-      RenderTable {TABLE} at (0,0) size 769x656 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 767x654
-          RenderTableRow {TR} at (0,0) size 767x18
-            RenderTableCell {TD} at (0,0) size 74x18 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,0) size 769x656 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x654
+          LayoutTableRow {TR} at (0,0) size 767x18
+            LayoutTableCell {TD} at (0,0) size 74x18 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 22x16
                 text run at (1,1) width 22: "foo"
-            RenderTableCell {TD} at (74,0) size 693x18 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (74,0) size 693x18 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 21x16
                 text run at (1,1) width 21: "bar"
-          RenderTableRow {TR} at (0,18) size 767x636
-            RenderTableCell {TD} at (0,18) size 767x636 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
-              RenderTable {TABLE} at (1,1) size 765x634 [border: (1px outset #808080)]
-                RenderTableSection {TBODY} at (1,1) size 763x632
-                  RenderTableRow {TR} at (0,2) size 763x628
-                    RenderTableCell {TD} at (2,2) size 759x628 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,18) size 767x636
+            LayoutTableCell {TD} at (0,18) size 767x636 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
+              LayoutTable {TABLE} at (1,1) size 765x634 [border: (1px outset #808080)]
+                LayoutTableSection {TBODY} at (1,1) size 763x632
+                  LayoutTableRow {TR} at (0,2) size 763x628
+                    LayoutTableCell {TD} at (2,2) size 759x628 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (2,2) size 720x32
                         text run at (2,2) width 720: "When the Whiten house burned down in Renfrew Ontario, the insurer denied liability, asserting that the Plaintiff"
                         text run at (2,18) width 477: "Daphne Whiten was the cause of the fire herself and had committed arson."

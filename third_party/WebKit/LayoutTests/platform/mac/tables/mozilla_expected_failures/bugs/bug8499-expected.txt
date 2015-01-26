@@ -12,18 +12,18 @@ layer at (0,0) size 800x600
           text run at (347,32) width 116: "original 'flavour'.)"
       RenderBlock (anonymous) at (0,64) size 784x16
         RenderBR {BR} at (0,0) size 0x16
-      RenderTable {TABLE} at (0,80) size 792x132 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 790x130
-          RenderTableRow {TR} at (0,2) size 790x126
-            RenderTableCell {TD} at (2,2) size 786x126 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderTable {TABLE} at (2,2) size 782x122 [border: (1px outset #808080)]
-                RenderTableSection {TBODY} at (1,1) size 780x120
-                  RenderTableRow {TR} at (0,2) size 780x64
-                    RenderTableCell {TD} at (2,2) size 776x64 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderTable {TABLE} at (382,2) size 12x12 [border: (2px outset #808080)]
-                        RenderTableSection {TBODY} at (2,2) size 8x8
-                          RenderTableRow {TR} at (0,2) size 8x4
-                            RenderTableCell {TD} at (2,2) size 4x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,80) size 792x132 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 790x130
+          LayoutTableRow {TR} at (0,2) size 790x126
+            LayoutTableCell {TD} at (2,2) size 786x126 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (2,2) size 782x122 [border: (1px outset #808080)]
+                LayoutTableSection {TBODY} at (1,1) size 780x120
+                  LayoutTableRow {TR} at (0,2) size 780x64
+                    LayoutTableCell {TD} at (2,2) size 776x64 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                      LayoutTable {TABLE} at (382,2) size 12x12 [border: (2px outset #808080)]
+                        LayoutTableSection {TBODY} at (2,2) size 8x8
+                          LayoutTableRow {TR} at (0,2) size 8x4
+                            LayoutTableCell {TD} at (2,2) size 4x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                               RenderInline {APPLET} at (0,0) size 0x0
                                 RenderText {#text} at (0,0) size 0x0
                                 RenderText {#text} at (0,0) size 0x0
@@ -34,32 +34,32 @@ layer at (0,0) size 800x600
                           text run at (429,0) width 309: "plot of land with a 150 meter long private sandy"
                           text run at (0,16) width 145: "beach. The view from "
                           text run at (144,16) width 389: "decorated with antique and contemporary furniture and rugs."
-                  RenderTableRow {TR} at (0,68) size 780x50
-                    RenderTableCell {TD} at (2,68) size 776x50 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                      RenderTable {TABLE} at (2,2) size 772x46 [border: (1px outset #808080)]
-                        RenderTableSection {TBODY} at (1,1) size 770x44
-                          RenderTableRow {TR} at (0,0) size 770x44
-                            RenderTableCell {TD} at (0,8) size 308x28 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                  LayoutTableRow {TR} at (0,68) size 780x50
+                    LayoutTableCell {TD} at (2,68) size 776x50 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+                      LayoutTable {TABLE} at (2,2) size 772x46 [border: (1px outset #808080)]
+                        LayoutTableSection {TBODY} at (1,1) size 770x44
+                          LayoutTableRow {TR} at (0,0) size 770x44
+                            LayoutTableCell {TD} at (0,8) size 308x28 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 296x16
                                 text run at (6,6) width 138: "99 Rates in Drahmas "
                                 text run at (143,6) width 125: "Per Person on H/B "
                                 text run at (267,6) width 35: "Basis"
-                            RenderTableCell {TD} at (308,0) size 103x44 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+                            LayoutTableCell {TD} at (308,0) size 103x44 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 91x16
                                 text run at (6,6) width 91: "27/03 - 30/04 "
                               RenderBR {BR} at (96,18) size 1x0
                               RenderText {#text} at (6,22) size 87x16
                                 text run at (6,22) width 87: "16/10 - 31/10"
-                            RenderTableCell {TD} at (411,8) size 177x28 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+                            LayoutTableCell {TD} at (411,8) size 177x28 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 165x16
                                 text run at (6,6) width 165: "01/5- 21/5 & 2/10 - 15/10"
-                            RenderTableCell {TD} at (588,0) size 91x44 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
+                            LayoutTableCell {TD} at (588,0) size 91x44 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 79x16
                                 text run at (6,6) width 79: "22/5 - 16/07"
                               RenderBR {BR} at (84,18) size 1x0
                               RenderText {#text} at (6,22) size 79x16
                                 text run at (6,22) width 79: "28/8 - 01/10"
-                            RenderTableCell {TD} at (679,8) size 91x28 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
+                            LayoutTableCell {TD} at (679,8) size 91x28 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 79x16
                                 text run at (6,6) width 79: "17/07 - 27/8"
       RenderBlock (anonymous) at (0,212) size 784x16
@@ -70,18 +70,18 @@ layer at (0,0) size 800x600
           text run at (424,0) width 123: "Table lays out OK."
       RenderBlock (anonymous) at (0,276) size 784x16
         RenderBR {BR} at (0,0) size 0x16
-      RenderTable {TABLE} at (0,292) size 792x148 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 790x146
-          RenderTableRow {TR} at (0,2) size 790x142
-            RenderTableCell {TD} at (2,2) size 786x142 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderTable {TABLE} at (2,2) size 782x138 [border: (1px outset #808080)]
-                RenderTableSection {TBODY} at (1,1) size 780x136
-                  RenderTableRow {TR} at (0,2) size 780x80
-                    RenderTableCell {TD} at (2,2) size 776x80 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderTable {TABLE} at (332,2) size 112x28 [border: (2px outset #808080)]
-                        RenderTableSection {TBODY} at (2,2) size 108x24
-                          RenderTableRow {TR} at (0,2) size 108x20
-                            RenderTableCell {TD} at (2,2) size 104x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,292) size 792x148 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 790x146
+          LayoutTableRow {TR} at (0,2) size 790x142
+            LayoutTableCell {TD} at (2,2) size 786x142 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (2,2) size 782x138 [border: (1px outset #808080)]
+                LayoutTableSection {TBODY} at (1,1) size 780x136
+                  LayoutTableRow {TR} at (0,2) size 780x80
+                    LayoutTableCell {TD} at (2,2) size 776x80 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                      LayoutTable {TABLE} at (332,2) size 112x28 [border: (2px outset #808080)]
+                        LayoutTableSection {TBODY} at (2,2) size 108x24
+                          LayoutTableRow {TR} at (0,2) size 108x20
+                            LayoutTableCell {TD} at (2,2) size 104x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                               RenderText {#text} at (2,2) size 100x16
                                 text run at (2,2) width 100: "applet was here"
                       RenderBlock {P} at (2,46) size 772x32
@@ -90,31 +90,31 @@ layer at (0,0) size 800x600
                           text run at (429,0) width 309: "plot of land with a 150 meter long private sandy"
                           text run at (0,16) width 145: "beach. The view from "
                           text run at (144,16) width 389: "decorated with antique and contemporary furniture and rugs."
-                  RenderTableRow {TR} at (0,84) size 780x50
-                    RenderTableCell {TD} at (2,84) size 776x50 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                      RenderTable {TABLE} at (2,2) size 772x46 [border: (1px outset #808080)]
-                        RenderTableSection {TBODY} at (1,1) size 770x44
-                          RenderTableRow {TR} at (0,0) size 770x44
-                            RenderTableCell {TD} at (0,8) size 308x28 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                  LayoutTableRow {TR} at (0,84) size 780x50
+                    LayoutTableCell {TD} at (2,84) size 776x50 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+                      LayoutTable {TABLE} at (2,2) size 772x46 [border: (1px outset #808080)]
+                        LayoutTableSection {TBODY} at (1,1) size 770x44
+                          LayoutTableRow {TR} at (0,0) size 770x44
+                            LayoutTableCell {TD} at (0,8) size 308x28 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 296x16
                                 text run at (6,6) width 138: "99 Rates in Drahmas "
                                 text run at (143,6) width 125: "Per Person on H/B "
                                 text run at (267,6) width 35: "Basis"
-                            RenderTableCell {TD} at (308,0) size 103x44 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+                            LayoutTableCell {TD} at (308,0) size 103x44 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 91x16
                                 text run at (6,6) width 91: "27/03 - 30/04 "
                               RenderBR {BR} at (96,18) size 1x0
                               RenderText {#text} at (6,22) size 87x16
                                 text run at (6,22) width 87: "16/10 - 31/10"
-                            RenderTableCell {TD} at (411,8) size 177x28 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+                            LayoutTableCell {TD} at (411,8) size 177x28 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 165x16
                                 text run at (6,6) width 165: "01/5- 21/5 & 2/10 - 15/10"
-                            RenderTableCell {TD} at (588,0) size 91x44 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
+                            LayoutTableCell {TD} at (588,0) size 91x44 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 79x16
                                 text run at (6,6) width 79: "22/5 - 16/07"
                               RenderBR {BR} at (84,18) size 1x0
                               RenderText {#text} at (6,22) size 79x16
                                 text run at (6,22) width 79: "28/8 - 01/10"
-                            RenderTableCell {TD} at (679,8) size 91x28 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
+                            LayoutTableCell {TD} at (679,8) size 91x28 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 79x16
                                 text run at (6,6) width 79: "17/07 - 27/8"

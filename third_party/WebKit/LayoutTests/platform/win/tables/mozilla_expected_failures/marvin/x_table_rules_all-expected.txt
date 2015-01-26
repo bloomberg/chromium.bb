@@ -7,53 +7,53 @@ layer at (0,0) size 800x143
         RenderText {#text} at (0,0) size 459x17
           text run at (0,0) width 415: "There should be rules between all rows and columns in the table "
           text run at (414,0) width 45: "below."
-      RenderTable {table} at (0,34) size 181x85 [border: none]
-        RenderTableCol {colgroup} at (0,0) size 0x0
-          RenderTableCol {col} at (0,0) size 0x0
-        RenderTableCol {colgroup} at (0,0) size 0x0
-          RenderTableCol {col} at (0,0) size 0x0
-        RenderTableCol {colgroup} at (0,0) size 0x0
-          RenderTableCol {col} at (0,0) size 0x0
-        RenderTableSection {thead} at (0,0) size 180x21
-          RenderTableRow {tr} at (0,0) size 180x21
-            RenderTableCell {th} at (0,0) size 60x21 [border: (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {table} at (0,34) size 181x85 [border: none]
+        LayoutTableCol {colgroup} at (0,0) size 0x0
+          LayoutTableCol {col} at (0,0) size 0x0
+        LayoutTableCol {colgroup} at (0,0) size 0x0
+          LayoutTableCol {col} at (0,0) size 0x0
+        LayoutTableCol {colgroup} at (0,0) size 0x0
+          LayoutTableCol {col} at (0,0) size 0x0
+        LayoutTableSection {thead} at (0,0) size 180x21
+          LayoutTableRow {tr} at (0,0) size 180x21
+            LayoutTableCell {th} at (0,0) size 60x21 [border: (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 57x17
                 text run at (2,2) width 57: "THEAD"
-            RenderTableCell {th} at (60,0) size 60x21 [border: (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {th} at (60,0) size 60x21 [border: (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 57x17
                 text run at (2,2) width 57: "THEAD"
-            RenderTableCell {th} at (120,0) size 60x21 [border: (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {th} at (120,0) size 60x21 [border: (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 57x17
                 text run at (2,2) width 57: "THEAD"
-        RenderTableSection {tfoot} at (0,63) size 180x21
-          RenderTableRow {tr} at (0,0) size 180x21
-            RenderTableCell {td} at (0,0) size 60x21 [border: (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection {tfoot} at (0,63) size 180x21
+          LayoutTableRow {tr} at (0,0) size 180x21
+            LayoutTableCell {td} at (0,0) size 60x21 [border: (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 52x17
                 text run at (2,2) width 52: "TFOOT"
-            RenderTableCell {td} at (60,0) size 60x21 [border: (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {td} at (60,0) size 60x21 [border: (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 52x17
                 text run at (2,2) width 52: "TFOOT"
-            RenderTableCell {td} at (120,0) size 60x21 [border: (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {td} at (120,0) size 60x21 [border: (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 52x17
                 text run at (2,2) width 52: "TFOOT"
-        RenderTableSection {tbody} at (0,21) size 180x42
-          RenderTableRow {tr} at (0,0) size 180x21
-            RenderTableCell {td} at (0,0) size 60x21 [border: (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection {tbody} at (0,21) size 180x42
+          LayoutTableRow {tr} at (0,0) size 180x21
+            LayoutTableCell {td} at (0,0) size 60x21 [border: (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 56x17
                 text run at (2,2) width 56: "TBODY"
-            RenderTableCell {td} at (60,0) size 60x21 [border: (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {td} at (60,0) size 60x21 [border: (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 56x17
                 text run at (2,2) width 56: "TBODY"
-            RenderTableCell {td} at (120,0) size 60x21 [border: (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {td} at (120,0) size 60x21 [border: (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 56x17
                 text run at (2,2) width 56: "TBODY"
-          RenderTableRow {tr} at (0,21) size 180x21
-            RenderTableCell {td} at (0,21) size 60x21 [border: (1px solid #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {tr} at (0,21) size 180x21
+            LayoutTableCell {td} at (0,21) size 60x21 [border: (1px solid #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 56x17
                 text run at (2,2) width 56: "TBODY"
-            RenderTableCell {td} at (60,21) size 60x21 [border: (1px solid #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {td} at (60,21) size 60x21 [border: (1px solid #808080)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 56x17
                 text run at (2,2) width 56: "TBODY"
-            RenderTableCell {td} at (120,21) size 60x21 [border: (1px solid #808080)] [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {td} at (120,21) size 60x21 [border: (1px solid #808080)] [r=1 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 56x17
                 text run at (2,2) width 56: "TBODY"

@@ -30,36 +30,36 @@ layer at (0,0) size 800x600
           text run at (0,32) width 760: "remaining width is 300 pixels (350-50), the remaining columns should be 100 (2*50), 50 (1*50) and 150 (3*50) pixels"
           text run at (0,48) width 40: "wide, "
           text run at (39,48) width 82: "respectively."
-      RenderTable {TABLE} at (0,223.91) size 350x48 [border: (1px outset #808080)]
-        RenderTableCol {COLGROUP} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0
-        RenderTableSection {TBODY} at (1,1) size 348x46
-          RenderTableRow {TR} at (0,2) size 348x20
-            RenderTableCell {TH} at (2,2) size 50x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,223.91) size 350x48 [border: (1px outset #808080)]
+        LayoutTableCol {COLGROUP} at (0,0) size 0x0
+          LayoutTableCol {COL} at (0,0) size 0x0
+          LayoutTableCol {COL} at (0,0) size 0x0
+          LayoutTableCol {COL} at (0,0) size 0x0
+          LayoutTableCol {COL} at (0,0) size 0x0
+        LayoutTableSection {TBODY} at (1,1) size 348x46
+          LayoutTableRow {TR} at (0,2) size 348x20
+            LayoutTableCell {TH} at (2,2) size 50x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (10,2) size 30x16
                 text run at (10,2) width 30: "One"
-            RenderTableCell {TH} at (54,2) size 95x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TH} at (54,2) size 95x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (32,2) size 31x16
                 text run at (32,2) width 31: "Two"
-            RenderTableCell {TH} at (151,2) size 97x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TH} at (151,2) size 97x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (28,2) size 41x16
                 text run at (28,2) width 41: "Three"
-            RenderTableCell {TH} at (250,2) size 96x20 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TH} at (250,2) size 96x20 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
               RenderText {#text} at (31,2) size 34x16
                 text run at (31,2) width 34: "Four"
-          RenderTableRow {TR} at (0,24) size 348x20
-            RenderTableCell {TD} at (2,24) size 50x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,24) size 348x20
+            LayoutTableCell {TD} at (2,24) size 50x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 26x16
                 text run at (2,2) width 26: "Red"
-            RenderTableCell {TD} at (54,24) size 95x20 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (54,24) size 95x20 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 40x16
                 text run at (2,2) width 40: "Green"
-            RenderTableCell {TD} at (151,24) size 97x20 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (151,24) size 97x20 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 31x16
                 text run at (2,2) width 31: "Blue"
-            RenderTableCell {TD} at (250,24) size 96x20 [border: (1px inset #808080)] [r=1 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (250,24) size 96x20 [border: (1px inset #808080)] [r=1 c=3 rs=1 cs=1]
               RenderText {#text} at (2,2) size 40x16
                 text run at (2,2) width 40: "Green"

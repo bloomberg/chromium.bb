@@ -9,15 +9,15 @@ layer at (0,0) size 800x600
           RenderInline {TDX} at (0,0) size 0x0
             RenderInline {IMGX} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,0) size 800x80
-        RenderTable {TABLE} at (0,0) size 800x80 [bgcolor=#FFFFFF]
-          RenderTableSection {TBODY} at (0,0) size 800x80
-            RenderTableRow {TR} at (0,0) size 800x20
-              RenderTableCell {TD} at (0,0) size 326x60 [r=0 c=0 rs=2 cs=1]
+        LayoutTable {TABLE} at (0,0) size 800x80 [bgcolor=#FFFFFF]
+          LayoutTableSection {TBODY} at (0,0) size 800x80
+            LayoutTableRow {TR} at (0,0) size 800x20
+              LayoutTableCell {TD} at (0,0) size 326x60 [r=0 c=0 rs=2 cs=1]
                 RenderInline {A} at (0,0) size 250x19 [color=#003399]
                   RenderImage {IMG} at (0,0) size 250x60
-              RenderTableCell {TD} at (326,0) size 23x20 [r=0 c=1 rs=1 cs=1]
+              LayoutTableCell {TD} at (326,0) size 23x20 [r=0 c=1 rs=1 cs=1]
                 RenderImage {IMG} at (5,0) size 18x20
-              RenderTableCell {TD} at (349,4) size 451x12 [bgcolor=#000000] [r=0 c=2 rs=1 cs=2]
+              LayoutTableCell {TD} at (349,4) size 451x12 [bgcolor=#000000] [r=0 c=2 rs=1 cs=2]
                 RenderInline {FONT} at (0,0) size 344x12 [color=#FFFFFF]
                   RenderText {#text} at (0,0) size 0x0
                   RenderInline {B} at (0,0) size 344x12
@@ -66,12 +66,12 @@ layer at (0,0) size 800x600
                     RenderText {#text} at (445,0) size 6x12
                       text run at (445,0) width 6: "  "
                   RenderText {#text} at (0,0) size 0x0
-            RenderTableRow {TR} at (0,20) size 800x40
-              RenderTableCell {TD} at (326,20) size 474x40 [r=1 c=1 rs=1 cs=2]
+            LayoutTableRow {TR} at (0,20) size 800x40
+              LayoutTableCell {TD} at (326,20) size 474x40 [r=1 c=1 rs=1 cs=2]
                 RenderInline {A} at (0,0) size 112x19 [color=#003399]
                   RenderImage {IMG} at (362,0) size 112x40
-            RenderTableRow {TR} at (0,60) size 800x20
-              RenderTableCell {TD} at (0,64) size 800x12 [bgcolor=#6699CC] [r=2 c=0 rs=1 cs=4]
+            LayoutTableRow {TR} at (0,60) size 800x20
+              LayoutTableCell {TD} at (0,64) size 800x12 [bgcolor=#6699CC] [r=2 c=0 rs=1 cs=4]
                 RenderInline {FONT} at (0,0) size 582x12 [color=#FFFFFF]
                   RenderInline {B} at (0,0) size 582x12
                     RenderText {#text} at (0,0) size 6x12

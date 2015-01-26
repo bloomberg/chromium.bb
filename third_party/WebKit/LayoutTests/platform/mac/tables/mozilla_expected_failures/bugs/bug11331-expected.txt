@@ -16,19 +16,19 @@ layer at (0,0) size 800x600
           RenderBR {BR} at (250,44) size 1x0
           RenderText {#text} at (0,48) size 239x16
             text run at (0,48) width 239: "grey table has CELLPADDING=\"1\"."
-        RenderTable {TABLE} at (0,64) size 40x34 [bgcolor=#FFFF00]
-          RenderTableSection {TBODY} at (0,0) size 40x34
-            RenderTableRow {TR} at (0,2) size 40x30
-              RenderTableCell {TD} at (2,2) size 36x30 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,64) size 40x34 [bgcolor=#FFFF00]
+          LayoutTableSection {TBODY} at (0,0) size 40x34
+            LayoutTableRow {TR} at (0,2) size 40x30
+              LayoutTableCell {TD} at (2,2) size 36x30 [r=0 c=0 rs=1 cs=1]
                 RenderInline {FONT} at (0,0) size 29x30
                   RenderText {#text} at (0,0) size 29x30
                     text run at (0,0) width 29: "Online"
                     text run at (0,10) width 24: "Web-"
                     text run at (0,20) width 24: "Store"
-        RenderTable {TABLE} at (0,98) size 40x36 [bgcolor=#EEEEEE]
-          RenderTableSection {TBODY} at (0,0) size 40x36
-            RenderTableRow {TR} at (0,2) size 40x32
-              RenderTableCell {TD} at (2,2) size 36x32 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,98) size 40x36 [bgcolor=#EEEEEE]
+          LayoutTableSection {TBODY} at (0,0) size 40x36
+            LayoutTableRow {TR} at (0,2) size 40x32
+              LayoutTableCell {TD} at (2,2) size 36x32 [r=0 c=0 rs=1 cs=1]
                 RenderInline {FONT} at (0,0) size 29x30
                   RenderText {#text} at (1,1) size 29x30
                     text run at (1,1) width 29: "Online"

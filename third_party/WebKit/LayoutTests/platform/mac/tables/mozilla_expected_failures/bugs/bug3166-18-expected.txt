@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 664x16
         RenderText {#text} at (0,0) size 656x16
           text run at (0,0) width 656: "text text text previous paragraph text text above the table more text text text normal paragraph etc. etc."
-      RenderTable {TABLE} at (253,32) size 158x222
+      LayoutTable {TABLE} at (253,32) size 158x222
         RenderBlock {CAPTION} at (-128,0) size 128x80
           RenderText {#text} at (6,0) size 122x80
             text run at (6,0) width 122: "This is the caption."
@@ -14,74 +14,74 @@ layer at (0,0) size 800x600
             text run at (46,32) width 82: "aligned.Also"
             text run at (41,48) width 87: "aligned at the"
             text run at (82,64) width 46: "bottom"
-        RenderTableSection {TBODY} at (0,80) size 158x142
-          RenderTableRow {TR} at (0,2) size 158x18
-            RenderTableCell {TH} at (2,2) size 50x18 [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection {TBODY} at (0,80) size 158x142
+          LayoutTableRow {TR} at (0,2) size 158x18
+            LayoutTableCell {TH} at (2,2) size 50x18 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 48x16
                 text run at (1,1) width 48: "header"
-            RenderTableCell {TH} at (54,2) size 50x18 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TH} at (54,2) size 50x18 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 48x16
                 text run at (1,1) width 48: "header"
-            RenderTableCell {TH} at (106,2) size 50x18 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TH} at (106,2) size 50x18 [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 48x16
                 text run at (1,1) width 48: "header"
-          RenderTableRow {TR} at (0,22) size 158x18
-            RenderTableCell {TD} at (2,22) size 50x18 [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,22) size 158x18
+            LayoutTableCell {TD} at (2,22) size 50x18 [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (54,22) size 50x18 [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (54,22) size 50x18 [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (106,22) size 50x18 [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (106,22) size 50x18 [r=1 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-          RenderTableRow {TR} at (0,42) size 158x18
-            RenderTableCell {TD} at (2,42) size 50x18 [r=2 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,42) size 158x18
+            LayoutTableCell {TD} at (2,42) size 50x18 [r=2 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (54,42) size 50x18 [r=2 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (54,42) size 50x18 [r=2 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (106,42) size 50x18 [r=2 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (106,42) size 50x18 [r=2 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-          RenderTableRow {TR} at (0,62) size 158x18
-            RenderTableCell {TD} at (2,62) size 50x18 [r=3 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,62) size 158x18
+            LayoutTableCell {TD} at (2,62) size 50x18 [r=3 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (54,62) size 50x18 [r=3 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (54,62) size 50x18 [r=3 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (106,62) size 50x18 [r=3 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (106,62) size 50x18 [r=3 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-          RenderTableRow {TR} at (0,82) size 158x18
-            RenderTableCell {TD} at (2,82) size 50x18 [r=4 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,82) size 158x18
+            LayoutTableCell {TD} at (2,82) size 50x18 [r=4 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (54,82) size 50x18 [r=4 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (54,82) size 50x18 [r=4 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (106,82) size 50x18 [r=4 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (106,82) size 50x18 [r=4 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-          RenderTableRow {TR} at (0,102) size 158x18
-            RenderTableCell {TD} at (2,102) size 50x18 [r=5 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,102) size 158x18
+            LayoutTableCell {TD} at (2,102) size 50x18 [r=5 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (54,102) size 50x18 [r=5 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (54,102) size 50x18 [r=5 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (106,102) size 50x18 [r=5 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (106,102) size 50x18 [r=5 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-          RenderTableRow {TR} at (0,122) size 158x18
-            RenderTableCell {TD} at (2,122) size 50x18 [r=6 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,122) size 158x18
+            LayoutTableCell {TD} at (2,122) size 50x18 [r=6 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (54,122) size 50x18 [r=6 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (54,122) size 50x18 [r=6 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
-            RenderTableCell {TD} at (106,122) size 50x18 [r=6 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (106,122) size 50x18 [r=6 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x16
                 text run at (1,1) width 24: "cell"
