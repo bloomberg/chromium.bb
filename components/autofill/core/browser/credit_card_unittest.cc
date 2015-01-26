@@ -145,7 +145,7 @@ TEST(CreditCardTest, Copy) {
   EXPECT_TRUE(a == b);
 }
 
-TEST(CreditCardTest, Compare) {
+TEST(CreditCardTest, IsLocalDuplicateOfServerCard) {
   struct {
     CreditCard::RecordType first_card_record_type;
     const char* first_card_name;
@@ -217,7 +217,7 @@ TEST(CreditCardTest, Compare) {
   }
 }
 
-TEST(CreditCardTest, IsLocalDuplicateOfServerCard) {
+TEST(CreditCardTest, Compare) {
   CreditCard a(base::GenerateGUID(), std::string());
   CreditCard b(base::GenerateGUID(), std::string());
 

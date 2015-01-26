@@ -33,6 +33,12 @@ class CreditCard : public AutofillDataModel {
     FULL_SERVER_CARD,
   };
 
+  // The status of this credit card. Only used for server cards.
+  enum ServerStatus {
+    EXPIRED,
+    OK,
+  };
+
   CreditCard(const std::string& guid, const std::string& origin);
   CreditCard(const base::string16& card_number,
              int expiration_month,
@@ -71,6 +77,10 @@ class CreditCard : public AutofillDataModel {
 
   // Type strings are defined at the bottom of this file, e.g. kVisaCard.
   void SetTypeForMaskedCard(const char* type);
+
+  // Sets/gets the status of a server card.
+  void SetServerStatus(ServerStatus status);
+  ServerStatus GetServerStatus() const;
 
   // FormGroup:
   void GetMatchingTypes(const base::string16& text,
@@ -199,6 +209,10 @@ class CreditCard : public AutofillDataModel {
   // For server cards (both MASKED and UNMASKED) this is the ID assigned by the
   // server to uniquely identify this card.
   std::string server_id_;
+
+  // The status of the card, as reported by the server. Not valid for local
+  // cards.
+  ServerStatus server_status_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().

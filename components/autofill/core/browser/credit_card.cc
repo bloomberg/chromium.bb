@@ -132,14 +132,16 @@ CreditCard::CreditCard(const std::string& guid, const std::string& origin)
       record_type_(LOCAL_CARD),
       type_(kGenericCard),
       expiration_month_(0),
-      expiration_year_(0) {
+      expiration_year_(0),
+      server_status_(OK) {
 }
 
 CreditCard::CreditCard(const base::string16& card_number,
                        int expiration_month,
                        int expiration_year)
     : AutofillDataModel(std::string(), std::string()),
-      record_type_(LOCAL_CARD) {
+      record_type_(LOCAL_CARD),
+      server_status_(OK) {
   SetNumber(card_number);
   SetExpirationMonth(expiration_month);
   SetExpirationYear(expiration_year);
@@ -151,7 +153,8 @@ CreditCard::CreditCard(RecordType type, const std::string& server_id)
       type_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0),
-      server_id_(server_id) {
+      server_id_(server_id),
+      server_status_(OK) {
   DCHECK(type == MASKED_SERVER_CARD || type == FULL_SERVER_CARD);
 }
 
@@ -160,7 +163,8 @@ CreditCard::CreditCard()
       record_type_(LOCAL_CARD),
       type_(kGenericCard),
       expiration_month_(0),
-      expiration_year_(0) {
+      expiration_year_(0),
+      server_status_(OK) {
 }
 
 CreditCard::CreditCard(const CreditCard& credit_card)
@@ -305,6 +309,16 @@ const char* CreditCard::GetCreditCardType(const base::string16& number) {
 void CreditCard::SetTypeForMaskedCard(const char* type) {
   DCHECK_EQ(MASKED_SERVER_CARD, record_type());
   type_ = type;
+}
+
+void CreditCard::SetServerStatus(ServerStatus status) {
+  DCHECK_NE(LOCAL_CARD, record_type());
+  server_status_ = status;
+}
+
+CreditCard::ServerStatus CreditCard::GetServerStatus() const {
+  DCHECK_NE(LOCAL_CARD, record_type());
+  return server_status_;
 }
 
 base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
@@ -525,6 +539,7 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   expiration_month_ = credit_card.expiration_month_;
   expiration_year_ = credit_card.expiration_year_;
   server_id_ = credit_card.server_id_;
+  server_status_ = credit_card.server_status_;
 
   set_guid(credit_card.guid());
   set_origin(credit_card.origin());
@@ -579,6 +594,12 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
   if (comparison != 0)
     return comparison;
 
+  if (static_cast<int>(server_status_) <
+      static_cast<int>(credit_card.server_status_))
+    return -1;
+  if (static_cast<int>(server_status_) >
+      static_cast<int>(credit_card.server_status_))
+    return 1;
   if (static_cast<int>(record_type_) <
       static_cast<int>(credit_card.record_type_))
     return -1;

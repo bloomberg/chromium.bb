@@ -58,10 +58,24 @@ content::WebContents* CardUnmaskPromptControllerImpl::GetWebContents() {
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
-  return base::ASCIIToUTF16("Unlocking ") + card_.TypeAndLastFourDigits();
+  // TODO(estade): i18n.
+  if (card_.GetServerStatus() == CreditCard::EXPIRED) {
+    return base::ASCIIToUTF16("Update and verify your card ") +
+        card_.TypeAndLastFourDigits();
+  }
+
+  return base::ASCIIToUTF16("Verify your card ") +
+      card_.TypeAndLastFourDigits();
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
+  if (card_.GetServerStatus() == CreditCard::EXPIRED) {
+    return l10n_util::GetStringUTF16(
+        card_.type() == kAmericanExpressCard
+            ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_AMEX
+            : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED);
+  }
+
   return l10n_util::GetStringUTF16(
       card_.type() == kAmericanExpressCard
           ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX
@@ -71,6 +85,10 @@ base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
 int CardUnmaskPromptControllerImpl::GetCvcImageRid() const {
   return card_.type() == kAmericanExpressCard ? IDR_CREDIT_CARD_CVC_HINT_AMEX
                                               : IDR_CREDIT_CARD_CVC_HINT;
+}
+
+bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
+  return card_.GetServerStatus() == CreditCard::EXPIRED;
 }
 
 bool CardUnmaskPromptControllerImpl::InputTextIsValid(

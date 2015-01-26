@@ -24,6 +24,7 @@ class CardUnmaskPromptController {
   virtual base::string16 GetWindowTitle() const = 0;
   virtual base::string16 GetInstructionsMessage() const = 0;
   virtual int GetCvcImageRid() const = 0;
+  virtual bool ShouldRequestExpirationDate() const = 0;
   virtual bool InputTextIsValid(const base::string16& input_text) const = 0;
 };
 

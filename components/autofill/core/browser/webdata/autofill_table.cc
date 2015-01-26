@@ -445,6 +445,27 @@ time_t GetEndTime(const base::Time& end) {
   return end.ToTimeT();
 }
 
+std::string ServerStatusEnumToString(CreditCard::ServerStatus status) {
+  switch (status) {
+    case CreditCard::EXPIRED:
+      return "EXPIRED";
+
+    case CreditCard::OK:
+      return "OK";
+  }
+
+  NOTREACHED();
+  return "OK";
+}
+
+CreditCard::ServerStatus ServerStatusStringToEnum(const std::string& status) {
+  if (status == "EXPIRED")
+    return CreditCard::EXPIRED;
+
+  DCHECK_EQ("OK", status);
+  return CreditCard::OK;
+}
+
 }  // namespace
 
 // The maximum length allowed for form data.
@@ -1229,7 +1250,7 @@ bool AutofillTable::GetServerCreditCards(
       DCHECK_EQ(CreditCard::GetCreditCardType(full_card_number), card_type);
     }
 
-    index++;  // TODO(brettw) hook up status. For now, skip over it.
+    card->SetServerStatus(ServerStatusStringToEnum(s.ColumnString(index++)));
     card->SetRawInfo(CREDIT_CARD_NAME, s.ColumnString16(index++));
     card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(index++));
     card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(index++));
@@ -1266,6 +1287,19 @@ bool AutofillTable::GetServerCreditCards(
     fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NUMBER,
                                         ASCIIToUTF16("9424"));
     fake_masked_cards.back().SetTypeForMaskedCard(kDiscoverCard);
+
+    fake_masked_cards.push_back(
+        CreditCard(CreditCard::MASKED_SERVER_CARD, "c789"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NAME,
+                                        ASCIIToUTF16("Efren Salazar, Sr"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_MONTH,
+                                        ASCIIToUTF16("12"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                                        ASCIIToUTF16("2014"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NUMBER,
+                                        ASCIIToUTF16("1881"));
+    fake_masked_cards.back().SetTypeForMaskedCard(kVisaCard);
+    fake_masked_cards.back().SetServerStatus(CreditCard::EXPIRED);
 
     SetServerCreditCards(fake_masked_cards);
     return GetServerCreditCards(credit_cards);
@@ -1326,7 +1360,8 @@ void AutofillTable::SetServerCreditCards(
 
     masked_insert.BindString(0, card.server_id());
     masked_insert.BindString(1, card.type());
-    masked_insert.BindNull(2);  // Skip status which doesn't have storage yet.
+    masked_insert.BindString(2,
+                             ServerStatusEnumToString(card.GetServerStatus()));
     masked_insert.BindString16(3, card.GetRawInfo(CREDIT_CARD_NAME));
     masked_insert.BindString16(4, card.LastFourDigits());
     masked_insert.BindString16(5, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));

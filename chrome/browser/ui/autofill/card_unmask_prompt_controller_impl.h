@@ -32,6 +32,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   base::string16 GetWindowTitle() const override;
   base::string16 GetInstructionsMessage() const override;
   int GetCvcImageRid() const override;
+  bool ShouldRequestExpirationDate() const override;
   bool InputTextIsValid(const base::string16& input_text) const override;
 
  private:

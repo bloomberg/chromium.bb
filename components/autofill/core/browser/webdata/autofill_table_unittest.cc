@@ -1621,6 +1621,7 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[1].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("1997"));
   inputs[1].SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
   inputs[1].SetTypeForMaskedCard(kVisaCard);
+  inputs[1].SetServerStatus(CreditCard::EXPIRED);
 
   table_->SetServerCreditCards(inputs);
 
@@ -1642,6 +1643,9 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
 
   EXPECT_EQ(inputs[0], *outputs[0]);
   EXPECT_EQ(inputs[1], *outputs[1]);
+
+  EXPECT_EQ(CreditCard::OK, outputs[0]->GetServerStatus());
+  EXPECT_EQ(CreditCard::EXPIRED, outputs[1]->GetServerStatus());
 
   STLDeleteContainerPointers(outputs.begin(), outputs.end());
 }
