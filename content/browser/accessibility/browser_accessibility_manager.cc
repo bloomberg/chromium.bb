@@ -414,9 +414,6 @@ void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXNode* node) {
 }
 
 void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXNode* node) {
-  BrowserAccessibility* obj = GetFromAXNode(node);
-  if (obj)
-    obj->OnSubtreeWillBeDeleted();
 }
 
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXNode* node) {
@@ -431,17 +428,9 @@ void BrowserAccessibilityManager::OnNodeChanged(ui::AXNode* node) {
 }
 
 void BrowserAccessibilityManager::OnAtomicUpdateFinished(
-    bool root_changed,
-    const std::vector<ui::AXTreeDelegate::Change>& changes) {
-  for (size_t i = 0; i < changes.size(); ++i) {
-    BrowserAccessibility* obj = GetFromAXNode(changes[i].node);
-    if (!obj)
-      continue;
-
-    obj->OnUpdateFinished();
-    if (changes[i].type == AXTreeDelegate::SUBTREE_CREATED)
-      GetFromAXNode(changes[i].node)->OnSubtreeCreationFinished();
-  }
+    bool root_changed, const std::vector<ui::AXTreeDelegate::Change>& changes) {
+  for (size_t i = 0; i < changes.size(); ++i)
+    GetFromAXNode(changes[i].node)->OnUpdateFinished();
 }
 
 BrowserAccessibilityDelegate*

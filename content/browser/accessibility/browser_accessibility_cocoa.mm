@@ -482,9 +482,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSNumber*)numberOfCharacters {
-  std::string value = browserAccessibility_->GetStringAttribute(
-      ui::AX_ATTR_VALUE);
-  return [NSNumber numberWithInt:value.size()];
+  return [NSNumber numberWithInt:browserAccessibility_->value().length()];
 }
 
 // The origin of this accessibility object in the page's document.
@@ -920,9 +918,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSValue*)visibleCharacterRange {
-  std::string value = browserAccessibility_->GetStringAttribute(
-      ui::AX_ATTR_VALUE);
-  return [NSValue valueWithRange:NSMakeRange(0, value.size())];
+  return [NSValue valueWithRange:
+      NSMakeRange(0, browserAccessibility_->value().length())];
 }
 
 - (NSArray*)visibleCells {
@@ -1036,9 +1033,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   const std::vector<int32>& line_breaks =
       browserAccessibility_->GetIntListAttribute(
           ui::AX_ATTR_LINE_BREAKS);
-  std::string value = browserAccessibility_->GetStringAttribute(
-      ui::AX_ATTR_VALUE);
-  int len = static_cast<int>(value.size());
+  int len = static_cast<int>(browserAccessibility_->value().size());
 
   if ([attribute isEqualToString:
       NSAccessibilityStringForRangeParameterizedAttribute]) {
