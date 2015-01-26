@@ -303,8 +303,11 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
 
         FrameView* view = frameView();
         view->resize(containerSize());
-        if (!m_url.isEmpty())
-            view->scrollToFragment(m_url);
+
+        // Always call scrollToFragment, even if the url is empty, because
+        // there may have been a previous url/fragment that needs to be reset.
+        view->scrollToFragment(m_url);
+
         view->updateLayoutAndStyleForPainting();
         view->paint(&recordingContext, enclosingIntRect(srcRect));
         ASSERT(!view->needsLayout());

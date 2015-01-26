@@ -1425,7 +1425,9 @@ bool FrameView::scrollToFragment(const KURL& url)
     // OTOH If CSS target was set previously, we want to set it to 0, recalc
     // and possibly paint invalidation because :target pseudo class may have been
     // set (see bug 11321).
-    if (!url.hasFragmentIdentifier() && !m_frame->document()->cssTarget())
+    // Similarly for svg, if we had a previous svgView() then we need to reset
+    // the initial view if we don't have a fragment.
+    if (!url.hasFragmentIdentifier() && !m_frame->document()->cssTarget() && !m_frame->document()->isSVGDocument())
         return false;
 
     String fragmentIdentifier = url.fragmentIdentifier();

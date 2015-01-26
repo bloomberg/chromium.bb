@@ -713,8 +713,15 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
 
             if (RenderObject* renderer = svg->renderer())
                 markForLayoutAndParentResourceInvalidation(renderer);
+
+            return;
         }
     }
+
+    // If we previously had a view and didn't get a new one, we need to
+    // layout again.
+    if (renderer && hadUseCurrentView)
+        markForLayoutAndParentResourceInvalidation(renderer);
 
     // FIXME: We need to decide which <svg> to focus on, and zoom to it.
     // FIXME: We need to actually "highlight" the viewTarget(s).
