@@ -91,6 +91,7 @@ LoadManifestOnFileThread(
 bool IsNormalSession() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
              chromeos::switches::kGuestSession) &&
+         user_manager::UserManager::IsInitialized() &&
          user_manager::UserManager::Get()->IsUserLoggedIn();
 }
 #endif  // defined(OS_CHROMEOS)
