@@ -340,13 +340,8 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
   }
 }
 
-#if defined(OS_WIN)
 // http://crbug.com/396386
-#define MAYBE_BasicThreaded DISABLED_BasicThreaded
-#else
-#define MAYBE_BasicThreaded BasicThreaded
-#endif
-TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
+TEST(MessagePipeDispatcherTest, DISABLED_BasicThreaded) {
   test::Stopwatch stopwatch;
   int32_t buffer[1];
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));

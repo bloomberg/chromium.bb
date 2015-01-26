@@ -325,13 +325,8 @@ TEST(SimpleDispatcherTest, BasicClosed) {
   // Don't need to remove waiters from closed dispatchers.
 }
 
-#if defined(OS_WIN)
 // http://crbug.com/396393
-#define MAYBE_BasicThreaded DISABLED_BasicThreaded
-#else
-#define MAYBE_BasicThreaded BasicThreaded
-#endif
-TEST(SimpleDispatcherTest, MAYBE_BasicThreaded) {
+TEST(SimpleDispatcherTest, DISABLED_BasicThreaded) {
   test::Stopwatch stopwatch;
   bool did_wait;
   MojoResult result;
