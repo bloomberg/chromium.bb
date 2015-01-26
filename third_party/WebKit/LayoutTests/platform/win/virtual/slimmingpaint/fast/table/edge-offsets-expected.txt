@@ -26,22 +26,22 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (0,0) size 0x17
 layer at (8,104) size 102x102 clip at (9,105) size 100x85 scrollWidth 133
   RenderBlock {DIV} at (0,96) size 102x102 [border: (1px solid #0000FF)]
-    RenderTable {TABLE} at (1,1) size 6x6
-      RenderTableSection {TBODY} at (0,0) size 6x6
-        RenderTableRow {TR} at (0,2) size 6x2
-          RenderTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
+    LayoutTable {TABLE} at (1,1) size 6x6
+      LayoutTableSection {TBODY} at (0,0) size 6x6
+        LayoutTableRow {TR} at (0,2) size 6x2
+          LayoutTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
 layer at (8,224) size 102x102 clip at (9,225) size 100x85 scrollX 33.00 scrollWidth 133
   RenderBlock {DIV} at (0,216) size 102x102 [border: (1px solid #0000FF)]
-    RenderTable {TABLE} at (95,1) size 6x6
-      RenderTableSection {TBODY} at (0,0) size 6x6
-        RenderTableRow {TR} at (0,2) size 6x2
-          RenderTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
+    LayoutTable {TABLE} at (95,1) size 6x6
+      LayoutTableSection {TBODY} at (0,0) size 6x6
+        LayoutTableRow {TR} at (0,2) size 6x2
+          LayoutTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
 layer at (8,344) size 102x102 clip at (9,345) size 85x100 scrollHeight 133
   RenderBlock {DIV} at (0,336) size 102x102 [border: (1px solid #0000FF)]
-    RenderTable {TABLE} at (1,1) size 6x6
-      RenderTableSection {TBODY} at (0,0) size 6x6
-        RenderTableRow {TR} at (0,2) size 6x2
-          RenderTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
+    LayoutTable {TABLE} at (1,1) size 6x6
+      LayoutTableSection {TBODY} at (0,0) size 6x6
+        LayoutTableRow {TR} at (0,2) size 6x2
+          LayoutTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
 layer at (12,108) size 0x0
   RenderBlock (relative positioned) {DIV} at (1,1) size 0x0
 layer at (82,108) size 60x60 backgroundClip at (9,105) size 100x85 clip at (9,105) size 100x85 outlineClip at (9,105) size 100x85

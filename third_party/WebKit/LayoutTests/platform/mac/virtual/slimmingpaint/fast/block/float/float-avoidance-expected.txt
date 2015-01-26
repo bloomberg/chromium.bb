@@ -94,10 +94,10 @@ layer at (0,0) size 785x2180 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             RenderText at (8,2) size 22x13
               text run at (8,2) width 22: "One"
         RenderText {#text} at (0,0) size 0x0
-        RenderTable {TABLE} at (110,26) size 100x28 [border: (2px outset #808080)]
-          RenderTableSection {TBODY} at (2,2) size 96x24
-            RenderTableRow {TR} at (0,2) size 96x20
-              RenderTableCell {TD} at (2,2) size 92x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (110,26) size 100x28 [border: (2px outset #808080)]
+          LayoutTableSection {TBODY} at (2,2) size 96x24
+            LayoutTableRow {TR} at (0,2) size 96x20
+              LayoutTableCell {TD} at (2,2) size 92x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (2,2) size 37x16
                   text run at (2,2) width 37: "Table"
         RenderText {#text} at (0,0) size 0x0
@@ -115,10 +115,10 @@ layer at (0,0) size 785x2180 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             RenderText at (8,2) size 22x13
               text run at (8,2) width 22: "One"
         RenderText {#text} at (0,0) size 0x0
-        RenderTable {TABLE} at (10,44) size 200x60 [border: (2px outset #808080)]
-          RenderTableSection {TBODY} at (2,2) size 196x56
-            RenderTableRow {TR} at (0,2) size 196x52
-              RenderTableCell {TD} at (2,2) size 192x52 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (10,44) size 200x60 [border: (2px outset #808080)]
+          LayoutTableSection {TBODY} at (2,2) size 196x56
+            LayoutTableRow {TR} at (0,2) size 196x52
+              LayoutTableCell {TD} at (2,2) size 192x52 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (2,2) size 165x48
                   text run at (2,2) width 164: "Floating table that should"
                   text run at (2,18) width 165: "shrink so it can be next to"
@@ -139,10 +139,10 @@ layer at (0,0) size 785x2180 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText at (8,2) size 22x13
                 text run at (8,2) width 22: "One"
           RenderText {#text} at (0,0) size 0x0
-        RenderTable {TABLE} at (10,44) size 200x60 [border: (2px outset #808080)]
-          RenderTableSection {TBODY} at (2,2) size 196x56
-            RenderTableRow {TR} at (0,2) size 196x52
-              RenderTableCell {TD} at (2,2) size 192x52 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (10,44) size 200x60 [border: (2px outset #808080)]
+          LayoutTableSection {TBODY} at (2,2) size 196x56
+            LayoutTableRow {TR} at (0,2) size 196x52
+              LayoutTableCell {TD} at (2,2) size 192x52 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (2,2) size 165x48
                   text run at (2,2) width 164: "Floating table that should"
                   text run at (2,18) width 165: "shrink so it can be next to"
@@ -163,10 +163,10 @@ layer at (0,0) size 785x2180 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText at (8,2) size 22x13
                 text run at (8,2) width 22: "One"
           RenderText {#text} at (0,0) size 0x0
-        RenderTable {TABLE} at (110,26) size 100x124 [border: (2px outset #808080)]
-          RenderTableSection {TBODY} at (2,2) size 96x120
-            RenderTableRow {TR} at (0,2) size 96x116
-              RenderTableCell {TD} at (2,2) size 92x116 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (110,26) size 100x124 [border: (2px outset #808080)]
+          LayoutTableSection {TBODY} at (2,2) size 96x120
+            LayoutTableRow {TR} at (0,2) size 96x116
+              LayoutTableCell {TD} at (2,2) size 92x116 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (2,2) size 87x112
                   text run at (2,2) width 54: "Floating"
                   text run at (2,18) width 60: "table that"

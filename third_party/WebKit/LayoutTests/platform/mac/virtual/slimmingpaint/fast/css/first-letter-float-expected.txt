@@ -24,10 +24,10 @@ layer at (0,0) size 800x600
             text run at (279,0) width 13: "A"
         RenderText {#text} at (291,0) size 27x16
           text run at (291,0) width 27: "-Z\x{201D}."
-      RenderTable {TABLE} at (0,80) size 33x22
-        RenderTableSection {TBODY} at (0,0) size 33x22
-          RenderTableRow {TR} at (0,2) size 33x18
-            RenderTableCell {TD} at (2,2) size 29x18 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,80) size 33x22
+        LayoutTableSection {TBODY} at (0,0) size 33x22
+          LayoutTableRow {TR} at (0,2) size 33x18
+            LayoutTableCell {TD} at (2,2) size 29x18 [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 27x16
                 RenderBlock {P} at (0,0) size 27x16
                   RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 11.55x16 [color=#008000]
@@ -35,10 +35,10 @@ layer at (0,0) size 800x600
                       text run at (0,0) width 12: "A"
                   RenderTextFragment {#text} at (11,0) size 16x16
                     text run at (11,0) width 16: "-Z"
-      RenderTable {TABLE} at (0,102) size 33x22
-        RenderTableSection {TBODY} at (0,0) size 33x22
-          RenderTableRow {TR} at (0,2) size 33x18
-            RenderTableCell {TD} at (2,2) size 29x18 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,102) size 33x22
+        LayoutTableSection {TBODY} at (0,0) size 33x22
+          LayoutTableRow {TR} at (0,2) size 33x18
+            LayoutTableCell {TD} at (2,2) size 29x18 [r=0 c=0 rs=1 cs=1]
               RenderBlock {P} at (1,1) size 27x16
                 RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 11.55x16 [color=#008000]
                   RenderTextFragment at (0,0) size 12x16

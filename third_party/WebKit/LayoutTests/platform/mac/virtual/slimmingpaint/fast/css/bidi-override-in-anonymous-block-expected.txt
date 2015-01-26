@@ -178,63 +178,63 @@ layer at (0,0) size 785x1134 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       RenderBlock {P} at (0,853) size 769x16
         RenderText {#text} at (0,0) size 426x16
           text run at (0,0) width 426: "The following 2 tables should be identical, ignorning whitespaces:"
-      RenderTable {TABLE} at (1.47,885) size 85x60 [border: (1px solid #808080)]
+      LayoutTable {TABLE} at (1.47,885) size 85x60 [border: (1px solid #808080)]
         RenderBlock {CAPTION} at (0,0) size 85x16
           RenderText {#text} at (0,0) size 86x16
             text run at (0,0) width 85: "NormalTable"
-        RenderTableSection {TBODY} at (1,17) size 83x42
-          RenderTableRow {TR} at (0,2) size 83x18
-            RenderTableCell {TD} at (44,2) size 37x18 [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection {TBODY} at (1,17) size 83x42
+          LayoutTableRow {TR} at (0,2) size 83x18
+            LayoutTableCell {TD} at (44,2) size 37x18 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (13,1) size 23x16
                 text run at (13,1) width 23: "abc"
-            RenderTableCell {TD} at (2,2) size 40x18 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,2) size 40x18 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (18,1) size 21x16
                 text run at (18,1) width 21: "def"
-          RenderTableRow {TR} at (0,22) size 83x18
-            RenderTableCell {TD} at (44,22) size 37x18 [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,22) size 83x18
+            LayoutTableCell {TD} at (44,22) size 37x18 [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (19,1) size 17x16
                 text run at (19,1) width 17: "hij"
-            RenderTableCell {TD} at (2,22) size 40x18 [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,22) size 40x18 [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (15,1) size 24x16
                 text run at (15,1) width 24: "opq"
-      RenderTable {DIV} at (1.47,946.47) size 144x50 [border: (1px solid #000000)]
+      LayoutTable {DIV} at (1.47,946.47) size 144x50 [border: (1px solid #000000)]
         RenderBlock {DIV} at (0,0) size 144x16
           RenderText {#text} at (0,0) size 145x16
             text run at (0,0) width 144: "AnonymousTableRow"
-        RenderTableSection (anonymous) at (1,17) size 142x32
-          RenderTableRow {DIV} at (0,0) size 142x16
-            RenderTableCell {DIV} at (73,0) size 69x16 [r=0 c=0 rs=1 cs=1]
+        LayoutTableSection (anonymous) at (1,17) size 142x32
+          LayoutTableRow {DIV} at (0,0) size 142x16
+            LayoutTableCell {DIV} at (73,0) size 69x16 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (46,0) size 23x16
                 text run at (46,0) width 23: "abc"
-            RenderTableCell {DIV} at (0,0) size 73x16 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {DIV} at (0,0) size 73x16 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (52,0) size 21x16
                 text run at (52,0) width 21: "def"
-          RenderTableRow {DIV} at (0,16) size 142x16
-            RenderTableCell {DIV} at (73,16) size 69x16 [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {DIV} at (0,16) size 142x16
+            LayoutTableCell {DIV} at (73,16) size 69x16 [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (52,0) size 17x16
                 text run at (52,0) width 17: "hij"
-            RenderTableCell {DIV} at (0,16) size 73x16 [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {DIV} at (0,16) size 73x16 [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (49,0) size 24x16
                 text run at (49,0) width 24: "opq"
       RenderBlock {P} at (0,1012.47) size 769x16
         RenderText {#text} at (0,0) size 514x16
           text run at (0,0) width 514: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
       RenderBlock {DIV} at (0,1044.47) size 769x66 [border: (1px solid #000000)]
-        RenderTable at (1,1) size 24x64
-          RenderTableSection (anonymous) at (0,16) size 24x32
-            RenderTableRow {DIV} at (0,0) size 24x16
-              RenderTableCell (anonymous) at (0,0) size 24x16 [r=0 c=0 rs=1 cs=1]
+        LayoutTable at (1,1) size 24x64
+          LayoutTableSection (anonymous) at (0,16) size 24x32
+            LayoutTableRow {DIV} at (0,0) size 24x16
+              LayoutTableCell (anonymous) at (0,0) size 24x16 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (1,0) size 23x16
                   text run at (1,0) width 23 RTL override: "abc"
-            RenderTableRow (anonymous) at (0,16) size 24x16
-              RenderTableCell {DIV} at (0,16) size 24x16 [r=1 c=0 rs=1 cs=1]
+            LayoutTableRow (anonymous) at (0,16) size 24x16
+              LayoutTableCell {DIV} at (0,16) size 24x16 [r=1 c=0 rs=1 cs=1]
                 RenderText {#text} at (3,0) size 21x16
                   text run at (3,0) width 21 RTL override: "def"
           RenderBlock {DIV} at (0,0) size 24x16
             RenderText {#text} at (7,0) size 17x16
               text run at (7,0) width 17 RTL override: "hij"
-          RenderTableSection {DIV} at (0,48) size 24x16
-            RenderTableRow (anonymous) at (0,0) size 24x16
-              RenderTableCell (anonymous) at (0,0) size 24x16 [r=0 c=0 rs=1 cs=1]
+          LayoutTableSection {DIV} at (0,48) size 24x16
+            LayoutTableRow (anonymous) at (0,0) size 24x16
+              LayoutTableCell (anonymous) at (0,0) size 24x16 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 24x16
                   text run at (0,0) width 24 RTL override: "opq"
