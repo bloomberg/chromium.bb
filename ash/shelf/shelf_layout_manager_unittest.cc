@@ -362,13 +362,6 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
     return CreateTestWidgetWithParams(params);
   }
 
-  // Overridden from AshTestBase:
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableTrayDragging);
-    test::AshTestBase::SetUp();
-  }
-
   void RunGestureDragTests(gfx::Vector2d);
 
   // Turn on the lock screen.
@@ -1979,54 +1972,6 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
     waiter2.WaitTillDoneAnimating();
     EXPECT_TRUE(waiter2.WasValidAnimation());
   }
-}
-
-TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {
-  if (!SupportsHostWindowResize())
-    return;
-
-  ShelfLayoutManager* shelf = GetShelfLayoutManager();
-  shelf->LayoutShelf();
-
-  // Create a visible window so auto-hide behavior is enforced.
-  CreateTestWidget();
-
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  SystemTray* tray = GetSystemTray();
-
-  // First, make sure the shelf is visible.
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-  EXPECT_FALSE(tray->HasSystemBubble());
-
-  // Now, drag up on the tray to show the bubble.
-  gfx::Point start = GetShelfWidget()->status_area_widget()->
-      GetWindowBoundsInScreen().CenterPoint();
-  gfx::Point end(start.x(), start.y() - 100);
-  generator.GestureScrollSequence(start, end,
-      base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_TRUE(tray->HasSystemBubble());
-  tray->CloseSystemBubble();
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(tray->HasSystemBubble());
-
-  // Drag again, but only a small amount, and slowly. The bubble should not be
-  // visible.
-  end.set_y(start.y() - 30);
-  generator.GestureScrollSequence(start, end,
-      base::TimeDelta::FromMilliseconds(500), 100);
-  EXPECT_FALSE(tray->HasSystemBubble());
-
-  // Now, hide the shelf.
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-
-  // Start a drag from the bezel, and drag up to show both the shelf and the
-  // tray bubble.
-  start.set_y(start.y() + 100);
-  end.set_y(start.y() - 400);
-  generator.GestureScrollSequence(start, end,
-      base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-  EXPECT_TRUE(tray->HasSystemBubble());
 }
 
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {

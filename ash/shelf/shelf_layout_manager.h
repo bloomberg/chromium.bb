@@ -153,14 +153,7 @@ class ASH_EXPORT ShelfLayoutManager
   // Gesture related functions:
   void OnGestureEdgeSwipe(const ui::GestureEvent& gesture);
   void StartGestureDrag(const ui::GestureEvent& gesture);
-  enum DragState {
-    DRAG_SHELF,
-    DRAG_TRAY
-  };
-  // Returns DRAG_SHELF if the gesture should continue to drag the entire shelf.
-  // Returns DRAG_TRAY if the gesture can start dragging the tray-bubble from
-  // this point on.
-  DragState UpdateGestureDrag(const ui::GestureEvent& gesture);
+  void UpdateGestureDrag(const ui::GestureEvent& gesture);
   void CompleteGestureDrag(const ui::GestureEvent& gesture);
   void CancelGestureDrag();
 

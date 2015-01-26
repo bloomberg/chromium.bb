@@ -71,9 +71,6 @@ const char kAshEnableTouchViewTesting[] = "ash-enable-touch-view-testing";
 // ChromeVox is enabled or not.
 const char kAshEnableSystemSounds[] = "ash-enable-system-sounds";
 
-// Enables showing the tray bubble by dragging on the shelf.
-const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
-
 // Hides notifications that are irrelevant to Chrome OS device factory testing,
 // such as battery level updates.
 const char kAshHideNotificationsForFactory[] =

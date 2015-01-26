@@ -77,12 +77,6 @@ ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
 
-bool IsDraggingTrayEnabled() {
-  static bool dragging_tray_allowed = base::CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshEnableTrayDragging);
-  return dragging_tray_allowed;
-}
-
 }  // namespace
 
 // static
@@ -413,29 +407,12 @@ void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
   UpdateShelfBackground(BACKGROUND_CHANGE_ANIMATE);
 }
 
-ShelfLayoutManager::DragState ShelfLayoutManager::UpdateGestureDrag(
+void ShelfLayoutManager::UpdateGestureDrag(
     const ui::GestureEvent& gesture) {
   bool horizontal = IsHorizontalAlignment();
   gesture_drag_amount_ += horizontal ? gesture.details().scroll_y() :
                                        gesture.details().scroll_x();
   LayoutShelf();
-
-  // Start reveling the status menu when:
-  //   - dragging up on an already visible shelf
-  //   - dragging up on a hidden shelf, but it is currently completely visible.
-  if (horizontal && gesture.details().scroll_y() < 0) {
-    int min_height = 0;
-    if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN && shelf_)
-      min_height = shelf_->GetContentsView()->GetPreferredSize().height();
-
-    if (min_height < shelf_->GetWindowBoundsInScreen().height() &&
-        gesture.root_location().x() >=
-        shelf_->status_area_widget()->GetWindowBoundsInScreen().x() &&
-        IsDraggingTrayEnabled())
-      return DRAG_TRAY;
-  }
-
-  return DRAG_SHELF;
 }
 
 void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {

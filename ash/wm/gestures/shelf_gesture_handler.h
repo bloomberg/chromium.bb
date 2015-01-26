@@ -13,7 +13,6 @@ class GestureEvent;
 }
 
 namespace ash {
-class TrayGestureHandler;
 
 // This manages gestures on the shelf (e.g. launcher, status tray) that affects
 // the shelf visibility.
@@ -29,8 +28,6 @@ class ShelfGestureHandler {
 
  private:
   bool drag_in_progress_;
-
-  scoped_ptr<TrayGestureHandler> tray_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfGestureHandler);
 };
