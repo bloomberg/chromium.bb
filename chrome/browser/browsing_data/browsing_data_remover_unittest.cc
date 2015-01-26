@@ -20,7 +20,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -39,7 +38,6 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -703,13 +701,13 @@ class ClearDomainReliabilityTester {
 
 // Test Class ----------------------------------------------------------------
 
-class BrowsingDataRemoverTest : public testing::Test,
-                                public content::NotificationObserver {
+class BrowsingDataRemoverTest : public testing::Test {
  public:
-  BrowsingDataRemoverTest()
-      : profile_(new TestingProfile()) {
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
-                   content::Source<Profile>(profile_.get()));
+  BrowsingDataRemoverTest() : profile_(new TestingProfile()) {
+    callback_subscription_ =
+        BrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
+            base::Bind(&BrowsingDataRemoverTest::NotifyWithDetails,
+                       base::Unretained(this)));
   }
 
   ~BrowsingDataRemoverTest() override {}
@@ -794,19 +792,15 @@ class BrowsingDataRemoverTest : public testing::Test,
     return storage_partition_removal_data_;
   }
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(type, chrome::NOTIFICATION_BROWSING_DATA_REMOVED);
-
+  // Callback for browsing data removal events.
+  void NotifyWithDetails(
+      const BrowsingDataRemover::NotificationDetails& details) {
     // We're not taking ownership of the details object, but storing a copy of
     // it locally.
-    called_with_details_.reset(new BrowsingDataRemover::NotificationDetails(
-        *content::Details<BrowsingDataRemover::NotificationDetails>(
-            details).ptr()));
+    called_with_details_.reset(
+        new BrowsingDataRemover::NotificationDetails(details));
 
-    registrar_.RemoveAll();
+    callback_subscription_.reset();
   }
 
   MockExtensionSpecialStoragePolicy* CreateMockPolicy() {
@@ -841,8 +835,6 @@ class BrowsingDataRemoverTest : public testing::Test,
   scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
 
  private:
-  content::NotificationRegistrar registrar_;
-
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
 
@@ -851,6 +843,8 @@ class BrowsingDataRemoverTest : public testing::Test,
 #if defined(ENABLE_EXTENSIONS)
   scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy_;
 #endif
+
+  BrowsingDataRemover::CallbackSubscription callback_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverTest);
 };

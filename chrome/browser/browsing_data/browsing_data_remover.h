@@ -152,6 +152,10 @@ class BrowsingDataRemover
     virtual ~Observer() {}
   };
 
+  using Callback = base::Callback<void(const NotificationDetails&)>;
+  using CallbackSubscription = scoped_ptr<
+      base::CallbackList<void(const NotificationDetails&)>::Subscription>;
+
   // The completion inhibitor can artificially delay completion of the browsing
   // data removal process. It is used during testing to simulate scenarios in
   // which the deletion stalls or takes a very long time.
@@ -199,6 +203,12 @@ class BrowsingDataRemover
       CompletionInhibitor* inhibitor) {
     completion_inhibitor_ = inhibitor;
   }
+
+  // Add a callback to the list of callbacks to be called during a browsing data
+  // removal event. Returns a subscription object that can be used to
+  // un-register the callback.
+  static CallbackSubscription RegisterOnBrowsingDataRemovedCallback(
+      const Callback& callback);
 
   // Removes the specified items related to browsing for all origins that match
   // the provided |origin_set_mask| (see BrowsingDataHelper::OriginSetMask).

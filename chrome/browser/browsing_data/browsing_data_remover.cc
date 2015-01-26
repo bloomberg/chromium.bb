@@ -101,6 +101,24 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;
 
+namespace {
+
+using CallbackList =
+    base::CallbackList<void(const BrowsingDataRemover::NotificationDetails&)>;
+
+// Contains all registered callbacks for browsing data removed notifications.
+CallbackList* g_on_browsing_data_removed_callbacks = nullptr;
+
+// Accessor for |*g_on_browsing_data_removed_callbacks|. Creates a new object
+// the first time so that it always returns a valid object.
+CallbackList* GetOnBrowsingDataRemovedCallbacks() {
+  if (!g_on_browsing_data_removed_callbacks)
+    g_on_browsing_data_removed_callbacks = new CallbackList();
+  return g_on_browsing_data_removed_callbacks;
+}
+
+}  // namespace
+
 bool BrowsingDataRemover::is_removing_ = false;
 
 BrowsingDataRemover::CompletionInhibitor*
@@ -808,13 +826,11 @@ void BrowsingDataRemover::OnKeywordsLoaded() {
 void BrowsingDataRemover::NotifyAndDelete() {
   set_removing(false);
 
-  // Send global notification, then notify any explicit observers.
+  // Notify observers.
   BrowsingDataRemover::NotificationDetails details(delete_begin_, remove_mask_,
       origin_set_mask_);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
-      content::Source<Profile>(profile_),
-      content::Details<BrowsingDataRemover::NotificationDetails>(&details));
+
+  GetOnBrowsingDataRemovedCallbacks()->Notify(details);
 
   FOR_EACH_OBSERVER(Observer, observer_list_, OnBrowsingDataRemoverDone());
 
@@ -1198,4 +1214,11 @@ void BrowsingDataRemover::OnClearedDomainReliabilityMonitor() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_domain_reliability_monitor_ = false;
   NotifyAndDeleteIfDone();
+}
+
+// static
+BrowsingDataRemover::CallbackSubscription
+    BrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
+        const BrowsingDataRemover::Callback& callback) {
+  return GetOnBrowsingDataRemovedCallbacks()->Add(callback);
 }

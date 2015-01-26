@@ -13,14 +13,12 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/browser/notification_service.h"
 
 using extension_function_test_utils::RunFunctionAndReturnError;
 using extension_function_test_utils::RunFunctionAndReturnSingleResult;
@@ -42,8 +40,7 @@ const char kRemoveEverythingArguments[] = "[{\"since\": 1000}, {"
     "}]";
 
 
-class ExtensionBrowsingDataTest : public InProcessBrowserTest,
-                                  public content::NotificationObserver {
+class ExtensionBrowsingDataTest : public InProcessBrowserTest {
  public:
   base::Time GetBeginTime() {
     return called_with_details_->removal_begin;
@@ -60,21 +57,19 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
  protected:
   void SetUpOnMainThread() override {
     called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
-                   content::Source<Profile>(browser()->profile()));
+    callback_subscription_ =
+        BrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
+            base::Bind(&ExtensionBrowsingDataTest::NotifyWithDetails,
+                       base::Unretained(this)));
   }
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(type, chrome::NOTIFICATION_BROWSING_DATA_REMOVED);
-
+  // Callback for browsing data removal events.
+  void NotifyWithDetails(
+      const BrowsingDataRemover::NotificationDetails& details) {
     // We're not taking ownership of the details object, but storing a copy of
     // it locally.
-    called_with_details_.reset(new BrowsingDataRemover::NotificationDetails(
-        *content::Details<BrowsingDataRemover::NotificationDetails>(
-            details).ptr()));
+    called_with_details_.reset(
+        new BrowsingDataRemover::NotificationDetails(details));
   }
 
   int GetAsMask(const base::DictionaryValue* dict, std::string path,
@@ -257,7 +252,9 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
 
  private:
   scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
-  content::NotificationRegistrar registrar_;
+
+  BrowsingDataRemover::CallbackSubscription callback_subscription_;
+
 };
 
 }  // namespace
