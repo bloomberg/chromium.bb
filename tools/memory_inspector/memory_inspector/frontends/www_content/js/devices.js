@@ -65,8 +65,8 @@ this.onDevicesAjaxResponse_ = function(data) {
   if (data.length > 0) {
     this.onDeviceSelectionChange_();  // Start monitoring the first device.
   } else {
-    rootUi.showDialog('No devices could be detected. Check the settings tab ' +
-                      'to ensure that the adb path is properly configured.');
+    rootUi.showDialog('No devices detected. Make sure that adb is running on ' +
+                      'the host and check \'adb devices\'.');
   }
 };
 

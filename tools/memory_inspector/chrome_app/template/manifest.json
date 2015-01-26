@@ -1,7 +1,7 @@
 {
   "name": "Memory Inspector",
   "description": "Memory inspector tool for Android",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "manifest_version": 2,
   "icons": {
     "16": "images/icon_16.png",
@@ -30,6 +30,6 @@
         "udp-send-to:*:*"
       ]
     },
-    "http://127.0.0.1:*/*"
+    "http://127.0.0.1/*"
   ]
 }

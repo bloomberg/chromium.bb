@@ -39,7 +39,7 @@ this.onDomReady_ = function() {
   // Set-up the tracer dialog.
   $('#ps-tracer-dialog').dialog({autoOpen: false, modal: true, width: 400,
       buttons: {'Start': this.startTracingSelectedProcess_.bind(this)}});
-  $('#ps-tracer-period').spinner({min: 0, step: 20});
+  $('#ps-tracer-period').spinner({min: 0, step: 10});
   $('#ps-tracer-snapshots').spinner({min: 1, max: 100});
 
   // Create the process table.

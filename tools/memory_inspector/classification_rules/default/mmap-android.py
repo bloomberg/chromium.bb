@@ -76,7 +76,7 @@
   'children': [
     {
       'name': 'GPU',
-      'mmap_file': r'(nv)|(mali)',
+      'mmap_file': r'(nv)|(mali)|(kgsl)',
     },
   ],
 },
