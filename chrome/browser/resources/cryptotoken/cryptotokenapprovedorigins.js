@@ -30,36 +30,28 @@ function CryptoTokenApprovedOrigin() {}
 CryptoTokenApprovedOrigin.prototype.isApprovedOrigin =
     function(origin, opt_tabId) {
   return new Promise(function(resolve, reject) {
-      if (!chrome.tabs || !chrome.tabs.get) {
-        reject();
-        return;
-      }
-      if (!chrome.windows || !chrome.windows.get) {
-        reject();
-        return;
-      }
-      if (!opt_tabId) {
+      if (opt_tabId === undefined) {
         resolve(false);
         return;
       }
       var tabId = /** @type {number} */ (opt_tabId);
-      chrome.tabs.get(tabId, function(tab) {
-            if (chrome.runtime.lastError) {
-              resolve(false);
-              return;
-            }
-            if (!tab.active) {
-              resolve(false);
-              return;
-            }
-            chrome.windows.get(tab.windowId, function(aWindow) {
-                  if (!aWindow || !aWindow.focused) {
-                    resolve(false);
-                    return;
-                  }
-                  var tabOrigin = getOriginFromUrl(tab.url);
-                  resolve(tabOrigin == origin);
-                });
-          });
+      tabInForeground(tabId).then(function(result) {
+        if (!result) {
+          resolve(false);
+          return;
+        }
+        if (!chrome.tabs || !chrome.tabs.get) {
+          reject();
+          return;
+        }
+        chrome.tabs.get(tabId, function(tab) {
+          if (chrome.runtime.lastError) {
+            resolve(false);
+            return;
+          }
+          var tabOrigin = getOriginFromUrl(tab.url);
+          resolve(tabOrigin == origin);
+        });
+      });
   });
 };
