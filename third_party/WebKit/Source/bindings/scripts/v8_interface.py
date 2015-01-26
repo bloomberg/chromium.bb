@@ -463,13 +463,13 @@ def interface_context(interface):
     })
 
     context.update({
-        'indexed_property_getter': indexed_property_getter(interface),
-        'indexed_property_setter': indexed_property_setter(interface),
-        'indexed_property_deleter': indexed_property_deleter(interface),
+        'indexed_property_getter': property_getter(interface.indexed_property_getter, ['index']),
+        'indexed_property_setter': property_setter(interface.indexed_property_setter, interface),
+        'indexed_property_deleter': property_deleter(interface.indexed_property_deleter),
         'is_override_builtins': 'OverrideBuiltins' in extended_attributes,
-        'named_property_getter': named_property_getter(interface),
-        'named_property_setter': named_property_setter(interface),
-        'named_property_deleter': named_property_deleter(interface),
+        'named_property_getter': property_getter(interface.named_property_getter, ['propertyName']),
+        'named_property_setter': property_setter(interface.named_property_setter, interface),
+        'named_property_deleter': property_deleter(interface.named_property_deleter),
     })
 
     return context
@@ -1131,6 +1131,9 @@ def interface_length(interface, constructors):
 ################################################################################
 
 def property_getter(getter, cpp_arguments):
+    if not getter:
+        return None
+
     def is_null_expression(idl_type):
         if idl_type.use_output_parameter_for_result:
             return 'result.isNull()'
@@ -1175,7 +1178,10 @@ def property_getter(getter, cpp_arguments):
     }
 
 
-def property_setter(interface, setter):
+def property_setter(setter, interface):
+    if not setter:
+        return None
+
     idl_type = setter.arguments[1].idl_type
     extended_attributes = setter.extended_attributes
     is_raises_exception = 'RaisesException' in extended_attributes
@@ -1200,6 +1206,9 @@ def property_setter(interface, setter):
 
 
 def property_deleter(deleter):
+    if not deleter:
+        return None
+
     idl_type = deleter.idl_type
     if str(idl_type) != 'boolean':
         raise Exception(
@@ -1211,110 +1220,3 @@ def property_deleter(deleter):
         'is_raises_exception': 'RaisesException' in extended_attributes,
         'name': cpp_name(deleter),
     }
-
-
-################################################################################
-# Indexed properties
-# http://heycam.github.io/webidl/#idl-indexed-properties
-################################################################################
-
-def indexed_property_getter(interface):
-    try:
-        # Find indexed property getter, if present; has form:
-        # getter TYPE [OPTIONAL_IDENTIFIER](unsigned long ARG1)
-        getter = next(
-            method
-            for method in interface.operations
-            if ('getter' in method.specials and
-                len(method.arguments) == 1 and
-                str(method.arguments[0].idl_type) == 'unsigned long'))
-    except StopIteration:
-        return None
-
-    return property_getter(getter, ['index'])
-
-
-def indexed_property_setter(interface):
-    try:
-        # Find indexed property setter, if present; has form:
-        # setter RETURN_TYPE [OPTIONAL_IDENTIFIER](unsigned long ARG1, ARG_TYPE ARG2)
-        setter = next(
-            method
-            for method in interface.operations
-            if ('setter' in method.specials and
-                len(method.arguments) == 2 and
-                str(method.arguments[0].idl_type) == 'unsigned long'))
-    except StopIteration:
-        return None
-
-    return property_setter(interface, setter)
-
-
-def indexed_property_deleter(interface):
-    try:
-        # Find indexed property deleter, if present; has form:
-        # deleter TYPE [OPTIONAL_IDENTIFIER](unsigned long ARG)
-        deleter = next(
-            method
-            for method in interface.operations
-            if ('deleter' in method.specials and
-                len(method.arguments) == 1 and
-                str(method.arguments[0].idl_type) == 'unsigned long'))
-    except StopIteration:
-        return None
-
-    return property_deleter(deleter)
-
-
-################################################################################
-# Named properties
-# http://heycam.github.io/webidl/#idl-named-properties
-################################################################################
-
-def named_property_getter(interface):
-    try:
-        # Find named property getter, if present; has form:
-        # getter TYPE [OPTIONAL_IDENTIFIER](DOMString ARG1)
-        getter = next(
-            method
-            for method in interface.operations
-            if ('getter' in method.specials and
-                len(method.arguments) == 1 and
-                str(method.arguments[0].idl_type) == 'DOMString'))
-    except StopIteration:
-        return None
-
-    getter.name = getter.name or 'anonymousNamedGetter'
-    return property_getter(getter, ['propertyName'])
-
-
-def named_property_setter(interface):
-    try:
-        # Find named property setter, if present; has form:
-        # setter RETURN_TYPE [OPTIONAL_IDENTIFIER](DOMString ARG1, ARG_TYPE ARG2)
-        setter = next(
-            method
-            for method in interface.operations
-            if ('setter' in method.specials and
-                len(method.arguments) == 2 and
-                str(method.arguments[0].idl_type) == 'DOMString'))
-    except StopIteration:
-        return None
-
-    return property_setter(interface, setter)
-
-
-def named_property_deleter(interface):
-    try:
-        # Find named property deleter, if present; has form:
-        # deleter TYPE [OPTIONAL_IDENTIFIER](DOMString ARG)
-        deleter = next(
-            method
-            for method in interface.operations
-            if ('deleter' in method.specials and
-                len(method.arguments) == 1 and
-                str(method.arguments[0].idl_type) == 'DOMString'))
-    except StopIteration:
-        return None
-
-    return property_deleter(deleter)
