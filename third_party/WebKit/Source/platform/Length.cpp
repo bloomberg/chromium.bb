@@ -232,10 +232,10 @@ void Length::decrementCalculatedRef() const
     calcHandles().decrementRef(calculationHandle());
 }
 
-float Length::nonNanCalculatedValue(int maxValue) const
+float Length::nonNanCalculatedValue(LayoutUnit maxValue) const
 {
     ASSERT(isCalculated());
-    float result = calculationValue().evaluate(maxValue);
+    float result = calculationValue().evaluate(maxValue.toFloat());
     if (std::isnan(result))
         return 0;
     return result;

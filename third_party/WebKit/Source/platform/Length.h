@@ -291,7 +291,7 @@ public:
         ASSERT(!isMaxSizeNone());
         return m_isFloat ? m_floatValue : m_intValue;
     }
-    float nonNanCalculatedValue(int maxValue) const;
+    float nonNanCalculatedValue(LayoutUnit maxValue) const;
 
     Length subtractFromOneHundredPercent() const;
 
