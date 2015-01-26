@@ -36,6 +36,7 @@ const char kKeyEmailAddress[] = "emailAddress";
 const char kKeyEnterpriseDomain[] = "enterpriseDomain";
 const char kKeyPublicAccount[] = "publicAccount";
 const char kKeySupervisedUser[] = "supervisedUser";
+const char kKeyChildUser[] = "childUser";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
@@ -141,12 +142,14 @@ void UserSelectionScreen::FillUserDictionary(
       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
   const bool is_supervised_user =
       user->GetType() == user_manager::USER_TYPE_SUPERVISED;
+  const bool is_child_user = user->GetType() == user_manager::USER_TYPE_CHILD;
 
   user_dict->SetString(kKeyUsername, user_id);
   user_dict->SetString(kKeyEmailAddress, user->display_email());
   user_dict->SetString(kKeyDisplayName, user->GetDisplayName());
   user_dict->SetBoolean(kKeyPublicAccount, is_public_session);
   user_dict->SetBoolean(kKeySupervisedUser, is_supervised_user);
+  user_dict->SetBoolean(kKeyChildUser, is_child_user);
   user_dict->SetInteger(kKeyInitialAuthType, auth_type);
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
