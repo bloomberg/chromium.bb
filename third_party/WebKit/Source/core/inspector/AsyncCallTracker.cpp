@@ -78,7 +78,6 @@ public:
         OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
         ASSERT_UNUSED(self, self == this);
         ContextLifecycleObserver::contextDestroyed();
-        clearLifecycleContext();
         disposeCallChains();
     }
 
