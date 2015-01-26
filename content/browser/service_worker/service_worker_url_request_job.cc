@@ -25,6 +25,7 @@
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/common/referrer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -396,12 +397,19 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   }
   request->blob_uuid = blob_uuid;
   request->blob_size = blob_size;
-  request->referrer = GURL(request_->referrer());
   request->credentials_mode = credentials_mode_;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info) {
     request->is_reload = ui::PageTransitionCoreTypeIs(
         info->GetPageTransition(), ui::PAGE_TRANSITION_RELOAD);
+    request->referrer =
+        Referrer(GURL(request_->referrer()), info->GetReferrerPolicy());
+  } else {
+    CHECK(
+        request_->referrer_policy() ==
+        net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
+    request->referrer =
+        Referrer(GURL(request_->referrer()), blink::WebReferrerPolicyDefault);
   }
   return request.Pass();
 }

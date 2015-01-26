@@ -13,6 +13,7 @@
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/referrer.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_context.h"
@@ -215,13 +216,14 @@ class ServiceWorkerCacheTest : public testing::Test {
     ServiceWorkerHeaderMap headers;
     headers.insert(std::make_pair("a", "a"));
     headers.insert(std::make_pair("b", "b"));
-    body_request_ = ServiceWorkerFetchRequest(
-        GURL("http://example.com/body.html"), "GET", headers, GURL(), false);
+    body_request_ =
+        ServiceWorkerFetchRequest(GURL("http://example.com/body.html"), "GET",
+                                  headers, Referrer(), false);
     no_body_request_ =
         ServiceWorkerFetchRequest(GURL("http://example.com/no_body.html"),
                                   "GET",
                                   headers,
-                                  GURL(),
+                                  Referrer(),
                                   false);
 
     std::string expected_response;
@@ -721,7 +723,7 @@ TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerFetchRequestHeaders) {
   ServiceWorkerFetchRequest request(GURL("http://www.example.com"),
                                          "GET",
                                          ServiceWorkerHeaderMap(),
-                                         GURL(),
+                                         Referrer(),
                                          false);
   request.headers["content-type"] = "foo";
   request.headers["Content-Type"] = "bar";

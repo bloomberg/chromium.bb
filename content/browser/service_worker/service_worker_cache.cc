@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/service_worker_cache.pb.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/referrer.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
@@ -1098,7 +1099,7 @@ void ServiceWorkerCache::KeysDidReadMetadata(
         ServiceWorkerFetchRequest(GURL(entry->GetKey()),
                                   metadata->request().method(),
                                   ServiceWorkerHeaderMap(),
-                                  GURL(),
+                                  Referrer(),
                                   false));
 
     ServiceWorkerHeaderMap& req_headers =

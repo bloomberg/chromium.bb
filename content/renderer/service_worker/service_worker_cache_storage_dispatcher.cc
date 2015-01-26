@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/public/common/referrer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/service_worker/service_worker_script_context.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
@@ -52,10 +53,10 @@ ServiceWorkerFetchRequest FetchRequestFromWebRequest(
   ServiceWorkerHeaderMap headers;
   web_request.visitHTTPHeaderFields(MakeHeaderVisitor(&headers).get());
 
-  return ServiceWorkerFetchRequest(web_request.url(),
-                                   base::UTF16ToASCII(web_request.method()),
-                                   headers, web_request.referrerUrl(),
-                                   web_request.isReload());
+  return ServiceWorkerFetchRequest(
+      web_request.url(), base::UTF16ToASCII(web_request.method()), headers,
+      Referrer(web_request.referrerUrl(), web_request.referrerPolicy()),
+      web_request.isReload());
 }
 
 void PopulateWebRequestFromFetchRequest(
@@ -69,8 +70,8 @@ void PopulateWebRequestFromFetchRequest(
     web_request->setHeader(base::ASCIIToUTF16(i->first),
                            base::ASCIIToUTF16(i->second));
   }
-  web_request->setReferrer(base::ASCIIToUTF16(request.referrer.spec()),
-                           blink::WebReferrerPolicy::WebReferrerPolicyNever);
+  web_request->setReferrer(base::ASCIIToUTF16(request.referrer.url.spec()),
+                           request.referrer.policy);
   web_request->setIsReload(request.is_reload);
 }
 

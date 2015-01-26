@@ -13,6 +13,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/message_port_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/public/common/referrer.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebCrossOriginServiceWorkerClient.h"
@@ -290,8 +291,9 @@ void ServiceWorkerScriptContext::OnFetchEvent(
     webRequest.setBlob(blink::WebString::fromUTF8(request.blob_uuid),
                        request.blob_size);
   }
-  webRequest.setReferrer(blink::WebString::fromUTF8(request.referrer.spec()),
-                         blink::WebReferrerPolicyDefault);
+  webRequest.setReferrer(
+      blink::WebString::fromUTF8(request.referrer.url.spec()),
+      request.referrer.policy);
   webRequest.setMode(GetBlinkFetchRequestMode(request.mode));
   webRequest.setCredentialsMode(
       GetBlinkFetchCredentialsMode(request.credentials_mode));

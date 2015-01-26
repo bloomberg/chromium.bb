@@ -28,7 +28,7 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
     const GURL& url,
     const std::string& method,
     const ServiceWorkerHeaderMap& headers,
-    const GURL& referrer,
+    const Referrer& referrer,
     bool is_reload)
     : mode(FETCH_REQUEST_MODE_NO_CORS),
       request_context_type(REQUEST_CONTEXT_TYPE_UNSPECIFIED),

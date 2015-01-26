@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "content/common/content_export.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
@@ -87,7 +88,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ServiceWorkerFetchRequest(const GURL& url,
                             const std::string& method,
                             const ServiceWorkerHeaderMap& headers,
-                            const GURL& referrer,
+                            const Referrer& referrer,
                             bool is_reload);
   ~ServiceWorkerFetchRequest();
 
@@ -99,7 +100,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ServiceWorkerHeaderMap headers;
   std::string blob_uuid;
   uint64 blob_size;
-  GURL referrer;
+  Referrer referrer;
   FetchCredentialsMode credentials_mode;
   bool is_reload;
 };
