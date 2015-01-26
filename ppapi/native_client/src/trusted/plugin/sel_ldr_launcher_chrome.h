@@ -14,7 +14,7 @@ namespace plugin {
 
 class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
  public:
-  virtual bool Start(const char* url);
+  bool Start(const char* url) override;
 
   // Provides a way for LaunchSelLdr() to write bootstrap channel information
   // into this class.

@@ -63,10 +63,10 @@ class Plugin : public pp::Instance {
   // Initializes this plugin with <embed/object ...> tag attribute count |argc|,
   // names |argn| and values |argn|. Returns false on failure.
   // Gets called by the browser right after New().
-  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
+  bool Init(uint32_t argc, const char* argn[], const char* argv[]) override;
 
   // Handles document load, when the plugin is a MIME type handler.
-  virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);
+  bool HandleDocumentLoad(const pp::URLLoader& url_loader) override;
 
   // Load support.
   //
@@ -108,7 +108,7 @@ class Plugin : public pp::Instance {
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
   // The browser will invoke the destructor via the pp::Instance
   // pointer to this object, not from base's Delete().
-  ~Plugin();
+  ~Plugin() override;
 
   // Shuts down socket connection, service runtime, and receive thread,
   // in this order, for the main nacl subprocess.

@@ -13,11 +13,11 @@ class ModulePpapi : public pp::Module {
  public:
   ModulePpapi();
 
-  virtual ~ModulePpapi();
+  ~ModulePpapi() override;
 
-  virtual bool Init();
+  bool Init() override;
 
-  virtual pp::Instance* CreateInstance(PP_Instance pp_instance);
+  pp::Instance* CreateInstance(PP_Instance pp_instance) override;
 
  private:
   bool init_was_successful_;

@@ -14,6 +14,14 @@
 
 namespace plugin {
 
+NaClSubprocess::NaClSubprocess(const std::string& description,
+                               ServiceRuntime* service_runtime,
+                               SrpcClient* srpc_client)
+  : description_(description),
+    service_runtime_(service_runtime),
+    srpc_client_(srpc_client) {
+}
+
 std::string NaClSubprocess::detailed_description() const {
   std::stringstream ss;
   ss << description()

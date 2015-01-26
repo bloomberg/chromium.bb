@@ -31,11 +31,7 @@ class NaClSubprocess {
  public:
   NaClSubprocess(const std::string& description,
                  ServiceRuntime* service_runtime,
-                 SrpcClient* srpc_client)
-    : description_(description),
-      service_runtime_(service_runtime),
-      srpc_client_(srpc_client) {
-  }
+                 SrpcClient* srpc_client);
   virtual ~NaClSubprocess();
 
   ServiceRuntime* service_runtime() const { return service_runtime_.get(); }
