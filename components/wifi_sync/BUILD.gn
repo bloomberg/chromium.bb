@@ -33,11 +33,13 @@ source_set("unit_tests") {
   deps = [
     ":wifi_sync",
     "//sync",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 
   sources = [
     "wifi_config_delegate_chromeos_unittest.cc",
+    "wifi_credential_syncable_service_unittest.cc",
     "wifi_credential_unittest.cc",
     "wifi_security_class_chromeos_unittest.cc",
     "wifi_security_class_unittest.cc",

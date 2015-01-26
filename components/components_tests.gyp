@@ -745,6 +745,7 @@
                 'pairing/message_buffer_unittest.cc',
                 'timers/alarm_timer_unittest.cc',
                 'wifi_sync/wifi_config_delegate_chromeos_unittest.cc',
+                'wifi_sync/wifi_credential_syncable_service_unittest.cc',
                 'wifi_sync/wifi_credential_unittest.cc',
                 'wifi_sync/wifi_security_class_chromeos_unittest.cc',
                 'wifi_sync/wifi_security_class_unittest.cc',

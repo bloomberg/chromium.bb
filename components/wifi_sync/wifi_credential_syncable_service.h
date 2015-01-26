@@ -5,13 +5,17 @@
 #ifndef COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_
 #define COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/wifi_sync/wifi_config_delegate.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/syncable_service.h"
 
 namespace wifi_sync {
+class WifiCredential;
 
 // KeyedService that synchronizes WiFi credentials between local settings,
 // and Chrome Sync.
@@ -19,10 +23,19 @@ namespace wifi_sync {
 // This service does not necessarily own the storage for WiFi
 // credentials. In particular, on ChromeOS, WiFi credential storage is
 // managed by the ChromeOS connection manager ("Shill").
+//
+// On ChromeOS, this class should only be instantiated
+// for the primary user profile, as that is the only profile for
+// which a Shill profile is loaded.
 class WifiCredentialSyncableService
     : public syncer::SyncableService, public KeyedService {
  public:
-  WifiCredentialSyncableService();
+  // Constructs a syncable service. Changes from Chrome Sync will be
+  // applied locally by |network_config_delegate|. Local changes will
+  // be propagated to Chrome Sync using the |sync_processor| provided
+  // in the call to MergeDataAndStartSyncing.
+  explicit WifiCredentialSyncableService(
+      scoped_ptr<WifiConfigDelegate> network_config_delegate);
   ~WifiCredentialSyncableService() override;
 
   // syncer::SyncableService implementation.
@@ -37,10 +50,24 @@ class WifiCredentialSyncableService
       const tracked_objects::Location& caller_location,
       const syncer::SyncChangeList& change_list) override;
 
+  // Adds a WiFiCredential to Chrome Sync. |item_id| is a persistent
+  // identifier which can be used to later remove the credential. It
+  // is an error to add a network that already exists. It is also an
+  // error to call this method before MergeDataAndStartSyncing(), or
+  // after StopSyncing().
+  //
+  // TODO(quiche): Allow changing a credential, by addding it again.
+  // crbug.com/431436
+  bool AddToSyncedNetworks(const std::string& item_id,
+                           const WifiCredential& credential);
+
  private:
   // The syncer::ModelType that this SyncableService processes and
   // generates updates for.
   static const syncer::ModelType kModelType;
+
+  // The object we use to change local network configuration.
+  const scoped_ptr<WifiConfigDelegate> network_config_delegate_;
 
   // Our SyncChangeProcessor instance. Used to push changes into
   // Chrome Sync.
