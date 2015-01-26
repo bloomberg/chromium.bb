@@ -311,8 +311,8 @@ const char kDisableDisplayList2dCanvas[]    = "disable-display-list-2d-canvas";
 // Enables restarting interrupted downloads.
 const char kEnableDownloadResumption[]      = "enable-download-resumption";
 
-// Enables support for Encrypted Media Extensions (e.g. MediaKeys).
-const char kEnableEncryptedMedia[] = "enable-encrypted-media";
+// Disables (unprefixed) Encrypted Media Extensions.
+const char kDisableEncryptedMedia[] = "disable-encrypted-media";
 
 // Enable experimental canvas features, e.g. canvas 2D context attributes
 const char kEnableExperimentalCanvasFeatures[] =

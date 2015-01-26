@@ -337,13 +337,13 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
 
 // Tests encrypted media playback using ExternalClearKey key system in
 // decrypt-and-decode mode for unprefixed EME.
-// TODO(jrummell): Merge with ECKEncryptedMediaTest once unprefixed is
-// enabled by default.
+// TODO(jrummell): Make ECKEncryptedMediaTest run the unprefixed tests and add
+// a prefixed class to run the prefixed tests. (Once prefixed is disabled by
+// default, we will need a subclass to enable it from the command line.)
 class ECKUnprefixedEncryptedMediaTest : public EncryptedMediaTestBase {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableEncryptedMedia);
     SetUpCommandLineForKeySystem(kExternalClearKeyKeySystem, command_line);
   }
 };
@@ -354,7 +354,6 @@ class WVEncryptedMediaTest : public EncryptedMediaTestBase {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableEncryptedMedia);
     SetUpCommandLineForKeySystem(kWidevineKeySystem, command_line);
   }
 };
@@ -437,9 +436,6 @@ class EncryptedMediaTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
     SetUpCommandLineForKeySystem(CurrentKeySystem(), command_line);
-
-    if (CurrentEmeVersion() == UNPREFIXED)
-      command_line->AppendSwitch(switches::kEnableEncryptedMedia);
   }
 };
 

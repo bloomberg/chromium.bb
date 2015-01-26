@@ -52,8 +52,8 @@ namespace html_viewer {
 // media::Renderer implementation.
 const char kEnableMojoMediaRenderer[] = "enable-mojo-media-renderer";
 
-// Enables support for Encrypted Media Extensions (e.g. MediaKeys).
-const char kEnableEncryptedMedia[] = "enable-encrypted-media";
+// Disables support for (unprefixed) Encrypted Media Extensions.
+const char kDisableEncryptedMedia[] = "disable-encrypted-media";
 
 class HTMLViewer;
 
@@ -184,8 +184,8 @@ class HTMLViewer : public mojo::ApplicationDelegate,
     bool enable_mojo_media_renderer =
         command_line->HasSwitch(kEnableMojoMediaRenderer);
 
-    if (command_line->HasSwitch(kEnableEncryptedMedia))
-      blink::WebRuntimeFeatures::enableEncryptedMedia(true);
+    if (command_line->HasSwitch(kDisableEncryptedMedia))
+      blink::WebRuntimeFeatures::enableEncryptedMedia(false);
 
     compositor_thread_.Start();
     web_media_player_factory_.reset(new WebMediaPlayerFactory(

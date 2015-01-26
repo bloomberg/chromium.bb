@@ -118,8 +118,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableWebAudio(false);
 #endif
 
-  if (command_line.HasSwitch(switches::kEnableEncryptedMedia))
-    WebRuntimeFeatures::enableEncryptedMedia(true);
+  if (command_line.HasSwitch(switches::kDisableEncryptedMedia))
+    WebRuntimeFeatures::enableEncryptedMedia(false);
 
   if (command_line.HasSwitch(switches::kDisablePrefixedEncryptedMedia))
     WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
