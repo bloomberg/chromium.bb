@@ -98,4 +98,16 @@ void FrameTreeNode::ResetForNewProcess() {
   old_children.clear();  // May notify observers.
 }
 
+bool FrameTreeNode::IsDescendantOf(FrameTreeNode* other) const {
+  if (!other || !other->child_count())
+    return false;
+
+  for (FrameTreeNode* node = parent(); node; node = node->parent()) {
+    if (node == other)
+      return true;
+  }
+
+  return false;
+}
+
 }  // namespace content

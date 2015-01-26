@@ -205,6 +205,7 @@
       'browser/download/save_package_browsertest.cc',
       'browser/fileapi/file_system_browsertest.cc',
       'browser/frame_host/frame_tree_browsertest.cc',
+      'browser/frame_host/render_frame_host_impl_browsertest.cc',
       'browser/frame_host/render_frame_host_manager_browsertest.cc',
       'browser/frame_host/navigation_controller_impl_browsertest.cc',
       'browser/gpu/gpu_ipc_browsertests.cc',

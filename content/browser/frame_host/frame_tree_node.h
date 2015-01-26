@@ -112,6 +112,8 @@ class CONTENT_EXPORT FrameTreeNode {
     return render_manager_.current_frame_host();
   }
 
+  bool IsDescendantOf(FrameTreeNode* other) const;
+
  private:
   void set_parent(FrameTreeNode* parent) { parent_ = parent; }
 

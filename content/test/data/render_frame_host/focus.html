@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+  <iframe name='frame1' src='data:text/html,<input><div>frame1</div>'></iframe>
+  <iframe name='frame2' src='data:text/html,<input><div>frame2</div>'></iframe>
+</body>
+<script>
+  function focusframe1() {
+    frames[0].focus();
+  }
+  function focusframe2() {
+    frames[1].focus();
+  }
+</script>
+</html>

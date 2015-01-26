@@ -134,9 +134,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ExecuteJavaScript(const base::string16& javascript,
                          const JavaScriptResultCallback& callback) override;
   void ExecuteJavaScriptForTests(const base::string16& javascript) override;
+  void ActivateFindInPageResultForAccessibility(int request_id) override;
   RenderViewHost* GetRenderViewHost() override;
   ServiceRegistry* GetServiceRegistry() override;
-  void ActivateFindInPageResultForAccessibility(int request_id) override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -404,6 +404,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Tears down the browser-side state relating to the Mojo connection between
   // this instance and its associated render frame.
   void InvalidateMojoConnection();
+
+  // Returns whether the frame is focused. A frame is considered focused when it
+  // is the parent chain of the focused frame within the frame tree. In
+  // addition, its associated RenderWidgetHostView has to be focused.
+  bool IsFocused();
 
  protected:
   friend class RenderFrameHostFactory;

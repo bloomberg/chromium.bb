@@ -1557,6 +1557,13 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   service_registry_.reset();
 }
 
+bool RenderFrameHostImpl::IsFocused() {
+  return GetView()->HasFocus() &&
+         frame_tree_->GetFocusedFrame() &&
+         (frame_tree_->GetFocusedFrame() == frame_tree_node() ||
+          frame_tree_->GetFocusedFrame()->IsDescendantOf(frame_tree_node()));
+}
+
 void RenderFrameHostImpl::UpdateCrossProcessIframeAccessibility(
     const std::map<int32, int>& node_to_frame_routing_id_map) {
   for (const auto& iter : node_to_frame_routing_id_map) {
