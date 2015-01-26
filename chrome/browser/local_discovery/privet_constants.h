@@ -56,6 +56,8 @@ extern const char kPrivetTxtKeyVersion[];
 extern const char kPrivetTxtKeyType[];
 extern const char kPrivetTxtKeyID[];
 extern const char kPrivetTxtKeyConnectionState[];
+extern const char kPrivetTxtKeyGcdID[];
+extern const char kPrivetTxtKeyDevicesClass[];
 
 extern const char kPrivetConnectionStatusOnline[];
 extern const char kPrivetConnectionStatusOffline[];

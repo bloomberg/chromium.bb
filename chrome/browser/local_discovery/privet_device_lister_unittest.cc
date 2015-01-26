@@ -230,12 +230,9 @@ TEST_F(PrivetDeviceListerTest, SimpleUpdateTest) {
             outgoing_description.address.host());
   EXPECT_EQ(service_description_.address.port(),
             outgoing_description.address.port());
-  EXPECT_EQ(service_description_.ip_address, outgoing_description.ip_address);
-  EXPECT_EQ(service_description_.last_seen, outgoing_description.last_seen);
   EXPECT_EQ("My Printer", outgoing_description.name);
   EXPECT_EQ("This is my Printer", outgoing_description.description);
   EXPECT_EQ("", outgoing_description.id);
-  EXPECT_EQ(DeviceDescription::ONLINE, outgoing_description.connection_state);
 
   EXPECT_CALL(delegate_, DeviceRemoved("myprinter._privet._tcp.local"));
 

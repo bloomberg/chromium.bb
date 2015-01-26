@@ -16,35 +16,23 @@ namespace local_discovery {
 struct ServiceDescription;
 
 struct DeviceDescription {
-  enum ConnectionState {
-    ONLINE,
-    OFFLINE,
-    CONNECTING,
-    NOT_CONFIGURED,
-    UNKNOWN
-  };
-
   DeviceDescription();
+  explicit DeviceDescription(const ServiceDescription& service_description);
   ~DeviceDescription();
 
-  void FillFromServiceDescription(
-      const ServiceDescription& service_description);
+  bool IsValid() const;
 
   // Display attributes
   std::string name;
   std::string description;
 
   // Functional attributes
-  std::string url;
   std::string id;
   std::string type;
   int version;
-  ConnectionState connection_state;
 
   // Attributes related to local HTTP
   net::HostPortPair address;
-  net::IPAddressNumber ip_address;
-  base::Time last_seen;
 };
 
 }  // namespace local_discovery

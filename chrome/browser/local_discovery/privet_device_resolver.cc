@@ -29,14 +29,12 @@ void PrivetDeviceResolver::Start() {
 void PrivetDeviceResolver::OnServiceResolved(
     ServiceResolver::RequestStatus request_status,
     const ServiceDescription& service_description) {
-  DeviceDescription device_description;
   if (request_status != ServiceResolver::STATUS_SUCCESS) {
-    callback_.Run(false, device_description);
+    callback_.Run(false, DeviceDescription());
     return;
   }
 
-  device_description.FillFromServiceDescription(service_description);
-  callback_.Run(true, device_description);
+  callback_.Run(true, DeviceDescription(service_description));
 }
 
 }  // namespace local_discovery

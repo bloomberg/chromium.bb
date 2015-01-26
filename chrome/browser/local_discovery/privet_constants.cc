@@ -53,6 +53,8 @@ const char kPrivetTxtKeyVersion[] = "txtvers";
 const char kPrivetTxtKeyType[] = "type";
 const char kPrivetTxtKeyID[] = "id";
 const char kPrivetTxtKeyConnectionState[] = "cs";
+const char kPrivetTxtKeyGcdID[] = "gcd_id";
+const char kPrivetTxtKeyDevicesClass[] = "class";
 
 const char kPrivetConnectionStatusOnline[] = "online";
 const char kPrivetConnectionStatusOffline[] = "offline";

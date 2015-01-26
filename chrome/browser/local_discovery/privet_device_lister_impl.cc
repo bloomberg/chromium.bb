@@ -47,11 +47,8 @@ void PrivetDeviceListerImpl::OnDeviceChanged(
   if (!delegate_)
     return;
 
-  DeviceDescription device_description;
-  device_description.FillFromServiceDescription(service_description);
-
-  delegate_->DeviceChanged(
-      added, service_description.service_name, device_description);
+  delegate_->DeviceChanged(added, service_description.service_name,
+                           DeviceDescription(service_description));
 }
 
 void PrivetDeviceListerImpl::OnDeviceRemoved(const std::string& service_name) {
