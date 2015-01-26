@@ -124,8 +124,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityANameCalc) {
   RunHtmlTest(FILE_PATH_LITERAL("a-name-calc.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       MAYBE(AccessibilityANoText)) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityANoText) {
   RunHtmlTest(FILE_PATH_LITERAL("a-no-text.html"));
 }
 
