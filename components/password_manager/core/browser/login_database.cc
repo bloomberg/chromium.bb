@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -167,15 +166,9 @@ bool LoginDatabase::Init() {
   db_.set_exclusive_locking();
   db_.set_restrict_to_user();
 
-  {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/138903 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("138903 LoginDatabase::Init db init"));
-
-    if (!db_.Open(db_path_)) {
-      LOG(WARNING) << "Unable to open the password store database.";
-      return false;
-    }
+  if (!db_.Open(db_path_)) {
+    LOG(WARNING) << "Unable to open the password store database.";
+    return false;
   }
 
   sql::Transaction transaction(&db_);
