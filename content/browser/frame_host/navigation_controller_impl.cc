@@ -129,7 +129,9 @@ bool AreURLsInPageNavigation(const GURL& existing_url,
                         // for now.
                         existing_url == GURL(url::kAboutBlankURL) ||
                         existing_url.GetOrigin() == new_url.GetOrigin() ||
-                        !prefs.web_security_enabled;
+                        !prefs.web_security_enabled ||
+                        (prefs.allow_universal_access_from_file_urls &&
+                         existing_url.SchemeIs(url::kFileScheme));
   if (!is_same_origin && renderer_says_in_page)
       rfh->GetProcess()->ReceivedBadMessage();
   return is_same_origin && renderer_says_in_page;

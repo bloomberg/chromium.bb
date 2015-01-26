@@ -3196,15 +3196,41 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
   EXPECT_TRUE(controller.IsURLInPageNavigation(other_url, true,
       main_test_rfh()));
 
-  // Don't believe the renderer if it claims a cross-origin navigation is
-  // in-page.
+  // Test allow_universal_access_from_file_urls flag.
   const GURL different_origin_url("http://www.example.com");
   MockRenderProcessHost* rph =
       static_cast<MockRenderProcessHost*>(main_test_rfh()->GetProcess());
+  WebPreferences prefs = test_rvh()->GetWebkitPreferences();
+  prefs.allow_universal_access_from_file_urls = true;
+  test_rvh()->UpdateWebkitPreferences(prefs);
+  prefs = test_rvh()->GetWebkitPreferences();
+  EXPECT_TRUE(prefs.allow_universal_access_from_file_urls);
+  // Allow in page navigation if existing URL is file scheme.
+  const GURL file_url("file:///foo/index.html");
+  main_test_rfh()->SendNavigate(0, file_url);
   EXPECT_EQ(0, rph->bad_msg_count());
+  EXPECT_TRUE(controller.IsURLInPageNavigation(different_origin_url, true,
+      main_test_rfh()));
+  EXPECT_EQ(0, rph->bad_msg_count());
+  // Don't honor allow_universal_access_from_file_urls if existing URL is
+  // not file scheme.
+  main_test_rfh()->SendNavigate(0, url);
   EXPECT_FALSE(controller.IsURLInPageNavigation(different_origin_url, true,
       main_test_rfh()));
   EXPECT_EQ(1, rph->bad_msg_count());
+
+  // Remove allow_universal_access_from_file_urls flag.
+  prefs.allow_universal_access_from_file_urls = false;
+  test_rvh()->UpdateWebkitPreferences(prefs);
+  prefs = test_rvh()->GetWebkitPreferences();
+  EXPECT_FALSE(prefs.allow_universal_access_from_file_urls);
+
+  // Don't believe the renderer if it claims a cross-origin navigation is
+  // in-page.
+  EXPECT_EQ(1, rph->bad_msg_count());
+  EXPECT_FALSE(controller.IsURLInPageNavigation(different_origin_url, true,
+      main_test_rfh()));
+  EXPECT_EQ(2, rph->bad_msg_count());
 }
 
 // Some pages can have subframes with the same base URL (minus the reference) as
