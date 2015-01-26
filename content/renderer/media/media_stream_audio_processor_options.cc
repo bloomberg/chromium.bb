@@ -253,7 +253,7 @@ void EchoInformation::LogAecDelayStats() {
   if (echo_total_delay_counts_ > 0) {
     poor_delay_frequency = static_cast<float>(echo_poor_delay_counts_) /
         static_cast<float>(echo_total_delay_counts_);
-    UMA_HISTOGRAM_ENUMERATION("Media.AecDelayBasedQuality",
+    UMA_HISTOGRAM_ENUMERATION("WebRTC.AecDelayBasedQuality",
                               EchoDelayFrequencyToQuality(poor_delay_frequency),
                               DELAY_BASED_ECHO_QUALITY_MAX);
   }
