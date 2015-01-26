@@ -354,7 +354,7 @@ void BrowserPluginGuest::SwapCompositorFrame(
       1.0f / frame->metadata.device_scale_factor)));
 
   if (last_seen_view_size_ != view_size) {
-    delegate_->GuestSizeChanged(last_seen_view_size_, view_size);
+    delegate_->GuestSizeChanged(view_size);
     last_seen_view_size_ = view_size;
   }
 

@@ -292,6 +292,7 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
       guest_sizer_->SizeContents(new_size);
     }
 
+    DispatchOnResizeEvent(guest_size_, new_size);
     guest_size_ = new_size;
   }
 
@@ -407,6 +408,7 @@ void GuestViewBase::ElementSizeChanged(const gfx::Size& size) {
 
   // Only resize if needed.
   guest_sizer_->SizeContents(size);
+  DispatchOnResizeEvent(guest_size_, size);
   guest_size_ = size;
 }
 
@@ -414,14 +416,12 @@ WebContents* GuestViewBase::GetOwnerWebContents() const {
   return owner_web_contents_;
 }
 
-void GuestViewBase::GuestSizeChanged(const gfx::Size& old_size,
-                                     const gfx::Size& new_size) {
-  DispatchOnResizeEvent(old_size, new_size);
-
+void GuestViewBase::GuestSizeChanged(const gfx::Size& new_size) {
   if (!auto_size_enabled_)
     return;
+  GuestSizeChangedDueToAutoSize(guest_size_, new_size);
+  DispatchOnResizeEvent(guest_size_, new_size);
   guest_size_ = new_size;
-  GuestSizeChangedDueToAutoSize(old_size, new_size);
 }
 
 const GURL& GuestViewBase::GetOwnerSiteURL() const {

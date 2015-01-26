@@ -178,8 +178,9 @@ function testAutosizeBeforeNavigation() {
   webview.setAttribute('maxheight', 110);
 
   webview.addEventListener('sizechanged', function(e) {
-    embedder.test.assertEq(0, e.oldWidth);
-    embedder.test.assertEq(0, e.oldHeight);
+    // The old size should be the default size of the webview, which at the time
+    // of writing this comment is 300 x 300, but is not important to this test
+    // and could change in the future, so it is not checked here.
     embedder.test.assertTrue(e.newWidth >= 200 && e.newWidth <= 210);
     embedder.test.assertTrue(e.newHeight >= 100 && e.newHeight <= 110);
     embedder.test.succeed();
