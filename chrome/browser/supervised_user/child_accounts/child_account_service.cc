@@ -36,11 +36,12 @@
 
 const char kIsChildAccountServiceFlagName[] = "uca";
 
-// Normally, re-check the child account flag once per day.
-const int kStatusFlagUpdateIntervalSeconds = 60 * 60 * 24;
+// Normally, re-check the child account flag and the family info once per day.
+const int kUpdateIntervalSeconds = 60 * 60 * 24;
 
-// In case of an error while getting the flag, retry with exponential backoff.
-const net::BackoffEntry::Policy kFlagFetchBackoffPolicy = {
+// In case of an error while getting the flag or the family info, retry with
+// exponential backoff.
+const net::BackoffEntry::Policy kBackoffPolicy = {
   // Number of initial errors (in sequence) to ignore before applying
   // exponential back-off rules.
   0,
@@ -68,7 +69,8 @@ const net::BackoffEntry::Policy kFlagFetchBackoffPolicy = {
 
 ChildAccountService::ChildAccountService(Profile* profile)
     : profile_(profile), active_(false),
-      flag_fetch_backoff_(&kFlagFetchBackoffPolicy),
+      flag_fetch_backoff_(&kBackoffPolicy),
+      family_fetch_backoff_(&kBackoffPolicy),
       weak_ptr_factory_(this) {}
 
 ChildAccountService::~ChildAccountService() {}
@@ -128,16 +130,9 @@ bool ChildAccountService::SetActive(bool active) {
     SigninManagerFactory::GetForProfile(profile_)->ProhibitSignout(true);
 #endif
 
-    // TODO(treib): Maybe only fetch the parents on the first start, and then
-    // refresh occasionally (like once every 24h)? That's what
-    // GAIAInfoUpdateService does.
-    family_fetcher_.reset(new FamilyInfoFetcher(
-        this,
-        SigninManagerFactory::GetForProfile(profile_)
-            ->GetAuthenticatedAccountId(),
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
-        profile_->GetRequestContext()));
-    family_fetcher_->StartGetFamilyMembers();
+    // TODO(treib): Maybe store the last update time in a pref, so we don't
+    // have to re-fetch on every start.
+    StartFetchingFamilyInfo();
 
     SupervisedUserService* service =
         SupervisedUserServiceFactory::GetForProfile(profile_);
@@ -205,6 +200,7 @@ void ChildAccountService::GoogleSignedOut(const std::string& account_id,
                                           const std::string& username) {
   DCHECK(!profile_->IsChild());
   CancelFetchingServiceFlags();
+  CancelFetchingFamilyInfo();
 }
 
 void ChildAccountService::OnGetFamilyMembersSuccess(
@@ -229,12 +225,37 @@ void ChildAccountService::OnGetFamilyMembersSuccess(
   if (!parent_found)
     ClearSecondCustodianPrefs();
   family_fetcher_.reset();
+
+  family_fetch_backoff_.InformOfRequest(true);
+
+  ScheduleNextFamilyInfoUpdate(
+      base::TimeDelta::FromSeconds(kUpdateIntervalSeconds));
 }
 
 void ChildAccountService::OnFailure(FamilyInfoFetcher::ErrorCode error) {
   DLOG(WARNING) << "GetFamilyMembers failed with code " << error;
+  family_fetch_backoff_.InformOfRequest(false);
+  ScheduleNextFamilyInfoUpdate(family_fetch_backoff_.GetTimeUntilRelease());
+}
+
+void ChildAccountService::StartFetchingFamilyInfo() {
+  family_fetcher_.reset(new FamilyInfoFetcher(
+      this,
+      SigninManagerFactory::GetForProfile(profile_)
+          ->GetAuthenticatedAccountId(),
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
+      profile_->GetRequestContext()));
+  family_fetcher_->StartGetFamilyMembers();
+}
+
+void ChildAccountService::CancelFetchingFamilyInfo() {
   family_fetcher_.reset();
-  // TODO(treib): Retry after a while?
+  family_fetch_timer_.Stop();
+}
+
+void ChildAccountService::ScheduleNextFamilyInfoUpdate(base::TimeDelta delay) {
+  family_fetch_timer_.Start(
+      FROM_HERE, delay, this, &ChildAccountService::StartFetchingFamilyInfo);
 }
 
 void ChildAccountService::StartFetchingServiceFlags() {
@@ -282,8 +303,8 @@ void ChildAccountService::OnFlagsFetched(
                 kIsChildAccountServiceFlagName) != flags.end();
   SetIsChildAccount(is_child_account);
 
-  ScheduleNextStatusFlagUpdate(base::TimeDelta::FromSeconds(
-      kStatusFlagUpdateIntervalSeconds));
+  ScheduleNextStatusFlagUpdate(
+      base::TimeDelta::FromSeconds(kUpdateIntervalSeconds));
 }
 
 void ChildAccountService::ScheduleNextStatusFlagUpdate(base::TimeDelta delay) {

@@ -70,6 +70,10 @@ class ChildAccountService : public KeyedService,
       const std::vector<FamilyInfoFetcher::FamilyMember>& members) override;
   void OnFailure(FamilyInfoFetcher::ErrorCode error) override;
 
+  void StartFetchingFamilyInfo();
+  void CancelFetchingFamilyInfo();
+  void ScheduleNextFamilyInfoUpdate(base::TimeDelta delay);
+
   void StartFetchingServiceFlags();
   void CancelFetchingServiceFlags();
   void OnFlagsFetched(AccountServiceFlagFetcher::ResultCode,
@@ -101,6 +105,9 @@ class ChildAccountService : public KeyedService,
   net::BackoffEntry flag_fetch_backoff_;
 
   scoped_ptr<FamilyInfoFetcher> family_fetcher_;
+  // If fetching the family info fails, retry with exponential backoff.
+  base::OneShotTimer<ChildAccountService> family_fetch_timer_;
+  net::BackoffEntry family_fetch_backoff_;
 
   base::WeakPtrFactory<ChildAccountService> weak_ptr_factory_;
 
