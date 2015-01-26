@@ -314,6 +314,7 @@ html element audio
     property readyState
     property seekable
     property seeking
+    property setMediaKeys
     property src
     property textTracks
     property volume
@@ -1027,6 +1028,7 @@ html element video
     property readyState
     property seekable
     property seeking
+    property setMediaKeys
     property src
     property textTracks
     property videoHeight
