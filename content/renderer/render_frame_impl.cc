@@ -2021,10 +2021,18 @@ blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
 
 void RenderFrameImpl::didAccessInitialDocument(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  // Notify the browser process that it is no longer safe to show the pending
-  // URL of the main frame, since a URL spoof is now possible.
-  if (!frame->parent() && render_view_->page_id_ == -1)
-    Send(new FrameHostMsg_DidAccessInitialDocument(routing_id_));
+  // If the request hasn't yet committed, notify the browser process that it is
+  // no longer safe to show the pending URL of the main frame, since a URL spoof
+  // is now possible. (If the request has committed, the browser already knows.)
+  if (!frame->parent()) {
+    DocumentState* document_state =
+        DocumentState::FromDataSource(frame->dataSource());
+    NavigationState* navigation_state = document_state->navigation_state();
+
+    if (!navigation_state->request_committed()) {
+      Send(new FrameHostMsg_DidAccessInitialDocument(routing_id_));
+    }
+  }
 }
 
 // TODO(alexmos): Remove once Blink is updated to use the version that takes
