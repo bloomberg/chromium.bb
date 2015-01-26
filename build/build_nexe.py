@@ -248,6 +248,10 @@ class Builder(CommandRunner):
     self.Log('Compile options: %s' % self.compile_options)
     self.Log('Linker options: %s' % self.link_options)
 
+    # depfiles accumulates the filenames that are found to be dependencies of
+    # the generated file.
+    self.depfiles = set()
+
   def GenNaClPath(self, path):
     """Helper which prepends path with the native client source directory."""
     return os.path.join(self.root_path, 'native_client', path)
@@ -515,6 +519,7 @@ class Builder(CommandRunner):
       deps = [self.FixWindowsPath(d) for d in deps]
     # Check if any input has changed.
     for filename in deps:
+      self.depfiles.add(filename)
       file_tm = GetMTime(filename)
       if IsStale(oldest_output[0], file_tm, rebuilt):
         if rebuilt:
@@ -798,6 +803,8 @@ def Main(argv):
                     help='GYP build configuration name (Release/Debug)')
   parser.add_option('--gomadir', dest='gomadir',
                     help='Path of the goma directory.')
+  parser.add_option('--depfile-out', dest='depfile_out',
+                    help='Path to write dependent sources.')
   options, files = parser.parse_args(argv[1:])
 
   if options.name is None:
@@ -944,6 +951,15 @@ def Main(argv):
         out = build.Compile(filename)
         if out:
           objs.append(out)
+
+    # We write the list of detected depfiles to the specified "depfile_out".
+    # This allows ninja to correctly trigger rebuilds when dependencies are
+    # modified.
+    if options.depfile_out:
+      with open(options.depfile_out, 'w') as outdf:
+        outdf.write('%s: \\\n' % os.path.relpath(options.name, product_dir))
+        for f in build.depfiles:
+          outdf.write(' %s\n' % os.path.realpath(f))
 
     # Do not link if building an object. However we still want the output file
     # to be what was specified in options.name

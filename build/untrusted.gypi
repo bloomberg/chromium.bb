@@ -1642,6 +1642,7 @@
              'action_name': 'build newlib plib',
              'variables': {
                'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+               'out_depfile': '>(_target_name).d',
              },
              'msvs_cygwin_shell': 0,
              'description': 'building >(out_pnacl_newlib)',
@@ -1669,7 +1670,9 @@
                '--defines=^(defines) >(_defines)',
                '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
                '--source-list=^(source_list_pnacl_newlib)',
+               '--depfile-out=>(out_depfile)',
              ],
+             'depfile': '>(out_depfile)',
            },
          ],
        }], # end pnacl actions for bitcode libraries
