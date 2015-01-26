@@ -295,7 +295,7 @@ std::string DumpFramesAsPrintedText(blink::WebFrame* frame, bool recursive) {
 
   std::string result = DumpFrameHeaderIfNeeded(frame);
   result.append(
-      frame->renderTreeAsText(blink::WebFrame::RenderAsTextPrinting).utf8());
+      frame->layoutTreeAsText(blink::WebFrame::LayoutAsTextPrinting).utf8());
   result.append("\n");
 
   if (recursive) {
@@ -438,13 +438,13 @@ std::string WebTestProxyBase::CaptureTree(bool debug_render_tree) {
   } else {
     bool recursive = test_interfaces_->GetTestRunner()
                          ->shouldDumpChildFrameScrollPositions();
-    blink::WebFrame::RenderAsTextControls render_text_behavior =
-        blink::WebFrame::RenderAsTextNormal;
+    blink::WebFrame::LayoutAsTextControls layout_text_behavior =
+        blink::WebFrame::LayoutAsTextNormal;
     if (should_dump_as_printed)
-      render_text_behavior |= blink::WebFrame::RenderAsTextPrinting;
+      layout_text_behavior |= blink::WebFrame::LayoutAsTextPrinting;
     if (debug_render_tree)
-      render_text_behavior |= blink::WebFrame::RenderAsTextDebug;
-    data_utf8 = frame->renderTreeAsText(render_text_behavior).utf8();
+      layout_text_behavior |= blink::WebFrame::LayoutAsTextDebug;
+    data_utf8 = frame->layoutTreeAsText(layout_text_behavior).utf8();
     data_utf8 += DumpFrameScrollPosition(frame, recursive);
   }
 
