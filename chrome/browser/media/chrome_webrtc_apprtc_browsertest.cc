@@ -55,10 +55,8 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
 
-    // The video playback will not work without a GPU, so force its use here.
-    command_line->AppendSwitch(switches::kUseGpuInTests);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseFakeDeviceForMediaStream);
+    // Use fake devices in order to run on VMs.
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 
   void TearDown() override {

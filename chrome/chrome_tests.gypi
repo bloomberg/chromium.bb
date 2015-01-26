@@ -310,6 +310,7 @@
       'browser/media/chrome_webrtc_disable_encryption_flag_browsertest.cc',
       'browser/media/chrome_webrtc_getmediadevices_browsertest.cc',
       'browser/media/chrome_webrtc_perf_browsertest.cc',
+      'browser/media/chrome_webrtc_simulcast_browsertest.cc',
       'browser/media/chrome_webrtc_video_quality_browsertest.cc',
       'browser/media/chrome_webrtc_webcam_browsertest.cc',
       'browser/media/encrypted_media_istypesupported_browsertest.cc',
