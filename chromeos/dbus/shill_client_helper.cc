@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/values.h"
+#include "chromeos/device_event_log.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 #include "dbus/values_util.h"
@@ -211,8 +212,8 @@ ShillClientHelper::ShillClientHelper(dbus::ObjectProxy* proxy)
 }
 
 ShillClientHelper::~ShillClientHelper() {
-  LOG_IF(ERROR, observer_list_.might_have_observers())
-      << "ShillClientHelper destroyed with active observers";
+  if (observer_list_.might_have_observers())
+    NET_LOG(ERROR) << "ShillClientHelper destroyed with active observers";
 }
 
 void ShillClientHelper::SetReleasedCallback(ReleasedCallback callback) {
@@ -394,34 +395,55 @@ void ShillClientHelper::CallListValueMethodWithErrorCallback(
                  error_callback));
 }
 
-// static
-void ShillClientHelper::AppendValueDataAsVariant(dbus::MessageWriter* writer,
-                                                 const base::Value& value) {
+namespace {
+
+enum DictionaryType { DICTIONARY_TYPE_VARIANT, DICTIONARY_TYPE_STRING };
+
+// Appends an a{ss} dictionary to |writer|. |dictionary| must only contain
+// strings.
+void AppendStringDictionary(const base::DictionaryValue& dictionary,
+                            dbus::MessageWriter* writer) {
+  dbus::MessageWriter variant_writer(NULL);
+  writer->OpenVariant("a{ss}", &variant_writer);
+  dbus::MessageWriter array_writer(NULL);
+  variant_writer.OpenArray("{ss}", &array_writer);
+  for (base::DictionaryValue::Iterator it(dictionary); !it.IsAtEnd();
+       it.Advance()) {
+    dbus::MessageWriter entry_writer(NULL);
+    array_writer.OpenDictEntry(&entry_writer);
+    entry_writer.AppendString(it.key());
+    const base::Value& value = it.value();
+    std::string value_string;
+    if (!value.GetAsString(&value_string))
+      NET_LOG(ERROR) << "Dictionary value not a string: " << it.key();
+    entry_writer.AppendString(value_string);
+    array_writer.CloseContainer(&entry_writer);
+  }
+  variant_writer.CloseContainer(&array_writer);
+  writer->CloseContainer(&variant_writer);
+}
+
+// Implements AppendValueDataAsVariant. If |dictionary_type| is
+// DICTIONARY_TYPE_VARIANT  and |value| is a Dictionary then it will be written
+// as type 'a{ss}'. Otherwise dictionaries are written as type a{sv}. (This is
+// to support Cellular.APN which expects a string -> string dictionary).
+void AppendValueDataAsVariantInternal(dbus::MessageWriter* writer,
+                                      const base::Value& value,
+                                      DictionaryType dictionary_type) {
   // Support basic types and string-to-string dictionary.
   switch (value.GetType()) {
     case base::Value::TYPE_DICTIONARY: {
       const base::DictionaryValue* dictionary = NULL;
       value.GetAsDictionary(&dictionary);
-      dbus::MessageWriter variant_writer(NULL);
-      writer->OpenVariant("a{ss}", &variant_writer);
-      dbus::MessageWriter array_writer(NULL);
-      variant_writer.OpenArray("{ss}", &array_writer);
-      for (base::DictionaryValue::Iterator it(*dictionary);
-           !it.IsAtEnd();
-           it.Advance()) {
-        dbus::MessageWriter entry_writer(NULL);
-        array_writer.OpenDictEntry(&entry_writer);
-        entry_writer.AppendString(it.key());
-        const base::Value& value = it.value();
-        std::string value_string;
-        DLOG_IF(ERROR, value.GetType() != base::Value::TYPE_STRING)
-            << "Unexpected type " << value.GetType();
-        value.GetAsString(&value_string);
-        entry_writer.AppendString(value_string);
-        array_writer.CloseContainer(&entry_writer);
+      if (dictionary_type == DICTIONARY_TYPE_STRING) {
+        AppendStringDictionary(*dictionary, writer);
+      } else {
+        dbus::MessageWriter variant_writer(NULL);
+        writer->OpenVariant("a{sv}", &variant_writer);
+        ShillClientHelper::AppendServicePropertiesDictionary(&variant_writer,
+                                                             *dictionary);
+        writer->CloseContainer(&variant_writer);
       }
-      variant_writer.CloseContainer(&array_writer);
-      writer->CloseContainer(&variant_writer);
       break;
     }
     case base::Value::TYPE_LIST: {
@@ -434,10 +456,9 @@ void ShillClientHelper::AppendValueDataAsVariant(dbus::MessageWriter* writer,
       for (base::ListValue::const_iterator it = list->begin();
            it != list->end(); ++it) {
         const base::Value& value = **it;
-        LOG_IF(ERROR, value.GetType() != base::Value::TYPE_STRING)
-            << "Unexpected type " << value.GetType();
         std::string value_string;
-        value.GetAsString(&value_string);
+        if (!value.GetAsString(&value_string))
+          NET_LOG(ERROR) << "List value not a string: " << value;
         array_writer.AppendString(value_string);
       }
       variant_writer.CloseContainer(&array_writer);
@@ -451,9 +472,16 @@ void ShillClientHelper::AppendValueDataAsVariant(dbus::MessageWriter* writer,
       dbus::AppendBasicTypeValueDataAsVariant(writer, value);
       break;
     default:
-      DLOG(ERROR) << "Unexpected type " << value.GetType();
+      NET_LOG(ERROR) << "Unexpected value type: " << value.GetType();
   }
+}
 
+}  // namespace
+
+// static
+void ShillClientHelper::AppendValueDataAsVariant(dbus::MessageWriter* writer,
+                                                 const base::Value& value) {
+  AppendValueDataAsVariantInternal(writer, value, DICTIONARY_TYPE_VARIANT);
 }
 
 // static
@@ -462,13 +490,19 @@ void ShillClientHelper::AppendServicePropertiesDictionary(
     const base::DictionaryValue& dictionary) {
   dbus::MessageWriter array_writer(NULL);
   writer->OpenArray("{sv}", &array_writer);
-  for (base::DictionaryValue::Iterator it(dictionary);
-       !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(dictionary); !it.IsAtEnd();
        it.Advance()) {
     dbus::MessageWriter entry_writer(NULL);
     array_writer.OpenDictEntry(&entry_writer);
     entry_writer.AppendString(it.key());
-    ShillClientHelper::AppendValueDataAsVariant(&entry_writer, it.value());
+    // Shill expects Cellular.APN to be a string dictionary, a{ss}. All other
+    // properties use a varient dictionary, a{sv}. TODO(stevenjb): Remove this
+    // hack if/when we change Shill to accept a{sv} for Cellular.APN.
+    DictionaryType dictionary_type = (it.key() == shill::kCellularApnProperty)
+                                         ? DICTIONARY_TYPE_STRING
+                                         : DICTIONARY_TYPE_VARIANT;
+    AppendValueDataAsVariantInternal(&entry_writer, it.value(),
+                                     dictionary_type);
     array_writer.CloseContainer(&entry_writer);
   }
   writer->CloseContainer(&array_writer);
@@ -487,8 +521,8 @@ void ShillClientHelper::Release() {
 void ShillClientHelper::OnSignalConnected(const std::string& interface,
                                           const std::string& signal,
                                           bool success) {
-  LOG_IF(ERROR, !success) << "Connect to " << interface << " " << signal
-                          << " failed.";
+  if (!success)
+    NET_LOG(ERROR) << "Connect to " << interface << " " << signal << " failed.";
 }
 
 void ShillClientHelper::OnPropertyChanged(dbus::Signal* signal) {

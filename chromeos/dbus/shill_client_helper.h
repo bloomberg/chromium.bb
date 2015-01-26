@@ -141,15 +141,16 @@ class ShillClientHelper {
 
   const dbus::ObjectProxy* object_proxy() const { return proxy_; }
 
-  // Appends the value (basic types and string-to-string dictionary) to the
-  // writer as a variant.
+  // Appends the value to the writer as a variant. If |value| is a Dictionary it
+  // will be written as a string -> varient dictionary, a{sv}. If |value| is a
+  // List then it must be a List of String values and is writen as type 'as'.
   static void AppendValueDataAsVariant(dbus::MessageWriter* writer,
                                        const base::Value& value);
 
-  // Appends a string-to-variant dictionary to the writer.
-  static void AppendServicePropertiesDictionary(
-      dbus::MessageWriter* writer,
-      const base::DictionaryValue& dictionary);
+  // Appends a string-to-variant dictionary to the writer as an '{sv}' array.
+  // Each value is written using AppendValueDataAsVariant.
+  static void AppendServicePropertiesDictionary(dbus::MessageWriter* writer,
+                                                const base::DictionaryValue&);
 
  protected:
   // Reference / Ownership management. If the number of active refs (observers
