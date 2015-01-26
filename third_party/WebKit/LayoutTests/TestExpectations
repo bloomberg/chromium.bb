@@ -1759,7 +1759,6 @@ crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/overflow-interr
 
 crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 crbug.com/442181 virtual/slimmingpaint/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
-crbug.com/451730 virtual/stable/webexposed/element-instance-property-listing.html [ NeedsRebaseline ]
 
 crbug.com/444020 fast/dom/shadow/import-rule-in-shadow-tree-needs-document-style-recalc.html [ Pass ImageOnlyFailure ]
 crbug.com/444022 svg/wicd/test-scalable-background-image1.xhtml [ Pass Failure ]
