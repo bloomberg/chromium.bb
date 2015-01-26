@@ -4,6 +4,7 @@
 
 #include "content/app/mojo/mojo_init.h"
 
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/mojo/src/mojo/edk/embedder/configuration.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
@@ -11,14 +12,24 @@
 
 namespace content {
 
+namespace {
+
+class MojoInitializer {
+ public:
+  MojoInitializer() {
+    mojo::embedder::GetConfiguration()->max_message_num_bytes =
+        64 * 1024 * 1024;
+    mojo::embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>(
+        new mojo::embedder::SimplePlatformSupport()));
+  }
+};
+
+base::LazyInstance<MojoInitializer>::Leaky mojo_initializer;
+
+}  //  namespace
+
 void InitializeMojo() {
-  // Things like content_shell and DevTools ocassionally send big
-  // message which includes whole rendered screen or all loaded
-  // scripts. The buffer size has to be big enough to allow such use
-  // cases.
-  mojo::embedder::GetConfiguration()->max_message_num_bytes = 64*1024*1024;
-  mojo::embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>(
-      new mojo::embedder::SimplePlatformSupport()));
+  mojo_initializer.Get();
 }
 
 }  // namespace content
