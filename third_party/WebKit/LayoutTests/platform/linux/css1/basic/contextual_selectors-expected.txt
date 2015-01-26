@@ -42,18 +42,18 @@ layer at (0,0) size 800x600
               RenderListMarker at (-18,0) size 7x19: white bullet
               RenderText {#text} at (0,0) size 128x19
                 text run at (0,0) width 128: "This should be green."
-      RenderTable {TABLE} at (0,259) size 699x165 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 697x163
-          RenderTableRow {TR} at (0,0) size 697x28
-            RenderTableCell {TD} at (0,0) size 697x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,259) size 699x165 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 697x163
+          LayoutTableRow {TR} at (0,0) size 697x28
+            LayoutTableCell {TD} at (0,0) size 697x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 159x19
                 RenderText {#text} at (4,4) size 159x19
                   text run at (4,4) width 159: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,28) size 697x135
-            RenderTableCell {TD} at (0,81) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,28) size 697x135
+            LayoutTableCell {TD} at (0,81) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
-            RenderTableCell {TD} at (12,28) size 685x135 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,28) size 685x135 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 677x19 [color=#800080]
                 RenderText {#text} at (0,0) size 677x18
                   text run at (0,0) width 677: "This sentence should be navy serif in the first half of the page, but purple and sans-serif in the table."

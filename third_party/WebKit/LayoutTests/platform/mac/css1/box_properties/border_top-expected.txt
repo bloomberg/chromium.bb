@@ -28,26 +28,26 @@ layer at (0,0) size 785x891 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       RenderBlock {P} at (0,205) size 769x17 [border: (1px solid #800080) none]
         RenderText {#text} at (0,1) size 337x16
           text run at (0,1) width 337: "This paragraph should have a thin purple top border."
-      RenderTable {TABLE} at (0,238) size 769x102 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 767x100
-          RenderTableRow {TR} at (0,5) size 767x37
-            RenderTableCell {TD} at (5,5) size 757x37 [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,238) size 769x102 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x100
+          LayoutTableRow {TR} at (0,5) size 767x37
+            LayoutTableCell {TD} at (5,5) size 757x37 [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderText {#text} at (2,3) size 730x32
                 text run at (2,3) width 439: "Every cell in this table should have a 2-pixel solid green top border. "
                 text run at (440,3) width 292: "This is also true of the table-testing section in"
                 text run at (2,19) width 203: "the second half of the test page."
-          RenderTableRow {TR} at (0,47) size 767x48
-            RenderTableCell {TD} at (5,60) size 190x21 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,47) size 767x48
+            LayoutTableCell {TD} at (5,60) size 190x21 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (2,3) size 54x16
                 text run at (2,3) width 54: "Cell one"
-            RenderTableCell {TD} at (200,47) size 562x48 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (200,47) size 562x48 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock (anonymous) at (2,3) size 558x16
                 RenderText {#text} at (0,0) size 55x16
                   text run at (0,0) width 55: "Cell two"
-              RenderTable {TABLE} at (2,19) size 166x27 [border: (1px outset #808080)]
-                RenderTableSection {TBODY} at (1,1) size 164x25
-                  RenderTableRow {TR} at (0,2) size 164x21
-                    RenderTableCell {TD} at (2,2) size 160x21 [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (2,19) size 166x27 [border: (1px outset #808080)]
+                LayoutTableSection {TBODY} at (1,1) size 164x25
+                  LayoutTableRow {TR} at (0,2) size 164x21
+                    LayoutTableCell {TD} at (2,2) size 160x21 [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (2,3) size 156x16
                         text run at (2,3) width 156: "Nested single-cell table!"
       RenderBlock {UL} at (0,356) size 769x105
@@ -77,18 +77,18 @@ layer at (0,0) size 785x891 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           RenderListMarker at (-16,3) size 6x16: bullet
           RenderText {#text} at (0,3) size 493x16
             text run at (0,3) width 493: "Each list item in this list should have a medium-width black border at its top."
-      RenderTable {TABLE} at (0,477) size 769x398 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 767x396
-          RenderTableRow {TR} at (0,0) size 767x25
-            RenderTableCell {TD} at (0,0) size 767x25 [bgcolor=#C0C0C0] [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,477) size 769x398 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x396
+          LayoutTableRow {TR} at (0,0) size 767x25
+            LayoutTableCell {TD} at (0,0) size 767x25 [bgcolor=#C0C0C0] [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 163x16
                 RenderText {#text} at (4,5) size 163x16
                   text run at (4,5) width 163: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,25) size 767x371
-            RenderTableCell {TD} at (0,198) size 12x25 [bgcolor=#C0C0C0] [border: (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,25) size 767x371
+            LayoutTableCell {TD} at (0,198) size 12x25 [bgcolor=#C0C0C0] [border: (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,5) size 4x16
                 text run at (4,5) width 4: " "
-            RenderTableCell {TD} at (12,25) size 755x371 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,25) size 755x371 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,5) size 747x32
                 RenderText {#text} at (0,0) size 723x32
                   text run at (0,0) width 648: "Note that all table cells on this page should have a two-pixel solid green border along their top sides. "
@@ -100,26 +100,26 @@ layer at (0,0) size 785x891 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               RenderBlock {P} at (4,95) size 747x17 [border: (1px solid #800080) none]
                 RenderText {#text} at (0,1) size 337x16
                   text run at (0,1) width 337: "This paragraph should have a thin purple top border."
-              RenderTable {TABLE} at (4,128) size 747x102 [border: (1px outset #808080)]
-                RenderTableSection {TBODY} at (1,1) size 745x100
-                  RenderTableRow {TR} at (0,5) size 745x37
-                    RenderTableCell {TD} at (5,5) size 735x37 [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              LayoutTable {TABLE} at (4,128) size 747x102 [border: (1px outset #808080)]
+                LayoutTableSection {TBODY} at (1,1) size 745x100
+                  LayoutTableRow {TR} at (0,5) size 745x37
+                    LayoutTableCell {TD} at (5,5) size 735x37 [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
                       RenderText {#text} at (2,3) size 730x32
                         text run at (2,3) width 439: "Every cell in this table should have a 2-pixel solid green top border. "
                         text run at (440,3) width 292: "This is also true of the table-testing section in"
                         text run at (2,19) width 203: "the second half of the test page."
-                  RenderTableRow {TR} at (0,47) size 745x48
-                    RenderTableCell {TD} at (5,60) size 185x21 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+                  LayoutTableRow {TR} at (0,47) size 745x48
+                    LayoutTableCell {TD} at (5,60) size 185x21 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
                       RenderText {#text} at (2,3) size 54x16
                         text run at (2,3) width 54: "Cell one"
-                    RenderTableCell {TD} at (195,47) size 545x48 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+                    LayoutTableCell {TD} at (195,47) size 545x48 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
                       RenderBlock (anonymous) at (2,3) size 541x16
                         RenderText {#text} at (0,0) size 55x16
                           text run at (0,0) width 55: "Cell two"
-                      RenderTable {TABLE} at (2,19) size 166x27 [border: (1px outset #808080)]
-                        RenderTableSection {TBODY} at (1,1) size 164x25
-                          RenderTableRow {TR} at (0,2) size 164x21
-                            RenderTableCell {TD} at (2,2) size 160x21 [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                      LayoutTable {TABLE} at (2,19) size 166x27 [border: (1px outset #808080)]
+                        LayoutTableSection {TBODY} at (1,1) size 164x25
+                          LayoutTableRow {TR} at (0,2) size 164x21
+                            LayoutTableCell {TD} at (2,2) size 160x21 [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                               RenderText {#text} at (2,3) size 156x16
                                 text run at (2,3) width 156: "Nested single-cell table!"
               RenderBlock {UL} at (4,246) size 747x105
