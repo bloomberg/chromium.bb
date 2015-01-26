@@ -256,8 +256,7 @@ egl_make_swapbuffers_nonblock(struct egl_state *egl)
 	if (!eglGetConfigAttrib(egl->dpy, egl->conf, a, &a) ||
 	    !eglGetConfigAttrib(egl->dpy, egl->conf, b, &b)) {
 		fprintf(stderr, "warning: swap interval range unknown\n");
-	} else
-	if (a > 0) {
+	} else if (a > 0) {
 		fprintf(stderr, "warning: minimum swap interval is %d, "
 			"while 0 is required to not deadlock on resize.\n", a);
 	}
