@@ -3911,36 +3911,6 @@ surface_resize(struct surface *surface)
 }
 
 static void
-hack_prevent_EGL_sub_surface_deadlock(struct window *window)
-{
-	/*
-	 * This hack should be removed, when EGL respects
-	 * eglSwapInterval(0).
-	 *
-	 * If this window has sub-surfaces, especially a free-running
-	 * EGL-widget, we need to post the parent surface once with
-	 * all the old state to guarantee, that the EGL-widget will
-	 * receive its frame callback soon. Otherwise, a forced call
-	 * to eglSwapBuffers may end up blocking, waiting for a frame
-	 * event that will never come, because we will commit the parent
-	 * surface with all new state only after eglSwapBuffers returns.
-	 *
-	 * This assumes, that:
-	 * 1. When the EGL widget's resize hook is called, it pauses.
-	 * 2. When the EGL widget's redraw hook is called, it forces a
-	 *    repaint and a call to eglSwapBuffers(), and maybe resumes.
-	 * In a single threaded application condition 1 is a no-op.
-	 *
-	 * XXX: This should actually be after the surface_resize() calls,
-	 * but cannot, because then it would commit the incomplete state
-	 * accumulated from the widget resize hooks.
-	 */
-	if (window->subsurface_list.next != &window->main_surface->link ||
-	    window->subsurface_list.prev != &window->main_surface->link)
-		wl_surface_commit(window->main_surface->surface);
-}
-
-static void
 window_do_resize(struct window *window)
 {
 	struct surface *surface;
@@ -3981,8 +3951,6 @@ idle_resize(struct window *window)
 	    window->main_surface->server_allocation.height,
 	    window->pending_allocation.width,
 	    window->pending_allocation.height);
-
-	hack_prevent_EGL_sub_surface_deadlock(window);
 
 	window_do_resize(window);
 }
