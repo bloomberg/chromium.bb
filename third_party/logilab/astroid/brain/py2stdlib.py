@@ -1,3 +1,4 @@
+
 """Astroid hooks for the Python 2 standard library.
 
 Currently help understanding of :
@@ -6,6 +7,7 @@ Currently help understanding of :
 """
 
 import sys
+from functools import partial
 from textwrap import dedent
 
 from astroid import (
@@ -104,6 +106,12 @@ class %(name)s(object):
   @property
   def name(self):
     return %(name)r
+  @property
+  def block_size(self):
+    return 1
+  @property
+  def digest_size(self):
+    return 1
 '''
     algorithms = ('md5', 'sha1', 'sha224', 'sha256', 'sha384', 'sha512')
     classes = "".join(
@@ -322,5 +330,5 @@ MANAGER.register_transform(nodes.CallFunc, inference_tip(infer_enum),
 MANAGER.register_transform(nodes.Class, infer_enum_class)
 register_module_extender(MANAGER, 'hashlib', hashlib_transform)
 register_module_extender(MANAGER, 'collections', collections_transform)
-register_module_extender(MANAGER, 'pkg_resourcds', pkg_resources_transform)
+register_module_extender(MANAGER, 'pkg_resources', pkg_resources_transform)
 register_module_extender(MANAGER, 'subprocess', subprocess_transform)

@@ -128,16 +128,19 @@ def category_id(cid):
     return MSG_TYPES_LONG.get(cid)
 
 
+def _decoding_readline(stream, module):
+    return lambda: stream.readline().decode(module.file_encoding,
+                                           'replace')
+
+
 def tokenize_module(module):
-    stream = module.file_stream
-    stream.seek(0)
-    readline = stream.readline
-    if sys.version_info < (3, 0):
-        if module.file_encoding is not None:
-            readline = lambda: stream.readline().decode(module.file_encoding,
-                                                        'replace')
-        return list(tokenize.generate_tokens(readline))
-    return list(tokenize.tokenize(readline))
+    with module.stream() as stream:
+        readline = stream.readline
+        if sys.version_info < (3, 0):
+            if module.file_encoding is not None:
+                readline = _decoding_readline(stream, module)
+            return list(tokenize.generate_tokens(readline))
+        return list(tokenize.tokenize(readline))
 
 def build_message_def(checker, msgid, msg_tuple):
     if implements(checker, (IRawChecker, ITokenChecker)):
@@ -267,8 +270,8 @@ class MessagesHandlerMixIn(object):
             msgs = self._msgs_state
             msgs[msg.msgid] = False
             # sync configuration object
-            self.config.disable_msg = [mid for mid, val in six.iteritems(msgs)
-                                       if not val]
+            self.config.disable = [mid for mid, val in six.iteritems(msgs)
+                                   if not val]
 
     def enable(self, msgid, scope='package', line=None, ignore_unknown=False):
         """reenable message of the given id"""

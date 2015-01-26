@@ -42,7 +42,6 @@ class Similar(object):
 
     def append_stream(self, streamid, stream, encoding=None):
         """append a file to search for similarities"""
-        stream.seek(0) # XXX may be removed with astroid > 0.23
         if encoding is None:
             readlines = stream.readlines
         else:
@@ -300,7 +299,10 @@ class SimilarChecker(BaseChecker, Similar):
 
         stream must implement the readlines method
         """
-        self.append_stream(self.linter.current_name, node.file_stream, node.file_encoding)
+        with node.stream() as stream:
+            self.append_stream(self.linter.current_name,
+                               stream,
+                               node.file_encoding)
 
     def close(self):
         """compute and display similarities on closing (i.e. end of parsing)"""
@@ -361,7 +363,8 @@ def Run(argv=None):
         usage(1)
     sim = Similar(min_lines, ignore_comments, ignore_docstrings, ignore_imports)
     for filename in args:
-        sim.append_stream(filename, open(filename))
+        with open(filename) as stream:
+            sim.append_stream(filename, stream)
     sim.run()
     sys.exit(0)
 

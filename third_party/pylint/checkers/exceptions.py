@@ -16,17 +16,21 @@
 """
 import sys
 
-from logilab.common.compat import builtins
-BUILTINS_NAME = builtins.__name__
 import astroid
 from astroid import YES, Instance, unpack_infer, List, Tuple
+from logilab.common.compat import builtins
 
 from pylint.checkers import BaseChecker
 from pylint.checkers.utils import (
-    is_empty, is_raising,
-    check_messages, inherit_from_std_ex,
-    EXCEPTIONS_MODULE, has_known_bases)
+    is_empty,
+    is_raising,
+    check_messages,
+    inherit_from_std_ex,
+    EXCEPTIONS_MODULE,
+    has_known_bases,
+    safe_infer)
 from pylint.interfaces import IAstroidChecker, INFERENCE, INFERENCE_FAILURE
+
 
 def _annotated_unpack_infer(stmt, context=None):
     """
@@ -35,33 +39,21 @@ def _annotated_unpack_infer(stmt, context=None):
     Returns an iterator which yields tuples in the format
     ('original node', 'infered node').
     """
-    # TODO: the same code as unpack_infer, except for the annotated
-    # return. We need this type of annotation only here and
-    # there is no point in complicating the API for unpack_infer.
-    # If the need arises, this behaviour can be promoted to unpack_infer
-    # as well.
     if isinstance(stmt, (List, Tuple)):
         for elt in stmt.elts:
-            for infered_elt in unpack_infer(elt, context):
-                yield elt, infered_elt
+            inferred = safe_infer(elt)
+            if inferred and inferred is not YES:
+                yield elt, inferred
         return
-    # if infered is a final node, return it and stop
-    infered = next(stmt.infer(context))
-    if infered is stmt:
-        yield stmt, infered
-        return
-    # else, infer recursivly, except YES object that should be returned as is
     for infered in stmt.infer(context):
         if infered is YES:
-            yield stmt, infered
-        else:
-            for inf_inf in unpack_infer(infered, context):
-                yield stmt, inf_inf
+            continue
+        yield stmt, infered
 
 
 PY3K = sys.version_info >= (3, 0)
 OVERGENERAL_EXCEPTIONS = ('Exception',)
-
+BUILTINS_NAME = builtins.__name__
 MSGS = {
     'E0701': ('Bad except clauses order (%s)',
               'bad-except-order',
@@ -145,21 +137,8 @@ class ExceptionsChecker(BaseChecker):
         if node.exc is None:
             return
         if PY3K and node.cause:
-            try:
-                cause = next(node.cause.infer())
-            except astroid.InferenceError:
-                pass
-            else:
-                if cause is YES:
-                    return
-                if isinstance(cause, astroid.Const):
-                    if cause.value is not None:
-                        self.add_message('bad-exception-context',
-                                         node=node)
-                elif (not isinstance(cause, astroid.Class) and
-                      not inherit_from_std_ex(cause)):
-                    self.add_message('bad-exception-context',
-                                     node=node)
+            self._check_bad_exception_context(node)
+
         expr = node.exc
         if self._check_raise_value(node, expr):
             return
@@ -170,23 +149,59 @@ class ExceptionsChecker(BaseChecker):
                 return
             self._check_raise_value(node, value)
 
+    def _check_bad_exception_context(self, node):
+        """Verify that the exception context is properly set.
+
+        An exception context can be only `None` or an exception.
+        """
+        cause = safe_infer(node.cause)
+        if cause in (YES, None):
+            return
+        if isinstance(cause, astroid.Const):
+            if cause.value is not None:
+                self.add_message('bad-exception-context',
+                                 node=node)
+        elif (not isinstance(cause, astroid.Class) and
+              not inherit_from_std_ex(cause)):
+            self.add_message('bad-exception-context',
+                             node=node)
+
     def _check_raise_value(self, node, expr):
         """check for bad values, string exception and class inheritance
         """
         value_found = True
         if isinstance(expr, astroid.Const):
             value = expr.value
-            if isinstance(value, str):
+            if not isinstance(value, str):
                 # raising-string will be emitted from python3 porting checker.
-                pass
-            else:
                 self.add_message('raising-bad-type', node=node,
                                  args=value.__class__.__name__)
-        elif (isinstance(expr, astroid.Name) and \
-                 expr.name in ('None', 'True', 'False')) or \
-                 isinstance(expr, (astroid.List, astroid.Dict, astroid.Tuple,
-                                   astroid.Module, astroid.Function)):
-            self.add_message('raising-bad-type', node=node, args=expr.name)
+        elif ((isinstance(expr, astroid.Name) and
+               expr.name in ('None', 'True', 'False')) or
+              isinstance(expr, (astroid.List, astroid.Dict, astroid.Tuple,
+                                astroid.Module, astroid.Function))):
+            emit = True
+            if not PY3K and isinstance(expr, astroid.Tuple):
+                # On Python 2, using the following is not an error:
+                #    raise (ZeroDivisionError, None)
+                #    raise (ZeroDivisionError, )
+                # What's left to do is to check that the first
+                # argument is indeed an exception.
+                # Verifying the other arguments is not
+                # the scope of this check.
+                first = expr.elts[0]
+                inferred = safe_infer(first)
+                if isinstance(inferred, Instance):
+                    # pylint: disable=protected-access
+                    inferred = inferred._proxied
+                if (inferred is YES or
+                        isinstance(inferred, astroid.Class)
+                        and inherit_from_std_ex(inferred)):
+                    emit = False
+            if emit:
+                self.add_message('raising-bad-type',
+                                 node=node,
+                                 args=expr.name)
         elif ((isinstance(expr, astroid.Name) and expr.name == 'NotImplemented')
               or (isinstance(expr, astroid.CallFunc) and
                   isinstance(expr.func, astroid.Name) and
@@ -194,21 +209,64 @@ class ExceptionsChecker(BaseChecker):
             self.add_message('notimplemented-raised', node=node)
         elif isinstance(expr, (Instance, astroid.Class)):
             if isinstance(expr, Instance):
+                # pylint: disable=protected-access
                 expr = expr._proxied
             if (isinstance(expr, astroid.Class) and
-                    not inherit_from_std_ex(expr) and
-                    expr.root().name != BUILTINS_NAME):
+                    not inherit_from_std_ex(expr)):
                 if expr.newstyle:
                     self.add_message('raising-non-exception', node=node)
                 else:
+                    if has_known_bases(expr):
+                        confidence = INFERENCE
+                    else:
+                        confidence = INFERENCE_FAILURE
                     self.add_message(
                         'nonstandard-exception', node=node,
-                        confidence=INFERENCE if has_known_bases(expr) else INFERENCE_FAILURE)
+                        confidence=confidence)
             else:
                 value_found = False
         else:
             value_found = False
         return value_found
+
+    def _check_catching_non_exception(self, handler, exc, part):
+        if isinstance(exc, astroid.Tuple):
+            # Check if it is a tuple of exceptions.
+            inferred = [safe_infer(elt) for elt in exc.elts]
+            if any(node is astroid.YES for node in inferred):
+                # Don't emit if we don't know every component.
+                return
+            if all(node and inherit_from_std_ex(node)
+                   for node in inferred):
+                return
+
+        if not isinstance(exc, astroid.Class):
+            # Don't emit the warning if the infered stmt
+            # is None, but the exception handler is something else,
+            # maybe it was redefined.
+            if (isinstance(exc, astroid.Const) and
+                    exc.value is None):
+                if ((isinstance(handler.type, astroid.Const) and
+                     handler.type.value is None) or
+                        handler.type.parent_of(exc)):
+                    # If the exception handler catches None or
+                    # the exception component, which is None, is
+                    # defined by the entire exception handler, then
+                    # emit a warning.
+                    self.add_message('catching-non-exception',
+                                     node=handler.type,
+                                     args=(part.as_string(), ))
+            else:
+                self.add_message('catching-non-exception',
+                                 node=handler.type,
+                                 args=(part.as_string(), ))
+            return
+        if (not inherit_from_std_ex(exc) and
+                exc.root().name != BUILTINS_NAME):
+            if has_known_bases(exc):
+                self.add_message('catching-non-exception',
+                                 node=handler.type,
+                                 args=(exc.name, ))
 
     @check_messages('bare-except', 'broad-except', 'pointless-except',
                     'binary-op-exception', 'bad-except-order',
@@ -242,28 +300,14 @@ class ExceptionsChecker(BaseChecker):
                 for part, exc in excs:
                     if exc is YES:
                         continue
-                    if isinstance(exc, astroid.Instance) and inherit_from_std_ex(exc):
+                    if (isinstance(exc, astroid.Instance)
+                            and inherit_from_std_ex(exc)):
+                        # pylint: disable=protected-access
                         exc = exc._proxied
+
+                    self._check_catching_non_exception(handler, exc, part)
+
                     if not isinstance(exc, astroid.Class):
-                        # Don't emit the warning if the infered stmt
-                        # is None, but the exception handler is something else,
-                        # maybe it was redefined.
-                        if (isinstance(exc, astroid.Const) and
-                                exc.value is None):
-                            if ((isinstance(handler.type, astroid.Const) and
-                                 handler.type.value is None) or
-                                    handler.type.parent_of(exc)):
-                                # If the exception handler catches None or
-                                # the exception component, which is None, is
-                                # defined by the entire exception handler, then
-                                # emit a warning.
-                                self.add_message('catching-non-exception',
-                                                 node=handler.type,
-                                                 args=(part.as_string(), ))
-                        else:
-                            self.add_message('catching-non-exception',
-                                             node=handler.type,
-                                             args=(part.as_string(), ))
                         continue
 
                     exc_ancestors = [anc for anc in exc.ancestors()
@@ -279,13 +323,6 @@ class ExceptionsChecker(BaseChecker):
                             and not is_raising(handler.body)):
                         self.add_message('broad-except',
                                          args=exc.name, node=handler.type)
-
-                    if (not inherit_from_std_ex(exc) and
-                            exc.root().name != BUILTINS_NAME):
-                        if has_known_bases(exc):
-                            self.add_message('catching-non-exception',
-                                             node=handler.type,
-                                             args=(exc.name, ))
 
                 exceptions_classes += [exc for _, exc in excs]
 
