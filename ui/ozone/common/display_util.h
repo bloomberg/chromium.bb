@@ -44,9 +44,9 @@ bool CreateSnapshotFromEDIDFile(const base::FilePath& file,
 
 // Create a display snaphot from edid.
 // Return false if it doesn't contain valid EDID.
-bool CreateSnapshotFromEDID(bool internal,
-                            const std::vector<uint8_t>& edid,
-                            DisplaySnapshot_Params* snapshot_out);
+OZONE_EXPORT bool CreateSnapshotFromEDID(bool internal,
+                                         const std::vector<uint8_t>& edid,
+                                         DisplaySnapshot_Params* snapshot_out);
 
 }  // namespace ui
 
