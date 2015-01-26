@@ -208,6 +208,28 @@ Background.prototype = {
         if (this.currentRange_)
           this.currentRange_.getStart().getNode().doDefault();
         break;
+      case 'continuousRead':
+        global.isReadingContinuously = true;
+        var continueReading = function(prevRange) {
+          if (!global.isReadingContinuously)
+            return;
+
+          new Output().withSpeechAndBraille(
+                  this.currentRange_, prevRange, Output.EventType.NAVIGATE)
+              .onSpeechEnd(function() { continueReading(prevRange); })
+              .onSpeechInterrupted(
+                  function() { global.isReadingContinuously = false; })
+              .go();
+          prevRange = this.currentRange_;
+          this.currentRange_ =
+              this.currentRange_.move(cursors.Unit.NODE, Dir.FORWARD);
+
+          if (this.currentRange_.equals(prevRange))
+            global.isReadingContinuously = false;
+        }.bind(this);
+
+        continueReading(null);
+        return;
     }
 
     if (pred) {
@@ -224,7 +246,9 @@ Background.prototype = {
 
       var prevRange = this.currentRange_;
       this.currentRange_ = current;
-      new Output(this.currentRange_, prevRange, Output.EventType.NAVIGATE);
+      new Output().withSpeechAndBraille(
+              this.currentRange_, prevRange, Output.EventType.NAVIGATE)
+          .go();
     }
   },
 
@@ -245,7 +269,9 @@ Background.prototype = {
     if (node.root.role != chrome.automation.RoleType.desktop && !this.active_)
       return;
 
-    new Output(this.currentRange_, prevRange, evt.type);
+    new Output().withSpeechAndBraille(
+            this.currentRange_, prevRange, evt.type)
+        .go();
   },
 
   /**
@@ -265,7 +291,9 @@ Background.prototype = {
       this.currentRange_ = cursors.Range.fromNode(node);
 
     if (this.currentRange_)
-      new Output(this.currentRange_, null, evt.type);
+      new Output().withSpeechAndBraille(
+              this.currentRange_, null, evt.type)
+          .go();
   },
 
   /**
@@ -303,7 +331,9 @@ Background.prototype = {
     }
 
     this.editableTextHandler.changed(textChangeEvent);
-    new Output(this.currentRange_, null, evt.type, {braille: true});
+    new Output().withBraille(
+            this.currentRange_, null, evt.type)
+        .go();
   },
 
   /**

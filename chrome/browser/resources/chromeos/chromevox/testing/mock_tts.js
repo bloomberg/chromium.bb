@@ -8,6 +8,11 @@
  * @extends {cvox.TtsInterface}
  */
 var MockTts = function() {
+  /**
+   * The event handler for the most recent call to |speak|.
+   * @private
+   */
+  this.onEvent_;
 };
 
 MockTts.prototype = {
@@ -29,6 +34,9 @@ MockTts.prototype = {
 
   /** @override */
   speak: function(textString, queueMode, properties) {
+    if (properties)
+      this.onEvent_ = properties['onEvent'];
+
     this.process_(textString);
   },
 
@@ -66,6 +74,22 @@ MockTts.prototype = {
    */
   finishExpectations: function() {
     this.expectSpeechAfter('', testDone);
+  },
+
+  /**
+   * Fakes an event to |onEvent|.
+   */
+  sendStartEvent: function() {
+    if (this.onEvent_)
+      this.onEvent_({type: 'start'});
+  },
+
+  /**
+   * Fakes an event to |onEvent|.
+   */
+  sendEndEvent: function() {
+    if (this.onEvent_)
+      this.onEvent_({type: 'end'});
   },
 
   /**

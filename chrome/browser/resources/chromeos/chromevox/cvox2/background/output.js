@@ -40,15 +40,9 @@ var Dir = AutomationUtil.Dir;
  * = suffix: used to specify substitution only if not previously appended.
  *     For example, $name= would insert the name attribute only if no name
  * attribute had been inserted previously.
- * @param {!cursors.Range} range
- * @param {cursors.Range} prevRange
- * @param {chrome.automation.EventType|Output.EventType} type
- * @param {{braille: (boolean|undefined), speech: (boolean|undefined)}=}
- *     opt_options
  * @constructor
  */
-Output = function(range, prevRange, type, opt_options) {
-  opt_options = opt_options || {braille: true, speech: true};
+Output = function() {
   // TODO(dtseng): Include braille specific rules.
   /** @type {!cvox.Spannable} */
   this.buffer_ = new cvox.Spannable();
@@ -56,19 +50,18 @@ Output = function(range, prevRange, type, opt_options) {
   this.brailleBuffer_ = new cvox.Spannable();
   /** @type {!Array.<Object>} */
   this.locations_ = [];
+  /** @type {function()} */
+  this.speechStartCallback_ = function() {};
+  /** @type {function()} */
+  this.speechEndCallback_ = function() {};
+  /** @type {function()} */
+  this.speechInterruptedCallback_ = function() {};
 
   /**
    * Current global options.
    * @type {{speech: boolean, braille: boolean, location: boolean}}
    */
   this.formatOptions_ = {speech: true, braille: false, location: true};
-
-  this.render_(range, prevRange, type);
-  if (opt_options.speech)
-    this.handleSpeech();
-  if (opt_options.braille)
-    this.handleBraille();
-  this.handleDisplay();
 };
 
 /**
@@ -240,26 +233,99 @@ Output.prototype = {
   },
 
   /**
-   * Handle output to speech.
+   * Specify ranges for speech.
+   * @param {!cursors.Range} range
+   * @param {cursors.Range} prevRange
+   * @param {chrome.automation.EventType|Output.EventType} type
+   * @return {!Output}
    */
-  handleSpeech: function() {
-    var buff = this.buffer_;
-    if (!buff.toString())
-      return;
+  withSpeech: function(range, prevRange, type) {
+    this.formatOptions_ = {speech: true, braille: false, location: true};
+    this.render_(range, prevRange, type, this.buffer_);
+    return this;
+  },
 
-    cvox.ChromeVox.tts.speak(buff.toString(), cvox.QueueMode.FLUSH);
+  /**
+   * Specify ranges for braille.
+   * @param {!cursors.Range} range
+   * @param {cursors.Range} prevRange
+   * @param {chrome.automation.EventType|Output.EventType} type
+   * @return {!Output}
+   */
+  withBraille: function(range, prevRange, type) {
+    this.formatOptions_ = {speech: false, braille: true, location: false};
+    this.render_(range, prevRange, type, this.brailleBuffer_);
+    return this;
+  },
+
+  /**
+   * Specify the same ranges for speech and braille.
+   * @param {!cursors.Range} range
+   * @param {cursors.Range} prevRange
+   * @param {chrome.automation.EventType|Output.EventType} type
+   * @return {!Output}
+   */
+  withSpeechAndBraille: function(range, prevRange, type) {
+    this.withSpeech(range, prevRange, type);
+    this.withBraille(range, prevRange, type);
+    return this;
+  },
+
+  /**
+   * Triggers callback for a speech event.
+   * @param {function()} callback
+   */
+  onSpeechStart: function(callback) {
+    this.speechStartCallback_ = callback;
+    return this;
+  },
+
+  /**
+   * Triggers callback for a speech event.
+   * @param {function()} callback
+   */
+  onSpeechEnd: function(callback) {
+    this.speechEndCallback_ = callback;
+    return this;
+  },
+
+  /**
+   * Triggers callback for a speech event.
+   * @param {function()} callback
+   */
+  onSpeechInterrupted: function(callback) {
+    this.speechInterruptedCallback_ = callback;
+    return this;
+  },
+
+  /**
+   * Executes all specified output.
+   */
+  go: function() {
+    // Speech.
+    var buff = this.buffer_;
+
+    var onEvent = function(evt) {
+      switch (evt.type) {
+        case 'start': this.speechStartCallback_(); break;
+        case 'end': this.speechEndCallback_(); break;
+        case 'interrupted': this.speechInterruptedCallback_(); break;
+      }
+    }.bind(this);
+
+    if (buff.toString()) {
+      cvox.ChromeVox.tts.speak(
+          buff.toString(), cvox.QueueMode.FLUSH, {onEvent: onEvent});
+    }
+
     var actions = buff.getSpansInstanceOf(Output.Action);
     if (actions) {
       actions.forEach(function(a) {
         a.run();
       });
     }
-  },
 
-  /**
-   * Handles output to braille.
-   */
-  handleBraille: function() {
+    // Braille.
     var selSpan =
         this.brailleBuffer_.getSpanInstanceOf(Output.SelectionSpan);
     var startIndex = -1, endIndex = -1;
@@ -285,13 +351,10 @@ Output.prototype = {
       endIndex: endIndex
     });
 
-    cvox.ChromeVox.braille.write(output);
-  },
+    if (this.brailleBuffer_)
+      cvox.ChromeVox.braille.write(output);
 
-  /**
-   * Handles output to visual display.
-   */
-  handleDisplay: function() {
+    // Display.
     chrome.accessibilityPrivate.setFocusRing(this.locations_);
   },
 
@@ -301,25 +364,14 @@ Output.prototype = {
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
    * @param {chrome.automation.EventType|string} type
+   * @param {!cvox.Spannable} buff Buffer to receive rendered output.
    * @private
    */
-  render_: function(range, prevRange, type) {
-    var buff = new cvox.Spannable();
-    var brailleBuff = new cvox.Spannable();
+  render_: function(range, prevRange, type, buff) {
     if (range.isSubNode())
       this.subNode_(range, prevRange, type, buff);
     else
       this.range_(range, prevRange, type, buff);
-
-    this.formatOptions_.braille = true;
-    this.formatOptions_.location = false;
-        if (range.isSubNode())
-      this.subNode_(range, prevRange, type, brailleBuff);
-    else
-      this.range_(range, prevRange, type, brailleBuff);
-
-    this.buffer_ = buff;
-    this.brailleBuffer_ = brailleBuff;
   },
 
   /**

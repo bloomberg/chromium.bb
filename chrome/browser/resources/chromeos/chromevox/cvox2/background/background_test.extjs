@@ -178,3 +178,23 @@ TEST_F('BackgroundTest', 'DISABLED_SelectSingleBasic', function() {
     cvox.ChromeVox.tts.finishExpectations();
   }.bind(this));
 });
+
+TEST_F('BackgroundTest', 'ContinuousRead', function() {
+  cvox.ChromeVox.tts.expectSpeech('start', null, true);
+  this.runWithDocument(this.linksAndHeadingsDoc, function() {
+    var doCmd = this.doCmd.bind(this);
+    var expect =
+        cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
+    var sendEndEvent = function() {
+        window.setTimeout(function() {
+          this.sendEndEvent();
+      }.bind(this), 0);
+    }.bind(cvox.ChromeVox.tts);
+
+    expect('start', doCmd('continuousRead'));
+    expect('alpha Link', sendEndEvent);
+    expect('beta Link', sendEndEvent);
+    expect('Heading charlie', sendEndEvent);
+    cvox.ChromeVox.tts.finishExpectations();
+  }.bind(this));
+});

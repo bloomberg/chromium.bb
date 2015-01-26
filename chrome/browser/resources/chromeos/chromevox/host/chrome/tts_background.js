@@ -229,6 +229,7 @@ cvox.TtsBackground.prototype.speak = function(
   if (splitTextString.length > 2) {
     var startCallback = properties['startCallback'];
     var endCallback = properties['endCallback'];
+    var onEvent = properties['onEvent'];
     for (var i = 0; i < splitTextString.length; i++) {
       var propertiesCopy = {};
       for (var p in properties) {
@@ -237,6 +238,8 @@ cvox.TtsBackground.prototype.speak = function(
       propertiesCopy['startCallback'] = i == 0 ? startCallback : null;
       propertiesCopy['endCallback'] =
           i == (splitTextString.length - 1) ? endCallback : null;
+      propertiesCopy['onEvent'] =
+          i == (splitTextString.length - 1) ? onEvent : null;
       this.speak(splitTextString[i], queueMode, propertiesCopy);
       queueMode = cvox.QueueMode.QUEUE;
     }
@@ -345,9 +348,12 @@ cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
   this.currentUtterance_ = this.utteranceQueue_.shift();
   var utteranceId = this.currentUtterance_.id;
 
-  this.currentUtterance_.properties['onEvent'] = goog.bind(function(event) {
-    this.onTtsEvent_(event, utteranceId);
-  }, this);
+  this.currentUtterance_.properties['onEvent'] =
+      this.currentUtterance_.properties['onEvent'] ||
+          goog.bind(function(event) {
+            this.onTtsEvent_(event, utteranceId);
+          },
+  this);
 
   var validatedProperties = {};
   for (var i = 0; i < cvox.TtsBackground.ALLOWED_PROPERTIES_.length; i++) {

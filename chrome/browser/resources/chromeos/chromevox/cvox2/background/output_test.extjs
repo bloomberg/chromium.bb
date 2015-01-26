@@ -26,7 +26,7 @@ TEST_F('OutputE2ETest', 'RenderBasic', function() {
     function(root) {
       var link = root.firstChild.firstChild;
       var range = cursors.Range.fromNode(link);
-      var o = new Output(range, null, 'navigate');
+      var o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'Click here Link', 'spans_': [
                         {value: 'name', start: 0, end: 10},
                         // Link earcon.
@@ -36,4 +36,3 @@ TEST_F('OutputE2ETest', 'RenderBasic', function() {
       testDone();
   }.bind(this));
 });
-  
