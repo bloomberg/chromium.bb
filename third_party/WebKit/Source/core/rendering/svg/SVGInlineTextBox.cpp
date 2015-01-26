@@ -80,7 +80,7 @@ int SVGInlineTextBox::offsetForPositionInFragment(const SVGTextFragment& fragmen
 {
     RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
 
-    FloatWillBeLayoutUnit scalingFactor = textRenderer.scalingFactor();
+    float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
 
     RenderStyle* style = textRenderer.style();
@@ -112,7 +112,7 @@ FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const S
 
     RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
 
-    FloatWillBeLayoutUnit scalingFactor = textRenderer.scalingFactor();
+    float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
 
     const Font& scaledFont = textRenderer.scaledFont();
@@ -250,7 +250,7 @@ FloatRectWillBeLayoutRect SVGInlineTextBox::calculateBoundaries() const
 
     RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
 
-    FloatWillBeLayoutUnit scalingFactor = textRenderer.scalingFactor();
+    float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
 
     FloatWillBeLayoutUnit baseline = textRenderer.scaledFont().fontMetrics().floatAscent() / scalingFactor;

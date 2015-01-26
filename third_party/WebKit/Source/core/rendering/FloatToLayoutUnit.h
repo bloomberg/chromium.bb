@@ -643,7 +643,7 @@ public:
     void move(FloatLineLayoutUnit dx, FloatLineLayoutUnit dy) { m_value.move(dx.toFloat(), dy.toFloat()); }
     void moveBy(const LayoutPoint& layoutPoint) { m_value.moveBy(layoutPoint); }
 
-    void scale(FloatLineLayoutUnit sx, FloatLineLayoutUnit sy) { m_value.scale(sx.toFloat(), sy.toFloat()); }
+    void scale(float sx, float sy) { m_value.scale(sx, sy); }
 
 private:
     FloatPoint m_value;
@@ -733,8 +733,8 @@ public:
 
     void unite(const FloatRectLineLayoutRect& rect) { m_value.unite(rect.toFloatRect()); }
 
-    void scale(FloatLineLayoutUnit s) { m_value.scale(s.toFloat()); }
-    void scale(FloatLineLayoutUnit sx, FloatLineLayoutUnit sy) { m_value.scale(sx.toFloat(), sy.toFloat()); }
+    void scale(float s) { m_value.scale(s); }
+    void scale(float sx, float sy) { m_value.scale(sx, sy); }
 
     bool intersects(const FloatRectLineLayoutRect& rect) const { return m_value.intersects(rect.toFloatRect()); }
 
