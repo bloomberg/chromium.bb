@@ -12,6 +12,10 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 
+namespace blink {
+class WebTraceLocation;
+}
+
 namespace content {
 
 class CONTENT_EXPORT WebThreadBase : public blink::WebThread {
@@ -39,6 +43,12 @@ class CONTENT_EXPORT WebThreadImpl : public WebThreadBase {
   explicit WebThreadImpl(const char* name);
   virtual ~WebThreadImpl();
 
+  virtual void postTask(const blink::WebTraceLocation& location, Task* task);
+  virtual void postDelayedTask(const blink::WebTraceLocation& location,
+                               Task* task,
+                               long long delay_ms);
+
+  // TODO(skyostil): Remove once blink has migrated.
   virtual void postTask(Task* task);
   virtual void postDelayedTask(Task* task, long long delay_ms);
 
@@ -60,8 +70,14 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   CONTENT_EXPORT virtual ~WebThreadImplForMessageLoop();
 
-  virtual void postTask(Task* task) override;
-  virtual void postDelayedTask(Task* task, long long delay_ms) override;
+  virtual void postTask(const blink::WebTraceLocation& location, Task* task);
+  virtual void postDelayedTask(const blink::WebTraceLocation& location,
+                               Task* task,
+                               long long delay_ms);
+
+  // TODO(skyostil): Remove once blink has migrated.
+  virtual void postTask(Task* task);
+  virtual void postDelayedTask(Task* task, long long delay_ms);
 
   virtual void enterRunLoop() override;
   virtual void exitRunLoop() override;
