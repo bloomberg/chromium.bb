@@ -274,7 +274,7 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptR
     case V8CacheOptionsHeuristicsDefaultMobile: {
         // We expect compression to win on mobile devices, due to relatively
         // slow storage.
-        bool compress = cacheOptions == V8CacheOptionsHeuristicsMobile;
+        bool compress = (cacheOptions == V8CacheOptionsHeuristicsMobile || cacheOptions == V8CacheOptionsHeuristicsDefaultMobile);
         CacheTagKind codeTag = compress ? CacheTagCodeCompressed : CacheTagCode;
 
         // Either code or parser caching, depending on code size and what we
