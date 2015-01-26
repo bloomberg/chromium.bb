@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/browser/local_discovery/privet_url_fetcher.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
@@ -20,6 +21,8 @@ const char kUrlPlaceHolder[] = "http://host/";
 
 const char kStubPrivetCode[] = "1234";
 
+const char kPrivetV3AuthAnonymous[] = "Privet anonymous";
+
 GURL CreatePrivetURL(const std::string& path) {
   GURL url(kUrlPlaceHolder);
   GURL::Replacements replacements;
@@ -32,10 +35,12 @@ GURL CreatePrivetURL(const std::string& path) {
 class PrivetV3Session::FetcherDelegate : public PrivetURLFetcher::Delegate {
  public:
   FetcherDelegate(const base::WeakPtr<PrivetV3Session>& session,
+                  const std::string& auth_token,
                   const PrivetV3Session::MessageCallback& callback);
   ~FetcherDelegate() override;
 
   // PrivetURLFetcher::Delegate methods.
+  std::string GetAuthToken() override;
   void OnNeedPrivetToken(
       PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) override;
@@ -51,22 +56,29 @@ class PrivetV3Session::FetcherDelegate : public PrivetURLFetcher::Delegate {
 
   scoped_ptr<PrivetURLFetcher> url_fetcher_;
   base::WeakPtr<PrivetV3Session> session_;
+  std::string auth_token_;
   MessageCallback callback_;
 };
 
 PrivetV3Session::FetcherDelegate::FetcherDelegate(
     const base::WeakPtr<PrivetV3Session>& session,
+    const std::string& auth_token,
     const PrivetV3Session::MessageCallback& callback)
-    : session_(session), callback_(callback) {
+    : session_(session), auth_token_(auth_token), callback_(callback) {
 }
 
 PrivetV3Session::FetcherDelegate::~FetcherDelegate() {
+}
+
+std::string PrivetV3Session::FetcherDelegate::GetAuthToken() {
+  return auth_token_;
 }
 
 void PrivetV3Session::FetcherDelegate::OnNeedPrivetToken(
     PrivetURLFetcher* fetcher,
     const PrivetURLFetcher::TokenCallback& callback) {
   NOTREACHED();
+  OnError(fetcher, PrivetURLFetcher::URL_FETCH_ERROR);
 }
 
 void PrivetV3Session::FetcherDelegate::OnError(
@@ -103,6 +115,8 @@ PrivetV3Session::~PrivetV3Session() {
 }
 
 void PrivetV3Session::Init(const InitCallback& callback) {
+  privet_auth_token_ = kPrivetV3AuthAnonymous;
+
   // TODO: call /info.
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
@@ -140,8 +154,8 @@ void PrivetV3Session::SendMessage(const std::string& api,
   if (!code_confirmed_)
     return callback.Run(Result::STATUS_SESSIONERROR, base::DictionaryValue());
 
-  FetcherDelegate* fetcher_delegate(
-      new FetcherDelegate(weak_ptr_factory_.GetWeakPtr(), callback));
+  FetcherDelegate* fetcher_delegate(new FetcherDelegate(
+      weak_ptr_factory_.GetWeakPtr(), privet_auth_token_, callback));
   fetchers_.push_back(fetcher_delegate);
 
   scoped_ptr<PrivetURLFetcher> url_fetcher(client_->CreateURLFetcher(

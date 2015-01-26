@@ -34,7 +34,7 @@ struct TokenMapHolder {
 };
 
 const char kXPrivetTokenHeaderPrefix[] = "X-Privet-Token: ";
-const char kXPrivetAuthTokenHeaderPrefix[] = "X-Privet-Auth: ";
+const char kPrivetV3AuthTokenHeaderPrefix[] = "Authorization: ";
 const char kRangeHeaderFormat[] = "Range: bytes=%d-%d";
 const char kXPrivetEmptyToken[] = "\"\"";
 const char kPrivetAuthTokenUnknown[] = "Unknown";
@@ -151,10 +151,9 @@ void PrivetURLFetcher::Try() {
     url_fetcher_->SetRequestContext(request_context_.get());
 
     if (v3_mode_) {
-      std::string auth_token = delegate_->GetAuthToken();
-
       url_fetcher_->AddExtraRequestHeader(
-          std::string(kXPrivetAuthTokenHeaderPrefix) + auth_token);
+          std::string(kPrivetV3AuthTokenHeaderPrefix) +
+          delegate_->GetAuthToken());
     } else {
       std::string token = GetPrivetAccessToken();
 

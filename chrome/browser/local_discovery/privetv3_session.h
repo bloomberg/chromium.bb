@@ -60,6 +60,8 @@ class PrivetV3Session {
   scoped_ptr<PrivetHTTPClient> client_;
   bool code_confirmed_;
   ScopedVector<FetcherDelegate> fetchers_;
+  std::string privet_auth_token_;
+
   base::WeakPtrFactory<PrivetV3Session> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(PrivetV3Session);
 };
