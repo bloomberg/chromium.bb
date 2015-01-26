@@ -1679,6 +1679,62 @@ def GerritUpload(options, args, cl, change):
   return 0
 
 
+def GetTargetRef(remote, remote_branch, target_branch, pending_prefix):
+  """Computes the remote branch ref to use for the CL.
+
+  Args:
+    remote (str): The git remote for the CL.
+    remote_branch (str): The git remote branch for the CL.
+    target_branch (str): The target branch specified by the user.
+    pending_prefix (str): The pending prefix from the settings.
+  """
+  if not (remote and remote_branch):
+    return None
+  
+  if target_branch:
+    # Cannonicalize branch references to the equivalent local full symbolic
+    # refs, which are then translated into the remote full symbolic refs
+    # below.
+    if '/' not in target_branch:
+      remote_branch = 'refs/remotes/%s/%s' % (remote, target_branch)
+    else:
+      prefix_replacements = (
+        ('^((refs/)?remotes/)?branch-heads/', 'refs/remotes/branch-heads/'),
+        ('^((refs/)?remotes/)?%s/' % remote,  'refs/remotes/%s/' % remote),
+        ('^(refs/)?heads/',                   'refs/remotes/%s/' % remote),
+      )
+      match = None
+      for regex, replacement in prefix_replacements:
+        match = re.search(regex, target_branch)
+        if match:
+          remote_branch = target_branch.replace(match.group(0), replacement)
+          break
+      if not match:
+        # This is a branch path but not one we recognize; use as-is.
+        remote_branch = target_branch
+  elif (not remote_branch.startswith('refs/remotes/branch-heads') and
+        not remote_branch.startswith('refs/remotes/%s/refs' % remote)):
+    # Default to master for refs that are not branches.
+    remote_branch = 'refs/remotes/%s/master' % remote
+    
+  # Create the true path to the remote branch.
+  # Does the following translation:
+  # * refs/remotes/origin/refs/diff/test -> refs/diff/test
+  # * refs/remotes/origin/master -> refs/heads/master
+  # * refs/remotes/branch-heads/test -> refs/branch-heads/test
+  if remote_branch.startswith('refs/remotes/%s/refs/' % remote):
+    remote_branch = remote_branch.replace('refs/remotes/%s/' % remote, '')
+  elif remote_branch.startswith('refs/remotes/%s/' % remote):
+    remote_branch = remote_branch.replace('refs/remotes/%s/' % remote,
+                                          'refs/heads/')
+  elif remote_branch.startswith('refs/remotes/branch-heads'):
+    remote_branch = remote_branch.replace('refs/remotes/', 'refs/')
+  # If a pending prefix exists then replace refs/ with it.
+  if pending_prefix:
+    remote_branch = remote_branch.replace('refs/', pending_prefix)
+  return remote_branch
+
+
 def RietveldUpload(options, args, cl, change):
   """upload the patch to rietveld."""
   upload_args = ['--assume_yes']  # Don't ask about untracked files.
@@ -1757,24 +1813,10 @@ def RietveldUpload(options, args, cl, change):
   if remote_url:
     upload_args.extend(['--base_url', remote_url])
     remote, remote_branch = cl.GetRemoteBranch()
-    if remote and remote_branch:
-      # Create the true path to the remote branch.
-      # Does the following translation:
-      # * refs/remotes/origin/refs/diff/test -> refs/diff/test
-      # * refs/remotes/origin/master -> refs/heads/master
-      # * refs/remotes/branch-heads/test -> refs/branch-heads/test
-      if remote_branch.startswith('refs/remotes/%s/refs/' % remote):
-        remote_branch = remote_branch.replace('refs/remotes/%s/' % remote, '')
-      elif remote_branch.startswith('refs/remotes/%s/' % remote):
-        remote_branch = remote_branch.replace('refs/remotes/%s/' % remote,
-                                              'refs/heads/')
-      elif remote_branch.startswith('refs/remotes/branch-heads'):
-        remote_branch = remote_branch.replace('refs/remotes/', 'refs/')
-      pending_prefix = settings.GetPendingRefPrefix()
-      # If a pending prefix exists then replace refs/ with it.
-      if pending_prefix:
-        remote_branch = remote_branch.replace('refs/', pending_prefix)
-      upload_args.extend(['--target_ref', remote_branch])
+    target_ref = GetTargetRef(remote, remote_branch, options.target_branch,
+                              settings.GetPendingRefPrefix())
+    if target_ref:
+      upload_args.extend(['--target_ref', target_ref])
 
   project = settings.GetProject()
   if project:
@@ -1851,8 +1893,9 @@ def CMDupload(parser, args):
                     help='set the review private (rietveld only)')
   parser.add_option('--target_branch',
                     '--target-branch',
-                    help='When uploading to gerrit, remote branch to '
-                         'use for CL.  Default: master')
+                    metavar='TARGET',
+                    help='Apply CL to remote ref TARGET.  ' +
+                         'Default: remote branch head, or master')
   parser.add_option('--email', default=None,
                     help='email address to use to connect to Rietveld')
   parser.add_option('--tbr-owners', dest='tbr_owners', action='store_true',
@@ -1860,9 +1903,6 @@ def CMDupload(parser, args):
 
   add_git_similarity(parser)
   (options, args) = parser.parse_args(args)
-
-  if options.target_branch and not settings.GetIsGerrit():
-    parser.error('Use --target_branch for non gerrit repository.')
 
   if is_dirty_git_tree('upload'):
     return 1

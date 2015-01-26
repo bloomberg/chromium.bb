@@ -756,6 +756,57 @@ class TestGitCl(TestCase):
       actual.append(obj.description)
     self.assertEqual(expected, actual)
 
+  def test_get_target_ref(self):
+    # Check remote or remote branch not present.
+    self.assertEqual(None, git_cl.GetTargetRef('origin', None, 'master', None))
+    self.assertEqual(None, git_cl.GetTargetRef(None,
+                                               'refs/remotes/origin/master',
+                                               'master', None))
+    
+    # Check default target refs for branches.
+    self.assertEqual('refs/heads/master',
+                     git_cl.GetTargetRef('origin', 'refs/remotes/origin/master',
+                                         None, None))
+    self.assertEqual('refs/heads/master',
+                     git_cl.GetTargetRef('origin', 'refs/remotes/origin/lkgr',
+                                         None, None))
+    self.assertEqual('refs/heads/master',
+                     git_cl.GetTargetRef('origin', 'refs/remotes/origin/lkcr',
+                                         None, None))
+    self.assertEqual('refs/branch-heads/123',
+                     git_cl.GetTargetRef('origin',
+                                         'refs/remotes/branch-heads/123',
+                                         None, None))
+    self.assertEqual('refs/diff/test',
+                     git_cl.GetTargetRef('origin',
+                                         'refs/remotes/origin/refs/diff/test',
+                                         None, None))
+
+    # Check target refs for user-specified target branch.
+    for branch in ('branch-heads/123', 'remotes/branch-heads/123',
+                   'refs/remotes/branch-heads/123'):
+      self.assertEqual('refs/branch-heads/123',
+                       git_cl.GetTargetRef('origin',
+                                           'refs/remotes/origin/master',
+                                           branch, None))
+    for branch in ('origin/master', 'remotes/origin/master',
+                   'refs/remotes/origin/master'):
+      self.assertEqual('refs/heads/master',
+                       git_cl.GetTargetRef('origin',
+                                           'refs/remotes/branch-heads/123',
+                                           branch, None))
+    for branch in ('master', 'heads/master', 'refs/heads/master'):
+      self.assertEqual('refs/heads/master',
+                       git_cl.GetTargetRef('origin',
+                                           'refs/remotes/branch-heads/123',
+                                           branch, None))
+
+    # Check target refs for pending prefix.
+    self.assertEqual('prefix/heads/master',
+                     git_cl.GetTargetRef('origin', 'refs/remotes/origin/master',
+                                         None, 'prefix/'))
+
+
 if __name__ == '__main__':
   git_cl.logging.basicConfig(
       level=git_cl.logging.DEBUG if '-v' in sys.argv else git_cl.logging.ERROR)
