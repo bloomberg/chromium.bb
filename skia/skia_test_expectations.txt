@@ -88,4 +88,15 @@ crbug.com/449873 virtual/slimmingpaint/fast/images/exif-orientation.html [ Image
 crbug.com/449873 virtual/slimmingpaint/fast/text/international/rtl-white-space-pre-wrap.html [ ImageOnlyFailure Pass ]
 crbug.com/449873 virtual/slimmingpaint/fast/text/international/unicode-bidi-plaintext-in-textarea.html [ ImageOnlyFailure Pass ]
 
+# https://codereview.chromium.org/776673002/
+crbug.com/452219 css3/filters/effect-combined.html [ ImageOnlyFailure Pass ]
+crbug.com/452219 svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ ImageOnlyFailure Pass ]
+crbug.com/452219 svg/custom/feComponentTransfer-Discrete.svg [ ImageOnlyFailure Pass ]
+crbug.com/452219 svg/custom/feComponentTransfer-Gamma.svg [ ImageOnlyFailure Pass ]
+crbug.com/452219 svg/custom/feComponentTransfer-Linear.svg [ ImageOnlyFailure Pass ]
+crbug.com/452219 svg/custom/feComponentTransfer-Table.svg [ ImageOnlyFailure Pass ]
+crbug.com/452219 svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr.html [ ImageOnlyFailure Pass ]
+crbug.com/452219 svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ ImageOnlyFailure Pass ]
+
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
