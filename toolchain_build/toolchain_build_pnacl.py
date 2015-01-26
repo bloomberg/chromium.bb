@@ -693,27 +693,17 @@ def HostToolsDirectToNacl(host):
 
     cc, cxx = CompilersForHost(host)
     tools.update({
-        'redirector_src': {
-            'type': 'source',
-            'inputs': { 'source_directory': REDIRECTOR_WIN32_SRC },
-            'commands': [
-                command.CopyTree('%(source_directory)s', '%(output)s'),
-                command.WriteData(redirector_table,
-                                  os.path.join('%(output)s',
-                                               'redirector_table.txt')),
-            ],
-        },
         'redirector': {
             'type': 'build',
-            'dependencies': ['redirector_src'],
+            'inputs': { 'source_directory': REDIRECTOR_WIN32_SRC },
             'commands': [
-                command.Mkdir('%(output)s', parents=True),
-                command.Command([cc, '-O3', '-std=c99',
-                                 '-I',
-                                 os.path.join(NACL_DIR, '..'),
-                                 '-o',
+                command.WriteData(redirector_table,
+                                  'redirector_table_pnacl.txt'),
+                command.Command([cc, '-O3', '-std=c99', '-I.', '-o',
                                  os.path.join('%(output)s', 'redirector.exe'),
-                                 os.path.join('%(redirector_src)s',
+                                 '-I', os.path.dirname(NACL_DIR),
+                                 '-DREDIRECT_DATA="redirector_table_pnacl.txt"',
+                                 os.path.join(REDIRECTOR_WIN32_SRC,
                                               'redirector.c')]),
             ],
         },

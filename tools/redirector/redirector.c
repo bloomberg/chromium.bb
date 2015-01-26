@@ -93,14 +93,14 @@ static
 wchar_t reduce_wchar(wchar_t c) {
   if (c == L'/')
     return L'\\';
-  return (wchar_t)CharLowerW((LPWSTR)c);
+  return (wchar_t)(intptr_t)CharLowerW((LPWSTR)(intptr_t)c);
 }
 
 /*
  * Returns whether path ends with redirect
  */
 static
-int check_path (const wchar_t *path, const wchar_t *redirect) {
+int check_path(const wchar_t *path, const wchar_t *redirect) {
   int path_len = lstrlenW(path);
   int redirect_len = lstrlenW(redirect);
   int path_offset;
@@ -123,7 +123,7 @@ int is_driver(const wchar_t *option) {
 static
 void println_redirect(const redirect_t *redirect) {
   const wchar_t *str;
-  int tmp;
+  DWORD tmp;
   HANDLE output;
   output = GetStdHandle(STD_OUTPUT_HANDLE);
   for (str = redirect->from; *str; ++str)
@@ -140,7 +140,8 @@ void println_redirect(const redirect_t *redirect) {
 int main() {
   wchar_t *newpath = NULL, *oldpath = NULL;
   const wchar_t *cmdline, *arguments, *selector;
-  int length, done;
+  DWORD length;
+  int done;
   int redirect_index;
   int length_from;
   int length_to;
@@ -222,10 +223,11 @@ int main() {
     WaitForSingleObject(pi.hProcess, INFINITE);
     HeapFree(GetProcessHeap(), 0, newpath);
     HeapFree(GetProcessHeap(), 0, oldpath);
-    if (GetExitCodeProcess(pi.hProcess, &done)) {
+    DWORD exitcode;
+    if (GetExitCodeProcess(pi.hProcess, &exitcode)) {
       CloseHandle(pi.hProcess);
       CloseHandle(pi.hThread);
-      ExitProcess(done);
+      ExitProcess(exitcode);
     }
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);

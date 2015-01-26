@@ -15,8 +15,12 @@ typedef struct {
   const wchar_t *args;
 } redirect_t;
 
+#ifndef REDIRECT_DATA
+#define REDIRECT_DATA "redirector_table.txt"
+#endif
+
 const redirect_t redirects[] = {
-#include "redirector_table.txt"
+#include REDIRECT_DATA
 };
 
 #endif
