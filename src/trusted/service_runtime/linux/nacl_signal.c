@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"

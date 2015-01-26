@@ -12,6 +12,7 @@
  * Note that this test hangs in pthread_join() on ARM QEMU.
  */
 
+#include "native_client/src/include/build_config.h"
 #if NACL_LINUX || NACL_OSX
 #include <pthread.h>
 #endif

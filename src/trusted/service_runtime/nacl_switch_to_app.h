@@ -11,6 +11,7 @@
 #ifndef SERVICE_RUNTIME_NACL_SWITCH_TO_APP_H__
 #define SERVICE_RUNTIME_NACL_SWITCH_TO_APP_H__ 1
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 /* get nacl_reg_t */

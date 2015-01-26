@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <string>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability_sockets.h"
 #include "native_client/src/shared/platform/nacl_log.h"

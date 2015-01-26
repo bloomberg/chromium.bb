@@ -16,6 +16,7 @@
  * ABI is implicitly defined.
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_size_t.h"
 
 #ifdef __cplusplus

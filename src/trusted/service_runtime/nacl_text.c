@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/concurrency_ops.h"
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"

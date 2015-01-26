@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_THREAD_SUSPENSION_H__
 #define NATIVE_CLIENT_SERVICE_RUNTIME_THREAD_SUSPENSION_H__ 1
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 
 EXTERN_C_BEGIN

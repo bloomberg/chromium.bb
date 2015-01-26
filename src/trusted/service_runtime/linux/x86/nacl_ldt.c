@@ -10,6 +10,9 @@
 
 #include <asm/ldt.h>
 #include <stdio.h>
+
+#include "native_client/src/include/build_config.h"
+
 #if NACL_ANDROID
 #include <sys/syscall.h>
 #endif

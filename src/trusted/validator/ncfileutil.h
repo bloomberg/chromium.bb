@@ -10,6 +10,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCFILEUTIL_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCFILEUTIL_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/elf.h"
 #include "native_client/src/trusted/validator/types_memory_model.h"

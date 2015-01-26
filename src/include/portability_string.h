@@ -39,6 +39,8 @@
 
 #include <string.h>
 
+#include "native_client/src/include/build_config.h"
+
 typedef char utf8char_t;
 
 #if NACL_OSX

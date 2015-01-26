@@ -14,6 +14,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_SYNC_CHECKED_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_SYNC_CHECKED_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 
 #include "native_client/src/shared/platform/nacl_sync.h"

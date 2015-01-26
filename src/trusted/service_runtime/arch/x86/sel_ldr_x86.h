@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_X86_SEL_LDR_X86__H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_X86_SEL_LDR_X86__H_
 
+#include "native_client/src/include/build_config.h"
+
 /* to make LDT_ENTRIES available */
 #if NACL_WINDOWS
 # define LDT_ENTRIES 8192

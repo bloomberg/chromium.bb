@@ -13,6 +13,7 @@
  * and actually invoking the C system call handler code.
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_64/sel_rt_64.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 

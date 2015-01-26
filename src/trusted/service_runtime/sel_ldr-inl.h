@@ -49,6 +49,7 @@
  * 0 is a valid user address.)
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 
 static INLINE uintptr_t NaClUserToSysAddrNullOkay(struct NaClApp  *nap,

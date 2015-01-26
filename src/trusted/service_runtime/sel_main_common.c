@@ -6,6 +6,8 @@
 
 #include "native_client/src/trusted/service_runtime/sel_main_common.h"
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_OSX
 #include <crt_externs.h>
 #endif

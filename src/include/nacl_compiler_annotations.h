@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_NACL_COMPILER_ANNOTATIONS_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_NACL_COMPILER_ANNOTATIONS_H_
 
+#include "native_client/src/include/build_config.h"
+
 /* MSVC supports "inline" only in C++ */
 #if NACL_WINDOWS
 # define INLINE __forceinline

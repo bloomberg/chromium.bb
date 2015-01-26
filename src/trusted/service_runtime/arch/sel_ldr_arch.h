@@ -13,6 +13,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_SEL_LDR_ARCH_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_SEL_LDR_ARCH_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86

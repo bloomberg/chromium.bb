@@ -11,6 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_SECURE_RANDOM_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_SECURE_RANDOM_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 
 /*

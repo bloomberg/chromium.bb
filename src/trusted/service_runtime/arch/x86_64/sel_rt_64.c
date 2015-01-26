@@ -7,6 +7,8 @@
 #include <float.h>
 #include <string.h>
 
+#include "native_client/src/include/build_config.h"
+
 /*
  * This header declares the _mm_getcsr function.
  */

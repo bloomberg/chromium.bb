@@ -9,6 +9,7 @@
 
 #include "native_client/src/shared/platform/nacl_find_addrsp.h"
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"

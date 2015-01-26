@@ -6,6 +6,8 @@
 
 #include <float.h>
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_WINDOWS
 /*
  * This header declares the _mm_getcsr function.

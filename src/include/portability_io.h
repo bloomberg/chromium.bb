@@ -13,6 +13,8 @@
 
 #include <fcntl.h>
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_WINDOWS
 /* disable warnings for deprecated _snprintf */
 #pragma warning(disable : 4996)

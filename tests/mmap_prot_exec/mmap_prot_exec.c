@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "native_client/src/include/build_config.h"
 /* Get macros for NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 etc. */
 #include "native_client/src/include/nacl_base.h"
 

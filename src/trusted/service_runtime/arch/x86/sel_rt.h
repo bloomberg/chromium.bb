@@ -11,6 +11,7 @@
 #ifndef __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_SEL_RT_H__
 #define __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_SEL_RT_H__ 1
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 
 #if NACL_BUILD_SUBARCH == 32

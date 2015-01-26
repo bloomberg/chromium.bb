@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "native_client/src/include/build_config.h"
+
 #if !NACL_WINDOWS
 # include <sys/mman.h>
 #endif

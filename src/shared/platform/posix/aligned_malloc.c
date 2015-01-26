@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/aligned_malloc.h"
 
 #if NACL_ANDROID

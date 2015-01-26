@@ -7,7 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_WIN_EXCEPTION_PATCH_NTDLL_PATCH_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_WIN_EXCEPTION_PATCH_NTDLL_PATCH_H_ 1
 
-
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 
 #if (NACL_WINDOWS && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && \

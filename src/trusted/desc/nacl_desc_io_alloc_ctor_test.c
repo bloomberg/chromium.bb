@@ -14,6 +14,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_WINDOWS
 # include <io.h>
 # include <windows.h>

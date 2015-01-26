@@ -13,6 +13,8 @@
 
 #include <stdlib.h>
 
+#include "native_client/src/include/build_config.h"
+
 #if defined(__native_client__)
 # include <stdint.h>
 #else

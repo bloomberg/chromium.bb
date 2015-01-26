@@ -8,6 +8,7 @@
  * NaCl Secure Runtime
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_32/sel_rt_32.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 

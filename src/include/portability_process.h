@@ -39,6 +39,8 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_PROCESS_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_PROCESS_H_ 1
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_WINDOWS
 
 #include <process.h>

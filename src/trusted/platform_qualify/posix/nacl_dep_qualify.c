@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <signal.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"

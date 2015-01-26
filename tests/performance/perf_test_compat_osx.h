@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_TESTS_PERFORMANCE_PERF_TEST_COMPAT_OSX_H_
 #define NATIVE_CLIENT_TESTS_PERFORMANCE_PERF_TEST_COMPAT_OSX_H_
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_OSX
 
 #include <time.h>

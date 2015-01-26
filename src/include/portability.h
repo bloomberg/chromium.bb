@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #ifdef __native_client__
 #include <bits/wordsize.h>

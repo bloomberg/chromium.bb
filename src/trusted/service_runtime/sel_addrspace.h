@@ -11,6 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_ADDRSPACE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_ADDRSPACE_H_ 1
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"

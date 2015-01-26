@@ -9,6 +9,7 @@
  * with a single instruction
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_asm.h"
 
 

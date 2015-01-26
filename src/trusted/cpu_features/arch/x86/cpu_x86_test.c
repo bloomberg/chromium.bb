@@ -12,6 +12,7 @@
  * cpu_x86_test.c
  * test main and subroutines for cpu_x86
  */
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 #include <stdio.h>
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"

@@ -23,6 +23,8 @@
 EXTERN_C_BEGIN
 
 #include <stdarg.h>
+
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 #ifdef __native_client__
 typedef int SRPC_IMC_DESC_TYPE;

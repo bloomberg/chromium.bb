@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_OSX_MACH_THREAD_MAP_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_OSX_MACH_THREAD_MAP_H_ 1
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_OSX
 
 #include <mach/mach.h>

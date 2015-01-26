@@ -9,6 +9,7 @@
 
 /* Defines the API exposed by the Native Client validators. */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/cpu_features/cpu_features.h"

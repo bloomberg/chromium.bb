@@ -13,6 +13,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "native_client/src/include/build_config.h"
+
 /*
  * TODO(sehr): enable thread local storage.
  */

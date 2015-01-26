@@ -7,6 +7,8 @@
 #include <fcntl.h>
 #include <cstring>
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_WINDOWS
 # include <io.h>
 #endif

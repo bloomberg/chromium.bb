@@ -21,6 +21,9 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/types.h>
+
+#include "native_client/src/include/build_config.h"
+
 #if NACL_ANDROID
 #include <linux/ashmem.h>
 #endif

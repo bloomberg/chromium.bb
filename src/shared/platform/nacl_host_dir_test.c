@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability_io.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"

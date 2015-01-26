@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 #include "native_client/src/trusted/validator_ragel/dfa_validate_common.h"

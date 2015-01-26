@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"

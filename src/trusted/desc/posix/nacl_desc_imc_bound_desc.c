@@ -15,6 +15,7 @@
 #include <string.h>
 #include <sys/socket.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"

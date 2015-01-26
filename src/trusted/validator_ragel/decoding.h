@@ -16,6 +16,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODING_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODING_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/validator_ragel/decoder.h"
 
 #if NACL_WINDOWS

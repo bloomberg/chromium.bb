@@ -14,6 +14,7 @@
 #include <stddef.h>
 
 #include "native_client/src/include/atomic_ops.h"
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"

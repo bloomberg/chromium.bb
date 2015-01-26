@@ -10,6 +10,8 @@
 #include <iterator>
 #include <vector>
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_OSX
 #include <crt_externs.h>
 #endif

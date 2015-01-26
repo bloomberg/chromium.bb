@@ -11,6 +11,8 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_SYNC_H_
 #define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_SYNC_H_
 
+#include "native_client/src/include/build_config.h"
+
 #if defined(__native_client__) || NACL_LINUX || NACL_OSX
 # include <pthread.h>
 # include "native_client/src/shared/platform/posix/nacl_fast_mutex.h"

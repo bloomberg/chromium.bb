@@ -25,6 +25,8 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
+#include "native_client/src/include/build_config.h"
+
 /*
  * Get inline functions for system calls.
  */

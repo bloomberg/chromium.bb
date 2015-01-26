@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_EXCEPTION_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_EXCEPTION_H__ 1
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"

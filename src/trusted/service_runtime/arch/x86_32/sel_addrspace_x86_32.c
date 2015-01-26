@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_LINUX
 #include <errno.h>
 #include <sys/mman.h>

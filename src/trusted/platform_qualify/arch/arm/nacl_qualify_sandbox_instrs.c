@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/arm_sandbox.h"
 #include "native_client/src/trusted/platform_qualify/arch/arm/nacl_arm_qualify.h"

@@ -12,6 +12,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"

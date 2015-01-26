@@ -15,6 +15,7 @@
  * to and from architecture dependent CPU state structures.
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
 

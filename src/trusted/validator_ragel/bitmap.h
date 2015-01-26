@@ -11,6 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_BITMAP_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_BITMAP_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 

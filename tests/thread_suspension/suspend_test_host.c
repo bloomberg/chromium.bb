@@ -6,6 +6,7 @@
 
 #include "native_client/tests/thread_suspension/suspend_test.h"
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"

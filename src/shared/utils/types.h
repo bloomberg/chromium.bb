@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_UTILS_TYPES_H__
 #define NATIVE_CLIENT_SRC_SHARED_UTILS_TYPES_H__
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 
 EXTERN_C_BEGIN

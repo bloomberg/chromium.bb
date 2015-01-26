@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"

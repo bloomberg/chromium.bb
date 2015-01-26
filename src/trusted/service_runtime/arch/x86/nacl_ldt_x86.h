@@ -10,6 +10,7 @@
 #ifndef SERVICE_RUNTIME_NACL_LDT_H__
 #define SERVICE_RUNTIME_NACL_LDT_H__ 1
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 
 EXTERN_C_BEGIN

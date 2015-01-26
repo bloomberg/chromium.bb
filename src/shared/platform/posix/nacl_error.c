@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_error.h"
 
 int NaClGetLastErrorString(char* buffer, size_t length) {

@@ -9,6 +9,7 @@
 
 #include <unistd.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"

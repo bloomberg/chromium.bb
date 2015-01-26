@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_PUBLIC_CHROME_MAIN_H_
 #define NATIVE_CLIENT_SRC_PUBLIC_CHROME_MAIN_H_ 1
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 /*

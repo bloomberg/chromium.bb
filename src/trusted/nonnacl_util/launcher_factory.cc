@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
 #if NACL_LINUX || NACL_OSX

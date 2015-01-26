@@ -9,6 +9,7 @@
 
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/platform/nacl_check.h"

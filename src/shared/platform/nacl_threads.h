@@ -16,6 +16,7 @@
  * have the native_client source tree.
  * TODO(sehr): use export_header.py to copy these files out.
  */
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/portability.h"

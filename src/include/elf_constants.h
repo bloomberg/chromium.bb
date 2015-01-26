@@ -19,6 +19,7 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_ELF_CONSTANTS_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_ELF_CONSTANTS_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 
 EXTERN_C_BEGIN

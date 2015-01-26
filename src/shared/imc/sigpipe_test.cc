@@ -16,6 +16,7 @@
 
 #include <vector>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"

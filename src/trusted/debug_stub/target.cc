@@ -10,6 +10,7 @@
 
 #include <algorithm>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"

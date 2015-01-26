@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include "native_client/src/include/build_config.h"
+
 #if !NACL_WINDOWS /* stdint is neither available nor needed on Windows */
 #include <stdint.h>
 #endif

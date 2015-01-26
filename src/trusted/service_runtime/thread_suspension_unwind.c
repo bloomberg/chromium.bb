@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension_unwind.h"
 
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"

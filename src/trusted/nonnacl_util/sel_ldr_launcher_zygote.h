@@ -8,6 +8,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_NONNACL_UTIL_SEL_LDR_LAUNCHER_ZYGOTE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_NONNACL_UTIL_SEL_LDR_LAUNCHER_ZYGOTE_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher_zygote_base.h"
 
 #if NACL_LINUX || NACL_OSX

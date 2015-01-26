@@ -11,6 +11,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_UTIL_INL_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_UTIL_INL_H_ 1
 
+#include "native_client/src/include/build_config.h"
+
 /*
  * NaClRoundPage is a bit of a misnomer -- it always rounds up to a
  * page size, not the nearest.

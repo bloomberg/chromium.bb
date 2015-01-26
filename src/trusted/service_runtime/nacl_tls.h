@@ -20,6 +20,7 @@
  * NACL_WINDOWS, and TSD on NACL_OSX since OSX does not implement
  * __thread).
  */
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 
 struct NaClAppThread;

@@ -22,6 +22,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_LINUX
 # include <pthread.h>
 /* pthread_once for NaClHostDescInit, which is no-op on other OSes */

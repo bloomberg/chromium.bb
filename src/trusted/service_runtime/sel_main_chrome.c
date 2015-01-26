@@ -6,6 +6,7 @@
 
 #include "native_client/src/public/chrome_main.h"
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_sockets.h"

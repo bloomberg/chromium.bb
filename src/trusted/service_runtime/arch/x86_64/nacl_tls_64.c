@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/include/build_config.h"
+
 #if NACL_OSX
 # include <pthread.h>
 #endif

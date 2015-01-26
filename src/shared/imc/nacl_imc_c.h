@@ -16,6 +16,7 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_IMC_NACL_IMC_C_H_
 #define NATIVE_CLIENT_SRC_SHARED_IMC_NACL_IMC_C_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 #ifndef __native_client__
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"

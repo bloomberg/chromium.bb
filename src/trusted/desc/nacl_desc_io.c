@@ -9,6 +9,7 @@
  * mapping using descriptors.
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 
 #if NACL_WINDOWS

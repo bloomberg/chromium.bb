@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/mman.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"

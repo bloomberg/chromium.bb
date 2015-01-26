@@ -8,6 +8,7 @@
  * NaCl Service Runtime.  Secure RNG abstraction.
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_global_secure_random.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_secure_random.h"

@@ -7,6 +7,8 @@
 
 /* NaCl inter-module communication primitives. */
 
+#include "native_client/src/include/build_config.h"
+
 /* Used for UINT32_MAX */
 #if !NACL_WINDOWS
 # ifndef __STDC_LIMIT_MACROS

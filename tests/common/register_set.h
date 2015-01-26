@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_TESTS_COMMON_REGISTER_SET_H_
 #define NATIVE_CLIENT_TESTS_COMMON_REGISTER_SET_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"

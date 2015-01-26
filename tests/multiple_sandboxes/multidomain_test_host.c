@@ -8,6 +8,7 @@
  * This test program creates two NaCl sandboxes within the same host process.
  */
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"

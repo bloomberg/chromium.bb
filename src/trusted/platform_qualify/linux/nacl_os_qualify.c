@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/utsname.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/platform_qualify/kernel_version.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"

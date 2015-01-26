@@ -10,6 +10,7 @@
 
 #include "native_client/src/trusted/validator/ncfileutil.h"
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability.h"
 
 #include <stdarg.h>

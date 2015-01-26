@@ -4,6 +4,9 @@
  * found in the LICENSE file.
  */
 #include <errno.h>
+
+#include "native_client/src/include/build_config.h"
+
 #if NACL_ANDROID
 /* Android uses a non-canonical futex.h version that requires __user be set. */
 #include <linux/compiler.h>
