@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_H_
 
+#include <list>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -32,8 +34,8 @@ class TestServiceWorkerCache;
 
 // Represents a ServiceWorker Cache as seen in
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html.
-// Callbacks to the public functions will be called so long as the cache object
-// lives.
+// The asynchronous methods are executed serially. Callbacks to the
+// public functions will be called so long as the cache object lives.
 class CONTENT_EXPORT ServiceWorkerCache
     : public base::RefCounted<ServiceWorkerCache> {
  public:
@@ -86,7 +88,7 @@ class CONTENT_EXPORT ServiceWorkerCache
   // Returns ErrorTypeOK and a vector of requests if there are no errors.
   void Keys(const RequestsCallback& callback);
 
-  // Closes the backend. Pending and future operations that require the backend
+  // Closes the backend. Future operations that require the backend
   // will exit early. Close should only be called once per ServiceWorkerCache.
   void Close(const base::Closure& callback);
 
@@ -127,6 +129,8 @@ class CONTENT_EXPORT ServiceWorkerCache
   virtual ~ServiceWorkerCache();
 
   // Match callbacks
+  void MatchImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
+                 const ResponseCallback& callback);
   void MatchDidOpenEntry(scoped_ptr<MatchContext> match_context, int rv);
   void MatchDidReadMetadata(scoped_ptr<MatchContext> match_context,
                             scoped_ptr<ServiceWorkerCacheMetadata> headers);
@@ -147,6 +151,8 @@ class CONTENT_EXPORT ServiceWorkerCache
                               bool success);
 
   // Delete callbacks
+  void DeleteImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
+                  const ErrorCallback& callback);
   void DeleteDidOpenEntry(
       const GURL& origin,
       scoped_ptr<ServiceWorkerFetchRequest> request,
@@ -156,6 +162,7 @@ class CONTENT_EXPORT ServiceWorkerCache
       int rv);
 
   // Keys callbacks.
+  void KeysImpl(const RequestsCallback& callback);
   void KeysDidOpenNextEntry(scoped_ptr<KeysContext> keys_context, int rv);
   void KeysProcessNextEntry(scoped_ptr<KeysContext> keys_context,
                             const Entries::iterator& iter);
@@ -172,11 +179,12 @@ class CONTENT_EXPORT ServiceWorkerCache
                               scoped_ptr<ScopedBackendPtr> backend_ptr,
                               int rv);
 
-  void InitBackend(const base::Closure& callback);
+  void InitBackend();
   void InitDone(ErrorType error);
 
-  void IncPendingOps() { pending_ops_++; }
-  void DecPendingOps();
+  void CompleteOperationAndRunNext();
+  void RunOperationIfIdle();
+  void PendingClosure(const base::Closure& callback);
   void PendingErrorCallback(const ErrorCallback& callback, ErrorType error);
   void PendingResponseCallback(
       const ResponseCallback& callback,
@@ -187,27 +195,21 @@ class CONTENT_EXPORT ServiceWorkerCache
                                ErrorType error,
                                scoped_ptr<Requests> requests);
 
-  // The backend can be deleted via the Close function at any time so always
-  // check for its existence before use.
+  // Be sure to check |backend_state_| before use.
   scoped_ptr<disk_cache::Backend> backend_;
+
   GURL origin_;
   base::FilePath path_;
   net::URLRequestContext* request_context_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   BackendState backend_state_;
-  std::vector<base::Closure> init_callbacks_;
+  std::list<base::Closure> pending_operations_;
+  bool operation_running_;
+  bool initializing_;
 
   // Whether or not to store data in disk or memory.
   bool memory_only_;
-
-  // The number of started operations that have yet to complete.
-  // TODO(jkarlin): pending_ops_ gets double counted on lazy initialization (say
-  // in ::Put). The counting still works but pending_ops_ doesn't accurately
-  // represent the number of operations in flight. Fix this by having the lazy
-  // init callback call a different function than the original caller (::Put).
-  size_t pending_ops_;
-  base::Closure ops_complete_callback_;
 
   base::WeakPtrFactory<ServiceWorkerCache> weak_ptr_factory_;
 

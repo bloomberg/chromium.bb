@@ -790,126 +790,43 @@ TEST_P(ServiceWorkerCacheTestP, OpsFailOnClosedBackend) {
   VerifyAllOpsFail();
 }
 
-TEST_P(ServiceWorkerCacheTestP, ClosedDuringPutInitBackend) {
-  // Even though Close is called in the middle of a Put operation (during
-  // backend creation), the put operation should exit early.
-  cache_->set_delay_backend_creation(true);
-  scoped_ptr<base::RunLoop> close_loop(new base::RunLoop());
-  cache_->Put(CopyFetchRequest(body_request_),
-              CopyFetchResponse(body_response_),
-              base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
-                         base::Unretained(this), nullptr));
-  cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
-                           base::Unretained(this), close_loop.get()));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
-  EXPECT_FALSE(callback_closed_);
-
-  cache_->ContinueCreateBackend();
-
-  close_loop->Run();
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeStorage, callback_error_);
-  EXPECT_TRUE(callback_closed_);
-
-  VerifyAllOpsFail();
-}
-
-TEST_P(ServiceWorkerCacheTestP, ClosedDuringMatchInitBackend) {
-  // Even though Close is called in the middle of a Match operation (during
-  // backend creation), the match operation should exit early.
-  cache_->set_delay_backend_creation(true);
-  scoped_ptr<base::RunLoop> close_loop(new base::RunLoop());
-  cache_->Match(CopyFetchRequest(body_request_),
-                base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
-                           base::Unretained(this), nullptr));
-  cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
-                           base::Unretained(this), close_loop.get()));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
-  EXPECT_FALSE(callback_closed_);
-
-  cache_->ContinueCreateBackend();
-
-  close_loop->Run();
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeStorage, callback_error_);
-  EXPECT_TRUE(callback_closed_);
-
-  VerifyAllOpsFail();
-}
-
-TEST_P(ServiceWorkerCacheTestP, ClosedDuringDeleteInitBackend) {
-  // Even though Close is called in the middle of a Delete operation (during
-  // backend creation), the delete operation should exit early.
-  cache_->set_delay_backend_creation(true);
-  scoped_ptr<base::RunLoop> close_loop(new base::RunLoop());
-  cache_->Delete(CopyFetchRequest(body_request_),
-                 base::Bind(&ServiceWorkerCacheTest::ErrorTypeCallback,
-                            base::Unretained(this), nullptr));
-  cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
-                           base::Unretained(this), close_loop.get()));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
-  EXPECT_FALSE(callback_closed_);
-
-  cache_->ContinueCreateBackend();
-
-  close_loop->Run();
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeStorage, callback_error_);
-  EXPECT_TRUE(callback_closed_);
-
-  VerifyAllOpsFail();
-}
-
-TEST_P(ServiceWorkerCacheTestP, ClosedDuringKeysInitBackend) {
-  // Even though Close is called in the middle of a Keys operation (during
-  // backend creation), the keys operation should exit early.
-  cache_->set_delay_backend_creation(true);
-  scoped_ptr<base::RunLoop> close_loop(new base::RunLoop());
-  cache_->Keys(base::Bind(&ServiceWorkerCacheTest::RequestsCallback,
-                          base::Unretained(this), nullptr));
-  cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
-                           base::Unretained(this), close_loop.get()));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
-  EXPECT_FALSE(callback_closed_);
-
-  cache_->ContinueCreateBackend();
-
-  close_loop->Run();
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeStorage, callback_error_);
-  EXPECT_TRUE(callback_closed_);
-
-  VerifyAllOpsFail();
-}
-
-TEST_P(ServiceWorkerCacheTestP, ClosedDuringPutOpenEntry) {
+TEST_P(ServiceWorkerCacheTestP, VerifySerialScheduling) {
+  // Start two operations, the first one is delayed but the second isn't. The
+  // second should wait for the first.
   EXPECT_TRUE(Keys());  // Opens the backend.
   DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
   delayable_backend->set_delay_open(true);
 
-  // Run Put and Close. Put will delay on OpenEntry, Close will wait for Put to
-  // finish.
-  scoped_ptr<base::RunLoop> close_loop(new base::RunLoop());
-  cache_->Put(CopyFetchRequest(body_request_),
-              CopyFetchResponse(body_response_),
-              base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
-                         base::Unretained(this), nullptr));
-  cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
-                           base::Unretained(this), close_loop.get()));
+  scoped_ptr<ServiceWorkerResponse> response1 =
+      CopyFetchResponse(body_response_);
+  response1->status_code = 1;
 
+  scoped_ptr<base::RunLoop> close_loop1(new base::RunLoop());
+  cache_->Put(CopyFetchRequest(body_request_), response1.Pass(),
+              base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
+                         base::Unretained(this), close_loop1.get()));
+
+  // Blocks on opening the cache entry.
   base::RunLoop().RunUntilIdle();
-  // Verify that neither operation has finished.
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
-  EXPECT_FALSE(callback_closed_);
+
+  delayable_backend->set_delay_open(false);
+  scoped_ptr<ServiceWorkerResponse> response2 =
+      CopyFetchResponse(body_response_);
+  response2->status_code = 2;
+  scoped_ptr<base::RunLoop> close_loop2(new base::RunLoop());
+  cache_->Put(CopyFetchRequest(body_request_), response2.Pass(),
+              base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
+                         base::Unretained(this), close_loop2.get()));
+
+  // The second put operation should wait for the first to complete.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(callback_response_);
 
   delayable_backend->OpenEntryContinue();
-
-  close_loop->Run();
-  // Put failed because the backend was closed while it was running.
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeStorage, callback_error_);
-  EXPECT_TRUE(callback_closed_);
-
-  VerifyAllOpsFail();
+  close_loop1->Run();
+  EXPECT_EQ(1, callback_response_->status_code);
+  close_loop2->Run();
+  EXPECT_EQ(2, callback_response_->status_code);
 }
 
 INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheTest,
