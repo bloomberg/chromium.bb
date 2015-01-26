@@ -144,14 +144,6 @@ if [ "${BUILD_ARCH}" != "${HOST_ARCH}" ]; then
   fi
 fi
 
-if ${BUILD_PLATFORM_WIN}; then
-   readonly GCLIENT="gclient.bat"
-   readonly GIT="git.bat"
-else
-   readonly GCLIENT="gclient"
-   readonly GIT="git"
-fi
-
 # On Windows, scons expects Windows-style paths (C:\foo\bar)
 # This function converts cygwin posix paths to Windows-style paths.
 # On all other platforms, this function does nothing to the path.
@@ -164,80 +156,9 @@ PosixToSysPath() {
   fi
 }
 
-
-######################################################################
-# Git repository tools
-######################################################################
-
-git-has-changes() {
-  local dir=$1
-  spushd "${dir}"
-  local status=$(${GIT} status --porcelain --untracked-files=no)
-  spopd
-  [[ ${#status} > 0 ]]
-  return $?
-}
-
-git-assert-no-changes() {
-  local dir=$1
-  if git-has-changes "${dir}"; then
-    Banner "ERROR: Repository ${dir} has local changes"
-    exit -1
-  fi
-}
-
-######################################################################
-# vcs rev info helper
-######################################################################
-get-field () {
-  cut -d " " -f $1
-}
-
-git-one-line-rev-info() {
-    local commit=$(${GIT} log -n 1 | head -1 | get-field 2)
-    local url=$(egrep "^[^a-z]+url = " .git/config | head -1 | get-field 3)
-    # variable bypass does implicit whitespace strip
-    echo "[GIT] ${url}: ${commit}"
-}
-
-#+ one-line-rev-info <dir> - show one line summmary for
-one-line-rev-info() {
-  spushd $1
-  if [ -d .git ]; then
-    # we currently only
-    git-one-line-rev-info
-  else
-    echo "[$1] Unknown version control system"
-  fi
-  spopd
-}
-
 ######################################################################
 # Logging tools
 ######################################################################
-
-#@ progress              - Show build progress (open in another window)
-progress() {
-  StepBanner "PROGRESS WINDOW"
-
-  while true; do
-    if [ -f "${TC_LOG_ALL}" ]; then
-      if tail --version > /dev/null; then
-        # GNU coreutils tail
-        tail -s 0.05 --max-unchanged-stats=20 --follow=name "${TC_LOG_ALL}"
-      else
-        # MacOS tail
-        tail -F "${TC_LOG_ALL}"
-      fi
-    fi
-    sleep 1
-  done
-}
-
-#+ clean-logs            - Clean all logs
-clean-logs() {
-  rm -rf "${TC_LOG}"
-}
 
 # Logged pushd
 spushd() {
@@ -405,40 +326,6 @@ Fatal() {
   echo "$@" 1>&2
   echo 1>&2
   exit -1
-}
-
-is-ELF() {
-  local F=$(file -b "$1")
-  [[ "${F}" =~ "ELF" ]]
-}
-
-is-Mach() {
-  local F=$(file -b "$1")
-  [[ "${F}" =~ "Mach-O" ]]
-}
-
-is-shell-script() {
-  local F=$(file -b "$1")
-  [[ "${F}" =~ "shell" ]]
-}
-
-get_dir_size_in_mb() {
-  du -msc "$1" | tail -1 | egrep -o "[0-9]+"
-}
-
-confirm-yes() {
-  local msg="$1"
-  while true; do
-    echo -n "${msg} [Y/N]? "
-    local YESNO
-    read YESNO
-    if [ "${YESNO}" == "N" ] || [ "${YESNO}" == "n" ]; then
-      return 1
-    fi
-    if [ "${YESNO}" == "Y" ] || [ "${YESNO}" == "y" ]; then
-      return 0
-    fi
-  done
 }
 
 # On Linux with GNU readlink, "readlink -f" would be a quick way

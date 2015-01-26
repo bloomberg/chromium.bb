@@ -47,71 +47,25 @@ readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 # Concurrency for builds using the host's system compiler (which might be goma)
 readonly PNACL_CONCURRENCY_HOST=${PNACL_CONCURRENCY_HOST:-${PNACL_CONCURRENCY}}
 PNACL_PRUNE=${PNACL_PRUNE:-true}
-PNACL_BUILD_ARM=true
-PNACL_BUILD_MIPS=${PNACL_BUILD_MIPS:-false}
-
-if ${BUILD_PLATFORM_MAC} || ${BUILD_PLATFORM_WIN}; then
-  # We don't yet support building ARM tools for mac or windows.
-  PNACL_BUILD_ARM=false
-  PNACL_BUILD_MIPS=false
-fi
-
-# PNaCl builds libc++/libc++abi as well as libstdc++, allowing users to
-# choose which to use through the -stdlib=XXX command-line argument.
-#
-# The following strings are used for banner names as well as file and
-# folder names. These names are created by the libraries themselves, and
-# expected by their dependents. Changing them would be ill-advised.
-readonly LIB_CXX_NAME="libc++"
-readonly LIB_STDCPP_NAME="libstdc++"
 
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
-readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=le32-nacl
-readonly NACL64_TARGET=x86_64-nacl
 
 readonly DRIVER_DIR="${PNACL_ROOT}/driver"
-readonly ARM_ARCH=armv7-a
-readonly ARM_FPU=vfp
 
 readonly TOOLCHAIN_ROOT="${NACL_ROOT}/toolchain"
 readonly TOOLCHAIN_BASE="${TOOLCHAIN_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 
-readonly NNACL_NEWLIB_ROOT="${TOOLCHAIN_BASE}/nacl_x86_newlib"
-readonly NNACL_ARM_NEWLIB_ROOT="${TOOLCHAIN_BASE}/nacl_arm_newlib"
-
 readonly PNACL_MAKE_OPTS="${PNACL_MAKE_OPTS:-}"
 readonly MAKE_OPTS="-j${PNACL_CONCURRENCY} VERBOSE=1 ${PNACL_MAKE_OPTS}"
-readonly MAKE_OPTS_HOST="-j${PNACL_CONCURRENCY_HOST} VERBOSE=1 ${PNACL_MAKE_OPTS}"
 
 readonly NONEXISTENT_PATH="/going/down/the/longest/road/to/nowhere"
-
-# For speculative build status output. ( see status function )
-# Leave this blank, it will be filled during processing.
-SPECULATIVE_REBUILD_SET=""
-
-readonly PNACL_SUPPORT="${PNACL_ROOT}/support"
-
-readonly THIRD_PARTY="${NACL_ROOT}"/../third_party
-readonly NACL_SRC_THIRD_PARTY="${NACL_ROOT}/src/third_party"
 
 # Git sources
 readonly PNACL_GIT_ROOT="${NACL_ROOT}/toolchain_build/src"
 readonly TC_SRC_BINUTILS="${PNACL_GIT_ROOT}/binutils"
 readonly TC_SRC_LLVM="${PNACL_GIT_ROOT}/llvm"
-readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/pnacl-gcc"
-readonly TC_SRC_NEWLIB="${PNACL_GIT_ROOT}/pnacl-newlib"
-readonly TC_SRC_LIBSTDCPP="${TC_SRC_GCC}/${LIB_STDCPP_NAME}-v3"
-readonly TC_SRC_COMPILER_RT="${PNACL_GIT_ROOT}/compiler-rt"
-readonly TC_SRC_CLANG="${PNACL_GIT_ROOT}/clang"
-readonly TC_SRC_LIBCXX="${PNACL_GIT_ROOT}/libcxx"
-
-readonly SERVICE_RUNTIME_SRC="${NACL_ROOT}/src/trusted/service_runtime"
-readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
-readonly NACL_SYS_HEADERS="${SERVICE_RUNTIME_SRC}/include"
-readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib/libc/sys/nacl"
-
 
 readonly TOOLCHAIN_BUILD_OUT="${NACL_ROOT}/toolchain_build/out"
 
@@ -122,20 +76,12 @@ readonly SDK_INSTALL_ROOT="${TOOLCHAIN_BASE}/pnacl_newlib"
 readonly INSTALL_ROOT="${TOOLCHAIN_BUILD_OUT}/translator_compiler_install"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 
-# Bitcode lib directories (including static bitcode libs)
-INSTALL_LIB="${INSTALL_ROOT}/lib"
-
 # Native nacl lib directories
 # The pattern `${INSTALL_LIB_NATIVE}${arch}' is used in many places.
 readonly INSTALL_LIB_NATIVE="${INSTALL_ROOT}/translator/"
-readonly INSTALL_LIB_ARM="${INSTALL_LIB_NATIVE}arm/lib"
-readonly INSTALL_LIB_X8632="${INSTALL_LIB_NATIVE}x86-32/lib"
-readonly INSTALL_LIB_X8664="${INSTALL_LIB_NATIVE}x86-64/lib"
-readonly INSTALL_LIB_MIPS32="${INSTALL_LIB_NATIVE}mips32/lib"
 
 # PNaCl client-translators (sandboxed) binary locations
 readonly INSTALL_TRANSLATOR="${TOOLCHAIN_BUILD_OUT}/sandboxed_translators_install"
-
 
 # The INSTALL_HOST directory has host binaries and libs which
 # are part of the toolchain (e.g. llvm and binutils).
@@ -147,9 +93,6 @@ readonly INSTALL_HOST="${INSTALL_ROOT}"
 # Component installation directories
 readonly LLVM_INSTALL_DIR="${INSTALL_HOST}"
 readonly BINUTILS_INSTALL_DIR="${INSTALL_HOST}"
-readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
-readonly FAKE_INSTALL_DIR="${INSTALL_HOST}/fake"
-NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/usr"
 
 # Location of the PNaCl tools defined for configure invocations.
 readonly PNACL_CC="${INSTALL_BIN}/pnacl-clang"
@@ -213,15 +156,6 @@ if ${HOST_ARCH_X8632}; then
   CC="${PNACL_ROOT}/scripts/mygcc32"
   CXX="${PNACL_ROOT}/scripts/myg++32"
 fi
-
-# The gold plugin that we use is documented at
-# http://llvm.org/docs/GoldPlugin.html
-# Despite its name it is actually used by both gold and bfd. The changes to
-# this file to enable its use are:
-# * Build shared
-# * --enable-gold and --enable-plugin when building binutils
-# * --with-binutils-include when building binutils
-# * linking the plugin in bfd-plugins
 
 ######################################################################
 ######################################################################
@@ -837,13 +771,6 @@ sdk-libs() {
 }
 
 
-#+-------------------------------------------------------------------------
-#@ driver                - Install driver scripts.
-driver() {
-  StepBanner "DRIVER"
-  driver-install
-}
-
 # install python scripts and redirector shell/batch scripts
 driver-install-python() {
   local destdir="$1"
@@ -888,50 +815,6 @@ feature-version-file-install() {
   echo 12 > "${install_root}/FEATURE_VERSION"
 }
 
-# The driver is a simple python script which changes its behavior
-# depending on the name it is invoked as.
-driver-install() {
-  local bindir=bin
-  # On Linux we ship a fat toolchain with 2 sets of binaries defaulting to
-  # x86-32 (mostly because of the 32 bit chrome bots). So the default
-  # bin dir is 32, and the bin64 driver runs the 64 bit binaries
-  if ${HOST_ARCH_X8664} && ${BUILD_PLATFORM_LINUX}; then
-    bindir="bin64"
-    # We want to be able to locally test a toolchain on 64 bit hosts without
-    # building it twice and without extra env vars. So if a 32 bit toolchain
-    # has not already been built, just symlink the bin dirs together.
-    if [[ ! -d "${INSTALL_BIN}" ]]; then
-      mkdir -p "${INSTALL_ROOT}"
-      ln -s ${bindir} "${INSTALL_BIN}"
-    fi
-  fi
-
-  # This directory (the ${INSTALL_ROOT}/${bindir} part)
-  # should be kept in sync with INSTALL_BIN et al.
-  local destdir="${INSTALL_ROOT}/${bindir}"
-
-  driver-install-python "${destdir}" "pnacl-*.py"
-
-  # Tell the driver the library mode and host arch
-  echo """HAS_FRONTEND=1
-HOST_ARCH=${HOST_ARCH}""" > "${destdir}"/driver.conf
-
-  # On windows, copy the cygwin DLLs needed by the driver tools
-  if ${BUILD_PLATFORM_WIN}; then
-    StepBanner "DRIVER" "Copying cygwin libraries"
-    local deps="gcc_s-1 iconv-2 win1 intl-8 stdc++-6 z"
-    for name in ${deps}; do
-      cp "/bin/cyg${name}.dll" "${destdir}"
-    done
-  fi
-
-  # Install a REV file so that "pnacl-clang --version" knows the version
-  # of the drivers themselves.
-  DumpAllRevisions > "${destdir}/REV"
-
-  feature-version-file-install ${INSTALL_ROOT}
-}
-
 #@ driver-install-translator - Install driver scripts for translator component
 driver-install-translator() {
   local destdir="${INSTALL_TRANSLATOR}/bin"
@@ -941,328 +824,6 @@ driver-install-translator() {
   echo """HAS_FRONTEND=0""" > "${destdir}"/driver.conf
 
   feature-version-file-install ${INSTALL_TRANSLATOR}
-}
-
-######################################################################
-######################################################################
-#
-#                           HELPER FUNCTIONS
-#
-#             (These should not generally be used directly)
-#
-######################################################################
-######################################################################
-
-DumpAllRevisions() {
-  one-line-rev-info ${NACL_ROOT}
-  for d in ${PNACL_GIT_ROOT}/*/ ; do
-    one-line-rev-info $d
-  done
-}
-
-######################################################################
-######################################################################
-#     < VERIFY >
-######################################################################
-######################################################################
-
-# Note: we could replace this with a modified version of tools/elf_checker.py
-#       if we do not want to depend on binutils
-readonly NACL_OBJDUMP=${BINUTILS_INSTALL_DIR}/bin/${REAL_CROSS_TARGET}-objdump
-
-# Usage: VerifyArchive <checker> <pattern> <filename>
-ExtractAndCheck() {
-  local checker="$1"
-  local pattern="$2"
-  local archive="$3"
-  local tmp="/tmp/ar-verify-${RANDOM}"
-  rm -rf ${tmp}
-  mkdir -p ${tmp}
-  cp "${archive}" "${tmp}"
-  spushd ${tmp}
-  ${PNACL_AR} x $(basename ${archive})
-  # extract all the files
-  local count=0
-  for i in ${pattern} ; do
-    if [ ! -e "$i" ]; then
-      # we may also see the unexpanded pattern here if there is no match
-      continue
-    fi
-    count=$((count+1))
-    ${checker} $i
-  done
-  echo "PASS  (${count} files)"
-  rm -rf "${tmp}"
-  spopd
-}
-
-IsLinkerScript() {
-  local fname="$1"
-  local type="$(file --brief --mime-type "${fname}")"
-  case "$type" in
-    text/x-c)
-      # A linker script with C comments looks like C to "file".
-      return 0
-      ;;
-    text/plain)
-      return 0
-      ;;
-  esac
-  return 1
-}
-
-# Usage: VerifyLinkerScript <filename>
-VerifyLinkerScript() {
-  local archive="$1"
-  # Use preprocessor to strip the C-style comments.
-  ${PNACL_PP} -xc "${archive}" | awk -v archive="$(basename ${archive})" '
-    BEGIN { status = 0 }
-    NF == 0 || $1 == "#" { next }
-    $1 == "INPUT" && $2 == "(" && $NF == ")" { next }
-    {
-      print "FAIL - unexpected linker script(?) contents:", archive
-      status = 1
-      exit(status)
-    }
-    END { if (status == 0) print "PASS  (trivial linker script)" }
-' || exit -1
-}
-
-# Usage: VerifyArchive <checker> <pattern> <filename>
-VerifyArchive() {
-  local checker="$1"
-  local pattern="$2"
-  local archive="$3"
-  echo -n "verify $(basename "${archive}"): "
-  if IsLinkerScript "${archive}"; then
-    VerifyLinkerScript "${archive}"
-  else
-    ExtractAndCheck "$checker" "$pattern" "$archive"
-  fi
-}
-
-#
-# verify-object-llvm <obj>
-#
-#   Verifies that a given .o file is bitcode and free of ASMSs
-verify-object-llvm() {
-  if ${PNACL_DIS} "$1" -o - | grep asm ; then
-    echo
-    echo "ERROR asm in $1"
-    echo
-    exit -1
-  fi
-  if [ ${PIPESTATUS[0]} -ne 0 ]; then
-    exit -1
-  fi
-}
-
-
-check-elf-abi() {
-  # Temporarily disable ELF abi check until DEPS roll
-  return 0
-
-  local arch_info="$(${NACL_OBJDUMP} -f $1)"
-  if ! grep -q $2 <<< ${arch_info} ; then
-    echo "ERROR $1 - bad file format: $2 vs ${arch_info}\n"
-    echo ${arch_info}
-    exit -1
-  fi
-}
-
-
-# verify-object-arm <obj>
-#
-#   Ensure that the ARCH properties are what we expect, this is a little
-#   fragile and needs to be updated when tools change
-verify-object-arm() {
-  check-elf-abi $1 "elf32-littlearm"
-  # llvm-mc does not automatically insert these tags (unlike gnu-as).
-  # So we exclude llvm-mc generated object files for now
-  if [[ $1 == aeabi_read_tp.o || $1 == setjmp.o ]] ; then
-    return
-  fi
-  arch_info="$("${PNACL_READELF}" -A "$1")"
-  #TODO(robertm): some refactoring and cleanup needed
-  if ! grep -q "Tag_FP_arch: VFPv3" <<< ${arch_info} ; then
-    echo "ERROR $1 - bad Tag_FP_arch"
-    #TODO(robertm): figure out what the right thing to do is here, c.f.
-    # http://code.google.com/p/nativeclient/issues/detail?id=966
-    "${PNACL_READELF}" -A $1 | grep  Tag_FP_arch
-    exit -1
-  fi
-
-  if ! grep -q "Tag_CPU_arch: v7" <<< ${arch_info} ; then
-    echo "FAIL bad $1 Tag_CPU_arch"
-    "${PNACL_READELF}" -A $1 | grep Tag_CPU_arch
-    exit -1
-  fi
-
-  if ! grep -q "Tag_Advanced_SIMD_arch: NEONv1" <<< ${arch_info} ; then
-    echo "FAIL bad $1 Tag_Advanced_SIMD_arch"
-    "${PNACL_READELF}" -A $1 | grep Tag_Advanced_SIMD_arch
-  fi
-
-  # Check that the file uses the ARM hard-float ABI (where VFP
-  # registers D0-D7 (s0-s15) are used to pass arguments and results).
-  if ! grep -q "Tag_ABI_VFP_args: VFP registers" <<< ${arch_info} ; then
-    echo "FAIL bad $1 Tag_ABI_VFP_args"
-    "${PNACL_READELF}" -A $1 | grep Tag_ABI_VFP_args
-  fi
-}
-
-
-# verify-object-x86-32 <obj>
-#
-verify-object-x86-32() {
-  check-elf-abi $1 "elf32-i386"
-}
-
-# verify-object-x86-64 <obj>
-#
-verify-object-x86-64() {
-  check-elf-abi $1 "elf64-x86-64"
-}
-
-#+ verify-bitcode-dir    - Verify that the files in a directory are bitcode.
-verify-bitcode-dir() {
-  local dir="$1"
-  # This avoids errors when * finds no matches.
-  shopt -s nullglob
-  SubBanner "VERIFY: ${dir}"
-  for i in "${dir}"/*.a ; do
-    verify-archive-llvm "$i"
-  done
-  for i in "${dir}"/*.bc ; do
-    echo -n "verify $(basename "$i"): "
-    verify-object-llvm "$i"
-    echo "PASS (bitcode)"
-  done
-  for i in "${dir}"/*.o ; do
-    Fatal "Native object file $i inside bitcode directory"
-  done
-  shopt -u nullglob
-}
-
-
-#+ verify-native-dir     - Verify that files in a directory are native for arch.
-verify-native-dir() {
-  local arch="$1"
-  local dir="$2"
-
-  SubBanner "VERIFY: ${dir}"
-
-  # This avoids errors when * finds no matches.
-  shopt -s nullglob
-  for i in "${dir}"/*.o ; do
-    verify-object-${arch} "$i"
-  done
-
-  for i in "${dir}"/*.a ; do
-    verify-archive-${arch} "$i"
-  done
-
-  for i in "${dir}"/*.bc "${dir}"/*.pso ; do
-    Fatal "Bitcode file $i found inside native directory"
-  done
-  shopt -u nullglob
-}
-
-#
-# verify-archive-llvm <archive>
-# Verifies that a given archive is bitcode and free of ASMSs
-#
-verify-archive-llvm() {
-  # Currently all the files are .o in the llvm archives.
-  # Eventually more and more should be .bc.
-  VerifyArchive verify-object-llvm '*.bc *.o' "$@"
-}
-
-#
-# verify-archive-arm <archive>
-# Verifies that a given archive is a proper arm achive
-#
-verify-archive-arm() {
-  VerifyArchive verify-object-arm '*.o *.ons' "$@"
-}
-
-#
-# verify-archive-x86-32 <archive>
-# Verifies that a given archive is a proper x86-32 achive
-#
-verify-archive-x86-32() {
-  VerifyArchive verify-object-x86-32 '*.o *.ons' "$@"
-}
-
-#
-# verify-archive-x86-64 <archive>
-# Verifies that a given archive is a proper x86-64 achive
-#
-verify-archive-x86-64() {
-  VerifyArchive verify-object-x86-64 '*.o *.ons' "$@"
-}
-
-#@-------------------------------------------------------------------------
-#+ verify                - Verifies that the pnacl-untrusted ELF files
-#+                         are of the correct architecture.
-verify() {
-  StepBanner "VERIFY"
-  verify-bitcode
-  verify-native
-}
-
-verify-bitcode() {
-  verify-bitcode-dir "${INSTALL_LIB}"
-}
-
-verify-native() {
-  local arch
-  for arch in arm x86-32 x86-64; do
-    verify-native-dir ${arch} "${INSTALL_LIB_NATIVE}${arch}"
-  done
-}
-
-#+ verify-triple-build <arch>
-#+     Verify that the sandboxed translator produces an identical
-#+     translation of itself (pnacl-llc.pexe) as the unsandboxed translator.
-#+     (NOTE: This function is experimental/untested)
-verify-triple-build() {
-  local arch=$1
-  StepBanner "VERIFY" "Verifying triple build for ${arch}"
-
-  local bindir="$(GetTranslatorInstallDir ${arch})/bin"
-  local llc_nexe="${bindir}/pnacl-llc.nexe"
-  local llc_pexe="${bindir}/pnacl-llc.pexe"
-  assert-file "${llc_nexe}" "sandboxed llc for ${arch} does not exist"
-  assert-file "${llc_pexe}" "pnacl-llc.pexe does not exist"
-
-  local flags="--pnacl-sb --pnacl-driver-verbose"
-
-  if [ ${arch} == "arm" ] ; then
-    # Use emulator if we are not on ARM
-    local hostarch=$(uname -m)
-    if ! [[ "${BUILD_ARCH}" =~ arm ]]; then
-      flags+=" --pnacl-use-emulator"
-    fi
-  fi
-
-  local triple_install_dir="$(GetTranslatorInstallDir ${arch})/triple-build"
-  mkdir -p ${triple_install_dir}
-  local new_llc_nexe="${triple_install_dir}/pnacl-llc.rebuild.nexe"
-  mkdir -p "${triple_install_dir}"
-  StepBanner "VERIFY" "Translating ${llc_pexe} using sandboxed tools (${arch})"
-  local sb_translator="${INSTALL_TRANSLATOR}/bin/pnacl-translate"
-  RunWithLog "verify.triple.build" \
-    "${sb_translator}" ${flags} -arch ${arch} "${llc_pexe}" -o "${new_llc_nexe}"
-
-  if ! cmp --silent "${llc_nexe}" "${new_llc_nexe}" ; then
-    Banner "TRIPLE BUILD VERIFY FAILED"
-    echo "Expected these files to be identical, but they are not:"
-    echo "  ${archllc}"
-    echo "  ${newllc}"
-    exit -1
-  fi
-  StepBanner "VERIFY" "Verified ${arch} OK"
 }
 
 ######################################################################
@@ -1297,56 +858,6 @@ help() {
 #@ help-full             - Usage information including internal functions.
 help-full() {
   Usage2
-}
-
-has-trusted-toolchain() {
-  if [ -f ${TOOLCHAIN_BASE}/arm_trusted/ld_script_arm_trusted ]; then
-    return 0
-  else
-    return 1
-  fi
-}
-
-check-for-trusted() {
-  if ! ${PNACL_BUILD_ARM} ; then
-    return
-  fi
-
-  if ! has-trusted-toolchain; then
-    echo '*******************************************************************'
-    echo '*   The ARM trusted toolchain does not appear to be installed yet *'
-    echo '*   It is needed to run ARM tests.                                *'
-    echo '*                                                                 *'
-    echo '*   To download and install the trusted toolchain, run:           *'
-    echo '*                                                                 *'
-    echo '*       $ pnacl/build.sh download-trusted                         *'
-    echo '*                                                                 *'
-    echo '*   To compile the trusted toolchain, use:                        *'
-    echo '*                                                                 *'
-    echo '*       $ tools/llvm/trusted-toolchain-creator.sh trusted_sdk     *'
-    echo '*               (warning: this takes a while)                     *'
-    echo '*******************************************************************'
-
-    # If building on the bots, do not continue since it needs to run ARM tests.
-    if ${PNACL_BUILDBOT} ; then
-      echo "Building on bots --> need ARM trusted toolchain to run tests!"
-      exit -1
-    elif trusted-tc-confirm ; then
-      echo "Continuing without ARM trusted toolchain"
-      PNACL_BUILD_ARM=false
-    else
-      echo "Okay, stopping."
-      exit -1
-    fi
-  fi
-}
-
-trusted-tc-confirm() {
-  echo
-  echo "Do you wish to continue without the ARM trusted TC (skip ARM testing)?"
-  echo ""
-  confirm-yes "Continue"
-  return $?
 }
 
 DebugRun() {
