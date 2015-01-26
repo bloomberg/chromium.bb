@@ -99,6 +99,8 @@
         'browser/ui/ui_util.mm',
         'browser/ui/uikit_ui_util.h',
         'browser/ui/uikit_ui_util.mm',
+        'browser/web_resource/ios_web_resource_service.cc',
+        'browser/web_resource/ios_web_resource_service.h',
       ],
     },
   ],
