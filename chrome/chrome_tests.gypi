@@ -668,6 +668,7 @@
       'browser/chromeos/login/reset_browsertest.cc',
       # TODO(nkostylev) Re-enable ResourceLoaderBrowserTest.
       #'browser/chromeos/login/resource_loader_browsertest.cc',
+      'browser/chromeos/login/proxy_auth_dialog_browsertest.cc',
       'browser/chromeos/login/saml/saml_browsertest.cc',
       'browser/chromeos/login/session_login_browsertest.cc',
       'browser/chromeos/login/screens/mock_base_screen_delegate.cc',
