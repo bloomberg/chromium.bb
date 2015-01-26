@@ -86,7 +86,7 @@ bool isDelayAgnosticAecEnabled() {
   if (command_line->HasSwitch(switches::kEnableDelayAgnosticAec))
     return true;
 
-  return group_name == "Enabled";
+  return (group_name == "Enabled" || group_name == "DefaultEnabled");
 }
 }  // namespace
 

@@ -266,7 +266,8 @@ void EnableEchoCancellation(AudioProcessing* audio_processing) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   const std::string group_name =
       base::FieldTrialList::FindFullName("ReplaceAECMWithAEC");
-  if (group_name.empty() || group_name != "Enabled") {
+  if (group_name.empty() ||
+      !(group_name == "Enabled" || group_name == "DefaultEnabled")) {
     // Mobile devices are using AECM.
     int err = audio_processing->echo_control_mobile()->set_routing_mode(
         webrtc::EchoControlMobile::kSpeakerphone);
