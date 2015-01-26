@@ -358,7 +358,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
  * socket later - typically when the compositor has handled all
  * requests and goes back to block in the event loop.  This function
  * flushes all queued up events for a client immediately.
- * 
+ *
  * \memberof wl_client
  */
 WL_EXPORT void
@@ -371,7 +371,7 @@ wl_client_flush(struct wl_client *client)
  *
  * \param client The client object
  * \return The display object the client is associated with.
- * 
+ *
  * \memberof wl_client
  */
 WL_EXPORT struct wl_display *
@@ -402,7 +402,7 @@ bind_display(struct wl_client *client, struct wl_display *display);
  * WAYLAND_SOCKET environment variable on the client side.
  *
  * On failure this function sets errno accordingly and returns NULL.
- * 
+ *
  * \memberof wl_display
  */
 WL_EXPORT struct wl_client *
@@ -472,7 +472,7 @@ err_client:
  * then connects using socketpair(), this function will return the
  * credentials for the compositor.  The credentials for the socketpair
  * are set at creation time in the compositor.
- * 
+ *
  * \memberof wl_client
  */
 WL_EXPORT void
@@ -494,8 +494,8 @@ wl_client_get_credentials(struct wl_client *client,
  * \return The object or NULL if there is not object for the given ID
  *
  * This looks up an object in the client object name space by its
- * object ID.  
- * 
+ * object ID.
+ *
  * \memberof wl_client
  */
 WL_EXPORT struct wl_resource *
@@ -583,12 +583,12 @@ wl_resource_find_for_client(struct wl_list *list, struct wl_client *client)
 	if (client == NULL)
 		return NULL;
 
-        wl_list_for_each(resource, list, link) {
-                if (resource->client == client)
-                        return resource;
-        }
+	wl_list_for_each(resource, list, link) {
+		if (resource->client == client)
+			return resource;
+	}
 
-        return NULL;
+	return NULL;
 }
 
 WL_EXPORT struct wl_client *
@@ -951,7 +951,7 @@ wl_global_destroy(struct wl_global *global)
  *
  * This function returns the most recent serial number, but does not
  * increment it.
- * 
+ *
  * \memberof wl_display
  */
 WL_EXPORT uint32_t
@@ -966,7 +966,7 @@ wl_display_get_serial(struct wl_display *display)
  *
  * This function increments the display serial number and returns the
  * new value.
- * 
+ *
  * \memberof wl_display
  */
 WL_EXPORT uint32_t
@@ -1371,9 +1371,9 @@ wl_display_add_shm_format(struct wl_display *display, uint32_t format)
  * WL_SHM_FORMAT_XRGB8888 are always supported and not included in the
  * array, but all formats added through wl_display_add_shm_format()
  * will be in the array.
- * 
+ *
  * \sa wl_display_add_shm_format()
- * 
+ *
  * \memberof wl_display
  */
 struct wl_array *
