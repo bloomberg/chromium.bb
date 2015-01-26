@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
@@ -57,7 +58,6 @@ class BrowserToolbarModelDelegate;
 class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
 class FindBarController;
-class FullscreenController;
 class PrefService;
 class Profile;
 class SearchDelegate;
@@ -475,8 +475,8 @@ class Browser : public TabStripModelObserver,
   // Show a download on the download shelf.
   void ShowDownload(content::DownloadItem* download);
 
-  FullscreenController* fullscreen_controller() const {
-    return fullscreen_controller_.get();
+  ExclusiveAccessManager* exclusive_access_manager() {
+    return exclusive_access_manager_.get();
   }
 
   extensions::WindowController* extension_window_controller() const {
@@ -954,7 +954,7 @@ class Browser : public TabStripModelObserver,
 
   BookmarkBar::State bookmark_bar_state_;
 
-  scoped_ptr<FullscreenController> fullscreen_controller_;
+  scoped_ptr<ExclusiveAccessManager> exclusive_access_manager_;
 
   scoped_ptr<extensions::WindowController> extension_window_controller_;
 

@@ -96,12 +96,12 @@ const float kHideDuration = 0.7;
     [[self window] setIgnoresMouseEvents:YES];
 
   DCHECK(exclusive_access_bubble::ShowButtonsForType(bubbleType_));
-  browser_->fullscreen_controller()->OnAcceptFullscreenPermission();
+  browser_->exclusive_access_manager()->OnAcceptExclusiveAccessPermission();
 }
 
 - (void)deny:(id)sender {
   DCHECK(exclusive_access_bubble::ShowButtonsForType(bubbleType_));
-  browser_->fullscreen_controller()->OnDenyFullscreenPermission();
+  browser_->exclusive_access_manager()->OnDenyExclusiveAccessPermission();
 }
 
 - (void)showButtons:(BOOL)show {
@@ -151,8 +151,9 @@ const float kHideDuration = 0.7;
 - (BOOL)textView:(NSTextView*)textView
     clickedOnLink:(id)link
           atIndex:(NSUInteger)charIndex {
-  browser_->fullscreen_controller()
-      ->ExitTabOrBrowserFullscreenToPreviousState();
+  browser_->exclusive_access_manager()
+      ->fullscreen_controller()
+      ->ExitExclusiveAccessToPreviousState();
   return YES;
 }
 

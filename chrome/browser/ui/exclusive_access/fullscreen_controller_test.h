@@ -7,6 +7,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -55,6 +56,9 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void Reload();
   void SetPrivilegedFullscreen(bool is_privileged);
   static const char kFullscreenMouseLockHTML[];
+  FullscreenController* GetFullscreenController();
+  ExclusiveAccessManager* GetExclusiveAccessManager();
+
  private:
   void ToggleTabFullscreen_Internal(bool enter_fullscreen,
                                     bool retry_until_success);

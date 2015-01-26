@@ -861,7 +861,6 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
   DCHECK(browser->window());
-  DCHECK(browser->fullscreen_controller());
 
   if (IsShowing())
     return;

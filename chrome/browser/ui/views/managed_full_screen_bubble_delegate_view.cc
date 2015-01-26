@@ -21,9 +21,10 @@ ManagedFullScreenBubbleDelegateView::ManagedFullScreenBubbleDelegateView(
   // Add observer to close the bubble if the fullscreen state changes.
   if (web_contents) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-    registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-                   content::Source<FullscreenController>(
-                       browser->fullscreen_controller()));
+    registrar_.Add(
+        this, chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        content::Source<FullscreenController>(
+            browser->exclusive_access_manager()->fullscreen_controller()));
   }
 }
 

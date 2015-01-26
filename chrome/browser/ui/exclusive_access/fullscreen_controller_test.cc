@@ -27,34 +27,39 @@ void FullscreenControllerTest::RequestToLockMouse(
       last_unlocked_by_target);
 }
 
+FullscreenController* FullscreenControllerTest::GetFullscreenController() {
+  return GetExclusiveAccessManager()->fullscreen_controller();
+}
+
+ExclusiveAccessManager* FullscreenControllerTest::GetExclusiveAccessManager() {
+  return browser()->exclusive_access_manager();
+}
+
 void FullscreenControllerTest::LostMouseLock() {
   browser()->LostMouseLock();
 }
 
 bool FullscreenControllerTest::SendEscapeToFullscreenController() {
-  return browser()->fullscreen_controller()->HandleUserPressedEscape();
+  return GetExclusiveAccessManager()->HandleUserPressedEscape();
 }
 
 bool FullscreenControllerTest::IsFullscreenForBrowser() {
-  return browser()->fullscreen_controller()->IsFullscreenForBrowser();
+  return GetFullscreenController()->IsFullscreenForBrowser();
 }
 
 bool FullscreenControllerTest::IsWindowFullscreenForTabOrPending() {
-  return browser()->fullscreen_controller()->
-      IsWindowFullscreenForTabOrPending();
+  return GetFullscreenController()->IsWindowFullscreenForTabOrPending();
 }
 
 bool FullscreenControllerTest::IsMouseLockPermissionRequested() {
-  ExclusiveAccessBubbleType type =
-      browser()->fullscreen_controller()->GetExclusiveAccessBubbleType();
+  ExclusiveAccessBubbleType type = GetExclusiveAccessBubbleType();
   bool mouse_lock = false;
   exclusive_access_bubble::PermissionRequestedByType(type, NULL, &mouse_lock);
   return mouse_lock;
 }
 
 bool FullscreenControllerTest::IsFullscreenPermissionRequested() {
-  ExclusiveAccessBubbleType type =
-      browser()->fullscreen_controller()->GetExclusiveAccessBubbleType();
+  ExclusiveAccessBubbleType type = GetExclusiveAccessBubbleType();
   bool fullscreen = false;
   exclusive_access_bubble::PermissionRequestedByType(type, &fullscreen, NULL);
   return fullscreen;
@@ -62,27 +67,24 @@ bool FullscreenControllerTest::IsFullscreenPermissionRequested() {
 
 ExclusiveAccessBubbleType
 FullscreenControllerTest::GetExclusiveAccessBubbleType() {
-  return browser()->fullscreen_controller()->GetExclusiveAccessBubbleType();
+  return GetExclusiveAccessManager()->GetExclusiveAccessExitBubbleType();
 }
 
 bool FullscreenControllerTest::IsFullscreenBubbleDisplayed() {
-  ExclusiveAccessBubbleType type =
-      browser()->fullscreen_controller()->GetExclusiveAccessBubbleType();
-  return type != EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
+  return GetExclusiveAccessBubbleType() != EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
 }
 
 bool FullscreenControllerTest::IsFullscreenBubbleDisplayingButtons() {
-  ExclusiveAccessBubbleType type =
-      browser()->fullscreen_controller()->GetExclusiveAccessBubbleType();
-  return exclusive_access_bubble::ShowButtonsForType(type);
+  return exclusive_access_bubble::ShowButtonsForType(
+      GetExclusiveAccessBubbleType());
 }
 
 void FullscreenControllerTest::AcceptCurrentFullscreenOrMouseLockRequest() {
-  browser()->fullscreen_controller()->OnAcceptFullscreenPermission();
+  GetExclusiveAccessManager()->OnAcceptExclusiveAccessPermission();
 }
 
 void FullscreenControllerTest::DenyCurrentFullscreenOrMouseLockRequest() {
-  browser()->fullscreen_controller()->OnDenyFullscreenPermission();
+  GetExclusiveAccessManager()->OnDenyExclusiveAccessPermission();
 }
 
 void FullscreenControllerTest::GoBack() {
@@ -100,6 +102,5 @@ void FullscreenControllerTest::Reload() {
 }
 
 void FullscreenControllerTest::SetPrivilegedFullscreen(bool is_privileged) {
-  browser()->fullscreen_controller()->
-      SetPrivilegedFullscreenForTesting(is_privileged);
+  GetFullscreenController()->SetPrivilegedFullscreenForTesting(is_privileged);
 }

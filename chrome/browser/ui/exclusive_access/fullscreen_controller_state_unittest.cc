@@ -428,7 +428,9 @@ TEST_F(FullscreenControllerStateUnitTest, ExitFullscreenViaBrowserWindow) {
   browser()->window()->ExitFullscreen();
   ChangeWindowFullscreenState();
   EXPECT_EQ(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
-            browser()->fullscreen_controller()->GetExclusiveAccessBubbleType());
+            browser()
+                ->exclusive_access_manager()
+                ->GetExclusiveAccessExitBubbleType());
 }
 
 // Test that switching tabs takes the browser out of tab fullscreen.
@@ -763,8 +765,9 @@ TEST_F(FullscreenControllerStateUnitTest,
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(tab));
   EXPECT_TRUE(second_wc_delegate->IsFullscreenForTabOrPending(tab));
   EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
-  EXPECT_FALSE(second_browser->fullscreen_controller()->
-                   IsWindowFullscreenForTabOrPending());
+  EXPECT_FALSE(second_browser->exclusive_access_manager()
+                   ->fullscreen_controller()
+                   ->IsWindowFullscreenForTabOrPending());
 
   // Now, detach and reattach it back to the first browser window.  Again, the
   // tab should remain in fullscreen mode and neither browser window should have
@@ -777,8 +780,9 @@ TEST_F(FullscreenControllerStateUnitTest,
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(tab));
   EXPECT_TRUE(second_wc_delegate->IsFullscreenForTabOrPending(tab));
   EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
-  EXPECT_FALSE(second_browser->fullscreen_controller()->
-                   IsWindowFullscreenForTabOrPending());
+  EXPECT_FALSE(second_browser->exclusive_access_manager()
+                   ->fullscreen_controller()
+                   ->IsWindowFullscreenForTabOrPending());
 
   // Exit fullscreen.
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
@@ -786,8 +790,9 @@ TEST_F(FullscreenControllerStateUnitTest,
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(tab));
   EXPECT_FALSE(second_wc_delegate->IsFullscreenForTabOrPending(tab));
   EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
-  EXPECT_FALSE(second_browser->fullscreen_controller()->
-                   IsWindowFullscreenForTabOrPending());
+  EXPECT_FALSE(second_browser->exclusive_access_manager()
+                   ->fullscreen_controller()
+                   ->IsWindowFullscreenForTabOrPending());
 
   // Required tear-down specific to this test.
   second_browser->tab_strip_model()->CloseAllTabs();

@@ -104,6 +104,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
 #include "chrome/browser/ui/fast_unload_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -444,7 +445,7 @@ Browser::Browser(const CreateParams& params)
 #endif  // defined(OS_WIN)
   }
 
-  fullscreen_controller_.reset(new FullscreenController(this));
+  exclusive_access_manager_.reset(new ExclusiveAccessManager(this));
 
   // Must be initialized after window_.
   // Also: surprise! a modal dialog host is not necessary to host modal dialogs
@@ -784,7 +785,8 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
 // Browser, Tab adding/showing functions:
 
 void Browser::WindowFullscreenStateChanged() {
-  fullscreen_controller_->WindowFullscreenStateChanged();
+  exclusive_access_manager_->fullscreen_controller()
+      ->WindowFullscreenStateChanged();
   command_controller_->FullscreenStateChanged();
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN);
 }
@@ -793,8 +795,8 @@ void Browser::WindowFullscreenStateChanged() {
 // Browser, Assorted browser commands:
 
 void Browser::ToggleFullscreenModeWithExtension(const GURL& extension_url) {
-  fullscreen_controller_->
-      ToggleBrowserFullscreenModeWithExtension(extension_url);
+  exclusive_access_manager_->fullscreen_controller()
+      ->ToggleBrowserFullscreenModeWithExtension(extension_url);
 }
 
 bool Browser::SupportsWindowFeature(WindowFeature feature) const {
@@ -944,7 +946,7 @@ void Browser::TabInsertedAt(WebContents* contents,
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
                            WebContents* contents,
                            int index) {
-  fullscreen_controller_->OnTabClosing(contents);
+  exclusive_access_manager_->OnTabClosing(contents);
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
@@ -980,7 +982,7 @@ void Browser::TabDetachedAt(WebContents* contents, int index) {
 }
 
 void Browser::TabDeactivated(WebContents* contents) {
-  fullscreen_controller_->OnTabDeactivated(contents);
+  exclusive_access_manager_->OnTabDeactivated(contents);
   search_delegate_->OnTabDeactivated(contents);
   SearchTabHelper::FromWebContents(contents)->OnTabDeactivated();
 
@@ -1008,7 +1010,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   // is updated.
   window_->OnActiveTabChanged(old_contents, new_contents, index, reason);
 
-  fullscreen_controller_->OnTabDetachedFromView(old_contents);
+  exclusive_access_manager_->OnTabDetachedFromView(old_contents);
 
   // Discarded tabs always get reloaded.
   if (tab_strip_model_->IsTabDiscarded(index)) {
@@ -1080,7 +1082,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
                             WebContents* new_contents,
                             int index) {
   TabDetachedAtImpl(old_contents, index, DETACH_TYPE_REPLACE);
-  fullscreen_controller_->OnTabClosing(old_contents);
+  exclusive_access_manager_->OnTabClosing(old_contents);
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
@@ -1180,10 +1182,10 @@ bool Browser::ShouldPreserveAbortedURLs(WebContents* source) {
 bool Browser::PreHandleKeyboardEvent(content::WebContents* source,
                                      const NativeWebKeyboardEvent& event,
                                      bool* is_keyboard_shortcut) {
-  // Escape exits tabbed fullscreen mode.
+  // Escape exits tabbed fullscreen mode and mouse lock, and possibly others.
   // TODO(koz): Write a test for this http://crbug.com/100441.
   if (event.windowsKeyCode == 27 &&
-      fullscreen_controller_->HandleUserPressedEscape()) {
+      exclusive_access_manager_->HandleUserPressedEscape()) {
     return true;
   }
   return window()->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
@@ -1261,7 +1263,7 @@ bool Browser::CanDragEnter(content::WebContents* source,
 }
 
 bool Browser::IsMouseLocked() const {
-  return fullscreen_controller_->IsMouseLocked();
+  return exclusive_access_manager_->mouse_lock_controller()->IsMouseLocked();
 }
 
 void Browser::OnWindowDidShow() {
@@ -1665,16 +1667,19 @@ bool Browser::EmbedsFullscreenWidget() const {
 
 void Browser::EnterFullscreenModeForTab(WebContents* web_contents,
                                         const GURL& origin) {
-  fullscreen_controller_->EnterFullscreenModeForTab(web_contents, origin);
+  exclusive_access_manager_->fullscreen_controller()->EnterFullscreenModeForTab(
+      web_contents, origin);
 }
 
 void Browser::ExitFullscreenModeForTab(WebContents* web_contents) {
-  fullscreen_controller_->ExitFullscreenModeForTab(web_contents);
+  exclusive_access_manager_->fullscreen_controller()->ExitFullscreenModeForTab(
+      web_contents);
 }
 
 bool Browser::IsFullscreenForTabOrPending(
     const WebContents* web_contents) const {
-  return fullscreen_controller_->IsFullscreenForTabOrPending(web_contents);
+  return exclusive_access_manager_->fullscreen_controller()
+      ->IsFullscreenForTabOrPending(web_contents);
 }
 
 void Browser::RegisterProtocolHandler(WebContents* web_contents,
@@ -1770,13 +1775,12 @@ void Browser::FindReply(WebContents* web_contents,
 void Browser::RequestToLockMouse(WebContents* web_contents,
                                  bool user_gesture,
                                  bool last_unlocked_by_target) {
-  fullscreen_controller_->RequestToLockMouse(web_contents,
-                                             user_gesture,
-                                             last_unlocked_by_target);
+  exclusive_access_manager_->mouse_lock_controller()->RequestToLockMouse(
+      web_contents, user_gesture, last_unlocked_by_target);
 }
 
 void Browser::LostMouseLock() {
-  fullscreen_controller_->LostMouseLock();
+  exclusive_access_manager_->mouse_lock_controller()->LostMouseLock();
 }
 
 void Browser::RequestMediaAccessPermission(

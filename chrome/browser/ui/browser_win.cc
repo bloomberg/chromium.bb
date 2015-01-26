@@ -7,5 +7,5 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 
 void Browser::SetMetroSnapMode(bool enable) {
-  fullscreen_controller_->SetMetroSnapMode(enable);
+  exclusive_access_manager_->fullscreen_controller()->SetMetroSnapMode(enable);
 }

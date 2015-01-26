@@ -1130,7 +1130,9 @@ void ToggleRequestTabletSite(Browser* browser) {
 
 void ToggleFullscreenMode(Browser* browser) {
   DCHECK(browser);
-  browser->fullscreen_controller()->ToggleBrowserFullscreenMode();
+  browser->exclusive_access_manager()
+      ->fullscreen_controller()
+      ->ToggleBrowserFullscreenMode();
 }
 
 void ClearCache(Browser* browser) {

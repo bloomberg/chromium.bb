@@ -426,8 +426,9 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)configurePresentationModeController {
-  BOOL fullscreen_for_tab =
-      browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
+  BOOL fullscreen_for_tab = browser_->exclusive_access_manager()
+                                ->fullscreen_controller()
+                                ->IsWindowFullscreenForTabOrPending();
   BOOL kiosk_mode =
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
   BOOL showDropdown =
@@ -670,7 +671,9 @@ willPositionSheet:(NSWindow*)sheet
   NSWindow* window = [self window];
   savedRegularWindowFrame_ = [window frame];
   BOOL mode = enteringPresentationMode_ ||
-       browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
+              browser_->exclusive_access_manager()
+                  ->fullscreen_controller()
+                  ->IsWindowFullscreenForTabOrPending();
   enteringAppKitFullscreen_ = YES;
   enteringAppKitFullscreenOnPrimaryScreen_ =
       [[[self window] screen] isEqual:[[NSScreen screens] objectAtIndex:0]];

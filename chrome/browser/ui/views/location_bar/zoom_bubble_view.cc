@@ -39,7 +39,8 @@ ZoomBubbleView* ZoomBubbleView::zoom_bubble_ = NULL;
 void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
                                 bool auto_close) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  DCHECK(browser && browser->window() && browser->fullscreen_controller());
+  DCHECK(browser && browser->window() &&
+         browser->exclusive_access_manager()->fullscreen_controller());
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   bool is_fullscreen = browser_view->IsFullscreen();
@@ -66,11 +67,8 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   // bubble must be closed and a new one created.
   CloseBubble();
 
-  zoom_bubble_ = new ZoomBubbleView(anchor_view,
-                                    web_contents,
-                                    auto_close,
-                                    browser_view->immersive_mode_controller(),
-                                    browser->fullscreen_controller());
+  zoom_bubble_ = new ZoomBubbleView(anchor_view, web_contents, auto_close,
+                                    browser_view->immersive_mode_controller());
 
   // If the zoom change was initiated by an extension, capture the relevent
   // information from it.
@@ -118,8 +116,7 @@ ZoomBubbleView::ZoomBubbleView(
     views::View* anchor_view,
     content::WebContents* web_contents,
     bool auto_close,
-    ImmersiveModeController* immersive_mode_controller,
-    FullscreenController* fullscreen_controller)
+    ImmersiveModeController* immersive_mode_controller)
     : ManagedFullScreenBubbleDelegateView(anchor_view, web_contents),
       image_button_(NULL),
       label_(NULL),

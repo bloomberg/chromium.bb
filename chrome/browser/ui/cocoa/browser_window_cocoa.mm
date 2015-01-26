@@ -361,7 +361,9 @@ void BrowserWindowCocoa::Restore() {
 void BrowserWindowCocoa::EnterFullscreen(const GURL& url,
                                          ExclusiveAccessBubbleType bubble_type,
                                          bool with_toolbar) {
-  if (browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending())
+  if (browser_->exclusive_access_manager()
+          ->fullscreen_controller()
+          ->IsWindowFullscreenForTabOrPending())
     [controller_ enterWebContentFullscreenForURL:url bubbleType:bubble_type];
   else if (!url.is_empty())
     [controller_ enterExtensionFullscreenForURL:url bubbleType:bubble_type];

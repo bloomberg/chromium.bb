@@ -147,8 +147,10 @@ class FlashFullscreenInteractiveBrowserTest : public OutOfProcessPPAPITest {
         return false;
       }
       EXPECT_EQ(GetActiveWebContents()->GetCapturerCount() > 0,
-                !browser()->fullscreen_controller()->
-                     IsWindowFullscreenForTabOrPending());
+                !browser()
+                     ->exclusive_access_manager()
+                     ->fullscreen_controller()
+                     ->IsWindowFullscreenForTabOrPending());
     }
 
     return true;
@@ -187,8 +189,11 @@ class FlashFullscreenInteractiveBrowserTest : public OutOfProcessPPAPITest {
  private:
   bool IsObservingTabInFullscreen(content::WebContents* contents,
                                   bool expected_in_fullscreen) const {
-    return expected_in_fullscreen == browser()->fullscreen_controller()->
-                                         IsFullscreenForTabOrPending(contents);
+    return expected_in_fullscreen ==
+           browser()
+               ->exclusive_access_manager()
+               ->fullscreen_controller()
+               ->IsFullscreenForTabOrPending(contents);
   }
 
   bool IsObservingFlashHasFocus(content::WebContents* contents,

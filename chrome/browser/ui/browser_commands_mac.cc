@@ -16,7 +16,9 @@ namespace chrome {
 void ToggleFullscreenWithToolbarOrFallback(Browser* browser) {
   DCHECK(browser);
   if (chrome::mac::SupportsSystemFullscreen())
-    browser->fullscreen_controller()->ToggleBrowserFullscreenWithToolbar();
+    browser->exclusive_access_manager()
+        ->fullscreen_controller()
+        ->ToggleBrowserFullscreenWithToolbar();
   else
     ToggleFullscreenMode(browser);
 }

@@ -80,8 +80,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
     // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously.
     scoped_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
-    browser()->fullscreen_controller()->EnterFullscreenModeForTab(
-        web_contents, GURL());
+    browser()
+        ->exclusive_access_manager()
+        ->fullscreen_controller()
+        ->EnterFullscreenModeForTab(web_contents, GURL());
     waiter->Wait();
   }
   EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
@@ -138,8 +140,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   {
     scoped_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
-    browser()->fullscreen_controller()->EnterFullscreenModeForTab(
-        web_contents, GURL());
+    browser()
+        ->exclusive_access_manager()
+        ->fullscreen_controller()
+        ->EnterFullscreenModeForTab(web_contents, GURL());
     waiter->Wait();
   }
   EXPECT_TRUE(immersive_mode_controller->IsEnabled());
@@ -165,7 +169,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   {
     scoped_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
-    browser()->fullscreen_controller()->ExitFullscreenModeForTab(web_contents);
+    browser()
+        ->exclusive_access_manager()
+        ->fullscreen_controller()
+        ->ExitFullscreenModeForTab(web_contents);
     waiter->Wait();
   }
 

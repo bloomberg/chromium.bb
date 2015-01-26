@@ -75,8 +75,7 @@ class ZoomBubbleView : public ManagedFullScreenBubbleDelegateView,
   ZoomBubbleView(views::View* anchor_view,
                  content::WebContents* web_contents,
                  bool auto_close,
-                 ImmersiveModeController* immersive_mode_controller,
-                 FullscreenController* fullscreen_controller);
+                 ImmersiveModeController* immersive_mode_controller);
   ~ZoomBubbleView() override;
 
   // ManagedFullScreenBubbleDelegateView:

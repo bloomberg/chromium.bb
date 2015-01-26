@@ -74,13 +74,16 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
     scoped_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
     if (tab_fullscreen) {
-      browser()->fullscreen_controller()->EnterFullscreenModeForTab(
-          web_contents, GURL());
+      browser()
+          ->exclusive_access_manager()
+          ->fullscreen_controller()
+          ->EnterFullscreenModeForTab(web_contents, GURL());
     } else {
-      browser()->fullscreen_controller()->ExitFullscreenModeForTab(
-          web_contents);
+      browser()
+          ->exclusive_access_manager()
+          ->fullscreen_controller()
+          ->ExitFullscreenModeForTab(web_contents);
     }
-
     waiter->Wait();
   }
 

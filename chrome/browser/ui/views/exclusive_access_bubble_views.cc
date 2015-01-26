@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -295,9 +296,11 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
 
   popup_->AddObserver(this);
 
-  registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-                 content::Source<FullscreenController>(
-                     browser_view_->browser()->fullscreen_controller()));
+  registrar_.Add(
+      this, chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+      content::Source<FullscreenController>(browser_view_->browser()
+                                                ->exclusive_access_manager()
+                                                ->fullscreen_controller()));
 
   UpdateForImmersiveState();
 }

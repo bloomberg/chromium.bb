@@ -415,15 +415,19 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
       break;
 
     case BUBBLE_EXIT_LINK:
-      GetFullscreenController()->ExitTabOrBrowserFullscreenToPreviousState();
+      GetFullscreenController()->ExitExclusiveAccessToPreviousState();
       break;
 
     case BUBBLE_ALLOW:
-      GetFullscreenController()->OnAcceptFullscreenPermission();
+      GetBrowser()
+          ->exclusive_access_manager()
+          ->OnAcceptExclusiveAccessPermission();
       break;
 
     case BUBBLE_DENY:
-      GetFullscreenController()->OnDenyFullscreenPermission();
+      GetBrowser()
+          ->exclusive_access_manager()
+          ->OnDenyExclusiveAccessPermission();
       break;
 
     case WINDOW_CHANGE:
@@ -756,7 +760,7 @@ void FullscreenControllerStateTest::VerifyWindowStateExpectations(
 }
 
 FullscreenController* FullscreenControllerStateTest::GetFullscreenController() {
-    return GetBrowser()->fullscreen_controller();
+  return GetBrowser()->exclusive_access_manager()->fullscreen_controller();
 }
 
 std::string FullscreenControllerStateTest::GetTransitionTableAsString() const {
