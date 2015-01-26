@@ -137,7 +137,7 @@ class TestRLZTracker : public RLZTracker {
   }
 
 #if defined(OS_CHROMEOS)
-  virtual bool ScheduleClearRlzState() override {
+  bool ScheduleClearRlzState() override {
     return !assume_not_ui_thread_;
   }
 #endif
