@@ -253,4 +253,67 @@ void* _calloc_impl(size_t n, size_t size) {
   return calloc(n, size);
 }
 
+#ifndef NDEBUG
+#undef malloc
+#undef free
+#undef calloc
+
+static int error_handler(int reportType) {
+  switch (reportType) {
+    case 0:  // _CRT_WARN
+      __debugbreak();
+      return 0;
+
+    case 1:  // _CRT_ERROR
+      __debugbreak();
+      return 0;
+
+    case 2:  // _CRT_ASSERT
+      __debugbreak();
+      return 0;
+  }
+  char* p = NULL;
+  *p = '\0';
+  return 0;
+}
+
+int _CrtDbgReport(int reportType,
+                  const char*,
+                  int,
+                  const char*,
+                  const char*,
+                  ...) {
+  return error_handler(reportType);
+}
+
+int _CrtDbgReportW(int reportType,
+                   const wchar_t*,
+                   int,
+                   const wchar_t*,
+                   const wchar_t*,
+                   ...) {
+  return error_handler(reportType);
+}
+
+int _CrtSetReportMode(int, int) {
+  return 0;
+}
+
+void* _malloc_dbg(size_t size, int, const char*, int) {
+  return malloc(size);
+}
+
+void* _realloc_dbg(void* ptr, size_t size, int, const char*, int) {
+  return realloc(ptr, size);
+}
+
+void _free_dbg(void* ptr, int) {
+  free(ptr);
+}
+
+void* _calloc_dbg(size_t n, size_t size, int, const char*, int) {
+  return calloc(n, size);
+}
+#endif  // NDEBUG
+
 }  // extern C
