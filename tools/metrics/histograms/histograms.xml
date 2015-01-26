@@ -24703,6 +24703,86 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Temperature reading at sensor 9 (PECI) taken every 30s.</summary>
 </histogram>
 
+<histogram name="Platform.Thermal.Temperature.Cpu.0" units="Celsius">
+  <owner>mka@chromium.org</owner>
+  <summary>
+    Temperature reading at sensor 0 of the CPU collected every few seconds (may
+    vary between devices).
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Thermal.Temperature.Wifi0" units="Celsius">
+  <owner>mka@chromium.org</owner>
+  <summary>
+    Temperature reading at wireless interface 0 collected every few seconds (may
+    vary between devices).
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Thermal.Temperature.Wifi1" units="Celsius">
+  <owner>mka@chromium.org</owner>
+  <summary>
+    Temperature reading at wireless interface 1 collected every few seconds (may
+    vary between devices).
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Thermal.Temperature.Wifi2" units="Celsius">
+  <owner>mka@chromium.org</owner>
+  <summary>
+    Temperature reading at wireless interface 2 collected every few seconds (may
+    vary between devices).
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Thermal.Zone.Cpu.States" units="Thermal state">
+  <owner>mka@chromium.org</owner>
+  <summary>
+    State of the thermal zone of the CPU collected every second. State depends
+    on device, higher state corresponds to a higher temperature.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Thermal.Zone.Wifi0.States" units="Thermal state">
+  <owner>mka@chromium.org</owner>
+  <summary>
+    State of the thermal zone of wireless interface 0 collected every second.
+    State depends on device, higher state corresponds to a higher temperature.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Thermal.Zone.Wifi1.States" units="Thermal state">
+  <owner>mka@chromium.org</owner>
+  <summary>
+    State of the thermal zone of wireless interface 1 collected every second.
+    State depends on device, higher state corresponds to a higher temperature.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Thermal.Zone.Wifi2.States" units="Thermal state">
+  <owner>mka@chromium.org</owner>
+  <summary>
+    State of the thermal zone of wireless interface 2 collected every second.
+    State depends on device, higher state corresponds to a higher temperature.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="Platform.TPM.DictionaryAttackCounter">
   <owner>dkrahn@chromium.org</owner>
   <summary>
