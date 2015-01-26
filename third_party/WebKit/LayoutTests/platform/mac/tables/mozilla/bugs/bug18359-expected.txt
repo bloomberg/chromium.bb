@@ -8,32 +8,32 @@ layer at (0,0) size 800x600
           text run at (0,0) width 364: "SeaMonkey XPInstall Trigger Page"
       RenderBlock {HR} at (0,43.91) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {FORM} at (0,53.91) size 784x47
-        RenderTable {TABLE} at (0,0) size 549x47
-          RenderTableSection {TBODY} at (0,0) size 549x47
-            RenderTableRow {TR} at (0,2) size 549x21
-              RenderTableCell {TD} at (2,3) size 107x18 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,0) size 549x47
+          LayoutTableSection {TBODY} at (0,0) size 549x47
+            LayoutTableRow {TR} at (0,2) size 549x21
+              LayoutTableCell {TD} at (2,3) size 107x18 [r=0 c=0 rs=1 cs=1]
                 RenderInline {B} at (0,0) size 96x16
                   RenderText {#text} at (1,1) size 96x16
                     text run at (1,1) width 96: "Trigger URL:"
-              RenderTableCell {TD} at (111,2) size 350x21 [r=0 c=1 rs=1 cs=1]
+              LayoutTableCell {TD} at (111,2) size 350x21 [r=0 c=1 rs=1 cs=1]
                 RenderTextControl {INPUT} at (1,1) size 348x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-              RenderTableCell {TD} at (463,2) size 84x20 [r=0 c=2 rs=1 cs=1]
+              LayoutTableCell {TD} at (463,2) size 84x20 [r=0 c=2 rs=1 cs=1]
                 RenderButton {INPUT} at (1,1) size 54.97x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 38.97x13
                     RenderText {#text} at (0,0) size 39x13
                       text run at (0,0) width 39: "Trigger"
-            RenderTableRow {TR} at (0,25) size 549x20
-              RenderTableCell {TD} at (2,26) size 107x18 [r=1 c=0 rs=1 cs=1]
+            LayoutTableRow {TR} at (0,25) size 549x20
+              LayoutTableCell {TD} at (2,26) size 107x18 [r=1 c=0 rs=1 cs=1]
                 RenderInline {B} at (0,0) size 105x16
                   RenderText {#text} at (1,1) size 105x16
                     text run at (1,1) width 105: "Run Test Case:"
-              RenderTableCell {TD} at (111,25) size 350x20 [r=1 c=1 rs=1 cs=1]
+              LayoutTableCell {TD} at (111,25) size 350x20 [r=1 c=1 rs=1 cs=1]
                 RenderMenuList {SELECT} at (1,1) size 262x18 [bgcolor=#F8F8F8]
                   RenderBlock (anonymous) at (0,0) size 262x18
                     RenderText at (8,2) size 73x13
                       text run at (8,2) width 73: "a_abortinstall"
                 RenderText {#text} at (0,0) size 0x0
-              RenderTableCell {TD} at (463,25) size 84x20 [r=1 c=2 rs=1 cs=1]
+              LayoutTableCell {TD} at (463,25) size 84x20 [r=1 c=2 rs=1 cs=1]
                 RenderButton {INPUT} at (1,1) size 81.91x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 65.91x13
                     RenderText {#text} at (0,0) size 66x13

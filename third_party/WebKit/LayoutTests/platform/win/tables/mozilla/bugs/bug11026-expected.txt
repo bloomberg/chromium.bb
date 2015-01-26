@@ -7,10 +7,10 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 337x17
           text run at (0,0) width 337: "The bug showed horizontal scroll bars when resized "
         RenderBR {BR} at (336,14) size 1x0
-      RenderTable {TABLE} at (0,18) size 800x90
-        RenderTableSection {TBODY} at (0,0) size 800x90
-          RenderTableRow {TR} at (0,0) size 800x90
-            RenderTableCell {TD} at (0,0) size 800x90 [bgcolor=#FFFFFF] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,18) size 800x90
+        LayoutTableSection {TBODY} at (0,0) size 800x90
+          LayoutTableRow {TR} at (0,0) size 800x90
+            LayoutTableCell {TD} at (0,0) size 800x90 [bgcolor=#FFFFFF] [r=0 c=0 rs=1 cs=1]
               RenderBlock (floating) {IMG} at (0,0) size 194x90
               RenderImage {IMG} at (667,0) size 133x90
 layer at (0,18) size 194x90 clip at (1,19) size 192x88

@@ -9,10 +9,10 @@ layer at (0,0) size 800x234
         RenderBR {BR} at (246,0) size 1x12
         RenderText {#text} at (0,12) size 390x12
           text run at (0,12) width 390: "This test passes if \"the table cell should tightly wrap this text\" is tightly wrapped."
-      RenderTable {TABLE} at (1,37) size 798x196 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 797x195
-          RenderTableRow {TR} at (0,0) size 797x195
-            RenderTableCell {TD} at (0,0) size 797x195 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (1,37) size 798x196 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 797x195
+          LayoutTableRow {TR} at (0,0) size 797x195
+            LayoutTableCell {TD} at (0,0) size 797x195 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
               RenderBlock (anonymous) at (2,2) size 794x174
                 RenderText {#text} at (0,0) size 786x174
                   text run at (0,0) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
@@ -21,9 +21,9 @@ layer at (0,0) size 800x234
                   text run at (0,87) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
                   text run at (0,116) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
                   text run at (0,145) width 446: "Autosize Autosize Autosize Autosize"
-              RenderTable {TABLE} at (3,177) size 203x16 [border: none]
-                RenderTableSection {TBODY} at (0,0) size 202x15
-                  RenderTableRow {TR} at (0,0) size 202x15
-                    RenderTableCell {TD} at (0,0) size 202x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (3,177) size 203x16 [border: none]
+                LayoutTableSection {TBODY} at (0,0) size 202x15
+                  LayoutTableRow {TR} at (0,0) size 202x15
+                    LayoutTableCell {TD} at (0,0) size 202x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (2,2) size 199x12
                         text run at (2,2) width 199: "the table cell should tightly wrap this text"

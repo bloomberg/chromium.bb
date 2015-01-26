@@ -5,14 +5,14 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
       RenderBlock {FORM} at (0,0) size 784x195
         RenderBlock {HR} at (0,0) size 602x2 [border: (1px inset #EEEEEE)]
-        RenderTable {TABLE} at (0,10) size 600x185
-          RenderTableSection {TBODY} at (0,0) size 600x185
-            RenderTableRow {TR} at (0,2) size 600x44
-              RenderTableCell {TD} at (2,2) size 594x44 [r=0 c=0 rs=1 cs=3]
+        LayoutTable {TABLE} at (0,10) size 600x185
+          LayoutTableSection {TBODY} at (0,0) size 600x185
+            LayoutTableRow {TR} at (0,2) size 600x44
+              LayoutTableCell {TD} at (2,2) size 594x44 [r=0 c=0 rs=1 cs=3]
                 RenderImage {IMG} at (7.50,1) size 579x42
                 RenderText {#text} at (0,0) size 0x0
-            RenderTableRow {TR} at (0,48) size 600x55
-              RenderTableCell {TD} at (2,55) size 594x40 [bgcolor=#99CCCC] [r=1 c=0 rs=1 cs=3]
+            LayoutTableRow {TR} at (0,48) size 600x55
+              LayoutTableCell {TD} at (2,55) size 594x40 [bgcolor=#99CCCC] [r=1 c=0 rs=1 cs=3]
                 RenderInline {FONT} at (0,0) size 134x16
                   RenderInline {B} at (0,0) size 134x16
                     RenderText {#text} at (51,4) size 134x16
@@ -69,14 +69,14 @@ layer at (0,0) size 800x600
                       text run at (505,23) width 71: "Yellow Pages"
                   RenderText {#text} at (0,0) size 0x0
                 RenderText {#text} at (0,0) size 0x0
-            RenderTableRow {TR} at (0,105) size 600x49
-              RenderTableCell {TD} at (2,112) size 159x34 [r=2 c=0 rs=1 cs=1]
+            LayoutTableRow {TR} at (0,105) size 600x49
+              LayoutTableCell {TD} at (2,112) size 159x34 [r=2 c=0 rs=1 cs=1]
                 RenderInline {A} at (0,0) size 115x35 [color=#0000EE]
                   RenderInline {FONT} at (0,0) size 115x32 [color=#CC0033]
                     RenderText {#text} at (22,1) size 115x32
                       text run at (22,1) width 115: "Download Netscape"
                       text run at (26,17) width 107: "Communicator 4.5"
-              RenderTableCell {TD} at (163,105) size 270x49 [r=2 c=1 rs=1 cs=1]
+              LayoutTableCell {TD} at (163,105) size 270x49 [r=2 c=1 rs=1 cs=1]
                 RenderInline {A} at (0,0) size 232x29 [color=#0000EE]
                   RenderImage {IMG} at (19,1) size 232x35 [border: (1px solid #0000EE)]
                   RenderBR {BR} at (251,36) size 0x0
@@ -84,14 +84,14 @@ layer at (0,0) size 800x600
                     RenderText {#text} at (112,36) size 46x12
                       text run at (112,36) width 46: "Click Here!"
                 RenderBR {BR} at (158,46) size 0x0
-              RenderTableCell {TD} at (435,120) size 161x18 [r=2 c=2 rs=1 cs=1]
+              LayoutTableCell {TD} at (435,120) size 161x18 [r=2 c=2 rs=1 cs=1]
                 RenderInline {A} at (0,0) size 129x19 [color=#0000EE]
                   RenderInline {FONT} at (0,0) size 129x16 [color=#0066FF]
                     RenderText {#text} at (16,1) size 129x16
                       text run at (16,1) width 129: "Hassle-Free Upgrades"
                 RenderText {#text} at (0,0) size 0x0
-            RenderTableRow {TR} at (0,156) size 600x22
-              RenderTableCell {TD} at (2,156) size 594x22 [r=3 c=0 rs=1 cs=3]
+            LayoutTableRow {TR} at (0,156) size 600x22
+              LayoutTableCell {TD} at (2,156) size 594x22 [r=3 c=0 rs=1 cs=3]
                 RenderInline {A} at (0,0) size 48x19 [color=#0000EE]
                   RenderInline {FONT} at (0,0) size 48x16 [color=#0066FF]
                     RenderInline {B} at (0,0) size 48x16
@@ -130,11 +130,11 @@ layer at (0,0) size 800x600
                       text run at (497,4) width 81: "WebMail< /A>"
                 RenderInline {A} at (0,0) size 0x19 [color=#0000EE]
                   RenderText {#text} at (0,0) size 0x0
-            RenderTableRow {TR} at (0,180) size 600x3
-              RenderTableCell {TD} at (2,180) size 596x3 [bgcolor=#99CCCC] [r=4 c=0 rs=1 cs=4]
-                RenderTable {TABLE} at (1,1) size 1x1
-                  RenderTableSection {TBODY} at (0,0) size 1x1
-                    RenderTableRow {TR} at (0,0) size 1x1
-                      RenderTableCell {TD} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
+            LayoutTableRow {TR} at (0,180) size 600x3
+              LayoutTableCell {TD} at (2,180) size 596x3 [bgcolor=#99CCCC] [r=4 c=0 rs=1 cs=4]
+                LayoutTable {TABLE} at (1,1) size 1x1
+                  LayoutTableSection {TBODY} at (0,0) size 1x1
+                    LayoutTableRow {TR} at (0,0) size 1x1
+                      LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
 layer at (281,77) size 209x16
   RenderBlock {DIV} at (2,3) size 209x16

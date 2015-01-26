@@ -10,17 +10,17 @@ layer at (0,0) size 800x246
         RenderText {#text} at (0,0) size 517x17
           text run at (0,0) width 517: "Each green box should be identical to the blue box it follows, except for accents."
       RenderBlock {HR} at (0,60) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderTable {TABLE} at (0,70) size 414x152
-        RenderTableSection {TBODY} at (0,0) size 414x152
-          RenderTableRow {TR} at (0,2) size 414x20
-            RenderTableCell {TD} at (2,2) size 204x20 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,70) size 414x152
+        LayoutTableSection {TBODY} at (0,0) size 414x152
+          LayoutTableRow {TR} at (0,2) size 414x20
+            LayoutTableCell {TD} at (2,2) size 204x20 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (57,1) size 90x17
                 text run at (57,1) width 90: "Word spacing"
-            RenderTableCell {TD} at (208,2) size 204x20 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (208,2) size 204x20 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (56,1) size 92x17
                 text run at (56,1) width 92: "Letter spacing"
-          RenderTableRow {TR} at (0,24) size 414x126
-            RenderTableCell {TD} at (2,24) size 204x126 [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,24) size 414x126
+            LayoutTableCell {TD} at (2,24) size 204x126 [r=1 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 202x124
                 RenderBlock {DIV} at (0,0) size 202x38 [border: (1px solid #0000FF)]
                   RenderText {#text} at (27,1) size 174x35
@@ -34,7 +34,7 @@ layer at (0,0) size 800x246
                   RenderText {#text} at (1,1) size 175x35
                     text run at (1,1) width 174: "Lorem ipsum dolor sit amet,"
                     text run at (1,19) width 175: "consectetuer adipiscing elit."
-            RenderTableCell {TD} at (208,24) size 204x126 [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (208,24) size 204x126 [r=1 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 202x124
                 RenderBlock {DIV} at (0,0) size 202x38 [border: (1px solid #0000FF)]
                   RenderText {#text} at (10,1) size 191x35

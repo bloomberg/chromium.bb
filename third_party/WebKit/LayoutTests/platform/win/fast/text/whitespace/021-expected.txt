@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderTable {TABLE} at (0,0) size 450x60
-        RenderTableSection {TBODY} at (0,0) size 450x60
-          RenderTableRow {TR} at (0,2) size 450x56
-            RenderTableCell {TD} at (2,2) size 446x56 [bgcolor=#CCCC44] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,0) size 450x60
+        LayoutTableSection {TBODY} at (0,0) size 450x60
+          LayoutTableRow {TR} at (0,2) size 450x56
+            LayoutTableCell {TD} at (2,2) size 446x56 [bgcolor=#CCCC44] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 428x35
                 text run at (1,1) width 428: "This stuff should all be within the table boundaries, and not off the"
                 text run at (1,19) width 39: "edge. "

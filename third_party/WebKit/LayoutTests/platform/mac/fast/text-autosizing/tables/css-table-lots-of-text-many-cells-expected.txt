@@ -9,79 +9,79 @@ layer at (0,0) size 800x116
         RenderBR {BR} at (294,0) size 1x12
         RenderText {#text} at (0,12) size 251x12
           text run at (0,12) width 251: "This test passes if none of the 18 cells are autosized."
-      RenderTable {DIV} at (1,37) size 798x78
-        RenderTableSection (anonymous) at (0,0) size 798x78
-          RenderTableRow {DIV} at (0,0) size 798x26
-            RenderTableCell {DIV} at (0,0) size 133x14 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (1,37) size 798x78
+        LayoutTableSection (anonymous) at (0,0) size 798x78
+          LayoutTableRow {DIV} at (0,0) size 798x26
+            LayoutTableCell {DIV} at (0,0) size 133x14 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 24x12
                 text run at (1,1) width 24: "hello"
-            RenderTableCell {DIV} at (133,0) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {DIV} at (133,0) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (266,0) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {DIV} at (266,0) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (399,0) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {DIV} at (399,0) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=3 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (532,0) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=4 rs=1 cs=1]
+            LayoutTableCell {DIV} at (532,0) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=4 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (665,0) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=5 rs=1 cs=1]
+            LayoutTableCell {DIV} at (665,0) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=5 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-          RenderTableRow {DIV} at (0,26) size 798x26
-            RenderTableCell {DIV} at (0,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {DIV} at (0,26) size 798x26
+            LayoutTableCell {DIV} at (0,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (133,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {DIV} at (133,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (266,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {DIV} at (266,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (399,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=3 rs=1 cs=1]
+            LayoutTableCell {DIV} at (399,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=3 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (532,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=4 rs=1 cs=1]
+            LayoutTableCell {DIV} at (532,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=4 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (665,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=5 rs=1 cs=1]
+            LayoutTableCell {DIV} at (665,26) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=5 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-          RenderTableRow {DIV} at (0,52) size 798x26
-            RenderTableCell {DIV} at (0,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=0 rs=1 cs=1]
+          LayoutTableRow {DIV} at (0,52) size 798x26
+            LayoutTableCell {DIV} at (0,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (133,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=1 rs=1 cs=1]
+            LayoutTableCell {DIV} at (133,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (266,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=2 rs=1 cs=1]
+            LayoutTableCell {DIV} at (266,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (399,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=3 rs=1 cs=1]
+            LayoutTableCell {DIV} at (399,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=3 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (532,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=4 rs=1 cs=1]
+            LayoutTableCell {DIV} at (532,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=4 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"
-            RenderTableCell {DIV} at (665,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=5 rs=1 cs=1]
+            LayoutTableCell {DIV} at (665,52) size 133x26 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=5 rs=1 cs=1]
               RenderText {#text} at (1,1) size 105x24
                 text run at (1,1) width 105: "hello hello hello hello"
                 text run at (1,13) width 78: "hello hello hello"

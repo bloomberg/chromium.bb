@@ -9,10 +9,10 @@ layer at (0,0) size 800x231
         RenderBR {BR} at (227,0) size 0x15
         RenderText {#text} at (0,16) size 361x15
           text run at (0,16) width 361: "This test passes if there are no numbers overflowing outside this green box."
-      RenderTable {TABLE} at (1,37) size 693x193 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 692x192
-          RenderTableRow {TR} at (0,0) size 692x192
-            RenderTableCell {TD} at (0,0) size 692x192 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (1,37) size 693x193 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 692x192
+          LayoutTableRow {TR} at (0,0) size 692x192
+            LayoutTableCell {TD} at (0,0) size 692x192 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 422x20
                 text run at (2,2) width 422: "The pi approximation below should not overrun this block."
               RenderBR {BR} at (424,2) size 0x20

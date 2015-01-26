@@ -19,20 +19,20 @@ layer at (0,0) size 800x348
         RenderText {#text} at (0,0) size 517x16
           text run at (0,0) width 517: "Each green box should be identical to the blue box it follows, except for accents."
       RenderBlock {HR} at (0,72) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderTable {TABLE} at (0,82) size 620x242
-        RenderTableSection {TBODY} at (0,0) size 620x242
-          RenderTableRow {TR} at (0,2) size 620x18
-            RenderTableCell {TD} at (2,2) size 204x18 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,82) size 620x242
+        LayoutTableSection {TBODY} at (0,0) size 620x242
+          LayoutTableRow {TR} at (0,2) size 620x18
+            LayoutTableCell {TD} at (2,2) size 204x18 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (57,1) size 90x16
                 text run at (57,1) width 90: "Word spacing"
-            RenderTableCell {TD} at (208,2) size 204x18 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (208,2) size 204x18 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (56,1) size 92x16
                 text run at (56,1) width 92: "Letter spacing"
-            RenderTableCell {TD} at (414,2) size 204x18 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (414,2) size 204x18 [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (62,1) size 80x16
                 text run at (62,1) width 80: "Justification"
-          RenderTableRow {TR} at (0,22) size 620x218
-            RenderTableCell {TD} at (2,22) size 204x168 [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,22) size 620x218
+            LayoutTableCell {TD} at (2,22) size 204x168 [r=1 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 202x166
                 RenderBlock {DIV} at (0,0) size 202x56 [border: (1px solid #0000FF)]
                   RenderText {#text} at (52,1) size 192x54
@@ -50,7 +50,7 @@ layer at (0,0) size 800x348
                     text run at (1,1) width 173: "Lorem ipsum dolor sit"
                     text run at (1,17) width 130: "amet, consectetuer"
                     text run at (1,33) width 105: "adipiscing elit."
-            RenderTableCell {TD} at (208,22) size 204x218 [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (208,22) size 204x218 [r=1 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 202x216
                 RenderBlock {DIV} at (0,0) size 202x74 [border: (1px solid #0000FF)]
                   RenderText {#text} at (2,1) size 199x72
@@ -70,7 +70,7 @@ layer at (0,0) size 800x348
                     text run at (1,17) width 167: "dolor sit amet,"
                     text run at (1,33) width 140: "consectetuer"
                     text run at (1,49) width 175: "adipiscing elit."
-            RenderTableCell {TD} at (414,22) size 204x118 [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (414,22) size 204x118 [r=1 c=2 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 202x116
                 RenderBlock {DIV} at (0,0) size 202x38 [border: (1px solid #0000FF)]
                   RenderText {#text} at (1,1) size 200x36

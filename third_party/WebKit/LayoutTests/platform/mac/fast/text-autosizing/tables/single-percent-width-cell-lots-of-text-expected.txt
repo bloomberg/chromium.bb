@@ -9,23 +9,23 @@ layer at (0,0) size 800x1638 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         RenderBR {BR} at (316,0) size 1x12
         RenderText {#text} at (0,12) size 506x12
           text run at (0,12) width 506: "This test passes if there is a one cell with lots of text that's autosized, and five cells that are not autosized."
-      RenderTable {TABLE} at (1,37) size 798x1600 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 797x1599
-          RenderTableRow {TR} at (0,0) size 797x15
-            RenderTableCell {TD} at (0,0) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (1,37) size 798x1600 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 797x1599
+          LayoutTableRow {TR} at (0,0) size 797x15
+            LayoutTableCell {TD} at (0,0) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"
-            RenderTableCell {TD} at (279,0) size 239x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (279,0) size 239x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"
-            RenderTableCell {TD} at (518,0) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (518,0) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"
-          RenderTableRow {TR} at (0,15) size 797x1584
-            RenderTableCell {TD} at (0,799) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,15) size 797x1584
+            LayoutTableCell {TD} at (0,799) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"
-            RenderTableCell {TD} at (279,15) size 239x1584 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (279,15) size 239x1584 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 195x1581
                 text run at (2,2) width 195: "hello hello hello"
                 text run at (2,33) width 195: "hello hello hello"
@@ -78,6 +78,6 @@ layer at (0,0) size 800x1638 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (2,1490) width 195: "hello hello hello"
                 text run at (2,1521) width 195: "hello hello hello"
                 text run at (2,1552) width 128: "hello hello"
-            RenderTableCell {TD} at (518,799) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (518,799) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"

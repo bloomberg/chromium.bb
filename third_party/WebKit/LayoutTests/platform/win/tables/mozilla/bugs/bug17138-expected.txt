@@ -9,16 +9,16 @@ layer at (0,0) size 800x600
         RenderInline {A} at (0,0) size 170x17 [color=#0000EE]
           RenderText {#text} at (157,0) size 170x17
             text run at (157,0) width 170: "http://www.weather.com"
-      RenderTable {TABLE} at (0,39.27) size 450x196
-        RenderTableSection {TBODY} at (0,0) size 450x196
-          RenderTableRow {TR} at (0,0) size 450x27
-            RenderTableCell {TD} at (0,0) size 325x17 [r=0 c=0 rs=1 cs=3]
+      LayoutTable {TABLE} at (0,39.27) size 450x196
+        LayoutTableSection {TBODY} at (0,0) size 450x196
+          LayoutTableRow {TR} at (0,0) size 450x27
+            LayoutTableCell {TD} at (0,0) size 325x17 [r=0 c=0 rs=1 cs=3]
               RenderImage {IMG} at (0,0) size 318x17
-            RenderTableCell {TD} at (325,0) size 125x196 [r=0 c=3 rs=2 cs=1]
-              RenderTable {TABLE} at (0,0) size 125x196 [bgcolor=#E0EBF5]
-                RenderTableSection {TBODY} at (0,0) size 125x196
-                  RenderTableRow {TR} at (0,0) size 125x196
-                    RenderTableCell {TD} at (0,0) size 125x196 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (325,0) size 125x196 [r=0 c=3 rs=2 cs=1]
+              LayoutTable {TABLE} at (0,0) size 125x196 [bgcolor=#E0EBF5]
+                LayoutTableSection {TBODY} at (0,0) size 125x196
+                  LayoutTableRow {TR} at (0,0) size 125x196
+                    LayoutTableCell {TD} at (0,0) size 125x196 [r=0 c=0 rs=1 cs=1]
                       RenderImage {IMG} at (0,0) size 125x34
                       RenderBR {BR} at (125,34) size 0x0
                       RenderText {#text} at (0,34) size 122x35
@@ -32,14 +32,14 @@ layer at (0,0) size 800x600
                       RenderBR {BR} at (0,142) size 0x17
                       RenderBR {BR} at (0,160) size 0x17
                       RenderBR {BR} at (0,178) size 0x17
-          RenderTableRow {TR} at (0,27) size 450x169
-            RenderTableCell {TD} at (0,27) size 167x105 [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,27) size 450x169
+            LayoutTableCell {TD} at (0,27) size 167x105 [r=1 c=0 rs=1 cs=1]
               RenderImage {IMG} at (0,0) size 167x105
               RenderText {#text} at (0,0) size 0x0
-            RenderTableCell {TD} at (167,102) size 4x18 [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (167,102) size 4x18 [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (0,0) size 4x17
                 text run at (0,0) width 4: " "
-            RenderTableCell {TD} at (171,27) size 154x80 [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (171,27) size 154x80 [r=1 c=2 rs=1 cs=1]
               RenderInline {FONT} at (0,0) size 145x80
                 RenderInline {B} at (0,0) size 68x16
                   RenderText {#text} at (0,0) size 68x16

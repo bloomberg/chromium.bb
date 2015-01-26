@@ -7,10 +7,10 @@ layer at (0,0) size 800x600
         RenderText {#text} at (2,2) size 630x19
           text run at (2,2) width 630: "There should be 30px of word spacing between each word."
       RenderBlock {DIV} at (0,0) size 784x100
-      RenderTable {TABLE} at (0,100) size 100x104
-        RenderTableSection {TBODY} at (0,0) size 100x104
-          RenderTableRow {TR} at (0,0) size 100x104
-            RenderTableCell {TD} at (0,0) size 100x104 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,100) size 100x104
+        LayoutTableSection {TBODY} at (0,0) size 100x104
+          LayoutTableRow {TR} at (0,0) size 100x104
+            LayoutTableCell {TD} at (0,0) size 100x104 [r=0 c=0 rs=1 cs=1]
               RenderBlock {P} at (0,0) size 100x104 [border: (2px solid #008000)]
                 RenderText {#text} at (2,2) size 96x99
                   text run at (2,2) width 93: "There should"

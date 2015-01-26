@@ -9,14 +9,14 @@ layer at (0,0) size 800x367
         RenderBR {BR} at (214,0) size 1x12
         RenderText {#text} at (0,12) size 254x12
           text run at (0,12) width 254: "This test passes if the main content area is autosized."
-      RenderTable {TABLE} at (1,37) size 798x329 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 797x328
-          RenderTableRow {TR} at (0,0) size 797x15
-            RenderTableCell {TD} at (0,0) size 797x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (1,37) size 798x329 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 797x328
+          LayoutTableRow {TR} at (0,0) size 797x15
+            LayoutTableCell {TD} at (0,0) size 797x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=2]
               RenderText {#text} at (2,2) size 23x12
                 text run at (2,2) width 23: "Title"
-          RenderTableRow {TR} at (0,15) size 797x313
-            RenderTableCell {TD} at (0,122) size 54x99 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,15) size 797x313
+            LayoutTableCell {TD} at (0,122) size 54x99 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"
               RenderBR {BR} at (25,2) size 1x12
@@ -41,7 +41,7 @@ layer at (0,0) size 800x367
               RenderText {#text} at (2,86) size 51x12
                 text run at (2,86) width 51: "navigation"
               RenderBR {BR} at (52,86) size 1x12
-            RenderTableCell {TD} at (54,15) size 743x313 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (54,15) size 743x313 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 735x310
                 text run at (2,2) width 735: "hello hello hello hello hello hello hello hello hello hello hello"
                 text run at (2,33) width 735: "hello hello hello hello hello hello hello hello hello hello hello"

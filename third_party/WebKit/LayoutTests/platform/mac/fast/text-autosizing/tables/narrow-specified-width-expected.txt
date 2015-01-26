@@ -9,23 +9,23 @@ layer at (0,0) size 800x129
         RenderBR {BR} at (251,0) size 1x12
         RenderText {#text} at (0,12) size 245x12
           text run at (0,12) width 245: "This test passes if none of the 6 cells are autosized."
-      RenderTable {TABLE} at (1,37) size 200x91 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 199x90
-          RenderTableRow {TR} at (0,0) size 199x15
-            RenderTableCell {TD} at (0,0) size 27x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (1,37) size 200x91 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 199x90
+          LayoutTableRow {TR} at (0,0) size 199x15
+            LayoutTableCell {TD} at (0,0) size 27x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"
-            RenderTableCell {TD} at (27,0) size 145x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (27,0) size 145x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"
-            RenderTableCell {TD} at (172,0) size 27x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (172,0) size 27x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"
-          RenderTableRow {TR} at (0,15) size 199x75
-            RenderTableCell {TD} at (0,45) size 27x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,15) size 199x75
+            LayoutTableCell {TD} at (0,45) size 27x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"
-            RenderTableCell {TD} at (27,15) size 145x75 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (27,15) size 145x75 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 132x72
                 text run at (2,2) width 132: "hello hello hello hello hello"
                 text run at (2,14) width 132: "hello hello hello hello hello"
@@ -33,6 +33,6 @@ layer at (0,0) size 800x129
                 text run at (2,38) width 132: "hello hello hello hello hello"
                 text run at (2,50) width 132: "hello hello hello hello hello"
                 text run at (2,62) width 24: "hello"
-            RenderTableCell {TD} at (172,45) size 27x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (172,45) size 27x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 24x12
                 text run at (2,2) width 24: "hello"
