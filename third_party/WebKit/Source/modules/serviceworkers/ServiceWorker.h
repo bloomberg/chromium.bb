@@ -47,12 +47,15 @@ class ScriptPromiseResolver;
 
 class ServiceWorker final : public AbstractWorker, public WebServiceWorkerProxy {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_PRE_FINALIZER(ServiceWorker, dispose);
 public:
     // For CallbackPromiseAdapter
     typedef WebServiceWorker WebType;
     static PassRefPtrWillBeRawPtr<ServiceWorker> take(ScriptPromiseResolver*, WebType* worker);
 
     static PassRefPtrWillBeRawPtr<ServiceWorker> from(ExecutionContext*, WebType*);
+
+    ~ServiceWorker() override;
     static void dispose(WebType*);
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
@@ -89,6 +92,8 @@ private:
     // ActiveDOMObject overrides.
     virtual bool hasPendingActivity() const override;
     virtual void stop() override;
+
+    void dispose();
 
     OwnPtr<WebServiceWorker> m_outerWorker;
     ProxyState m_proxyState;

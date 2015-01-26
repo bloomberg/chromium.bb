@@ -161,6 +161,12 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
         } \
         using UsingPreFinazlizerMacroNeedsTrailingSemiColon = char
 
+#if ENABLE(OILPAN)
+#define WILL_BE_USING_PRE_FINALIZER(Class, method) USING_PRE_FINALIZER(Class, method)
+#else
+#define WILL_BE_USING_PRE_FINALIZER(Class, method)
+#endif
+
 // List of typed heaps. The list is used to generate the implementation
 // of typed heap related methods.
 //

@@ -145,12 +145,24 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
     , m_stopped(false)
 {
     ASSERT(m_outerRegistration);
+    ThreadState::current()->registerPreFinalizer(*this);
 
     if (!executionContext)
         return;
     if (ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(executionContext))
         m_provider = client->provider();
     m_outerRegistration->setProxy(this);
+}
+
+ServiceWorkerRegistration::~ServiceWorkerRegistration()
+{
+    ASSERT(!m_outerRegistration);
+}
+
+void ServiceWorkerRegistration::dispose()
+{
+    // See ServiceWorker::dispose() comment why this explicit dispose() action is needed.
+    m_outerRegistration.clear();
 }
 
 void ServiceWorkerRegistration::trace(Visitor* visitor)
