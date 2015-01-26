@@ -26,6 +26,7 @@ namespace password_manager {
 // something reasonably sane.
 const size_t kMaxFederations = 50u;
 
+// TODO(melandory): Remove unsigned int.
 enum class CredentialType : unsigned int {
   CREDENTIAL_TYPE_EMPTY = 0,
   CREDENTIAL_TYPE_LOCAL,
@@ -36,7 +37,8 @@ enum class CredentialType : unsigned int {
 struct CredentialInfo {
   CredentialInfo();
   explicit CredentialInfo(const blink::WebCredential& credential);
-  explicit CredentialInfo(const autofill::PasswordForm& form);
+  explicit CredentialInfo(const autofill::PasswordForm& form,
+                          CredentialType form_type);
   ~CredentialInfo();
 
   CredentialType type;

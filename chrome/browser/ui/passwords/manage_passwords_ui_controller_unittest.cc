@@ -322,7 +322,7 @@ TEST_F(ManagePasswordsUIControllerTest, AutomaticPasswordSave) {
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, mock.state());
 }
 
-TEST_F(ManagePasswordsUIControllerTest, ChooseCredential) {
+TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
   ScopedVector<autofill::PasswordForm> local_credentials;
   local_credentials.push_back(new autofill::PasswordForm(test_form()));
   ScopedVector<autofill::PasswordForm> federated_credentials;
@@ -341,13 +341,41 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredential) {
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, mock.state());
 
-  controller()->ManagePasswordsUIController::ChooseCredential(true,
-                                                              test_form());
+  controller()->ManagePasswordsUIController::ChooseCredential(
+      test_form(), password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
   ASSERT_TRUE(credential_info());
   EXPECT_EQ(test_form().username_value, credential_info()->id);
   EXPECT_EQ(test_form().password_value, credential_info()->password);
+  EXPECT_TRUE(credential_info()->federation.is_empty());
   EXPECT_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL,
+            credential_info()->type);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialFederated) {
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  ScopedVector<autofill::PasswordForm> federated_credentials;
+  federated_credentials.push_back(new autofill::PasswordForm(test_form()));
+  EXPECT_TRUE(controller()->OnChooseCredentials(
+      local_credentials.Pass(), federated_credentials.Pass(),
+      base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
+                 base::Unretained(this))));
+  EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_AND_BUBBLE_STATE,
+            controller()->state());
+  EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+  EXPECT_EQ(autofill::ConstPasswordFormMap(), controller()->best_matches());
+
+  ManagePasswordsIconMock mock;
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, mock.state());
+
+  controller()->ManagePasswordsUIController::ChooseCredential(
+      test_form(), password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED);
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
+  ASSERT_TRUE(credential_info());
+  EXPECT_EQ(test_form().username_value, credential_info()->id);
+  EXPECT_TRUE(credential_info()->password.empty());
+  EXPECT_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED,
             credential_info()->type);
 }
 
@@ -363,10 +391,12 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_AND_BUBBLE_STATE,
             controller()->state());
 
-  controller()->ManagePasswordsUIController::ChooseCredential(false,
-                                                              test_form());
+  controller()->ManagePasswordsUIController::ChooseCredential(
+      test_form(), password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
   ASSERT_TRUE(credential_info());
+  EXPECT_TRUE(credential_info()->federation.is_empty());
+  EXPECT_TRUE(credential_info()->password.empty());
   EXPECT_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY,
             credential_info()->type);
 }

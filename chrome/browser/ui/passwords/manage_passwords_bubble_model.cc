@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feedback/feedback_data.h"
 #include "components/feedback/feedback_util.h"
+#include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/password_manager_url_collection_experiment.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
@@ -121,10 +122,13 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   state_ = controller->state();
   if (password_manager::ui::IsPendingState(state_))
     pending_password_ = controller->PendingPassword();
-  if (password_manager::ui::IsCredentialsState(state_))
-    pending_credentials_.swap(controller->new_password_forms());
-  else
+  if (password_manager::ui::IsCredentialsState(state_)) {
+    local_pending_credentials_.swap(controller->local_credentials_forms());
+    federated_pending_credentials_.swap(
+        controller->federated_credentials_forms());
+  } else {
     best_matches_ = controller->best_matches();
+  }
 
   if (password_manager::ui::IsPendingState(state_)) {
     title_ = PendingStateTitleBasedOnSavePasswordPref(never_save_passwords_);
@@ -197,8 +201,9 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
     // OnChooseCredentials().
     ManagePasswordsUIController* manage_passwords_ui_controller =
         ManagePasswordsUIController::FromWebContents(web_contents());
-    manage_passwords_ui_controller->ChooseCredential(false,
-                                                     autofill::PasswordForm());
+    manage_passwords_ui_controller->ChooseCredential(
+        autofill::PasswordForm(),
+        password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
     state_ = password_manager::ui::INACTIVE_STATE;
   }
   if (dismissal_reason_ == metrics_util::NOT_DISPLAYED)
@@ -317,12 +322,14 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
 }
 
 void ManagePasswordsBubbleModel::OnChooseCredentials(
-    const autofill::PasswordForm& password_form) {
+    const autofill::PasswordForm& password_form,
+    password_manager::CredentialType credential_type) {
   dismissal_reason_ = metrics_util::CLICKED_CREDENTIAL;
   RecordExperimentStatistics(web_contents(), dismissal_reason_);
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
-  manage_passwords_ui_controller->ChooseCredential(true, password_form);
+  manage_passwords_ui_controller->ChooseCredential(password_form,
+                                                   credential_type);
   state_ = password_manager::ui::INACTIVE_STATE;
 }
 

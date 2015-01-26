@@ -18,6 +18,7 @@ class WebContents;
 }
 
 namespace password_manager {
+enum class CredentialType : unsigned int;
 struct CredentialInfo;
 class PasswordFormManager;
 }
@@ -80,8 +81,9 @@ class ManagePasswordsUIController
 
   // Called from the model when the user chooses a credential.
   // The controller MUST be in a pending credentials state.
-  virtual void ChooseCredential(bool was_chosen,
-                                const autofill::PasswordForm& form);
+  virtual void ChooseCredential(
+      const autofill::PasswordForm& form,
+      password_manager::CredentialType credential_type);
 
   // Called from the model when the user chooses to never save passwords; passes
   // the action off to the FormManager. The controller MUST be in a pending
@@ -107,8 +109,12 @@ class ManagePasswordsUIController
 
   password_manager::ui::State state() const { return state_; }
 
-  ScopedVector<autofill::PasswordForm>& new_password_forms() {
-    return new_password_forms_;
+  ScopedVector<autofill::PasswordForm>& federated_credentials_forms() {
+    return federated_credentials_forms_;
+  }
+
+  ScopedVector<autofill::PasswordForm>& local_credentials_forms() {
+    return local_credentials_forms_;
   }
 
   // True if a password is sitting around, waiting for a user to decide whether
@@ -153,6 +159,14 @@ class ManagePasswordsUIController
   // that we destroy them correctly. If |new_password_forms_| gets cleared then
   // |password_form_map_| is to be cleared too.
   ScopedVector<autofill::PasswordForm> new_password_forms_;
+
+  // Federated credentials. Stores federated credentials which will be shown
+  // when Credential Management API was used.
+  ScopedVector<autofill::PasswordForm> federated_credentials_forms_;
+
+  // Local credentials. Stores local credentials which will be shown
+  // when Credential Management API was used.
+  ScopedVector<autofill::PasswordForm> local_credentials_forms_;
 
   // All previously stored credentials for a specific site.
   // Protected, not private, so we can mess with the value in

@@ -121,9 +121,11 @@ void CredentialsItemView::AvatarFetcher::OnFetchComplete(
 CredentialsItemView::CredentialsItemView(
     views::ButtonListener* button_listener,
     const autofill::PasswordForm& form,
+    password_manager::CredentialType credential_type,
     net::URLRequestContextGetter* request_context)
     : LabelButton(button_listener, base::string16()),
       form_(form),
+      credential_type_(credential_type),
       weak_ptr_factory_(this) {
   set_notify_enter_exit_on_child(true);
   // Create an image-view for the avatar. Make sure it ignores events so that

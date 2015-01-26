@@ -14,6 +14,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace password_manager {
+enum class CredentialType : unsigned int;
+}
+
 // This mock is used in tests to ensure that we're just testing the controller
 // behavior, and not the behavior of the bits and pieces it relies upon (like
 // FormManager).
@@ -40,8 +44,8 @@ class ManagePasswordsUIControllerMock
   void NeverSavePasswordInternal() override;
   bool never_saved_password() const { return never_saved_password_; }
 
-  void ChooseCredential(bool was_chosen,
-                        const autofill::PasswordForm& form) override;
+  void ChooseCredential(const autofill::PasswordForm& form,
+                        password_manager::CredentialType form_type) override;
   bool choose_credential() const { return choose_credential_; }
 
   const autofill::PasswordForm& PendingPassword() const override;

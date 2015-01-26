@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_url_collection_experiment.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -257,7 +258,8 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickCredential) {
   PretendCredentialsWaiting();
   EXPECT_FALSE(controller()->choose_credential());
   autofill::PasswordForm form;
-  model_->OnChooseCredentials(form);
+  model_->OnChooseCredentials(
+      form, password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_CREDENTIAL);

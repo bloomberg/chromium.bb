@@ -55,14 +55,20 @@ class TestPasswordManagerClient
       const std::vector<autofill::PasswordForm*>& federated_forms,
       base::Callback<void(const password_manager::CredentialInfo&)> callback)
       override {
+    // TODO(melandory): Use ScopedVector instead of std::vector in arguments.
+    // ContentCredentialManagerDispatcher::OnGetPasswordStoreResults contains a
+    // memory leak because of this.
     EXPECT_FALSE(local_forms.empty() && federated_forms.empty());
     did_prompt_user_to_choose_ = true;
     ScopedVector<autofill::PasswordForm> local_entries;
     local_entries.assign(local_forms.begin(), local_forms.end());
     ScopedVector<autofill::PasswordForm> federated_entries;
     federated_entries.assign(federated_forms.begin(), federated_forms.end());
-    // TODO(vasilii): Do something clever with |federated_forms|.
-    password_manager::CredentialInfo info(*local_entries[0]);
+    password_manager::CredentialInfo info(
+        local_forms.empty() ? *federated_forms[0] : *local_entries[0],
+        local_forms.empty()
+            ? password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED
+            : password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(callback, info));
     return true;
@@ -188,7 +194,8 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifyFailedSignIn) {
 }
 
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
-  CredentialInfo info(form_);
+  CredentialInfo info(form_,
+                      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
   dispatcher()->OnNotifySignedIn(kRequestId, info);
 
   const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedIn::ID;
@@ -215,7 +222,7 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
 }
 
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerIncognitoSignedIn) {
-  CredentialInfo info(form_);
+  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_LOCAL);
   client_->set_off_the_record(true);
   dispatcher()->OnNotifySignedIn(kRequestId, info);
 

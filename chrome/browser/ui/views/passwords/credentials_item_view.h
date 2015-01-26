@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/content/common/credential_manager_types.h"
 #include "ui/views/controls/button/label_button.h"
 
 namespace gfx {
@@ -29,10 +30,14 @@ class CredentialsItemView : public views::LabelButton {
  public:
   CredentialsItemView(views::ButtonListener* button_listener,
                       const autofill::PasswordForm& form,
+                      password_manager::CredentialType credential_type,
                       net::URLRequestContextGetter* request_context);
   ~CredentialsItemView() override;
 
   const autofill::PasswordForm& form() const { return form_; }
+  password_manager::CredentialType credential_type() const {
+    return credential_type_;
+  }
 
  private:
   class AvatarFetcher;
@@ -45,6 +50,7 @@ class CredentialsItemView : public views::LabelButton {
   void UpdateAvatar(const gfx::ImageSkia& image);
 
   autofill::PasswordForm form_;
+  password_manager::CredentialType credential_type_;
 
   views::ImageView* image_view_;
   views::Label* full_name_label_;

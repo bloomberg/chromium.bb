@@ -119,11 +119,16 @@ bool ManagePasswordsUIController::OnChooseCredentials(
     ScopedVector<autofill::PasswordForm> local_credentials,
     ScopedVector<autofill::PasswordForm> federated_credentials,
     base::Callback<void(const password_manager::CredentialInfo&)> callback){
-  // TODO(vasilii): Do something clever with |federated_credentials|.
   DCHECK(!local_credentials.empty() || !federated_credentials.empty());
   form_manager_.reset();
-  origin_ = local_credentials[0]->origin;
-  new_password_forms_.swap(local_credentials);
+  // TODO(melandory): fix the crash when |local_credentials| is empty.
+  // By providing origin explicitly.
+  if (!local_credentials.empty())
+    origin_ = local_credentials[0]->origin;
+  else
+    origin_ = GURL();
+  local_credentials_forms_.swap(local_credentials);
+  federated_credentials_forms_.swap(federated_credentials);
   // The map is useless because usernames may overlap.
   password_form_map_.clear();
   SetState(password_manager::ui::CREDENTIAL_REQUEST_AND_BUBBLE_STATE);
@@ -211,13 +216,12 @@ void ManagePasswordsUIController::SavePassword() {
 }
 
 void ManagePasswordsUIController::ChooseCredential(
-    bool was_chosen,
-    const autofill::PasswordForm& form) {
+    const autofill::PasswordForm& form,
+    password_manager::CredentialType credential_type) {
   DCHECK(password_manager::ui::IsCredentialsState(state_));
   DCHECK(!credentials_callback_.is_null());
-  password_manager::CredentialInfo info = was_chosen ?
-      password_manager::CredentialInfo(form) :
-      password_manager::CredentialInfo();
+  password_manager::CredentialInfo info =
+      password_manager::CredentialInfo(form, credential_type);
   credentials_callback_.Run(info);
   SetState(password_manager::ui::INACTIVE_STATE);
   UpdateBubbleAndIconVisibility();

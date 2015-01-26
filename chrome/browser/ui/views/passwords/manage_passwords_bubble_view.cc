@@ -187,6 +187,12 @@ class ManagePasswordsBubbleView::AccountChooserView
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // Adds |password_forms| to the layout remembering their |type|.
+  void AddCredentialItemsWithType(
+      views::GridLayout* layout,
+      const ScopedVector<autofill::PasswordForm>& password_forms,
+      password_manager::CredentialType type);
+
   ManagePasswordsBubbleView* parent_;
   views::LabelButton* cancel_button_;
 };
@@ -208,16 +214,13 @@ ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   AddTitleRow(layout, parent_->model());
 
-  const auto& pending_credentials = parent_->model()->pending_credentials();
-  net::URLRequestContextGetter* request_context =
-      parent_->model()->GetProfile()->GetRequestContext();
-  for (autofill::PasswordForm* form : pending_credentials) {
-    CredentialsItemView* credential_view =
-        new CredentialsItemView(this, *form, request_context);
-    // Add the title to the layout with appropriate padding.
-    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-    layout->AddView(credential_view);
-  }
+  AddCredentialItemsWithType(
+      layout, parent_->model()->local_pending_credentials(),
+      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
+
+  AddCredentialItemsWithType(
+      layout, parent_->model()->federated_pending_credentials(),
+      password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED);
 
   // Button row.
   BuildColumnSet(layout, SINGLE_BUTTON_COLUMN_SET);
@@ -234,13 +237,28 @@ ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
 ManagePasswordsBubbleView::AccountChooserView::~AccountChooserView() {
 }
 
+void ManagePasswordsBubbleView::AccountChooserView::AddCredentialItemsWithType(
+    views::GridLayout* layout,
+    const ScopedVector<autofill::PasswordForm>& password_forms,
+    password_manager::CredentialType type) {
+  net::URLRequestContextGetter* request_context =
+      parent_->model()->GetProfile()->GetRequestContext();
+  for (autofill::PasswordForm* form : password_forms) {
+    // Add the title to the layout with appropriate padding.
+    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+    layout->AddView(
+        new CredentialsItemView(this, *form, type, request_context));
+  }
+}
+
 void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
   if (sender != cancel_button_) {
     // ManagePasswordsBubbleModel should care about calling a callback in case
     // the bubble is dismissed by any other means.
     CredentialsItemView* view = static_cast<CredentialsItemView*>(sender);
-    parent_->model()->OnChooseCredentials(view->form());
+    parent_->model()->OnChooseCredentials(view->form(),
+                                          view->credential_type());
   } else {
     parent_->model()->OnNopeClicked();
   }

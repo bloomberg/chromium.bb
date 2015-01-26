@@ -33,15 +33,26 @@ CredentialInfo::CredentialInfo(const blink::WebCredential& credential)
   }
 }
 
-CredentialInfo::CredentialInfo(const autofill::PasswordForm& form)
-    : id(form.username_value),
+CredentialInfo::CredentialInfo(const autofill::PasswordForm& form,
+                               CredentialType form_type)
+    : type(form_type),
+      id(form.username_value),
       name(form.display_name),
       avatar(form.avatar_url),
       password(form.password_value),
       federation(form.federation_url) {
-  DCHECK(!password.empty() || !federation.is_empty());
-  type = password.empty() ? CredentialType::CREDENTIAL_TYPE_FEDERATED
-                          : CredentialType::CREDENTIAL_TYPE_LOCAL;
+  switch (form_type) {
+    case CredentialType::CREDENTIAL_TYPE_EMPTY:
+      password = base::string16();
+      federation = GURL();
+      break;
+    case CredentialType::CREDENTIAL_TYPE_LOCAL:
+      federation = GURL();
+      break;
+    case CredentialType::CREDENTIAL_TYPE_FEDERATED:
+      password = base::string16();
+      break;
+  }
 }
 
 CredentialInfo::~CredentialInfo() {
