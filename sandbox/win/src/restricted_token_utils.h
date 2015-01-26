@@ -82,6 +82,19 @@ const wchar_t* GetIntegrityLevelString(IntegrityLevel integrity_level);
 // current integrity level, the function will fail.
 DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level);
 
+// Hardens the integrity level policy on a token. This is only valid on Win 7
+// and above. Specifically it sets the policy to block read and execute so
+// that a lower privileged process cannot open the token for impersonate or
+// duplicate permissions. This should limit potential security holes.
+DWORD HardenTokenIntegrityLevelPolicy(HANDLE token);
+
+// Hardens the integrity level policy on the current process. This is only
+// valid on Win 7 and above. Specifically it sets the policy to block read
+// and execute so that a lower privileged process cannot open the token for
+// impersonate or duplicate permissions. This should limit potential security
+// holes.
+DWORD HardenProcessIntegrityLevelPolicy();
+
 }  // namespace sandbox
 
 #endif  // SANDBOX_SRC_RESTRICTED_TOKEN_UTILS_H__

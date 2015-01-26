@@ -199,6 +199,11 @@ const MitigationFlags MITIGATION_EXTENSION_DLL_DISABLE            = 0x00000400;
 // Must be enabled after startup.
 const MitigationFlags MITIGATION_DLL_SEARCH_ORDER        = 0x00000001ULL << 32;
 
+// Changes the mandatory integrity level policy on the current process' token
+// to enable no-read and no-execute up. This prevents a lower IL process from
+// opening the process token for impersonate/duplicate/assignment.
+const MitigationFlags MITIGATION_HARDEN_TOKEN_IL_POLICY  = 0x00000001ULL << 33;
+
 }  // namespace sandbox
 
 #endif  // SANDBOX_SRC_SECURITY_LEVEL_H_

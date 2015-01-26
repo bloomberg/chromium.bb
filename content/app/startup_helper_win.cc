@@ -43,7 +43,8 @@ void InitializeSandboxInfo(sandbox::SandboxInterfaceInfo* info) {
     // Ensure the proper mitigations are enforced for the browser process.
     sandbox::ApplyProcessMitigationsToCurrentProcess(
         sandbox::MITIGATION_DEP |
-        sandbox::MITIGATION_DEP_NO_ATL_THUNK);
+        sandbox::MITIGATION_DEP_NO_ATL_THUNK |
+        sandbox::MITIGATION_HARDEN_TOKEN_IL_POLICY);
   }
 }
 

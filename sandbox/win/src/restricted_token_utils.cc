@@ -342,4 +342,67 @@ DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level) {
   return SetTokenIntegrityLevel(token.Get(), integrity_level);
 }
 
+DWORD HardenTokenIntegrityLevelPolicy(HANDLE token) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return ERROR_SUCCESS;
+
+  DWORD last_error = 0;
+  DWORD length_needed = 0;
+
+  ::GetKernelObjectSecurity(token, LABEL_SECURITY_INFORMATION,
+                            NULL, 0, &length_needed);
+
+  last_error = ::GetLastError();
+  if (last_error != ERROR_INSUFFICIENT_BUFFER)
+    return last_error;
+
+  std::vector<char> security_desc_buffer(length_needed);
+  PSECURITY_DESCRIPTOR security_desc =
+      reinterpret_cast<PSECURITY_DESCRIPTOR>(&security_desc_buffer[0]);
+
+  if (!::GetKernelObjectSecurity(token, LABEL_SECURITY_INFORMATION,
+                                 security_desc, length_needed,
+                                 &length_needed))
+    return ::GetLastError();
+
+  PACL sacl = NULL;
+  BOOL sacl_present = FALSE;
+  BOOL sacl_defaulted = FALSE;
+
+  if (!::GetSecurityDescriptorSacl(security_desc, &sacl_present,
+                                   &sacl, &sacl_defaulted))
+    return ::GetLastError();
+
+  for (DWORD ace_index = 0; ace_index < sacl->AceCount; ++ace_index) {
+    PSYSTEM_MANDATORY_LABEL_ACE ace;
+
+    if (::GetAce(sacl, ace_index, reinterpret_cast<LPVOID*>(&ace))
+        && ace->Header.AceType == SYSTEM_MANDATORY_LABEL_ACE_TYPE) {
+      ace->Mask |= SYSTEM_MANDATORY_LABEL_NO_READ_UP
+                |  SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP;
+      break;
+    }
+  }
+
+  if (!::SetKernelObjectSecurity(token, LABEL_SECURITY_INFORMATION,
+                                 security_desc))
+    return ::GetLastError();
+
+  return ERROR_SUCCESS;
+}
+
+DWORD HardenProcessIntegrityLevelPolicy() {
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return ERROR_SUCCESS;
+
+  HANDLE token_handle;
+  if (!::OpenProcessToken(GetCurrentProcess(), READ_CONTROL | WRITE_OWNER,
+                          &token_handle))
+    return ::GetLastError();
+
+  base::win::ScopedHandle token(token_handle);
+
+  return HardenTokenIntegrityLevelPolicy(token.Get());
+}
+
 }  // namespace sandbox
