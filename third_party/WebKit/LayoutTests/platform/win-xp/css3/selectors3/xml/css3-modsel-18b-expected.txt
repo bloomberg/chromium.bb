@@ -13,14 +13,14 @@ layer at (0,0) size 800x307
       RenderBlock {p} at (0,56) size 800x20
         RenderText {#text} at (0,0) size 55x19
           text run at (0,0) width 55: "This text."
-      RenderTable {table} at (0,92) size 107x108
-        RenderTableSection (anonymous) at (0,0) size 107x108
-          RenderTableRow {tr} at (0,2) size 107x80
-            RenderTableCell {td} at (2,2) size 103x80 [r=0 c=0 rs=1 cs=1]
-              RenderTable {table} at (1,1) size 101x78
-                RenderTableSection (anonymous) at (0,0) size 101x78
-                  RenderTableRow {tr} at (0,2) size 101x74
-                    RenderTableCell {td} at (2,2) size 97x74 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {table} at (0,92) size 107x108
+        LayoutTableSection (anonymous) at (0,0) size 107x108
+          LayoutTableRow {tr} at (0,2) size 107x80
+            LayoutTableCell {td} at (2,2) size 103x80 [r=0 c=0 rs=1 cs=1]
+              LayoutTable {table} at (1,1) size 101x78
+                LayoutTableSection (anonymous) at (0,0) size 101x78
+                  LayoutTableRow {tr} at (0,2) size 101x74
+                    LayoutTableCell {td} at (2,2) size 97x74 [r=0 c=0 rs=1 cs=1]
                       RenderBlock {dl} at (1,17) size 95x40
                         RenderBlock {dt} at (0,0) size 95x20
                           RenderText {#text} at (0,0) size 55x19
@@ -28,8 +28,8 @@ layer at (0,0) size 800x307
                         RenderBlock {dd} at (40,20) size 55x20
                           RenderText {#text} at (0,0) size 55x19
                             text run at (0,0) width 55: "This text."
-          RenderTableRow {tr} at (0,84) size 107x22
-            RenderTableCell {td} at (2,84) size 103x22 [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {tr} at (0,84) size 107x22
+            LayoutTableCell {td} at (2,84) size 103x22 [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 55x19
                 text run at (1,1) width 55: "This text."
       RenderBlock {p} at (0,216) size 800x23

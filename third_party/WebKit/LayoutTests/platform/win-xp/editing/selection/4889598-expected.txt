@@ -18,10 +18,10 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (0,0) size 784x20
           RenderText {#text} at (0,0) size 261x19
             text run at (0,0) width 261: "Click anywhere in this line and move down."
-        RenderTable {TABLE} at (0,20) size 318x30 [border: (1px outset #808080)]
-          RenderTableSection {TBODY} at (1,1) size 316x28
-            RenderTableRow {TR} at (0,2) size 316x24
-              RenderTableCell {TD} at (2,2) size 312x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,20) size 318x30 [border: (1px outset #808080)]
+          LayoutTableSection {TBODY} at (1,1) size 316x28
+            LayoutTableRow {TR} at (0,2) size 316x24
+              LayoutTableCell {TD} at (2,2) size 312x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (2,2) size 61x19
                   text run at (2,2) width 61: "The caret "
                 RenderInline {SPAN} at (0,0) size 39x19 [color=#0000FF]

@@ -6,10 +6,10 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x16
         RenderText {#text} at (0,0) size 363x16
           text run at (0,0) width 363: "Should say \x{201C}BEFORE CONTENT AFTER CONTENT\x{201D}"
-      RenderTable {DIV} at (0,32) size 75x48
-        RenderTableSection (anonymous) at (0,0) size 75x48
-          RenderTableRow (anonymous) at (0,0) size 75x48
-            RenderTableCell (anonymous) at (0,0) size 75x48 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (0,32) size 75x48
+        LayoutTableSection (anonymous) at (0,0) size 75x48
+          LayoutTableRow (anonymous) at (0,0) size 75x48
+            LayoutTableCell (anonymous) at (0,0) size 75x48 [r=0 c=0 rs=1 cs=1]
               RenderBlock (anonymous) at (0,0) size 75x16
                 RenderInline {<pseudo:before>} at (0,0) size 62x16
                   RenderTextFragment at (0,0) size 62x16

@@ -21,10 +21,10 @@ layer at (0,0) size 800x600
           text run at (0,0) width 267: "The two boxes below should be identical."
       RenderBlock {HR} at (0,80) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {DIV} at (0,90) size 200x54 [bgcolor=#C0C0C0]
-        RenderTable {TABLE} at (0,0) size 200x54
-          RenderTableSection {TBODY} at (0,0) size 200x54
-            RenderTableRow {TR} at (0,2) size 200x50
-              RenderTableCell {TD} at (2,2) size 196x50 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,0) size 200x54
+          LayoutTableSection {TBODY} at (0,0) size 200x54
+            LayoutTableRow {TR} at (0,2) size 200x50
+              LayoutTableCell {TD} at (2,2) size 196x50 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 182x48
                   text run at (1,1) width 182: "Lorem ipsum dolor sit amet,"
                   text run at (1,17) width 179: "consectetuer adipiscing elit."
@@ -32,10 +32,10 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,144) size 784x16
         RenderBR {BR} at (0,0) size 0x16
       RenderBlock {DIV} at (0,160) size 200x54 [bgcolor=#C0C0C0]
-        RenderTable {TABLE} at (0,0) size 200x54
-          RenderTableSection {TBODY} at (0,0) size 200x54
-            RenderTableRow {TR} at (0,2) size 200x50
-              RenderTableCell {TD} at (2,2) size 196x50 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,0) size 200x54
+          LayoutTableSection {TBODY} at (0,0) size 200x54
+            LayoutTableRow {TR} at (0,2) size 200x50
+              LayoutTableCell {TD} at (2,2) size 196x50 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 182x48
                   text run at (1,1) width 182: "Lorem ipsum dolor sit amet,"
                   text run at (1,17) width 179: "consectetuer adipiscing elit."

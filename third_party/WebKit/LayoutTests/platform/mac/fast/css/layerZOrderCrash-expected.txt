@@ -8,20 +8,20 @@ layer at (0,0) size 800x600
           text run at (0,0) width 631: "To reproduce this bug outside of DumpRenderTree, click the link below. If broken, we will crash. "
         RenderBR {BR} at (630,12) size 1x0
 layer at (8,24) size 60x80
-  RenderTable {TABLE} at (0,16) size 60x80
-    RenderTableSection {TBODY} at (0,0) size 60x80
-      RenderTableRow {TR} at (0,2) size 60x18
-        RenderTableCell {TD} at (2,2) size 56x18 [r=0 c=0 rs=1 cs=1]
+  LayoutTable {TABLE} at (0,16) size 60x80
+    LayoutTableSection {TBODY} at (0,0) size 60x80
+      LayoutTableRow {TR} at (0,2) size 60x18
+        LayoutTableCell {TD} at (2,2) size 56x18 [r=0 c=0 rs=1 cs=1]
           RenderInline {A} at (0,0) size 25x16 [color=#0000EE]
             RenderText {#text} at (1,1) size 25x16
               text run at (1,1) width 25: "link"
-      RenderTableRow {TR} at (0,22) size 60x56
-        RenderTableCell {TD} at (2,22) size 56x56 [r=1 c=0 rs=1 cs=1]
+      LayoutTableRow {TR} at (0,22) size 60x56
+        LayoutTableCell {TD} at (2,22) size 56x56 [r=1 c=0 rs=1 cs=1]
 layer at (11,47) size 54x54
-  RenderTable {TABLE} at (1,1) size 54x54
-    RenderTableSection {TBODY} at (0,0) size 54x54
-      RenderTableRow {TR} at (0,2) size 54x50
-        RenderTableCell {TD} at (2,2) size 50x50 [r=0 c=0 rs=1 cs=1]
+  LayoutTable {TABLE} at (1,1) size 54x54
+    LayoutTableSection {TBODY} at (0,0) size 54x54
+      LayoutTableRow {TR} at (0,2) size 54x50
+        LayoutTableCell {TD} at (2,2) size 50x50 [r=0 c=0 rs=1 cs=1]
           RenderText {#text} at (1,1) size 48x16
             text run at (1,1) width 48: "content"
           RenderBR {BR} at (48,13) size 1x0

@@ -7,10 +7,10 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 622x16
           text run at (0,0) width 622: "This tests caret painting after a table, you should see a caret after the table containing 'foo' above."
       RenderBlock {DIV} at (0,32) size 784x24
-        RenderTable {TABLE} at (0,0) size 30x24 [border: (1px solid #AAAAAA)]
-          RenderTableSection {TBODY} at (1,1) size 28x22
-            RenderTableRow {TR} at (0,2) size 28x18
-              RenderTableCell {TD} at (2,2) size 24x18 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,0) size 30x24 [border: (1px solid #AAAAAA)]
+          LayoutTableSection {TBODY} at (1,1) size 28x22
+            LayoutTableRow {TR} at (0,2) size 28x18
+              LayoutTableCell {TD} at (2,2) size 24x18 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 22x16
                   text run at (1,1) width 22: "foo"
 caret: position 1 of child 0 {TABLE} of child 2 {DIV} of body

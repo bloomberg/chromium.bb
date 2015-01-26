@@ -11,10 +11,10 @@ layer at (0,0) size 800x585
             text run at (0,18) width 132: "overflow from right."
           RenderBR {BR} at (131,32) size 1x0
           RenderBR {BR} at (0,36) size 0x17
-        RenderTable {TABLE} at (2,56) size 982x28 [border: (2px solid #FF0000)]
-          RenderTableSection {TBODY} at (2,2) size 978x24
-            RenderTableRow {TR} at (0,2) size 978x20
-              RenderTableCell {TD} at (2,2) size 974x20 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (2,56) size 982x28 [border: (2px solid #FF0000)]
+          LayoutTableSection {TBODY} at (2,2) size 978x24
+            LayoutTableRow {TR} at (0,2) size 978x20
+              LayoutTableCell {TD} at (2,2) size 974x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 972x17
                   text run at (1,1) width 488: "Blabla blah. Blabla blah. Blabla blah. Blabla blah. Blabla blah. Blabla blah. "
                   text run at (488,1) width 485: "Blabla blah. Blabla blah. Blabla blah. Blabla blah. Blabla blah. Blabla blah."

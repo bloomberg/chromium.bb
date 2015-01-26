@@ -6,23 +6,23 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x16
         RenderText {#text} at (0,0) size 363x16
           text run at (0,0) width 363: "Should say \x{201C}BEFORE CONTENT AFTER CONTENT\x{201D}"
-      RenderTable {DIV} at (0,32) size 75x48
-        RenderTableSection (anonymous) at (0,0) size 75x48
-          RenderTableRow (anonymous) at (0,0) size 75x48
-            RenderTableCell (anonymous) at (0,0) size 75x48 [r=0 c=0 rs=1 cs=1]
-              RenderTable {<pseudo:before>} at (0,0) size 62x16
-                RenderTableSection (anonymous) at (0,0) size 62x16
-                  RenderTableRow (anonymous) at (0,0) size 62x16
-                    RenderTableCell (anonymous) at (0,0) size 62x16 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (0,32) size 75x48
+        LayoutTableSection (anonymous) at (0,0) size 75x48
+          LayoutTableRow (anonymous) at (0,0) size 75x48
+            LayoutTableCell (anonymous) at (0,0) size 75x48 [r=0 c=0 rs=1 cs=1]
+              LayoutTable {<pseudo:before>} at (0,0) size 62x16
+                LayoutTableSection (anonymous) at (0,0) size 62x16
+                  LayoutTableRow (anonymous) at (0,0) size 62x16
+                    LayoutTableCell (anonymous) at (0,0) size 62x16 [r=0 c=0 rs=1 cs=1]
                       RenderTextFragment at (0,0) size 62x16
                         text run at (0,0) width 62: "BEFORE"
               RenderBlock {DIV} at (0,16) size 75x16
                 RenderText {#text} at (0,0) size 75x16
                   text run at (0,0) width 75: "CONTENT"
-              RenderTable {<pseudo:after>} at (0,32) size 51x16
-                RenderTableSection (anonymous) at (0,0) size 51x16
-                  RenderTableRow (anonymous) at (0,0) size 51x16
-                    RenderTableCell (anonymous) at (0,0) size 51x16 [r=0 c=0 rs=1 cs=1]
+              LayoutTable {<pseudo:after>} at (0,32) size 51x16
+                LayoutTableSection (anonymous) at (0,0) size 51x16
+                  LayoutTableRow (anonymous) at (0,0) size 51x16
+                    LayoutTableCell (anonymous) at (0,0) size 51x16 [r=0 c=0 rs=1 cs=1]
                       RenderTextFragment at (0,0) size 51x16
                         text run at (0,0) width 51: "AFTER"
       RenderBlock (anonymous) at (0,80) size 784x16

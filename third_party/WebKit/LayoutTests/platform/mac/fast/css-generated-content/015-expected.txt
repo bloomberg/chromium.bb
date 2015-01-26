@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderTable {DIV} at (0,0) size 300x54
-        RenderTableSection (anonymous) at (0,0) size 300x54
-          RenderTableRow (anonymous) at (0,0) size 300x54
-            RenderTableCell (anonymous) at (0,0) size 300x53.72 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (0,0) size 300x54
+        LayoutTableSection (anonymous) at (0,0) size 300x54
+          LayoutTableRow (anonymous) at (0,0) size 300x54
+            LayoutTableCell (anonymous) at (0,0) size 300x53.72 [r=0 c=0 rs=1 cs=1]
               RenderBlock (anonymous) at (0,0) size 300x0
                 RenderInline {FORM} at (0,0) size 0x0
                   RenderText {#text} at (0,0) size 0x0

@@ -55,10 +55,10 @@ layer at (0,0) size 800x994 backgroundClip at (0,0) size 800x600 clip at (0,0) s
 layer at (8,502) size 0x5000
   RenderBlock (positioned) {P} at (8,502) size 0x5000
 layer at (8,532) size 475x454 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderTable {TABLE} at (0,516) size 475x454 [border: (5px outset #808080)]
-    RenderTableSection {TBODY} at (5,5) size 465x444
-      RenderTableRow {TR} at (0,2) size 465x440
-        RenderTableCell {TD} at (2,2) size 461x440 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+  LayoutTable {TABLE} at (0,516) size 475x454 [border: (5px outset #808080)]
+    LayoutTableSection {TBODY} at (5,5) size 465x444
+      LayoutTableRow {TR} at (0,2) size 465x440
+        LayoutTableCell {TD} at (2,2) size 461x440 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
           RenderBlock (floating) {DIV} at (8,8) size 34x34 [border: (1px dotted #008000)]
           RenderBlock (floating) {DIV} at (54,8) size 29x29 [border: (1px dotted #008000)]
           RenderBlock (floating) {DIV} at (95,8) size 24x24 [border: (1px dotted #008000)]

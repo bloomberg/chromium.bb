@@ -19,10 +19,10 @@ layer at (0,0) size 800x600
         RenderText {#text} at (31,0) size 49x16
           text run at (31,0) width 49: "content"
       RenderBlock {DIV} at (0,85.44) size 784x16
-        RenderTable {<pseudo:before>} at (0,0) size 32x16
-          RenderTableSection (anonymous) at (0,0) size 32x16
-            RenderTableRow (anonymous) at (0,0) size 32x16
-              RenderTableCell (anonymous) at (0,0) size 32x16 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {<pseudo:before>} at (0,0) size 32x16
+          LayoutTableSection (anonymous) at (0,0) size 32x16
+            LayoutTableRow (anonymous) at (0,0) size 32x16
+              LayoutTableCell (anonymous) at (0,0) size 32x16 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 32x16
                   text run at (0,0) width 32: "Test:"
         RenderText {#text} at (32,0) size 48x16
@@ -46,10 +46,10 @@ layer at (0,0) size 800x600
             text run at (31,16) width 49: "content"
         RenderBR {BR} at (79,28) size 1x0
         RenderInline {SPAN} at (0,0) size 80x16
-          RenderTable {<pseudo:before>} at (0,32) size 32x16
-            RenderTableSection (anonymous) at (0,0) size 32x16
-              RenderTableRow (anonymous) at (0,0) size 32x16
-                RenderTableCell (anonymous) at (0,0) size 32x16 [r=0 c=0 rs=1 cs=1]
+          LayoutTable {<pseudo:before>} at (0,32) size 32x16
+            LayoutTableSection (anonymous) at (0,0) size 32x16
+              LayoutTableRow (anonymous) at (0,0) size 32x16
+                LayoutTableCell (anonymous) at (0,0) size 32x16 [r=0 c=0 rs=1 cs=1]
                   RenderTextFragment at (0,0) size 32x16
                     text run at (0,0) width 32: "Test:"
           RenderText {#text} at (32,32) size 48x16

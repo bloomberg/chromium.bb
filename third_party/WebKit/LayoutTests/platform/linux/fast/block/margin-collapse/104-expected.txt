@@ -11,10 +11,10 @@ layer at (0,0) size 800x585
             text run at (0,20) width 62: "from right."
           RenderBR {BR} at (62,35) size 0x0
           RenderBR {BR} at (0,40) size 0x19
-        RenderTable {TABLE} at (2,62) size 906x30 [border: (2px solid #FF0000)]
-          RenderTableSection {TBODY} at (2,2) size 902x26
-            RenderTableRow {TR} at (0,2) size 902x22
-              RenderTableCell {TD} at (2,2) size 898x22 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (2,62) size 906x30 [border: (2px solid #FF0000)]
+          LayoutTableSection {TBODY} at (2,2) size 902x26
+            LayoutTableRow {TR} at (0,2) size 902x22
+              LayoutTableCell {TD} at (2,2) size 898x22 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 896x19
                   text run at (1,1) width 450: "Blabla blah. Blabla blah. Blabla blah. Blabla blah. Blabla blah. Blabla blah. "
                   text run at (451,1) width 446: "Blabla blah. Blabla blah. Blabla blah. Blabla blah. Blabla blah. Blabla blah."
