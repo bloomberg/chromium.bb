@@ -14,15 +14,19 @@ TestAutofillClient::~TestAutofillClient() {
 }
 
 PersonalDataManager* TestAutofillClient::GetPersonalDataManager() {
-  return NULL;
+  return nullptr;
 }
 
 scoped_refptr<AutofillWebDataService> TestAutofillClient::GetDatabase() {
-  return scoped_refptr<AutofillWebDataService>(NULL);
+  return scoped_refptr<AutofillWebDataService>(nullptr);
 }
 
 PrefService* TestAutofillClient::GetPrefs() {
   return prefs_.get();
+}
+
+IdentityProvider* TestAutofillClient::GetIdentityProvider() {
+  return nullptr;
 }
 
 void TestAutofillClient::HideRequestAutocompleteDialog() {

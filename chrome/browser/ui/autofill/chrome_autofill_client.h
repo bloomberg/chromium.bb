@@ -46,6 +46,7 @@ class ChromeAutofillClient
   PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
+  IdentityProvider* GetIdentityProvider() override;
   void HideRequestAutocompleteDialog() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,
@@ -128,6 +129,9 @@ class ChromeAutofillClient
 
   // The last render frame that called requestAutocomplete.
   content::RenderFrameHost* last_rfh_to_rac_;
+
+  // The identity provider, used for Wallet integration.
+  scoped_ptr<IdentityProvider> identity_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };

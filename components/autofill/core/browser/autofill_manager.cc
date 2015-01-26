@@ -561,6 +561,8 @@ void AutofillManager::FillOrPreviewForm(
       unmasking_query_id_ = query_id;
       unmasking_form_ = form;
       unmasking_field_ = field;
+      // TODO(estade): uncomment this after the demo.
+      // real_pan_client_.Prepare();
       client()->ShowUnmaskPrompt(unmasking_card_,
                                  weak_ptr_factory_.GetWeakPtr());
       return;
@@ -708,13 +710,12 @@ void AutofillManager::OnUnmaskPromptClosed() {
   unmasking_cvc_.clear();
 }
 
-void AutofillManager::OnDidGetRealPan(const std::string& real_pan) {
-  NOTIMPLEMENTED();
+IdentityProvider* AutofillManager::GetIdentityProvider() {
+  return client()->GetIdentityProvider();
 }
 
-std::string AutofillManager::GetOAuth2Token() {
+void AutofillManager::OnDidGetRealPan(const std::string& real_pan) {
   NOTIMPLEMENTED();
-  return "would_I_lie_to_you?";
 }
 
 void AutofillManager::OnUnmaskVerificationResult(bool success) {

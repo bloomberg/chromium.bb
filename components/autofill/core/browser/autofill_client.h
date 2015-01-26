@@ -13,6 +13,8 @@
 #include "base/strings/string16.h"
 #include "ui/base/window_open_disposition.h"
 
+class IdentityProvider;
+
 namespace content {
 class RenderFrameHost;
 }
@@ -71,6 +73,9 @@ class AutofillClient {
 
   // Gets the preferences associated with the client.
   virtual PrefService* GetPrefs() = 0;
+
+  // Gets the IdentityProvider associated with the client (for OAuth2).
+  virtual IdentityProvider* GetIdentityProvider() = 0;
 
   // Hides the associated request autocomplete dialog (if it exists).
   virtual void HideRequestAutocompleteDialog() = 0;

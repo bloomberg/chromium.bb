@@ -230,8 +230,8 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnUnmaskPromptClosed() override;
 
   // wallet::RealPanWalletClient::Delegate:
+  IdentityProvider* GetIdentityProvider() override;
   void OnDidGetRealPan(const std::string& real_pan) override;
-  std::string GetOAuth2Token() override;
 
   // A toy method called when the (fake) unmasking process has finished.
   void OnUnmaskVerificationResult(bool success);

@@ -7,7 +7,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
+
+class IdentityProvider;
 
 namespace net {
 class URLFetcher;
@@ -23,17 +26,17 @@ namespace wallet {
 // RealPanWalletClient is modelled on WalletClient. Whereas the latter is used
 // for requestAutocomplete-related requests, RealPanWalletClient is used to
 // import user data from Wallet for normal web Autofill.
-class RealPanWalletClient : public net::URLFetcherDelegate {
+class RealPanWalletClient : public net::URLFetcherDelegate,
+                            public OAuth2TokenService::Consumer  {
  public:
   class Delegate {
    public:
+    // The identity provider used to get OAuth2 tokens.
+    virtual IdentityProvider* GetIdentityProvider() = 0;
+
     // Returns the real PAN retrieved from Wallet. |real_pan| will be empty
     // on failure.
     virtual void OnDidGetRealPan(const std::string& real_pan) = 0;
-
-    // Called to retrieve the OAuth2 token that should be used for requests
-    // to Wallet.
-    virtual std::string GetOAuth2Token() = 0;
   };
 
   // |context_getter| is reference counted so it has no lifetime or ownership
@@ -43,6 +46,10 @@ class RealPanWalletClient : public net::URLFetcherDelegate {
                       Delegate* delegate);
 
   ~RealPanWalletClient() override;
+
+  // Starts fetching the OAuth2 token in anticipation of future wallet requests.
+  // Called as an optimization, but not strictly necessary.
+  void Prepare();
 
   // The user has attempted to unmask a card with the given cvc.
   void UnmaskCard(const CreditCard& card, const std::string& cvc);
@@ -54,6 +61,19 @@ class RealPanWalletClient : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
+  // OAuth2TokenService::Consumer implementation.
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
+
+  // Initiates a new OAuth2 token request.
+  void StartTokenFetch();
+
+  // Adds the token to |request_| and starts the request.
+  void SetOAuth2TokenAndStartRequest();
+
   // The context for the request. Ensures the gdToken cookie is set as a header
   // in the requests to Online Wallet if it is present.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
@@ -62,8 +82,14 @@ class RealPanWalletClient : public net::URLFetcherDelegate {
   // of a request to Online Wallet.
   Delegate* const delegate_;  // must outlive |this|.
 
-  // The current request object.
+  // The current Wallet request object.
   scoped_ptr<net::URLFetcher> request_;
+
+  // The current OAuth2 token request object;
+  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+
+  // The OAuth2 token, or empty if not fetched.
+  std::string access_token_;
 
   base::WeakPtrFactory<RealPanWalletClient> weak_ptr_factory_;
 
