@@ -1102,8 +1102,8 @@ void RenderGrid::layoutGridItems()
     populateGridPositions(sizingData, availableSpaceForColumns, availableSpaceForRows);
     m_gridItemsOverflowingGridArea.resize(0);
 
-    LayoutUnit columnOffset = contentPositionAndDistributionColumnOffset(availableSpaceForColumns, style()->justifyContent(), style()->justifyContentDistribution(), m_columnPositions.size() - 1);
-    LayoutUnit rowOffset = contentPositionAndDistributionRowOffset(availableSpaceForRows, style()->alignContent(), style()->alignContentDistribution(), m_rowPositions.size() - 1);
+    LayoutUnit columnOffset = contentPositionAndDistributionColumnOffset(availableSpaceForColumns, style()->justifyContent(), style()->justifyContentDistribution(), style()->justifyContentOverflowAlignment(), m_columnPositions.size() - 1);
+    LayoutUnit rowOffset = contentPositionAndDistributionRowOffset(availableSpaceForRows, style()->alignContent(), style()->alignContentDistribution(), style()->alignContentOverflowAlignment(), m_rowPositions.size() - 1);
     LayoutSize contentPositionOffset(columnOffset, rowOffset);
 
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
@@ -1629,9 +1629,9 @@ static inline LayoutUnit offsetToEndEdge(bool isLeftToRight, LayoutUnit availabl
     return !isLeftToRight ? LayoutUnit(0) : availableSpace;
 }
 
-LayoutUnit RenderGrid::contentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, ContentPosition position, ContentDistributionType distribution, unsigned numberOfGridTracks) const
+LayoutUnit RenderGrid::contentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, ContentPosition position, ContentDistributionType distribution, OverflowAlignment overflow, unsigned numberOfGridTracks) const
 {
-    if (availableFreeSpace <= 0)
+    if (overflow == OverflowAlignmentSafe && availableFreeSpace <= 0)
         return 0;
 
     // FIXME: for the time being, spec states that it will always fallback for Grids, but
@@ -1639,8 +1639,6 @@ LayoutUnit RenderGrid::contentPositionAndDistributionColumnOffset(LayoutUnit ava
     if (distribution != ContentDistributionDefault && position == ContentPositionAuto)
         position = resolveContentDistributionFallback(distribution);
 
-    // FIXME: still pending of implementing support for the <overflow-position> keyword
-    // in justify-content and aling-content properties.
     switch (position) {
     case ContentPositionLeft:
         return 0;
@@ -1669,9 +1667,9 @@ LayoutUnit RenderGrid::contentPositionAndDistributionColumnOffset(LayoutUnit ava
     return 0;
 }
 
-LayoutUnit RenderGrid::contentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, ContentPosition position, ContentDistributionType distribution, unsigned numberOfGridTracks) const
+LayoutUnit RenderGrid::contentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, ContentPosition position, ContentDistributionType distribution, OverflowAlignment overflow, unsigned numberOfGridTracks) const
 {
-    if (availableFreeSpace <= 0)
+    if (overflow == OverflowAlignmentSafe && availableFreeSpace <= 0)
         return 0;
 
     // FIXME: for the time being, spec states that it will always fallback for Grids, but
@@ -1679,8 +1677,6 @@ LayoutUnit RenderGrid::contentPositionAndDistributionRowOffset(LayoutUnit availa
     if (distribution != ContentDistributionDefault && position == ContentPositionAuto)
         position = resolveContentDistributionFallback(distribution);
 
-    // FIXME: still pending of implementing support for the <overflow-position> keyword
-    // in justify-content and align-content properties.
     switch (position) {
     case ContentPositionLeft:
         // The align-content's axis is always orthogonal to the inline-axis.
