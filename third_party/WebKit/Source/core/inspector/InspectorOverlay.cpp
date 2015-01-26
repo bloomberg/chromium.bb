@@ -262,14 +262,18 @@ static bool buildNodeQuads(RenderObject* renderer, FloatQuad* content, FloatQuad
         RenderBox* renderBox = toRenderBox(renderer);
 
         // RenderBox returns the "pure" content area box, exclusive of the scrollbars (if present), which also count towards the content area in CSS.
+        const int verticalScrollbarWidth = renderBox->verticalScrollbarWidth();
+        const int horizontalScrollbarHeight = renderBox->horizontalScrollbarHeight();
         contentBox = renderBox->contentBoxRect();
-        contentBox.setWidth(contentBox.width() + renderBox->verticalScrollbarWidth());
-        contentBox.setHeight(contentBox.height() + renderBox->horizontalScrollbarHeight());
+        contentBox.setWidth(contentBox.width() + verticalScrollbarWidth);
+        contentBox.setHeight(contentBox.height() + horizontalScrollbarHeight);
 
-        paddingBox = LayoutRect(contentBox.x() - renderBox->paddingLeft(), contentBox.y() - renderBox->paddingTop(),
-            contentBox.width() + renderBox->paddingLeft() + renderBox->paddingRight(), contentBox.height() + renderBox->paddingTop() + renderBox->paddingBottom());
-        borderBox = LayoutRect(paddingBox.x() - renderBox->borderLeft(), paddingBox.y() - renderBox->borderTop(),
-            paddingBox.width() + renderBox->borderLeft() + renderBox->borderRight(), paddingBox.height() + renderBox->borderTop() + renderBox->borderBottom());
+        paddingBox = renderBox->paddingBoxRect();
+        paddingBox.setWidth(paddingBox.width() + verticalScrollbarWidth);
+        paddingBox.setHeight(paddingBox.height() + horizontalScrollbarHeight);
+
+        borderBox = renderBox->borderBoxRect();
+
         marginBox = LayoutRect(borderBox.x() - renderBox->marginLeft(), borderBox.y() - renderBox->marginTop(),
             borderBox.width() + renderBox->marginWidth(), borderBox.height() + renderBox->marginHeight());
     } else {
