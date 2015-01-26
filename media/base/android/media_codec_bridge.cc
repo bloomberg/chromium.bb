@@ -238,10 +238,14 @@ bool MediaCodecBridge::IsKnownUnaccelerated(const std::string& mime_type,
   // HW-acceleration but it doesn't. Android Media guidance is that the
   // "OMX.google" prefix is always used for SW decoders, so that's what we
   // use. "OMX.SEC.*" codec is Samsung software implementation - report it
-  // as unaccelerated as well.
+  // as unaccelerated as well. Also temporary blacklist Exynos and MediaTek
+  // devices while HW decoder video freezes and distortions are
+  // investigated - http://crbug.com/446974.
   if (codec_name.length() > 0) {
     return (StartsWithASCII(codec_name, "OMX.google.", true) ||
-        StartsWithASCII(codec_name, "OMX.SEC.", true));
+        StartsWithASCII(codec_name, "OMX.SEC.", true) ||
+        StartsWithASCII(codec_name, "OMX.MTK.", true) ||
+        StartsWithASCII(codec_name, "OMX.Exynos.", true));
   }
   return true;
 }
