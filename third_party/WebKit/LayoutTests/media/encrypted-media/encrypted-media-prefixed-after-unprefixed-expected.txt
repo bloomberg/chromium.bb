@@ -1,3 +1,4 @@
+CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed soon. Please use 'navigator.requestMediaKeySystemAccess()' instead.
 Call prefixed EME API after unprefixed EME API.
 
 EVENT(loadstart)

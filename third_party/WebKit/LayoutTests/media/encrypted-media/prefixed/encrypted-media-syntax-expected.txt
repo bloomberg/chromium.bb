@@ -1,3 +1,6 @@
+CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed soon. Please use 'navigator.requestMediaKeySystemAccess()' instead.
+CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed soon. Please use 'navigator.requestMediaKeySystemAccess()' instead.
+CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed soon. Please use 'navigator.requestMediaKeySystemAccess()' instead.
 Tests invalid and valid syntaxes.
 
 Test calling functions with too few parameters.

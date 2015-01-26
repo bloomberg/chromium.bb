@@ -830,6 +830,14 @@ String UseCounter::deprecationMessage(Feature feature)
     case RangeExpand:
         return replacedBy("Range.expand()", "Selection.modify()");
 
+    case PrefixedMediaAddKey:
+    case PrefixedMediaGenerateKeyRequest:
+    case PrefixedMediaCancelKeyRequest:
+        return "The prefixed Encrypted Media Extensions APIs are deprecated and will be removed soon. Please use 'navigator.requestMediaKeySystemAccess()' instead.";
+
+    case CanPlayTypeKeySystem:
+        return "canPlayType()'s 'keySystem' parameter is deprecated and will be removed soon. Please use 'navigator.requestMediaKeySystemAccess()' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
