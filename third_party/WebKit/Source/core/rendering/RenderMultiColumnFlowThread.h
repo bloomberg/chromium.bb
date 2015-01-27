@@ -191,6 +191,7 @@ private:
     virtual LayoutUnit skipColumnSpanner(RenderBox*, LayoutUnit logicalTopInFlowThread) override;
     virtual void flowThreadDescendantWasInserted(RenderObject*) override;
     virtual void flowThreadDescendantWillBeRemoved(RenderObject*) override;
+    virtual void computePreferredLogicalWidths() override;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void updateLogicalWidth() override;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) override;

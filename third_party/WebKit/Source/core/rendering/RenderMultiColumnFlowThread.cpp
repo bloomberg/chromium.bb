@@ -580,6 +580,32 @@ void RenderMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(RenderObject
     columnSetToRemove->destroy();
 }
 
+void RenderMultiColumnFlowThread::computePreferredLogicalWidths()
+{
+    RenderFlowThread::computePreferredLogicalWidths();
+
+    // The min/max intrinsic widths calculated really tell how much space elements need when
+    // laid out inside the columns. In order to eventually end up with the desired column width,
+    // we need to convert them to values pertaining to the multicol container.
+    const RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
+    const RenderStyle* multicolStyle = multicolContainer->style();
+    int columnCount = multicolStyle->hasAutoColumnCount() ? 1 : multicolStyle->columnCount();
+    LayoutUnit columnWidth;
+    LayoutUnit gapExtra = (columnCount - 1) * multicolContainer->columnGap();
+    if (multicolStyle->hasAutoColumnWidth()) {
+        m_minPreferredLogicalWidth = m_minPreferredLogicalWidth * columnCount + gapExtra;
+    } else {
+        columnWidth = multicolStyle->columnWidth();
+        m_minPreferredLogicalWidth = std::min(m_minPreferredLogicalWidth, columnWidth);
+    }
+    // Note that if column-count is auto here, we should resolve it to calculate the maximum
+    // intrinsic width, instead of pretending that it's 1. The only way to do that is by performing
+    // a layout pass, but this is not an appropriate time or place for layout. The good news is that
+    // if height is unconstrained and there are no explicit breaks, the resolved column-count really
+    // should be 1.
+    m_maxPreferredLogicalWidth = std::max(m_maxPreferredLogicalWidth, columnWidth) * columnCount + gapExtra;
+}
+
 void RenderMultiColumnFlowThread::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     // We simply remain at our intrinsic height.

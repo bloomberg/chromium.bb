@@ -27,6 +27,8 @@ public:
 protected:
     virtual void willBeRemovedFromTree() override;
     virtual bool needsPreferredWidthsRecalculation() const override;
+    virtual LayoutUnit minPreferredLogicalWidth() const override;
+    virtual LayoutUnit maxPreferredLogicalWidth() const override;
     virtual void layout() override;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override;

@@ -53,6 +53,16 @@ bool RenderMultiColumnSpannerPlaceholder::needsPreferredWidthsRecalculation() co
     return m_rendererInFlowThread->needsPreferredWidthsRecalculation();
 }
 
+LayoutUnit RenderMultiColumnSpannerPlaceholder::minPreferredLogicalWidth() const
+{
+    return m_rendererInFlowThread->minPreferredLogicalWidth();
+}
+
+LayoutUnit RenderMultiColumnSpannerPlaceholder::maxPreferredLogicalWidth() const
+{
+    return m_rendererInFlowThread->maxPreferredLogicalWidth();
+}
+
 void RenderMultiColumnSpannerPlaceholder::layout()
 {
     ASSERT(needsLayout());

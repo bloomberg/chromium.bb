@@ -2956,7 +2956,11 @@ void RenderBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Lay
 
     maxLogicalWidth = std::max(minLogicalWidth, maxLogicalWidth);
 
-    adjustIntrinsicLogicalWidthsForColumns(minLogicalWidth, maxLogicalWidth);
+    // The flow thread based multicol implementation will do this adjustment on the flow thread, and
+    // not here on the multicol container, so that spanners won't incorrectly be treated as column
+    // content (and have spanners' preferred widths multiplied by the number of columns, etc.).
+    if (style()->specifiesColumns() && !document().regionBasedColumnsEnabled())
+        adjustIntrinsicLogicalWidthsForColumns(minLogicalWidth, maxLogicalWidth);
 
     if (isTableCell()) {
         Length tableCellWidth = toLayoutTableCell(this)->styleOrColLogicalWidth();
@@ -3010,6 +3014,7 @@ void RenderBlock::computePreferredLogicalWidths()
 
 void RenderBlock::adjustIntrinsicLogicalWidthsForColumns(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
+    ASSERT(!document().regionBasedColumnsEnabled());
     if (!style()->hasAutoColumnCount() || !style()->hasAutoColumnWidth()) {
         // The min/max intrinsic widths calculated really tell how much space elements need when
         // laid out inside the columns. In order to eventually end up with the desired column width,
@@ -3041,8 +3046,9 @@ void RenderBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
     RenderBlock* containingBlock = this->containingBlock();
     LayoutUnit floatLeftWidth = 0, floatRightWidth = 0;
     while (child) {
-        // Positioned children don't affect the min/max width
-        if (child->isOutOfFlowPositioned()) {
+        // Positioned children don't affect the min/max width. Spanners only affect the min/max
+        // width of the multicol container, not the flow thread.
+        if (child->isOutOfFlowPositioned() || child->isColumnSpanAll()) {
             child = child->nextSibling();
             continue;
         }
