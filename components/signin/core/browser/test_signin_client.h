@@ -83,6 +83,10 @@ class TestSigninClient : public SigninClient {
   ios::FakeProfileOAuth2TokenServiceIOSProvider* GetIOSProviderAsFake();
 #endif
 
+  void set_are_signin_cookies_allowed(bool value) {
+    are_signin_cookies_allowed_ = value;
+  }
+
   // SigninClient overrides:
   void SetSigninProcess(int host_id) override;
   void ClearSigninProcess() override;
@@ -90,6 +94,11 @@ class TestSigninClient : public SigninClient {
   bool HasSigninProcess() const override;
   bool IsFirstRun() const override;
   base::Time GetInstallDate() override;
+  bool AreSigninCookiesAllowed() override;
+  void AddContentSettingsObserver(
+      content_settings::Observer* observer) override;
+  void RemoveContentSettingsObserver(
+      content_settings::Observer* observer) override;
 
  private:
   // Loads the token database.
@@ -100,6 +109,7 @@ class TestSigninClient : public SigninClient {
   scoped_refptr<TokenWebData> database_;
   int signin_host_id_;
   PrefService* pref_service_;
+  bool are_signin_cookies_allowed_;
 
   // Pointer to be filled by PostSignedIn.
   std::string signed_in_password_;

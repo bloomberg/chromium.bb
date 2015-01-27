@@ -34,6 +34,8 @@
         '../sql/sql.gyp:sql',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        'content_settings_core_browser',
+        'content_settings_core_common',
         'keyed_service_core',
         'os_crypt',
         'signin_core_common',

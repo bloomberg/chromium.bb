@@ -25,6 +25,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -80,6 +81,7 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
   TestingProfile* profile() { return profile_; }
   FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
   FakeProfileOAuth2TokenService* token_service() { return token_service_; }
+  TestSigninClient* test_signin_client() { return test_signin_client_; }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
   void SetFakeResponse(const std::string& url,
@@ -96,6 +98,10 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
       const std::string& account_id,
       const GoogleServiceAuthError& error);
 
+  void SimulateCookieContentSettingsChanged(
+      content_settings::Observer* observer,
+      const ContentSettingsPattern& primary_pattern);
+
   GURL list_accounts_url() { return list_accounts_url_; }
   GURL get_check_connection_info_url() {
     return get_check_connection_info_url_;
@@ -106,6 +112,7 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
   TestingProfile* profile_;
   FakeSigninManagerForTesting* signin_manager_;
   FakeProfileOAuth2TokenService* token_service_;
+  TestSigninClient* test_signin_client_;
   MockAccountReconcilor* mock_reconcilor_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
   scoped_ptr<TestingProfileManager> testing_profile_manager_;
@@ -119,6 +126,7 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
 AccountReconcilorTest::AccountReconcilorTest()
     : signin_manager_(NULL),
       token_service_(NULL),
+      test_signin_client_(NULL),
       mock_reconcilor_(NULL),
       url_fetcher_factory_(NULL) {}
 
@@ -166,6 +174,10 @@ void AccountReconcilorTest::SetUp() {
   token_service_ =
       static_cast<FakeProfileOAuth2TokenService*>(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
+
+  test_signin_client_ =
+      static_cast<TestSigninClient*>(
+          ChromeSigninClientFactory::GetForProfile(profile()));
 }
 
 MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
@@ -183,6 +195,16 @@ void AccountReconcilorTest::SimulateMergeSessionCompleted(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   observer->MergeSessionCompleted(account_id, error);
+}
+
+void AccountReconcilorTest::SimulateCookieContentSettingsChanged(
+    content_settings::Observer* observer,
+    const ContentSettingsPattern& primary_pattern) {
+  observer->OnContentSettingChanged(
+      primary_pattern,
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES,
+      std::string());
 }
 
 TEST_F(AccountReconcilorTest, Basic) {
@@ -308,6 +330,86 @@ TEST_P(AccountReconcilorTest, StartReconcileNoop) {
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
       signin_metrics::ACCOUNTS_SAME,
       1);
+}
+
+TEST_P(AccountReconcilorTest, StartReconcileCookiesDisabled) {
+  signin_manager()->SetAuthenticatedUsername(kTestEmail);
+  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+  test_signin_client()->set_are_signin_cookies_allowed(false);
+
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(reconcilor);
+
+  reconcilor->StartReconcile();
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_FALSE(reconcilor->AreGaiaAccountsSet());
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+}
+
+TEST_P(AccountReconcilorTest, StartReconcileContentSettings) {
+  signin_manager()->SetAuthenticatedUsername(kTestEmail);
+  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(reconcilor);
+
+  test_signin_client()->set_are_signin_cookies_allowed(false);
+  SimulateCookieContentSettingsChanged(reconcilor,
+                                       ContentSettingsPattern::Wildcard());
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+
+  test_signin_client()->set_are_signin_cookies_allowed(true);
+  SimulateCookieContentSettingsChanged(reconcilor,
+                                       ContentSettingsPattern::Wildcard());
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+}
+
+TEST_P(AccountReconcilorTest, StartReconcileContentSettingsGaiaUrl) {
+  signin_manager()->SetAuthenticatedUsername(kTestEmail);
+  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(reconcilor);
+
+  SimulateCookieContentSettingsChanged(
+      reconcilor,
+      ContentSettingsPattern::FromURL(GaiaUrls::GetInstance()->gaia_url()));
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+}
+
+TEST_P(AccountReconcilorTest, StartReconcileContentSettingsNonGaiaUrl) {
+  signin_manager()->SetAuthenticatedUsername(kTestEmail);
+  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(reconcilor);
+
+  SimulateCookieContentSettingsChanged(
+      reconcilor,
+      ContentSettingsPattern::FromURL(GURL("http://www.example.com")));
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+}
+
+TEST_P(AccountReconcilorTest, StartReconcileContentSettingsInvalidPattern) {
+  signin_manager()->SetAuthenticatedUsername(kTestEmail);
+  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(reconcilor);
+
+  scoped_ptr<ContentSettingsPattern::BuilderInterface>
+      builder(ContentSettingsPattern::CreateBuilder(false));
+  builder->Invalid();
+
+  SimulateCookieContentSettingsChanged(reconcilor, builder->Build());
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
 }
 
 // This is test is needed until chrome changes to use gaia obfuscated id.

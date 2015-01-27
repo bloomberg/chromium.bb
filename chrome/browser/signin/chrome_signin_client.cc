@@ -203,6 +203,20 @@ base::Time ChromeSigninClient::GetInstallDate() {
       g_browser_process->metrics_service()->GetInstallDate());
 }
 
+bool ChromeSigninClient::AreSigninCookiesAllowed() {
+  return ProfileAllowsSigninCookies(profile_);
+}
+
+void ChromeSigninClient::AddContentSettingsObserver(
+    content_settings::Observer* observer) {
+  profile_->GetHostContentSettingsMap()->AddObserver(observer);
+}
+
+void ChromeSigninClient::RemoveContentSettingsObserver(
+    content_settings::Observer* observer) {
+  profile_->GetHostContentSettingsMap()->RemoveObserver(observer);
+}
+
 scoped_ptr<SigninClient::CookieChangedSubscription>
 ChromeSigninClient::AddCookieChangedCallback(
     const GURL& url,

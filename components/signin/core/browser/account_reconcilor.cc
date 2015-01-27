@@ -88,6 +88,7 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
   if (IsProfileConnected()) {
     RegisterWithMergeSessionHelper();
     RegisterForCookieChanges();
+    RegisterWithContentSettings();
     RegisterWithTokenService();
 
     // Start a reconcile if the tokens are already loaded.
@@ -107,6 +108,7 @@ void AccountReconcilor::Shutdown() {
   UnregisterWithSigninManager();
   UnregisterWithTokenService();
   UnregisterForCookieChanges();
+  UnregisterWithContentSettings();
 }
 
 void AccountReconcilor::AddMergeSessionObserver(
@@ -139,6 +141,14 @@ void AccountReconcilor::RegisterWithSigninManager() {
 
 void AccountReconcilor::UnregisterWithSigninManager() {
   signin_manager_->RemoveObserver(this);
+}
+
+void AccountReconcilor::RegisterWithContentSettings() {
+  client_->AddContentSettingsObserver(this);
+}
+
+void AccountReconcilor::UnregisterWithContentSettings() {
+  client_->RemoveContentSettingsObserver(this);
 }
 
 void AccountReconcilor::RegisterWithTokenService() {
@@ -204,6 +214,27 @@ void AccountReconcilor::OnCookieChanged(const net::CanonicalCookie& cookie,
   }
 }
 
+void AccountReconcilor::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  // If this is not a change to cookie settings, just ignore.
+  if (content_type != CONTENT_SETTINGS_TYPE_COOKIES)
+    return;
+
+  // If this does not affect GAIA, just ignore.  If the primary pattern is
+  // invalid, then assume it could affect GAIA.  The secondary pattern is
+  // not needed.
+  if (primary_pattern.IsValid() &&
+      !primary_pattern.Matches(GaiaUrls::GetInstance()->gaia_url())) {
+    return;
+  }
+
+  VLOG(1) << "AccountReconcilor::OnContentSettingChanged";
+  StartReconcile();
+}
+
 void AccountReconcilor::OnEndBatchChanges() {
   VLOG(1) << "AccountReconcilor::OnEndBatchChanges";
   // Remember that accounts have changed if a reconcile is already started.
@@ -217,6 +248,7 @@ void AccountReconcilor::GoogleSigninSucceeded(const std::string& account_id,
   VLOG(1) << "AccountReconcilor::GoogleSigninSucceeded: signed in";
   RegisterWithMergeSessionHelper();
   RegisterForCookieChanges();
+  RegisterWithContentSettings();
   RegisterWithTokenService();
 }
 
@@ -229,6 +261,7 @@ void AccountReconcilor::GoogleSignedOut(const std::string& account_id,
   UnregisterWithMergeSessionHelper();
   UnregisterWithTokenService();
   UnregisterForCookieChanges();
+  UnregisterWithContentSettings();
   PerformLogoutAllAccountsAction();
 }
 
@@ -249,10 +282,13 @@ void AccountReconcilor::PerformLogoutAllAccountsAction() {
 }
 
 void AccountReconcilor::StartReconcile() {
-  if (!IsProfileConnected() || is_reconcile_started_ ||
-      get_gaia_accounts_callbacks_.size() > 0) {
+  if (!IsProfileConnected() || !client_->AreSigninCookiesAllowed()) {
+    VLOG(1) << "AccountReconcilor::StartReconcile: !connected or no cookies";
     return;
   }
+
+  if (is_reconcile_started_ || get_gaia_accounts_callbacks_.size() > 0)
+    return;
 
   is_reconcile_started_ = true;
   m_reconcile_start_time_ = base::Time::Now();
