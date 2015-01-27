@@ -28532,6 +28532,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Log each stage of a recovery component event.</summary>
 </histogram>
 
+<histogram name="Render.Workers.MaxWorkerCountInRendererProcess">
+  <owner>kinuko@chromium.org</owner>
+  <summary>
+    Maximum number of workers (SharedWorker or ServiceWorker) that are
+    simultaneously hosted in a single renderer process. Recorded when the
+    renderer process host is being destructed.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.AcceleratedFixedRootBackground"
     enum="AcceleratedFixedRootBackground">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>

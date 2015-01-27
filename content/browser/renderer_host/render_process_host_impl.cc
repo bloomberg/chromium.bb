@@ -459,6 +459,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       within_process_died_observer_(false),
       power_monitor_broadcaster_(this),
       worker_ref_count_(0),
+      max_worker_count_(0),
       permission_service_context_(new PermissionServiceContext(this)),
       pending_valuebuffer_state_(new gpu::ValueStateMap()),
       subscribe_uniform_enabled_(false),
@@ -1594,6 +1595,14 @@ void RenderProcessHostImpl::Cleanup() {
           "SharedWorker.RendererSurviveForWorkerTime",
           base::TimeTicks::Now() - survive_for_worker_start_time_);
     }
+
+    if (max_worker_count_ > 0) {
+      // Record the max number of workers (SharedWorker or ServiceWorker)
+      // that are simultaneously hosted in this renderer process.
+      UMA_HISTOGRAM_COUNTS("Render.Workers.MaxWorkerCountInRendererProcess",
+                           max_worker_count_);
+    }
+
     // We cannot clean up twice; if this fails, there is an issue with our
     // control flow.
     DCHECK(!deleting_soon_);
@@ -2355,6 +2364,8 @@ void RenderProcessHostImpl::SendDisableAecDumpToRenderer() {
 void RenderProcessHostImpl::IncrementWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ++worker_ref_count_;
+  if (worker_ref_count_ > max_worker_count_)
+    max_worker_count_ = worker_ref_count_;
 }
 
 void RenderProcessHostImpl::DecrementWorkerRefCount() {

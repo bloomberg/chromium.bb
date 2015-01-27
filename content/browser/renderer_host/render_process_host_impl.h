@@ -476,6 +476,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Records the time when the process starts surviving for workers for UMA.
   base::TimeTicks survive_for_worker_start_time_;
 
+  // Records the maximum # of workers simultaneously hosted in this process
+  // for UMA.
+  int max_worker_count_;
+
   // Context shared for each PermissionService instance created for this RPH.
   scoped_ptr<PermissionServiceContext> permission_service_context_;
 
