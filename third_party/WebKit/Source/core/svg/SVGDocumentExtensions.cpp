@@ -96,10 +96,14 @@ void SVGDocumentExtensions::serviceOnAnimationFrame(Document& document, double m
 
 void SVGDocumentExtensions::serviceAnimations(double monotonicAnimationStartTime)
 {
-    WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> > timeContainers;
-    timeContainers.appendRange(m_timeContainers.begin(), m_timeContainers.end());
+    WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement>> timeContainers;
+    copyToVector(m_timeContainers, timeContainers);
     for (const auto& container : timeContainers)
         container->timeContainer()->serviceAnimations(monotonicAnimationStartTime);
+#if ENABLE(OILPAN)
+    // FIXME: Explicitly give hint to Oilpan that this can be promptly freed
+    timeContainers.clear();
+#endif
 }
 
 void SVGDocumentExtensions::startAnimations()
@@ -108,13 +112,17 @@ void SVGDocumentExtensions::startAnimations()
     // starting animations for a document will do this "latching"
     // FIXME: We hold a ref pointers to prevent a shadow tree from getting removed out from underneath us.
     // In the future we should refactor the use-element to avoid this. See https://webkit.org/b/53704
-    WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> > timeContainers;
-    timeContainers.appendRange(m_timeContainers.begin(), m_timeContainers.end());
+    WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement>> timeContainers;
+    copyToVector(m_timeContainers, timeContainers);
     for (const auto& container : timeContainers) {
         SMILTimeContainer* timeContainer = container->timeContainer();
         if (!timeContainer->isStarted())
             timeContainer->begin();
     }
+#if ENABLE(OILPAN)
+    // FIXME: Explicitly give hint to Oilpan that this can be promptly freed
+    timeContainers.clear();
+#endif
 }
 
 void SVGDocumentExtensions::pauseAnimations()
@@ -125,9 +133,8 @@ void SVGDocumentExtensions::pauseAnimations()
 
 void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
 {
-    WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> > timeContainers;
-    timeContainers.appendRange(m_timeContainers.begin(), m_timeContainers.end());
-
+    WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement>> timeContainers;
+    copyToVector(m_timeContainers, timeContainers);
     for (const auto& container : timeContainers) {
         SVGSVGElement* outerSVG = container.get();
         if (!outerSVG->isOutermostSVGSVGElement())
@@ -137,6 +144,10 @@ void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
         if (outerSVG->document().wellFormed() || !outerSVG->document().isSVGDocument())
             outerSVG->sendSVGLoadEventIfPossible();
     }
+#if ENABLE(OILPAN)
+    // FIXME: Explicitly give hint to Oilpan that this can be promptly freed
+    timeContainers.clear();
+#endif
 }
 
 static void reportMessage(Document* document, MessageLevel level, const String& message)
