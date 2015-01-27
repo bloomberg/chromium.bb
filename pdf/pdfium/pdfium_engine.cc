@@ -2392,7 +2392,7 @@ pp::VarDictionary PDFiumEngine::GetNamedDestinations() {
   pp::VarDictionary named_destinations;
   for (unsigned long i = 0; i < FPDF_CountNamedDests(doc_); i++) {
     base::string16 name;
-    unsigned long buffer_bytes;
+    long buffer_bytes;
     FPDF_GetNamedDest(doc_, i, NULL, buffer_bytes);
     size_t name_length = buffer_bytes / sizeof(base::string16::value_type);
     if (name_length > 0) {
