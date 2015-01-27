@@ -35,13 +35,15 @@ class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
   // MessageLoop is destroyed.
   static void EnsureForCurrentMessageLoop();
 
-  // Returns thread wrapper for the current thread. NULL is returned
-  // if EnsureForCurrentMessageLoop() has never been called for this
-  // thread.
+  // Creates JingleThreadWrapper for |task_runner| that runs tasks on the
+  // current thread.
+  static scoped_ptr<JingleThreadWrapper> WrapTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Returns thread wrapper for the current thread or nullptr if it doesn't
+  // exist.
   static JingleThreadWrapper* current();
 
-  explicit JingleThreadWrapper(
-     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~JingleThreadWrapper() override;
 
   // Sets whether the thread can be used to send messages
@@ -94,6 +96,9 @@ class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
  private:
   typedef std::map<int, rtc::Message> MessagesQueue;
   struct PendingSend;
+
+  explicit JingleThreadWrapper(
+     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void PostTaskInternal(
       int delay_ms, rtc::MessageHandler* handler,

@@ -198,8 +198,8 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   // are not shared with Chrome.
   thread_task_runner_handle_.reset(
       new base::ThreadTaskRunnerHandle(plugin_task_runner_));
-  thread_wrapper_.reset(
-      new jingle_glue::JingleThreadWrapper(plugin_task_runner_));
+  thread_wrapper_ =
+      jingle_glue::JingleThreadWrapper::WrapTaskRunner(plugin_task_runner_);
   media::InitializeCPUSpecificYUVConversions();
 
   // Register a global log handler.

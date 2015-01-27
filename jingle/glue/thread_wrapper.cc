@@ -30,14 +30,24 @@ base::LazyInstance<base::ThreadLocalPointer<JingleThreadWrapper> >
 
 // static
 void JingleThreadWrapper::EnsureForCurrentMessageLoop() {
-  if (JingleThreadWrapper::current() == NULL) {
+  if (JingleThreadWrapper::current() == nullptr) {
     base::MessageLoop* message_loop = base::MessageLoop::current();
-    g_jingle_thread_wrapper.Get()
-        .Set(new JingleThreadWrapper(message_loop->message_loop_proxy()));
-    message_loop->AddDestructionObserver(current());
+    scoped_ptr<JingleThreadWrapper> wrapper =
+        JingleThreadWrapper::WrapTaskRunner(message_loop->task_runner());
+    message_loop->AddDestructionObserver(wrapper.release());
   }
 
   DCHECK_EQ(rtc::Thread::Current(), current());
+}
+
+scoped_ptr<JingleThreadWrapper> JingleThreadWrapper::WrapTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(!JingleThreadWrapper::current());
+  DCHECK(task_runner->BelongsToCurrentThread());
+
+  scoped_ptr<JingleThreadWrapper> result(new JingleThreadWrapper(task_runner));
+  g_jingle_thread_wrapper.Get().Set(result.get());
+  return result.Pass();
 }
 
 // static
@@ -47,8 +57,7 @@ JingleThreadWrapper* JingleThreadWrapper::current() {
 
 JingleThreadWrapper::JingleThreadWrapper(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : rtc::Thread(new rtc::NullSocketServer()),
-      task_runner_(task_runner),
+    : task_runner_(task_runner),
       send_allowed_(false),
       last_task_id_(0),
       pending_send_event_(true, false),
@@ -61,18 +70,19 @@ JingleThreadWrapper::JingleThreadWrapper(
 }
 
 JingleThreadWrapper::~JingleThreadWrapper() {
-  Clear(NULL, rtc::MQID_ANY, NULL);
+  DCHECK_EQ(this, JingleThreadWrapper::current());
+  DCHECK_EQ(this, rtc::Thread::Current());
+
+  UnwrapCurrent();
+  rtc::ThreadManager::Instance()->SetCurrentThread(nullptr);
+  rtc::MessageQueueManager::Remove(this);
+  g_jingle_thread_wrapper.Get().Set(nullptr);
+
+  Clear(nullptr, rtc::MQID_ANY, nullptr);
 }
 
 void JingleThreadWrapper::WillDestroyCurrentMessageLoop() {
-  DCHECK_EQ(rtc::Thread::Current(), current());
-  UnwrapCurrent();
-  g_jingle_thread_wrapper.Get().Set(NULL);
-  rtc::ThreadManager::Instance()->SetCurrentThread(NULL);
-  rtc::MessageQueueManager::Remove(this);
-  rtc::SocketServer* ss = socketserver();
   delete this;
-  delete ss;
 }
 
 void JingleThreadWrapper::Post(
@@ -133,7 +143,7 @@ void JingleThreadWrapper::Send(rtc::MessageHandler *handler, uint32 id,
     return;
 
   JingleThreadWrapper* current_thread = JingleThreadWrapper::current();
-  DCHECK(current_thread != NULL) << "Send() can be called only from a "
+  DCHECK(current_thread != nullptr) << "Send() can be called only from a "
       "thread that has JingleThreadWrapper.";
 
   rtc::Message message;
@@ -180,7 +190,7 @@ void JingleThreadWrapper::Send(rtc::MessageHandler *handler, uint32 id,
 
 void JingleThreadWrapper::ProcessPendingSends() {
   while (true) {
-    PendingSend* pending_send = NULL;
+    PendingSend* pending_send = nullptr;
     {
       base::AutoLock auto_lock(lock_);
       if (!pending_send_messages_.empty()) {
@@ -240,7 +250,7 @@ void JingleThreadWrapper::RunTask(int task_id) {
 
   if (have_message) {
     if (message.message_id == rtc::MQID_DISPOSE) {
-      DCHECK(message.phandler == NULL);
+      DCHECK(message.phandler == nullptr);
       delete message.pdata;
     } else {
       message.phandler->OnMessage(&message);
