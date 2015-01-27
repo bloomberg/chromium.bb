@@ -41,6 +41,8 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
 
     WillBeHeapVector<RefPtrWillBeMember<Document>> documents;
+    ASSERT(m_page->mainFrame());
+    documents.reserveInitialCapacity(m_page->mainFrame()->tree().scopedChildCount());
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->isLocalFrame())
             documents.append(toLocalFrame(frame)->document());
