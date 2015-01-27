@@ -50,6 +50,10 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual WhichTree GetTree() const = 0;
   virtual bool RequiresHighResToDraw() const = 0;
 
+  // Callback to notify the client that the live rect (set of tiles) changed for
+  // a tiling.
+  virtual void TilingLiveRectChanged() = 0;
+
  protected:
   virtual ~PictureLayerTilingClient() {}
 };

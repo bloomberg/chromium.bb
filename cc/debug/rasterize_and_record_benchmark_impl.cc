@@ -105,6 +105,8 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->RequiresHighResToDraw();
   }
 
+  void TilingLiveRectChanged() override {}
+
  private:
   PictureLayerTilingClient* base_client_;
   Region invalidation_;

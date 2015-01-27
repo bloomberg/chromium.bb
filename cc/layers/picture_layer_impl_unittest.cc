@@ -73,7 +73,8 @@ class PictureLayerImplTest : public testing::Test {
       : proxy_(base::MessageLoopProxy::current()),
         host_impl_(LowResTilingsSettings(), &proxy_, &shared_bitmap_manager_),
         root_id_(6),
-        id_(7),
+        parent_id_(7),
+        id_(8),
         pending_layer_(nullptr),
         old_pending_layer_(nullptr),
         active_layer_(nullptr) {
@@ -84,7 +85,8 @@ class PictureLayerImplTest : public testing::Test {
       : proxy_(base::MessageLoopProxy::current()),
         host_impl_(settings, &proxy_, &shared_bitmap_manager_),
         root_id_(6),
-        id_(7) {
+        parent_id_(7),
+        id_(8) {
     host_impl_.SetViewportSize(gfx::Size(10000, 10000));
   }
 
@@ -196,17 +198,21 @@ class PictureLayerImplTest : public testing::Test {
 
     // Steal from the recycled tree if possible.
     scoped_ptr<LayerImpl> pending_root = pending_tree->DetachLayerTree();
+    scoped_ptr<LayerImpl> pending_parent;
     scoped_ptr<FakePictureLayerImpl> pending_layer;
     DCHECK_IMPLIES(pending_root, pending_root->id() == root_id_);
     if (!pending_root) {
       pending_root = LayerImpl::Create(pending_tree, root_id_);
+      pending_parent = LayerImpl::Create(pending_tree, parent_id_);
       pending_layer = FakePictureLayerImpl::Create(pending_tree, id_);
       if (!tile_size.IsEmpty())
         pending_layer->set_fixed_tile_size(tile_size);
       pending_layer->SetDrawsContent(true);
     } else {
+      pending_parent = pending_root->RemoveChild(pending_root->children()[0]);
       pending_layer.reset(static_cast<FakePictureLayerImpl*>(
-          pending_root->RemoveChild(pending_root->children()[0]).release()));
+          pending_parent->RemoveChild(pending_parent->children()[0])
+              .release()));
       if (!tile_size.IsEmpty())
         pending_layer->set_fixed_tile_size(tile_size);
     }
@@ -216,7 +222,8 @@ class PictureLayerImplTest : public testing::Test {
     pending_layer->SetContentBounds(raster_source->GetSize());
     pending_layer->SetRasterSourceOnPending(raster_source, invalidation);
 
-    pending_root->AddChild(pending_layer.Pass());
+    pending_parent->AddChild(pending_layer.Pass());
+    pending_root->AddChild(pending_parent.Pass());
     pending_tree->SetRootLayer(pending_root.Pass());
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
@@ -306,6 +313,7 @@ class PictureLayerImplTest : public testing::Test {
   TestSharedBitmapManager shared_bitmap_manager_;
   FakeLayerTreeHostImpl host_impl_;
   int root_id_;
+  int parent_id_;
   int id_;
   FakePictureLayerImpl* pending_layer_;
   FakePictureLayerImpl* old_pending_layer_;
@@ -385,6 +393,155 @@ TEST_F(PictureLayerImplTest, CloneNoInvalidation) {
   EXPECT_GT(tilings->num_tilings(), 0u);
   for (size_t i = 0; i < tilings->num_tilings(); ++i)
     VerifyAllTilesExistAndHavePile(tilings->tiling_at(i), pending_pile.get());
+}
+
+TEST_F(PictureLayerImplTest, PushPropertiesForNewRasterSource) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 400);
+
+  scoped_refptr<FakePicturePileImpl> filled_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> empty_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+
+  // A new layer needs to push properties.
+  SetupPendingTree(filled_pile);
+  EXPECT_TRUE(pending_layer_->needs_push_properties());
+
+  host_impl_.ActivateSyncTree();
+
+  // By default a layer has nothing to push.
+  host_impl_.CreatePendingTree();
+  EXPECT_FALSE(pending_layer_->needs_push_properties());
+
+  // Setting a new raster source will require pushing.
+  pending_layer_->SetRasterSourceOnPending(filled_pile, Region());
+  EXPECT_TRUE(pending_layer_->needs_push_properties());
+
+  host_impl_.ActivateSyncTree();
+  host_impl_.CreatePendingTree();
+  EXPECT_FALSE(pending_layer_->needs_push_properties());
+
+  // A new source that changes CanHaveTilings also requires pushing.
+  EXPECT_TRUE(pending_layer_->CanHaveTilings());
+  pending_layer_->SetRasterSourceOnPending(empty_pile, Region());
+  EXPECT_FALSE(pending_layer_->CanHaveTilings());
+  EXPECT_TRUE(pending_layer_->needs_push_properties());
+}
+
+TEST_F(PictureLayerImplTest, PushPropertiesForNewTiling) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 400);
+
+  scoped_refptr<FakePicturePileImpl> filled_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> empty_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+
+  // A new layer needs to push properties.
+  SetupPendingTree(filled_pile);
+  EXPECT_TRUE(pending_layer_->needs_push_properties());
+
+  host_impl_.ActivateSyncTree();
+
+  // By default a layer has nothing to push.
+  host_impl_.CreatePendingTree();
+  host_impl_.pending_tree()->PushPageScaleFromMainThread(1.f, 0.25f, 100.f);
+  EXPECT_FALSE(pending_layer_->needs_push_properties());
+
+  // Update tiles without changing the scale, shouldn't need to push properties.
+  time_ticks += base::TimeDelta::FromMilliseconds(200);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+
+  EXPECT_EQ(1.f, pending_layer_->HighResTiling()->contents_scale());
+  EXPECT_FALSE(pending_layer_->needs_push_properties());
+
+  // Change the scale on the layer, which should make a new high res tiling.
+  time_ticks += base::TimeDelta::FromMilliseconds(200);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 6.f, 1.f, 6.f, 1.f, false);
+
+  EXPECT_EQ(6.f, pending_layer_->HighResTiling()->contents_scale());
+  EXPECT_TRUE(pending_layer_->needs_push_properties());
+}
+
+TEST_F(PictureLayerImplTest, PushPropertiesForNewTiles) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 100000);
+
+  host_impl_.SetViewportSize(gfx::Size(100, 100));
+
+  scoped_refptr<FakePicturePileImpl> filled_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> empty_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+
+  // A new layer needs to push properties.
+  SetupPendingTree(filled_pile);
+  EXPECT_TRUE(pending_layer_->needs_push_properties());
+
+  host_impl_.ActivateSyncTree();
+
+  // By default a layer has nothing to push.
+  host_impl_.CreatePendingTree();
+  EXPECT_FALSE(pending_layer_->needs_push_properties());
+
+  host_impl_.pending_tree()->PushPageScaleFromMainThread(1.f, 0.25f, 100.f);
+
+  int num_tiles_y =
+      pending_layer_->HighResTiling()->TilingDataForTesting().num_tiles_y();
+
+  // Verify a bit about current pending tree's current tiles.
+  EXPECT_EQ(1.f, pending_layer_->HighResTiling()->contents_scale());
+  EXPECT_TRUE(pending_layer_->HighResTiling()->TileAt(0, 0));
+  EXPECT_FALSE(pending_layer_->HighResTiling()->TileAt(0, num_tiles_y - 1));
+
+  // Update tiles without changing the viewport, nothing new to push.
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+  host_impl_.pending_tree()->UpdateDrawProperties();
+
+  // Same tiles on the pending tree.
+  EXPECT_TRUE(pending_layer_->HighResTiling()->TileAt(0, 0));
+  EXPECT_FALSE(pending_layer_->HighResTiling()->TileAt(0, num_tiles_y - 1));
+  // Means nothing new to push.
+  EXPECT_FALSE(pending_layer_->needs_push_properties());
+
+  host_impl_.ActivateSyncTree();
+  host_impl_.CreatePendingTree();
+  EXPECT_FALSE(pending_layer_->needs_push_properties());
+
+  host_impl_.pending_tree()->PushPageScaleFromMainThread(1.f, 0.25f, 100.f);
+
+  // Change what part of the layer is visible in the viewport and update draw
+  // properties and tile priorities. This should create new tiles on the layer.
+  pending_layer_->parent()->SetPosition(
+      gfx::PointF(0.f, -layer_bounds.height() + 100.f));
+
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+  host_impl_.pending_tree()->UpdateDrawProperties();
+
+  // There are new tiles on the pending tree now.
+  EXPECT_FALSE(pending_layer_->HighResTiling()->TileAt(0, 0));
+  EXPECT_TRUE(pending_layer_->HighResTiling()->TileAt(0, num_tiles_y - 1));
+  // So the layer needs to push properties to sync the new tiles.
+  EXPECT_TRUE(pending_layer_->needs_push_properties());
 }
 
 TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {

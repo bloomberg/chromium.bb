@@ -36,6 +36,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
       const PictureLayerTiling* tiling) override;
   bool RequiresHighResToDraw() const override;
   WhichTree GetTree() const override;
+  void TilingLiveRectChanged() override {}
 
   void set_twin_tiling_set(PictureLayerTilingSet* set) {
     twin_set_ = set;
