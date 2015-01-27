@@ -41894,6 +41894,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.FecBitrateReceivedInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of received FEC bits per second for a received video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.FecBitrateSentInKbps" units="kbps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of sent FEC bits per second for a sent video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.FirPacketsReceivedPerMinute"
     units="packets/minute">
   <owner>asapersson@chromium.org</owner>
