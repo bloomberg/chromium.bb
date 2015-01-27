@@ -151,6 +151,7 @@ protected:
 
     // ARIA attributes.
     virtual String ariaDescribedByAttribute() const override final;
+    virtual const AtomicString& ariaDropEffect() const override final;
     virtual String ariaLabeledByAttribute() const override final;
     virtual AccessibilityRole ariaRoleAttribute() const override final;
     virtual AccessibilityOptionalBool isAriaGrabbed() const override final;

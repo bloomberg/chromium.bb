@@ -477,6 +477,14 @@ bool WebAXObject::ariaDescribedby(WebVector<WebAXObject>& describedbyElements) c
     return true;
 }
 
+WebString WebAXObject::ariaDropEffect() const
+{
+    if (isDetached())
+        return WebString();
+
+    return WebString(m_private->ariaDropEffect());
+}
+
 bool WebAXObject::ariaHasPopup() const
 {
     if (isDetached())

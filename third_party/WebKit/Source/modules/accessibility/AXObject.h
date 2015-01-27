@@ -456,6 +456,7 @@ public:
     virtual AXObject* activeDescendant() const { return 0; }
     virtual String ariaAutoComplete() const { return String(); }
     virtual String ariaDescribedByAttribute() const { return String(); }
+    virtual const AtomicString& ariaDropEffect() const { return nullAtom; }
     virtual void ariaFlowToElements(AccessibilityChildrenVector&) const { }
     virtual void ariaControlsElements(AccessibilityChildrenVector&) const { }
     virtual void ariaDescribedbyElements(AccessibilityChildrenVector& describedby) const { };

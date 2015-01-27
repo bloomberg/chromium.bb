@@ -1226,6 +1226,11 @@ String AXNodeObject::ariaDescribedByAttribute() const
     return accessibilityDescriptionForElements(elements);
 }
 
+const AtomicString& AXNodeObject::ariaDropEffect() const
+{
+    return getAttribute(aria_dropeffectAttr);
+}
+
 String AXNodeObject::ariaLabeledByAttribute() const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
