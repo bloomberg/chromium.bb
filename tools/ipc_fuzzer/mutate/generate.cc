@@ -60,6 +60,7 @@ class Generator {
   virtual void GenerateLong(long* value) = 0;
   virtual void GenerateSize(size_t* value) = 0;
   virtual void GenerateUChar(unsigned char *value) = 0;
+  virtual void GenerateWChar(wchar_t *value) = 0;
   virtual void GenerateUInt16(uint16* value) = 0;
   virtual void GenerateUInt32(uint32* value) = 0;
   virtual void GenerateInt64(int64* value) = 0;
@@ -132,6 +133,10 @@ class GeneratorImpl : public Generator {
     GenerateIntegralType<unsigned char>(value);
   }
 
+  void GenerateWChar(wchar_t* value) override {
+    GenerateIntegralType<wchar_t>(value);
+  }
+
   void GenerateUInt16(uint16* value) override {
     GenerateIntegralType<uint16>(value);
   }
@@ -190,7 +195,16 @@ struct GenerateTraits {
 template <class P>
 static bool GenerateParam(P* p, Generator* generator) {
   return GenerateTraits<P>::Generate(p, generator);
-}
+};
+
+template <class P>
+static bool GenerateParamArray(P* p, size_t length, Generator* generator) {
+  for (size_t i = 0; i < length; i++, p++) {
+    if (!GenerateTraits<P>::Generate(p, generator))
+      return false;
+  }
+  return true;
+};
 
 // Specializations to generate primitive types.
 template <>
@@ -277,6 +291,14 @@ template <>
 struct GenerateTraits<unsigned char> {
   static bool Generate(unsigned char* p, Generator* generator) {
     generator->GenerateUChar(p);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<wchar_t> {
+  static bool Generate(wchar_t* p, Generator* generator) {
+    generator->GenerateWChar(p);
     return true;
   }
 };
@@ -434,25 +456,31 @@ struct GenerateTraits<std::pair<A, B> > {
 };
 
 // Specializations to generate hand-coded types.
-#if defined(OS_POSIX)
 template <>
-struct GenerateTraits<base::FileDescriptor> {
-    static bool Generate(base::FileDescriptor* p, Generator* generator) {
-        // I don't think we can generate real ones due to check on construct.
-        p->fd = -1;
-        return true;
-    }
+struct GenerateTraits<IPC::PlatformFileForTransit> {
+  static bool Generate(IPC::PlatformFileForTransit* p, Generator* generator) {
+    // TODO(inferno): I don't think we can generate real ones due to check on
+    // construct.
+    *p = IPC::InvalidPlatformFileForTransit();
+    return true;
+  }
 };
 
 template <>
 struct GenerateTraits<IPC::ChannelHandle> {
-    static bool Generate(IPC::ChannelHandle* p, Generator* generator) {
-        return
-            GenerateParam(&p->name, generator) &&
-            GenerateParam(&p->socket, generator);
-    }
-};
+  static bool Generate(IPC::ChannelHandle* p, Generator* generator) {
+    // TODO(inferno): Add way to generate real channel handles.
+#if defined(OS_WIN)
+    HANDLE fake_handle = (HANDLE)(RandU64());
+    p->pipe = IPC::ChannelHandle::PipeHandle(fake_handle);
+    return true;
+#elif defined(OS_POSIX)
+    return
+        GenerateParam(&p->name, generator) &&
+        GenerateParam(&p->socket, generator);
 #endif
+  }
+};
 
 template <>
 struct GenerateTraits<base::NullableString16> {
@@ -661,6 +689,47 @@ struct GenerateTraits<base::DictionaryValue> {
 };
 
 template <>
+struct GenerateTraits<blink::WebGamepad> {
+  static bool Generate(blink::WebGamepad* p, Generator* generator) {
+    if (!GenerateParam(&p->connected, generator))
+      return false;
+    if (!GenerateParam(&p->timestamp, generator))
+      return false;
+    unsigned idLength = static_cast<unsigned>(
+        RandInRange(blink::WebGamepad::idLengthCap + 1));
+    if (!GenerateParamArray(&p->id[0], idLength, generator))
+      return false;
+    p->axesLength = static_cast<unsigned>(
+        RandInRange(blink::WebGamepad::axesLengthCap + 1));
+    if (!GenerateParamArray(&p->axes[0], p->axesLength, generator))
+      return false;
+    p->buttonsLength = static_cast<unsigned>(
+        RandInRange(blink::WebGamepad::buttonsLengthCap + 1));
+    if (!GenerateParamArray(&p->buttons[0], p->buttonsLength, generator))
+      return false;
+    unsigned mappingsLength = static_cast<unsigned>(
+      RandInRange(blink::WebGamepad::mappingLengthCap + 1));
+    if (!GenerateParamArray(&p->mapping[0], mappingsLength, generator))
+      return false;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<blink::WebGamepadButton> {
+  static bool Generate(blink::WebGamepadButton* p, Generator* generator) {
+    bool pressed;
+    double value;
+    if (!GenerateParam(&pressed, generator))
+      return false;
+    if (!GenerateParam(&value, generator))
+      return false;
+    *p = blink::WebGamepadButton(pressed, value);
+    return true;
+  }
+};
+
+template <>
 struct GenerateTraits<cc::CompositorFrame> {
   // FIXME: this should actually generate something
   static bool Generate(cc::CompositorFrame* p, Generator* generator) {
@@ -846,12 +915,10 @@ template <>
 struct GenerateTraits<gpu::ValueState> {
   static bool Generate(gpu::ValueState* p, Generator* generator) {
     gpu::ValueState state;
-    for (int i = 0; i < 4; i++) {
-      if (!GenerateParam(&state.float_value[i], generator))
-        return false;
-      if (!GenerateParam(&state.int_value[i], generator))
-        return false;
-    }
+    if (!GenerateParamArray(&state.float_value[0], 4, generator))
+      return false;
+    if (!GenerateParamArray(&state.int_value[0], 4, generator))
+      return false;
     *p = state;
     return true;
   }
@@ -1139,6 +1206,45 @@ struct GenerateTraits<PP_NetAddress_Private> {
 };
 
 template <>
+struct GenerateTraits<ppapi::proxy::ResourceMessageCallParams> {
+  static bool Generate(
+      ppapi::proxy::ResourceMessageCallParams *p, Generator* generator) {
+    PP_Resource resource;
+    int32_t sequence;
+    bool has_callback;
+    if (!GenerateParam(&resource, generator))
+      return false;
+    if (!GenerateParam(&sequence, generator))
+      return false;
+    if (!GenerateParam(&has_callback, generator))
+      return false;
+    *p = ppapi::proxy::ResourceMessageCallParams(resource, sequence);
+    if (has_callback)
+      p->set_has_callback();
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ppapi::proxy::ResourceMessageReplyParams> {
+  static bool Generate(
+      ppapi::proxy::ResourceMessageReplyParams *p, Generator* generator) {
+    PP_Resource resource;
+    int32_t sequence;
+    int32_t result;
+    if (!GenerateParam(&resource, generator))
+      return false;
+    if (!GenerateParam(&sequence, generator))
+      return false;
+    if (!GenerateParam(&result, generator))
+      return false;
+    *p = ppapi::proxy::ResourceMessageReplyParams(resource, sequence);
+    p->set_result(result);
+    return true;
+  }
+};
+
+template <>
 struct GenerateTraits<ppapi::HostResource> {
   static bool Generate(ppapi::HostResource *p, Generator* generator) {
     PP_Instance instance;
@@ -1189,6 +1295,23 @@ struct GenerateTraits<ppapi::SocketOptionData> {
 };
 
 template <>
+struct GenerateTraits<printing::PdfRenderSettings> {
+  static bool Generate(printing::PdfRenderSettings *p, Generator* generator) {
+    gfx::Rect area;
+    int dpi;
+    bool autorotate;
+    if (!GenerateParam(&area, generator))
+      return false;
+    if (!GenerateParam(&dpi, generator))
+      return false;
+    if (!GenerateParam(&autorotate, generator))
+      return false;
+    *p = printing::PdfRenderSettings(area, dpi, autorotate);
+    return true;
+  }
+};
+
+template <>
 struct GenerateTraits<remoting::ScreenResolution> {
   static bool Generate(remoting::ScreenResolution* p, Generator* generator) {
     webrtc::DesktopSize size;
@@ -1207,6 +1330,38 @@ template <>
 struct GenerateTraits<SkBitmap> {
   static bool Generate(SkBitmap* p, Generator* generator) {
     *p = SkBitmap();
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ui::LatencyInfo> {
+  static bool Generate(ui::LatencyInfo* p, Generator* generator) {
+    // TODO(inferno): Add param traits for |latency_components|.
+    p->input_coordinates_size = static_cast<uint32>(
+        RandInRange(ui::LatencyInfo::kMaxInputCoordinates + 1));
+    if (!GenerateParamArray(
+        &p->input_coordinates[0], p->input_coordinates_size, generator))
+      return false;
+    if (!GenerateParam(&p->trace_id, generator))
+      return false;
+    if (!GenerateParam(&p->terminated, generator))
+      return false;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<ui::LatencyInfo::InputCoordinate> {
+  static bool Generate(
+      ui::LatencyInfo::InputCoordinate* p, Generator* generator) {
+    float x;
+    float y;
+    if (!GenerateParam(&x, generator))
+      return false;
+    if (!GenerateParam(&y, generator))
+      return false;
+    *p = ui::LatencyInfo::InputCoordinate(x, y);
     return true;
   }
 };
