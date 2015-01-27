@@ -510,11 +510,11 @@ ssize_t SafeSNPrintf(char* buf, size_t sz, const char* fmt, const Arg* args,
         buffer.Pad(' ', padding, 1);
 
         // Convert the argument to an ASCII character and output it.
-        char ch = static_cast<char>(arg.integer.i);
-        if (!ch) {
+        char as_char = static_cast<char>(arg.integer.i);
+        if (!as_char) {
           goto end_of_output_buffer;
         }
-        buffer.Out(ch);
+        buffer.Out(as_char);
         break; }
       case 'd':    // Output a possibly signed decimal value.
       case 'o':    // Output an unsigned octal value.
