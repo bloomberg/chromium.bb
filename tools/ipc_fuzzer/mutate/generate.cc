@@ -73,6 +73,10 @@ class Generator {
   virtual void GenerateBytes(void* data, int data_len) = 0;
 };
 
+typedef IPC::Message* (*GeneratorFunction)(Generator*);
+typedef std::vector<GeneratorFunction> GeneratorFunctionVector;
+GeneratorFunctionVector g_function_vector;
+
 template <typename T>
 void GenerateIntegralType(T* value) {
   switch (RandInRange(16)) {
@@ -456,32 +460,6 @@ struct GenerateTraits<std::pair<A, B> > {
 };
 
 // Specializations to generate hand-coded types.
-template <>
-struct GenerateTraits<IPC::PlatformFileForTransit> {
-  static bool Generate(IPC::PlatformFileForTransit* p, Generator* generator) {
-    // TODO(inferno): I don't think we can generate real ones due to check on
-    // construct.
-    *p = IPC::InvalidPlatformFileForTransit();
-    return true;
-  }
-};
-
-template <>
-struct GenerateTraits<IPC::ChannelHandle> {
-  static bool Generate(IPC::ChannelHandle* p, Generator* generator) {
-    // TODO(inferno): Add way to generate real channel handles.
-#if defined(OS_WIN)
-    HANDLE fake_handle = (HANDLE)(RandU64());
-    p->pipe = IPC::ChannelHandle::PipeHandle(fake_handle);
-    return true;
-#elif defined(OS_POSIX)
-    return
-        GenerateParam(&p->name, generator) &&
-        GenerateParam(&p->socket, generator);
-#endif
-  }
-};
-
 template <>
 struct GenerateTraits<base::NullableString16> {
   static bool Generate(base::NullableString16* p, Generator* generator) {
@@ -1184,6 +1162,46 @@ struct GenerateTraits<gfx::Vector2dF> {
   }
 };
 
+template <>
+struct GenerateTraits<IPC::Message> {
+  static bool Generate(IPC::Message *p, Generator* generator) {
+    if (g_function_vector.empty())
+      return false;
+    size_t index = RandInRange(g_function_vector.size());
+    IPC::Message* ipc_message = (*g_function_vector[index])(generator);
+    if (!ipc_message)
+      return false;
+    p = ipc_message;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<IPC::PlatformFileForTransit> {
+  static bool Generate(IPC::PlatformFileForTransit* p, Generator* generator) {
+    // TODO(inferno): I don't think we can generate real ones due to check on
+    // construct.
+    *p = IPC::InvalidPlatformFileForTransit();
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<IPC::ChannelHandle> {
+  static bool Generate(IPC::ChannelHandle* p, Generator* generator) {
+    // TODO(inferno): Add way to generate real channel handles.
+#if defined(OS_WIN)
+    HANDLE fake_handle = (HANDLE)(RandU64());
+    p->pipe = IPC::ChannelHandle::PipeHandle(fake_handle);
+    return true;
+#elif defined(OS_POSIX)
+    return
+      GenerateParam(&p->name, generator) &&
+      GenerateParam(&p->socket, generator);
+#endif
+  }
+};
+
 // PP_ traits.
 template <>
 struct GenerateTraits<PP_Bool> {
@@ -1569,9 +1587,6 @@ struct GenerateTraits<webrtc::DesktopRect> {
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"
 #include "ipc/ipc_message_null_macros.h"
 
-typedef IPC::Message* (*GeneratorFunction)(Generator*);
-typedef std::vector<GeneratorFunction> GeneratorFunctionVector;
-
 void PopulateGeneratorFunctionVector(
     GeneratorFunctionVector *function_vector) {
 #undef IPC_MESSAGE_DECL
@@ -1600,9 +1615,8 @@ int GenerateMain(int argc, char** argv) {
 
   InitRand();
 
-  GeneratorFunctionVector function_vector;
-  PopulateGeneratorFunctionVector(&function_vector);
-  std::cerr << "Counted " << function_vector.size()
+  PopulateGeneratorFunctionVector(&g_function_vector);
+  std::cerr << "Counted " << g_function_vector.size()
             << " distinct messages present in chrome.\n";
 
   Generator* generator = new GeneratorImpl();
@@ -1611,8 +1625,8 @@ int GenerateMain(int argc, char** argv) {
   int bad_count = 0;
   if (message_count < 0) {
     // Enumerate them all.
-    for (size_t i = 0; i < function_vector.size(); ++i) {
-      if (IPC::Message* new_message = (*function_vector[i])(generator))
+    for (size_t i = 0; i < g_function_vector.size(); ++i) {
+      if (IPC::Message* new_message = (*g_function_vector[i])(generator))
         message_vector.push_back(new_message);
       else
         bad_count += 1;
@@ -1620,8 +1634,8 @@ int GenerateMain(int argc, char** argv) {
   } else {
     // Generate a random batch.
     for (int i = 0; i < message_count; ++i) {
-      size_t index = RandInRange(function_vector.size());
-      if (IPC::Message* new_message = (*function_vector[index])(generator))
+      size_t index = RandInRange(g_function_vector.size());
+      if (IPC::Message* new_message = (*g_function_vector[index])(generator))
         message_vector.push_back(new_message);
       else
         bad_count += 1;
