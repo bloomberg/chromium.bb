@@ -30,7 +30,8 @@ class PermissionBubbleManager
       public content::WebContentsUserData<PermissionBubbleManager>,
       public PermissionBubbleView::Delegate {
  public:
-  // Return the flag-driven enabled state of permissions bubbles.
+  // Return the enabled state of permissions bubbles.
+  // Controlled by a flag and FieldTrial.
   static bool Enabled();
 
   ~PermissionBubbleManager() override;
