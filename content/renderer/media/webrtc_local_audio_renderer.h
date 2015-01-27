@@ -21,7 +21,7 @@
 
 namespace media {
 class AudioBus;
-class AudioFifo;
+class AudioShifter;
 class AudioOutputDevice;
 class AudioParameters;
 }
@@ -120,8 +120,8 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // The sink (destination) for rendered audio.
   scoped_refptr<media::AudioOutputDevice> sink_;
 
-  // Contains copies of captured audio frames.
-  scoped_ptr<media::AudioFifo> loopback_fifo_;
+  // This does all the synchronization/resampling/smoothing.
+  scoped_ptr<media::AudioShifter> audio_shifter_;
 
   // Stores last time a render callback was received. The time difference
   // between a new time stamp and this value can be used to derive the
@@ -142,7 +142,7 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // Set when playing, cleared when paused.
   bool playing_;
 
-  // Protects |loopback_fifo_|, |playing_| and |sink_|.
+  // Protects |audio_shifter_|, |playing_| and |sink_|.
   mutable base::Lock thread_lock_;
 
   // The preferred buffer size provided via the ctor.
