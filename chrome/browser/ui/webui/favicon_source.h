@@ -41,7 +41,7 @@ class Profile;
 //      If the parameter is unspecified, the requested favicon's size defaults
 //      to 16 and the requested scale factor defaults to 1x.
 //      Example: chrome://favicon/size/16@2x/http://www.google.com/
-//  'urlmodifier'      Optional
+//  'urlmodifier'       Optional
 //    Values: ['iconurl', 'origin']
 //    'iconurl': Specifies that the url parameter refers to the URL of
 //    the favicon image as opposed to the URL of the page that the favicon is

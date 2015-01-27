@@ -96,24 +96,22 @@ bool ParseFaviconPath(const std::string& path,
     parsed_index += strlen(kIconURLParameter);
     parsed->is_icon_url = true;
     parsed->url = path.substr(parsed_index);
-  } else {
+  } else if (HasSubstringAt(path, parsed_index, kOriginParameter)) {
     // URL requests prefixed with "origin/" are converted to a form with an
     // empty path and a valid scheme. (e.g., example.com -->
     // http://example.com/ or http://example.com/a --> http://example.com/)
-    if (HasSubstringAt(path, parsed_index, kOriginParameter)) {
-      parsed_index += strlen(kOriginParameter);
-      std::string possibly_invalid_url = path.substr(parsed_index);
+    parsed_index += strlen(kOriginParameter);
+    std::string possibly_invalid_url = path.substr(parsed_index);
 
-      // If the URL does not specify a scheme (e.g., example.com instead of
-      // http://example.com), add "http://" as a default.
-      if (!GURL(possibly_invalid_url).has_scheme())
-        possibly_invalid_url = "http://" + possibly_invalid_url;
+    // If the URL does not specify a scheme (e.g., example.com instead of
+    // http://example.com), add "http://" as a default.
+    if (!GURL(possibly_invalid_url).has_scheme())
+      possibly_invalid_url = "http://" + possibly_invalid_url;
 
-      // Strip the path beyond the top-level domain.
-      parsed->url = GURL(possibly_invalid_url).GetOrigin().spec();
-    } else {
-      parsed->url = path.substr(parsed_index);
-    }
+    // Strip the path beyond the top-level domain.
+    parsed->url = GURL(possibly_invalid_url).GetOrigin().spec();
+  } else {
+    parsed->url = path.substr(parsed_index);
   }
 
   // The parsed index needs to be returned in order to allow Instant Extended

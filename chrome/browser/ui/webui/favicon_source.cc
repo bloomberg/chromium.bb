@@ -85,7 +85,7 @@ void FaviconSource::StartDataRequest(
   if (parsed.is_icon_url) {
     // TODO(michaelbai): Change GetRawFavicon to support combination of
     // IconType.
-   favicon_service->GetRawFavicon(
+    favicon_service->GetRawFavicon(
         url,
         favicon_base::FAVICON,
         desired_size_in_pixel,
