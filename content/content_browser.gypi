@@ -27,7 +27,7 @@
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/resources/ui_resources.gyp:ui_resources',
     '../ui/snapshot/snapshot.gyp:snapshot',
-    'browser/service_worker/service_worker_proto.gyp:proto',
+    'browser/service_worker/service_worker_proto.gyp:service_worker_proto',
     'browser/speech/proto/speech_proto.gyp:speech_proto',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
