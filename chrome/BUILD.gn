@@ -38,7 +38,14 @@ if (!is_android) {
         "app/signature_validator_win.h",
         "//content/app/startup_helper_win.cc",
       ]
-      deps += [ "//ui/gfx" ]
+      deps += [
+        ":image_pre_reader",
+        "//chrome/browser:chrome_process_finder",
+        "//chrome/chrome_watcher",
+        "//chrome/chrome_watcher:client",
+        "//components/browser_watcher:browser_watcher_client",
+        "//ui/gfx",
+      ]
     } else if (use_aura) {
       # Non-Windows aura entrypoint.
       sources += [ "app/chrome_exe_main_aura.cc" ]
@@ -251,6 +258,16 @@ if (is_win) {
     # TODO(brettw) this should move to $target_gen_dir/version.h and
     # source files including it should reference it via "chrome/version.h"
     output = "$root_gen_dir/version.h"
+  }
+
+  source_set("image_pre_reader") {
+    sources = [
+      "app/image_pre_reader_win.cc",
+      "app/image_pre_reader_win.h",
+    ]
+    deps = [
+      "//base",
+    ]
   }
 }
 

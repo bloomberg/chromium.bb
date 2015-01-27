@@ -646,6 +646,7 @@ static_library("browser") {
       "//ui/views/controls/webview",
     ]
     deps += [
+      ":chrome_process_finder",
       "//chrome:version_header",
       "//chrome/installer/util:strings",
       "//chrome_elf",
@@ -655,8 +656,6 @@ static_library("browser") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//third_party/wtl",
-
-      #"chrome_process_finder",  TODO(GYP)
       "//ui/metro_viewer",
       "//win8:metro_viewer",
     ]
@@ -758,6 +757,23 @@ if (is_android) {
     sources =
         rebase_path(gypi_values.chrome_browser_jni_sources, ".", "//chrome")
     jni_package = "chrome"
+  }
+}
+
+if (is_win) {
+  source_set("chrome_process_finder") {
+    sources = [
+      "chrome_process_finder_win.cc",
+      "chrome_process_finder_win.h",
+    ]
+    deps = [
+      "//base",
+      "//chrome/browser/metro_utils",
+      "//chrome/common:constants",
+    ]
+    if (enable_configuration_policy) {
+      deps += [ "//chrome/browser/policy:path_parser" ]
+    }
   }
 }
 
