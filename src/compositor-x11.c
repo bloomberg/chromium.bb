@@ -117,6 +117,11 @@ struct x11_output {
 	int32_t                 scale;
 };
 
+struct window_delete_data {
+	struct x11_compositor	*compositor;
+	xcb_window_t		window;
+};
+
 struct gl_renderer_interface *gl_renderer;
 
 static struct xkb_keymap *
@@ -941,6 +946,14 @@ x11_compositor_delete_window(struct x11_compositor *c, xcb_window_t window)
 		wl_display_terminate(c->base.wl_display);
 }
 
+static void delete_cb(void *data)
+{
+	struct window_delete_data *wd = data;
+
+	x11_compositor_delete_window(wd->compositor, wd->window);
+	free(wd);
+}
+
 #ifdef HAVE_XCB_XKB
 static void
 update_xkb_state(struct x11_compositor *c, xcb_xkb_state_notify_event_t *state)
@@ -1284,8 +1297,23 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			client_message = (xcb_client_message_event_t *) event;
 			atom = client_message->data.data32[0];
 			window = client_message->window;
-			if (atom == c->atom.wm_delete_window)
-				x11_compositor_delete_window(c, window);
+			if (atom == c->atom.wm_delete_window) {
+				struct wl_event_loop *loop;
+				struct window_delete_data *data = malloc(sizeof *data);
+
+				/* if malloc failed we should at least try to
+				 * delete the window, even if it may result in
+				 * a crash.
+				 */
+				if (!data) {
+					x11_compositor_delete_window(c, window);
+					break;
+				}
+				data->compositor = c;
+				data->window = window;
+				loop = wl_display_get_event_loop(c->base.wl_display);
+				wl_event_loop_add_idle(loop, delete_cb, data);
+			}
 			break;
 
 		case XCB_FOCUS_IN:
