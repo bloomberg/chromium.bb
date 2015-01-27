@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
+#include "content/common/application_setup.mojom.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "third_party/mojo/src/mojo/edk/embedder/channel_init.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
@@ -29,7 +30,7 @@ namespace content {
 class CONTENT_EXPORT MojoApplicationHost {
  public:
   MojoApplicationHost();
-  virtual ~MojoApplicationHost();
+  ~MojoApplicationHost();
 
   // Two-phase initialization:
   //  1- Init makes service_registry() available synchronously.
@@ -53,6 +54,7 @@ class CONTENT_EXPORT MojoApplicationHost {
 
   bool did_activate_;
 
+  scoped_ptr<ApplicationSetup> application_setup_;
   ServiceRegistryImpl service_registry_;
 
 #if defined(OS_ANDROID)

@@ -79,7 +79,10 @@ class {{interface|name}}Client extends bindings.Client with {{interface|name}}Ca
   }
 }
 
-
+{#--- TODO(zra): Remove Interface suffix from the name of this class.
+      This is tricky because some mojom files have interfaces named both
+      X and XClient. This leads to an XClient for the Client of X, and an
+      XClient for the Interface of XClient, which conflict with eachother. #}
 class {{interface|name}}Interface extends bindings.Interface
 {% if interface.client != None -%}
 with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Calls
@@ -114,16 +117,29 @@ with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Cal
   }
 {%- else %}
 {%- set response_struct = method|response_struct_from_method %}
+  {{response_struct|name}} _{{response_struct|name}}Factory(
+    {%- for param in method.response_parameters -%}
+      {{param.kind|dart_type}} {{param|name}}{% if not loop.last %}, {% endif %}
+    {%- endfor -%}
+  ) {
+    var result = new {{response_struct|name}}();
+    {%- for param in method.response_parameters %}
+    result.{{param|name}} = {{param|name}};
+    {%- endfor %}
+    return result;
+  }
+
   Future<{{response_struct|name}}> {{method|name}}(
   {%- for parameter in method.parameters -%}
-    {{parameter.kind|dart_type}} {{parameter|name}}{% if not loop.last %}, {% endif %}
+    {{parameter.kind|dart_type}} {{parameter|name}},
   {%- endfor -%}
-  ) {
+    Function responseFactory) {
     assert(_delegate != null);
     return _delegate.{{method|name}}(
       {%- for parameter in method.parameters -%}
-        {{parameter|name}}{% if not loop.last %}, {% endif %}
-      {%- endfor %});
+        {{parameter|name}},
+      {%- endfor %}
+      responseFactory);
   }
 {%- endif %}
 {%- endfor %}
@@ -142,11 +158,12 @@ with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Cal
           {%- endfor -%}
         );
 {%- else %}
+{%- set response_struct = method|response_struct_from_method %}
         return {{method|name}}(
           {%- for parameter in method.parameters -%}
-              params.{{parameter|name}}{% if not loop.last %}, {% endif %}
+              params.{{parameter|name}},
           {%- endfor -%}
-        ).then((response) {
+          _{{response_struct|name}}Factory).then((response) {
           if (response != null) {
             return buildResponseWithId(
                 response,

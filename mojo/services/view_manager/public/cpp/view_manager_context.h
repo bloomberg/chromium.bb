@@ -26,14 +26,14 @@ class ViewManagerContext {
   // Subsequent times, the implementation of this method is delegated to the
   // application embedded at the service root View. This application will have a
   // specific definition of where within its View hierarchy to embed an
-  // un-parented URL. |exported_services| encapsulates services offered by the
-  // application calling Embed() to the application being embedded. Returns
-  // an object implementing ServiceProvider encapsulating services offered by
-  // the embedded application to the embedder.
+  // un-parented URL.
+  // |services| encapsulates services offered by the embedder to the embedded
+  // app alongside this Embed() call. |exposed_services| provides a means for
+  // the embedder to connect to services exposed by the embedded app.
   void Embed(const String& url);
-  scoped_ptr<ServiceProvider> Embed(
-      const String& url,
-      scoped_ptr<ServiceProviderImpl> exported_services);
+  void Embed(const String& url,
+             InterfaceRequest<ServiceProvider> services,
+             ServiceProviderPtr exposed_Services);
 
  private:
   class InternalState;

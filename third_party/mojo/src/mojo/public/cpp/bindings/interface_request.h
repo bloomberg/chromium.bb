@@ -16,7 +16,12 @@ class InterfaceRequest {
  public:
   InterfaceRequest() {}
 
+  InterfaceRequest(decltype(nullptr)) {}
   InterfaceRequest(InterfaceRequest&& other) { handle_ = other.handle_.Pass(); }
+  InterfaceRequest& operator=(decltype(nullptr)) {
+    handle_.reset();
+    return *this;
+  }
   InterfaceRequest& operator=(InterfaceRequest&& other) {
     handle_ = other.handle_.Pass();
     return *this;

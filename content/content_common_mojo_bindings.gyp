@@ -11,6 +11,7 @@
       'variables': {
         'mojom_files': [
           # NOTE: Sources duplicated in //content/common/BUILD.gn:mojo_bindings.
+          'common/application_setup.mojom',
           'common/geolocation_service.mojom',
           'common/permission_service.mojom',
           'common/render_frame_setup.mojom',

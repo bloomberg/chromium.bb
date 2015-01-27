@@ -7,14 +7,33 @@ module mojo;
 import "mojo/public/interfaces/application/application.mojom";
 import "mojo/public/interfaces/application/service_provider.mojom";
 
-// The Shell is the finder and launcher of Applications. An Application uses
-// it's Shell interface to connect to other Applications.
+// An interface through which a Mojo application may communicate with the Mojo
+// system and request connections to other applications.
 [Client=Application]
 interface Shell {
-  // Loads |application_url|. mojo:{service} will result in the user of the value of the
-  // --origin flag to the shell being used.
-  // |services| can be used to look up services provided by the application at |application_url|.
-  // |exposed_services| can be used to expose services to the application at |application_url|.
+  // Establishes a connection with another application (identified by
+  // |application_url|) through which the calling application and the other
+  // application may request services from one another.
+  //
+  // If the calling application would like to request services from the other
+  // application, it should pass a valid interface request in the |services|
+  // parameter (i.e. one containing a valid message pipe endpoint). If the other
+  // application does not wish to offer services, it may either not bind an
+  // implementation to the interface request, or else bind an implementation
+  // that will reject some or all service requests.
+  //
+  // If the calling application would like to offer services to the other
+  // application, it should pass a bound interface through the
+  // |exposed_services| parameter. The other application may then request
+  // services through that interface.
+  //
+  // At least one of |services| or |exposed_services| should be valid/bound in
+  // the call.
+  //
+  // If the |application_url| does not contain a domain, but is of the form
+  // "mojo:{service}", it is up to the Mojo shell to select an appropriate
+  // application for the service. Currently, the shell does this based on the
+  // value of its --origin flag.
   ConnectToApplication(string application_url,
                        ServiceProvider&? services,
                        ServiceProvider? exposed_services);

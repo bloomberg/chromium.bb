@@ -41,6 +41,8 @@ namespace system {
 // on which |Init()| is called).
 class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
  public:
+  // This object may be destroyed on any thread (if |Init()| was called, after
+  // |Shutdown()| was called).
   virtual ~RawChannel();
 
   // The |Delegate| is only accessed on the same thread as the message loop
@@ -61,14 +63,14 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
       ERROR_WRITE
     };
 
-    // Called when a message is read. This may call |Shutdown()| (on the
-    // |RawChannel|), but must not destroy it.
+    // Called when a message is read. This may call the |RawChannel|'s
+    // |Shutdown()| and then (if desired) destroy it.
     virtual void OnReadMessage(
         const MessageInTransit::View& message_view,
         embedder::ScopedPlatformHandleVectorPtr platform_handles) = 0;
 
-    // Called when there's a (fatal) error. This may call the raw channel's
-    // |Shutdown()|, but must not destroy it.
+    // Called when there's a (fatal) error. This may call the |RawChannel|'s
+    // |Shutdown()| and then (if desired) destroy it.
     //
     // For each raw channel, there'll be at most one |ERROR_READ_...| and at
     // most one |ERROR_WRITE| notification. After |OnError(ERROR_READ_...)|,
@@ -197,10 +199,10 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   RawChannel();
 
   // |result| must not be |IO_PENDING|. Must be called on the I/O thread WITHOUT
-  // |write_lock_| held.
+  // |write_lock_| held. This object may be destroyed by this call.
   void OnReadCompleted(IOResult io_result, size_t bytes_read);
   // |result| must not be |IO_PENDING|. Must be called on the I/O thread WITHOUT
-  // |write_lock_| held.
+  // |write_lock_| held. This object may be destroyed by this call.
   void OnWriteCompleted(IOResult io_result,
                         size_t platform_handles_written,
                         size_t bytes_written);
@@ -280,8 +282,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // Must be called on the I/O thread WITHOUT |write_lock_| held.
   virtual void OnInit() = 0;
   // On shutdown, passes the ownership of the buffers to subclasses, which may
-  // want to preserve them if there are pending read/write. Must be called on
-  // the I/O thread under |write_lock_|.
+  // want to preserve them if there are pending read/writes. After this is
+  // called, |OnReadCompleted()| must no longer be called. Must be called on the
+  // I/O thread under |write_lock_|.
   virtual void OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
                                 scoped_ptr<WriteBuffer> write_buffer) = 0;
 
@@ -290,7 +293,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   static Delegate::Error ReadIOResultToError(IOResult io_result);
 
   // Calls |delegate_->OnError(error)|. Must be called on the I/O thread WITHOUT
-  // |write_lock_| held.
+  // |write_lock_| held. This object may be destroyed by this call.
   void CallOnError(Delegate::Error error);
 
   // If |io_result| is |IO_SUCCESS|, updates the write buffer and schedules a
@@ -308,7 +311,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   // Only used on the I/O thread:
   Delegate* delegate_;
-  bool read_stopped_;
+  bool* set_on_shutdown_;
   scoped_ptr<ReadBuffer> read_buffer_;
 
   base::Lock write_lock_;  // Protects the following members.

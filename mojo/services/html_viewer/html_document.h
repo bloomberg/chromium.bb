@@ -110,10 +110,9 @@ class HTMLDocument : public blink::WebViewClient,
   virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
 
   // ViewManagerDelegate methods:
-  void OnEmbed(
-      mojo::View* root,
-      mojo::ServiceProviderImpl* embedee_service_provider_impl,
-      scoped_ptr<mojo::ServiceProvider> embedder_service_provider) override;
+  void OnEmbed(mojo::View* root,
+               mojo::InterfaceRequest<mojo::ServiceProvider> services,
+               mojo::ServiceProviderPtr exposed_services) override;
   void OnViewManagerDisconnected(mojo::ViewManager* view_manager) override;
 
   // ViewObserver methods:
@@ -131,7 +130,7 @@ class HTMLDocument : public blink::WebViewClient,
 
   mojo::URLResponsePtr response_;
   mojo::ServiceProviderImpl exported_services_;
-  scoped_ptr<mojo::ServiceProvider> embedder_service_provider_;
+  mojo::ServiceProviderPtr embedder_service_provider_;
   mojo::Shell* shell_;
   mojo::LazyInterfacePtr<mojo::NavigatorHost> navigator_host_;
   blink::WebView* web_view_;

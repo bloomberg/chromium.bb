@@ -555,12 +555,14 @@ TEST_F(RawChannelTest, WriteMessageAfterShutdown) {
   EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
 }
 
-// RawChannelTest.ShutdownOnReadMessage ----------------------------------------
+// RawChannelTest.{Shutdown, ShutdownAndDestroy}OnReadMessage ------------------
 
 class ShutdownOnReadMessageRawChannelDelegate : public RawChannel::Delegate {
  public:
-  explicit ShutdownOnReadMessageRawChannelDelegate(RawChannel* raw_channel)
+  explicit ShutdownOnReadMessageRawChannelDelegate(RawChannel* raw_channel,
+                                                   bool should_destroy)
       : raw_channel_(raw_channel),
+        should_destroy_(should_destroy),
         done_event_(false, false),
         did_shutdown_(false) {}
   ~ShutdownOnReadMessageRawChannelDelegate() override {}
@@ -574,6 +576,8 @@ class ShutdownOnReadMessageRawChannelDelegate : public RawChannel::Delegate {
     EXPECT_TRUE(
         CheckMessageData(message_view.bytes(), message_view.num_bytes()));
     raw_channel_->Shutdown();
+    if (should_destroy_)
+      delete raw_channel_;
     did_shutdown_ = true;
     done_event_.Signal();
   }
@@ -589,6 +593,7 @@ class ShutdownOnReadMessageRawChannelDelegate : public RawChannel::Delegate {
 
  private:
   RawChannel* const raw_channel_;
+  const bool should_destroy_;
   base::WaitableEvent done_event_;
   bool did_shutdown_;
 
@@ -601,7 +606,7 @@ TEST_F(RawChannelTest, ShutdownOnReadMessage) {
     EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), 10));
 
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
-  ShutdownOnReadMessageRawChannelDelegate delegate(rc.get());
+  ShutdownOnReadMessageRawChannelDelegate delegate(rc.get(), false);
   io_thread()->PostTaskAndWait(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc.get(), base::Unretained(&delegate)));
@@ -610,13 +615,29 @@ TEST_F(RawChannelTest, ShutdownOnReadMessage) {
   delegate.Wait();
 }
 
-// RawChannelTest.ShutdownOnError{Read, Write} ---------------------------------
+TEST_F(RawChannelTest, ShutdownAndDestroyOnReadMessage) {
+  // Write a message into the other end.
+  EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), 10));
+
+  // The delegate will destroy |rc|.
+  RawChannel* rc = RawChannel::Create(handles[0].Pass()).release();
+  ShutdownOnReadMessageRawChannelDelegate delegate(rc, true);
+  io_thread()->PostTaskAndWait(
+      FROM_HERE, base::Bind(&InitOnIOThread, rc, base::Unretained(&delegate)));
+
+  // Wait for the delegate, which will shut the |RawChannel| down.
+  delegate.Wait();
+}
+
+// RawChannelTest.{Shutdown, ShutdownAndDestroy}OnError{Read, Write} -----------
 
 class ShutdownOnErrorRawChannelDelegate : public RawChannel::Delegate {
  public:
   ShutdownOnErrorRawChannelDelegate(RawChannel* raw_channel,
+                                    bool should_destroy,
                                     Error shutdown_on_error_type)
       : raw_channel_(raw_channel),
+        should_destroy_(should_destroy),
         shutdown_on_error_type_(shutdown_on_error_type),
         done_event_(false, false),
         did_shutdown_(false) {}
@@ -633,6 +654,8 @@ class ShutdownOnErrorRawChannelDelegate : public RawChannel::Delegate {
     if (error != shutdown_on_error_type_)
       return;
     raw_channel_->Shutdown();
+    if (should_destroy_)
+      delete raw_channel_;
     did_shutdown_ = true;
     done_event_.Signal();
   }
@@ -645,6 +668,7 @@ class ShutdownOnErrorRawChannelDelegate : public RawChannel::Delegate {
 
  private:
   RawChannel* const raw_channel_;
+  const bool should_destroy_;
   const Error shutdown_on_error_type_;
   base::WaitableEvent done_event_;
   bool did_shutdown_;
@@ -655,7 +679,7 @@ class ShutdownOnErrorRawChannelDelegate : public RawChannel::Delegate {
 TEST_F(RawChannelTest, ShutdownOnErrorRead) {
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
   ShutdownOnErrorRawChannelDelegate delegate(
-      rc.get(), RawChannel::Delegate::ERROR_READ_SHUTDOWN);
+      rc.get(), false, RawChannel::Delegate::ERROR_READ_SHUTDOWN);
   io_thread()->PostTaskAndWait(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc.get(), base::Unretained(&delegate)));
@@ -667,13 +691,43 @@ TEST_F(RawChannelTest, ShutdownOnErrorRead) {
   delegate.Wait();
 }
 
+TEST_F(RawChannelTest, ShutdownAndDestroyOnErrorRead) {
+  RawChannel* rc = RawChannel::Create(handles[0].Pass()).release();
+  ShutdownOnErrorRawChannelDelegate delegate(
+      rc, true, RawChannel::Delegate::ERROR_READ_SHUTDOWN);
+  io_thread()->PostTaskAndWait(
+      FROM_HERE, base::Bind(&InitOnIOThread, rc, base::Unretained(&delegate)));
+
+  // Close the handle of the other end, which should stuff fail.
+  handles[1].reset();
+
+  // Wait for the delegate, which will shut the |RawChannel| down.
+  delegate.Wait();
+}
+
 TEST_F(RawChannelTest, ShutdownOnErrorWrite) {
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
-  ShutdownOnErrorRawChannelDelegate delegate(rc.get(),
+  ShutdownOnErrorRawChannelDelegate delegate(rc.get(), false,
                                              RawChannel::Delegate::ERROR_WRITE);
   io_thread()->PostTaskAndWait(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc.get(), base::Unretained(&delegate)));
+
+  // Close the handle of the other end, which should stuff fail.
+  handles[1].reset();
+
+  EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
+
+  // Wait for the delegate, which will shut the |RawChannel| down.
+  delegate.Wait();
+}
+
+TEST_F(RawChannelTest, ShutdownAndDestroyOnErrorWrite) {
+  RawChannel* rc = RawChannel::Create(handles[0].Pass()).release();
+  ShutdownOnErrorRawChannelDelegate delegate(rc, true,
+                                             RawChannel::Delegate::ERROR_WRITE);
+  io_thread()->PostTaskAndWait(
+      FROM_HERE, base::Bind(&InitOnIOThread, rc, base::Unretained(&delegate)));
 
   // Close the handle of the other end, which should stuff fail.
   handles[1].reset();

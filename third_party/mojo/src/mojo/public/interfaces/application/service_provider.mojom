@@ -4,11 +4,14 @@
 
 module mojo;
 
-// ServiceProvider is used to establish connections to services in a bi-
-// directional fashion between two applications.
-[Client=ServiceProvider]
+// An interface through which a client may request services from a host.
+// Instances of this interface are created within the context of an
+// already-identified client and host pair, so there is no need to explicitly
+// identify the client or host in the methods below.
 interface ServiceProvider {
-  // Connect the given message pipe handle to the named service. If the named
-  // service does not exist, then the handle will be closed.
+  // Asks the host to provide the service identified by |interface_name| through
+  // the message |pipe| endpoint supplied by the caller. If the host is not
+  // willing or able to provide the requested service, it should close the
+  // |pipe|.
   ConnectToService(string interface_name, handle<message_pipe> pipe);
 };

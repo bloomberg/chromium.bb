@@ -21,9 +21,34 @@ base::PlatformFile PlatformFileFromScopedPlatformHandle(
 #endif
 }
 
+class ApplicationSetupImpl : public ApplicationSetup {
+ public:
+  ApplicationSetupImpl(ServiceRegistryImpl* service_registry,
+                       mojo::InterfaceRequest<ApplicationSetup> request)
+      : binding_(this, request.Pass()),
+        service_registry_(service_registry) {
+  }
+
+  ~ApplicationSetupImpl() override {
+  }
+
+ private:
+  // ApplicationSetup implementation.
+  void ExchangeServiceProviders(
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services) override {
+    service_registry_->Bind(services.Pass());
+    service_registry_->BindRemoteServiceProvider(exposed_services.Pass());
+  }
+
+  mojo::Binding<ApplicationSetup> binding_;
+  ServiceRegistryImpl* service_registry_;
+};
+
 }  // namespace
 
-MojoApplicationHost::MojoApplicationHost() : did_activate_(false) {
+MojoApplicationHost::MojoApplicationHost()
+    : did_activate_(false) {
 #if defined(OS_ANDROID)
   service_registry_android_.reset(
       new ServiceRegistryAndroid(&service_registry_));
@@ -47,7 +72,9 @@ bool MojoApplicationHost::Init() {
   // Forward this to the client once we know its process handle.
   client_handle_ = channel_pair.PassClientHandle();
 
-  service_registry_.BindRemoteServiceProvider(message_pipe.Pass());
+  application_setup_.reset(new ApplicationSetupImpl(
+      &service_registry_,
+      mojo::MakeRequest<ApplicationSetup>(message_pipe.Pass())));
   return true;
 }
 

@@ -1177,8 +1177,10 @@ void RenderFrameImpl::NavigateToSwappedOutURL() {
 }
 
 void RenderFrameImpl::BindServiceRegistry(
-    mojo::ScopedMessagePipeHandle service_provider_handle) {
-  service_registry_.BindRemoteServiceProvider(service_provider_handle.Pass());
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services) {
+  service_registry_.Bind(services.Pass());
+  service_registry_.BindRemoteServiceProvider(exposed_services.Pass());
 }
 
 ManifestManager* RenderFrameImpl::manifest_manager() {

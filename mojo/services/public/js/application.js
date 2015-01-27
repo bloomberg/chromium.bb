@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 define("mojo/services/public/js/application", [
+  "mojo/public/js/bindings",
+  "mojo/public/js/threading",
   "mojo/services/public/js/service_provider",
   "mojo/services/public/js/shell",
-  "mojo/public/js/threading",
-], function(serviceProvider, shell, threading) {
+], function(bindings, threading, serviceProvider, shell) {
 
+  const ProxyBindings = bindings.ProxyBindings;
   const ServiceProvider = serviceProvider.ServiceProvider;
   const Shell = shell.Shell;
 
@@ -26,18 +28,27 @@ define("mojo/services/public/js/application", [
     initialize(args) {
     }
 
-    doAcceptConnection(url, serviceProviderProxy, exposedServiceProviderProxy) {
-      var serviceProvider = new ServiceProvider(serviceProviderProxy);
+    // The mojom signature of this function is:
+    //   AcceptConnection(string requestor_url,
+    //                    ServiceProvider&? services,
+    //                    ServiceProvider? exposed_services);
+    //
+    // We want to bind |services| to our js implementation of ServiceProvider
+    // and store |exposed_services| so we can request services of the connecting
+    // application.
+    doAcceptConnection(requestorUrl, servicesRequest, exposedServicesProxy) {
+      // Construct a new js ServiceProvider that can make outgoing calls on
+      // exposedServicesProxy.
+      var serviceProvider = new ServiceProvider(exposedServicesProxy);
       this.serviceProviders.push(serviceProvider);
 
-      var exposedServiceProvider =
-          new ServiceProvider(exposedServiceProviderProxy);
-      this.exposedServiceProviders.push(exposedServiceProvider);
+      // Then associate incoming calls with the serviceProvider.
+      ProxyBindings(servicesRequest).setLocalDelegate(serviceProvider);
 
-      this.acceptConnection(url, serviceProvider, exposedServiceProvider);
+      this.acceptConnection(requestorUrl, serviceProvider);
     }
 
-    acceptConnection(url, serviceProvider, exposedServiceProvider) {
+    acceptConnection(requestorUrl, serviceProvider) {
     }
 
     quit() {

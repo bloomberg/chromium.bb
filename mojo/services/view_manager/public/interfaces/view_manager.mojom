@@ -124,15 +124,16 @@ interface ViewManagerService {
   // children the children are removed. The one exception is the root
   // connection.
   //
-  // |service_provider| encapsulates services offered by the embedder to the
-  // embedded app alongside this Embed() call. It also provides a means for
-  // the embedder to connect to services symmetrically exposed by the embedded
-  // app. Note that if a different app is subsequently embedded at |view_id|
-  // the |service_provider|'s connection to its client in the embedded app and
-  // any services it provided are not broken and continue to be valid.
+  // |services| encapsulates services offered by the embedder to the embedded
+  // app alongside this Embed() call. |exposed_services| provides a means for
+  // the embedder to connect to services exposed by the embedded app. Note that
+  // if a different app is subsequently embedded at |view_id| the
+  // ServiceProvider connections to its client in the embedded app and any
+  // services it provided are not broken and continue to be valid.
   Embed(string url,
         uint32 view_id,
-        ServiceProvider& service_provider) => (bool success);
+        ServiceProvider&? services,
+        ServiceProvider? exposed_services) => (bool success);
 };
 
 // Changes to views are not sent to the connection that originated the
@@ -146,7 +147,8 @@ interface ViewManagerClient {
   OnEmbed(uint16 connection_id,
           string embedder_url,
           ViewData root,
-          ServiceProvider& parent_service_provider,
+          ServiceProvider&? services,
+          ServiceProvider? exposed_services,
           handle<message_pipe> window_manager_pipe);
 
   // Invoked when the application embedded at |view| is disconnected.

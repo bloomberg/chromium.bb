@@ -195,19 +195,16 @@ void ViewManagerClientImpl::SetProperty(
 }
 
 void ViewManagerClientImpl::Embed(const String& url, Id view_id) {
-  ServiceProviderPtr sp;
-  BindToProxy(new ServiceProviderImpl, &sp);
-  Embed(url, view_id, sp.Pass());
+  Embed(url, view_id, nullptr, nullptr);
 }
 
-void ViewManagerClientImpl::Embed(
-    const String& url,
-    Id view_id,
-    ServiceProviderPtr service_provider) {
+void ViewManagerClientImpl::Embed(const String& url,
+                                  Id view_id,
+                                  InterfaceRequest<ServiceProvider> services,
+                                  ServiceProviderPtr exposed_services) {
   DCHECK(connected_);
-  service_->Embed(url, view_id,
-      MakeRequest<ServiceProvider>(service_provider.PassMessagePipe()),
-      ActionCompletedCallback());
+  service_->Embed(url, view_id, services.Pass(), exposed_services.Pass(),
+                  ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::AddView(View* view) {
@@ -261,7 +258,8 @@ void ViewManagerClientImpl::OnEmbed(
     ConnectionSpecificId connection_id,
     const String& creator_url,
     ViewDataPtr root_data,
-    InterfaceRequest<ServiceProvider> parent_services,
+    InterfaceRequest<ServiceProvider> services,
+    ServiceProviderPtr exposed_services,
     ScopedMessagePipeHandle window_manager_pipe) {
   DCHECK(!connected_);
   connected_ = true;
@@ -272,14 +270,6 @@ void ViewManagerClientImpl::OnEmbed(
   root_ = AddViewToViewManager(this, nullptr, root_data);
   root_->AddObserver(new RootObserver(root_));
 
-  ServiceProviderImpl* exported_services = nullptr;
-  scoped_ptr<ServiceProvider> remote;
-
-  // BindToRequest() binds the lifetime of |exported_services| to the pipe.
-  exported_services = new ServiceProviderImpl;
-  BindToRequest(exported_services, &parent_services);
-  remote.reset(exported_services->CreateRemoteServiceProvider());
-
   window_manager_.Bind(window_manager_pipe.Pass());
   window_manager_.set_client(this);
   // base::Unretained() is safe here as |window_manager_| is bound to our
@@ -287,7 +277,8 @@ void ViewManagerClientImpl::OnEmbed(
   window_manager_->GetFocusedAndActiveViews(
       base::Bind(&ViewManagerClientImpl::OnGotFocusedAndActiveViews,
                  base::Unretained(this)));
-  delegate_->OnEmbed(root_, exported_services, remote.Pass());
+
+  delegate_->OnEmbed(root_, services.Pass(), exposed_services.Pass());
 }
 
 void ViewManagerClientImpl::OnEmbeddedAppDisconnected(Id view_id) {

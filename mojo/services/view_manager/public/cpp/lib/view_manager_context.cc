@@ -31,23 +31,13 @@ ViewManagerContext::ViewManagerContext(ApplicationImpl* application_impl)
 ViewManagerContext::~ViewManagerContext() {}
 
 void ViewManagerContext::Embed(const String& url) {
-  scoped_ptr<ServiceProviderImpl> spi(new ServiceProviderImpl);
-  Embed(url, spi.Pass());
+  Embed(url, nullptr, nullptr);
 }
 
-scoped_ptr<ServiceProvider> ViewManagerContext::Embed(
-    const String& url,
-    scoped_ptr<ServiceProviderImpl> exported_services) {
-  scoped_ptr<ServiceProvider> imported_services;
-  // BindToProxy() takes ownership of |exported_services|.
-  ServiceProviderImpl* registry = exported_services.release();
-  ServiceProviderPtr sp;
-  if (registry) {
-    BindToProxy(registry, &sp);
-    imported_services.reset(registry->CreateRemoteServiceProvider());
-  }
-  state_->wm()->Embed(url, MakeRequest<ServiceProvider>(sp.PassMessagePipe()));
-  return imported_services.Pass();
+void ViewManagerContext::Embed(const String& url,
+                               InterfaceRequest<ServiceProvider> services,
+                               ServiceProviderPtr exposed_services) {
+  state_->wm()->Embed(url, services.Pass(), exposed_services.Pass());
 }
 
 }  // namespace mojo

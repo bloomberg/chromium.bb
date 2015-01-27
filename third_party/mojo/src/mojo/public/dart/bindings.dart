@@ -6,7 +6,6 @@ library bindings;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:mirrors';
 import 'dart:mojo_core' as core;
 import 'dart:typed_data';
 

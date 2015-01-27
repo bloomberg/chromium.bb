@@ -2,26 +2,16 @@ These are interim instructions for building and testing Dart's Mojo bindings.
 These instructions currently only work for Linux, and assume you already have a
 Mojo checkout.
 
-1.) Add a Dart VM source checkout to your client:
-
-  Edit your .gclient file. Replace "DEPS" with "DEPS.dart".
-  Then, run:
-
-    $ gclient sync
-
-  You should now have a directory //dart
-
-
-2.) Configure Mojo with Dart.
+1.) Configure Mojo with Dart.
 
   $ ./mojo/tools/mojob.py gn --release --with-dart
 
 
-3.) Build Mojo with Dart.
+2.) Build Mojo with Dart.
 
   $ ./mojo/tools/mojob.py build --release
 
 
-4.) Run Dart tests.
+3.) Run Dart tests.
 
   $ ./mojo/tools/mojob.py darttest --release

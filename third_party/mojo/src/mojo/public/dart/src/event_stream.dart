@@ -176,8 +176,10 @@ class MojoEventStreamListener {
         assert(_eventStream.readyWrite);
         handleWrite();
       }
-      _eventStream.enableSignals(enableSignals(
-          signalsWatched, signalsReceived));
+      if (_isOpen) {
+        _eventStream.enableSignals(enableSignals(
+            signalsWatched, signalsReceived));
+      }
       _isInHandler = false;
     });
   }

@@ -5,22 +5,23 @@
 #include "mojo/public/cpp/application/service_provider_impl.h"
 
 #include "mojo/public/cpp/application/lib/service_connector.h"
-#include "mojo/public/cpp/application/lib/weak_service_provider.h"
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 
-ServiceProviderImpl::ServiceProviderImpl() : remote_(nullptr) {
+ServiceProviderImpl::ServiceProviderImpl() : binding_(this) {
+}
+
+ServiceProviderImpl::ServiceProviderImpl(
+    InterfaceRequest<ServiceProvider> request)
+    : binding_(this, request.Pass()) {
 }
 
 ServiceProviderImpl::~ServiceProviderImpl() {
 }
 
-ServiceProvider* ServiceProviderImpl::CreateRemoteServiceProvider() {
-  // TODO(beng): it sure would be nice if this method could return a scoped_ptr.
-  MOJO_DCHECK(!remote_);
-  remote_ = new internal::WeakServiceProvider(this, client());
-  return remote_;
+void ServiceProviderImpl::Bind(InterfaceRequest<ServiceProvider> request) {
+  binding_.Bind(request.Pass());
 }
 
 void ServiceProviderImpl::ConnectToService(
@@ -35,10 +36,6 @@ void ServiceProviderImpl::ConnectToService(
       service_connectors_[service_name];
   return service_connector->ConnectToService(service_name,
                                              client_handle.Pass());
-}
-
-void ServiceProviderImpl::OnConnectionError() {
-  ClearRemote();
 }
 
 void ServiceProviderImpl::AddServiceConnector(
@@ -57,13 +54,6 @@ void ServiceProviderImpl::RemoveServiceConnector(
     return;
   delete it->second;
   service_connectors_.erase(it);
-}
-
-void ServiceProviderImpl::ClearRemote() {
-  if (remote_) {
-    remote_->Clear();
-    remote_ = nullptr;
-  }
 }
 
 }  // namespace mojo

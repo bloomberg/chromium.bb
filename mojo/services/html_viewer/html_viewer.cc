@@ -102,6 +102,8 @@ class HTMLViewerApplication : public mojo::Application {
     }
   }
 
+  void RequestQuit() override {}
+
  private:
   void OnResponseReceived(URLLoaderPtr loader,
                           InterfaceRequest<ServiceProvider> services,

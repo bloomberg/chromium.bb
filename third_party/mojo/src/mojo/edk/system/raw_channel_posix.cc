@@ -356,18 +356,23 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
   pending_read_ = false;
   size_t bytes_read = 0;
   IOResult io_result = Read(&bytes_read);
-  if (io_result != IO_PENDING)
+  if (io_result != IO_PENDING) {
     OnReadCompleted(io_result, bytes_read);
+    // TODO(vtl): If we weren't destroyed, we'd like to do
+    //
+    //   DCHECK(!read_watcher_ || pending_read_);
+    //
+    // On failure, |read_watcher_| must have been reset; on success, we assume
+    // that |OnReadCompleted()| always schedules another read. Otherwise, we
+    // could end up spinning -- getting |OnFileCanReadWithoutBlocking()| again
+    // and again but not doing any actual read.
+    // TODO(yzshen): An alternative is to stop watching if RawChannel doesn't
+    // schedule a new read. But that code won't be reached under the current
+    // RawChannel implementation.
+    return;  // |this| may have been destroyed in |OnReadCompleted()|.
+  }
 
-  // On failure, |read_watcher_| must have been reset; on success,
-  // we assume that |OnReadCompleted()| always schedules another read.
-  // Otherwise, we could end up spinning -- getting
-  // |OnFileCanReadWithoutBlocking()| again and again but not doing any actual
-  // read.
-  // TODO(yzshen): An alternative is to stop watching if RawChannel doesn't
-  // schedule a new read. But that code won't be reached under the current
-  // RawChannel implementation.
-  DCHECK(!read_watcher_ || pending_read_);
+  DCHECK(pending_read_);
 }
 
 void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
@@ -386,8 +391,10 @@ void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
     io_result = WriteNoLock(&platform_handles_written, &bytes_written);
   }
 
-  if (io_result != IO_PENDING)
+  if (io_result != IO_PENDING) {
     OnWriteCompleted(io_result, platform_handles_written, bytes_written);
+    return;  // |this| may have been destroyed in |OnWriteCompleted()|.
+  }
 }
 
 RawChannel::IOResult RawChannelPosix::ReadImpl(size_t* bytes_read) {
@@ -451,6 +458,7 @@ void RawChannelPosix::WaitToWrite() {
       pending_write_ = false;
     }
     OnWriteCompleted(IO_FAILED_UNKNOWN, 0, 0);
+    return;  // |this| may have been destroyed in |OnWriteCompleted()|.
   }
 }
 

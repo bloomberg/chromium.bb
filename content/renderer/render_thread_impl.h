@@ -11,6 +11,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -404,8 +405,10 @@ class CONTENT_EXPORT RenderThreadImpl
   void AddEmbeddedWorkerRoute(int32 routing_id, IPC::Listener* listener);
   void RemoveEmbeddedWorkerRoute(int32 routing_id);
 
-  void RegisterPendingRenderFrameConnect(int routing_id,
-                                         mojo::ScopedMessagePipeHandle handle);
+  void RegisterPendingRenderFrameConnect(
+      int routing_id,
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services);
 
  protected:
   virtual void SetResourceDispatchTaskQueue(
@@ -597,7 +600,24 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_elastic_overscroll_enabled_;
   unsigned use_image_texture_target_;
 
-  std::map<int, mojo::MessagePipeHandle> pending_render_frame_connects_;
+  struct PendingRenderFrameConnect
+      : public base::RefCounted<PendingRenderFrameConnect> {
+    PendingRenderFrameConnect(
+        mojo::InterfaceRequest<mojo::ServiceProvider> services,
+        mojo::ServiceProviderPtr exposed_services);
+
+    mojo::InterfaceRequest<mojo::ServiceProvider> services;
+    mojo::ServiceProviderPtr exposed_services;
+
+   private:
+    friend class base::RefCounted<PendingRenderFrameConnect>;
+
+    ~PendingRenderFrameConnect();
+  };
+
+  typedef std::map<int, scoped_refptr<PendingRenderFrameConnect>>
+      PendingRenderFrameConnectMap;
+  PendingRenderFrameConnectMap pending_render_frame_connects_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

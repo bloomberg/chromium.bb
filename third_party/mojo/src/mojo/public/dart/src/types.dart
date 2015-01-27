@@ -127,11 +127,12 @@ class MojoHandleSignals {
   static const int kReadWrite = kReadable | kWritable;
   static const int kAll = kReadable | kWritable | kPeerClosed;
 
-  // TODO(zra): Does PEER_CLOSED | anything else make sense?
   static const NONE = const MojoHandleSignals._(kNone);
   static const READABLE = const MojoHandleSignals._(kReadable);
   static const WRITABLE = const MojoHandleSignals._(kWritable);
   static const PEER_CLOSED = const MojoHandleSignals._(kPeerClosed);
+  static const PEER_CLOSED_READABLE =
+      const MojoHandleSignals._(kPeerClosed | kReadable);
   static const READWRITE = const MojoHandleSignals._(kReadWrite);
   static const ALL = const MojoHandleSignals._(kAll);
 
@@ -146,9 +147,10 @@ class MojoHandleSignals {
       case kWritable: return WRITABLE;
       case kPeerClosed: return PEER_CLOSED;
       case kReadWrite: return READWRITE;
+      case kPeerClosed | kReadable: return PEER_CLOSED_READABLE;
       case kAll: return ALL;
       default:
-        throw 'Invalid handle signal';
+        throw 'Invalid handle signal: $value';
     }
   }
 
@@ -174,8 +176,9 @@ class MojoHandleSignals {
       case kWritable: return "WRITABLE";
       case kPeerClosed: return "PEER_CLOSED";
       case kReadWrite: return "READWRITE";
+      case kPeerClosed | kReadable: return "PEER_CLOSED_READABLE";
       case kAll: return "ALL";
-      default: return "<invalid signal>";
+      default: return "<invalid signals>";
     }
   }
 }

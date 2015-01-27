@@ -111,7 +111,7 @@ HTMLDocument::HTMLDocument(
       web_media_player_factory_(web_media_player_factory) {
   exported_services_.AddService(this);
   exported_services_.AddService(&view_manager_client_factory_);
-  WeakBindToPipe(&exported_services_, services.PassMessagePipe());
+  exported_services_.Bind(services.Pass());
   Load(response_.Pass());
 }
 
@@ -126,10 +126,10 @@ HTMLDocument::~HTMLDocument() {
 
 void HTMLDocument::OnEmbed(
     View* root,
-    mojo::ServiceProviderImpl* embedee_service_provider_impl,
-    scoped_ptr<mojo::ServiceProvider> embedder_service_provider) {
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services) {
   root_ = root;
-  embedder_service_provider_ = embedder_service_provider.Pass();
+  embedder_service_provider_ = exposed_services.Pass();
   navigator_host_.set_service_provider(embedder_service_provider_.get());
 
   blink::WebSize root_size(root_->bounds().width, root_->bounds().height);

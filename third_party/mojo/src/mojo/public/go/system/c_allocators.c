@@ -157,3 +157,15 @@ void FreeWriteDataParams(struct WriteDataParams p) {
   free(p.num_bytes);
   free(p.elements);
 }
+
+struct TwoPhaseActionParams MallocTwoPhaseActionParams() {
+  struct TwoPhaseActionParams p;
+  p.buffer = (void**)malloc(sizeof(void*));
+  p.num_bytes = (uint32_t*)malloc(sizeof(uint32_t));
+  return p;
+}
+
+void FreeTwoPhaseActionParams(struct TwoPhaseActionParams p) {
+  free(p.buffer);
+  free(p.num_bytes);
+}

@@ -534,10 +534,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(nasko): Remove this method once swapped out state is no longer used.
   void NavigateToSwappedOutURL();
 
-  // Binds this render frame's service registry to a handle to the remote
-  // service registry.
+  // Binds this render frame's service registry.
   void BindServiceRegistry(
-      mojo::ScopedMessagePipeHandle service_provider_handle);
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services);
 
   ManifestManager* manifest_manager();
 

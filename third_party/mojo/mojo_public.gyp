@@ -237,8 +237,6 @@
         'src/mojo/public/cpp/application/lib/service_connector.h',
         'src/mojo/public/cpp/application/lib/service_registry.cc',
         'src/mojo/public/cpp/application/lib/service_registry.h',
-        'src/mojo/public/cpp/application/lib/weak_service_provider.cc',
-        'src/mojo/public/cpp/application/lib/weak_service_provider.h',
         'src/mojo/public/cpp/application/service_provider_impl.h',
       ],
       'dependencies': [

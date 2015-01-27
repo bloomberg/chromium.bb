@@ -156,7 +156,7 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
 RawChannel::RawChannel()
     : message_loop_for_io_(nullptr),
       delegate_(nullptr),
-      read_stopped_(false),
+      set_on_shutdown_(nullptr),
       write_stopped_(false),
       weak_ptr_factory_(this) {
 }
@@ -212,7 +212,10 @@ void RawChannel::Shutdown() {
 
   // Reset the delegate so that it won't receive further calls.
   delegate_ = nullptr;
-  read_stopped_ = true;
+  if (set_on_shutdown_) {
+    *set_on_shutdown_ = true;
+    set_on_shutdown_ = nullptr;
+  }
   write_stopped_ = true;
   weak_ptr_factory_.InvalidateWeakPtrs();
 
@@ -264,11 +267,6 @@ bool RawChannel::IsWriteBufferEmpty() {
 void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
 
-  if (read_stopped_) {
-    NOTREACHED();
-    return;
-  }
-
   // Keep reading data in a loop, and dispatch messages if enough data is
   // received. Exit the loop if any of the following happens:
   //   - one or more messages were dispatched;
@@ -281,9 +279,8 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
       case IO_FAILED_SHUTDOWN:
       case IO_FAILED_BROKEN:
       case IO_FAILED_UNKNOWN:
-        read_stopped_ = true;
         CallOnError(ReadIOResultToError(io_result));
-        return;
+        return;  // |this| may have been destroyed in |CallOnError()|.
       case IO_PENDING:
         NOTREACHED();
         return;
@@ -318,16 +315,14 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
                                 &error_message)) {
         DCHECK(error_message);
         LOG(ERROR) << "Received invalid message: " << error_message;
-        read_stopped_ = true;
         CallOnError(Delegate::ERROR_READ_BAD_MESSAGE);
-        return;
+        return;  // |this| may have been destroyed in |CallOnError()|.
       }
 
       if (message_view.type() == MessageInTransit::kTypeRawChannel) {
         if (!OnReadMessageForRawChannel(message_view)) {
-          read_stopped_ = true;
           CallOnError(Delegate::ERROR_READ_BAD_MESSAGE);
-          return;
+          return;  // |this| may have been destroyed in |CallOnError()|.
         }
       } else {
         embedder::ScopedPlatformHandleVectorPtr platform_handles;
@@ -344,9 +339,8 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
                                        platform_handle_table).Pass();
             if (!platform_handles) {
               LOG(ERROR) << "Invalid number of platform handles received";
-              read_stopped_ = true;
               CallOnError(Delegate::ERROR_READ_BAD_MESSAGE);
-              return;
+              return;  // |this| may have been destroyed in |CallOnError()|.
             }
           }
         }
@@ -355,13 +349,16 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
         // for the POSIX implementation, we should confirm that none are stored.
 
         // Dispatch the message.
+        // Detect the case when |Shutdown()| is called; subsequent destruction
+        // is also permitted then.
+        bool shutdown_called = false;
+        DCHECK(!set_on_shutdown_);
+        set_on_shutdown_ = &shutdown_called;
         DCHECK(delegate_);
         delegate_->OnReadMessage(message_view, platform_handles.Pass());
-        if (read_stopped_) {
-          // |Shutdown()| was called in |OnReadMessage()|.
-          // TODO(vtl): Add test for this case.
+        if (shutdown_called)
           return;
-        }
+        set_on_shutdown_ = nullptr;
       }
 
       did_dispatch_message = true;
@@ -429,8 +426,10 @@ void RawChannel::OnWriteCompleted(IOResult io_result,
                                        bytes_written);
   }
 
-  if (did_fail)
+  if (did_fail) {
     CallOnError(Delegate::ERROR_WRITE);
+    return;  // |this| may have been destroyed in |CallOnError()|.
+  }
 }
 
 void RawChannel::EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message) {
@@ -467,8 +466,10 @@ RawChannel::Delegate::Error RawChannel::ReadIOResultToError(
 void RawChannel::CallOnError(Delegate::Error error) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
   // TODO(vtl): Add a "write_lock_.AssertNotAcquired()"?
-  if (delegate_)
+  if (delegate_) {
     delegate_->OnError(error);
+    return;  // |this| may have been destroyed in |OnError()|.
+  }
 }
 
 bool RawChannel::OnWriteCompletedNoLock(IOResult io_result,

@@ -44,11 +44,13 @@ static jobject CreateServiceRegistryPair(JNIEnv* env,
   content::ServiceRegistryImpl* registry_b = new ServiceRegistryImpl();
   test_environment->registries.push_back(registry_b);
 
-  mojo::ScopedMessagePipeHandle handle_a;
-  mojo::ScopedMessagePipeHandle handle_b;
-  mojo::CreateMessagePipe(NULL, &handle_a, &handle_b);
-  registry_a->BindRemoteServiceProvider(handle_a.Pass());
-  registry_b->BindRemoteServiceProvider(handle_b.Pass());
+  mojo::ServiceProviderPtr exposed_services_a;
+  registry_a->Bind(GetProxy(&exposed_services_a));
+  registry_b->BindRemoteServiceProvider(exposed_services_a.Pass());
+
+  mojo::ServiceProviderPtr exposed_services_b;
+  registry_b->Bind(GetProxy(&exposed_services_b));
+  registry_a->BindRemoteServiceProvider(exposed_services_b.Pass());
 
   content::ServiceRegistryAndroid* wrapper_a =
       new ServiceRegistryAndroid(registry_a);

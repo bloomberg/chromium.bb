@@ -114,4 +114,8 @@ void ApplicationImpl::AcceptConnection(
   incoming_service_registries_.push_back(registry);
 }
 
+void ApplicationImpl::RequestQuit() {
+  Terminate();
+}
+
 }  // namespace mojo

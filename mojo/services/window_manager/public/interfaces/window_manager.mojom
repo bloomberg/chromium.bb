@@ -10,8 +10,9 @@ import "mojo/public/interfaces/application/service_provider.mojom";
 [Client=WindowManagerClient]
 interface WindowManager {
   // Requests the WindowManager to embed the app for |url| at an appropriate
-  // View. See ViewMangerService::Embed() for details on |service_provider|.
-  Embed(string url, ServiceProvider& service_provider);
+  // View. See ViewMangerService::Embed() for details on |services| and
+  // |exposed_services|.
+  Embed(string url, ServiceProvider&? services, ServiceProvider? exposed_services);
 
   SetCapture(uint32 view_id) => (bool success);
   FocusWindow(uint32 view_id) => (bool success);

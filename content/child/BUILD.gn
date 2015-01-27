@@ -23,6 +23,7 @@ source_set("child") {
   deps = [
     "//base",
     "//components/tracing",
+    "//content/common:mojo_bindings",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//skia",

@@ -63,7 +63,8 @@ class ViewManagerClientImpl : public ViewManager,
   void Embed(const String& url, Id view_id);
   void Embed(const String& url,
              Id view_id,
-             ServiceProviderPtr service_provider);
+             InterfaceRequest<ServiceProvider> services,
+             ServiceProviderPtr exposed_services);
 
   void set_change_acked_callback(const base::Callback<void(void)>& callback) {
     change_acked_callback_ = callback;
@@ -95,7 +96,8 @@ class ViewManagerClientImpl : public ViewManager,
   void OnEmbed(ConnectionSpecificId connection_id,
                const String& creator_url,
                ViewDataPtr root,
-               InterfaceRequest<ServiceProvider> parent_services,
+               InterfaceRequest<ServiceProvider> services,
+               ServiceProviderPtr exposed_services,
                ScopedMessagePipeHandle window_manager_pipe) override;
   void OnEmbeddedAppDisconnected(Id view_id) override;
   void OnViewBoundsChanged(Id view_id,

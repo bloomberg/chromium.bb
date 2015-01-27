@@ -6,19 +6,22 @@
 #define MOJO_PUBLIC_APPLICATION_SERVICE_PROVIDER_IMPL_H_
 
 #include "mojo/public/cpp/application/lib/service_connector.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace mojo {
 namespace internal {
-class WeakServiceProvider;
 class ServiceConnectorBase;
 }
 
 // Implements a registry that can be used to expose services to another app.
-class ServiceProviderImpl : public InterfaceImpl<ServiceProvider> {
+class ServiceProviderImpl : public ServiceProvider {
  public:
   ServiceProviderImpl();
+  explicit ServiceProviderImpl(InterfaceRequest<ServiceProvider> request);
   ~ServiceProviderImpl() override;
+
+  void Bind(InterfaceRequest<ServiceProvider> request);
 
   template <typename Interface>
   void AddService(InterfaceFactory<Interface>* factory) {
@@ -26,37 +29,21 @@ class ServiceProviderImpl : public InterfaceImpl<ServiceProvider> {
         new internal::InterfaceFactoryConnector<Interface>(factory));
   }
 
-  // Returns an instance of a ServiceProvider that weakly wraps this impl's
-  // connection to some other app. Whereas the lifetime of an instance of
-  // ServiceProviderImpl is bound to the lifetime of the pipe it
-  // encapsulates, the lifetime of the ServiceProvider instance returned by this
-  // method is assumed by the caller. After the pipe is closed
-  // ConnectToService() calls on this object will be silently dropped.
-  // This method must only be called once per ServiceProviderImpl.
-  ServiceProvider* CreateRemoteServiceProvider();
-
  private:
   typedef std::map<std::string, internal::ServiceConnectorBase*>
       NameToServiceConnectorMap;
-
-  friend class internal::WeakServiceProvider;
 
   // Overridden from ServiceProvider:
   void ConnectToService(const String& service_name,
                         ScopedMessagePipeHandle client_handle) override;
 
-  // Overridden from InterfaceImpl:
-  void OnConnectionError() override;
-
   void AddServiceConnector(internal::ServiceConnectorBase* service_connector);
   void RemoveServiceConnector(
       internal::ServiceConnectorBase* service_connector);
 
-  void ClearRemote();
-
   NameToServiceConnectorMap service_connectors_;
 
-  internal::WeakServiceProvider* remote_;
+  Binding<ServiceProvider> binding_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceProviderImpl);
 };

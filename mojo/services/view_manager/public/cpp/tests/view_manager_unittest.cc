@@ -81,8 +81,8 @@ class ConnectApplicationLoader : public ApplicationLoader,
 
   // Overridden from ViewManagerDelegate:
   void OnEmbed(View* root,
-               ServiceProviderImpl* exported_services,
-               scoped_ptr<ServiceProvider> imported_services) override {
+               InterfaceRequest<ServiceProvider> services,
+               ServiceProviderPtr exposed_services) override {
     callback_.Run(root);
   }
   void OnViewManagerDisconnected(ViewManager* view_manager) override {}

@@ -6,19 +6,39 @@ module mojo;
 
 import "mojo/public/interfaces/application/service_provider.mojom";
 
-// Applications vend Services through the ServiceProvider interface. Services
-// implement Interfaces.
+// This is the primary interface implemented by every Mojo application. It
+// allows the application to receive its startup arguments from the shell, and
+// to be notified of events that occur during its execution.
 interface Application {
-  // Initialize is guaranteed to be called before any AcceptConnection calls.
+  // Initializes the application with the specified arguments. This method is
+  // guaranteed to be called before any other method is called, and will only be
+  // called once.
   Initialize(array<string>? args);
 
-  // Called in response to a call to mojo.Shell.ConnectToApplication().
-  // The |services| and |exposed_services| parameters are the same as those on
-  // mojo.Shell.ConnectToApplication().
-  // |services| will be used to look up services provided by this application.
-  // |exposed_services| can be used to look up services exposed by the
-  // application at |requestor_url|.
+  // Called when another application (identified by |requestor_url|) attempts to
+  // open a connection to this application.
+  //
+  // If the other application wants to request services from this application,
+  // it will have passed a valid interface request through the |services|
+  // parameter (i.e. one containing a valid message pipe endpoint). This
+  // application may then bind an implementation of |ServiceProvider| to that
+  // request in order to make services available to the other application.
+  //
+  // If the other application wants to offer services to this application, it
+  // will have passed a bound interface through the |exposed_services|
+  // parameter. This application may then request services through that
+  // interface.
+  //
+  // It is possible that both parameters will be valid/bound if the other
+  // application wants to both request services from and offer services to this
+  // application.
+  //
+  // This application is free to ignore the |services| or |exposed_services|
+  // parameters if it does not wish to offer or request services.
   AcceptConnection(string requestor_url,
                    ServiceProvider&? services,
                    ServiceProvider? exposed_services);
+
+  // Called to request the application shut itself down gracefully.
+  RequestQuit();
 };

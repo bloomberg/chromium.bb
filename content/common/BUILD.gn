@@ -406,6 +406,7 @@ source_set("common") {
 
 mojom("mojo_bindings") {
   sources = [
+    "application_setup.mojom",
     "geolocation_service.mojom",
     "permission_service.mojom",
     "render_frame_setup.mojom",

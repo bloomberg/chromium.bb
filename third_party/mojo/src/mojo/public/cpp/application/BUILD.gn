@@ -22,8 +22,6 @@ mojo_sdk_source_set("application") {
     "lib/service_connector.h",
     "lib/service_registry.cc",
     "lib/service_registry.h",
-    "lib/weak_service_provider.cc",
-    "lib/weak_service_provider.h",
   ]
 
   mojo_sdk_deps = [

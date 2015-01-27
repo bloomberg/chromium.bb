@@ -6,9 +6,6 @@ declare_args() {
   # Whether to use a prebuilt mojo_shell binary instead of one built from
   # source.
   use_prebuilt_mojo_shell = false
-
-  # Whether to build the dart bindings.
-  mojo_use_dart = false
 }
 
 # The absolute path to the directory containing the mojo public SDK (i.e., the

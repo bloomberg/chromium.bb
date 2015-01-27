@@ -47,10 +47,11 @@ class ApplicationConnection {
   // Connect to the service implementing |Interface|.
   template <typename Interface>
   void ConnectToService(InterfacePtr<Interface>* ptr) {
-    MessagePipe pipe;
-    ptr->Bind(pipe.handle0.Pass());
-    GetServiceProvider()->ConnectToService(Interface::Name_,
-                                           pipe.handle1.Pass());
+    if (ServiceProvider* sp = GetServiceProvider()) {
+      MessagePipe pipe;
+      ptr->Bind(pipe.handle0.Pass());
+      sp->ConnectToService(Interface::Name_, pipe.handle1.Pass());
+    }
   }
 
   // The url identifying the application on the other end of this connection.

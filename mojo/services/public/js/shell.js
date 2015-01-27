@@ -33,8 +33,10 @@ define("mojo/services/public/js/shell", [
       if (application)
         return application;
 
-      this.proxy.connectToApplication(url, function(sp) {
-        application = new ServiceProvider(sp);
+      this.proxy.connectToApplication(url, function(services) {
+        application = new ServiceProvider(services);
+      }, function() {
+        return application;
       });
       this.applications_.set(url, application);
       return application;

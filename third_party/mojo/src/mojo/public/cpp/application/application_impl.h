@@ -100,6 +100,7 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   void AcceptConnection(const String& requestor_url,
                         InterfaceRequest<ServiceProvider> services,
                         ServiceProviderPtr exposed_services) override;
+  void RequestQuit() override;
 
   typedef std::vector<internal::ServiceRegistry*> ServiceRegistryList;
 

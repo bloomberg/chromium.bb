@@ -5,12 +5,10 @@
 #ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_DELEGATE_H_
 #define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_DELEGATE_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace mojo {
 
-class ServiceProviderImpl;
 class View;
 class ViewManager;
 
@@ -22,15 +20,18 @@ class ViewManagerDelegate {
   // created. |root| and it's corresponding ViewManager are valid until
   // OnViewManagerDisconnected() is called with the same object.
   //
-  // |exported_services| is an object that the delegate can add services to
-  // expose to the embedder. |imported_services| exposes the services offered by
-  // the embedder to the delegate. Note that if a different application is
-  // subsequently embedded at |root|, the pipe(s) connecting |imported_services|
-  // to the embedder and any services obtained from it are not broken and will
-  // continue to be valid.
+  // |services| exposes the services offered by the embedder to the delegate.
+  //
+  // |exposed_services| is an object that the delegate can add services to
+  // expose to the embedder.
+  //
+  // Note that if a different application is subsequently embedded at |root|,
+  // the pipes connecting |services| and |exposed_services| to the embedder and
+  // any services obtained from them are not broken and will continue to be
+  // valid.
   virtual void OnEmbed(View* root,
-                       ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) = 0;
+                       InterfaceRequest<ServiceProvider> services,
+                       ServiceProviderPtr exposed_services) = 0;
 
   // Called when a connection to the view manager service is closed.
   // |view_manager| is not valid after this function returns.

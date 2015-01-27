@@ -313,9 +313,11 @@ class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
       : routing_id_highmark_(-1) {
   }
 
-  void GetServiceProviderForFrame(
+  void ExchangeServiceProviders(
       int32_t frame_routing_id,
-      mojo::InterfaceRequest<mojo::ServiceProvider> request) override {
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services)
+      override {
     // TODO(morrita): This is for investigating http://crbug.com/415059 and
     // should be removed once it is fixed.
     CHECK_LT(routing_id_highmark_, frame_routing_id);
@@ -327,11 +329,11 @@ class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
     // triggers creation of the RenderFrame we want.
     if (!frame) {
       RenderThreadImpl::current()->RegisterPendingRenderFrameConnect(
-          frame_routing_id, request.PassMessagePipe());
+          frame_routing_id, services.Pass(), exposed_services.Pass());
       return;
     }
 
-    frame->BindServiceRegistry(request.PassMessagePipe());
+    frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
   }
 
  private:
@@ -656,12 +658,6 @@ void RenderThreadImpl::Init() {
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
-  for (std::map<int, mojo::MessagePipeHandle>::iterator it =
-           pending_render_frame_connects_.begin();
-       it != pending_render_frame_connects_.end();
-       ++it) {
-    mojo::CloseRaw(it->second);
-  }
 }
 
 void RenderThreadImpl::Shutdown() {
@@ -859,7 +855,7 @@ scoped_refptr<base::MessageLoopProxy>
 
 void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
   ChildThread::GetRouter()->AddRoute(routing_id, listener);
-  std::map<int, mojo::MessagePipeHandle>::iterator it =
+  PendingRenderFrameConnectMap::iterator it =
       pending_render_frame_connects_.find(routing_id);
   if (it == pending_render_frame_connects_.end())
     return;
@@ -868,9 +864,14 @@ void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
   if (!frame)
     return;
 
-  mojo::ScopedMessagePipeHandle handle(it->second);
+  scoped_refptr<PendingRenderFrameConnect> connection(it->second);
+  mojo::InterfaceRequest<mojo::ServiceProvider> services(
+      connection->services.Pass());
+  mojo::ServiceProviderPtr exposed_services(
+      connection->exposed_services.Pass());
   pending_render_frame_connects_.erase(it);
-  frame->BindServiceRegistry(handle.Pass());
+
+  frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
 }
 
 void RenderThreadImpl::RemoveRoute(int32 routing_id) {
@@ -896,10 +897,14 @@ void RenderThreadImpl::RemoveEmbeddedWorkerRoute(int32 routing_id) {
 
 void RenderThreadImpl::RegisterPendingRenderFrameConnect(
     int routing_id,
-    mojo::ScopedMessagePipeHandle handle) {
-  std::pair<std::map<int, mojo::MessagePipeHandle>::iterator, bool> result =
-      pending_render_frame_connects_.insert(
-          std::make_pair(routing_id, handle.release()));
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services) {
+  std::pair<PendingRenderFrameConnectMap::iterator, bool> result =
+      pending_render_frame_connects_.insert(std::make_pair(
+          routing_id,
+          make_scoped_refptr(new PendingRenderFrameConnect(
+              services.Pass(),
+              exposed_services.Pass()))));
   CHECK(result.second) << "Inserting a duplicate item.";
 }
 
@@ -1779,6 +1784,16 @@ void RenderThreadImpl::WidgetRestored() {
   }
 
   ScheduleIdleHandler(kLongIdleHandlerDelayMs);
+}
+
+RenderThreadImpl::PendingRenderFrameConnect::PendingRenderFrameConnect(
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services)
+    : services(services.Pass()),
+      exposed_services(exposed_services.Pass()) {
+}
+
+RenderThreadImpl::PendingRenderFrameConnect::~PendingRenderFrameConnect() {
 }
 
 }  // namespace content

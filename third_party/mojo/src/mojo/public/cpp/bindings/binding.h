@@ -17,8 +17,10 @@
 
 namespace mojo {
 
-// This binds an interface implementation a pipe. Deleting the binding closes
-// the pipe.
+// Represents the binding of an interface implementation to a message pipe.
+// When the |Binding| object is destroyed, the binding between the message pipe
+// and the interface is torn down and the message pipe is closed, leaving the
+// interface implementation in an unbound state.
 //
 // Example:
 //
@@ -43,13 +45,29 @@ namespace mojo {
 //       // delete FooImpl on connection errors.
 //     }
 //   };
+//
+// The caller may specify a |MojoAsyncWaiter| to be used by the connection when
+// waiting for calls to arrive. Normally it is fine to use the default waiter.
+// However, the caller may provide their own implementation if needed. The
+// |Binding| will not take ownership of the waiter, and the waiter must outlive
+// the |Binding|.
+//
+// TODO(ggowan): Find out under what circumstances the caller may need to
+// provide their own implementation of MojoAsyncWaiter, and then describe those
+// circumstances.
 template <typename Interface>
 class Binding : public ErrorHandler {
  public:
   using Client = typename Interface::Client;
 
+  // Constructs an incomplete binding that will use the implementation |impl|.
+  // The binding may be completed with a subsequent call to the |Bind| method.
+  // Does not take ownership of |impl|, which must outlive the binding.
   explicit Binding(Interface* impl) : impl_(impl) { stub_.set_sink(impl_); }
 
+  // Constructs a completed binding of message pipe |handle| to implementation
+  // |impl|. Does not take ownership of |impl|, which must outlive the binding.
+  // See class comment for definition of |waiter|.
   Binding(Interface* impl,
           ScopedMessagePipeHandle handle,
           const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
@@ -57,6 +75,12 @@ class Binding : public ErrorHandler {
     Bind(handle.Pass(), waiter);
   }
 
+  // Constructs a completed binding of |impl| to a new message pipe, passing the
+  // client end to |ptr|, which takes ownership of it. The caller is expected to
+  // pass |ptr| on to the client of the service. Does not take ownership of any
+  // of the parameters. |impl| must outlive the binding. |ptr| only needs to
+  // last until the constructor returns. See class comment for definition of
+  // |waiter|.
   Binding(Interface* impl,
           InterfacePtr<Interface>* ptr,
           const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
@@ -64,6 +88,10 @@ class Binding : public ErrorHandler {
     Bind(ptr, waiter);
   }
 
+  // Constructs a completed binding of |impl| to the message pipe endpoint in
+  // |request|, taking ownership of the endpoint. Does not take ownership of
+  // |impl|, which must outlive the binding. See class comment for definition of
+  // |waiter|.
   Binding(Interface* impl,
           InterfaceRequest<Interface> request,
           const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
@@ -71,6 +99,8 @@ class Binding : public ErrorHandler {
     Bind(request.PassMessagePipe(), waiter);
   }
 
+  // Tears down the binding, closing the message pipe and leaving the interface
+  // implementation unbound.
   ~Binding() override {
     delete proxy_;
     if (internal_router_) {
@@ -79,6 +109,9 @@ class Binding : public ErrorHandler {
     }
   }
 
+  // Completes a binding that was constructed with only an interface
+  // implementation.  Takes ownership of |handle| and binds it to the previously
+  // specified implementation. See class comment for definition of |waiter|.
   void Bind(
       ScopedMessagePipeHandle handle,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
@@ -95,6 +128,12 @@ class Binding : public ErrorHandler {
     proxy_ = new typename Client::Proxy_(internal_router_);
   }
 
+  // Completes a binding that was constructed with only an interface
+  // implementation by creating a new message pipe, binding one end of it to the
+  // previously specified implementation, and passing the other to |ptr|, which
+  // takes ownership of it. The caller is expected to pass |ptr| on to the
+  // eventual client of the service. Does not take ownership of |ptr|. See
+  // class comment for definition of |waiter|.
   void Bind(
       InterfacePtr<Interface>* ptr,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
@@ -103,35 +142,50 @@ class Binding : public ErrorHandler {
     Bind(pipe.handle1.Pass(), waiter);
   }
 
+  // Completes a binding that was constructed with only an interface
+  // implementation by removing the message pipe endpoint from |request| and
+  // binding it to the previously specified implementation. See class comment
+  // for definition of |waiter|.
   void Bind(
       InterfaceRequest<Interface> request,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     Bind(request.PassMessagePipe(), waiter);
   }
 
+  // Blocks the calling thread until either a call arrives on the previously
+  // bound message pipe, or an error occurs.
   bool WaitForIncomingMethodCall() {
     MOJO_DCHECK(internal_router_);
     return internal_router_->WaitForIncomingMessage();
   }
 
+  // Closes the message pipe that was previously bound.
   void Close() {
     MOJO_DCHECK(internal_router_);
     internal_router_->CloseMessagePipe();
   }
 
+  // Sets an error handler that will be called if a connection error occurs on
+  // the bound message pipe.
   void set_error_handler(ErrorHandler* error_handler) {
     error_handler_ = error_handler;
   }
 
-  // ErrorHandler implementation
+  // Implements the |Binding|'s response to a connection error.
   void OnConnectionError() override {
     if (error_handler_)
       error_handler_->OnConnectionError();
   }
 
+  // Returns the interface implementation that was previously specified. Caller
+  // does not take ownership.
   Interface* impl() { return impl_; }
+
+  // Returns the client's interface.
   Client* client() { return proxy_; }
 
+  // Indicates whether the binding has been completed (i.e., whether a message
+  // pipe has been bound to the implementation).
   bool is_bound() const { return !!internal_router_; }
 
   // Exposed for testing, should not generally be used.

@@ -303,6 +303,7 @@ void RawChannelWin::RawChannelIOHandler::OnReadCompleted(DWORD bytes_read,
   if (!owner_)
     return;
 
+  // Note: |OnReadCompleted()| may detach us from |owner_|.
   if (error == ERROR_SUCCESS) {
     DCHECK_GT(bytes_read, 0u);
     owner_->OnReadCompleted(IO_SUCCEEDED, bytes_read);
@@ -335,6 +336,7 @@ void RawChannelWin::RawChannelIOHandler::OnWriteCompleted(DWORD bytes_written,
     pending_write_ = false;
   }
 
+  // Note: |OnWriteCompleted()| may detach us from |owner_|.
   if (error == ERROR_SUCCESS) {
     owner_->OnWriteCompleted(IO_SUCCEEDED, 0, bytes_written);
   } else if (error == ERROR_BROKEN_PIPE) {

@@ -121,8 +121,8 @@ _spec_to_encode_method = {
 
 def GetDartType(kind):
   if kind.imported_from:
-    return kind.imported_from["unique_name"] + "." + kind.name
-  return kind.name
+    return kind.imported_from["unique_name"] + "." + GetNameForElement(kind)
+  return GetNameForElement(kind)
 
 def DartDefaultValue(field):
   if field.default:

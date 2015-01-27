@@ -19,10 +19,7 @@ define("mojo/services/public/js/service_provider", [
 
   class ServiceProvider {
     constructor(service) {
-      if (!(service instanceof ServiceProviderInterface.proxyClass))
-        throw new Error("service must be a ServiceProvider proxy");
       this.proxy = service;
-      ProxyBindings(this.proxy).setLocalDelegate(this);
       this.providers_ = new Map(); // serviceName => see provideService() below
       this.pendingRequests_ = new Map(); // serviceName => serviceHandle
     }

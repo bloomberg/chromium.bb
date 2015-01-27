@@ -126,4 +126,11 @@ struct WriteDataParams {
 struct WriteDataParams MallocWriteDataParams(uint32_t length);
 void FreeWriteDataParams(struct WriteDataParams p);
 
+struct TwoPhaseActionParams {
+  void** buffer;
+  uint32_t* num_bytes;
+};
+struct TwoPhaseActionParams MallocTwoPhaseActionParams();
+void FreeTwoPhaseActionParams(struct TwoPhaseActionParams p);
+
 #endif  // MOJO_PUBLIC_GO_SYSTEM_C_ALLOCATORS_H_

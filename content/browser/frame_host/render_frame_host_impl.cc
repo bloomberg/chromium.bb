@@ -1545,11 +1545,14 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   RegisterMojoServices();
   RenderFrameSetupPtr setup;
   GetProcess()->GetServiceRegistry()->ConnectToRemoteService(&setup);
-  mojo::ServiceProviderPtr service_provider;
-  setup->GetServiceProviderForFrame(routing_id_,
-                                    mojo::GetProxy(&service_provider));
-  service_registry_->BindRemoteServiceProvider(
-      service_provider.PassMessagePipe());
+
+  mojo::ServiceProviderPtr exposed_services;
+  service_registry_->Bind(GetProxy(&exposed_services));
+
+  mojo::ServiceProviderPtr services;
+  setup->ExchangeServiceProviders(routing_id_, GetProxy(&services),
+                                  exposed_services.Pass());
+  service_registry_->BindRemoteServiceProvider(services.Pass());
 
 #if defined(OS_ANDROID)
   service_registry_android_.reset(
