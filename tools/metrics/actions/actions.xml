@@ -1259,6 +1259,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BadMessageTerminate_WC">
+  <owner>nasko@chromium.org</owner>
+  <description>
+    Indicates that a renderer process was terminated due to receiving a
+    malformed or unexpected IPC message. The process was terminated by the
+    WebContentsImpl class.
+  </description>
+</action>
+
 <action name="BadMessageTerminate_WPH">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

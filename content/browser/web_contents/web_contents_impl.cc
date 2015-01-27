@@ -2763,18 +2763,21 @@ void WebContentsImpl::OnDidRunInsecureContent(
 }
 
 void WebContentsImpl::OnDocumentLoadedInFrame() {
-  CHECK(render_frame_message_source_);
-  CHECK(!render_view_message_source_);
+  if (!render_frame_message_source_) {
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_WC"));
+    GetRenderProcessHost()->ReceivedBadMessage();
+    return;
+  }
+
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
   FOR_EACH_OBSERVER(
       WebContentsObserver, observers_, DocumentLoadedInFrame(rfh));
 }
 
-void WebContentsImpl::OnDidFinishLoad(
-    const GURL& url) {
+void WebContentsImpl::OnDidFinishLoad(const GURL& url) {
   if (!render_frame_message_source_) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RVD2"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_WC"));
     GetRenderProcessHost()->ReceivedBadMessage();
     return;
   }
