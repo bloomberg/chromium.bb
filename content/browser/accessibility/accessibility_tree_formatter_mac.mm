@@ -163,7 +163,9 @@ NSArray* BuildAllAttributesArray() {
       @"AXARIARelevant",
       NSAccessibilityColumnIndexRangeAttribute,
       NSAccessibilityEnabledAttribute,
+      NSAccessibilityExpandedAttribute,
       NSAccessibilityFocusedAttribute,
+      @"AXGrabbed",
       NSAccessibilityIndexAttribute,
       @"AXLoaded",
       @"AXLoadingProcess",
@@ -179,7 +181,6 @@ NSArray* BuildAllAttributesArray() {
       NSAccessibilityVisibleChildrenAttribute,
       @"AXVisited",
       @"AXLinkedUIElements",
-      NSAccessibilityExpandedAttribute,
       nil];
   return [array retain];
 }

@@ -3001,6 +3001,9 @@ void BrowserAccessibilityWin::OnUpdateFinished() {
   BoolAttributeToIA2(ui::AX_ATTR_LIVE_ATOMIC, "atomic");
   BoolAttributeToIA2(ui::AX_ATTR_LIVE_BUSY, "busy");
 
+  // Expose aria-grabbed attributes.
+  BoolAttributeToIA2(ui::AX_ATTR_GRABBED, "grabbed");
+
   // Expose container live region attributes.
   StringAttributeToIA2(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
                        "container-live");

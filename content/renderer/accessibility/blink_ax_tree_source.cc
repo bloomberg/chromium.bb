@@ -378,6 +378,12 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
       }
     }
 
+    blink::WebAXOptionalBool optionalBool = src.isAriaGrabbed();
+    if (optionalBool == blink::WebAXOptionalBoolFalse)
+      dst->AddBoolAttribute(ui::AX_ATTR_GRABBED, false);
+    else if (optionalBool == blink::WebAXOptionalBoolTrue)
+      dst->AddBoolAttribute(ui::AX_ATTR_GRABBED, true);
+
     // ARIA role.
     if (element.hasAttribute("role")) {
       dst->AddStringAttribute(ui::AX_ATTR_ROLE,

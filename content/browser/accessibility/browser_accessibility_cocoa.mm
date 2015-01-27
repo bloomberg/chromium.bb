@@ -109,6 +109,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { @"AXARIABusy", @"ariaBusy" },
     { @"AXARIALive", @"ariaLive" },
     { @"AXARIARelevant", @"ariaRelevant" },
+    { @"AXGrabbed", @"grabbed" },
     { @"AXInvalid", @"invalid" },
     { @"AXLoaded", @"loaded" },
     { @"AXLoadingProgress", @"loadingProgress" },
@@ -341,6 +342,11 @@ NSDictionary* attributeToMethodNameMap = nil;
   NSNumber* ret = [NSNumber numberWithBool:
       manager->GetFocus(NULL) == browserAccessibility_];
   return ret;
+}
+
+- (NSNumber*)grabbed {
+  bool boolValue = browserAccessibility_->GetBoolAttribute(ui::AX_ATTR_GRABBED);
+  return [NSNumber numberWithBool:boolValue];
 }
 
 - (id)header {
@@ -1386,8 +1392,14 @@ NSDictionary* attributeToMethodNameMap = nil;
         @"AXARIABusy",
         nil]];
   }
+  // Add aria-grabbed attribute only if it has true.
+  if (browserAccessibility_->HasBoolAttribute(ui::AX_ATTR_GRABBED)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        @"AXGrabbed",
+        nil]];
+  }
 
-  //Add expanded attribute only if it has expanded or collapsed state.
+  // Add expanded attribute only if it has expanded or collapsed state.
   if (GetState(browserAccessibility_, ui::AX_STATE_EXPANDED) ||
         GetState(browserAccessibility_, ui::AX_STATE_COLLAPSED)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:

@@ -1,0 +1,14 @@
+AXWebArea
+    AXList
+        AXGroup AXTitle='grabbed-true ' AXGrabbed='1'
+            AXListMarker AXValue='•'
+            AXStaticText AXValue='grabbed-true '
+            AXImage
+        AXGroup AXTitle='grabbed-false ' AXGrabbed='0'
+            AXListMarker AXValue='•'
+            AXStaticText AXValue='grabbed-false '
+            AXImage
+        AXGroup AXTitle='grabbed-undefined '
+            AXListMarker AXValue='•'
+            AXStaticText AXValue='grabbed-undefined '
+            AXImage

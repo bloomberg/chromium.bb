@@ -345,7 +345,11 @@
     // Set if this node is the host of an external AXTree, for
     // example a web view that's a child of a native view, or a
     // web iframe that's the child of another web frame.
-    is_ax_tree_host
+    is_ax_tree_host,
+
+    // Set if this node has been selected for dragging in
+    // a drag-n-drop operation.
+    grabbed
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXIntListAttribute {
