@@ -147,6 +147,13 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
         HTTPHeaderMap m_simpleRequestHeaders; // stores simple request headers in case of a cross-origin redirect.
         Timer<DocumentThreadableLoader> m_timeoutTimer;
         double m_requestStartedSeconds; // Time an asynchronous fetch request is started
+
+        // Max number of times that this DocumentThreadableLoader can follow
+        // cross-origin redirects.
+        // This is used to limit the number of redirects.
+        // But this value is not the max number of total redirects allowed,
+        // because same-origin redirects are not counted here.
+        int m_corsRedirectLimit;
     };
 
 } // namespace blink

@@ -57,6 +57,13 @@
 
 namespace blink {
 
+// Max number of CORS redirects handled in DocumentThreadableLoader.
+// Same number as net/url_request/url_request.cc, and
+// same number as https://fetch.spec.whatwg.org/#concept-http-fetch, Step 4.
+// FIXME: currently the number of redirects is counted and limited here and in
+// net/url_request/url_request.cc separately.
+static const int kMaxCORSRedirects = 20;
+
 void DocumentThreadableLoader::loadResourceSynchronously(Document& document, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
     // The loader will be deleted as soon as this function exits.
@@ -84,6 +91,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_async(blockingBehavior == LoadAsynchronously)
     , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
     , m_requestStartedSeconds(0.0)
+    , m_corsRedirectLimit(kMaxCORSRedirects)
 {
     ASSERT(client);
     // Setting an outgoing referer is only supported in the async code path.
@@ -279,7 +287,10 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     // When using access control, only simple cross origin requests are allowed to redirect. The new request URL must have a supported
     // scheme and not contain the userinfo production. In addition, the redirect response must pass the access control check if the
     // original request was not same-origin.
-    if (m_options.crossOriginRequestPolicy == UseAccessControl) {
+    if (m_corsRedirectLimit <= 0) {
+        m_client->didFailRedirectCheck();
+    } else if (m_options.crossOriginRequestPolicy == UseAccessControl) {
+        --m_corsRedirectLimit;
 
         InspectorInstrumentation::didReceiveCORSRedirectResponse(m_document.frame(), resource->identifier(), m_document.frame()->loader().documentLoader(), redirectResponse, 0);
 
