@@ -1000,6 +1000,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState
     m_error = false;
 
     if (m_async) {
+        UseCounter::count(&executionContext, UseCounter::XMLHttpRequestAsynchronous);
         if (m_upload)
             request.setReportUploadProgress(true);
 
