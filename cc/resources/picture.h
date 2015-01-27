@@ -11,11 +11,11 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
-#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "skia/ext/refptr.h"

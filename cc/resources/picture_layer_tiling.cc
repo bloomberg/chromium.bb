@@ -9,9 +9,9 @@
 #include <limits>
 #include <set>
 
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"

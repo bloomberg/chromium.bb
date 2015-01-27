@@ -5,8 +5,8 @@
 #ifndef CC_RESOURCES_TILE_DRAW_INFO_H_
 #define CC_RESOURCES_TILE_DRAW_INFO_H_
 
-#include "base/debug/trace_event_argument.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"

@@ -4,7 +4,7 @@
 
 #include "cc/resources/raster_source_helper.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/debug/debug_colors.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"

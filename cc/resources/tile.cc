@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/debug/trace_event_argument.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/tile_manager.h"

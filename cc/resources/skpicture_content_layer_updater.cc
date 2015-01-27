@@ -4,7 +4,7 @@
 
 #include "cc/resources/skpicture_content_layer_updater.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/resources/prioritized_resource.h"

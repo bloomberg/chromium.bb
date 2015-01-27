@@ -9,8 +9,8 @@
 #include <set>
 
 #include "base/base64.h"
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_argument.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"

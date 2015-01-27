@@ -4,7 +4,7 @@
 
 #include "cc/resources/display_list_raster_source.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/resources/display_item_list.h"

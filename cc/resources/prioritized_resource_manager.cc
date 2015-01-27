@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/priority_calculator.h"
 #include "cc/trees/proxy.h"

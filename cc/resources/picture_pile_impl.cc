@@ -6,7 +6,7 @@
 #include <limits>
 #include <set>
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/resources/picture_pile_impl.h"

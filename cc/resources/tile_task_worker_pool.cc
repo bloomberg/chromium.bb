@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/simple_thread.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/scoped_ptr_deque.h"
 #include "cc/resources/raster_source.h"
 #include "skia/ext/refptr.h"

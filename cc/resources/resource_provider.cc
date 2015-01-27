@@ -8,11 +8,11 @@
 #include <limits>
 
 #include "base/containers/hash_tables.h"
-#include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/util.h"
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/resources/platform_color.h"

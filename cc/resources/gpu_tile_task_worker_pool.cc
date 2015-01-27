@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/resources/raster_buffer.h"
 #include "cc/resources/raster_source.h"
 #include "cc/resources/resource.h"

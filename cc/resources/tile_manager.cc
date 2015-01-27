@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/debug/trace_event_argument.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/debug/traced_value.h"

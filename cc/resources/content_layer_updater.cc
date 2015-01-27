@@ -4,7 +4,7 @@
 
 #include "cc/resources/content_layer_updater.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/resources/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRect.h"

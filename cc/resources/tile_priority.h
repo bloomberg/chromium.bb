@@ -9,8 +9,8 @@
 #include <limits>
 #include <string>
 
-#include "base/debug/trace_event_argument.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/base/cc_export.h"
 
 namespace base {

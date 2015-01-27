@@ -4,8 +4,8 @@
 
 #include "cc/quads/checkerboard_draw_quad.h"
 
-#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 
 namespace cc {

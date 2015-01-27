@@ -5,9 +5,9 @@
 #ifndef CC_RESOURCES_DISPLAY_ITEM_LIST_H_
 #define CC_RESOURCES_DISPLAY_ITEM_LIST_H_
 
-#include "base/debug/trace_event.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/resources/display_item.h"

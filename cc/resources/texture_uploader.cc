@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/util.h"
 #include "cc/resources/resource.h"
 #include "gpu/GLES2/gl2extchromium.h"

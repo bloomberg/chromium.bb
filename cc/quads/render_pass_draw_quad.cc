@@ -4,7 +4,7 @@
 
 #include "cc/quads/render_pass_draw_quad.h"
 
-#include "base/debug/trace_event_argument.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
