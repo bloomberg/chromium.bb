@@ -189,7 +189,7 @@ struct PasswordForm {
     TYPE_LAST = TYPE_GENERATED
   };
 
-  // The form type. Not used yet. Please see http://crbug.com/152422
+  // The form type.
   Type type;
 
   // The number of times that this username/password has been used to
