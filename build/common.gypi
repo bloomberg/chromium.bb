@@ -2869,15 +2869,6 @@
           'LOG_DISABLED=0',
         ],
         'conditions': [
-          ['target_arch=="arm"', {
-            'defines': [
-              # TODO(lcwu): Work around an error when building Chromium
-              # with gcc-4.5.3 (e.g. v8/src/platform-linux.cc). Remove
-              # this define once the toolchain is updated.
-              # See crbug.com/388933.
-              '__SOFTFP',
-            ],
-          }],
           ['use_playready==1', {
             'defines': [
               'PLAYREADY_CDM_AVAILABLE',
