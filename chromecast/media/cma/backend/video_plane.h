@@ -21,9 +21,8 @@ class VideoPlane {
   enum CoordinateType {
     // Graphics plane as coordinate type.
     COORDINATE_TYPE_GRAPHICS_PLANE = 0,
-
-    // Output video plane as coordinate type.
-    COORDINATE_TYPE_VIDEO_PLANE_RESOLUTION = 1,
+    // Output display screen as coordinate type.
+    COORDINATE_TYPE_SCREEN_RESOLUTION = 1,
   };
 
   VideoPlane();
