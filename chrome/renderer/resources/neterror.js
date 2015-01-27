@@ -3,17 +3,13 @@
 // found in the LICENSE file.
 
 function toggleHelpBox() {
-  var helpBoxOuter = document.getElementById('details');
+  var helpBoxOuter = document.getElementById('help-box-outer');
   helpBoxOuter.classList.toggle('hidden');
   var detailsButton = document.getElementById('details-button');
   if (helpBoxOuter.classList.contains('hidden'))
     detailsButton.innerText = detailsButton.detailsText;
   else
     detailsButton.innerText = detailsButton.hideDetailsText;
-
-  // Details appears over the main content on small screens.
-  if (mobileNav)
-    document.getElementById('main-content').classList.toggle('hidden');
 }
 
 function diagnoseErrors() {
@@ -57,8 +53,6 @@ function updateIconClass(classList, newClass) {
   if (newClass == 'icon-offline') {
     document.body.classList.add('offline');
     new Runner('.interstitial-wrapper');
-  } else {
-    document.body.classList.add('neterror');
   }
 }
 
@@ -141,7 +135,7 @@ function onDocumentLoad() {
   if (loadTimeData.valueExists('summary') &&
           !loadTimeData.getValue('summary').msg) {
     detailsButton.style.display = 'none';
-    document.getElementById('details').style.display = 'block';
+    document.getElementById('help-box-outer').style.display = 'block';
   }
 
   // Show control buttons.

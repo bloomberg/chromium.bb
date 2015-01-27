@@ -139,14 +139,6 @@ function setupEvents() {
   } else {
     $('details-button').addEventListener('click', function(event) {
       var hiddenDetails = $('details').classList.toggle('hidden');
-
-      if (mobileNav) {
-        // Details appear over the main content on small screens.
-        $('main-content').classList.toggle('hidden', !hiddenDetails);
-      } else {
-        $('main-content').classList.remove('hidden');
-      }
-
       $('details-button').innerText = hiddenDetails ?
           loadTimeData.getString('openDetails') :
           loadTimeData.getString('closeDetails');
