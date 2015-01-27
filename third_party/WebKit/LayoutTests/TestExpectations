@@ -145,15 +145,6 @@ crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-body.html [ ImageOn
 crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
-crbug.com/452219 css3/filters/effect-combined.html [ NeedsRebaseline ]
-crbug.com/452219 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
-crbug.com/452219 svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ NeedsRebaseline ]
-crbug.com/452219 svg/custom/feComponentTransfer-Discrete.svg [ NeedsRebaseline ]
-crbug.com/452219 svg/custom/feComponentTransfer-Gamma.svg [ NeedsRebaseline ]
-crbug.com/452219 svg/custom/feComponentTransfer-Linear.svg [ NeedsRebaseline ]
-crbug.com/452219 svg/custom/feComponentTransfer-Table.svg [ NeedsRebaseline ]
-crbug.com/452219 svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr.html [ NeedsRebaseline ]
-crbug.com/452219 svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ NeedsRebaseline ]
 
 # These failures need to be investigated.
 crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/mask.html [ ImageOnlyFailure ]
