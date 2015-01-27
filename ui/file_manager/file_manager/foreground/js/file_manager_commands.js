@@ -47,7 +47,6 @@ CommandUtil.getCommandEntry = function(element) {
     // element is a DirectoryTree.
     return element.selectedItem ? element.selectedItem.entry : null;
   } else if (element instanceof DirectoryItem ||
-             element instanceof VolumeItem ||
              element instanceof ShortcutItem) {
     // element are sub items in DirectoryTree.
     return element.entry;

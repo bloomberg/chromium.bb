@@ -249,12 +249,12 @@ div.splitter {
   color: white;
 }
 
-/* Make top-level items thicker and their expand-icno invisible */
+/* Make top-level items thicker and Drive volume's expand-icon invisible */
 #directory-tree > .tree-item > .tree-row {
   line-height: 40px;
 }
 
-#directory-tree > .tree-item > .tree-row > .expand-icon {
+#directory-tree > .tree-item.drive-volume > .tree-row > .expand-icon {
   visibility: hidden;
 }
 
