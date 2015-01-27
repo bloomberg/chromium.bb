@@ -46,6 +46,11 @@ MESSAGE_CENTER_EXPORT
   // Is the popup currently being closed?
   BOOL isClosing_;
 
+#ifndef NDEBUG
+  // Has the popup been closed before being dealloc-ed.
+  BOOL hasBeenClosed_;
+#endif
+
   // The current bounds of the popup frame if no animation is playing.
   // Otherwise, it is the target bounds of the popup frame.
   NSRect bounds_;

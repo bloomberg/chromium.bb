@@ -136,7 +136,17 @@
   return self;
 }
 
+#ifndef NDEBUG
+- (void)dealloc {
+  DCHECK(hasBeenClosed_);
+  [super dealloc];
+}
+#endif
+
 - (void)close {
+#ifndef NDEBUG
+  hasBeenClosed_ = YES;
+#endif
   [self setBoundsAnimation:nil];
   if (trackingArea_.get())
     [[[self window] contentView] removeTrackingArea:trackingArea_.get()];
@@ -231,6 +241,9 @@
   if (isClosing_)
     return;
 
+#ifndef NDEBUG
+  hasBeenClosed_ = YES;
+#endif
   isClosing_ = YES;
 
   // If the notification was swiped closed, do not animate it as the

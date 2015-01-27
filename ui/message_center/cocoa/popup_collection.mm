@@ -192,8 +192,8 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
     return YES;
   }
 
-  // The popup cannot fit on screen, so it has to be released now.
-  [popup release];
+  // The popup cannot fit on screen, so it has to be closed now.
+  [popup close];
   return NO;
 }
 
