@@ -830,8 +830,10 @@ void TileManager::UpdateTileDrawInfo(
 
   if (analysis.is_solid_color) {
     draw_info.set_solid_color(analysis.solid_color);
-    resource_pool_->ReleaseResource(resource.Pass());
+    if (resource)
+      resource_pool_->ReleaseResource(resource.Pass());
   } else {
+    DCHECK(resource);
     draw_info.set_use_resource();
     draw_info.resource_ = resource.Pass();
   }

@@ -69,21 +69,17 @@ void GpuRasterizer::RasterizeTiles(
   ScopedResourceWriteLocks locks;
 
   for (Tile* tile : tiles) {
-    // TODO(hendrikw): Don't create resources for solid color tiles.
-    // See crbug.com/445919
-    scoped_ptr<ScopedResource> resource =
-        resource_pool->AcquireResource(tile->desired_texture_size(),
-                                       resource_format);
-    const ScopedResource* const_resource = resource.get();
-
     RasterSource::SolidColorAnalysis analysis;
 
     if (tile->use_picture_analysis())
       PerformSolidColorAnalysis(tile, &analysis);
 
-    if (!analysis.is_solid_color)
-      AddToMultiPictureDraw(tile, const_resource, &locks);
-
+    scoped_ptr<ScopedResource> resource;
+    if (!analysis.is_solid_color) {
+      resource = resource_pool->AcquireResource(tile->desired_texture_size(),
+                                                resource_format);
+      AddToMultiPictureDraw(tile, resource.get(), &locks);
+    }
     update_tile_draw_info.Run(tile, resource.Pass(), analysis);
   }
 
