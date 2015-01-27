@@ -48,7 +48,8 @@ class LoginDatabase {
   // These columns stay intact.
   PasswordStoreChangeList UpdateLogin(const autofill::PasswordForm& form);
 
-  // Removes |form| from the list of remembered password forms.
+  // Removes |form| from the list of remembered password forms. Returns true if
+  // |form| was successfully removed from the database.
   bool RemoveLogin(const autofill::PasswordForm& form);
 
   // Removes all logins created from |delete_begin| onwards (inclusive) and

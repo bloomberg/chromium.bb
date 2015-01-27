@@ -592,7 +592,7 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
   s.BindString16(4, form.submit_element);
   s.BindString(5, form.signon_realm);
 
-  return s.Run();
+  return s.Run() && db_.GetLastChangeCount() > 0;
 }
 
 bool LoginDatabase::RemoveLoginsCreatedBetween(base::Time delete_begin,

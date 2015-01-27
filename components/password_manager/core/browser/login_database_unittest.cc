@@ -1035,6 +1035,25 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   EXPECT_EQ(form, *result[0]);
 }
 
+TEST_F(LoginDatabaseTest, RemoveWrongForm) {
+  PasswordForm form;
+  // |origin| shouldn't be empty.
+  form.origin = GURL("http://accounts.google.com/LoginAuth");
+  form.signon_realm = "http://accounts.google.com/";
+  form.username_value = ASCIIToUTF16("my_username");
+  form.password_value = ASCIIToUTF16("my_password");
+  form.ssl_valid = false;
+  form.preferred = true;
+  form.blacklisted_by_user = false;
+  form.scheme = PasswordForm::SCHEME_HTML;
+  // The form isn't in the database.
+  EXPECT_FALSE(db().RemoveLogin(form));
+
+  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+  EXPECT_TRUE(db().RemoveLogin(form));
+  EXPECT_FALSE(db().RemoveLogin(form));
+}
+
 TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   PasswordForm password_form;
   password_form.origin = GURL("http://example.com");
