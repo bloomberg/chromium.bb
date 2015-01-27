@@ -84,8 +84,8 @@ void CmaRenderer::Initialize(
   DCHECK(!ended_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
-  DCHECK(demuxer_stream_provider_->GetStream(::media::DemuxerStream::AUDIO) ||
-         demuxer_stream_provider_->GetStream(::media::DemuxerStream::VIDEO));
+  DCHECK(demuxer_stream_provider->GetStream(::media::DemuxerStream::AUDIO) ||
+         demuxer_stream_provider->GetStream(::media::DemuxerStream::VIDEO));
 
   BeginStateTransition();
 
