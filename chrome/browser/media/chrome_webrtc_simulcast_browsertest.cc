@@ -38,8 +38,14 @@ class WebRtcSimulcastBrowserTest : public WebRtcTestBase {
   }
 };
 
+// Fails/times out on Win only.  http://crbug.com/452623
+#if defined(OS_WIN)
+#define MAYBE_TestVgaReturnsTwoSimulcastStreams DISABLED_TestVgaReturnsTwoSimulcastStreams
+#else
+#define MAYBE_TestVgaReturnsTwoSimulcastStreams TestVgaReturnsTwoSimulcastStreams
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcSimulcastBrowserTest,
-                       TestVgaReturnsTwoSimulcastStreams) {
+                       MAYBE_TestVgaReturnsTwoSimulcastStreams) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ui_test_utils::NavigateToURL(
