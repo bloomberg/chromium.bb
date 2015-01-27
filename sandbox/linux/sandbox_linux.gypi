@@ -254,6 +254,8 @@
           'sources': [
             'services/credentials.cc',
             'services/credentials.h',
+            'services/namespace_utils.cc',
+            'services/namespace_utils.h',
             'services/proc_util.cc',
             'services/proc_util.h',
           ],

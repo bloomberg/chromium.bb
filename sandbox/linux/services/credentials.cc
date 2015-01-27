@@ -22,6 +22,7 @@
 #include "base/process/launch.h"
 #include "base/template_util.h"
 #include "base/third_party/valgrind/valgrind.h"
+#include "sandbox/linux/services/namespace_utils.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 
 namespace sandbox {
@@ -49,39 +50,6 @@ struct CapTextFreeDeleter {
 
 // Wrapper to manage the result from libcap2's cap_from_text().
 typedef scoped_ptr<char, CapTextFreeDeleter> ScopedCapText;
-
-struct FILECloser {
-  inline void operator()(FILE* f) const {
-    DCHECK(f);
-    PCHECK(0 == fclose(f));
-  }
-};
-
-// Don't use ScopedFILE in base since it doesn't check fclose().
-// TODO(jln): fix base/.
-typedef scoped_ptr<FILE, FILECloser> ScopedFILE;
-
-static_assert((base::is_same<uid_t, gid_t>::value),
-              "uid_t and gid_t should be the same type");
-// generic_id_t can be used for either uid_t or gid_t.
-typedef uid_t generic_id_t;
-
-// Write a uid or gid mapping from |id| to |id| in |map_file|.
-bool WriteToIdMapFile(const char* map_file, generic_id_t id) {
-  ScopedFILE f(fopen(map_file, "w"));
-  PCHECK(f);
-  const uid_t inside_id = id;
-  const uid_t outside_id = id;
-  int num = fprintf(f.get(), "%d %d 1\n", inside_id, outside_id);
-  if (num < 0) return false;
-  // Manually call fflush() to catch permission failures.
-  int ret = fflush(f.get());
-  if (ret) {
-    VLOG(1) << "Could not write to id map file";
-    return false;
-  }
-  return true;
-}
 
 // Checks that the set of RES-uids and the set of RES-gids have
 // one element each and return that element in |resuid| and |resgid|
@@ -187,7 +155,7 @@ scoped_ptr<std::string> Credentials::GetCurrentCapString() {
 }
 
 // static
-bool Credentials::SupportsNewUserNS() {
+bool Credentials::CanCreateProcessInNewUserNS() {
   // Valgrind will let clone(2) pass-through, but doesn't support unshare(),
   // so always consider UserNS unsupported there.
   if (IsRunningOnValgrind()) {
@@ -240,8 +208,8 @@ bool Credentials::MoveToNewUserNS() {
   DCHECK(GetRESIds(NULL, NULL));
   const char kGidMapFile[] = "/proc/self/gid_map";
   const char kUidMapFile[] = "/proc/self/uid_map";
-  CHECK(WriteToIdMapFile(kGidMapFile, gid));
-  CHECK(WriteToIdMapFile(kUidMapFile, uid));
+  CHECK(NamespaceUtils::WriteToIdMapFile(kGidMapFile, gid));
+  CHECK(NamespaceUtils::WriteToIdMapFile(kUidMapFile, uid));
   DCHECK(GetRESIds(NULL, NULL));
   return true;
 }
