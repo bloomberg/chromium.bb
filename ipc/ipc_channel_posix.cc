@@ -189,7 +189,6 @@ ChannelPosix::ChannelPosix(const IPC::ChannelHandle& channel_handle,
       waiting_connect_(true),
       message_send_bytes_written_(0),
       pipe_name_(channel_handle.name),
-      in_dtor_(false),
       must_unlink_(false) {
   memset(input_cmsg_buf_, 0, sizeof(input_cmsg_buf_));
   if (!CreatePipe(channel_handle)) {
@@ -201,7 +200,6 @@ ChannelPosix::ChannelPosix(const IPC::ChannelHandle& channel_handle,
 }
 
 ChannelPosix::~ChannelPosix() {
-  in_dtor_ = true;
   Close();
 }
 
@@ -613,7 +611,7 @@ void ChannelPosix::ResetToAcceptingConnectionState() {
   // Unregister libevent for the unix domain socket and close it.
   read_watcher_.StopWatchingFileDescriptor();
   write_watcher_.StopWatchingFileDescriptor();
-  ResetSafely(&pipe_);
+  pipe_.reset();
 #if defined(IPC_USES_READWRITE)
   fd_pipe_.reset();
   remote_fd_pipe_.reset();
@@ -1078,23 +1076,6 @@ base::ProcessId ChannelPosix::GetPeerPID() const {
 
 base::ProcessId ChannelPosix::GetSelfPID() const {
   return GetHelloMessageProcId();
-}
-
-void ChannelPosix::ResetSafely(base::ScopedFD* fd) {
-  if (!in_dtor_) {
-    fd->reset();
-    return;
-  }
-
-  // crbug.com/449233
-  // The CL [1] tightened the error check for closing FDs, but it turned
-  // out that there are existing cases that hit the newly added check.
-  // ResetSafely() is the workaround for that crash, turning it from
-  // from PCHECK() to DPCHECK() so that it doesn't crash in production.
-  // [1] https://crrev.com/ce44fef5fd60dd2be5c587d4b084bdcd36adcee4
-  int fd_to_close = fd->release();
-  if (-1 != fd_to_close)
-    DPCHECK(0 == IGNORE_EINTR(close(fd_to_close)));
 }
 
 //------------------------------------------------------------------------------
