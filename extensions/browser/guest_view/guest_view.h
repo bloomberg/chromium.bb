@@ -61,8 +61,8 @@ class GuestView : public GuestViewBase {
   }
 
  protected:
-  GuestView(content::WebContents* owner_web_contents, int guest_instance_id)
-      : GuestViewBase(owner_web_contents, guest_instance_id) {}
+  explicit GuestView(content::WebContents* owner_web_contents)
+      : GuestViewBase(owner_web_contents) {}
   ~GuestView() override {}
 
  private:

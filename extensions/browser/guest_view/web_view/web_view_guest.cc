@@ -150,9 +150,8 @@ void RemoveWebViewEventListenersOnIOThread(
 }  // namespace
 
 // static
-GuestViewBase* WebViewGuest::Create(content::WebContents* owner_web_contents,
-                                    int guest_instance_id) {
-  return new WebViewGuest(owner_web_contents, guest_instance_id);
+GuestViewBase* WebViewGuest::Create(content::WebContents* owner_web_contents) {
+  return new WebViewGuest(owner_web_contents);
 }
 
 // static
@@ -630,9 +629,8 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
   return true;
 }
 
-WebViewGuest::WebViewGuest(content::WebContents* owner_web_contents,
-                           int guest_instance_id)
-    : GuestView<WebViewGuest>(owner_web_contents, guest_instance_id),
+WebViewGuest::WebViewGuest(content::WebContents* owner_web_contents)
+    : GuestView<WebViewGuest>(owner_web_contents),
       rules_registry_id_(RulesRegistryService::kInvalidRulesRegistryID),
       find_helper_(this),
       is_overriding_user_agent_(false),

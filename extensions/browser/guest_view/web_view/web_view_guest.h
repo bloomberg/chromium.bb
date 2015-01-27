@@ -36,8 +36,7 @@ class WebViewInternalFindFunction;
 class WebViewGuest : public GuestView<WebViewGuest>,
                      public content::NotificationObserver {
  public:
-  static GuestViewBase* Create(content::WebContents* owner_web_contents,
-                               int guest_instance_id);
+  static GuestViewBase* Create(content::WebContents* owner_web_contents);
 
   // For WebViewGuest, we create special guest processes, which host the
   // tag content separately from the main application that embeds the tag.
@@ -239,7 +238,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
  private:
   friend class WebViewPermissionHelper;
 
-  WebViewGuest(content::WebContents* owner_web_contents, int guest_instance_id);
+  explicit WebViewGuest(content::WebContents* owner_web_contents);
 
   ~WebViewGuest() override;
 

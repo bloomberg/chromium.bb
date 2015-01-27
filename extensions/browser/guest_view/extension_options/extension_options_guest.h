@@ -23,8 +23,7 @@ class ExtensionOptionsGuest
  public:
   static const char Type[];
   static extensions::GuestViewBase* Create(
-      content::WebContents* owner_web_contents,
-      int guest_instance_id);
+      content::WebContents* owner_web_contents);
 
   // GuestViewBase implementation.
   bool CanRunInDetachedState() const override;
@@ -66,8 +65,7 @@ class ExtensionOptionsGuest
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  ExtensionOptionsGuest(content::WebContents* owner_web_contents,
-                        int guest_instance_id);
+  explicit ExtensionOptionsGuest(content::WebContents* owner_web_contents);
   ~ExtensionOptionsGuest() override;
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 

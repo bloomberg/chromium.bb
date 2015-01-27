@@ -142,11 +142,12 @@ class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(OpenerLifetimeObserver);
 };
 
-GuestViewBase::GuestViewBase(content::WebContents* owner_web_contents,
-                             int guest_instance_id)
+GuestViewBase::GuestViewBase(content::WebContents* owner_web_contents)
     : owner_web_contents_(owner_web_contents),
       browser_context_(owner_web_contents->GetBrowserContext()),
-      guest_instance_id_(guest_instance_id),
+      guest_instance_id_(
+          GuestViewManager::FromBrowserContext(browser_context_)->
+              GetNextInstanceID()),
       view_instance_id_(guestview::kInstanceIDNone),
       element_instance_id_(guestview::kInstanceIDNone),
       initialized_(false),
@@ -311,7 +312,6 @@ void GuestViewBase::RegisterGuestViewType(
 // static
 GuestViewBase* GuestViewBase::Create(
     content::WebContents* owner_web_contents,
-    int guest_instance_id,
     const std::string& view_type) {
   if (guest_view_registry.Get().empty())
     RegisterGuestViewTypes();
@@ -321,7 +321,7 @@ GuestViewBase* GuestViewBase::Create(
     NOTREACHED();
     return nullptr;
   }
-  return it->second.Run(owner_web_contents, guest_instance_id);
+  return it->second.Run(owner_web_contents);
 }
 
 // static

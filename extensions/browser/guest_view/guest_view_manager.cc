@@ -140,8 +140,7 @@ void GuestViewManager::CreateGuest(const std::string& view_type,
                                    content::WebContents* owner_web_contents,
                                    const base::DictionaryValue& create_params,
                                    const WebContentsCreatedCallback& callback) {
-  auto guest =
-      GuestViewBase::Create(owner_web_contents, GetNextInstanceID(), view_type);
+  auto guest = GuestViewBase::Create(owner_web_contents, view_type);
   if (!guest) {
     callback.Run(nullptr);
     return;
@@ -153,8 +152,7 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
     const std::string& view_type,
     content::WebContents* owner_web_contents,
     const content::WebContents::CreateParams& create_params) {
-  auto guest =
-      GuestViewBase::Create(owner_web_contents, GetNextInstanceID(), view_type);
+  auto guest = GuestViewBase::Create(owner_web_contents, view_type);
   if (!guest)
     return nullptr;
   content::WebContents::CreateParams guest_create_params(create_params);

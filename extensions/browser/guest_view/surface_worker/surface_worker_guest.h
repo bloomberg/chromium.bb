@@ -17,8 +17,7 @@ class SurfaceWorkerGuest : public GuestView<SurfaceWorkerGuest> {
  public:
   static const char Type[];
 
-  static GuestViewBase* Create(content::WebContents* owner_web_contents,
-                               int guest_instance_id);
+  static GuestViewBase* Create(content::WebContents* owner_web_contents);
 
   // content::WebContentsDelegate implementation.
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
@@ -31,8 +30,7 @@ class SurfaceWorkerGuest : public GuestView<SurfaceWorkerGuest> {
   void DidAttachToEmbedder() override;
 
  private:
-  SurfaceWorkerGuest(content::WebContents* owner_web_contents,
-                     int guest_instance_id);
+  explicit SurfaceWorkerGuest(content::WebContents* owner_web_contents);
 
   ~SurfaceWorkerGuest() override;
 

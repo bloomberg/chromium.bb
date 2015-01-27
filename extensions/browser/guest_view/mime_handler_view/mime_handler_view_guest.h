@@ -53,8 +53,7 @@ class StreamContainer {
 class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
                              public ExtensionFunctionDispatcher::Delegate {
  public:
-  static GuestViewBase* Create(content::WebContents* owner_web_contents,
-                               int guest_instance_id);
+  static GuestViewBase* Create(content::WebContents* owner_web_contents);
 
   static const char Type[];
 
@@ -97,8 +96,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
   base::WeakPtr<StreamContainer> GetStream() const;
 
  private:
-  MimeHandlerViewGuest(content::WebContents* owner_web_contents,
-                       int guest_instance_id);
+  explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);
   ~MimeHandlerViewGuest() override;
 
   void OnRequest(const ExtensionHostMsg_Request_Params& params);

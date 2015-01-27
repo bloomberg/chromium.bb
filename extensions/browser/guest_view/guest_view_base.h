@@ -73,12 +73,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   }
 
   using GuestCreationCallback =
-      base::Callback<GuestViewBase*(content::WebContents*, int)>;
+      base::Callback<GuestViewBase*(content::WebContents*)>;
   static void RegisterGuestViewType(const std::string& view_type,
                                     const GuestCreationCallback& callback);
 
   static GuestViewBase* Create(content::WebContents* owner_web_contents,
-                               int guest_instance_id,
                                const std::string& view_type);
 
   static GuestViewBase* FromWebContents(content::WebContents* web_contents);
@@ -290,8 +289,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void DispatchEventToView(Event* event);
 
  protected:
-  GuestViewBase(content::WebContents* owner_web_contents,
-                int guest_instance_id);
+  explicit GuestViewBase(content::WebContents* owner_web_contents);
 
   ~GuestViewBase() override;
 
