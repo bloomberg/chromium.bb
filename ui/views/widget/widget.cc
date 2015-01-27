@@ -599,7 +599,9 @@ bool Widget::IsClosed() const {
 }
 
 void Widget::Show() {
-  TRACE_EVENT0("views", "Widget::Show");
+  const ui::Layer* layer = GetLayer();
+  TRACE_EVENT1("views", "Widget::Show", "layer",
+               layer ? layer->name() : "none");
   if (non_client_view_) {
     // While initializing, the kiosk mode will go to full screen before the
     // widget gets shown. In that case we stay in full screen mode, regardless

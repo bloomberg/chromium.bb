@@ -200,13 +200,19 @@ class VIEWS_EXPORT WidgetDelegate {
 // view's hierarchy and is expected to be deleted on DeleteDelegate call.
 class VIEWS_EXPORT WidgetDelegateView : public WidgetDelegate, public View {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   WidgetDelegateView();
   ~WidgetDelegateView() override;
 
-  // Overridden from WidgetDelegate:
+  // WidgetDelegate:
   void DeleteDelegate() override;
   Widget* GetWidget() override;
   const Widget* GetWidget() const override;
+
+  // View:
+  const char* GetClassName() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegateView);

@@ -45,6 +45,9 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
 
 }  // namespace
 
+// static
+const char BubbleDelegateView::kViewClassName[] = "BubbleDelegateView";
+
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
       close_on_deactivate_(true),
@@ -139,6 +142,10 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
 
 void BubbleDelegateView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_DIALOG;
+}
+
+const char* BubbleDelegateView::GetClassName() const {
+  return kViewClassName;
 }
 
 void BubbleDelegateView::OnWidgetDestroying(Widget* widget) {

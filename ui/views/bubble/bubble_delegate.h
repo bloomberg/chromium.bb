@@ -25,6 +25,9 @@ class BubbleFrameView;
 class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
                                         public WidgetObserver {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   BubbleDelegateView();
   BubbleDelegateView(View* anchor_view, BubbleBorder::Arrow arrow);
   ~BubbleDelegateView() override;
@@ -38,6 +41,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   View* GetContentsView() override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
   void GetAccessibleState(ui::AXViewState* state) override;
+  const char* GetClassName() const override;
 
   // WidgetObserver overrides:
   void OnWidgetDestroying(Widget* widget) override;
