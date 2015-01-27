@@ -1,7 +1,8 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "base/debug/trace_event_win.h"
+
+#include "base/trace_event/trace_event_win.h"
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"

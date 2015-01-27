@@ -2,58 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// In the process of moving the trace event files. Right now the headers
+// are being forwarded. In next CLs the change will get completed
+// TODO(ssid): https://code.google.com/p/chromium/issues/detail?id=451032
+
 #ifndef BASE_DEBUG_TRACE_EVENT_ARGUMENT_H_
 #define BASE_DEBUG_TRACE_EVENT_ARGUMENT_H_
 
-#include <string>
-#include <vector>
+#include "base/trace_event/trace_event_argument.h"
 
-#include "base/debug/trace_event.h"
-#include "base/memory/scoped_ptr.h"
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-class Value;
-
-namespace debug {
-
-class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
- public:
-  TracedValue();
-
-  void EndDictionary();
-  void EndArray();
-
-  void SetInteger(const char* name, int value);
-  void SetDouble(const char* name, double);
-  void SetBoolean(const char* name, bool value);
-  void SetString(const char* name, const std::string& value);
-  void SetValue(const char* name, Value* value);
-  void BeginDictionary(const char* name);
-  void BeginArray(const char* name);
-
-  void AppendInteger(int);
-  void AppendDouble(double);
-  void AppendBoolean(bool);
-  void AppendString(const std::string&);
-  void BeginArray();
-  void BeginDictionary();
-
-  void AppendAsTraceFormat(std::string* out) const override;
-
- private:
-  ~TracedValue() override;
-
-  DictionaryValue* GetCurrentDictionary();
-  ListValue* GetCurrentArray();
-
-  scoped_ptr<base::Value> root_;
-  std::vector<Value*> stack_;
-  DISALLOW_COPY_AND_ASSIGN(TracedValue);
-};
-
-}  // namespace debug
-}  // namespace base
-
-#endif  // BASE_DEBUG_TRACE_EVENT_ARGUMENT_H_
+#endif // BASE_DEBUG_TRACE_EVENT_ARGUMENT_H_

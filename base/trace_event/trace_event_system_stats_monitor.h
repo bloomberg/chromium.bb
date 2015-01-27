@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_DEBUG_TRACE_EVENT_SYSTEM_STATS_MONITOR_H_
-#define BASE_DEBUG_TRACE_EVENT_SYSTEM_STATS_MONITOR_H_
+#ifndef BASE_TRACE_EVENT_TRACE_EVENT_SYSTEM_STATS_MONITOR_H_
+#define BASE_TRACE_EVENT_TRACE_EVENT_SYSTEM_STATS_MONITOR_H_
 
 #include "base/base_export.h"
-#include "base/debug/trace_event_impl.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_metrics.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event_impl.h"
 
 namespace base {
 
@@ -72,4 +72,4 @@ BASE_EXPORT void AppendSystemProfileAsTraceFormat(const SystemMetrics&
 }  // namespace debug
 }  // namespace base
 
-#endif  // BASE_DEBUG_TRACE_EVENT_SYSTEM_STATS_MONITOR_H_
+#endif  // BASE_TRACE_EVENT_TRACE_EVENT_SYSTEM_STATS_MONITOR_H_

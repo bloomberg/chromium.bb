@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/debug/trace_event_impl.h"
+#include "base/trace_event/trace_event_impl.h"
 
 #include <algorithm>
 
@@ -10,8 +10,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/float_util.h"
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
@@ -33,9 +31,11 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_synthetic_delay.h"
 
 #if defined(OS_WIN)
-#include "base/debug/trace_event_win.h"
+#include "base/trace_event/trace_event_win.h"
 #endif
 
 class DeleteTraceLogForTesting {

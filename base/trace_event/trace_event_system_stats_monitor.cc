@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/debug/trace_event_system_stats_monitor.h"
+#include "base/trace_event/trace_event_system_stats_monitor.h"
 
 #include "base/debug/leak_annotations.h"
-#include "base/debug/trace_event.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -14,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local_storage.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 namespace debug {

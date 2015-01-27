@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_DEBUG_TRACE_EVENT_MEMORY_H_
-#define BASE_DEBUG_TRACE_EVENT_MEMORY_H_
+#ifndef BASE_TRACE_EVENT_TRACE_EVENT_MEMORY_H_
+#define BASE_TRACE_EVENT_TRACE_EVENT_MEMORY_H_
 
 #include "base/base_export.h"
-#include "base/debug/trace_event_impl.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event_impl.h"
 
 // TODO(jamescook): Windows support for memory tracing.
 #if !defined(NO_TCMALLOC) && !defined(OS_NACL) && \
@@ -169,4 +169,4 @@ BASE_EXPORT const char* StringFromHexAddress(const std::string& hex_address);
 // visualizer skips them. Must match the value in heap.js.
 #define TRACE_MEMORY_IGNORE "trace-memory-ignore"
 
-#endif  // BASE_DEBUG_TRACE_EVENT_MEMORY_H_
+#endif  // BASE_TRACE_EVENT_TRACE_EVENT_MEMORY_H_
