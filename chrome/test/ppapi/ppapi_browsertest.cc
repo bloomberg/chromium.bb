@@ -1304,13 +1304,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, View) {
   RUN_VIEW_SUBTESTS;
 }
-// Disabled due to flakiness under MSAN. See http://crbug.com/450908.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_View DISABLED_View
-#else
-#define MAYBE_View View
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(MAYBE_View)) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(View)) {
   RUN_VIEW_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, View) {

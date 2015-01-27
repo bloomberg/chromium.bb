@@ -14,7 +14,7 @@
 REGISTER_TEST_CASE(View);
 
 // When waiting for view changed events, wait no longer than this.
-#if !defined(THREAD_SANITIZER)
+#if !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER)
 static int kViewChangeTimeoutSec = 5;
 #else
 // ThreadSanitizer may slow the interaction down significantly.
