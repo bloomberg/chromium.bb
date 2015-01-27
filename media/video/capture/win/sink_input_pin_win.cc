@@ -66,6 +66,15 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
       break;
     }
     case 2: {
+      pvi->bmiHeader.biCompression = MAKEFOURCC('M', 'J', 'P', 'G');
+      pvi->bmiHeader.biBitCount = 0;
+      pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
+      pvi->bmiHeader.biHeight = requested_format_.frame_size.height();
+      pvi->bmiHeader.biSizeImage = 0;
+      media_type->subtype = MEDIASUBTYPE_MJPG;
+      break;
+    }
+    case 3: {
       pvi->bmiHeader.biCompression = BI_RGB;
       pvi->bmiHeader.biBitCount = 24;
       pvi->bmiHeader.biWidth = requested_format_.frame_size.width();
@@ -116,6 +125,11 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
   if (sub_type == MEDIASUBTYPE_YUY2 &&
       pvi->bmiHeader.biCompression == MAKEFOURCC('Y', 'U', 'Y', '2')) {
     resulting_format_.pixel_format = PIXEL_FORMAT_YUY2;
+    return true;  // This format is acceptable.
+  }
+  if (sub_type == MEDIASUBTYPE_MJPG &&
+      pvi->bmiHeader.biCompression == MAKEFOURCC('M', 'J', 'P', 'G')) {
+    resulting_format_.pixel_format = PIXEL_FORMAT_MJPEG;
     return true;  // This format is acceptable.
   }
   if (sub_type == MEDIASUBTYPE_RGB24 &&

@@ -232,9 +232,6 @@ VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
     if (capture_filter_.get())
       graph_builder_->RemoveFilter(capture_filter_.get());
 
-    if (mjpg_filter_.get())
-      graph_builder_->RemoveFilter(mjpg_filter_.get());
-
     if (crossbar_filter_.get())
       graph_builder_->RemoveFilter(crossbar_filter_.get());
   }
@@ -372,35 +369,9 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     }
   }
 
-  if (format.pixel_format == PIXEL_FORMAT_MJPEG && !mjpg_filter_.get()) {
-    // Create MJPG filter if we need it.
-    hr = mjpg_filter_.CreateInstance(CLSID_MjpegDec, NULL, CLSCTX_INPROC);
-
-    if (SUCCEEDED(hr)) {
-      input_mjpg_pin_ =
-          GetPin(mjpg_filter_.get(), PINDIR_INPUT, GUID_NULL, GUID_NULL);
-      output_mjpg_pin_ =
-          GetPin(mjpg_filter_.get(), PINDIR_OUTPUT, GUID_NULL, GUID_NULL);
-      hr = graph_builder_->AddFilter(mjpg_filter_.get(), NULL);
-    }
-
-    if (FAILED(hr)) {
-      mjpg_filter_.Release();
-      input_mjpg_pin_.Release();
-      output_mjpg_pin_.Release();
-    }
-  }
-
   SetAntiFlickerInCaptureFilter();
 
-  if (format.pixel_format == PIXEL_FORMAT_MJPEG && mjpg_filter_.get()) {
-    // Connect the camera to the MJPEG decoder.
-    hr = graph_builder_->ConnectDirect(output_capture_pin_.get(),
-                                       input_mjpg_pin_.get(), NULL);
-    // Connect the MJPEG filter to the Capture filter.
-    hr += graph_builder_->ConnectDirect(output_mjpg_pin_.get(),
-                                        input_sink_pin_.get(), NULL);
-  } else if (media_type->subtype == kMediaSubTypeHDYC) {
+  if (media_type->subtype == kMediaSubTypeHDYC) {
     // HDYC pixel format, used by the DeckLink capture card, needs an AVI
     // decompressor filter after source, let |graph_builder_| add it.
     hr = graph_builder_->Connect(output_capture_pin_.get(),
@@ -450,11 +421,6 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
   graph_builder_->Disconnect(output_capture_pin_.get());
   graph_builder_->Disconnect(input_sink_pin_.get());
 
-  // If the _mjpg filter exist disconnect it even if it has not been used.
-  if (mjpg_filter_.get()) {
-    graph_builder_->Disconnect(input_mjpg_pin_.get());
-    graph_builder_->Disconnect(output_mjpg_pin_.get());
-  }
   if (crossbar_filter_.get()) {
     graph_builder_->Disconnect(analog_video_input_pin_.get());
     graph_builder_->Disconnect(crossbar_video_output_pin_.get());

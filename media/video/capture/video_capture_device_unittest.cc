@@ -37,9 +37,7 @@
 #define MAYBE_CaptureMjpeg DISABLED_CaptureMjpeg
 #elif defined(OS_WIN)
 #define MAYBE_AllocateBadSize AllocateBadSize
-// Windows currently uses DirectShow to convert from MJPEG and a raw format is
-// always delivered.
-#define MAYBE_CaptureMjpeg DISABLED_CaptureMjpeg
+#define MAYBE_CaptureMjpeg CaptureMjpeg
 #elif defined(OS_ANDROID)
 // TODO(wjia): enable those tests on Android.
 // On Android, native camera (JAVA) delivers frames on UI thread which is the
@@ -81,6 +79,8 @@ class MockClient : public media::VideoCaptureDevice::Client {
                                       const VideoCaptureFormat& format,
                                       int rotation,
                                       base::TimeTicks timestamp) override {
+    ASSERT_GT(length, 0);
+    ASSERT_TRUE(data != NULL);
     main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
   }
 
