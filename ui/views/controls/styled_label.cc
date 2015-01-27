@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/styled_label.h"
 
+#include <limits>
 #include <vector>
 
 #include "base/strings/string_util.h"
@@ -99,6 +100,7 @@ StyledLabel::StyledLabel(const base::string16& text,
                          StyledLabelListener* listener)
     : specified_line_height_(0),
       listener_(listener),
+      width_at_last_size_calculation_(0),
       width_at_last_layout_(0),
       displayed_on_background_color_(SkColorSetRGB(0xFF, 0xFF, 0xFF)),
       displayed_on_background_color_set_(false),
@@ -159,6 +161,13 @@ void StyledLabel::SetDisplayedOnBackgroundColor(SkColor color) {
   }
 }
 
+void StyledLabel::SizeToFit(int max_width) {
+  if (max_width == 0)
+    max_width = std::numeric_limits<int>::max();
+
+  SetSize(CalculateAndDoLayout(max_width, true));
+}
+
 const char* StyledLabel::GetClassName() const {
   return kViewClassName;
 }
@@ -182,23 +191,26 @@ gfx::Insets StyledLabel::GetInsets() const {
   return insets;
 }
 
+gfx::Size StyledLabel::GetPreferredSize() const {
+  return calculated_size_;
+}
+
 int StyledLabel::GetHeightForWidth(int w) const {
   // TODO(erg): Munge the const-ness of the style label. CalculateAndDoLayout
   // doesn't actually make any changes to member variables when |dry_run| is
   // set to true. In general, the mutating and non-mutating parts shouldn't
   // be in the same codepath.
-  calculated_size_ =
-      const_cast<StyledLabel*>(this)->CalculateAndDoLayout(w, true);
-  return calculated_size_.height();
+  return const_cast<StyledLabel*>(this)->CalculateAndDoLayout(w, true).height();
 }
 
 void StyledLabel::Layout() {
-  calculated_size_ = CalculateAndDoLayout(GetLocalBounds().width(), false);
-  width_at_last_layout_ = calculated_size_.width();
+  CalculateAndDoLayout(GetLocalBounds().width(), false);
 }
 
 void StyledLabel::PreferredSizeChanged() {
   calculated_size_ = gfx::Size();
+  width_at_last_size_calculation_ = 0;
+  width_at_last_layout_ = 0;
   View::PreferredSizeChanged();
 }
 
@@ -208,10 +220,15 @@ void StyledLabel::LinkClicked(Link* source, int event_flags) {
 }
 
 gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
-  width -= GetInsets().width();
-  if (width == calculated_size_.width() &&
-      (dry_run || width_at_last_layout_ == width))
+  if (width == width_at_last_size_calculation_ &&
+      (dry_run || width == width_at_last_layout_))
     return calculated_size_;
+
+  width_at_last_size_calculation_ = width;
+  if (!dry_run)
+    width_at_last_layout_ = width;
+
+  width -= GetInsets().width();
 
   if (!dry_run) {
     RemoveAllChildViews(true);
@@ -228,6 +245,8 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
   // The x position (in pixels) of the line we're on, relative to content
   // bounds.
   int x = 0;
+  // The width that was actually used. Guaranteed to be no larger than |width|.
+  int used_width = 0;
 
   base::string16 remaining_string = text_;
   StyleRanges::const_iterator current_range = style_ranges_.begin();
@@ -333,15 +352,18 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       AddChildView(label.release());
     }
     x += view_size.width() - focus_border_insets.width();
+    used_width = std::max(used_width, x);
 
     remaining_string = remaining_string.substr(chunk.size());
   }
 
+  DCHECK_LE(used_width, width);
   // The user-specified line height only applies to interline spacing, so the
   // final line's height is unaffected.
   int total_height = line * line_height +
       CalculateLineHeight(font_list_) + GetInsets().height();
-  return gfx::Size(width, total_height);
+  calculated_size_ = gfx::Size(used_width + GetInsets().width(), total_height);
+  return calculated_size_;
 }
 
 }  // namespace views

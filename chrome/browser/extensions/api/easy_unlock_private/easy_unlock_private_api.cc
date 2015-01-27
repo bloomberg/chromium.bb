@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h"
@@ -17,13 +18,17 @@
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
+#include "chrome/browser/ui/proximity_auth/proximity_auth_error_bubble.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/proximity_auth/bluetooth_util.h"
 #include "components/proximity_auth/switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/range/range.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chromeos_utils.h"
@@ -299,11 +304,15 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
   strings->SetString(
       "setupErrorFindingPhone",
       l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_ERROR_FINDING_PHONE));
+  // TODO(isherman): Remove the setupErrorBluetoothConnectionFailed string; it
+  // is unused.
   strings->SetString(
       "setupErrorBluetoothConnectionFailed",
       l10n_util::GetStringFUTF16(
           IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_CONNECTION_FAILED,
           device_type));
+  // TODO(isherman): Remove the setupErrorConnectionToPhoneTimeout string; it is
+  // identical to the setupErrorConnectingToPhone string, and hence obsolete.
   strings->SetString(
       "setupErrorConnectionToPhoneTimeout",
        l10n_util::GetStringFUTF16(
@@ -740,6 +749,49 @@ void EasyUnlockPrivateGetConnectionInfoFunction::OnConnectionInfo(
   results->AppendInteger(connection_info.max_transmit_power);
   SetResultList(results.Pass());
   SendResponse(true);
+}
+
+EasyUnlockPrivateShowErrorBubbleFunction::
+    EasyUnlockPrivateShowErrorBubbleFunction() {
+}
+
+EasyUnlockPrivateShowErrorBubbleFunction::
+    ~EasyUnlockPrivateShowErrorBubbleFunction() {
+}
+
+bool EasyUnlockPrivateShowErrorBubbleFunction::RunSync() {
+  content::WebContents* web_contents = GetAssociatedWebContents();
+  if (!web_contents) {
+    SetError("A foreground app window is required.");
+    return true;
+  }
+
+  scoped_ptr<easy_unlock_private::ShowErrorBubble::Params> params(
+      easy_unlock_private::ShowErrorBubble::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (params->link_range.start < 0 ||
+      params->link_range.end < 0 ||
+      base::saturated_cast<size_t>(params->link_range.end) >
+          params->message.size()) {
+    SetError("Invalid link range.");
+    return true;
+  }
+
+#if defined(TOOLKIT_VIEWS)
+  gfx::Rect anchor_rect(
+      params->anchor_rect.left, params->anchor_rect.top,
+      params->anchor_rect.width, params->anchor_rect.height);
+  anchor_rect +=
+      web_contents->GetContainerBounds().OffsetFromOrigin();
+  ShowProximityAuthErrorBubble(
+      base::UTF8ToUTF16(params->message),
+      gfx::Range(params->link_range.start, params->link_range.end),
+      GURL(params->link_target), anchor_rect, web_contents);
+#else
+  SetError("Not supported on non-Views platforms.");
+#endif
+  return true;
 }
 
 }  // namespace api

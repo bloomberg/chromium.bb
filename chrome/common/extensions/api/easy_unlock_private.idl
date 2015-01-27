@@ -148,6 +148,20 @@ namespace easyUnlockPrivate {
     boolean dataReady;
   };
 
+  // A range.
+  dictionary Range {
+    long start;
+    long end;
+  };
+
+  // A rectangle, in screen coordinates, measured in device-independent pixels.
+  dictionary Rect {
+    long left;
+    long top;
+    long width;
+    long height;
+  };
+
   // Callback for crypto methods that return a single array buffer.
   callback DataCallback = void(optional ArrayBuffer data);
 
@@ -324,6 +338,17 @@ namespace easyUnlockPrivate {
     // deviceAddress.
     static void getConnectionInfo(DOMString deviceAddress,
                                   ConnectionInfoCallback callback);
+
+    // Shows an error bubble with the given |message|, anchored to an edge of
+    // the given |anchorRect| -- typically the right edge, but possibly a
+    // different edge if there is not space for the bubble to the right of the
+    // anchor rectangle. If the |link_range| is non-empty, renders the text
+    // within the |message| that is contained in the |link_range| as a link with
+    // the given |link_target| URL.
+    static void showErrorBubble(DOMString message,
+                                Range link_range,
+                                DOMString link_target,
+                                Rect anchorRect);
   };
 
   interface Events {

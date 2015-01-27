@@ -353,6 +353,21 @@ class EasyUnlockPrivateGetConnectionInfoFunction
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetConnectionInfoFunction);
 };
 
+class EasyUnlockPrivateShowErrorBubbleFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.showErrorBubble",
+                             EASYUNLOCKPRIVATE_SHOWERRORBUBBLE)
+  EasyUnlockPrivateShowErrorBubbleFunction();
+
+ private:
+  ~EasyUnlockPrivateShowErrorBubbleFunction() override;
+
+  // SyncExtensionFunction:
+  bool RunSync() override;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateShowErrorBubbleFunction);
+};
+
 }  // namespace api
 }  // namespace extensions
 
