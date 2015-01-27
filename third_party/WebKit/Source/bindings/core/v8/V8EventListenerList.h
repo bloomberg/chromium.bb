@@ -79,7 +79,7 @@ private:
 
     static inline v8::Handle<v8::String> getHiddenProperty(bool isAttribute, v8::Isolate* isolate)
     {
-        return isAttribute ? v8AtomicString(isolate, "attributeListener") : v8AtomicString(isolate, "listener");
+        return isAttribute ? v8AtomicString(isolate, "EventListenerList::attributeListener") : v8AtomicString(isolate, "EventListenerList::listener");
     }
 };
 
