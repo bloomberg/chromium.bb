@@ -19,11 +19,11 @@
 #include "media/base/limits.h"
 #include "media/base/video_decoder.h"
 #include "media/filters/ffmpeg_video_decoder.h"
+#include "media/filters/skcanvas_video_renderer.h"
 #include "media/filters/vpx_video_decoder.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_errors.h"
-#include "third_party/libyuv/include/libyuv.h"
 #include "webkit/common/gpu/context_provider_web_context.h"
 
 namespace content {
@@ -272,16 +272,10 @@ void VideoDecoderShim::DecoderImpl::OnOutputComplete(
     pending_frame.reset(new PendingFrame(
         decode_id_, frame->coded_size(), frame->visible_rect()));
     // Convert the VideoFrame pixels to ABGR to match VideoDecodeAccelerator.
-    libyuv::I420ToABGR(frame->data(media::VideoFrame::kYPlane),
-                       frame->stride(media::VideoFrame::kYPlane),
-                       frame->data(media::VideoFrame::kUPlane),
-                       frame->stride(media::VideoFrame::kUPlane),
-                       frame->data(media::VideoFrame::kVPlane),
-                       frame->stride(media::VideoFrame::kVPlane),
-                       &pending_frame->argb_pixels.front(),
-                       frame->coded_size().width() * 4,
-                       frame->coded_size().width(),
-                       frame->coded_size().height());
+    media::SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
+        frame,
+        &pending_frame->argb_pixels.front(),
+        frame->coded_size().width() * 4);
   } else {
     pending_frame.reset(new PendingFrame(decode_id_));
   }

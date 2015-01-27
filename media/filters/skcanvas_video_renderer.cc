@@ -91,155 +91,6 @@ bool IsYUVOrNative(media::VideoFrame::Format format) {
   return IsYUV(format) || format == media::VideoFrame::NATIVE_TEXTURE;
 }
 
-// Converts a |video_frame| to raw |rgb_pixels|.
-void ConvertVideoFrameToRGBPixels(
-    const scoped_refptr<media::VideoFrame>& video_frame,
-    void* rgb_pixels,
-    size_t row_bytes) {
-  DCHECK(IsYUVOrNative(video_frame->format()))
-      << video_frame->format();
-  if (IsYUV(video_frame->format())) {
-    DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
-              video_frame->stride(media::VideoFrame::kVPlane));
-  }
-
-  size_t y_offset = 0;
-  size_t uv_offset = 0;
-  if (IsYUV(video_frame->format())) {
-    int y_shift = (video_frame->format() == media::VideoFrame::YV16) ? 0 : 1;
-    // Use the "left" and "top" of the destination rect to locate the offset
-    // in Y, U and V planes.
-    y_offset = (video_frame->stride(media::VideoFrame::kYPlane) *
-                video_frame->visible_rect().y()) +
-                video_frame->visible_rect().x();
-    // For format YV12, there is one U, V value per 2x2 block.
-    // For format YV16, there is one U, V value per 2x1 block.
-    uv_offset = (video_frame->stride(media::VideoFrame::kUPlane) *
-                (video_frame->visible_rect().y() >> y_shift)) +
-                (video_frame->visible_rect().x() >> 1);
-  }
-
-  switch (video_frame->format()) {
-    case VideoFrame::YV12:
-    case VideoFrame::I420:
-      LIBYUV_I420_TO_ARGB(
-          video_frame->data(VideoFrame::kYPlane) + y_offset,
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->data(VideoFrame::kUPlane) + uv_offset,
-          video_frame->stride(VideoFrame::kUPlane),
-          video_frame->data(VideoFrame::kVPlane) + uv_offset,
-          video_frame->stride(VideoFrame::kVPlane),
-          static_cast<uint8*>(rgb_pixels),
-          row_bytes,
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height());
-      break;
-
-    case VideoFrame::YV12J:
-      ConvertYUVToRGB32(
-          video_frame->data(VideoFrame::kYPlane) + y_offset,
-          video_frame->data(VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(VideoFrame::kVPlane) + uv_offset,
-          static_cast<uint8*>(rgb_pixels),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->stride(VideoFrame::kUPlane),
-          row_bytes,
-          YV12J);
-      break;
-
-    case VideoFrame::YV12HD:
-      ConvertYUVToRGB32(
-          video_frame->data(VideoFrame::kYPlane) + y_offset,
-          video_frame->data(VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(VideoFrame::kVPlane) + uv_offset,
-          static_cast<uint8*>(rgb_pixels),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->stride(VideoFrame::kUPlane),
-          row_bytes,
-          YV12HD);
-      break;
-
-    case VideoFrame::YV16:
-      LIBYUV_I422_TO_ARGB(
-          video_frame->data(VideoFrame::kYPlane) + y_offset,
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->data(VideoFrame::kUPlane) + uv_offset,
-          video_frame->stride(VideoFrame::kUPlane),
-          video_frame->data(VideoFrame::kVPlane) + uv_offset,
-          video_frame->stride(VideoFrame::kVPlane),
-          static_cast<uint8*>(rgb_pixels),
-          row_bytes,
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height());
-      break;
-
-    case VideoFrame::YV12A:
-      // Since libyuv doesn't support YUVA, fallback to media, which is not ARM
-      // optimized.
-      // TODO(fbarchard, mtomasz): Use libyuv, then copy the alpha channel.
-      ConvertYUVAToARGB(
-          video_frame->data(VideoFrame::kYPlane) + y_offset,
-          video_frame->data(VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(VideoFrame::kVPlane) + uv_offset,
-          video_frame->data(VideoFrame::kAPlane),
-          static_cast<uint8*>(rgb_pixels),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->stride(VideoFrame::kUPlane),
-          video_frame->stride(VideoFrame::kAPlane),
-          row_bytes,
-          YV12);
-      break;
-
-    case VideoFrame::YV24:
-      libyuv::I444ToARGB(
-          video_frame->data(VideoFrame::kYPlane) + y_offset,
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->data(VideoFrame::kUPlane) + uv_offset,
-          video_frame->stride(VideoFrame::kUPlane),
-          video_frame->data(VideoFrame::kVPlane) + uv_offset,
-          video_frame->stride(VideoFrame::kVPlane),
-          static_cast<uint8*>(rgb_pixels),
-          row_bytes,
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height());
-#if SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
-    SK_A32_SHIFT == 24
-      libyuv::ARGBToABGR(static_cast<uint8*>(rgb_pixels),
-                         row_bytes,
-                         static_cast<uint8*>(rgb_pixels),
-                         row_bytes,
-                         video_frame->visible_rect().width(),
-                         video_frame->visible_rect().height());
-#endif
-      break;
-
-    case VideoFrame::NATIVE_TEXTURE: {
-      SkBitmap tmp;
-      tmp.installPixels(
-          SkImageInfo::MakeN32Premul(video_frame->visible_rect().width(),
-                                     video_frame->visible_rect().height()),
-          rgb_pixels,
-          row_bytes);
-      video_frame->ReadPixelsFromNativeTexture(tmp);
-      break;
-    }
-
-#if defined(VIDEO_HOLE)
-    case VideoFrame::HOLE:
-#endif  // defined(VIDEO_HOLE)
-    case VideoFrame::ARGB:
-    case VideoFrame::UNKNOWN:
-    case VideoFrame::NV12:
-      NOTREACHED();
-  }
-}
-
 bool IsSkBitmapProperlySizedTexture(const SkBitmap* bitmap,
                                     const gfx::Size& size) {
   return bitmap->getTexture() && bitmap->width() == size.width() &&
@@ -344,7 +195,8 @@ class VideoImageGenerator : public SkImageGenerator {
     if (!pixels)
       return false;
     // If skia couldn't do the YUV conversion on GPU, we will on CPU.
-    ConvertVideoFrameToRGBPixels(frame_, pixels, row_bytes);
+    SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
+        frame_, pixels, row_bytes);
     return true;
   }
 
@@ -569,6 +421,155 @@ void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
                                  SkCanvas* canvas) {
   Paint(video_frame, canvas, video_frame->visible_rect(), 0xff,
         SkXfermode::kSrc_Mode, media::VIDEO_ROTATION_0, Context3D());
+}
+
+// static
+void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
+    const scoped_refptr<media::VideoFrame>& video_frame,
+    void* rgb_pixels,
+    size_t row_bytes) {
+  DCHECK(IsYUVOrNative(video_frame->format()))
+      << video_frame->format();
+  if (IsYUV(video_frame->format())) {
+    DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
+              video_frame->stride(media::VideoFrame::kVPlane));
+  }
+
+  size_t y_offset = 0;
+  size_t uv_offset = 0;
+  if (IsYUV(video_frame->format())) {
+    int y_shift = (video_frame->format() == media::VideoFrame::YV16) ? 0 : 1;
+    // Use the "left" and "top" of the destination rect to locate the offset
+    // in Y, U and V planes.
+    y_offset = (video_frame->stride(media::VideoFrame::kYPlane) *
+                video_frame->visible_rect().y()) +
+                video_frame->visible_rect().x();
+    // For format YV12, there is one U, V value per 2x2 block.
+    // For format YV16, there is one U, V value per 2x1 block.
+    uv_offset = (video_frame->stride(media::VideoFrame::kUPlane) *
+                (video_frame->visible_rect().y() >> y_shift)) +
+                (video_frame->visible_rect().x() >> 1);
+  }
+
+  switch (video_frame->format()) {
+    case VideoFrame::YV12:
+    case VideoFrame::I420:
+      LIBYUV_I420_TO_ARGB(
+          video_frame->data(VideoFrame::kYPlane) + y_offset,
+          video_frame->stride(VideoFrame::kYPlane),
+          video_frame->data(VideoFrame::kUPlane) + uv_offset,
+          video_frame->stride(VideoFrame::kUPlane),
+          video_frame->data(VideoFrame::kVPlane) + uv_offset,
+          video_frame->stride(VideoFrame::kVPlane),
+          static_cast<uint8*>(rgb_pixels),
+          row_bytes,
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height());
+      break;
+
+    case VideoFrame::YV12J:
+      ConvertYUVToRGB32(
+          video_frame->data(VideoFrame::kYPlane) + y_offset,
+          video_frame->data(VideoFrame::kUPlane) + uv_offset,
+          video_frame->data(VideoFrame::kVPlane) + uv_offset,
+          static_cast<uint8*>(rgb_pixels),
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height(),
+          video_frame->stride(VideoFrame::kYPlane),
+          video_frame->stride(VideoFrame::kUPlane),
+          row_bytes,
+          YV12J);
+      break;
+
+    case VideoFrame::YV12HD:
+      ConvertYUVToRGB32(
+          video_frame->data(VideoFrame::kYPlane) + y_offset,
+          video_frame->data(VideoFrame::kUPlane) + uv_offset,
+          video_frame->data(VideoFrame::kVPlane) + uv_offset,
+          static_cast<uint8*>(rgb_pixels),
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height(),
+          video_frame->stride(VideoFrame::kYPlane),
+          video_frame->stride(VideoFrame::kUPlane),
+          row_bytes,
+          YV12HD);
+      break;
+
+    case VideoFrame::YV16:
+      LIBYUV_I422_TO_ARGB(
+          video_frame->data(VideoFrame::kYPlane) + y_offset,
+          video_frame->stride(VideoFrame::kYPlane),
+          video_frame->data(VideoFrame::kUPlane) + uv_offset,
+          video_frame->stride(VideoFrame::kUPlane),
+          video_frame->data(VideoFrame::kVPlane) + uv_offset,
+          video_frame->stride(VideoFrame::kVPlane),
+          static_cast<uint8*>(rgb_pixels),
+          row_bytes,
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height());
+      break;
+
+    case VideoFrame::YV12A:
+      // Since libyuv doesn't support YUVA, fallback to media, which is not ARM
+      // optimized.
+      // TODO(fbarchard, mtomasz): Use libyuv, then copy the alpha channel.
+      ConvertYUVAToARGB(
+          video_frame->data(VideoFrame::kYPlane) + y_offset,
+          video_frame->data(VideoFrame::kUPlane) + uv_offset,
+          video_frame->data(VideoFrame::kVPlane) + uv_offset,
+          video_frame->data(VideoFrame::kAPlane),
+          static_cast<uint8*>(rgb_pixels),
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height(),
+          video_frame->stride(VideoFrame::kYPlane),
+          video_frame->stride(VideoFrame::kUPlane),
+          video_frame->stride(VideoFrame::kAPlane),
+          row_bytes,
+          YV12);
+      break;
+
+    case VideoFrame::YV24:
+      libyuv::I444ToARGB(
+          video_frame->data(VideoFrame::kYPlane) + y_offset,
+          video_frame->stride(VideoFrame::kYPlane),
+          video_frame->data(VideoFrame::kUPlane) + uv_offset,
+          video_frame->stride(VideoFrame::kUPlane),
+          video_frame->data(VideoFrame::kVPlane) + uv_offset,
+          video_frame->stride(VideoFrame::kVPlane),
+          static_cast<uint8*>(rgb_pixels),
+          row_bytes,
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height());
+#if SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
+    SK_A32_SHIFT == 24
+      libyuv::ARGBToABGR(static_cast<uint8*>(rgb_pixels),
+                         row_bytes,
+                         static_cast<uint8*>(rgb_pixels),
+                         row_bytes,
+                         video_frame->visible_rect().width(),
+                         video_frame->visible_rect().height());
+#endif
+      break;
+
+    case VideoFrame::NATIVE_TEXTURE: {
+      SkBitmap tmp;
+      tmp.installPixels(
+          SkImageInfo::MakeN32Premul(video_frame->visible_rect().width(),
+                                     video_frame->visible_rect().height()),
+          rgb_pixels,
+          row_bytes);
+      video_frame->ReadPixelsFromNativeTexture(tmp);
+      break;
+    }
+
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+    case VideoFrame::ARGB:
+    case VideoFrame::UNKNOWN:
+    case VideoFrame::NV12:
+      NOTREACHED();
+  }
 }
 
 // static

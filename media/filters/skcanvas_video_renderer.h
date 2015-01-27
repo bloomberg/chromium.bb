@@ -46,6 +46,14 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   // Copy |video_frame| on |canvas|.
   void Copy(const scoped_refptr<VideoFrame>&, SkCanvas* canvas);
 
+  // Convert the contents of |video_frame| to raw RGB pixels. |rgb_pixels|
+  // should point into a buffer large enough to hold as many 32 bit RGBA pixels
+  // as are in the visible_rect() area of the frame.
+  static void ConvertVideoFrameToRGBPixels(
+      const scoped_refptr<media::VideoFrame>& video_frame,
+      void* rgb_pixels,
+      size_t row_bytes);
+
   // Copy the contents of texture of |video_frame| to texture |texture|.
   // |level|, |internal_format|, |type| specify target texture |texture|.
   // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
