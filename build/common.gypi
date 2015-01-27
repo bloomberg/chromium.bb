@@ -3544,7 +3544,7 @@
       },
     }],
     # TODO(thakis): Enable this everywhere. http://crbug.com/371125
-    ['(OS=="linux" or OS=="android") and asan==0 and msan==0 and tsan==0 and ubsan==0 and ubsan_vptr==0 and use_ozone!=1 and target_arch!="mipsel"', {
+    ['(OS=="linux" or OS=="android") and asan==0 and msan==0 and tsan==0 and ubsan==0 and ubsan_vptr==0 and use_ozone!=1', {
       'target_defaults': {
         'ldflags': [
           '-Wl,-z,defs',

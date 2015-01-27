@@ -350,10 +350,7 @@ config("compiler") {
       "-Wl,-z,now",
       "-Wl,-z,relro",
     ]
-
-    # TODO(zork): The mipsel build is broken in ffmpeg, guard this flag for now
-    # to hide the breakage. https://crbug.com/450771
-    if (!using_sanitizer && cpu_arch != "mipsel") {
+    if (!using_sanitizer) {
       ldflags += [ "-Wl,-z,defs" ]
     }
   }
