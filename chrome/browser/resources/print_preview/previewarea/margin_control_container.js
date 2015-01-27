@@ -14,11 +14,15 @@ cr.define('print_preview', function() {
    *     Used to read and write custom margin values.
    * @param {!print_preview.MeasurementSystem} measurementSystem Used to convert
    *     between the system's local units and points.
+   * @param {function(boolean)} dragChangedCallback A function which is called
+   *     when dragging margins starts or stops. True is passed to the function
+   *     if the margin is currently being dragged and false otherwise.
    * @constructor
    * @extends {print_preview.Component}
    */
   function MarginControlContainer(documentInfo, marginsTypeTicketItem,
-                                  customMarginsTicketItem, measurementSystem) {
+                                  customMarginsTicketItem, measurementSystem,
+                                  dragChangedCallback) {
     print_preview.Component.call(this);
 
     /**
@@ -46,6 +50,15 @@ cr.define('print_preview', function() {
      * @private
      */
     this.measurementSystem_ = measurementSystem;
+
+    /**
+     * Called in response to dragging the margins starting or stopping. True is
+     * passed to the function if the margin is currently being dragged and false
+     * otherwise.
+     * @type {function(boolean)}
+     * @private
+     */
+    this.dragChangedCallback_ = dragChangedCallback;
 
     /**
      * Convenience array that contains all of the margin controls.
@@ -307,6 +320,7 @@ cr.define('print_preview', function() {
           MarginControlContainer.isTopOrBottom_(control.getOrientation()) ?
               MarginControlContainer.Classes_.DRAGGING_VERTICAL :
               MarginControlContainer.Classes_.DRAGGING_HORIZONTAL);
+      this.dragChangedCallback_(true);
     },
 
     /**
@@ -348,6 +362,7 @@ cr.define('print_preview', function() {
             this.draggedControl_.getOrientation(),
             this.draggedControl_.getPositionInPts());
         this.draggedControl_ = null;
+        this.dragChangedCallback_(false);
       }
     },
 

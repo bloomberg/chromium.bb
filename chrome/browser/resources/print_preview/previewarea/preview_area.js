@@ -108,7 +108,8 @@ cr.define('print_preview', function() {
         this.documentInfo_,
         this.printTicketStore_.marginsType,
         this.printTicketStore_.customMargins,
-        this.printTicketStore_.measurementSystem);
+        this.printTicketStore_.measurementSystem,
+        this.onMarginDragChanged_.bind(this));
     this.addChild(this.marginControlContainer_);
 
     /**
@@ -793,6 +794,22 @@ cr.define('print_preview', function() {
         this.marginControlContainer_.updateClippingMask(
             new print_preview.Size(viewportWidth, viewportHeight));
       }
+    },
+
+    /**
+     * Called when dragging margins starts or stops.
+     * @param {boolean} isDragging True if the margin is currently being dragged
+     *     and false otherwise.
+     */
+    onMarginDragChanged_: function(isDragging) {
+      if (!this.plugin_)
+        return;
+
+      // When hovering over the plugin (which may be in a separate iframe)
+      // pointer events will be sent to the frame. When dragging the margins,
+      // we don't want this to happen as it can cause the margin to stop
+      // being draggable.
+      this.plugin_.style.pointerEvents = isDragging ? 'none' : 'auto';
     }
   };
 
