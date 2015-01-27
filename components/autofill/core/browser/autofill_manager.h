@@ -128,6 +128,9 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void RemoveAutocompleteEntry(const base::string16& name,
                                const base::string16& value);
 
+  // Returns true when the Wallet card unmask prompt is being displayed.
+  bool IsShowingUnmaskPrompt();
+
   // Returns the present form structures seen by Autofill manager.
   const std::vector<FormStructure*>& GetFormStructures();
 

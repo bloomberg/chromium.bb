@@ -157,7 +157,6 @@ class AutofillAgent : public content::RenderFrameObserver,
                                 const base::string16& password);
   void OnPreviewPasswordSuggestion(const base::string16& username,
                                    const base::string16& password);
-  void OnPopupHidden();
 
   // Called when interactive autocomplete finishes. |message| is printed to
   // the console if non-empty.

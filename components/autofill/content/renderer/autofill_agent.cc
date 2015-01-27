@@ -173,7 +173,6 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnFillPasswordSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_PreviewPasswordSuggestion,
                         OnPreviewPasswordSuggestion)
-    IPC_MESSAGE_HANDLER(AutofillMsg_PopupHidden, OnPopupHidden)
     IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteResult,
                         OnRequestAutocompleteResult)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -557,11 +556,6 @@ void AutofillAgent::OnPreviewPasswordSuggestion(
       username,
       password);
   DCHECK(handled);
-}
-
-void AutofillAgent::OnPopupHidden() {
-  if (!element_.isNull())
-    OnClearPreviewedForm();
 }
 
 void AutofillAgent::OnRequestAutocompleteResult(

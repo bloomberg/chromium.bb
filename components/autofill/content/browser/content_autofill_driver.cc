@@ -146,10 +146,10 @@ void ContentAutofillDriver::RendererShouldPreviewFieldWithValue(
 }
 
 void ContentAutofillDriver::PopupHidden() {
-  if (!RendererIsAvailable())
-    return;
-  render_frame_host_->Send(
-      new AutofillMsg_PopupHidden(render_frame_host_->GetRoutingID()));
+  // If the unmask prompt is showing, keep showing the preview. The preview
+  // will be cleared when the prompt closes.
+  if (!autofill_manager_->IsShowingUnmaskPrompt())
+    RendererShouldClearPreviewedForm();
 }
 
 bool ContentAutofillDriver::HandleMessage(const IPC::Message& message) {
