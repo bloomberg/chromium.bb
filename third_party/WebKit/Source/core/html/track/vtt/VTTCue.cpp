@@ -756,21 +756,6 @@ VTTDisplayParameters VTTCue::calculateDisplayParameters() const
             displayParameters.position.setX(0);
     }
 
-    // FIXME: Remove this block.
-    if (!m_snapToLines) {
-        if (m_writingDirection == Horizontal && displayParameters.direction == CSSValueLtr)
-            displayParameters.position.setX(computedTextPosition);
-
-        if (m_writingDirection == Horizontal && displayParameters.direction == CSSValueRtl)
-            displayParameters.position.setX(100 - computedTextPosition);
-
-        if (m_writingDirection == VerticalGrowingLeft)
-            displayParameters.position = FloatPoint(100 - computedLinePosition, computedTextPosition);
-
-        if (m_writingDirection == VerticalGrowingRight)
-            displayParameters.position.setY(computedTextPosition);
-    }
-
     // Step 9 not implemented (margin == 0).
 
     ASSERT(std::isfinite(displayParameters.size));
