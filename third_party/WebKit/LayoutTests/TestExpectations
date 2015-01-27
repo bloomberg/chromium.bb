@@ -21,6 +21,10 @@ crbug.com/441639 virtual/slimmingpaint/fast/overflow/paged-x-with-column-gap.htm
 crbug.com/441639 [ Linux ] virtual/slimmingpaint/fast/overflow/paged-x-div-with-column-gap.html [ ImageOnlyFailure ]
 crbug.com/441639 [ Debug ] virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Pass Timeout ]
 
+crbug.com/450612 virtual/slimmingpaint/fast/table/wide-column.html [ NeedsRebaseline ]
+crbug.com/450612 virtual/slimmingpaint/fast/table/height-percent-test-vertical.html [ NeedsRebaseline ]
+crbug.com/450612 virtual/slimmingpaint/fast/table/border-collapsing/equal-precedence-resolution-vertical.html [ NeedsRebaseline ]
+
 # Restore after crbug.com/450612 rebases land.
 #crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 
