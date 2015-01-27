@@ -40,7 +40,13 @@ vars = {
   'pdfium_git': 'https://pdfium.googlesource.com',
   'skia_git': 'https://skia.googlesource.com',
   'boringssl_git': 'https://boringssl.googlesource.com',
-  'libvpx_revision': '5da40ca3395cd09443f3d4a3f8b86e495a6df364',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling libvpx
+  # and whatever else without interference from each other.
+  'libvpx_revision': 'cc9c0c5198e416173f480fb1f11e052f5c29a95b',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling libvpx
+  # and whatever else without interference from each other.
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
   'skia_revision': '36c57dfb4fe9bbaca436942d5eaa75b142ba251d',
   # Three lines of non-changing comments so that
