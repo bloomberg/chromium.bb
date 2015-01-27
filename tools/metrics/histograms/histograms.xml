@@ -47954,6 +47954,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="674" label="BlockedSniffingImageToScript"/>
   <int value="675" label="Fetch"/>
   <int value="676" label="FetchBodyStream"/>
+  <int value="677" label="XMLHttpRequestAsynchronous"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
