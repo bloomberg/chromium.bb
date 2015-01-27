@@ -237,7 +237,6 @@
         ['remoting==1', {
           'dependencies': [
             '../remoting/remoting.gyp:*',
-            '../remoting/app_remoting_webapp.gyp:*',
           ],
         }],
         ['use_openssl==0', {
