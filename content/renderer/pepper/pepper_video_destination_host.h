@@ -39,6 +39,11 @@ class CONTENT_EXPORT PepperVideoDestinationHost
   int32_t OnHostMsgClose(ppapi::host::HostMessageContext* context);
 
   scoped_ptr<FrameWriterInterface> frame_writer_;
+  // Used for checking that timestamps are strictly increasing.
+#if DCHECK_IS_ON()
+  bool has_received_frame_;
+  int64_t previous_timestamp_ns_;
+#endif
 
   base::WeakPtrFactory<PepperVideoDestinationHost> weak_factory_;
 

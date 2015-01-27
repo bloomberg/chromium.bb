@@ -24,6 +24,9 @@ PepperVideoDestinationHost::PepperVideoDestinationHost(RendererPpapiHost* host,
                                                        PP_Instance instance,
                                                        PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
+#if DCHECK_IS_ON()
+      has_received_frame_(false),
+#endif
       weak_factory_(this) {}
 
 PepperVideoDestinationHost::~PepperVideoDestinationHost() {}
@@ -83,6 +86,14 @@ int32_t PepperVideoDestinationHost::OnHostMsgPutFrame(
   // nanoseconds).
   const int64_t timestamp_ns =
       static_cast<int64_t>(timestamp * base::Time::kNanosecondsPerSecond);
+  // Check that timestamps are strictly increasing.
+#if DCHECK_IS_ON()
+  if (has_received_frame_)
+    DCHECK_GT(timestamp_ns, previous_timestamp_ns_);
+  has_received_frame_ = true;
+  previous_timestamp_ns_ = timestamp_ns;
+#endif
+
   frame_writer_->PutFrame(image_data_impl, timestamp_ns);
 
   return PP_OK;
