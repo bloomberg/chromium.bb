@@ -461,7 +461,7 @@
       <message desc="Labels the voice selection list box." name="IDS_CHROMEVOX_OPTIONS_VOICES_DESCRIPTION">
         Change the current voice by selecting an option from the list below.
       </message>
-      <message desc="An options page section header for options about the ChromeVox braille table.  This section lets users change the braille table by selecting a different braille table from a listbox.  A braille table describes how text gets converted from a unicode encoding into a pattern of dots. This varies based on locale and contraction. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_OPTIONS_BRAILLE">
+      <message desc="An options page section header for options about the ChromeVox braille support. This section allows the user to customize varous aspects of the braille output and input support." name="IDS_CHROMEVOX_OPTIONS_BRAILLE">
         Braille
       </message>
       <message desc="Labels the braille table type button when the current table is an 6 dot table. A braille table describes how text gets converted from a unicode encoding into a pattern of dots. This varies based on locale and contraction. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_OPTIONS_BRAILLE_TABLE_TYPE_6">
@@ -484,6 +484,9 @@
       </message>
       <message desc="Labels the braille table selection list box.  A braille table describes how text gets converted from a unicode encoding into a pattern of dots. This varies based on locale and contraction. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_OPTIONS_BRAILLE_DESCRIPTION_8">
         Change the current 8 dot braille table by selecting an option from the list below.
+      </message>
+      <message desc="Labels the checkbox that enables wrapping of words if a whole line doesn't fit on a braille display. When this option is enabled, an effort is made to keep the characters of words together on the display. Otherwise, as many characters as possible are put on each braille display line, possible splitting words between lines." name="IDS_CHROMEVOX_OPTIONS_BRAILLE_WORD_WRAP">
+        Enable word wrap
       </message>
       <message desc="An options page section header for options about key shortcuts. This section lets users change the key bindings for ChromeVox actions. The section has a list of actions and a text field to change the binding (e.g. Ctrl-B) for each action." name="IDS_CHROMEVOX_OPTIONS_KEYBOARD_SHORTCUTS">
         Keyboard shortcuts

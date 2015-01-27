@@ -72,6 +72,9 @@ cvox.OptionsPage.init = function() {
     cvox.OptionsPage.brailleTables = tables;
     cvox.OptionsPage.populateBrailleTablesSelect();
   });
+  chrome.storage.local.get({'brailleWordWrap': true}, function(items) {
+    $('brailleWordWrap').checked = items.brailleWordWrap;
+  });
 
   cvox.ChromeVox.msgs.addTranslatedMessagesToDom(document);
   cvox.OptionsPage.hidePlatformSpecifics();
@@ -468,7 +471,9 @@ cvox.OptionsPage.setValue = function(element, value) {
 cvox.OptionsPage.eventListener = function(event) {
   window.setTimeout(function() {
     var target = event.target;
-    if (target.classList.contains('pref')) {
+    if (target.id == 'brailleWordWrap') {
+      chrome.storage.local.set({brailleWordWrap: target.checked});
+    } else if (target.classList.contains('pref')) {
       if (target.tagName == 'INPUT' && target.type == 'checkbox') {
         cvox.OptionsPage.prefs.setPref(target.name, target.checked);
       } else if (target.tagName == 'INPUT' && target.type == 'radio') {

@@ -159,6 +159,7 @@
         'braille/braille_translator_manager_test.extjs',
         'braille/expanding_braille_translator_test.unitjs',
         'braille/liblouis_test.extjs',
+        'braille/pan_strategy_test.unitjs',
         'common/aria_util_test.unitjs',
         'common/braille_text_handler_test.unitjs',
         'common/braille_util_test.unitjs',

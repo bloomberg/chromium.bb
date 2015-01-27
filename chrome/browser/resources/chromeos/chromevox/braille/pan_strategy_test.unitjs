@@ -1,0 +1,121 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
+
+/**
+ * Test fixture.
+ * @constructor
+ * @extends {ChromeVoxUnitTestBase}
+ */
+function CvoxPanStrategyUnitTest() {}
+
+CvoxPanStrategyUnitTest.prototype = {
+  __proto__: ChromeVoxUnitTestBase.prototype,
+
+  /** @override */
+  closureModuleDeps: [
+    'cvox.PanStrategy',
+  ],
+};
+
+/**
+ * @param {string} content String representing the content with spaces
+ *     representing blank cells and any other character representing
+ *     arbitrary non-blank cells.
+ */
+function createArrayBuffer(content) {
+  var result = new ArrayBuffer(content.length);
+  var view = new Uint8Array(result);
+  for (var i = 0; i < content.length; ++i) {
+    view[i] = (content[i] != ' ' ? 1 : 0);
+  }
+  return result;
+}
+
+ TEST_F('CvoxPanStrategyUnitTest', 'FixedPanning', function() {
+  var panner = new cvox.FixedPanStrategy();
+
+  panner.setDisplaySize(0);
+  panner.setContent(createArrayBuffer(''), 0);
+  assertEqualsJSON({start: 0, end: 0}, panner.viewPort);
+  assertFalse(panner.previous());
+  assertFalse(panner.next());
+
+  // 25 cells with a blank cell in the first 10 characters.
+  var content = createArrayBuffer('01234567 9012345678901234');
+  panner.setContent(content, 0);
+  assertEqualsJSON({start: 0, end: 0}, panner.viewPort);
+  assertFalse(panner.next());
+  assertFalse(panner.previous());
+
+  panner.setDisplaySize(10);
+  assertEqualsJSON({start: 0, end: 10}, panner.viewPort);
+  assertTrue(panner.next());
+  assertEqualsJSON({start: 10, end: 20}, panner.viewPort);
+  assertTrue(panner.next());
+  assertEqualsJSON({start: 20, end: 25}, panner.viewPort);
+  assertFalse(panner.next());
+  assertEqualsJSON({start: 20, end: 25}, panner.viewPort);
+  assertTrue(panner.previous());
+  assertEqualsJSON({start: 10, end: 20}, panner.viewPort);
+  assertTrue(panner.previous());
+  assertEqualsJSON({start: 0, end: 10}, panner.viewPort);
+
+  panner.setContent(content, 19);
+  assertEqualsJSON({start: 10, end: 20}, panner.viewPort);
+
+  panner.setContent(content, 20);
+  assertEqualsJSON({start: 20, end: 25}, panner.viewPort);
+
+  panner.setDisplaySize(8);
+  assertEqualsJSON({start: 16, end: 24}, panner.viewPort);
+
+  panner.viewPort_ = {start: 2, end: 10};
+  assertTrue(panner.previous());
+  assertEqualsJSON({start: 0, end: 8}, panner.viewPort);
+});
+
+TEST_F('CvoxPanStrategyUnitTest', 'WrappedPanning', function() {
+  var panner = new cvox.WrappingPanStrategy();
+
+  // 30 cells with blank cells at positions 8, 22 and 26.
+  var content = createArrayBuffer('01234567 9012345678901 345 789');
+  panner.setContent(content, 0);
+  assertEqualsJSON({start: 0, end: 0}, panner.viewPort);
+  assertFalse(panner.next());
+  assertFalse(panner.previous());
+
+  panner.setDisplaySize(10);
+  assertEqualsJSON({start: 0, end: 9}, panner.viewPort);
+  assertTrue(panner.next());
+  assertEqualsJSON({start: 9, end: 19}, panner.viewPort);
+  assertTrue(panner.next());
+  assertEqualsJSON({start: 19, end: 27}, panner.viewPort);
+  assertTrue(panner.next());
+  assertEqualsJSON({start: 27, end: 30}, panner.viewPort);
+  assertFalse(panner.next());
+  assertEqualsJSON({start: 27, end: 30}, panner.viewPort);
+  assertTrue(panner.previous());
+  assertEqualsJSON({start: 23, end: 27}, panner.viewPort);
+  assertTrue(panner.previous());
+  assertEqualsJSON({start: 13, end: 23}, panner.viewPort);
+  assertTrue(panner.previous());
+  assertEqualsJSON({start: 9, end: 13}, panner.viewPort);
+  assertTrue(panner.previous());
+  assertEqualsJSON({start: 0, end: 9}, panner.viewPort);
+
+  panner.setContent(content, 21);
+  assertEqualsJSON({start: 19, end: 27}, panner.viewPort);
+
+  panner.setContent(content, 30);
+  assertEqualsJSON({start: 27, end: 30}, panner.viewPort);
+
+  panner.setDisplaySize(8);
+  assertEqualsJSON({start: 23, end: 30}, panner.viewPort);
+
+  panner.viewPort_ = {start: 2, end: 10};
+  assertTrue(panner.previous());
+  assertEqualsJSON({start: 0, end: 8}, panner.viewPort);
+});
