@@ -119,19 +119,14 @@ def WipeDeviceData(device):
   """
   device_authorized = device.FileExists(constants.ADB_KEYS_FILE)
   if device_authorized:
-    adb_keys = device.RunShellCommand('cat %s' % constants.ADB_KEYS_FILE,
-                                      as_root=True)
+    adb_keys = device.ReadFile(constants.ADB_KEYS_FILE, as_root=True)
   device.RunShellCommand('wipe data', as_root=True)
   if device_authorized:
     path_list = constants.ADB_KEYS_FILE.split('/')
     dir_path = '/'.join(path_list[:len(path_list)-1])
     device.RunShellCommand('mkdir -p %s' % dir_path, as_root=True)
     device.RunShellCommand('restorecon %s' % dir_path, as_root=True)
-    device.RunShellCommand('echo %s > %s' %
-                           (adb_keys[0], constants.ADB_KEYS_FILE), as_root=True)
-    for adb_key in adb_keys[1:]:
-      device.RunShellCommand(
-        'echo %s >> %s' % (adb_key, constants.ADB_KEYS_FILE), as_root=True)
+    device.WriteFile(constants.ADB_KEYS_FILE, adb_keys, as_root=True)
     device.RunShellCommand('restorecon %s' % constants.ADB_KEYS_FILE,
                            as_root=True)
 
