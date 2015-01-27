@@ -174,7 +174,7 @@ class MediaMessageFifo {
   typedef base::subtle::Atomic32 AtomicSize;
 #elif SIZE_MAX == UINT64_MAX
   typedef base::subtle::Atomic64 AtomicSize;
-#elif
+#else
 #error "Unsupported size_t"
 #endif
   AtomicSize* rd_offset_;
