@@ -46,6 +46,8 @@ class OnscreenDisplayClient : cc::DisplayClient {
   void OutputSurfaceLost() override;
   void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
 
+  bool output_surface_lost() { return output_surface_lost_; }
+
  private:
   void ScheduleDraw();
   void Draw();

@@ -27,6 +27,8 @@ class Surface;
 class SurfaceFactoryClient;
 class SurfaceManager;
 
+enum class SurfaceDrawStatus { DRAW_SKIPPED, DRAWN };
+
 // A SurfaceFactory is used to create surfaces that may share resources and
 // receive returned resources for frames submitted to those surfaces. Resources
 // submitted to frames created by a particular factory will be returned to that
@@ -35,9 +37,7 @@ class SurfaceManager;
 class CC_SURFACES_EXPORT SurfaceFactory
     : public base::SupportsWeakPtr<SurfaceFactory> {
  public:
-  // This callback is called with true if the frame was drawn, or false if it
-  // was discarded.
-  using DrawCallback = base::Callback<void(bool)>;
+  using DrawCallback = base::Callback<void(SurfaceDrawStatus)>;
 
   SurfaceFactory(SurfaceManager* manager, SurfaceFactoryClient* client);
   ~SurfaceFactory();

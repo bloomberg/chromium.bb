@@ -42,7 +42,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
     observer_list_.RemoveObserver(obs);
   }
 
-  void SurfaceModified(SurfaceId surface_id);
+  bool SurfaceModified(SurfaceId surface_id);
 
   // A frame for a surface satisfies a set of sequence numbers in a particular
   // id namespace.

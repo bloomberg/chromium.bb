@@ -16,6 +16,7 @@
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/render_pass_id.h"
+#include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
@@ -34,7 +35,7 @@ class SurfaceResourceHolder;
 
 class CC_SURFACES_EXPORT Surface {
  public:
-  using DrawCallback = base::Callback<void(bool)>;
+  using DrawCallback = SurfaceFactory::DrawCallback;
 
   Surface(SurfaceId id, SurfaceFactory* factory);
   ~Surface();
@@ -55,7 +56,7 @@ class CC_SURFACES_EXPORT Surface {
   int frame_index() const { return frame_index_; }
 
   void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
-  void RunDrawCallbacks();
+  void RunDrawCallbacks(SurfaceDrawStatus drawn);
 
   base::WeakPtr<SurfaceFactory> factory() { return factory_; }
 

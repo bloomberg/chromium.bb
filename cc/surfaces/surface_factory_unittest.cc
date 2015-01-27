@@ -360,8 +360,10 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   }
 }
 
-void DrawCallback(bool* executed, bool* result, bool drawn) {
-  *executed = true;
+void DrawCallback(uint32* execute_count,
+                  SurfaceDrawStatus* result,
+                  SurfaceDrawStatus drawn) {
+  *execute_count += 1;
   *result = drawn;
 }
 
@@ -377,17 +379,16 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
   frame_data->resource_list.push_back(resource);
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->delegated_frame_data = frame_data.Pass();
-  bool executed = false;
-  bool drawn = false;
+  uint32 execute_count = 0;
+  SurfaceDrawStatus drawn = SurfaceDrawStatus::DRAW_SKIPPED;
 
   factory_.SubmitFrame(id, frame.Pass(),
-                       base::Bind(&DrawCallback, &executed, &drawn));
+                       base::Bind(&DrawCallback, &execute_count, &drawn));
 
   surface_id_ = SurfaceId();
-  EXPECT_FALSE(executed);
   factory_.DestroyAll();
-  EXPECT_TRUE(executed);
-  EXPECT_FALSE(drawn);
+  EXPECT_EQ(1u, execute_count);
+  EXPECT_EQ(SurfaceDrawStatus::DRAW_SKIPPED, drawn);
 }
 
 TEST_F(SurfaceFactoryTest, DestroySequence) {

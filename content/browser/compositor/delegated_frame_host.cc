@@ -344,6 +344,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     last_output_surface_id_ = output_surface_id;
   }
   bool immediate_ack = !compositor_;
+  pending_delegated_ack_count_++;
+
   if (frame_size.IsEmpty()) {
     DCHECK(frame_data->resource_list.empty());
     EvictDelegatedFrame();
@@ -423,8 +425,6 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     client_->DelegatedFrameHostGetLayer()->OnDelegatedFrameDamage(
         damage_rect_in_dip);
 
-  pending_delegated_ack_count_++;
-
   if (immediate_ack) {
     SendDelegatedFrameAck(output_surface_id);
   } else if (!use_surfaces_) {
@@ -462,7 +462,8 @@ void DelegatedFrameHost::SendDelegatedFrameAck(uint32 output_surface_id) {
   pending_delegated_ack_count_--;
 }
 
-void DelegatedFrameHost::SurfaceDrawn(uint32 output_surface_id, bool drawn) {
+void DelegatedFrameHost::SurfaceDrawn(uint32 output_surface_id,
+                                      cc::SurfaceDrawStatus drawn) {
   SendDelegatedFrameAck(output_surface_id);
 }
 

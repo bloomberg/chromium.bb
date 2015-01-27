@@ -82,7 +82,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   void SetFullRootLayerDamage() override {}
 
   // SurfaceDamageObserver implementation.
-  void OnSurfaceDamaged(SurfaceId surface) override;
+  void OnSurfaceDamaged(SurfaceId surface, bool* changed) override;
 
  private:
   void InitializeRenderer();

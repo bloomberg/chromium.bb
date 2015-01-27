@@ -42,6 +42,13 @@ Display::Display(DisplayClient* client,
 
 Display::~Display() {
   manager_->RemoveObserver(this);
+  if (aggregator_) {
+    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
+      Surface* surface = manager_->GetSurfaceForId(id_entry.first);
+      if (surface)
+        surface->RunDrawCallbacks(SurfaceDrawStatus::DRAW_SKIPPED);
+    }
+  }
 }
 
 bool Display::Initialize(scoped_ptr<OutputSurface> output_surface) {
@@ -123,7 +130,7 @@ bool Display::Draw() {
   for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
     Surface* surface = manager_->GetSurfaceForId(id_entry.first);
     if (surface)
-      surface->RunDrawCallbacks();
+      surface->RunDrawCallbacks(SurfaceDrawStatus::DRAWN);
   }
   DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
 
@@ -168,7 +175,7 @@ void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
   client_->SetMemoryPolicy(policy);
 }
 
-void Display::OnSurfaceDamaged(SurfaceId surface_id) {
+void Display::OnSurfaceDamaged(SurfaceId surface_id, bool* changed) {
   if (aggregator_ &&
       aggregator_->previous_contained_surfaces().count(surface_id)) {
     Surface* surface = manager_->GetSurfaceForId(surface_id);
@@ -179,6 +186,10 @@ void Display::OnSurfaceDamaged(SurfaceId surface_id) {
         aggregator_->ReleaseResources(surface_id);
     }
     client_->DisplayDamaged();
+    *changed = true;
+  } else if (surface_id == current_surface_id_) {
+    client_->DisplayDamaged();
+    *changed = true;
   }
 }
 

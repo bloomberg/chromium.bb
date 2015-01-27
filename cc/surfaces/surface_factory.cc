@@ -51,7 +51,8 @@ void SurfaceFactory::SubmitFrame(SurfaceId surface_id,
   DCHECK(it != surface_map_.end());
   DCHECK(it->second->factory().get() == this);
   it->second->QueueFrame(frame.Pass(), callback);
-  manager_->SurfaceModified(surface_id);
+  if (!manager_->SurfaceModified(surface_id))
+    it->second->RunDrawCallbacks(SurfaceDrawStatus::DRAW_SKIPPED);
 }
 
 void SurfaceFactory::RequestCopyOfSurface(

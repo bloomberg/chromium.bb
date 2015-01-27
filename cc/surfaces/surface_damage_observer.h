@@ -11,7 +11,9 @@ namespace cc {
 
 class SurfaceDamageObserver {
  public:
-  virtual void OnSurfaceDamaged(SurfaceId surface_id) = 0;
+  // Runs when a Surface is damaged. *changed should be set to true if this
+  // causes a Display to be damaged.
+  virtual void OnSurfaceDamaged(SurfaceId surface_id, bool* changed) = 0;
 };
 
 }  // namespace cc

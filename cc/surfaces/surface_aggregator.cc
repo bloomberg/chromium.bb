@@ -433,6 +433,10 @@ void SurfaceAggregator::RemoveUnreferencedChildren() {
         provider_->DestroyChild(it->second);
         surface_id_to_resource_child_id_.erase(it);
       }
+
+      Surface* surface_ptr = manager_->GetSurfaceForId(surface.first);
+      if (surface_ptr)
+        surface_ptr->RunDrawCallbacks(SurfaceDrawStatus::DRAW_SKIPPED);
     }
   }
 }
