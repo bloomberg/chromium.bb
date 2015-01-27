@@ -12,7 +12,16 @@
 
 namespace gestures {
 
-void FingerEnergyHistory::PushFingerState(const FingerState &fs) {
+void FingerEnergyHistory::PushFingerState(const FingerState &fs,
+                                          const stime_t timestamp) {
+
+  // Reset the history if there is no finger state received longer than
+  // time interval 'idle_time_'.
+  if (moving_ && timestamp - prev_ > idle_time_) {
+    moving_ = false;
+    head_ = size_ = 0;
+  }
+
   // Insert current finger position into the queue
   head_ = (head_ + max_size_ - 1) % max_size_;
   history_[head_].x = fs.position_x;
@@ -47,6 +56,8 @@ void FingerEnergyHistory::PushFingerState(const FingerState &fs) {
   // Calculate current pure signal energy
   history_[head_].energy_x = psx * psx;
   history_[head_].energy_y = psy * psy;
+
+  prev_ = timestamp;
 }
 
 const FingerEnergy& FingerEnergyHistory::Get(size_t offset) const {
@@ -114,13 +125,13 @@ void StationaryWiggleFilterInterpreter::UpdateStationaryFlags(
     // Create a new entry if it is a new finger
     if (!MapContainsKey(histories_, fs->tracking_id)) {
       histories_[fs->tracking_id] = FingerEnergyHistory();
-      histories_[fs->tracking_id].PushFingerState(*fs);
+      histories_[fs->tracking_id].PushFingerState(*fs, hwstate->timestamp);
       continue;
     }
 
     // Update the energy history and check if the finger is moving
     FingerEnergyHistory& feh = histories_[fs->tracking_id];
-    feh.PushFingerState(*fs);
+    feh.PushFingerState(*fs, hwstate->timestamp);
     if (feh.HasEnoughSamples()) {
       float threshold = feh.moving() ? hysteresis_.val_ : threshold_.val_;
       if (!feh.IsFingerMoving(threshold))

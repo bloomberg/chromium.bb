@@ -85,10 +85,12 @@ class FingerEnergyHistory {
   FingerEnergyHistory()
       : size_(0),
         head_(0),
-        moving_(false) {}
+        moving_(false),
+        idle_time_(0.1),
+        prev_(0) {}
 
   // Push the current finger data into the history buffer
-  void PushFingerState(const FingerState &fs);
+  void PushFingerState(const FingerState &fs, const stime_t timestamp);
 
   // Get previous moving state
   bool moving() const { return moving_; }
@@ -114,6 +116,8 @@ class FingerEnergyHistory {
   size_t size_;
   size_t head_;
   bool moving_;
+  stime_t idle_time_;  // timeout for finger without state change
+  stime_t prev_;
 };
 
 class StationaryWiggleFilterInterpreter : public FilterInterpreter {
