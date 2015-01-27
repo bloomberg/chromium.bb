@@ -495,8 +495,7 @@ void GpuDataManagerImplPrivate::Initialize() {
     return;
   }
 
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kSkipGpuDataLoading))
     return;
 
@@ -540,6 +539,12 @@ void GpuDataManagerImplPrivate::Initialize() {
   InitializeImpl(gpu_blacklist_string,
                  gpu_driver_bug_list_string,
                  gpu_info);
+
+  if (command_line->HasSwitch(switches::kSingleProcess) ||
+      command_line->HasSwitch(switches::kInProcessGPU)) {
+    command_line->AppendSwitch(switches::kDisableGpuWatchdog);
+    AppendGpuCommandLine(command_line);
+  }
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
