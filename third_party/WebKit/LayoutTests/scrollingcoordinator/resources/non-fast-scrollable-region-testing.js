@@ -4,17 +4,9 @@
 if (window.internals)
     window.internals.settings.setMockScrollbarsEnabled(true);
 
-function runNonFastScrollableRegionTest(scale) {
-    var invScale;
-    if (scale != undefined) {
-        if (window.eventSender)
-            eventSender.setPageScaleFactor(scale, 0, 0);
-        // FIXME: This is a hack for applyPageScaleFactorInCompositor() == false.
-        invScale = 1 / scale;
-    } else {
-        invScale = 1;
-    }
-
+// Draws green overlays for non-fast scrollable regions. This provides a visual
+// feedback that is useful when running the test interactively.
+function drawNonFastScrollableRegionOverlays() {
     var overlay = document.createElement("div");
     overlay.style.position = "absolute";
     overlay.style.left = 0;
@@ -27,14 +19,23 @@ function runNonFastScrollableRegionTest(scale) {
         var patch = document.createElement("div");
         patch.style.position = "absolute";
         patch.style.backgroundColor = "#00ff00";
-        patch.style.left = rect.left * invScale + "px";
-        patch.style.top = rect.top * invScale + "px";
-        patch.style.width = rect.width * invScale + "px";
-        patch.style.height = rect.height * invScale + "px";
+        patch.style.left = rect.left + "px";
+        patch.style.top = rect.top  + "px";
+        patch.style.width = rect.width + "px";
+        patch.style.height = rect.height + "px";
 
         overlay.appendChild(patch);
     }
 
     document.body.appendChild(overlay);
+}
+
+// Waits for one RAF call to ensure compositing update has occurred and invokes task.
+function awaitCompsitingUpdate(task) {
+    window.requestAnimationFrame(task);
+}
+
+function rectToString(rect) {
+    return '[' + [rect.left, rect.top, rect.width, rect.height].join(', ') + ']';
 }
 

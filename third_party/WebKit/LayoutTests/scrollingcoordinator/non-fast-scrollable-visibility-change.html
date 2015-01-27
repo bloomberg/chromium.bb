@@ -77,7 +77,7 @@
       // Next 3 statements have no functional impact just visual
       showSectionIf(function(){return true;});
       awaitCompsitingUpdate(function(){
-        runNonFastScrollableRegionTest();
+        drawNonFastScrollableRegionOverlays();
 
         finishJSTest();
       });
@@ -156,14 +156,5 @@
     var sections = document.querySelectorAll('section');
     for (var i = 0; i < sections.length; i++)
       sections[i].style.display = condition(sections[i]) ? 'block' : 'none';
-  }
-
-  // Waits for one RAF call to ensure compositing update has occurred and invokes task.
-  function awaitCompsitingUpdate(task) {
-    window.requestAnimationFrame(task);
-  }
-
-  function rectToString(rect) {
-    return '[' + [rect.left, rect.top, rect.width, rect.height].join(', ') + ']';
   }
 </script>

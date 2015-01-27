@@ -15,6 +15,7 @@ iframe {
   onload = function() {
     if (window.internals) {
       var frame = document.getElementById('scrollable-iframe');
+      document.body.offsetTop; // Force layout
       shouldBe('internals.nonFastScrollableRects(document).length', '1');
       frame.style.display = 'none';
       document.body.offsetTop; // Force layout

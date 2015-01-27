@@ -370,8 +370,6 @@ crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-fl
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-block-formatting-context-001.htm [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-block-003.htm [ Pass ImageOnlyFailure ]
 
-crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Failure Pass ]
-
 crbug.com/365340 editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
 
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
