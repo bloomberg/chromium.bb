@@ -48,7 +48,7 @@ vars = {
   # the commit queue can handle CLs rolling libvpx
   # and whatever else without interference from each other.
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
-  'skia_revision': '36c57dfb4fe9bbaca436942d5eaa75b142ba251d',
+  'skia_revision': '5f213d9627d2eefa7da81cd97f36754f75eb4ae9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
