@@ -321,6 +321,39 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   }
 }
 
+void IndexedDBContextImpl::CopyOriginData(const GURL& origin_url,
+                                          IndexedDBContext* dest_context) {
+  DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
+
+  if (data_path_.empty() || !IsInOriginSet(origin_url))
+    return;
+
+  IndexedDBContextImpl* dest_context_impl =
+      static_cast<IndexedDBContextImpl*>(dest_context);
+
+  ForceClose(origin_url, FORCE_CLOSE_COPY_ORIGIN);
+  std::string origin_id = storage::GetIdentifierFromOrigin(origin_url);
+
+  // Make sure we're not about to delete our own database.
+  CHECK_NE(dest_context_impl->data_path().value(), data_path().value());
+
+  // Delete any existing storage paths in the destination context.
+  // A previously failed migration may have left behind partially copied
+  // directories.
+  for (const base::FilePath& dest_path :
+       dest_context_impl->GetStoragePaths(origin_url))
+    base::DeleteFile(dest_path, true);
+
+  base::FilePath dest_data_path = dest_context_impl->data_path();
+  base::CreateDirectory(dest_data_path);
+
+  for (const base::FilePath& src_data_path : GetStoragePaths(origin_url)) {
+    if (base::PathExists(src_data_path)) {
+      base::CopyDirectory(src_data_path, dest_data_path, true);
+    }
+  }
+}
+
 void IndexedDBContextImpl::ForceClose(const GURL origin_url,
                                       ForceCloseReason reason) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());

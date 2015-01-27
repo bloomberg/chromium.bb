@@ -648,6 +648,34 @@ void SandboxFileSystemBackendDelegate::CollectOpenFileSystemMetrics(
 #undef REPORT
 }
 
+void SandboxFileSystemBackendDelegate::CopyFileSystem(
+    const GURL& origin_url,
+    FileSystemType type,
+    SandboxFileSystemBackendDelegate* destination) {
+  DCHECK(file_task_runner()->RunsTasksOnCurrentThread());
+
+  base::FilePath base_path =
+      GetBaseDirectoryForOriginAndType(origin_url, type, false /* create */);
+  if (base::PathExists(base_path)) {
+    // Delete any existing file system directories in the destination. A
+    // previously failed migration
+    // may have left behind partially copied directories.
+    base::FilePath dest_path = destination->GetBaseDirectoryForOriginAndType(
+        origin_url, type, false /* create */);
+
+    // Make sure we're not about to delete our own file system.
+    CHECK_NE(base_path.value(), dest_path.value());
+    base::DeleteFile(dest_path, true);
+
+    dest_path = destination->GetBaseDirectoryForOriginAndType(
+        origin_url, type, true /* create */);
+
+    obfuscated_file_util()->CloseFileSystemForOriginAndType(
+        origin_url, GetTypeString(type));
+    base::CopyDirectory(base_path, dest_path.DirName(), true /* rescursive */);
+  }
+}
+
 ObfuscatedFileUtil* SandboxFileSystemBackendDelegate::obfuscated_file_util() {
   return static_cast<ObfuscatedFileUtil*>(sync_file_util());
 }

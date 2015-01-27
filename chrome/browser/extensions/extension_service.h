@@ -51,6 +51,7 @@ class DevToolsAgentHost;
 }
 
 namespace extensions {
+class AppDataMigrator;
 class ComponentLoader;
 class CrxInstaller;
 class ExtensionActionStorageManager;
@@ -731,6 +732,9 @@ class ExtensionService
   scoped_ptr<extensions::SharedModuleService> shared_module_service_;
 
   ObserverList<extensions::UpdateObserver, true> update_observers_;
+
+  // Migrates app data when upgrading a legacy packaged app to a platform app
+  scoped_ptr<extensions::AppDataMigrator> app_data_migrator_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            DestroyingProfileClearsExtensions);

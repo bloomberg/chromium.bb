@@ -483,6 +483,8 @@
       'browser/extensions/api/webstore/webstore_api.h',
       'browser/extensions/api/webstore_private/webstore_private_api.cc',
       'browser/extensions/api/webstore_private/webstore_private_api.h',
+      'browser/extensions/app_data_migrator.cc',
+      'browser/extensions/app_data_migrator.h',
       'browser/extensions/app_icon_loader.h',
       'browser/extensions/app_icon_loader_impl.cc',
       'browser/extensions/app_icon_loader_impl.h',

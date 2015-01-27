@@ -898,6 +898,20 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   return base::DeleteFile(origin_path, true /* recursive */);
 }
 
+void ObfuscatedFileUtil::CloseFileSystemForOriginAndType(
+    const GURL& origin,
+    const std::string& type_string) {
+  const std::string key_prefix = GetDirectoryDatabaseKey(origin, type_string);
+  for (DirectoryMap::iterator iter = directories_.lower_bound(key_prefix);
+       iter != directories_.end();) {
+    if (!StartsWithASCII(iter->first, key_prefix, true))
+      break;
+    DCHECK(type_string.empty() || iter->first == key_prefix);
+    scoped_ptr<SandboxDirectoryDatabase> database(iter->second);
+    directories_.erase(iter++);
+  }
+}
+
 ObfuscatedFileUtil::AbstractOriginEnumerator*
 ObfuscatedFileUtil::CreateOriginEnumerator() {
   std::vector<SandboxOriginDatabase::OriginRecord> origins;

@@ -45,6 +45,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
     FORCE_CLOSE_DELETE_ORIGIN = 0,
     FORCE_CLOSE_BACKING_STORE_FAILURE,
     FORCE_CLOSE_INTERNALS_PAGE,
+    FORCE_CLOSE_COPY_ORIGIN,
     FORCE_CLOSE_REASON_MAX
   };
 
@@ -67,6 +68,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   std::vector<IndexedDBInfo> GetAllOriginsInfo() override;
   int64 GetOriginDiskUsage(const GURL& origin_url) override;
   void DeleteForOrigin(const GURL& origin_url) override;
+  void CopyOriginData(const GURL& origin_url,
+                      IndexedDBContext* dest_context) override;
   base::FilePath GetFilePathForTesting(
       const std::string& origin_id) const override;
   void SetTaskRunnerForTesting(base::SequencedTaskRunner* task_runner) override;
@@ -91,6 +94,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // GetStoragePaths returns all paths owned by this database, in arbitrary
   // order.
   std::vector<base::FilePath> GetStoragePaths(const GURL& origin_url) const;
+
   base::FilePath data_path() const { return data_path_; }
   bool IsInOriginSet(const GURL& origin_url) {
     std::set<GURL>* set = GetOriginSet();

@@ -21,6 +21,7 @@
 #include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
+#include "chrome/browser/extensions/app_data_migrator.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
@@ -271,7 +272,8 @@ ExtensionService::ExtensionService(Profile* profile,
       installs_delayed_for_gc_(false),
       is_first_run_(false),
       block_extensions_(false),
-      shared_module_service_(new extensions::SharedModuleService(profile_)) {
+      shared_module_service_(new extensions::SharedModuleService(profile_)),
+      app_data_migrator_(new extensions::AppDataMigrator(profile_, registry_)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
@@ -1858,6 +1860,16 @@ void ExtensionService::AddNewOrUpdatedExtension(
   delayed_installs_.Remove(extension->id());
   if (InstallVerifier::NeedsVerification(*extension))
     system_->install_verifier()->VerifyExtension(extension->id());
+
+  const Extension* old = GetInstalledExtension(extension->id());
+  if (extensions::AppDataMigrator::NeedsMigration(old, extension)) {
+    app_data_migrator_->DoMigrationAndReply(
+        old, extension,
+        base::Bind(&ExtensionService::FinishInstallation, AsWeakPtr(),
+                   make_scoped_refptr(extension), was_ephemeral));
+    return;
+  }
+
   FinishInstallation(extension, was_ephemeral);
 }
 

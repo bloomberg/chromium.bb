@@ -174,6 +174,12 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
 
   void CollectOpenFileSystemMetrics(base::File::Error error_code);
 
+  // Used for migrating from the general storage partition to an isolated
+  // storage partition
+  void CopyFileSystem(const GURL& origin_url,
+                      FileSystemType type,
+                      SandboxFileSystemBackendDelegate* destination);
+
   base::SequencedTaskRunner* file_task_runner() {
     return file_task_runner_.get();
   }

@@ -190,6 +190,10 @@ class STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
       const GURL& origin,
       const std::string& type_string);
 
+  // Frees resources used by an origin's filesystem.
+  void CloseFileSystemForOriginAndType(const GURL& origin,
+                                       const std::string& type_string);
+
   // This method and all methods of its returned class must be called only on
   // the FILE thread.  The caller is responsible for deleting the returned
   // object.

@@ -34,6 +34,11 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   // Deletes all indexed db files for the given origin.
   virtual void DeleteForOrigin(const GURL& origin_url) = 0;
 
+  // Copies the indexed db files from this context to another. The
+  // indexed db directory in the destination context needs to be empty.
+  virtual void CopyOriginData(const GURL& origin_url,
+                              IndexedDBContext* dest_context) = 0;
+
   // Get the file name of the local storage file for the given origin.
   virtual base::FilePath GetFilePathForTesting(
       const std::string& origin_id) const = 0;
