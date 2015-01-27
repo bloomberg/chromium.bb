@@ -456,15 +456,15 @@ SdchManager::GetDictionarySetByHash(
   *problem_code = SDCH_DICTIONARY_HASH_NOT_FOUND;
   const auto& it = dictionaries_.find(server_hash);
   if (it == dictionaries_.end())
-    return result;
+    return result.Pass();
 
   *problem_code = it->second->data.CanUse(target_url);
   if (*problem_code != SDCH_OK)
-    return result;
+    return result.Pass();
 
   result.reset(new DictionarySet);
   result->AddDictionary(it->first, it->second);
-  return result;
+  return result.Pass();
 }
 
 // static
