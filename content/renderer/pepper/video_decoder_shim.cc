@@ -539,8 +539,8 @@ void VideoDecoderShim::SendPictures() {
                       GL_UNSIGNED_BYTE,
                       &frame->argb_pixels.front());
 
-    host_->PictureReady(
-        media::Picture(texture_id, frame->decode_id, frame->visible_rect));
+    host_->PictureReady(media::Picture(texture_id, frame->decode_id,
+                                       frame->visible_rect, false));
     pending_frames_.pop();
   }
 

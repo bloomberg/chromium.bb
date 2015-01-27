@@ -373,11 +373,10 @@ void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
                                       default_matrix);
 
   base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &AndroidVideoDecodeAccelerator::NotifyPictureReady,
-          weak_this_factory_.GetWeakPtr(),
-          media::Picture(picture_buffer_id, bitstream_id, gfx::Rect(size_))));
+      FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyPictureReady,
+                            weak_this_factory_.GetWeakPtr(),
+                            media::Picture(picture_buffer_id, bitstream_id,
+                                           gfx::Rect(size_), false)));
 }
 
 void AndroidVideoDecodeAccelerator::Decode(

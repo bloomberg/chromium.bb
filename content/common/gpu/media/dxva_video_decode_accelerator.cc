@@ -1241,9 +1241,8 @@ void DXVAVideoDecodeAccelerator::NotifyPictureReady(
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   // This task could execute after the decoder has been torn down.
   if (GetState() != kUninitialized && client_) {
-    media::Picture picture(picture_buffer_id,
-                           input_buffer_id,
-                           picture_buffer_size);
+    media::Picture picture(picture_buffer_id, input_buffer_id,
+                           picture_buffer_size, false);
     client_->PictureReady(picture);
   }
 }

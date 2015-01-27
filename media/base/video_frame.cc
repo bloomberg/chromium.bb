@@ -253,7 +253,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     base::TimeDelta timestamp,
-    const ReadPixelsCB& read_pixels_cb) {
+    const ReadPixelsCB& read_pixels_cb,
+    bool allow_overlay) {
   scoped_refptr<VideoFrame> frame(new VideoFrame(NATIVE_TEXTURE,
                                                  coded_size,
                                                  visible_rect,
@@ -263,6 +264,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
                                                  false));
   frame->mailbox_holder_release_cb_ = mailbox_holder_release_cb;
   frame->read_pixels_cb_ = read_pixels_cb;
+  frame->allow_overlay_ = allow_overlay;
 
   return frame;
 }
@@ -685,7 +687,8 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
       timestamp_(timestamp),
       release_sync_point_(0),
-      end_of_stream_(end_of_stream) {
+      end_of_stream_(end_of_stream),
+      allow_overlay_(false) {
   DCHECK(IsValidConfig(format_, coded_size_, visible_rect_, natural_size_));
 
   memset(&strides_, 0, sizeof(strides_));

@@ -886,8 +886,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
   available_picture_ids_.pop_back();
   picture_bindings_[picture_id] = frame.image;
-  client_->PictureReady(media::Picture(
-      picture_id, frame.bitstream_id, gfx::Rect(frame.coded_size)));
+  client_->PictureReady(media::Picture(picture_id, frame.bitstream_id,
+                                       gfx::Rect(frame.coded_size), false));
   return true;
 }
 
