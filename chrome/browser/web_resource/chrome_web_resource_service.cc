@@ -27,6 +27,7 @@ ChromeWebResourceService::ChromeWebResourceService(
           last_update_time_pref_name,
           start_fetch_delay_ms,
           cache_update_delay_ms,
+          g_browser_process->system_request_context(),
           switches::kDisableBackgroundNetworking) {
 }
 
@@ -41,8 +42,4 @@ void ChromeWebResourceService::ParseJSON(
   scoped_refptr<SafeJsonParser> json_parser(
       new SafeJsonParser(data, success_callback, error_callback));
   json_parser->Start();
-}
-
-net::URLRequestContextGetter* ChromeWebResourceService::GetRequestContext() {
-  return g_browser_process->system_request_context();
 }

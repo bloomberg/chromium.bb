@@ -243,6 +243,10 @@ void BrowserProcessImpl::StartTearDown() {
   if (safe_browsing_service_.get())
     safe_browsing_service()->ShutDown();
 #endif
+  promo_resource_service_.reset();
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  plugins_resource_service_.reset();
+#endif
 
   // Need to clear the desktop notification balloons before the io_thread_ and
   // before the profiles, since if there are any still showing we will access
@@ -1014,7 +1018,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   DCHECK(!plugins_resource_service_.get());
-  plugins_resource_service_ = new PluginsResourceService(local_state());
+  plugins_resource_service_.reset(new PluginsResourceService(local_state()));
   plugins_resource_service_->Init();
 #endif
 #endif  // defined(ENABLE_PLUGINS)
@@ -1023,7 +1027,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableWebResources)) {
     DCHECK(!promo_resource_service_.get());
-    promo_resource_service_ = new PromoResourceService;
+    promo_resource_service_.reset(new PromoResourceService);
     promo_resource_service_->StartAfterDelay();
   }
 

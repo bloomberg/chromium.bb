@@ -15,14 +15,13 @@ class PrefRegistrySimple;
 class PluginsResourceService : public ChromeWebResourceService {
  public:
   explicit PluginsResourceService(PrefService* local_state);
+  ~PluginsResourceService() override;
 
   void Init();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
-  ~PluginsResourceService() override;
-
   // WebResourceService override to process the parsed information.
   void Unpack(const base::DictionaryValue& parsed_json) override;
 

@@ -31,7 +31,7 @@ class PromoResourceServiceMobileNtpTest : public testing::Test {
 
  protected:
   ScopedTestingLocalState local_state_;
-  scoped_refptr<PromoResourceService> promo_resource_service_;
+  scoped_ptr<PromoResourceService> promo_resource_service_;
   base::MessageLoop loop_;
 };
 

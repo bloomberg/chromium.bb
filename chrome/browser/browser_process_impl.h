@@ -258,7 +258,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<ChromeResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
 
-  scoped_refptr<PromoResourceService> promo_resource_service_;
+  scoped_ptr<PromoResourceService> promo_resource_service_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;
@@ -282,7 +282,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  scoped_refptr<PluginsResourceService> plugins_resource_service_;
+  scoped_ptr<PluginsResourceService> plugins_resource_service_;
 #endif
 
   scoped_ptr<BrowserProcessPlatformPart> platform_part_;

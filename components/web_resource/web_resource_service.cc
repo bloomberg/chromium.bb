@@ -15,6 +15,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
@@ -28,13 +29,15 @@ const char kUnexpectedJSONFormatError[] =
 
 namespace web_resource {
 
-WebResourceService::WebResourceService(PrefService* prefs,
-                                       const GURL& web_resource_server,
-                                       const std::string& application_locale,
-                                       const char* last_update_time_pref_name,
-                                       int start_fetch_delay_ms,
-                                       int cache_update_delay_ms,
-                                       const char* disable_network_switch)
+WebResourceService::WebResourceService(
+    PrefService* prefs,
+    const GURL& web_resource_server,
+    const std::string& application_locale,
+    const char* last_update_time_pref_name,
+    int start_fetch_delay_ms,
+    int cache_update_delay_ms,
+    net::URLRequestContextGetter* request_context,
+    const char* disable_network_switch)
     : prefs_(prefs),
       resource_request_allowed_notifier_(prefs, disable_network_switch),
       in_fetch_(false),
@@ -43,6 +46,7 @@ WebResourceService::WebResourceService(PrefService* prefs,
       last_update_time_pref_name_(last_update_time_pref_name),
       start_fetch_delay_ms_(start_fetch_delay_ms),
       cache_update_delay_ms_(cache_update_delay_ms),
+      request_context_(request_context),
       weak_ptr_factory_(this) {
   resource_request_allowed_notifier_.Init(this);
   DCHECK(prefs);
@@ -75,8 +79,6 @@ void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
     // We do not call ParseJSON(), so we need to call EndFetch() ourselves.
     EndFetch();
   }
-
-  Release();
 }
 
 // Delay initial load of resource data into cache so as not to interfere
@@ -103,9 +105,6 @@ void WebResourceService::StartFetch() {
     return;
   in_fetch_ = true;
 
-  // Balanced in OnURLFetchComplete.
-  AddRef();
-
   GURL web_resource_server =
       application_locale_.empty()
           ? google_util::AppendGoogleLocaleParam(web_resource_server_,
@@ -120,7 +119,7 @@ void WebResourceService::StartFetch() {
   url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
                              net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->SetRequestContext(GetRequestContext());
+  url_fetcher_->SetRequestContext(request_context_.get());
   url_fetcher_->Start();
 }
 

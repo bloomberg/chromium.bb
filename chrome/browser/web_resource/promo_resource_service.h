@@ -33,10 +33,9 @@ class PromoResourceService : public ChromeWebResourceService {
   static void MigrateUserPrefs(PrefService* user_prefs);
 
   PromoResourceService();
-
- private:
   ~PromoResourceService() override;
 
+ private:
   // Schedule a notification that a web resource is either going to become
   // available or be no longer valid.
   void ScheduleNotification(const NotificationPromo& notification_promo);

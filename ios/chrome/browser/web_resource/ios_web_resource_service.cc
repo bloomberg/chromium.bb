@@ -40,6 +40,7 @@ IOSWebResourceService::IOSWebResourceService(
           last_update_time_pref_name,
           start_fetch_delay_ms,
           cache_update_delay_ms,
+          GetApplicationContext()->GetSystemURLRequestContext(),
           nullptr) {
 }
 
@@ -74,8 +75,4 @@ void IOSWebResourceService::ParseJSON(const std::string& data,
       base::Bind(&IOSWebResourceService::ParseJSONOnBackgroundThread, data,
                  success_callback, error_callback),
       base::Bind(&RunClosure));
-}
-
-net::URLRequestContextGetter* IOSWebResourceService::GetRequestContext() {
-  return GetApplicationContext()->GetSystemURLRequestContext();
 }

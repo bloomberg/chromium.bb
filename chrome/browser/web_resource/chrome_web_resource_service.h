@@ -27,7 +27,6 @@ class ChromeWebResourceService : public web_resource::WebResourceService {
   void ParseJSON(const std::string& data,
                  const SuccessCallback& success_callback,
                  const ErrorCallback& error_callback) override;
-  net::URLRequestContextGetter* GetRequestContext() override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebResourceService);
 };

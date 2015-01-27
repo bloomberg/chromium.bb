@@ -32,7 +32,6 @@ namespace web_resource {
 // refreshes it.
 class WebResourceService
     : public net::URLFetcherDelegate,
-      public base::RefCountedThreadSafe<WebResourceService>,
       public ResourceRequestAllowedNotifier::Observer {
  public:
   // Creates a new WebResourceService.
@@ -44,7 +43,10 @@ class WebResourceService
                      const char* last_update_time_pref_name,
                      int start_fetch_delay_ms,
                      int cache_update_delay_ms,
+                     net::URLRequestContextGetter* request_context,
                      const char* disable_network_switch);
+
+  ~WebResourceService() override;
 
   // Sleep until cache needs to be updated, but always for at least
   // |start_fetch_delay_ms| so we don't interfere with startup.
@@ -56,14 +58,9 @@ class WebResourceService
   using SuccessCallback = base::Callback<void(scoped_ptr<base::Value>)>;
   using ErrorCallback = base::Callback<void(const std::string&)>;
 
-  ~WebResourceService() override;
-
   PrefService* prefs_;
 
  private:
-  class UnpackerClient;
-  friend class base::RefCountedThreadSafe<WebResourceService>;
-
   // For the subclasses to process the result of a fetch.
   virtual void Unpack(const base::DictionaryValue& parsed_json) = 0;
 
@@ -72,9 +69,6 @@ class WebResourceService
   virtual void ParseJSON(const std::string& data,
                          const SuccessCallback& success_callback,
                          const ErrorCallback& error_callback) = 0;
-
-  // Gets the request context for the resource fetch.
-  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
   // net::URLFetcherDelegate implementation:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -122,6 +116,9 @@ class WebResourceService
   // Delay between calls to update the web resource cache. This delay may be
   // different for different builds of Chrome.
   int cache_update_delay_ms_;
+
+  // The request context for the resource fetch.
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // So that we can delay our start so as not to affect start-up time; also,
   // so that we can schedule future cache updates.
