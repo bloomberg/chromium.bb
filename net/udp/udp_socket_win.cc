@@ -327,10 +327,10 @@ int UDPSocketWin::GetPeerAddress(IPEndPoint* address) const {
     SockaddrStorage storage;
     if (getpeername(socket_, storage.addr, &storage.addr_len))
       return MapSystemError(WSAGetLastError());
-    scoped_ptr<IPEndPoint> address(new IPEndPoint());
-    if (!address->FromSockAddr(storage.addr, storage.addr_len))
+    scoped_ptr<IPEndPoint> remote_address(new IPEndPoint());
+    if (!remote_address->FromSockAddr(storage.addr, storage.addr_len))
       return ERR_ADDRESS_INVALID;
-    remote_address_.reset(address.release());
+    remote_address_.reset(remote_address.release());
   }
 
   *address = *remote_address_;
@@ -348,10 +348,10 @@ int UDPSocketWin::GetLocalAddress(IPEndPoint* address) const {
     SockaddrStorage storage;
     if (getsockname(socket_, storage.addr, &storage.addr_len))
       return MapSystemError(WSAGetLastError());
-    scoped_ptr<IPEndPoint> address(new IPEndPoint());
-    if (!address->FromSockAddr(storage.addr, storage.addr_len))
+    scoped_ptr<IPEndPoint> local_address(new IPEndPoint());
+    if (!local_address->FromSockAddr(storage.addr, storage.addr_len))
       return ERR_ADDRESS_INVALID;
-    local_address_.reset(address.release());
+    local_address_.reset(local_address.release());
     net_log_.AddEvent(NetLog::TYPE_UDP_LOCAL_ADDRESS,
                       CreateNetLogUDPConnectCallback(local_address_.get()));
   }
