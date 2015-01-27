@@ -45,8 +45,8 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
 }
 
 // Checks that MakeWebKeyboardEvent returns a correct windowsKeyCode.
-#if defined(THREAD_SANITIZER)
-// This test fails under ThreadSanitizer on Linux, see
+#if defined(OS_CHROMEOS) || defined(THREAD_SANITIZER)
+// Fails on Chrome OS and under ThreadSanitizer on Linux, see
 // https://crbug.com/449103.
 #define MAYBE_TestMakeWebKeyboardEventWindowsKeyCode \
     DISABLED_TestMakeWebKeyboardEventWindowsKeyCode
