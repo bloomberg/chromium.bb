@@ -224,7 +224,8 @@ FtpNetworkTransaction::FtpNetworkTransaction(
       data_connection_port_(0),
       socket_factory_(socket_factory),
       next_state_(STATE_NONE),
-      state_after_data_connect_complete_(STATE_CTRL_WRITE_SIZE) {}
+      state_after_data_connect_complete_(STATE_NONE) {
+}
 
 FtpNetworkTransaction::~FtpNetworkTransaction() {
 }
@@ -345,20 +346,13 @@ void FtpNetworkTransaction::ResetStateForRestart() {
   ctrl_socket_.reset();
   data_socket_.reset();
   next_state_ = STATE_NONE;
-  state_after_data_connect_complete_ = STATE_CTRL_WRITE_SIZE;
+  state_after_data_connect_complete_ = STATE_NONE;
 }
 
-void FtpNetworkTransaction::ResetDataConnectionAfterError(State next_state) {
-  // The server _might_ have reset the data connection
-  // (see RFC 959 3.2. ESTABLISHING DATA CONNECTIONS:
-  // "The server MUST close the data connection under the following
-  // conditions:
-  // ...
-  // 5. An irrecoverable error condition occurs.")
-  //
-  // It is ambiguous what an irrecoverable error condition is,
-  // so we take no chances.
-  state_after_data_connect_complete_ = next_state;
+void FtpNetworkTransaction::EstablishDataConnection(State state_after_connect) {
+  DCHECK(state_after_connect == STATE_CTRL_WRITE_RETR ||
+         state_after_connect == STATE_CTRL_WRITE_LIST);
+  state_after_data_connect_complete_ = state_after_connect;
   next_state_ = use_epsv_ ? STATE_CTRL_WRITE_EPSV : STATE_CTRL_WRITE_PASV;
 }
 
@@ -944,7 +938,7 @@ int FtpNetworkTransaction::ProcessResponseTYPE(
     case ERROR_CLASS_INITIATED:
       return Stop(ERR_INVALID_RESPONSE);
     case ERROR_CLASS_OK:
-      next_state_ = use_epsv_ ? STATE_CTRL_WRITE_EPSV : STATE_CTRL_WRITE_PASV;
+      next_state_ = STATE_CTRL_WRITE_SIZE;
       break;
     case ERROR_CLASS_INFO_NEEDED:
       return Stop(ERR_INVALID_RESPONSE);
@@ -1056,19 +1050,7 @@ int FtpNetworkTransaction::ProcessResponseRETR(
     case ERROR_CLASS_TRANSIENT_ERROR:
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
     case ERROR_CLASS_PERMANENT_ERROR:
-      // Code 550 means "Failed to open file". Other codes are unrelated,
-      // like "Not logged in" etc.
-      if (response.status_code != 550 || resource_type_ == RESOURCE_TYPE_FILE)
-        return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
-
-      // It's possible that RETR failed because the path is a directory.
-      resource_type_ = RESOURCE_TYPE_DIRECTORY;
-
-      // We're going to try CWD next, but first send a PASV one more time,
-      // because some FTP servers, including FileZilla, require that.
-      // See http://crbug.com/25316.
-      next_state_ = use_epsv_ ? STATE_CTRL_WRITE_EPSV : STATE_CTRL_WRITE_PASV;
-      break;
+      return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
     default:
       NOTREACHED();
       return Stop(ERR_UNEXPECTED);
@@ -1090,15 +1072,8 @@ int FtpNetworkTransaction::DoCtrlWriteSIZE() {
 
 int FtpNetworkTransaction::ProcessResponseSIZE(
     const FtpCtrlResponse& response) {
-  State state_after_size;
-  if (resource_type_ == RESOURCE_TYPE_FILE)
-    state_after_size = STATE_CTRL_WRITE_RETR;
-  else
-    state_after_size = STATE_CTRL_WRITE_CWD;
-
   switch (GetErrorClass(response.status_code)) {
     case ERROR_CLASS_INITIATED:
-      next_state_ = state_after_size;
       break;
     case ERROR_CLASS_OK:
       if (response.lines.size() != 1)
@@ -1113,14 +1088,10 @@ int FtpNetworkTransaction::ProcessResponseSIZE(
       // Some FTP servers (for example, the qnx one) send a SIZE even for
       // directories.
       response_.expected_content_size = size;
-
-      next_state_ = state_after_size;
       break;
     case ERROR_CLASS_INFO_NEEDED:
-      next_state_ = state_after_size;
       break;
     case ERROR_CLASS_TRANSIENT_ERROR:
-      ResetDataConnectionAfterError(state_after_size);
       break;
     case ERROR_CLASS_PERMANENT_ERROR:
       // It's possible that SIZE failed because the path is a directory.
@@ -1128,14 +1099,15 @@ int FtpNetworkTransaction::ProcessResponseSIZE(
           response.status_code != 550) {
         return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
       }
-
-      ResetDataConnectionAfterError(state_after_size);
       break;
     default:
       NOTREACHED();
       return Stop(ERR_UNEXPECTED);
   }
-
+  if (resource_type_ == RESOURCE_TYPE_FILE)
+    EstablishDataConnection(STATE_CTRL_WRITE_RETR);
+  else
+    next_state_ = STATE_CTRL_WRITE_CWD;
   return OK;
 }
 
@@ -1154,7 +1126,7 @@ int FtpNetworkTransaction::ProcessResponseCWD(const FtpCtrlResponse& response) {
     case ERROR_CLASS_INITIATED:
       return Stop(ERR_INVALID_RESPONSE);
     case ERROR_CLASS_OK:
-      next_state_ = STATE_CTRL_WRITE_LIST;
+      EstablishDataConnection(STATE_CTRL_WRITE_LIST);
       break;
     case ERROR_CLASS_INFO_NEEDED:
       return Stop(ERR_INVALID_RESPONSE);
@@ -1191,7 +1163,7 @@ int FtpNetworkTransaction::ProcessResponseCWDNotADirectory() {
   // an access error (http://crbug.com/56734). Try RETR just to be sure.
   resource_type_ = RESOURCE_TYPE_FILE;
 
-  ResetDataConnectionAfterError(STATE_CTRL_WRITE_RETR);
+  EstablishDataConnection(STATE_CTRL_WRITE_RETR);
   return OK;
 }
 
