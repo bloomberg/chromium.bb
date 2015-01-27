@@ -39,6 +39,7 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/media/midi_permission_context_factory.h"
+#include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/chrome_net_log.h"

@@ -272,6 +272,8 @@
       'renderer/media/media_stream_dispatcher_eventhandler.h',
       'renderer/media/media_stream_track.cc',
       'renderer/media/media_stream_track.h',
+      'renderer/media/media_permission_dispatcher.cc',
+      'renderer/media/media_permission_dispatcher.h',
       'renderer/media/midi_dispatcher.cc',
       'renderer/media/midi_dispatcher.h',
       'renderer/media/midi_message_filter.cc',

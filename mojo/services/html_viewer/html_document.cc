@@ -277,8 +277,10 @@ void HTMLDocument::didNavigateWithinPage(
 
 blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {
   if (!web_encrypted_media_client_) {
+    // TODO(xhwang): Hook up permission services and add a MediaPermission
+    // implementation for HTMLDocument.
     web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
-        make_scoped_ptr(new media::DefaultCdmFactory())));
+        make_scoped_ptr(new media::DefaultCdmFactory()), nullptr));
   }
   return web_encrypted_media_client_.get();
 }

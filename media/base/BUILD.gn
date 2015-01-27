@@ -113,6 +113,8 @@ source_set("base") {
     "media_log.cc",
     "media_log.h",
     "media_log_event.h",
+    "media_permission.cc",
+    "media_permission.h",
     "media_switches.cc",
     "media_switches.h",
     "multi_channel_resampler.cc",

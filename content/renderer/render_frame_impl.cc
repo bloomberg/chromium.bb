@@ -72,6 +72,7 @@
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/crypto/render_cdm_factory.h"
+#include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_renderer_factory.h"
 #include "content/renderer/media/midi_dispatcher.h"
@@ -675,6 +676,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       handling_select_range_(false),
       notification_permission_dispatcher_(NULL),
       web_user_media_client_(NULL),
+      media_permission_dispatcher_(NULL),
       midi_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
@@ -3389,8 +3391,12 @@ blink::WebEncryptedMediaClient* RenderFrameImpl::encryptedMediaClient() {
 #else
     scoped_ptr<media::CdmFactory> cdm_factory(new RenderCdmFactory());
 #endif
-    web_encrypted_media_client_.reset(
-        new media::WebEncryptedMediaClientImpl(cdm_factory.Pass()));
+
+    DCHECK(!media_permission_dispatcher_);
+    media_permission_dispatcher_ = new MediaPermissionDispatcher(this);
+
+    web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
+        cdm_factory.Pass(), media_permission_dispatcher_));
   }
   return web_encrypted_media_client_.get();
 }

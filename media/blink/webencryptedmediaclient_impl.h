@@ -13,10 +13,13 @@
 
 namespace media {
 
+class MediaPermission;
+
 class MEDIA_EXPORT WebEncryptedMediaClientImpl
     : public blink::WebEncryptedMediaClient {
  public:
-  WebEncryptedMediaClientImpl(scoped_ptr<CdmFactory> cdm_factory);
+  WebEncryptedMediaClientImpl(scoped_ptr<CdmFactory> cdm_factory,
+                              MediaPermission* media_permission);
   virtual ~WebEncryptedMediaClientImpl();
 
   // WebEncryptedMediaClient implementation.

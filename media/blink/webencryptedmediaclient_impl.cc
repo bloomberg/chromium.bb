@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/key_systems.h"
+#include "media/base/media_permission.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaRequest.h"
 #include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
@@ -131,8 +132,11 @@ static bool GetSupportedConfiguration(
 }
 
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
-    scoped_ptr<CdmFactory> cdm_factory)
+    scoped_ptr<CdmFactory> cdm_factory,
+    MediaPermission* /* media_permission */)
     : cdm_factory_(cdm_factory.Pass()) {
+  // TODO(sandersd): Use |media_permission| to check for media permissions in
+  // this class.
 }
 
 WebEncryptedMediaClientImpl::~WebEncryptedMediaClientImpl() {

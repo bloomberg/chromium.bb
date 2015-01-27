@@ -79,6 +79,7 @@ class GeolocationDispatcher;
 class ManifestManager;
 class MediaStreamDispatcher;
 class MediaStreamRendererFactory;
+class MediaPermissionDispatcher;
 class MidiDispatcher;
 class NotificationPermissionDispatcher;
 class PageState;
@@ -815,6 +816,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // EncryptedMediaClient attached to this frame; lazily initialized.
   scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
+
+  // The media permission dispatcher attached to this frame, lazily initialized.
+  MediaPermissionDispatcher* media_permission_dispatcher_;
 
   // MidiClient attached to this frame; lazily initialized.
   MidiDispatcher* midi_dispatcher_;

@@ -325,6 +325,8 @@
         'base/media_log.h',
         'base/media_log_event.h',
         'base/media_posix.cc',
+        'base/media_permission.cc',
+        'base/media_permission.h',
         'base/media_switches.cc',
         'base/media_switches.h',
         'base/media_win.cc',

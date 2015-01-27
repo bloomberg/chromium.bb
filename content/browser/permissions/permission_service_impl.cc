@@ -18,6 +18,8 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
       return PERMISSION_MIDI_SYSEX;
     case PERMISSION_NAME_NOTIFICATIONS:
       return PERMISSION_NOTIFICATIONS;
+    case PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER:
+      return PERMISSION_PROTECTED_MEDIA;
   }
 
   NOTREACHED();
