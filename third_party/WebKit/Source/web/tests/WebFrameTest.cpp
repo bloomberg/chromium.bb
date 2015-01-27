@@ -688,8 +688,6 @@ class FixedLayoutTestWebViewClient : public FrameTestHelpers::TestWebViewClient 
 };
 
 class FakeCompositingWebViewClient : public FixedLayoutTestWebViewClient {
-public:
-    virtual bool enterFullScreen() override { return true; }
 };
 
 // Viewport settings need to be set before the page gets loaded
