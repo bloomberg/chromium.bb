@@ -205,7 +205,16 @@ class InputRouterImplTest : public testing::Test {
         SyntheticWebMouseWheelEventBuilder::Build(phase)));
   }
 
-  void SimulateGestureEvent(const WebGestureEvent& gesture) {
+  void SimulateGestureEvent(WebGestureEvent gesture) {
+    // Ensure non-zero touchscreen fling velocities, as the router will
+    // validate aganst such.
+    if (gesture.type == WebInputEvent::GestureFlingStart &&
+        gesture.sourceDevice == blink::WebGestureDeviceTouchscreen &&
+        !gesture.data.flingStart.velocityX &&
+        !gesture.data.flingStart.velocityY) {
+      gesture.data.flingStart.velocityX = 5.f;
+    }
+
     input_router_->SendGestureEvent(GestureEventWithLatencyInfo(gesture));
   }
 

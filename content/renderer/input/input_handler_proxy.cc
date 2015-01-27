@@ -482,6 +482,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
       const float vx = gesture_event.data.flingStart.velocityX;
       const float vy = gesture_event.data.flingStart.velocityY;
       current_fling_velocity_ = gfx::Vector2dF(vx, vy);
+      DCHECK(!current_fling_velocity_.IsZero());
       fling_curve_.reset(client_->CreateFlingAnimationCurve(
           gesture_event.sourceDevice,
           WebFloatPoint(vx, vy),
@@ -640,6 +641,7 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
       gfx::Vector2dF new_fling_velocity(
           gesture_event.data.flingStart.velocityX,
           gesture_event.data.flingStart.velocityY);
+      DCHECK(!new_fling_velocity.IsZero());
 
       if (fling_boosted)
         current_fling_velocity_ += new_fling_velocity;

@@ -40,8 +40,19 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
       if (!scrolling_)
         error_msg->append("Scroll update outside of scroll\n");
       break;
-    case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureFlingStart:
+      if (event.sourceDevice == blink::WebGestureDeviceTouchscreen &&
+          !event.data.flingStart.velocityX &&
+          !event.data.flingStart.velocityY) {
+        error_msg->append("Zero velocity touchscreen fling\n");
+      }
+      if (!scrolling_)
+        error_msg->append("Fling start outside of scroll\n");
+      if (pinching_)
+        error_msg->append("Flinging while pinching\n");
+      scrolling_ = false;
+      break;
+    case WebInputEvent::GestureScrollEnd:
       if (!scrolling_)
         error_msg->append("Scroll end outside of scroll\n");
       if (pinching_)

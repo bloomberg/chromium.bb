@@ -48,11 +48,20 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
     case WebInputEvent::GestureFlingStart:
       if (gesture_event->sourceDevice != blink::WebGestureDeviceTouchscreen)
         break;
+      // Touchscreen flings should always have non-zero velocity.
+      DCHECK(gesture_event->data.flingStart.velocityX ||
+             gesture_event->data.flingStart.velocityY);
       if (!drop_scroll_gesture_events_) {
         if (allowed_touch_action_ == TOUCH_ACTION_PAN_X)
           gesture_event->data.flingStart.velocityY = 0;
         if (allowed_touch_action_ == TOUCH_ACTION_PAN_Y)
           gesture_event->data.flingStart.velocityX = 0;
+        // As the renderer expects a scroll-ending event, but does not expect a
+        // zero-velocity fling, convert the now zero-velocity fling accordingly.
+        if (!gesture_event->data.flingStart.velocityX &&
+            !gesture_event->data.flingStart.velocityY) {
+          gesture_event->type = WebInputEvent::GestureScrollEnd;
+        }
       }
       return FilterScrollEndingGesture();
 

@@ -649,4 +649,42 @@ TEST(TouchActionFilterTest, TouchActionResetMidSequence) {
   EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
 }
 
+TEST(TouchActionFilterTest, ZeroVelocityFlingsConvertedToScrollEnd) {
+  TouchActionFilter filter;
+  const float kFlingX = 7;
+  const float kFlingY = -4;
+
+  {
+    // Scrolls hinted mostly in the Y axis will suppress flings with a
+    // component solely on the X axis, converting them to a GestureScrollEnd.
+    filter.ResetTouchAction();
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN_Y);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(-6, 7);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
+        kFlingX, 0, kSourceDevice);
+    EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
+    EXPECT_EQ(WebInputEvent::GestureScrollEnd, fling_start.type);
+  }
+
+  filter.ResetTouchAction();
+
+  {
+    // Scrolls hinted mostly in the X axis will suppress flings with a
+    // component solely on the Y axis, converting them to a GestureScrollEnd.
+    filter.ResetTouchAction();
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN_X);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(-7, 6);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
+        0, kFlingY, kSourceDevice);
+    EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
+    EXPECT_EQ(WebInputEvent::GestureScrollEnd, fling_start.type);
+  }
+}
+
 }  // namespace content
