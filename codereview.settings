@@ -1,7 +1,7 @@
-# This file is used by gcl to get repository specific information.
+# This file is used by git-cl to get repository specific information.
 CODE_REVIEW_SERVER: codereview.chromium.org
 CC_LIST: native-client-reviews@googlegroups.com
-VIEW_VC: http://src.chromium.org/viewvc/native_client?view=rev&revision=
+VIEW_VC: https://chromium.googlesource.com/native_client/src/native_client/+/
 STATUS: http://nativeclient-status.appspot.com/status
 TRY_ON_UPLOAD: True
 TRYSERVER_PROJECT: nacl
