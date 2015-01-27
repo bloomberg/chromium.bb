@@ -2366,7 +2366,6 @@ int PDFiumEngine::GetNumberOfPages() {
   return pages_.size();
 }
 
-
 pp::VarArray PDFiumEngine::GetBookmarks() {
   pp::VarDictionary dict = TraverseBookmarks(doc_, NULL);
   // The root bookmark contains no useful information.

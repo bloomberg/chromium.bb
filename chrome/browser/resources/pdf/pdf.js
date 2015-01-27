@@ -670,5 +670,16 @@ PDFViewer.prototype = {
    */
   get viewport() {
     return this.viewport_;
+  },
+
+  /**
+   * Each bookmark is an Object containing a:
+   * - title
+   * - page (optional)
+   * - array of children (themselves bookmarks)
+   * @type {Array} the top-level bookmarks of the PDF.
+   */
+  get bookmarks() {
+    return this.bookmarks_;
   }
 };

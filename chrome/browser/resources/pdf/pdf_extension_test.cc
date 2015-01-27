@@ -40,7 +40,7 @@ class PDFExtensionTest : public ExtensionApiTest {
     ExtensionApiTest::TearDownOnMainThread();
   }
 
-  void RunTestsInFile(std::string filename) {
+  void RunTestsInFile(std::string filename, std::string pdf_filename) {
     base::FilePath pdf_path;
     ASSERT_TRUE(PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path));
     ASSERT_TRUE(
@@ -60,7 +60,7 @@ class PDFExtensionTest : public ExtensionApiTest {
 
     extensions::ResultCatcher catcher;
 
-    GURL url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+    GURL url(embedded_test_server()->GetURL("/pdf/" + pdf_filename));
     GURL extension_url(
         "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html?" +
         url.spec());
@@ -85,13 +85,17 @@ class PDFExtensionTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
-  RunTestsInFile("basic_test.js");
+  RunTestsInFile("basic_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BasicPlugin) {
-  RunTestsInFile("basic_plugin_test.js");
+  RunTestsInFile("basic_plugin_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Viewport) {
-  RunTestsInFile("viewport_test.js");
+  RunTestsInFile("viewport_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Bookmark) {
+  RunTestsInFile("bookmarks_test.js", "test-bookmarks.pdf");
 }
