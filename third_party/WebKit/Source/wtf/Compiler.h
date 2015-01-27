@@ -134,16 +134,6 @@
 
 #define ALLOW_UNUSED_LOCAL(x) false ? (void)x : (void)0
 
-/* REFERENCED_FROM_ASM */
-
-#ifndef REFERENCED_FROM_ASM
-#if COMPILER(GCC)
-#define REFERENCED_FROM_ASM __attribute__((used))
-#else
-#define REFERENCED_FROM_ASM
-#endif
-#endif
-
 
 /* OBJC_CLASS */
 
