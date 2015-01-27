@@ -175,6 +175,7 @@ base::DictionaryValue* SessionTabToValue(const sync_pb::SessionTab& proto) {
   SET_BYTES(favicon);
   SET_ENUM(favicon_type, GetFaviconTypeString);
   SET_STR(favicon_source);
+  SET_REP(variation_id, MakeInt64Value);
   return value;
 }
 

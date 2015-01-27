@@ -24,6 +24,7 @@
 #include "components/sessions/session_types.h"
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "components/variations/variations_associated_data.h"
 #include "sync/api/syncable_service.h"
 
 class Profile;
@@ -202,6 +203,8 @@ class SessionsSyncManager : public syncer::SyncableService,
                            SwappedOutOnRestore);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            ProcessRemoteDeleteOfLocalSession);
+  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
+                           SetVariationIds);
 
   void InitializeCurrentMachineTag();
 
@@ -298,6 +301,10 @@ class SessionsSyncManager : public syncer::SyncableService,
       const SyncedTabDelegate& tab_delegate,
       base::Time mtime,
       sessions::SessionTab* session_tab);
+
+  // Sets |variation_ids| field of |session_tab| with the ids of the currently
+  // assigned variations which should be sent to sync.
+  static void SetVariationIds(sessions::SessionTab* session_tab);
 
   // Populates |specifics| based on the data in |tab_delegate|.
   void LocalTabDelegateToSpecifics(const SyncedTabDelegate& tab_delegate,

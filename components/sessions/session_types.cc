@@ -39,6 +39,9 @@ void SessionTab::SetFromSyncData(const sync_pb::SessionTab& sync_data,
         SerializedNavigationEntry::FromSyncData(i, sync_data.navigation(i)));
   }
   session_storage_persistent_id.clear();
+  variation_ids.clear();
+  for (int i = 0; i < sync_data.variation_id_size(); ++i)
+    variation_ids.push_back(sync_data.variation_id(i));
 }
 
 sync_pb::SessionTab SessionTab::ToSyncData() const {
@@ -49,9 +52,11 @@ sync_pb::SessionTab SessionTab::ToSyncData() const {
   sync_data.set_current_navigation_index(current_navigation_index);
   sync_data.set_pinned(pinned);
   sync_data.set_extension_app_id(extension_app_id);
-  for (std::vector<SerializedNavigationEntry>::const_iterator
-           it = navigations.begin(); it != navigations.end(); ++it) {
-    *sync_data.add_navigation() = it->ToSyncData();
+  for (const SerializedNavigationEntry& navigation : navigations) {
+    *sync_data.add_navigation() = navigation.ToSyncData();
+  }
+  for (const variations::VariationID variation_id : variation_ids) {
+    sync_data.add_variation_id(variation_id);
   }
   return sync_data;
 }

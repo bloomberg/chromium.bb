@@ -81,6 +81,8 @@ message SessionTab {
   optional FaviconType favicon_type = 9;
   // The url of the actual favicon (as opposed to the page using the favicon).
   optional string favicon_source = 11;
+  // Ids of the currently assigned variations which should be sent to sync.
+  repeated uint64 variation_id = 12;
 }
 
 message TabNavigation {

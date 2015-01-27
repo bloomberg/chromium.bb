@@ -15,6 +15,7 @@
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/session_id.h"
 #include "components/sessions/sessions_export.h"
+#include "components/variations/variations_associated_data.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
@@ -100,6 +101,9 @@ struct SESSIONS_EXPORT SessionTab {
 
   // For reassociating sessionStorage.
   std::string session_storage_persistent_id;
+
+  // Ids of the currently assigned variations which should be sent to sync.
+  std::vector<variations::VariationID> variation_ids;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionTab);

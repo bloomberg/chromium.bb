@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
@@ -900,6 +901,7 @@ void SessionsSyncManager::LocalTabDelegateToSpecifics(
                               tab_delegate.GetSessionId(),
                               tab_delegate.GetSyncId());
   SetSessionTabFromDelegate(tab_delegate, base::Time::Now(), session_tab);
+  SetVariationIds(session_tab);
   sync_pb::SessionTab tab_s = session_tab->ToSyncData();
   specifics->set_session_tag(current_machine_tag_);
   specifics->set_tab_node_id(tab_delegate.GetSyncId());
@@ -1017,6 +1019,19 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
     }
   }
   session_tab->session_storage_persistent_id.clear();
+}
+
+// static.
+void SessionsSyncManager::SetVariationIds(sessions::SessionTab* session_tab) {
+  base::FieldTrial::ActiveGroups active_groups;
+  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+  for (const base::FieldTrial::ActiveGroup& group : active_groups) {
+    const variations::VariationID id =
+        variations::GetGoogleVariationID(variations::CHROME_SYNC_SERVICE,
+                                         group.trial_name, group.group_name);
+    if (id != variations::EMPTY_ID)
+      session_tab->variation_ids.push_back(id);
+  }
 }
 
 FaviconCache* SessionsSyncManager::GetFaviconCache() {

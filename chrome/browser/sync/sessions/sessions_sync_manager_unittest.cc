@@ -204,6 +204,19 @@ void AddTabsToSyncDataList(const std::vector<sync_pb::SessionSpecifics> tabs,
   }
 }
 
+// Creates a field trial with the specified |trial_name| and |group_name| and
+// registers an associated |variation_id| for it for the given |service|.
+void CreateAndActivateFieldTrial(const std::string& trial_name,
+                                 const std::string& group_name,
+                                 variations::VariationID variation_id,
+                                 variations::IDCollectionKey service) {
+  base::FieldTrialList::CreateFieldTrial(trial_name, group_name);
+  variations::AssociateGoogleVariationID(service, trial_name, group_name,
+                                         variation_id);
+  // Access the trial to activate it.
+  base::FieldTrialList::FindFullName(trial_name);
+}
+
 class DummyRouter : public LocalSessionEventRouter {
  public:
   ~DummyRouter() override {}
@@ -654,6 +667,30 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateCurrentInvalid) {
 
   EXPECT_EQ(2, session_tab.current_navigation_index);
   ASSERT_EQ(3u, session_tab.navigations.size());
+}
+
+// Tests that variation ids are set correctly.
+TEST_F(SessionsSyncManagerTest, SetVariationIds) {
+  // Create two trials with a group which has a variation id for Chrome Sync
+  // and one with a variation id for another service.
+  const variations::VariationID kVariationId1 = 3300200;
+  const variations::VariationID kVariationId2 = 3300300;
+  const variations::VariationID kVariationId3 = 3300400;
+
+  base::FieldTrialList field_trial_list(NULL);
+  CreateAndActivateFieldTrial("trial name 1", "group name", kVariationId1,
+                              variations::CHROME_SYNC_SERVICE);
+  CreateAndActivateFieldTrial("trial name 2", "group name", kVariationId2,
+                              variations::CHROME_SYNC_SERVICE);
+  CreateAndActivateFieldTrial("trial name 3", "group name", kVariationId3,
+                              variations::GOOGLE_UPDATE_SERVICE);
+
+  sessions::SessionTab session_tab;
+  manager()->SetVariationIds(&session_tab);
+
+  ASSERT_EQ(2u, session_tab.variation_ids.size());
+  EXPECT_EQ(kVariationId1, session_tab.variation_ids[0]);
+  EXPECT_EQ(kVariationId2, session_tab.variation_ids[1]);
 }
 
 // Tests that for supervised users blocked navigations are recorded and marked
