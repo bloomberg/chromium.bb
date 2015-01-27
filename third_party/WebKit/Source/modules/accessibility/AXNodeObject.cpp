@@ -92,6 +92,10 @@ static String accessibleNameForNode(Node* node)
         const AtomicString& alt = toHTMLElement(node)->getAttribute(altAttr);
         if (!alt.isEmpty())
             return alt;
+
+        const AtomicString& title = toHTMLElement(node)->getAttribute(titleAttr);
+        if (!title.isEmpty())
+            return title;
     }
 
     return String();
