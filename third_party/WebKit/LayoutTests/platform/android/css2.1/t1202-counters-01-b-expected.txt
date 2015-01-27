@@ -14,7 +14,7 @@ layer at (0,0) size 800x100
       RenderBlock {DIV} at (0,36) size 784x20
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (0,0) size 4x19
+            LayoutCounter at (0,0) size 4x19
               text run at (0,0) width 4: "."
             RenderText at (4,0) size 6x19
               text run at (4,0) width 6: "z"
@@ -22,7 +22,7 @@ layer at (0,0) size 800x100
           text run at (10,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (14,0) size 4x19
+            LayoutCounter at (14,0) size 4x19
               text run at (14,0) width 4: "."
             RenderText at (18,0) size 6x19
               text run at (18,0) width 6: "z"
@@ -30,7 +30,7 @@ layer at (0,0) size 800x100
           text run at (24,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (28,0) size 4x19
+            LayoutCounter at (28,0) size 4x19
               text run at (28,0) width 4: "."
             RenderText at (32,0) size 6x19
               text run at (32,0) width 6: "z"
@@ -38,7 +38,7 @@ layer at (0,0) size 800x100
           text run at (38,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (42,0) size 4x19
+            LayoutCounter at (42,0) size 4x19
               text run at (42,0) width 4: "."
             RenderText at (46,0) size 6x19
               text run at (46,0) width 6: "z"
@@ -46,7 +46,7 @@ layer at (0,0) size 800x100
           text run at (52,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (56,0) size 4x19
+            LayoutCounter at (56,0) size 4x19
               text run at (56,0) width 4: "."
             RenderText at (60,0) size 6x19
               text run at (60,0) width 6: "z"
@@ -54,7 +54,7 @@ layer at (0,0) size 800x100
           text run at (66,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (70,0) size 4x19
+            LayoutCounter at (70,0) size 4x19
               text run at (70,0) width 4: "."
             RenderText at (74,0) size 6x19
               text run at (74,0) width 6: "z"
@@ -62,7 +62,7 @@ layer at (0,0) size 800x100
           text run at (80,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (84,0) size 4x19
+            LayoutCounter at (84,0) size 4x19
               text run at (84,0) width 4: "."
             RenderText at (88,0) size 6x19
               text run at (88,0) width 6: "z"
@@ -70,7 +70,7 @@ layer at (0,0) size 800x100
           text run at (94,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (98,0) size 4x19
+            LayoutCounter at (98,0) size 4x19
               text run at (98,0) width 4: "."
             RenderText at (102,0) size 6x19
               text run at (102,0) width 6: "z"
@@ -78,7 +78,7 @@ layer at (0,0) size 800x100
           text run at (108,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (112,0) size 4x19
+            LayoutCounter at (112,0) size 4x19
               text run at (112,0) width 4: "."
             RenderText at (116,0) size 6x19
               text run at (116,0) width 6: "z"
@@ -86,7 +86,7 @@ layer at (0,0) size 800x100
           text run at (122,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (126,0) size 4x19
+            LayoutCounter at (126,0) size 4x19
               text run at (126,0) width 4: "."
             RenderText at (130,0) size 6x19
               text run at (130,0) width 6: "z"
@@ -94,7 +94,7 @@ layer at (0,0) size 800x100
           text run at (136,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (140,0) size 4x19
+            LayoutCounter at (140,0) size 4x19
               text run at (140,0) width 4: "."
             RenderText at (144,0) size 6x19
               text run at (144,0) width 6: "z"
@@ -102,7 +102,7 @@ layer at (0,0) size 800x100
           text run at (150,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
           RenderInline (generated) at (0,0) size 10x19
-            RenderCounter at (154,0) size 4x19
+            LayoutCounter at (154,0) size 4x19
               text run at (154,0) width 4: "."
             RenderText at (158,0) size 6x19
               text run at (158,0) width 6: "z"

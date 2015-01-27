@@ -47,6 +47,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -58,7 +59,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
-#include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListBox.h"
@@ -2157,14 +2157,14 @@ void FrameView::postLayoutTimerFired(Timer<FrameView>*)
 void FrameView::updateCounters()
 {
     RenderView* view = renderView();
-    if (!view->hasRenderCounters())
+    if (!view->hasLayoutCounters())
         return;
 
     for (RenderObject* renderer = view; renderer; renderer = renderer->nextInPreOrder()) {
         if (!renderer->isCounter())
             continue;
 
-        toRenderCounter(renderer)->updateCounter();
+        toLayoutCounter(renderer)->updateCounter();
     }
 }
 

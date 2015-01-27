@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/rendering/style/ContentData.h"
 
-#include "core/rendering/RenderCounter.h"
+#include "core/layout/LayoutCounter.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/RenderImageResourceStyleImage.h"
@@ -86,7 +86,7 @@ RenderObject* TextContentData::createRenderer(Document& doc, RenderStyle* pseudo
 
 RenderObject* CounterContentData::createRenderer(Document& doc, RenderStyle* pseudoStyle) const
 {
-    RenderObject* renderer = new RenderCounter(&doc, *m_counter);
+    RenderObject* renderer = new LayoutCounter(&doc, *m_counter);
     renderer->setPseudoStyle(pseudoStyle);
     return renderer;
 }

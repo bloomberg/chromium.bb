@@ -20,9 +20,9 @@
  */
 
 #include "config.h"
-#include "core/rendering/CounterNode.h"
+#include "core/layout/CounterNode.h"
 
-#include "core/rendering/RenderCounter.h"
+#include "core/layout/LayoutCounter.h"
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -153,7 +153,7 @@ int CounterNode::computeCountInParent() const
     return m_parent->m_value + increment;
 }
 
-void CounterNode::addRenderer(RenderCounter* value)
+void CounterNode::addRenderer(LayoutCounter* value)
 {
     if (!value) {
         ASSERT_NOT_REACHED();
@@ -164,7 +164,7 @@ void CounterNode::addRenderer(RenderCounter* value)
         value->m_counterNode->removeRenderer(value);
     }
     ASSERT(!value->m_nextForSameCounter);
-    for (RenderCounter* iterator = m_rootRenderer;iterator; iterator = iterator->m_nextForSameCounter) {
+    for (LayoutCounter* iterator = m_rootRenderer;iterator; iterator = iterator->m_nextForSameCounter) {
         if (iterator == value) {
             ASSERT_NOT_REACHED();
             return;
@@ -181,7 +181,7 @@ void CounterNode::addRenderer(RenderCounter* value)
     }
 }
 
-void CounterNode::removeRenderer(RenderCounter* value)
+void CounterNode::removeRenderer(LayoutCounter* value)
 {
     if (!value) {
         ASSERT_NOT_REACHED();
@@ -191,8 +191,8 @@ void CounterNode::removeRenderer(RenderCounter* value)
         ASSERT_NOT_REACHED();
         value->m_counterNode->removeRenderer(value);
     }
-    RenderCounter* previous = 0;
-    for (RenderCounter* iterator = m_rootRenderer;iterator; iterator = iterator->m_nextForSameCounter) {
+    LayoutCounter* previous = 0;
+    for (LayoutCounter* iterator = m_rootRenderer;iterator; iterator = iterator->m_nextForSameCounter) {
         if (iterator == value) {
             if (previous)
                 previous->m_nextForSameCounter = value->m_nextForSameCounter;
@@ -240,14 +240,14 @@ void CounterNode::insertAfter(CounterNode* newChild, CounterNode* refChild, cons
     ASSERT(!newChild->m_parent);
     ASSERT(!newChild->m_previousSibling);
     ASSERT(!newChild->m_nextSibling);
-    // If the refChild is not our child we can not complete the request. This hardens against bugs in RenderCounter.
-    // When renderers are reparented it may request that we insert counter nodes improperly.
+    // If the refChild is not our child we can not complete the request. This hardens against bugs in LayoutCounter.
+    // When layoutObjects are reparented it may request that we insert counter nodes improperly.
     if (refChild && refChild->m_parent != this)
         return;
 
     if (newChild->m_hasResetType) {
         while (m_lastChild != refChild)
-            RenderCounter::destroyCounterNode(m_lastChild->owner(), identifier);
+            LayoutCounter::destroyCounterNode(m_lastChild->owner(), identifier);
     }
 
     CounterNode* next;
@@ -306,8 +306,9 @@ void CounterNode::insertAfter(CounterNode* newChild, CounterNode* refChild, cons
         if (next) {
             ASSERT(next->m_previousSibling == newChild);
             next->m_previousSibling = last;
-        } else
+        } else {
             m_lastChild = last;
+        }
         for (next = first; ; next = next->m_nextSibling) {
             next->m_parent = this;
             if (last == next)
@@ -334,16 +335,16 @@ void CounterNode::removeChild(CounterNode* oldChild)
     oldChild->m_previousSibling = 0;
     oldChild->m_parent = 0;
 
-    if (previous)
+    if (previous) {
         previous->m_nextSibling = next;
-    else {
+    } else {
         ASSERT(m_firstChild == oldChild);
         m_firstChild = next;
     }
 
-    if (next)
+    if (next) {
         next->m_previousSibling = previous;
-    else {
+    } else {
         ASSERT(m_lastChild == oldChild);
         m_lastChild = previous;
     }

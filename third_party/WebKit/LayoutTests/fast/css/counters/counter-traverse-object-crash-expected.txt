@@ -1,2 +1,2 @@
-This tests that we do not crash when RenderCounter traverses detached render trees. PASS
+This tests that we do not crash when LayoutCounter traverses detached render trees. PASS
 

@@ -1,4 +1,4 @@
-This tests that the text for RenderCounter is exposed correctly.
+This tests that the text for LayoutCounter is exposed correctly.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

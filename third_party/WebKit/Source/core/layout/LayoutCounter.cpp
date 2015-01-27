@@ -20,13 +20,13 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderCounter.h"
+#include "core/layout/LayoutCounter.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLOListElement.h"
-#include "core/rendering/CounterNode.h"
+#include "core/layout/CounterNode.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
@@ -274,8 +274,9 @@ static bool findPlaceForCounter(RenderObject& counterOwner, const AtomicString& 
                         currentRenderer = parentElement(*currentRenderer)->renderer();
                         continue;
                     }
-                } else
+                } else {
                     previousSiblingProtector = currentCounter;
+                }
                 currentRenderer = previousSiblingOrParent(*currentRenderer);
                 continue;
             }
@@ -312,9 +313,9 @@ static CounterNode* makeCounterNode(RenderObject& object, const AtomicString& id
     if (findPlaceForCounter(object, identifier, isReset, newParent, newPreviousSibling))
         newParent->insertAfter(newNode.get(), newPreviousSibling.get(), identifier);
     CounterMap* nodeMap;
-    if (object.hasCounterNodeMap())
+    if (object.hasCounterNodeMap()) {
         nodeMap = counterMaps().get(&object);
-    else {
+    } else {
         nodeMap = new CounterMap;
         counterMaps().set(&object, adoptPtr(nodeMap));
         object.setHasCounterNodeMap(true);
@@ -344,20 +345,20 @@ static CounterNode* makeCounterNode(RenderObject& object, const AtomicString& id
     return newNode.get();
 }
 
-RenderCounter::RenderCounter(Document* node, const CounterContent& counter)
+LayoutCounter::LayoutCounter(Document* node, const CounterContent& counter)
     : RenderText(node, StringImpl::empty())
     , m_counter(counter)
     , m_counterNode(0)
     , m_nextForSameCounter(0)
 {
-    view()->addRenderCounter();
+    view()->addLayoutCounter();
 }
 
-RenderCounter::~RenderCounter()
+LayoutCounter::~LayoutCounter()
 {
 }
 
-void RenderCounter::destroy()
+void LayoutCounter::destroy()
 {
     if (m_counterNode) {
         m_counterNode->removeRenderer(this);
@@ -366,19 +367,19 @@ void RenderCounter::destroy()
     RenderText::destroy();
 }
 
-void RenderCounter::willBeDestroyed()
+void LayoutCounter::willBeDestroyed()
 {
     if (view())
-        view()->removeRenderCounter();
+        view()->removeLayoutCounter();
     RenderText::willBeDestroyed();
 }
 
-const char* RenderCounter::renderName() const
+const char* LayoutCounter::renderName() const
 {
-    return "RenderCounter";
+    return "LayoutCounter";
 }
 
-PassRefPtr<StringImpl> RenderCounter::originalText() const
+PassRefPtr<StringImpl> LayoutCounter::originalText() const
 {
     if (!m_counterNode) {
         RenderObject* beforeAfterContainer = parent();
@@ -386,13 +387,13 @@ PassRefPtr<StringImpl> RenderCounter::originalText() const
             if (!beforeAfterContainer)
                 return nullptr;
             if (!beforeAfterContainer->isAnonymous() && !beforeAfterContainer->isPseudoElement())
-                return nullptr; // RenderCounters are restricted to before and after pseudo elements
+                return nullptr; // LayoutCounters are restricted to before and after pseudo elements
             PseudoId containerStyle = beforeAfterContainer->style()->styleType();
             if ((containerStyle == BEFORE) || (containerStyle == AFTER))
                 break;
             beforeAfterContainer = beforeAfterContainer->parent();
         }
-        makeCounterNode(*beforeAfterContainer, m_counter.identifier(), true)->addRenderer(const_cast<RenderCounter*>(this));
+        makeCounterNode(*beforeAfterContainer, m_counter.identifier(), true)->addRenderer(const_cast<LayoutCounter*>(this));
         ASSERT(m_counterNode);
     }
     CounterNode* child = m_counterNode;
@@ -413,12 +414,12 @@ PassRefPtr<StringImpl> RenderCounter::originalText() const
     return text.impl();
 }
 
-void RenderCounter::updateCounter()
+void LayoutCounter::updateCounter()
 {
     setText(originalText());
 }
 
-void RenderCounter::invalidate()
+void LayoutCounter::invalidate()
 {
     m_counterNode->removeRenderer(this);
     ASSERT(!m_counterNode);
@@ -440,7 +441,7 @@ static void destroyCounterNodeWithoutMapRemoval(const AtomicString& identifier, 
         parent->removeChild(node);
 }
 
-void RenderCounter::destroyCounterNodes(RenderObject& owner)
+void LayoutCounter::destroyCounterNodes(RenderObject& owner)
 {
     CounterMaps& maps = counterMaps();
     CounterMaps::iterator mapsIterator = maps.find(&owner);
@@ -455,7 +456,7 @@ void RenderCounter::destroyCounterNodes(RenderObject& owner)
     owner.setHasCounterNodeMap(false);
 }
 
-void RenderCounter::destroyCounterNode(RenderObject& owner, const AtomicString& identifier)
+void LayoutCounter::destroyCounterNode(RenderObject& owner, const AtomicString& identifier)
 {
     CounterMap* map = counterMaps().get(&owner);
     if (!map)
@@ -468,20 +469,20 @@ void RenderCounter::destroyCounterNode(RenderObject& owner, const AtomicString& 
     // We do not delete "map" here even if empty because we expect to reuse
     // it soon. In order for a renderer to lose all its counters permanently,
     // a style change for the renderer involving removal of all counter
-    // directives must occur, in which case, RenderCounter::destroyCounterNodes()
+    // directives must occur, in which case, LayoutCounter::destroyCounterNodes()
     // must be called.
     // The destruction of the Renderer (possibly caused by the removal of its
     // associated DOM node) is the other case that leads to the permanent
     // destruction of all counters attached to a Renderer. In this case
-    // RenderCounter::destroyCounterNodes() must be and is now called, too.
-    // RenderCounter::destroyCounterNodes() handles destruction of the counter
+    // LayoutCounter::destroyCounterNodes() must be and is now called, too.
+    // LayoutCounter::destroyCounterNodes() handles destruction of the counter
     // map associated with a renderer, so there is no risk in leaking the map.
 }
 
-void RenderCounter::rendererRemovedFromTree(RenderObject* renderer)
+void LayoutCounter::rendererRemovedFromTree(RenderObject* renderer)
 {
     ASSERT(renderer->view());
-    if (!renderer->view()->hasRenderCounters())
+    if (!renderer->view()->hasLayoutCounters())
         return;
     RenderObject* currentRenderer = renderer->lastLeafChild();
     if (!currentRenderer)
@@ -530,10 +531,10 @@ static void updateCounters(RenderObject& renderer)
     }
 }
 
-void RenderCounter::rendererSubtreeAttached(RenderObject* renderer)
+void LayoutCounter::rendererSubtreeAttached(RenderObject* renderer)
 {
     ASSERT(renderer->view());
-    if (!renderer->view()->hasRenderCounters())
+    if (!renderer->view()->hasLayoutCounters())
         return;
     Node* node = renderer->node();
     if (node)
@@ -546,7 +547,7 @@ void RenderCounter::rendererSubtreeAttached(RenderObject* renderer)
         updateCounters(*descendant);
 }
 
-void RenderCounter::rendererStyleChanged(RenderObject& renderer, const RenderStyle* oldStyle, const RenderStyle* newStyle)
+void LayoutCounter::rendererStyleChanged(RenderObject& renderer, const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
     Node* node = renderer.generatingNode();
     if (!node || node->needsAttach())
@@ -562,7 +563,7 @@ void RenderCounter::rendererStyleChanged(RenderObject& renderer, const RenderSty
                 if (oldMapIt != oldMapEnd) {
                     if (oldMapIt->value == it->value)
                         continue;
-                    RenderCounter::destroyCounterNode(renderer, it->key);
+                    LayoutCounter::destroyCounterNode(renderer, it->key);
                 }
                 // We must create this node here, because the changed node may be a node with no display such as
                 // as those created by the increment or reset directives and the re-layout that will happen will
@@ -572,11 +573,11 @@ void RenderCounter::rendererStyleChanged(RenderObject& renderer, const RenderSty
             // Destroying old counters that do not exist in the new counterDirective map.
             for (CounterDirectiveMap::const_iterator it = oldCounterDirectives->begin(); it !=oldMapEnd; ++it) {
                 if (!newCounterDirectives->contains(it->key))
-                    RenderCounter::destroyCounterNode(renderer, it->key);
+                    LayoutCounter::destroyCounterNode(renderer, it->key);
             }
         } else {
             if (renderer.hasCounterNodeMap())
-                RenderCounter::destroyCounterNodes(renderer);
+                LayoutCounter::destroyCounterNodes(renderer);
         }
     } else if (newCounterDirectives) {
         CounterDirectiveMap::const_iterator newMapEnd = newCounterDirectives->end();

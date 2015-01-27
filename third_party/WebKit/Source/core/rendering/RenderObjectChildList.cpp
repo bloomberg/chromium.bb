@@ -28,7 +28,7 @@
 #include "core/rendering/RenderObjectChildList.h"
 
 #include "core/dom/AXObjectCache.h"
-#include "core/rendering/RenderCounter.h"
+#include "core/layout/LayoutCounter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -114,7 +114,7 @@ RenderObject* RenderObjectChildList::removeChildNode(RenderObject* owner, Render
     // rendererRemovedFromTree walks the whole subtree. We can improve performance
     // by skipping this step when destroying the entire tree.
     if (!owner->documentBeingDestroyed())
-        RenderCounter::rendererRemovedFromTree(oldChild);
+        LayoutCounter::rendererRemovedFromTree(oldChild);
 
     if (AXObjectCache* cache = owner->document().existingAXObjectCache())
         cache->childrenChanged(owner);
@@ -162,7 +162,7 @@ void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* n
         newChild->insertedIntoTree();
 
     if (!owner->documentBeingDestroyed()) {
-        RenderCounter::rendererSubtreeAttached(newChild);
+        LayoutCounter::rendererSubtreeAttached(newChild);
     }
 
     newChild->setNeedsLayoutAndPrefWidthsRecalc();

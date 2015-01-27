@@ -58,7 +58,7 @@ RenderView::RenderView(Document* document)
     , m_pageLogicalHeightChanged(false)
     , m_layoutState(0)
     , m_renderQuoteHead(nullptr)
-    , m_renderCounterCount(0)
+    , m_layoutCounterCount(0)
     , m_hitTestCount(0)
 {
     // init RenderObject attributes

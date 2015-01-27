@@ -48,6 +48,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutTableCaption.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
@@ -58,7 +59,6 @@
 #include "core/page/Page.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderFlowThread.h"
@@ -1802,7 +1802,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         return;
 
     if (diff.needsFullLayout()) {
-        RenderCounter::rendererStyleChanged(*this, oldStyle, m_style.get());
+        LayoutCounter::rendererStyleChanged(*this, oldStyle, m_style.get());
 
         // If the object already needs layout, then setNeedsLayout won't do
         // any work. But if the containing block has changed, then we may need
@@ -2318,7 +2318,7 @@ void RenderObject::willBeDestroyed()
     // this renderer had no parent at the time remove() was called.
 
     if (hasCounterNodeMap())
-        RenderCounter::destroyCounterNodes(*this);
+        LayoutCounter::destroyCounterNodes(*this);
 
     // Remove the handler if node had touch-action set. Handlers are not added
     // for text nodes so don't try removing for one too. Need to check if

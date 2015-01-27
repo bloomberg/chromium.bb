@@ -155,9 +155,9 @@ public:
     // requires walking the entire tree repeatedly and most pages don't actually use either
     // feature so we shouldn't take the performance hit when not needed. Long term we should
     // rewrite the counter and quotes code.
-    void addRenderCounter() { m_renderCounterCount++; }
-    void removeRenderCounter() { ASSERT(m_renderCounterCount > 0); m_renderCounterCount--; }
-    bool hasRenderCounters() { return m_renderCounterCount; }
+    void addLayoutCounter() { m_layoutCounterCount++; }
+    void removeLayoutCounter() { ASSERT(m_layoutCounterCount > 0); m_layoutCounterCount--; }
+    bool hasLayoutCounters() { return m_layoutCounterCount; }
 
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const override;
 
@@ -200,7 +200,7 @@ private:
     RefPtr<IntervalArena> m_intervalArena;
 
     RawPtrWillBeMember<RenderQuote> m_renderQuoteHead;
-    unsigned m_renderCounterCount;
+    unsigned m_layoutCounterCount;
 
     unsigned m_hitTestCount;
 

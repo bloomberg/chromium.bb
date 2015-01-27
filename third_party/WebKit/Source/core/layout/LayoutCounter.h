@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef RenderCounter_h
-#define RenderCounter_h
+#ifndef LayoutCounter_h
+#define LayoutCounter_h
 
 #include "core/rendering/RenderText.h"
 #include "core/rendering/style/CounterContent.h"
@@ -29,10 +29,10 @@ namespace blink {
 
 class CounterNode;
 
-class RenderCounter final : public RenderText {
+class LayoutCounter final : public RenderText {
 public:
-    RenderCounter(Document*, const CounterContent&);
-    virtual ~RenderCounter();
+    LayoutCounter(Document*, const CounterContent&);
+    virtual ~LayoutCounter();
     virtual void destroy() override;
 
     static void destroyCounterNodes(RenderObject&);
@@ -57,11 +57,11 @@ private:
 
     CounterContent m_counter;
     CounterNode* m_counterNode;
-    RenderCounter* m_nextForSameCounter;
+    LayoutCounter* m_nextForSameCounter;
     friend class CounterNode;
 };
 
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderCounter, isCounter());
+DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutCounter, isCounter());
 
 } // namespace blink
 
@@ -70,4 +70,4 @@ DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderCounter, isCounter());
 void showCounterRendererTree(const blink::RenderObject*, const char* counterName = 0);
 #endif
 
-#endif // RenderCounter_h
+#endif // LayoutCounter_h

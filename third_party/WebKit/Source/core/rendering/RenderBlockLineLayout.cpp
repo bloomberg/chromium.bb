@@ -23,8 +23,8 @@
 #include "config.h"
 
 #include "core/dom/AXObjectCache.h"
+#include "core/layout/LayoutCounter.h"
 #include "core/rendering/BidiRunForLine.h"
-#include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListMarker.h"
