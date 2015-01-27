@@ -58,6 +58,10 @@ def Trace(msg):
 
 
 def GetWindowsEnvironment():
+  if oshelpers.FindExeInPath('cl.exe') is not None:
+    # cl.exe is already in the path, let's just use that.
+    return os.environ
+
   sys.path.append(os.path.join(NACL_DIR, 'buildbot'))
   import buildbot_standard
 
@@ -85,12 +89,30 @@ def GetWindowsEnvironment():
   context = FakeContext()
   buildbot_standard.SetupWindowsEnvironment(context)
 
-  # buildbot_standard.SetupWindowsEnvironment adds the directory which contains
-  # vcvarsall.bat to the path, but not the directory which contains cl.exe,
-  # link.exe, etc.
-  # Running vcvarsall.bat adds the correct directories to the path, which we
-  # extract below.
-  process = subprocess.Popen('vcvarsall.bat x86 > NUL && set',
+  env_script = 'vcvarsall.bat'
+
+  if not oshelpers.FindExeInPath(env_script):
+    # This might happen if Visual Studio is not installed. Check to see if
+    # vs2013 is in depot_tools.
+
+    # Find depot_tools by looking for gclient.bat.
+    gclient_bat = oshelpers.FindExeInPath('gclient.bat')
+    if gclient_bat is None:
+      ErrorExit('gclient.bat is not in the path. Where is depot_tools?')
+
+    depot_tools_dir = os.path.dirname(gclient_bat)
+    vs2013_dir = os.path.join(depot_tools_dir, 'win_toolchain', 'vs2013_files')
+    if not os.path.exists(vs2013_dir):
+      ErrorExit('Visual Studio not installed normally or in depot_tools.')
+
+    # The depot_tools vs2013 toolchain has its own batch file (not
+    # vcvarsall.bat) for setting the environment variables needed by vs2013.
+    env_script = os.path.join(vs2013_dir, 'win8sdk', 'bin', 'SetEnv.cmd')
+
+  # Running the env_script adds the correct directories to the path for
+  # executables (e.g. cl.exe, link.exe), include paths, lib directories, etc,
+  # which we extract below.
+  process = subprocess.Popen(env_script + ' x86 > NUL && set',
       stdout=subprocess.PIPE, env=context.env, shell=True)
   stdout, _ = process.communicate()
 

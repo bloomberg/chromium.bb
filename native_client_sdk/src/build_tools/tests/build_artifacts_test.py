@@ -181,15 +181,9 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
               'output_dir=out_dir'],
              cwd='src_dir',
              env={
+               'GYP_CROSSCOMPILE': '1',
                'GYP_GENERATORS': 'ninja',
-               'GYP_DEFINES': 'target_arch=arm armv7=1 arm_thumb=0 arm_neon=1'
-                              ' arm_float_abi=hard nacl_enable_arm_gcc=1',
-               'CC': 'arm-linux-gnueabihf-gcc',
-               'CXX': 'arm-linux-gnueabihf-g++',
-               'AR': 'arm-linux-gnueabihf-ar',
-               'AS': 'arm-linux-gnueabihf-as',
-               'CC_host': 'cc',
-               'CXX_host': 'c++',
+               'GYP_DEFINES': 'target_arch=arm arm_float_abi=hard',
              }),
         call(['ninja', '-C', 'out_dir/Release', 'target'], cwd='src_dir')
     ])
@@ -204,16 +198,10 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
               'output_dir=out_dir'],
              cwd='src_dir',
              env={
+               'GYP_CROSSCOMPILE': '1',
                'GYP_GENERATORS': 'ninja',
-               'GYP_DEFINES': 'target_arch=arm armv7=1 arm_thumb=0 arm_neon=1'
-                              ' arm_float_abi=hard nacl_enable_arm_gcc=1'
-                              ' disable_cross_trusted=1',
-               'CC': 'arm-linux-gnueabihf-gcc',
-               'CXX': 'arm-linux-gnueabihf-g++',
-               'AR': 'arm-linux-gnueabihf-ar',
-               'AS': 'arm-linux-gnueabihf-as',
-               'CC_host': 'cc',
-               'CXX_host': 'c++',
+               'GYP_DEFINES': 'target_arch=arm arm_float_abi=hard '
+                              'disable_cross_trusted=1',
              }),
         call(['ninja', '-C', 'out_dir/Release', 'target'], cwd='src_dir')
     ])

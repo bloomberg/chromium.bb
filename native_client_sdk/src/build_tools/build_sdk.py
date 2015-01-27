@@ -450,7 +450,15 @@ def GypNinjaInstall(pepperdir, toolchains):
 
 
 def GypNinjaBuild_NaCl(rel_out_dir):
-  gyp_py = os.path.join(NACL_DIR, 'build', 'gyp_nacl')
+  # TODO(binji): gyp_nacl doesn't build properly on Windows anymore; it only
+  # can use VS2010, not VS2013 which is now required by the Chromium repo. NaCl
+  # needs to be updated to perform the same logic as Chromium in detecting VS,
+  # which can now exist in the depot_tools directory.
+  # See https://code.google.com/p/nativeclient/issues/detail?id=4022
+  #
+  # For now, let's use gyp_chromium to build these components.
+#  gyp_py = os.path.join(NACL_DIR, 'build', 'gyp_nacl')
+  gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
   nacl_core_sdk_gyp = os.path.join(NACL_DIR, 'build', 'nacl_core_sdk.gyp')
   all_gyp = os.path.join(NACL_DIR, 'build', 'all.gyp')
 
@@ -510,11 +518,10 @@ def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
   gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client', 'src',
                           'untrusted', 'pnacl_irt_shim', 'pnacl_irt_shim.gyp')
   targets = ['aot']
-  GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir, False)
+  GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir)
 
 
-def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
-                  out_dir, force_arm_gcc=True):
+def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
   gyp_env = dict(os.environ)
   gyp_env['GYP_GENERATORS'] = 'ninja'
   gyp_defines = []
@@ -523,18 +530,8 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
   if arch is not None:
     gyp_defines.append('target_arch=%s' % arch)
     if arch == 'arm':
-      if getos.GetPlatform() == 'linux':
-        gyp_env['CC'] = 'arm-linux-gnueabihf-gcc'
-        gyp_env['CXX'] = 'arm-linux-gnueabihf-g++'
-        gyp_env['AR'] = 'arm-linux-gnueabihf-ar'
-        gyp_env['AS'] = 'arm-linux-gnueabihf-as'
-        gyp_env['CC_host'] = 'cc'
-        gyp_env['CXX_host'] = 'c++'
-        gyp_defines += ['clang=0', 'host_clang=0']
-      gyp_defines += ['armv7=1', 'arm_thumb=0', 'arm_neon=1',
-          'arm_float_abi=hard']
-      if force_arm_gcc:
-        gyp_defines.append('nacl_enable_arm_gcc=1')
+      gyp_env['GYP_CROSSCOMPILE'] = '1'
+      gyp_defines += ['arm_float_abi=hard']
       if options.no_arm_trusted:
         gyp_defines.append('disable_cross_trusted=1')
   if getos.GetPlatform() == 'mac':
