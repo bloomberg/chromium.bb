@@ -21,12 +21,6 @@ import java.util.Map;
  */
 @JNINamespace("content")
 public class LoadUrlParams {
-    // These fields have been replaced by build-time generated enums and should be removed when
-    // no longer used downstream.
-    @Deprecated
-    public static final int LOAD_TYPE_BROWSER_INITIATED_HTTP_POST =
-            LoadURLType.BROWSER_INITIATED_HTTP_POST;
-
     // Fields with counterparts in NavigationController::LoadURLParams.
     // Package private so that ContentViewCore.loadUrl can pass them down to
     // native code. Should not be accessed directly anywhere else outside of
