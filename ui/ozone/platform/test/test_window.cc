@@ -77,4 +77,7 @@ void TestWindow::SetCursor(PlatformCursor cursor) {
 void TestWindow::MoveCursorTo(const gfx::Point& location) {
 }
 
+void TestWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
+}
+
 }  // namespace ui

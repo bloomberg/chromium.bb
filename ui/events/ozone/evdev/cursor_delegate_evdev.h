@@ -32,8 +32,8 @@ class EVENTS_OZONE_EVDEV_EXPORT CursorDelegateEvdev {
   // Cursor visibility.
   virtual bool IsCursorVisible() = 0;
 
-  // The bounds of the display that the cursor is currently on
-  virtual gfx::Rect GetCursorDisplayBounds() = 0;
+  // The bounds that the cursor is confined to.
+  virtual gfx::Rect GetCursorConfinedBounds() = 0;
 };
 
 }  // namespace ui

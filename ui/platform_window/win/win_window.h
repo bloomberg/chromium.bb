@@ -35,6 +35,7 @@ class WIN_WINDOW_EXPORT WinWindow : public NON_EXPORTED_BASE(PlatformWindow),
   virtual void Restore() override;
   virtual void SetCursor(PlatformCursor cursor) override;
   virtual void MoveCursorTo(const gfx::Point& location) override;
+  virtual void ConfineCursorToBounds(const gfx::Rect& bounds) override;
 
   CR_BEGIN_MSG_MAP_EX(WinWindow)
     CR_MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)

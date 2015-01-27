@@ -13,6 +13,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/platform_window/platform_window.h"
 
 namespace ash {
 namespace {
@@ -37,6 +38,7 @@ class AshWindowTreeHostOzone : public AshWindowTreeHost,
   gfx::Transform GetInverseRootTransform() const override;
   void UpdateRootWindowSize(const gfx::Size& host_size) override;
   void OnCursorVisibilityChangedNative(bool show) override;
+  void SetBounds(const gfx::Rect& bounds) override;
   void DispatchEvent(ui::Event* event) override;
 
   // Temporarily disable the tap-to-click feature. Used on CrOS.
@@ -59,7 +61,10 @@ void AshWindowTreeHostOzone::ToggleFullScreen() {
 }
 
 bool AshWindowTreeHostOzone::ConfineCursorToRootWindow() {
-  return false;
+  gfx::Rect confined_bounds(GetBounds().size());
+  confined_bounds.Inset(transformer_helper_.GetHostInsets());
+  platform_window()->ConfineCursorToBounds(confined_bounds);
+  return true;
 }
 
 void AshWindowTreeHostOzone::UnConfineCursor() {
@@ -69,6 +74,7 @@ void AshWindowTreeHostOzone::UnConfineCursor() {
 void AshWindowTreeHostOzone::SetRootWindowTransformer(
     scoped_ptr<RootWindowTransformer> transformer) {
   transformer_helper_.SetRootWindowTransformer(transformer.Pass());
+  ConfineCursorToRootWindow();
 }
 
 gfx::Insets AshWindowTreeHostOzone::GetHostInsets() const {
@@ -97,6 +103,11 @@ void AshWindowTreeHostOzone::UpdateRootWindowSize(const gfx::Size& host_size) {
 
 void AshWindowTreeHostOzone::OnCursorVisibilityChangedNative(bool show) {
   SetTapToClickPaused(!show);
+}
+
+void AshWindowTreeHostOzone::SetBounds(const gfx::Rect& bounds) {
+  WindowTreeHostOzone::SetBounds(bounds);
+  ConfineCursorToRootWindow();
 }
 
 void AshWindowTreeHostOzone::DispatchEvent(ui::Event* event) {

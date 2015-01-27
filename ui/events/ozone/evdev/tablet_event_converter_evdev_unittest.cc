@@ -77,7 +77,7 @@ class MockTabletEventConverterEvdev : public TabletEventConverterEvdev {
 
 class MockTabletCursorEvdev : public CursorDelegateEvdev {
  public:
-  MockTabletCursorEvdev() { cursor_display_bounds_ = gfx::Rect(1024, 768); }
+  MockTabletCursorEvdev() { cursor_confined_bounds_ = gfx::Rect(1024, 768); }
   ~MockTabletCursorEvdev() override {}
 
   // CursorDelegateEvdev:
@@ -91,11 +91,13 @@ class MockTabletCursorEvdev : public CursorDelegateEvdev {
   void MoveCursor(const gfx::Vector2dF& delta) override { NOTREACHED(); }
   bool IsCursorVisible() override { return 1; }
   gfx::PointF GetLocation() override { return cursor_location_; }
-  gfx::Rect GetCursorDisplayBounds() override { return cursor_display_bounds_; }
+  gfx::Rect GetCursorConfinedBounds() override {
+    return cursor_confined_bounds_;
+  }
 
  private:
   gfx::PointF cursor_location_;
-  gfx::Rect cursor_display_bounds_;
+  gfx::Rect cursor_confined_bounds_;
   DISALLOW_COPY_AND_ASSIGN(MockTabletCursorEvdev);
 };
 
@@ -251,7 +253,7 @@ TEST_F(TabletEventConverterEvdevTest, MoveTopRight) {
   EXPECT_EQ(ui::ET_MOUSE_MOVED, event->type());
 
   EXPECT_GT(cursor()->GetLocation().x(),
-            cursor()->GetCursorDisplayBounds().width() - EPSILON);
+            cursor()->GetCursorConfinedBounds().width() - EPSILON);
   EXPECT_LT(cursor()->GetLocation().y(), EPSILON);
 }
 
@@ -285,7 +287,7 @@ TEST_F(TabletEventConverterEvdevTest, MoveBottomLeft) {
 
   EXPECT_LT(cursor()->GetLocation().x(), EPSILON);
   EXPECT_GT(cursor()->GetLocation().y(),
-            cursor()->GetCursorDisplayBounds().height() - EPSILON);
+            cursor()->GetCursorConfinedBounds().height() - EPSILON);
 }
 
 TEST_F(TabletEventConverterEvdevTest, MoveBottomRight) {
@@ -319,9 +321,9 @@ TEST_F(TabletEventConverterEvdevTest, MoveBottomRight) {
   EXPECT_EQ(ui::ET_MOUSE_MOVED, event->type());
 
   EXPECT_GT(cursor()->GetLocation().x(),
-            cursor()->GetCursorDisplayBounds().height() - EPSILON);
+            cursor()->GetCursorConfinedBounds().height() - EPSILON);
   EXPECT_GT(cursor()->GetLocation().y(),
-            cursor()->GetCursorDisplayBounds().height() - EPSILON);
+            cursor()->GetCursorConfinedBounds().height() - EPSILON);
 }
 
 TEST_F(TabletEventConverterEvdevTest, Tap) {

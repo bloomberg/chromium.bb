@@ -50,12 +50,17 @@ DriWindow::~DriWindow() {
 void DriWindow::Initialize() {
   sender_->AddChannelObserver(this);
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-  cursor_->OnWindowAdded(widget_, bounds_);
+  cursor_->OnWindowAdded(widget_, bounds_, GetCursorConfinedBounds());
   delegate_->OnAcceleratedWidgetAvailable(widget_);
 }
 
 gfx::AcceleratedWidget DriWindow::GetAcceleratedWidget() {
   return widget_;
+}
+
+gfx::Rect DriWindow::GetCursorConfinedBounds() const {
+  return cursor_confined_bounds_.IsEmpty() ? gfx::Rect(bounds_.size())
+                                           : cursor_confined_bounds_;
 }
 
 void DriWindow::Show() {}
@@ -96,6 +101,14 @@ void DriWindow::SetCursor(PlatformCursor cursor) {
 
 void DriWindow::MoveCursorTo(const gfx::Point& location) {
   event_factory_->WarpCursorTo(widget_, location);
+}
+
+void DriWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
+  if (cursor_confined_bounds_ == bounds)
+    return;
+
+  cursor_confined_bounds_ = bounds;
+  cursor_->ConfineCursorToBounds(widget_, bounds);
 }
 
 bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
@@ -156,6 +169,7 @@ uint32_t DriWindow::DispatchEvent(const PlatformEvent& native_event) {
 void DriWindow::OnChannelEstablished() {
   sender_->Send(new OzoneGpuMsg_CreateWindowDelegate(widget_));
   SendBoundsChange();
+  cursor_->ConfineCursorToBounds(widget_, GetCursorConfinedBounds());
 }
 
 void DriWindow::OnChannelDestroyed() {
@@ -164,7 +178,6 @@ void DriWindow::OnChannelDestroyed() {
 void DriWindow::SendBoundsChange() {
   cursor_->PrepareForBoundsChange(widget_);
   sender_->Send(new OzoneGpuMsg_WindowBoundsChanged(widget_, bounds_));
-  cursor_->CommitBoundsChange(widget_, bounds_);
 }
 
 }  // namespace ui

@@ -26,7 +26,20 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
 
  protected:
   // WindowTreeHost:
+  ui::EventSource* GetEventSource() override;
+  gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  void Show() override;
+  void Hide() override;
   gfx::Rect GetBounds() const override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Point GetLocationOnNativeScreen() const override;
+  void SetCapture() override;
+  void ReleaseCapture() override;
+  void SetCursorNative(gfx::NativeCursor cursor_type) override;
+  void MoveCursorToNative(const gfx::Point& location) override;
+  void OnCursorVisibilityChangedNative(bool show) override;
+
+  ui::PlatformWindow* platform_window() { return platform_window_.get(); }
 
  private:
   // ui::PlatformWindowDelegate:
@@ -39,19 +52,6 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
   void OnLostCapture() override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnActivationChanged(bool active) override;
-
-  // WindowTreeHost:
-  ui::EventSource* GetEventSource() override;
-  gfx::AcceleratedWidget GetAcceleratedWidget() override;
-  void Show() override;
-  void Hide() override;
-  void SetBounds(const gfx::Rect& bounds) override;
-  gfx::Point GetLocationOnNativeScreen() const override;
-  void SetCapture() override;
-  void ReleaseCapture() override;
-  void SetCursorNative(gfx::NativeCursor cursor_type) override;
-  void MoveCursorToNative(const gfx::Point& location) override;
-  void OnCursorVisibilityChangedNative(bool show) override;
 
   // ui::EventSource overrides.
   ui::EventProcessor* GetEventProcessor() override;

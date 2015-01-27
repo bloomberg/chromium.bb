@@ -134,6 +134,8 @@ void CacaWindow::SetCursor(PlatformCursor cursor) {}
 
 void CacaWindow::MoveCursorTo(const gfx::Point& location) {}
 
+void CacaWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {}
+
 bool CacaWindow::CanDispatchEvent(const PlatformEvent& event) { return true; }
 
 uint32_t CacaWindow::DispatchEvent(const PlatformEvent& ne) {

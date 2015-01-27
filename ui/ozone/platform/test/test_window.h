@@ -39,6 +39,7 @@ class TestWindow : public PlatformWindow {
   void Restore() override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
+  void ConfineCursorToBounds(const gfx::Rect& bounds) override;
 
  private:
   PlatformWindowDelegate* delegate_;

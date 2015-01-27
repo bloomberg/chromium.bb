@@ -52,7 +52,8 @@ void DriCursor::SetCursor(gfx::AcceleratedWidget window,
 }
 
 void DriCursor::OnWindowAdded(gfx::AcceleratedWidget window,
-                              const gfx::Rect& bounds) {
+                              const gfx::Rect& bounds_in_screen,
+                              const gfx::Rect& cursor_confined_bounds) {
 #if DCHECK_IS_ON()
   if (!ui_task_runner_)
     ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -63,8 +64,9 @@ void DriCursor::OnWindowAdded(gfx::AcceleratedWidget window,
   if (state_.window == gfx::kNullAcceleratedWidget) {
     // First window added & cursor is not placed. Place it.
     state_.window = window;
-    state_.bounds = bounds;
-    SetCursorLocationLocked(bounds.CenterPoint() - bounds.OffsetFromOrigin());
+    state_.display_bounds_in_screen = bounds_in_screen;
+    state_.confined_bounds = cursor_confined_bounds;
+    SetCursorLocationLocked(cursor_confined_bounds.CenterPoint());
   }
 }
 
@@ -74,19 +76,18 @@ void DriCursor::OnWindowRemoved(gfx::AcceleratedWidget window) {
 
   if (state_.window == window) {
     // Try to find a new location for the cursor.
-    gfx::PointF screen_location =
-        state_.location + state_.bounds.OffsetFromOrigin();
     DriWindow* dest_window = window_manager_->GetPrimaryWindow();
 
     if (dest_window) {
       state_.window = dest_window->GetAcceleratedWidget();
-      state_.bounds = dest_window->GetBounds();
-      SetCursorLocationLocked(state_.bounds.CenterPoint() -
-                              state_.bounds.OffsetFromOrigin());
+      state_.display_bounds_in_screen = dest_window->GetBounds();
+      state_.confined_bounds = dest_window->GetCursorConfinedBounds();
+      SetCursorLocationLocked(state_.confined_bounds.CenterPoint());
       SendCursorShowLocked();
     } else {
       state_.window = gfx::kNullAcceleratedWidget;
-      state_.bounds = gfx::Rect();
+      state_.display_bounds_in_screen = gfx::Rect();
+      state_.confined_bounds = gfx::Rect();
       state_.location = gfx::Point();
     }
   }
@@ -102,14 +103,17 @@ void DriCursor::PrepareForBoundsChange(gfx::AcceleratedWidget window) {
   // TODO(spang): The GPU-side code should handle this.
   if (state_.window == window)
     SendCursorHideLocked();
+
+  // The cursor will be shown and moved once the confined bounds for |window|
+  // are updated.
 }
 
-void DriCursor::CommitBoundsChange(gfx::AcceleratedWidget window,
-                                   const gfx::Rect& bounds) {
+void DriCursor::ConfineCursorToBounds(gfx::AcceleratedWidget window,
+                                      const gfx::Rect& bounds) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(state_.lock);
   if (state_.window == window) {
-    state_.bounds = bounds;
+    state_.confined_bounds = bounds;
     SetCursorLocationLocked(state_.location);
     SendCursorShowLocked();
   }
@@ -128,7 +132,8 @@ void DriCursor::MoveCursorTo(gfx::AcceleratedWidget window,
       SendCursorHideLocked();
 
     DriWindow* dri_window = window_manager_->GetWindow(window);
-    state_.bounds = dri_window->GetBounds();
+    state_.display_bounds_in_screen = dri_window->GetBounds();
+    state_.confined_bounds = dri_window->GetCursorConfinedBounds();
     state_.window = window;
   }
 
@@ -146,7 +151,8 @@ void DriCursor::MoveCursorTo(const gfx::PointF& screen_location) {
   // TODO(spang): Moving between windows doesn't work here, but
   // is not needed for current uses.
 
-  SetCursorLocationLocked(screen_location - state_.bounds.OffsetFromOrigin());
+  SetCursorLocationLocked(screen_location -
+                          state_.display_bounds_in_screen.OffsetFromOrigin());
 }
 
 void DriCursor::MoveCursor(const gfx::Vector2dF& delta) {
@@ -174,12 +180,13 @@ bool DriCursor::IsCursorVisible() {
 
 gfx::PointF DriCursor::GetLocation() {
   base::AutoLock lock(state_.lock);
-  return state_.location + state_.bounds.OffsetFromOrigin();
+  return state_.location + state_.display_bounds_in_screen.OffsetFromOrigin();
 }
 
-gfx::Rect DriCursor::GetCursorDisplayBounds() {
+gfx::Rect DriCursor::GetCursorConfinedBounds() {
   base::AutoLock lock(state_.lock);
-  return state_.bounds;
+  return state_.confined_bounds +
+         state_.display_bounds_in_screen.OffsetFromOrigin();
 }
 
 void DriCursor::OnChannelEstablished(
@@ -196,7 +203,7 @@ void DriCursor::OnChannelEstablished(
   state_.send_runner = send_runner;
   state_.send_callback = send_callback;
   // Initial set for this GPU process will happen after the window
-  // initializes, in CommitBoundsChange.
+  // initializes, in ConfineCursorToBounds().
 }
 
 void DriCursor::OnChannelDestroyed(int host_id) {
@@ -216,11 +223,11 @@ bool DriCursor::OnMessageReceived(const IPC::Message& message) {
 void DriCursor::SetCursorLocationLocked(const gfx::PointF& location) {
   state_.lock.AssertAcquired();
 
-  const gfx::Size& size = state_.bounds.size();
   gfx::PointF clamped_location = location;
-  clamped_location.SetToMax(gfx::PointF(0, 0));
+  clamped_location.SetToMax(state_.confined_bounds.origin());
   // Right and bottom edges are exclusive.
-  clamped_location.SetToMin(gfx::PointF(size.width() - 1, size.height() - 1));
+  clamped_location.SetToMin(gfx::PointF(state_.confined_bounds.right() - 1,
+                                        state_.confined_bounds.bottom() - 1));
 
   state_.location = clamped_location;
 }
@@ -266,7 +273,7 @@ void DriCursor::SendLocked(IPC::Message* message) {
                                    base::Bind(state_.send_callback, message)))
     return;
 
-  // Drop disconnected updates. DriWindow will call CommitBoundsChange()
+  // Drop disconnected updates. DriWindow will call ConfineCursorToBounds()
   // when we connect to initialize the cursor location.
   delete message;
 }

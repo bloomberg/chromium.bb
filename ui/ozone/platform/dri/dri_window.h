@@ -39,6 +39,8 @@ class DriWindow : public PlatformWindow,
 
   gfx::AcceleratedWidget GetAcceleratedWidget();
 
+  gfx::Rect GetCursorConfinedBounds() const;
+
   // PlatformWindow:
   void Show() override;
   void Hide() override;
@@ -53,6 +55,7 @@ class DriWindow : public PlatformWindow,
   void Restore() override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
+  void ConfineCursorToBounds(const gfx::Rect& bounds) override;
 
   // PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;
@@ -74,6 +77,8 @@ class DriWindow : public PlatformWindow,
 
   gfx::Rect bounds_;
   gfx::AcceleratedWidget widget_;
+
+  gfx::Rect cursor_confined_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(DriWindow);
 };

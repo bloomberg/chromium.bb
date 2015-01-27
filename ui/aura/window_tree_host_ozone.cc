@@ -21,8 +21,54 @@ WindowTreeHostOzone::~WindowTreeHostOzone() {
   DestroyDispatcher();
 }
 
+ui::EventSource* WindowTreeHostOzone::GetEventSource() {
+  return this;
+}
+
+gfx::AcceleratedWidget WindowTreeHostOzone::GetAcceleratedWidget() {
+  return widget_;
+}
+
+void WindowTreeHostOzone::Show() {
+  platform_window_->Show();
+}
+
+void WindowTreeHostOzone::Hide() {
+  platform_window_->Hide();
+}
+
 gfx::Rect WindowTreeHostOzone::GetBounds() const {
   return platform_window_->GetBounds();
+}
+
+void WindowTreeHostOzone::SetBounds(const gfx::Rect& bounds) {
+  platform_window_->SetBounds(bounds);
+}
+
+gfx::Point WindowTreeHostOzone::GetLocationOnNativeScreen() const {
+  return platform_window_->GetBounds().origin();
+}
+
+void WindowTreeHostOzone::SetCapture() {
+  platform_window_->SetCapture();
+}
+
+void WindowTreeHostOzone::ReleaseCapture() {
+  platform_window_->ReleaseCapture();
+}
+
+void WindowTreeHostOzone::SetCursorNative(gfx::NativeCursor cursor) {
+  if (cursor == current_cursor_)
+    return;
+  current_cursor_ = cursor;
+  platform_window_->SetCursor(cursor.platform());
+}
+
+void WindowTreeHostOzone::MoveCursorToNative(const gfx::Point& location) {
+  platform_window_->MoveCursorTo(location);
+}
+
+void WindowTreeHostOzone::OnCursorVisibilityChangedNative(bool show) {
 }
 
 void WindowTreeHostOzone::OnBoundsChanged(const gfx::Rect& new_bounds) {
@@ -59,52 +105,6 @@ void WindowTreeHostOzone::OnAcceleratedWidgetAvailable(
 }
 
 void WindowTreeHostOzone::OnActivationChanged(bool active) {
-}
-
-ui::EventSource* WindowTreeHostOzone::GetEventSource() {
-  return this;
-}
-
-gfx::AcceleratedWidget WindowTreeHostOzone::GetAcceleratedWidget() {
-  return widget_;
-}
-
-void WindowTreeHostOzone::Show() {
-  platform_window_->Show();
-}
-
-void WindowTreeHostOzone::Hide() {
-  platform_window_->Hide();
-}
-
-void WindowTreeHostOzone::SetBounds(const gfx::Rect& bounds) {
-  platform_window_->SetBounds(bounds);
-}
-
-gfx::Point WindowTreeHostOzone::GetLocationOnNativeScreen() const {
-  return platform_window_->GetBounds().origin();
-}
-
-void WindowTreeHostOzone::SetCapture() {
-  platform_window_->SetCapture();
-}
-
-void WindowTreeHostOzone::ReleaseCapture() {
-  platform_window_->ReleaseCapture();
-}
-
-void WindowTreeHostOzone::SetCursorNative(gfx::NativeCursor cursor) {
-  if (cursor == current_cursor_)
-    return;
-  current_cursor_ = cursor;
-  platform_window_->SetCursor(cursor.platform());
-}
-
-void WindowTreeHostOzone::MoveCursorToNative(const gfx::Point& location) {
-  platform_window_->MoveCursorTo(location);
-}
-
-void WindowTreeHostOzone::OnCursorVisibilityChangedNative(bool show) {
 }
 
 ui::EventProcessor* WindowTreeHostOzone::GetEventProcessor() {

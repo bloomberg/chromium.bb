@@ -94,6 +94,7 @@ class EgltestWindow : public PlatformWindow, public PlatformEventDispatcher {
   void Restore() override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
+  void ConfineCursorToBounds(const gfx::Rect& bounds) override;
 
   // PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;
@@ -170,6 +171,9 @@ void EgltestWindow::SetCursor(PlatformCursor cursor) {
 
 void EgltestWindow::MoveCursorTo(const gfx::Point& location) {
   event_factory_->WarpCursorTo(window_id_, location);
+}
+
+void EgltestWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
 
 bool EgltestWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {

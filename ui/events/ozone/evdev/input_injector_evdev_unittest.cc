@@ -60,7 +60,7 @@ class MockCursorEvdev : public CursorDelegateEvdev {
     cursor_location_ = gfx::PointF(delta.x(), delta.y());
   }
   bool IsCursorVisible() override { return 1; }
-  gfx::Rect GetCursorDisplayBounds() override {
+  gfx::Rect GetCursorConfinedBounds() override {
     NOTIMPLEMENTED();
     return gfx::Rect();
   }

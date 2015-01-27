@@ -41,13 +41,17 @@ class DriCursor : public CursorDelegateEvdev, public GpuPlatformSupportHost {
   void SetCursor(gfx::AcceleratedWidget window, PlatformCursor platform_cursor);
 
   // Handle window lifecycle.
-  void OnWindowAdded(gfx::AcceleratedWidget window, const gfx::Rect& bounds);
+  void OnWindowAdded(gfx::AcceleratedWidget window,
+                     const gfx::Rect& bounds_in_screen,
+                     const gfx::Rect& cursor_confined_bounds);
   void OnWindowRemoved(gfx::AcceleratedWidget window);
 
   // Handle window bounds changes.
   void PrepareForBoundsChange(gfx::AcceleratedWidget window);
-  void CommitBoundsChange(gfx::AcceleratedWidget window,
-                          const gfx::Rect& bounds);
+
+  // Confines the cursor to |confined_bounds| for |window|.
+  void ConfineCursorToBounds(gfx::AcceleratedWidget window,
+                             const gfx::Rect& bounds);
 
   // CursorDelegateEvdev:
   void MoveCursorTo(gfx::AcceleratedWidget window,
@@ -56,7 +60,7 @@ class DriCursor : public CursorDelegateEvdev, public GpuPlatformSupportHost {
   void MoveCursor(const gfx::Vector2dF& delta) override;
   bool IsCursorVisible() override;
   gfx::PointF GetLocation() override;
-  gfx::Rect GetCursorDisplayBounds() override;
+  gfx::Rect GetCursorConfinedBounds() override;
 
   // GpuPlatformSupportHost:
   void OnChannelEstablished(
@@ -102,7 +106,10 @@ class DriCursor : public CursorDelegateEvdev, public GpuPlatformSupportHost {
     gfx::PointF location;
 
     // The bounds of the display under the cursor.
-    gfx::Rect bounds;
+    gfx::Rect display_bounds_in_screen;
+
+    // The bounds that the cursor is confined to in |window|.
+    gfx::Rect confined_bounds;
 
     int host_id;
 

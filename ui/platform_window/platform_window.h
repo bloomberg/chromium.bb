@@ -42,7 +42,13 @@ class PlatformWindow {
   virtual void Restore() = 0;
 
   virtual void SetCursor(PlatformCursor cursor) = 0;
+
+  // Moves the cursor to |location|. Location is in platform window coordinates.
   virtual void MoveCursorTo(const gfx::Point& location) = 0;
+
+  // Confines the cursor to |bounds| when it is in the platform window. |bounds|
+  // is in platform window coordinates.
+  virtual void ConfineCursorToBounds(const gfx::Rect& bounds) = 0;
 };
 
 }  // namespace ui

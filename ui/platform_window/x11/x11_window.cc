@@ -251,6 +251,9 @@ void X11Window::SetCursor(PlatformCursor cursor) {}
 
 void X11Window::MoveCursorTo(const gfx::Point& location) {}
 
+void X11Window::ConfineCursorToBounds(const gfx::Rect& bounds) {
+}
+
 bool X11Window::CanDispatchEvent(const PlatformEvent& event) {
   return FindXEventTarget(event) == xwindow_;
 }
