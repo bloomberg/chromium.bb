@@ -26,9 +26,6 @@ crbug.com/441639 [ Debug ] virtual/slimmingpaint/fast/overflow/lots-of-sibling-i
 
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
-crbug.com/445100 virtual/slimmingpaint/fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
-crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
-
 # Failing since Android viewport limits are hard-coded in HTMLMetaElement-in.cpp
 crbug.com/448148 inspector/device-emulation/device-emulation-restore.html [ Failure ]
 
@@ -47,6 +44,14 @@ crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]
+
+# It is not possible to capture a marquee at exactly the same state 100% of the runs.
+crbug.com/445100 virtual/slimmingpaint/fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
+crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
+crbug.com/432129 fast/html/marquee-scroll.html [ Pass Failure ]
+crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
+crbug.com/439478 fast/inline-block/003.html [ NeedsRebaseline ]
+crbug.com/439478 virtual/slimmingpaint/fast/inline-block/003.html [ NeedsRebaseline ]
 
 # These tests require virtual-viewport mode to be enabled. Remove this expectation once virtual-viewport
 # lands on desktop platforms.
@@ -998,11 +1003,9 @@ crbug.com/432129 [ Mac ] fast/dom/shadow/shadowdom-for-meter-dynamic.html [ Pass
 crbug.com/432129 [ Mac ] fast/dom/shadow/shadowdom-for-meter-multiple.html [ Pass ImageOnlyFailure ]
 crbug.com/432129 [ Mac ] fast/dom/shadow/shadowdom-for-meter-without-shadow-element.html [ Pass ImageOnlyFailure ]
 crbug.com/432129 [ Mac ] fast/dom/shadow/shadowdom-for-meter-with-style.html [ Pass ImageOnlyFailure ]
-crbug.com/432129 fast/html/marquee-scroll.html [ Pass Failure ]
 crbug.com/432129 fast/inline/whitespace-reattaching.html [ Pass Failure ]
 crbug.com/432129 [ Win Debug ] inspector-protocol/timeline/timeline-raf.html [ Pass Failure ]
 crbug.com/432129 inspector/elements/styles/styles-change-node-while-editing.html [ Pass Failure ]
-crbug.com/432129 virtual/slimmingpaint/fast/inline-block/003.html [ Pass Failure ]
 crbug.com/432129 virtual/slimmingpaint/fast/inline/whitespace-reattaching.html [ Pass Failure ]
 crbug.com/432129 virtual/slimmingpaint/fast/text/descent-clip-in-scaled-page.html [ Pass ImageOnlyFailure ]
 
@@ -1039,7 +1042,6 @@ crbug.com/362434 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/over
 
 crbug.com/362499 [ Mac ] touchadjustment/context-menu-text-subtargets.html [ Failure Pass ]
 crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
-crbug.com/445494 [ Mac ] fast/inline-block/003.html [ Failure Pass ]
 
 crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash Pass ]
 
@@ -1518,8 +1520,6 @@ crbug.com/437131 [ Win Linux ] virtual/gpu/fast/canvas/image-object-in-canvas.ht
 
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 crbug.com/419486 [ Mac ] virtual/slimmingpaint/fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
-
-crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 
 # Disabled until the test plugin is fixed.
 crbug.com/363099 [ Win ] plugins/geturlnotify-during-document-teardown.html [ Failure ]
