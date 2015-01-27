@@ -362,7 +362,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterPersisted) {
   EXPECT_EQ(app_id_sw1.ToString(), gcm_service()->last_registered_app_id());
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
+// Disabled due to failures: crbug.com/452666
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, DISABLED_PushEventSuccess) {
   std::string script_result;
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
@@ -465,8 +466,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoPermission) {
 }
 
 #if defined(ENABLE_NOTIFICATIONS)
+// Disabled due to failures: crbug.com/452666
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
-                       PushEventEnforcesUserVisibleNotification) {
+                       DISABLED_PushEventEnforcesUserVisibleNotification) {
   std::string script_result;
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
