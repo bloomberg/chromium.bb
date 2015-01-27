@@ -16,7 +16,7 @@ class WebServiceWorkerResponsePrivate : public RefCounted<WebServiceWorkerRespon
 public:
     WebServiceWorkerResponsePrivate()
         : status(0)
-        , responseType(WebServiceWorkerResponseTypeOpaque)
+        , responseType(WebServiceWorkerResponseTypeDefault)
     {
     }
     WebURL url;
