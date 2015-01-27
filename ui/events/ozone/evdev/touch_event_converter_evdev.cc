@@ -74,9 +74,9 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
     base::FilePath path,
     int id,
     InputDeviceType type,
-    const EventDispatchCallback& callback)
+    const TouchEventDispatchCallback& touch_callback)
     : EventConverterEvdev(fd, path, id, type),
-      callback_(callback),
+      touch_callback_(touch_callback),
       syn_dropped_(false),
       is_type_a_(false),
       current_slot_(0) {
@@ -270,35 +270,12 @@ void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
 }
 
 void TouchEventConverterEvdev::ReportEvent(int touch_id,
-    const InProgressEvents& event, const base::TimeDelta& delta) {
-  float x = event.x_;
-  float y = event.y_;
-
-  double radius_x = event.radius_x_;
-  double radius_y = event.radius_y_;
-
-  // Transform the event according (this is used to align touches
-  // to the image based on display mode).
-  DeviceDataManager::GetInstance()->ApplyTouchTransformer(
-      id_, &x, &y);
-  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(
-      id_, &radius_x);
-  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(
-      id_, &radius_y);
-
-  gfx::PointF location(x, y);
-
-  scoped_ptr<TouchEvent> touch_event(
-      new TouchEvent(event.type_, location,
-                     /* flags */ 0,
-                     /* touch_id */ touch_id,
-                     delta,
-                     /* radius_x */ radius_x,
-                     /* radius_y */ radius_y,
-                     /* angle */ 0.,
-                     event.pressure_));
-  touch_event->set_source_device_id(id_);
-  callback_.Run(touch_event.Pass());
+                                           const InProgressEvents& event,
+                                           const base::TimeDelta& timestamp) {
+  touch_callback_.Run(TouchEventParams(
+      id_, touch_id, event.type_, gfx::PointF(event.x_, event.y_),
+      gfx::Vector2dF(event.radius_x_, event.radius_y_), event.pressure_,
+      timestamp));
 }
 
 void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {

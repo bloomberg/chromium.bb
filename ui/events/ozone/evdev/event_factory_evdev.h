@@ -78,6 +78,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   InputController* input_controller() { return &input_controller_; }
 
+  // Post a touch event to UI.
+  void PostTouchEvent(const TouchEventParams& params);
+
  protected:
   // DeviceEventObserver overrides:
   //

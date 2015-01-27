@@ -29,7 +29,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
                            base::FilePath path,
                            int id,
                            InputDeviceType type,
-                           const EventDispatchCallback& dispatch);
+                           const TouchEventDispatchCallback& touch_callback);
   ~TouchEventConverterEvdev() override;
 
   // EventConverterEvdev:
@@ -70,7 +70,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   void ReportEvents(base::TimeDelta delta);
 
   // Callback for dispatching events.
-  EventDispatchCallback callback_;
+  TouchEventDispatchCallback touch_callback_;
 
   // Set if we have seen a SYN_DROPPED and not yet re-synced with the device.
   bool syn_dropped_;

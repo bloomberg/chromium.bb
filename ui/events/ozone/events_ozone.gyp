@@ -81,6 +81,8 @@
       'evdev/event_converter_evdev_impl.h',
       'evdev/event_device_info.cc',
       'evdev/event_device_info.h',
+      'evdev/event_dispatch_callback.cc',
+      'evdev/event_dispatch_callback.h',
       'evdev/event_factory_evdev.cc',
       'evdev/event_factory_evdev.h',
       'evdev/event_modifiers_evdev.cc',

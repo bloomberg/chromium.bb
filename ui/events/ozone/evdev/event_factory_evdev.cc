@@ -7,11 +7,13 @@
 #include <fcntl.h>
 #include <linux/input.h>
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
+#include "base/time/time.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_util_linux.h"
 #include "ui/events/devices/input_device.h"
@@ -49,6 +51,7 @@ struct OpenInputDeviceParams {
 
   // Callback for dispatching events. Call on UI thread only.
   EventDispatchCallback dispatch_callback;
+  TouchEventDispatchCallback touch_callback;
 
   // State shared between devices. Must not be dereferenced on worker thread.
   EventModifiersEvdev* modifiers;
@@ -94,7 +97,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   // Touchscreen: use TouchEventConverterEvdev.
   if (devinfo.HasMTAbsXY()) {
     scoped_ptr<TouchEventConverterEvdev> converter(new TouchEventConverterEvdev(
-        fd, params.path, params.id, type, params.dispatch_callback));
+        fd, params.path, params.id, type, params.touch_callback));
     converter->Initialize(devinfo);
     return converter.Pass();
   }
@@ -197,6 +200,28 @@ scoped_ptr<SystemInputInjector> EventFactoryEvdev::CreateSystemInputInjector() {
       &modifiers_, cursor_, &keyboard_, dispatch_callback_));
 }
 
+void EventFactoryEvdev::PostTouchEvent(const TouchEventParams& params) {
+  float x = params.location.x();
+  float y = params.location.y();
+  double radius_x = params.radii.x();
+  double radius_y = params.radii.y();
+
+  // Transform the event to align touches to the image based on display mode.
+  DeviceDataManager::GetInstance()->ApplyTouchTransformer(params.device_id, &x,
+                                                          &y);
+  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(params.device_id,
+                                                          &radius_x);
+  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(params.device_id,
+                                                          &radius_y);
+
+  scoped_ptr<TouchEvent> touch_event(new TouchEvent(
+      params.type, gfx::PointF(x, y),
+      /* flags */ 0, params.touch_id, params.timestamp, radius_x, radius_y,
+      /* angle */ 0., params.pressure));
+  touch_event->set_source_device_id(params.device_id);
+  PostUiEvent(touch_event.Pass());
+}
+
 void EventFactoryEvdev::PostUiEvent(scoped_ptr<Event> event) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -245,6 +270,10 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
       params->button_map = &button_map_;
       params->keyboard = &keyboard_;
       params->cursor = cursor_;
+
+      params->touch_callback = base::Bind(&EventFactoryEvdev::PostTouchEvent,
+                                          weak_ptr_factory_.GetWeakPtr());
+
 #if defined(USE_EVDEV_GESTURES)
       params->gesture_property_provider = gesture_property_provider_.get();
 #endif
