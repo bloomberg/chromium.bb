@@ -26,17 +26,12 @@ enum class DomCode;
 // one logical keyboard, applying modifiers & implementing key repeat.
 //
 // It also currently also applies the layout.
-//
-// TODO(spang): Implement key repeat & turn off kernel repeat.
 class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
  public:
   KeyboardEvdev(EventModifiersEvdev* modifiers,
                 KeyboardLayoutEngine* keyboard_layout_engine,
                 const EventDispatchCallback& callback);
   ~KeyboardEvdev();
-
-  static int NativeCodeToEvdevCode(int native_code);
-  static int EvdevCodeToNativeCode(int evdev_code);
 
   // Handlers for raw key presses & releases.
   void OnKeyChange(unsigned int code, bool down);

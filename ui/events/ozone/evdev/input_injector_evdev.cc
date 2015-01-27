@@ -8,6 +8,7 @@
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/input_injector_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
+#include "ui/events/ozone/evdev/keyboard_util_evdev.h"
 
 namespace ui {
 
@@ -82,7 +83,7 @@ void InputInjectorEvdev::InjectKeyPress(DomCode physical_key, bool down) {
   }
 
   int native_keycode = KeycodeConverter::DomCodeToNativeKeycode(physical_key);
-  int evdev_code = KeyboardEvdev::NativeCodeToEvdevCode(native_keycode);
+  int evdev_code = NativeCodeToEvdevCode(native_keycode);
   keyboard_->OnKeyChange(evdev_code, down);
 }
 

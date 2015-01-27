@@ -78,6 +78,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   InputController* input_controller() { return &input_controller_; }
 
+  // Post a key event to the unified keyboard (KeyboardEvdev).
+  void PostKeyEvent(const KeyEventParams& params);
+
   // Post a touch event to UI.
   void PostTouchEvent(const TouchEventParams& params);
 

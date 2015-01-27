@@ -27,6 +27,19 @@ class Event;
 
 typedef base::Callback<void(scoped_ptr<Event>)> EventDispatchCallback;
 
+struct EVENTS_OZONE_EVDEV_EXPORT KeyEventParams {
+  KeyEventParams(int device_id, unsigned int code, bool down);
+  KeyEventParams(const KeyEventParams& other);
+  ~KeyEventParams();
+
+  int device_id;
+  unsigned int code;
+  bool down;
+};
+
+typedef base::Callback<void(const KeyEventParams& params)>
+    KeyEventDispatchCallback;
+
 struct EVENTS_OZONE_EVDEV_EXPORT TouchEventParams {
   TouchEventParams(int device_id,
                    int touch_id,

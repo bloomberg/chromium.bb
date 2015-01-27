@@ -27,7 +27,7 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
                               EventModifiersEvdev* modifiers,
                               MouseButtonMapEvdev* button_map,
                               CursorDelegateEvdev* cursor,
-                              KeyboardEvdev* keyboard,
+                              const KeyEventDispatchCallback& key_callback,
                               const EventDispatchCallback& callback)
       : EventConverterEvdevImpl(fd,
                                 base::FilePath(kTestDevicePath),
@@ -37,7 +37,7 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
                                 modifiers,
                                 button_map,
                                 cursor,
-                                keyboard,
+                                key_callback,
                                 callback) {
     Start();
   }
@@ -100,12 +100,15 @@ class EventConverterEvdevImplTest : public testing::Test {
     const ui::EventDispatchCallback callback =
         base::Bind(&EventConverterEvdevImplTest::DispatchEventForTest,
                    base::Unretained(this));
+    const ui::KeyEventDispatchCallback key_callback =
+        base::Bind(&EventConverterEvdevImplTest::DispatchKeyEventForTest,
+                   base::Unretained(this));
     keyboard_.reset(new ui::KeyboardEvdev(
         modifiers_.get(),
         ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(), callback));
     device_.reset(new ui::MockEventConverterEvdevImpl(
         events_in_, modifiers_.get(), button_map_.get(), cursor_.get(),
-        keyboard_.get(), callback));
+        key_callback, callback));
   }
   void TearDown() override {
     device_.reset();
@@ -139,6 +142,10 @@ class EventConverterEvdevImplTest : public testing::Test {
  private:
   void DispatchEventForTest(scoped_ptr<ui::Event> event) {
     dispatched_events_.push_back(event.release());
+  }
+
+  void DispatchKeyEventForTest(const ui::KeyEventParams& params) {
+    keyboard_->OnKeyChange(params.code, params.down);
   }
 
   base::MessageLoopForUI ui_loop_;

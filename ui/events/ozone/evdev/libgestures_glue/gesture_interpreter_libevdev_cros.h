@@ -22,7 +22,6 @@ class EventDeviceInfo;
 class EventModifiersEvdev;
 class MouseButtonMapEvdev;
 class CursorDelegateEvdev;
-class KeyboardEvdev;
 struct GestureDeviceProperties;
 class GesturePropertyProvider;
 
@@ -46,8 +45,8 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
                                  EventModifiersEvdev* modifiers,
                                  MouseButtonMapEvdev* button_map,
                                  CursorDelegateEvdev* cursor,
-                                 KeyboardEvdev* keyboard,
                                  GesturePropertyProvider* property_provider,
+                                 const KeyEventDispatchCallback& key_callback,
                                  const EventDispatchCallback& callback);
   ~GestureInterpreterLibevdevCros() override;
 
@@ -105,13 +104,11 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
 
-  // Shared keyboard state.
-  KeyboardEvdev* keyboard_;
-
   // Shared gesture property provider.
   GesturePropertyProvider* property_provider_;
 
-  // Callback for dispatching events.
+  // Callbacks for dispatching events.
+  KeyEventDispatchCallback key_callback_;
   EventDispatchCallback dispatch_callback_;
 
   // Gestures interpretation state.

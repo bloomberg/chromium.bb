@@ -34,7 +34,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
                           EventModifiersEvdev* modifiers,
                           MouseButtonMapEvdev* button_map,
                           CursorDelegateEvdev* cursor,
-                          KeyboardEvdev* keyboard,
+                          const KeyEventDispatchCallback& key_callback,
                           const EventDispatchCallback& callback);
   ~EventConverterEvdevImpl() override;
 
@@ -78,16 +78,14 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
 
-  // Shared keyboard state.
-  KeyboardEvdev* keyboard_;
-
   // Modifier key state (shift, ctrl, etc).
   EventModifiersEvdev* modifiers_;
 
   // Shared mouse button map.
   MouseButtonMapEvdev* button_map_;
 
-  // Callback for dispatching events.
+  // Callbacks for dispatching events.
+  KeyEventDispatchCallback key_callback_;
   EventDispatchCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(EventConverterEvdevImpl);

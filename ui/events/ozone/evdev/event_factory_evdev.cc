@@ -51,12 +51,12 @@ struct OpenInputDeviceParams {
 
   // Callback for dispatching events. Call on UI thread only.
   EventDispatchCallback dispatch_callback;
+  KeyEventDispatchCallback key_callback;
   TouchEventDispatchCallback touch_callback;
 
   // State shared between devices. Must not be dereferenced on worker thread.
   EventModifiersEvdev* modifiers;
   MouseButtonMapEvdev* button_map;
-  KeyboardEvdev* keyboard;
   CursorDelegateEvdev* cursor;
 #if defined(USE_EVDEV_GESTURES)
   GesturePropertyProvider* gesture_property_provider;
@@ -87,7 +87,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
     scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp =
         make_scoped_ptr(new GestureInterpreterLibevdevCros(
             params.id, params.modifiers, params.button_map, params.cursor,
-            params.keyboard, params.gesture_property_provider,
+            params.gesture_property_provider, params.key_callback,
             params.dispatch_callback));
     return make_scoped_ptr(new EventReaderLibevdevCros(
         fd, params.path, params.id, type, devinfo, gesture_interp.Pass()));
@@ -111,7 +111,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   // Everything else: use EventConverterEvdevImpl.
   return make_scoped_ptr<EventConverterEvdevImpl>(new EventConverterEvdevImpl(
       fd, params.path, params.id, type, devinfo, params.modifiers,
-      params.button_map, params.cursor, params.keyboard,
+      params.button_map, params.cursor, params.key_callback,
       params.dispatch_callback));
 }
 
@@ -200,6 +200,10 @@ scoped_ptr<SystemInputInjector> EventFactoryEvdev::CreateSystemInputInjector() {
       &modifiers_, cursor_, &keyboard_, dispatch_callback_));
 }
 
+void EventFactoryEvdev::PostKeyEvent(const KeyEventParams& params) {
+  keyboard_.OnKeyChange(params.code, params.down);
+}
+
 void EventFactoryEvdev::PostTouchEvent(const TouchEventParams& params) {
   float x = params.location.x();
   float y = params.location.y();
@@ -268,9 +272,9 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
       params->dispatch_callback = dispatch_callback_;
       params->modifiers = &modifiers_;
       params->button_map = &button_map_;
-      params->keyboard = &keyboard_;
       params->cursor = cursor_;
-
+      params->key_callback = base::Bind(&EventFactoryEvdev::PostKeyEvent,
+                                        weak_ptr_factory_.GetWeakPtr());
       params->touch_callback = base::Bind(&EventFactoryEvdev::PostTouchEvent,
                                           weak_ptr_factory_.GetWeakPtr());
 

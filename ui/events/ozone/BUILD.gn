@@ -81,6 +81,8 @@ component("events_ozone_evdev") {
     "evdev/input_injector_evdev.h",
     "evdev/keyboard_evdev.cc",
     "evdev/keyboard_evdev.h",
+    "evdev/keyboard_util_evdev.cc",
+    "evdev/keyboard_util_evdev.h",
     "evdev/mouse_button_map_evdev.cc",
     "evdev/mouse_button_map_evdev.h",
     "evdev/tablet_event_converter_evdev.cc",

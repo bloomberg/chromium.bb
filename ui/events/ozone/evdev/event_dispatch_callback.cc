@@ -6,6 +6,15 @@
 
 namespace ui {
 
+KeyEventParams::KeyEventParams(int device_id, unsigned int code, bool down)
+    : device_id(device_id), code(code), down(down) {
+}
+
+KeyEventParams::KeyEventParams(const KeyEventParams& other) = default;
+
+KeyEventParams::~KeyEventParams() {
+}
+
 TouchEventParams::TouchEventParams(int device_id,
                                    int touch_id,
                                    EventType type,

@@ -8,6 +8,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
+#include "ui/events/ozone/evdev/keyboard_util_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/layout_util.h"
@@ -15,8 +16,6 @@
 namespace ui {
 
 namespace {
-
-const int kXkbKeycodeOffset = 8;
 
 const int kRepeatDelayMs = 500;
 const int kRepeatIntervalMs = 50;
@@ -187,21 +186,6 @@ void KeyboardEvdev::DispatchKey(unsigned int key, bool down, bool repeat) {
   if (platform_keycode)
     event->set_platform_keycode(platform_keycode);
   callback_.Run(make_scoped_ptr(event));
-}
-
-// static
-int KeyboardEvdev::NativeCodeToEvdevCode(int native_code) {
-  if (native_code == KeycodeConverter::InvalidNativeKeycode()) {
-    return KEY_RESERVED;
-  }
-  return native_code - kXkbKeycodeOffset;
-}
-
-// static
-int KeyboardEvdev::EvdevCodeToNativeCode(int evdev_code) {
-  if (evdev_code == KEY_RESERVED)
-    return KeycodeConverter::InvalidNativeKeycode();
-  return evdev_code + kXkbKeycodeOffset;
 }
 
 }  // namespace ui

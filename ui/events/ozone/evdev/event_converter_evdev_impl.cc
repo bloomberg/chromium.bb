@@ -7,16 +7,19 @@
 #include <errno.h>
 #include <linux/input.h>
 
-#include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
-#include "ui/events/ozone/evdev/keyboard_evdev.h"
+#include "ui/events/ozone/evdev/keyboard_util_evdev.h"
 
 namespace ui {
+
+namespace {
 
 // Values for EV_KEY.
 const int kKeyReleaseValue = 0;
 const int kKeyRepeatValue = 2;
+
+}  // namespace
 
 EventConverterEvdevImpl::EventConverterEvdevImpl(
     int fd,
@@ -27,7 +30,7 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
     EventModifiersEvdev* modifiers,
     MouseButtonMapEvdev* button_map,
     CursorDelegateEvdev* cursor,
-    KeyboardEvdev* keyboard,
+    const KeyEventDispatchCallback& key_callback,
     const EventDispatchCallback& callback)
     : EventConverterEvdev(fd, path, id, type),
       has_keyboard_(devinfo.HasKeyboard()),
@@ -35,9 +38,9 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
       x_offset_(0),
       y_offset_(0),
       cursor_(cursor),
-      keyboard_(keyboard),
       modifiers_(modifiers),
       button_map_(button_map),
+      key_callback_(key_callback),
       callback_(callback) {
 }
 
@@ -117,9 +120,11 @@ void EventConverterEvdevImpl::ConvertKeyEvent(const input_event& input) {
 
   // Keyboard processing.
   DomCode key_code = KeycodeConverter::NativeKeycodeToDomCode(
-      KeyboardEvdev::EvdevCodeToNativeCode(input.code));
-  if (!allowed_keys_ || allowed_keys_->count(key_code))
-    keyboard_->OnKeyChange(input.code, input.value != kKeyReleaseValue);
+      EvdevCodeToNativeCode(input.code));
+  if (!allowed_keys_ || allowed_keys_->count(key_code)) {
+    key_callback_.Run(
+        KeyEventParams(id_, input.code, input.value != kKeyReleaseValue));
+  }
 }
 
 void EventConverterEvdevImpl::ConvertMouseMoveEvent(const input_event& input) {

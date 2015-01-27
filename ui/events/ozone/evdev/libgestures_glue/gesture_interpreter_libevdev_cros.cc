@@ -16,7 +16,7 @@
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
-#include "ui/events/ozone/evdev/keyboard_evdev.h"
+#include "ui/events/ozone/evdev/keyboard_util_evdev.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_timer_provider.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
@@ -110,16 +110,16 @@ GestureInterpreterLibevdevCros::GestureInterpreterLibevdevCros(
     EventModifiersEvdev* modifiers,
     MouseButtonMapEvdev* button_map,
     CursorDelegateEvdev* cursor,
-    KeyboardEvdev* keyboard,
     GesturePropertyProvider* property_provider,
+    const KeyEventDispatchCallback& key_callback,
     const EventDispatchCallback& callback)
     : id_(id),
       is_mouse_(false),
       modifiers_(modifiers),
       button_map_(button_map),
       cursor_(cursor),
-      keyboard_(keyboard),
       property_provider_(property_provider),
+      key_callback_(key_callback),
       dispatch_callback_(callback),
       interpreter_(NULL),
       evdev_(NULL),
@@ -245,8 +245,8 @@ void GestureInterpreterLibevdevCros::SetAllowedKeys(
 
   allowed_keys_.reset(new std::set<int>());
   for (const auto& it : *allowed_keys) {
-    int evdev_code = KeyboardEvdev::NativeCodeToEvdevCode(
-        KeycodeConverter::DomCodeToNativeKeycode(it));
+    int evdev_code =
+        NativeCodeToEvdevCode(KeycodeConverter::DomCodeToNativeKeycode(it));
     allowed_keys_->insert(evdev_code);
   }
 }
@@ -508,7 +508,7 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,
         continue;
 
       // Dispatch key press or release to keyboard.
-      keyboard_->OnKeyChange(key, value);
+      key_callback_.Run(KeyEventParams(id_, key, value));
     }
   }
 
