@@ -647,6 +647,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kContextMenus);
   skip.insert(APIPermission::kCryptotokenPrivate);
   skip.insert(APIPermission::kCopresencePrivate);
+  skip.insert(APIPermission::kDesktopCapturePrivate);
   skip.insert(APIPermission::kDiagnostics);
   skip.insert(APIPermission::kDns);
   skip.insert(APIPermission::kDownloadsShelf);

@@ -36,6 +36,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_DESKTOP_CAPTURE,
        PermissionMessage::kDesktopCapture},
+      {APIPermission::kDesktopCapturePrivate, "desktopCapturePrivate"},
       {APIPermission::kDownloads,
        "downloads",
        APIPermissionInfo::kFlagNone,
