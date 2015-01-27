@@ -26,6 +26,10 @@ void CopyData(const scoped_refptr<IOBuffer>& buf,
               int buf_size,
               const scoped_refptr<base::RefCountedMemory>& data,
               int64 data_offset) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("422489 CopyData"));
+
   memcpy(buf->data(), data->front() + data_offset, buf_size);
 }
 
