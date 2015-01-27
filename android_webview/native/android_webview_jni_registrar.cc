@@ -29,7 +29,7 @@
 #include "android_webview/native/permission/aw_permission_request.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 
 namespace android_webview {
 

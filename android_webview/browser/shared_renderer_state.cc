@@ -10,9 +10,9 @@
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
-#include "base/debug/trace_event_argument.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/trace_event/trace_event_argument.h"
 
 namespace android_webview {
 

@@ -8,7 +8,7 @@
 
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "jni/JavaBrowserViewRendererHelper_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/utils/SkCanvasStateUtils.h"

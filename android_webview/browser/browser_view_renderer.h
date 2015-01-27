@@ -9,7 +9,7 @@
 #include "android_webview/browser/shared_renderer_state.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "ui/gfx/geometry/rect.h"

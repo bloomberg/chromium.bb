@@ -6,9 +6,9 @@
 
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/shared_renderer_state.h"
-#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 
