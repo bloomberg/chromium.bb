@@ -29,10 +29,12 @@ namespace chromeos {
 namespace {
 
 bool ConnectionStateChanged(NetworkState* network,
-                            const std::string& prev_connection_state) {
-  return (network->connection_state() != prev_connection_state) &&
-         (network->connection_state() != shill::kStateIdle ||
-          !prev_connection_state.empty());
+                            const std::string& prev_connection_state,
+                            bool prev_is_captive_portal) {
+  return ((network->connection_state() != prev_connection_state) &&
+          !((network->connection_state() == shill::kStateIdle) &&
+            prev_connection_state.empty())) ||
+         (network->is_captive_portal() != prev_is_captive_portal);
 }
 
 std::string GetManagedStateLogType(const ManagedState* state) {
@@ -519,6 +521,7 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
   DCHECK(network);
   bool network_property_updated = false;
   std::string prev_connection_state = network->connection_state();
+  bool prev_is_captive_portal = network->is_captive_portal();
   for (base::DictionaryValue::Iterator iter(properties);
        !iter.IsAtEnd(); iter.Advance()) {
     if (network->PropertyChanged(iter.key(), iter.value()))
@@ -531,8 +534,10 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
   // Notify observers of NetworkState changes.
   if (network_property_updated || network->update_requested()) {
     // Signal connection state changed after all properties have been updated.
-    if (ConnectionStateChanged(network, prev_connection_state))
+    if (ConnectionStateChanged(network, prev_connection_state,
+                               prev_is_captive_portal)) {
       OnNetworkConnectionStateChanged(network);
+    }
     NET_LOG_EVENT("NetworkPropertiesUpdated", GetLogName(network));
     NotifyNetworkPropertiesUpdated(network);
   }
@@ -548,6 +553,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (!network)
     return;
   std::string prev_connection_state = network->connection_state();
+  bool prev_is_captive_portal = network->is_captive_portal();
   std::string prev_profile_path = network->profile_path();
   changed |= network->PropertyChanged(key, value);
   if (!changed)
@@ -555,7 +561,8 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
 
   if (key == shill::kStateProperty || key == shill::kVisibleProperty) {
     network_list_sorted_ = false;
-    if (ConnectionStateChanged(network, prev_connection_state)) {
+    if (ConnectionStateChanged(network, prev_connection_state,
+                               prev_is_captive_portal)) {
       OnNetworkConnectionStateChanged(network);
       // If the connection state changes, other properties such as IPConfig
       // may have changed, so request a full update.

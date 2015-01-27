@@ -76,6 +76,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // Wireless property accessors
   bool connectable() const { return connectable_; }
+  bool is_captive_portal() const { return is_captive_portal_; }
   int signal_strength() const { return signal_strength_; }
 
   // Wifi property accessors
@@ -116,9 +117,11 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Set the GUID. Called exclusively by NetworkStateHandler.
   void SetGuid(const std::string& guid);
 
-  // Helpers (used e.g. when a state or error is cached)
+  // Helpers (used e.g. when a state, error, or shill dictionary is cached)
   static bool StateIsConnected(const std::string& connection_state);
   static bool StateIsConnecting(const std::string& connection_state);
+  static bool NetworkStateIsCaptivePortal(
+      const base::DictionaryValue& shill_properties);
   static bool ErrorIsValid(const std::string& error);
 
  private:
@@ -143,7 +146,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string connection_state_;
   std::string profile_path_;
   std::vector<uint8_t> raw_ssid_;  // Unknown encoding. Not necessarily UTF-8.
-  bool connectable_;
 
   // Reflects the current Shill Service.Error property. This might get cleared
   // by Shill shortly after a failure.
@@ -163,6 +165,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   GURL web_proxy_auto_discovery_url_;
 
   // Wireless properties, used for icons and Connect logic.
+  bool connectable_;
+  bool is_captive_portal_;
   int signal_strength_;
 
   // Cellular properties, used for icons, Connect, and Activation.

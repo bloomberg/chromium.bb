@@ -434,8 +434,8 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
     }
     onc_object_->SetStringWithoutPathExpansion(
         ::onc::network_config::kConnectionState, onc_state);
-    // Only set 'RestrictedConnectivity' if true.
-    if (state == shill::kStatePortal) {
+    // Only set 'RestrictedConnectivity' if captive portal state is true.
+    if (NetworkState::NetworkStateIsCaptivePortal(*shill_dictionary_)) {
       onc_object_->SetBooleanWithoutPathExpansion(
           ::onc::network_config::kRestrictedConnectivity, true);
     }

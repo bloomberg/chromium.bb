@@ -29,6 +29,47 @@ bool ConvertListValueToStringVector(const base::ListValue& string_list,
   return true;
 }
 
+bool IsCaptivePortalState(const base::DictionaryValue& properties, bool log) {
+  std::string state;
+  properties.GetStringWithoutPathExpansion(shill::kStateProperty, &state);
+  if (state != shill::kStatePortal)
+    return false;
+  std::string portal_detection_phase, portal_detection_status;
+  if (!properties.GetStringWithoutPathExpansion(
+          shill::kPortalDetectionFailedPhaseProperty,
+          &portal_detection_phase) ||
+      !properties.GetStringWithoutPathExpansion(
+          shill::kPortalDetectionFailedStatusProperty,
+          &portal_detection_status)) {
+    // If Shill (or a stub) has not set PortalDetectionFailedStatus
+    // or PortalDetectionFailedPhase, assume we are in captive portal state.
+    return true;
+  }
+
+  // Shill reports the phase in which it determined that the device is behind a
+  // captive portal. We only want to rely only on incorrect content being
+  // returned and ignore other reasons.
+  bool is_captive_portal =
+      portal_detection_phase == shill::kPortalDetectionPhaseContent &&
+      portal_detection_status == shill::kPortalDetectionStatusFailure;
+
+  if (log) {
+    std::string name;
+    properties.GetStringWithoutPathExpansion(shill::kNameProperty, &name);
+    if (name.empty())
+      properties.GetStringWithoutPathExpansion(shill::kSSIDProperty, &name);
+    if (!is_captive_portal) {
+      NET_LOG(EVENT) << "State is 'portal' but not in captive portal state:"
+                     << " name=" << name << " phase=" << portal_detection_phase
+                     << " status=" << portal_detection_status;
+    } else {
+      NET_LOG(EVENT) << "Network is in captive portal state: " << name;
+    }
+  }
+
+  return is_captive_portal;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -36,8 +77,9 @@ namespace chromeos {
 NetworkState::NetworkState(const std::string& path)
     : ManagedState(MANAGED_TYPE_NETWORK, path),
       visible_(false),
-      connectable_(false),
       prefix_length_(0),
+      connectable_(false),
+      is_captive_portal_(false),
       signal_strength_(0),
       cellular_out_of_credits_(false) {
 }
@@ -141,8 +183,12 @@ bool NetworkState::InitialPropertiesReceived(
   // SignalStrength > 0.
   if ((type() == shill::kTypeWifi || type() == shill::kTypeWimax) &&
       visible() && signal_strength_ <= 0) {
-      signal_strength_ = 1;
+    signal_strength_ = 1;
   }
+
+  // Any change to connection state will trigger a complete property update,
+  // so we update is_captive_portal_ here.
+  is_captive_portal_ = IsCaptivePortalState(properties, true /* log */);
 
   // Ensure that the network has a valid name.
   return UpdateName(properties);
@@ -182,9 +228,8 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
 
   // Mobile properties
   if (NetworkTypePattern::Mobile().MatchesType(type())) {
-    dictionary->SetStringWithoutPathExpansion(
-        shill::kNetworkTechnologyProperty,
-        network_technology());
+    dictionary->SetStringWithoutPathExpansion(shill::kNetworkTechnologyProperty,
+                                              network_technology());
     dictionary->SetStringWithoutPathExpansion(shill::kActivationStateProperty,
                                               activation_state());
     dictionary->SetStringWithoutPathExpansion(shill::kRoamingStateProperty,
@@ -196,8 +241,8 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
 
 void NetworkState::IPConfigPropertiesChanged(
     const base::DictionaryValue& properties) {
-  for (base::DictionaryValue::Iterator iter(properties);
-       !iter.IsAtEnd(); iter.Advance()) {
+  for (base::DictionaryValue::Iterator iter(properties); !iter.IsAtEnd();
+       iter.Advance()) {
     std::string key = iter.key();
     const base::Value& value = iter.value();
 
@@ -262,7 +307,7 @@ bool NetworkState::IsInProfile() const {
 
 bool NetworkState::IsPrivate() const {
   return !profile_path_.empty() &&
-      profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
+         profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
 }
 
 std::string NetworkState::GetDnsServersAsString() const {
@@ -281,7 +326,7 @@ std::string NetworkState::GetNetmask() const {
 
 std::string NetworkState::GetSpecifier() const {
   if (!update_received()) {
-    NET_LOG(ERROR) << "GetSpecifier called before update: " <<  path();
+    NET_LOG(ERROR) << "GetSpecifier called before update: " << path();
     return std::string();
   }
   if (type() == shill::kTypeWifi)
@@ -317,6 +362,12 @@ bool NetworkState::StateIsConnecting(const std::string& connection_state) {
   return (connection_state == shill::kStateAssociation ||
           connection_state == shill::kStateConfiguration ||
           connection_state == shill::kStateCarrier);
+}
+
+// static
+bool NetworkState::NetworkStateIsCaptivePortal(
+    const base::DictionaryValue& shill_properties) {
+  return IsCaptivePortalState(shill_properties, false /* log */);
 }
 
 // static

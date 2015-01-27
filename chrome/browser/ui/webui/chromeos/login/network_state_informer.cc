@@ -70,14 +70,14 @@ NetworkStateInformer::State GetStateForDefaultNetwork() {
     }
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL ||
         (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-         network->connection_state() == shill::kStatePortal))
+         network->is_captive_portal()))
       return NetworkStateInformer::CAPTIVE_PORTAL;
   } else {
     if (NetworkState::StateIsConnecting(network->connection_state()))
       return NetworkStateInformer::CONNECTING;
     if (network->connection_state() == shill::kStateOnline)
       return NetworkStateInformer::ONLINE;
-    if (network->connection_state() == shill::kStatePortal)
+    if (network->is_captive_portal())
       return NetworkStateInformer::CAPTIVE_PORTAL;
   }
   return NetworkStateInformer::OFFLINE;

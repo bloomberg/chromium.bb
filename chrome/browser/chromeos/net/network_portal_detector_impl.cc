@@ -96,7 +96,7 @@ void RecordDiscrepancyWithShill(
           NetworkPortalDetectorImpl::kSessionShillOnlineHistogram,
           status,
           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-    } else if (network->connection_state() == shill::kStatePortal) {
+    } else if (network->is_captive_portal()) {
       UMA_HISTOGRAM_ENUMERATION(
           NetworkPortalDetectorImpl::kSessionShillPortalHistogram,
           status,
@@ -113,7 +113,7 @@ void RecordDiscrepancyWithShill(
           NetworkPortalDetectorImpl::kOobeShillOnlineHistogram,
           status,
           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-    } else if (network->connection_state() == shill::kStatePortal) {
+    } else if (network->is_captive_portal()) {
       UMA_HISTOGRAM_ENUMERATION(
           NetworkPortalDetectorImpl::kOobeShillPortalHistogram,
           status,
@@ -480,7 +480,7 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
   // if the default network is in portal state.
   if (result != captive_portal::RESULT_NO_RESPONSE &&
       DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface() &&
-      network && network->connection_state() == shill::kStatePortal) {
+      network && network->is_captive_portal()) {
     result = captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL;
     response_code = 200;
   }
@@ -502,8 +502,7 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
     case captive_portal::RESULT_NO_RESPONSE:
       if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
         state.status = CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
-      } else if (network &&
-                 (network->connection_state() == shill::kStatePortal)) {
+      } else if (network && network->is_captive_portal()) {
         // Take into account shill's detection results.
         state.status = CAPTIVE_PORTAL_STATUS_PORTAL;
       } else {
@@ -618,17 +617,15 @@ void NetworkPortalDetectorImpl::RecordDetectionStats(
       NOTREACHED();
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      if (network->connection_state() == shill::kStateOnline ||
-          network->connection_state() == shill::kStatePortal) {
+      if (network->IsConnectedState())
         RecordDiscrepancyWithShill(network, status);
-      }
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
       if (network->connection_state() != shill::kStateOnline)
         RecordDiscrepancyWithShill(network, status);
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
-      if (network->connection_state() != shill::kStatePortal)
+      if (!network->is_captive_portal())
         RecordDiscrepancyWithShill(network, status);
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
