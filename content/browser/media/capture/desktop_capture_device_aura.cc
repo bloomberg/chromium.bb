@@ -362,8 +362,11 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
                                                texture_mailbox.target(),
                                                texture_mailbox.sync_point())),
         base::Bind(&RunSingleReleaseCallback, base::Passed(&release_callback)),
-        result->size(), gfx::Rect(result->size()), result->size(),
-        base::TimeDelta(), media::VideoFrame::ReadPixelsCB(), false);
+        result->size(),
+        gfx::Rect(result->size()),
+        result->size(),
+        base::TimeDelta(),
+        media::VideoFrame::ReadPixelsCB());
     capture_frame_cb.Run(video_frame, start_time, true);
     return true;
   }

@@ -57,8 +57,7 @@ class MEDIA_EXPORT Picture {
  public:
   Picture(int32 picture_buffer_id,
           int32 bitstream_buffer_id,
-          const gfx::Rect& visible_rect,
-          bool allow_overlay);
+          const gfx::Rect& visible_rect);
 
   // Returns the id of the picture buffer where this picture is contained.
   int32 picture_buffer_id() const {
@@ -79,13 +78,10 @@ class MEDIA_EXPORT Picture {
   // Picture contained in the PictureBuffer.
   gfx::Rect visible_rect() const { return visible_rect_; }
 
-  bool allow_overlay() const { return allow_overlay_; }
-
  private:
   int32 picture_buffer_id_;
   int32 bitstream_buffer_id_;
   gfx::Rect visible_rect_;
-  bool allow_overlay_;
 };
 
 }  // namespace media

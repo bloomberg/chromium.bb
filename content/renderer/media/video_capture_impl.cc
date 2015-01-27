@@ -278,12 +278,16 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
 
   scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapNativeTexture(
       make_scoped_ptr(new gpu::MailboxHolder(mailbox_holder)),
-      media::BindToCurrentLoop(base::Bind(
-          &VideoCaptureImpl::OnClientBufferFinished, weak_factory_.GetWeakPtr(),
-          buffer_id, scoped_refptr<ClientBuffer>())),
-      last_frame_format_.frame_size, gfx::Rect(last_frame_format_.frame_size),
-      last_frame_format_.frame_size, timestamp - first_frame_timestamp_,
-      base::Bind(&NullReadPixelsCB), false);
+      media::BindToCurrentLoop(
+          base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
+                     weak_factory_.GetWeakPtr(),
+                     buffer_id,
+                     scoped_refptr<ClientBuffer>())),
+      last_frame_format_.frame_size,
+      gfx::Rect(last_frame_format_.frame_size),
+      last_frame_format_.frame_size,
+      timestamp - first_frame_timestamp_,
+      base::Bind(&NullReadPixelsCB));
 
   for (ClientInfoMap::iterator it = clients_.begin(); it != clients_.end();
        ++it) {

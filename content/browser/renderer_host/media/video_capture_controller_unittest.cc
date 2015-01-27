@@ -145,9 +145,13 @@ class VideoCaptureControllerTest : public testing::Test {
       const media::VideoFrame::ReleaseMailboxCB& release_cb,
       gfx::Size dimensions) {
     return media::VideoFrame::WrapNativeTexture(
-        holder.Pass(), release_cb, dimensions, gfx::Rect(dimensions),
-        dimensions, base::TimeDelta(), media::VideoFrame::ReadPixelsCB(),
-        false);
+        holder.Pass(),
+        release_cb,
+        dimensions,
+        gfx::Rect(dimensions),
+        dimensions,
+        base::TimeDelta(),
+        media::VideoFrame::ReadPixelsCB());
   }
 
   TestBrowserThreadBundle bundle_;

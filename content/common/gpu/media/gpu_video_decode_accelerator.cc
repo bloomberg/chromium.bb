@@ -215,9 +215,10 @@ void GpuVideoDecodeAccelerator::PictureReady(
   }
 
   if (!Send(new AcceleratedVideoDecoderHostMsg_PictureReady(
-          host_route_id_, picture.picture_buffer_id(),
-          picture.bitstream_buffer_id(), picture.visible_rect(),
-          picture.allow_overlay()))) {
+          host_route_id_,
+          picture.picture_buffer_id(),
+          picture.bitstream_buffer_id(),
+          picture.visible_rect()))) {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_PictureReady) failed";
   }
 }

@@ -114,8 +114,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       base::TimeDelta timestamp,
-      const ReadPixelsCB& read_pixels_cb,
-      bool allow_overlay);
+      const ReadPixelsCB& read_pixels_cb);
 
 #if !defined(MEDIA_FOR_CAST_IOS)
   // Read pixels from the native texture backing |*this| and write
@@ -300,8 +299,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the shared-memory handle, if present
   base::SharedMemoryHandle shared_memory_handle() const;
 
-  bool allow_overlay() const { return allow_overlay_; }
-
 #if defined(OS_POSIX)
   // Returns backing dmabuf file descriptor for given |plane|, if present.
   int dmabuf_fd(size_t plane) const;
@@ -412,8 +409,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   uint32 release_sync_point_;
 
   const bool end_of_stream_;
-
-  bool allow_overlay_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoFrame);
 };

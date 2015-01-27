@@ -450,12 +450,16 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
       make_scoped_ptr(new gpu::MailboxHolder(
           pb.texture_mailbox(), decoder_texture_target_, 0 /* sync_point */)),
-      BindToCurrentLoop(base::Bind(
-          &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
-          factories_, picture.picture_buffer_id(), pb.texture_id())),
-      pb.size(), visible_rect, natural_size, timestamp,
-      base::Bind(&ReadPixelsSync, factories_, pb.texture_id(), visible_rect),
-      picture.allow_overlay()));
+      BindToCurrentLoop(base::Bind(&GpuVideoDecoder::ReleaseMailbox,
+                                   weak_factory_.GetWeakPtr(),
+                                   factories_,
+                                   picture.picture_buffer_id(),
+                                   pb.texture_id())),
+      pb.size(),
+      visible_rect,
+      natural_size,
+      timestamp,
+      base::Bind(&ReadPixelsSync, factories_, pb.texture_id(), visible_rect)));
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;
   bool inserted =

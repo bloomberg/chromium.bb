@@ -24,12 +24,10 @@ PictureBuffer::PictureBuffer(int32 id,
 
 Picture::Picture(int32 picture_buffer_id,
                  int32 bitstream_buffer_id,
-                 const gfx::Rect& visible_rect,
-                 bool allow_overlay)
+                 const gfx::Rect& visible_rect)
     : picture_buffer_id_(picture_buffer_id),
       bitstream_buffer_id_(bitstream_buffer_id),
-      visible_rect_(visible_rect),
-      allow_overlay_(allow_overlay) {
+      visible_rect_(visible_rect) {
 }
 
 }  // namespace media
