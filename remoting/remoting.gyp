@@ -26,11 +26,7 @@
     'remoting_multi_process%': '<(remoting_multi_process)',
     'remoting_rdp_session%': 1,
 
-    'remoting_localize_path': 'tools/build/remoting_localize.py',
-
     'branding_path': '../remoting/branding_<(branding)',
-
-    'webapp_locale_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/webapp/_locales',
 
     'conditions': [
       ['OS=="mac"', {
@@ -55,25 +51,6 @@
 
       }],
     ],
-    'remoting_locales': [
-      # Note: list duplicated in GN build. See //remoting/resources/BUILD.gn
-      'ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'en-GB', 'es',
-      'es-419', 'et', 'fi', 'fil', 'fr', 'he', 'hi', 'hr', 'hu', 'id',
-      'it', 'ja', 'ko', 'lt', 'lv', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT',
-      'ro', 'ru', 'sk', 'sl', 'sr', 'sv', 'th', 'tr', 'uk', 'vi',
-      'zh-CN', 'zh-TW',
-    ],
-    'remoting_host_locale_files': [
-      # Build the list of .pak files generated from remoting_strings.grd.
-      '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x '
-          '<(PRODUCT_DIR) <(remoting_locales))',
-    ],
-    'remoting_webapp_locale_files': [
-      # Build the list of .json files generated from remoting_strings.grd.
-      '<!@pymod_do_main(remoting_localize --locale_output '
-          '"<(webapp_locale_dir)/@{json_suffix}/messages.json" '
-          '--print_only <(remoting_locales))',
-    ],
   },
 
   'includes': [
@@ -82,10 +59,12 @@
     'remoting_client.gypi',
     'remoting_host.gypi',
     'remoting_host_srcs.gypi',
+    'remoting_locales.gypi',
     'remoting_srcs.gypi',
     'remoting_test.gypi',
     'remoting_version.gypi',
     'remoting_webapp_files.gypi',
+    'app_remoting_webapp_files.gypi',
   ],
 
   'target_defaults': {
@@ -165,7 +144,6 @@
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)',
         'sources': [
-          '<(SHARED_INTERMEDIATE_DIR)/main.html',
           'base/resources_unittest.cc',
           'host/continue_window_mac.mm',
           'host/disconnect_window_mac.mm',
@@ -176,8 +154,8 @@
           'host/win/host_messages.mc.jinja2',
           'host/win/version.rc.jinja2',
           'resources/play_store_resources.cc',
-          'webapp/crd/manifest.json.jinja2',
-          '<@(remoting_webapp_crd_js_files)',
+          '<@(desktop_remoting_webapp_localizable_files)',
+          '<@(app_remoting_webapp_localizable_files)',
         ],
       },
       'actions': [

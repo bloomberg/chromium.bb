@@ -4,7 +4,8 @@
 
 {
   'includes': [
-    '<(DEPTH)/remoting/app_remoting_webapp_build.gypi',
+    '../remoting/remoting_locales.gypi',
+    '../remoting/app_remoting_webapp_build.gypi',
   ],
 
   'target_defaults': {

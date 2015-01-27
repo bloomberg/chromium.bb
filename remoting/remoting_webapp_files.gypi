@@ -350,5 +350,15 @@
       'webapp/crd/html/window_frame.html',
     ],
 
+    # Files that contain localizable strings.
+    'desktop_remoting_webapp_localizable_files': [
+      'webapp/crd/manifest.json.jinja2',
+      '<(remoting_webapp_template_main)',
+      '<(remoting_webapp_template_wcs_sandbox)',
+      '<(remoting_webapp_template_background)',
+      '<@(remoting_webapp_template_files)',
+      '<@(remoting_webapp_crd_js_files)',
+    ],
+
   },
 }
