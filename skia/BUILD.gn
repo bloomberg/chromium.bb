@@ -80,7 +80,7 @@ gypi_skia_effects =
                 "scope",
                 [ "//third_party/skia/gyp/effects.gypi" ])
 
-# The list of Skia utilss that are to be set for chromium.
+# The list of Skia utils that are to be set for chromium.
 gypi_skia_utils =
     exec_script("//build/gypi_to_gn.py",
                 [
@@ -90,6 +90,16 @@ gypi_skia_utils =
                 ],
                 "scope",
                 [ "//third_party/skia/gyp/utils.gypi" ])
+
+gypi_skia_opts =
+    exec_script("//build/gypi_to_gn.py",
+                [
+                  rebase_path("//third_party/skia/gyp/opts.gypi"),
+                  "--replace=<(skia_include_path)=//third_party/skia/include",
+                  "--replace=<(skia_src_path)=//third_party/skia/src",
+                ],
+                "scope",
+                [ "//third_party/skia/gyp/opts.gypi" ])
 
 # The list of Skia files is kept in skia_gn_files.gypi. Read it.
 gypi_values =
@@ -568,72 +578,25 @@ source_set("skia_opts") {
   defines = []
 
   if (cpu_arch == "x86" || cpu_arch == "x64") {
-    sources = [
-      "//third_party/skia/src/opts/SkTextureCompression_opts_none.cpp",
-
-      # SSE 2
-      "//third_party/skia/src/opts/opts_check_x86.cpp",
-      "//third_party/skia/src/opts/SkBitmapFilter_opts_SSE2.cpp",
-      "//third_party/skia/src/opts/SkBitmapProcState_opts_SSE2.cpp",
-      "//third_party/skia/src/opts/SkBlitRect_opts_SSE2.cpp",
-      "//third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp",
-      "//third_party/skia/src/opts/SkBlurImage_opts_SSE2.cpp",
-      "//third_party/skia/src/opts/SkMorphology_opts_SSE2.cpp",
-      "//third_party/skia/src/opts/SkUtils_opts_SSE2.cpp",
-      "//third_party/skia/src/opts/SkXfermode_opts_SSE2.cpp",
-
-      # SSSE 3
-      "//third_party/skia/src/opts/SkBitmapProcState_opts_SSSE3.cpp",
-
-      # SSE 4
-      "//third_party/skia/src/opts/SkBlurImage_opts_SSE4.cpp",
-
-      # Chrome-specific.
-      "ext/convolver_SSE2.cc",
-
-      # These are header files used by this target from the skia one above.
-      "ext/convolver.h",
-      "//third_party/skia/include/core/SkTypes.h",
-    ]
-
-    if (!is_win) {
-      # SSE 4
-      if (cpu_arch == "x86") {
-        sources += [ "//third_party/skia/src/opts/SkBlitRow_opts_SSE4_asm.S" ]
-      } else {  # x64
-        sources +=
-            [ "//third_party/skia/src/opts/SkBlitRow_opts_SSE4_x64_asm.S" ]
-      }
-    }
+    sources = gypi_skia_opts.sse2_sources + gypi_skia_opts.ssse3_sources +
+              gypi_skia_opts.sse41_sources +
+              [
+                # Chrome-specific.
+                "ext/convolver_SSE2.cc",
+              ]
 
     if (is_linux || is_mac) {
       cflags += [ "-msse4.1" ]
     }
   } else if (cpu_arch == "arm") {
-    sources = [
-      "//third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp",
-    ]
-
     # The assembly uses the frame pointer register (r7 in Thumb/r11 in
     # ARM), the compiler doesn't like that.
     cflags += [ "-fomit-frame-pointer" ]
 
     if (arm_version >= 7) {
+      sources = gypi_skia_opts.armv7_sources
       if (arm_use_neon || arm_optionally_use_neon) {
-        sources += [
-          "//third_party/skia/src/opts/SkBitmapProcState_arm_neon.cpp",
-          "//third_party/skia/src/opts/SkBitmapProcState_matrixProcs_neon.cpp",
-          "//third_party/skia/src/opts/SkBitmapProcState_matrix_clamp_neon.h",
-          "//third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h",
-          "//third_party/skia/src/opts/SkBlitMask_opts_arm_neon.cpp",
-          "//third_party/skia/src/opts/SkBlitRow_opts_arm_neon.cpp",
-          "//third_party/skia/src/opts/SkBlurImage_opts_neon.cpp",
-          "//third_party/skia/src/opts/SkMorphology_opts_neon.cpp",
-          "//third_party/skia/src/opts/SkTextureCompression_opts_neon.cpp",
-          "//third_party/skia/src/opts/SkXfermode_opts_arm_neon.cpp",
-          "//third_party/skia/src/opts/memset16_neon.S",
-          "//third_party/skia/src/opts/memset32_neon.S",
-        ]
+        sources += gypi_skia_opts.neon_sources
 
         # Root build config sets -mfpu=$arm_fpu, which we expect to be neon
         # when running this.
@@ -641,54 +604,13 @@ source_set("skia_opts") {
           configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
           cflags += [ "-mfpu=neon" ]
         }
-
-        #ldflags = [
-        #  "-march=armv7-a",
-        #  "-Wl,--fix-cortex-a8",
-        #]
       }
-    }
-
-    # Non-Neon ARM code.
-    if (arm_version < 7 || !arm_use_neon) {
-      sources += [ "//third_party/skia/src/opts/memset.arm.S" ]
-    }
-
-    if (arm_version < 6) {
-      sources += [
-        "//third_party/skia/src/opts/SkBlitMask_opts_none.cpp",
-        "//third_party/skia/src/opts/SkBlitRow_opts_none.cpp",
-        "//third_party/skia/src/opts/SkBlurImage_opts_none.cpp",
-        "//third_party/skia/src/opts/SkMorphology_opts_none.cpp",
-        "//third_party/skia/src/opts/SkTextureCompression_opts_none.cpp",
-        "//third_party/skia/src/opts/SkUtils_opts_none.cpp",
-        "//third_party/skia/src/opts/SkXfermode_opts_none.cpp",
-      ]
     } else {
-      # arm version >= 6.
-      sources += [
-        "//third_party/skia/src/opts/SkBlitMask_opts_arm.cpp",
-        "//third_party/skia/src/opts/SkBlitRow_opts_arm.cpp",
-        "//third_party/skia/src/opts/SkBlitRow_opts_arm.h",
-        "//third_party/skia/src/opts/SkBlurImage_opts_arm.cpp",
-        "//third_party/skia/src/opts/SkMorphology_opts_arm.cpp",
-        "//third_party/skia/src/opts/SkTextureCompression_opts_arm.cpp",
-        "//third_party/skia/src/opts/SkUtils_opts_arm.cpp",
-        "//third_party/skia/src/opts/SkXfermode_opts_none.cpp",
-      ]
+      sources = gypi_skia_opts.none_sourcees
     }
   } else if (cpu_arch == "mipsel") {
     cflags += [ "-fomit-frame-pointer" ]
-    sources = [
-      "//third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp",
-      "//third_party/skia/src/opts/SkBlitMask_opts_none.cpp",
-      "//third_party/skia/src/opts/SkBlitRow_opts_none.cpp",
-      "//third_party/skia/src/opts/SkBlurImage_opts_none.cpp",
-      "//third_party/skia/src/opts/SkMorphology_opts_none.cpp",
-      "//third_party/skia/src/opts/SkTextureCompression_opts_none.cpp",
-      "//third_party/skia/src/opts/SkUtils_opts_none.cpp",
-      "//third_party/skia/src/opts/SkXfermode_opts_none.cpp",
-    ]
+    sources = gypi_skia_opts.none_sources
   } else {
     assert(false, "Need to port cpu specific stuff from skia_library_opts.gyp")
   }
