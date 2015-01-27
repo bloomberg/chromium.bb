@@ -16,8 +16,8 @@ function test()
 
     function step2(msg)
     {
-        if (typeof(NetworkAgent.clearBrowserCookies) === 'function')
-            NetworkAgent.clearBrowserCookies(step3);
+        if (typeof(InspectorTest.NetworkAgent.clearBrowserCookies) === 'function')
+            InspectorTest.NetworkAgent.clearBrowserCookies(step3);
         else
             step3();
     }

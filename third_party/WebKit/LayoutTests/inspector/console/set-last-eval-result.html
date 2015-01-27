@@ -9,7 +9,7 @@ var obj = { "a" : 1, "b": 2 };
 function test()
 {
     var remote;
-    RuntimeAgent.evaluate("window.obj", step1);
+    InspectorTest.RuntimeAgent.evaluate("window.obj", step1);
 
     function step1(error, result)
     {

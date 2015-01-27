@@ -55,7 +55,7 @@ function test()
     function step3(content)
     {
         content2 = content;
-        NetworkAgent.setCacheDisabled(true, step4);
+        InspectorTest.NetworkAgent.setCacheDisabled(true, step4);
     }
 
     function step4(msg)
@@ -74,7 +74,7 @@ function test()
 
         InspectorTest.assertTrue(content1 === content2, "First and second scripts should be equal.");
         InspectorTest.assertTrue(content2 !== content3, "Second and third scripts should differ.");
-        NetworkAgent.setCacheDisabled(false, step7);
+        InspectorTest.NetworkAgent.setCacheDisabled(false, step7);
     }
 
     function step7(msg)

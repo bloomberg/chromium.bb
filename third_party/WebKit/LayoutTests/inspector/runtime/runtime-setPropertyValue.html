@@ -38,13 +38,13 @@ function test()
 
             function step0()
             {
-                RuntimeAgent.evaluate("object1", step1);
+                InspectorTest.RuntimeAgent.evaluate("object1", step1);
             }
 
             function step1(error, result, wasThrown)
             {
                 obj1 = WebInspector.runtimeModel.createRemoteObject(result);
-                RuntimeAgent.evaluate("object2", step2);
+                InspectorTest.RuntimeAgent.evaluate("object2", step2);
             }
 
             function step2(error, result, wasThrown)
@@ -158,7 +158,7 @@ function test()
         function testReleaseObjectIsCalled(next)
         {
             // If failed, this test will time out.
-            InspectorTest.addSniffer(RuntimeAgent, "releaseObject", next);
+            InspectorTest.addSniffer(InspectorTest.RuntimeAgent, "releaseObject", next);
             obj1.setPropertyValue(nameFoo, "[1,2,3]", function(){});
         }
     ]);

@@ -49,7 +49,7 @@ function test()
         function testInvalidDocumentDoesNotCrash(next)
         {
             var htmlId = InspectorTest.expandedNodeWithId("html").id;
-            DOMAgent.setOuterHTML(htmlId, "foo", callback);
+            InspectorTest.DOMAgent.setOuterHTML(htmlId, "foo", callback);
 
             function callback()
             {

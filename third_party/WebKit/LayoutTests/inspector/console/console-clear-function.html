@@ -24,7 +24,7 @@ function test()
     InspectorTest.addResult("=== Before clear ===");
     InspectorTest.dumpConsoleMessages();
 
-    RuntimeAgent.evaluate("foo();", step1);
+    InspectorTest.RuntimeAgent.evaluate("foo();", step1);
 
     function step1()
     {

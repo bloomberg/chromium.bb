@@ -17,22 +17,22 @@ function test()
         InspectorTest.runTestSuite([
             function testDocumentQuerySelector(next)
             {
-                DOMAgent.querySelector(documentId, "div.foo", dumpNodes.bind(null, next));
+                InspectorTest.DOMAgent.querySelector(documentId, "div.foo", dumpNodes.bind(null, next));
             },
 
             function testDocumentQuerySelectorAll(next)
             {
-                DOMAgent.querySelectorAll(documentId, "div.foo", dumpNodes.bind(null, next));
+                InspectorTest.DOMAgent.querySelectorAll(documentId, "div.foo", dumpNodes.bind(null, next));
             },
 
             function testQuerySelector(next)
             {
-                DOMAgent.querySelector(containerId, "div.foo", dumpNodes.bind(null, next));
+                InspectorTest.DOMAgent.querySelector(containerId, "div.foo", dumpNodes.bind(null, next));
             },
 
             function testQuerySelectorAll(next)
             {
-                DOMAgent.querySelectorAll(containerId, "div.foo", dumpNodes.bind(null, next));
+                InspectorTest.DOMAgent.querySelectorAll(containerId, "div.foo", dumpNodes.bind(null, next));
             }
         ]);
     }

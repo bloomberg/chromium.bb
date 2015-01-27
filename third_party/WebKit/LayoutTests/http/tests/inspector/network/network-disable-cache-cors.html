@@ -34,7 +34,7 @@ function step3()
 
 function test()
 {
-    NetworkAgent.setCacheDisabled(true, step0);
+    InspectorTest.NetworkAgent.setCacheDisabled(true, step0);
 
     function step0()
     {
@@ -45,7 +45,7 @@ function test()
 
     function step4()
     {
-        NetworkAgent.setCacheDisabled(false, step5);
+        InspectorTest.NetworkAgent.setCacheDisabled(false, step5);
     }
 
     function step5()

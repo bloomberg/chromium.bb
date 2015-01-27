@@ -69,12 +69,12 @@ function test()
     function step4(msg)
     {
         // Disable-enable cache to force MemoryCache::evictResources().
-        NetworkAgent.setCacheDisabled(true, step5);
+        InspectorTest.NetworkAgent.setCacheDisabled(true, step5);
     }
 
     function step5(msg)
     {
-        NetworkAgent.setCacheDisabled(false, step6);
+        InspectorTest.NetworkAgent.setCacheDisabled(false, step6);
     }
 
     function step6()

@@ -4,14 +4,14 @@ function test()
 
     function step1()
     {
-        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
         InspectorTest.evaluateInPage("setTimeout(testAction, 100);");
         InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
     }
 
     function step2()
     {
-        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
         InspectorTest.completeDebuggerTest();
     }
 }

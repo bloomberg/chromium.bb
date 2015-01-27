@@ -29,13 +29,13 @@ var test = function ()
 
     function step1()
     {
-        DebuggerAgent.enablePromiseTracker();
+        InspectorTest.DebuggerAgent.enablePromiseTracker();
         InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
     {
-        DebuggerAgent.getPromises(didGetPromises);
+        InspectorTest.DebuggerAgent.getPromises(didGetPromises);
     }
 
     function didGetPromises(error, response)
@@ -78,7 +78,7 @@ var test = function ()
 
         InspectorTest.addResults(output);
 
-        DebuggerAgent.getPromiseById(response[0].id, "console", didGetPromiseById);
+        InspectorTest.DebuggerAgent.getPromiseById(response[0].id, "console", didGetPromiseById);
     }
 
     function didGetPromiseById(error, response)
@@ -86,7 +86,7 @@ var test = function ()
         InspectorTest.assertTrue(!error, "FAIL: " + error);
         InspectorTest.assertTrue(response && response.type === "object" && response.className === "Promise", "FAIL: returned by ID object is not a Promise.");
 
-        RuntimeAgent.getProperties(response.objectId, didGetProperties);
+        InspectorTest.RuntimeAgent.getProperties(response.objectId, didGetProperties);
     }
 
     function didGetProperties(error, properties, internalProperties)
@@ -105,8 +105,8 @@ var test = function ()
 
         InspectorTest.addResult("Promise:\n    status: " + status + "\n    value: " + value);
 
-        DebuggerAgent.disablePromiseTracker();
-        DebuggerAgent.getPromises(didGetPromises2);
+        InspectorTest.DebuggerAgent.disablePromiseTracker();
+        InspectorTest.DebuggerAgent.getPromises(didGetPromises2);
     }
 
     function didGetPromises2(error, response)

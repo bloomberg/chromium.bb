@@ -35,7 +35,7 @@ function test()
         var styleSheets = WebInspector.cssModel.allStyleSheets();
         styleSheets.sort();
         for (var i = 0; i < styleSheets.length; ++i)
-            CSSAgent.getStyleSheetText(styleSheets[i].id, dumpStyleSheet.bind(null, styleSheets[i], i === styleSheets.length - 1));
+            InspectorTest.CSSAgent.getStyleSheetText(styleSheets[i].id, dumpStyleSheet.bind(null, styleSheets[i], i === styleSheets.length - 1));
     }
 
     function dumpStyleSheet(header, isLast, error, content, callback)

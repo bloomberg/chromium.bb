@@ -156,7 +156,7 @@ function test()
 
         function testRuntimeAgentCallFunctionOn(next)
         {
-            RuntimeAgent.evaluate("({ a : 1, b : 2 })", step1);
+            InspectorTest.RuntimeAgent.evaluate("({ a : 1, b : 2 })", step1);
 
             function step1(error, result, wasThrown)
             {
@@ -164,7 +164,7 @@ function test()
                 {
                     return this.a + this.b;
                 }
-                RuntimeAgent.callFunctionOn(result.objectId, sum.toString(), step2);
+                InspectorTest.RuntimeAgent.callFunctionOn(result.objectId, sum.toString(), step2);
             }
 
             function step2(error, result, wasThrown)

@@ -20,7 +20,7 @@ var test = function()
 
     function step1()
     {
-        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
         InspectorTest.evaluateInPage("setTimeout(handleClick, 0)");
         InspectorTest.waitUntilPaused(step2);
     }
@@ -29,7 +29,7 @@ var test = function()
     {
         var mainResourceURL = WebInspector.resourceTreeModel.mainFrame.url;
         var resourceURL = WebInspector.ParsedURL.completeURL(mainResourceURL, "resources/resource.php");
-        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, resourceURL, undefined, resourceContentLoaded);
+        InspectorTest.NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, resourceURL, undefined, resourceContentLoaded);
     }
 
     function resourceContentLoaded(error, statusCode, headers, content)

@@ -29,7 +29,7 @@ var test = function()
         {
             var expression = "var a = 1; var b = 2; a + b; ";
             InspectorTest.addResult("Compiling script");
-            DebuggerAgent.compileScript(expression, "test.js", compileCallback.bind(this));
+            InspectorTest.DebuggerAgent.compileScript(expression, "test.js", compileCallback.bind(this));
 
             function compileCallback(error, scriptId, exceptionDetails)
             {
@@ -37,7 +37,7 @@ var test = function()
                 InspectorTest.assertTrue(!exceptionDetails);
                 InspectorTest.assertTrue(!!scriptId);
                 InspectorTest.addResult("Running script");
-                DebuggerAgent.runScript(scriptId, undefined, "console", false, runCallback.bind(this));
+                InspectorTest.DebuggerAgent.runScript(scriptId, undefined, "console", false, runCallback.bind(this));
             }
 
             function runCallback(error, result, exceptionDetails)
@@ -54,7 +54,7 @@ var test = function()
         {
             var expression = "var a = 1; a + c; ";
             InspectorTest.addResult("Compiling script");
-            DebuggerAgent.compileScript(expression, "test.js", compileCallback.bind(this));
+            InspectorTest.DebuggerAgent.compileScript(expression, "test.js", compileCallback.bind(this));
 
             function compileCallback(error, scriptId, exceptionDetails)
             {
@@ -62,7 +62,7 @@ var test = function()
                 InspectorTest.assertTrue(!exceptionDetails);
                 InspectorTest.assertTrue(!!scriptId);
                 InspectorTest.addResult("Running script");
-                DebuggerAgent.runScript(scriptId, undefined, "console", false, runCallback.bind(this));
+                InspectorTest.DebuggerAgent.runScript(scriptId, undefined, "console", false, runCallback.bind(this));
             }
 
             function runCallback(error, result, exceptionDetails)
@@ -80,7 +80,7 @@ var test = function()
             var expression = "}";
             InspectorTest.addResult("Compiling script");
             var contextId = undefined;
-            DebuggerAgent.compileScript(expression, "test.js", contextId, compileCallback.bind(this));
+            InspectorTest.DebuggerAgent.compileScript(expression, "test.js", contextId, compileCallback.bind(this));
 
             function compileCallback(error, scriptId, exceptionDetails)
             {

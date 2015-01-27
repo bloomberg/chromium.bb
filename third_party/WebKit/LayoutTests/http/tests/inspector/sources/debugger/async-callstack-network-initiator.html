@@ -39,14 +39,14 @@ var test = function()
 
     function step1()
     {
-        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        DebuggerAgent.setAsyncCallStackDepth(0);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(0);
         InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
     {
-        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, didPause);
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, didPause);
     }
 
     function didPause()

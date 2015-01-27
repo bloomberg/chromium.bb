@@ -95,7 +95,7 @@ function test()
                 return;
             }
             var scopeJson = scopeChain[pos];
-            RuntimeAgent.getProperties(scopeJson.object.objectId, true, didGetProperties);
+            InspectorTest.RuntimeAgent.getProperties(scopeJson.object.objectId, true, didGetProperties);
 
             function didGetProperties(error, propertyDescriptors)
             {
@@ -119,7 +119,7 @@ function test()
         function didEvaluate(remote)
         {
             InspectorTest.addResult(pageExpression + " type = " + remote.type);
-            DebuggerAgent.getFunctionDetails(remote.objectId, didGetDetails);
+            InspectorTest.DebuggerAgent.getFunctionDetails(remote.objectId, didGetDetails);
         }
         function didGetDetails(error, response)
         {

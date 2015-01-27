@@ -17,7 +17,7 @@ function test()
 
     function step2()
     {
-        NetworkAgent.disable(step3);
+        InspectorTest.NetworkAgent.disable(step3);
     }
 
     function step3()
@@ -30,7 +30,7 @@ function test()
     {
         var request1 = InspectorTest.networkRequests().pop();
         InspectorTest.addResult("resource.content after disabling network domain: " + request1.content);
-        NetworkAgent.enable(step5);
+        InspectorTest.NetworkAgent.enable(step5);
     }
 
     function step5()

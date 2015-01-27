@@ -72,11 +72,11 @@ function test()
 
         function testConsoleEvalObject(next)
         {
-            RuntimeAgent.evaluate("testObj", step1);
+            InspectorTest.RuntimeAgent.evaluate("testObj", step1);
 
             function step1(error, result)
             {
-                RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ true, step2);
+                InspectorTest.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ true, step2);
             }
 
             function step2(error, properties)

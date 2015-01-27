@@ -7,7 +7,7 @@ localStorage.testProperty = "testPropertyValue";
 
 function test()
 {
-    RuntimeAgent.evaluate("localStorage", step1);
+    InspectorTest.RuntimeAgent.evaluate("localStorage", step1);
 
     function step1(error, result, wasThrown)
     {

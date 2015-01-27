@@ -5,7 +5,7 @@
 
 function test()
 {
-    RuntimeAgent.evaluate("document.all", "console", false, didGetHTMLAllCollection.bind(this));
+    InspectorTest.RuntimeAgent.evaluate("document.all", "console", false, didGetHTMLAllCollection.bind(this));
     function didGetHTMLAllCollection(error, result, wasThrown)
     {
         if (error || wasThrown) {

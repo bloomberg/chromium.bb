@@ -88,7 +88,7 @@ InspectorTest.runAsyncCallStacksTest = function(totalDebuggerStatements, maxAsyn
 
     function step1()
     {
-        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
     }
 
     function step2()
@@ -226,7 +226,7 @@ InspectorTest.waitUntilPausedAndPerformSteppingActions = function(actions, callb
             WebInspector.panels.sources.togglePause();
             break;
         case "StepIntoAsync":
-            DebuggerAgent.stepIntoAsync();
+            InspectorTest.DebuggerAgent.stepIntoAsync();
             break;
         default:
             InspectorTest.addResult("FAIL: Unknown action: " + action);

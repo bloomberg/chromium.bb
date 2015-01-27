@@ -26,12 +26,12 @@ function test()
     function step3()
     {
         InspectorTest.addResult("Clearing memory cache: ");
-        NetworkAgent.setCacheDisabled(true, step4);
+        InspectorTest.NetworkAgent.setCacheDisabled(true, step4);
     }
 
     function step4()
     {
-        NetworkAgent.setCacheDisabled(false, step5);
+        InspectorTest.NetworkAgent.setCacheDisabled(false, step5);
     }
 
     var resource;

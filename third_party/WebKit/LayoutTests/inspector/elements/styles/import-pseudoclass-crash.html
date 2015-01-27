@@ -19,13 +19,13 @@ function test()
     function matchedStylesCallback(styles)
     {
         styleSheetId = styles.matchedCSSRules[1].styleSheetId;
-        CSSAgent.setStyleSheetText(styleSheetId,
+        InspectorTest.CSSAgent.setStyleSheetText(styleSheetId,
             "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #000001; }\n", modifiedCallback);
     }
 
     function modifiedCallback()
     {
-        CSSAgent.setStyleSheetText(styleSheetId, "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #002001; }\n", modifiedCallback2);
+        InspectorTest.CSSAgent.setStyleSheetText(styleSheetId, "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #002001; }\n", modifiedCallback2);
     }
 
     function modifiedCallback2()

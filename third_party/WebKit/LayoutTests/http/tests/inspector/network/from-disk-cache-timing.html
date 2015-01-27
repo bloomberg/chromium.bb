@@ -32,7 +32,7 @@ function test()
     var timeZero = 0;
 
     InspectorTest.recordNetwork();
-    NetworkAgent.setCacheDisabled(true, step1);
+    InspectorTest.NetworkAgent.setCacheDisabled(true, step1);
 
     function step1()
     {
@@ -52,7 +52,7 @@ function test()
 
     function step4()
     {
-        NetworkAgent.setCacheDisabled(true, step5);
+        InspectorTest.NetworkAgent.setCacheDisabled(true, step5);
     }
 
     function step5()
@@ -64,7 +64,7 @@ function test()
         InspectorTest.addResult("has timing: " + !!request._timing);
         InspectorTest.addResult("");
         timeZero = request._timing.requestTime;
-        NetworkAgent.setCacheDisabled(false, step6);
+        InspectorTest.NetworkAgent.setCacheDisabled(false, step6);
     }
 
     function step6()

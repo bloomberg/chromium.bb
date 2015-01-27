@@ -14,7 +14,7 @@ function throwAnException()
 var test = function()
 {
     var panel = WebInspector.panels.sources;
-    DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+    InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
 
     InspectorTest.runDebuggerTestSuite([
         function testRevealAfterPausedOnException(next)

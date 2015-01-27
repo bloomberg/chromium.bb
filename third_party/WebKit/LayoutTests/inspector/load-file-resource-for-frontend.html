@@ -11,7 +11,7 @@ function test()
         var urlPrefix = documentURL.substr(0, lastIndexOfSlash + 1);
         var fullURL = urlPrefix + url;
         InspectorTest.addResult("Loading resource from " + url);
-        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, fullURL, undefined, callback);
+        InspectorTest.NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, fullURL, undefined, callback);
 
         function callback(error, statusCode, headers, content)
         {

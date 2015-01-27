@@ -44,7 +44,7 @@ function test()
 
     function step1()
     {
-        DebuggerAgent.enablePromiseTracker(true);
+        InspectorTest.DebuggerAgent.enablePromiseTracker(true);
         WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.PromiseUpdated, promiseUpdated);
         InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
     }
@@ -59,7 +59,7 @@ function test()
     function step2()
     {
         outputResults();
-        DebuggerAgent.disablePromiseTracker();
+        InspectorTest.DebuggerAgent.disablePromiseTracker();
         InspectorTest.completeDebuggerTest();
     }
 

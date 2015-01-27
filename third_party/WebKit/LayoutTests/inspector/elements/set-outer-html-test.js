@@ -15,7 +15,7 @@ InspectorTest.setUpTestSuite = function(next)
     function step2(node)
     {
         InspectorTest.containerId = node.id;
-        DOMAgent.getOuterHTML(InspectorTest.containerId, step3);
+        InspectorTest.DOMAgent.getOuterHTML(InspectorTest.containerId, step3);
     }
 
     function step3(error, text)
@@ -80,12 +80,12 @@ InspectorTest.setOuterHTMLUseUndo = function(newText, next)
 
 InspectorTest.innerSetOuterHTML = function(newText, last, next)
 {
-    DOMAgent.setOuterHTML(InspectorTest.containerId, newText, InspectorTest._dumpOuterHTML.bind(InspectorTest, last, next));
+    InspectorTest.DOMAgent.setOuterHTML(InspectorTest.containerId, newText, InspectorTest._dumpOuterHTML.bind(InspectorTest, last, next));
 }
 
 InspectorTest._dumpOuterHTML = function(last, next)
 {
-    RuntimeAgent.evaluate("document.getElementById(\"identity\").wrapperIdentity", dumpIdentity);
+    InspectorTest.RuntimeAgent.evaluate("document.getElementById(\"identity\").wrapperIdentity", dumpIdentity);
     function dumpIdentity(error, result)
     {
         InspectorTest.addResult("Wrapper identity: " + result.value);
@@ -95,7 +95,7 @@ InspectorTest._dumpOuterHTML = function(last, next)
         InspectorTest.events = [];
     }
 
-    DOMAgent.getOuterHTML(InspectorTest.containerId, callback);
+    InspectorTest.DOMAgent.getOuterHTML(InspectorTest.containerId, callback);
 
     function callback(error, text)
     {

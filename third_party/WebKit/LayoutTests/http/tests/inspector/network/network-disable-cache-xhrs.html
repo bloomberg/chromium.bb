@@ -22,7 +22,7 @@ function test()
 
     function step2(msg)
     {
-        NetworkAgent.setCacheDisabled(true, step3);
+        InspectorTest.NetworkAgent.setCacheDisabled(true, step3);
     }
 
     function step3(msg)
@@ -59,7 +59,7 @@ function test()
         InspectorTest.addResult(request3.url);
         InspectorTest.assertTrue(request1.content === request2.content, "First and second resources are equal");
         InspectorTest.assertTrue(request2.content !== request3.content, "Second and third resources differ");
-        NetworkAgent.setCacheDisabled(false, step5);
+        InspectorTest.NetworkAgent.setCacheDisabled(false, step5);
     }
 
     function step5(msg)

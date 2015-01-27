@@ -25,7 +25,7 @@ function reopenWebInspector(objectId)
 
 function test()
 {
-    RuntimeAgent.evaluate("window.objectId", dispatch);
+    InspectorTest.RuntimeAgent.evaluate("window.objectId", dispatch);
 
     function dispatch(error, result, wasThrown)
     {
@@ -40,7 +40,7 @@ function test()
 
     function installHandleInInjectedScript()
     {
-        RuntimeAgent.evaluate("({ handle : \"handle\" })", storeIdInTargetWindow);
+        InspectorTest.RuntimeAgent.evaluate("({ handle : \"handle\" })", storeIdInTargetWindow);
 
         function storeIdInTargetWindow(error, result, wasThrown)
         {
@@ -55,7 +55,7 @@ function test()
 
     function checkHandleInInjectedScript(objectId, callback)
     {
-        RuntimeAgent.getProperties(objectId, false, propertiesAvailable);
+        InspectorTest.RuntimeAgent.getProperties(objectId, false, propertiesAvailable);
 
         function propertiesAvailable(error, properties)
         {

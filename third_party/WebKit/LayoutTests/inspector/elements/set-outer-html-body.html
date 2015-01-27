@@ -26,22 +26,22 @@ function test()
 
         function testSetBody(next)
         {
-            DOMAgent.setOuterHTML(bodyNode.id, "<body>New body content</body>", dumpHTML(next));
+            InspectorTest.DOMAgent.setOuterHTML(bodyNode.id, "<body>New body content</body>", dumpHTML(next));
         },
 
         function testInsertComments(next)
         {
-            DOMAgent.setOuterHTML(bodyNode.id, "<!-- new comment between head and body --><body>New body content</body>", dumpHTML(next));
+            InspectorTest.DOMAgent.setOuterHTML(bodyNode.id, "<!-- new comment between head and body --><body>New body content</body>", dumpHTML(next));
         },
 
         function testSetHead(next)
         {
-            DOMAgent.setOuterHTML(headNode.id, "<head><!-- new head content --></head>", dumpHTML(next));
+            InspectorTest.DOMAgent.setOuterHTML(headNode.id, "<head><!-- new head content --></head>", dumpHTML(next));
         },
 
          function testSetHTML(next)
         {
-            DOMAgent.setOuterHTML(htmlNode.id, "<html><head><!-- new head content --></head><body>Setting body as a part of HTML.</body></html>", dumpHTML(next));
+            InspectorTest.DOMAgent.setOuterHTML(htmlNode.id, "<html><head><!-- new head content --></head><body>Setting body as a part of HTML.</body></html>", dumpHTML(next));
         }
     ]);
 
@@ -49,7 +49,7 @@ function test()
     {
         function dump()
         {
-            DOMAgent.getOuterHTML(htmlNode.id, callback);
+            InspectorTest.DOMAgent.getOuterHTML(htmlNode.id, callback);
             function callback(error, text)
             {
                 InspectorTest.addResult(error ? error : text);

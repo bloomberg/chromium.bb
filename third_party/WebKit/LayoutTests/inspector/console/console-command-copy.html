@@ -28,9 +28,9 @@ function test()
     InspectorFrontendHost.copyText = copyText;
 
     for (var i = 0; i < testCases.length; ++i)
-        RuntimeAgent.evaluate(testCases[i], "", true);
+        InspectorTest.RuntimeAgent.evaluate(testCases[i], "", true);
 
-    RuntimeAgent.evaluate("copy(null)", "", true, InspectorTest.completeTest.bind(InspectorTest));
+    InspectorTest.RuntimeAgent.evaluate("copy(null)", "", true, InspectorTest.completeTest.bind(InspectorTest));
 }
 
 </script>

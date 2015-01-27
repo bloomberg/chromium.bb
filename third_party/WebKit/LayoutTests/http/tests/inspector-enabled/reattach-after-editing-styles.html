@@ -27,7 +27,7 @@ function initTest()
 
 function test()
 {
-    RuntimeAgent.evaluate("window.didReopen", dispatch);
+    InspectorTest.RuntimeAgent.evaluate("window.didReopen", dispatch);
 
     function dispatch(error, result, wasThrown)
     {

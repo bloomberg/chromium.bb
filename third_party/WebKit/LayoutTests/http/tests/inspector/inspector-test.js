@@ -26,12 +26,12 @@ InspectorTest.startDumpingProtocolMessages = function()
 
 InspectorTest.completeTest = function()
 {
-    RuntimeAgent.evaluate("completeTest(\"" + escape(JSON.stringify(results)) + "\")", "test");
+    InspectorTest.RuntimeAgent.evaluate("completeTest(\"" + escape(JSON.stringify(results)) + "\")", "test");
 }
 
 InspectorTest.flushResults = function()
 {
-    RuntimeAgent.evaluate("flushResults(\"" + escape(JSON.stringify(results)) + "\")", "test");
+    InspectorTest.RuntimeAgent.evaluate("flushResults(\"" + escape(JSON.stringify(results)) + "\")", "test");
     results = [];
 }
 
@@ -44,7 +44,7 @@ InspectorTest.evaluateInPage = function(code, callback)
         if (!error)
             callback(WebInspector.runtimeModel.createRemoteObject(result), wasThrown);
     }
-    RuntimeAgent.evaluate(code, "console", false, mycallback);
+    InspectorTest.RuntimeAgent.evaluate(code, "console", false, mycallback);
 }
 
 InspectorTest.evaluateInPageWithTimeout = function(code)
@@ -273,7 +273,7 @@ InspectorTest._innerReloadPage = function(hardReload, callback, scriptToEvaluate
 
     if (WebInspector.panels.network)
         WebInspector.panels.network._networkLogView.reset();
-    PageAgent.reload(hardReload, scriptToEvaluateOnLoad, scriptPreprocessor);
+    InspectorTest.PageAgent.reload(hardReload, scriptToEvaluateOnLoad, scriptPreprocessor);
 }
 
 InspectorTest.pageLoaded = function()
@@ -687,6 +687,15 @@ InspectorTest.preloadPanel = function(panelName)
 {
     InspectorTest._panelsToPreload.push(panelName);
 }
+
+InspectorTest.CSSAgent = WebInspector.targetManager.mainTarget().cssAgent();
+InspectorTest.DOMAgent = WebInspector.targetManager.mainTarget().domAgent();
+InspectorTest.DOMDebuggerAgent = WebInspector.targetManager.mainTarget().domdebuggerAgent();
+InspectorTest.DebuggerAgent = WebInspector.targetManager.mainTarget().debuggerAgent();
+InspectorTest.InspectorAgent = WebInspector.targetManager.mainTarget().inspectorAgent();
+InspectorTest.NetworkAgent = WebInspector.targetManager.mainTarget().networkAgent();
+InspectorTest.PageAgent = WebInspector.targetManager.mainTarget().pageAgent();
+InspectorTest.RuntimeAgent = WebInspector.targetManager.mainTarget().runtimeAgent();
 
 };  // initialize_InspectorTest
 

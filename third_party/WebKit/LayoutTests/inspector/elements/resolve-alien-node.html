@@ -5,7 +5,7 @@
 
 function test()
 {
-    RuntimeAgent.evaluate("var doc = document.implementation.createHTMLDocument(''); doc.lastChild.innerHTML = '<span></span>'; doc.lastChild", step1);
+    InspectorTest.RuntimeAgent.evaluate("var doc = document.implementation.createHTMLDocument(''); doc.lastChild.innerHTML = '<span></span>'; doc.lastChild", step1);
 
     function step1(error, result, wasThrown)
     {

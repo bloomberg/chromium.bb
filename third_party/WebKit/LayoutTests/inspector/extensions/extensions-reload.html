@@ -52,7 +52,7 @@ function initialize_testReloadInjectsCodeWithMessage()
     }
     InspectorTest.getScriptSource = function(scriptId, callback)
     {
-        DebuggerAgent.getScriptSource(scriptId, didGetScriptSource);
+        InspectorTest.DebuggerAgent.getScriptSource(scriptId, didGetScriptSource);
         function didGetScriptSource(error, source)
         {
             callback(error ? "" : source);

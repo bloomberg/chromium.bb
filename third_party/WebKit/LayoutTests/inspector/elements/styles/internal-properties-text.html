@@ -27,7 +27,7 @@ function test()
 
         function nodeCallback(node)
         {
-            CSSAgent.getInlineStylesForNode(node.id, callback);
+            InspectorTest.CSSAgent.getInlineStylesForNode(node.id, callback);
         }
 
         InspectorTest.selectNodeWithId("inspected", nodeCallback);

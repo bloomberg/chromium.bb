@@ -38,7 +38,7 @@ function test()
 
     function step2()
     {
-        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
         pane._setBreakpoint("instrumentation:setTimer");
         InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
     }
@@ -51,7 +51,7 @@ function test()
 
     function completeTest()
     {
-        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
         pane._removeBreakpoint("instrumentation:setTimer");
         InspectorTest.completeDebuggerTest();
     }

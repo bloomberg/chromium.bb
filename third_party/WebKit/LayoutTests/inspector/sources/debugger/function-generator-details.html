@@ -58,7 +58,7 @@ function test()
         function didEvaluate(remote)
         {
             InspectorTest.addResult(pageExpression + ": type = " + remote.type + ", subtype = " + remote.subtype);
-            DebuggerAgent.getGeneratorObjectDetails(remote.objectId, didGetDetails);
+            InspectorTest.DebuggerAgent.getGeneratorObjectDetails(remote.objectId, didGetDetails);
         }
 
         function didGetDetails(error, response)

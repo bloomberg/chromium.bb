@@ -22,17 +22,17 @@ function test()
         InspectorTest.completeTest();
     }
 
-    RuntimeAgent.evaluate("window.b", step1);
+    InspectorTest.RuntimeAgent.evaluate("window.b", step1);
 
     function step1(error, result)
     {
-        RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ false, step2);
+        InspectorTest.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ false, step2);
     }
 
     function step2(error, properties) 
     {
         if (error) 
-            return fail("Error took place during RuntimeAgent.getProperties call");
+            return fail("Error took place during InspectorTest.RuntimeAgent.getProperties call");
         
         if (!properties) 
             return fail("Properties do not exist");

@@ -66,8 +66,8 @@ function test()
 
     function step1(node)
     {
-        CSSAgent.getInlineStylesForNode(node.id, inlineCallback);
-        CSSAgent.getMatchedStylesForNode(node.id, matchedCallback);
+        InspectorTest.CSSAgent.getInlineStylesForNode(node.id, inlineCallback);
+        InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, matchedCallback);
     }
 
     function step2()

@@ -16,8 +16,8 @@ function test()
 
     function step2(msg)
     {
-        if (typeof(NetworkAgent.clearBrowserCache) === 'function')
-            NetworkAgent.clearBrowserCache(step3);
+        if (typeof(InspectorTest.NetworkAgent.clearBrowserCache) === 'function')
+            InspectorTest.NetworkAgent.clearBrowserCache(step3);
         else
             step3();
     }

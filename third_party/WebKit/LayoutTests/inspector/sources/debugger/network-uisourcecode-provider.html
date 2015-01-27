@@ -23,7 +23,7 @@ function test()
         };
     }
 
-    NetworkAgent.getResponseBody = function(requestId, callback)
+    InspectorTest.NetworkAgent.getResponseBody = function(requestId, callback)
     {
         callback(undefined, mockContentsMap[requestId], false);
     }

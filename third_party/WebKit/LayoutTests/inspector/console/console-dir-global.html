@@ -12,7 +12,7 @@ function doit()
 
 function test()
 {
-    RuntimeAgent.evaluate("window", "console", false, evalCallback);
+    InspectorTest.RuntimeAgent.evaluate("window", "console", false, evalCallback);
 
     function evalCallback(error, result)
     {

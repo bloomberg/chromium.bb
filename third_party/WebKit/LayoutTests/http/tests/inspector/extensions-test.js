@@ -53,7 +53,7 @@ InspectorTest.showPanel = function(panelId)
 
 InspectorTest.runExtensionTests = function()
 {
-    RuntimeAgent.evaluate("location.href", "console", false, function(error, result) {
+    InspectorTest.RuntimeAgent.evaluate("location.href", "console", false, function(error, result) {
         if (error)
             return;
         var pageURL = result.value;

@@ -10,7 +10,7 @@ function test()
     function didReceiveDocumentObject(remoteObject, wasThrown)
     {
         InspectorTest.addResult("didReceiveDocumentObject");
-        DOMAgent.requestNode(remoteObject.objectId, didRequestNode);
+        InspectorTest.DOMAgent.requestNode(remoteObject.objectId, didRequestNode);
     }
 
     function didRequestNode(error, nodeId)
