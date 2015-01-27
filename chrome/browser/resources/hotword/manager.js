@@ -34,6 +34,11 @@
     stateManager.updateStatus();
   });
 
+  // Detect a request to delete the speaker model.
+  chrome.hotwordPrivate.onDeleteSpeakerModel.addListener(function() {
+    hotword.TrainingManager.handleDeleteSpeakerModel();
+  });
+
   // Detect when the shared module containing the NaCL module and language model
   // is installed.
   chrome.management.onInstalled.addListener(function(info) {

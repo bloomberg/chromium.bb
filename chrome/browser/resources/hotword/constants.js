@@ -36,6 +36,20 @@ var CLIENT_PORT_NAME = 'chwcpn';
 var COMMAND_FIELD_NAME = 'cmd';
 
 /**
+ * The speaker model file name.
+ * @const {string}
+ */
+var SPEAKER_MODEL_FILE_NAME = 'speaker_model.data';
+
+/**
+ * The size of the file system requested for reading the speaker model file.
+ * As of January 27th, 2015, the speaker model is 290 bytes. This number
+ * should always be larger than the speaker model file size.
+ * @const {number}
+ */
+var FILE_SYSTEM_SIZE_BYTES = 526;
+
+/**
  * Time to wait for expected messages, in milliseconds.
  * @enum {number}
  */
@@ -234,8 +248,10 @@ return {
   AUDIO_LOG_SECONDS: AUDIO_LOG_SECONDS,
   CLIENT_PORT_NAME: CLIENT_PORT_NAME,
   COMMAND_FIELD_NAME: COMMAND_FIELD_NAME,
+  FILE_SYSTEM_SIZE_BYTES: FILE_SYSTEM_SIZE_BYTES,
   SHARED_MODULE_ID: SHARED_MODULE_ID,
   SHARED_MODULE_ROOT: SHARED_MODULE_ROOT,
+  SPEAKER_MODEL_FILE_NAME: SPEAKER_MODEL_FILE_NAME,
   UI_LANGUAGE: UI_LANGUAGE,
   CommandToPage: CommandToPage,
   CommandFromPage: CommandFromPage,

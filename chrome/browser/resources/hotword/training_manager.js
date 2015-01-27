@@ -27,6 +27,47 @@ cr.define('hotword', function() {
                                     hotword.constants.SessionSource.TRAINING);
   }
 
+  /**
+   * Handles a success event on mounting the file system event.
+   * @param {FileSystem} fs The FileSystem object.
+   * @private
+   */
+  TrainingManager.onRequestFileSystemSuccess_ = function(fs) {
+    fs.root.getFile(hotword.constants.SPEAKER_MODEL_FILE_NAME, {create: false},
+        function(fileEntry) {
+          if (fileEntry.isFile) {
+            hotword.debug('File found: ' + fileEntry.fullPath);
+            if (hotword.DEBUG || window.localStorage['hotword.DEBUG']) {
+              fileEntry.getMetadata(function(md) {
+                hotword.debug('Speaker model file size: ' + md.size);
+              });
+            }
+            fileEntry.remove(function() {
+                hotword.debug('File removed.');
+            }, TrainingManager.fileErrorHandler_);
+          }
+        }, TrainingManager.fileErrorHandler_);
+    };
+
+  /**
+   * Handles a failure event on mounting the file system event.
+   * @param {FileError} e The FileError object.
+   * @private
+   */
+  TrainingManager.fileErrorHandler_ = function(e) {
+      hotword.debug('File error: ' + e.code);
+  };
+
+  /**
+   * Handles a request to delete the speaker model.
+   */
+  TrainingManager.handleDeleteSpeakerModel = function() {
+    window.webkitRequestFileSystem(PERSISTENT,
+        hotword.constants.FILE_SYSTEM_SIZE_BYTES,
+        TrainingManager.onRequestFileSystemSuccess_,
+        TrainingManager.fileErrorHandler_);
+  };
+
   TrainingManager.prototype = {
     __proto__: hotword.BaseSessionManager.prototype,
 
