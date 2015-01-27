@@ -5,9 +5,9 @@
 #include "ui/ozone/platform/caca/caca_window.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/platform/caca/caca_event_source.h"

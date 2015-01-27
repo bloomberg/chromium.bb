@@ -6,7 +6,7 @@
 
 #include <errno.h>
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_util.h"

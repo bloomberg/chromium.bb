@@ -4,8 +4,8 @@
 
 #include "ui/events/ozone/device/udev/device_manager_udev.h"
 
-#include "base/debug/trace_event.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_event_observer.h"
 

@@ -10,12 +10,12 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/hardware_display_plane_manager_legacy.h"

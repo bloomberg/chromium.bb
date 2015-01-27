@@ -4,7 +4,7 @@
 
 #include "ui/gl/gl_image_surface_texture.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gl/android/surface_texture.h"
 
 namespace gfx {

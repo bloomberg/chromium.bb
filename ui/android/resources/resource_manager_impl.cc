@@ -5,7 +5,7 @@
 #include "ui/android/resources/resource_manager_impl.h"
 
 #include "base/android/jni_string.h"
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "jni/ResourceManager_jni.h"
 #include "ui/android/resources/ui_resource_android.h"
 #include "ui/android/resources/ui_resource_provider.h"

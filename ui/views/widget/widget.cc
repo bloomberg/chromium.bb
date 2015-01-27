@@ -4,10 +4,10 @@
 
 #include "ui/views/widget/widget.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/hit_test.h"

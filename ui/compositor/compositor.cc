@@ -9,11 +9,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/latency_info_swap_promise.h"
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"

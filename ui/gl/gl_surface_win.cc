@@ -7,9 +7,9 @@
 #include <dwmapi.h>
 
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/native_widget_types.h"

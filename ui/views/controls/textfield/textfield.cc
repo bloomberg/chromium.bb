@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"

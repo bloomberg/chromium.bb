@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/scoped_ptr_algorithm.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/delegated_renderer_layer.h"

@@ -4,8 +4,8 @@
 
 #include "ui/gl/gl_image_memory.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/scoped_binders.h"
 

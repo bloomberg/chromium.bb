@@ -10,8 +10,8 @@
 #include <xf86drm.h>
 
 #include "base/basictypes.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"

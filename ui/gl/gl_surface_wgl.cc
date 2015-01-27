@@ -4,9 +4,9 @@
 
 #include "ui/gl/gl_surface_wgl.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_wgl_api_implementation.h"

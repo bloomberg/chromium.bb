@@ -4,7 +4,7 @@
 
 #include "ui/events/gesture_detection/motion_event_buffer.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
 
 namespace ui {

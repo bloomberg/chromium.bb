@@ -11,8 +11,8 @@
 #pragma comment(lib, "wtsapi32.lib")
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"

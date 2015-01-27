@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"

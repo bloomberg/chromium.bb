@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/dri/channel_observer.h"

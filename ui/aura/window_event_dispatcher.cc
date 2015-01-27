@@ -5,9 +5,9 @@
 #include "ui/aura/window_event_dispatcher.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/event_client.h"

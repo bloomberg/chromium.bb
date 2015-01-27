@@ -12,9 +12,9 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"

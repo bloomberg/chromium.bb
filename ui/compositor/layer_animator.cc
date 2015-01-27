@@ -4,9 +4,9 @@
 
 #include "ui/compositor/layer_animator.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/output/begin_frame_args.h"
 #include "ui/compositor/compositor.h"
