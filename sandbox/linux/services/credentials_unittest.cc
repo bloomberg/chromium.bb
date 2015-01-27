@@ -130,7 +130,8 @@ TEST(Credentials, CanDetectRoot) {
   ASSERT_TRUE(WorkingDirectoryIsRoot());
 }
 
-SANDBOX_TEST(Credentials, DISABLE_ON_LSAN(DropFileSystemAccessIsSafe)) {
+// Disabled on ASAN because of crbug.com/451603.
+SANDBOX_TEST(Credentials, DISABLE_ON_ASAN(DropFileSystemAccessIsSafe)) {
   CHECK(Credentials::DropAllCapabilities());
   // Probably missing kernel support.
   if (!Credentials::MoveToNewUserNS()) return;
@@ -145,7 +146,7 @@ SANDBOX_TEST(Credentials, DISABLE_ON_LSAN(DropFileSystemAccessIsSafe)) {
 
 // Check that after dropping filesystem access and dropping privileges
 // it is not possible to regain capabilities.
-SANDBOX_TEST(Credentials, DISABLE_ON_LSAN(CannotRegainPrivileges)) {
+SANDBOX_TEST(Credentials, DISABLE_ON_ASAN(CannotRegainPrivileges)) {
   CHECK(Credentials::DropAllCapabilities());
   // Probably missing kernel support.
   if (!Credentials::MoveToNewUserNS()) return;
