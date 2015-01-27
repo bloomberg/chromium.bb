@@ -9,6 +9,10 @@ source_set("common") {
 
   if (enable_configuration_policy) {
     sources = [
+      "async_policy_loader.cc",
+      "async_policy_loader.h",
+      "async_policy_provider.cc",
+      "async_policy_provider.h",
       "cloud/cloud_external_data_manager.cc",
       "cloud/cloud_external_data_manager.h",
       "cloud/cloud_policy_client.cc",
@@ -61,10 +65,6 @@ source_set("common") {
       "cloud/user_info_fetcher.h",
       "cloud/user_policy_request_context.cc",
       "cloud/user_policy_request_context.h",
-      "async_policy_loader.cc",
-      "async_policy_loader.h",
-      "async_policy_provider.cc",
-      "async_policy_provider.h",
       "config_dir_policy_loader.cc",
       "config_dir_policy_loader.h",
       "configuration_policy_provider.cc",
@@ -109,6 +109,10 @@ source_set("common") {
       "preg_parser_win.h",
       "registry_dict_win.cc",
       "registry_dict_win.h",
+      "remote_commands/remote_command_job.cc",
+      "remote_commands/remote_command_job.h",
+      "remote_commands/remote_commands_queue.cc",
+      "remote_commands/remote_commands_queue.h",
       "schema.cc",
       "schema.h",
       "schema_internal.h",

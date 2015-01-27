@@ -404,6 +404,53 @@ message PolicyPublicKeyAndDomain {
   optional string domain = 2;
 }
 
+// This protobuf defines a single remote command from server to client for
+// execution.
+message RemoteCommand {
+  enum Type {
+    // Simple echo command for testing, will be ignored in production code.
+    COMMAND_ECHO_TEST = -1;
+  }
+
+  // The command type.
+  optional Type type = 1;
+
+  // An opaque unique identifier for the command.
+  optional int64 unique_id = 2;
+
+  // The time at which the command was issued, in milliseconds.
+  optional int64 timestamp = 3;
+
+  // Extra parameters for this command, might be a serialization of another
+  // protobuf.
+  optional bytes payload = 4;
+}
+
+// This protobuf defines the execution result of a single remote command
+// which will be sent back to the server.
+message RemoteCommandResult {
+  enum ResultType {
+    RESULT_IGNORED = 0;  // The command was ignored as obsolete.
+    RESULT_FAILURE = 1;  // The command could not be executed.
+    RESULT_SUCCESS = 2;  // The command was successfully executed.
+  }
+
+  // The result of the command.
+  optional ResultType result = 1;
+
+  // The opaque unique identifier of the command. This value is copied from the
+  // RemoteCommand protobuf that contained the command.
+  optional int64 unique_id = 2;
+
+  // The time at which the command was executed, if the the result is
+  // RESULT_SUCCESS.
+  optional int64 timestamp = 3;
+
+  // Extra information sent to server as result of execution, might be a
+  // serialization of another protobuf.
+  optional bytes payload = 4;
+}
+
 // Request from device to server for reading policies.
 message DevicePolicyRequest {
   // The policy fetch request.  If this field exists, the request must
