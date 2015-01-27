@@ -387,15 +387,6 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchNoCache) {
   EXPECT_EQ(ServiceWorkerCache::ErrorTypeNotFound, callback_cache_error_);
 }
 
-// Flaky. See crbug.com/444503
-TEST_P(ServiceWorkerCacheStorageManagerTestP,
-       DISABLED_StorageMatchCacheNotReferenced) {
-  EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
-  callback_cache_ = nullptr;
-  EXPECT_TRUE(StorageMatch(origin1_, "foo", GURL("http://example.com/foo")));
-}
-
 TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllEntryExists) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
@@ -412,14 +403,6 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllNoEntry) {
 TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllNoCaches) {
   EXPECT_FALSE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
   EXPECT_EQ(ServiceWorkerCache::ErrorTypeNotFound, callback_cache_error_);
-}
-
-TEST_P(ServiceWorkerCacheStorageManagerTestP,
-       StorageMatchAllCacheNotReferenced) {
-  EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
-  callback_cache_ = nullptr;
-  EXPECT_TRUE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllEntryExistsTwice) {
@@ -441,13 +424,13 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchInOneOfMany) {
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, Chinese) {
-  EXPECT_TRUE(Open(origin1_, "你好"));
+  EXPECT_TRUE(Open(origin1_, "������"));
   scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
-  EXPECT_TRUE(Open(origin1_, "你好"));
+  EXPECT_TRUE(Open(origin1_, "������"));
   EXPECT_EQ(callback_cache_.get(), cache.get());
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_EQ(1u, callback_strings_.size());
-  EXPECT_STREQ("你好", callback_strings_[0].c_str());
+  EXPECT_STREQ("������", callback_strings_[0].c_str());
 }
 
 TEST_F(ServiceWorkerCacheStorageManagerTest, EmptyKey) {
@@ -531,15 +514,6 @@ TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest,
   EXPECT_TRUE(cache);
   EXPECT_TRUE(Delete(origin1_, "foo"));
   EXPECT_FALSE(cache);
-}
-
-TEST_P(ServiceWorkerCacheStorageManagerTestP, RecreateCacheOnDemand) {
-  EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
-  callback_cache_ = NULL;
-  EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_TRUE(
-      CacheMatch(callback_cache_, GURL("http://example.com/foo")));
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteBeforeRelease) {
