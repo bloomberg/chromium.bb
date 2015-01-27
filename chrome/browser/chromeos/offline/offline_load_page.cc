@@ -94,9 +94,10 @@ std::string OfflineLoadPage::GetHTMLContents() {
     resource_id = IDR_OFFLINE_NET_LOAD_HTML;
   }
 
-  const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          resource_id));
+  std::string template_html = ResourceBundle::GetSharedInstance()
+                                  .GetRawDataResource(resource_id)
+                                  .as_string();
+  webui::AppendWebUiCssTextDefaults(&template_html);
   // "t" is the id of the templates root node.
   return webui::GetTemplatesHtml(template_html, &error_strings, "t");
 }
