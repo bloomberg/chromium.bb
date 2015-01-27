@@ -17,6 +17,7 @@
 #include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/dom3/dom_key.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/ozone/layout/layout_util.h"
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_code_conversion.h"
 
@@ -773,6 +774,12 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
                                         xkb_keysym, *dom_key, *character);
       if (*key_code == VKEY_UNKNOWN)
         *key_code = DomCodeToNonLocatedKeyboardCode(dom_code);
+    }
+
+    if ((flags & EF_CONTROL_DOWN) == EF_CONTROL_DOWN) {
+      // Use GetCharacterFromKeyCode() to set |character| to 0x0 for key codes
+      // that we do not care about.
+      *character = GetCharacterFromKeyCode(*key_code, flags);
     }
   } else if (*dom_key == DomKey::DEAD) {
     *character = DeadXkbKeySymToCombiningCharacter(xkb_keysym);
