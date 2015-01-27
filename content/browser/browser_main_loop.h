@@ -150,6 +150,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   void InitStartupTracing(const base::CommandLine& command_line);
   void EndStartupTracing();
 
+  bool UsingInProcessGpu() const;
+  void InitializeGpuDataManager();
+
   // Members initialized on construction ---------------------------------------
   const MainFunctionParams& parameters_;
   const base::CommandLine& parsed_command_line_;

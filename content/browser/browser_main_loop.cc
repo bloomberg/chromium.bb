@@ -394,8 +394,7 @@ void BrowserMainLoop::EarlyInitialization() {
 #endif
 
 #if defined(USE_X11)
-  if (parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
-      parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
+  if (UsingInProcessGpu()) {
     if (!gfx::InitializeThreadedX11()) {
       LOG(ERROR) << "Failed to put Xlib into threaded mode.";
     }
@@ -617,6 +616,26 @@ int BrowserMainLoop::PreCreateThreads() {
   if (parsed_command_line_.HasSwitch(switches::kSingleProcess))
     RenderProcessHost::SetRunRendererInProcess(true);
 #endif
+
+  // Need to initialize in-process GpuDataManager before creating threads.
+  // It's unsafe to append the gpu command line switches to the global
+  // CommandLine::ForCurrentProcess object after threads are created.
+  if (UsingInProcessGpu()) {
+    bool initialize_gpu_data_manager = true;
+#if defined(OS_ANDROID)
+    if (!gfx::GLSurface::InitializeOneOff()) {
+      // Single-process Android WebView supports no gpu.
+      LOG(ERROR) << "GLSurface::InitializeOneOff failed";
+      initialize_gpu_data_manager = false;
+    }
+#endif
+
+    // Initialize the GpuDataManager before we set up the MessageLoops because
+    // otherwise we'll trigger the assertion about doing IO on the UI thread.
+    if (initialize_gpu_data_manager)
+      GpuDataManagerImpl::GetInstance()->Initialize();
+  }
+
   return result_code_;
 }
 
@@ -1012,6 +1031,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   indexed_db_thread_->Start();
 #endif
 
+#if !defined(OS_IOS)
+  HistogramSynchronizer::GetInstance();
+
+
+  // GpuDataManager for in-process initialized in PreCreateThreads.
+  bool initialize_gpu_data_manager = !UsingInProcessGpu();
 #if defined(OS_ANDROID)
   // Up the priority of anything that touches with display tasks
   // (this thread is UI thread, and io_thread_ is for IPCs).
@@ -1019,23 +1044,20 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   base::PlatformThread::SetThreadPriority(
       base::PlatformThread::CurrentHandle(),
       base::kThreadPriority_Display);
-#endif
 
-#if !defined(OS_IOS)
-  HistogramSynchronizer::GetInstance();
-
-  bool initialize_gpu_data_manager = true;
-#if defined(OS_ANDROID)
-  // On Android, GLSurface::InitializeOneOff() must be called before initalizing
-  // the GpuDataManagerImpl as it uses the GL bindings. crbug.com/326295
-  if (!gfx::GLSurface::InitializeOneOff()) {
-    LOG(ERROR) << "GLSurface::InitializeOneOff failed";
-    initialize_gpu_data_manager = false;
+  // On Android, GLSurface::InitializeOneOff() must be called before
+  // initalizing the GpuDataManagerImpl as it uses the GL bindings.
+  // TODO(sievers): Shouldn't need to init full bindings to determine GL
+  // version/vendor strings. crbug.com/326295
+  if (initialize_gpu_data_manager) {
+    // Note InitializeOneOff is not safe either for in-process gpu after
+    // creating threads, since it may race with the gpu thread.
+    if (!gfx::GLSurface::InitializeOneOff()) {
+      LOG(FATAL) << "GLSurface::InitializeOneOff failed";
+    }
   }
 #endif
 
-  // Initialize the GpuDataManager before we set up the MessageLoops because
-  // otherwise we'll trigger the assertion about doing IO on the UI thread.
   if (initialize_gpu_data_manager)
     GpuDataManagerImpl::GetInstance()->Initialize();
 
@@ -1118,8 +1140,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL) &&
       !established_gpu_channel &&
       always_uses_gpu &&
-      !parsed_command_line_.HasSwitch(switches::kSingleProcess) &&
-      !parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
+      !UsingInProcessGpu()) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
                          TRACE_EVENT_SCOPE_THREAD);
     BrowserThread::PostTask(
@@ -1142,6 +1163,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif  // !defined(OS_IOS)
 
   return result_code_;
+}
+
+bool BrowserMainLoop::UsingInProcessGpu() const {
+  return parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
+         parsed_command_line_.HasSwitch(switches::kInProcessGPU);
 }
 
 bool BrowserMainLoop::InitializeToolkit() {
