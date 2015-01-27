@@ -1665,6 +1665,12 @@ chrome_pfq.add_config('falco-chrome-pfq',
   hw_tests=HWTestConfig.DefaultListPFQ(),
 )
 
+chrome_pfq.add_config('peach_pit-chrome-pfq',
+  _base_configs['peach_pit'],
+  hw_tests=HWTestConfig.DefaultListPFQ(),
+  important=False,
+)
+
 _telemetry_boards = frozenset([
     'amd64-generic',
     'arm-generic',
