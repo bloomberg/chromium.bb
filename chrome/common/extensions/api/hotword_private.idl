@@ -161,5 +161,8 @@ namespace hotwordPrivate {
 
     // Fired when a hotword has triggered.
     static void onHotwordTriggered();
+
+    // Fired when the speaker model should be deleted.
+    static void onDeleteSpeakerModel();
   };
 };

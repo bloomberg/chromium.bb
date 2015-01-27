@@ -40,6 +40,8 @@ class HotwordPrivateEventService : public BrowserContextKeyedAPI {
 
   void OnSpeakerModelSaved();
 
+  void OnDeleteSpeakerModel();
+
  private:
   friend class BrowserContextKeyedAPIFactory<HotwordPrivateEventService>;
 

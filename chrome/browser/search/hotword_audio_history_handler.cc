@@ -97,9 +97,18 @@ void HotwordAudioHistoryHandler::GetAudioHistoryComplete(
   if (success) {
     value = new_enabled_value;
     prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, value);
-    // If the setting is now turned off, always on should also be turned off.
-    if (!value)
-      prefs->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, false);
+    // If the setting is now turned off, always on should also be turned off,
+    // and the speaker model should be deleted.
+    if (!value) {
+      if (prefs->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled)) {
+        prefs->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, false);
+        HotwordPrivateEventService* event_service =
+            BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(
+                profile_);
+        if (event_service)
+          event_service->OnDeleteSpeakerModel();
+      }
+    }
   }
   callback.Run(success, value);
 }

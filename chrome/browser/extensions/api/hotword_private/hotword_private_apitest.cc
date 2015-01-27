@@ -377,6 +377,26 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnHotwordTriggered) {
   EXPECT_TRUE(listenerNotification.WaitUntilSatisfied());
 }
 
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnDeleteSpeakerModel) {
+  MockWebHistoryService* web_history = new MockWebHistoryService(profile());
+  MockAudioHistoryHandler* handler =
+      new MockAudioHistoryHandler(profile(), web_history);
+  service()->SetAudioHistoryHandler(handler);
+  web_history->SetExpectedValue(false);
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, true);
+
+  // Trigger the pref registrar.
+  extensions::HotwordPrivateEventService::GetFactoryInstance();
+  ExtensionTestMessageListener listener("ready", false);
+  ASSERT_TRUE(
+      LoadExtensionAsComponent(test_data_dir_.AppendASCII(
+          "onDeleteSpeakerModel")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener listenerNotification("notification", false);
+  EXPECT_TRUE(listenerNotification.WaitUntilSatisfied());
+}
+
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, Training) {
   EXPECT_FALSE(service()->IsTraining());
 

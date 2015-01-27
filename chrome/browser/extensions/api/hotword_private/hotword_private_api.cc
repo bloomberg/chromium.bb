@@ -97,6 +97,10 @@ void HotwordPrivateEventService::OnHotwordTriggered() {
   SignalEvent(api::hotword_private::OnHotwordTriggered::kEventName);
 }
 
+void HotwordPrivateEventService::OnDeleteSpeakerModel() {
+  SignalEvent(api::hotword_private::OnDeleteSpeakerModel::kEventName);
+}
+
 void HotwordPrivateEventService::SignalEvent(const std::string& event_name) {
   EventRouter* router = EventRouter::Get(profile_);
   if (!router || !router->HasEventListener(event_name))
