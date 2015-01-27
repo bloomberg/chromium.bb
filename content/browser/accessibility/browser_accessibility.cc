@@ -38,11 +38,6 @@ void BrowserAccessibility::Init(BrowserAccessibilityManager* manager,
   node_ = node;
 }
 
-void BrowserAccessibility::OnDataChanged() {
-  GetStringAttribute(ui::AX_ATTR_NAME, &name_);
-  GetStringAttribute(ui::AX_ATTR_VALUE, &value_);
-}
-
 bool BrowserAccessibility::PlatformIsLeaf() const {
   if (InternalChildCount() == 0)
     return true;
@@ -94,6 +89,17 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
   }
 
   return result;
+}
+
+bool BrowserAccessibility::PlatformIsChildOfLeaf() const {
+  BrowserAccessibility* ancestor = GetParent();
+  while (ancestor) {
+    if (ancestor->PlatformIsLeaf())
+      return true;
+    ancestor = ancestor->GetParent();
+  }
+
+  return false;
 }
 
 BrowserAccessibility* BrowserAccessibility::GetPreviousSibling() {
@@ -384,9 +390,6 @@ BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(
 
 void BrowserAccessibility::Destroy() {
   // Allow the object to fire a TextRemoved notification.
-  name_.clear();
-  value_.clear();
-
   manager_->NotifyAccessibilityEvent(ui::AX_EVENT_HIDE, this);
   node_ = NULL;
   manager_ = NULL;
@@ -557,24 +560,6 @@ bool BrowserAccessibility::GetString16Attribute(
   return true;
 }
 
-void BrowserAccessibility::SetStringAttribute(
-    ui::AXStringAttribute attribute, const std::string& value) {
-  if (!node_)
-    return;
-  ui::AXNodeData data = GetData();
-  for (size_t i = 0; i < data.string_attributes.size(); ++i) {
-    if (data.string_attributes[i].first == attribute) {
-      data.string_attributes[i].second = value;
-      node_->SetData(data);
-      return;
-    }
-  }
-  if (!value.empty()) {
-    data.string_attributes.push_back(std::make_pair(attribute, value));
-    node_->SetData(data);
-  }
-}
-
 bool BrowserAccessibility::HasIntListAttribute(
     ui::AXIntListAttribute attribute) const {
   const ui::AXNodeData& data = GetData();
@@ -700,17 +685,6 @@ bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
     return false;
 
   return grandparent->GetRole() == ui::AX_ROLE_IFRAME_PRESENTATIONAL;
-}
-
-std::string BrowserAccessibility::GetTextRecursive() const {
-  if (!name_.empty()) {
-    return name_;
-  }
-
-  std::string result;
-  for (uint32 i = 0; i < PlatformChildCount(); ++i)
-    result += PlatformGetChild(i)->GetTextRecursive();
-  return result;
 }
 
 int BrowserAccessibility::GetStaticTextLenRecursive() const {
