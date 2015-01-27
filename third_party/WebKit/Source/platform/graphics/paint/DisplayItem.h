@@ -73,6 +73,7 @@ public:
         EndTransform,
         ScrollbarCorner,
         Scrollbar,
+        ScrollbarTickMark,
         Resizer,
         ColumnRules,
         ClipNodeImage,

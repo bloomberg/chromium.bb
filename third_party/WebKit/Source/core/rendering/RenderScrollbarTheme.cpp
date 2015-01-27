@@ -150,6 +150,7 @@ void RenderScrollbarTheme::paintThumb(GraphicsContext* context, ScrollbarThemeCl
 
 void RenderScrollbarTheme::paintTickmarks(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
+    DrawingRecorder recorder(context, displayItemClient(), DisplayItem::ScrollbarTickMark, rect);
     ScrollbarTheme::theme()->paintTickmarks(context, scrollbar, rect);
 }
 

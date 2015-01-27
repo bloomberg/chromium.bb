@@ -1,4 +1,6 @@
 
+crbug.com/452320 [ Mac ] virtual/slimmingpaint/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/svg-as-mask.html [ ImageOnlyFailure ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-body-background.html [ ImageOnlyFailure ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/gradient-background-leakage-hidpi.html [ ImageOnlyFailure ]

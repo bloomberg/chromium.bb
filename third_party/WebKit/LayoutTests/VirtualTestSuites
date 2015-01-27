@@ -221,5 +221,10 @@
     "prefix": "slimmingpaint",
     "base": "fast/backgrounds",
     "args": ["--enable-slimming-paint"]
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/scrolling",
+    "args": ["--enable-slimming-paint"]
   }
 ]

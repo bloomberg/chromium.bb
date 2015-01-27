@@ -58,6 +58,7 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case EndTransform: return "EndTransform";
     case ScrollbarCorner: return "ScrollbarCorner";
     case Scrollbar: return "Scrollbar";
+    case ScrollbarTickMark: return "ScrollbarTickMark";
     case Resizer: return "Resizer";
     case ColumnRules: return "ColumnRules";
     case ClipNodeImage: return "ClipNodeImage";
