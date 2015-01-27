@@ -243,11 +243,15 @@ def GitRevInfo(directory):
   Args:
     directory: Existing git working directory.
 """
-  url = log_tools.CheckOutput(GitCmd() + ['ls-remote', '--get-url', 'origin'],
-                              cwd=directory)
+  get_url_command = GitCmd() + ['ls-remote', '--get-url', 'origin']
+  url = log_tools.CheckOutput(get_url_command, cwd=directory).strip()
+  # If the URL is actually a directory, it might be a git-cache directory.
+  # Re-run from that directory to get the actual remote URL.
+  if os.path.isdir(url):
+    url = log_tools.CheckOutput(get_url_command, cwd=url).strip()
   rev = log_tools.CheckOutput(GitCmd() + ['rev-parse', 'HEAD'],
-                              cwd=directory)
-  return url.strip(), rev.strip()
+                              cwd=directory).strip()
+  return url, rev
 
 
 def GetAuthenticatedGitURL(url):

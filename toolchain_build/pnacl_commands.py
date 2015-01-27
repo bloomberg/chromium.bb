@@ -111,7 +111,7 @@ def CmdCheckoutGitBundleForTrybot(logger, subst, repo, destination):
 def WriteREVFile(logger, subst, dstfile, base_url, repos, revisions):
   # Install the REV file with repo info for all the components
   rev_file = subst.SubstituteAbsPaths(dstfile)
-  logger.debug('  Installing: %s', rev_file)
+  logger.debug('Installing: %s', rev_file)
   with open(rev_file, 'w') as f:
     url, rev = pynacl.repo_tools.GitRevInfo(NACL_DIR)
     print >> f, '[GIT] %s: %s' % (url, rev)
