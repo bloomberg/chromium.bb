@@ -217,6 +217,14 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
     PrefHashFilter::VALUE_PERSONAL
   },
+#if defined(OS_WIN)
+  {
+    22, prefs::kSwReporterPromptSeed,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
+  },
+#endif
   // See note at top, new items added here also need to be added to
   // histograms.xml's TrackedPreference enum.
 };

@@ -20,6 +20,7 @@ extern const char kSwReporterLastTimeTriggered[];
 // Profile prefs.
 extern const char kSwReporterPromptReason[];
 extern const char kSwReporterPromptVersion[];
+extern const char kSwReporterPromptSeed[];
 #endif
 
 }  // namespace prefs

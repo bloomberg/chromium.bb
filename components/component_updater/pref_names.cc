@@ -31,6 +31,11 @@ const char kSwReporterPromptReason[] = "software_reporter.prompt_reason";
 // string when the prompt wasn't shown yet. Stored in the protected prefs of the
 // profile that owns the browser where the prompt was shown.
 const char kSwReporterPromptVersion[] = "software_reporter.prompt_version";
+
+// A string value uniquely identifying an SRTPrompt campaign so that users that
+// have been prompted with this seed before won't be prompted again until a new
+// seed comes in.
+const char kSwReporterPromptSeed[] = "software_reporter.prompt_seed";
 #endif
 
 }  // namespace prefs

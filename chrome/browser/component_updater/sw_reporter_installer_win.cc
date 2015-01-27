@@ -5,6 +5,8 @@
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 
 #include <stdint.h>
+
+#include <map>
 #include <string>
 #include <vector>
 
@@ -42,6 +44,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -92,6 +95,7 @@ const wchar_t kEndTimeRegistryValueName[] = L"EndTime";
 // Field trial strings.
 const char kSRTPromptTrialName[] = "SRTPromptFieldTrial";
 const char kSRTPromptOnGroup[] = "On";
+const char kSRTPromptSeedParamName[] = "Seed";
 
 // Exit codes that identify that a cleanup is needed.
 const int kCleanupNeeded = 0;
@@ -137,67 +141,89 @@ void ReportVersionWithUma(const base::Version& version) {
 // so the kSwReporterPromptVersion prefs can be set.
 void ReportAndClearExitCode(int exit_code, const std::string& version) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.ExitCode", exit_code);
+  base::win::RegKey srt_key(HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey,
+                            KEY_WRITE);
+  srt_key.DeleteValue(kExitCodeRegistryValueName);
+
   if (g_browser_process && g_browser_process->local_state()) {
     g_browser_process->local_state()->SetInteger(prefs::kSwReporterLastExitCode,
                                                  exit_code);
   }
 
-  if ((exit_code == kPostRebootCleanupNeeded || exit_code == kCleanupNeeded) &&
-      base::FieldTrialList::FindFullName(kSRTPromptTrialName) ==
+  if ((exit_code != kPostRebootCleanupNeeded && exit_code != kCleanupNeeded) ||
+      base::FieldTrialList::FindFullName(kSRTPromptTrialName) !=
           kSRTPromptOnGroup) {
-    // Find the last active browser, which may be NULL, in which case we won't
-    // show the prompt this time and will wait until the next run of the
-    // reporter. We can't use other ways of finding a browser because we don't
-    // have a profile.
-    chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
-    Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
-    if (browser) {
-      Profile* profile = browser->profile();
-      // Don't show the prompt again if it's been shown before for this profile.
-      DCHECK(profile);
-      const std::string prompt_version =
-          profile->GetPrefs()->GetString(prefs::kSwReporterPromptVersion);
-      if (prompt_version.empty()) {
-        profile->GetPrefs()->SetString(prefs::kSwReporterPromptVersion,
-                                       version);
-        profile->GetPrefs()->SetInteger(prefs::kSwReporterPromptReason,
-                                        exit_code);
-        // Now that we have a profile, make sure we have a tabbed browser since
-        // we need to anchor the bubble to the toolbar's wrench menu. Create one
-        // if none exist already.
-        if (browser->type() != Browser::TYPE_TABBED) {
-          browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
-          if (!browser)
-            browser = new Browser(Browser::CreateParams(profile, desktop_type));
-        }
-        GlobalErrorService* global_error_service =
-            GlobalErrorServiceFactory::GetForProfile(profile);
-        SRTGlobalError* global_error = new SRTGlobalError(global_error_service);
-        // |global_error_service| takes ownership of |global_error| and keeps it
-        // alive until RemoveGlobalError() is called, and even then, the object
-        // is not destroyed, the caller of RemoveGlobalError is responsible to
-        // destroy it, and in the case of the SRTGlobalError, it deletes itself
-        // but only after the bubble has been interacted with.
-        global_error_service->AddGlobalError(global_error);
-
-        // Do not try to show bubble if another GlobalError is already showing
-        // one. The bubble will be shown once the others have been dismissed.
-        const GlobalErrorService::GlobalErrorList& global_errors(
-            global_error_service->errors());
-        GlobalErrorService::GlobalErrorList::const_iterator it;
-        for (it = global_errors.begin(); it != global_errors.end(); ++it) {
-          if ((*it)->GetBubbleView())
-            break;
-        }
-        if (it == global_errors.end())
-          global_error->ShowBubbleView(browser);
-      }
-    }
+    return;
   }
+  // Find the last active browser, which may be NULL, in which case we won't
+  // show the prompt this time and will wait until the next run of the
+  // reporter. We can't use other ways of finding a browser because we don't
+  // have a profile.
+  chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
+  Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
+  if (!browser)
+    return;
 
-  base::win::RegKey srt_key(
-      HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey, KEY_WRITE);
-  srt_key.DeleteValue(kExitCodeRegistryValueName);
+  Profile* profile = browser->profile();
+  DCHECK(profile);
+
+  PrefService* prefs = profile->GetPrefs();
+  DCHECK(prefs);
+
+  // Don't show the prompt again if it's been shown before for this profile
+  // and for the current Finch seed.
+  std::map<std::string, std::string> params;
+  variations::GetVariationParams(kSRTPromptTrialName, &params);
+  const std::string previous_prompt_seed =
+      prefs->GetString(prefs::kSwReporterPromptSeed);
+  std::map<std::string, std::string>::const_iterator seed_iter(
+      params.find(std::string(kSRTPromptSeedParamName)));
+  bool valid_incoming_seed =
+      seed_iter != params.end() && !seed_iter->second.empty();
+  if (valid_incoming_seed && seed_iter->second == previous_prompt_seed)
+    return;
+
+  // If we don't have a new seed, and have shown the prompt before, don't show
+  // it again.
+  const std::string prompt_version =
+      prefs->GetString(prefs::kSwReporterPromptVersion);
+  if (!valid_incoming_seed && !prompt_version.empty())
+    return;
+
+  if (valid_incoming_seed)
+    prefs->SetString(prefs::kSwReporterPromptSeed, seed_iter->second);
+  prefs->SetString(prefs::kSwReporterPromptVersion, version);
+  prefs->SetInteger(prefs::kSwReporterPromptReason, exit_code);
+
+  // Make sure we have a tabbed browser since we need to anchor the bubble to
+  // the toolbar's wrench menu. Create one if none exist already.
+  if (browser->type() != Browser::TYPE_TABBED) {
+    browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
+    if (!browser)
+      browser = new Browser(Browser::CreateParams(profile, desktop_type));
+  }
+  GlobalErrorService* global_error_service =
+      GlobalErrorServiceFactory::GetForProfile(profile);
+  SRTGlobalError* global_error = new SRTGlobalError(global_error_service);
+
+  // |global_error_service| takes ownership of |global_error| and keeps it
+  // alive until RemoveGlobalError() is called, and even then, the object
+  // is not destroyed, the caller of RemoveGlobalError is responsible to
+  // destroy it, and in the case of the SRTGlobalError, it deletes itself
+  // but only after the bubble has been interacted with.
+  global_error_service->AddGlobalError(global_error);
+
+  // Do not try to show bubble if another GlobalError is already showing
+  // one. The bubble will be shown once the others have been dismissed.
+  const GlobalErrorService::GlobalErrorList& global_errors(
+      global_error_service->errors());
+  GlobalErrorService::GlobalErrorList::const_iterator it;
+  for (it = global_errors.begin(); it != global_errors.end(); ++it) {
+    if ((*it)->GetBubbleView())
+      break;
+  }
+  if (it == global_errors.end())
+    global_error->ShowBubbleView(browser);
 }
 
 // This function is called from a worker thread to launch the SwReporter and
@@ -409,13 +435,15 @@ void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {
 void RegisterProfilePrefsForSwReporter(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
-      prefs::kSwReporterPromptReason,
-      -1,
+      prefs::kSwReporterPromptReason, -1,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterStringPref(
-      prefs::kSwReporterPromptVersion,
-      "",
+      prefs::kSwReporterPromptVersion, "",
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  registry->RegisterStringPref(
+      prefs::kSwReporterPromptSeed, "",
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
