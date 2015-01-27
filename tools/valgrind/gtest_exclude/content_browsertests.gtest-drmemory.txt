@@ -22,6 +22,3 @@ ServiceWorkerBrowserTest.ImportsBustMemcache
 
 # http://crbug.com/293125
 WebRtcBrowserTest.CanMakeEmptyCallThenAddStreamsAndRenegotiate
-
-# http://crbug.com/451983
-DumpAccessibilityEventsTest.AccessibilityEventsTextChanged
