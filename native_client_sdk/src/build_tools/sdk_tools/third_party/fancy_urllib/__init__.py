@@ -329,7 +329,7 @@ class FancyProxyHandler(urllib2.ProxyHandler):
 class FancyHTTPSHandler(urllib2.HTTPSHandler):
   """An HTTPSHandler that works with CONNECT-enabled proxies."""
 
-  def do_open(self, http_class, req):
+  def do_open(self, http_class, req, **kwargs):
     # Intentionally very specific so as to opt for false negatives
     # rather than false positives.
     try:
@@ -339,7 +339,8 @@ class FancyHTTPSHandler(urllib2.HTTPSHandler):
                                    req._key_file,
                                    req._cert_file,
                                    req._ca_certs),
-          req)
+          req,
+          **kwargs)
     except urllib2.URLError, url_error:
       try:
         import ssl
