@@ -4,6 +4,7 @@
 
 #include "base/message_loop/message_pump_win.h"
 
+#include <limits>
 #include <math.h>
 
 #include "base/debug/trace_event.h"
@@ -70,12 +71,13 @@ int MessagePumpWin::GetCurrentDelay() const {
   double timeout =
       ceil((delayed_work_time_ - TimeTicks::Now()).InMillisecondsF());
 
-  // If this value is negative, then we need to run delayed work soon.
-  int delay = static_cast<int>(timeout);
-  if (delay < 0)
-    delay = 0;
-
-  return delay;
+  // Range check the |timeout| while converting to an integer.  If the |timeout|
+  // is negative, then we need to run delayed work soon.  If the |timeout| is
+  // "overflowingly" large, that means a delayed task was posted with a
+  // super-long delay.
+  return timeout < 0 ? 0 :
+      (timeout > std::numeric_limits<int>::max() ?
+       std::numeric_limits<int>::max() : static_cast<int>(timeout));
 }
 
 //-----------------------------------------------------------------------------
