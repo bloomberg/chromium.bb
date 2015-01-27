@@ -40,10 +40,6 @@ inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedBy
     SVGURIReference::initialize(this);
 }
 
-SVGScriptElement::~SVGScriptElement()
-{
-}
-
 PassRefPtrWillBeRawPtr<SVGScriptElement> SVGScriptElement::create(Document& document, bool insertedByParser)
 {
     return adoptRefWillBeNoop(new SVGScriptElement(document, insertedByParser, false));

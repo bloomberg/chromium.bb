@@ -71,7 +71,6 @@ public:
     bool isDisplayNone() const;
 private:
     explicit HTMLOptionElement(Document&);
-    virtual ~HTMLOptionElement();
 
     virtual bool rendererIsFocusable() const override { return true; }
     virtual void attach(const AttachContext& = AttachContext()) override;

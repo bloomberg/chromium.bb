@@ -52,7 +52,6 @@ public:
 
 private:
     SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
-    virtual ~SVGScriptElement();
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;

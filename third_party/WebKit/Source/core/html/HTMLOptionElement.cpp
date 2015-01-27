@@ -55,10 +55,6 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
     setHasCustomStyleCallbacks();
 }
 
-HTMLOptionElement::~HTMLOptionElement()
-{
-}
-
 PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLOptionElement> option = adoptRefWillBeNoop(new HTMLOptionElement(document));
