@@ -20,11 +20,11 @@ layer at (410,0) size 390x600
           text run at (20,250) width 4: " "
           text run at (20,254) width 288: "bug fix changed our behavior to match the spec."
       RenderBlock {DIV} at (72,32) size 270x520 [border: (1px solid #0000FF)]
-        RenderTable {DIV} at (1,1) size 220x115 [border: (1px none #000000)]
-          RenderTableSection (anonymous) at (10,1) size 200x104
-            RenderTableRow {P} at (0,0) size 100x104
-              RenderTableCell {SPAN} at (0,0) size 100x-37 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              RenderTableCell {SPAN} at (0,52) size 100x20 [border: (10px solid #000000)] [r=0 c=1 rs=1 cs=1]
-            RenderTableRow {P} at (0,100) size 100x104 [border: (1px solid #0000FF)]
-              RenderTableCell {SPAN} at (100,0) size 100x-28 [border: (10px solid #000000)] [r=1 c=0 rs=1 cs=1]
-              RenderTableCell {SPAN} at (100,52) size 100x20 [border: (10px solid #000000)] [r=1 c=1 rs=1 cs=1]
+        LayoutTable {DIV} at (1,1) size 220x115 [border: (1px none #000000)]
+          LayoutTableSection (anonymous) at (10,1) size 200x104
+            LayoutTableRow {P} at (0,0) size 100x104
+              LayoutTableCell {SPAN} at (0,0) size 100x-37 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutTableCell {SPAN} at (0,52) size 100x20 [border: (10px solid #000000)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableRow {P} at (0,100) size 100x104 [border: (1px solid #0000FF)]
+              LayoutTableCell {SPAN} at (100,0) size 100x-28 [border: (10px solid #000000)] [r=1 c=0 rs=1 cs=1]
+              LayoutTableCell {SPAN} at (100,52) size 100x20 [border: (10px solid #000000)] [r=1 c=1 rs=1 cs=1]

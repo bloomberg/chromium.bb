@@ -3,14 +3,14 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderTable {TABLE} at (0,0) size 784x280 [border: (4px solid #0000FF)]
-        RenderTableSection {TBODY} at (4,4) size 776x272
-          RenderTableRow {TR} at (0,2) size 776x268
-            RenderTableCell {TD} at (2,2) size 605x120 [border: (1px solid #0000FF)] [r=0 c=0 rs=1 cs=1]
-              RenderTable {TABLE} at (2,2) size 601x116 [border: (4px solid #008000)]
-                RenderTableSection {TBODY} at (4,4) size 593x108
-                  RenderTableRow {TR} at (0,2) size 593x104
-                    RenderTableCell {TD} at (2,2) size 589x104 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,0) size 784x280 [border: (4px solid #0000FF)]
+        LayoutTableSection {TBODY} at (4,4) size 776x272
+          LayoutTableRow {TR} at (0,2) size 776x268
+            LayoutTableCell {TD} at (2,2) size 605x120 [border: (1px solid #0000FF)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (2,2) size 601x116 [border: (4px solid #008000)]
+                LayoutTableSection {TBODY} at (4,4) size 593x108
+                  LayoutTableRow {TR} at (0,2) size 593x104
+                    LayoutTableCell {TD} at (2,2) size 589x104 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (2,2) size 580x99
                         text run at (2,2) width 580: "this is a bunch of text. this is a bunch of text. this is a bunch of text. this is a bunch of text. this is a"
                         text run at (2,22) width 488: "bunch of text. this is a bunch of text. this is a bunch of text. this is a bunch of text. "
@@ -18,18 +18,18 @@ layer at (0,0) size 800x600
                         text run at (2,42) width 578: "of text. this is a bunch of text. this is a bunch of text. this is a bunch of text. this is a bunch of text."
                         text run at (2,62) width 580: "this is a bunch of text. this is a bunch of text. this is a bunch of text. this is a bunch of text. this is a"
                         text run at (2,82) width 82: "bunch of text."
-            RenderTableCell {TD} at (609,2) size 165x268 [border: (1px solid #0000FF)] [r=0 c=1 rs=1 cs=1]
-              RenderTable {TABLE} at (2,2) size 161x264 [border: (4px solid #008000)]
-                RenderTableSection {TBODY} at (4,4) size 153x256
-                  RenderTableRow {TR} at (0,2) size 153x252
-                    RenderTableCell {TD} at (2,2) size 149x252 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (609,2) size 165x268 [border: (1px solid #0000FF)] [r=0 c=1 rs=1 cs=1]
+              LayoutTable {TABLE} at (2,2) size 161x264 [border: (4px solid #008000)]
+                LayoutTableSection {TBODY} at (4,4) size 153x256
+                  LayoutTableRow {TR} at (0,2) size 153x252
+                    LayoutTableCell {TD} at (2,2) size 149x252 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
                       RenderBlock (anonymous) at (2,2) size 145x20
                         RenderText {#text} at (0,0) size 111x19
                           text run at (0,0) width 111: "this cell is nowrap."
-                      RenderTable {TABLE} at (2,22) size 145x228 [border: (4px solid #FF0000)]
-                        RenderTableSection {TBODY} at (4,4) size 137x220
-                          RenderTableRow {TR} at (0,2) size 137x216
-                            RenderTableCell {TD} at (2,2) size 133x216 [border: (1px solid #FF0000)] [r=0 c=0 rs=1 cs=1]
+                      LayoutTable {TABLE} at (2,22) size 145x228 [border: (4px solid #FF0000)]
+                        LayoutTableSection {TBODY} at (4,4) size 137x220
+                          LayoutTableRow {TR} at (0,2) size 137x216
+                            LayoutTableCell {TD} at (2,2) size 133x216 [border: (1px solid #FF0000)] [r=0 c=0 rs=1 cs=1]
                               RenderBlock (anonymous) at (2,2) size 129x60
                                 RenderText {#text} at (0,0) size 124x59
                                   text run at (0,0) width 124: "this text is in a cell of"

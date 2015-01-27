@@ -15,25 +15,25 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,3) size 784x581 [bgcolor=#FFFFFF]
       RenderBlock {CENTER} at (0,0) size 784x272
-        RenderTable {TABLE} at (0,0) size 784x20
-          RenderTableSection {TBODY} at (0,0) size 784x20
-            RenderTableRow {TR} at (0,0) size 784x16
-              RenderTableCell {TD} at (0,0) size 784x16 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,0) size 784x20
+          LayoutTableSection {TBODY} at (0,0) size 784x20
+            LayoutTableRow {TR} at (0,0) size 784x16
+              LayoutTableCell {TD} at (0,0) size 784x16 [r=0 c=0 rs=1 cs=1]
                 RenderInline {FONT} at (0,0) size 101x15
                   RenderInline {A} at (0,0) size 101x15 [color=#0000CC]
                     RenderText {#text} at (683,0) size 101x15
                       text run at (683,0) width 101: "Personalized Home"
-            RenderTableRow {TR} at (0,16) size 784x4
-              RenderTableCell {TD} at (0,17) size 784x1 [r=1 c=0 rs=1 cs=1]
+            LayoutTableRow {TR} at (0,16) size 784x4
+              LayoutTableCell {TD} at (0,17) size 784x1 [r=1 c=0 rs=1 cs=1]
                 RenderImage {IMG} at (0,0) size 1x1
         RenderBlock (anonymous) at (0,20) size 784x40
           RenderBR {BR} at (392,0) size 0x19
           RenderBR {BR} at (392,20) size 0x19
         RenderBlock {DIV} at (0,60) size 784x108 [border: (2px solid #AAAAFF)]
-          RenderTable {TABLE} at (218,2) size 348x24
-            RenderTableSection {TBODY} at (0,0) size 348x24
-              RenderTableRow {TR} at (0,0) size 348x24
-                RenderTableCell {TD} at (0,0) size 348x24 [r=0 c=0 rs=1 cs=1]
+          LayoutTable {TABLE} at (218,2) size 348x24
+            LayoutTableSection {TBODY} at (0,0) size 348x24
+              LayoutTableRow {TR} at (0,0) size 348x24
+                LayoutTableCell {TD} at (0,0) size 348x24 [r=0 c=0 rs=1 cs=1]
                   RenderInline {FONT} at (0,0) size 340x15
                     RenderInline {B} at (0,0) size 25x15
                       RenderText {#text} at (4,4) size 25x15
@@ -74,13 +74,13 @@ layer at (0,0) size 800x600
                       RenderInline {A} at (0,0) size 38x15 [color=#0000CC]
                         RenderText {#text} at (306,4) size 38x15
                           text run at (306,4) width 38: "more \x{BB}"
-          RenderTable {TABLE} at (29,26) size 726x44
-            RenderTableSection {TBODY} at (0,0) size 726x44
-              RenderTableRow {TR} at (0,0) size 726x44
-                RenderTableCell {TD} at (0,12) size 181x20 [r=0 c=0 rs=1 cs=1]
+          LayoutTable {TABLE} at (29,26) size 726x44
+            LayoutTableSection {TBODY} at (0,0) size 726x44
+              LayoutTableRow {TR} at (0,0) size 726x44
+                LayoutTableCell {TD} at (0,12) size 181x20 [r=0 c=0 rs=1 cs=1]
                   RenderText {#text} at (0,0) size 4x19
                     text run at (0,0) width 4: " "
-                RenderTableCell {TD} at (181,0) size 364x44 [r=0 c=1 rs=1 cs=1]
+                LayoutTableCell {TD} at (181,0) size 364x44 [r=0 c=1 rs=1 cs=1]
                   RenderTextControl {INPUT} at (0.50,0) size 363x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                   RenderBR {BR} at (363,16) size 1x0
                   RenderButton {INPUT} at (72.50,22) size 102x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
@@ -91,7 +91,7 @@ layer at (0,0) size 800x600
                     RenderBlock (anonymous) at (8,3) size 101x16
                       RenderText {#text} at (0,0) size 101x16
                         text run at (0,0) width 101: "I'm Feeling Lucky"
-                RenderTableCell {TD} at (545,0) size 181x36 [r=0 c=2 rs=1 cs=1]
+                LayoutTableCell {TD} at (545,0) size 181x36 [r=0 c=2 rs=1 cs=1]
                   RenderInline {FONT} at (0,0) size 74x36
                     RenderText {#text} at (0,0) size 6x12
                       text run at (0,0) width 6: "  "

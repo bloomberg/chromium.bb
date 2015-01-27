@@ -3,26 +3,26 @@ layer at (0,0) size 785x852
 layer at (0,0) size 785x852
   RenderBlock {HTML} at (0,0) size 785x852
     RenderBody {BODY} at (8,8) size 769x836
-      RenderTable {TABLE} at (0,0) size 310x310
-        RenderTableSection {TBODY} at (0,0) size 310x310
-          RenderTableRow {TR} at (0,2) size 310x306
-            RenderTableCell {TD} at (2,2) size 306x306 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,0) size 310x310
+        LayoutTableSection {TBODY} at (0,0) size 310x310
+          LayoutTableRow {TR} at (0,2) size 310x306
+            LayoutTableCell {TD} at (2,2) size 306x306 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 0x0
-      RenderTable {TABLE} at (0,310) size 606x306
-        RenderTableSection {TBODY} at (0,0) size 606x306
-          RenderTableRow {TR} at (0,2) size 606x302
-            RenderTableCell {TD} at (2,2) size 602x302 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,310) size 606x306
+        LayoutTableSection {TBODY} at (0,0) size 606x306
+          LayoutTableRow {TR} at (0,2) size 606x302
+            LayoutTableCell {TD} at (2,2) size 602x302 [r=0 c=0 rs=1 cs=1]
               RenderImage {IMG} at (1,1) size 600x300
               RenderText {#text} at (0,0) size 0x0
-      RenderTable {TABLE} at (0,616) size 310x156
-        RenderTableSection {TBODY} at (0,0) size 310x156
-          RenderTableRow {TR} at (0,2) size 310x152
-            RenderTableCell {TD} at (2,2) size 306x152 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,616) size 310x156
+        LayoutTableSection {TBODY} at (0,0) size 310x156
+          LayoutTableRow {TR} at (0,2) size 310x152
+            LayoutTableCell {TD} at (2,2) size 306x152 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 0x0
-      RenderTable {TABLE} at (0,772) size 606x64
-        RenderTableSection {TBODY} at (0,0) size 606x64
-          RenderTableRow {TR} at (0,2) size 606x60
-            RenderTableCell {TD} at (2,2) size 602x60 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,772) size 606x64
+        LayoutTableSection {TBODY} at (0,0) size 606x64
+          LayoutTableRow {TR} at (0,2) size 606x60
+            LayoutTableCell {TD} at (2,2) size 602x60 [r=0 c=0 rs=1 cs=1]
               RenderImage {IMG} at (1,1) size 600x58
               RenderText {#text} at (0,0) size 0x0
 layer at (11,11) size 308x304

@@ -320,18 +320,18 @@ layer at (0,0) size 785x4321
         RenderText {#text} at (0,0) size 722x39
           text run at (0,0) width 722: "This paragraph should be black, because the color declaration after the previous ruleset should be considered part of the"
           text run at (0,20) width 588: "selector for this ruleset, and this ruleset therefore has an invalid selector and should not be applied."
-      RenderTable {TABLE} at (0,2607) size 769x1698 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 767x1696
-          RenderTableRow {TR} at (0,0) size 767x28
-            RenderTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,2607) size 769x1698 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x1696
+          LayoutTableRow {TR} at (0,0) size 767x28
+            LayoutTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 159x19
                 RenderText {#text} at (4,4) size 159x19
                   text run at (4,4) width 159: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,28) size 767x1668
-            RenderTableCell {TD} at (0,848) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,28) size 767x1668
+            LayoutTableCell {TD} at (0,848) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
-            RenderTableCell {TD} at (12,28) size 755x1668 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,28) size 755x1668 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 747x20 [color=#008000]
                 RenderText {#text} at (0,0) size 462x19
                   text run at (0,0) width 462: "This paragraph should be green, because only the rotation should be ignored."

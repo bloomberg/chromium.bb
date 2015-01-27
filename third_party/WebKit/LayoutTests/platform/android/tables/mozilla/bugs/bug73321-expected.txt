@@ -11,10 +11,10 @@ layer at (0,0) size 785x1395
             text run at (250,32) width 160: "Linux.com"
         RenderText {#text} at (410,32) size 242x37
           text run at (410,32) width 242: " Table Testcase"
-      RenderTable {TABLE} at (16,160.88) size 737x1202
-        RenderTableSection {TBODY} at (0,0) size 737x1202
-          RenderTableRow {TR} at (0,2) size 737x841
-            RenderTableCell {TD} at (2,2) size 135x722.13 [bgcolor=#FFFFFF] [r=0 c=0 rs=2 cs=1]
+      LayoutTable {TABLE} at (16,160.88) size 737x1202
+        LayoutTableSection {TBODY} at (0,0) size 737x1202
+          LayoutTableRow {TR} at (0,2) size 737x841
+            LayoutTableCell {TD} at (2,2) size 135x722.13 [bgcolor=#FFFFFF] [r=0 c=0 rs=2 cs=1]
               RenderBlock {H2} at (5,18.27) size 125x20
                 RenderText {#text} at (0,0) size 117x19
                   text run at (0,0) width 117: "Weekly Feature"
@@ -73,7 +73,7 @@ layer at (0,0) size 785x1395
                 RenderText {#text} at (0,0) size 108x32
                   text run at (0,0) width 108: "blah blah blah blah"
                   text run at (0,16) width 108: "blah blah blah blah"
-            RenderTableCell {TD} at (139,2) size 459x1198.13 [bgcolor=#FFFFFF] [r=0 c=1 rs=2 cs=1]
+            LayoutTableCell {TD} at (139,2) size 459x1198.13 [bgcolor=#FFFFFF] [r=0 c=1 rs=2 cs=1]
               RenderBlock {H2} at (5,18.27) size 449x20
                 RenderText {#text} at (0,0) size 187x19
                   text run at (0,0) width 187: "The Latest of Linux.com!"
@@ -157,7 +157,7 @@ layer at (0,0) size 785x1395
               RenderBlock {P} at (5,1164.13) size 449x16
                 RenderText {#text} at (0,0) size 307x16
                   text run at (0,0) width 307: "This stuff is cropped off in Mozilla for whatever reason"
-            RenderTableCell {TD} at (600,2) size 135x402.59 [bgcolor=#FFFFFF] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (600,2) size 135x402.59 [bgcolor=#FFFFFF] [r=0 c=2 rs=1 cs=1]
               RenderBlock {H2} at (5,18.27) size 125x20
                 RenderText {#text} at (0,0) size 47x19
                   text run at (0,0) width 47: "OSDN"
@@ -188,8 +188,8 @@ layer at (0,0) size 785x1395
                   text run at (0,32) width 108: "blah blah blah blah"
                   text run at (0,48) width 108: "blah blah blah blah"
                   text run at (0,64) width 52: "blah blah"
-          RenderTableRow {TR} at (0,845) size 737x355
-            RenderTableCell {TD} at (600,1030) size 135x169.53 [bgcolor=#FFFFFF] [r=1 c=2 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,845) size 737x355
+            LayoutTableCell {TD} at (600,1030) size 135x169.53 [bgcolor=#FFFFFF] [r=1 c=2 rs=1 cs=1]
               RenderBlock {H2} at (5,18.27) size 125x40
                 RenderText {#text} at (0,0) size 88x39
                   text run at (0,0) width 88: "Community"

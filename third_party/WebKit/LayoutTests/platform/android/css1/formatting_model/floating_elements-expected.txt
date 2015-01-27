@@ -352,18 +352,18 @@ layer at (0,0) size 785x6501
           text run at (5,185) width 479: "insertion point of the floated element to avoid floating elements appearing before"
           text run at (5,205) width 278: "text which precedes it in the source document."
       RenderBlock {HR} at (24,3264) size 578.75x2 [border: (1px inset #EEEEEE)]
-      RenderTable {TABLE} at (0,3290) size 769x3195 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 767x3193
-          RenderTableRow {TR} at (0,0) size 767x28
-            RenderTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,3290) size 769x3195 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x3193
+          LayoutTableRow {TR} at (0,0) size 767x28
+            LayoutTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 159x19
                 RenderText {#text} at (4,4) size 159x19
                   text run at (4,4) width 159: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,28) size 767x3165
-            RenderTableCell {TD} at (0,1596) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,28) size 767x3165
+            LayoutTableCell {TD} at (0,1596) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
-            RenderTableCell {TD} at (12,28) size 755x3165 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,28) size 755x3165 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 747x40
                 RenderText {#text} at (0,0) size 731x39
                   text run at (0,0) width 645: "On this test page, each test is performed once with floating paragraphs, and then again with floating images. "

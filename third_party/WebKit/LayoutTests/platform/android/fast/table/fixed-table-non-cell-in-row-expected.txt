@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,56) size 784x20
         RenderText {#text} at (0,0) size 411x19
           text run at (0,0) width 411: "The test is simply that the empty table below does not cause a crash."
-      RenderTable {TABLE} at (0,92) size 100x100 [border: (3px solid #FF0000)]
-        RenderTableSection {TBODY} at (3,3) size 94x94
-          RenderTableRow {TR} at (0,2) size 94x90
-            RenderTableCell {TD} at (2,46) size 90x2 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,92) size 100x100 [border: (3px solid #FF0000)]
+        LayoutTableSection {TBODY} at (3,3) size 94x94
+          LayoutTableRow {TR} at (0,2) size 94x90
+            LayoutTableCell {TD} at (2,46) size 90x2 [r=0 c=0 rs=1 cs=1]

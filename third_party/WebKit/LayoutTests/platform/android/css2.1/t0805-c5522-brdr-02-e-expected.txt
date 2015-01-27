@@ -3,21 +3,21 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x84
   RenderBlock {HTML} at (0,0) size 800x84
     RenderBody {BODY} at (8,8) size 784x68 [color=#0000FF]
-      RenderTable {TABLE} at (0,0) size 682x68
-        RenderTableSection {TBODY} at (0,0) size 682x68
-          RenderTableRow {TR} at (0,2) size 682x26
-            RenderTableCell {TD} at (2,2) size 678x26 [border: (2px solid #0000FF)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,0) size 682x68
+        LayoutTableSection {TBODY} at (0,0) size 682x68
+          LayoutTableRow {TR} at (0,2) size 682x26
+            LayoutTableCell {TD} at (2,2) size 678x26 [border: (2px solid #0000FF)] [r=0 c=0 rs=1 cs=2]
               RenderText {#text} at (3,3) size 312x19
                 text run at (3,3) width 312: "There should be a blue border around this sentence."
-          RenderTableRow {TR} at (0,30) size 682x36
-            RenderTableCell {TD} at (2,35) size 318x26 [border: (2px solid #0000FF)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,30) size 682x36
+            LayoutTableCell {TD} at (2,35) size 318x26 [border: (2px solid #0000FF)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (3,3) size 312x19
                 text run at (3,3) width 312: "There should be a blue border around this sentence."
-            RenderTableCell {TD} at (322,30) size 358x36 [border: (2px solid #0000FF)] [r=1 c=1 rs=1 cs=1]
-              RenderTable {TABLE} at (3,3) size 352x30
-                RenderTableSection {TBODY} at (0,0) size 352x30
-                  RenderTableRow {TR} at (0,2) size 352x26
-                    RenderTableCell {TD} at (2,2) size 348x26 [border: (2px solid #0000FF)] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (322,30) size 358x36 [border: (2px solid #0000FF)] [r=1 c=1 rs=1 cs=1]
+              LayoutTable {TABLE} at (3,3) size 352x30
+                LayoutTableSection {TBODY} at (0,0) size 352x30
+                  LayoutTableRow {TR} at (0,2) size 352x26
+                    LayoutTableCell {TD} at (2,2) size 348x26 [border: (2px solid #0000FF)] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (3,3) size 101x19
                         text run at (3,3) width 101: "There should be "
                       RenderInline {STRONG} at (0,0) size 111x19

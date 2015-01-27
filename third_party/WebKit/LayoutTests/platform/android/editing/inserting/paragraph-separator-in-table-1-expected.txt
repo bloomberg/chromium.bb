@@ -11,13 +11,13 @@ layer at (0,0) size 800x600
           text run at (0,0) width 325: "This tests InsertParagraphSeparator inside table cells. "
           text run at (325,0) width 264: "'Cell' and 'Two' should be on separate lines."
       RenderBlock {DIV} at (0,36) size 784x50
-        RenderTable {TABLE} at (0,0) size 98x50 [border: (1px outset #808080)]
-          RenderTableSection {TBODY} at (1,1) size 96x48
-            RenderTableRow {TR} at (0,2) size 96x44
-              RenderTableCell {TD} at (2,12) size 58x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (0,0) size 98x50 [border: (1px outset #808080)]
+          LayoutTableSection {TBODY} at (1,1) size 96x48
+            LayoutTableRow {TR} at (0,2) size 96x44
+              LayoutTableCell {TD} at (2,12) size 58x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (2,2) size 54x19
                   text run at (2,2) width 54: "Cell One"
-              RenderTableCell {TD} at (62,2) size 32x44 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutTableCell {TD} at (62,2) size 32x44 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
                 RenderText {#text} at (2,2) size 28x19
                   text run at (2,2) width 28: "Cell "
                 RenderBR {BR} at (30,17) size 0x0

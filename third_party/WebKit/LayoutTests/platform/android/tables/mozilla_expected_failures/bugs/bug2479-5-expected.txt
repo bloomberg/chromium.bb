@@ -2,10 +2,10 @@ layer at (0,0) size 785x1437
   RenderView at (0,0) size 785x600
 layer at (8,8) size 769x1421
   RenderBlock {HTML} at (8,8) size 769x1421 [bgcolor=#008000] [border: (16px solid #00FF00)]
-    RenderTable at (16,16) size 737x1389
-      RenderTableSection (anonymous) at (0,0) size 737x1389
-        RenderTableRow (anonymous) at (0,0) size 737x1389
-          RenderTableCell {HEAD} at (0,0) size 205x546 [color=#FFFFFF] [bgcolor=#FF0000] [border: (5px solid #FFFFFF)] [r=0 c=0 rs=1 cs=1]
+    LayoutTable at (16,16) size 737x1389
+      LayoutTableSection (anonymous) at (0,0) size 737x1389
+        LayoutTableRow (anonymous) at (0,0) size 737x1389
+          LayoutTableCell {HEAD} at (0,0) size 205x546 [color=#FFFFFF] [bgcolor=#FF0000] [border: (5px solid #FFFFFF)] [r=0 c=0 rs=1 cs=1]
             RenderBlock {META} at (21,37) size 163x2 [border: (1px dotted #FFFFFF)]
             RenderBlock {META} at (21,55) size 163x2 [border: (1px dotted #FFFFFF)]
             RenderBlock {META} at (21,73) size 163x2 [border: (1px dotted #FFFFFF)]
@@ -40,7 +40,7 @@ layer at (8,8) size 769x1421
                 text run at (1,261) width 155: "white; background: red; }"
                 text run at (1,281) width 140: "BODY { color: yellow;"
                 text run at (1,301) width 116: "background: teal; }"
-          RenderTableCell {BODY} at (205,42) size 532x1347 [color=#FFFF00] [bgcolor=#008080] [border: (5px solid #FFFF00)] [r=0 c=1 rs=1 cs=1]
+          LayoutTableCell {BODY} at (205,42) size 532x1347 [color=#FFFF00] [bgcolor=#008080] [border: (5px solid #FFFF00)] [r=0 c=1 rs=1 cs=1]
             RenderBlock {H1} at (21,53) size 490x76 [border: (1px dotted #FFFF00)]
               RenderText {#text} at (1,1) size 152x36
                 text run at (1,1) width 152: "Rendering "

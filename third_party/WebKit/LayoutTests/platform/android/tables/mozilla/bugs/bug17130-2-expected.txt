@@ -12,10 +12,10 @@ layer at (0,0) size 800x600
       RenderBlock {H4} at (0,41.27) size 784x20
         RenderText {#text} at (0,0) size 293x19
           text run at (0,0) width 293: "Minimize the window and then open it again."
-      RenderTable {TABLE} at (0,82.53) size 784x26
-        RenderTableSection {TBODY} at (0,0) size 784x26
-          RenderTableRow {TR} at (0,2) size 784x22 [bgcolor=#006633]
-            RenderTableCell {TD} at (2,2) size 780x22 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,82.53) size 784x26
+        LayoutTableSection {TBODY} at (0,0) size 784x26
+          LayoutTableRow {TR} at (0,2) size 784x22 [bgcolor=#006633]
+            LayoutTableCell {TD} at (2,2) size 780x22 [r=0 c=0 rs=1 cs=1]
               RenderInline {FONT} at (0,0) size 136x19 [color=#FFCC00]
                 RenderText {#text} at (1,1) size 8x19
                   text run at (1,1) width 8: "  "
@@ -34,10 +34,10 @@ layer at (0,0) size 800x600
       RenderBlock {H4} at (0,149.80) size 784x20
         RenderText {#text} at (0,0) size 477x19
           text run at (0,0) width 477: "This is the same table as above but with all <SPAN> elements removed."
-      RenderTable {TABLE} at (0,191.06) size 784x26
-        RenderTableSection {TBODY} at (0,0) size 784x26
-          RenderTableRow {TR} at (0,2) size 784x22 [bgcolor=#006633]
-            RenderTableCell {TD} at (2,2) size 780x22 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,191.06) size 784x26
+        LayoutTableSection {TBODY} at (0,0) size 784x26
+          LayoutTableRow {TR} at (0,2) size 784x22 [bgcolor=#006633]
+            LayoutTableCell {TD} at (2,2) size 780x22 [r=0 c=0 rs=1 cs=1]
               RenderInline {FONT} at (0,0) size 136x19 [color=#FFCC00]
                 RenderText {#text} at (1,1) size 136x19
                   text run at (1,1) width 136: "  CNET : Downloads :"

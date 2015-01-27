@@ -25,10 +25,10 @@ layer at (0,0) size 785x710
         RenderBlock (anonymous) at (13,13) size 743x20
           RenderText {#text} at (0,0) size 222x19
             text run at (0,0) width 222: "If this paragraph breaks the line here:"
-        RenderTable {SPAN} at (13,33) size 55x20
-          RenderTableSection (anonymous) at (0,0) size 55x20
-            RenderTableRow (anonymous) at (0,0) size 55x20
-              RenderTableCell (anonymous) at (0,0) size 55x20 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {SPAN} at (13,33) size 55x20
+          LayoutTableSection (anonymous) at (0,0) size 55x20
+            LayoutTableRow (anonymous) at (0,0) size 55x20
+              LayoutTableCell (anonymous) at (0,0) size 55x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 55x19
                   text run at (0,0) width 55: "and here:"
         RenderBlock (anonymous) at (13,53) size 743x40
@@ -50,13 +50,13 @@ layer at (0,0) size 785x710
         RenderText {#text} at (0,0) size 748x39
           text run at (0,0) width 748: "Below there should be a gray bar, spanning the width of the BODY, with the text \"Left\" to the left and the text \"Right\", on the"
           text run at (0,20) width 162: "same line, flush to the right."
-      RenderTable {DIV} at (0,379.25) size 769x20 [bgcolor=#C0C0C0]
-        RenderTableSection (anonymous) at (0,0) size 769x20
-          RenderTableRow (anonymous) at (0,0) size 769x20
-            RenderTableCell {DIV} at (0,0) size 335x20 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {DIV} at (0,379.25) size 769x20 [bgcolor=#C0C0C0]
+        LayoutTableSection (anonymous) at (0,0) size 769x20
+          LayoutTableRow (anonymous) at (0,0) size 769x20
+            LayoutTableCell {DIV} at (0,0) size 335x20 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (0,0) size 24x19
                 text run at (0,0) width 24: "Left"
-            RenderTableCell {DIV} at (335,0) size 434x20 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {DIV} at (335,0) size 434x20 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (403,0) size 31x19
                 text run at (403,0) width 31: "Right"
       RenderBlock {H2} at (0,419.16) size 769x27

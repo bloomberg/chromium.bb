@@ -9,10 +9,10 @@ layer at (0,0) size 800x1211
         RenderBR {BR} at (306,0) size 0x19
         RenderText {#text} at (0,20) size 358x19
           text run at (0,20) width 358: "This test passes if there is not extra space in the pink boxes."
-      RenderTable {TABLE} at (1,49) size 798x292 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 797x291
-          RenderTableRow {TR} at (0,0) size 797x291
-            RenderTableCell {TD} at (0,0) size 797x291 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (1,49) size 798x292 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 797x291
+          LayoutTableRow {TR} at (0,0) size 797x291
+            LayoutTableCell {TD} at (0,0) size 797x291 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,3) size 740x142
                 text run at (2,3) width 740: "Autosize Autosize Autosize Autosize Autosize"
                 text run at (2,51) width 740: "Autosize Autosize Autosize Autosize Autosize"
@@ -24,10 +24,10 @@ layer at (0,0) size 800x1211
                 text run at (2,147) width 740: "Autosize Autosize Autosize Autosize Autosize"
                 text run at (2,195) width 740: "Autosize Autosize Autosize Autosize Autosize"
                 text run at (2,243) width 590: "Autosize Autosize Autosize Autosize"
-      RenderTable {TABLE} at (1,342) size 144x868 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 143x867
-          RenderTableRow {TR} at (0,0) size 143x867
-            RenderTableCell {TD} at (0,0) size 143x867 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (1,342) size 144x868 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 143x867
+          LayoutTableRow {TR} at (0,0) size 143x867
+            LayoutTableCell {TD} at (0,0) size 143x867 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,3) size 140x46
                 text run at (2,3) width 140: "Autosize"
               RenderBR {BR} at (142,3) size 0x46

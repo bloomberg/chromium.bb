@@ -126,18 +126,18 @@ layer at (0,0) size 785x1745
             text run at (268,3) width 40: "style"
         RenderText {#text} at (308,0) size 57x19
           text run at (308,0) width 57: " attribute."
-      RenderTable {TABLE} at (0,963) size 769x766 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 767x764
-          RenderTableRow {TR} at (0,0) size 767x28
-            RenderTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,963) size 769x766 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x764
+          LayoutTableRow {TR} at (0,0) size 767x28
+            LayoutTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 159x19
                 RenderText {#text} at (4,4) size 159x19
                   text run at (4,4) width 159: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,28) size 767x736
-            RenderTableCell {TD} at (0,382) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,28) size 767x736
+            LayoutTableCell {TD} at (0,382) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
-            RenderTableCell {TD} at (12,28) size 755x736 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,28) size 755x736 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 747x20
                 RenderText {#text} at (0,0) size 184x19
                   text run at (0,0) width 184: "This sentence should be black."

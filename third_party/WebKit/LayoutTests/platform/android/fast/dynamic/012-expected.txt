@@ -32,77 +32,77 @@ layer at (0,0) size 800x600
           RenderText {#text} at (16,1) size 87x19
             text run at (16,1) width 87: " Block Three"
         RenderBlock {DIV} at (0,73) size 784x74
-          RenderTable {TABLE} at (0,0) size 784x74
-            RenderTableSection {TBODY} at (0,0) size 784x74
-              RenderTableRow {TR} at (0,2) size 784x22
-                RenderTableCell {TD} at (2,2) size 32x22 [r=0 c=0 rs=1 cs=1]
+          LayoutTable {TABLE} at (0,0) size 784x74
+            LayoutTableSection {TBODY} at (0,0) size 784x74
+              LayoutTableRow {TR} at (0,2) size 784x22
+                LayoutTableCell {TD} at (2,2) size 32x22 [r=0 c=0 rs=1 cs=1]
                   RenderText {#text} at (1,1) size 4x19
                     text run at (1,1) width 4: " "
-                RenderTableCell {TD} at (36,2) size 746x22 [r=0 c=1 rs=1 cs=1]
+                LayoutTableCell {TD} at (36,2) size 746x22 [r=0 c=1 rs=1 cs=1]
                   RenderText {#text} at (1,1) size 60x19
                     text run at (1,1) width 60: "This is the"
-              RenderTableRow {TR} at (0,26) size 784x22
-                RenderTableCell {TD} at (2,26) size 32x22 [r=1 c=0 rs=1 cs=1]
+              LayoutTableRow {TR} at (0,26) size 784x22
+                LayoutTableCell {TD} at (2,26) size 32x22 [r=1 c=0 rs=1 cs=1]
                   RenderText {#text} at (1,1) size 4x19
                     text run at (1,1) width 4: " "
-                RenderTableCell {TD} at (36,26) size 746x22 [r=1 c=1 rs=1 cs=1]
+                LayoutTableCell {TD} at (36,26) size 746x22 [r=1 c=1 rs=1 cs=1]
                   RenderText {#text} at (1,1) size 66x19
                     text run at (1,1) width 66: "contents of"
-              RenderTableRow {TR} at (0,50) size 784x22
-                RenderTableCell {TD} at (2,50) size 32x22 [r=2 c=0 rs=1 cs=1]
+              LayoutTableRow {TR} at (0,50) size 784x22
+                LayoutTableCell {TD} at (2,50) size 32x22 [r=2 c=0 rs=1 cs=1]
                   RenderText {#text} at (1,1) size 4x19
                     text run at (1,1) width 4: " "
-                RenderTableCell {TD} at (36,50) size 746x22 [r=2 c=1 rs=1 cs=1]
+                LayoutTableCell {TD} at (36,50) size 746x22 [r=2 c=1 rs=1 cs=1]
                   RenderText {#text} at (1,1) size 72x19
                     text run at (1,1) width 72: "block three."
         RenderBlock {HR} at (0,155) size 784x2 [border: (1px inset #EEEEEE)]
 hidden layer at (8,194) size 106x74
   RenderBlock (positioned) {DIV} at (8,193.91) size 106x74
-    RenderTable {TABLE} at (0,0) size 106x74
-      RenderTableSection {TBODY} at (0,0) size 106x74
-        RenderTableRow {TR} at (0,2) size 106x22
-          RenderTableCell {TD} at (2,2) size 32x22 [r=0 c=0 rs=1 cs=1]
+    LayoutTable {TABLE} at (0,0) size 106x74
+      LayoutTableSection {TBODY} at (0,0) size 106x74
+        LayoutTableRow {TR} at (0,2) size 106x22
+          LayoutTableCell {TD} at (2,2) size 32x22 [r=0 c=0 rs=1 cs=1]
             RenderText {#text} at (1,1) size 4x19
               text run at (1,1) width 4: " "
-          RenderTableCell {TD} at (36,2) size 68x22 [r=0 c=1 rs=1 cs=1]
+          LayoutTableCell {TD} at (36,2) size 68x22 [r=0 c=1 rs=1 cs=1]
             RenderText {#text} at (1,1) size 60x19
               text run at (1,1) width 60: "This is the"
-        RenderTableRow {TR} at (0,26) size 106x22
-          RenderTableCell {TD} at (2,26) size 32x22 [r=1 c=0 rs=1 cs=1]
+        LayoutTableRow {TR} at (0,26) size 106x22
+          LayoutTableCell {TD} at (2,26) size 32x22 [r=1 c=0 rs=1 cs=1]
             RenderText {#text} at (1,1) size 4x19
               text run at (1,1) width 4: " "
-          RenderTableCell {TD} at (36,26) size 68x22 [r=1 c=1 rs=1 cs=1]
+          LayoutTableCell {TD} at (36,26) size 68x22 [r=1 c=1 rs=1 cs=1]
             RenderText {#text} at (1,1) size 66x19
               text run at (1,1) width 66: "contents of"
-        RenderTableRow {TR} at (0,50) size 106x22
-          RenderTableCell {TD} at (2,50) size 32x22 [r=2 c=0 rs=1 cs=1]
+        LayoutTableRow {TR} at (0,50) size 106x22
+          LayoutTableCell {TD} at (2,50) size 32x22 [r=2 c=0 rs=1 cs=1]
             RenderText {#text} at (1,1) size 4x19
               text run at (1,1) width 4: " "
-          RenderTableCell {TD} at (36,50) size 68x22 [r=2 c=1 rs=1 cs=1]
+          LayoutTableCell {TD} at (36,50) size 68x22 [r=2 c=1 rs=1 cs=1]
             RenderText {#text} at (1,1) size 64x19
               text run at (1,1) width 64: "block one."
 hidden layer at (8,215) size 106x74
   RenderBlock (positioned) {DIV} at (8,214.91) size 106x74
-    RenderTable {TABLE} at (0,0) size 106x74
-      RenderTableSection {TBODY} at (0,0) size 106x74
-        RenderTableRow {TR} at (0,2) size 106x22
-          RenderTableCell {TD} at (2,2) size 32x22 [r=0 c=0 rs=1 cs=1]
+    LayoutTable {TABLE} at (0,0) size 106x74
+      LayoutTableSection {TBODY} at (0,0) size 106x74
+        LayoutTableRow {TR} at (0,2) size 106x22
+          LayoutTableCell {TD} at (2,2) size 32x22 [r=0 c=0 rs=1 cs=1]
             RenderText {#text} at (1,1) size 4x19
               text run at (1,1) width 4: " "
-          RenderTableCell {TD} at (36,2) size 68x22 [r=0 c=1 rs=1 cs=1]
+          LayoutTableCell {TD} at (36,2) size 68x22 [r=0 c=1 rs=1 cs=1]
             RenderText {#text} at (1,1) size 60x19
               text run at (1,1) width 60: "This is the"
-        RenderTableRow {TR} at (0,26) size 106x22
-          RenderTableCell {TD} at (2,26) size 32x22 [r=1 c=0 rs=1 cs=1]
+        LayoutTableRow {TR} at (0,26) size 106x22
+          LayoutTableCell {TD} at (2,26) size 32x22 [r=1 c=0 rs=1 cs=1]
             RenderText {#text} at (1,1) size 4x19
               text run at (1,1) width 4: " "
-          RenderTableCell {TD} at (36,26) size 68x22 [r=1 c=1 rs=1 cs=1]
+          LayoutTableCell {TD} at (36,26) size 68x22 [r=1 c=1 rs=1 cs=1]
             RenderText {#text} at (1,1) size 66x19
               text run at (1,1) width 66: "contents of"
-        RenderTableRow {TR} at (0,50) size 106x22
-          RenderTableCell {TD} at (2,50) size 32x22 [r=2 c=0 rs=1 cs=1]
+        LayoutTableRow {TR} at (0,50) size 106x22
+          LayoutTableCell {TD} at (2,50) size 32x22 [r=2 c=0 rs=1 cs=1]
             RenderText {#text} at (1,1) size 4x19
               text run at (1,1) width 4: " "
-          RenderTableCell {TD} at (36,50) size 68x22 [r=2 c=1 rs=1 cs=1]
+          LayoutTableCell {TD} at (36,50) size 68x22 [r=2 c=1 rs=1 cs=1]
             RenderText {#text} at (1,1) size 65x19
               text run at (1,1) width 65: "block two."

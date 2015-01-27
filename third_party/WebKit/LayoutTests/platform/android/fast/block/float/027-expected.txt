@@ -5,10 +5,10 @@ layer at (0,0) size 785x1432
     RenderBody {BODY} at (8,8) size 769x1416
       RenderBlock {DIV} at (0,0) size 769x200
         RenderBlock (floating) {DIV} at (0,0) size 200x200 [bgcolor=#FF0000]
-        RenderTable {TABLE} at (200,0) size 569x50 [border: (2px solid #008000)]
-          RenderTableSection {TBODY} at (2,2) size 565x46
-            RenderTableRow {TR} at (0,2) size 565x42
-              RenderTableCell {TD} at (2,2) size 561x42 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (200,0) size 569x50 [border: (2px solid #008000)]
+          LayoutTableSection {TBODY} at (2,2) size 565x46
+            LayoutTableRow {TR} at (0,2) size 565x42
+              LayoutTableCell {TD} at (2,2) size 561x42 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 546x39
                   text run at (1,1) width 546: "This is a table. It should sit on the same line as the float and wrap as needed to fit within the"
                   text run at (1,21) width 122: "remaining line width."
@@ -19,10 +19,10 @@ layer at (0,0) size 785x1432
         RenderBlock {HR} at (200,0) size 569x2 [border: (1px inset #EEEEEE)]
       RenderBlock {DIV} at (0,608) size 769x200
         RenderBlock (floating) {DIV} at (0,0) size 200x200 [bgcolor=#FF0000]
-        RenderTable {TABLE} at (200,0) size 384x50 [border: (2px solid #008000)]
-          RenderTableSection {TBODY} at (2,2) size 380x46
-            RenderTableRow {TR} at (0,2) size 380x42
-              RenderTableCell {TD} at (2,2) size 376x42 [r=0 c=0 rs=1 cs=1]
+        LayoutTable {TABLE} at (200,0) size 384x50 [border: (2px solid #008000)]
+          LayoutTableSection {TBODY} at (2,2) size 380x46
+            LayoutTableRow {TR} at (0,2) size 380x42
+              LayoutTableCell {TD} at (2,2) size 376x42 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (1,1) size 354x39
                   text run at (1,1) width 354: "This is a table. It should sit on the same line as the float and"
                   text run at (1,21) width 314: "wrap as needed to fit within the remaining line width."

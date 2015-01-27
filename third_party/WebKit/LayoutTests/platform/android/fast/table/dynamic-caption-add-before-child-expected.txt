@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x256
   RenderBlock {html} at (0,0) size 800x256
     RenderBody {body} at (8,8) size 784x240
-      RenderTable {table} at (0,0) size 73x240
+      LayoutTable {table} at (0,0) size 73x240
         RenderBlock {caption} at (0,0) size 73x80
           RenderText {#text} at (16,0) size 73x79
             text run at (16,0) width 41: "PASS:"
