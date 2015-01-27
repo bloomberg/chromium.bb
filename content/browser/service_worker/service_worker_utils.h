@@ -25,12 +25,19 @@ class ServiceWorkerUtils {
   // Returns true if |scope| matches |url|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
 
-  // Returns true if |scope| and |script_url| are satisfied with the
-  // ServiceWorker's path restriction.
+  // Returns true if the script at |script_url| is allowed to control |scope|
+  // according to Service Worker's path restriction policy. If
+  // |service_worker_allowed| is not null, it points to the
+  // Service-Worker-Allowed header value.
   CONTENT_EXPORT static bool IsPathRestrictionSatisfied(
       const GURL& scope,
       const GURL& script_url,
+      const std::string* service_worker_allowed_header_value,
       std::string* error_message);
+
+  static bool ContainsDisallowedCharacter(const GURL& scope,
+                                          const GURL& script_url,
+                                          std::string* error_message);
 };
 
 class CONTENT_EXPORT LongestScopeMatcher {

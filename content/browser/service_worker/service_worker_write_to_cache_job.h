@@ -93,6 +93,8 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   void OnResponseStarted(net::URLRequest* request) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
+  bool CheckPathRestriction(net::URLRequest* request);
+
   void AsyncNotifyDoneHelper(const net::URLRequestStatus& status,
                              const std::string& status_message);
 

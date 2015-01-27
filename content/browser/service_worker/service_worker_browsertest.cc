@@ -506,7 +506,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   }
 
   void SetUpRegistrationOnIOThread(const std::string& worker_url) {
-    const GURL pattern = embedded_test_server()->GetURL("/");
+    const GURL pattern = embedded_test_server()->GetURL("/service_worker/");
     registration_ = new ServiceWorkerRegistration(
         pattern,
         wrapper()->context()->storage()->NewRegistrationId(),
@@ -879,6 +879,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
   EXPECT_EQ(0, CountRenderProcessHosts());
 
   const std::string kWorkerUrl = "/service_worker/fetch_event.js";
+  const std::string kScope = "/service_worker/";
 
   // Unregistering nothing should return false.
   {
@@ -893,7 +894,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
   {
     base::RunLoop run_loop;
     public_context()->RegisterServiceWorker(
-        embedded_test_server()->GetURL("/"),
+        embedded_test_server()->GetURL(kScope),
         embedded_test_server()->GetURL("/does/not/exist"),
         base::Bind(&ExpectResultAndRun, false, run_loop.QuitClosure()));
     run_loop.Run();
@@ -904,7 +905,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
   {
     base::RunLoop run_loop;
     public_context()->RegisterServiceWorker(
-        embedded_test_server()->GetURL("/"),
+        embedded_test_server()->GetURL(kScope),
         embedded_test_server()->GetURL(kWorkerUrl),
         base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
     run_loop.Run();
@@ -916,7 +917,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
   {
     base::RunLoop run_loop;
     public_context()->RegisterServiceWorker(
-        embedded_test_server()->GetURL("/"),
+        embedded_test_server()->GetURL(kScope),
         embedded_test_server()->GetURL(kWorkerUrl),
         base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
     run_loop.Run();
@@ -930,7 +931,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
   {
     base::RunLoop run_loop;
     public_context()->UnregisterServiceWorker(
-        embedded_test_server()->GetURL("/"),
+        embedded_test_server()->GetURL(kScope),
         base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
     run_loop.Run();
   }

@@ -299,8 +299,8 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
   }
 
   std::string error_message;
-  if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
-          pattern, script_url, &error_message)) {
+  if (ServiceWorkerUtils::ContainsDisallowedCharacter(pattern, script_url,
+                                                      &error_message)) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
         base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +

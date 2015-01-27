@@ -13,7 +13,16 @@ bool IsPathRestrictionSatisfied(
     const GURL& scope, const GURL& script_url) {
   std::string error_message;
   return ServiceWorkerUtils::IsPathRestrictionSatisfied(
-      scope, script_url, &error_message);
+      scope, script_url, nullptr, &error_message);
+}
+
+bool IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+    const GURL& scope,
+    const GURL& script_url,
+    const std::string& service_worker_allowed) {
+  std::string error_message;
+  return ServiceWorkerUtils::IsPathRestrictionSatisfied(
+      scope, script_url, &service_worker_allowed, &error_message);
 }
 
 }  // namespace
@@ -355,6 +364,48 @@ TEST(ServiceWorkerUtilsTest, PathRestriction_DisallowedCharacter) {
   EXPECT_TRUE(IsPathRestrictionSatisfied(
       GURL("http://example.com/foo/bar?key\\value"),
       GURL("http://example.com/foo/sw.js?key%5cvalue")));
+}
+
+TEST(ServiceWorkerUtils, PathRestriction_ServiceWorkerAllowed) {
+  // Setting header to default max scope changes nothing.
+  EXPECT_TRUE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/"), GURL("http://example.com/sw.js"),
+      "http://example.com/"));
+  EXPECT_FALSE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/"), GURL("http://example.com/foo/sw.js"),
+      "http://example.com/foo/"));
+
+  // Using the header to widen allowed scope.
+  EXPECT_TRUE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/"), GURL("http://example.com/foo/sw.js"),
+      "http://example.com/"));
+  EXPECT_TRUE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/"), GURL("http://example.com/foo/sw.js"), "/"));
+  EXPECT_TRUE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/"), GURL("http://example.com/foo/sw.js"), ".."));
+  EXPECT_TRUE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/bar/"), GURL("http://example.com/foo/sw.js"),
+      "../b"));
+  EXPECT_FALSE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/bar/"), GURL("http://example.com/foo/sw.js"),
+      "../c"));
+
+  // Using the header to restrict allowed scope.
+  EXPECT_FALSE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/"), GURL("http://example.com/sw.js"),
+      "http://example.com/foo/"));
+  EXPECT_FALSE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/"), GURL("http://example.com/sw.js"), "foo"));
+  EXPECT_TRUE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/foo/"), GURL("http://example.com/sw.js"),
+      "foo"));
+
+  // Empty string resolves to max scope of "http://www.example.com/sw.js".
+  EXPECT_FALSE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/"), GURL("http://example.com/sw.js"), ""));
+  EXPECT_TRUE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/sw.js/hi"), GURL("http://example.com/sw.js"),
+      ""));
 }
 
 }  // namespace content

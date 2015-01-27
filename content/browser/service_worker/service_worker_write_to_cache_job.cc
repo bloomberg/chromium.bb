@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
+#include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -37,6 +38,8 @@ const char kClientAuthenticationError[] =
     "Client authentication was required to fetch the script.";
 const char kRedirectError[] =
     "The script resource is behind a redirect, which is disallowed.";
+const char kServiceWorkerAllowed[] = "Service-Worker-Allowed";
+
 }
 
 ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
@@ -396,7 +399,7 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
       return;
     }
   }
-  // To prevent most user-uploaded content from being used as a serviceworker.
+
   if (version_->script_url() == url_) {
     std::string mime_type;
     request->GetMimeType(&mime_type);
@@ -412,7 +415,11 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
                             error_message);
       return;
     }
+
+    if (!CheckPathRestriction(request))
+      return;
   }
+
   WriteHeadersToCache();
 }
 
@@ -442,6 +449,25 @@ void ServiceWorkerWriteToCacheJob::OnReadCompleted(
   did_notify_finished_ = true;
   SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
   NotifyReadComplete(0);
+}
+
+bool ServiceWorkerWriteToCacheJob::CheckPathRestriction(
+    net::URLRequest* request) {
+  std::string service_worker_allowed;
+  const net::HttpResponseHeaders* headers = request->response_headers();
+  bool has_header = headers->EnumerateHeader(nullptr, kServiceWorkerAllowed,
+                                             &service_worker_allowed);
+
+  std::string error_message;
+  if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
+          version_->scope(), url_,
+          has_header ? &service_worker_allowed : nullptr, &error_message)) {
+    AsyncNotifyDoneHelper(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                                net::ERR_INSECURE_RESPONSE),
+                          error_message);
+    return false;
+  }
+  return true;
 }
 
 void ServiceWorkerWriteToCacheJob::AsyncNotifyDoneHelper(
