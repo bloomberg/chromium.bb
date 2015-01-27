@@ -8,8 +8,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "content/public/browser/notification_service.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
@@ -1469,13 +1467,9 @@ TEST_F(SyncFaviconCacheTest, HistoryFullClear) {
   syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
   EXPECT_TRUE(changes.empty());
 
-  history::URLsDeletedDetails deletions;
-  deletions.all_history = true;
   EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
-  content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-        content::Source<Profile>(NULL),
-        content::Details<history::URLsDeletedDetails>(&deletions));
+  cache()->OnURLsDeleted(nullptr, true, false, history::URLRows(),
+                         std::set<GURL>());
   EXPECT_EQ(0U, GetFaviconCount());
   changes = processor()->GetAndResetChangeList();
   ASSERT_EQ(changes.size(), (unsigned long)kFaviconBatchSize*2);
@@ -1500,13 +1494,13 @@ TEST_F(SyncFaviconCacheTest, HistorySubsetClear) {
   syncer::SyncDataList initial_image_data, initial_tracking_data;
   std::vector<int> expected_icons;
   std::vector<syncer::SyncChange::SyncChangeType> expected_deletions;
-  history::URLsDeletedDetails deletions;
+  std::set<GURL> favicon_urls_to_delete;
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData test_data = BuildFaviconData(i);
     if (i < kFaviconBatchSize/2) {
       expected_icons.push_back(i);
       expected_deletions.push_back(syncer::SyncChange::ACTION_DELETE);
-      deletions.favicon_urls.insert(test_data.icon_url);
+      favicon_urls_to_delete.insert(test_data.icon_url);
     }
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(test_data,
@@ -1532,10 +1526,8 @@ TEST_F(SyncFaviconCacheTest, HistorySubsetClear) {
   EXPECT_TRUE(changes.empty());
 
   EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
-  content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-        content::Source<Profile>(NULL),
-        content::Details<history::URLsDeletedDetails>(&deletions));
+  cache()->OnURLsDeleted(nullptr, false, false, history::URLRows(),
+                         favicon_urls_to_delete);
   EXPECT_EQ((unsigned long)kFaviconBatchSize/2, GetFaviconCount());
   changes = processor()->GetAndResetChangeList();
   ASSERT_EQ(changes.size(), (unsigned long)kFaviconBatchSize);

@@ -14,8 +14,6 @@
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/history/core/browser/android/android_history_types.h"
 #include "components/history/core/browser/history_service_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class AndroidHistoryProviderService;
 class FaviconService;
@@ -31,7 +29,6 @@ class Statement;
 
 // This class implements the native methods of ChromeBrowserProvider.java
 class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
-                              public content::NotificationObserver,
                               public history::HistoryServiceObserver {
  public:
   ChromeBrowserProvider(JNIEnv* env, jobject obj);
@@ -193,17 +190,17 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
                     const history::URLRow& row,
                     const history::RedirectList& redirects,
                     base::Time visit_time) override;
+  void OnURLsDeleted(HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
   void OnKeywordSearchTermUpdated(HistoryService* history_service,
                                   const history::URLRow& row,
                                   history::KeywordID keyword_id,
                                   const base::string16& term) override;
   void OnKeywordSearchTermDeleted(HistoryService* history_service,
                                   history::URLID url_id) override;
-
-  // Override content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
 
   JavaObjectWeakGlobalRef weak_java_provider_;
 
@@ -221,8 +218,6 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  // Used to register/unregister notification observer.
-  content::NotificationRegistrar notification_registrar_;
   ScopedObserver<HistoryService, HistoryServiceObserver>
       history_service_observer_;
 

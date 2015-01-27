@@ -8,16 +8,17 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/web_history_service.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+class HistoryService;
 class ProfileSyncService;
 class SupervisedUserService;
 
@@ -27,7 +28,7 @@ class BookmarkModel;
 
 // The handler for Javascript messages related to the "history" view.
 class BrowsingHistoryHandler : public content::WebUIMessageHandler,
-                               public content::NotificationObserver {
+                               public history::HistoryServiceObserver {
  public:
   // Represents a history entry to be shown to the user, representing either
   // a local or remote visit. A single entry can represent multiple visits,
@@ -109,11 +110,6 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // Handler for "removeBookmark" message.
   void HandleRemoveBookmark(const base::ListValue* args);
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Merges duplicate entries from the query results, only retaining the most
   // recent visit to a URL on a particular day. That visit contains the
   // timestamps of the other visits.
@@ -173,7 +169,12 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // kAcceptLanguages pref value.
   std::string GetAcceptLanguages() const;
 
-  content::NotificationRegistrar registrar_;
+  // history::HistoryServiceObserver:
+  void OnURLsDeleted(HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
 
   // Tracker for search requests to the history service.
   base::CancelableTaskTracker query_task_tracker_;
@@ -202,6 +203,9 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   // Timer used to implement a timeout on a Web History response.
   base::OneShotTimer<BrowsingHistoryHandler> web_history_timer_;
+
+  ScopedObserver<HistoryService, HistoryServiceObserver>
+      history_service_observer_;
 
   base::WeakPtrFactory<BrowsingHistoryHandler> weak_factory_;
 

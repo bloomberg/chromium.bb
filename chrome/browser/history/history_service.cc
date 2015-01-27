@@ -30,9 +30,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_backend.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/top_sites.h"
@@ -58,7 +56,6 @@
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/notification_service.h"
 #include "sync/api/sync_error_factory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -131,12 +128,9 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
  public:
   BackendDelegate(
       const base::WeakPtr<HistoryService>& history_service,
-      const scoped_refptr<base::SequencedTaskRunner>& service_task_runner,
-      Profile* profile)
+      const scoped_refptr<base::SequencedTaskRunner>& service_task_runner)
       : history_service_(history_service),
-        service_task_runner_(service_task_runner),
-        profile_(profile) {
-  }
+        service_task_runner_(service_task_runner) {}
 
   void NotifyProfileError(sql::InitStatus init_status) override {
     // Send to the history service on the main thread.
@@ -184,10 +178,18 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 
   void NotifyURLsModified(const history::URLRows& changed_urls) override {
     service_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&HistoryService::NotifyURLsModified,
+                              history_service_, changed_urls));
+  }
+
+  void NotifyURLsDeleted(bool all_history,
+                         bool expired,
+                         const history::URLRows& deleted_rows,
+                         const std::set<GURL>& favicon_urls) override {
+    service_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&HistoryService::NotifyURLsModified,
-                   history_service_,
-                   changed_urls));
+        base::Bind(&HistoryService::NotifyURLsDeleted, history_service_,
+                   all_history, expired, deleted_rows, favicon_urls));
   }
 
   void NotifyKeywordSearchTermUpdated(const history::URLRow& row,
@@ -204,22 +206,6 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                               history_service_, url_id));
   }
 
-  void BroadcastNotifications(
-      int type,
-      scoped_ptr<history::HistoryDetails> details) override {
-    // Send the notification on the history thread.
-    if (content::NotificationService::current()) {
-      content::Details<history::HistoryDetails> det(details.get());
-      content::NotificationService::current()->Notify(
-          type, content::Source<Profile>(profile_), det);
-    }
-    // Send the notification to the history service on the main thread.
-    service_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&HistoryService::BroadcastNotificationsHelper,
-                   history_service_, type, base::Passed(&details)));
-  }
-
   void DBLoaded() override {
     service_task_runner_->PostTask(
         FROM_HERE,
@@ -229,7 +215,6 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
  private:
   const base::WeakPtr<HistoryService> history_service_;
   const scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
-  Profile* const profile_;
 };
 
 // The history thread is intentionally not a BrowserThread because the
@@ -254,8 +239,6 @@ HistoryService::HistoryService(history::HistoryClient* client, Profile* profile)
       no_db_(false),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                 content::Source<Profile>(profile_));
 }
 
 HistoryService::~HistoryService() {
@@ -955,42 +938,6 @@ void HistoryService::Cleanup() {
   delete thread;
 }
 
-void HistoryService::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!thread_)
-    return;
-
-  switch (type) {
-    case chrome::NOTIFICATION_HISTORY_URLS_DELETED: {
-      // Update the visited link system for deleted URLs. We will update the
-      // visited link system for added URLs as soon as we get the add
-      // notification (we don't have to wait for the backend, which allows us to
-      // be faster to update the state).
-      //
-      // For deleted URLs, we don't typically know what will be deleted since
-      // delete notifications are by time. We would also like to be more
-      // respectful of privacy and never tell the user something is gone when it
-      // isn't. Therefore, we update the delete URLs after the fact.
-      if (visitedlink_master_) {
-        content::Details<history::URLsDeletedDetails> deleted_details(details);
-
-        if (deleted_details->all_history) {
-          visitedlink_master_->DeleteAllURLs();
-        } else {
-          URLIteratorFromURLRows iterator(deleted_details->rows);
-          visitedlink_master_->DeleteURLs(&iterator);
-        }
-      }
-      break;
-    }
-
-    default:
-      NOTREACHED();
-  }
-}
-
 void HistoryService::RebuildTable(
     const scoped_refptr<URLEnumerator>& enumerator) {
   DCHECK(thread_) << "History service being called after cleanup";
@@ -1022,13 +969,10 @@ bool HistoryService::Init(
   }
 
   // Create the history backend.
-  scoped_refptr<HistoryBackend> backend(
-      new HistoryBackend(history_dir_,
-                         new BackendDelegate(
-                             weak_ptr_factory_.GetWeakPtr(),
-                             base::ThreadTaskRunnerHandle::Get(),
-                             profile_),
-                         history_client_));
+  scoped_refptr<HistoryBackend> backend(new HistoryBackend(
+      history_dir_, new BackendDelegate(weak_ptr_factory_.GetWeakPtr(),
+                                        base::ThreadTaskRunnerHandle::Get()),
+      history_client_));
   history_backend_.swap(backend);
 
   // There may not be a profile when unit testing.
@@ -1142,7 +1086,7 @@ void HistoryService::SetInMemoryBackend(
   in_memory_backend_.reset(mem_backend.release());
 
   // The database requires additional initialization once we own it.
-  in_memory_backend_->AttachToHistoryService(profile_, this);
+  in_memory_backend_->AttachToHistoryService(this);
 }
 
 void HistoryService::NotifyProfileError(sql::InitStatus init_status) {
@@ -1227,31 +1171,6 @@ void HistoryService::ExpireLocalAndRemoteHistoryBetween(
   ExpireHistoryBetween(restrict_urls, begin_time, end_time, callback, tracker);
 }
 
-void HistoryService::BroadcastNotificationsHelper(
-    int type,
-    scoped_ptr<history::HistoryDetails> details) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(evanm): this is currently necessitated by generate_profile, which
-  // runs without a browser process. generate_profile should really create
-  // a browser process, at which point this check can then be nuked.
-  if (!g_browser_process)
-    return;
-
-  if (!thread_)
-    return;
-
-  // The source of all of our notifications is the profile. Note that this
-  // pointer is NULL in unit tests.
-  content::Source<Profile> source(profile_);
-
-  // The details object just contains the pointer to the object that the
-  // backend has allocated for us. The receiver of the notification will cast
-  // this to the proper type.
-  content::Details<history::HistoryDetails> det(details.get());
-
-  content::NotificationService::current()->Notify(type, source, det);
-}
-
 void HistoryService::OnDBLoaded() {
   DCHECK(thread_checker_.CalledOnValidThread());
   backend_loaded_ = true;
@@ -1285,6 +1204,37 @@ void HistoryService::NotifyURLsModified(const history::URLRows& changed_urls) {
   FOR_EACH_OBSERVER(history::HistoryServiceObserver,
                     observers_,
                     OnURLsModified(this, changed_urls));
+}
+
+void HistoryService::NotifyURLsDeleted(bool all_history,
+                                       bool expired,
+                                       const history::URLRows& deleted_rows,
+                                       const std::set<GURL>& favicon_urls) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!thread_)
+    return;
+
+  // Update the visited link system for deleted URLs. We will update the
+  // visited link system for added URLs as soon as we get the add
+  // notification (we don't have to wait for the backend, which allows us to
+  // be faster to update the state).
+  //
+  // For deleted URLs, we don't typically know what will be deleted since
+  // delete notifications are by time. We would also like to be more
+  // respectful of privacy and never tell the user something is gone when it
+  // isn't. Therefore, we update the delete URLs after the fact.
+  if (visitedlink_master_) {
+    if (all_history) {
+      visitedlink_master_->DeleteAllURLs();
+    } else {
+      URLIteratorFromURLRows iterator(deleted_rows);
+      visitedlink_master_->DeleteURLs(&iterator);
+    }
+  }
+
+  FOR_EACH_OBSERVER(
+      history::HistoryServiceObserver, observers_,
+      OnURLsDeleted(this, all_history, expired, deleted_rows, favicon_urls));
 }
 
 void HistoryService::NotifyHistoryServiceLoaded() {

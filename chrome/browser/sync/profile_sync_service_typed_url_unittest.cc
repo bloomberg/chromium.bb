@@ -17,9 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_backend.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
@@ -355,6 +353,16 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     SendNotification(base::Bind(&HistoryBackendNotifier::NotifyURLsModified,
                                 base::Unretained(history_backend_.get()),
                                 rows));
+  }
+
+  void SendNotificationURLsDeleted(bool all_history,
+                                   bool expired,
+                                   const history::URLRows& deleted_rows,
+                                   const std::set<GURL>& favicon_urls) {
+    SendNotification(base::Bind(&HistoryBackendNotifier::NotifyURLsDeleted,
+                                base::Unretained(history_backend_.get()),
+                                all_history, expired, deleted_rows,
+                                favicon_urls));
   }
 
   static bool URLsEqual(history::URLRow& lhs, history::URLRow& rhs) {
@@ -841,15 +849,11 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
-  history::URLsDeletedDetails changes;
-  changes.all_history = false;
-  changes.rows.push_back(history::URLRow(GURL("http://mine.com")));
+  history::URLRows rows;
+  rows.push_back(history::URLRow(GURL("http://mine.com")));
   scoped_refptr<ThreadNotifier> notifier(
       new ThreadNotifier(history_thread_.get()));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                   content::Source<Profile>(profile_),
-                   content::Details<history::URLsDeletedDetails>(&changes));
-
+  SendNotificationURLsDeleted(false, false, rows, std::set<GURL>());
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(1U, new_sync_entries.size());
@@ -878,17 +882,12 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveExpired) {
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
-  history::URLsDeletedDetails changes;
-  changes.all_history = false;
   // Setting expired=true should cause the sync code to ignore this deletion.
-  changes.expired = true;
-  changes.rows.push_back(history::URLRow(GURL("http://mine.com")));
+  history::URLRows rows;
+  rows.push_back(history::URLRow(GURL("http://mine.com")));
   scoped_refptr<ThreadNotifier> notifier(
       new ThreadNotifier(history_thread_.get()));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                   content::Source<Profile>(profile_),
-                   content::Details<history::URLsDeletedDetails>(&changes));
-
+  SendNotificationURLsDeleted(false, true, rows, std::set<GURL>());
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   // Both URLs should still be there.
@@ -921,13 +920,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(2U, new_sync_entries.size());
 
-  history::URLsDeletedDetails changes;
-  changes.all_history = true;
   scoped_refptr<ThreadNotifier> notifier(
       new ThreadNotifier(history_thread_.get()));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                   content::Source<Profile>(profile_),
-                   content::Details<history::URLsDeletedDetails>(&changes));
+  SendNotificationURLsDeleted(true, false, history::URLRows(),
+                              std::set<GURL>());
 
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(0U, new_sync_entries.size());

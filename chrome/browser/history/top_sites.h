@@ -12,9 +12,9 @@
 #include "base/observer_list.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
 
@@ -30,6 +30,7 @@ class RefCountedMemory;
 namespace history {
 
 class TopSitesCache;
+class TopSitesObserver;
 
 // Interface for TopSites, which stores the data for the top "most visited"
 // sites. This includes a cache of the most visited data from history, as well

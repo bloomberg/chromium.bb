@@ -15,9 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_backend.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_url_index.h"
@@ -29,8 +27,6 @@
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/in_memory_url_index_types.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -113,9 +109,6 @@ class InMemoryURLIndexTest : public testing::Test {
   bool GetCacheFilePath(base::FilePath* file_path) const;
   void PostRestoreFromCacheFileTask();
   void PostSaveToCacheFileTask();
-  void Observe(int notification_type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details);
   const std::set<std::string>& scheme_whitelist();
 
 
@@ -174,13 +167,6 @@ void InMemoryURLIndexTest::PostRestoreFromCacheFileTask() {
 
 void InMemoryURLIndexTest::PostSaveToCacheFileTask() {
   url_index_->PostSaveToCacheFileTask();
-}
-
-void InMemoryURLIndexTest::Observe(
-    int notification_type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  url_index_->Observe(notification_type, source, details);
 }
 
 const std::set<std::string>& InMemoryURLIndexTest::scheme_whitelist() {
@@ -899,12 +885,10 @@ TEST_F(InMemoryURLIndexTest, ExpireRow) {
 
   // Determine the row id for the result, remember that id, broadcast a
   // delete notification, then ensure that the row has been deleted.
-  URLsDeletedDetails deleted_details;
-  deleted_details.all_history = false;
-  deleted_details.rows.push_back(matches[0].url_info);
-  Observe(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-          content::Source<InMemoryURLIndexTest>(this),
-          content::Details<history::HistoryDetails>(&deleted_details));
+  URLRows deleted_rows;
+  deleted_rows.push_back(matches[0].url_info);
+  url_index_->OnURLsDeleted(nullptr, false, false, deleted_rows,
+                            std::set<GURL>());
   EXPECT_TRUE(url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudgeReport"), base::string16::npos, kMaxMatches).empty());
 }

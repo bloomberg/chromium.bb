@@ -10,13 +10,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "components/history/core/browser/history_backend_observer.h"
 #include "components/sync_driver/data_type_error_handler.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_types.h"
 
 class Profile;
 
@@ -24,14 +22,8 @@ namespace base {
 class MessageLoop;
 }
 
-namespace content {
-class NotificationService;
-}
-
 namespace history {
 class HistoryBackend;
-struct URLsDeletedDetails;
-struct URLsModifiedDetails;
 class URLRow;
 };
 
@@ -43,7 +35,6 @@ class DataTypeErrorHandler;
 // applying them to the sync API 'syncable' model, and vice versa. All
 // operations and use of this class are from the UI thread.
 class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
-                                public content::NotificationObserver,
                                 public history::HistoryBackendObserver {
  public:
   TypedUrlChangeProcessor(Profile* profile,
@@ -51,21 +42,6 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
                           history::HistoryBackend* history_backend,
                           sync_driver::DataTypeErrorHandler* error_handler);
   ~TypedUrlChangeProcessor() override;
-
-  // content::NotificationObserver implementation.
-  // History -> sync API change application.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  // history::HistoryBackendObserver:
-  void OnURLVisited(history::HistoryBackend* history_backend,
-                    ui::PageTransition transition,
-                    const history::URLRow& row,
-                    const history::RedirectList& redirects,
-                    base::Time visit_time) override;
-  void OnURLsModified(history::HistoryBackend* history_backend,
-                      const history::URLRows& changed_urls) override;
 
   // sync API model -> WebDataService change application.
   void ApplyChangesFromSyncModel(
@@ -88,7 +64,19 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
   void StartObserving();
   void StopObserving();
 
-  void HandleURLsDeleted(history::URLsDeletedDetails* details);
+  // history::HistoryBackendObserver:
+  void OnURLVisited(history::HistoryBackend* history_backend,
+                    ui::PageTransition transition,
+                    const history::URLRow& row,
+                    const history::RedirectList& redirects,
+                    base::Time visit_time) override;
+  void OnURLsModified(history::HistoryBackend* history_backend,
+                      const history::URLRows& changed_urls) override;
+  void OnURLsDeleted(history::HistoryBackend* history_backend,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
 
   // Returns true if the caller should sync as a result of the passed visit
   // notification. We use this to throttle the number of sync changes we send
@@ -114,10 +102,6 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
   history::HistoryBackend* history_backend_;
   base::MessageLoop* backend_loop_;
 
-  content::NotificationRegistrar notification_registrar_;
-
-  scoped_ptr<content::NotificationService> notification_service_;
-
   // The set of pending changes that will be written out on the next
   // CommitChangesFromSyncModel() call.
   history::URLRows pending_new_urls_;
@@ -128,6 +112,9 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
 
   bool disconnected_;
   base::Lock disconnect_lock_;
+
+  ScopedObserver<history::HistoryBackend, history::HistoryBackendObserver>
+      history_backend_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlChangeProcessor);
 };

@@ -109,7 +109,6 @@ class ExpireHistoryTest : public testing::Test,
   // Time at the beginning of the test, so everybody agrees what "now" is.
   const Time now_;
 
-  // Details received from HistoryObserver events.
   typedef std::vector<URLRows> URLsModifiedNotificationList;
   URLsModifiedNotificationList urls_modified_notifications_;
 

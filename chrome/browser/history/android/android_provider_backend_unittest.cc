@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/chrome_history_client_factory.h"
 #include "chrome/browser/history/history_backend.h"
@@ -87,18 +86,16 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   void NotifyURLsModified(const history::URLRows& rows) override {
     modified_details_.reset(new history::URLRows(rows));
   }
+  void NotifyURLsDeleted(bool all_history,
+                         bool expired,
+                         const URLRows& deleted_rows,
+                         const std::set<GURL>& favicon_urls) override {
+    deleted_details_.reset(new history::URLRows(deleted_rows));
+  }
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                       KeywordID keyword_id,
                                       const base::string16& term) override {}
   void NotifyKeywordSearchTermDeleted(URLID url_id) override {}
-  void BroadcastNotifications(
-      int type,
-      scoped_ptr<HistoryDetails> details) override {
-    DCHECK_EQ(type, chrome::NOTIFICATION_HISTORY_URLS_DELETED);
-    scoped_ptr<URLsDeletedDetails> urls_deleted_details(
-        static_cast<URLsDeletedDetails*>(details.release()));
-    deleted_details_.reset(new history::URLRows(urls_deleted_details->rows));
-  }
   void DBLoaded() override {}
 
   history::URLRows* deleted_details() const { return deleted_details_.get(); }

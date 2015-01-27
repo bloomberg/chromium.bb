@@ -228,13 +228,7 @@ enum NotificationType {
   // the LoginHandler that should be cancelled.
   NOTIFICATION_AUTH_CANCELLED,
 
-  // History -----------------------------------------------------------------
-
-  // Sent when one or more URLs are deleted.
-  //
-  // The source is the profile owning the history service that changed, and
-  // the details is history::URLsDeletedDetails that lists the deleted URLs.
-  NOTIFICATION_HISTORY_URLS_DELETED,
+  // Favicon ------------------------------------------------------------------
 
   // Sent by FaviconTabHelper when a tab's favicon has been successfully
   // updated. The details are a bool indicating whether the

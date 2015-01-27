@@ -43,7 +43,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_backend.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/common/chrome_constants.h"
@@ -108,12 +107,14 @@ class BackendDelegate : public HistoryBackend::Delegate {
                         const RedirectList& redirects,
                         base::Time visit_time) override {}
   void NotifyURLsModified(const URLRows& changed_urls) override {}
+  void NotifyURLsDeleted(bool all_history,
+                         bool expired,
+                         const URLRows& deleted_rows,
+                         const std::set<GURL>& favicon_urls) override {}
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                       KeywordID keyword_id,
                                       const base::string16& term) override {}
   void NotifyKeywordSearchTermDeleted(URLID url_id) override {}
-  void BroadcastNotifications(int type,
-                              scoped_ptr<HistoryDetails> details) override;
   void DBLoaded() override {}
 
  private:
@@ -232,16 +233,6 @@ void BackendDelegate::SetInMemoryBackend(
   // Save the in-memory backend to the history test object, this happens
   // synchronously, so we don't have to do anything fancy.
   history_test_->in_mem_backend_.swap(backend);
-}
-
-void BackendDelegate::BroadcastNotifications(
-    int type,
-    scoped_ptr<HistoryDetails> details) {
-  // Currently, just send the notifications directly to the in-memory database.
-  // We may want do do something more fancy in the future.
-  content::Details<HistoryDetails> det(details.get());
-  history_test_->in_mem_backend_->Observe(type,
-      content::Source<HistoryBackendDBTest>(NULL), det);
 }
 
 TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {

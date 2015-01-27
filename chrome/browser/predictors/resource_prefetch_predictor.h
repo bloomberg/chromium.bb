@@ -22,17 +22,11 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
 class PredictorsHandler;
 class Profile;
-
-namespace content {
-class WebContents;
-}
 
 namespace net {
 class URLRequest;
@@ -76,7 +70,6 @@ class ResourcePrefetcherManager;
 // with main frame.
 class ResourcePrefetchPredictor
     : public KeyedService,
-      public content::NotificationObserver,
       public history::HistoryServiceObserver,
       public base::SupportsWeakPtr<ResourcePrefetchPredictor> {
  public:
@@ -186,11 +179,6 @@ class ResourcePrefetchPredictor
   // Returns true if the request (should have a response in it) is cacheable.
   static bool IsCacheable(const net::URLRequest* request);
 
-  // content::NotificationObserver methods override.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // KeyedService methods override.
   void Shutdown() override;
 
@@ -297,6 +285,11 @@ class ResourcePrefetchPredictor
       size_t max_assumed_prefetched) const;
 
   // history::HistoryServiceObserver:
+  void OnURLsDeleted(HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
   void OnHistoryServiceLoaded(HistoryService* history_service) override;
 
   // Used to connect to HistoryService or register for service loaded
@@ -313,7 +306,6 @@ class ResourcePrefetchPredictor
   InitializationState initialization_state_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
   scoped_refptr<ResourcePrefetcherManager> prefetch_manager_;
-  content::NotificationRegistrar notification_registrar_;
   base::CancelableTaskTracker history_lookup_consumer_;
 
   // Map of all the navigations in flight to their resource requests.

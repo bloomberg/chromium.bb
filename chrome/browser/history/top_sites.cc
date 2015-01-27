@@ -9,6 +9,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "grit/theme_resources.h"
 
 namespace history {

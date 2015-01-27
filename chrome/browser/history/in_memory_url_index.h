@@ -23,9 +23,6 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/history/core/browser/in_memory_url_index_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "sql/connection.h"
 
 class HistoryService;
@@ -47,8 +44,6 @@ namespace imui = in_memory_url_index;
 class HistoryClient;
 class HistoryDatabase;
 class URLIndexPrivateData;
-struct URLsDeletedDetails;
-struct URLsModifiedDetails;
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
@@ -70,7 +65,6 @@ struct URLsModifiedDetails;
 // is being searched on and which character occurs as the second char16 of a
 // multi-char16 instance.
 class InMemoryURLIndex : public HistoryServiceObserver,
-                         public content::NotificationObserver,
                          public base::SupportsWeakPtr<InMemoryURLIndex> {
  public:
   // Defines an abstract class which is notified upon completion of restoring
@@ -151,6 +145,7 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
   friend class InMemoryURLIndexCacheTest;
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, ExpireRow);
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
 
   // Creating one of me without a history path is not allowed (tests excepted).
@@ -235,11 +230,6 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   // |succeeded| is true on a successful save.
   void OnCacheSaveDone(bool succeeded);
 
-  // Handles notifications of history changes.
-  void Observe(int notification_type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // HistoryServiceObserver:
   void OnURLVisited(HistoryService* history_service,
                     ui::PageTransition transition,
@@ -248,10 +238,12 @@ class InMemoryURLIndex : public HistoryServiceObserver,
                     base::Time visit_time) override;
   void OnURLsModified(HistoryService* history_service,
                       const URLRows& changed_urls) override;
+  void OnURLsDeleted(HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
   void OnHistoryServiceLoaded(HistoryService* history_service) override;
-
-  // Notification handlers.
-  void OnURLsDeleted(const URLsDeletedDetails* details);
 
   // Sets the directory wherein the cache file will be maintained.
   // For unit test usage only.
@@ -298,7 +290,6 @@ class InMemoryURLIndex : public HistoryServiceObserver,
 
   base::CancelableTaskTracker private_data_tracker_;
   base::CancelableTaskTracker cache_reader_tracker_;
-  content::NotificationRegistrar registrar_;
 
   // Set to true once the shutdown process has begun.
   bool shutdown_;

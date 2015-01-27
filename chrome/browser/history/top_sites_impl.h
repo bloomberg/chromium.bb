@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_backend.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/common/thumbnail_score.h"
@@ -46,7 +48,7 @@ class TopSitesImplTest;
 // thread. All other methods must be invoked on the UI thread. All mutations
 // to internal state happen on the UI thread and are scheduled to update the
 // db using TopSitesBackend.
-class TopSitesImpl : public TopSites {
+class TopSitesImpl : public TopSites, public HistoryServiceObserver {
  public:
   explicit TopSitesImpl(Profile* profile);
 
@@ -210,6 +212,14 @@ class TopSitesImpl : public TopSites {
   // Called when history service returns a list of top URLs.
   void OnTopSitesAvailableFromHistory(const MostVisitedURLList* data);
 
+  // history::HistoryServiceObserver:
+  void OnURLsDeleted(HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
+  void HistoryServiceBeingDeleted(HistoryService* history_service) override;
+
   scoped_refptr<TopSitesBackend> backend_;
 
   // The top sites data.
@@ -256,6 +266,9 @@ class TopSitesImpl : public TopSites {
 
   // Are we loaded?
   bool loaded_;
+
+  ScopedObserver<HistoryService, HistoryServiceObserver>
+      history_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesImpl);
 };

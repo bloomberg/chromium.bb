@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
@@ -125,11 +124,10 @@ void AutocompleteActionPredictor::RegisterTransitionalMatches(
                                             transitional_match);
   }
 
-  for (AutocompleteResult::const_iterator i(result.begin()); i != result.end();
-       ++i) {
+  for (const auto& i : result) {
     if (std::find(match_it->urls.begin(), match_it->urls.end(),
-                  i->destination_url) == match_it->urls.end()) {
-      match_it->urls.push_back(i->destination_url);
+                  i.destination_url) == match_it->urls.end()) {
+      match_it->urls.push_back(i.destination_url);
     }
   }
 }
@@ -231,19 +229,6 @@ void AutocompleteActionPredictor::Observe(
           content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
           content::NotificationService::AllSources());
       break;
-
-    case chrome::NOTIFICATION_HISTORY_URLS_DELETED: {
-      DCHECK(initialized_);
-      const content::Details<const history::URLsDeletedDetails>
-          urls_deleted_details =
-              content::Details<const history::URLsDeletedDetails>(details);
-      if (urls_deleted_details->all_history)
-        DeleteAllRows();
-      else
-        DeleteRowsWithURLs(urls_deleted_details->rows);
-      break;
-    }
-
     case chrome::NOTIFICATION_OMNIBOX_OPENED_URL: {
       DCHECK(initialized_);
 
@@ -557,8 +542,6 @@ void AutocompleteActionPredictor::FinishInitialization() {
   // opens the non-incognito history (and lets users delete from there).
   notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                               content::Source<Profile>(profile_));
-  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-      content::Source<Profile>(profile_->GetOriginalProfile()));
   initialized_ = true;
 }
 
@@ -592,6 +575,21 @@ double AutocompleteActionPredictor::CalculateConfidenceForDbEntry(
 
 void AutocompleteActionPredictor::Shutdown() {
   history_service_observer_.RemoveAll();
+}
+
+void AutocompleteActionPredictor::OnURLsDeleted(
+    HistoryService* history_service,
+    bool all_history,
+    bool expired,
+    const history::URLRows& deleted_rows,
+    const std::set<GURL>& favicon_urls) {
+  if (!initialized_)
+    return;
+
+  if (all_history)
+    DeleteAllRows();
+  else
+    DeleteRowsWithURLs(deleted_rows);
 }
 
 void AutocompleteActionPredictor::OnHistoryServiceLoaded(

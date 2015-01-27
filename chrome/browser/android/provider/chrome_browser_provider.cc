@@ -23,7 +23,6 @@
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
@@ -39,7 +38,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "jni/ChromeBrowserProvider_jni.h"
 #include "sql/statement.h"
 #include "ui/base/layout.h"
@@ -1172,12 +1170,10 @@ ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
       profile_, ServiceAccessType::EXPLICIT_ACCESS),
   service_.reset(new AndroidHistoryProviderService(profile_));
 
-  // Registers the notifications we are interested.
+  // Register as observer for service we are interested.
   bookmark_model_->AddObserver(this);
   history_service_observer_.Add(HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS));
-  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                              content::NotificationService::AllSources());
   TemplateURLService* template_service =
         TemplateURLServiceFactory::GetForProfile(profile_);
   if (!template_service->loaded())
@@ -1189,6 +1185,7 @@ ChromeBrowserProvider::~ChromeBrowserProvider() {
 }
 
 void ChromeBrowserProvider::Destroy(JNIEnv*, jobject) {
+  history_service_observer_.RemoveAll();
   delete this;
 }
 
@@ -1625,6 +1622,14 @@ void ChromeBrowserProvider::OnURLVisited(HistoryService* history_service,
   OnHistoryChanged();
 }
 
+void ChromeBrowserProvider::OnURLsDeleted(HistoryService* history_service,
+                                          bool all_history,
+                                          bool expired,
+                                          const history::URLRows& deleted_rows,
+                                          const std::set<GURL>& favicon_urls) {
+  OnHistoryChanged();
+}
+
 void ChromeBrowserProvider::OnKeywordSearchTermUpdated(
     HistoryService* history_service,
     const history::URLRow& row,
@@ -1639,12 +1644,5 @@ void ChromeBrowserProvider::OnKeywordSearchTermUpdated(
 
 void ChromeBrowserProvider::OnKeywordSearchTermDeleted(
     HistoryService* history_service,
-    history::URLID url_id) {}
-
-void ChromeBrowserProvider::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_HISTORY_URLS_DELETED);
-  OnHistoryChanged();
+    history::URLID url_id) {
 }

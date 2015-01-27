@@ -20,9 +20,7 @@
 #import "chrome/browser/ui/cocoa/main_menu_item.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/sessions/session_id.h"
-#include "content/public/browser/notification_observer.h"
 
-class NotificationRegistrar;
 class PageUsageData;
 class Profile;
 class TabRestoreService;
@@ -58,8 +56,7 @@ struct FaviconImageResult;
 // unlike the typical ownership model, this bridge owns its controller. The
 // controller is very thin and only exists to interact with Cocoa, but this
 // class does the bulk of the work.
-class HistoryMenuBridge : public content::NotificationObserver,
-                          public TabRestoreServiceObserver,
+class HistoryMenuBridge : public TabRestoreServiceObserver,
                           public MainMenuItem,
                           public history::HistoryServiceObserver {
  public:
@@ -129,11 +126,6 @@ class HistoryMenuBridge : public content::NotificationObserver,
   explicit HistoryMenuBridge(Profile* profile);
   ~HistoryMenuBridge() override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // TabRestoreServiceObserver:
   void TabRestoreServiceChanged(TabRestoreService* service) override;
   void TabRestoreServiceDestroyed(TabRestoreService* service) override;
@@ -141,16 +133,6 @@ class HistoryMenuBridge : public content::NotificationObserver,
   // MainMenuItem:
   void ResetMenu() override;
   void BuildMenu() override;
-
-  // history::HistoryServiceObserver:
-  void OnURLVisited(HistoryService* history_service,
-                    ui::PageTransition transition,
-                    const history::URLRow& row,
-                    const history::RedirectList& redirects,
-                    base::Time visit_time) override;
-  void OnURLsModified(HistoryService* history_service,
-                      const history::URLRows& changed_urls) override;
-  void OnHistoryServiceLoaded(HistoryService* service) override;
 
   // Looks up an NSMenuItem in the |menu_item_map_| and returns the
   // corresponding HistoryItem.
@@ -219,13 +201,27 @@ class HistoryMenuBridge : public content::NotificationObserver,
   friend class ::HistoryMenuBridgeTest;
   friend class HistoryMenuCocoaControllerTest;
 
+  // history::HistoryServiceObserver:
+  void OnURLVisited(HistoryService* history_service,
+                    ui::PageTransition transition,
+                    const history::URLRow& row,
+                    const history::RedirectList& redirects,
+                    base::Time visit_time) override;
+  void OnURLsModified(HistoryService* history_service,
+                      const history::URLRows& changed_urls) override;
+  void OnURLsDeleted(HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
+  void OnHistoryServiceLoaded(HistoryService* service) override;
+
   base::scoped_nsobject<HistoryMenuCocoaController> controller_;  // strong
 
   Profile* profile_;  // weak
   HistoryService* history_service_;  // weak
   TabRestoreService* tab_restore_service_;  // weak
 
-  content::NotificationRegistrar registrar_;
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Mapping of NSMenuItems to HistoryItems. This owns the HistoryItems until

@@ -7,8 +7,6 @@
 #include "base/debug/trace_event.h"
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_index_private_data.h"
@@ -16,9 +14,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/url_database.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 
 using in_memory_url_index::InMemoryURLIndexCacheItem;
 
@@ -104,11 +99,7 @@ InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
       needs_to_be_cached_(false),
       history_service_observer_(this) {
   InitializeSchemeWhitelist(&scheme_whitelist_);
-  if (profile) {
-    // TODO(mrossetti): Register for language change notifications.
-    content::Source<Profile> source(profile);
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
-  }
+  // TODO(mrossetti): Register for language change notifications.
   if (history_service_)
     history_service_observer_.Add(history_service_);
 }
@@ -140,7 +131,6 @@ void InMemoryURLIndex::Init() {
 
 void InMemoryURLIndex::ShutDown() {
   history_service_observer_.RemoveAll();
-  registrar_.RemoveAll();
   cache_reader_tracker_.TryCancelAll();
   shutdown_ = true;
   base::FilePath path;
@@ -182,21 +172,6 @@ void InMemoryURLIndex::DeleteURL(const GURL& url) {
   private_data_->DeleteURL(url);
 }
 
-void InMemoryURLIndex::Observe(int notification_type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  switch (notification_type) {
-    case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
-      OnURLsDeleted(
-          content::Details<history::URLsDeletedDetails>(details).ptr());
-      break;
-    default:
-      // For simplicity, the unit tests send us all notifications, even when
-      // we haven't registered for them, so don't assert here.
-      break;
-  }
-}
-
 void InMemoryURLIndex::OnURLVisited(HistoryService* history_service,
                                     ui::PageTransition transition,
                                     const URLRow& row,
@@ -222,18 +197,17 @@ void InMemoryURLIndex::OnURLsModified(HistoryService* history_service,
   }
 }
 
-void InMemoryURLIndex::OnHistoryServiceLoaded(HistoryService* history_service) {
-  ScheduleRebuildFromHistory();
-}
-
-void InMemoryURLIndex::OnURLsDeleted(const URLsDeletedDetails* details) {
-  if (details->all_history) {
+void InMemoryURLIndex::OnURLsDeleted(HistoryService* history_service,
+                                     bool all_history,
+                                     bool expired,
+                                     const URLRows& deleted_rows,
+                                     const std::set<GURL>& favicon_urls) {
+  if (all_history) {
     ClearPrivateData();
     needs_to_be_cached_ = true;
   } else {
-    for (URLRows::const_iterator row = details->rows.begin();
-         row != details->rows.end(); ++row)
-      needs_to_be_cached_ |= private_data_->DeleteURL(row->url());
+    for (const auto& row : deleted_rows)
+      needs_to_be_cached_ |= private_data_->DeleteURL(row.url());
   }
   // If we made changes, destroy the previous cache.  Otherwise, if we go
   // through an unclean shutdown (and therefore fail to write a new cache file),
@@ -254,6 +228,10 @@ void InMemoryURLIndex::OnURLsDeleted(const URLsDeletedDetails* details) {
     content::BrowserThread::PostBlockingPoolTask(
         FROM_HERE, base::Bind(DeleteCacheFile, path));
   }
+}
+
+void InMemoryURLIndex::OnHistoryServiceLoaded(HistoryService* history_service) {
+  ScheduleRebuildFromHistory();
 }
 
 // Restoring from Cache --------------------------------------------------------

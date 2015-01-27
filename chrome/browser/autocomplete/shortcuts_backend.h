@@ -14,10 +14,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/shortcuts_database.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "content/public/browser/notification_observer.h"
@@ -33,7 +35,8 @@ class ShortcutsDatabase;
 // This class manages the shortcut provider backend - access to database on the
 // db thread, etc.
 class ShortcutsBackend : public RefcountedKeyedService,
-                         public content::NotificationObserver {
+                         public content::NotificationObserver,
+                         public history::HistoryServiceObserver {
  public:
   typedef std::multimap<base::string16,
                         const history::ShortcutsDatabase::Shortcut> ShortcutMap;
@@ -104,6 +107,13 @@ class ShortcutsBackend : public RefcountedKeyedService,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // history::HistoryServiceObserver:
+  void OnURLsDeleted(HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
+
   // Internal initialization of the back-end. Posted by Init() to the DB thread.
   // On completion posts InitCompleted() back to UI thread.
   void InitInternal();
@@ -144,6 +154,8 @@ class ShortcutsBackend : public RefcountedKeyedService,
   GuidMap guid_map_;
 
   content::NotificationRegistrar notification_registrar_;
+  ScopedObserver<HistoryService, HistoryServiceObserver>
+      history_service_observer_;
 
   // For some unit-test only.
   bool no_db_access_;

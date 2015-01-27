@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_backend.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -101,13 +100,12 @@ TopSitesImpl::TopSitesImpl(Profile* profile)
       thread_safe_cache_(new TopSitesCache()),
       profile_(profile),
       last_num_urls_changed_(0),
-      loaded_(false) {
+      loaded_(false),
+      history_service_observer_(this) {
   if (!profile_)
     return;
 
   if (content::NotificationService::current()) {
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                   content::Source<Profile>(profile_));
     // Listen for any nav commits. We'll ignore those not related to this
     // profile when we get the notification.
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -739,34 +737,10 @@ base::TimeDelta TopSitesImpl::GetUpdateDelay() {
 void TopSitesImpl::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
+  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
   if (!loaded_)
     return;
 
-  if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
-    content::Details<history::URLsDeletedDetails> deleted_details(details);
-    if (deleted_details->all_history) {
-      SetTopSites(MostVisitedURLList());
-      backend_->ResetDatabase();
-    } else {
-      std::set<size_t> indices_to_delete;  // Indices into top_sites_.
-      for (URLRows::const_iterator i = deleted_details->rows.begin();
-           i != deleted_details->rows.end(); ++i) {
-        if (cache_->IsKnownURL(i->url()))
-          indices_to_delete.insert(cache_->GetURLIndex(i->url()));
-      }
-
-      if (indices_to_delete.empty())
-        return;
-
-      MostVisitedURLList new_top_sites(cache_->top_sites());
-      for (std::set<size_t>::reverse_iterator i = indices_to_delete.rbegin();
-           i != indices_to_delete.rend(); i++) {
-        new_top_sites.erase(new_top_sites.begin() + *i);
-      }
-      SetTopSites(new_top_sites);
-    }
-    StartQueryForMostVisited();
-  } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
     Profile* profile = Profile::FromBrowserContext(
@@ -783,7 +757,6 @@ void TopSitesImpl::Observe(int type,
         RestartQueryForTopSitesTimer(GetUpdateDelay());
       }
     }
-  }
 }
 
 void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites) {
@@ -874,6 +847,12 @@ void TopSitesImpl::MoveStateToLoaded() {
   for (size_t i = 0; i < pending_callbacks.size(); i++)
     pending_callbacks[i].Run(filtered_urls_all, filtered_urls_nonforced);
 
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  // |hs| may be null during unit tests.
+  if (hs)
+    history_service_observer_.Add(hs);
+
   NotifyTopSitesLoaded();
 }
 
@@ -923,6 +902,41 @@ void TopSitesImpl::OnTopSitesAvailableFromHistory(
     const MostVisitedURLList* pages) {
   DCHECK(pages);
   SetTopSites(*pages);
+}
+
+void TopSitesImpl::OnURLsDeleted(HistoryService* history_service,
+                                 bool all_history,
+                                 bool expired,
+                                 const URLRows& deleted_rows,
+                                 const std::set<GURL>& favicon_urls) {
+  if (!loaded_)
+    return;
+
+  if (all_history) {
+    SetTopSites(MostVisitedURLList());
+    backend_->ResetDatabase();
+  } else {
+    std::set<size_t> indices_to_delete;  // Indices into top_sites_.
+    for (const auto& row : deleted_rows) {
+      if (cache_->IsKnownURL(row.url()))
+        indices_to_delete.insert(cache_->GetURLIndex(row.url()));
+    }
+
+    if (indices_to_delete.empty())
+      return;
+
+    MostVisitedURLList new_top_sites(cache_->top_sites());
+    for (std::set<size_t>::reverse_iterator i = indices_to_delete.rbegin();
+         i != indices_to_delete.rend(); i++) {
+      new_top_sites.erase(new_top_sites.begin() + *i);
+    }
+    SetTopSites(new_top_sites);
+  }
+  StartQueryForMostVisited();
+}
+
+void TopSitesImpl::HistoryServiceBeingDeleted(HistoryService* history_service) {
+  history_service_observer_.Remove(history_service);
 }
 
 }  // namespace history

@@ -22,7 +22,7 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -44,8 +44,6 @@
 #include "components/search/search.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/device_info.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -418,6 +416,7 @@ bool BrowsingHistoryHandler::HistoryEntry::SortByTimeDescending(
 
 BrowsingHistoryHandler::BrowsingHistoryHandler()
     : has_pending_delete_request_(false),
+      history_service_observer_(this),
       weak_factory_(this) {
 }
 
@@ -433,8 +432,10 @@ void BrowsingHistoryHandler::RegisterMessages() {
       profile, new FaviconSource(profile, FaviconSource::ANY));
 
   // Get notifications when history is cleared.
-  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-      content::Source<Profile>(profile->GetOriginalProfile()));
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  if (hs)
+    history_service_observer_.Add(hs);
 
   web_ui()->RegisterMessageCallback("queryHistory",
       base::Bind(&BrowsingHistoryHandler::HandleQueryHistory,
@@ -987,32 +988,25 @@ static bool DeletionsDiffer(const history::URLRows& deleted_rows,
                             const std::set<GURL>& urls_to_be_deleted) {
   if (deleted_rows.size() != urls_to_be_deleted.size())
     return true;
-  for (history::URLRows::const_iterator i = deleted_rows.begin();
-       i != deleted_rows.end(); ++i) {
-    if (urls_to_be_deleted.find(i->url()) == urls_to_be_deleted.end())
+  for (const auto& i : deleted_rows) {
+    if (urls_to_be_deleted.find(i.url()) == urls_to_be_deleted.end())
       return true;
   }
   return false;
 }
 
-void BrowsingHistoryHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type != chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
-    NOTREACHED();
-    return;
-  }
-  history::URLsDeletedDetails* deletedDetails =
-      content::Details<history::URLsDeletedDetails>(details).ptr();
-  if (deletedDetails->all_history ||
-      DeletionsDiffer(deletedDetails->rows, urls_to_be_deleted_))
-    web_ui()->CallJavascriptFunction("historyDeleted");
-}
-
 std::string BrowsingHistoryHandler::GetAcceptLanguages() const {
   Profile* profile = Profile::FromWebUI(web_ui());
   return profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+}
+
+void BrowsingHistoryHandler::OnURLsDeleted(HistoryService* history_service,
+                                           bool all_history,
+                                           bool expired,
+                                           const history::URLRows& deleted_rows,
+                                           const std::set<GURL>& favicon_urls) {
+  if (all_history || DeletionsDiffer(deleted_rows, urls_to_be_deleted_))
+    web_ui()->CallJavascriptFunction("historyDeleted");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

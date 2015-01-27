@@ -31,8 +31,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "content/public/browser/download_manager_delegate.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "sql/init_status.h"
 #include "sync/api/syncable_service.h"
 #include "ui/base/page_transition_types.h"
@@ -74,7 +72,6 @@ class URLDatabase;
 class VisitFilter;
 struct DownloadRow;
 struct HistoryAddPageArgs;
-struct HistoryDetails;
 struct KeywordSearchTermVisit;
 
 }  // namespace history
@@ -84,8 +81,7 @@ struct KeywordSearchTermVisit;
 //
 // This service is thread safe. Each request callback is invoked in the
 // thread that made the request.
-class HistoryService : public content::NotificationObserver,
-                       public syncer::SyncableService,
+class HistoryService : public syncer::SyncableService,
                        public KeyedService,
                        public visitedlink::VisitedLinkDelegate {
  public:
@@ -557,11 +553,6 @@ class HistoryService : public content::NotificationObserver,
   // still in memory (pending requests may be holding a reference to us).
   void Cleanup();
 
-  // Implementation of content::NotificationObserver.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Implementation of visitedlink::VisitedLinkDelegate.
   void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) override;
 
@@ -575,12 +566,6 @@ class HistoryService : public content::NotificationObserver,
   // database so it can query. See history_autocomplete.cc for a diagram.
   void ScheduleAutocomplete(const base::Callback<
       void(history::HistoryBackend*, history::URLDatabase*)>& callback);
-
-  // Broadcasts the given notification. This is called by the backend so that
-  // the notification will be broadcast on the main thread.
-  void BroadcastNotificationsHelper(
-      int type,
-      scoped_ptr<history::HistoryDetails> details);
 
   // Notification from the backend that it has finished loading. Sends
   // notification (NOTIFY_HISTORY_LOADED) and sets backend_loaded_ to true.
@@ -611,11 +596,24 @@ class HistoryService : public content::NotificationObserver,
   // modified. |changed_urls| contains the list of affects URLs.
   void NotifyURLsModified(const history::URLRows& changed_urls);
 
+  // Notify all HistoryServiceObservers registered that URLs have been deleted.
+  // |all_history| is set to true, if all the URLs are deleted.
+  //               When set to true, |deleted_rows| and |favicon_urls| are
+  //               undefined.
+  // |expired| is set to true, if the URL deletion is due to expiration.
+  // |deleted_rows| list of the deleted URLs.
+  // |favicon_urls| list of favicon URLs that correspond to the deleted URLs.
+  void NotifyURLsDeleted(bool all_history,
+                         bool expired,
+                         const history::URLRows& deleted_rows,
+                         const std::set<GURL>& favicon_urls);
+
   // Notify all HistoryServiceObservers registered that the
   // HistoryService has finished loading.
   void NotifyHistoryServiceLoaded();
 
-  // HistoryService is being deleted.
+  // Notify all HistoryServiceObservers registered that HistoryService is being
+  // deleted.
   void NotifyHistoryServiceBeingDeleted();
 
   // Notify all HistoryServiceObservers registered that a keyword search term
@@ -868,8 +866,6 @@ class HistoryService : public content::NotificationObserver,
   }
 
   base::ThreadChecker thread_checker_;
-
-  content::NotificationRegistrar registrar_;
 
   // The thread used by the history service to run complicated operations.
   // |thread_| is NULL once |Cleanup| is NULL.

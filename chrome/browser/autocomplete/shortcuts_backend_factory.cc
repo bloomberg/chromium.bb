@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autocomplete/shortcuts_backend.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -54,6 +55,7 @@ ShortcutsBackendFactory::ShortcutsBackendFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
         "ShortcutsBackend",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 ShortcutsBackendFactory::~ShortcutsBackendFactory() {}

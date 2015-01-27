@@ -10,22 +10,14 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/url_database.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 
 namespace history {
 
 InMemoryHistoryBackend::InMemoryHistoryBackend()
-    : profile_(nullptr),
-      history_service_observer_(this),
-      history_service_(nullptr) {
+    : history_service_observer_(this) {
 }
 
 InMemoryHistoryBackend::~InMemoryHistoryBackend() {
@@ -37,29 +29,10 @@ bool InMemoryHistoryBackend::Init(const base::FilePath& history_filename) {
 }
 
 void InMemoryHistoryBackend::AttachToHistoryService(
-    Profile* profile,
     HistoryService* history_service) {
-  if (!db_) {
-    NOTREACHED();
-    return;
-  }
-
-  profile_ = profile;
-
+  DCHECK(db_);
   DCHECK(history_service);
   history_service_observer_.Add(history_service);
-  history_service_ = history_service;
-
-  // TODO(evanm): this is currently necessitated by generate_profile, which
-  // runs without a browser process. generate_profile should really create
-  // a browser process, at which point this check can then be nuked.
-  if (!g_browser_process)
-    return;
-
-  // Register for the notifications we care about.
-  // We only want notifications for the associated profile.
-  content::Source<Profile> source(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
 }
 
 void InMemoryHistoryBackend::DeleteAllSearchTermsForKeyword(
@@ -84,6 +57,30 @@ void InMemoryHistoryBackend::OnURLsModified(HistoryService* history_service,
   }
 }
 
+void InMemoryHistoryBackend::OnURLsDeleted(HistoryService* history_service,
+                                           bool all_history,
+                                           bool expired,
+                                           const URLRows& deleted_rows,
+                                           const std::set<GURL>& favicon_urls) {
+  DCHECK(db_);
+
+  if (all_history) {
+    // When all history is deleted, the individual URLs won't be listed. Just
+    // create a new database to quickly clear everything out.
+    db_.reset(new InMemoryDatabase);
+    if (!db_->InitFromScratch())
+      db_.reset();
+    return;
+  }
+
+  // Delete all matching URLs in our database.
+  for (const auto& row : deleted_rows) {
+    // This will also delete the corresponding keyword search term.
+    // Ignore errors, as we typically only cache a subset of URLRows.
+    db_->DeleteURLRow(row.id());
+  }
+}
+
 void InMemoryHistoryBackend::OnKeywordSearchTermUpdated(
     HistoryService* history_service,
     const URLRow& row,
@@ -102,21 +99,6 @@ void InMemoryHistoryBackend::OnKeywordSearchTermDeleted(
   db_->DeleteKeywordSearchTermForURL(url_id);
 }
 
-void InMemoryHistoryBackend::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
-      OnURLsDeleted(*content::Details<URLsDeletedDetails>(details).ptr());
-      break;
-    default:
-      // For simplicity, the unit tests send us all notifications, even when
-      // we haven't registered for them, so don't assert here.
-      break;
-  }
-}
-
 void InMemoryHistoryBackend::OnURLVisitedOrModified(const URLRow& url_row) {
   DCHECK(db_);
   DCHECK(url_row.id());
@@ -124,27 +106,6 @@ void InMemoryHistoryBackend::OnURLVisitedOrModified(const URLRow& url_row) {
     db_->InsertOrUpdateURLRowByID(url_row);
   else
     db_->DeleteURLRow(url_row.id());
-}
-
-void InMemoryHistoryBackend::OnURLsDeleted(const URLsDeletedDetails& details) {
-  DCHECK(db_);
-
-  if (details.all_history) {
-    // When all history is deleted, the individual URLs won't be listed. Just
-    // create a new database to quickly clear everything out.
-    db_.reset(new InMemoryDatabase);
-    if (!db_->InitFromScratch())
-      db_.reset();
-    return;
-  }
-
-  // Delete all matching URLs in our database.
-  for (URLRows::const_iterator row = details.rows.begin();
-       row != details.rows.end(); ++row) {
-    // This will also delete the corresponding keyword search term.
-    // Ignore errors, as we typically only cache a subset of URLRows.
-    db_->DeleteURLRow(row->id());
-  }
 }
 
 }  // namespace history

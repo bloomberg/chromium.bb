@@ -16,6 +16,7 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_cache.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/test/history_unittest_base.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

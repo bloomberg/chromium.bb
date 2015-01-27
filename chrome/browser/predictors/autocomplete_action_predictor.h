@@ -221,6 +221,11 @@ class AutocompleteActionPredictor
   void Shutdown() override;
 
   // history::HistoryServiceObserver:
+  void OnURLsDeleted(HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
   void OnHistoryServiceLoaded(HistoryService* history_service) override;
 
   Profile* profile_;

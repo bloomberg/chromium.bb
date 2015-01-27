@@ -15,8 +15,8 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/autocomplete/shortcuts_database.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -79,6 +79,7 @@ AutocompleteMatch::Type GetTypeForShortcut(AutocompleteMatch::Type type) {
 ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
     : profile_(profile),
       current_state_(NOT_INITIALIZED),
+      history_service_observer_(this),
       no_db_access_(suppress_db) {
   if (!suppress_db) {
     db_ = new history::ShortcutsDatabase(
@@ -92,9 +93,10 @@ ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
         extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::Source<Profile>(profile));
 #endif
-    notification_registrar_.Add(
-        this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-        content::Source<Profile>(profile));
+    HistoryService* hs = HistoryServiceFactory::GetForProfile(
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
+    if (hs)
+      history_service_observer_.Add(hs);
   }
 }
 
@@ -174,40 +176,47 @@ void ShortcutsBackend::ShutdownOnUIThread() {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   notification_registrar_.RemoveAll();
+  history_service_observer_.RemoveAll();
 }
 
 void ShortcutsBackend::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
+#if defined(ENABLE_EXTENSIONS)
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED, type);
   if (!initialized())
     return;
 
-#if defined(ENABLE_EXTENSIONS)
-  if (type == extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
-    // When an extension is unloaded, we want to remove any Shortcuts associated
-    // with it.
-    DeleteShortcutsWithURL(content::Details<extensions::UnloadedExtensionInfo>(
-        details)->extension->url(), false);
-    return;
-  }
+  // When an extension is unloaded, we want to remove any Shortcuts associated
+  // with it.
+  DeleteShortcutsWithURL(content::Details<extensions::UnloadedExtensionInfo>(
+                             details)->extension->url(),
+                         false);
 #endif
+}
 
-  DCHECK_EQ(chrome::NOTIFICATION_HISTORY_URLS_DELETED, type);
-  const history::URLsDeletedDetails* deleted_details =
-      content::Details<const history::URLsDeletedDetails>(details).ptr();
-  if (deleted_details->all_history) {
+void ShortcutsBackend::OnURLsDeleted(HistoryService* history_service,
+                                     bool all_history,
+                                     bool expired,
+                                     const history::URLRows& deleted_rows,
+                                     const std::set<GURL>& favicon_urls) {
+  if (!initialized())
+    return;
+
+  if (all_history) {
     DeleteAllShortcuts();
     return;
   }
 
-  const history::URLRows& rows(deleted_details->rows);
   history::ShortcutsDatabase::ShortcutIDs shortcut_ids;
-  for (GuidMap::const_iterator it(guid_map_.begin()); it != guid_map_.end();
-        ++it) {
+  for (const auto& guid_pair : guid_map_) {
     if (std::find_if(
-        rows.begin(), rows.end(), history::URLRow::URLRowHasURL(
-            it->second->second.match_core.destination_url)) != rows.end())
-      shortcut_ids.push_back(it->first);
+            deleted_rows.begin(), deleted_rows.end(),
+            history::URLRow::URLRowHasURL(
+                guid_pair.second->second.match_core.destination_url)) !=
+        deleted_rows.end()) {
+      shortcut_ids.push_back(guid_pair.first);
+    }
   }
   DeleteShortcutsWithIDs(shortcut_ids);
 }

@@ -15,11 +15,11 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/session_id.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/syncable_service.h"
@@ -46,7 +46,7 @@ struct SyncedFaviconInfo;
 // Encapsulates the logic for loading and storing synced favicons.
 // TODO(zea): make this a KeyedService.
 class FaviconCache : public syncer::SyncableService,
-                     public content::NotificationObserver {
+                     public history::HistoryServiceObserver {
  public:
   FaviconCache(Profile* profile, int max_sync_favicon_limit);
   ~FaviconCache() override;
@@ -96,13 +96,10 @@ class FaviconCache : public syncer::SyncableService,
                              const std::string& icon_bytes,
                              int64 visit_time_ms);
 
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
  private:
   friend class SyncFaviconCacheTest;
+  FRIEND_TEST_ALL_PREFIXES(SyncFaviconCacheTest, HistoryFullClear);
+  FRIEND_TEST_ALL_PREFIXES(SyncFaviconCacheTest, HistorySubsetClear);
 
   // Functor for ordering SyncedFaviconInfo objects by recency;
   struct FaviconRecencyFunctor {
@@ -196,6 +193,13 @@ class FaviconCache : public syncer::SyncableService,
   size_t NumFaviconsForTest() const;
   size_t NumTasksForTest() const;
 
+  // history::HistoryServiceObserver:
+  void OnURLsDeleted(HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
+
   // Trask tracker for loading favicons.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
@@ -220,11 +224,11 @@ class FaviconCache : public syncer::SyncableService,
   scoped_ptr<syncer::SyncChangeProcessor> favicon_images_sync_processor_;
   scoped_ptr<syncer::SyncChangeProcessor> favicon_tracking_sync_processor_;
 
-  // For listening to history deletions.
-  content::NotificationRegistrar notification_registrar_;
-
   // Maximum number of favicons to sync. 0 means no limit.
   const size_t max_sync_favicon_limit_;
+
+  ScopedObserver<HistoryService, HistoryServiceObserver>
+      history_service_observer_;
 
   // Weak pointer factory for favicon loads.
   base::WeakPtrFactory<FaviconCache> weak_ptr_factory_;

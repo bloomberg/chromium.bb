@@ -24,7 +24,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/top_sites.h"
@@ -2489,15 +2488,6 @@ void HistoryBackend::ProcessDBTask(
     ProcessDBTaskImpl();
 }
 
-void HistoryBackend::BroadcastNotifications(
-    int type,
-    scoped_ptr<HistoryDetails> details) {
-  // |delegate_| may be NULL if |this| is in the process of closing (closed by
-  // HistoryService -> HistoryBackend::Closing().
-  if (delegate_)
-    delegate_->BroadcastNotifications(type, details.Pass());
-}
-
 void HistoryBackend::NotifyFaviconChanged(const std::set<GURL>& urls) {
   if (delegate_)
     delegate_->NotifyFaviconChanged(urls);
@@ -2542,19 +2532,22 @@ void HistoryBackend::NotifyURLsDeleted(bool all_history,
                                        bool expired,
                                        const URLRows& rows,
                                        const std::set<GURL>& favicon_urls) {
-  scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails);
-  details->all_history = all_history;
-  details->expired = expired;
-  details->rows = rows;
-  details->favicon_urls = favicon_urls;
-
+  URLRows copied_rows(rows);
   if (typed_url_syncable_service_.get()) {
-    typed_url_syncable_service_->OnUrlsDeleted(
-        all_history, expired, &details->rows);
+    typed_url_syncable_service_->OnUrlsDeleted(all_history, expired,
+                                               &copied_rows);
   }
 
-  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                         details.Pass());
+  FOR_EACH_OBSERVER(
+      HistoryBackendObserver, observers_,
+      OnURLsDeleted(this, all_history, expired, copied_rows, favicon_urls));
+
+  // TODO(sdefresne): turn HistoryBackend::Delegate from HistoryService into
+  // an HistoryBackendObserver and register it so that we can remove this
+  // method.
+  if (delegate_)
+    delegate_->NotifyURLsDeleted(all_history, expired, copied_rows,
+                                 favicon_urls);
 }
 
 // Deleting --------------------------------------------------------------------

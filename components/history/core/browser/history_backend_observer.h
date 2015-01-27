@@ -35,8 +35,22 @@ class HistoryBackendObserver {
   // |changed_urls| lists the information for each of the URLs affected. The
   // rows will have the IDs that are currently in effect in the main history
   // database.
-  virtual void OnURLsModified(history::HistoryBackend* history_backend,
-                              const history::URLRows& changed_urls) = 0;
+  virtual void OnURLsModified(HistoryBackend* history_backend,
+                              const URLRows& changed_urls) = 0;
+
+  // Called when one or more of URLs are deleted.
+  //
+  // |all_history| is set to true, if all the URLs are deleted.
+  //               When set to true, |deleted_rows| and |favicon_urls| are
+  //               undefined.
+  // |expired| is set to true, if the URL deletion is due to expiration.
+  // |deleted_rows| list of the deleted URLs.
+  // |favicon_urls| list of favicon URLs that correspond to the deleted URLs.
+  virtual void OnURLsDeleted(HistoryBackend* history_backend,
+                             bool all_history,
+                             bool expired,
+                             const URLRows& deleted_rows,
+                             const std::set<GURL>& favicon_urls) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryBackendObserver);

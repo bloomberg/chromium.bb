@@ -144,6 +144,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // be forwarded to the HistoryServiceObservers in the correct thread.
     virtual void NotifyURLsModified(const URLRows& changed_urls) = 0;
 
+    // Notify HistoryService that some or all of the URLs have been deleted.
+    // The event will be forwarded to the HistoryServiceObservers in the correct
+    // thread.
+    virtual void NotifyURLsDeleted(bool all_history,
+                                   bool expired,
+                                   const URLRows& deleted_rows,
+                                   const std::set<GURL>& favicon_urls) = 0;
+
     // Notify HistoryService that some keyword has been searched using omnibox.
     // The event will be forwarded to the HistoryServiceObservers in the correct
     // thread.
@@ -155,13 +163,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // The event will be forwarded to the HistoryServiceObservers in the correct
     // thread.
     virtual void NotifyKeywordSearchTermDeleted(URLID url_id) = 0;
-
-    // Broadcasts the specified notification to the notification service.
-    // This is implemented here because notifications must only be sent from
-    // the main thread. This is the only method that doesn't identify the
-    // caller because notifications must always be sent.
-    virtual void BroadcastNotifications(int type,
-                                        scoped_ptr<HistoryDetails> details) = 0;
 
     // Invoked when the backend has finished loading the db.
     virtual void DBLoaded() = 0;
@@ -597,7 +598,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, UpdateVisitDuration);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ExpireHistoryForTimes);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteFTSIndexDatabases);
-
+  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTypedUrlTest,
+                           ProcessUserChangeRemove);
   friend class ::TestingProfile;
 
   // Computes the name of the specified database on disk.
@@ -797,11 +799,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Processes the next scheduled HistoryDBTask, scheduling this method
   // to be invoked again if there are more tasks that need to run.
   void ProcessDBTaskImpl();
-
-  // Broadcasts the specified notification to the notification service on both
-  // the main thread and the history thread if a notification service is
-  // running.
-  void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details);
 
   // HistoryBackendNotifier:
   void NotifyFaviconChanged(const std::set<GURL>& urls) override;

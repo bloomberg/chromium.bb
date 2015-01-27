@@ -10,15 +10,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_HISTORY_MENU
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #import "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -112,10 +109,6 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
 HistoryMenuBridge::~HistoryMenuBridge() {
   // Unregister ourselves as observers and notifications.
   DCHECK(profile_);
-  if (history_service_) {
-    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                      content::Source<Profile>(profile_));
-  }
 
   if (tab_restore_service_)
     tab_restore_service_->RemoveObserver(this);
@@ -127,15 +120,6 @@ HistoryMenuBridge::~HistoryMenuBridge() {
     menu_item_map_.erase(it++);
     delete item;
   }
-}
-
-void HistoryMenuBridge::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  // chrome::NOTIFICATION_HISTORY_URLS_DELETED is the only notification we are
-  // registered for. OnHistoryChanged is the generic function called for any
-  // History modifications.
-  OnHistoryChanged();
 }
 
 void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
@@ -249,25 +233,6 @@ void HistoryMenuBridge::BuildMenu() {
     CreateMenu();
 }
 
-void HistoryMenuBridge::OnURLVisited(HistoryService* history_service,
-                                     ui::PageTransition transition,
-                                     const history::URLRow& row,
-                                     const history::RedirectList& redirects,
-                                     base::Time visit_time) {
-  OnHistoryChanged();
-}
-
-void HistoryMenuBridge::OnURLsModified(HistoryService* history_service,
-                                       const history::URLRows& changed_urls) {
-  OnHistoryChanged();
-}
-
-void HistoryMenuBridge::OnHistoryServiceLoaded(
-    HistoryService* history_service) {
-  history_service_ = history_service;
-  Init();
-}
-
 HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForMenuItem(
     NSMenuItem* item) {
   std::map<NSMenuItem*, HistoryItem*>::iterator it = menu_item_map_.find(item);
@@ -355,8 +320,6 @@ NSMenuItem* HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
 
 void HistoryMenuBridge::Init() {
   DCHECK(history_service_);
-  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                 content::Source<Profile>(profile_));
 }
 
 void HistoryMenuBridge::CreateMenu() {
@@ -468,4 +431,31 @@ void HistoryMenuBridge::CancelFaviconRequest(HistoryItem* item) {
     item->icon_requested = false;
     item->icon_task_id = base::CancelableTaskTracker::kBadTaskId;
   }
+}
+
+void HistoryMenuBridge::OnURLVisited(HistoryService* history_service,
+                                     ui::PageTransition transition,
+                                     const history::URLRow& row,
+                                     const history::RedirectList& redirects,
+                                     base::Time visit_time) {
+  OnHistoryChanged();
+}
+
+void HistoryMenuBridge::OnURLsModified(HistoryService* history_service,
+                                       const history::URLRows& changed_urls) {
+  OnHistoryChanged();
+}
+
+void HistoryMenuBridge::OnURLsDeleted(HistoryService* history_service,
+                                      bool all_history,
+                                      bool expired,
+                                      const history::URLRows& deleted_rows,
+                                      const std::set<GURL>& favicon_urls) {
+  OnHistoryChanged();
+}
+
+void HistoryMenuBridge::OnHistoryServiceLoaded(
+    HistoryService* history_service) {
+  history_service_ = history_service;
+  Init();
 }
