@@ -369,7 +369,7 @@ HistogramBase* Histogram::DeserializeInfoImpl(PickleIterator* iter) {
 scoped_ptr<SampleVector> Histogram::SnapshotSampleVector() const {
   scoped_ptr<SampleVector> samples(new SampleVector(bucket_ranges()));
   samples->Add(*samples_);
-  return samples;
+  return samples.Pass();
 }
 
 void Histogram::WriteAsciiImpl(bool graph_it,
