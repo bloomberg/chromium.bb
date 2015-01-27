@@ -24,7 +24,6 @@ class ChangeResource;
 class FileList;
 class FileResource;
 class ResourceEntry;
-class ResourceList;
 }  // namespace google_apis
 
 namespace drive {
@@ -57,9 +56,6 @@ std::string EscapeQueryStringValue(const std::string& str);
 // See also: https://developers.google.com/drive/search-parameters
 std::string TranslateQuery(const std::string& original_query);
 
-// Extracts resource_id out of edit url.
-std::string ExtractResourceIdFromUrl(const GURL& url);
-
 // If |resource_id| is in the old resource ID format used by WAPI, converts it
 // into the new format.
 std::string CanonicalizeResourceId(const std::string& resource_id);
@@ -68,19 +64,6 @@ std::string CanonicalizeResourceId(const std::string& resource_id);
 scoped_ptr<google_apis::ResourceEntry>
 ConvertFileResourceToResourceEntry(
     const google_apis::FileResource& file_resource);
-
-// Converts ChangeResource to ResourceEntry.
-scoped_ptr<google_apis::ResourceEntry>
-ConvertChangeResourceToResourceEntry(
-    const google_apis::ChangeResource& change_resource);
-
-// Converts FileList to ResourceList.
-scoped_ptr<google_apis::ResourceList>
-ConvertFileListToResourceList(const google_apis::FileList& file_list);
-
-// Converts ChangeList to ResourceList.
-scoped_ptr<google_apis::ResourceList>
-ConvertChangeListToResourceList(const google_apis::ChangeList& change_list);
 
 // Returns the (base-16 encoded) MD5 digest of the file content at |file_path|,
 // or an empty string if an error is found.

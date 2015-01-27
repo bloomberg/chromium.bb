@@ -13,7 +13,6 @@
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/drive_api_requests.h"
-#include "google_apis/drive/gdata_errorcode.h"
 #include "google_apis/drive/request_sender.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -166,13 +165,11 @@ DriveAPIService::DriveAPIService(
     base::SequencedTaskRunner* blocking_task_runner,
     const GURL& base_url,
     const GURL& base_download_url,
-    const GURL& wapi_base_url,
     const std::string& custom_user_agent)
     : oauth2_token_service_(oauth2_token_service),
       url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
       url_generator_(base_url, base_download_url),
-      wapi_url_generator_(wapi_base_url),
       custom_user_agent_(custom_user_agent) {
 }
 

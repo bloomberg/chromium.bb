@@ -20,7 +20,6 @@ class DriveServiceInterface;
 
 namespace google_apis {
 class ResourceEntry;
-class ResourceList;
 }
 
 namespace sync_file_system {

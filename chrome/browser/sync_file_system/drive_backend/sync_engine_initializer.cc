@@ -44,11 +44,6 @@ bool LessOnCreationTime(const google_apis::FileResource& left,
   return left.created_date() < right.created_date();
 }
 
-typedef base::Callback<void(scoped_ptr<SyncTaskToken> token,
-                            google_apis::GDataErrorCode error,
-                            scoped_ptr<google_apis::ResourceList> resources)>
-    TokenAndResourceListCallback;
-
 // Functions above are for wrapping the access to legacy GData WAPI classes.
 ////////////////////////////////////////////////////////////////////////////////
 

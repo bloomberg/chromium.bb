@@ -23,7 +23,6 @@ class DriveUploaderInterface;
 
 namespace google_apis {
 class FileResource;
-class ResourceList;
 }
 
 namespace sync_file_system {

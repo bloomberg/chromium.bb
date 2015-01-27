@@ -83,7 +83,6 @@ void DriveServiceBridgeImpl::Initialize() {
       drive_task_runner.get(),
       GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
       GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
-      GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
       std::string() /* custom_user_agent */));
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile_);

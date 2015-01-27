@@ -46,7 +46,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
-#include "google_apis/drive/gdata_wapi_url_generator.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -240,7 +239,6 @@ DriveIntegrationService::DriveIntegrationService(
         blocking_task_runner_.get(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
-        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         GetDriveUserAgent()));
   }
   scheduler_.reset(new JobScheduler(

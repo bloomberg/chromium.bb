@@ -27,7 +27,6 @@ class Time;
 
 namespace google_apis {
 class AboutResource;
-class ResourceList;
 }  // namespace google_apis
 
 namespace drive {

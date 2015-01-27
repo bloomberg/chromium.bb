@@ -14,18 +14,6 @@ namespace google_apis {
 
 class AboutResource;
 class AppList;
-class ResourceEntry;
-class ResourceList;
-
-// Callback used for getting ResourceList.
-typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<ResourceList> resource_list)>
-    GetResourceListCallback;
-
-// Callback used for getting ResourceEntry.
-typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<ResourceEntry> entry)>
-    GetResourceEntryCallback;
 
 // Callback used for getting AboutResource.
 typedef base::Callback<void(GDataErrorCode error,
