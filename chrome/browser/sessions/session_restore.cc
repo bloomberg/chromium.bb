@@ -73,19 +73,6 @@ TabLoader* shared_tab_loader = NULL;
 // Pointers to SessionRestoreImpls which are currently restoring the session.
 std::set<SessionRestoreImpl*>* active_session_restorers = NULL;
 
-// Sends a session restore notification to |callbacks|.
-void NotifySessionRestored(SessionRestore::CallbackList* callbacks) {
-  // TODO(sque): This is the old notification that's being phased out.
-  // Remove this once all listeners of NOTIFICATION_SESSION_RESTORE_DONE are
-  // using callbacks instead of notification service.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SESSION_RESTORE_DONE,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-
-  callbacks->Notify();
-}
-
 // TabLoader ------------------------------------------------------------------
 
 // TabLoader is responsible for loading tabs after session restore has finished
@@ -348,7 +335,7 @@ void TabLoader::LoadNextTab() {
   // When the session restore is done synchronously, notification is sent from
   // SessionRestoreImpl::Restore .
   if (tabs_to_load_.empty() && !SessionRestore::IsRestoringSynchronously()) {
-    NotifySessionRestored(on_session_restored_callbacks_);
+    on_session_restored_callbacks_->Notify();
   }
 }
 
@@ -655,7 +642,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         quit_closure_for_sync_restore_ = base::Closure();
       }
       Browser* browser = ProcessSessionWindows(&windows_, active_window_id_);
-      NotifySessionRestored(on_session_restored_callbacks_);
+      on_session_restored_callbacks_->Notify();
       delete this;
       return browser;
     }
