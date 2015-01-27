@@ -9,13 +9,32 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "ui/base/ime/text_input_focus_manager.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/webview_test_helper.h"
 #include "ui/views/test/widget_test.h"
 
 namespace {
+
+class WebViewTestViewsDelegate : public views::TestViewsDelegate {
+ public:
+  WebViewTestViewsDelegate() {}
+
+  // Overriden from TestViewsDelegate.
+  content::WebContents* CreateWebContents(
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance) override {
+    return content::WebContentsTester::CreateTestWebContents(browser_context,
+                                                             site_instance);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebViewTestViewsDelegate);
+};
 
 class WebViewInteractiveUiTest : public views::test::WidgetTest {
  public:
@@ -24,6 +43,8 @@ class WebViewInteractiveUiTest : public views::test::WidgetTest {
 
   void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
+    // The ViewsDelegate is deleted when the ViewsTestBase class is torn down.
+    WidgetTest::set_views_delegate(new WebViewTestViewsDelegate);
     WidgetTest::SetUp();
   }
 
@@ -62,25 +83,30 @@ TEST_F(WebViewInteractiveUiTest, TextInputClientIsUpToDate) {
 
   ui::TextInputFocusManager* text_input_focus_manager =
       ui::TextInputFocusManager::GetInstance();
-  const ui::TextInputClient* null_text_input_client = NULL;
-  EXPECT_EQ(null_text_input_client, webview->GetTextInputClient());
+  EXPECT_EQ(nullptr, webview->GetTextInputClient());
   EXPECT_EQ(text_input_focus_manager->GetFocusedTextInputClient(),
             webview->GetTextInputClient());
 
   // Case 1: Creates a new WebContents.
-  webview->GetWebContents();
+  content::WebContents* web_contents1 = webview->GetWebContents();
+  content::RenderViewHostTester::For(web_contents1->GetRenderViewHost())
+      ->CreateRenderView(base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                         -1, false);
   webview->RequestFocus();
   ui::TextInputClient* client1 = webview->GetTextInputClient();
-  EXPECT_NE(null_text_input_client, client1);
+  EXPECT_NE(nullptr, client1);
   EXPECT_EQ(text_input_focus_manager->GetFocusedTextInputClient(), client1);
 
   // Case 2: Replaces a WebContents by SetWebContents().
-  content::WebContents::CreateParams params(browser_context());
-  scoped_ptr<content::WebContents> web_contents(
-      content::WebContents::Create(params));
-  webview->SetWebContents(web_contents.get());
+  scoped_ptr<content::WebContents> web_contents2(
+      content::WebContentsTester::CreateTestWebContents(browser_context(),
+                                                        nullptr));
+  content::RenderViewHostTester::For(web_contents2->GetRenderViewHost())
+      ->CreateRenderView(base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                         -1, false);
+  webview->SetWebContents(web_contents2.get());
   ui::TextInputClient* client2 = webview->GetTextInputClient();
-  EXPECT_NE(null_text_input_client, client2);
+  EXPECT_NE(nullptr, client2);
   EXPECT_EQ(text_input_focus_manager->GetFocusedTextInputClient(), client2);
   EXPECT_NE(client1, client2);
 
