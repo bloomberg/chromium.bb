@@ -22461,6 +22461,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Omnibox.HasLegalDefaultMatchWithoutCompletion" enum="Boolean">
+  <obsolete>
+    Deprecated 2015-01-27
+  </obsolete>
   <owner>mpearson@chromium.org</owner>
   <summary>
     Whether there was at least one legal default match without an

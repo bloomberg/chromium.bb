@@ -240,18 +240,6 @@ class OmniboxFieldTrial {
   static bool HQPAllowMatchInSchemeValue();
 
   // ---------------------------------------------------------
-  // For the DisableInlining experiment that's part of the bundled omnibox
-  // field trial.
-
-  // Returns true if AutocompleteResult should prevent any suggestion with
-  // a non-empty |inline_autocomplete| from being the default match.  In
-  // other words, prevent an inline autocompletion from appearing as the
-  // top suggestion / within the omnibox itself, reordering matches as
-  // necessary to make this true.  Returns false if the experiment isn't
-  // active.
-  static bool DisableInlining();
-
-  // ---------------------------------------------------------
   // For the AnswersInSuggest experiment that's part of the bundled omnibox
   // field trial.
 
@@ -260,20 +248,6 @@ class OmniboxFieldTrial {
   // to be provided in the Omnibox suggestion list. Considers both the
   // field trial state as well as the overriding command-line flags.
   static bool EnableAnswersInSuggest();
-
-  // ---------------------------------------------------------
-  // For the AddUWYTMatchEvenIfPromotedURLs experiment that's part of the
-  // bundled omnibox field trial.
-
-  // Returns true if HistoryURL Provider should add the URL-what-you-typed match
-  // (if valid and reasonable) even if the provider has good inline
-  // autocompletions to offer.  Normally HistoryURL does not add the UWYT match
-  // if there are good inline autocompletions, as the user could simply hit
-  // backspace to delete the completion and get the what-you-typed match.
-  // However, for the disabling inlining experiment we want to have the UWYT
-  // always explicitly displayed at an option if possible.  Returns false if
-  // the experiment isn't active.
-  static bool AddUWYTMatchEvenIfPromotedURLs();
 
   // ---------------------------------------------------------
   // For the DisplayHintTextWhenPossible experiment that's part of the
@@ -309,9 +283,7 @@ class OmniboxFieldTrial {
   static const char kHQPAllowMatchInSchemeRule[];
   static const char kZeroSuggestRule[];
   static const char kZeroSuggestVariantRule[];
-  static const char kDisableInliningRule[];
   static const char kAnswersInSuggestRule[];
-  static const char kAddUWYTMatchEvenIfPromotedURLsRule[];
   static const char kDisplayHintTextWhenPossibleRule[];
   static const char kDisableResultsCachingRule[];
   static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];

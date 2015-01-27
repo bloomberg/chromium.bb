@@ -567,7 +567,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   if (url_db) {
     DoAutocomplete(NULL, url_db, params.get());
     matches_.clear();
-    PromoteMatchesIfNecessary(*params);
+    PromoteMatchIfNecessary(*params);
     // NOTE: We don't reset |params| here since at least the |promote_type|
     // field on it will be read by the second pass -- see comments in
     // DoAutocomplete().
@@ -765,7 +765,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   // searching has been disabled by policy. In the cases where we've parsed as
   // UNKNOWN, we'll still show an accidental search infobar if need be.
   VisitClassifier classifier(this, params->input, db);
-  params->have_what_you_typed_match =
+  bool have_what_you_typed_match =
       (params->input.type() != metrics::OmniboxInputType::QUERY) &&
       ((params->input.type() != metrics::OmniboxInputType::UNKNOWN) ||
        (classifier.type() == VisitClassifier::UNVISITED_INTRANET) ||
@@ -773,8 +773,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
        (AutocompleteInput::NumNonHostComponents(params->input.parts()) > 0) ||
        !params->default_search_provider);
   const bool have_shorter_suggestion_suitable_for_inline_autocomplete =
-      PromoteOrCreateShorterSuggestion(
-          db, params->have_what_you_typed_match, params);
+      PromoteOrCreateShorterSuggestion(db, have_what_you_typed_match, params);
 
   // Check whether what the user typed appears in history.
   const bool can_check_history_for_exact_match =
@@ -808,7 +807,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     params->promote_type = HistoryURLProviderParams::FRONT_HISTORY_MATCH;
   } else {
     // Failed to promote any URLs.  Use the What You Typed match, if we have it.
-    params->promote_type = params->have_what_you_typed_match ?
+    params->promote_type = have_what_you_typed_match ?
         HistoryURLProviderParams::WHAT_YOU_TYPED_MATCH :
         HistoryURLProviderParams::NEITHER;
   }
@@ -826,19 +825,15 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   }
 }
 
-void HistoryURLProvider::PromoteMatchesIfNecessary(
+void HistoryURLProvider::PromoteMatchIfNecessary(
     const HistoryURLProviderParams& params) {
-  if (params.promote_type == HistoryURLProviderParams::FRONT_HISTORY_MATCH) {
-    matches_.push_back(HistoryMatchToACMatch(params, 0, INLINE_AUTOCOMPLETE,
-        CalculateRelevance(INLINE_AUTOCOMPLETE, 0)));
-    if (OmniboxFieldTrial::AddUWYTMatchEvenIfPromotedURLs() &&
-        params.have_what_you_typed_match) {
-      matches_.push_back(params.what_you_typed_match);
-    }
-  } else if (params.promote_type ==
-      HistoryURLProviderParams::WHAT_YOU_TYPED_MATCH) {
-    matches_.push_back(params.what_you_typed_match);
-  }
+  if (params.promote_type == HistoryURLProviderParams::NEITHER)
+    return;
+  matches_.push_back(
+      (params.promote_type == HistoryURLProviderParams::WHAT_YOU_TYPED_MATCH) ?
+      params.what_you_typed_match :
+      HistoryMatchToACMatch(params, 0, INLINE_AUTOCOMPLETE,
+                            CalculateRelevance(INLINE_AUTOCOMPLETE, 0)));
 }
 
 void HistoryURLProvider::QueryComplete(
@@ -859,7 +854,7 @@ void HistoryURLProvider::QueryComplete(
   // match in it, whereas |params->matches| will be empty.
   if (!params->failed) {
     matches_.clear();
-    PromoteMatchesIfNecessary(*params);
+    PromoteMatchIfNecessary(*params);
 
     // Determine relevance of highest scoring match, if any.
     int relevance = matches_.empty() ?

@@ -8,7 +8,6 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -95,18 +94,6 @@ bool DestinationSort::operator()(const AutocompleteMatch& elem1,
     return demote_by_type_(elem1, elem2);
   }
   return elem1.stripped_destination_url < elem2.stripped_destination_url;
-}
-
-// Returns true if |match| is allowed to the default match taking into account
-// whether we're supposed to (and able to) demote all matches with inline
-// autocompletions.
-bool AllowedToBeDefaultMatchAccountingForDisableInliningExperiment(
-    const AutocompleteMatch& match,
-    const bool has_legal_default_match_without_completion) {
-  return match.allowed_to_be_default_match &&
-      (!OmniboxFieldTrial::DisableInlining() ||
-       !has_legal_default_match_without_completion ||
-       match.inline_autocompletion.empty());
 }
 
 };  // namespace
@@ -196,37 +183,16 @@ void AutocompleteResult::SortAndCull(
   DedupMatchesByDestination(input.current_page_classification(), true,
                             &matches_);
 
-  // If the result set has at least one legal default match without an inline
-  // autocompletion, then in the disable inlining experiment it will be okay
-  // to demote all matches with inline autocompletions.  On the other hand, if
-  // the experiment is active but there is no legal match without an inline
-  // autocompletion, then we'll pretend the experiment is not active and not
-  // demote the matches with an inline autocompletion.  In other words, an
-  // alternate name for this variable is
-  // allowed_to_demote_matches_with_inline_autocompletion.
-  bool has_legal_default_match_without_completion = false;
-  for (AutocompleteResult::iterator it = matches_.begin();
-       (it != matches_.end()) && !has_legal_default_match_without_completion;
-       ++it) {
-    if (it->allowed_to_be_default_match && it->inline_autocompletion.empty())
-      has_legal_default_match_without_completion = true;
-  }
-  UMA_HISTOGRAM_BOOLEAN("Omnibox.HasLegalDefaultMatchWithoutCompletion",
-                        has_legal_default_match_without_completion);
-
   // Sort and trim to the most relevant kMaxMatches matches.
   size_t max_num_matches = std::min(kMaxMatches, matches_.size());
   CompareWithDemoteByType comparing_object(input.current_page_classification());
   std::sort(matches_.begin(), matches_.end(), comparing_object);
-  if (!matches_.empty() &&
-      !AllowedToBeDefaultMatchAccountingForDisableInliningExperiment(
-          *matches_.begin(), has_legal_default_match_without_completion)) {
+  if (!matches_.empty() && !matches_.begin()->allowed_to_be_default_match) {
     // Top match is not allowed to be the default match.  Find the most
     // relevant legal match and shift it to the front.
     for (AutocompleteResult::iterator it = matches_.begin() + 1;
          it != matches_.end(); ++it) {
-      if (AllowedToBeDefaultMatchAccountingForDisableInliningExperiment(
-              *it, has_legal_default_match_without_completion)) {
+      if (it->allowed_to_be_default_match) {
         std::rotate(matches_.begin(), it, it + 1);
         break;
       }

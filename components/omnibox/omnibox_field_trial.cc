@@ -301,12 +301,6 @@ bool OmniboxFieldTrial::HQPAllowMatchInSchemeValue() {
       kHQPAllowMatchInSchemeRule) == "true";
 }
 
-bool OmniboxFieldTrial::DisableInlining() {
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kDisableInliningRule) == "true";
-}
-
 bool OmniboxFieldTrial::EnableAnswersInSuggest() {
   const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kDisableAnswersInSuggest))
@@ -317,12 +311,6 @@ bool OmniboxFieldTrial::EnableAnswersInSuggest() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kAnswersInSuggestRule) == "true";
-}
-
-bool OmniboxFieldTrial::AddUWYTMatchEvenIfPromotedURLs() {
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kAddUWYTMatchEvenIfPromotedURLsRule) == "true";
 }
 
 bool OmniboxFieldTrial::DisplayHintTextWhenPossible() {
@@ -367,10 +355,7 @@ const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";
 const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
-const char OmniboxFieldTrial::kDisableInliningRule[] = "DisableInlining";
 const char OmniboxFieldTrial::kAnswersInSuggestRule[] = "AnswersInSuggest";
-const char OmniboxFieldTrial::kAddUWYTMatchEvenIfPromotedURLsRule[] =
-    "AddUWYTMatchEvenIfPromotedURLs";
 const char OmniboxFieldTrial::kDisplayHintTextWhenPossibleRule[] =
     "DisplayHintTextWhenPossible";
 const char OmniboxFieldTrial::kDisableResultsCachingRule[] =
