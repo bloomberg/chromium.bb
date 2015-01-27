@@ -14323,6 +14323,16 @@ Do you accept?
         Enable Web MIDI API experimental support.
       </message>
 
+      <!-- Site per process mode -->
+      <message name="IDS_FLAGS_ENABLE_SITE_PER_PROCESS_NAME"
+               desc="Name of about:flag option to turn on experimental out-of-process iframe support">
+        Enable out of process iframes
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SITE_PER_PROCESS_DESCRIPTION"
+               desc="Description of about:flag option to turn on experimental out-of-process iframe support">
+        Highly experimental support for rendering cross-site iframes in separate processes.
+      </message>
+
       <!-- Windows 8 Metro mode. -->
       <if expr="is_win">
         <message name="IDS_METRO_FLOW_TAB_TITLE"
