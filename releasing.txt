@@ -22,13 +22,14 @@ To make a release of Weston and/or Wayland, follow these steps.
       skip testsuite by specifying the --dist argument.  Pass --help to
       see other supported options.
 
-  3.  Compose a release announcement.  The script will generate a
-      weston.x.y.0.announce file with a list of changes and tags.
-      Prepend this with a human-readable listing of the most notable
-      changes.  For x.y.0 releases, indicate the schedule for the
-      x.y+1.0 release.
+  3.  Compose the release announcements.  The script will generate
+      *.x.y.0.announce files with a list of changes and tags, one for
+      wayland, one for weston.  Prepend these with a human-readable
+      listing of the most notable changes.  For x.y.0 releases, indicate
+      the schedule for the x.y+1.0 release.
 
-  4.  Send the release announcement to wayland-devel@lists.freedesktop.org
+  4.  Send the release announcements to
+      wayland-devel@lists.freedesktop.org
 
   5.  Get your freshly posted release email URL from
       http://lists.freedesktop.org/archives/wayland-devel/
