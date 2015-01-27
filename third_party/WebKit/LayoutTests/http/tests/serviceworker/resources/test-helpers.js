@@ -63,7 +63,7 @@ function unload_iframe(iframe) {
 }
 
 function normalizeURL(url) {
-  return new URL(url, document.location).toString().replace(/#.*$/, '');
+  return new URL(url, self.location).toString().replace(/#.*$/, '');
 }
 
 function wait_for_update(test, registration) {
