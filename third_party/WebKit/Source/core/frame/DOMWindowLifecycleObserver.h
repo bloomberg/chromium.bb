@@ -41,6 +41,11 @@ public:
     explicit DOMWindowLifecycleObserver(LocalDOMWindow*);
     virtual ~DOMWindowLifecycleObserver();
 
+    virtual void contextDestroyed()
+    {
+        didRemoveAllEventListeners(lifecycleContext());
+        LifecycleObserver<LocalDOMWindow>::contextDestroyed();
+    }
     virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) { }
     virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) { }
     virtual void didRemoveAllEventListeners(LocalDOMWindow*) { }

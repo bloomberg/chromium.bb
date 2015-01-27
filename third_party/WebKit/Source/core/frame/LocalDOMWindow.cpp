@@ -1614,9 +1614,8 @@ void LocalDOMWindow::removeAllEventListenersInternal(BroadcastListenerRemoval mo
 {
     EventTarget::removeAllEventListeners();
 
-    lifecycleNotifier().notifyRemoveAllEventListeners(this);
-
     if (mode == DoBroadcastListenerRemoval) {
+        lifecycleNotifier().notifyRemoveAllEventListeners(this);
         if (frame() && frame()->host())
             frame()->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
     }
