@@ -211,13 +211,6 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
                                                       initial_cdm, shell_);
 }
 
-// TODO(alexmos): Remove once Blink is updated to pass sandboxFlags.
-blink::WebFrame* HTMLDocument::createChildFrame(
-    blink::WebLocalFrame* parent,
-    const blink::WebString& frameName) {
-  return createChildFrame(parent, frameName, blink::WebSandboxFlags::None);
-}
-
 blink::WebFrame* HTMLDocument::createChildFrame(
     blink::WebLocalFrame* parent,
     const blink::WebString& frameName,

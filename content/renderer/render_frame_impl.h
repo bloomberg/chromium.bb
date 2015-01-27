@@ -359,10 +359,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual blink::WebServiceWorkerProvider* createServiceWorkerProvider(
       blink::WebLocalFrame* frame);
   virtual void didAccessInitialDocument(blink::WebLocalFrame* frame);
-  // TODO(alexmos): Remove once Blink is updated to use the version that takes
-  // sandboxFlags.
-  virtual blink::WebFrame* createChildFrame(blink::WebLocalFrame* parent,
-                                            const blink::WebString& name);
   virtual blink::WebFrame* createChildFrame(
       blink::WebLocalFrame* parent,
       const blink::WebString& name,

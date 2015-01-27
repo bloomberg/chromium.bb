@@ -33,6 +33,14 @@ enum class SandboxFlags : int {
   ALL = -1
 };
 
+inline SandboxFlags operator&(SandboxFlags a, SandboxFlags b) {
+  return static_cast<SandboxFlags>(static_cast<int>(a) & static_cast<int>(b));
+}
+
+inline SandboxFlags operator~(SandboxFlags flags) {
+  return static_cast<SandboxFlags>(~static_cast<int>(flags));
+}
+
 // This structure holds information that needs to be replicated between a
 // RenderFrame and any of its associated RenderFrameProxies.
 struct CONTENT_EXPORT FrameReplicationState {

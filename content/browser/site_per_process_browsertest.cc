@@ -959,6 +959,107 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
   EXPECT_EQ(result + "/", main_url.GetOrigin().spec());
 }
 
+// Check that iframe sandbox flags are replicated correctly.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsReplication) {
+  GURL main_url(embedded_test_server()->GetURL("/sandboxed_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  SitePerProcessWebContentsObserver observer(shell()->web_contents());
+
+  // Navigate the second (sandboxed) subframe to a cross-site page with a
+  // subframe. Use RenderFrameHostCreatedObserver to guarantee that all
+  // FrameTreeNodes are created for child frames.
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 4);
+  GURL foo_url(
+      embedded_test_server()->GetURL("foo.com", "/frame_tree/1-1.html"));
+  NavigateFrameToURL(root->child_at(1), foo_url);
+  frame_observer.Wait();
+
+  // We can't use a SitePerProcessWebContentsObserver to verify the URL here,
+  // since the frame has children that may have clobbered it in the observer.
+  EXPECT_EQ(foo_url, root->child_at(1)->current_url());
+
+  // Load cross-site page into subframe's subframe.
+  ASSERT_EQ(2U, root->child_at(1)->child_count());
+  GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
+  NavigateFrameToURL(root->child_at(1)->child_at(0), bar_url);
+  EXPECT_TRUE(observer.navigation_succeeded());
+  EXPECT_EQ(bar_url, observer.navigation_url());
+
+  // Opening a popup in the sandboxed foo.com iframe should fail.
+  bool success = false;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractBool(root->child_at(1)->current_frame_host(),
+                                  "window.domAutomationController.send("
+                                  "!window.open('data:text/html,dataurl'));",
+                                  &success));
+  EXPECT_TRUE(success);
+  EXPECT_EQ(Shell::windows().size(), 1u);
+
+  // Opening a popup in a frame whose parent is sandboxed should also fail.
+  // Here, bar.com frame's sandboxed parent frame is a remote frame in
+  // bar.com's process.
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(1)->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send("
+      "!window.open('data:text/html,dataurl'));",
+      &success));
+  EXPECT_TRUE(success);
+  EXPECT_EQ(Shell::windows().size(), 1u);
+
+  // Same, but now try the case where bar.com frame's sandboxed parent is a
+  // local frame in bar.com's process.
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(2)->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send("
+      "!window.open('data:text/html,dataurl'));",
+      &success));
+  EXPECT_TRUE(success);
+  EXPECT_EQ(Shell::windows().size(), 1u);
+
+  // Check that foo.com frame's location.ancestorOrigins contains the correct
+  // origin for the parent, which should be unaffected by sandboxing.
+  int ancestor_origins_length = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->child_at(1)->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins.length);",
+      &ancestor_origins_length));
+  EXPECT_EQ(1, ancestor_origins_length);
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(1)->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins[0]);",
+      &result));
+  EXPECT_EQ(result + "/", main_url.GetOrigin().spec());
+
+  // Now check location.ancestorOrigins for the bar.com frame. The middle frame
+  // (foo.com's) origin should be unique, since that frame is sandboxed, and
+  // the top frame should match |main_url|.
+  FrameTreeNode* bottom_child = root->child_at(1)->child_at(0);
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      bottom_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins.length);",
+      &ancestor_origins_length));
+  EXPECT_EQ(2, ancestor_origins_length);
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      bottom_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins[0]);",
+      &result));
+  EXPECT_EQ(result, "null");
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      bottom_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins[1]);",
+      &result));
+  EXPECT_EQ(result + "/", main_url.GetOrigin().spec());
+}
+
 // Verify that a child frame can retrieve the name property set by its parent.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, WindowNameReplication) {
   GURL main_url(embedded_test_server()->GetURL("/frame_tree/2-4.html"));

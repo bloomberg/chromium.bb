@@ -2039,14 +2039,6 @@ void RenderFrameImpl::didAccessInitialDocument(blink::WebLocalFrame* frame) {
   }
 }
 
-// TODO(alexmos): Remove once Blink is updated to use the version that takes
-// sandbox flags.
-blink::WebFrame* RenderFrameImpl::createChildFrame(
-    blink::WebLocalFrame* parent,
-    const blink::WebString& name) {
-  return createChildFrame(parent, name, blink::WebSandboxFlags::None);
-}
-
 blink::WebFrame* RenderFrameImpl::createChildFrame(
     blink::WebLocalFrame* parent,
     const blink::WebString& name,

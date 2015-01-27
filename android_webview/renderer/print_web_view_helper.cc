@@ -541,9 +541,6 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   virtual void didStopLoading();
 
   // blink::WebFrameClient override:
-  // TODO(alexmos): Remove once Blink is updated to use sandbox flags.
-  virtual blink::WebFrame* createChildFrame(blink::WebLocalFrame* parent,
-                                            const blink::WebString& name);
   virtual blink::WebFrame* createChildFrame(
       blink::WebLocalFrame* parent,
       const blink::WebString& name,
@@ -686,13 +683,6 @@ void PrepareFrameAndViewForPrint::didStopLoading() {
       FROM_HERE,
       base::Bind(&PrepareFrameAndViewForPrint::CallOnReady,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-// TODO(alexmos): Remove once Blink is updated to use sandbox flags.
-blink::WebFrame* PrepareFrameAndViewForPrint::createChildFrame(
-    blink::WebLocalFrame* parent,
-    const blink::WebString& name) {
-  return createChildFrame(parent, name, blink::WebSandboxFlags::None);
 }
 
 blink::WebFrame* PrepareFrameAndViewForPrint::createChildFrame(
