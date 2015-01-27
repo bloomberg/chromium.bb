@@ -36,8 +36,7 @@ LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
 
 
 GerritPatchTuple = clactions.GerritPatchTuple
-GerritChangeTuple = collections.namedtuple('GerritChangeTuple',
-                                           ['gerrit_number', 'internal'])
+GerritChangeTuple = clactions.GerritChangeTuple
 CLActionTuple = collections.namedtuple('CLActionTuple',
                                        ['change', 'action', 'timestamp',
                                         'reason'])

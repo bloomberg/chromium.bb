@@ -350,7 +350,6 @@ class CanaryMasterTable(SpreadsheetMasterTable):
                                             list(CanaryMasterTable.COLUMNS))
 
 
-
 class CQMasterTable(SpreadsheetMasterTable):
   """Stats table for the CQ Master."""
   WATERFALL = 'chromeos'
@@ -1025,8 +1024,14 @@ class CLStats(StatsManager):
       actions: A list of actions for a single change.
     """
     submit = [a for a in actions if a.action == constants.CL_ACTION_SUBMITTED]
-    assert len(submit) == 1, \
-        'Expected change to be submitted exactly once, got %r' % submit
+    assert len(submit) > 0, 'Expected change to be submitted, got %r' % actions
+    if len(submit) > 1:
+      # Patches may be submitted more than once if we mark the patch as
+      # submitted when it is still in "SUBMITTING" state and Gerrit later bumps
+      # it back to "NEW". This should only happen due to Gerrit bugs.
+      cros_build_lib.Info('Change %s was submitted more than once: %r',
+                          submit[-1].patch, submit)
+
     return submit[-1].patch_number
 
   def ClassifyRejections(self, submitted_changes):
@@ -1372,10 +1377,7 @@ class CLStats(StatsManager):
       logging.info('%d bad patch candidates were rejected by the %s',
                    len(patches), bot_type)
       for k in patches:
-        logging.info('Bad patch candidate in: CL:%s%s',
-                     constants.INTERNAL_CHANGE_PREFIX
-                     if k.internal else constants.EXTERNAL_CHANGE_PREFIX,
-                     k.gerrit_number)
+        logging.info('Bad patch candidate in: %s', k)
 
     fmt_fai = '  %(cnt)d failures in %(reason)s'
     fmt_rej = '  %(cnt)d rejections due to %(reason)s'

@@ -37,9 +37,30 @@ CL_ACTION_COLUMNS = ['id', 'build_id', 'action', 'reason',
 
 _CLActionTuple = collections.namedtuple('_CLActionTuple', CL_ACTION_COLUMNS)
 
-GerritPatchTuple = collections.namedtuple('GerritPatchTuple',
-                                          ['gerrit_number', 'patch_number',
-                                           'internal'])
+_GerritPatchTuple = collections.namedtuple('_GerritPatchTuple',
+                                           ['gerrit_number', 'patch_number',
+                                            'internal'])
+
+class GerritPatchTuple(_GerritPatchTuple):
+  """A tuple for a given Gerrit patch."""
+
+  def __str__(self):
+    prefix = (constants.INTERNAL_CHANGE_PREFIX
+              if self.internal else constants.EXTERNAL_CHANGE_PREFIX)
+    return 'CL:%s%s#%s' % (prefix, self.gerrit_number, self.patch_number)
+
+
+_GerritChangeTuple = collections.namedtuple('_GerritChangeTuple',
+                                            ['gerrit_number', 'internal'])
+
+
+class GerritChangeTuple(_GerritChangeTuple):
+  """A tuple for a given Gerrit change."""
+
+  def __str__(self):
+    prefix = (constants.INTERNAL_CHANGE_PREFIX
+              if self.internal else constants.EXTERNAL_CHANGE_PREFIX)
+    return 'CL:%s%s' % (prefix, self.gerrit_number)
 
 
 class CLAction(_CLActionTuple):
