@@ -1348,18 +1348,7 @@ void ChunkDemuxer::AppendData(
 
     switch (state_) {
       case INITIALIZING:
-        DCHECK(IsValidId(id));
-        if (!source_state_map_[id]->Append(data, length,
-                                           append_window_start,
-                                           append_window_end,
-                                           timestamp_offset,
-                                           init_segment_received_cb)) {
-          ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
-          return;
-        }
-        break;
-
-      case INITIALIZED: {
+      case INITIALIZED:
         DCHECK(IsValidId(id));
         if (!source_state_map_[id]->Append(data, length,
                                            append_window_start,
@@ -1369,7 +1358,7 @@ void ChunkDemuxer::AppendData(
           ReportError_Locked(PIPELINE_ERROR_DECODE);
           return;
         }
-      } break;
+        break;
 
       case PARSE_ERROR:
         DVLOG(1) << "AppendData(): Ignoring data after a parse error.";

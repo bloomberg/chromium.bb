@@ -423,6 +423,7 @@ TEST_F(PipelineTest, NoStreams) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
       .WillOnce(PostCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*demuxer_, Stop());
+  EXPECT_CALL(callbacks_, OnMetadata(_));
 
   StartPipelineAndExpect(PIPELINE_ERROR_COULD_NOT_RENDER);
 }
@@ -867,6 +868,7 @@ class PipelineTeardownTest : public PipelineTest {
       }
 
       EXPECT_CALL(*demuxer_, Stop());
+      EXPECT_CALL(callbacks_, OnMetadata(_));
       return status;
     }
 

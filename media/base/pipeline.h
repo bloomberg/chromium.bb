@@ -336,8 +336,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // The following data members are only accessed by tasks posted to
   // |task_runner_|.
 
-  bool is_initialized_;
-
   // Member that tracks the current state.
   State state_;
 

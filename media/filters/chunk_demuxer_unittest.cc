@@ -667,7 +667,7 @@ class ChunkDemuxerTest : public ::testing::Test {
       int stream_flags, bool is_audio_encrypted, bool is_video_encrypted) {
 
     PipelineStatus expected_status =
-        (stream_flags != 0) ? PIPELINE_OK : DEMUXER_ERROR_COULD_NOT_OPEN;
+        (stream_flags != 0) ? PIPELINE_OK : PIPELINE_ERROR_DECODE;
 
     base::TimeDelta expected_duration = kNoTimestamp();
     if (expected_status == PIPELINE_OK)
@@ -1687,7 +1687,7 @@ TEST_F(ChunkDemuxerTest, PerStreamMonotonicallyIncreasingTimestamps) {
 TEST_F(ChunkDemuxerTest, ClusterBeforeInitSegment) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_, NewExpectedStatusCB(DEMUXER_ERROR_COULD_NOT_OPEN), true);
+      &host_, NewExpectedStatusCB(PIPELINE_ERROR_DECODE), true);
 
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
@@ -2127,7 +2127,7 @@ TEST_F(ChunkDemuxerTest, ParseErrorDuringInit) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(
-          kNoTimestamp(), DEMUXER_ERROR_COULD_NOT_OPEN), true);
+          kNoTimestamp(), PIPELINE_ERROR_DECODE), true);
 
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
@@ -2143,7 +2143,7 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(kNoTimestamp(),
-                               DEMUXER_ERROR_COULD_NOT_OPEN), true);
+                               PIPELINE_ERROR_DECODE), true);
 
   std::vector<std::string> codecs(1);
   codecs[0] = "vorbis";
@@ -2157,7 +2157,7 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithVideoOnlyType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(kNoTimestamp(),
-                               DEMUXER_ERROR_COULD_NOT_OPEN), true);
+                               PIPELINE_ERROR_DECODE), true);
 
   std::vector<std::string> codecs(1);
   codecs[0] = "vp8";
