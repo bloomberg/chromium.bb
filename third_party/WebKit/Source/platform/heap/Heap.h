@@ -388,7 +388,7 @@ public:
 #if ENABLE(GC_PROFILE_HEAP)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) = 0;
 #endif
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
     virtual bool contains(Address) = 0;
 #endif
     virtual size_t size() = 0;
@@ -481,7 +481,7 @@ public:
 #if ENABLE(GC_PROFILE_HEAP)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
     // Returns true for the whole blinkPageSize page that the page is on, even
     // for the header, and the unmapped guard page at the start. That ensures
     // the result can be used to populate the negative page cache.
@@ -550,17 +550,12 @@ public:
         BaseHeapPage::markOrphaned();
     }
 #if ENABLE(GC_PROFILE_MARKING)
-    virtual const GCInfo* findGCInfo(Address address) override
-    {
-        if (!objectContains(address))
-            return nullptr;
-        return gcInfo();
-    }
+    virtual const GCInfo* findGCInfo(Address);
 #endif
 #if ENABLE(GC_PROFILE_HEAP)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
 #endif
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
     // Returns true for any address that is on one of the pages that this
     // large object uses. That ensures that we can use a negative result to
     // populate the negative page cache.
@@ -742,7 +737,7 @@ public:
     ~ThreadHeap();
     void cleanupPages();
 
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
     BaseHeapPage* findPageFromAddress(Address);
 #endif
 #if ENABLE(GC_PROFILE_HEAP)
@@ -846,7 +841,7 @@ public:
     static void shutdown();
     static void doShutdown();
 
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
     static BaseHeapPage* findPageFromAddress(Address);
     static BaseHeapPage* findPageFromAddress(void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(pointer)); }
     static bool containedInHeapOrOrphanedPage(void*);

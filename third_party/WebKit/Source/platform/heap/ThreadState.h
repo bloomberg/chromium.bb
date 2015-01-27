@@ -466,7 +466,7 @@ public:
     // HeapTypeTrait<Type>::index.
     ThreadHeap* heap(int index) const { return m_heaps[index]; }
 
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
     // Infrastructure to determine if an address is within one of the
     // address ranges for the Blink heap. If the address is in the Blink
     // heap the containing heap page is returned.

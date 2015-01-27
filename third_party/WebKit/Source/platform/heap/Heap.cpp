@@ -857,7 +857,9 @@ static bool isLargeObjectAligned(LargeObject* largeObject, Address address)
     // for the guard page).
     return reinterpret_cast<Address>(largeObject) - WTF::kSystemPageSize == roundToBlinkPageStart(reinterpret_cast<Address>(largeObject));
 }
+#endif
 
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
 BaseHeapPage* ThreadHeap::findPageFromAddress(Address address)
 {
     for (HeapPage* page = m_firstPage; page; page = page->next()) {
@@ -1762,6 +1764,16 @@ size_t LargeObject::objectPayloadSizeForTesting()
     return payloadSize();
 }
 
+#if ENABLE(GC_PROFILE_MARKING)
+const GCInfo* LargeObject::findGCInfo(Address address)
+{
+    if (!containedInObjectPayload(address))
+        return nullptr;
+    HeapObjectHeader* header = heapObjectHeader();
+    return Heap::gcInfo(header->gcInfoIndex());
+}
+#endif
+
 #if ENABLE(GC_PROFILE_HEAP)
 void LargeObject::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
@@ -1921,7 +1933,7 @@ public:
     void reportStats()
     {
         fprintf(stderr, "\n---------- AFTER MARKING -------------------\n");
-        for (LiveObjectMap::iterator it = currentlyLive().begin(), end = currentlyLive().payloadEnd(); it != end; ++it) {
+        for (LiveObjectMap::iterator it = currentlyLive().begin(), end = currentlyLive().end(); it != end; ++it) {
             fprintf(stderr, "%s %u", it->key.ascii().data(), it->value.size());
 
             if (it->key == "blink::Document")
@@ -1944,7 +1956,7 @@ public:
 
         fprintf(stderr, " [previously %u]", previous.size());
         for (uintptr_t object : current) {
-            if (previous.find(object) == previous.payloadEnd())
+            if (previous.find(object) == previous.end())
                 continue;
             count++;
         }
@@ -1954,7 +1966,7 @@ public:
 
         fprintf(stderr, " {survived 2GCs %d: ", count);
         for (uintptr_t object : current) {
-            if (previous.find(object) == previous.payloadEnd())
+            if (previous.find(object) == previous.end())
                 continue;
             fprintf(stderr, "%ld", object);
             if (--count)
@@ -1967,10 +1979,10 @@ public:
     static void dumpPathToObjectFromObjectGraph(const ObjectGraph& graph, uintptr_t target)
     {
         ObjectGraph::const_iterator it = graph.find(target);
-        if (it == graph.payloadEnd())
+        if (it == graph.end())
             return;
         fprintf(stderr, "Path to %lx of %s\n", target, classOf(reinterpret_cast<const void*>(target)).ascii().data());
-        while (it != graph.payloadEnd()) {
+        while (it != graph.end()) {
             fprintf(stderr, "<- %lx of %s\n", it->value.first, it->value.second.utf8().data());
             it = graph.find(it->value.first);
         }

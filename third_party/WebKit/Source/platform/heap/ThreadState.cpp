@@ -914,7 +914,7 @@ void ThreadState::prepareHeapForTermination()
         m_heaps[i]->prepareHeapForTermination();
 }
 
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILE_MARKING)
 BaseHeapPage* ThreadState::findPageFromAddress(Address address)
 {
     for (int i = 0; i < NumberOfHeaps; ++i) {
