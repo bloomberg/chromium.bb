@@ -39,18 +39,22 @@ class RasterBufferImpl : public RasterBuffer {
 // static
 scoped_ptr<TileTaskWorkerPool> GpuTileTaskWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
-    TaskGraphRunner* task_graph_runner) {
+    TaskGraphRunner* task_graph_runner,
+    ResourceProvider* resource_provider) {
   return make_scoped_ptr<TileTaskWorkerPool>(
-      new GpuTileTaskWorkerPool(task_runner, task_graph_runner));
+      new GpuTileTaskWorkerPool(
+          task_runner, task_graph_runner, resource_provider));
 }
 
 // TODO(hendrikw): This class should be removed.  See crbug.com/444938.
 GpuTileTaskWorkerPool::GpuTileTaskWorkerPool(
     base::SequencedTaskRunner* task_runner,
-    TaskGraphRunner* task_graph_runner)
+    TaskGraphRunner* task_graph_runner,
+    ResourceProvider* resource_provider)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner_->GetNamespaceToken()),
+      resource_provider_(resource_provider),
       task_set_finished_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
 }
@@ -138,6 +142,10 @@ void GpuTileTaskWorkerPool::CheckForCompletedTasks() {
                                             &completed_tasks_);
   CompleteTasks(completed_tasks_);
   completed_tasks_.clear();
+}
+
+ResourceFormat GpuTileTaskWorkerPool::GetResourceFormat() {
+  return resource_provider_->best_texture_format();
 }
 
 void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {

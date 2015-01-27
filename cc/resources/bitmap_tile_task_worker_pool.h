@@ -38,6 +38,7 @@ class CC_EXPORT BitmapTileTaskWorkerPool : public TileTaskWorkerPool,
   void Shutdown() override;
   void ScheduleTasks(TileTaskQueue* queue) override;
   void CheckForCompletedTasks() override;
+  ResourceFormat GetResourceFormat() override;
 
   // Overridden from TileTaskClient:
   scoped_ptr<RasterBuffer> AcquireBufferForRaster(

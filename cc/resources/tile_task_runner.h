@@ -160,6 +160,9 @@ class CC_EXPORT TileTaskRunner {
   // Check for completed tasks and dispatch reply callbacks.
   virtual void CheckForCompletedTasks() = 0;
 
+  // Returns the format to use for the tiles.
+  virtual ResourceFormat GetResourceFormat() = 0;
+
  protected:
   virtual ~TileTaskRunner() {}
 };

@@ -23,9 +23,9 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
     ResourceProvider* resource_provider)
     : resource_pool_(
-          ResourcePool::Create(resource_provider, GL_TEXTURE_2D, RGBA_8888)),
-      tile_manager_(
-          new FakeTileManager(&tile_manager_client_, resource_pool_.get())),
+          ResourcePool::Create(resource_provider, GL_TEXTURE_2D)),
+      tile_manager_(new FakeTileManager(
+          &tile_manager_client_, resource_pool_.get())),
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),

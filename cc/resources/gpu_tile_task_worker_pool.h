@@ -10,6 +10,7 @@
 #include "cc/resources/tile_task_worker_pool.h"
 
 namespace cc {
+class ResourceProvider;
 
 class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
                                         public TileTaskRunner,
@@ -19,7 +20,8 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
 
   static scoped_ptr<TileTaskWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
-      TaskGraphRunner* task_graph_runner);
+      TaskGraphRunner* task_graph_runner,
+      ResourceProvider* resource_provider);
 
   // Overridden from TileTaskWorkerPool:
   TileTaskRunner* AsTileTaskRunner() override;
@@ -29,6 +31,7 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
   void Shutdown() override;
   void ScheduleTasks(TileTaskQueue* queue) override;
   void CheckForCompletedTasks() override;
+  ResourceFormat GetResourceFormat() override;
 
   // Overridden from TileTaskClient:
   scoped_ptr<RasterBuffer> AcquireBufferForRaster(
@@ -37,7 +40,8 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
 
  private:
   GpuTileTaskWorkerPool(base::SequencedTaskRunner* task_runner,
-                        TaskGraphRunner* task_graph_runner);
+                        TaskGraphRunner* task_graph_runner,
+                        ResourceProvider* resource_provider);
 
   void OnTaskSetFinished(TaskSet task_set);
   void CompleteTasks(const Task::Vector& tasks);
@@ -46,6 +50,7 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
   TaskGraphRunner* task_graph_runner_;
   const NamespaceToken namespace_token_;
   TileTaskRunnerClient* client_;
+  ResourceProvider* resource_provider_;
 
   TaskSetCollection tasks_pending_;
 

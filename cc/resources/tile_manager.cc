@@ -423,6 +423,7 @@ void TileManager::SynchronouslyRasterizeTiles(
   // Run and complete all raster task synchronously.
   rasterizer_->RasterizeTiles(
       tiles_that_need_to_be_rasterized, resource_pool_,
+      tile_task_runner_->GetResourceFormat(),
       base::Bind(&TileManager::UpdateTileDrawInfo, base::Unretained(this)));
 
   // Use on-demand raster for any required-for-draw tiles that have not been
@@ -606,7 +607,7 @@ void TileManager::AssignGpuMemoryToTiles(
     MemoryUsage memory_required_by_tile_to_be_scheduled;
     if (!tile->raster_task_.get()) {
       memory_required_by_tile_to_be_scheduled = MemoryUsage::FromConfig(
-          tile->desired_texture_size(), resource_pool_->default_format());
+          tile->desired_texture_size(), tile_task_runner_->GetResourceFormat());
     }
 
     bool tile_is_needed_now = priority.priority_bin == TilePriority::NOW;
@@ -742,7 +743,7 @@ scoped_refptr<ImageDecodeTask> TileManager::CreateImageDecodeTask(
 scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
   scoped_ptr<ScopedResource> resource =
       resource_pool_->AcquireResource(tile->desired_texture_size(),
-                                      resource_pool_->default_format());
+                                      tile_task_runner_->GetResourceFormat());
   const ScopedResource* const_resource = resource.get();
 
   // Create and queue all image decode tasks that this tile depends on.

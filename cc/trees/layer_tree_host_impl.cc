@@ -1973,9 +1973,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   ContextProvider* context_provider = output_surface_->context_provider();
   if (!context_provider) {
     *resource_pool =
-        ResourcePool::Create(resource_provider_.get(),
-                             GL_TEXTURE_2D,
-                             resource_provider_->best_texture_format());
+        ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
     *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
         task_runner, TileTaskWorkerPool::GetTaskGraphRunner(),
@@ -1985,12 +1983,11 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
 
   if (use_gpu_rasterization_) {
     *resource_pool =
-        ResourcePool::Create(resource_provider_.get(),
-                             GL_TEXTURE_2D,
-                             resource_provider_->best_texture_format());
+        ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
     *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
-        task_runner, TileTaskWorkerPool::GetTaskGraphRunner());
+        task_runner, TileTaskWorkerPool::GetTaskGraphRunner(),
+        resource_provider_.get());
     return;
   }
 
@@ -2005,8 +2002,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
 
     if (settings_.use_zero_copy || IsSynchronousSingleThreaded()) {
       *resource_pool =
-          ResourcePool::Create(resource_provider_.get(), image_target,
-                               resource_provider_->best_texture_format());
+          ResourcePool::Create(resource_provider_.get(), image_target);
 
       TaskGraphRunner* task_graph_runner;
       if (IsSynchronousSingleThreaded()) {
@@ -2025,11 +2021,9 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     if (settings_.use_one_copy) {
       // We need to create a staging resource pool when using copy rasterizer.
       *staging_resource_pool =
-          ResourcePool::Create(resource_provider_.get(), image_target,
-                               resource_provider_->best_texture_format());
+          ResourcePool::Create(resource_provider_.get(), image_target);
       *resource_pool =
-          ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D,
-                               resource_provider_->best_texture_format());
+          ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
       *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
           task_runner, TileTaskWorkerPool::GetTaskGraphRunner(),
@@ -2040,8 +2034,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   }
 
   *resource_pool = ResourcePool::Create(
-      resource_provider_.get(), GL_TEXTURE_2D,
-      resource_provider_->memory_efficient_texture_format());
+      resource_provider_.get(), GL_TEXTURE_2D);
 
   *tile_task_worker_pool = PixelBufferTileTaskWorkerPool::Create(
       task_runner, TileTaskWorkerPool::GetTaskGraphRunner(), context_provider,

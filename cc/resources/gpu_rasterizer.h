@@ -30,6 +30,7 @@ class CC_EXPORT GpuRasterizer : public Rasterizer {
   void RasterizeTiles(
       const TileVector& tiles,
       ResourcePool* resource_pool,
+      ResourceFormat resource_format,
       const UpdateTileDrawInfoCallback& update_tile_draw_info) override;
 
  private:

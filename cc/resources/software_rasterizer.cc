@@ -23,6 +23,7 @@ PrepareTilesMode SoftwareRasterizer::GetPrepareTilesMode() {
 void SoftwareRasterizer::RasterizeTiles(
     const TileVector& tiles,
     ResourcePool* resource_pool,
+    ResourceFormat resource_format,
     const UpdateTileDrawInfoCallback& update_tile_draw_info) {
 }
 

@@ -257,7 +257,7 @@ class TileTaskWorkerPoolPerfTest
       case TILE_TASK_WORKER_POOL_TYPE_ONE_COPY:
         Create3dOutputSurfaceAndResourceProvider();
         staging_resource_pool_ = ResourcePool::Create(resource_provider_.get(),
-                                                      GL_TEXTURE_2D, RGBA_8888);
+                                                      GL_TEXTURE_2D);
         tile_task_worker_pool_ = OneCopyTileTaskWorkerPool::Create(
             task_runner_.get(), task_graph_runner_.get(),
             context_provider_.get(), resource_provider_.get(),
@@ -266,7 +266,8 @@ class TileTaskWorkerPoolPerfTest
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
         tile_task_worker_pool_ = GpuTileTaskWorkerPool::Create(
-            task_runner_.get(), task_graph_runner_.get());
+            task_runner_.get(), task_graph_runner_.get(),
+            resource_provider_.get());
         break;
       case TILE_TASK_WORKER_POOL_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();

@@ -9,12 +9,9 @@
 
 namespace cc {
 
-ResourcePool::ResourcePool(ResourceProvider* resource_provider,
-                           GLenum target,
-                           ResourceFormat default_format)
+ResourcePool::ResourcePool(ResourceProvider* resource_provider, GLenum target)
     : resource_provider_(resource_provider),
       target_(target),
-      default_format_(default_format),
       max_memory_usage_bytes_(0),
       max_unused_memory_usage_bytes_(0),
       max_resource_count_(0),

@@ -160,6 +160,10 @@ void BitmapTileTaskWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
+ResourceFormat BitmapTileTaskWorkerPool::GetResourceFormat() {
+  return resource_provider_->best_texture_format();
+}
+
 scoped_ptr<RasterBuffer> BitmapTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
   return make_scoped_ptr<RasterBuffer>(

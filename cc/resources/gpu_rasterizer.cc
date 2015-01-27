@@ -59,6 +59,7 @@ PrepareTilesMode GpuRasterizer::GetPrepareTilesMode() {
 void GpuRasterizer::RasterizeTiles(
     const TileVector& tiles,
     ResourcePool* resource_pool,
+    ResourceFormat resource_format,
     const UpdateTileDrawInfoCallback& update_tile_draw_info) {
   ScopedGpuRaster gpu_raster(context_provider_);
 
@@ -69,7 +70,7 @@ void GpuRasterizer::RasterizeTiles(
     // See crbug.com/445919
     scoped_ptr<ScopedResource> resource =
         resource_pool->AcquireResource(tile->desired_texture_size(),
-                                       resource_pool->default_format());
+                                       resource_format);
     const ScopedResource* const_resource = resource.get();
 
     RasterSource::SolidColorAnalysis analysis;

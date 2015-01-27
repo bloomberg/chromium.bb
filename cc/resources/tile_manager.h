@@ -138,9 +138,9 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
-      draw_info.resource_ =
-          resource_pool_->AcquireResource(tiles[i]->desired_texture_size(),
-                                          resource_pool_->default_format());
+      draw_info.resource_ = resource_pool_->AcquireResource(
+          tiles[i]->desired_texture_size(),
+          tile_task_runner_->GetResourceFormat());
     }
   }
 
@@ -295,8 +295,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
   RasterTaskCompletionStats update_visible_tiles_stats_;
 
   std::vector<Tile*> released_tiles_;
-
-  ResourceFormat resource_format_;
 
   // Queue used when scheduling raster tasks.
   TileTaskQueue raster_queue_;

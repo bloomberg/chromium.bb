@@ -307,6 +307,10 @@ void PixelBufferTileTaskWorkerPool::CheckForCompletedTasks() {
   completed_raster_tasks_.clear();
 }
 
+ResourceFormat PixelBufferTileTaskWorkerPool::GetResourceFormat() {
+  return resource_provider_->memory_efficient_texture_format();
+}
+
 scoped_ptr<RasterBuffer> PixelBufferTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
   return make_scoped_ptr<RasterBuffer>(
