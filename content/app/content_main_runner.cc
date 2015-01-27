@@ -486,6 +486,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   int Initialize(const ContentMainParams& params) override {
     ui_task_ = params.ui_task;
 
+    base::EnableTerminationOnOutOfMemory();
 #if defined(OS_WIN)
     RegisterInvalidParamHandler();
     ui::win::CreateATLModuleIfNeeded();
@@ -602,7 +603,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
     if (!delegate_ || delegate_->ShouldEnableTerminationOnHeapCorruption())
       base::EnableTerminationOnHeapCorruption();
-    base::EnableTerminationOnOutOfMemory();
 
 #if !defined(OS_IOS)
     SetProcessTitleFromCommandLine(argv);

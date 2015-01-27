@@ -53,20 +53,13 @@ void* sk_malloc_throw(size_t size) {
 static void* sk_malloc_nothrow(size_t size) {
     // TODO(b.kelemen): we should always use UncheckedMalloc but currently it
     // doesn't work as intended everywhere.
-#if  defined(LIBC_GLIBC) || defined(USE_TCMALLOC) || \
-     (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_ANDROID)
+#if  defined(OS_IOS)
+    return malloc(size);
+#else
     void* result;
     // It's the responsibility of the caller to check the return value.
     ignore_result(base::UncheckedMalloc(size, &result));
     return result;
-#else
-    // This is not really thread safe.  It only won't collide with itself, but we're totally
-    // unprotected from races with other code that calls set_new_handler.
-    SkAutoMutexAcquire lock(gSkNewHandlerMutex);
-    std::new_handler old_handler = std::set_new_handler(NULL);
-    void* p = malloc(size);
-    std::set_new_handler(old_handler);
-    return p;
 #endif
 }
 
@@ -84,17 +77,12 @@ void* sk_calloc_throw(size_t size) {
 void* sk_calloc(size_t size) {
     // TODO(b.kelemen): we should always use UncheckedCalloc but currently it
     // doesn't work as intended everywhere.
-#if  defined(LIBC_GLIBC) || defined(USE_TCMALLOC) || \
-     (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_ANDROID)
+#if  defined(OS_IOS)
+    return calloc(1, size);
+#else
     void* result;
     // It's the responsibility of the caller to check the return value.
     ignore_result(base::UncheckedCalloc(size, 1, &result));
     return result;
-#else
-    SkAutoMutexAcquire lock(gSkNewHandlerMutex);
-    std::new_handler old_handler = std::set_new_handler(NULL);
-    void* p = calloc(size, 1);
-    std::set_new_handler(old_handler);
-    return p;
 #endif
 }

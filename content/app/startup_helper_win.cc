@@ -53,8 +53,6 @@ void InitializeSandboxInfo(sandbox::SandboxInterfaceInfo* info) {
 void RegisterInvalidParamHandler() {
   _set_invalid_parameter_handler(InvalidParameter);
   _set_purecall_handler(PureCall);
-  // Also enable the new handler for malloc() based failures.
-  _set_new_mode(1);
 }
 
 void SetupCRT(const base::CommandLine& command_line) {
