@@ -182,6 +182,10 @@ class NET_EXPORT HttpServerPropertiesImpl
   // been marked broken.
   typedef std::map<HostPortPair, int> BrokenAlternateProtocolMap;
 
+  // Return the iterator for |server|, or for its canonical host, or end.
+  AlternateProtocolMap::const_iterator GetAlternateProtocolIterator(
+      const HostPortPair& server);
+
   // Return the canonical host for |server|, or end if none exists.
   CanonicalHostMap::const_iterator GetCanonicalHost(HostPortPair server) const;
 

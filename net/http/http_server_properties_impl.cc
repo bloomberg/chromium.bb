@@ -227,17 +227,10 @@ bool HttpServerPropertiesImpl::HasAlternateProtocol(
     const HostPortPair& server) {
   if (g_forced_alternate_protocol)
     return true;
-  AlternateProtocolMap::const_iterator it = alternate_protocol_map_.Get(server);
-  if (it != alternate_protocol_map_.end())
-    return it->second.probability >= alternate_protocol_probability_threshold_;
-
-  auto canonical = GetCanonicalHost(server);
-  if (canonical == canonical_host_to_origin_map_.end() ||
-      canonical->second.Equals(server)) {
-    return false;
-  }
-
-  return HasAlternateProtocol(canonical->second);
+  AlternateProtocolMap::const_iterator it =
+      GetAlternateProtocolIterator(server);
+  return it != alternate_protocol_map_.end() &&
+         it->second.probability >= alternate_protocol_probability_threshold_;
 }
 
 std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
@@ -258,15 +251,10 @@ HttpServerPropertiesImpl::GetAlternateProtocol(
     const HostPortPair& server) {
   DCHECK(HasAlternateProtocol(server));
 
-  // First check the map.
-  AlternateProtocolMap::iterator it = alternate_protocol_map_.Get(server);
+  AlternateProtocolMap::const_iterator it =
+      GetAlternateProtocolIterator(server);
   if (it != alternate_protocol_map_.end())
     return it->second;
-
-  // Next check the canonical host.
-  CanonicalHostMap::const_iterator canonical_host = GetCanonicalHost(server);
-  if (canonical_host != canonical_host_to_origin_map_.end())
-    return alternate_protocol_map_.Get(canonical_host->second)->second;
 
   // We must be forcing an alternate.
   DCHECK(g_forced_alternate_protocol);
@@ -282,9 +270,10 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
   AlternateProtocolInfo alternate(alternate_port,
                                   alternate_protocol,
                                   alternate_probability);
-  if (HasAlternateProtocol(server)) {
-    const AlternateProtocolInfo existing_alternate =
-        GetAlternateProtocol(server);
+  AlternateProtocolMap::const_iterator it =
+      GetAlternateProtocolIterator(server);
+  if (it != alternate_protocol_map_.end()) {
+    const AlternateProtocolInfo existing_alternate = it->second;
 
     if (existing_alternate.is_broken) {
       DVLOG(1) << "Ignore alternate protocol since it's known to be broken.";
@@ -476,6 +465,20 @@ HttpServerPropertiesImpl::server_network_stats_map() const {
 void HttpServerPropertiesImpl::SetAlternateProtocolProbabilityThreshold(
     double threshold) {
   alternate_protocol_probability_threshold_ = threshold;
+}
+
+AlternateProtocolMap::const_iterator
+HttpServerPropertiesImpl::GetAlternateProtocolIterator(
+    const HostPortPair& server) {
+  AlternateProtocolMap::const_iterator it = alternate_protocol_map_.Get(server);
+  if (it != alternate_protocol_map_.end())
+    return it;
+
+  CanonicalHostMap::const_iterator canonical = GetCanonicalHost(server);
+  if (canonical != canonical_host_to_origin_map_.end())
+    return alternate_protocol_map_.Get(canonical->second);
+
+  return alternate_protocol_map_.end();
 }
 
 HttpServerPropertiesImpl::CanonicalHostMap::const_iterator
