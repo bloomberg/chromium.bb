@@ -8,6 +8,7 @@
 #include "base/atomicops.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "cc/test/test_now_source.h"
 #include "content/renderer/scheduler/cancelable_closure_holder.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
 #include "content/renderer/scheduler/single_thread_idle_task_runner.h"
@@ -42,9 +43,7 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   bool ShouldYieldForHighPriorityWork() override;
   void Shutdown() override;
 
- protected:
-  // Virtual for testing.
-  virtual base::TimeTicks Now() const;
+  void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
 
  private:
   friend class RendererSchedulerImplTest;
@@ -116,6 +115,8 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   void StartIdlePeriod();
   void EndIdlePeriod();
 
+  base::TimeTicks Now() const;
+
   base::ThreadChecker main_thread_checker_;
   scoped_ptr<RendererTaskQueueSelector> renderer_task_queue_selector_;
   scoped_ptr<TaskQueueManager> task_queue_manager_;
@@ -138,6 +139,8 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   base::Lock incoming_signals_lock_;
   base::TimeTicks last_input_time_;
   PollableNeedsUpdateFlag policy_may_need_update_;
+
+  scoped_refptr<cc::TestNowSource> time_source_;
 
   base::WeakPtr<RendererSchedulerImpl> weak_renderer_scheduler_ptr_;
   base::WeakPtrFactory<RendererSchedulerImpl> weak_factory_;
