@@ -132,6 +132,40 @@ void MarkIncidentsAsReported(const std::vector<PersistentIncidentState>& states,
   }
 }
 
+// Removes a profile's prune state for legacy incident types.
+void CleanLegacyPruneState(Profile* profile) {
+  static const IncidentType kLegacyTypes[] = {
+    // TODO(grt): remove in M44 (crbug.com/451173).
+    IncidentType::OMNIBOX_INTERACTION,
+  };
+
+  // Figure out if there are any values to remove before committing to making
+  // any changes since any use of DictionaryPrefUpdate will result in a full
+  // serialize-and-write operation on the preferences store.
+  const base::Value* value =
+      profile->GetPrefs()->GetUserPrefValue(prefs::kSafeBrowsingIncidentsSent);
+  const base::DictionaryValue* incidents_sent = NULL;
+  if (!value || !value->GetAsDictionary(&incidents_sent))
+    return;
+  std::vector<std::string> types_to_remove;
+  for (size_t i = 0; i < arraysize(kLegacyTypes); ++i) {
+    const std::string incident_type(
+        base::IntToString(static_cast<int32_t>(kLegacyTypes[i])));
+    const base::DictionaryValue* type_dict = NULL;
+    if (incidents_sent->GetDictionaryWithoutPathExpansion(incident_type,
+                                                          &type_dict)) {
+      types_to_remove.push_back(incident_type);
+    }
+  }
+  if (types_to_remove.empty())
+    return;
+
+  DictionaryPrefUpdate pref_update(profile->GetPrefs(),
+                                   prefs::kSafeBrowsingIncidentsSent);
+  for (const auto& incident_type : types_to_remove)
+    pref_update.Get()->RemoveWithoutPathExpansion(incident_type, NULL);
+}
+
 // Runs |callback| on the thread to which |thread_runner| belongs. The callback
 // is run immediately if this function is called on |thread_runner|'s thread.
 void AddIncidentOnOriginThread(
@@ -377,6 +411,8 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
       GetProfileContext(NULL)->incidents.size()) {
     BeginReportProcessing();
   }
+
+  CleanLegacyPruneState(profile);
 
   // TODO(grt): register for pref change notifications to start delayed analysis
   // and/or report processing if sb is currently disabled but subsequently
