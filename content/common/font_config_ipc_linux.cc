@@ -20,11 +20,12 @@
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 
 namespace content {
 
 // Return a stream from the file descriptor, or NULL on failure.
-SkStream* StreamFromFD(int fd) {
+SkStreamAsset* StreamFromFD(int fd) {
   skia::RefPtr<SkData> data = skia::AdoptRef(SkData::NewFromFD(fd));
   if (!data) {
     return NULL;
@@ -94,7 +95,7 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
   return true;
 }
 
-SkStream* FontConfigIPC::openStream(const FontIdentity& identity) {
+SkStreamAsset* FontConfigIPC::openStream(const FontIdentity& identity) {
   TRACE_EVENT0("sandbox_ipc", "FontConfigIPC::openStream");
   Pickle request;
   request.WriteInt(METHOD_OPEN);
@@ -118,7 +119,7 @@ SkStream* FontConfigIPC::openStream(const FontIdentity& identity) {
     return NULL;
   }
 
-  SkStream* stream = StreamFromFD(result_fd);
+  SkStreamAsset* stream = StreamFromFD(result_fd);
   CloseFD(result_fd);
   return stream;
 }

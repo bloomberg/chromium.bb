@@ -6,9 +6,13 @@
 #define CONTENT_COMMON_FONT_CONFIG_IPC_LINUX_H_
 
 #include "base/compiler_specific.h"
+#include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 
 #include <string>
+
+class SkString;
 
 namespace content {
 
@@ -25,7 +29,7 @@ class FontConfigIPC : public SkFontConfigInterface {
                        SkString* outFamilyName,
                        SkTypeface::Style* outStyle) override;
 
-  SkStream* openStream(const FontIdentity&) override;
+  SkStreamAsset* openStream(const FontIdentity&) override;
 
   enum Method {
     METHOD_MATCH = 0,
