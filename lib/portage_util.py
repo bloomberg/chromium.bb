@@ -67,6 +67,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
   """
   # Load all the known overlays so we can extract the details below.
   paths = (
+      'projects',
       'src/overlays',
       'src/private-overlays',
       'src/third_party',
