@@ -11,23 +11,23 @@
 namespace extensions {
 
 // See shell_gcd.idl for documentation.
-class ShellGcdGetSetupStatusFunction : public UIThreadExtensionFunction {
+class ShellGcdPingFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("shell.gcd.getSetupStatus", UNKNOWN);
+  DECLARE_EXTENSION_FUNCTION("shell.gcd.ping", UNKNOWN);
 
-  ShellGcdGetSetupStatusFunction();
+  ShellGcdPingFunction();
 
  protected:
-  ~ShellGcdGetSetupStatusFunction() override;
+  ~ShellGcdPingFunction() override;
 
   // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
   // Callback for status from DBus call to GCD privet daemon.
-  void OnSetupStatus(const std::string& status_string);
+  void OnPing(bool success);
 
-  DISALLOW_COPY_AND_ASSIGN(ShellGcdGetSetupStatusFunction);
+  DISALLOW_COPY_AND_ASSIGN(ShellGcdPingFunction);
 };
 
 }  // namespace extensions

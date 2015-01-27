@@ -13,23 +13,21 @@ namespace gcd = extensions::shell::api::shell_gcd;
 
 namespace extensions {
 
-ShellGcdGetSetupStatusFunction::ShellGcdGetSetupStatusFunction() {
+ShellGcdPingFunction::ShellGcdPingFunction() {
 }
 
-ShellGcdGetSetupStatusFunction::~ShellGcdGetSetupStatusFunction() {
+ShellGcdPingFunction::~ShellGcdPingFunction() {
 }
 
-ExtensionFunction::ResponseAction ShellGcdGetSetupStatusFunction::Run() {
+ExtensionFunction::ResponseAction ShellGcdPingFunction::Run() {
   // |this| is refcounted so we don't need the usual DBus callback WeakPtr.
-  chromeos::DBusThreadManager::Get()->GetPrivetDaemonClient()->GetSetupStatus(
-      base::Bind(&ShellGcdGetSetupStatusFunction::OnSetupStatus, this));
+  chromeos::DBusThreadManager::Get()->GetPrivetDaemonClient()->Ping(
+      base::Bind(&ShellGcdPingFunction::OnPing, this));
   return RespondLater();
 }
 
-void ShellGcdGetSetupStatusFunction::OnSetupStatus(
-    const std::string& status_string) {
-  gcd::SetupStatus status = gcd::ParseSetupStatus(status_string);
-  Respond(ArgumentList(gcd::GetSetupStatus::Results::Create(status)));
+void ShellGcdPingFunction::OnPing(bool success) {
+  Respond(OneArgument(new base::FundamentalValue(success)));
 }
 
 }  // namespace extensions

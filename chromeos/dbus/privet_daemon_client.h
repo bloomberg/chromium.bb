@@ -16,15 +16,11 @@
 // team. Move to third_party/cros_system_api/dbus/service_constants.h when the
 // interface is finalized.
 namespace privetd {
-const char kPrivetdInterface[] = "org.chromium.privetd";
-const char kPrivetdServicePath[] = "/org/chromium/privetd";
 const char kPrivetdServiceName[] = "org.chromium.privetd";
-
-// Signals.
-const char kSetupStatusChangedSignal[] = "SetupStatusChanged";
-
-// Setup status values.
-const char kSetupCompleted[] = "completed";
+const char kPrivetdManagerServicePath[] = "/org/chromium/privetd/Manager";
+const char kPrivetdManagerInterface[] = "org.chromium.privetd.Manager";
+// Methods.
+const char kPingMethod[] = "Ping";
 }  // namespace privetd
 
 namespace chromeos {
@@ -36,13 +32,11 @@ class CHROMEOS_EXPORT PrivetDaemonClient : public DBusClient {
  public:
   ~PrivetDaemonClient() override;
 
-  // Called with setup status.
-  using GetSetupStatusCallback =
-      base::Callback<void(const std::string& status)>;
+  // Returns true if privetd correctly responded to Ping().
+  using PingCallback = base::Callback<void(bool success)>;
 
-  // Asynchronously gets the current setup status. The setup status strings can
-  // be found in third_party/cros_system_api/dbus/service_constants.h.
-  virtual void GetSetupStatus(const GetSetupStatusCallback& callback) = 0;
+  // Asynchronously pings the daemon.
+  virtual void Ping(const PingCallback& callback) = 0;
 
   // Creates a new instance and returns ownership.
   static PrivetDaemonClient* Create();
@@ -52,6 +46,8 @@ class CHROMEOS_EXPORT PrivetDaemonClient : public DBusClient {
   PrivetDaemonClient();
 
  private:
+  friend class PrivetDaemonClientTest;
+
   DISALLOW_COPY_AND_ASSIGN(PrivetDaemonClient);
 };
 

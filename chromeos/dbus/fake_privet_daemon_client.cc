@@ -17,9 +17,8 @@ FakePrivetDaemonClient::~FakePrivetDaemonClient() {
 void FakePrivetDaemonClient::Init(dbus::Bus* bus) {
 }
 
-void FakePrivetDaemonClient::GetSetupStatus(
-    const GetSetupStatusCallback& callback) {
-  callback.Run(privetd::kSetupCompleted);
+void FakePrivetDaemonClient::Ping(const PingCallback& callback) {
+  callback.Run(true /* success */);
 }
 
 }  // namespace chromeos

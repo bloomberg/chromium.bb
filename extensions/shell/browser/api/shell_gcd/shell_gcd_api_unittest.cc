@@ -30,18 +30,17 @@ class ShellGcdApiTest : public ApiUnitTest {
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(ShellGcdApiTest);
 };
 
 TEST_F(ShellGcdApiTest, GetBootstrapStatus) {
   // Function succeeds and returns a result (for its callback).
   scoped_ptr<base::Value> result =
-      RunFunctionAndReturnValue(new ShellGcdGetSetupStatusFunction, "[{}]");
+      RunFunctionAndReturnValue(new ShellGcdPingFunction, "[{}]");
   ASSERT_TRUE(result.get());
-  std::string value;
-  result->GetAsString(&value);
-  EXPECT_EQ("completed", value);
+  bool success = false;
+  result->GetAsBoolean(&success);
+  EXPECT_TRUE(success);
 }
 
 }  // namespace extensions

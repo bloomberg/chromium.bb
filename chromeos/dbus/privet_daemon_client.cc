@@ -10,10 +10,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/bus.h"
+#include "dbus/message.h"
 #include "dbus/object_proxy.h"
 
 namespace chromeos {
 namespace {
+
+// The expected response to the Ping D-Bus method.
+const char kPingResponse[] = "Hello world!";
 
 // The PrivetClient implementation used in production.
 class PrivetClientImpl : public PrivetDaemonClient {
@@ -25,11 +29,11 @@ class PrivetClientImpl : public PrivetDaemonClient {
   void Init(dbus::Bus* bus) override;
 
   // PrivetClient overrides:
-  void GetSetupStatus(const GetSetupStatusCallback& callback) override;
+  void Ping(const PingCallback& callback) override;
 
  private:
-  // Called when the setup status changes.
-  void OnSetupStatusChanged(dbus::Signal* signal);
+  // Callback for the Ping DBus method.
+  void OnPing(const PingCallback& callback, dbus::Response* response);
 
   // Called when the object is connected to the signal.
   void OnSignalConnected(const std::string& interface_name,
@@ -49,26 +53,36 @@ PrivetClientImpl::PrivetClientImpl()
 PrivetClientImpl::~PrivetClientImpl() {
 }
 
-void PrivetClientImpl::GetSetupStatus(const GetSetupStatusCallback& callback) {
-  // TODO(jamescook): Implement this.
-  callback.Run(privetd::kSetupCompleted);
+void PrivetClientImpl::Ping(const PingCallback& callback) {
+  dbus::MethodCall method_call(privetd::kPrivetdManagerInterface,
+                               privetd::kPingMethod);
+  privetd_proxy_->CallMethod(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::Bind(&PrivetClientImpl::OnPing, weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void PrivetClientImpl::Init(dbus::Bus* bus) {
-  privetd_proxy_ =
-      bus->GetObjectProxy(privetd::kPrivetdServiceName,
-                          dbus::ObjectPath(privetd::kPrivetdServicePath));
-
-  privetd_proxy_->ConnectToSignal(
-      privetd::kPrivetdInterface, privetd::kSetupStatusChangedSignal,
-      base::Bind(&PrivetClientImpl::OnSetupStatusChanged,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&PrivetClientImpl::OnSignalConnected,
-                 weak_ptr_factory_.GetWeakPtr()));
+  privetd_proxy_ = bus->GetObjectProxy(
+      privetd::kPrivetdServiceName,
+      dbus::ObjectPath(privetd::kPrivetdManagerServicePath));
 }
 
-void PrivetClientImpl::OnSetupStatusChanged(dbus::Signal* signal) {
-  // TODO(jamescook): Implement this.
+void PrivetClientImpl::OnPing(const PingCallback& callback,
+                              dbus::Response* response) {
+  if (!response) {
+    LOG(ERROR) << "Error calling " << privetd::kPingMethod;
+    callback.Run(false);
+    return;
+  }
+  dbus::MessageReader reader(response);
+  std::string value;
+  if (!reader.PopString(&value)) {
+    LOG(ERROR) << "Error reading response from privetd: "
+               << response->ToString();
+  }
+  // Returns success if the expected value is received.
+  callback.Run(value == kPingResponse);
 }
 
 void PrivetClientImpl::OnSignalConnected(const std::string& interface_name,

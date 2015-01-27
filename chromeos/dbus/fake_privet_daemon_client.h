@@ -20,7 +20,7 @@ class FakePrivetDaemonClient : public PrivetDaemonClient {
   void Init(dbus::Bus* bus) override;
 
   // PrivetClient overrides:
-  void GetSetupStatus(const GetSetupStatusCallback& callback) override;
+  void Ping(const PingCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakePrivetDaemonClient);

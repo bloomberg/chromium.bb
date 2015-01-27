@@ -6,38 +6,11 @@
 // running on Chrome OS Core. The actual bootstrapping and GCD registration is
 // handled by the privetd and buffet system daemons.
 namespace shell.gcd {
-  
-  enum SetupStatus {
-    // Not yet configured. Waiting for a connection from the phone or laptop
-    // setup app.
-    unconfigured,
-
-    // Displaying code for user to verify they wish to set up this device.
-    confirmingSetup,
-    
-    // Establishing a secure connection to the setup device and exchanging the
-    // Wi-Fi credentials. 
-    exchangingCredentials,
-    
-    // Connecting to the local network.
-    connectingToNetwork,
-    
-    // Registering with the GCD backend.
-    registering,
-    
-    // Setup completed.
-    completed
-  };
-  
-  callback SetupStatusCallback = void(SetupStatus status);
+ 
+  callback PingCallback = void(boolean success);
 
   interface Functions {
-    // Returns the current setup status via |callback|.
-    static void getSetupStatus(SetupStatusCallback callback);
-  };
-  
-  interface Events {
-    // Notifies that setup has transitioned to a new |status|.
-    static void onSetupStatusChanged(SetupStatus status);
+    // Attempts to ping the daemon via D-Bus.
+    static void ping(PingCallback callback);
   };
 };
