@@ -51,7 +51,7 @@ public:
     // fills in the start location and column span of cell
     virtual void columnIndexRange(pair<unsigned, unsigned>& columnRange);
 
-    AccessibilityRole scanToDecideHeaderRole();
+    virtual AccessibilityRole scanToDecideHeaderRole();
 protected:
     virtual AXObject* parentTable() const;
     int m_rowIndex;

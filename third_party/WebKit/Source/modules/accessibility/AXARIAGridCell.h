@@ -48,8 +48,11 @@ public:
     virtual void rowIndexRange(pair<unsigned, unsigned>& rowRange) override;
     // fills in the start location and column span of cell
     virtual void columnIndexRange(pair<unsigned, unsigned>& columnRange) override;
+    virtual AccessibilityRole scanToDecideHeaderRole() override;
 
 protected:
+    bool isAriaColumnHeader() const;
+    bool isAriaRowHeader() const;
     virtual AXObject* parentTable() const override;
 };
 

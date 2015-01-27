@@ -50,6 +50,18 @@ PassRefPtr<AXARIAGridCell> AXARIAGridCell::create(RenderObject* renderer, AXObje
     return adoptRef(new AXARIAGridCell(renderer, axObjectCache));
 }
 
+bool AXARIAGridCell::isAriaColumnHeader() const
+{
+    const AtomicString& role = getAttribute(HTMLNames::roleAttr);
+    return equalIgnoringCase(role, "columnheader");
+}
+
+bool AXARIAGridCell::isAriaRowHeader() const
+{
+    const AtomicString& role = getAttribute(HTMLNames::roleAttr);
+    return equalIgnoringCase(role, "rowheader");
+}
+
 AXObject* AXARIAGridCell::parentTable() const
 {
     AXObject* parent = parentObjectUnignored();
@@ -119,6 +131,17 @@ void AXARIAGridCell::columnIndexRange(pair<unsigned, unsigned>& columnRange)
 
     // as far as I can tell, grid cells cannot span columns
     columnRange.second = 1;
+}
+
+AccessibilityRole AXARIAGridCell::scanToDecideHeaderRole()
+{
+    if (isAriaRowHeader())
+        return RowHeaderRole;
+
+    if (isAriaColumnHeader())
+        return ColumnHeaderRole;
+
+    return CellRole;
 }
 
 } // namespace blink

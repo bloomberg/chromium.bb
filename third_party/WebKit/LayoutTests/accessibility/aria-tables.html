@@ -1,0 +1,48 @@
+<script src="../resources/js-test.js"></script>
+<body id="body">
+<div role="grid">
+  <div role="row">
+    <div role="columnheader">col head</div>
+    <div role="columnheader">col head</div>
+    <div role="columnheader">col head</div>
+  </div>
+  <div role="row">
+    <div role="rowheader">row head</div>
+    <div role="gridcell">data</div>
+    <div role="rowheader">row head</div>
+  </div>
+  <div role="row">
+    <div role="rowheader">row head</div>
+    <div role="rowheader">row head</div>
+    <div role="columnheader">col head</div>
+  </div>
+</div>
+</body>
+<p>End of test</p>
+<p id="description"></p>
+<div id="console"></div>
+<script>
+    function buildAccessibilityTree(accessibilityObject, i) {
+        if(accessibilityObject.stringValue.indexOf('End of test') >= 0)
+            return false;
+
+        if (accessibilityObject.role == 'AXRole: AXColumn' || accessibilityObject.role == 'AXRole: AXTableHeaderContainer')
+            return true;
+
+        var indent = "";
+        for (var k = 0; k < i; k++)
+            indent += "  ";
+        debug(indent + accessibilityObject.role + " " + accessibilityObject.stringValue);
+        var childrenCount = accessibilityObject.childrenCount;
+        for (var j = 0; j < childrenCount; j++) {
+            if (!buildAccessibilityTree(accessibilityObject.childAtIndex(j), i + 1))
+                return false;
+        }
+        return true;
+    }
+
+if (window.accessibilityController) {
+    document.getElementById("body").focus();
+    buildAccessibilityTree(accessibilityController.focusedElement, 0);
+}
+</script>
