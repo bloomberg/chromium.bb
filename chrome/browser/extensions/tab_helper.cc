@@ -230,7 +230,7 @@ void TabHelper::DidNavigateMainFrame(
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const ExtensionSet& enabled_extensions = registry->enabled_extensions();
 
-  if (util::IsStreamlinedHostedAppsEnabled()) {
+  if (util::IsNewBookmarkAppsEnabled()) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     if (browser && browser->is_app()) {
       const Extension* extension = registry->GetExtensionById(

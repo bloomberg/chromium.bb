@@ -30,7 +30,7 @@ class ExtensionPrefs;
 // Gets the launch type preference. If no preference is set, returns
 // LAUNCH_TYPE_DEFAULT.
 // Returns LAUNCH_TYPE_WINDOW if there's no preference and
-// 'streamlined hosted apps' are enabled.
+// bookmark apps are enabled.
 LaunchType GetLaunchType(const ExtensionPrefs* prefs,
                          const Extension* extension);
 

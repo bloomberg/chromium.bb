@@ -79,7 +79,7 @@ void ExtensionAppModelBuilder::InitializePrefChangeRegistrars() {
       base::Bind(&ExtensionAppModelBuilder::OnProfilePreferenceChanged,
                  base::Unretained(this)));
 
-  if (!extensions::util::IsStreamlinedHostedAppsEnabled())
+  if (!extensions::util::IsNewBookmarkAppsEnabled())
     return;
 
   // TODO(calamity): analyze the performance impact of doing this every

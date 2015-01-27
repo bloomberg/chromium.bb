@@ -49,12 +49,12 @@ cr.define('ntp', function() {
       this.launch_.addEventListener('activate', this.onLaunch_.bind(this));
 
       menu.appendChild(cr.ui.MenuItem.createSeparator());
-      if (loadTimeData.getBoolean('enableStreamlinedHostedApps'))
+      if (loadTimeData.getBoolean('enableNewBookmarkApps'))
         this.launchRegularTab_ = this.appendMenuItem_('applaunchtypetab');
       else
         this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
       this.launchPinnedTab_ = this.appendMenuItem_('applaunchtypepinned');
-      if (loadTimeData.getBoolean('enableStreamlinedHostedApps') || !cr.isMac)
+      if (loadTimeData.getBoolean('enableNewBookmarkApps') || !cr.isMac)
         this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
       this.launchFullscreen_ = this.appendMenuItem_('applaunchtypefullscreen');
 
@@ -135,9 +135,9 @@ cr.define('ntp', function() {
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.disabled = false;
         launchTypeButton.checked = app.appData.launch_type == id;
-        // Streamlined hosted apps should only show the "Open as tab" button.
+        // If bookmark apps are enabled, only show the "Open as tab" button.
         launchTypeButton.hidden = app.appData.packagedApp ||
-            (loadTimeData.getBoolean('enableStreamlinedHostedApps') &&
+            (loadTimeData.getBoolean('enableNewBookmarkApps') &&
              launchTypeButton != launchTypeRegularTab);
       });
 
@@ -168,9 +168,9 @@ cr.define('ntp', function() {
       var pressed = e.currentTarget;
       var app = this.app_;
       var targetLaunchType = pressed;
-      // Streamlined hosted apps can only toggle between open as window and open
-      // as tab.
-      if (loadTimeData.getBoolean('enableStreamlinedHostedApps')) {
+      // When bookmark apps are enabled, hosted apps can only toggle between
+      // open as window and open as tab.
+      if (loadTimeData.getBoolean('enableNewBookmarkApps')) {
         targetLaunchType = this.launchRegularTab_.checked ?
             this.launchNewWindow_ : this.launchRegularTab_;
       }

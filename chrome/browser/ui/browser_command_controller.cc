@@ -978,8 +978,8 @@ void BrowserCommandController::InitCommandState() {
   // Navigation commands
   command_updater_.UpdateCommandEnabled(
       IDC_HOME,
-      normal_window || (extensions::util::IsStreamlinedHostedAppsEnabled() &&
-                        browser_->is_app()));
+      normal_window ||
+          (extensions::util::IsNewBookmarkAppsEnabled() && browser_->is_app()));
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);

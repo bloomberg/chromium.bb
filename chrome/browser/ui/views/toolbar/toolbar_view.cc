@@ -576,8 +576,7 @@ void ToolbarView::Layout() {
   next_element_x = reload_->bounds().right();
 
   if (show_home_button_.GetValue() ||
-      (browser_->is_app() &&
-       extensions::util::IsStreamlinedHostedAppsEnabled())) {
+      (browser_->is_app() && extensions::util::IsNewBookmarkAppsEnabled())) {
     home_->SetVisible(true);
     home_->SetBounds(next_element_x, child_y,
                      home_->GetPreferredSize().width(), child_height);

@@ -115,9 +115,9 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
     menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
 
     if (!is_platform_app_) {
-      // Streamlined hosted apps can only toggle between USE_LAUNCH_TYPE_WINDOW
-      // and USE_LAUNCH_TYPE_REGULAR.
-      if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
+      // When bookmark apps are enabled, hosted apps can only toggle between
+      // USE_LAUNCH_TYPE_WINDOW and USE_LAUNCH_TYPE_REGULAR.
+      if (extensions::util::IsNewBookmarkAppsEnabled()) {
         menu_model_->AddCheckItemWithStringId(
             USE_LAUNCH_TYPE_REGULAR,
             IDS_APP_CONTEXT_MENU_OPEN_TAB);
@@ -194,7 +194,7 @@ base::string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
   // If --enable-new-bookmark-apps is enabled, then only check if
   // USE_LAUNCH_TYPE_REGULAR is checked, as USE_LAUNCH_TYPE_PINNED (i.e. open
   // as pinned tab) and fullscreen-by-default windows do not exist.
-  if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
+  if (extensions::util::IsNewBookmarkAppsEnabled()) {
     return IsCommandIdChecked(USE_LAUNCH_TYPE_REGULAR) ?
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB) :
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
@@ -270,9 +270,9 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
              command_id < USE_LAUNCH_TYPE_COMMAND_END) {
     extensions::LaunchType launch_type = static_cast<extensions::LaunchType>(
         command_id - USE_LAUNCH_TYPE_COMMAND_START);
-    // Streamlined hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
-    // LAUNCH_TYPE_REGULAR.
-    if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
+    // When bookmark apps are enabled, hosted apps can only toggle between
+    // LAUNCH_TYPE_WINDOW and LAUNCH_TYPE_REGULAR.
+    if (extensions::util::IsNewBookmarkAppsEnabled()) {
       launch_type = (controller_->GetExtensionLaunchType(profile_, app_id_) ==
                      extensions::LAUNCH_TYPE_REGULAR) ?
                     extensions::LAUNCH_TYPE_WINDOW :

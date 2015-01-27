@@ -199,9 +199,9 @@ bool GetAppLaunchContainer(
   extensions::LaunchContainer launch_container = extensions::GetLaunchContainer(
       extensions::ExtensionPrefs::Get(profile), extension);
 
-  if (!extensions::util::IsStreamlinedHostedAppsEnabled() &&
+  if (!extensions::util::IsNewBookmarkAppsEnabled() &&
       !extensions::HasPreferredLaunchContainer(
-           extensions::ExtensionPrefs::Get(profile), extension)) {
+          extensions::ExtensionPrefs::Get(profile), extension)) {
     launch_container = extensions::LAUNCH_CONTAINER_WINDOW;
   }
 

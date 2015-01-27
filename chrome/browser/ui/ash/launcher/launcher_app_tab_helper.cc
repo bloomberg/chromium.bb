@@ -53,7 +53,7 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
 
   // Bookmark app windows should match their launch url extension despite
   // their web extents.
-  if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
+  if (extensions::util::IsNewBookmarkAppsEnabled()) {
     for (extensions::ExtensionSet::const_iterator it = extensions.begin();
          it != extensions.end(); ++it) {
       if (it->get()->from_bookmark() &&

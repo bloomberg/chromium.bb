@@ -239,7 +239,7 @@ void ToolsMenuModel::Build(Browser* browser) {
     show_create_shortcuts = false;
 #endif
 
-  if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
+  if (extensions::util::IsNewBookmarkAppsEnabled()) {
     AddItemWithStringId(IDC_CREATE_HOSTED_APP, IDS_CREATE_HOSTED_APP);
     AddSeparator(ui::NORMAL_SEPARATOR);
   } else if (show_create_shortcuts) {

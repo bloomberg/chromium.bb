@@ -157,10 +157,10 @@ bool ExtensionAppItem::NeedsOverlay() const {
           : extensions::LAUNCH_TYPE_WINDOW;
 
   // The overlay icon is disabled for hosted apps in windowed mode with
-  // streamlined hosted apps.
+  // bookmark apps enabled.
   return !is_platform_app_ && extension_id_ != extension_misc::kChromeAppId &&
-      (!extensions::util::IsStreamlinedHostedAppsEnabled() ||
-       launch_type != extensions::LAUNCH_TYPE_WINDOW);
+         (!extensions::util::IsNewBookmarkAppsEnabled() ||
+          launch_type != extensions::LAUNCH_TYPE_WINDOW);
 }
 
 void ExtensionAppItem::Reload() {

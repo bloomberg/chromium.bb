@@ -326,8 +326,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
 
   // If new bookmark apps are enabled, it should be a standard tabbed window,
   // not an app window; otherwise the reverse should be true.
-  bool new_bookmark_apps_enabled =
-      extensions::util::IsStreamlinedHostedAppsEnabled();
+  bool new_bookmark_apps_enabled = extensions::util::IsNewBookmarkAppsEnabled();
   EXPECT_EQ(!new_bookmark_apps_enabled, new_browser->is_app());
   EXPECT_EQ(new_bookmark_apps_enabled, new_browser->is_type_tabbed());
 }

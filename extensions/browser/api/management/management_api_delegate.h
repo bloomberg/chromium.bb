@@ -53,9 +53,9 @@ class ManagementAPIDelegate {
       const Extension* extension,
       content::BrowserContext* context) const = 0;
 
-  // Forwards the call to extensions::util::IsStreamlinedHostedAppsEnabled in
+  // Forwards the call to extensions::util::IsNewBookmarkAppsEnabled in
   // chrome.
-  virtual bool IsStreamlinedHostedAppsEnabled() const = 0;
+  virtual bool IsNewBookmarkAppsEnabled() const = 0;
 
   // Forwards the call to AppLaunchInfo::GetFullLaunchURL in chrome.
   virtual GURL GetFullLaunchURL(const Extension* extension) const = 0;

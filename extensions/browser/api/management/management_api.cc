@@ -82,7 +82,7 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
   launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB);
   launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
 
-  if (!delegate->IsStreamlinedHostedAppsEnabled()) {
+  if (!delegate->IsNewBookmarkAppsEnabled()) {
     launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB);
     launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_FULL_SCREEN);
   }

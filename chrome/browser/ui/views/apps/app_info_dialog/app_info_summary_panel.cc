@@ -58,16 +58,14 @@ class LaunchOptionsComboboxModel : public ui::ComboboxModel {
 };
 
 LaunchOptionsComboboxModel::LaunchOptionsComboboxModel() {
-  if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
-    // Streamlined hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
-    // LAUNCH_TYPE_REGULAR.
+  if (extensions::util::IsNewBookmarkAppsEnabled()) {
+    // When bookmark apps are enabled, hosted apps can only toggle between
+    // LAUNCH_TYPE_WINDOW and LAUNCH_TYPE_REGULAR.
     // TODO(sashab): Use a checkbox for this choice instead of combobox.
     launch_types_.push_back(extensions::LAUNCH_TYPE_REGULAR);
     launch_type_messages_.push_back(
         l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_TAB));
 
-    // Although LAUNCH_TYPE_WINDOW doesn't work on Mac, the streamlined hosted
-    // apps flag isn't available on Mac, so we must be on a non-Mac OS.
     launch_types_.push_back(extensions::LAUNCH_TYPE_WINDOW);
     launch_type_messages_.push_back(
         l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
@@ -81,7 +79,8 @@ LaunchOptionsComboboxModel::LaunchOptionsComboboxModel() {
         l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_PINNED));
 
 #if defined(OS_MACOSX)
-    // Mac does not support standalone web app browser windows or maximize.
+    // Mac does not support standalone web app browser windows or maximize
+    // unless the new bookmark apps system is enabled.
     launch_types_.push_back(extensions::LAUNCH_TYPE_FULLSCREEN);
     launch_type_messages_.push_back(
         l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN));

@@ -349,7 +349,7 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
       IDR_EXTENSION_DEFAULT_ICON);
 }
 
-bool IsStreamlinedHostedAppsEnabled() {
+bool IsNewBookmarkAppsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNewBookmarkApps);
 }

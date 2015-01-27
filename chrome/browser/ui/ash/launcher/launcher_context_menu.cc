@@ -106,10 +106,10 @@ void LauncherContextMenu::Init() {
       if (!controller_->IsPlatformApp(item_.id) &&
           item_.type != ash::TYPE_WINDOWED_APP) {
         AddSeparator(ui::NORMAL_SEPARATOR);
-        if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
-          // Streamlined hosted apps launch in a window by default. This menu
-          // item is re-interpreted as a single, toggle-able option to launch
-          // the hosted app as a tab.
+        if (extensions::util::IsNewBookmarkAppsEnabled()) {
+          // With bookmark apps enabled, hosted apps launch in a window by
+          // default. This menu item is re-interpreted as a single, toggle-able
+          // option to launch the hosted app as a tab.
           AddCheckItemWithStringId(
               LAUNCH_TYPE_REGULAR_TAB,
               IDS_APP_CONTEXT_MENU_OPEN_TAB);
@@ -313,9 +313,9 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case LAUNCH_TYPE_REGULAR_TAB: {
       extensions::LaunchType launch_type =
           extensions::LAUNCH_TYPE_REGULAR;
-      // Streamlined hosted apps can only toggle between LAUNCH_WINDOW and
-      // LAUNCH_REGULAR.
-      if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
+      // With bookmark apps enabled, hosted apps can only toggle between
+      // LAUNCH_WINDOW and LAUNCH_REGULAR.
+      if (extensions::util::IsNewBookmarkAppsEnabled()) {
         launch_type = controller_->GetLaunchType(item_.id) ==
                     extensions::LAUNCH_TYPE_REGULAR
                 ? extensions::LAUNCH_TYPE_WINDOW

@@ -2345,8 +2345,8 @@ bool Browser::ShouldShowLocationBar() const {
 }
 
 bool Browser::ShouldUseWebAppFrame() const {
-  // Only use the web app frame for apps in ash, and only if streamlined hosted
-  // apps are enabled.
+  // Only use the web app frame for apps in ash, and only if bookmark apps are
+  // enabled.
   if (!is_app() || host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH ||
       !IsWebAppFrameEnabled()) {
     return false;

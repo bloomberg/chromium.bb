@@ -442,8 +442,8 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
   GURL url = browser->profile()->GetHomePage();
 
 #if defined(ENABLE_EXTENSIONS)
-  // Streamlined hosted apps should return to their launch page when the home
-  // button is pressed.
+  // With bookmark apps enabled, hosted apps should return to their launch page
+  // when the home button is pressed.
   if (browser->is_app()) {
     const extensions::Extension* extension =
         extensions::ExtensionRegistry::Get(browser->profile())

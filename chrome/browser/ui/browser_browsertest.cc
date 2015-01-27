@@ -1318,8 +1318,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
 
-  bool new_bookmark_apps_enabled =
-      extensions::util::IsStreamlinedHostedAppsEnabled();
+  bool new_bookmark_apps_enabled = extensions::util::IsNewBookmarkAppsEnabled();
 
   // If the new bookmark app flow is enabled, the app should open as an tab.
   // Otherwise the app should open as an app window.

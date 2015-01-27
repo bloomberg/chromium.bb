@@ -264,8 +264,8 @@ ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
   return scoped_ptr<extensions::AppForLinkDelegate>(delegate);
 }
 
-bool ChromeManagementAPIDelegate::IsStreamlinedHostedAppsEnabled() const {
-  return extensions::util::IsStreamlinedHostedAppsEnabled();
+bool ChromeManagementAPIDelegate::IsNewBookmarkAppsEnabled() const {
+  return extensions::util::IsNewBookmarkAppsEnabled();
 }
 
 void ChromeManagementAPIDelegate::EnableExtension(
