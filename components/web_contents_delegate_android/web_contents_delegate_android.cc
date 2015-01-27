@@ -261,12 +261,22 @@ void WebContentsDelegateAndroid::WebContentsCreated(
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return;
-  Java_WebContentsDelegateAndroid_webContentsCreated(env, obj.obj(),
-      reinterpret_cast<intptr_t>(source_contents),
+
+  ScopedJavaLocalRef<jobject> jsource_contents;
+  if (source_contents)
+    jsource_contents = source_contents->GetJavaWebContents();
+  ScopedJavaLocalRef<jobject> jnew_contents;
+  if (new_contents)
+    jnew_contents = new_contents->GetJavaWebContents();
+
+  Java_WebContentsDelegateAndroid_webContentsCreated(
+      env,
+      obj.obj(),
+      jsource_contents.obj(),
       opener_render_frame_id,
       base::android::ConvertUTF16ToJavaString(env, frame_name).Release(),
       base::android::ConvertUTF8ToJavaString(env, target_url.spec()).Release(),
-      reinterpret_cast<intptr_t>(new_contents));
+      jnew_contents.obj());
 }
 
 void WebContentsDelegateAndroid::CloseContents(WebContents* source) {

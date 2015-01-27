@@ -40,7 +40,7 @@ public class ChromeShellTab extends Tab {
     public ChromeShellTab(Context context, LoadUrlParams params, WindowAndroid window,
             ContentViewClient contentViewClient, TabManager tabManager) {
         super(false, context, window);
-        initialize(0, null, false);
+        initialize(null, null, false);
         mTabManager = tabManager;
         setContentViewClient(contentViewClient);
         loadUrl(params);
@@ -141,8 +141,8 @@ public class ChromeShellTab extends Tab {
         }
 
         @Override
-        public void webContentsCreated(long sourceWebContents, long openerRenderFrameId,
-                String frameName, String targetUrl, long newWebContents) {
+        public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
+                String frameName, String targetUrl, WebContents newWebContents) {
             mTabManager.createTab(targetUrl, TabLaunchType.FROM_LINK);
             super.webContentsCreated(
                     sourceWebContents, openerRenderFrameId, frameName, targetUrl, newWebContents);

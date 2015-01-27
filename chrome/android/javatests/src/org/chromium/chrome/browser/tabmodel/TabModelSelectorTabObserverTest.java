@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -95,7 +96,7 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
         };
         mNormalTabModel = new TabModelBase(false, orderController, delegate) {
             @Override
-            protected Tab createTabWithNativeContents(boolean incognito, long nativeWebContents,
+            protected Tab createTabWithWebContents(boolean incognito, WebContents webContents,
                     int parentId) {
                 return null;
             }
@@ -108,7 +109,7 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
 
         mIncognitoTabModel = new TabModelBase(true, orderController, delegate) {
             @Override
-            protected Tab createTabWithNativeContents(boolean incognito, long nativeWebContents,
+            protected Tab createTabWithWebContents(boolean incognito, WebContents webContents,
                     int parentId) {
                 return null;
             }

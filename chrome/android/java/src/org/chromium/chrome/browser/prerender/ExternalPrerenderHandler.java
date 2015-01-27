@@ -8,6 +8,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * A handler class for prerender requests coming from  other applications.
@@ -28,16 +29,18 @@ public class ExternalPrerenderHandler {
      * @param referrer The referrer for the prerender request.
      * @param width The width for the content view (render widget host view) for the prerender.
      * @param height The height for the content view (render widget host view) for the prerender.
-     * @return The native web contents pointer that is linked to this prerender. 0 if unsuccessful.
+     * @return The {@link WebContents} that is linked to this prerender. {@code null} if
+     *         unsuccessful.
      */
-    public long addPrerender(Profile profile, String url, String referrer, int width, int height) {
-        long webContentsPtr = ContentViewUtil.createNativeWebContents(false);
-        if (nativeAddPrerender(mNativeExternalPrerenderHandler, profile, webContentsPtr,
+    public WebContents addPrerender(Profile profile, String url, String referrer, int width,
+            int height) {
+        WebContents webContents = ContentViewUtil.createWebContents(false, false);
+        if (nativeAddPrerender(mNativeExternalPrerenderHandler, profile, webContents,
                 url, referrer, width, height)) {
-            return webContentsPtr;
+            return webContents;
         }
-        ContentViewUtil.destroyNativeWebContents(webContentsPtr);
-        return 0;
+        if (webContents != null) webContents.destroy();
+        return null;
     }
 
     /**
@@ -52,11 +55,11 @@ public class ExternalPrerenderHandler {
      * given web contents.
      * @param profile The profile to check for prerendering.
      * @param url The url to check for prerender.
-     * @param webContentsPtr The native pointer for which to compare the session info.
+     * @param webContents The {@link WebContents} for which to compare the session info.
      * @return Whether the given url was prerendered.
      */
-    public static boolean hasPrerenderedUrl(Profile profile, String url, long webContentsPtr)  {
-        return nativeHasPrerenderedUrl(profile, url, webContentsPtr);
+    public static boolean hasPrerenderedUrl(Profile profile, String url, WebContents webContents)  {
+        return nativeHasPrerenderedUrl(profile, url, webContents);
     }
 
     /**
@@ -73,9 +76,9 @@ public class ExternalPrerenderHandler {
     private static native long nativeInit();
     private static native boolean nativeAddPrerender(
             long nativeExternalPrerenderHandlerAndroid, Profile profile,
-            long webContentsPtr, String url, String referrer, int width, int height);
+            WebContents webContents, String url, String referrer, int width, int height);
     private static native boolean nativeHasPrerenderedUrl(
-            Profile profile, String url, long webContentsPtr);
+            Profile profile, String url, WebContents webContents);
     private static native boolean nativeHasCookieStoreLoaded(
             Profile profile);
     private static native void nativeCancelCurrentPrerender(

@@ -9,6 +9,7 @@ import android.graphics.RectF;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Chromium Android specific WebContentsDelegate.
@@ -27,14 +28,14 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
     }
 
     @CalledByNative
-    public boolean addNewContents(long nativeSourceWebContents, long nativeWebContents,
+    public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
             int disposition, Rect initialPosition, boolean userGesture) {
         return false;
     }
 
     @Override
-    public void webContentsCreated(long sourceWebContents, long openerRenderFrameId,
-            String frameName, String targetUrl, long newWebContents) {
+    public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
+            String frameName, String targetUrl, WebContents newWebContents) {
     }
 
     // Helper functions used to create types that are part of the public interface

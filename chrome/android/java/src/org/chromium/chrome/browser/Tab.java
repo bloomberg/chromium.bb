@@ -392,8 +392,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
-        public void webContentsCreated(long sourceWebContents, long openerRenderFrameId,
-                String frameName, String targetUrl, long newWebContents) {
+        public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
+                String frameName, String targetUrl, WebContents newWebContents) {
             for (TabObserver observer : mObservers) {
                 observer.webContentsCreated(Tab.this, sourceWebContents, openerRenderFrameId,
                         frameName, targetUrl, newWebContents);
@@ -1187,65 +1187,56 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Initializes the ChromeTab after construction.
-     * @param nativeWebContents native WebContents object if available or 0 when creating a brand
-     *                          new tab
-     * @param tabContentManager A TabContentManager instance or {@code null} if the layer should not
-     *                          be attached to one.
-     * @param initiallyHidden   true iff the tab being initialized is created in background
+     * Initializes {@link Tab} with {@code webContents}.  If {@code webContents} is {@code null} a
+     * new {@link WebContents} will be created for this {@link Tab}.
+     * @param webContents       A {@link WebContents} object or {@code null} if one should be
+     *                          created.
+     * @param tabContentManager A {@link TabContentManager} instance or {@code null} if the web
+     *                          content will be managed/displayed manually.
+     * @param initiallyHidden   Only used if {@code webContents} is {@code null}.  Determines
+     *                          whether or not the newly created {@link WebContents} will be hidden
+     *                          or not.
      */
-    public void initialize(long nativeWebContents, TabContentManager tabContentManager,
+    public void initialize(WebContents webContents, TabContentManager tabContentManager,
             boolean initiallyHidden) {
         try {
             TraceEvent.begin("Tab.initialize");
+
             internalInit(tabContentManager);
 
-            if (getFrozenContentsState() == null && getPendingLoadParams() == null) {
-                boolean existingWebContents = nativeWebContents != 0;
-                // There is no frozen WebContents state or pending lazy load, create new
-                // WebContents.
-                if (nativeWebContents == 0) {
-                    nativeWebContents =
-                            ContentViewUtil.createNativeWebContents(isIncognito(), initiallyHidden);
-                }
-                initContentViewCore(nativeWebContents);
-                if (existingWebContents) {
-                    WebContents webContents = getWebContents();
-                    assert webContents != null;
-                    if (webContents.isLoadingToDifferentDocument()) {
-                        didStartPageLoad(webContents.getUrl(), false);
-                    }
-                }
+            // If there is a frozen WebContents state or a pending lazy load, don't create a new
+            // WebContents.
+            if (getFrozenContentsState() != null || getPendingLoadParams() != null) return;
+
+            boolean creatingWebContents = webContents == null;
+            if (creatingWebContents) {
+                webContents = ContentViewUtil.createWebContents(isIncognito(), initiallyHidden);
             }
+
+            ContentViewCore contentViewCore = ContentViewCore.fromWebContents(webContents);
+
+            if (contentViewCore == null) {
+                initContentViewCore(webContents);
+            } else {
+                setContentViewCore(contentViewCore);
+            }
+
+            if (!creatingWebContents && webContents.isLoadingToDifferentDocument()) {
+                didStartPageLoad(webContents.getUrl(), false);
+            }
+        } finally {
             if (mTimestampMillis == INVALID_TIMESTAMP) {
                 mTimestampMillis = System.currentTimeMillis();
             }
-        } finally {
-            TraceEvent.end("Tab.initialize");
-        }
-    }
 
-    /**
-     * Handles common post-construction initialization.
-     * @param contentViewCore   ContentViewCore object to attach to the tab.
-     * @param tabContentManager A TabContentManager instance or {@code null} if the layer should not
-     *                          be attached to one.
-     */
-    public void initialize(ContentViewCore contentViewCore, TabContentManager tabContentManager) {
-        try {
-            TraceEvent.begin("Tab.initialize");
-            internalInit(tabContentManager);
-            setContentViewCore(contentViewCore);
-            if (mTimestampMillis == INVALID_TIMESTAMP) {
-                mTimestampMillis = System.currentTimeMillis();
-            }
-        } finally {
             TraceEvent.end("Tab.initialize");
         }
     }
 
     /**
      * Perform any subclass-specific initialization tasks.
+     * @param tabContentManager A {@link TabContentManager} instance or {@code null} if the web
+     *                          content will be managed/displayed manually.
      */
     protected void internalInit(TabContentManager tabContentManager) {
         initializeNative();
@@ -1306,14 +1297,15 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /**
      * Creates and initializes the {@link ContentViewCore}.
      *
-     * @param nativeWebContents The native web contents pointer.
+     * @param webContents The WebContents object that will be used to build the
+     *                    {@link ContentViewCore}.
      */
-    protected void initContentViewCore(long nativeWebContents) {
+    protected void initContentViewCore(WebContents webContents) {
         ContentViewCore cvc = new ContentViewCore(mContext);
         ContentView cv = ContentView.newInstance(mContext, cvc);
         cv.setContentDescription(mContext.getResources().getString(
                 R.string.accessibility_content_view));
-        cvc.initialize(cv, cv, nativeWebContents, getWindowAndroid());
+        cvc.initialize(cv, cv, webContents, getWindowAndroid());
         setContentViewCore(cvc);
     }
 
@@ -1607,7 +1599,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         if (mPendingLoadParams != null) {
             assert isFrozen();
-            initContentViewCore(ContentViewUtil.createNativeWebContents(isIncognito(), isHidden()));
+            initContentViewCore(ContentViewUtil.createWebContents(isIncognito(), isHidden()));
             loadUrl(mPendingLoadParams);
             mPendingLoadParams = null;
             return true;
@@ -1664,12 +1656,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert getContentViewCore() == null;
 
             boolean forceNavigate = false;
-            long webContents = mFrozenContentsState.restoreContentsFromByteBuffer(isHidden());
-            if (webContents == 0) {
+            WebContents webContents = ContentViewUtil.fromNativeWebContents(
+                    mFrozenContentsState.restoreContentsFromByteBuffer(isHidden()));
+            if (webContents == null) {
                 // State restore failed, just create a new empty web contents as that is the best
                 // that can be done at this point. TODO(jcivelli) http://b/5910521 - we should show
                 // an error page instead of a blank page in that case (and the last loaded URL).
-                webContents = ContentViewUtil.createNativeWebContents(isIncognito(), isHidden());
+                webContents = ContentViewUtil.createWebContents(isIncognito(), isHidden());
                 forceNavigate = true;
             }
 
@@ -1886,12 +1879,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /** This is currently called when committing a pre-rendered page. */
     @CalledByNative
     private void swapWebContents(
-            long newWebContents, boolean didStartLoad, boolean didFinishLoad) {
+            WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
         ContentViewCore cvc = new ContentViewCore(mContext);
         ContentView cv = ContentView.newInstance(mContext, cvc);
         cv.setContentDescription(mContext.getResources().getString(
                 R.string.accessibility_content_view));
-        cvc.initialize(cv, cv, newWebContents, getWindowAndroid());
+        cvc.initialize(cv, cv, webContents, getWindowAndroid());
         swapContentViewCore(cvc, false, didStartLoad, didFinishLoad);
     }
 

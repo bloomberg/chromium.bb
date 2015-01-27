@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/android/shell_manager.h"
 #include "jni/Shell_jni.h"
@@ -58,7 +59,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 void Shell::PlatformSetContents() {
   JNIEnv* env = AttachCurrentThread();
   Java_Shell_initFromNativeTabContents(
-      env, java_object_.obj(), reinterpret_cast<intptr_t>(web_contents()));
+      env, java_object_.obj(), web_contents()->GetJavaWebContents().obj());
 }
 
 void Shell::PlatformResizeSubViews() {

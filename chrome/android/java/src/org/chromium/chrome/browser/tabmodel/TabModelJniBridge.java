@@ -9,6 +9,7 @@ import android.os.SystemClock;
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Bridges between the C++ and Java {@link TabModel} interfaces.
@@ -98,12 +99,12 @@ public abstract class TabModelJniBridge implements TabModel {
     /**
      * Creates a Tab with the given WebContents.
      * @param incognito Whether or not the tab is incognito.
-     * @param nativeWebContents Pointer to the native WebContents.
+     * @param webContents A {@link WebContents} object.
      * @param parentId ID of the parent.
      */
     @CalledByNative
-    protected abstract Tab createTabWithNativeContents(
-            boolean incognito, long nativeWebContents, int parentId);
+    protected abstract Tab createTabWithWebContents(
+            boolean incognito, WebContents webContents, int parentId);
 
     /**
      * Creates a Tab with the given WebContents for DevTools.

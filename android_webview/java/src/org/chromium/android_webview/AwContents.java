@@ -640,13 +640,13 @@ public class AwContents implements SmartClipProvider {
     }
 
     private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
-            Context context, InternalAccessDelegate internalDispatcher, long nativeWebContents,
+            Context context, InternalAccessDelegate internalDispatcher, WebContents webContents,
             GestureStateListener gestureStateListener,
             ContentViewClient contentViewClient,
             ContentViewCore.ZoomControlsDelegate zoomControlsDelegate,
             WindowAndroid windowAndroid) {
         ContentViewCore contentViewCore = new ContentViewCore(context);
-        contentViewCore.initialize(containerView, internalDispatcher, nativeWebContents,
+        contentViewCore.initialize(containerView, internalDispatcher, webContents,
                 windowAndroid);
         contentViewCore.addGestureStateListener(gestureStateListener);
         contentViewCore.setContentViewClient(contentViewClient);
@@ -812,21 +812,21 @@ public class AwContents implements SmartClipProvider {
         // bind all the native->java relationships.
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
-        long nativeWebContents = nativeGetWebContents(mNativeAwContents);
+        WebContents webContents = nativeGetWebContents(mNativeAwContents);
 
         Activity activity = ContentViewCore.activityFromContext(mContext);
         mWindowAndroid = activity != null
                 ? new ActivityWindowAndroid(activity)
                 : new WindowAndroid(mContext.getApplicationContext());
         mContentViewCore = createAndInitializeContentViewCore(
-                mContainerView, mContext, mInternalAccessAdapter, nativeWebContents,
+                mContainerView, mContext, mInternalAccessAdapter, webContents,
                 new AwGestureStateListener(), mContentViewClient, mZoomControls, mWindowAndroid);
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
         mWebContents = mContentViewCore.getWebContents();
         mNavigationController = mWebContents.getNavigationController();
         installWebContentsObserver();
-        mSettings.setWebContents(nativeWebContents);
+        mSettings.setWebContents(webContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
         mContentViewCore.onShow();
     }
@@ -2648,7 +2648,7 @@ public class AwContents implements SmartClipProvider {
             AwContentsClientBridge contentsClientBridge,
             AwContentsIoThreadClient ioThreadClient,
             InterceptNavigationDelegate navigationInterceptionDelegate);
-    private native long nativeGetWebContents(long nativeAwContents);
+    private native WebContents nativeGetWebContents(long nativeAwContents);
 
     private native void nativeDocumentHasImages(long nativeAwContents, Message message);
     private native void nativeGenerateMHTML(

@@ -89,7 +89,8 @@ class AwContents : public FindHelper::Listener,
                     jobject contents_client_bridge,
                     jobject io_thread_client,
                     jobject intercept_navigation_delegate);
-  jlong GetWebContents(JNIEnv* env, jobject obj);
+  base::android::ScopedJavaLocalRef<jobject> GetWebContents(JNIEnv* env,
+                                                            jobject obj);
 
   void Destroy(JNIEnv* env, jobject obj);
   void DocumentHasImages(JNIEnv* env, jobject obj, jobject message);

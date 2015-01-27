@@ -73,6 +73,22 @@ WebContents* WebContents::FromJavaWebContents(
 }
 
 // static
+static void DestroyWebContents(JNIEnv* env,
+                               jclass clazz,
+                               jlong jweb_contents_android_ptr) {
+  WebContentsAndroid* web_contents_android =
+      reinterpret_cast<WebContentsAndroid*>(jweb_contents_android_ptr);
+  if (!web_contents_android)
+    return;
+
+  content::WebContents* web_contents = web_contents_android->web_contents();
+  if (!web_contents)
+    return;
+
+  delete web_contents;
+}
+
+// static
 bool WebContentsAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
@@ -90,7 +106,7 @@ WebContentsAndroid::WebContentsAndroid(WebContents* web_contents)
 }
 
 WebContentsAndroid::~WebContentsAndroid() {
-  Java_WebContentsImpl_destroy(AttachCurrentThread(), obj_.obj());
+  Java_WebContentsImpl_clearNativePtr(AttachCurrentThread(), obj_.obj());
 }
 
 base::android::ScopedJavaLocalRef<jobject>

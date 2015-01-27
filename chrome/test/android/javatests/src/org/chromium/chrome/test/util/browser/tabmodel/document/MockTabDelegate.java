@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Mocks out calls to get Tabs for the DocumentTabModel.
@@ -33,7 +34,7 @@ public class MockTabDelegate implements TabDelegate {
     }
 
     @Override
-    public void createTabWithNativeContents(boolean isIncognito, long webContentsPtr,
+    public void createTabWithWebContents(boolean isIncognito, WebContents webContents,
             int parentTabId) {
     }
 

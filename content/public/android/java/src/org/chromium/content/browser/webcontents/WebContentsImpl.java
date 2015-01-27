@@ -38,7 +38,7 @@ import org.chromium.content_public.browser.WebContents;
     }
 
     @CalledByNative
-    private void destroy() {
+    private void clearNativePtr() {
         mNativeWebContentsAndroid = 0;
         mNavigationController = null;
     }
@@ -46,6 +46,11 @@ import org.chromium.content_public.browser.WebContents;
     @CalledByNative
     private long getNativePointer() {
         return mNativeWebContentsAndroid;
+    }
+
+    @Override
+    public void destroy() {
+        if (mNativeWebContentsAndroid != 0) nativeDestroyWebContents(mNativeWebContentsAndroid);
     }
 
     @Override
@@ -291,6 +296,9 @@ import org.chromium.content_public.browser.WebContents;
             String jsonResult, JavaScriptCallback callback) {
         callback.handleJavaScriptResult(jsonResult);
     }
+
+    // This is static to avoid exposing a public destroy method on the native side of this class.
+    private static native void nativeDestroyWebContents(long webContentsAndroidPtr);
 
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);

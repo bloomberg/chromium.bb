@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
 import org.chromium.chrome.browser.tabmodel.TabModelDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModelOrderController;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Basic implementation of TabModel for use in ChromeShell.
@@ -20,7 +21,7 @@ public class ChromeShellTabModel extends TabModelBase {
     }
 
     @Override
-    protected Tab createTabWithNativeContents(boolean incognito, long nativeWebContents,
+    protected Tab createTabWithWebContents(boolean incognito, WebContents webContents,
             int parentId) {
         return null;
     }

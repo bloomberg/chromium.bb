@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Java peer of the native class of the same name.
@@ -110,8 +111,8 @@ public class WebContentsDelegateAndroid {
     }
 
     @CalledByNative
-    public void webContentsCreated(long sourceWebContents, long openerRenderFrameId,
-            String frameName, String targetUrl, long newWebContents) {
+    public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
+            String frameName, String targetUrl, WebContents newWebContents) {
     }
 
     @CalledByNative

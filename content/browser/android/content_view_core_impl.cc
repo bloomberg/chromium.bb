@@ -1355,17 +1355,32 @@ void ContentViewCoreImpl::WebContentsDestroyed() {
 // This is called for each ContentView.
 jlong Init(JNIEnv* env,
            jobject obj,
-           jlong native_web_contents,
+           jobject web_contents,
            jlong view_android,
            jlong window_android,
            jobject retained_objects_set) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
       env, obj,
-      reinterpret_cast<WebContents*>(native_web_contents),
+      WebContents::FromJavaWebContents(web_contents),
       reinterpret_cast<ui::ViewAndroid*>(view_android),
       reinterpret_cast<ui::WindowAndroid*>(window_android),
       retained_objects_set);
   return reinterpret_cast<intptr_t>(view);
+}
+
+static jobject FromWebContentsAndroid(
+    JNIEnv* env,
+    jclass clazz,
+    jobject jweb_contents) {
+  WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
+  if (!web_contents)
+    return NULL;
+
+  ContentViewCore* view = ContentViewCore::FromWebContents(web_contents);
+  if (!view)
+    return NULL;
+
+  return view->GetJavaObject().Release();
 }
 
 bool RegisterContentViewCore(JNIEnv* env) {

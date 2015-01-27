@@ -523,6 +523,15 @@ public class ContentViewCore
     private ContextualSearchClient mContextualSearchClient;
 
     /**
+     * @param webContents The {@link WebContents} to find a {@link ContentViewCore} of.
+     * @return            A {@link ContentViewCore} that is connected to {@code webContents} or
+     *                    {@code null} if none exists.
+     */
+    public static ContentViewCore fromWebContents(WebContents webContents) {
+        return nativeFromWebContentsAndroid(webContents);
+    }
+
+    /**
      * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
      * a ContentViewCore and before using it.
      *
@@ -704,7 +713,7 @@ public class ContentViewCore
      * @param containerView The view that will act as a container for all views created by this.
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
      *                           containerView.
-     * @param nativeWebContents A pointer to the native web contents.
+     * @param webContents A WebContents instance to connect to.
      * @param windowAndroid An instance of the WindowAndroid.
      */
     // Perform important post-construction set up of the ContentViewCore.
@@ -717,7 +726,7 @@ public class ContentViewCore
     // Note that the caller remains the owner of the nativeWebContents and is responsible for
     // deleting it after destroying the ContentViewCore.
     public void initialize(ViewGroup containerView, InternalAccessDelegate internalDispatcher,
-            long nativeWebContents, WindowAndroid windowAndroid) {
+            WebContents webContents, WindowAndroid windowAndroid) {
         createContentViewAndroidDelegate();
         setContainerView(containerView);
         long windowNativePointer = windowAndroid.getNativePointer();
@@ -730,7 +739,7 @@ public class ContentViewCore
         mZoomControlsDelegate = NO_OP_ZOOM_CONTROLS_DELEGATE;
 
         mNativeContentViewCore = nativeInit(
-                nativeWebContents, viewAndroidNativePointer, windowNativePointer,
+                webContents, viewAndroidNativePointer, windowNativePointer,
                 mRetainedJavaScriptObjects);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
         mContentSettings = new ContentSettings(this, mNativeContentViewCore);
@@ -3016,9 +3025,9 @@ public class ContentViewCore
         if (potentiallyActiveFlingCount > 0) updateGestureStateListener(GestureEventType.FLING_END);
     }
 
-    private native long nativeInit(long webContentsPtr,
+    private native long nativeInit(WebContents webContents,
             long viewAndroidPtr, long windowAndroidPtr, HashSet<Object> retainedObjectSet);
-
+    private static native ContentViewCore nativeFromWebContentsAndroid(WebContents webContents);
     ContentVideoViewClient getContentVideoViewClient() {
         return getContentViewClient().getContentVideoViewClient();
     }

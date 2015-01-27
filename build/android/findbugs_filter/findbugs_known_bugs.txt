@@ -2,6 +2,6 @@ M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browse
 M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.extraHeaders  At DocumentTabModelSelector.java
 M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.postData  At DocumentTabModelSelector.java
 M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.referrer  At DocumentTabModelSelector.java
-M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.nativeWebContents  In PendingDocumentData.java
+M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.webContents  In PendingDocumentData.java
 M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.originalIntent  In PendingDocumentData.java
 M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.url  In PendingDocumentData.java

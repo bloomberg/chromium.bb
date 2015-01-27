@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.document;
 
 import android.content.Intent;
 
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 
 /**
@@ -14,7 +15,7 @@ import org.chromium.content_public.common.Referrer;
  */
 public class PendingDocumentData {
     /** Pending native web contents object to initialize with. */
-    public long nativeWebContents;
+    public WebContents webContents;
 
     /** The url to load in the current tab. */
     public String url;

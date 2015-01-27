@@ -286,15 +286,15 @@ public class Shell extends LinearLayout {
 
     /**
      * Initializes the ContentView based on the native tab contents pointer passed in.
-     * @param nativeWebContents The pointer to the native tab contents object.
+     * @param webContents A {@link WebContents} object.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void initFromNativeTabContents(long nativeWebContents) {
+    private void initFromNativeTabContents(WebContents webContents) {
         Context context = getContext();
         mContentViewCore = new ContentViewCore(context);
         ContentView cv = ContentView.newInstance(context, mContentViewCore);
-        mContentViewCore.initialize(cv, cv, nativeWebContents, mWindow);
+        mContentViewCore.initialize(cv, cv, webContents, mWindow);
         mContentViewCore.setContentViewClient(mContentViewClient);
         mWebContents = mContentViewCore.getWebContents();
         mNavigationController = mWebContents.getNavigationController();

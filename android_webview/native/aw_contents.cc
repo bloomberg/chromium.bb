@@ -283,10 +283,14 @@ AwContents::~AwContents() {
   }
 }
 
-jlong AwContents::GetWebContents(JNIEnv* env, jobject obj) {
+base::android::ScopedJavaLocalRef<jobject>
+AwContents::GetWebContents(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(web_contents_);
-  return reinterpret_cast<intptr_t>(web_contents_.get());
+  if (!web_contents_)
+    return base::android::ScopedJavaLocalRef<jobject>();
+
+  return web_contents_->GetJavaWebContents();
 }
 
 void AwContents::Destroy(JNIEnv* env, jobject obj) {

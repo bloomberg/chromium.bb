@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelInfo.DocumentEntry;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelInfo.DocumentList;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.content_public.browser.WebContents;
 
 import java.io.File;
 import java.io.IOException;
@@ -318,9 +319,9 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
-    protected Tab createTabWithNativeContents(
-            boolean isIncognito, long webContentsPtr, int parentTabId) {
-        mTabDelegate.createTabWithNativeContents(isIncognito, webContentsPtr, parentTabId);
+    protected Tab createTabWithWebContents(
+            boolean isIncognito, WebContents webContents, int parentTabId) {
+        mTabDelegate.createTabWithWebContents(isIncognito, webContents, parentTabId);
         return null;
     }
 

@@ -84,10 +84,11 @@ int TabModelJniBridge::GetActiveIndex() const {
 void TabModelJniBridge::CreateTab(WebContents* web_contents,
                                   int parent_tab_id) {
   JNIEnv* env = AttachCurrentThread();
-  Java_TabModelJniBridge_createTabWithNativeContents(
+  Java_TabModelJniBridge_createTabWithWebContents(
       env, java_object_.get(env).obj(),
       web_contents->GetBrowserContext()->IsOffTheRecord(),
-      reinterpret_cast<intptr_t>(web_contents), parent_tab_id);
+      web_contents->GetJavaWebContents().obj(),
+      parent_tab_id);
 }
 
 WebContents* TabModelJniBridge::GetWebContentsAt(int index) const {

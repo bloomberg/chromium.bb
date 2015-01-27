@@ -24,7 +24,7 @@ class AwSettings : public content::WebContentsObserver {
  public:
   static AwSettings* FromWebContents(content::WebContents* web_contents);
 
-  AwSettings(JNIEnv* env, jobject obj, jlong web_contents);
+  AwSettings(JNIEnv* env, jobject obj, content::WebContents* web_contents);
   virtual ~AwSettings();
 
   // Called from Java. Methods with "Locked" suffix require that the settings

@@ -6,6 +6,8 @@ package org.chromium.chrome.browser;
 
 import android.view.ContextMenu;
 
+import org.chromium.content_public.browser.WebContents;
+
 /**
  * An implementation of the {@link TabObserver} which has empty implementations of all methods.
  */
@@ -110,6 +112,6 @@ public class EmptyTabObserver implements TabObserver {
     public void onBackgroundColorChanged(Tab tab, int color) { }
 
     @Override
-    public void webContentsCreated(Tab tab, long sourceWebContents, long openerRenderFrameId,
-            String frameName, String targetUrl, long newWebContents) { }
+    public void webContentsCreated(Tab tab, WebContents sourceWebContents, long openerRenderFrameId,
+            String frameName, String targetUrl, WebContents newWebContents) { }
 }

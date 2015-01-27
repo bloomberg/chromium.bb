@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.view.ContextMenu;
 
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * An observer that is notified of changes to a {@link Tab} object.
@@ -266,6 +267,6 @@ public interface TabObserver {
      */
     public void onBackgroundColorChanged(Tab tab, int color);
 
-    public void webContentsCreated(Tab tab, long sourceWebContents, long openerRenderFrameId,
-            String frameName, String targetUrl, long newWebContents);
+    public void webContentsCreated(Tab tab, WebContents sourceWebContents, long openerRenderFrameId,
+            String frameName, String targetUrl, WebContents newWebContents);
 }

@@ -290,7 +290,7 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
   Java_Tab_swapWebContents(
       env,
       weak_java_tab_.get(env).obj(),
-      reinterpret_cast<intptr_t>(new_contents),
+      new_contents->GetJavaWebContents().obj(),
       did_start_load,
       did_finish_load);
 }

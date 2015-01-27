@@ -19,6 +19,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Stores Android WebView specific settings that does not need to be synced to WebKit.
@@ -264,15 +265,15 @@ public class AwSettings {
         }
     }
 
-    void setWebContents(long nativeWebContents) {
+    void setWebContents(WebContents webContents) {
         synchronized (mAwSettingsLock) {
             if (mNativeAwSettings != 0) {
                 nativeDestroy(mNativeAwSettings);
                 assert mNativeAwSettings == 0;  // nativeAwSettingsGone should have been called.
             }
-            if (nativeWebContents != 0) {
+            if (webContents != null) {
                 mEventHandler.bindUiThread();
-                mNativeAwSettings = nativeInit(nativeWebContents);
+                mNativeAwSettings = nativeInit(webContents);
                 updateEverythingLocked();
             }
         }
@@ -1650,7 +1651,7 @@ public class AwSettings {
         }
     }
 
-    private native long nativeInit(long webContentsPtr);
+    private native long nativeInit(WebContents webContents);
 
     private native void nativeDestroy(long nativeAwSettings);
 

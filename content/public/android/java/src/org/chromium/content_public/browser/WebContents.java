@@ -11,6 +11,11 @@ import org.chromium.base.VisibleForTesting;
  */
 public interface WebContents {
     /**
+     * Deletes the Web Contents object.
+     */
+    void destroy();
+
+    /**
      * @return The navigation controller associated with this WebContents.
      */
     NavigationController getNavigationController();
@@ -45,6 +50,7 @@ public interface WebContents {
      * Inserts css into main frame's document.
      */
     void insertCSS(String css);
+
     /**
      * To be called when the ContentView is hidden.
      */
