@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -98,6 +99,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the ServiceRegistry for this frame.
   virtual ServiceRegistry* GetServiceRegistry() = 0;
+
+  // Returns the visibility state of the frame. The different visibility states
+  // of a frame are defined in Blink.
+  virtual blink::WebPageVisibilityState GetVisibilityState() = 0;
 
  private:
   // This interface should only be implemented inside content.

@@ -28,6 +28,7 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -594,6 +595,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // particular NavigatorConnectContext.
   virtual void GetAdditionalNavigatorConnectServices(
       const scoped_refptr<NavigatorConnectContext>& context) {}
+
+  // Allows to override the visibility state of a RenderFrameHost.
+  // |visibility_state| should not be null. It will only be set if needed.
+  virtual void OverridePageVisibilityState(
+      RenderFrameHost* render_frame_host,
+      blink::WebPageVisibilityState* visibility_state) {}
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching

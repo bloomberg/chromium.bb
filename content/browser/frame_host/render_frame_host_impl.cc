@@ -270,6 +270,16 @@ ServiceRegistry* RenderFrameHostImpl::GetServiceRegistry() {
   return service_registry_.get();
 }
 
+blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
+  blink::WebPageVisibilityState visibility_state =
+      RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())->is_hidden()
+          ? blink::WebPageVisibilityStateHidden
+          : blink::WebPageVisibilityStateVisible;
+  GetContentClient()->browser()->OverridePageVisibilityState(this,
+                                                             &visibility_state);
+  return visibility_state;
+}
+
 bool RenderFrameHostImpl::Send(IPC::Message* message) {
   if (IPC_MESSAGE_ID_CLASS(message->type()) == InputMsgStart) {
     return render_view_host_->input_router()->SendInput(

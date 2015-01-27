@@ -137,6 +137,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ActivateFindInPageResultForAccessibility(int request_id) override;
   RenderViewHost* GetRenderViewHost() override;
   ServiceRegistry* GetServiceRegistry() override;
+  blink::WebPageVisibilityState GetVisibilityState() override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
