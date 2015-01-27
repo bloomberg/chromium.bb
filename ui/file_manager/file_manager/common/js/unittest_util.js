@@ -174,3 +174,50 @@ MockAPIEvent.prototype.dispatch = function(var_args) {
     this.listeners_[i].apply(null, arguments);
   }
 };
+
+/**
+ * Stubs the chrome.storage API.
+ * @construct
+ * @struct
+ */
+function MockChromeStorageAPI() {
+  /** @type {Object<string, ?>} */
+  this.state = {};
+
+  window.chrome = window.chrome || {};
+  window.chrome.runtime = window.chrome.runtime || {};  // For lastError.
+  window.chrome.storage = {
+    local: {
+      get: this.get_.bind(this),
+      set: this.set_.bind(this)
+    }
+  };
+}
+
+/**
+ * @param {Array<string>|string} keys
+ * @param {function(Object.<string, ?>)} callback
+ * @private
+ */
+MockChromeStorageAPI.prototype.get_ = function(keys, callback) {
+  var keyArray = keys instanceof Array ? keys : [keys];
+  var result = {};
+  for (var key in keys) {
+    if (key in this.state)
+      result[key] = this.state[key];
+  }
+  callback(result);
+};
+
+/**
+ * @param {Object.<string, ?>} values
+ * @param {function()=} opt_callback
+ * @private
+ */
+MockChromeStorageAPI.prototype.set_ = function(values, opt_callback) {
+  for (var key in values) {
+    this.state[key] = values[key];
+  }
+  if (opt_callback)
+    opt_callback();
+};

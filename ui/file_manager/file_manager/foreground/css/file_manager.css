@@ -1801,6 +1801,15 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
   visibility: hidden;
 }
 
+#cloud-import-banner {
+  background: #2196f3;
+  color: white;
+  display: flex;
+  flex: 0 0 14px;
+  font-size; 14px;
+  padding: 20px 15px;
+}
+
 .text-measure {
   pointer-events: none;
   position: absolute;

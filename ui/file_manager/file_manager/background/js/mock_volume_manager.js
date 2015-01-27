@@ -179,7 +179,7 @@ MockVolumeManagerWrapper.prototype.createVolumeInfo =
  */
 MockVolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
   for (var i = 0; i < this.volumeInfoList.length; i++) {
-    if (this.volumeInfoList.item(i).volumeId === entry.volumeId)
+    if (this.volumeInfoList.item(i).volumeId === entry.filesystem.name)
       return this.volumeInfoList.item(i);
   }
   return null;

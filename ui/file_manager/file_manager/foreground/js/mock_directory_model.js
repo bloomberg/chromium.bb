@@ -8,7 +8,15 @@
  * @extends {cr.EventTarget}
  */
 function MockDirectoryModel() {
+  /**
+   * @private {!MockFileFilter}
+   */
   this.fileFilter_ = new MockFileFilter();
+
+  /**
+   * @private {MockDirectoryEntry}
+   */
+  this.currentEntry_ = null;
 }
 
 /**
@@ -22,6 +30,30 @@ MockDirectoryModel.prototype = {__proto__: cr.EventTarget.prototype};
  */
 MockDirectoryModel.prototype.getFileFilter = function() {
   return this.fileFilter_;
+};
+
+/**
+ * @return {MockDirectoryEntry}
+ */
+MockDirectoryModel.prototype.getCurrentDirEntry = function() {
+  return this.currentEntry_;
+};
+
+/**
+ * @param {MockDirectoryEntry} entry
+ * @return {Promise}
+ */
+MockDirectoryModel.prototype.navigateToMockEntry = function(entry) {
+  return new Promise(function(resolve, reject) {
+    var event = new Event('directory-changed');
+    event.previousDirEntry = this.currentEntry_;
+    event.newDirEntry = entry;
+    event.volumeChanged = this.currentEntry_ &&
+        util.isSameFileSystem(this.currentEntry_, entry);
+    this.currentEntry_ = entry;
+    this.dispatchEvent(event);
+    resolve();
+  }.bind(this));
 };
 
 /**
