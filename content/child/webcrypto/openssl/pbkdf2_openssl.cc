@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/numerics/safe_math.h"
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
@@ -84,23 +83,18 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
     if (password.empty())
       return Status::ErrorPbkdf2EmptyPassword();
 
-    // Prevent underflowing password.size() - BoringSSL expects the size as an
-    // signed int, and will interpret the data as a C-String if it is -1.
-    base::CheckedNumeric<int> password_size = password.size();
-    if (!password_size.IsValid())
-      return Status::ErrorDataTooLarge();
-
     if (keylen_bytes == 0)
       return Status::Success();
 
     const char* password_ptr =
         password.empty() ? NULL : reinterpret_cast<const char*>(&password[0]);
 
-    if (!PKCS5_PBKDF2_HMAC(password_ptr, password_size.ValueOrDie(),
-                           params->salt().data(), params->salt().size(),
-                           params->iterations(), digest_algorithm, keylen_bytes,
-                           &derived_bytes->front()))
+    if (!PKCS5_PBKDF2_HMAC(password_ptr, password.size(), params->salt().data(),
+                           params->salt().size(), params->iterations(),
+                           digest_algorithm, keylen_bytes,
+                           &derived_bytes->front())) {
       return Status::OperationError();
+    }
     return Status::Success();
   }
 
