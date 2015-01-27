@@ -27,8 +27,7 @@ DEFAULT_VERSION_STRING = 'TheVersionString'
 DEFAULT_BOARD = 'TheBoard'
 DEFAULT_BOT_NAME = 'TheCoolBot'
 
-# Access to protected member.
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 DEFAULT_OPTIONS = cros_test_lib.EasyAttr(
     archive_base=DEFAULT_ARCHIVE_BASE,
@@ -178,10 +177,10 @@ class BuilderRunPickleTest(_BuilderRunTestCase):
     self.assertEquals(upload_url, run2.GetArchive().upload_url)
 
     # The attrs objects should be identical.
-    self.assertTrue(run1.attrs is run2.attrs)
+    self.assertIs(run1.attrs, run2.attrs)
 
     # And the run objects themselves are different.
-    self.assertFalse(run1 is run2)
+    self.assertIsNot(run1, run2)
 
   def testPickleBuilderRun(self):
     self._TestPickle(self._NewBuilderRun(config=self.real_config))
@@ -214,7 +213,7 @@ class BuilderRunTest(_BuilderRunTestCase):
 
       # We actually do not support identity and equality checks right now.
       self.assertNotEqual(meth1, meth2)
-      self.assertFalse(meth1 is meth2)
+      self.assertIsNot(meth1, meth2)
 
   def testOptions(self):
     options = _ExtendDefaultOptions(foo=True, bar=10)
@@ -409,7 +408,7 @@ class ChildBuilderRunTest(_BuilderRunTestCase):
 
       # We actually do not support identity and equality checks right now.
       self.assertNotEqual(meth1, meth2)
-      self.assertFalse(meth1 is meth2)
+      self.assertIsNot(meth1, meth2)
 
 
 class RunAttributesTest(_BuilderRunTestCase):

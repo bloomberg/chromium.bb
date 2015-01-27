@@ -350,7 +350,7 @@ class IgnoredStagesTest(patch_unittest.MockPatchBase):
 
 class ConfigFileTest(cros_test_lib.MockTestCase):
   """Tests for functions that read config information for a patch."""
-  # pylint: disable-msg=protected-access
+  # pylint: disable=protected-access
 
   def _GetPatch(self, affected_files):
     return sync_stages_unittest.MockPatch(

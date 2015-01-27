@@ -41,7 +41,7 @@ class TestTimeouts(cros_test_lib.TestCase):
       except timeout_util.TimeoutError:
         pass
       else:
-        self.assertTrue(False, 'Should have thrown an exception')
+        self.fail('Should have thrown an exception')
 
 
 class TestWaitFors(cros_test_lib.TestCase):

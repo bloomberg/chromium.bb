@@ -942,11 +942,11 @@ class OutputTestCase(TestCase):
     If the func does not raise a SystemExit with exit code 0 then assert.
     """
     exit_code = self.FuncCatchSystemExit(func, *args, **kwargs)[1]
-    self.assertFalse(exit_code is None,
+    self.assertIsNot(exit_code, None,
                      msg='Expected system exit code 0, but caught none')
-    self.assertTrue(exit_code == 0,
-                    msg='Expected system exit code 0, but caught %d' %
-                    exit_code)
+    self.assertEqual(exit_code, 0,
+                     msg=('Expected system exit code 0, but caught %d' %
+                          exit_code))
 
   def AssertFuncSystemExitNonZero(self, func, *args, **kwargs):
     """Run |func| with |args| and |kwargs| catching exceptions.SystemExit.
@@ -954,17 +954,17 @@ class OutputTestCase(TestCase):
     If the func does not raise a non-zero SystemExit code then assert.
     """
     exit_code = self.FuncCatchSystemExit(func, *args, **kwargs)[1]
-    self.assertFalse(exit_code is None,
+    self.assertIsNot(exit_code, None,
                      msg='Expected non-zero system exit code, but caught none')
-    self.assertFalse(exit_code == 0,
-                     msg='Expected non-zero system exit code, but caught %d' %
-                     exit_code)
+    self.assertNotEqual(exit_code, 0,
+                        msg=('Expected non-zero system exit code, but caught %d'
+                             % exit_code))
 
   def AssertRaisesAndReturn(self, error, func, *args, **kwargs):
     """Like assertRaises, but return exception raised."""
     try:
       func(*args, **kwargs)
-      self.assertTrue(False, msg='Expected %s but got none' % error)
+      self.fail(msg='Expected %s but got none' % error)
     except error as ex:
       return ex
 
@@ -1109,7 +1109,8 @@ class GerritTestCase(MockTempDirTestCase):
     with open(self.gerrit_instance.netrc_file, 'w') as out:
       for n in needed:
         cs = candidates[n]
-        self.assertTrue(len(cs) > 0, 'missing password in ~/.netrc for %s' % n)
+        self.assertGreater(len(cs), 0,
+                           msg='missing password in ~/.netrc for %s' % n)
         cs.sort()
         _, login, password = cs[0]
         out.write('machine %s login %s password %s\n' % (n, login, password))

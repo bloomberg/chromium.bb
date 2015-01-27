@@ -132,7 +132,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     self.fd
     return self
 
-  def _exit(self, exc_type, exc, traceback):
+  def _exit(self, _exc_type, _exc, _traceback):
     try:
       self.unlock()
     finally:
