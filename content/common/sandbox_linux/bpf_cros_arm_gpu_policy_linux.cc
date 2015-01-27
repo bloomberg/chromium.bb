@@ -60,10 +60,10 @@ void AddArmMaliGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   static const char kMali0Path[] = "/dev/mali0";
 
   // Video processor used on ARM Exynos platforms.
-  static const char kDevGsc1Path[] = "/dev/gsc1";
+  static const char kDevGsc0Path[] = "/dev/gsc0";
 
   permissions->push_back(BrokerFilePermission::ReadWrite(kMali0Path));
-  permissions->push_back(BrokerFilePermission::ReadWrite(kDevGsc1Path));
+  permissions->push_back(BrokerFilePermission::ReadWrite(kDevGsc0Path));
 }
 
 void AddArmGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
