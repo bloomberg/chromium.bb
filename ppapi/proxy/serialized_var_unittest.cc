@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppapi_proxy_test.h"
 
+#include "ppapi/proxy/proxy_object_var.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 
@@ -270,6 +271,38 @@ TEST_F(SerializedVarTest, PluginVectorReceiveInput) {
   EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_objects[0]));
   EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_objects[1]));
   EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_objects2[1]));
+}
+
+// Tests the browser sending a String var as a return value to make sure we
+// ref-count the host side properly.
+typedef HostProxyTest HostSerializedVarTest;
+TEST_F(HostSerializedVarTest, PluginReceiveStringReturn) {
+  {
+    PP_Var string_var = StringVar::StringToPPVar("Hello");
+    EXPECT_EQ(1, var_tracker().GetRefCountForObject(string_var));
+    GetDispatcher()->serialization_rules()->BeginSendPassRef(string_var);
+    GetDispatcher()->serialization_rules()->EndSendPassRef(string_var);
+    // It should be gone, so we should get -1 to indicate that.
+    EXPECT_EQ(-1, var_tracker().GetRefCountForObject(string_var));
+  }
+
+  {
+    // Note this is as little weird; we're testing the behavior of the host-
+    // side of the proxy, but we use ProxyObjectVar, because this unit test
+    // doesn't have access to stuff in content/renderer/pepper. The ref-counting
+    // behavior should be the same, however. All we're really testing
+    // is the code in ppapi/proxy (HostVarSerializationRules).
+    scoped_refptr<Var> obj_var = new ProxyObjectVar(NULL, 1234);
+    PP_Var obj_pp_var = obj_var->GetPPVar();
+    EXPECT_EQ(1, var_tracker().GetRefCountForObject(obj_pp_var));
+    GetDispatcher()->serialization_rules()->BeginSendPassRef(obj_pp_var);
+    GetDispatcher()->serialization_rules()->EndSendPassRef(obj_pp_var);
+    // The host side for object vars always keeps 1 ref on behalf of the plugin.
+    // See HostVarSerializationRules and PluginVarSerializationRules for an
+    // explanation.
+    EXPECT_EQ(1, var_tracker().GetRefCountForObject(obj_pp_var));
+    var_tracker().ReleaseVar(obj_pp_var);
+  }
 }
 
 // Tests the plugin receiving a var as a return value from the browser

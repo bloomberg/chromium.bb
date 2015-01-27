@@ -45,9 +45,18 @@ PP_Var HostVarSerializationRules::BeginSendPassRef(const PP_Var& var) {
   return var;
 }
 
-void HostVarSerializationRules::EndSendPassRef(const PP_Var& /* var */) {
-  // See PluginVarSerialization::ReceivePassRef for an example. We don't need
-  // to do anything here.
+void HostVarSerializationRules::EndSendPassRef(const PP_Var& var) {
+  // See PluginVarSerializationRules::ReceivePassRef for an example. We don't
+  // need to do anything here for "Object" vars; we continue holding one ref on
+  // behalf of the plugin.
+  if (var.type != PP_VARTYPE_OBJECT) {
+    // But for other ref-counted types (like String, Array, and Dictionary),
+    // the value will be re-constituted on the other side as a new Var with no
+    // connection to the host-side reference counting. We must therefore release
+    // our reference count; this is roughly equivalent to passing the ref to the
+    // plugin.
+    PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(var);
+  }
 }
 
 void HostVarSerializationRules::ReleaseObjectRef(const PP_Var& var) {
