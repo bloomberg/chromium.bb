@@ -142,14 +142,26 @@ def CompilersForHost(host):
   compiler = {
       # For now we only do native builds for linux and mac
       # treat 32-bit linux like a native build
-      'i686-linux': (CHROME_CLANG, CHROME_CLANGXX),
-      'x86_64-linux': (CHROME_CLANG, CHROME_CLANGXX),
-      'x86_64-apple-darwin': (CHROME_CLANG, CHROME_CLANGXX),
+      'i686-linux': (CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'),
+      'x86_64-linux': (CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'),
+      'x86_64-apple-darwin': (CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'),
       # Windows build should work for native and cross
-      'i686-w64-mingw32': ('i686-w64-mingw32-gcc', 'i686-w64-mingw32-g++'),
+      'i686-w64-mingw32': (
+          'i686-w64-mingw32-gcc', 'i686-w64-mingw32-g++', 'ar', 'ranlib'),
       # TODO: add arm-hosted support
-      'i686-pc-cygwin': ('gcc', 'g++'),
+      'i686-pc-cygwin': ('gcc', 'g++', 'ar', 'ranlib'),
   }
+  if host == 'le32-nacl':
+    nacl_sdk = os.environ.get('NACL_SDK_ROOT')
+    assert nacl_sdk, 'NACL_SDK_ROOT not set'
+    pnacl_bin_dir = os.path.join(nacl_sdk, 'toolchain/linux_pnacl/bin')
+    glibc_bin_dir = os.path.join(nacl_sdk, 'toolchain/linux_x86_glibc/bin')
+    compiler.update({
+        'le32-nacl': (os.path.join(pnacl_bin_dir, 'pnacl-clang'),
+                      os.path.join(pnacl_bin_dir, 'pnacl-clang++'),
+                      os.path.join(pnacl_bin_dir, 'pnacl-ar'),
+                      os.path.join(pnacl_bin_dir, 'pnacl-ranlib')),
+    })
   return compiler[host]
 
 
@@ -157,11 +169,17 @@ def GSDJoin(*args):
   return '_'.join([pynacl.gsd_storage.LegalizeName(arg) for arg in args])
 
 
-def ConfigureHostArchFlags(host, extra_cflags, options):
+def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
   """ Return flags passed to LLVM and binutils configure for compilers and
   compile flags. """
   configure_args = []
   extra_cc_args = []
+
+  configure_args += options.extra_configure_args
+  if extra_configure is not None:
+    configure_args += extra_configure
+  if options.extra_cc_args is not None:
+    extra_cc_args += [options.extra_cc_args]
 
   native = pynacl.platform.PlatformTriple()
   is_cross = host != native
@@ -176,15 +194,17 @@ def ConfigureHostArchFlags(host, extra_cflags, options):
       configure_args.append('--host=' + host)
   if TripleIsLinux(host) and not TripleIsX8664(host):
     # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux.
-    extra_cc_args = ['-m32']
+    extra_cc_args += ['-m32']
 
   extra_cxx_args = list(extra_cc_args)
 
   if not options.gcc:
-    cc, cxx = CompilersForHost(host)
+    cc, cxx, ar, ranlib = CompilersForHost(host)
 
     configure_args.append('CC=' + ' '.join([cc] + extra_cc_args))
     configure_args.append('CXX=' + ' '.join([cxx] + extra_cxx_args))
+    configure_args.append('AR=' + ar)
+    configure_args.append('RANLIB=' + ranlib)
 
   if TripleIsWindows(host):
     # The i18n support brings in runtime dependencies on MinGW DLLs
@@ -201,7 +221,7 @@ def ConfigureHostArchFlags(host, extra_cflags, options):
     if TripleIsMac(host):
       # This is required for building with recent libc++ against OSX 10.6
       extra_cflags.append('-U__STRICT_ANSI__')
-    if options.gcc:
+    if options.gcc or host == 'le32-nacl':
       configure_args.extend(['CFLAGS=' + ' '.join(extra_cflags),
                              'CXXFLAGS=' + ' '.join(extra_cflags)])
     else:
@@ -215,7 +235,7 @@ def ConfigureHostArchFlags(host, extra_cflags, options):
 
 
 def LibCxxHostArchFlags(host):
-  cc, cxx = CompilersForHost(host)
+  cc, cxx, _, _ = CompilersForHost(host)
   cmake_flags = []
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if TripleIsLinux(host) and not TripleIsX8664(host):
@@ -227,7 +247,7 @@ def LibCxxHostArchFlags(host):
 def CmakeHostArchFlags(host, options):
   """ Set flags passed to LLVM cmake for compilers and compile flags. """
   cmake_flags = []
-  cc, cxx = CompilersForHost(host)
+  cc, cxx, _, _ = CompilersForHost(host)
 
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
 
@@ -391,7 +411,9 @@ def CopyHostLibcxxForLLVMBuild(host, dest, options):
           command.Copy('%(' + GSDJoin('abs_libcxx', host) +')s/lib/' + libname,
                        os.path.join(dest, libname))]
 
-def CreateSymLinksToDirectToNaClTools():
+def CreateSymLinksToDirectToNaClTools(host):
+  if host == 'le32-nacl':
+    return []
   return (
       [command.Command(['ln', '-f',
                         command.path.join('%(output)s', 'bin','clang'),
@@ -470,6 +492,14 @@ def HostTools(host, options):
       return file + '.exe'
     else:
       return file
+
+  werror = []
+  extra_gold_deps = []
+  if host == 'le32-nacl':
+    # TODO(bradnelson): Fix warnings so this can go away.
+    werror = ['--enable-werror=no']
+    extra_gold_deps = [H('llvm')]
+
   # Binutils still has some warnings when building with clang
   if not options.gcc:
     warning_flags = ['-Wno-extended-offsetof', '-Wno-absolute-value',
@@ -478,11 +508,12 @@ def HostTools(host, options):
                     '-Wno-unused-private-field', '-Wno-format-security']
   else:
     warning_flags = ['-Wno-unused-function', '-Wno-unused-value']
+
   tools = {
       # The binutils_pnacl package is used both for bitcode linking (gold) and
       # for its conventional use with arm-nacl-clang.
       H('binutils_pnacl'): {
-          'dependencies': ['binutils_pnacl_src'],
+          'dependencies': ['binutils_pnacl_src'] + extra_gold_deps,
           'type': 'build',
           'inputs' : { 'macros': os.path.join(NACL_DIR,
               'pnacl', 'support', 'clang_direct', 'nacl-arm-macros.s')},
@@ -491,7 +522,9 @@ def HostTools(host, options):
                   'sh',
                   '%(binutils_pnacl_src)s/configure'] +
                   ConfigureBinutilsCommon() +
-                  ConfigureHostArchFlags(host, warning_flags, options) +
+                  ConfigureHostArchFlags(
+                    host, warning_flags, options,
+                    options.binutils_pnacl_extra_configure) +
                   ['--target=arm-nacl',
                   '--program-prefix=le32-nacl-',
                   '--enable-targets=arm-nacl,i686-nacl,x86_64-nacl,' +
@@ -500,7 +533,7 @@ def HostTools(host, options):
                   '--enable-gold=default',
                   '--enable-plugins',
                   '--without-gas',
-                  '--with-sysroot=/le32-nacl']),
+                  '--with-sysroot=/le32-nacl'] + werror),
               command.Command(MakeCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
               [command.RemoveDirectory(os.path.join('%(output)s', dir))
@@ -565,9 +598,17 @@ def HostTools(host, options):
               command.Command(['ninja', '-v']),
               command.Command(['ninja', 'install']),
               ] +
-          CreateSymLinksToDirectToNaClTools()
+          CreateSymLinksToDirectToNaClTools(host)
       },
   }
+  cleanup_static_libs = []
+  shared = []
+  if host != 'le32-nacl':
+    shared = ['--enable-shared']
+    cleanup_static_libs = [
+        command.Remove(*[os.path.join('%(output)s', 'lib', f) for f
+                         in '*.a', '*Hello.*', 'BugpointPasses.*']),
+    ]
   llvm_autoconf = {
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
@@ -580,7 +621,6 @@ def HostTools(host, options):
                   ConfigureHostArchFlags(host, [], options) +
                   LLVMConfigureAssertionsFlags(options) +
                   ['--prefix=/',
-                   '--enable-shared',
                    '--disable-zlib',
                    '--disable-terminfo',
                    '--disable-jit',
@@ -589,7 +629,7 @@ def HostTools(host, options):
                    '--enable-targets=x86,arm,mips',
                    '--program-prefix=',
                    '--enable-optimized',
-                   '--with-clang-srcdir=%(abs_clang_src)s'])] +
+                   '--with-clang-srcdir=%(abs_clang_src)s'] + shared)] +
               CopyHostLibcxxForLLVMBuild(
                   host,
                   os.path.join('Release+Asserts', 'lib'),
@@ -597,16 +637,16 @@ def HostTools(host, options):
               [command.Command(MakeCommand(host) + [
                   'VERBOSE=1',
                   'NACL_SANDBOX=0',
+                  'PNACL_BROWSER_TRANSLATOR=0',
                   'SUBZERO_SRC_ROOT=%(abs_subzero_src)s',
                   'all']),
-              command.Command(MAKE_DESTDIR_CMD + ['install']),
-              command.Remove(*[os.path.join('%(output)s', 'lib', f) for f in
-                              '*.a', '*Hello.*', 'BugpointPasses.*']),
+              command.Command(MAKE_DESTDIR_CMD + ['install'])] +
+              cleanup_static_libs + [
               command.Remove(*[os.path.join('%(output)s', 'bin', f) for f in
                                Exe('clang-format'), Exe('clang-check'),
                                Exe('c-index-test'), Exe('clang-tblgen'),
                                Exe('llvm-tblgen')])] +
-              CreateSymLinksToDirectToNaClTools() +
+              CreateSymLinksToDirectToNaClTools(host) +
               CopyWindowsHostLibs(host),
       },
   }
@@ -617,7 +657,7 @@ def HostTools(host, options):
   if TripleIsWindows(host):
     tools[H('binutils_pnacl')]['dependencies'].append('libdl')
     tools[H('llvm')]['dependencies'].append('libdl')
-  elif not options.gcc:
+  elif not options.gcc and host != 'le32-nacl':
     tools[H('binutils_pnacl')]['dependencies'].append(H('libcxx'))
     tools[H('llvm')]['dependencies'].append(H('libcxx'))
   return tools
@@ -691,7 +731,7 @@ def HostToolsDirectToNacl(host):
                           '   L"/bin/x86_64-nacl-%s.exe",' % tool + \
                           ' L"%s"},\n' % args
 
-    cc, cxx = CompilersForHost(host)
+    cc, cxx, _, _ = CompilersForHost(host)
     tools.update({
         'redirector': {
             'type': 'build',
@@ -948,6 +988,17 @@ if __name__ == '__main__':
                       'Only useful if --sync/ is also enabled'))
   parser.add_argument('--build-sbtc', action='store_true', default=False,
                       help='Build the sandboxed translators')
+  parser.add_argument('--pnacl-in-pnacl', action='store_true', default=False,
+                      help='Build with a PNaCl toolchain')
+  parser.add_argument('--extra-cc-args', default=None,
+                      help='Extra arguments to pass to cc/cxx')
+  parser.add_argument('--extra-configure-arg', dest='extra_configure_args',
+                      default=[], action='append',
+                      help='Extra arguments to pass pass to host configure')
+  parser.add_argument('--binutils-pnacl-extra-configure',
+                      default=[], action='append',
+                      help='Extra binutils-pnacl arguments '
+                           'to pass pass to host configure')
   args, leftover_args = parser.parse_known_args()
   if '-h' in leftover_args or '--help' in leftover_args:
     print 'The following arguments are specific to toolchain_build_pnacl.py:'
@@ -981,14 +1032,19 @@ if __name__ == '__main__':
     if args.testsuite_sync:
       packages.update(TestsuiteSources(GetGitSyncCmdsCallback(rev)))
 
-    hosts = [pynacl.platform.PlatformTriple()]
+    if args.pnacl_in_pnacl:
+      hosts = ['le32-nacl']
+    else:
+      hosts = [pynacl.platform.PlatformTriple()]
     if pynacl.platform.IsLinux() and BUILD_CROSS_MINGW:
       hosts.append(pynacl.platform.PlatformTriple('win', 'x86-32'))
     for host in hosts:
-      packages.update(HostLibs(host, args))
       packages.update(HostTools(host, args))
-      packages.update(HostToolsDirectToNacl(host))
-    packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple(), args))
+      if not args.pnacl_in_pnacl:
+        packages.update(HostLibs(host, args))
+        packages.update(HostToolsDirectToNacl(host))
+    if not args.pnacl_in_pnacl:
+      packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple(), args))
     # Don't build the target libs on Windows because of pathname issues.
     # Only the linux64 bot is canonical (i.e. it will upload its packages).
     # The other bots will use a 'work' target instead of a 'build' target for
@@ -998,7 +1054,8 @@ if __name__ == '__main__':
     # scons tests, skip running them if their dependencies haven't changed, like
     # build targets)
     is_canonical = pynacl.platform.IsLinux64()
-    if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
+    if ((pynacl.platform.IsLinux() or pynacl.platform.IsMac())
+        and not args.pnacl_in_pnacl):
       packages.update(pnacl_targetlibs.TargetLibsSrc(
         GetGitSyncCmdsCallback(rev)))
       for bias in BITCODE_BIASES:
@@ -1012,12 +1069,11 @@ if __name__ == '__main__':
       packages.update(pnacl_targetlibs.SDKCompiler(
                       ['le32'] + DIRECT_TO_NACL_ARCHES))
       packages.update(pnacl_targetlibs.SDKLibs('le32', is_canonical))
-    if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
       unsandboxed_irt_canonical = is_canonical or pynacl.platform.IsMac()
       packages.update(pnacl_targetlibs.UnsandboxedIRT(
           'x86-32-%s' % pynacl.platform.GetOS(), unsandboxed_irt_canonical))
 
-    if args.build_sbtc:
+    if args.build_sbtc and not args.pnacl_in_pnacl:
       packages.update(pnacl_sandboxed_translator.SandboxedTranslators(
         SANDBOXED_TRANSLATOR_ARCHES))
 
