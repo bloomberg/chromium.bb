@@ -44,15 +44,29 @@ class LayerTreeHostPictureTestTwinLayer
 
   void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // Activate while there are pending and active twins in place.
+        layer_tree_host()->SetNeedsCommit();
+        break;
       case 2:
-        // Drop the picture layer from the tree.
+        // Drop the picture layer from the tree so the activate will have an
+        // active layer without a pending twin.
         layer_tree_host()->root_layer()->children()[0]->RemoveFromParent();
         break;
-      case 3:
-        // Add a new picture layer.
+      case 3: {
+        // Add a new picture layer so the activate will have a pending layer
+        // without an active twin.
         scoped_refptr<FakePictureLayer> picture =
             FakePictureLayer::Create(&client_);
         layer_tree_host()->root_layer()->AddChild(picture);
+        break;
+      }
+      case 4:
+        // Active while there are pending and active twins again.
+        layer_tree_host()->SetNeedsCommit();
+        break;
+      case 5:
+        EndTest();
         break;
     }
   }
@@ -87,7 +101,7 @@ class LayerTreeHostPictureTestTwinLayer
     // After the first activation, when we commit again, we'll have a pending
     // and active layer. Then we recreate a picture layer in the 4th activate
     // and the next commit will have a pending and active twin again.
-    EXPECT_TRUE(activates_ == 1 || activates_ == 4);
+    EXPECT_TRUE(activates_ == 1 || activates_ == 4) << activates_;
 
     EXPECT_EQ(pending_picture_impl,
               active_picture_impl->GetPendingOrActiveTwinLayer());
@@ -114,13 +128,9 @@ class LayerTreeHostPictureTestTwinLayer
     }
 
     ++activates_;
-    if (activates_ <= 4)
-      PostSetNeedsCommitToMainThread();
-    else
-      EndTest();
   }
 
-  void AfterTest() override {}
+  void AfterTest() override { EXPECT_EQ(5, activates_); }
 
   int activates_;
 };
