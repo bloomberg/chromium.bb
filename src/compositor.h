@@ -122,6 +122,7 @@ struct weston_shell_interface {
 				    int32_t x, int32_t y,
 				    int32_t width, int32_t height);
 	void (*set_maximized)(struct shell_surface *shsurf);
+	void (*set_pid)(struct shell_surface *shsurf, pid_t pid);
 };
 
 struct weston_animation {

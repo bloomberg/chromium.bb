@@ -403,6 +403,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 	uint32_t *xid;
 	xcb_atom_t *atom;
 	uint32_t i;
+	char name[1024];
 
 	if (!window->properties_dirty)
 		return;
@@ -494,10 +495,28 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		free(reply);
 	}
 
+	if (window->pid > 0) {
+		gethostname(name, sizeof(name));
+		for (i = 0; i < sizeof(name); i++) {
+			if (name[i] == '\0')
+				break;
+		}
+		if (i == sizeof(name))
+			name[0] = '\0'; /* ignore stupid hostnames */
+
+		/* this is only one heuristic to guess the PID of a client is
+		* valid, assuming it's compliant with icccm and ewmh.
+		* Non-compliants and remote applications of course fail. */
+		if (!window->machine || strcmp(window->machine, name))
+			window->pid = 0;
+	}
+
 	if (window->shsurf && window->name)
 		shell_interface->set_title(window->shsurf, window->name);
 	if (window->frame && window->name)
 		frame_set_title(window->frame, window->name);
+	if (window->shsurf && window->pid > 0)
+		shell_interface->set_pid(window->shsurf, window->pid);
 }
 
 static void
@@ -658,17 +677,10 @@ weston_wm_kill_client(struct wl_listener *listener, void *data)
 {
 	struct weston_surface *surface = data;
 	struct weston_wm_window *window = get_wm_window(surface);
-	char name[1024];
-
 	if (!window)
 		return;
 
-	gethostname(name, 1024);
-
-	/* this is only one heuristic to guess the PID of a client is valid,
-	 * assuming it's compliant with icccm and ewmh. Non-compliants and
-	 * remote applications of course fail. */
-	if (!strcmp(window->machine, name) && window->pid != 0)
+	if (window->pid > 0)
 		kill(window->pid, SIGKILL);
 }
 
@@ -2430,6 +2442,8 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 
 	if (window->name)
 		shell_interface->set_title(window->shsurf, window->name);
+	if (window->pid > 0)
+		shell_interface->set_pid(window->shsurf, window->pid);
 
 	if (window->fullscreen) {
 		window->saved_width = window->width;

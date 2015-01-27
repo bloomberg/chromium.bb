@@ -2252,6 +2252,12 @@ set_title(struct shell_surface *shsurf, const char *title)
 }
 
 static void
+set_pid(struct shell_surface *shsurf, pid_t pid)
+{
+	/* We have no use for it */
+}
+
+static void
 set_type(struct shell_surface *shsurf, enum shell_surface_type t)
 {
 	shsurf->type = t;
@@ -6602,6 +6608,7 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.set_title = set_title;
 	ec->shell_interface.set_window_geometry = set_window_geometry;
 	ec->shell_interface.set_maximized = shell_interface_set_maximized;
+	ec->shell_interface.set_pid = set_pid;
 
 	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
 	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);
