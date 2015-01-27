@@ -37,6 +37,7 @@ a {
 
 .icon {
   -webkit-user-select: none;
+  content: '';
 }
 
 .icon-generic {
@@ -153,6 +154,7 @@ a {
 
 .error-code {
   color: #A0A0A0;
+  font-size: .825em;
   margin-top: 15px;
 }
 
@@ -165,11 +167,8 @@ a {
 
 /* Decrease padding at low sizes. */
 @media (max-width: 640px), (max-height: 640px) {
-  body {
-    margin: 15px;
-  }
   h1 {
-    margin: 10px 0 15px;
+    margin: 0 0 15px;
   }
   #content-top {
     margin: 15px;
@@ -282,8 +281,9 @@ html[subframe] body {
   color: #2b2b2b;
   font-size: 1em;
   line-height: 1.55;
-  margin: 100px auto 0;
+  margin: 0 auto;
   max-width: 600px;
+  padding-top: 100px;
   width: 100%;
 }
 
@@ -320,11 +320,10 @@ html[subframe] body {
   display: none;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 420px) {
   .suggested-left > #control-buttons,
   .suggested-right > #control-buttons {
     float: none;
-    margin: 50px 0 20px;
   }
 }
 
@@ -343,5 +342,11 @@ html[subframe] body {
 
   .nav-wrapper {
     margin-top: 30px;
+  }
+}
+
+@media (min-height: 240px) and (orientation: landscape) {
+  .offline .interstitial-wrapper {
+    margin-bottom: 20px;
   }
 }
