@@ -280,6 +280,22 @@ TEST_P(HandleWatcherTest, Restart) {
   EXPECT_FALSE(callback_helper2.got_callback());
 }
 
+// Verifies Start() invoked a second time on the same handle works.
+TEST_P(HandleWatcherTest, RestartOnSameHandle) {
+  MessagePipe test_pipe;
+  CallbackHelper callback_helper;
+  ASSERT_TRUE(test_pipe.handle0.is_valid());
+
+  HandleWatcher watcher;
+  callback_helper.Start(&watcher, test_pipe.handle0.get());
+  RunUntilIdle();
+  EXPECT_FALSE(callback_helper.got_callback());
+
+  callback_helper.Start(&watcher, test_pipe.handle0.get());
+  RunUntilIdle();
+  EXPECT_FALSE(callback_helper.got_callback());
+}
+
 // Verifies deadline is honored.
 TEST_P(HandleWatcherTest, Deadline) {
   InstallTickClock();

@@ -459,6 +459,8 @@ void HandleWatcher::Start(const Handle& handle,
   DCHECK(handle.is_valid());
   DCHECK_NE(MOJO_HANDLE_SIGNAL_NONE, handle_signals);
 
+  // Need to clear the state before creating a new one.
+  state_.reset();
   if (MessagePumpMojo::IsCurrent()) {
     state_.reset(new SameThreadWatchingState(
         this, handle, handle_signals, deadline, callback));
