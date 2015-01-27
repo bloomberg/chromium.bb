@@ -202,6 +202,10 @@ class IPC_EXPORT ChannelPosix : public Channel,
   // implementation!
   std::vector<int> input_fds_;
 
+
+  void ResetSafely(base::ScopedFD* fd);
+  bool in_dtor_;
+
 #if defined(OS_MACOSX)
   // On OSX, sent FDs must not be closed until we get an ack.
   // Keep track of sent FDs here to make sure the remote is not
