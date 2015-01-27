@@ -478,12 +478,12 @@ div.splitter {
 
 /* The container for breadcrumb elements. */
 .breadcrumbs {
+  -webkit-margin-start: 16px;
   align-items: center;
   display: flex;
   flex: auto;
   flex-direction: row;
   line-height: 20px;
-  margin-left: 16px;
   overflow: hidden;
   padding-top: 1px;
 }
