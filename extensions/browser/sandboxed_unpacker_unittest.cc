@@ -10,10 +10,10 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/sandboxed_unpacker.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extensions_test.h"
+#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
@@ -24,7 +24,6 @@ namespace extensions {
 
 class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
  public:
-
   void WaitForUnpack() {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
@@ -44,7 +43,6 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
                        const SkBitmap& install_icon) override {
     temp_dir_ = temp_dir;
     quit_closure_.Run();
-
   }
 
   void OnUnpackFailure(const base::string16& error) override {
@@ -55,10 +53,11 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   base::FilePath temp_dir_;
 };
 
-class SandboxedUnpackerTest : public testing::Test {
+class SandboxedUnpackerTest : public ExtensionsTest {
  public:
   void SetUp() override {
-   ASSERT_TRUE(extensions_dir_.CreateUniqueTempDir());
+    ExtensionsTest::SetUp();
+    ASSERT_TRUE(extensions_dir_.CreateUniqueTempDir());
     browser_threads_.reset(new content::TestBrowserThreadBundle(
         content::TestBrowserThreadBundle::IO_MAINLOOP));
     in_process_utility_thread_helper_.reset(
@@ -72,6 +71,7 @@ class SandboxedUnpackerTest : public testing::Test {
     // it posts a task to it.
     sandboxed_unpacker_ = NULL;
     base::RunLoop().RunUntilIdle();
+    ExtensionsTest::TearDown();
   }
 
   void SetupUnpacker(const std::string& crx_name) {
@@ -81,12 +81,8 @@ class SandboxedUnpackerTest : public testing::Test {
     ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
 
     sandboxed_unpacker_ = new SandboxedUnpacker(
-        original_path,
-        Manifest::INTERNAL,
-        Extension::NO_FLAGS,
-        extensions_dir_.path(),
-        base::MessageLoopProxy::current(),
-        client_);
+        original_path, Manifest::INTERNAL, Extension::NO_FLAGS,
+        extensions_dir_.path(), base::MessageLoopProxy::current(), client_);
 
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
@@ -110,16 +106,14 @@ class SandboxedUnpackerTest : public testing::Test {
 TEST_F(SandboxedUnpackerTest, NoCatalogsSuccess) {
   SetupUnpacker("no_l10n.crx");
   // Check that there is no _locales folder.
-  base::FilePath install_path =
-      GetInstallPath().Append(kLocaleFolder);
+  base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_FALSE(base::PathExists(install_path));
 }
 
 TEST_F(SandboxedUnpackerTest, WithCatalogsSuccess) {
   SetupUnpacker("good_l10n.crx");
   // Check that there is _locales folder.
-  base::FilePath install_path =
-      GetInstallPath().Append(kLocaleFolder);
+  base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_TRUE(base::PathExists(install_path));
 }
 

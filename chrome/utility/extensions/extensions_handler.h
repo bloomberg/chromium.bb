@@ -29,16 +29,12 @@ class ExtensionsHandler : public UtilityMessageHandler {
   ~ExtensionsHandler() override;
 
   static void PreSandboxStartup();
-  static void UtilityThreadStarted();
 
   // UtilityMessageHandler:
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   // IPC message handlers.
-  void OnUnpackExtension(const base::FilePath& extension_path,
-                         const std::string& extension_id,
-                         int location, int creation_flags);
   void OnUnzipToDir(const base::FilePath& zip_path, const base::FilePath& dir);
   void OnDecodeImageBase64(const std::string& encoded_data);
   void OnCheckMediaFile(int64 milliseconds_of_decoding,

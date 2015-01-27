@@ -74,6 +74,7 @@ void ExtensionsTestSuite::Initialize() {
     ExtensionsContentClient content_client;
     RegisterContentSchemes(&content_client);
   }
+  RegisterInProcessThreads();
 
   extensions::RegisterPathProvider();
 

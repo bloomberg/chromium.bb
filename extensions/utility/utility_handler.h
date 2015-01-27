@@ -7,7 +7,12 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace IPC {
 class Message;
@@ -28,6 +33,9 @@ class UtilityHandler {
  private:
   // IPC message handlers.
   void OnParseUpdateManifest(const std::string& xml);
+  void OnUnpackExtension(const base::FilePath& extension_path,
+                         const std::string& extension_id,
+                         int location, int creation_flags);
 
   DISALLOW_COPY_AND_ASSIGN(UtilityHandler);
 };

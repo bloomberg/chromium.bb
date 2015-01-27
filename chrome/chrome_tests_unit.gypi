@@ -783,7 +783,6 @@
       'browser/extensions/permission_messages_unittest.cc',
       'browser/extensions/permissions_based_management_policy_provider_unittest.cc',
       'browser/extensions/permissions_updater_unittest.cc',
-      'browser/extensions/sandboxed_unpacker_unittest.cc',
       'browser/extensions/shared_module_service_unittest.cc',
       'browser/extensions/standard_management_policy_provider_unittest.cc',
       'browser/extensions/token_cache/token_cache_service_unittest.cc',

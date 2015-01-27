@@ -12,8 +12,9 @@
 
 namespace content {
 class BrowserContext;
-class ContentClient;
 class ContentBrowserClient;
+class ContentClient;
+class ContentUtilityClient;
 }
 
 namespace extensions {
@@ -49,6 +50,7 @@ class ExtensionsTest : public testing::Test {
  private:
   // TODO(yoz): Add a NotificationService here; it's used widely enough.
   scoped_ptr<content::ContentClient> content_client_;
+  scoped_ptr<content::ContentUtilityClient> content_utility_client_;
   scoped_ptr<content::ContentBrowserClient> content_browser_client_;
   scoped_ptr<content::BrowserContext> browser_context_;
   scoped_ptr<TestExtensionsBrowserClient> extensions_browser_client_;

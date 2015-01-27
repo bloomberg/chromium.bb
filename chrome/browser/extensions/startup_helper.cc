@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,6 +21,7 @@
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/extension.h"
 #include "ipc/ipc_message.h"
 
@@ -298,7 +298,7 @@ void AppInstallHelper::OnAppInstallComplete(bool success,
                                             const std::string& error,
                                             webstore_install::Result result) {
   success_ = success;
-  error_= error;
+  error_ = error;
   done_callback_.Run();
 }
 

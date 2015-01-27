@@ -109,7 +109,7 @@ ChromeContentUtilityClient::~ChromeContentUtilityClient() {
 
 void ChromeContentUtilityClient::UtilityThreadStarted() {
 #if defined(ENABLE_EXTENSIONS)
-  extensions::ExtensionsHandler::UtilityThreadStarted();
+  extensions::UtilityHandler::UtilityThreadStarted();
 #endif
 
   if (kMessageWhitelistSize > 0) {

@@ -475,6 +475,8 @@ source_set("browser") {
       "renderer_startup_helper.h",
       "runtime_data.cc",
       "runtime_data.h",
+      "sandboxed_unpacker.cc",
+      "sandboxed_unpacker.h",
       "script_execution_observer.h",
       "script_executor.cc",
       "script_executor.h",

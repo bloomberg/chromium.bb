@@ -90,6 +90,7 @@
         'browser/process_map_unittest.cc',
         'browser/quota_service_unittest.cc',
         'browser/runtime_data_unittest.cc',
+        'browser/sandboxed_unpacker_unittest.cc',
         'browser/value_store/leveldb_value_store_unittest.cc',
         'browser/value_store/testing_value_store_unittest.cc',
         'browser/value_store/value_store_change_unittest.cc',

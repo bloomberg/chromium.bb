@@ -9,6 +9,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/test/test_browser_context.h"
 #include "extensions/browser/test_extensions_browser_client.h"
+#include "extensions/test/test_content_utility_client.h"
 
 namespace extensions {
 
@@ -22,11 +23,13 @@ namespace extensions {
 // };
 ExtensionsTest::ExtensionsTest()
     : content_client_(new content::ContentClient),
+      content_utility_client_(new TestContentUtilityClient),
       content_browser_client_(new content::ContentBrowserClient),
       browser_context_(new content::TestBrowserContext),
       extensions_browser_client_(
           new TestExtensionsBrowserClient(browser_context_.get())) {
   content::SetContentClient(content_client_.get());
+  content::SetUtilityClientForTesting(content_utility_client_.get());
   content::SetBrowserClientForTesting(content_browser_client_.get());
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 }
@@ -34,6 +37,7 @@ ExtensionsTest::ExtensionsTest()
 ExtensionsTest::~ExtensionsTest() {
   ExtensionsBrowserClient::Set(NULL);
   content::SetBrowserClientForTesting(NULL);
+  content::SetUtilityClientForTesting(NULL);
   content::SetContentClient(NULL);
 }
 

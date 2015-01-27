@@ -8999,6 +8999,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.SandboxUnpackSuccessCrxSize">
+  <owner>asargent@chromium.org</owner>
+  <summary>Size of the .crx file, in KB, when the unpack succeeds.</summary>
+</histogram>
+
 <histogram name="Extensions.SandboxUnpackSuccessTime">
   <owner>asargent@chromium.org</owner>
   <summary>

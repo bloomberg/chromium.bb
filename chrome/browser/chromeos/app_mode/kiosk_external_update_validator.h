@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/extensions/sandboxed_unpacker.h"
+#include "extensions/browser/sandboxed_unpacker.h"
 
 namespace extensions {
 class Extension;

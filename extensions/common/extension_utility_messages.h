@@ -41,6 +41,14 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_CONTROL1(ExtensionUtilityMsg_ParseUpdateManifest,
                      std::string /* xml document contents */)
 
+// Tells the utility process to unpack the given extension file in its
+// directory and verify that it is valid.
+IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_UnpackExtension,
+                     base::FilePath /* extension_filename */,
+                     std::string /* extension_id */,
+                     int /* Manifest::Location */,
+                     int /* InitFromValue flags */)
+
 //------------------------------------------------------------------------------
 // Utility process host messages:
 // These are messages from the utility process to the browser.
@@ -54,3 +62,18 @@ IPC_MESSAGE_CONTROL1(ExtensionUtilityHostMsg_ParseUpdateManifest_Succeeded,
 // is a description of what went wrong suitable for logging.
 IPC_MESSAGE_CONTROL1(ExtensionUtilityHostMsg_ParseUpdateManifest_Failed,
                      std::string /* error_message, if any */)
+
+// Reply when the utility process is done unpacking an extension.  |manifest|
+// is the parsed manifest.json file.
+// The unpacker should also have written out files containing the decoded
+// images and message catalogs from the extension. The data is written into a
+// DecodedImages struct into a file named kDecodedImagesFilename in the
+// directory that was passed in. This is done because the data is too large to
+// pass over IPC.
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Succeeded,
+                     base::DictionaryValue /* manifest */)
+
+// Reply when the utility process has failed while unpacking an extension.
+// |error_message| is a user-displayable explanation of what went wrong.
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Failed,
+                     base::string16 /* error_message, if any */)
