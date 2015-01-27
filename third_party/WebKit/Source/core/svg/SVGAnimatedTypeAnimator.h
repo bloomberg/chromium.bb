@@ -35,6 +35,9 @@ class SVGPropertyBase;
 class SVGElement;
 class SVGAnimationElement;
 
+// The size of SVGElementInstances is 1 unless there is a <use> instance of the element.
+using SVGElementInstances = WillBeHeapVector<RawPtrWillBeMember<SVGElement>, 1u>;
+
 class SVGAnimatedTypeAnimator final : public NoBaseWillBeGarbageCollectedFinalized<SVGAnimatedTypeAnimator> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -46,9 +49,9 @@ public:
 
     PassRefPtrWillBeRawPtr<SVGPropertyBase> constructFromString(const String&);
 
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> startAnimValAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
-    void stopAnimValAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> resetAnimValToBaseVal(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> startAnimValAnimation(const SVGElementInstances&);
+    void stopAnimValAnimation(const SVGElementInstances&);
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> resetAnimValToBaseVal(const SVGElementInstances&);
 
     void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*);
     float calculateDistance(const String& fromString, const String& toString);
@@ -69,7 +72,7 @@ private:
 
     friend class ParsePropertyFromString;
     PassRefPtrWillBeRawPtr<SVGPropertyBase> createPropertyForAnimation(const String&);
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> resetAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> resetAnimation(const SVGElementInstances&);
 
     AnimatedPropertyType m_type;
     RawPtrWillBeMember<SVGAnimationElement> m_animationElement;

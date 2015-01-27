@@ -136,18 +136,15 @@ bool SVGAnimateElement::calculateFromAndByValues(const String& fromString, const
 
 namespace {
 
-WillBeHeapVector<RawPtrWillBeMember<SVGElement> > findElementInstances(SVGElement* targetElement)
+SVGElementInstances findElementInstances(SVGElement* targetElement)
 {
     ASSERT(targetElement);
-    WillBeHeapVector<RawPtrWillBeMember<SVGElement> > animatedElements;
+    SVGElementInstances animatedElements;
 
     animatedElements.append(targetElement);
 
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = targetElement->instancesForElement();
-    for (SVGElement* shadowTreeElement : instances) {
-        if (shadowTreeElement)
-            animatedElements.append(shadowTreeElement);
-    }
+    const auto& instances = targetElement->instancesForElement();
+    animatedElements.appendRange(instances.begin(), instances.end());
 
     return animatedElements;
 }
@@ -167,7 +164,7 @@ void SVGAnimateElement::resetAnimatedType()
 
     if (shouldApply == ApplyXMLAnimation) {
         // SVG DOM animVal animation code-path.
-        WillBeHeapVector<RawPtrWillBeMember<SVGElement> > animatedElements = findElementInstances(targetElement);
+        SVGElementInstances animatedElements = findElementInstances(targetElement);
         ASSERT(!animatedElements.isEmpty());
 
         for (SVGElement* element : animatedElements)
@@ -271,10 +268,8 @@ static inline void notifyTargetAndInstancesAboutAnimValChange(SVGElement* target
     notifyTargetAboutAnimValChange(targetElement, attributeName);
 
     // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = targetElement->instancesForElement();
-    for (SVGElement* element : instances) {
+    for (SVGElement* element : targetElement->instancesForElement())
         notifyTargetAboutAnimValChange(element, attributeName);
-    }
 }
 
 void SVGAnimateElement::clearAnimatedType(SVGElement* targetElement)
@@ -296,7 +291,7 @@ void SVGAnimateElement::clearAnimatedType(SVGElement* targetElement)
 
     // SVG DOM animVal animation code-path.
     if (m_animator) {
-        WillBeHeapVector<RawPtrWillBeMember<SVGElement> > animatedElements = findElementInstances(targetElement);
+        SVGElementInstances animatedElements = findElementInstances(targetElement);
         m_animator->stopAnimValAnimation(animatedElements);
         notifyTargetAndInstancesAboutAnimValChange(targetElement, attributeName());
     }
