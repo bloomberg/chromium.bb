@@ -14,6 +14,10 @@ namespace mojoPrivate {
         DOMString moduleName,
         optional DOMString[] dependencies,
         DefineCallback factory);
+
+    // Returns a promise that will resolve to an asynchronously
+    // loaded module.
+    [nocompile] static any requireAsync(DOMString name);
   };
 
 };

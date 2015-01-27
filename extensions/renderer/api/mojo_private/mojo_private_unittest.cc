@@ -45,4 +45,14 @@ TEST_F(MojoPrivateApiTest, DefineModuleDoesNotExist) {
                     "does not exist!"));
 }
 
+TEST_F(MojoPrivateApiTest, RequireAsync) {
+  ASSERT_NO_FATAL_FAILURE(
+      RunTest("mojo_private_unittest.js", "testRequireAsync"));
+}
+
+TEST_F(MojoPrivateApiTest, DefineAndRequire) {
+  ASSERT_NO_FATAL_FAILURE(
+      RunTest("mojo_private_unittest.js", "testDefineAndRequire"));
+}
+
 }  // namespace extensions

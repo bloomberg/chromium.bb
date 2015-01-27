@@ -31,4 +31,24 @@ unittestBindings.exportTests([
     mojoPrivate.define('testModule', ['does not exist!'], test.fail);
     test.succeed();
   },
+
+  function testRequireAsync() {
+    mojoPrivate.requireAsync('mojo/public/js/codec').then(
+        test.callbackPass(function(codec) {
+          test.assertEq('function', typeof codec.Message);
+        }));
+  },
+
+  function testDefineAndRequire() {
+    mojoPrivate.define('testModule', ['dependency'],
+                       test.callbackPass(function(module) {
+      test.assertEq(12345, module.result);
+    }));
+    mojoPrivate.define('dependency', test.callbackPass(function() {
+      return {result: 12345};
+    }));
+    mojoPrivate.requireAsync('dependency').then(
+        test.callbackPass(),
+        test.fail);
+  }
 ], test.runTests, exports);
