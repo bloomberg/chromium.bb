@@ -256,7 +256,7 @@
       <if expr="chromeos">
         <!-- The font name like: 'Font Name, 10' -->
         <message name="IDS_UI_FONT_FAMILY_CROS" use_name_for_id="true">
-          Noto Sans UI,ui-sans, 12px
+          Noto Sans UI, 12px
         </message>
 
         <!-- The font used in Web UI (e.g. History). -->
