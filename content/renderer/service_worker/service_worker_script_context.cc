@@ -347,7 +347,7 @@ void ServiceWorkerScriptContext::OnGeofencingEvent(
 
 void ServiceWorkerScriptContext::OnCrossOriginConnectEvent(
     int request_id,
-    const CrossOriginServiceWorkerClient& client) {
+    const NavigatorConnectClient& client) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnCrossOriginConnectEvent");
   blink::WebCrossOriginServiceWorkerClient web_client;
@@ -383,7 +383,7 @@ void ServiceWorkerScriptContext::OnPostMessage(
 }
 
 void ServiceWorkerScriptContext::OnCrossOriginMessageToWorker(
-    const CrossOriginServiceWorkerClient& client,
+    const NavigatorConnectClient& client,
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids,
     const std::vector<int>& new_routing_ids) {

@@ -13,6 +13,7 @@
 #include "content/browser/host_zoom_level_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/media/webrtc_identity_store.h"
+#include "content/browser/navigator_connect/navigator_connect_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
@@ -48,7 +49,7 @@ class StoragePartitionImpl : public StoragePartition {
   HostZoomMap* GetHostZoomMap() override;
   HostZoomLevelContext* GetHostZoomLevelContext() override;
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
-  NavigatorConnectContext* GetNavigatorConnectContext() override;
+  NavigatorConnectContextImpl* GetNavigatorConnectContext() override;
 
   void ClearDataForOrigin(uint32 remove_mask,
                           uint32 quota_storage_remove_mask,
@@ -129,7 +130,7 @@ class StoragePartitionImpl : public StoragePartition {
       storage::SpecialStoragePolicy* special_storage_policy,
       GeofencingManager* geofencing_manager,
       HostZoomLevelContext* host_zoom_level_context,
-      NavigatorConnectContext* navigator_connect_context);
+      NavigatorConnectContextImpl* navigator_connect_context);
 
   void ClearDataImpl(uint32 remove_mask,
                      uint32 quota_storage_remove_mask,
@@ -171,7 +172,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<GeofencingManager> geofencing_manager_;
   scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
-  scoped_refptr<NavigatorConnectContext> navigator_connect_context_;
+  scoped_refptr<NavigatorConnectContextImpl> navigator_connect_context_;
 
   // Raw pointer that should always be valid. The BrowserContext owns the
   // StoragePartitionImplMap which then owns StoragePartitionImpl. When the

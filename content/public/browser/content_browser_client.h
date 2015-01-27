@@ -92,6 +92,8 @@ class DevToolsManagerDelegate;
 class ExternalVideoSurfaceContainer;
 class LocationProvider;
 class MediaObserver;
+class NavigatorConnectContext;
+class NavigatorConnectServiceFactory;
 class PlatformNotificationService;
 class QuotaPermissionContext;
 class RenderFrameHost;
@@ -587,6 +589,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows to override browser Mojo services exposed through the
   // RenderProcessHost.
   virtual void OverrideRenderProcessMojoServices(ServiceRegistry* registry) {}
+
+  // Registers additional navigator.connect service factories available in a
+  // particular NavigatorConnectContext.
+  virtual void GetAdditionalNavigatorConnectServices(
+      const scoped_refptr<NavigatorConnectContext>& context) {}
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching

@@ -10,7 +10,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/navigator_connect_messages.h"
-#include "content/common/navigator_connect_types.h"
+#include "content/public/common/navigator_connect_client.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
 namespace content {
@@ -46,7 +46,7 @@ void SendConnectMessage(const scoped_refptr<ThreadSafeSender>& sender,
                         int message_port_id) {
   sender->Send(new NavigatorConnectHostMsg_Connect(
       thread_id, request_id,
-      CrossOriginServiceWorkerClient(target_url, origin, message_port_id)));
+      NavigatorConnectClient(target_url, origin, message_port_id)));
 }
 
 }  // namespace

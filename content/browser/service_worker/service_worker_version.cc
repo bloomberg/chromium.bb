@@ -544,7 +544,7 @@ void ServiceWorkerVersion::DispatchGeofencingEvent(
 
 void ServiceWorkerVersion::DispatchCrossOriginConnectEvent(
     const CrossOriginConnectCallback& callback,
-    const CrossOriginServiceWorkerClient& client) {
+    const NavigatorConnectClient& client) {
   DCHECK_EQ(ACTIVATED, status()) << status();
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -574,7 +574,7 @@ void ServiceWorkerVersion::DispatchCrossOriginConnectEvent(
 }
 
 void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
-    const CrossOriginServiceWorkerClient& client,
+    const NavigatorConnectClient& client,
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids,
     const StatusCallback& callback) {

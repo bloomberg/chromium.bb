@@ -35,8 +35,8 @@ struct WebCircularGeofencingRegion;
 
 namespace content {
 
-struct CrossOriginServiceWorkerClient;
 class EmbeddedWorkerRegistry;
+struct NavigatorConnectClient;
 struct PlatformNotificationData;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
@@ -243,7 +243,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This must be called when the status() is ACTIVATED.
   void DispatchCrossOriginConnectEvent(
       const CrossOriginConnectCallback& callback,
-      const CrossOriginServiceWorkerClient& client);
+      const NavigatorConnectClient& client);
 
   // Sends a cross origin message event to the associated embedded worker and
   // asynchronously calls |callback| when the message was sent (or failed to
@@ -254,7 +254,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   //
   // This must be called when the status() is ACTIVATED.
   void DispatchCrossOriginMessageEvent(
-      const CrossOriginServiceWorkerClient& client,
+      const NavigatorConnectClient& client,
       const base::string16& message,
       const std::vector<int>& sent_message_port_ids,
       const StatusCallback& callback);

@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "content/common/navigator_connect_types.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/navigator_connect_client.h"
 #include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
@@ -430,13 +430,13 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GeofencingEvent,
                      blink::WebCircularGeofencingRegion /* region */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CrossOriginConnectEvent,
                      int /* request_id */,
-                     content::CrossOriginServiceWorkerClient /* client */)
+                     content::NavigatorConnectClient /* client */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_MessageToWorker,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */,
                      std::vector<int> /* new_routing_ids */)
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_CrossOriginMessageToWorker,
-                     content::CrossOriginServiceWorkerClient /* client */,
+                     content::NavigatorConnectClient /* client */,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */,
                      std::vector<int> /* new_routing_ids */)

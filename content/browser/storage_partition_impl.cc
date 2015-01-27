@@ -11,7 +11,8 @@
 #include "content/browser/geofencing/geofencing_manager.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/host_zoom_map_impl.h"
-#include "content/browser/navigator_connect/navigator_connect_context.h"
+#include "content/browser/navigator_connect/navigator_connect_context_impl.h"
+#include "content/browser/navigator_connect/navigator_connect_service_worker_service_factory.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -373,7 +374,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     storage::SpecialStoragePolicy* special_storage_policy,
     GeofencingManager* geofencing_manager,
     HostZoomLevelContext* host_zoom_level_context,
-    NavigatorConnectContext* navigator_connect_context)
+    NavigatorConnectContextImpl* navigator_connect_context)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -490,8 +491,10 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       new HostZoomLevelContext(
           context->CreateZoomLevelDelegate(partition_path)));
 
-  scoped_refptr<NavigatorConnectContext> navigator_connect_context =
-      new NavigatorConnectContext(service_worker_context);
+  scoped_refptr<NavigatorConnectContextImpl> navigator_connect_context =
+      new NavigatorConnectContextImpl();
+  navigator_connect_context->AddFactory(make_scoped_ptr(
+      new NavigatorConnectServiceWorkerServiceFactory(service_worker_context)));
 
   StoragePartitionImpl* storage_partition = new StoragePartitionImpl(
       context, partition_path, quota_manager.get(), appcache_service.get(),
@@ -565,7 +568,8 @@ ZoomLevelDelegate* StoragePartitionImpl::GetZoomLevelDelegate() {
   return host_zoom_level_context_->GetZoomLevelDelegate();
 }
 
-NavigatorConnectContext* StoragePartitionImpl::GetNavigatorConnectContext() {
+NavigatorConnectContextImpl*
+StoragePartitionImpl::GetNavigatorConnectContext() {
   return navigator_connect_context_.get();
 }
 

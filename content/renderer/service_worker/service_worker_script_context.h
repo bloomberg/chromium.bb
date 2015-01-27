@@ -38,7 +38,7 @@ namespace content {
 
 class EmbeddedWorkerContextClient;
 class WebServiceWorkerRegistrationImpl;
-struct CrossOriginServiceWorkerClient;
+struct NavigatorConnectClient;
 struct PlatformNotificationData;
 
 // TODO(kinuko): This should implement WebServiceWorkerContextClient
@@ -117,12 +117,12 @@ class ServiceWorkerScriptContext {
                          const std::string& region_id,
                          const blink::WebCircularGeofencingRegion& region);
   void OnCrossOriginConnectEvent(int request_id,
-                                 const CrossOriginServiceWorkerClient& client);
+                                 const NavigatorConnectClient& client);
   void OnPostMessage(const base::string16& message,
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);
   void OnCrossOriginMessageToWorker(
-      const CrossOriginServiceWorkerClient& client,
+      const NavigatorConnectClient& client,
       const base::string16& message,
       const std::vector<int>& sent_message_port_ids,
       const std::vector<int>& new_routing_ids);
