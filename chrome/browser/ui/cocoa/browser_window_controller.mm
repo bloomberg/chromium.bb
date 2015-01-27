@@ -255,7 +255,10 @@ using content::WebContents;
     // Make the content view for the window have a layer. This will make all
     // sub-views have layers. This is necessary to ensure correct layer
     // ordering of all child views and their layers.
-    [[window contentView] setWantsLayer:YES];
+    if ([self wantsRootViewToBeLayerBacked])
+      [[[window contentView] superview] setWantsLayer:YES];
+    else
+      [[window contentView] setWantsLayer:YES];
     windowShim_.reset(new BrowserWindowCocoa(browser, self));
 
     // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.

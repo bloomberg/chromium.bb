@@ -1072,4 +1072,16 @@ willPositionSheet:(NSWindow*)sheet
   return [super shouldConstrainFrameRect];
 }
 
+- (BOOL)wantsRootViewToBeLayerBacked {
+  // This class always layer-backs the contentView of the window. If Chrome
+  // were linked against OSX 10.9, this would also cause the root view to be
+  // layer backed. Since Chrome is linked against OSX 10.6, the root view by
+  // default is not layer backed.
+
+  // This class is going to have a custom AppKit fullscreen animation, which
+  // requires that the root view is layer backed. To be safe, this class will
+  // only layer-back the root view on OSX 10.9+.
+  return base::mac::IsOSMavericksOrLater();
+}
+
 @end  // @implementation BrowserWindowController(Private)
