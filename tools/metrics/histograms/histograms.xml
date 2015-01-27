@@ -39719,7 +39719,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="V8.ASTOptimization">
   <obsolete>
-    This histogram is no longer present in V8
+    This histogram is no longer present in V8.
   </obsolete>
   <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
@@ -39727,7 +39727,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="V8.CodeCreation">
   <obsolete>
-    This histogram is no longer present in V8
+    This histogram is no longer present in V8.
   </obsolete>
   <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
@@ -39735,7 +39735,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="V8.CodeGeneration">
   <obsolete>
-    This histogram is no longer present in V8
+    This histogram is no longer present in V8.
   </obsolete>
   <owner>jochen@chromium.org</owner>
   <summary>Time spent generating native code for functions.</summary>
@@ -39751,31 +39751,75 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.Compile" units="milliseconds">
+  <obsolete>
+    This histogram has been replaced by V8.CompileMicroSeconds.
+  </obsolete>
   <owner>jochen@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
   <summary>Time spent in V8 compiler (full codegen).</summary>
 </histogram>
 
 <histogram name="V8.CompileDeserialize" units="milliseconds">
+  <obsolete>
+    This histogram has been replaced by V8.CompileDeserializeMicroSeconds.
+  </obsolete>
+  <owner>vogelheim@chromium.org</owner>
+  <summary>Time spent deseriailzing code, used by V8 code caching.</summary>
+</histogram>
+
+<histogram name="V8.CompileDeserializeMicroSeconds" units="microseconds">
   <owner>vogelheim@chromium.org</owner>
   <summary>Time spent deseriailzing code, used by V8 code caching.</summary>
 </histogram>
 
 <histogram name="V8.CompileEval" units="milliseconds">
+  <obsolete>
+    This histogram has been replaced by V8.CompileEvalMicroSeconds.
+  </obsolete>
   <owner>jochen@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
   <summary>Time spent in V8 compiler (full codegen) for eval.</summary>
 </histogram>
 
-<histogram name="V8.CompileLazy">
+<histogram name="V8.CompileEvalMicroSeconds" units="microseconds">
+  <owner>jochen@chromium.org</owner>
+  <owner>yangguo@chromium.org</owner>
+  <summary>Time spent in V8 compiler (full codegen) for eval.</summary>
+</histogram>
+
+<histogram name="V8.CompileLazy" units="milliseconds">
   <obsolete>
-    This histogram is no longer present in V8
+    This histogram has been replaced by V8.CompileLazyMicroSeconds.
   </obsolete>
   <owner>jochen@chromium.org</owner>
   <summary>Time spent compiling functions lazily on first run.</summary>
 </histogram>
 
+<histogram name="V8.CompileLazyMicroSeconds" units="microseconds">
+  <owner>jochen@chromium.org</owner>
+  <summary>
+    Aggregated time spent compiling functions lazily during a single script
+    execution.
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileMicroSeconds" units="microseconds">
+  <owner>jochen@chromium.org</owner>
+  <owner>yangguo@chromium.org</owner>
+  <summary>Time spent in V8 compiler (full codegen).</summary>
+</histogram>
+
 <histogram name="V8.CompileScript" units="milliseconds">
+  <obsolete>
+    This histogram has been replaced by V8.CompileScriptMicroSeconds.
+  </obsolete>
+  <owner>yangguo@chromium.org</owner>
+  <summary>
+    Total time spent in compiling a script (incl. parsing/caching).
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileScriptMicroSeconds" units="microseconds">
   <owner>yangguo@chromium.org</owner>
   <summary>
     Total time spent in compiling a script (incl. parsing/caching).
@@ -39783,6 +39827,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.CompileSerialize" units="milliseconds">
+  <obsolete>
+    This histogram has been replaced by V8.CompileSerializeMicroSeconds.
+  </obsolete>
+  <owner>vogelheim@chromium.org</owner>
+  <summary>Time spent serializing code, used by V8 code caching.</summary>
+</histogram>
+
+<histogram name="V8.CompileSerializeMicroSeconds" units="microseconds">
   <owner>vogelheim@chromium.org</owner>
   <summary>Time spent serializing code, used by V8 code caching.</summary>
 </histogram>
@@ -40021,12 +40073,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.Parse" units="milliseconds">
+  <obsolete>
+    This histogram has been replaced by V8.ParseMicroSeconds.
+  </obsolete>
   <owner>jochen@chromium.org</owner>
   <owner>marja@chromium.org</owner>
   <summary>Time spent in V8 parser.</summary>
 </histogram>
 
 <histogram name="V8.ParseLazy" units="milliseconds">
+  <obsolete>
+    This histogram has been replaced by V8.ParseLazyMicroSeconds.
+  </obsolete>
   <owner>jochen@chromium.org</owner>
   <owner>marja@chromium.org</owner>
   <summary>
@@ -40034,7 +40092,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="V8.ParseLazyMicroSeconds" units="microseconds">
+  <owner>jochen@chromium.org</owner>
+  <owner>marja@chromium.org</owner>
+  <summary>
+    Time spent parsing functions when they are lazily compiled on first run.
+  </summary>
+</histogram>
+
+<histogram name="V8.ParseMicroSeconds" units="microseconds">
+  <owner>jochen@chromium.org</owner>
+  <owner>marja@chromium.org</owner>
+  <summary>Time spent in V8 parser.</summary>
+</histogram>
+
 <histogram name="V8.PreParse" units="milliseconds">
+  <obsolete>
+    This histogram has been replaced by V8.PreParseMicroSeconds.
+  </obsolete>
+  <owner>jochen@chromium.org</owner>
+  <owner>marja@chromium.org</owner>
+  <summary>Time spent preparsing source code.</summary>
+</histogram>
+
+<histogram name="V8.PreParseMicroSeconds" units="microseconds">
   <owner>jochen@chromium.org</owner>
   <owner>marja@chromium.org</owner>
   <summary>Time spent preparsing source code.</summary>
@@ -40042,7 +40123,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="V8.Rewriting">
   <obsolete>
-    This histogram is no longer present in V8
+    This histogram is no longer present in V8.
   </obsolete>
   <owner>jochen@chromium.org</owner>
   <summary>Time spent on rewriting ASTs before compilation.</summary>
@@ -40050,7 +40131,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="V8.RSetLO">
   <obsolete>
-    This histogram is no longer present in V8
+    This histogram is no longer present in V8.
   </obsolete>
   <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
@@ -40058,13 +40139,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="V8.RSetPaged">
   <obsolete>
-    This histogram is no longer present in V8
+    This histogram is no longer present in V8.
   </obsolete>
   <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
 </histogram>
 
 <histogram name="V8.ScriptCache">
+  <obsolete>
+    This histogram is no longer present in V8.
+  </obsolete>
   <owner>jochen@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
   <summary>
@@ -40074,7 +40158,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="V8.UsageAnalysis">
   <obsolete>
-    This histogram is no longer present in V8
+    This histogram is no longer present in V8.
   </obsolete>
   <owner>jochen@chromium.org</owner>
   <summary>Time spent analysing the usage of variables.</summary>
@@ -40082,7 +40166,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="V8.VariableAllocation">
   <obsolete>
-    This histogram is no longer present in V8
+    This histogram is no longer present in V8.
   </obsolete>
   <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
