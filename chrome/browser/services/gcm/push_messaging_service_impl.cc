@@ -31,6 +31,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/platform_notification_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -148,9 +149,10 @@ void PushMessagingServiceImpl::OnMessage(
     const GCMClient::IncomingMessage& message) {
   // The Push API only exposes a single string of data in the push event fired
   // on the Service Worker. When developers send messages using GCM to the Push
-  // API, they must pass a single key-value pair, where the key is "data" and
-  // the value is the string they want to be passed to their Service Worker.
-  // For example, they could send the following JSON using the HTTPS GCM API:
+  // API and want to include a message payload, they must pass a single key-
+  // value pair, where the key is "data" and the value is the string they want
+  // to be passed to their Service Worker. For example, they could send the
+  // following JSON using the HTTPS GCM API:
   // {
   //     "registration_ids": ["FOO", "BAR"],
   //     "data": {
@@ -161,30 +163,40 @@ void PushMessagingServiceImpl::OnMessage(
   // TODO(johnme): Make sure this is clearly documented for developers.
   PushMessagingApplicationId application_id =
       PushMessagingApplicationId::Parse(app_id);
-  GCMClient::MessageData::const_iterator it = message.data.find("data");
-  if (application_id.IsValid() && it != message.data.end()) {
-    if (!HasPermission(application_id.origin)) {
-      // The |origin| lost push permission. We need to unregister and drop this
-      // message.
-      Unregister(application_id, UnregisterCallback());
-      return;
-    }
 
-    const std::string& data = it->second;
-    content::BrowserContext::DeliverPushMessage(
-        profile_,
-        application_id.origin,
-        application_id.service_worker_registration_id,
-        data,
-        base::Bind(&PushMessagingServiceImpl::DeliverMessageCallback,
-                   weak_factory_.GetWeakPtr(),
-                   application_id,
-                   message));
-  } else {
-    // Drop the message, as it is invalid.
+  // Drop messages whose application is is invalid.
+  if (!application_id.IsValid()) {
     DeliverMessageCallback(application_id, message,
                            content::PUSH_DELIVERY_STATUS_INVALID_MESSAGE);
+    return;
   }
+
+  // |origin| may have lost push permission. Unregister and drop this message.
+  if (!HasPermission(application_id.origin)) {
+    Unregister(application_id, UnregisterCallback());
+    return;
+  }
+
+  std::string data;
+
+  // TODO(peter): Message payloads are disabled pending mandatory encryption.
+  // https://crbug.com/449184
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePushMessagePayload)) {
+    GCMClient::MessageData::const_iterator it = message.data.find("data");
+    if (it != message.data.end())
+      data = it->second;
+  }
+
+  content::BrowserContext::DeliverPushMessage(
+      profile_,
+      application_id.origin,
+      application_id.service_worker_registration_id,
+      data,
+      base::Bind(&PushMessagingServiceImpl::DeliverMessageCallback,
+                 weak_factory_.GetWeakPtr(),
+                 application_id,
+                 message));
 }
 
 void PushMessagingServiceImpl::SetProfileForTesting(Profile* profile) {

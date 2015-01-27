@@ -179,6 +179,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kReducedReferrerGranularity))
     WebRuntimeFeatures::enableReducedReferrerGranularity(true);
 
+  if (command_line.HasSwitch(switches::kEnablePushMessagePayload))
+    WebRuntimeFeatures::enablePushMessagingData(true);
+
   if (command_line.HasSwitch(switches::kDisableV8IdleTasks))
     WebRuntimeFeatures::enableV8IdleTasks(false);
   else

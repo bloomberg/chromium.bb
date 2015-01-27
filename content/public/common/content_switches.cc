@@ -366,6 +366,9 @@ const char kEnablePinch[]                   = "enable-pinch";
 // also applys to workers.
 const char kEnablePreciseMemoryInfo[] = "enable-precise-memory-info";
 
+// Enables payloads for received push messages when using the W3C Push API.
+const char kEnablePushMessagePayload[] = "enable-push-message-payload";
+
 // Set options to cache V8 data. (off, preparse data, or code)
 const char kV8CacheOptions[] = "v8-cache-options";
 
