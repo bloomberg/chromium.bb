@@ -131,8 +131,7 @@ void AccountsDetailedView::AddAddAccountButton() {
   add_account_button->AddLabel(
       l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_ADD_ACCOUNT_LABEL,
                                  user_name),
-      gfx::ALIGN_CENTER,
-      gfx::Font::NORMAL);
+      gfx::ALIGN_CENTER, false /* highlight */);
   AddChildView(add_account_button);
   add_account_button_ = add_account_button;
 }

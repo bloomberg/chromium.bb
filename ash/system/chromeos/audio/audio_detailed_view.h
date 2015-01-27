@@ -33,7 +33,7 @@ class AudioDetailedView : public TrayDetailsView,
   void AddScrollListInfoItem(const base::string16& text);
 
   HoverHighlightView* AddScrollListItem(const base::string16& text,
-                                        gfx::Font::FontStyle style,
+                                        bool highlight,
                                         bool checked);
 
   void CreateHeaderEntry();

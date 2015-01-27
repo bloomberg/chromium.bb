@@ -238,10 +238,9 @@ class BluetoothDetailedView : public TrayDetailsView,
     bool blueooth_available = delegate->GetBluetoothAvailable();
     if (blueooth_available && !bluetooth_enabled &&
         toggle_bluetooth_) {
-      enable_bluetooth_ =
-          AddScrollListItem(
-              l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH),
-              gfx::Font::NORMAL, false, true);
+      enable_bluetooth_ = AddScrollListItem(
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH),
+          false /* highlight */, false /* checked */, true /* enabled */);
     }
 
     AppendSameTypeDevicesToScrollList(
@@ -258,10 +257,10 @@ class BluetoothDetailedView : public TrayDetailsView,
     // Show user Bluetooth state if there is no bluetooth devices in list.
     if (device_map_.size() == 0) {
       if (blueooth_available && bluetooth_enabled) {
-        AddScrollListItem(
-            l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING),
-            gfx::Font::NORMAL, false, true);
+        AddScrollListItem(l10n_util::GetStringUTF16(
+                              IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING),
+                          false /* highlight */, false /* checked */,
+                          true /* enabled */);
       }
     }
 
@@ -270,24 +269,23 @@ class BluetoothDetailedView : public TrayDetailsView,
   }
 
   void AppendSameTypeDevicesToScrollList(const BluetoothDeviceList& list,
-                                         bool bold,
+                                         bool highlight,
                                          bool checked,
                                          bool enabled) {
     for (size_t i = 0; i < list.size(); ++i) {
-      HoverHighlightView* container = AddScrollListItem(
-          list[i].display_name,
-          bold? gfx::Font::BOLD : gfx::Font::NORMAL,
-          checked, enabled);
+      HoverHighlightView* container =
+          AddScrollListItem(list[i].display_name, highlight, checked, enabled);
       device_map_[container] = list[i].address;
     }
   }
 
   HoverHighlightView* AddScrollListItem(const base::string16& text,
-                                        gfx::Font::FontStyle style,
+                                        bool highlight,
                                         bool checked,
                                         bool enabled) {
     HoverHighlightView* container = new HoverHighlightView(this);
-    views::Label* label = container->AddCheckableLabel(text, style, checked);
+    views::Label* label =
+        container->AddCheckableLabel(text, highlight, checked);
     label->SetEnabled(enabled);
     scroll_content()->AddChildView(container);
     return container;
@@ -316,8 +314,7 @@ class BluetoothDetailedView : public TrayDetailsView,
     HoverHighlightView* container = new HoverHighlightView(this);
     container->AddLabel(
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BLUETOOTH_MANAGE_DEVICES),
-        gfx::ALIGN_LEFT,
-        gfx::Font::NORMAL);
+        gfx::ALIGN_LEFT, false /* highlight */);
     container->SetEnabled(delegate->GetBluetoothAvailable());
     AddChildView(container);
     manage_devices_ = container;
@@ -349,8 +346,8 @@ class BluetoothDetailedView : public TrayDetailsView,
           IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING, display_name);
 
       item_container->RemoveAllChildViews(true);
-      static_cast<HoverHighlightView*>(item_container)->
-          AddCheckableLabel(display_name, gfx::Font::BOLD, false);
+      static_cast<HoverHighlightView*>(item_container)
+          ->AddCheckableLabel(display_name, true /* highlight */, false);
       scroll_content()->SizeToPreferredSize();
       static_cast<views::View*>(scroller())->Layout();
     }

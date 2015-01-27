@@ -48,9 +48,7 @@ class SelectableHoverHighlightView : public HoverHighlightView {
                                const base::string16& label,
                                bool selected)
       : HoverHighlightView(listener), selected_(selected) {
-    AddLabel(label,
-             gfx::ALIGN_LEFT,
-             selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
+    AddLabel(label, gfx::ALIGN_LEFT, selected);
   }
 
   ~SelectableHoverHighlightView() override {}
@@ -173,8 +171,7 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
                  : IDS_ASH_STATUS_TRAY_ENABLE_KEYBOARD;
     container->AddLabel(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(id),
-        gfx::ALIGN_LEFT,
-        gfx::Font::NORMAL);
+        gfx::ALIGN_LEFT, false /* highlight */);
     scroll_content()->AddChildView(container);
     keyboard_status_ = container;
   }
@@ -184,8 +181,7 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
     container->AddLabel(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_IME_SETTINGS),
-        gfx::ALIGN_LEFT,
-        gfx::Font::NORMAL);
+        gfx::ALIGN_LEFT, false /* highlight */);
     AddChildView(container);
     settings_ = container;
   }

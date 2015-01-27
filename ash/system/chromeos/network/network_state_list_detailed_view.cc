@@ -565,10 +565,8 @@ void NetworkStateListDetailedView::ToggleMobile() {
 
 views::View* NetworkStateListDetailedView::CreateViewForNetwork(
     const ui::NetworkInfo& info) {
-  gfx::Font::FontStyle font =
-      info.highlight ? gfx::Font::BOLD : gfx::Font::NORMAL;
   HoverHighlightView* view = new HoverHighlightView(this);
-  view->AddIconAndLabel(info.image, info.label, font);
+  view->AddIconAndLabel(info.image, info.label, info.highlight);
   view->SetBorder(
       views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
   return view;
@@ -586,10 +584,8 @@ NetworkTypePattern NetworkStateListDetailedView::GetNetworkTypePattern() const {
 void NetworkStateListDetailedView::UpdateViewForNetwork(
     views::View* view,
     const NetworkInfo& info) {
-  gfx::Font::FontStyle font =
-      info.highlight ? gfx::Font::BOLD : gfx::Font::NORMAL;
   HoverHighlightView* highlight = static_cast<HoverHighlightView*>(view);
-  highlight->AddIconAndLabel(info.image, info.label, font);
+  highlight->AddIconAndLabel(info.image, info.label, info.highlight);
 }
 
 views::Label* NetworkStateListDetailedView::CreateInfoLabel() {

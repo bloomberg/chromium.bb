@@ -66,8 +66,7 @@ void SpecialPopupRow::SetTextLabel(int string_id, ViewClickListener* listener) {
 
   container->AddIconAndLabel(
       *rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToImageSkia(),
-      rb.GetLocalizedString(string_id),
-      gfx::Font::BOLD);
+      rb.GetLocalizedString(string_id), true /* highlight */);
 
   container->SetBorder(
       views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));

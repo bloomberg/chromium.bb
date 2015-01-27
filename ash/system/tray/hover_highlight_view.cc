@@ -23,6 +23,11 @@ namespace {
 
 const int kCheckLabelPadding = 4;
 
+const gfx::FontList& GetFontList(bool highlight) {
+  return ui::ResourceBundle::GetSharedInstance().GetFontList(
+      highlight ? ui::ResourceBundle::BoldFont : ui::ResourceBundle::BaseFont);
+}
+
 }  // namespace
 
 namespace ash {
@@ -46,7 +51,7 @@ HoverHighlightView::~HoverHighlightView() {
 
 void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
                                          const base::string16& text,
-                                         gfx::Font::FontStyle style) {
+                                         bool highlight) {
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 3, kTrayPopupPaddingBetweenItems));
   views::ImageView* image_view =
@@ -56,7 +61,7 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
 
   text_label_ = new views::Label(text);
   text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  text_label_->SetFontList(text_label_->font_list().DeriveWithStyle(style));
+  text_label_->SetFontList(GetFontList(highlight));
   if (text_default_color_)
     text_label_->SetEnabledColor(text_default_color_);
   AddChildView(text_label_);
@@ -66,7 +71,7 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
 
 views::Label* HoverHighlightView::AddLabel(const base::string16& text,
                                            gfx::HorizontalAlignment alignment,
-                                           gfx::Font::FontStyle style) {
+                                           bool highlight) {
   SetLayoutManager(new views::FillLayout());
   text_label_ = new views::Label(text);
   int left_margin = kTrayPopupPaddingHorizontal;
@@ -80,7 +85,7 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
   text_label_->SetBorder(
       views::Border::CreateEmptyBorder(5, left_margin, 5, right_margin));
   text_label_->SetHorizontalAlignment(alignment);
-  text_label_->SetFontList(text_label_->font_list().DeriveWithStyle(style));
+  text_label_->SetFontList(GetFontList(highlight));
   // Do not set alpha value in disable color. It will have issue with elide
   // blending filter in disabled state for rendering label text color.
   text_label_->SetDisabledColor(SkColorSetARGB(255, 127, 127, 127));
@@ -93,7 +98,7 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
 }
 
 views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
-                                                    gfx::Font::FontStyle style,
+                                                    bool highlight,
                                                     bool checked) {
   checkable_ = true;
   checked_ = checked;
@@ -112,7 +117,7 @@ views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
 
     text_label_ = new views::Label(text);
     text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    text_label_->SetFontList(text_label_->font_list().DeriveWithStyle(style));
+    text_label_->SetFontList(GetFontList(highlight));
     text_label_->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
     if (text_default_color_)
       text_label_->SetEnabledColor(text_default_color_);
@@ -121,7 +126,7 @@ views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
     SetAccessibleName(text);
     return text_label_;
   }
-  return AddLabel(text, gfx::ALIGN_LEFT, style);
+  return AddLabel(text, gfx::ALIGN_LEFT, highlight);
 }
 
 void HoverHighlightView::SetExpandable(bool expandable) {

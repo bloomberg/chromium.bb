@@ -73,7 +73,7 @@ class AccessibilityDetailedView : public TrayDetailsView,
   void AppendHelpEntries();
 
   HoverHighlightView* AddScrollListItem(const base::string16& text,
-                                        gfx::Font::FontStyle style,
+                                        bool highlight,
                                         bool checked);
   // Overridden from ViewClickListener.
   void OnViewClicked(views::View* sender) override;

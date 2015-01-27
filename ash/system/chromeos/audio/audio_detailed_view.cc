@@ -93,10 +93,10 @@ void AudioDetailedView::AddScrollListInfoItem(const base::string16& text) {
 
 HoverHighlightView* AudioDetailedView::AddScrollListItem(
     const base::string16& text,
-    gfx::Font::FontStyle style,
+    bool highlight,
     bool checked) {
   HoverHighlightView* container = new HoverHighlightView(this);
-  container->AddCheckableLabel(text, style, checked);
+  container->AddCheckableLabel(text, highlight, checked);
   scroll_content()->AddChildView(container);
   return container;
 }
@@ -137,9 +137,8 @@ void AudioDetailedView::UpdateScrollableList() {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT));
   for (size_t i = 0; i < output_devices_.size(); ++i) {
     HoverHighlightView* container = AddScrollListItem(
-        GetAudioDeviceName(output_devices_[i]),
-        gfx::Font::NORMAL,
-        output_devices_[i].active);  /* checkmark if active */
+        GetAudioDeviceName(output_devices_[i]), false /* highlight */,
+        output_devices_[i].active); /* checkmark if active */
     device_map_[container] = output_devices_[i];
   }
 
@@ -150,9 +149,8 @@ void AudioDetailedView::UpdateScrollableList() {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_INPUT));
   for (size_t i = 0; i < input_devices_.size(); ++i) {
     HoverHighlightView* container = AddScrollListItem(
-        GetAudioDeviceName(input_devices_[i]),
-        gfx::Font::NORMAL,
-        input_devices_[i].active);  /* checkmark if active */
+        GetAudioDeviceName(input_devices_[i]), false /* highlight */,
+        input_devices_[i].active); /* checkmark if active */
     device_map_[container] = input_devices_[i];
   }
 
