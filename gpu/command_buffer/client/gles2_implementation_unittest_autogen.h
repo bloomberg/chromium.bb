@@ -351,6 +351,17 @@ TEST_F(GLES2ImplementationTest, CopyTexSubImage2D) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, CopyTexSubImage3D) {
+  struct Cmds {
+    cmds::CopyTexSubImage3D cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_TEXTURE_3D, 2, 3, 4, 5, 6, 7, 8, 9);
+
+  gl_->CopyTexSubImage3D(GL_TEXTURE_3D, 2, 3, 4, 5, 6, 7, 8, 9);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, CullFace) {
   struct Cmds {
     cmds::CullFace cmd;

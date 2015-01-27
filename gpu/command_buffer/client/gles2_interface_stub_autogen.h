@@ -112,6 +112,15 @@ void CopyTexSubImage2D(GLenum target,
                        GLint y,
                        GLsizei width,
                        GLsizei height) override;
+void CopyTexSubImage3D(GLenum target,
+                       GLint level,
+                       GLint xoffset,
+                       GLint yoffset,
+                       GLint zoffset,
+                       GLint x,
+                       GLint y,
+                       GLsizei width,
+                       GLsizei height) override;
 GLuint CreateProgram() override;
 GLuint CreateShader(GLenum type) override;
 void CullFace(GLenum mode) override;

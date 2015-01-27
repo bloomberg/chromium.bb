@@ -1773,6 +1773,89 @@ static_assert(offsetof(CopyTexSubImage2D, width) == 28,
 static_assert(offsetof(CopyTexSubImage2D, height) == 32,
               "offset of CopyTexSubImage2D height should be 32");
 
+struct CopyTexSubImage3D {
+  typedef CopyTexSubImage3D ValueType;
+  static const CommandId kCmdId = kCopyTexSubImage3D;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLint _zoffset,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
+    SetHeader();
+    target = _target;
+    level = _level;
+    xoffset = _xoffset;
+    yoffset = _yoffset;
+    zoffset = _zoffset;
+    x = _x;
+    y = _y;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLint _zoffset,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)->Init(_target, _level, _xoffset, _yoffset,
+                                       _zoffset, _x, _y, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t level;
+  int32_t xoffset;
+  int32_t yoffset;
+  int32_t zoffset;
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
+};
+
+static_assert(sizeof(CopyTexSubImage3D) == 40,
+              "size of CopyTexSubImage3D should be 40");
+static_assert(offsetof(CopyTexSubImage3D, header) == 0,
+              "offset of CopyTexSubImage3D header should be 0");
+static_assert(offsetof(CopyTexSubImage3D, target) == 4,
+              "offset of CopyTexSubImage3D target should be 4");
+static_assert(offsetof(CopyTexSubImage3D, level) == 8,
+              "offset of CopyTexSubImage3D level should be 8");
+static_assert(offsetof(CopyTexSubImage3D, xoffset) == 12,
+              "offset of CopyTexSubImage3D xoffset should be 12");
+static_assert(offsetof(CopyTexSubImage3D, yoffset) == 16,
+              "offset of CopyTexSubImage3D yoffset should be 16");
+static_assert(offsetof(CopyTexSubImage3D, zoffset) == 20,
+              "offset of CopyTexSubImage3D zoffset should be 20");
+static_assert(offsetof(CopyTexSubImage3D, x) == 24,
+              "offset of CopyTexSubImage3D x should be 24");
+static_assert(offsetof(CopyTexSubImage3D, y) == 28,
+              "offset of CopyTexSubImage3D y should be 28");
+static_assert(offsetof(CopyTexSubImage3D, width) == 32,
+              "offset of CopyTexSubImage3D width should be 32");
+static_assert(offsetof(CopyTexSubImage3D, height) == 36,
+              "offset of CopyTexSubImage3D height should be 36");
+
 struct CreateProgram {
   typedef CreateProgram ValueType;
   static const CommandId kCmdId = kCreateProgram;

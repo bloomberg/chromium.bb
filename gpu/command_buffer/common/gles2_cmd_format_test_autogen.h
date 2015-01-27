@@ -562,6 +562,28 @@ TEST_F(GLES2FormatTest, CopyTexSubImage2D) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, CopyTexSubImage3D) {
+  cmds::CopyTexSubImage3D& cmd = *GetBufferAs<cmds::CopyTexSubImage3D>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<GLint>(12), static_cast<GLint>(13),
+                           static_cast<GLint>(14), static_cast<GLint>(15),
+                           static_cast<GLint>(16), static_cast<GLint>(17),
+                           static_cast<GLsizei>(18), static_cast<GLsizei>(19));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::CopyTexSubImage3D::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.xoffset);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.yoffset);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.zoffset);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.x);
+  EXPECT_EQ(static_cast<GLint>(17), cmd.y);
+  EXPECT_EQ(static_cast<GLsizei>(18), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(19), cmd.height);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, CreateProgram) {
   cmds::CreateProgram& cmd = *GetBufferAs<cmds::CreateProgram>();
   void* next_cmd = cmd.Set(&cmd, static_cast<uint32_t>(11));

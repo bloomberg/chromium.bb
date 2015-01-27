@@ -113,6 +113,15 @@ virtual void CopyTexSubImage2D(GLenum target,
                                GLint y,
                                GLsizei width,
                                GLsizei height) = 0;
+virtual void CopyTexSubImage3D(GLenum target,
+                               GLint level,
+                               GLint xoffset,
+                               GLint yoffset,
+                               GLint zoffset,
+                               GLint x,
+                               GLint y,
+                               GLsizei width,
+                               GLsizei height) = 0;
 virtual GLuint CreateProgram() = 0;
 virtual GLuint CreateShader(GLenum type) = 0;
 virtual void CullFace(GLenum mode) = 0;

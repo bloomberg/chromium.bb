@@ -86,10 +86,6 @@ error::Error GLES2DecoderImpl::HandleBindBufferRange(
   GLuint buffer = c.buffer;
   GLintptr offset = static_cast<GLintptr>(c.offset);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
-  if (size < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glBindBufferRange", "size < 0");
-    return error::kNoError;
-  }
   if (!group_->GetBufferServiceId(buffer, &buffer)) {
     if (!group_->bind_generates_resource()) {
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindBufferRange",
@@ -616,10 +612,6 @@ error::Error GLES2DecoderImpl::HandleCopyBufferSubData(
   GLintptr readoffset = static_cast<GLintptr>(c.readoffset);
   GLintptr writeoffset = static_cast<GLintptr>(c.writeoffset);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
-  if (size < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopyBufferSubData", "size < 0");
-    return error::kNoError;
-  }
   glCopyBufferSubData(readtarget, writetarget, readoffset, writeoffset, size);
   return error::kNoError;
 }
@@ -694,6 +686,32 @@ error::Error GLES2DecoderImpl::HandleCopyTexSubImage2D(
     return error::kNoError;
   }
   DoCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleCopyTexSubImage3D(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::CopyTexSubImage3D& c =
+      *static_cast<const gles2::cmds::CopyTexSubImage3D*>(cmd_data);
+  (void)c;
+  error::Error error;
+  error = WillAccessBoundFramebufferForRead();
+  if (error != error::kNoError)
+    return error;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLint zoffset = static_cast<GLint>(c.zoffset);
+  GLint x = static_cast<GLint>(c.x);
+  GLint y = static_cast<GLint>(c.y);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  glCopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width,
+                      height);
   return error::kNoError;
 }
 
@@ -1526,11 +1544,6 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
-  if (bufSize < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glGetInternalformativ",
-                       "bufSize < 0");
-    return error::kNoError;
-  }
   if (params == NULL) {
     return error::kOutOfBounds;
   }
@@ -1977,16 +1990,6 @@ error::Error GLES2DecoderImpl::HandleInvalidateSubFramebufferImmediate(
   GLsizei height = static_cast<GLsizei>(c.height);
   if (attachments == NULL) {
     return error::kOutOfBounds;
-  }
-  if (width < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glInvalidateSubFramebuffer",
-                       "width < 0");
-    return error::kNoError;
-  }
-  if (height < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glInvalidateSubFramebuffer",
-                       "height < 0");
-    return error::kNoError;
   }
   glInvalidateSubFramebuffer(target, count, attachments, x, y, width, height);
   return error::kNoError;
@@ -2799,22 +2802,6 @@ error::Error GLES2DecoderImpl::HandleTexStorage3D(uint32_t immediate_data_size,
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   GLsizei depth = static_cast<GLsizei>(c.depth);
-  if (levels < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "levels < 0");
-    return error::kNoError;
-  }
-  if (width < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "width < 0");
-    return error::kNoError;
-  }
-  if (height < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "height < 0");
-    return error::kNoError;
-  }
-  if (depth < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "depth < 0");
-    return error::kNoError;
-  }
   glTexStorage3D(target, levels, internalFormat, width, height, depth);
   return error::kNoError;
 }

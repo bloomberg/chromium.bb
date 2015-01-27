@@ -12,6 +12,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+// TODO(gman): GetUniformiv
+
 // TODO(gman): GetUniformLocation
 
 TEST_P(GLES2DecoderTest2, GetVertexAttribfvValidArgs) {
@@ -1484,6 +1486,4 @@ TEST_P(GLES2DecoderTest2, VertexAttribI4uivImmediateValidArgs) {
   decoder_->set_unsafe_es3_apis_enabled(false);
   EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
-// TODO(gman): VertexAttribIPointer
-
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

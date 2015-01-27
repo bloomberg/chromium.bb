@@ -258,6 +258,20 @@ void GLES2TraceImplementation::CopyTexSubImage2D(GLenum target,
   gl_->CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
 }
 
+void GLES2TraceImplementation::CopyTexSubImage3D(GLenum target,
+                                                 GLint level,
+                                                 GLint xoffset,
+                                                 GLint yoffset,
+                                                 GLint zoffset,
+                                                 GLint x,
+                                                 GLint y,
+                                                 GLsizei width,
+                                                 GLsizei height) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::CopyTexSubImage3D");
+  gl_->CopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width,
+                         height);
+}
+
 GLuint GLES2TraceImplementation::CreateProgram() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::CreateProgram");
   return gl_->CreateProgram();

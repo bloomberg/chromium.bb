@@ -12,6 +12,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 
+// TODO(gman): VertexAttribIPointer
+
 // TODO(gman): VertexAttribPointer
 
 TEST_P(GLES2DecoderTest3, ViewportValidArgs) {

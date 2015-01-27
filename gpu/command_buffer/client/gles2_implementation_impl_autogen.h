@@ -413,6 +413,34 @@ void GLES2Implementation::CopyTexSubImage2D(GLenum target,
   CheckGLError();
 }
 
+void GLES2Implementation::CopyTexSubImage3D(GLenum target,
+                                            GLint level,
+                                            GLint xoffset,
+                                            GLint yoffset,
+                                            GLint zoffset,
+                                            GLint x,
+                                            GLint y,
+                                            GLsizei width,
+                                            GLsizei height) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopyTexSubImage3D("
+                     << GLES2Util::GetStringTexture3DTarget(target) << ", "
+                     << level << ", " << xoffset << ", " << yoffset << ", "
+                     << zoffset << ", " << x << ", " << y << ", " << width
+                     << ", " << height << ")");
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage3D", "width < 0");
+    return;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage3D", "height < 0");
+    return;
+  }
+  helper_->CopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y,
+                             width, height);
+  CheckGLError();
+}
+
 GLuint GLES2Implementation::CreateProgram() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCreateProgram("

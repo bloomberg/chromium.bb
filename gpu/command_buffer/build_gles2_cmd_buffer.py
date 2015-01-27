@@ -1712,6 +1712,10 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoCopyTexSubImage2D',
     'defer_reads': True,
   },
+  'CopyTexSubImage3D': {
+    'defer_reads': True,
+    'unsafe': True,
+  },
   'CreateImageCHROMIUM': {
     'type': 'Manual',
     'cmd_args':
@@ -7551,21 +7555,29 @@ class SizeArgument(Argument):
 
   def WriteValidationCode(self, file, func):
     """overridden from Argument."""
-    file.Write("  if (%s < 0) {\n" % self.name)
-    file.Write(
-        "    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, \"gl%s\", \"%s < 0\");\n" %
-        (func.original_name, self.name))
-    file.Write("    return error::kNoError;\n")
-    file.Write("  }\n")
+    if func.IsUnsafe():
+      return
+    code = """  if (%(var_name)s < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "gl%(func_name)s", "%(var_name)s < 0");
+    return error::kNoError;
+  }
+"""
+    file.Write(code % {
+        "var_name": self.name,
+        "func_name": func.original_name,
+      })
 
   def WriteClientSideValidationCode(self, file, func):
     """overridden from Argument."""
-    file.Write("  if (%s < 0) {\n" % self.name)
-    file.Write(
-        "    SetGLError(GL_INVALID_VALUE, \"gl%s\", \"%s < 0\");\n" %
-        (func.original_name, self.name))
-    file.Write("    return;\n")
-    file.Write("  }\n")
+    code = """  if (%(var_name)s < 0) {
+    SetGLError(GL_INVALID_VALUE, "gl%(func_name)s", "%(var_name)s < 0");
+    return;
+  }
+"""
+    file.Write(code % {
+        "var_name": self.name,
+        "func_name": func.original_name,
+      })
 
 
 class SizeNotNegativeArgument(SizeArgument):

@@ -181,6 +181,18 @@ void GLES2CopyTexSubImage2D(GLenum target,
   gles2::GetGLContext()->CopyTexSubImage2D(target, level, xoffset, yoffset, x,
                                            y, width, height);
 }
+void GLES2CopyTexSubImage3D(GLenum target,
+                            GLint level,
+                            GLint xoffset,
+                            GLint yoffset,
+                            GLint zoffset,
+                            GLint x,
+                            GLint y,
+                            GLsizei width,
+                            GLsizei height) {
+  gles2::GetGLContext()->CopyTexSubImage3D(target, level, xoffset, yoffset,
+                                           zoffset, x, y, width, height);
+}
 GLuint GLES2CreateProgram() {
   return gles2::GetGLContext()->CreateProgram();
 }
@@ -1362,6 +1374,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glCopyTexSubImage2D",
      reinterpret_cast<GLES2FunctionPointer>(glCopyTexSubImage2D),
+    },
+    {
+     "glCopyTexSubImage3D",
+     reinterpret_cast<GLES2FunctionPointer>(glCopyTexSubImage3D),
     },
     {
      "glCreateProgram",

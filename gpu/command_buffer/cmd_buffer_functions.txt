@@ -38,6 +38,7 @@ GL_APICALL void         GL_APIENTRY glCompressedTexSubImage2D (GLenumTextureTarg
 GL_APICALL void         GL_APIENTRY glCopyBufferSubData (GLenumBufferTarget readtarget, GLenumBufferTarget writetarget, GLintptrNotNegative readoffset, GLintptrNotNegative writeoffset, GLsizeiptr size);
 GL_APICALL void         GL_APIENTRY glCopyTexImage2D (GLenumTextureTarget target, GLint level, GLenumTextureInternalFormat internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLintTextureBorder border);
 GL_APICALL void         GL_APIENTRY glCopyTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glCopyTexSubImage3D (GLenumTexture3DTarget target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL GLuint       GL_APIENTRY glCreateProgram (void);
 GL_APICALL GLuint       GL_APIENTRY glCreateShader (GLenumShaderType type);
 GL_APICALL void         GL_APIENTRY glCullFace (GLenumFaceType mode);
@@ -85,7 +86,7 @@ GL_APICALL void         GL_APIENTRY glGetFloatv (GLenumGLState pname, GLfloat* p
 GL_APICALL GLint        GL_APIENTRY glGetFragDataLocation (GLidProgram program, const char* name);
 GL_APICALL void         GL_APIENTRY glGetFramebufferAttachmentParameteriv (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumFrameBufferParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetIntegerv (GLenumGLState pname, GLint* params);
-GL_APICALL void         GL_APIENTRY glGetInternalformativ (GLenumRenderBufferTarget target, GLenumRenderBufferFormat format, GLenumRenderBufferParameter pname, GLsizei bufSize, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetInternalformativ (GLenumRenderBufferTarget target, GLenumRenderBufferFormat format, GLenumRenderBufferParameter pname, GLsizeiNotNegative bufSize, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetProgramiv (GLidProgram program, GLenumProgramParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoLog (GLidProgram program, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* infolog);
 GL_APICALL void         GL_APIENTRY glGetRenderbufferParameteriv (GLenumRenderBufferTarget target, GLenumRenderBufferParameter pname, GLint* params);
@@ -144,14 +145,14 @@ GL_APICALL void         GL_APIENTRY glStencilMaskSeparate (GLenumFaceType face, 
 GL_APICALL void         GL_APIENTRY glStencilOp (GLenumStencilOp fail, GLenumStencilOp zfail, GLenumStencilOp zpass);
 GL_APICALL void         GL_APIENTRY glStencilOpSeparate (GLenumFaceType face, GLenumStencilOp fail, GLenumStencilOp zfail, GLenumStencilOp zpass);
 GL_APICALL void         GL_APIENTRY glTexImage2D (GLenumTextureTarget target, GLint level, GLintTextureInternalFormat internalformat, GLsizei width, GLsizei height, GLintTextureBorder border, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
-GL_APICALL void         GL_APIENTRY glTexImage3D (GLenumTextureTarget target, GLint level, GLintTextureInternalFormat internalformat, GLsizei width, GLsizei height, GLsizei depth, GLintTextureBorder border, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
+GL_APICALL void         GL_APIENTRY glTexImage3D (GLenumTexture3DTarget target, GLint level, GLintTextureInternalFormat internalformat, GLsizei width, GLsizei height, GLsizei depth, GLintTextureBorder border, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
 GL_APICALL void         GL_APIENTRY glTexParameterf (GLenumTextureBindTarget target, GLenumTextureParameter pname, GLfloat param);
 GL_APICALL void         GL_APIENTRY glTexParameterfv (GLenumTextureBindTarget target, GLenumTextureParameter pname, const GLfloat* params);
 GL_APICALL void         GL_APIENTRY glTexParameteri (GLenumTextureBindTarget target, GLenumTextureParameter pname, GLint param);
 GL_APICALL void         GL_APIENTRY glTexParameteriv (GLenumTextureBindTarget target, GLenumTextureParameter pname, const GLint* params);
 GL_APICALL void         GL_APIENTRY glTexStorage3D (GLenumTexture3DTarget target, GLsizei levels, GLenumTextureInternalFormatStorage internalFormat, GLsizei width, GLsizei height, GLsizei depth);
 GL_APICALL void         GL_APIENTRY glTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
-GL_APICALL void         GL_APIENTRY glTexSubImage3D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
+GL_APICALL void         GL_APIENTRY glTexSubImage3D (GLenumTexture3DTarget target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
 GL_APICALL void         GL_APIENTRY glUniform1f (GLintUniformLocation location, GLfloat x);
 GL_APICALL void         GL_APIENTRY glUniform1fv (GLintUniformLocation location, GLsizeiNotNegative count, const GLfloat* v);
 GL_APICALL void         GL_APIENTRY glUniform1i (GLintUniformLocation location, GLint x);

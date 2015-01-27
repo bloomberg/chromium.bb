@@ -47,6 +47,7 @@
 #define glCopyBufferSubData GLES2_GET_FUN(CopyBufferSubData)
 #define glCopyTexImage2D GLES2_GET_FUN(CopyTexImage2D)
 #define glCopyTexSubImage2D GLES2_GET_FUN(CopyTexSubImage2D)
+#define glCopyTexSubImage3D GLES2_GET_FUN(CopyTexSubImage3D)
 #define glCreateProgram GLES2_GET_FUN(CreateProgram)
 #define glCreateShader GLES2_GET_FUN(CreateShader)
 #define glCullFace GLES2_GET_FUN(CullFace)

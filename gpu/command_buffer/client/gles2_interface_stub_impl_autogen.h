@@ -155,6 +155,16 @@ void GLES2InterfaceStub::CopyTexSubImage2D(GLenum /* target */,
                                            GLsizei /* width */,
                                            GLsizei /* height */) {
 }
+void GLES2InterfaceStub::CopyTexSubImage3D(GLenum /* target */,
+                                           GLint /* level */,
+                                           GLint /* xoffset */,
+                                           GLint /* yoffset */,
+                                           GLint /* zoffset */,
+                                           GLint /* x */,
+                                           GLint /* y */,
+                                           GLsizei /* width */,
+                                           GLsizei /* height */) {
+}
 GLuint GLES2InterfaceStub::CreateProgram() {
   return 0;
 }
