@@ -24,8 +24,7 @@
 static const char kSimulcastTestPage[] = "/webrtc/webrtc-simulcast.html";
 
 // Simulcast integration test. This test ensures 'a=x-google-flag:conference'
-// is working and that Chrome is capable of sending simulcast streams. To run
-// this test, Chrome must be hideout-enabled.
+// is working and that Chrome is capable of sending simulcast streams.
 class WebRtcSimulcastBrowserTest : public WebRtcTestBase {
  public:
   // TODO(phoglund): Make it possible to enable DetectErrorsInJavaScript() here.
