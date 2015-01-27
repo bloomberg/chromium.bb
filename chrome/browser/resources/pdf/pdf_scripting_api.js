@@ -9,6 +9,7 @@
  * @param {Object} plugin the plugin element containing the pdf viewer.
  */
 function PDFScriptingAPI(window, plugin) {
+  this.loaded_ = false;
   this.pendingScriptingMessages_ = [];
   this.setPlugin(plugin);
 
@@ -28,10 +29,9 @@ function PDFScriptingAPI(window, plugin) {
                                         event.data.viewportHeight);
         break;
       case 'documentLoaded':
-        if (this.loadCallback_) {
+        this.loaded_ = true;
+        if (this.loadCallback_)
           this.loadCallback_();
-          this.loadCallback_ = null;
-        }
         break;
       case 'getAccessibilityJSONReply':
         if (this.accessibilityCallback_) {
@@ -73,6 +73,11 @@ PDFScriptingAPI.prototype = {
     this.plugin_ = plugin;
 
     if (this.plugin_) {
+      // Send a message to ensure the postMessage channel is initialized which
+      // allows us to receive messages.
+      this.sendMessage_({
+        type: 'initialize'
+      });
       // Flush pending messages.
       while (this.pendingScriptingMessages_.length > 0)
         this.sendMessage_(this.pendingScriptingMessages_.shift());
@@ -91,17 +96,11 @@ PDFScriptingAPI.prototype = {
    * Sets the callback which will be run when the PDF document has finished
    * loading. If the document is already loaded, it will be run immediately.
    * @param {Function} callback the callback to be called.
-   * @return {boolean} false if there is a callback already set and true
-   *     otherwise.
    */
   setLoadCallback: function(callback) {
-    if (this.loadCallback_)
-      return false;
     this.loadCallback_ = callback;
-    this.sendMessage_({
-      type: 'isDocumentLoaded'
-    });
-    return true;
+    if (this.loaded_ && this.loadCallback_)
+      this.loadCallback_();
   },
 
   /**
@@ -112,6 +111,7 @@ PDFScriptingAPI.prototype = {
    * @param {boolean} modifiable whether or not the document is modifiable.
    */
   resetPrintPreviewMode: function(url, grayscale, pageNumbers, modifiable) {
+    this.loaded_ = false;
     this.sendMessage_({
       type: 'resetPrintPreviewMode',
       url: url,

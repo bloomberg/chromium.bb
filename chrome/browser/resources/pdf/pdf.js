@@ -342,6 +342,9 @@ PDFViewer.prototype = {
         this.viewport_.position = this.lastViewportPosition_;
       this.handleURLParams_();
       this.loaded_ = true;
+      this.sendScriptingMessage_({
+        type: 'documentLoaded'
+      });
       while (this.delayedScriptingMessages_.length > 0)
         this.handleScriptingMessage(this.delayedScriptingMessages_.shift());
     }
@@ -558,8 +561,15 @@ PDFViewer.prototype = {
    * @param {MessageObject} message the message to handle.
    */
   handleScriptingMessage: function(message) {
-    if (this.parentWindow_ != message.source)
+    if (this.parentWindow_ != message.source) {
       this.parentWindow_ = message.source;
+      // Ensure that we notify the embedder if the document is loaded.
+      if (this.loaded_) {
+        this.sendScriptingMessage_({
+          type: 'documentLoaded'
+        });
+      }
+    }
 
     if (this.handlePrintPreviewScriptingMessage_(message))
       return;
@@ -577,13 +587,6 @@ PDFViewer.prototype = {
       case 'print':
       case 'selectAll':
         this.plugin_.postMessage(message.data);
-        break;
-      case 'isDocumentLoaded':
-        // Since this is only hit after the document has been loaded, we can
-        // send a reply immediately.
-        this.sendScriptingMessage_({
-          type: 'documentLoaded'
-        });
         break;
     }
   },
@@ -603,6 +606,7 @@ PDFViewer.prototype = {
         this.plugin_.postMessage(message.data);
         return true;
       case 'resetPrintPreviewMode':
+        this.loaded_ = false;
         if (!this.inPrintPreviewMode_) {
           this.inPrintPreviewMode_ = true;
           this.viewport_.fitToPage();
