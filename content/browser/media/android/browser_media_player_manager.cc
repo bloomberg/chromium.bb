@@ -39,6 +39,7 @@ namespace content {
 // Threshold on the number of media players per renderer before we start
 // attempting to release inactive media players.
 const int kMediaPlayerThreshold = 1;
+const int kInvalidMediaPlayerId = -1;
 
 static BrowserMediaPlayerManager::Factory g_factory = NULL;
 static media::MediaUrlInterceptor* media_url_interceptor_ = NULL;
@@ -122,7 +123,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
 BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host),
-      fullscreen_player_id_(-1),
+      fullscreen_player_id_(kInvalidMediaPlayerId),
       fullscreen_player_is_released_(false),
       web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
       weak_ptr_factory_(this) {
@@ -148,7 +149,7 @@ void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
       new MediaPlayerMsg_DidExitFullscreen(RoutingID(), fullscreen_player_id_));
   video_view_.reset();
   MediaPlayerAndroid* player = GetFullscreenPlayer();
-  fullscreen_player_id_ = -1;
+  fullscreen_player_id_ = kInvalidMediaPlayerId;
   if (!player)
     return;
   if (release_media_player)
@@ -288,7 +289,7 @@ void BrowserMediaPlayerManager::RequestFullScreen(int player_id) {
   if (fullscreen_player_id_ == player_id)
     return;
 
-  if (fullscreen_player_id_ != -1) {
+  if (fullscreen_player_id_ != kInvalidMediaPlayerId) {
     // TODO(qinmin): Determine the correct error code we should report to WMPA.
     OnError(player_id, MediaPlayerAndroid::MEDIA_ERROR_DECODE);
     return;
@@ -375,7 +376,7 @@ void BrowserMediaPlayerManager::OnRequestExternalSurface(
 #endif  // defined(VIDEO_HOLE)
 
 void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
-  DCHECK_EQ(fullscreen_player_id_, -1);
+  DCHECK_EQ(fullscreen_player_id_, kInvalidMediaPlayerId);
 #if defined(VIDEO_HOLE)
   // If this fullscreen player is started when another player
   // uses the external surface, release that other player.
@@ -485,7 +486,7 @@ void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
 void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
   RemovePlayer(player_id);
   if (fullscreen_player_id_ == player_id)
-    fullscreen_player_id_ = -1;
+    fullscreen_player_id_ = kInvalidMediaPlayerId;
 }
 
 void BrowserMediaPlayerManager::OnRequestRemotePlayback(int /* player_id */) {
