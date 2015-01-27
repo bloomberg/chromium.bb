@@ -159,9 +159,6 @@
 // out of AppKit Fullscreen.
 - (BOOL)shouldUseCustomAppKitFullscreenTransition;
 
-// Whether the root view of the window should be layer backed.
-- (BOOL)wantsRootViewToBeLayerBacked;
-
 @end  // @interface BrowserWindowController(Private)
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_
