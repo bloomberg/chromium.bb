@@ -99,9 +99,18 @@ void OmniboxNavigationObserver::Observe(
   if (!InfoBarService::FromWebContents(web_contents))
     return;
 
-  CHECK_EQ(match_.destination_url,
-           content::Details<content::NavigationEntry>(
-               details)->GetVirtualURL());
+  // Ignore navgiations to the wrong URL.
+  // This shouldn't actually happen, but right now it's possible because the
+  // prerenderer doesn't properly notify us when it swaps in a prerendered page.
+  // Plus, the swap-in can trigger instant to kick off a new background
+  // prerender, which we _do_ get notified about.  Once crbug.com/247848 is
+  // fixed, this conditional should be able to be replaced with a [D]CHECK;
+  // until then we ignore the incorrect navigation (and will be torn down
+  // without having received the correct notification).
+  if (match_.destination_url !=
+      content::Details<content::NavigationEntry>(details)->GetVirtualURL())
+    return;
+
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                     content::NotificationService::AllSources());
   if (fetcher_) {
