@@ -4,8 +4,8 @@
 
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 
-#include "base/debug/trace_event.h"
 #include "base/memory/singleton.h"
+#include "base/trace_event/trace_event.h"
 #include "ios/web/public/browser_state.h"
 
 // static

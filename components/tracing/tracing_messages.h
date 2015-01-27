@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/debug/trace_event_impl.h"
 #include "base/sync_socket.h"
+#include "base/trace_event/trace_event_impl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
