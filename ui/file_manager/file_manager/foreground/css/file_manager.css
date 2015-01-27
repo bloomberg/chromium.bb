@@ -113,7 +113,7 @@ a:focus {
 /* Main part of the dialog between header and footer. */
 .dialog-container {
   align-items: stretch;
-  background-color: white;  /* Makes #drag-container invisible. */
+  background-color: rgb(250, 250, 250);  /* Makes #drag-container invisible. */
   display: flex;
   flex: auto;
   flex-direction: row;
@@ -124,6 +124,7 @@ a:focus {
 /* List/grid and preview are inside this container. */
 .dialog-main {
   align-items: stretch;
+  background: rgb(245, 245, 245);
   display: flex;
   flex: auto;
   flex-direction: column;
@@ -131,8 +132,8 @@ a:focus {
 
 /* Directory tree at the left. */
 .dialog-navigation-list {
-  -webkit-border-end: 1px solid rgba(20, 20, 22, 0.1);
-  background-color: #f1f1f1;
+  -webkit-border-end: 1px solid rgb(210, 210, 210);
+  background-color: rgb(250, 250, 250);
   display: flex;
   flex: none;
   flex-direction: column;
@@ -165,20 +166,6 @@ div.splitter {
   position: relative;
   width: 6px;
   z-index: 500;  /* Must be below the contextmenu (600). */
-}
-
-#middlebar-header {
-  -webkit-border-end: 1px solid rgba(20, 20, 22, 0.1);
-  -webkit-box-sizing: border-box;
-  -webkit-padding-start: 20px;
-  color: rgb(100, 100, 100);
-  flex: none;
-  height: 47px;
-  line-height: 40px;
-  overflow-x: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  width: 100%;
 }
 
 #directory-tree {
@@ -892,8 +879,8 @@ li[renaming=''] .filename-label {
 .preview-panel {
   -webkit-transition: background-color 150ms ease;
   align-items: center;
-  background: white;
-  border-top: 1px solid rgba(20, 20, 22, 0.1);
+  background: rgb(250, 250, 250);
+  border-top: 1px solid rgb(210, 210, 210);
   bottom: 0;
   display: flex;
   flex-direction: row;
@@ -1019,8 +1006,8 @@ li[renaming=''] .filename-label {
     url(../images/files/ui/2x/vertical_separator.png) 2x);
   background-position: center;
   background-repeat: repeat-y;
-  height: 20px;
-  top: 10px;
+  height: 40px;
+  top: 0;
   width: 5px;
 }
 
@@ -1030,9 +1017,10 @@ li[renaming=''] .filename-label {
 
 /* Container for a table header. */
 .table-header {
+  border-bottom: 1px solid rgb(210, 210, 210);
   box-sizing: border-box;
   flex: none;
-  height: 47px;
+  height: 40px;
 }
 
 .table-header-sort-image-desc::after {
@@ -1069,7 +1057,7 @@ li[renaming=''] .filename-label {
 .table-header-label {
   color: rgb(100, 100, 100);
   line-height: 40px;
-  margin: 0 7px;
+  margin: 0 10px;
 }
 
 .table-row-cell > * {
@@ -1372,7 +1360,7 @@ body[drive='error'] #unmounted-panel > .error,
   padding: 10px;
   position: absolute;
   right: 0;
-  top: 28px;  /* Leave room for the file list header. */
+  top: 36px;  /* Leave room for the file list header. */
 }
 
 .dialog-container:not([drive-welcome='page']) #no-search-results[show] {
