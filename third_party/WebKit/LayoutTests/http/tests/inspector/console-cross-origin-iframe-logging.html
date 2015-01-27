@@ -23,7 +23,7 @@ function test()
 {
     var finishAttemptsLeft = 2;
     InspectorTest.addConsoleSniffer(maybeFinish, true);
-    ConsoleAgent.setMonitoringXHREnabled(true, step1);
+    InspectorTest.ConsoleAgent.setMonitoringXHREnabled(true, step1);
 
     function step1()
     {
@@ -36,7 +36,7 @@ function test()
         if (finishAttemptsLeft)
             return;
 
-        ConsoleAgent.setMonitoringXHREnabled(false, finish);
+        InspectorTest.ConsoleAgent.setMonitoringXHREnabled(false, finish);
     }
 
     function finish()

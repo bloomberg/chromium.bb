@@ -71,7 +71,7 @@ function test()
     }
     function step2()
     {
-        CanvasAgent.startCapturing(didStartCapturing);
+        InspectorTest.CanvasAgent.startCapturing(didStartCapturing);
     }
     function didStartCapturing(error, id)
     {
@@ -81,7 +81,7 @@ function test()
     }
     function didSomeCanvasCalls()
     {
-        CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
+        InspectorTest.CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
     }
     function didReceiveTraceLog(error, traceLog)
     {

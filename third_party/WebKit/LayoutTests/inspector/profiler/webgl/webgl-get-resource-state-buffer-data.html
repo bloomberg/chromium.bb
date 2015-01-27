@@ -53,7 +53,7 @@ function test()
     }
     function step2()
     {
-        CanvasAgent.startCapturing(didStartCapturing);
+        InspectorTest.CanvasAgent.startCapturing(didStartCapturing);
     }
     function didStartCapturing(error, id)
     {
@@ -64,12 +64,12 @@ function test()
     }
     function didCanvasCalls()
     {
-        CanvasAgent.stopCapturing(traceLogId, didStopCapturing);
+        InspectorTest.CanvasAgent.stopCapturing(traceLogId, didStopCapturing);
     }
     function didStopCapturing()
     {
         InspectorTest.addResult("Stopped capturing.");
-        CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
+        InspectorTest.CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
     }
     function didReceiveTraceLog(error, traceLogValue)
     {
@@ -86,7 +86,7 @@ function test()
         for (var i = offset, n = calls.length; i < n; ++i) {
             var call = calls[i];
             if (bufferDataCalls.indexOf(call.functionName) !== -1) {
-                CanvasAgent.replayTraceLog(traceLogId, i, didReplayTraceLog.bind(null, i));
+                InspectorTest.CanvasAgent.replayTraceLog(traceLogId, i, didReplayTraceLog.bind(null, i));
                 return;
             }
         }
@@ -95,7 +95,7 @@ function test()
     function didReplayTraceLog(stepNo)
     {
         InspectorTest.addResult("\nReplayed call #" + stepNo);
-        CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLBuffer@1"], didGetResourceState);
+        InspectorTest.CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLBuffer@1"], didGetResourceState);
 
         function didGetResourceState(error, resourceState)
         {

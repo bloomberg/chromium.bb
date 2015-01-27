@@ -28,7 +28,7 @@ function test()
         callback(undefined, mockContentsMap[requestId], false);
     }
 
-    PageAgent.getResourceContent = function(frameId, url, callback)
+    InspectorTest.PageAgent.getResourceContent = function(frameId, url, callback)
     {
         callback(undefined, mockContentsMap[url], false);
     }

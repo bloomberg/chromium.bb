@@ -7,7 +7,7 @@ function test()
 {
     function dumpState(next)
     {
-        PageAgent.getScriptExecutionStatus(statusCallback);
+        InspectorTest.PageAgent.getScriptExecutionStatus(statusCallback);
         function statusCallback(error, status)
         {
             if (error) {
@@ -22,13 +22,13 @@ function test()
 
     function setJSDisabled(disabled, next)
     {
-        PageAgent.setScriptExecutionDisabled(disabled, next);
+        InspectorTest.PageAgent.setScriptExecutionDisabled(disabled, next);
     }
 
     InspectorTest.runTestSuite([
         function init(next)
         {
-            PageAgent.enable();
+            InspectorTest.PageAgent.enable();
             dumpState(next);
         },
 

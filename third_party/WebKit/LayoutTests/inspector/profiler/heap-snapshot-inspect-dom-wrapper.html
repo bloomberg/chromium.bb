@@ -48,7 +48,7 @@ function test()
         InspectorTest.addResult("PASS: more than 2 HTMLBodyElements were found");
 
         for (var i = 0; i < bodyWrapperIds.length; i++)
-            HeapProfilerAgent.getObjectByHeapObjectId("" + bodyWrapperIds[i], undefined, didGetObjectByHeapObjectId);
+            InspectorTest.HeapProfilerAgent.getObjectByHeapObjectId("" + bodyWrapperIds[i], undefined, didGetObjectByHeapObjectId);
 
         var resolvedObjectsCount = 0;
         var remoteObjects = [];

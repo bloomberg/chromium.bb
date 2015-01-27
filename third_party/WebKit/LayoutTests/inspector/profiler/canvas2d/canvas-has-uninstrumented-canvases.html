@@ -27,7 +27,7 @@ function test()
     }
     function step2()
     {
-        CanvasAgent.hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback1);
+        InspectorTest.CanvasAgent.hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback1);
     }
     function hasUninstrumentedCanvasesCallback1(error, result)
     {
@@ -46,7 +46,7 @@ function test()
     }
     function step5()
     {
-        CanvasAgent.hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback2);
+        InspectorTest.CanvasAgent.hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback2);
     }
     function hasUninstrumentedCanvasesCallback2(error, result)
     {

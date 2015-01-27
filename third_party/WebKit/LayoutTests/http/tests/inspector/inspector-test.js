@@ -689,13 +689,19 @@ InspectorTest.preloadPanel = function(panelName)
 }
 
 InspectorTest.CSSAgent = WebInspector.targetManager.mainTarget().cssAgent();
+InspectorTest.CanvasAgent = WebInspector.targetManager.mainTarget().canvasAgent();
+InspectorTest.ConsoleAgent = WebInspector.targetManager.mainTarget().consoleAgent();
 InspectorTest.DOMAgent = WebInspector.targetManager.mainTarget().domAgent();
 InspectorTest.DOMDebuggerAgent = WebInspector.targetManager.mainTarget().domdebuggerAgent();
 InspectorTest.DebuggerAgent = WebInspector.targetManager.mainTarget().debuggerAgent();
+InspectorTest.HeapProfilerAgent = WebInspector.targetManager.mainTarget().heapProfilerAgent();
 InspectorTest.InspectorAgent = WebInspector.targetManager.mainTarget().inspectorAgent();
+InspectorTest.LayerTreeAgent = WebInspector.targetManager.mainTarget().layerTreeAgent();
 InspectorTest.NetworkAgent = WebInspector.targetManager.mainTarget().networkAgent();
 InspectorTest.PageAgent = WebInspector.targetManager.mainTarget().pageAgent();
+InspectorTest.ProfilerAgent = WebInspector.targetManager.mainTarget().profilerAgent();
 InspectorTest.RuntimeAgent = WebInspector.targetManager.mainTarget().runtimeAgent();
+InspectorTest.WorkerAgent = WebInspector.targetManager.mainTarget().workerAgent();
 
 };  // initialize_InspectorTest
 

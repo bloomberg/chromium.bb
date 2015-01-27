@@ -48,7 +48,7 @@ function test()
     }
     function step2()
     {
-        CanvasAgent.startCapturing(didStartCapturing);
+        InspectorTest.CanvasAgent.startCapturing(didStartCapturing);
     }
     function didStartCapturing(error, id)
     {
@@ -59,26 +59,26 @@ function test()
     }
     function didCanvasCalls()
     {
-        CanvasAgent.stopCapturing(traceLogId, didStopCapturing);
+        InspectorTest.CanvasAgent.stopCapturing(traceLogId, didStopCapturing);
     }
     function didStopCapturing()
     {
         InspectorTest.addResult("Stopped capturing.");
-        CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
+        InspectorTest.CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
     }
     function didReceiveTraceLog(error, traceLog)
     {
         InspectorTest.assertTrue(!error && !!traceLog, "Unexpected error: " + error);
         traceLogCallsNumber = traceLog.calls.length;
         InspectorTest.addResult("Number of trace log calls received: " + traceLogCallsNumber);
-        CanvasAgent.replayTraceLog(traceLogId, 0, didReplayFirstCall);
+        InspectorTest.CanvasAgent.replayTraceLog(traceLogId, 0, didReplayFirstCall);
     }
     function didReplayFirstCall(error, resourceState)
     {
         InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
         InspectorTest.addResult("\n--- Canvas 2D initial state ---");
         InspectorTest.dumpResourceState(resourceState);
-        CanvasAgent.replayTraceLog(traceLogId, traceLogCallsNumber - 1, didReplayLastCall);
+        InspectorTest.CanvasAgent.replayTraceLog(traceLogId, traceLogCallsNumber - 1, didReplayLastCall);
     }
     function didReplayLastCall(error, resourceState)
     {

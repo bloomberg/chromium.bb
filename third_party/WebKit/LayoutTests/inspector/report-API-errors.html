@@ -11,10 +11,10 @@ function test()
         InspectorTest.addResult(String.sprintf.apply(this, arguments));
     }
 
-    ConsoleAgent.setMonitoringXHREnabled(1);
-    ConsoleAgent.setMonitoringXHREnabled();
-    ConsoleAgent.setMonitoringXHREnabled(false, "not a function");
-    ConsoleAgent.setMonitoringXHREnabled(false, undefined);
+    InspectorTest.ConsoleAgent.setMonitoringXHREnabled(1);
+    InspectorTest.ConsoleAgent.setMonitoringXHREnabled();
+    InspectorTest.ConsoleAgent.setMonitoringXHREnabled(false, "not a function");
+    InspectorTest.ConsoleAgent.setMonitoringXHREnabled(false, undefined);
     InspectorTest.RuntimeAgent.evaluate("true", "test");
     InspectorTest.RuntimeAgent.evaluate("true", "test", function(){});
     InspectorTest.RuntimeAgent.evaluate("true", "test", undefined, function(){});

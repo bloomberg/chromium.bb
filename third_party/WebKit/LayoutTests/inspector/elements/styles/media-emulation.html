@@ -53,7 +53,7 @@ function test()
 
     function applyEmulatedMedia(media)
     {
-        PageAgent.setEmulatedMedia(media);
+        InspectorTest.PageAgent.setEmulatedMedia(media);
         WebInspector.cssModel.mediaQueryResultChanged();
     }
 }

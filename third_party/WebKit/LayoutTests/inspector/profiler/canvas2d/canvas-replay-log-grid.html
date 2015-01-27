@@ -82,7 +82,7 @@ function test()
     {
         profileView = profilesPanel.visibleView;
         dataGrid = profileView._logGrid;
-        InspectorTest.addSniffer(CanvasAgent, "replayTraceLog", onReplayTraceLog);
+        InspectorTest.addSniffer(InspectorTest.CanvasAgent, "replayTraceLog", onReplayTraceLog);
         profilesPanel.toggleRecordButton();
     }
     function onReplayTraceLog(traceLogId, index)

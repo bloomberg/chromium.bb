@@ -17,7 +17,7 @@ function test()
 
         var profileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
 
-        InspectorTest.override(HeapProfilerAgent, "takeHeapSnapshot", takeHeapSnapshotMock);
+        InspectorTest.override(InspectorTest.HeapProfilerAgent, "takeHeapSnapshot", takeHeapSnapshotMock);
         function takeHeapSnapshotMock(reportProgress, callback) {
             if (reportProgress) {
                 profileType._reportHeapSnapshotProgress({data: {done: 50, total: 100, finished: false}});

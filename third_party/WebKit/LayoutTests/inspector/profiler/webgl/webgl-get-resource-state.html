@@ -103,7 +103,7 @@ function test()
     }
     function step2()
     {
-        CanvasAgent.startCapturing(didStartCapturing);
+        InspectorTest.CanvasAgent.startCapturing(didStartCapturing);
     }
     function didStartCapturing(error, id)
     {
@@ -114,12 +114,12 @@ function test()
     }
     function didCanvasCalls()
     {
-        CanvasAgent.stopCapturing(traceLogId, didStopCapturing);
+        InspectorTest.CanvasAgent.stopCapturing(traceLogId, didStopCapturing);
     }
     function didStopCapturing()
     {
         InspectorTest.addResult("Stopped capturing.");
-        CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
+        InspectorTest.CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
     }
     function didReceiveTraceLog(error, traceLog)
     {
@@ -127,56 +127,56 @@ function test()
         var traceLogCallsNumber = traceLog.calls.length;
         InspectorTest.assertTrue(traceLogCallsNumber > 0, "Expected not empty trace log calls array");
         resourceIds = InspectorTest.collectResourceIdsFromTraceLog(traceLog);
-        CanvasAgent.replayTraceLog(traceLogId, traceLogCallsNumber - 1, didReplayTraceLog);
+        InspectorTest.CanvasAgent.replayTraceLog(traceLogId, traceLogCallsNumber - 1, didReplayTraceLog);
     }
     function didReplayTraceLog(error, resourceState)
     {
         InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
         InspectorTest.addResult("\n--- WebGLRenderingContext state ---");
         InspectorTest.dumpResourceState(resourceState);
-        CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLBuffer@1"], didGetWebGLBufferState);
+        InspectorTest.CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLBuffer@1"], didGetWebGLBufferState);
     }
     function didGetWebGLBufferState(error, resourceState)
     {
         InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
         InspectorTest.addResult("\n--- WebGLBuffer state ---");
         InspectorTest.dumpResourceState(resourceState);
-        CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLTexture@1"], didGetWebGLTextureState);
+        InspectorTest.CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLTexture@1"], didGetWebGLTextureState);
     }
     function didGetWebGLTextureState(error, resourceState)
     {
         InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
         InspectorTest.addResult("\n--- WebGLTexture state ---");
         InspectorTest.dumpResourceState(resourceState);
-        CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLProgram@1"], didGetWebGLProgramState);
+        InspectorTest.CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLProgram@1"], didGetWebGLProgramState);
     }
     function didGetWebGLProgramState(error, resourceState)
     {
         InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
         InspectorTest.addResult("\n--- WebGLProgram state ---");
         InspectorTest.dumpResourceState(resourceState);
-        CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLShader@1"], didGetWebGLShaderState);
+        InspectorTest.CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLShader@1"], didGetWebGLShaderState);
     }
     function didGetWebGLShaderState(error, resourceState)
     {
         InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
         InspectorTest.addResult("\n--- WebGLShader state ---");
         InspectorTest.dumpResourceState(resourceState);
-        CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLFramebuffer@1"], didGetWebGLFramebufferState);
+        InspectorTest.CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLFramebuffer@1"], didGetWebGLFramebufferState);
     }
     function didGetWebGLFramebufferState(error, resourceState)
     {
         InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
         InspectorTest.addResult("\n--- WebGLFramebuffer state ---");
         InspectorTest.dumpResourceState(resourceState);
-        CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLRenderbuffer@1"], didGetWebGLRenderbufferState);
+        InspectorTest.CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLRenderbuffer@1"], didGetWebGLRenderbufferState);
     }
     function didGetWebGLRenderbufferState(error, resourceState)
     {
         InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
         InspectorTest.addResult("\n--- WebGLRenderbuffer state ---");
         InspectorTest.dumpResourceState(resourceState);
-        CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLUniformLocation@1"], didGetWebGLUniformLocationState);
+        InspectorTest.CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLUniformLocation@1"], didGetWebGLUniformLocationState);
     }
     function didGetWebGLUniformLocationState(error, resourceState)
     {

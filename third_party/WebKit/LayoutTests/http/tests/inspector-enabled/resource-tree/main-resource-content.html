@@ -22,7 +22,7 @@ function test()
     {
         InspectorTest.addResult("Requesting content: ");
         resource = InspectorTest.resourceMatchingURL("main-resource-content-frame.html");
-        PageAgent.getResourceContent(resource.frameId, resource.url, step3);
+        InspectorTest.PageAgent.getResourceContent(resource.frameId, resource.url, step3);
     }
 
     function step3(error, content)
@@ -33,7 +33,7 @@ function test()
 
         InspectorTest.addResult("Requesting utf8 content: ");
         resource = InspectorTest.resourceMatchingURL("main-resource-content-frame-utf8.php");
-        PageAgent.getResourceContent(resource.frameId, resource.url, step4);
+        InspectorTest.PageAgent.getResourceContent(resource.frameId, resource.url, step4);
     }
 
     function step4(error, content)

@@ -12,7 +12,7 @@ InspectorTest.enableCanvasAgent = function(callback)
         }
     }
     try {
-        CanvasAgent.enable(canvasAgentEnabled);
+        InspectorTest.CanvasAgent.enable(canvasAgentEnabled);
     } catch (e) {
         InspectorTest.addResult("Exception while enabling CanvasAgent: " + e);
         InspectorTest.completeTest();
@@ -31,7 +31,7 @@ InspectorTest.disableCanvasAgent = function(callback)
         }
     }
     try {
-        CanvasAgent.disable(canvasAgentDisabled);
+        InspectorTest.CanvasAgent.disable(canvasAgentDisabled);
     } catch (e) {
         InspectorTest.addResult("Exception while disabling CanvasAgent: " + e);
         InspectorTest.completeTest();

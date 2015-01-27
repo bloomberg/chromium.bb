@@ -14,7 +14,7 @@ function test()
     {
         var resource = WebInspector.resourceForURL("http://127.0.0.1:8000/inspector/search/resources/search.js");
         var url = "http://127.0.0.1:8000/inspector/search/resources/non-existing.js";
-        PageAgent.searchInResource(resource.frameId, url, text, step3);
+        InspectorTest.PageAgent.searchInResource(resource.frameId, url, text, step3);
     }
 
     function step3(error, searchMatches)

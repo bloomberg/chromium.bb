@@ -75,7 +75,7 @@ function test() {
             secure: secure,
             session: true
         };
-        return WebInspector.Cookies.buildCookieProtocolObject(protocolCookie);
+        return WebInspector.Cookies._parseProtocolCookie(WebInspector.targetManager.mainTarget(), protocolCookie);
     }
 }
 </script>

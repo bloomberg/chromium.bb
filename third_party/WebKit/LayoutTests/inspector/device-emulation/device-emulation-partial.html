@@ -42,11 +42,11 @@ function test()
     {
         var params = {width: 0, height: 0, deviceScaleFactor: 0, mobile: false, fitWindow: false};
         if (name === null) {
-            PageAgent.clearDeviceMetricsOverride(getPageMetrics.bind(null, check));
+            InspectorTest.PageAgent.clearDeviceMetricsOverride(getPageMetrics.bind(null, check));
         } else {
             if (name)
                 params[name] = value;
-            PageAgent.invoke_setDeviceMetricsOverride(params, getPageMetrics.bind(null, check));
+            InspectorTest.PageAgent.invoke_setDeviceMetricsOverride(params, getPageMetrics.bind(null, check));
         }
 
         function check(metrics)

@@ -8,7 +8,7 @@ function test()
     function onSnapshotDone(snapshot)
     {
         var wrappedCallback = InspectorBackend.wrapClientCallback(onHistoryReceived, "LayerTreeAgent.snapshotCommandLog(): ");
-        LayerTreeAgent.snapshotCommandLog(snapshot._id, wrappedCallback);
+        InspectorTest.LayerTreeAgent.snapshotCommandLog(snapshot._id, wrappedCallback);
     }
 
     function onHistoryReceived(history)
