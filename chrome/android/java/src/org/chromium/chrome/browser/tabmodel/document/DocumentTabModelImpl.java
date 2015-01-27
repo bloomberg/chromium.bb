@@ -143,7 +143,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
      */
     public DocumentTabModelImpl(ActivityDelegate activityDelegate, TabDelegate tabDelegate,
             boolean isIncognito, int prioritizedTabId) {
-        this(activityDelegate, new StorageDelegate(isIncognito), tabDelegate, isIncognito,
+        this(activityDelegate, new StorageDelegate(), tabDelegate, isIncognito,
                 prioritizedTabId, ApplicationStatus.getApplicationContext());
     }
 
@@ -500,7 +500,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         }
 
         // Read the file, which saved out the task IDs in regular order.
-        byte[] tabFileBytes = mStorageDelegate.readTaskFileBytes();
+        byte[] tabFileBytes = mStorageDelegate.readTaskFileBytes(isIncognito());
         if (tabFileBytes != null) {
             try {
                 DocumentList list = MessageNano.mergeFrom(new DocumentList(), tabFileBytes);
@@ -544,7 +544,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         if (mPrioritizedTabId != Tab.INVALID_TAB_ID) {
             Entry entry = mEntryMap.get(mPrioritizedTabId);
             if (entry != null) {
-                entry.tabState = mStorageDelegate.restoreTabState(mPrioritizedTabId);
+                entry.tabState = mStorageDelegate.restoreTabState(mPrioritizedTabId, isIncognito());
                 entry.isTabStateReady = true;
             }
         }
@@ -568,7 +568,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             public Void doInBackground(Void... params) {
                 for (Entry entry : mEntries) {
                     if (mPrioritizedTabId == entry.tabId) continue;
-                    entry.tabState = mStorageDelegate.restoreTabState(entry.tabId);
+                    entry.tabState = mStorageDelegate.restoreTabState(entry.tabId, isIncognito());
                     entry.isTabStateReady = true;
                 }
 
@@ -670,9 +670,9 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             public Void doInBackground(Void... params) {
                 for (Integer tabId : mHistoricalTabsForBackgroundThread) {
                     // Read the saved state, then delete the file.
-                    TabState state = mStorageDelegate.restoreTabState(tabId);
+                    TabState state = mStorageDelegate.restoreTabState(tabId, isIncognito());
                     mEntries.add(new Entry(tabId, state));
-                    mStorageDelegate.deleteTabStateFile(tabId);
+                    mStorageDelegate.deleteTabState(tabId, isIncognito());
                 }
 
                 return null;
@@ -761,7 +761,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
             @Override
             protected Void doInBackground(Void... params) {
-                mStorageDelegate.writeTaskFileBytes(MessageNano.toByteArray(mList));
+                mStorageDelegate.writeTaskFileBytes(isIncognito(), MessageNano.toByteArray(mList));
                 return null;
             }
         }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
@@ -787,7 +787,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             protected Void doInBackground(Void... voids) {
                 for (int i = 0; i < mStatesToWrite.size(); i++) {
                     int tabId = mStatesToWrite.keyAt(i);
-                    mStorageDelegate.saveTabState(tabId, mStatesToWrite.valueAt(i));
+                    mStorageDelegate.saveTabState(tabId, isIncognito(), mStatesToWrite.valueAt(i));
                 }
                 return null;
             }

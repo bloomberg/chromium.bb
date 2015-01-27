@@ -135,6 +135,31 @@ public class TabState {
     }
 
     /**
+     * Restore a TabState file for a particular Tab.  Checks if the Tab exists as a regular tab
+     * before searching for an encrypted version.
+     * @param stateFolder Folder containing the TabState files.
+     * @param id ID of the Tab to restore.
+     * @return TabState that has been restored, or null if it failed.
+     */
+    public static TabState restoreTabState(File stateFolder, int id) {
+        // First try finding an unencrypted file.
+        boolean encrypted = false;
+        File file = getTabStateFile(stateFolder, id, encrypted);
+
+        // If that fails, try finding the encrypted version.
+        if (!file.exists()) {
+            encrypted = true;
+            file = getTabStateFile(stateFolder, id, encrypted);
+        }
+
+        // If they both failed, there's nothing to read.
+        if (!file.exists()) return null;
+
+        // If one of them passed, open the file input stream and read the state contents.
+        return restoreTabState(file, encrypted);
+    }
+
+    /**
      * Restores a particular TabState file from storage.
      * @param tabFile Location of the TabState file.
      * @param isIncognito Whether the Tab is incognito or not.
@@ -291,6 +316,28 @@ public class TabState {
         } finally {
             StreamUtil.closeQuietly(stream);
         }
+    }
+
+    /**
+     * Returns a File corresponding to the given TabState.
+     * @param directory Directory containing the TabState files.
+     * @param tabId ID of the TabState to delete.
+     * @param encrypted Whether the TabState is encrypted.
+     * @return File corresponding to the given TabState.
+     */
+    public static File getTabStateFile(File directory, int tabId, boolean encrypted) {
+        return new File(directory, getTabStateFilename(tabId, encrypted));
+    }
+
+    /**
+     * Deletes the TabState corresponding to the given Tab.
+     * @param directory Directory containing the TabState files.
+     * @param tabId ID of the TabState to delete.
+     * @param encrypted Whether the TabState is encrypted.
+     */
+    public static void deleteTabState(File directory, int tabId, boolean encrypted) {
+        File file = getTabStateFile(directory, tabId, encrypted);
+        if (file.exists() && !file.delete()) Log.e(TAG, "Failed to delete TabState: " + file);
     }
 
     /** @return Title currently being displayed in the saved state's current entry. */

@@ -31,21 +31,20 @@ public class MockStorageDelegate extends StorageDelegate {
     private byte[] mTaskFileBytes;
     private final File mStateDirectory;
 
-    public MockStorageDelegate(File cacheDirectory, boolean isIncognito) {
-        super(isIncognito);
+    public MockStorageDelegate(File cacheDirectory) {
         mStateDirectory = new File(cacheDirectory, "DocumentTabModelTest");
         ensureDirectoryDestroyed();
     }
 
     @Override
-    public byte[] readTaskFileBytes() {
-        if (mIsIncognito) return null;
+    public byte[] readTaskFileBytes(boolean encrypted) {
+        if (encrypted) return null;
         return mTaskFileBytes == null ? null : mTaskFileBytes.clone();
     }
 
     @Override
-    public void writeTaskFileBytes(byte[] bytes) {
-        if (mIsIncognito) return;
+    public void writeTaskFileBytes(boolean encrypted, byte[] bytes) {
+        if (encrypted) return;
         mTaskFileBytes = bytes.clone();
     }
 
@@ -71,8 +70,8 @@ public class MockStorageDelegate extends StorageDelegate {
      * @param encodedState Base64 encoded TabState.
      * @return Whether or not the TabState was successfully read.
      */
-    public boolean addEncodedTabState(int tabId, String encodedState) {
-        String filename = TabState.getTabStateFilename(tabId, mIsIncognito);
+    public boolean addEncodedTabState(int tabId, boolean encrypted, String encodedState) {
+        String filename = TabState.getTabStateFilename(tabId, encrypted);
         File tabStateFile = new File(getStateDirectory(), filename);
         FileOutputStream outputStream = null;
         try {

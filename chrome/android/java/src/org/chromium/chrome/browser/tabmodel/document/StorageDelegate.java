@@ -9,6 +9,7 @@ import android.util.Log;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.tabmodel.TabPersister;
 import org.chromium.chrome.browser.util.StreamUtil;
 
 import java.io.ByteArrayOutputStream;
@@ -21,7 +22,7 @@ import java.io.IOException;
 /**
  * Contains functions for interacting with the file system.
  */
-public class StorageDelegate {
+public class StorageDelegate extends TabPersister {
     private static final String TAG = "StorageDelegate";
 
     /** Filename to use for the DocumentTabModel that stores regular tabs. */
@@ -33,27 +34,21 @@ public class StorageDelegate {
     /** The buffer size to use when reading the DocumentTabModel file, set to 4k bytes. */
     private static final int BUF_SIZE = 0x1000;
 
-    /** Whether this is dealing with incognito state. */
-    protected final boolean mIsIncognito;
-
-    public StorageDelegate(boolean isIncognito) {
-        mIsIncognito = isIncognito;
-    }
-
     /**
      * Reads the file containing the minimum info required to restore the state of the
      * {@link DocumentTabModel}.
+     * @param encrypted Whether or not the file corresponds to an OffTheRecord TabModel.
      * @return Byte buffer containing the task file's data, or null if it wasn't read.
      */
-    public byte[] readTaskFileBytes() {
+    public byte[] readTaskFileBytes(boolean encrypted) {
         // Incognito mode doesn't save its state out.
-        if (mIsIncognito) return null;
+        if (encrypted) return null;
 
         // Read in the file.
         byte[] bytes = null;
         FileInputStream streamIn = null;
         try {
-            String filename = getFilename();
+            String filename = getFilename(encrypted);
             streamIn = ApplicationStatus.getApplicationContext().openFileInput(filename);
 
             // Read the file from the file into the out stream.
@@ -78,17 +73,17 @@ public class StorageDelegate {
     /**
      * Writes the file containing the minimum info required to restore the state of the
      * {@link DocumentTabModel}.
-     * @param isIncognito Whether the TabModel is incognito.
+     * @param encrypted Whether the TabModel is incognito.
      * @param bytes Byte buffer containing the tab's data.
      */
-    public void writeTaskFileBytes(byte[] bytes) {
+    public void writeTaskFileBytes(boolean encrypted, byte[] bytes) {
         // Incognito mode doesn't save its state out.
-        if (mIsIncognito) return;
+        if (encrypted) return;
 
         FileOutputStream outputStream = null;
         try {
             outputStream = ApplicationStatus.getApplicationContext().openFileOutput(
-                    getFilename(), Context.MODE_PRIVATE);
+                    getFilename(encrypted), Context.MODE_PRIVATE);
             outputStream.write(bytes);
         } catch (FileNotFoundException e) {
             Log.e(TAG, "DocumentTabModel file not found", e);
@@ -100,6 +95,7 @@ public class StorageDelegate {
     }
 
     /** @return The directory that stores the TabState files. */
+    @Override
     public File getStateDirectory() {
         return ApplicationStatus.getApplicationContext().getDir(
                 STATE_DIRECTORY, Context.MODE_PRIVATE);
@@ -110,45 +106,16 @@ public class StorageDelegate {
      * @param tabId ID of the Tab.
      * @return TabState for the Tab.
      */
-    public TabState restoreTabState(int tabId) {
-        return TabState.restoreTabState(getTabFile(tabId), mIsIncognito);
+    public TabState restoreTabState(int tabId, boolean encrypted) {
+        return TabState.restoreTabState(getTabStateFile(tabId, encrypted), encrypted);
     }
 
     /**
-     * Saves the TabState with the given ID.
-     * @param tabId ID of the Tab.
-     * @param state TabState for the Tab.
+     * Return the filename of the persisted TabModel state.
+     * @param encrypted Whether or not the state belongs to an OffTheRecordDocumentTabModel.
+     * @return String pointing at the TabModel's persisted state.
      */
-    public void saveTabState(int tabId, TabState state) {
-        FileOutputStream stream = null;
-        try {
-            stream = new FileOutputStream(getTabFile(tabId));
-            TabState.saveState(stream, state, mIsIncognito);
-        } catch (FileNotFoundException exception) {
-            Log.e(TAG, "Failed to save out tab state for tab " + tabId, exception);
-        } catch (IOException exception) {
-            Log.e(TAG, "Failed to save out tab state.", exception);
-        } finally {
-            StreamUtil.closeQuietly(stream);
-        }
-    }
-
-    /**
-     * Deletes the TabState file for the given ID.
-     * @param tabId ID of the TabState file to delete.
-     */
-    public void deleteTabStateFile(int tabId) {
-        boolean success = getTabFile(tabId).delete();
-        if (!success) Log.w(TAG, "Failed to delete file for tab " + tabId);
-    }
-
-    private File getTabFile(int tabId) {
-        String tabStateFilename = TabState.getTabStateFilename(tabId, mIsIncognito);
-        return new File(getStateDirectory(), tabStateFilename);
-    }
-
-    /** @return the filename of the persisted TabModel state. */
-    private String getFilename() {
-        return mIsIncognito ? null : REGULAR_FILE_NAME;
+    private String getFilename(boolean encrypted) {
+        return encrypted ? null : REGULAR_FILE_NAME;
     }
 }

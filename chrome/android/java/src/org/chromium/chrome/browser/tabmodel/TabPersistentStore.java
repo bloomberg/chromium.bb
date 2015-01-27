@@ -26,7 +26,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -35,7 +34,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * This class handles saving and loading tab state from the persistent storage.
  */
-public class TabPersistentStore {
+public class TabPersistentStore extends TabPersister {
     private static final String TAG = "TabPersistentStore";
 
     /** The current version of the saved state file. */
@@ -51,18 +50,19 @@ public class TabPersistentStore {
     private static final Object MIGRATION_LOCK = new Object();
 
     /**
-     * Callback interface to use while reading the saved state file from disk.
+     * Callback interface to use while reading the persisted TabModelSelector info from disk.
      */
     public static interface OnTabStateReadCallback {
         /**
-         * To be called as the state for each tab is read from disk.
+         * To be called as the details about a persisted Tab are read from the TabModelSelector's
+         * persisted data.
          * @param index The index out of all tabs for the current tab read.
          * @param id The id for the current tab read.
          * @param url The url for the current tab read.
          * @param isStandardActiveIndex Whether the current tab read is the normal active tab.
          * @param isIncognitoActiveIndex Whether the current tab read is the incognito active tab.
          */
-        void onStateRead(int index, int id, String url,
+        void onDetailsRead(int index, int id, String url,
                 boolean isStandardActiveIndex, boolean isIncognitoActiveIndex);
     }
 
@@ -141,18 +141,21 @@ public class TabPersistentStore {
         }
     }
 
+    @Override
+    public File getStateDirectory() {
+        return getStateDirectory(mContext, mSelectorIndex);
+    }
+
     /**
      * The folder where the state should be saved to.
      * @param context A Context instance.
      * @param index   The TabModelSelector index.
      * @return        A file representing the directory that contains the TabModelSelector state.
      */
-    public static File getStateFolder(Context context, int index) {
+    public static File getStateDirectory(Context context, int index) {
         File file = new File(context.getDir(BASE_STATE_FOLDER, Context.MODE_PRIVATE),
                 Integer.toString(index));
-        if (!file.mkdirs()) {
-            Log.e(TAG, "Failed to create state folder: " + file);
-        }
+        if (!file.exists() && !file.mkdirs()) Log.e(TAG, "Failed to create state folder: " + file);
         return file;
     }
 
@@ -223,7 +226,7 @@ public class TabPersistentStore {
                 logSaveException(e);
             } catch (OutOfMemoryError e) {
                 Log.w(TAG, "Out of memory error while attempting to save tab state.  Erasing.");
-                deleteTabStateFile(id, incognito);
+                deleteTabState(id, incognito);
             }
         }
         mTabsToSave.clear();
@@ -332,7 +335,7 @@ public class TabPersistentStore {
         boolean tabRestored = false;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            TabState state = readTabState(tabToRestore.id);
+            TabState state = TabState.restoreTabState(getStateDirectory(), tabToRestore.id);
 
             if (state != null) {
                 restoreTab(tabToRestore, state, setAsActive);
@@ -520,8 +523,7 @@ public class TabPersistentStore {
     private void saveListToFile(byte[] listData) {
         synchronized (mSaveListLock) {
             // Save the index file containing the list of tabs to restore.
-            String fileName = new File(getStateFolder(mContext, mSelectorIndex),
-                    SAVED_STATE_FILE).getAbsolutePath();
+            String fileName = new File(getStateDirectory(), SAVED_STATE_FILE).getAbsolutePath();
             ImportantFileWriterAndroid.writeFileAtomically(fileName, listData);
         }
     }
@@ -538,7 +540,7 @@ public class TabPersistentStore {
         assert  mTabModelSelector.getModel(false).getCount() == 0;
         int maxId = 0;
         File[] folders = mContext.getDir(BASE_STATE_FOLDER, Context.MODE_PRIVATE).listFiles();
-        File stateFolder = getStateFolder(mContext, mSelectorIndex);
+        File stateFolder = getStateDirectory();
         for (File folder : folders) {
             assert folder.isDirectory();
             if (!folder.isDirectory()) continue;
@@ -548,7 +550,7 @@ public class TabPersistentStore {
 
             int curId = readSavedStateFile(folder, new OnTabStateReadCallback() {
                 @Override
-                public void onStateRead(int index, int id, String url,
+                public void onDetailsRead(int index, int id, String url,
                         boolean isStandardActiveIndex, boolean isIncognitoActiveIndex) {
                     // If we're not trying to build the restore list skip the build part.
                     // We've already read all the state for this entry from the input stream.
@@ -610,7 +612,7 @@ public class TabPersistentStore {
                 String tabUrl = skipUrlRead ? "" : stream.readUTF();
                 if (id >= nextId) nextId = id + 1;
 
-                callback.onStateRead(
+                callback.onDetailsRead(
                         i, id, tabUrl, i == standardActiveIndex, i == incognitoActiveIndex);
             }
             return nextId;
@@ -653,16 +655,7 @@ public class TabPersistentStore {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            if (mState == null) return null;
-            try {
-                TabState.saveState(openTabStateOutputStream(mId, mEncrypted), mState, mEncrypted);
-                mStateSaved = true;
-            } catch (IOException e) {
-                Log.w(TAG, "IO Exception while attempting to save tab state.");
-            } catch (OutOfMemoryError e) {
-                Log.w(TAG, "Out of memory error while attempting to save tab state.  Erasing.");
-                deleteTabStateFile(mId, mEncrypted);
-            }
+            mStateSaved = saveTabState(mId, mEncrypted, mState);
             return null;
         }
 
@@ -726,7 +719,7 @@ public class TabPersistentStore {
     }
 
     private void cleanupPersistentData() {
-        String[] files = getStateFolder(mContext, mSelectorIndex).list();
+        String[] files = getStateDirectory().list();
         for (String file : files) {
             Pair<Integer, Boolean> data = TabState.parseInfoFromFilename(file);
             if (data != null) {
@@ -740,7 +733,7 @@ public class TabPersistentStore {
     }
 
     private void cleanupPersistentDataAtAndAboveId(int minForbiddenId)  {
-        String[] files = getStateFolder(mContext, mSelectorIndex).list();
+        String[] files = getStateDirectory().list();
 
         for (String file : files) {
             Pair<Integer, Boolean> data = TabState.parseInfoFromFilename(file);
@@ -755,7 +748,7 @@ public class TabPersistentStore {
     }
 
     private void cleanupAllEncryptedPersistentData() {
-        String[] files = getStateFolder(mContext, mSelectorIndex).list();
+        String[] files = getStateDirectory().list();
         for (String file : files) {
             if (file.startsWith(TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO)) {
                 deleteFileAsync(file);
@@ -767,7 +760,7 @@ public class TabPersistentStore {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
-                File stateFile = new File(getStateFolder(mContext, mSelectorIndex), file);
+                File stateFile = new File(getStateDirectory(), file);
                 if (stateFile.exists()) {
                     if (!stateFile.delete()) Log.e(TAG, "Failed to delete file: " + stateFile);
                 }
@@ -789,10 +782,7 @@ public class TabPersistentStore {
         protected TabState doInBackground(Void... voids) {
             if (mDestroyed || isCancelled()) return null;
             try {
-                return readTabState(mTabToRestore.id);
-            } catch (IOException e) {
-                // Bad state file, skipping it.
-                return null;
+                return TabState.restoreTabState(getStateDirectory(), mTabToRestore.id);
             } catch (Exception e) {
                 Log.w(TAG, "Unable to read state: " + e);
                 return null;
@@ -828,7 +818,7 @@ public class TabPersistentStore {
         @Override
         protected Void doInBackground(Void... params) {
             File oldFolder = mContext.getFilesDir();
-            File newFolder = getStateFolder(mContext, mSelectorIndex);
+            File newFolder = getStateDirectory();
             // If we already have files here just return.
             File[] newFiles = newFolder.listFiles();
             if (newFiles != null && newFiles.length > 0) return null;
@@ -852,46 +842,6 @@ public class TabPersistentStore {
             }
 
             return null;
-        }
-    }
-
-    private TabState readTabState(int id) throws IOException {
-        File stateFolder = getStateFolder(mContext, mSelectorIndex);
-        FileInputStream fis = null;
-        try {
-            // First try finding an unencrypted file.
-            boolean encrypted = false;
-            File file = new File(stateFolder, TabState.getTabStateFilename(id, encrypted));
-
-            // If that fails, try finding the encrypted version.
-            if (!file.exists()) {
-                encrypted = true;
-                file = new File(stateFolder, TabState.getTabStateFilename(id, encrypted));
-            }
-
-            // If they both failed, there's nothing to read.
-            if (!file.exists()) return null;
-
-            // If one of them passed, open the file input stream and read the state contents.
-            fis = new FileInputStream(file);
-            return TabState.readState(fis, encrypted);
-        } finally {
-            StreamUtil.closeQuietly(fis);
-        }
-    }
-
-    private FileOutputStream openTabStateOutputStream(int id, boolean encrypted)
-            throws IOException {
-        File stateFolder = getStateFolder(mContext, mSelectorIndex);
-        return new FileOutputStream(
-                new File(stateFolder, TabState.getTabStateFilename(id, encrypted)));
-    }
-
-    private void deleteTabStateFile(int id, boolean encrypted) {
-        File stateFolder = getStateFolder(mContext, mSelectorIndex);
-        File file = new File(stateFolder, TabState.getTabStateFilename(id, encrypted));
-        if (file.exists()) {
-            if (!file.delete()) Log.e(TAG, "Failed to delete TabState: " + file);
         }
     }
 

@@ -131,10 +131,10 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
 
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir(), false);
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
-        mStorageDelegate.addEncodedTabState(1010, TAB_STATE_1010_ERFWORLD_RETARGETABLE);
-        mStorageDelegate.addEncodedTabState(1011, TAB_STATE_1011_REDDIT);
+        mStorageDelegate.addEncodedTabState(1010, false, TAB_STATE_1010_ERFWORLD_RETARGETABLE);
+        mStorageDelegate.addEncodedTabState(1011, false, TAB_STATE_1011_REDDIT);
 
         setupDocumentTabModel();
 
@@ -171,10 +171,10 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
         mActivityDelegate.addTask(true, 1012, "http://incognito.com/ignored");
 
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir(), false);
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
-        mStorageDelegate.addEncodedTabState(1010, TAB_STATE_1010_ERFWORLD_RETARGETABLE);
-        mStorageDelegate.addEncodedTabState(1011, TAB_STATE_1011_REDDIT);
+        mStorageDelegate.addEncodedTabState(1010, false, TAB_STATE_1010_ERFWORLD_RETARGETABLE);
+        mStorageDelegate.addEncodedTabState(1011, false, TAB_STATE_1011_REDDIT);
 
         setupDocumentTabModel();
 
@@ -215,7 +215,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
 
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir(), false);
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
 
         setupDocumentTabModel();
@@ -243,9 +243,9 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
 
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir(), false);
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
-        mStorageDelegate.addEncodedTabState(1011, TAB_STATE_1011_REDDIT);
+        mStorageDelegate.addEncodedTabState(1011, false, TAB_STATE_1011_REDDIT);
 
         setupDocumentTabModel();
 
@@ -276,7 +276,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
     public void testTasksSwipedAwayBeforeTabModelCreation() throws Exception {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
 
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir(), false);
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
         setupDocumentTabModel();
 
@@ -294,7 +294,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
 
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir(), false);
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
 
         setupDocumentTabModel();
@@ -321,7 +321,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1010, "http://erfworld.com");
         mActivityDelegate.addTask(false, 1011, "http://reddit.com/r/android");
 
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir(), false);
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mStorageDelegate.setTaskFileBytesFromEncodedString(MODEL_STATE_WITH_1010_1011);
 
         setupDocumentTabModel();
@@ -350,7 +350,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1012, "http://digg.com");
         mActivityDelegate.addTask(false, 1013, "http://slashdot.org");
 
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir(), false);
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
 
         setupDocumentTabModel();
         assertEquals(4, mTabModel.getCount());
@@ -391,7 +391,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         mActivityDelegate.addTask(false, 1012, "http://digg.com");
         mActivityDelegate.addTask(false, 1013, "http://slashdot.org");
 
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir(), false);
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
 
         Map<String, Object> data = new ArrayMap<String, Object>();
         data.put(DocumentTabModelImpl.PREF_LAST_SHOWN_TAB_ID_REGULAR, 1011);
