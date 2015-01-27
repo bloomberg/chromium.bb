@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_FRAMER_H_
 #define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_FRAMER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "extensions/common/api/cast_channel.h"
 #include "net/base/io_buffer.h"
@@ -42,7 +44,7 @@ class MessageFramer {
   // |error| The result of the ingest operation. Set to CHANNEL_ERROR_NONE
   //         if no error occurred.
   // Returns A pointer to a parsed CastMessage if a message was received
-  //         in its entirety, NULL otherwise.
+  //         in its entirety, nullptr otherwise.
   scoped_ptr<CastMessage> Ingest(size_t num_bytes,
                                  size_t* message_length,
                                  ChannelError* error);

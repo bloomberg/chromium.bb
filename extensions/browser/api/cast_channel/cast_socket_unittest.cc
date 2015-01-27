@@ -79,13 +79,13 @@ CastMessage CreateTestMessage() {
 
 class MockTCPSocket : public net::TCPClientSocket {
  public:
-  explicit MockTCPSocket(const net::MockConnect& connect_data) :
-      TCPClientSocket(net::AddressList(), NULL, net::NetLog::Source()),
-      connect_data_(connect_data),
-      do_nothing_(false) { }
+  explicit MockTCPSocket(const net::MockConnect& connect_data)
+      : TCPClientSocket(net::AddressList(), nullptr, net::NetLog::Source()),
+        connect_data_(connect_data),
+        do_nothing_(false) {}
 
-  explicit MockTCPSocket(bool do_nothing) :
-      TCPClientSocket(net::AddressList(), NULL, net::NetLog::Source()) {
+  explicit MockTCPSocket(bool do_nothing)
+      : TCPClientSocket(net::AddressList(), nullptr, net::NetLog::Source()) {
     CHECK(do_nothing);
     do_nothing_ = do_nothing;
   }
@@ -196,7 +196,7 @@ class TestCastSocket : public CastSocketImpl {
         verify_challenge_disallow_(false),
         tcp_unresponsive_(false),
         mock_timer_(new base::MockTimer(false, false)),
-        mock_transport_(NULL) {}
+        mock_transport_(nullptr) {}
 
   ~TestCastSocket() override {}
 

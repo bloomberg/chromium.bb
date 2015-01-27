@@ -5,6 +5,7 @@
 #include "extensions/browser/api/cast_channel/cast_framer.h"
 
 #include <algorithm>
+#include <string>
 
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,13 +51,13 @@ TEST_F(CastFramerTest, TestMessageFramerCompleteMessage) {
 
   // Receive 1 byte of the header, framer demands 3 more bytes.
   EXPECT_EQ(4u, framer_->BytesRequested());
-  EXPECT_EQ(NULL, framer_->Ingest(1, &message_length, &error).get());
+  EXPECT_EQ(nullptr, framer_->Ingest(1, &message_length, &error).get());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, error);
   EXPECT_EQ(3u, framer_->BytesRequested());
 
   // Ingest remaining 3, expect that the framer has moved on to requesting the
   // body contents.
-  EXPECT_EQ(NULL, framer_->Ingest(3, &message_length, &error).get());
+  EXPECT_EQ(nullptr, framer_->Ingest(3, &message_length, &error).get());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, error);
   EXPECT_EQ(
       cast_message_str_.size() - MessageFramer::MessageHeader::header_size(),
@@ -65,7 +66,7 @@ TEST_F(CastFramerTest, TestMessageFramerCompleteMessage) {
   // Remainder of packet sent over the wire.
   scoped_ptr<CastMessage> message;
   message = framer_->Ingest(framer_->BytesRequested(), &message_length, &error);
-  EXPECT_NE(static_cast<CastMessage*>(NULL), message.get());
+  EXPECT_NE(static_cast<CastMessage*>(nullptr), message.get());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, error);
   EXPECT_EQ(message->SerializeAsString(), cast_message_.SerializeAsString());
   EXPECT_EQ(4u, framer_->BytesRequested());
@@ -93,14 +94,14 @@ TEST_F(CastFramerTest, TestIngestIllegalLargeMessage) {
   size_t bytes_ingested;
   ChannelError error;
   EXPECT_EQ(4u, framer_->BytesRequested());
-  EXPECT_EQ(NULL, framer_->Ingest(4, &bytes_ingested, &error).get());
+  EXPECT_EQ(nullptr, framer_->Ingest(4, &bytes_ingested, &error).get());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE, error);
   EXPECT_EQ(0u, framer_->BytesRequested());
 
   // Test that the parser enters a terminal error state.
   WriteToBuffer(cast_message_str_);
   EXPECT_EQ(0u, framer_->BytesRequested());
-  EXPECT_EQ(NULL, framer_->Ingest(4, &bytes_ingested, &error).get());
+  EXPECT_EQ(nullptr, framer_->Ingest(4, &bytes_ingested, &error).get());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE, error);
   EXPECT_EQ(0u, framer_->BytesRequested());
 }
@@ -122,15 +123,14 @@ TEST_F(CastFramerTest, TestUnparsableBodyProto) {
   size_t message_length;
   ChannelError error;
   EXPECT_EQ(4u, framer_->BytesRequested());
-  EXPECT_EQ(NULL, framer_->Ingest(4, &message_length, &error).get());
+  EXPECT_EQ(nullptr, framer_->Ingest(4, &message_length, &error).get());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, error);
   EXPECT_EQ(cast_message_str_.size() - 4, framer_->BytesRequested());
 
   // Send body, expect an error.
   scoped_ptr<CastMessage> message;
-  EXPECT_EQ(NULL,
-            framer_->Ingest(framer_->BytesRequested(), &message_length, &error)
-                .get());
+  EXPECT_EQ(nullptr, framer_->Ingest(framer_->BytesRequested(), &message_length,
+                                     &error).get());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE, error);
 }
 }  // namespace cast_channel

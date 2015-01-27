@@ -73,7 +73,7 @@ class Logger : public base::RefCounted<Logger> {
 
   // Assembles logs collected so far and return it as a serialized Log proto,
   // compressed in gzip format.
-  // If serialization or compression failed, returns a NULL pointer.
+  // If serialization or compression failed, returns nullptr.
   // |length|: If successful, assigned with size of compressed content.
   scoped_ptr<char[]> GetLogs(size_t* length) const;
 

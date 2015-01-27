@@ -160,7 +160,7 @@ scoped_ptr<base::Timer> CastChannelAPI::GetInjectedTimeoutTimerForTest() {
 
 CastChannelAPI::~CastChannelAPI() {}
 
-CastChannelAsyncApiFunction::CastChannelAsyncApiFunction() : manager_(NULL) {
+CastChannelAsyncApiFunction::CastChannelAsyncApiFunction() : manager_(nullptr) {
 }
 
 CastChannelAsyncApiFunction::~CastChannelAsyncApiFunction() { }

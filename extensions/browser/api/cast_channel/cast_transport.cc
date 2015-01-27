@@ -402,7 +402,7 @@ int CastTransportImpl::DoReadComplete(int result) {
   }
 
   size_t message_size;
-  DCHECK(current_message_.get() == NULL);
+  DCHECK(!current_message_);
   ChannelError framing_error;
   current_message_ = framer_->Ingest(result, &message_size, &framing_error);
   if (current_message_.get() && (framing_error == CHANNEL_ERROR_NONE)) {
@@ -413,11 +413,11 @@ int CastTransportImpl::DoReadComplete(int result) {
                            static_cast<uint32>(message_size)));
     SetReadState(READ_STATE_DO_CALLBACK);
   } else if (framing_error != CHANNEL_ERROR_NONE) {
-    DCHECK(current_message_.get() == NULL);
+    DCHECK(!current_message_);
     SetErrorState(CHANNEL_ERROR_INVALID_MESSAGE);
     SetReadState(READ_STATE_ERROR);
   } else {
-    DCHECK(current_message_.get() == NULL);
+    DCHECK(!current_message_);
     SetReadState(READ_STATE_READ);
   }
   return net::OK;

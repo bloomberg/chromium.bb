@@ -59,7 +59,7 @@ class CastChannelAPI : public BrowserContextKeyedAPI {
   void SetSocketForTest(scoped_ptr<cast_channel::CastSocket> socket_for_test);
 
   // Returns a test CastSocket instance, if it is defined.
-  // Otherwise returns a scoped_ptr with a NULL ptr value.
+  // Otherwise returns a scoped_ptr with a nullptr value.
   scoped_ptr<cast_channel::CastSocket> GetSocketForTest();
 
   // Returns the API browser context.
@@ -176,7 +176,7 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
                               cast_channel::ConnectInfo* connect_info);
 
   // Validates that |connect_info| represents a valid IP end point and returns a
-  // new IPEndPoint if so.  Otherwise returns NULL.
+  // new IPEndPoint if so.  Otherwise returns nullptr.
   static net::IPEndPoint* ParseConnectInfo(
       const cast_channel::ConnectInfo& connect_info);
 

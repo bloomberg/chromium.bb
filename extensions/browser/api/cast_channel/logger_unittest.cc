@@ -121,7 +121,7 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
   EXPECT_EQ(last_errors.nss_error_code, kTestNssErrorCode);
 
   scoped_ptr<Log> log = GetLog();
-  ASSERT_TRUE(log.get() != NULL);
+  ASSERT_TRUE(log);
 
   ASSERT_EQ(2, log->aggregated_socket_event_size());
   {
@@ -257,7 +257,7 @@ TEST_F(CastChannelLoggerTest, LogSocketReadWrite) {
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
 
   scoped_ptr<Log> log = GetLog();
-  ASSERT_TRUE(log.get() != NULL);
+  ASSERT_TRUE(log);
 
   ASSERT_EQ(2, log->aggregated_socket_event_size());
   {
@@ -284,7 +284,7 @@ TEST_F(CastChannelLoggerTest, TooManySockets) {
   }
 
   scoped_ptr<Log> log = GetLog();
-  ASSERT_TRUE(log.get() != NULL);
+  ASSERT_TRUE(log);
 
   ASSERT_EQ(kMaxSocketsToLog, log->aggregated_socket_event_size());
   EXPECT_EQ(5, log->num_evicted_aggregated_socket_events());
@@ -302,7 +302,7 @@ TEST_F(CastChannelLoggerTest, TooManyEvents) {
   }
 
   scoped_ptr<Log> log = GetLog();
-  ASSERT_TRUE(log.get() != NULL);
+  ASSERT_TRUE(log);
 
   ASSERT_EQ(1, log->aggregated_socket_event_size());
   EXPECT_EQ(0, log->num_evicted_aggregated_socket_events());
@@ -318,14 +318,14 @@ TEST_F(CastChannelLoggerTest, Reset) {
   logger_->LogSocketEvent(1, EventType::CAST_SOCKET_CREATED);
 
   scoped_ptr<Log> log = GetLog();
-  ASSERT_TRUE(log.get() != NULL);
+  ASSERT_TRUE(log);
 
   EXPECT_EQ(1, log->aggregated_socket_event_size());
 
   logger_->Reset();
 
   log = GetLog();
-  ASSERT_TRUE(log.get() != NULL);
+  ASSERT_TRUE(log);
 
   EXPECT_EQ(0, log->aggregated_socket_event_size());
 }

@@ -58,7 +58,7 @@ TEST(CastChannelOpenFunctionTest, TestParseConnectInfo) {
   connect_info.auth = CHANNEL_AUTH_TYPE_SSL;
 
   ip_endpoint.reset(ccof::ParseConnectInfo(connect_info));
-  EXPECT_TRUE(ip_endpoint.get() != NULL);
+  EXPECT_TRUE(ip_endpoint);
   EXPECT_EQ(ip_endpoint->ToString(), "192.0.0.1:8009");
 }
 
