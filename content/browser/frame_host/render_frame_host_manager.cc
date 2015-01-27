@@ -1218,8 +1218,9 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
   // TODO(creis): Pass hidden to RFH.
   scoped_ptr<RenderFrameHostImpl> render_frame_host = make_scoped_ptr(
       RenderFrameHostFactory::Create(
-          render_view_host, render_frame_delegate_, render_widget_delegate_,
-          frame_tree, frame_tree_node_, frame_routing_id, flags).release());
+          site_instance, render_view_host, render_frame_delegate_,
+          render_widget_delegate_, frame_tree, frame_tree_node_,
+          frame_routing_id, flags).release());
   return render_frame_host.Pass();
 }
 

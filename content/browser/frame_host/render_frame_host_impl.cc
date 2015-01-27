@@ -118,7 +118,8 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(int process_id,
   return it == frames->end() ? NULL : it->second;
 }
 
-RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
+RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
+                                         RenderViewHostImpl* render_view_host,
                                          RenderFrameHostDelegate* delegate,
                                          RenderWidgetHostDelegate* rwh_delegate,
                                          FrameTree* frame_tree,
@@ -127,6 +128,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
                                          int flags)
     : render_view_host_(render_view_host),
       delegate_(delegate),
+      site_instance_(static_cast<SiteInstanceImpl*>(site_instance)),
+      process_(site_instance->GetProcess()),
       cross_process_frame_connector_(NULL),
       render_frame_proxy_host_(NULL),
       frame_tree_(frame_tree),
@@ -198,13 +201,11 @@ int RenderFrameHostImpl::GetRoutingID() {
 }
 
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
-  return render_view_host_->GetSiteInstance();
+  return site_instance_.get();
 }
 
 RenderProcessHost* RenderFrameHostImpl::GetProcess() {
-  // TODO(nasko): This should return its own process, once we have working
-  // cross-process navigation for subframes.
-  return render_view_host_->GetProcess();
+  return process_;
 }
 
 RenderFrameHost* RenderFrameHostImpl::GetParent() {

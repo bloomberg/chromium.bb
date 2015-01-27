@@ -34,14 +34,16 @@ void TestRenderFrameHostCreationObserver::RenderFrameCreated(
   last_created_frame_ = render_frame_host;
 }
 
-TestRenderFrameHost::TestRenderFrameHost(RenderViewHostImpl* render_view_host,
+TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
+                                         RenderViewHostImpl* render_view_host,
                                          RenderFrameHostDelegate* delegate,
                                          RenderWidgetHostDelegate* rwh_delegate,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
                                          int routing_id,
                                          int flags)
-    : RenderFrameHostImpl(render_view_host,
+    : RenderFrameHostImpl(site_instance,
+                          render_view_host,
                           delegate,
                           rwh_delegate,
                           frame_tree,

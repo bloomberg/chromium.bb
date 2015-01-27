@@ -418,7 +418,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(nasko): Remove dependency on RenderViewHost here. RenderProcessHost
   // should be the abstraction needed here, but we need RenderViewHost to pass
   // into WebContentsObserver::FrameDetached for now.
-  RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
+  RenderFrameHostImpl(SiteInstance* site_instance,
+                      RenderViewHostImpl* render_view_host,
                       RenderFrameHostDelegate* delegate,
                       RenderWidgetHostDelegate* rwh_delegate,
                       FrameTree* frame_tree,
@@ -535,6 +536,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderViewHostImpl* render_view_host_;
 
   RenderFrameHostDelegate* delegate_;
+
+  // The SiteInstance associated with this RenderFrameHost. All content drawn
+  // in this RenderFrameHost is part of this SiteInstance. Cannot change over
+  // time.
+  scoped_refptr<SiteInstanceImpl> site_instance_;
+
+  // The renderer process this RenderFrameHost is associated with. It is
+  // equivalent to the result of site_instance_->GetProcess(), but that
+  // method has the side effect of creating the process if it doesn't exist.
+  // Cache a pointer to avoid unnecessary process creation.
+  RenderProcessHost* process_;
 
   // |cross_process_frame_connector_| passes messages from an out-of-process
   // child frame to the parent process for compositing.

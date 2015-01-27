@@ -35,7 +35,8 @@ class TestRenderFrameHostCreationObserver : public WebContentsObserver {
 class TestRenderFrameHost : public RenderFrameHostImpl,
                             public RenderFrameHostTester {
  public:
-  TestRenderFrameHost(RenderViewHostImpl* render_view_host,
+  TestRenderFrameHost(SiteInstance* site_instance,
+                      RenderViewHostImpl* render_view_host,
                       RenderFrameHostDelegate* delegate,
                       RenderWidgetHostDelegate* rwh_delegate,
                       FrameTree* frame_tree,
