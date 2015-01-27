@@ -1711,6 +1711,7 @@ crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/canvas-resize-reset.html 
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/canvas-transform-nan.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/font-update.html [ Pass ImageOnlyFailure ]
+crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/toDataURL-alpha.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/drawImage.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/canvas-unbalanced-save.html [ Pass ImageOnlyFailure ]
@@ -1749,8 +1750,7 @@ crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/main-frame-elem
 crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/main-frame-element-scrollTo.html [ Pass Timeout ]
 crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Pass Failure Timeout ]
 crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/main-frame-scroll.html [ Pass Timeout ]
-# crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/main-frame-scrollBy.html [ Pass Timeout ]
-# bug(noel): restore the [ Debug ] line above once main-frame-scrollBy.html [ Release ] is rebaselined.
+crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/main-frame-scrollBy.html [ Pass Timeout ]
 crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/main-frame-scrollLeft.html [ Pass Timeout ]
 crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/main-frame-scrollTo.html [ Pass Timeout ]
 crbug.com/243871 [ Debug ] virtual/threaded/fast/scroll-behavior/subframe-element-scroll.html [ Pass Timeout ]
