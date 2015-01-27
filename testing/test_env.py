@@ -173,7 +173,8 @@ def run_executable(cmd, env):
       # Need to pipe to the symbolizer script.
       p1 = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE,
                             stderr=sys.stdout)
-      p2 = subprocess.Popen(["../tools/valgrind/asan/asan_symbolize.py"],
+      p2 = subprocess.Popen([sys.executable,
+                             "../tools/valgrind/asan/asan_symbolize.py"],
                             env=env, stdin=p1.stdout)
       p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
       p1.wait()
