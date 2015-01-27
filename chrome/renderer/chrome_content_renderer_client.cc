@@ -702,7 +702,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     }
 
 #if defined(ENABLE_PLUGINS)
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+    if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed &&
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnablePluginPowerSaver)) {
       status_value =
           ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
