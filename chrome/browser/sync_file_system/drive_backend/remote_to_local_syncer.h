@@ -27,7 +27,6 @@ class DriveServiceInterface;
 namespace google_apis {
 class FileList;
 class FileResource;
-class ResourceEntry;
 }
 
 namespace storage {

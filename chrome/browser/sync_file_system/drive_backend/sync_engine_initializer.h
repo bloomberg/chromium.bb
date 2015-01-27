@@ -24,7 +24,6 @@ namespace google_apis {
 class AboutResource;
 class FileList;
 class FileResource;
-class ResourceEntry;
 }
 
 namespace leveldb {

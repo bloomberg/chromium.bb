@@ -28,7 +28,6 @@ class Env;
 namespace google_apis {
 class ChangeResource;
 class FileResource;
-class ResourceEntry;
 }
 
 namespace tracked_objects {

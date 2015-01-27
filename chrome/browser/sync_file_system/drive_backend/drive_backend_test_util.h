@@ -11,7 +11,6 @@
 
 namespace google_apis {
 class FileResource;
-class ResourceEntry;
 }
 
 namespace sync_file_system {

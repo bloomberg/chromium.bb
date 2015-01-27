@@ -25,7 +25,6 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {

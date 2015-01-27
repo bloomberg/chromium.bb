@@ -16,7 +16,6 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 
 namespace sync_file_system {
 namespace drive_backend {

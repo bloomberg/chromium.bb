@@ -17,10 +17,6 @@ namespace drive {
 class DriveServiceInterface;
 }
 
-namespace google_apis {
-class ResourceEntry;
-}
-
 namespace sync_file_system {
 namespace drive_backend {
 

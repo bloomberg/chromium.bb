@@ -19,7 +19,6 @@
 namespace google_apis {
 class ChangeResource;
 class FileResource;
-class ResourceEntry;
 }
 
 namespace sync_file_system {
