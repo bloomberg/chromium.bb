@@ -64,7 +64,7 @@ FullscreenUnprefixed status=test
 Geofencing status=experimental
 GeometryInterfaces status=test
 ImageColorProfiles
-ImageDataConstructor status=experimental
+ImageDataConstructor status=stable
 ImageRenderingPixelated status=stable
 IMEAPI status=experimental
 IndexedDBExperimental status=experimental
