@@ -1,4 +1,4 @@
-Bug 76842: Crash in WebCore::RenderTableSection::rowLogicalHeightChanged
+Bug 76842: Crash in WebCore::LayoutTableSection::rowLogicalHeightChanged
 
 This test passes if it does not crash nor ASSERT.
 

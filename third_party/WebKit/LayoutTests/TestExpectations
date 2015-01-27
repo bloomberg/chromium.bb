@@ -7,8 +7,7 @@ crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/gradient-background-leak
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/gradient-background-leakage.html [ ImageOnlyFailure ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/mask-box-image.html [ ImageOnlyFailure ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/background-leakage.html [ ImageOnlyFailure ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ ImageOnlyFailure ]
+crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ ImageOnlyFailure ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-html-body-background.html [ ImageOnlyFailure ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/gradient-background-leakage-2.html [ ImageOnlyFailure ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-body-html-background.html [ ImageOnlyFailure ]
@@ -27,8 +26,7 @@ crbug.com/450612 virtual/slimmingpaint/fast/table/wide-column.html [ NeedsRebase
 crbug.com/450612 virtual/slimmingpaint/fast/table/height-percent-test-vertical.html [ NeedsRebaseline ]
 crbug.com/450612 virtual/slimmingpaint/fast/table/border-collapsing/equal-precedence-resolution-vertical.html [ NeedsRebaseline ]
 
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
+crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
@@ -482,6 +480,9 @@ crbug.com/396823 [ Mac ] virtual/regionbasedmulticol/fast/multicol/multicol-with
 
 crbug.com/442730 inspector/sources/debugger/watch-expressions-preserve-expansion.html [ Pass Failure ]
 
+crbug.com/450612 fast/table/generated-caption.html [ NeedsRebaseline ]
+crbug.com/450612 virtual/slimmingpaint/fast/table/generated-caption.html [ NeedsRebaseline ]
+
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
@@ -786,9 +787,8 @@ crbug.com/368560 [ Win ] http/tests/svg/image-fetch-fail.svg [ Timeout Pass ]
 
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
-#crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
+crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
+crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
 
 crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
@@ -821,11 +821,10 @@ crbug.com/341331 http/tests/xmlhttprequest/event-listener-gc.html [ Pass Failure
 crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
 crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
 
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/338475 crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
-#crbug.com/338475 crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
-#crbug.com/338475 crbug.com/307777 [ Android ] css1/color_and_background/background_color.html [ Failure Timeout ]
-#crbug.com/338475 crbug.com/307777 [ Android ] css1/color_and_background/color.html [ Failure Timeout ]
+crbug.com/338475 crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
+crbug.com/338475 crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
+crbug.com/338475 crbug.com/307777 [ Android ] css1/color_and_background/background_color.html [ Failure Timeout ]
+crbug.com/338475 crbug.com/307777 [ Android ] css1/color_and_background/color.html [ Failure Timeout ]
 crbug.com/338475 crbug.com/307777 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Timeout ]
 crbug.com/338475 crbug.com/307777 [ Android ] fast/invalid/009.html [ Failure Timeout ]
 
@@ -833,19 +832,16 @@ crbug.com/439457 [ Android ] compositing/draws-content/canvas-background-layer.h
 crbug.com/439457 [ Android ] http/tests/media/media-source/mediasource-play.html [ Failure Crash ]
 crbug.com/439457 [ Android ] compositing/repaint/invalidations-on-composited-layers.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] compositing/repaint/resize-repaint.html [ Timeout Crash ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/439457 [ Android ] css1/classification/list_style_image.html [ Timeout Crash ]
-#crbug.com/439457 [ Android ] css1/classification/list_style_position.html [ Timeout Crash ]
-#crbug.com/439457 [ Android ] css1/font_properties/font_style.html [ Timeout Crash ]
-#crbug.com/439457 [ Android ] css1/font_properties/font_variant.html [ Timeout Crash ]
-#crbug.com/439457 [ Android ] css1/formatting_model/canvas.html [ Timeout Crash ]
+crbug.com/439457 [ Android ] css1/classification/list_style_image.html [ Timeout Crash ]
+crbug.com/439457 [ Android ] css1/classification/list_style_position.html [ Timeout Crash ]
+crbug.com/439457 [ Android ] css1/font_properties/font_style.html [ Timeout Crash ]
+crbug.com/439457 [ Android ] css1/font_properties/font_variant.html [ Timeout Crash ]
+crbug.com/439457 [ Android ] css1/formatting_model/canvas.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] css1/formatting_model/horizontal_formatting.html [ Timeout Crash ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/439457 [ Android ] css1/text_properties/text_align.html [ Timeout Crash ]
+crbug.com/439457 [ Android ] css1/text_properties/text_align.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] editing/caret/caret-color.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] fast/compact/002.html [ Timeout Crash ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/439457 [ Android ] fast/inline-block/overflow-clip.html [ Timeout Crash ]
+crbug.com/439457 [ Android ] fast/inline-block/overflow-clip.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] fast/text/chromium-linux-fontconfig-renderstyle.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] media/media-load-event.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] media/video-autoplay.html [ Timeout Crash ]
@@ -861,54 +857,6 @@ crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 
-crbug.com/450612 fast/text/whitespace/013.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text/whitespace/014.html [ NeedsManualRebaseline ]
-crbug.com/450612 css1/cascade/important.html [ NeedsManualRebaseline ]
-crbug.com/450612 css1/classification/list_style.html [ NeedsManualRebaseline ]
-crbug.com/450612 css1/classification/list_style_image.html [ NeedsManualRebaseline ]
-crbug.com/450612 css1/classification/list_style_position.html [ NeedsManualRebaseline ]
-crbug.com/450612 css1/color_and_background/background_color.html [ NeedsManualRebaseline ]
-crbug.com/450612 css1/color_and_background/color.html [ NeedsManualRebaseline ]
-crbug.com/450612 css1/font_properties/font_style.html [ NeedsManualRebaseline ]
-crbug.com/450612 css1/font_properties/font_variant.html [ NeedsManualRebaseline ]
-crbug.com/450612 css1/formatting_model/canvas.html [ NeedsManualRebaseline ]
-crbug.com/450612 css1/text_properties/text_align.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/inline-block/overflow-clip.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text-autosizing/supercluster-multiple-layout.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text-autosizing/tables/table-with-inline-block.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text/atsui-multiple-renderers.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text/whitespace/002.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text/whitespace/003.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text/whitespace/004.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text/whitespace/005.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text/whitespace/010.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text/whitespace/011.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text/whitespace/015.html [ NeedsManualRebaseline ]
-crbug.com/450612 fast/text/whitespace/016.html [ NeedsManualRebaseline ]
-crbug.com/450612 http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/block/basic/016.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/block/float/025.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/block/float/026.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/block/float/027.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/block/float/028.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/block/margin-collapse/104.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/012.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/027-vertical.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/027.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/040-vertical.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/border-collapsing/004.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/empty-cells.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/frame-and-rules.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/height-percent-test.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/overflowHidden.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/prepend-in-anonymous-table.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/table-display-types-vertical.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/text/atsui-multiple-renderers.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/text/whitespace/013.html [ NeedsManualRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/text/whitespace/014.html [ NeedsManualRebaseline ]
-
 crbug.com/378716 editing/pasteboard/drag-files-to-editable-element.html [ Pass Timeout ]
 crbug.com/393094 [ Win7 ] editing/selection/move-by-line-006.html [ Pass Failure ]
 crbug.com/393095 [ Win7 ] fast/events/touch/compositor-touch-hit-rects-iframes.html [ Pass Failure ]
@@ -919,9 +867,8 @@ crbug.com/339778 crbug.com/412273 fast/dom/timer-throttling-hidden-page.html [ F
 
 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/418070 [ Mac ] fast/text/atsui-multiple-renderers.html [ Failure ]
-#crbug.com/418070 [ Mac ] virtual/slimmingpaint/fast/text/atsui-multiple-renderers.html [ Failure ]
+crbug.com/418070 [ Mac ] fast/text/atsui-multiple-renderers.html [ Failure ]
+crbug.com/418070 [ Mac ] virtual/slimmingpaint/fast/text/atsui-multiple-renderers.html [ Failure ]
 
 # Failing Reftests from CoreText shaper removal
 crbug.com/334269 [ Mac ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
@@ -997,8 +944,7 @@ crbug.com/356996 [ Mac Release ] html5lib/generated/run-tests1-data.html [ Pass 
 crbug.com/356997 http/tests/security/isolatedWorld/events.html [ Failure Pass ]
 crbug.com/357002 [ Linux ] http/tests/misc/cache-hit-resource-timing-buffer-full-crash.html [ Failure Pass ]
 crbug.com/357068 css3/images/cross-fade-invalidation.html [ ImageOnlyFailure Pass ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/392626 [ XP ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Timeout ]
+crbug.com/392626 [ XP ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Timeout ]
 crbug.com/357075 [ Win Release ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ Failure Pass ]
 crbug.com/357082 [ Win Debug ] virtual/threaded/animations/animation-hit-test.html [ Failure Pass ]
 crbug.com/357084 [ Linux Win Debug ] virtual/threaded/animations/keyframe-timing-functions2.html [ Pass Timeout ]
@@ -1404,24 +1350,21 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-wit
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/async-callstack-get-as-string.html [ Crash ]
 
 # Ahem font is sometimes not loaded on Windows.
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/392046 [ Win ] fast/text/whitespace/002.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] fast/text/whitespace/003.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] fast/text/whitespace/004.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] fast/text/whitespace/005.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/text/whitespace/002.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/text/whitespace/003.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/text/whitespace/004.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/text/whitespace/005.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/006.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/007.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/008.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/009.html [ Pass Failure ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/392046 [ Win ] fast/text/whitespace/010.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] fast/text/whitespace/011.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/text/whitespace/010.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/text/whitespace/011.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/012.html [ Pass Failure ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/392046 [ Win ] fast/text/whitespace/013.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] fast/text/whitespace/014.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] fast/text/whitespace/015.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] fast/text/whitespace/016.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/text/whitespace/013.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/text/whitespace/014.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/text/whitespace/015.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/text/whitespace/016.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/017.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/018.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/ruby/select-ruby.html [ Pass Failure ]
@@ -1587,15 +1530,13 @@ crbug.com/429128 [ Linux ] virtual/gpu/fast/canvas/yuv-video-on-accelerated-canv
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ Mac ] virtual/antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/016.html [ Failure ImageOnlyFailure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/016.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/fieldset-stretch-to-legend.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/008.html [ Failure ImageOnlyFailure ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/025.html [ Failure ImageOnlyFailure ]
-#crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/026.html [ Failure ImageOnlyFailure ]
-#crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/027.html [ Failure ImageOnlyFailure ]
-#crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/028.html [ Failure ImageOnlyFailure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/025.html [ Failure ImageOnlyFailure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/026.html [ Failure ImageOnlyFailure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/027.html [ Failure ImageOnlyFailure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/028.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/032.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/033.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/035.html [ Failure ImageOnlyFailure ]
@@ -1604,8 +1545,7 @@ crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/nested-c
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/relative-painted-twice.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/shrink-to-avoid-float-complexity.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/lineboxcontain/parsing-invalid.html [ Failure ImageOnlyFailure ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/margin-collapse/104.html [ Failure ImageOnlyFailure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/margin-collapse/104.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/margin-collapse/empty-clear-blocks.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/047.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/051.html [ Failure ImageOnlyFailure ]
@@ -1622,23 +1562,21 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/text-shadow-no-default-
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/008.html [ Pass ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/009.html [ Pass ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/012.html [ Pass ImageOnlyFailure ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/013.html [ Pass ImageOnlyFailure ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/014.html [ Pass ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/013.html [ Pass ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/014.html [ Pass ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/018.html [ Pass ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/inline/inline-borders-with-bidi-override.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/inline/inline-continuation-borders.html [ Pass Failure ImageOnlyFailure ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/027-vertical.html [ NeedsManualRebaseline ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/027.html [ Pass Failure ImageOnlyFailure ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/040-vertical.html [ NeedsManualRebaseline ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/border-collapsing/004.html [ Pass Failure ImageOnlyFailure ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/empty-cells.html [ Pass Failure ImageOnlyFailure ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/frame-and-rules.html [ Pass Failure ImageOnlyFailure ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/height-percent-test.html [ Pass Failure ImageOnlyFailure ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/overflowHidden.html [ Pass Failure ImageOnlyFailure ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/prepend-in-anonymous-table.html [ Pass Failure ImageOnlyFailure ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/table-display-types-vertical.html [ NeedsManualRebaseline ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/027-vertical.html [ NeedsManualRebaseline ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/027.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/040-vertical.html [ NeedsManualRebaseline ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/border-collapsing/004.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/empty-cells.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/frame-and-rules.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/height-percent-test.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/overflowHidden.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/prepend-in-anonymous-table.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/table-display-types-vertical.html [ NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/atsui-bidi-control.html [ Crash ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/bidi-neutral-run.html [ Failure Crash ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
@@ -1675,8 +1613,7 @@ crbug.com/432790 [ XP ] virtual/prefer_compositing_to_lcd_text/compositing/overf
 
 # Bug(fmalita): re-enable after crbug.com/449873
 # crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]
-# Restore after crbug.com/450612 rebases land.
-#crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/borders/table-borders.html [ ImageOnlyFailure ]
+crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/borders/table-borders.html [ ImageOnlyFailure ]
 # crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed-iframe.html [ ImageOnlyFailure ]
 # crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed.html [ ImageOnlyFailure ]
 

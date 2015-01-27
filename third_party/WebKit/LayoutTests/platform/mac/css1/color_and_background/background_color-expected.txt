@@ -43,18 +43,18 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 754x16
           text run at (0,0) width 469: "This element should allow the document background to \"shine through.\" "
           text run at (468,0) width 286: "There should be no green backgrounds here!"
-      RenderTable {TABLE} at (0,275) size 784x178 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 782x176
-          RenderTableRow {TR} at (0,0) size 782x24
-            RenderTableCell {TD} at (0,0) size 782x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+      LayoutTable {TABLE} at (0,275) size 784x178 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x176
+          LayoutTableRow {TR} at (0,0) size 782x24
+            LayoutTableCell {TD} at (0,0) size 782x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 163x16
                 RenderText {#text} at (4,4) size 163x16
                   text run at (4,4) width 163: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,24) size 782x152
-            RenderTableCell {TD} at (0,88) size 12x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,24) size 782x152
+            LayoutTableCell {TD} at (0,88) size 12x24 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,4) size 4x16
                 text run at (4,4) width 4: " "
-            RenderTableCell {TD} at (12,24) size 770x152 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,24) size 770x152 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 762x16 [bgcolor=#008000]
                 RenderText {#text} at (0,0) size 282x16
                   text run at (0,0) width 282: "This element's background should be green."

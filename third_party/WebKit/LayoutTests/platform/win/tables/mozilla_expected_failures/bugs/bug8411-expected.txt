@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (5,5) size 790x100
   RenderBlock {doc} at (5,5) size 790x100
-    RenderTable at (0,0) size 50x60
+    LayoutTable at (0,0) size 50x60
       RenderBlock {captionelement} at (0,0) size 50x60 [color=#FF0000]
         RenderText {#text} at (0,0) size 50x59
           text run at (0,0) width 49: "This is a"

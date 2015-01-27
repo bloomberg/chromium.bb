@@ -1,2 +1,2 @@
-WebKit Bug 87445 - RenderTableSection::paintCell.
+WebKit Bug 87445 - LayoutTableSection::paintCell.
 Test passes if it does not crash.

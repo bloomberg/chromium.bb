@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
               text run at (51,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=15309"
           RenderText {#text} at (356,0) size 370x19
             text run at (356,0) width 4: " "
-            text run at (360,0) width 366: "Crash due to infinite recursion in RenderTable::addChild"
+            text run at (360,0) width 366: "Crash due to infinite recursion in LayoutTable::addChild"
         RenderText {#text} at (726,0) size 4x19
           text run at (726,0) width 4: "."
       RenderBlock {P} at (0,36) size 784x20

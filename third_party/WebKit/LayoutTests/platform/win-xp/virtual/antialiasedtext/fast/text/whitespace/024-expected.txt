@@ -30,10 +30,10 @@ layer at (0,0) size 785x1239
       RenderBlock {H2} at (0,187.34) size 769x27
         RenderText {#text} at (0,0) size 108x26
           text run at (0,0) width 108: "Example 1"
-      RenderTable {TABLE} at (0,234.25) size 769x181
-        RenderTableSection {TBODY} at (0,0) size 769x181
-          RenderTableRow {TR} at (0,2) size 769x177
-            RenderTableCell {TD} at (2,2) size 177x177 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,234.25) size 769x181
+        LayoutTableSection {TBODY} at (0,0) size 769x181
+          LayoutTableRow {TR} at (0,2) size 769x177
+            LayoutTableCell {TD} at (2,2) size 177x177 [r=0 c=0 rs=1 cs=1]
               RenderBlock {PRE} at (1,1) size 175x175 [bgcolor=#CCCC99] [border: (1px solid #000000)]
                 RenderText {#text} at (7,8) size 97x32
                   text run at (7,8) width 97: "        2003"
@@ -56,7 +56,7 @@ layer at (0,0) size 785x1239
                   text run at (7,136) width 161: "21 22 23 24 25 26 27"
                   text run at (167,136) width 1: " "
                   text run at (7,152) width 65: "28 29 30"
-            RenderTableCell {TD} at (181,2) size 586x22 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (181,2) size 586x22 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 459x19
                 text run at (1,1) width 326: "The blank line between '2003' and the nested element "
                 text run at (327,1) width 133: "triggers the width bug."
@@ -65,10 +65,10 @@ layer at (0,0) size 785x1239
       RenderBlock {H2} at (0,455.16) size 769x27
         RenderText {#text} at (0,0) size 108x26
           text run at (0,0) width 108: "Example 2"
-      RenderTable {TABLE} at (0,502.06) size 769x181
-        RenderTableSection {TBODY} at (0,0) size 769x181
-          RenderTableRow {TR} at (0,2) size 769x177
-            RenderTableCell {TD} at (2,2) size 177x177 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,502.06) size 769x181
+        LayoutTableSection {TBODY} at (0,0) size 769x181
+          LayoutTableRow {TR} at (0,2) size 769x177
+            LayoutTableCell {TD} at (2,2) size 177x177 [r=0 c=0 rs=1 cs=1]
               RenderBlock {PRE} at (1,1) size 175x175 [bgcolor=#CCCC99] [border: (1px solid #000000)]
                 RenderText {#text} at (7,8) size 97x32
                   text run at (7,8) width 97: "        2003"
@@ -91,7 +91,7 @@ layer at (0,0) size 785x1239
                   text run at (7,136) width 161: "21 22 23 24 25 26 27"
                   text run at (167,136) width 1: " "
                   text run at (7,152) width 65: "28 29 30"
-            RenderTableCell {TD} at (181,2) size 586x78 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (181,2) size 586x78 [r=0 c=1 rs=1 cs=1]
               RenderBlock (anonymous) at (1,1) size 584x20
                 RenderText {#text} at (0,0) size 459x19
                   text run at (0,0) width 326: "The blank line between '2003' and the nested element "
@@ -106,10 +106,10 @@ layer at (0,0) size 785x1239
       RenderBlock {H2} at (0,722.97) size 769x27
         RenderText {#text} at (0,0) size 108x26
           text run at (0,0) width 108: "Example 3"
-      RenderTable {TABLE} at (0,769.88) size 769x165
-        RenderTableSection {TBODY} at (0,0) size 769x165
-          RenderTableRow {TR} at (0,2) size 769x161
-            RenderTableCell {TD} at (2,2) size 177x161 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,769.88) size 769x165
+        LayoutTableSection {TBODY} at (0,0) size 769x165
+          LayoutTableRow {TR} at (0,2) size 769x161
+            LayoutTableCell {TD} at (2,2) size 177x161 [r=0 c=0 rs=1 cs=1]
               RenderBlock {PRE} at (1,1) size 175x159 [bgcolor=#CCCC99] [border: (1px solid #000000)]
                 RenderText {#text} at (7,8) size 97x16
                   text run at (7,8) width 97: "        2003"
@@ -131,7 +131,7 @@ layer at (0,0) size 785x1239
                   text run at (7,120) width 161: "21 22 23 24 25 26 27"
                   text run at (167,120) width 1: " "
                   text run at (7,136) width 65: "28 29 30"
-            RenderTableCell {TD} at (181,2) size 586x42 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (181,2) size 586x42 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 542x39
                 text run at (1,1) width 326: "The blank line between '2003' and the nested element "
                 text run at (327,1) width 216: "has been removed, so the bug is not"
@@ -141,10 +141,10 @@ layer at (0,0) size 785x1239
       RenderBlock {H2} at (0,974.78) size 769x27
         RenderText {#text} at (0,0) size 108x26
           text run at (0,0) width 108: "Example 4"
-      RenderTable {TABLE} at (0,1021.69) size 769x181
-        RenderTableSection {TBODY} at (0,0) size 769x181
-          RenderTableRow {TR} at (0,2) size 769x177
-            RenderTableCell {TD} at (2,2) size 177x177 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,1021.69) size 769x181
+        LayoutTableSection {TBODY} at (0,0) size 769x181
+          LayoutTableRow {TR} at (0,2) size 769x177
+            LayoutTableCell {TD} at (2,2) size 177x177 [r=0 c=0 rs=1 cs=1]
               RenderBlock {PRE} at (1,1) size 175x175 [bgcolor=#CCCC99] [border: (1px solid #000000)]
                 RenderInline {SPAN} at (0,0) size 97x16
                   RenderText {#text} at (7,8) size 97x16
@@ -169,7 +169,7 @@ layer at (0,0) size 785x1239
                   text run at (7,136) width 161: "21 22 23 24 25 26 27"
                   text run at (167,136) width 1: " "
                   text run at (7,152) width 65: "28 29 30"
-            RenderTableCell {TD} at (181,2) size 586x42 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (181,2) size 586x42 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (1,1) size 572x39
                 text run at (1,1) width 326: "The blank line between '2003' and the nested element "
                 text run at (327,1) width 246: "no longer triggers the width bug, because"

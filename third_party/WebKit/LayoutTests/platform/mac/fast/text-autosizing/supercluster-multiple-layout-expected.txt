@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x386
   RenderBlock {HTML} at (0,0) size 800x386
     RenderBody {BODY} at (0,0) size 800x386
-      RenderTable {TABLE} at (0,0) size 800x282
-        RenderTableSection {TBODY} at (0,0) size 800x282
-          RenderTableRow {TR} at (0,2) size 800x278
-            RenderTableCell {TD} at (2,2) size 796x278 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,0) size 800x282
+        LayoutTableSection {TBODY} at (0,0) size 800x282
+          LayoutTableRow {TR} at (0,2) size 800x278
+            LayoutTableCell {TD} at (2,2) size 796x278 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 784x276
                 text run at (1,1) width 644: "Lorem ipsum dolor sit amet, consectetur"
                 text run at (1,47) width 627: "adipisicing elit, sed do eiusmod tempor"
@@ -16,15 +16,15 @@ layer at (0,0) size 800x386
                 text run at (1,185) width 139: "ullamco "
                 text run at (140,185) width 611: "laboris ni si ut aliquip ex ea commodo"
                 text run at (1,231) width 170: "consequat."
-      RenderTable {TABLE} at (50,282) size 306x52
-        RenderTableSection {TBODY} at (0,0) size 306x52
-          RenderTableRow {TR} at (0,2) size 306x48
-            RenderTableCell {TD} at (2,2) size 302x48 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (50,282) size 306x52
+        LayoutTableSection {TBODY} at (0,0) size 306x52
+          LayoutTableRow {TR} at (0,2) size 306x48
+            LayoutTableCell {TD} at (2,2) size 302x48 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 300x46
                 text run at (1,1) width 300: "Another comment."
-      RenderTable {TABLE} at (100,334) size 306x52
-        RenderTableSection {TBODY} at (0,0) size 306x52
-          RenderTableRow {TR} at (0,2) size 306x48
-            RenderTableCell {TD} at (2,2) size 302x48 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (100,334) size 306x52
+        LayoutTableSection {TBODY} at (0,0) size 306x52
+          LayoutTableRow {TR} at (0,2) size 306x48
+            LayoutTableCell {TD} at (2,2) size 302x48 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 300x46
                 text run at (1,1) width 300: "Another comment."

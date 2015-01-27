@@ -1,2 +1,2 @@
-Bug 74026: Crash in RenderTable::outerBorderAfter
+Bug 74026: Crash in LayoutTable::outerBorderAfter
 This test has PASSED!
