@@ -459,24 +459,22 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
     WillBeHeapHashSet<ElementAttributePair> invalidKeys;
     using AnimationsVector = WillBeHeapVector<RefPtrWillBeMember<SVGSMILElement>>;
     AnimationsVector animationsToApply;
+    AnimationsVector scheduledAnimationsInSameGroup;
     for (const auto& entry : m_scheduledAnimations) {
         if (!entry.key.first || entry.value->isEmpty()) {
             invalidKeys.add(entry.key);
             continue;
         }
 
-        AnimationsLinkedHashSet* scheduled = entry.value.get();
-
         // Sort according to priority. Elements with later begin time have higher priority.
         // In case of a tie, document order decides.
         // FIXME: This should also consider timing relationships between the elements. Dependents
         // have higher priority.
-        AnimationsVector scheduledAnimations;
-        copyToVector(*scheduled, scheduledAnimations);
-        std::sort(scheduledAnimations.begin(), scheduledAnimations.end(), PriorityCompare(elapsed));
+        copyToVector(*entry.value, scheduledAnimationsInSameGroup);
+        std::sort(scheduledAnimationsInSameGroup.begin(), scheduledAnimationsInSameGroup.end(), PriorityCompare(elapsed));
 
         SVGSMILElement* resultElement = nullptr;
-        for (const auto& itAnimation : scheduledAnimations) {
+        for (const auto& itAnimation : scheduledAnimationsInSameGroup) {
             SVGSMILElement* animation = itAnimation.get();
             ASSERT(animation->timeContainer() == this);
             ASSERT(animation->targetElement());
