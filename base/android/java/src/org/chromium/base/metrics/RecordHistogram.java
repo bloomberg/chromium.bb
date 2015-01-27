@@ -21,7 +21,7 @@ public class RecordHistogram {
      * @param sample sample to be recorded, either true or false
      */
     public static void recordBooleanHistogram(String name, boolean sample) {
-        nativeRecordBooleanHistogram(name, sample);
+        nativeRecordBooleanHistogram(name, System.identityHashCode(name), sample);
     }
 
     /**
@@ -33,7 +33,7 @@ public class RecordHistogram {
      *        lower than |boundary|
      */
     public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
-        nativeRecordEnumeratedHistogram(name, sample, boundary);
+        nativeRecordEnumeratedHistogram(name, System.identityHashCode(name), sample, boundary);
     }
 
     /**
@@ -53,9 +53,9 @@ public class RecordHistogram {
         nativeInitialize();
     }
 
-    private static native void nativeRecordBooleanHistogram(String name, boolean sample);
+    private static native void nativeRecordBooleanHistogram(String name, int key, boolean sample);
     private static native void nativeRecordEnumeratedHistogram(
-            String name, int sample, int boundary);
+            String name, int key, int sample, int boundary);
 
     private static native int nativeGetHistogramValueCountForTesting(String name, int sample);
     private static native void nativeInitialize();
