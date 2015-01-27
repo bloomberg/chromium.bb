@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -11,6 +12,8 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -25,11 +28,16 @@ namespace autofill {
 namespace {
 
 class CardUnmaskPromptViews : public CardUnmaskPromptView,
+                              views::ComboboxListener,
                               views::DialogDelegateView,
                               views::TextfieldController {
  public:
   explicit CardUnmaskPromptViews(CardUnmaskPromptController* controller)
-      : controller_(controller), cvc_input_(nullptr), message_label_(nullptr) {}
+      : controller_(controller),
+        cvc_input_(nullptr),
+        month_input_(nullptr),
+        year_input_(nullptr),
+        message_label_(nullptr) {}
 
   ~CardUnmaskPromptViews() override {
     if (controller_)
@@ -48,7 +56,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   }
 
   void DisableAndWaitForVerification() override {
-    cvc_input_->SetEnabled(false);
+    SetInputsEnabled(false);
     message_label_->SetText(base::ASCIIToUTF16("Verifying..."));
     message_label_->SetVisible(true);
     GetDialogClientView()->UpdateDialogButtons();
@@ -63,11 +71,20 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
                                 base::Unretained(this)),
           base::TimeDelta::FromSeconds(1));
     } else {
-      cvc_input_->SetEnabled(true);
+      SetInputsEnabled(true);
       message_label_->SetText(base::ASCIIToUTF16("Verification error."));
       GetDialogClientView()->UpdateDialogButtons();
     }
     Layout();
+  }
+
+  void SetInputsEnabled(bool enabled) {
+    cvc_input_->SetEnabled(enabled);
+
+    if (month_input_)
+      month_input_->SetEnabled(enabled);
+    if (year_input_)
+      year_input_->SetEnabled(enabled);
   }
 
   // views::DialogDelegateView
@@ -114,7 +131,13 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
 
     return cvc_input_->enabled() &&
-        controller_->InputTextIsValid(cvc_input_->text());
+           controller_->InputTextIsValid(cvc_input_->text()) &&
+           (!month_input_ ||
+            month_input_->selected_index() !=
+                month_combobox_model_.GetDefaultIndex()) &&
+           (!year_input_ ||
+            year_input_->selected_index() !=
+                year_combobox_model_.GetDefaultIndex());
   }
 
   views::View* GetInitiallyFocusedView() override { return cvc_input_; }
@@ -127,13 +150,25 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     if (!controller_)
       return true;
 
-    controller_->OnUnmaskResponse(cvc_input_->text());
+    controller_->OnUnmaskResponse(
+        cvc_input_->text(),
+        month_input_
+            ? month_combobox_model_.GetItemAt(month_input_->selected_index())
+            : base::string16(),
+        year_input_
+            ? year_combobox_model_.GetItemAt(year_input_->selected_index())
+            : base::string16());
     return false;
   }
 
   // views::TextfieldController
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override {
+    GetDialogClientView()->UpdateDialogButtons();
+  }
+
+  // views::ComboboxListener
+  void OnPerformAction(views::Combobox* combobox) override {
     GetDialogClientView()->UpdateDialogButtons();
   }
 
@@ -151,27 +186,36 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(instructions);
 
-    views::View* cvc_container = new views::View();
-    cvc_container->SetLayoutManager(
+    views::View* input_row = new views::View();
+    input_row->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5));
-    AddChildView(cvc_container);
+    AddChildView(input_row);
+
+    if (controller_->ShouldRequestExpirationDate()) {
+      month_input_ = new views::Combobox(&month_combobox_model_);
+      month_input_->set_listener(this);
+      input_row->AddChildView(month_input_);
+      year_input_ = new views::Combobox(&year_combobox_model_);
+      year_input_->set_listener(this);
+      input_row->AddChildView(year_input_);
+    }
 
     cvc_input_ = new views::Textfield();
     cvc_input_->set_controller(this);
     cvc_input_->set_placeholder_text(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
     cvc_input_->set_default_width_in_chars(10);
-    cvc_container->AddChildView(cvc_input_);
+    input_row->AddChildView(cvc_input_);
 
     views::ImageView* cvc_image = new views::ImageView();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     cvc_image->SetImage(rb.GetImageSkiaNamed(controller_->GetCvcImageRid()));
 
-    cvc_container->AddChildView(cvc_image);
+    input_row->AddChildView(cvc_image);
 
     message_label_ = new views::Label();
-    cvc_container->AddChildView(message_label_);
+    input_row->AddChildView(message_label_);
     message_label_->SetVisible(false);
   }
 
@@ -180,6 +224,13 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   CardUnmaskPromptController* controller_;
 
   views::Textfield* cvc_input_;
+
+  // These will be null when expiration date is not required.
+  views::Combobox* month_input_;
+  views::Combobox* year_input_;
+
+  MonthComboboxModel month_combobox_model_;
+  YearComboboxModel year_combobox_model_;
 
   // TODO(estade): this is a temporary standin in place of some spinner UI
   // as well as a better error message.

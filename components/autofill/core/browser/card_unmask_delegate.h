@@ -13,7 +13,9 @@ class CardUnmaskDelegate {
  public:
   // Called when the user has attempted a verification. Prompt is still
   // open at this point.
-  virtual void OnUnmaskResponse(const base::string16& cvc) = 0;
+  virtual void OnUnmaskResponse(const base::string16& cvc,
+                                const base::string16& exp_month,
+                                const base::string16& exp_year) = 0;
 
   // Called when the unmask prompt is closed (e.g., cancelled).
   virtual void OnUnmaskPromptClosed() = 0;

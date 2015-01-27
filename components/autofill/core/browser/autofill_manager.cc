@@ -683,10 +683,12 @@ void AutofillManager::OnLoadedServerPredictions(
   driver_->SendAutofillTypePredictionsToRenderer(form_structures_.get());
 }
 
-void AutofillManager::OnUnmaskResponse(const base::string16& cvc) {
+void AutofillManager::OnUnmaskResponse(const base::string16& cvc,
+                                       const base::string16& exp_month,
+                                       const base::string16& exp_year) {
   // Most of this function is demo code. The real code should look something
   // like:
-  //   real_pan_client_.UnmaskCard(unmasking_card_, cvc);
+  //   real_pan_client_.UnmaskCard(unmasking_card_, cvc, exp_month, exp_year);
 
   unmasking_cvc_ = cvc;
   // TODO(estade): fake verification: assume 123/1234 is the correct cvc.
@@ -723,6 +725,8 @@ void AutofillManager::OnUnmaskVerificationResult(bool success) {
     unmasking_card_.set_record_type(CreditCard::FULL_SERVER_CARD);
     if (unmasking_card_.type() == kAmericanExpressCard) {
       unmasking_card_.SetNumber(base::ASCIIToUTF16("371449635398431"));
+    } else if (unmasking_card_.type() == kVisaCard) {
+      unmasking_card_.SetNumber(base::ASCIIToUTF16("4012888888881881"));
     } else {
       DCHECK_EQ(kDiscoverCard, unmasking_card_.type());
       unmasking_card_.SetNumber(base::ASCIIToUTF16("6011000990139424"));

@@ -27,7 +27,10 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
 
   // CardUnmaskPromptController implementation.
   void OnUnmaskDialogClosed() override;
-  void OnUnmaskResponse(const base::string16& cvc) override;
+  void OnUnmaskResponse(const base::string16& cvc,
+                        const base::string16& exp_month,
+                        const base::string16& exp_year) override;
+
   content::WebContents* GetWebContents() override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetInstructionsMessage() const override;

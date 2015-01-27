@@ -17,7 +17,9 @@ class CardUnmaskPromptController {
  public:
   // Interaction.
   virtual void OnUnmaskDialogClosed() = 0;
-  virtual void OnUnmaskResponse(const base::string16& cvc) = 0;
+  virtual void OnUnmaskResponse(const base::string16& cvc,
+                                const base::string16& exp_month,
+                                const base::string16& exp_year) = 0;
 
   // State.
   virtual content::WebContents* GetWebContents() = 0;

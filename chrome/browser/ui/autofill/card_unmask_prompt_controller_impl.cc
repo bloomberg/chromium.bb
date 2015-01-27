@@ -48,9 +48,11 @@ void CardUnmaskPromptControllerImpl::OnUnmaskDialogClosed() {
 }
 
 void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
-    const base::string16& cvc) {
+    const base::string16& cvc,
+    const base::string16& exp_month,
+    const base::string16& exp_year) {
   card_unmask_view_->DisableAndWaitForVerification();
-  delegate_->OnUnmaskResponse(cvc);
+  delegate_->OnUnmaskResponse(cvc, exp_month, exp_year);
 }
 
 content::WebContents* CardUnmaskPromptControllerImpl::GetWebContents() {
@@ -59,7 +61,7 @@ content::WebContents* CardUnmaskPromptControllerImpl::GetWebContents() {
 
 base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
   // TODO(estade): i18n.
-  if (card_.GetServerStatus() == CreditCard::EXPIRED) {
+  if (ShouldRequestExpirationDate()) {
     return base::ASCIIToUTF16("Update and verify your card ") +
         card_.TypeAndLastFourDigits();
   }
@@ -69,7 +71,7 @@ base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
-  if (card_.GetServerStatus() == CreditCard::EXPIRED) {
+  if (ShouldRequestExpirationDate()) {
     return l10n_util::GetStringUTF16(
         card_.type() == kAmericanExpressCard
             ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_AMEX

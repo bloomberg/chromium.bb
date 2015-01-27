@@ -226,7 +226,9 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnLoadedServerPredictions(const std::string& response_xml) override;
 
   // CardUnmaskDelegate:
-  void OnUnmaskResponse(const base::string16& cvc) override;
+  void OnUnmaskResponse(const base::string16& cvc,
+                        const base::string16& exp_month,
+                        const base::string16& exp_year) override;
   void OnUnmaskPromptClosed() override;
 
   // wallet::RealPanWalletClient::Delegate:
