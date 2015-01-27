@@ -108,8 +108,7 @@ Presentation status=test
 PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test
 PushMessaging status=experimental
 // Push messaging payloads are blocked on the Push API supporting encryption.
-// FIXME: Change this to |test| when Chromium tests have been updated.
-PushMessagingData status=experimental
+PushMessagingData status=test
 QuotaPromise status=experimental
 ReducedReferrerGranularity
 RegionBasedColumns status=experimental
