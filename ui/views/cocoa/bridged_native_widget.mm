@@ -370,7 +370,8 @@ void BridgedNativeWidget::OnVisibilityChangedTo(bool new_visibility) {
 }
 
 void BridgedNativeWidget::OnBackingPropertiesChanged() {
-  UpdateLayerProperties();
+  if (layer())
+    UpdateLayerProperties();
 }
 
 void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
