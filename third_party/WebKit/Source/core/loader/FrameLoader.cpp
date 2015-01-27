@@ -44,6 +44,7 @@
 #include "core/dom/ViewportDescription.h"
 #include "core/editing/Editor.h"
 #include "core/editing/UndoStack.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/PageTransitionEvent.h"
 #include "core/fetch/FetchContext.h"
@@ -745,11 +746,15 @@ static NavigationPolicy navigationPolicyForRequest(const FrameLoadRequest& reque
 
     if (request.formState() && event->underlyingEvent())
         event = event->underlyingEvent();
-    if (!event->isMouseEvent())
-        return policy;
 
-    const MouseEvent* mouseEvent = toMouseEvent(event);
-    navigationPolicyFromMouseEvent(mouseEvent->button(), mouseEvent->ctrlKey(), mouseEvent->shiftKey(), mouseEvent->altKey(), mouseEvent->metaKey(), &policy);
+    if (event->isMouseEvent()) {
+        MouseEvent* mouseEvent = toMouseEvent(event);
+        navigationPolicyFromMouseEvent(mouseEvent->button(), mouseEvent->ctrlKey(), mouseEvent->shiftKey(), mouseEvent->altKey(), mouseEvent->metaKey(), &policy);
+    } else if (event->isKeyboardEvent()) {
+        // The click is simulated when triggering the keypress event.
+        KeyboardEvent* keyEvent = toKeyboardEvent(event);
+        navigationPolicyFromMouseEvent(0, keyEvent->ctrlKey(), keyEvent->shiftKey(), keyEvent->altKey(), keyEvent->metaKey(), &policy);
+    }
     return policy;
 }
 
