@@ -2155,9 +2155,16 @@ void Document::detach(const AttachContext& context)
         registrationContext()->documentWasDetached();
 
     m_hoverNode = nullptr;
-    m_focusedElement = nullptr;
     m_activeHoverElement = nullptr;
     m_autofocusElement = nullptr;
+
+    if (m_focusedElement.get()) {
+        RefPtrWillBeRawPtr<Element> oldFocusedElement = m_focusedElement;
+        m_focusedElement = nullptr;
+        if (frameHost())
+            frameHost()->chrome().focusedNodeChanged(oldFocusedElement.get(), nullptr);
+
+    }
 
     m_renderView = 0;
     ContainerNode::detach(context);
