@@ -69,7 +69,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
     if (IsViewType(T::Type))
       return static_cast<T*>(this);
 
-    return NULL;
+    return nullptr;
   }
 
   using GuestCreationCallback =
@@ -209,7 +209,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   bool initialized() const { return initialized_; }
 
   content::WebContents* embedder_web_contents() const {
-    return attached() ? owner_web_contents_ : NULL;
+    return attached() ? owner_web_contents_ : nullptr;
   }
 
   content::WebContents* owner_web_contents() const {

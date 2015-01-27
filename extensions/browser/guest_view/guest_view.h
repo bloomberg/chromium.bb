@@ -24,20 +24,20 @@ class GuestView : public GuestViewBase {
   static T* From(int embedder_process_id, int guest_instance_id) {
     auto guest = GuestViewBase::From(embedder_process_id, guest_instance_id);
     if (!guest)
-      return NULL;
+      return nullptr;
     return guest->As<T>();
   }
 
   static T* FromWebContents(content::WebContents* contents) {
     auto guest = GuestViewBase::FromWebContents(contents);
-    return guest ? guest->As<T>() : NULL;
+    return guest ? guest->As<T>() : nullptr;
   }
 
   static T* FromFrameID(int render_process_id, int render_frame_id) {
     auto render_frame_host =
         content::RenderFrameHost::FromID(render_process_id, render_frame_id);
     if (!render_frame_host)
-      return NULL;
+      return nullptr;
 
     auto web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -47,7 +47,7 @@ class GuestView : public GuestViewBase {
   T* GetOpener() const {
     GuestViewBase* guest = GuestViewBase::GetOpener();
     if (!guest)
-      return NULL;
+      return nullptr;
     return guest->As<T>();
   }
 
@@ -56,7 +56,7 @@ class GuestView : public GuestViewBase {
   }
 
   // GuestViewBase implementation.
-  virtual const char* GetViewType() const override {
+  const char* GetViewType() const final {
     return T::Type;
   }
 
