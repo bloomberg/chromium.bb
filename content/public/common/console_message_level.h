@@ -7,6 +7,8 @@
 
 namespace content {
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content_public.common
 enum ConsoleMessageLevel {
   CONSOLE_MESSAGE_LEVEL_DEBUG,
   CONSOLE_MESSAGE_LEVEL_LOG,

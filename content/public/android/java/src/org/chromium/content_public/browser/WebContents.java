@@ -208,4 +208,9 @@ public interface WebContents {
      */
     public void evaluateJavaScript(String script, JavaScriptCallback callback);
 
+    /**
+     * Adds a log message to dev tools console. |level| must be a value of
+     * org.chromium.content_public.common.ConsoleMessageLevel.
+     */
+    public void addMessageToDevToolsConsole(int level, String message);
 }

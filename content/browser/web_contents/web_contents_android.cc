@@ -15,6 +15,7 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -464,6 +465,19 @@ void WebContentsAndroid::EvaluateJavaScript(JNIEnv* env,
 
   web_contents_->GetMainFrame()->ExecuteJavaScript(
       ConvertJavaStringToUTF16(env, script), js_callback);
+}
+
+void WebContentsAndroid::AddMessageToDevToolsConsole(JNIEnv* env,
+                                                     jobject jobj,
+                                                     jint level,
+                                                     jstring message) {
+  DCHECK_GE(level, 0);
+  DCHECK_LE(level, CONSOLE_MESSAGE_LEVEL_LAST);
+
+  web_contents_->GetMainFrame()->Send(new DevToolsAgentMsg_AddMessageToConsole(
+      web_contents_->GetMainFrame()->GetRoutingID(),
+      static_cast<ConsoleMessageLevel>(level),
+      ConvertJavaStringToUTF8(env, message)));
 }
 
 }  // namespace content

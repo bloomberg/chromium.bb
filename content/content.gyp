@@ -438,6 +438,7 @@
             '../ui/touch_selection/ui_touch_selection.gyp:selection_event_type_java',
             '../third_party/WebKit/public/blink_headers.gyp:blink_headers_java',
             'common_aidl',
+            'console_message_level_java',
             'content_common',
             'content_strings_grd',
             'content_gamepad_mapping',
@@ -456,6 +457,14 @@
             'R_package_relpath': 'org/chromium/content',
           },
           'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'console_message_level_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'public/common/console_message_level.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           'target_name': 'content_strings_grd',

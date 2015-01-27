@@ -291,6 +291,11 @@ import org.chromium.content_public.browser.WebContents;
         nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback);
     }
 
+    @Override
+    public void addMessageToDevToolsConsole(int level, String message) {
+        nativeAddMessageToDevToolsConsole(mNativeWebContentsAndroid, level, message);
+    }
+
     @CalledByNative
     private static void onEvaluateJavaScriptResult(
             String jsonResult, JavaScriptCallback callback) {
@@ -340,4 +345,6 @@ import org.chromium.content_public.browser.WebContents;
     private native void nativeFetchTransitionElements(long nativeWebContentsAndroid, String url);
     private native void nativeEvaluateJavaScript(long nativeWebContentsAndroid,
             String script, JavaScriptCallback callback);
+    private native void nativeAddMessageToDevToolsConsole(
+            long nativeWebContentsAndroid, int level, String message);
 }

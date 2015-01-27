@@ -103,6 +103,12 @@ class CONTENT_EXPORT WebContentsAndroid
                           jobject obj,
                           jstring script,
                           jobject callback);
+
+  void AddMessageToDevToolsConsole(JNIEnv* env,
+                                   jobject jobj,
+                                   jint level,
+                                   jstring message);
+
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
