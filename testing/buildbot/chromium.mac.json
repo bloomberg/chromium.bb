@@ -28,7 +28,12 @@
       },
       "cacheinvalidation_unittests",
       "cast_unittests",
-      "cc_unittests",
+      {
+        "test": "cc_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "chromedriver_unittests",
       {
         "test": "components_browsertests",
@@ -173,7 +178,12 @@
       },
       "cacheinvalidation_unittests",
       "cast_unittests",
-      "cc_unittests",
+      {
+        "test": "cc_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "chromedriver_unittests",
       {
         "test": "components_unittests",
@@ -312,7 +322,12 @@
       },
       "cacheinvalidation_unittests",
       "cast_unittests",
-      "cc_unittests",
+      {
+        "test": "cc_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "chromedriver_unittests",
       {
         "test": "components_unittests",
@@ -451,7 +466,12 @@
       },
       "cacheinvalidation_unittests",
       "cast_unittests",
-      "cc_unittests",
+      {
+        "test": "cc_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "chromedriver_unittests",
       {
         "test": "components_unittests",
