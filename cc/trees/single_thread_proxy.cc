@@ -135,7 +135,7 @@ void SingleThreadProxy::SetOutputSurface(
     scoped_ptr<OutputSurface> output_surface) {
   DCHECK(Proxy::IsMainThread());
   DCHECK(layer_tree_host_->output_surface_lost());
-  output_surface_creation_requested_ = false;
+  DCHECK(output_surface_creation_requested_);
   renderer_capabilities_for_main_thread_ = RendererCapabilities();
 
   bool success;
@@ -153,7 +153,10 @@ void SingleThreadProxy::SetOutputSurface(
       scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
     else if (!inside_synchronous_composite_)
       SetNeedsCommit();
+    output_surface_creation_requested_ = false;
   } else {
+    // DidFailToInitializeOutputSurface is treated as a RequestNewOutputSurface,
+    // and so output_surface_creation_requested remains true.
     layer_tree_host_->DidFailToInitializeOutputSurface();
   }
 }

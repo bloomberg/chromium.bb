@@ -191,6 +191,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsZeroCopyEnabled() override;
   bool IsOneCopyEnabled() override;
   bool IsElasticOverscrollEnabled() override;
+  bool UseSingleThreadScheduler() override;
   uint32 GetImageTextureTarget() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() override;

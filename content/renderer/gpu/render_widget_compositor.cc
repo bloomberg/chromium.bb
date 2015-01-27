@@ -273,7 +273,7 @@ void RenderWidgetCompositor::Initialize() {
   settings.renderer_settings.allow_antialiasing &=
       !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
   settings.single_thread_proxy_scheduler =
-      !cmd->HasSwitch(switches::kDisableSingleThreadProxyScheduler);
+      compositor_deps_->UseSingleThreadScheduler();
 
   // These flags should be mirrored by UI versions in ui/compositor/.
   settings.initial_debug_state.show_debug_borders =

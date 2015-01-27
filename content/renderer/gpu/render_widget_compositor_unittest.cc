@@ -133,11 +133,24 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
               fallback);
     last_create_was_fallback_ = fallback;
     bool success = num_failures_ >= num_failures_before_success_;
-    if (success)
-      return cc::FakeOutputSurface::Create3d();
+    if (success) {
+      scoped_ptr<cc::TestWebGraphicsContext3D> context =
+          cc::TestWebGraphicsContext3D::Create();
+      // Image support required for synchronous compositing.
+      context->set_support_image(true);
+      return cc::FakeOutputSurface::Create3d(context.Pass());
+    }
     return use_null_output_surface_
                ? nullptr
                : make_scoped_ptr(new cc::FailureOutputSurface(false));
+  }
+
+  // Force a new output surface to be created.
+  void SynchronousComposite() {
+   layer_tree_host()->DidLoseOutputSurface();
+
+   base::TimeTicks some_time;
+   layer_tree_host()->Composite(some_time);
   }
 
   void RequestNewOutputSurface() override {
@@ -157,8 +170,12 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
     } else {
       num_requests_since_last_success_ = 0;
       RenderWidgetCompositor::DidInitializeOutputSurface();
-      layer_tree_host()->DidLoseOutputSurface();
-      RequestNewOutputSurface();
+      // Post the synchronous composite task so that it is not called
+      // reentrantly as a part of RequestNewOutputSurface.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&RenderWidgetCompositorOutputSurface::SynchronousComposite,
+                     base::Unretained(this)));
     }
   }
 
@@ -213,10 +230,11 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
  public:
   RenderWidgetCompositorOutputSurfaceTest()
       : render_widget_(make_scoped_refptr(new RenderWidgetOutputSurface)),
-        compositor_deps_(make_scoped_ptr(new FakeCompositorDependencies)),
-        render_widget_compositor_(make_scoped_ptr(
-            new RenderWidgetCompositorOutputSurface(render_widget_.get(),
-                                                    compositor_deps_.get()))) {
+        compositor_deps_(make_scoped_ptr(new FakeCompositorDependencies)) {
+    // Required in order to call the synchronous LayerTreeHost::Composite.
+    compositor_deps_->set_use_single_thread_scheduler(false);
+    render_widget_compositor_.reset(new RenderWidgetCompositorOutputSurface(
+        render_widget_.get(), compositor_deps_.get()));
     render_widget_compositor_->Initialize();
     render_widget_->SetCompositor(render_widget_compositor_.get());
   }
@@ -228,9 +246,10 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
     render_widget_compositor_->SetUp(
         use_null_output_surface, num_failures_before_success,
         expected_successes, expected_fallback_succeses);
+    render_widget_compositor_->StartCompositor();
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&RenderWidgetCompositor::RequestNewOutputSurface,
+        base::Bind(&RenderWidgetCompositorOutputSurface::SynchronousComposite,
                    base::Unretained(render_widget_compositor_.get())));
     base::MessageLoop::current()->Run();
     render_widget_compositor_->AfterTest();

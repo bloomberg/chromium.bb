@@ -169,7 +169,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
                          CompositorDependencies* compositor_deps);
 
   void Initialize();
-
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
 
  private:

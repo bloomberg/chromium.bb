@@ -10,7 +10,8 @@
 
 namespace content {
 
-FakeCompositorDependencies::FakeCompositorDependencies() {
+FakeCompositorDependencies::FakeCompositorDependencies()
+    : use_single_thread_scheduler_(true) {
 }
 
 bool FakeCompositorDependencies::IsImplSidePaintingEnabled() {
@@ -47,6 +48,10 @@ bool FakeCompositorDependencies::IsOneCopyEnabled() {
 
 bool FakeCompositorDependencies::IsElasticOverscrollEnabled() {
   return false;
+}
+
+bool FakeCompositorDependencies::UseSingleThreadScheduler() {
+  return use_single_thread_scheduler_;
 }
 
 uint32 FakeCompositorDependencies::GetImageTextureTarget() {

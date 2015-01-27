@@ -1382,6 +1382,11 @@ bool RenderThreadImpl::IsElasticOverscrollEnabled() {
   return is_elastic_overscroll_enabled_;
 }
 
+bool RenderThreadImpl::UseSingleThreadScheduler() {
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  return !cmd->HasSwitch(switches::kDisableSingleThreadProxyScheduler);
+}
+
 uint32 RenderThreadImpl::GetImageTextureTarget() {
   return use_image_texture_target_;
 }
