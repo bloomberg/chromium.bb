@@ -528,6 +528,7 @@ public:
     virtual AXObject* firstChild() const { return 0; }
     virtual AXObject* nextSibling() const { return 0; }
     AXObject* firstAccessibleObjectFromNode(const Node*);
+    virtual bool isDescendantOfBarrenParent() const { return false; }
     virtual void addChildren() { }
     virtual bool canHaveChildren() const { return true; }
     bool hasChildren() const { return m_haveChildren; }

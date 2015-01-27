@@ -1271,6 +1271,11 @@ static bool shouldUseAccessibilityObjectInnerText(AXObject* obj)
     if (obj->isInertOrAriaHidden())
         return false;
 
+    // If something doesn't expose any children, then we can always take the inner text content.
+    // This is what we want when someone puts an <a> inside a <button> for example.
+    if (obj->isDescendantOfBarrenParent())
+        return true;
+
     // Skip focusable children, so we don't include the text of links and controls.
     if (obj->canSetFocusAttribute())
         return false;

@@ -68,7 +68,7 @@ protected:
     AccessibilityRole determineAriaRoleAttribute() const;
     void elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName&) const;
     bool hasContentEditableAttributeSet() const;
-    bool isDescendantOfBarrenParent() const;
+    virtual bool isDescendantOfBarrenParent() const override;
     // This returns true if it's focusable but it's not content editable and it's not a control or ARIA control.
     bool isGenericFocusableElement() const;
     HTMLLabelElement* labelForElement(Element*) const;
