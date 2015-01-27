@@ -689,11 +689,14 @@ void EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
   else
     state->flags &= ~characteristic_flag;
 
-  // Toggle Caps Lock if the remapped key is ui::VKEY_CAPITAL, but do nothing if
-  // the original key is ui::VKEY_CAPITAL (i.e. a Caps Lock key on an external
-  // keyboard is pressed) since X can handle that case.
+  // Toggle Caps Lock if the remapped key is ui::VKEY_CAPITAL.
   if (key_event.type() == ui::ET_KEY_PRESSED &&
+#if defined(USE_X11)
+      // ... but for X11, do nothing if the original key is ui::VKEY_CAPITAL
+      // (i.e. a Caps Lock key on an external keyboard is pressed) since X
+      // handles that itself.
       incoming.key_code != ui::VKEY_CAPITAL &&
+#endif
       state->key_code == ui::VKEY_CAPITAL) {
     chromeos::input_method::ImeKeyboard* ime_keyboard =
         ime_keyboard_for_testing_

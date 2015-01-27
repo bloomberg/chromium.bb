@@ -35,6 +35,9 @@ bool ImeKeyboardOzone::ReapplyCurrentKeyboardLayout() {
 }
 
 void ImeKeyboardOzone::SetCapsLockEnabled(bool enable_caps_lock) {
+  // Inform ImeKeyboard of caps lock state.
+  ImeKeyboard::SetCapsLockEnabled(enable_caps_lock);
+  // Inform Ozone InputController input of caps lock state.
   input_controller_->SetCapsLockEnabled(enable_caps_lock);
 }
 

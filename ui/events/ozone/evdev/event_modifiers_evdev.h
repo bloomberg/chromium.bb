@@ -50,6 +50,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventModifiersEvdev {
   // Record key press or release for locking modifier key (caps lock).
   void UpdateModifierLock(unsigned int modifier, bool down);
 
+  // Directly set the state of a locking modifier key (caps lock).
+  void SetModifierLock(unsigned int modifier, bool locked);
+
   // Return current flags to use for incoming events.
   int GetModifierFlags();
 

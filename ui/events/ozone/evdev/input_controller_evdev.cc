@@ -75,11 +75,11 @@ bool InputControllerEvdev::HasTouchpad() {
 }
 
 bool InputControllerEvdev::IsCapsLockEnabled() {
-  return false;
+  return keyboard_->IsCapsLockEnabled();
 }
 
 void InputControllerEvdev::SetCapsLockEnabled(bool enabled) {
-  NOTIMPLEMENTED();
+  keyboard_->SetCapsLockEnabled(enabled);
 }
 
 void InputControllerEvdev::SetNumLockEnabled(bool enabled) {

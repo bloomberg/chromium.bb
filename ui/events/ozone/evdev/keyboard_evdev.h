@@ -41,6 +41,10 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   // Handlers for raw key presses & releases.
   void OnKeyChange(unsigned int code, bool down);
 
+  // Handle Caps Lock modifier.
+  void SetCapsLockEnabled(bool enabled);
+  bool IsCapsLockEnabled();
+
   // Configuration for key repeat.
   bool IsAutoRepeatEnabled();
   void SetAutoRepeatEnabled(bool enabled);

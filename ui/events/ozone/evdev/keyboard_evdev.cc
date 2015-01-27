@@ -84,6 +84,14 @@ void KeyboardEvdev::OnKeyChange(unsigned int key, bool down) {
   DispatchKey(key, down, false /* repeat */);
 }
 
+void KeyboardEvdev::SetCapsLockEnabled(bool enabled) {
+  modifiers_->SetModifierLock(EVDEV_MODIFIER_CAPS_LOCK, enabled);
+}
+
+bool KeyboardEvdev::IsCapsLockEnabled() {
+  return (modifiers_->GetModifierFlags() & EF_CAPS_LOCK_DOWN) != 0;
+}
+
 bool KeyboardEvdev::IsAutoRepeatEnabled() {
   return repeat_enabled_;
 }
