@@ -662,8 +662,8 @@ void RegistryKeyIterator::Initialize(HKEY root_key,
     key_ = NULL;
   } else {
     DWORD count = 0;
-    LONG result = ::RegQueryInfoKey(key_, NULL, 0, NULL, &count, NULL, NULL,
-                                    NULL, NULL, NULL, NULL, NULL);
+    result = ::RegQueryInfoKey(key_, NULL, 0, NULL, &count, NULL, NULL, NULL,
+                               NULL, NULL, NULL, NULL);
 
     if (result != ERROR_SUCCESS) {
       ::RegCloseKey(key_);
