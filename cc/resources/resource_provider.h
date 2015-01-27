@@ -336,7 +336,8 @@ class CC_EXPORT ResourceProvider {
     ~ScopedWriteLockGr();
 
     SkSurface* GetSkSurface(bool use_distance_field_text,
-                            bool can_use_lcd_text);
+                            bool can_use_lcd_text,
+                            int msaa_sample_count);
 
    private:
     bool SurfaceHasMatchingProperties(bool use_distance_field_text,

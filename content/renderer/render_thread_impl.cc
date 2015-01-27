@@ -588,6 +588,17 @@ void RenderThreadImpl::Init() {
   is_gpu_rasterization_forced_ =
       command_line.HasSwitch(switches::kForceGpuRasterization);
 
+  if (command_line.HasSwitch(switches::kGpuRasterizationMSAASampleCount)) {
+    std::string string_value = command_line.GetSwitchValueASCII(
+        switches::kGpuRasterizationMSAASampleCount);
+    bool parsed_msaa_sample_count =
+        base::StringToInt(string_value, &gpu_rasterization_msaa_sample_count_);
+    DCHECK(parsed_msaa_sample_count) << string_value;
+    DCHECK_GE(gpu_rasterization_msaa_sample_count_, 0);
+  } else {
+    gpu_rasterization_msaa_sample_count_ = 0;
+  }
+
   if (command_line.HasSwitch(switches::kDisableDistanceFieldText)) {
     is_distance_field_text_enabled_ = false;
   } else if (command_line.HasSwitch(switches::kEnableDistanceFieldText)) {
@@ -1345,6 +1356,10 @@ bool RenderThreadImpl::IsGpuRasterizationForced() {
 
 bool RenderThreadImpl::IsGpuRasterizationEnabled() {
   return is_gpu_rasterization_enabled_;
+}
+
+int RenderThreadImpl::GetGpuRasterizationMSAASampleCount() {
+  return gpu_rasterization_msaa_sample_count_;
 }
 
 bool RenderThreadImpl::IsLcdTextEnabled() {

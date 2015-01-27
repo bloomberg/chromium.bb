@@ -140,7 +140,7 @@ scoped_ptr<Rasterizer> LayerTreeHostPixelResourceTest::CreateRasterizer(
     case GPU_TILE_TASK_WORKER_POOL:
       EXPECT_TRUE(context_provider);
       return GpuRasterizer::Create(context_provider, resource_provider,
-                                   use_distance_field_text, false);
+                                   use_distance_field_text, false, 0);
   }
   NOTREACHED();
   return nullptr;

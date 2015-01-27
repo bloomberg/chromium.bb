@@ -232,6 +232,8 @@ void RenderWidgetCompositor::Initialize() {
   settings.max_untiled_layer_size = gfx::Size(max_untiled_layer_width,
                                            max_untiled_layer_height);
 
+  settings.gpu_rasterization_msaa_sample_count =
+      compositor_deps_->GetGpuRasterizationMSAASampleCount();
   settings.impl_side_painting = compositor_deps_->IsImplSidePaintingEnabled();
   settings.gpu_rasterization_forced =
       compositor_deps_->IsGpuRasterizationForced();

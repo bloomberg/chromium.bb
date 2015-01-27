@@ -25,7 +25,8 @@ class CC_EXPORT GpuRasterizer : public Rasterizer {
   static scoped_ptr<GpuRasterizer> Create(ContextProvider* context_provider,
                                           ResourceProvider* resource_provider,
                                           bool use_distance_field_text,
-                                          bool tile_prepare_enabled);
+                                          bool tile_prepare_enabled,
+                                          int msaa_sample_count);
   PrepareTilesMode GetPrepareTilesMode() override;
   void RasterizeTiles(
       const TileVector& tiles,
@@ -37,7 +38,8 @@ class CC_EXPORT GpuRasterizer : public Rasterizer {
   GpuRasterizer(ContextProvider* context_provider,
                 ResourceProvider* resource_provider,
                 bool use_distance_filed_text,
-                bool tile_prepare_enabled);
+                bool tile_prepare_enabled,
+                int msaa_sample_count);
 
   using ScopedResourceWriteLocks =
       ScopedPtrVector<ResourceProvider::ScopedWriteLockGr>;
@@ -54,6 +56,7 @@ class CC_EXPORT GpuRasterizer : public Rasterizer {
 
   bool use_distance_field_text_;
   bool tile_prepare_enabled_;
+  int msaa_sample_count_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRasterizer);
 };

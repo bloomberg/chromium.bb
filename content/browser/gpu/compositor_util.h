@@ -35,6 +35,10 @@ CONTENT_EXPORT bool IsZeroCopyUploadEnabled();
 // Returns true if gpu rasterization is on (via flags) for the renderer.
 CONTENT_EXPORT bool IsGpuRasterizationEnabled();
 
+// Returns the number of multisample antialiasing samples (via flags) for
+// GPU rasterization.
+CONTENT_EXPORT int GpuRasterizationMSAASampleCount();
+
 // Returns true if force-gpu-rasterization is on (via flags) for the renderer.
 CONTENT_EXPORT bool IsForceGpuRasterizationEnabled();
 

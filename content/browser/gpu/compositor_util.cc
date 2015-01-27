@@ -34,6 +34,8 @@ const char* kMultipleRasterThreadsFeatureName = "multiple_raster_threads";
 const int kMinRasterThreads = 1;
 const int kMaxRasterThreads = 64;
 
+const int kMinMSAASampleCount = 0;
+
 struct GpuFeatureInfo {
   std::string name;
   bool blocked;
@@ -255,7 +257,7 @@ int ForceNumberOfRendererRasterThreads() {
       force_num_raster_threads <= kMaxRasterThreads) {
     return force_num_raster_threads;
   } else {
-    LOG(WARNING) << "Failed to parse switch " <<
+    DLOG(WARNING) << "Failed to parse switch " <<
         switches::kNumRasterThreads  << ": " << string_value;
     return 0;
   }
@@ -299,6 +301,26 @@ bool UseSurfacesEnabled() {
 
   return command_line.HasSwitch(switches::kUseSurfaces);
 #endif
+}
+
+int GpuRasterizationMSAASampleCount() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  if (!command_line.HasSwitch(switches::kGpuRasterizationMSAASampleCount))
+    return 0;
+  std::string string_value = command_line.GetSwitchValueASCII(
+      switches::kGpuRasterizationMSAASampleCount);
+  int msaa_sample_count = 0;
+  if (base::StringToInt(string_value, &msaa_sample_count) &&
+      msaa_sample_count >= kMinMSAASampleCount) {
+    return msaa_sample_count;
+  } else {
+    DLOG(WARNING) << "Failed to parse switch "
+                  << switches::kGpuRasterizationMSAASampleCount << ": "
+                  << string_value;
+    return 0;
+  }
 }
 
 base::DictionaryValue* GetFeatureStatus() {

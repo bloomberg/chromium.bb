@@ -496,6 +496,11 @@ const char kForceFieldTrials[]              = "force-fieldtrials";
 // kEnableGpuRasterization flag.
 const char kForceGpuRasterization[]        = "force-gpu-rasterization";
 
+// The number of multisample antialiasing samples for GPU rasterization.
+// Requires MSAA support on GPU to have an effect. 0 disables MSAA.
+const char kGpuRasterizationMSAASampleCount[] =
+    "gpu-rasterization-msaa-sample-count";
+
 // Force renderer accessibility to be on instead of enabling it on demand when
 // a screen reader is detected. The disable-renderer-accessibility switch
 // overrides this if present.

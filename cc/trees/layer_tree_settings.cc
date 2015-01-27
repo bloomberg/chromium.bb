@@ -29,6 +29,7 @@ LayerTreeSettings::LayerTreeSettings()
       use_distance_field_text(false),
       gpu_rasterization_enabled(false),
       gpu_rasterization_forced(false),
+      gpu_rasterization_msaa_sample_count(0),
       create_low_res_tiling(false),
       scrollbar_animator(NoAnimator),
       scrollbar_fade_delay_ms(0),

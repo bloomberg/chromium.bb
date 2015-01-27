@@ -31,20 +31,23 @@ scoped_ptr<GpuRasterizer> GpuRasterizer::Create(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     bool use_distance_field_text,
-    bool tile_prepare_enabled) {
-  return make_scoped_ptr<GpuRasterizer>(
-      new GpuRasterizer(context_provider, resource_provider,
-                        use_distance_field_text, tile_prepare_enabled));
+    bool tile_prepare_enabled,
+    int msaa_sample_count) {
+  return make_scoped_ptr<GpuRasterizer>(new GpuRasterizer(
+      context_provider, resource_provider, use_distance_field_text,
+      tile_prepare_enabled, msaa_sample_count));
 }
 
 GpuRasterizer::GpuRasterizer(ContextProvider* context_provider,
                              ResourceProvider* resource_provider,
                              bool use_distance_field_text,
-                             bool tile_prepare_enabled)
+                             bool tile_prepare_enabled,
+                             int msaa_sample_count)
     : context_provider_(context_provider),
       resource_provider_(resource_provider),
       use_distance_field_text_(use_distance_field_text),
-      tile_prepare_enabled_(tile_prepare_enabled) {
+      tile_prepare_enabled_(tile_prepare_enabled),
+      msaa_sample_count_(msaa_sample_count) {
   DCHECK(context_provider_);
 }
 
@@ -123,7 +126,8 @@ void GpuRasterizer::AddToMultiPictureDraw(const Tile* tile,
       new ResourceProvider::ScopedWriteLockGr(resource_provider_,
                                               resource->id()));
   SkSurface* sk_surface = lock->GetSkSurface(
-      use_distance_field_text, tile->raster_source()->CanUseLCDText());
+      use_distance_field_text, tile->raster_source()->CanUseLCDText(),
+      msaa_sample_count_);
 
   locks->push_back(lock.Pass());
 

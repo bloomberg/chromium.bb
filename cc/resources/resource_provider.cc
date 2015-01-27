@@ -1099,7 +1099,8 @@ ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
 
 SkSurface* ResourceProvider::ScopedWriteLockGr::GetSkSurface(
     bool use_distance_field_text,
-    bool can_use_lcd_text) {
+    bool can_use_lcd_text,
+    int msaa_sample_count) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(resource_->locked_for_write);
 
@@ -1116,6 +1117,7 @@ SkSurface* ResourceProvider::ScopedWriteLockGr::GetSkSurface(
     desc.fConfig = ToGrPixelConfig(resource_->format);
     desc.fOrigin = kTopLeft_GrSurfaceOrigin;
     desc.fTextureHandle = resource_->gl_id;
+    desc.fSampleCnt = msaa_sample_count;
 
     class GrContext* gr_context = resource_provider_->GrContext();
     skia::RefPtr<GrTexture> gr_texture =

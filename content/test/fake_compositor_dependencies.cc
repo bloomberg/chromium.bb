@@ -25,6 +25,10 @@ bool FakeCompositorDependencies::IsGpuRasterizationEnabled() {
   return false;
 }
 
+int FakeCompositorDependencies::GetGpuRasterizationMSAASampleCount() {
+  return 0;
+}
+
 bool FakeCompositorDependencies::IsLcdTextEnabled() {
   return false;
 }

@@ -1956,7 +1956,8 @@ scoped_ptr<Rasterizer> LayerTreeHostImpl::CreateRasterizer() {
   ContextProvider* context_provider = output_surface_->context_provider();
   if (use_gpu_rasterization_ && context_provider) {
     return GpuRasterizer::Create(context_provider, resource_provider_.get(),
-                                 settings_.use_distance_field_text, false);
+                                 settings_.use_distance_field_text, false,
+                                 settings_.gpu_rasterization_msaa_sample_count);
   }
   return SoftwareRasterizer::Create();
 }

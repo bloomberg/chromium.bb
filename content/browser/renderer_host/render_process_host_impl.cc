@@ -1081,6 +1081,13 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kEnableGpuRasterization);
 
+  int msaa_sample_count = GpuRasterizationMSAASampleCount();
+  if (msaa_sample_count > 0) {
+    command_line->AppendSwitchASCII(
+        switches::kGpuRasterizationMSAASampleCount,
+        base::IntToString(msaa_sample_count));
+  }
+
   DCHECK_IMPLIES(IsZeroCopyUploadEnabled(), !IsOneCopyUploadEnabled());
   DCHECK_IMPLIES(IsOneCopyUploadEnabled(), !IsZeroCopyUploadEnabled());
   if (IsZeroCopyUploadEnabled())
