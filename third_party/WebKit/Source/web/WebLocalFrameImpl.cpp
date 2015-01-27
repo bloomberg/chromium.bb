@@ -1488,11 +1488,6 @@ WebString WebLocalFrameImpl::contentAsMarkup() const
     return createMarkup(frame()->document());
 }
 
-WebString WebLocalFrameImpl::renderTreeAsText(RenderAsTextControls toShow) const
-{
-    return layoutTreeAsText(static_cast<LayoutAsTextControls>(toShow));
-}
-
 WebString WebLocalFrameImpl::layoutTreeAsText(LayoutAsTextControls toShow) const
 {
     LayoutAsTextBehavior behavior = LayoutAsTextShowAllLayers;

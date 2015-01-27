@@ -179,8 +179,6 @@ public:
 
     virtual WebString contentAsText(size_t maxChars) const override;
     virtual WebString contentAsMarkup() const override;
-    // DEPRECATED. Use layoutTreeAsText.
-    virtual WebString renderTreeAsText(RenderAsTextControls toShow = RenderAsTextNormal) const override;
     virtual WebString layoutTreeAsText(LayoutAsTextControls toShow = LayoutAsTextNormal) const override;
     virtual WebString markerTextForListItem(const WebElement&) const override;
     virtual WebRect selectionBoundsRect() const override;

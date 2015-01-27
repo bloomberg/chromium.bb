@@ -104,13 +104,6 @@ public:
         LayoutAsTextPrinting = 1 << 1
     };
     typedef unsigned LayoutAsTextControls;
-    // DEPRECATED. Use LayoutAsTextControl. crbug.com/450624
-    enum RenderAsTextControl {
-        RenderAsTextNormal = 0,
-        RenderAsTextDebug = 1 << 0,
-        RenderAsTextPrinting = 1 << 1
-    };
-    typedef unsigned RenderAsTextControls;
 
     // Returns the number of live WebFrame objects, used for leak checking.
     BLINK_EXPORT static int instanceCount();
@@ -638,8 +631,6 @@ public:
 
     // Returns a text representation of the render tree.  This method is used
     // to support layout tests.
-    // DEPRECATED. Use layoutTreeAsText below. crbug.com/450624
-    virtual WebString renderTreeAsText(RenderAsTextControls toShow = RenderAsTextNormal) const = 0;
     virtual WebString layoutTreeAsText(LayoutAsTextControls toShow = LayoutAsTextNormal) const = 0;
 
     // Calls markerTextForListItem() defined in core/layout/LayoutTreeAsText.h.
