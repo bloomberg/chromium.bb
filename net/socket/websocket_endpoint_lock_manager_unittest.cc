@@ -92,6 +92,23 @@ class FakeWaiter : public WebSocketEndpointLockManager::Waiter {
   bool called_;
 };
 
+class BlockingWaiter : public FakeWaiter {
+ public:
+  void WaitForLock() {
+    while (!called()) {
+      run_loop_.Run();
+    }
+  }
+
+  void GotEndpointLock() override {
+    FakeWaiter::GotEndpointLock();
+    run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+};
+
 class WebSocketEndpointLockManagerTest : public ::testing::Test {
  protected:
   WebSocketEndpointLockManagerTest()
@@ -273,21 +290,23 @@ TEST_F(WebSocketEndpointLockManagerTest, UnlockEndpointIsAsynchronous) {
 
 // UnlockEndpoint() should normally have a delay.
 TEST_F(WebSocketEndpointLockManagerTest, UnlockEndpointIsDelayed) {
-  const base::TimeDelta one_millisecond = base::TimeDelta::FromMilliseconds(1);
-  instance()->SetUnlockDelayForTesting(one_millisecond);
-  FakeWaiter waiters[2];
-  EXPECT_EQ(OK, instance()->LockEndpoint(DummyEndpoint(), &waiters[0]));
-  EXPECT_EQ(ERR_IO_PENDING,
-            instance()->LockEndpoint(DummyEndpoint(), &waiters[1]));
+  using base::TimeTicks;
 
+  const base::TimeDelta unlock_delay = base::TimeDelta::FromMilliseconds(1);
+  instance()->SetUnlockDelayForTesting(unlock_delay);
+  FakeWaiter fake_waiter;
+  BlockingWaiter blocking_waiter;
+  EXPECT_EQ(OK, instance()->LockEndpoint(DummyEndpoint(), &fake_waiter));
+  EXPECT_EQ(ERR_IO_PENDING,
+            instance()->LockEndpoint(DummyEndpoint(), &blocking_waiter));
+
+  TimeTicks before_unlock = TimeTicks::Now();
   instance()->UnlockEndpoint(DummyEndpoint());
   RunUntilIdle();
-  EXPECT_FALSE(waiters[1].called());
-  base::RunLoop run_loop;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), one_millisecond);
-  run_loop.Run();
-  EXPECT_TRUE(waiters[1].called());
+  EXPECT_FALSE(blocking_waiter.called());
+  blocking_waiter.WaitForLock();
+  TimeTicks after_unlock = TimeTicks::Now();
+  EXPECT_GE(after_unlock - before_unlock, unlock_delay);
   instance()->SetUnlockDelayForTesting(base::TimeDelta());
   UnlockDummyEndpoint(1);
 }
