@@ -97,9 +97,6 @@ crbug.com/339118 virtual/slimmingpaint/fast/events/touch/compositor-touch-hit-re
 crbug.com/430980 [ Mac ] fast/events/hit-test-counts.html [ Failure Pass ]
 crbug.com/430980 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Failure Pass ]
 
-crbug.com/438282 [ XP ] svg/batik/text/smallFonts.svg [ NeedsRebaseline ]
-crbug.com/438282 [ XP ] svg/custom/recursive-filter.svg [ NeedsRebaseline ]
-
 # The result here is flaky. So a rebaseline won't make these [ Pass Timeout ].
 crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure ]
 crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order.html [ Failure ]
