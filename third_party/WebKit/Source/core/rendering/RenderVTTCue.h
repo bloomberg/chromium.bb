@@ -42,21 +42,10 @@ public:
 private:
     virtual void layout() override;
 
-    bool isOutside() const;
-    bool isOverlapping() const;
-    bool shouldSwitchDirection(InlineFlowBox*, LayoutUnit) const;
-
-    void moveBoxesByStep(LayoutUnit);
-    bool switchDirection(bool&, LayoutUnit&);
-
-    bool findFirstLineBox(InlineFlowBox*&);
-    bool initializeLayoutParameters(InlineFlowBox*, LayoutUnit&, LayoutUnit&);
-    void placeBoxInDefaultPosition(LayoutUnit, bool&);
-    void repositionCueSnapToLinesSet();
+    void adjustForTopAndBottomMarginBorderAndPadding();
     void repositionCueSnapToLinesNotSet();
 
     RawPtrWillBeMember<VTTCue> m_cue;
-    LayoutPoint m_specifiedPosition;
 };
 
 } // namespace blink
