@@ -138,8 +138,7 @@ remoting.DesktopRemoting.prototype.getRequiredCapabilities = function() {
     remoting.ClientSession.Capability.VIDEO_RECORDER,
     // TODO(aiguha): Add this capability based on a gyp/command-line flag,
     // rather than by default.
-    remoting.ClientSession.Capability.CAST,
-    remoting.ClientSession.Capability.GNUBBY_AUTH
+    remoting.ClientSession.Capability.CAST
   ];
 };
 
