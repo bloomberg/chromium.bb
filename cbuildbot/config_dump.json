@@ -14764,6 +14764,16 @@
         "upload_standalone_images": false,
         "vm_tests": []
     },
+    "gizmo-project-sdk": {
+        "boards": [
+            "gizmo"
+        ],
+        "build_type": "project-sdk",
+        "description": "Produce Project SDK build artifacts.",
+        "name": "gizmo-project-sdk",
+        "sync_chrome": false,
+        "vm_tests": []
+    },
     "gizmo-release": {
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",

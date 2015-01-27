@@ -393,6 +393,9 @@ CANARY_TYPE = 'canary'
 # Generate payloads for an already built build/version.
 PAYLOADS_TYPE = 'payloads'
 
+# Generate a Project SDK build.
+PROJECT_SDK_TYPE = 'project-sdk'
+
 BRANCH_UTIL_CONFIG = 'branch-util'
 
 # Special build type for Chroot builders.  These builds focus on building
@@ -416,6 +419,7 @@ VALID_BUILD_TYPES = (
     REFRESH_PACKAGES_TYPE,
     CREATE_BRANCH_TYPE,
     PAYLOADS_TYPE,
+    PROJECT_SDK_TYPE,
 )
 
 # The name of the standard pre-cq testing config.

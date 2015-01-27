@@ -1160,6 +1160,25 @@ moblab = _config(
   hw_tests=[],
 )
 
+# Builds for the Project SDK.
+project_sdk = _config(
+  build_type=constants.PROJECT_SDK_TYPE,
+  description='Produce Project SDK build artifacts.',
+
+  # These are test builds, they shouldn't break anything (yet).
+  important=False,
+
+  sync_chrome=False,
+  chrome_sdk=False,
+
+  vm_tests=[],
+  hw_tests=[],
+)
+
+_project_sdk_boards = frozenset([
+    'gizmo',
+])
+
 beaglebone = brillo.derive(non_testable_builder, rootfs_verification=False)
 
 # This adds Chrome branding.
@@ -3087,6 +3106,12 @@ def _AddPayloadConfigs():
 
 _AddPayloadConfigs()
 
+def _AddProjectSdkConfigs():
+  for board in _project_sdk_boards:
+    name = '%s-project-sdk' % board
+    project_sdk.add_config(name, boards=[board])
+
+_AddProjectSdkConfigs()
 
 def GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
   """Given a config_name, return display position specified by suffix_order.
