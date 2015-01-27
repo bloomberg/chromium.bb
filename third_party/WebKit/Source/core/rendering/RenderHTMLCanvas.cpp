@@ -71,16 +71,14 @@ void RenderHTMLCanvas::canvasSizeChanged()
     if (!preferredLogicalWidthsDirty())
         setPreferredLogicalWidthsDirty();
 
-    if (selfNeedsLayout())
-        return;
-
     LayoutSize oldSize = size();
     updateLogicalWidth();
     updateLogicalHeight();
     if (oldSize == size())
         return;
 
-    setNeedsLayout();
+    if (!selfNeedsLayout())
+        setNeedsLayout();
 }
 
 CompositingReasons RenderHTMLCanvas::additionalCompositingReasons() const
