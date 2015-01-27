@@ -1694,8 +1694,6 @@ crbug.com/442512 svg/dom/viewspec-viewtargetparams.html [ Pass ImageOnlyFailure 
 crbug.com/442512 svg/dom/viewspec-zoomandpanparams.html [ Pass ImageOnlyFailure ]
 crbug.com/442512 svg/dom/complex-svgView-specification.html [ Pass ImageOnlyFailure ]
 
-crbug.com/436445 fast/css-grid-layout/flex-and-minmax-content-resolution-rows.html [ Failure ]
-
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-state-persistence-no-dirty.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-text-space-characters.html [ Pass ImageOnlyFailure ]

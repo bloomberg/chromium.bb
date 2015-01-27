@@ -64,6 +64,11 @@ public:
         m_integerPosition = adjustGridPositionForSide(integerPosition, side).toInt();
     }
 
+    GridResolvedPosition& operator*()
+    {
+        return *this;
+    }
+
     GridResolvedPosition& operator++()
     {
         m_integerPosition++;
