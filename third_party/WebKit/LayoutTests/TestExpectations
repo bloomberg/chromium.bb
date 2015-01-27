@@ -50,8 +50,6 @@ crbug.com/445100 virtual/slimmingpaint/fast/block/float/marquee-shrink-to-avoid-
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
 crbug.com/432129 fast/html/marquee-scroll.html [ Pass Failure ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
-crbug.com/439478 fast/inline-block/003.html [ NeedsRebaseline ]
-crbug.com/439478 virtual/slimmingpaint/fast/inline-block/003.html [ NeedsRebaseline ]
 
 # These tests require virtual-viewport mode to be enabled. Remove this expectation once virtual-viewport
 # lands on desktop platforms.
