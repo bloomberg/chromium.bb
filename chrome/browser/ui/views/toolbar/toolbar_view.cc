@@ -284,14 +284,12 @@ void ToolbarView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
   extensions::ExtensionCommandsGlobalRegistry* registry =
       extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
-  if (registry) {
-    if (active) {
-      registry->set_registry_for_active_window(
-          browser_actions_->extension_keybinding_registry());
-    } else if (registry->registry_for_active_window() ==
-               browser_actions_->extension_keybinding_registry()) {
-      registry->set_registry_for_active_window(NULL);
-    }
+  if (active) {
+    registry->set_registry_for_active_window(
+        browser_actions_->extension_keybinding_registry());
+  } else if (registry->registry_for_active_window() ==
+             browser_actions_->extension_keybinding_registry()) {
+    registry->set_registry_for_active_window(nullptr);
   }
 }
 

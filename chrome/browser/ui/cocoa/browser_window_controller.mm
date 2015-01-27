@@ -630,12 +630,8 @@ using content::WebContents;
   if ([self isInAnyFullscreenMode])
     [floatingBarBackingView_ setNeedsDisplay:YES];  // Okay even if nil.
 
-  auto registry =
-      extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
-  if (registry) {
-    registry->set_registry_for_active_window(
-        extension_keybinding_registry_.get());
-  }
+  extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile())
+      ->set_registry_for_active_window(extension_keybinding_registry_.get());
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
@@ -647,10 +643,8 @@ using content::WebContents;
   if ([self isInAnyFullscreenMode])
     [floatingBarBackingView_ setNeedsDisplay:YES];  // Okay even if nil.
 
-  auto registry =
-      extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
-  if (registry)
-    registry->set_registry_for_active_window(nullptr);
+  extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile())
+      ->set_registry_for_active_window(nullptr);
 }
 
 // Called when we are activated (when we gain focus).

@@ -65,6 +65,7 @@ class ExtensionCommandsGlobalRegistry
   static const char* service_name() {
     return "ExtensionCommandsGlobalRegistry";
   }
+  static const bool kServiceRedirectedInIncognito = true;
 
   // Overridden from ExtensionKeybindingRegistry:
   void AddExtensionKeybindings(const Extension* extension,
