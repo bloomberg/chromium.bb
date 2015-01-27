@@ -67,6 +67,7 @@ class ContentAction : public base::RefCounted<ContentAction> {
   // in case the input is syntactically unexpected.
   static scoped_refptr<ContentAction> Create(
       content::BrowserContext* browser_context,
+      const HostID& host_id,
       const Extension* extension,
       const base::Value& json_action,
       std::string* error,
@@ -95,15 +96,21 @@ class RequestContentScript : public ContentAction {
  public:
   struct ScriptData;
 
+  // TODO(hanxi): remove the plumbing of |host_id| when introducing class
+  // Host/Consumer to de-couple extension from the ContentAction.
+  // |host_id| will be a part of Host/Consumer class.
   RequestContentScript(content::BrowserContext* browser_context,
+                       const HostID& host_id,
                        const Extension* extension,
                        const ScriptData& script_data);
   RequestContentScript(DeclarativeUserScriptMaster* master,
+                       const HostID& host_id,
                        const Extension* extension,
                        const ScriptData& script_data);
 
   static scoped_refptr<ContentAction> Create(
       content::BrowserContext* browser_context,
+      const HostID& host_id,
       const Extension* extension,
       const base::DictionaryValue* dict,
       std::string* error,
@@ -111,6 +118,7 @@ class RequestContentScript : public ContentAction {
 
   static scoped_refptr<ContentAction> CreateForTest(
       DeclarativeUserScriptMaster* master,
+      const HostID& host_id,
       const Extension* extension,
       const base::Value& json_action,
       std::string* error,
@@ -137,7 +145,9 @@ class RequestContentScript : public ContentAction {
               ApplyInfo* apply_info) const override;
 
  private:
-  void InitScript(const Extension* extension, const ScriptData& script_data);
+  void InitScript(const HostID& host_id,
+                  const Extension* extension,
+                  const ScriptData& script_data);
 
   void AddScript() {
     DCHECK(master_);

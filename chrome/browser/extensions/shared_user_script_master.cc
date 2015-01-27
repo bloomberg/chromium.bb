@@ -8,12 +8,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/host_id.h"
 
 namespace extensions {
 
 SharedUserScriptMaster::SharedUserScriptMaster(Profile* profile)
     : loader_(profile,
-              std::string() /* owner_extension_id */,
+              HostID(),
               true /* listen_for_extension_system_loaded */),
       profile_(profile),
       extension_registry_observer_(this) {

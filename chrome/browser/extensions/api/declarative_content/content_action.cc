@@ -62,6 +62,7 @@ class ShowPageAction : public ContentAction {
 
   static scoped_refptr<ContentAction> Create(
       content::BrowserContext* browser_context,
+      const HostID& host_id,
       const Extension* extension,
       const base::DictionaryValue* dict,
       std::string* error,
@@ -125,6 +126,7 @@ class SetIcon : public ContentAction {
 
   static scoped_refptr<ContentAction> Create(
       content::BrowserContext* browser_context,
+      const HostID& host_id,
       const Extension* extension,
       const base::DictionaryValue* dict,
       std::string* error,
@@ -218,6 +220,7 @@ struct ContentActionFactory {
   // not confirm to the validated JSON specification.
   typedef scoped_refptr<ContentAction>(*FactoryMethod)(
       content::BrowserContext* /* browser_context */,
+      const HostID& host_id /* host id */,
       const Extension* /* extension */,
       const base::DictionaryValue* /* dict */,
       std::string* /* error */,
@@ -263,6 +266,7 @@ RequestContentScript::ScriptData::~ScriptData() {}
 // static
 scoped_refptr<ContentAction> RequestContentScript::Create(
     content::BrowserContext* browser_context,
+    const HostID& host_id,
     const Extension* extension,
     const base::DictionaryValue* dict,
     std::string* error,
@@ -273,6 +277,7 @@ scoped_refptr<ContentAction> RequestContentScript::Create(
 
   return scoped_refptr<ContentAction>(new RequestContentScript(
       browser_context,
+      host_id,
       extension,
       script_data));
 }
@@ -280,6 +285,7 @@ scoped_refptr<ContentAction> RequestContentScript::Create(
 // static
 scoped_refptr<ContentAction> RequestContentScript::CreateForTest(
     DeclarativeUserScriptMaster* master,
+    const HostID& host_id,
     const Extension* extension,
     const base::Value& json_action,
     std::string* error,
@@ -307,6 +313,7 @@ scoped_refptr<ContentAction> RequestContentScript::CreateForTest(
   // using a BrowserContext.
   return scoped_refptr<ContentAction>(new RequestContentScript(
       master,
+      host_id,
       extension,
       script_data));
 }
@@ -348,21 +355,23 @@ bool RequestContentScript::InitScriptData(const base::DictionaryValue* dict,
 
 RequestContentScript::RequestContentScript(
     content::BrowserContext* browser_context,
+    const HostID& host_id,
     const Extension* extension,
     const ScriptData& script_data) {
-  InitScript(extension, script_data);
+  InitScript(host_id, extension, script_data);
 
   master_ = ExtensionSystem::Get(browser_context)
                 ->declarative_user_script_manager()
-                ->GetDeclarativeUserScriptMasterByID(extension->id());
+                ->GetDeclarativeUserScriptMasterByID(host_id);
   AddScript();
 }
 
 RequestContentScript::RequestContentScript(
     DeclarativeUserScriptMaster* master,
+    const HostID& host_id,
     const Extension* extension,
     const ScriptData& script_data) {
-  InitScript(extension, script_data);
+  InitScript(host_id, extension, script_data);
 
   master_ = master;
   AddScript();
@@ -373,10 +382,11 @@ RequestContentScript::~RequestContentScript() {
   master_->RemoveScript(script_);
 }
 
-void RequestContentScript::InitScript(const Extension* extension,
+void RequestContentScript::InitScript(const HostID& host_id,
+                                      const Extension* extension,
                                       const ScriptData& script_data) {
   script_.set_id(UserScript::GenerateUserScriptID());
-  script_.set_extension_id(extension->id());
+  script_.set_host_id(host_id);
   script_.set_run_location(UserScript::BROWSER_DRIVEN);
   script_.set_match_all_frames(script_data.all_frames);
   script_.set_match_about_blank(script_data.match_about_blank);
@@ -433,6 +443,7 @@ void RequestContentScript::InstructRenderProcessToInject(
 // static
 scoped_refptr<ContentAction> SetIcon::Create(
     content::BrowserContext* browser_context,
+    const HostID& host_id,
     const Extension* extension,
     const base::DictionaryValue* dict,
     std::string* error,
@@ -470,6 +481,7 @@ ContentAction::~ContentAction() {}
 // static
 scoped_refptr<ContentAction> ContentAction::Create(
     content::BrowserContext* browser_context,
+    const HostID& host_id,
     const Extension* extension,
     const base::Value& json_action,
     std::string* error,
@@ -485,7 +497,7 @@ scoped_refptr<ContentAction> ContentAction::Create(
       factory_method_iter = factory.factory_methods.find(instance_type);
   if (factory_method_iter != factory.factory_methods.end())
     return (*factory_method_iter->second)(
-        browser_context, extension, action_dict, error, bad_message);
+        browser_context, host_id, extension, action_dict, error, bad_message);
 
   *error = base::StringPrintf(kInvalidInstanceTypeError, instance_type.c_str());
   return scoped_refptr<ContentAction>();
