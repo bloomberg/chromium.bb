@@ -69,7 +69,7 @@ CastWindowAndroid* CastWindowAndroid::CreateCastWindowAndroid(
   web_contents->SetDelegate(shell);
 
   Java_CastWindowAndroid_initFromNativeWebContents(
-      env, shell->java_object_.obj(), reinterpret_cast<jint>(web_contents),
+      env, shell->java_object_.obj(), web_contents->GetJavaWebContents().obj(),
       web_contents->GetRenderProcessHost()->GetID());
 
   // Enabling hole-punching also requires runtime renderer preference

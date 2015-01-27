@@ -124,11 +124,11 @@ public class CastWindowAndroid extends LinearLayout {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void initFromNativeWebContents(long nativeWebContents, int renderProcessId) {
+    private void initFromNativeWebContents(WebContents webContents, int renderProcessId) {
         Context context = getContext();
         mContentViewCore = new ContentViewCore(context);
         ContentView view = ContentView.newInstance(context, mContentViewCore);
-        mContentViewCore.initialize(view, view, nativeWebContents, mWindow);
+        mContentViewCore.initialize(view, view, webContents, mWindow);
         mWebContents = mContentViewCore.getWebContents();
         mNavigationController = mWebContents.getNavigationController();
         mRenderProcessId = renderProcessId;
