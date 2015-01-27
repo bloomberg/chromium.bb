@@ -90,7 +90,7 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
                 continue;
 
             AXObject* cell = axObjectCache()->getOrCreate(layoutCell->node());
-            if (!cell)
+            if (!cell || !cell->isTableCell())
                 continue;
 
             if (toAXTableCell(cell)->scanToDecideHeaderRole() == ColumnHeaderRole)
