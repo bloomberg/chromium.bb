@@ -20,7 +20,6 @@ Polymer('indeterminate-progress', {
   },
 
   ready: function() {
-    this.async(this.doProgress, null, this.timeout);
   },
 
   doProgress: function() {
