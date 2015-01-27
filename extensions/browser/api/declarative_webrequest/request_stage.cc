@@ -17,7 +17,7 @@ const unsigned int kActiveStages = ON_BEFORE_REQUEST |
 // |n| is a positive compile-time constant.
 template <long unsigned int n>
 struct HighestBit {
-  COMPILE_ASSERT(n > 0, argument_is_not_a_positive_compile_time_constant);
+  static_assert(n > 0, "argument is not a positive compile time constant");
   enum { VALUE = HighestBit<(n >> 1)>::VALUE << 1 };
 };
 template <>

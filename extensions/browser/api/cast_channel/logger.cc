@@ -76,7 +76,8 @@ scoped_ptr<char[]> Compress(const std::string& input, size_t* length) {
   size_t out_size = deflateBound(&stream, input.size());
   scoped_ptr<char[]> out(new char[out_size]);
 
-  COMPILE_ASSERT(sizeof(uint8) == sizeof(char), uint8_char_different_sizes);
+  static_assert(sizeof(uint8) == sizeof(char),
+                "uint8 char should be of different sizes");
 
   stream.next_in = reinterpret_cast<uint8*>(const_cast<char*>(input.data()));
   stream.avail_in = input.size();

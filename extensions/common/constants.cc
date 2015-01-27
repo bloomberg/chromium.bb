@@ -80,9 +80,9 @@ const IconRepresentationInfo kExtensionActionIconSizes[] = {
   { 2 * EXTENSION_ICON_ACTION, "38", ui::SCALE_FACTOR_200P }
 };
 
-COMPILE_ASSERT(kNumExtensionActionIconSizes ==
-               arraysize(kExtensionActionIconSizes),
-               num_action_icon_sizes_must_be_in_sync_with_action_icon_sizes);
+static_assert(kNumExtensionActionIconSizes ==
+              arraysize(kExtensionActionIconSizes),
+              "num action icon sizes must be in sync with action icon sizes");
 
 const char kPdfExtensionId[] = "mhjfbmdgcfjbbpaeojofohoefgiehjai";
 const char kQuickOfficeComponentExtensionId[] =

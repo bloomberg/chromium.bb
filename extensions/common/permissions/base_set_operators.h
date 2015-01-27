@@ -69,8 +69,8 @@ class BaseSetOperators {
   BaseSetOperators() {
     // Ensure |T| is convertible to us, so we can safely downcast when calling
     // methods that must exist in |T|.
-    COMPILE_ASSERT((base::is_convertible<T*, BaseSetOperators<T>*>::value),
-                   U_ptr_must_implicitly_convert_to_T_ptr);
+    static_assert((base::is_convertible<T*, BaseSetOperators<T>*>::value),
+                   "U ptr must implicitly convert to T ptr");
   }
 
   BaseSetOperators(const T& set) {

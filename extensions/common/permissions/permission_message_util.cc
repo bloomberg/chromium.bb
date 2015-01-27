@@ -86,11 +86,11 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts,
                      IDS_EXTENSION_PROMPT_WARNING_3_HOSTS_READ_ONLY),
       std::make_pair(PermissionMessage::kHosts4OrMoreReadOnly,
                      IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST_READ_ONLY)};
-  COMPILE_ASSERT(
+  static_assert(
       arraysize(kReadWriteMessagesList) == arraysize(kReadOnlyMessagesList),
-      message_lists_different_size);
-  COMPILE_ASSERT(kNumMessages == arraysize(kReadWriteMessagesList),
-                 messages_array_different_size);
+      "message lists should be of different size");
+  static_assert(kNumMessages == arraysize(kReadWriteMessagesList),
+                "messages array should be of different size");
 
   const MsgPair(&messages_list)[kNumMessages] =
       properties == kReadOnly ? kReadOnlyMessagesList : kReadWriteMessagesList;
