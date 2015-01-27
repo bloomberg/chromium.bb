@@ -17,43 +17,17 @@ CHROME_SANDBOX_ENV = 'CHROME_DEVEL_SANDBOX'
 CHROME_SANDBOX_PATH = '/opt/chromium/chrome_sandbox'
 
 
-def should_enable_sandbox(cmd, sandbox_path):
-  """Return a boolean indicating that the current slave is capable of using the
-  sandbox and should enable it.  This should return True iff the slave is a
-  Linux host with the sandbox file present and configured correctly."""
-  if not (sys.platform.startswith('linux') and
-          os.path.exists(sandbox_path)):
-    return False
-
-  # Copy the check in tools/build/scripts/slave/runtest.py.
-  if '--lsan=1' in cmd:
-    return False
-
-  sandbox_stat = os.stat(sandbox_path)
-  if ((sandbox_stat.st_mode & stat.S_ISUID) and
-      (sandbox_stat.st_mode & stat.S_IRUSR) and
-      (sandbox_stat.st_mode & stat.S_IXUSR) and
-      (sandbox_stat.st_uid == 0)):
-    return True
-  return False
-
-
-def get_sandbox_env(cmd, env, verbose=False):
-  """Checks enables the sandbox if it is required, otherwise it disables it.
-  Returns the environment flags to set."""
+def get_sandbox_env(env):
+  """Returns the environment flags needed for the SUID sandbox to work."""
   extra_env = {}
   chrome_sandbox_path = env.get(CHROME_SANDBOX_ENV, CHROME_SANDBOX_PATH)
-
-  if should_enable_sandbox(cmd, chrome_sandbox_path):
-    if verbose:
-      print 'Enabling sandbox. Setting environment variable:'
-      print '  %s="%s"' % (CHROME_SANDBOX_ENV, chrome_sandbox_path)
-    extra_env[CHROME_SANDBOX_ENV] = chrome_sandbox_path
-  else:
-    if verbose:
-      print 'Disabling sandbox.  Setting environment variable:'
-      print '  CHROME_DEVEL_SANDBOX=""'
-    extra_env['CHROME_DEVEL_SANDBOX'] = ''
+  # The above would silently disable the SUID sandbox if the env value were
+  # an empty string. We don't want to allow that. http://crbug.com/245376
+  # TODO(jln): Remove this check once it's no longer possible to disable the
+  # sandbox that way.
+  if not chrome_sandbox_path:
+    chrome_sandbox_path = CHROME_SANDBOX_PATH
+  extra_env[CHROME_SANDBOX_ENV] = chrome_sandbox_path
 
   return extra_env
 
@@ -135,7 +109,7 @@ def run_executable(cmd, env):
   """Runs an executable with:
     - environment variable CR_SOURCE_ROOT set to the root directory.
     - environment variable LANGUAGE to en_US.UTF-8.
-    - environment variable CHROME_DEVEL_SANDBOX set if need
+    - environment variable CHROME_DEVEL_SANDBOX set
     - Reuses sys.executable automatically.
   """
   extra_env = {}
@@ -144,7 +118,7 @@ def run_executable(cmd, env):
   # Used by base/base_paths_linux.cc as an override. Just make sure the default
   # logic is used.
   env.pop('CR_SOURCE_ROOT', None)
-  extra_env.update(get_sandbox_env(cmd, env))
+  extra_env.update(get_sandbox_env(env))
 
   # Copy logic from  tools/build/scripts/slave/runtest.py.
   asan = '--asan=1' in cmd
