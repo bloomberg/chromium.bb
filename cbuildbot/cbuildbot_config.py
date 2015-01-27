@@ -1327,7 +1327,6 @@ _x86_internal_release_boards = frozenset([
   'cid',
   'cranky',
   'clapper',
-  'duck',
   'enguarde',
   'expresso',
   'falco',
@@ -1467,7 +1466,6 @@ _internal_boards = _all_release_boards
 # Board can appear in 1 or more of the following sets.
 _brillo_boards = frozenset([
   'cosmos',
-  'duck',
   'gizmo',
   'kayle',
   'lemmings',
@@ -2231,7 +2229,7 @@ _config.add_group('mixed-b-pre-cq',
 
 _config.add_group('mixed-c-pre-cq',
   # brillo
-  config['duck-compile-only-pre-cq'],
+  config['storm-compile-only-pre-cq'],
 )
 
 _config.add_group('external-mixed-pre-cq',
@@ -2253,8 +2251,8 @@ _config.add_group(constants.PRE_CQ_GROUP_CONFIG,
   # brillo config. We set build_packages_in_background=False here, so
   # that subsequent boards (samus, lumpy, parrot) don't get launched until
   # after duck finishes BuildPackages.
-  unittest_only_pre_cq.add_config('duck-deprecated-pre-cq',
-                                  _base_configs['duck'],
+  unittest_only_pre_cq.add_config('storm-pre-cq',
+                                  _base_configs['storm'],
                                   build_packages_in_background=False),
 
   # samus w/kernel 3.14.
@@ -2568,17 +2566,6 @@ _brillo_release = _release.derive(brillo,
   afdo_use=False,
   signer_tests=True,
   image_test=True,
-)
-
-_brillo_release.add_config('duck-release',
-  boards=['duck'],
-
-  # Need to verify before enabling.
-  signer_tests=False,
-
-  # Hw Lab can't test, yet.
-  paygen_skip_testing=True,
-  important=False,
 )
 
 _brillo_release.add_config('gizmo-release',

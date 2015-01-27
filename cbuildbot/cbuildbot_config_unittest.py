@@ -726,6 +726,6 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
     self.assertEquals(new['vm_tests'], old['vm_tests'])
 
     # Don't override vm tests for brillo boards.
-    old = cbuildbot_config.config['duck-paladin']
+    old = cbuildbot_config.config['storm-paladin']
     new = cbuildbot_config.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], old['vm_tests'])
