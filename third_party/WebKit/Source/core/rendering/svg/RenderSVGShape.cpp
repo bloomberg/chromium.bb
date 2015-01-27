@@ -64,8 +64,7 @@ void RenderSVGShape::updateShapeFromElement()
     processMarkerPositions();
 
     m_fillBoundingBox = calculateObjectBoundingBox();
-    m_hitTestStrokeBoundingBox = calculateHitTestStrokeBoundingBox();
-    m_strokeBoundingBox = style()->svgStyle().hasStroke() ? m_hitTestStrokeBoundingBox : m_fillBoundingBox;
+    m_strokeBoundingBox = calculateStrokeBoundingBox();
 }
 
 bool RenderSVGShape::shapeDependentStrokeContains(const FloatPoint& point)
@@ -102,16 +101,11 @@ bool RenderSVGShape::fillContains(const FloatPoint& point, bool requiresFill, co
 
 bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke)
 {
-    if (requiresStroke) {
-        if (!strokeBoundingBox().contains(point))
-            return false;
+    if (!strokeBoundingBox().contains(point))
+        return false;
 
-        if (!SVGPaintServer::existsForRenderer(*this, style(), ApplyToStrokeMode))
-            return false;
-    } else {
-        if (!hitTestStrokeBoundingBox().contains(point))
-            return false;
-    }
+    if (requiresStroke && !SVGPaintServer::existsForRenderer(*this, style(), ApplyToStrokeMode))
+        return false;
 
     return shapeDependentStrokeContains(point);
 }
@@ -227,23 +221,25 @@ FloatRect RenderSVGShape::calculateObjectBoundingBox() const
     return path().boundingRect();
 }
 
-FloatRect RenderSVGShape::calculateHitTestStrokeBoundingBox() const
+FloatRect RenderSVGShape::calculateStrokeBoundingBox() const
 {
     ASSERT(m_path);
     FloatRect strokeBoundingBox = m_fillBoundingBox;
 
-    StrokeData strokeData;
-    SVGRenderSupport::applyStrokeStyleToStrokeData(&strokeData, style(), this);
-    if (hasNonScalingStroke()) {
-        AffineTransform nonScalingTransform = nonScalingStrokeTransform();
-        if (nonScalingTransform.isInvertible()) {
-            Path* usePath = nonScalingStrokePath(m_path.get(), nonScalingTransform);
-            FloatRect strokeBoundingRect = usePath->strokeBoundingRect(strokeData);
-            strokeBoundingRect = nonScalingTransform.inverse().mapRect(strokeBoundingRect);
-            strokeBoundingBox.unite(strokeBoundingRect);
+    if (style()->svgStyle().hasStroke()) {
+        StrokeData strokeData;
+        SVGRenderSupport::applyStrokeStyleToStrokeData(&strokeData, style(), this);
+        if (hasNonScalingStroke()) {
+            AffineTransform nonScalingTransform = nonScalingStrokeTransform();
+            if (nonScalingTransform.isInvertible()) {
+                Path* usePath = nonScalingStrokePath(m_path.get(), nonScalingTransform);
+                FloatRect strokeBoundingRect = usePath->strokeBoundingRect(strokeData);
+                strokeBoundingRect = nonScalingTransform.inverse().mapRect(strokeBoundingRect);
+                strokeBoundingBox.unite(strokeBoundingRect);
+            }
+        } else {
+            strokeBoundingBox.unite(path().strokeBoundingRect(strokeData));
         }
-    } else {
-        strokeBoundingBox.unite(path().strokeBoundingRect(strokeData));
     }
 
     return strokeBoundingBox;

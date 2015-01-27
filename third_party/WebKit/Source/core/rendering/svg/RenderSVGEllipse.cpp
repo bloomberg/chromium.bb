@@ -49,7 +49,6 @@ void RenderSVGEllipse::updateShapeFromElement()
     // to avoid using garbage.
     m_fillBoundingBox = FloatRect();
     m_strokeBoundingBox = FloatRect();
-    m_hitTestStrokeBoundingBox = FloatRect();
     m_center = FloatPoint();
     m_radii = FloatSize();
     m_usePathFallback = false;
@@ -71,9 +70,9 @@ void RenderSVGEllipse::updateShapeFromElement()
     }
 
     m_fillBoundingBox = FloatRect(m_center.x() - m_radii.width(), m_center.y() - m_radii.height(), 2 * m_radii.width(), 2 * m_radii.height());
-    m_hitTestStrokeBoundingBox = m_fillBoundingBox;
-    m_hitTestStrokeBoundingBox.inflate(strokeWidth() / 2);
-    m_strokeBoundingBox = style()->svgStyle().hasStroke() ? m_hitTestStrokeBoundingBox : m_fillBoundingBox;
+    m_strokeBoundingBox = m_fillBoundingBox;
+    if (style()->svgStyle().hasStroke())
+        m_strokeBoundingBox.inflate(strokeWidth() / 2);
 }
 
 void RenderSVGEllipse::calculateRadiiAndCenter()

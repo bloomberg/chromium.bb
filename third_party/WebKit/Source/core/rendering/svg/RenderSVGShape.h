@@ -89,7 +89,6 @@ protected:
 
     FloatRect m_fillBoundingBox;
     FloatRect m_strokeBoundingBox;
-    FloatRect m_hitTestStrokeBoundingBox;
 
 private:
     // Hit-detection separated for the fill and the stroke
@@ -108,9 +107,8 @@ private:
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override final;
 
     virtual FloatRect strokeBoundingBox() const override final { return m_strokeBoundingBox; }
-    FloatRect hitTestStrokeBoundingBox() const { return m_hitTestStrokeBoundingBox; }
     FloatRect calculateObjectBoundingBox() const;
-    FloatRect calculateHitTestStrokeBoundingBox() const;
+    FloatRect calculateStrokeBoundingBox() const;
     void updatePaintInvalidationBoundingBox();
     void updateLocalTransform();
 
