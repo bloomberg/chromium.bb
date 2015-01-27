@@ -297,6 +297,10 @@ GLenum GLES2InterfaceStub::GetError() {
 }
 void GLES2InterfaceStub::GetFloatv(GLenum /* pname */, GLfloat* /* params */) {
 }
+GLint GLES2InterfaceStub::GetFragDataLocation(GLuint /* program */,
+                                              const char* /* name */) {
+  return 0;
+}
 void GLES2InterfaceStub::GetFramebufferAttachmentParameteriv(
     GLenum /* target */,
     GLenum /* attachment */,

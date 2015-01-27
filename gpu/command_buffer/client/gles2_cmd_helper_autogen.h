@@ -744,6 +744,17 @@ void GetFloatv(GLenum pname,
   }
 }
 
+void GetFragDataLocation(GLuint program,
+                         uint32_t name_bucket_id,
+                         uint32_t location_shm_id,
+                         uint32_t location_shm_offset) {
+  gles2::cmds::GetFragDataLocation* c =
+      GetCmdSpace<gles2::cmds::GetFragDataLocation>();
+  if (c) {
+    c->Init(program, name_bucket_id, location_shm_id, location_shm_offset);
+  }
+}
+
 void GetFramebufferAttachmentParameteriv(GLenum target,
                                          GLenum attachment,
                                          GLenum pname,

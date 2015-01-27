@@ -188,6 +188,7 @@ virtual void GetBufferParameteriv(GLenum target,
                                   GLint* params) = 0;
 virtual GLenum GetError() = 0;
 virtual void GetFloatv(GLenum pname, GLfloat* params) = 0;
+virtual GLint GetFragDataLocation(GLuint program, const char* name) = 0;
 virtual void GetFramebufferAttachmentParameteriv(GLenum target,
                                                  GLenum attachment,
                                                  GLenum pname,

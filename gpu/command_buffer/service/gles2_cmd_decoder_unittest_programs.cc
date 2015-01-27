@@ -875,6 +875,58 @@ TEST_P(GLES2DecoderWithShaderTest, GetAttribLocationInvalidArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
+TEST_P(GLES2DecoderWithShaderTest, GetFragDataLocation) {
+  const uint32 kBucketId = 123;
+  const GLint kLocation = 10;
+  const char* kName = "color";
+  typedef GetFragDataLocation::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  SetBucketAsCString(kBucketId, kName);
+  *result = -1;
+  GetFragDataLocation cmd;
+  cmd.Init(client_program_id_, kBucketId, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_CALL(*gl_, GetFragDataLocation(kServiceProgramId, StrEq(kName)))
+      .WillOnce(Return(kLocation))
+      .RetiresOnSaturation();
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(kLocation, *result);
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetFragDataLocationInvalidArgs) {
+  const uint32 kBucketId = 123;
+  typedef GetFragDataLocation::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  *result = -1;
+  GetFragDataLocation cmd;
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  // Check no bucket
+  cmd.Init(client_program_id_, kBucketId, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(-1, *result);
+  // Check bad program id.
+  const char* kName = "color";
+  SetBucketAsCString(kBucketId, kName);
+  cmd.Init(kInvalidClientId, kBucketId, kSharedMemoryId, kSharedMemoryOffset);
+  *result = -1;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(-1, *result);
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  // Check bad memory
+  cmd.Init(client_program_id_,
+           kBucketId,
+           kInvalidSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(client_program_id_,
+           kBucketId,
+           kSharedMemoryId,
+           kInvalidSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderWithShaderTest, GetUniformLocation) {
   const uint32 kBucketId = 123;
   const char* kNonExistentName = "foobar";

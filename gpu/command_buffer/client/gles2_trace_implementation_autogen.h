@@ -185,6 +185,7 @@ void GetBooleanv(GLenum pname, GLboolean* params) override;
 void GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) override;
 GLenum GetError() override;
 void GetFloatv(GLenum pname, GLfloat* params) override;
+GLint GetFragDataLocation(GLuint program, const char* name) override;
 void GetFramebufferAttachmentParameteriv(GLenum target,
                                          GLenum attachment,
                                          GLenum pname,

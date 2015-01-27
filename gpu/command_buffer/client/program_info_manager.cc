@@ -4,9 +4,10 @@
 
 #include "gpu/command_buffer/client/program_info_manager.h"
 
-#include <map>
+#include <string>
 
 #include "base/compiler_specific.h"
+#include "base/containers/hash_tables.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -35,6 +36,10 @@ class NonCachedProgramInfoManager : public ProgramInfoManager {
   GLint GetUniformLocation(GLES2Implementation* gl,
                            GLuint program,
                            const char* name) override;
+
+  GLint GetFragDataLocation(GLES2Implementation* gl,
+                            GLuint program,
+                            const char* name) override;
 
   bool GetActiveAttrib(GLES2Implementation* gl,
                        GLuint program,
@@ -85,6 +90,11 @@ GLint NonCachedProgramInfoManager::GetUniformLocation(
   return gl->GetUniformLocationHelper(program, name);
 }
 
+GLint NonCachedProgramInfoManager::GetFragDataLocation(
+    GLES2Implementation* gl, GLuint program, const char* name) {
+  return gl->GetFragDataLocationHelper(program, name);
+}
+
 bool NonCachedProgramInfoManager::GetActiveAttrib(
     GLES2Implementation* gl,
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
@@ -122,6 +132,10 @@ class CachedProgramInfoManager : public ProgramInfoManager {
   GLint GetUniformLocation(GLES2Implementation* gl,
                            GLuint program,
                            const char* name) override;
+
+  GLint GetFragDataLocation(GLES2Implementation* gl,
+                            GLuint program,
+                            const char* name) override;
 
   bool GetActiveAttrib(GLES2Implementation* gl,
                        GLuint program,
@@ -191,6 +205,9 @@ class CachedProgramInfoManager : public ProgramInfoManager {
     // Gets the location of a uniform by name.
     GLint GetUniformLocation(const std::string& name) const;
 
+    GLint GetFragDataLocation(const std::string& name) const;
+    void CacheFragDataLocation(const std::string& name, GLint loc);
+
     bool GetProgramiv(GLenum pname, GLint* params);
 
     // Updates the program info after a successful link.
@@ -213,14 +230,15 @@ class CachedProgramInfoManager : public ProgramInfoManager {
     // Uniform info by index.
     UniformInfoVector uniform_infos_;
 
+    base::hash_map<std::string, GLint> frag_data_locations_;
+
     // This is true if glLinkProgram was successful last time it was called.
     bool link_status_;
   };
 
   Program* GetProgramInfo(GLES2Implementation* gl, GLuint program);
 
-  // TODO(gman): Switch to a faster container.
-  typedef std::map<GLuint, Program> ProgramInfoMap;
+  typedef base::hash_map<GLuint, Program> ProgramInfoMap;
 
   ProgramInfoMap program_infos_;
 
@@ -284,6 +302,20 @@ GLint CachedProgramInfoManager::Program::GetUniformLocation(
   return -1;
 }
 
+GLint CachedProgramInfoManager::Program::GetFragDataLocation(
+    const std::string& name) const {
+  base::hash_map<std::string, GLint>::const_iterator iter =
+      frag_data_locations_.find(name);
+  if (iter == frag_data_locations_.end())
+    return -1;
+  return iter->second;
+}
+
+void CachedProgramInfoManager::Program::CacheFragDataLocation(
+    const std::string& name, GLint loc) {
+  frag_data_locations_[name] = loc;
+}
+
 bool CachedProgramInfoManager::Program::GetProgramiv(
     GLenum pname, GLint* params) {
   switch (pname) {
@@ -338,6 +370,7 @@ void CachedProgramInfoManager::Program::Update(
   }
   attrib_infos_.clear();
   uniform_infos_.clear();
+  frag_data_locations_.clear();
   max_attrib_name_length_ = 0;
   max_uniform_name_length_ = 0;
   const ProgramInput* inputs = LocalGetAs<const ProgramInput*>(
@@ -457,6 +490,30 @@ GLint CachedProgramInfoManager::GetUniformLocation(
     }
   }
   return gl->GetUniformLocationHelper(program, name);
+}
+
+GLint CachedProgramInfoManager::GetFragDataLocation(
+    GLES2Implementation* gl, GLuint program, const char* name) {
+  // TODO(zmo): make FragData locations part of the ProgramInfo that are
+  // fetched altogether from the service side.  See crbug.com/452104.
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program);
+    if (info) {
+      GLint possible_loc = info->GetFragDataLocation(name);
+      if (possible_loc != -1)
+        return possible_loc;
+    }
+  }
+  GLint loc = gl->GetFragDataLocationHelper(program, name);
+  if (loc != -1) {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program);
+    if (info) {
+      info->CacheFragDataLocation(name, loc);
+    }
+  }
+  return loc;
 }
 
 bool CachedProgramInfoManager::GetActiveAttrib(

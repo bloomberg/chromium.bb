@@ -1061,6 +1061,35 @@ bool GLES2Implementation::GetProgramivHelper(
   return got_value;
 }
 
+GLint GLES2Implementation::GetFragDataLocationHelper(
+    GLuint program, const char* name) {
+  typedef cmds::GetFragDataLocation::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return -1;
+  }
+  *result = -1;
+  SetBucketAsCString(kResultBucketId, name);
+  helper_->GetFragDataLocation(
+      program, kResultBucketId, GetResultShmId(), GetResultShmOffset());
+  WaitForCmd();
+  helper_->SetBucketSize(kResultBucketId, 0);
+  return *result;
+}
+
+GLint GLES2Implementation::GetFragDataLocation(
+    GLuint program, const char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetFragDataLocation("
+      << program << ", " << name << ")");
+  TRACE_EVENT0("gpu", "GLES2::GetFragDataLocation");
+  GLint loc = share_group_->program_info_manager()->GetFragDataLocation(
+      this, program, name);
+  GPU_CLIENT_LOG("returned " << loc);
+  CheckGLError();
+  return loc;
+}
+
 void GLES2Implementation::LinkProgram(GLuint program) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glLinkProgram(" << program << ")");

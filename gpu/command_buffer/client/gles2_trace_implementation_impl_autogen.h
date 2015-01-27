@@ -522,6 +522,12 @@ void GLES2TraceImplementation::GetFloatv(GLenum pname, GLfloat* params) {
   gl_->GetFloatv(pname, params);
 }
 
+GLint GLES2TraceImplementation::GetFragDataLocation(GLuint program,
+                                                    const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetFragDataLocation");
+  return gl_->GetFragDataLocation(program, name);
+}
+
 void GLES2TraceImplementation::GetFramebufferAttachmentParameteriv(
     GLenum target,
     GLenum attachment,

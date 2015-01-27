@@ -33,6 +33,9 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
   virtual GLint GetUniformLocation(
       GLES2Implementation* gl, GLuint program, const char* name) = 0;
 
+  virtual GLint GetFragDataLocation(
+      GLES2Implementation* gl, GLuint program, const char* name) = 0;
+
   virtual bool GetActiveAttrib(
       GLES2Implementation* gl,
       GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,

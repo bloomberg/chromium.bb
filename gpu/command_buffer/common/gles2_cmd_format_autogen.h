@@ -3590,6 +3590,61 @@ static_assert(offsetof(GetFloatv, params_shm_id) == 8,
 static_assert(offsetof(GetFloatv, params_shm_offset) == 12,
               "offset of GetFloatv params_shm_offset should be 12");
 
+struct GetFragDataLocation {
+  typedef GetFragDataLocation ValueType;
+  static const CommandId kCmdId = kGetFragDataLocation;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef GLint Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            uint32_t _name_bucket_id,
+            uint32_t _location_shm_id,
+            uint32_t _location_shm_offset) {
+    SetHeader();
+    program = _program;
+    name_bucket_id = _name_bucket_id;
+    location_shm_id = _location_shm_id;
+    location_shm_offset = _location_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            uint32_t _name_bucket_id,
+            uint32_t _location_shm_id,
+            uint32_t _location_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_program, _name_bucket_id,
+                                       _location_shm_id, _location_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t name_bucket_id;
+  uint32_t location_shm_id;
+  uint32_t location_shm_offset;
+};
+
+static_assert(sizeof(GetFragDataLocation) == 20,
+              "size of GetFragDataLocation should be 20");
+static_assert(offsetof(GetFragDataLocation, header) == 0,
+              "offset of GetFragDataLocation header should be 0");
+static_assert(offsetof(GetFragDataLocation, program) == 4,
+              "offset of GetFragDataLocation program should be 4");
+static_assert(offsetof(GetFragDataLocation, name_bucket_id) == 8,
+              "offset of GetFragDataLocation name_bucket_id should be 8");
+static_assert(offsetof(GetFragDataLocation, location_shm_id) == 12,
+              "offset of GetFragDataLocation location_shm_id should be 12");
+static_assert(offsetof(GetFragDataLocation, location_shm_offset) == 16,
+              "offset of GetFragDataLocation location_shm_offset should be 16");
+
 struct GetFramebufferAttachmentParameteriv {
   typedef GetFramebufferAttachmentParameteriv ValueType;
   static const CommandId kCmdId = kGetFramebufferAttachmentParameteriv;

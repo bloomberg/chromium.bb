@@ -347,6 +347,9 @@ GLenum GLES2GetError() {
 void GLES2GetFloatv(GLenum pname, GLfloat* params) {
   gles2::GetGLContext()->GetFloatv(pname, params);
 }
+GLint GLES2GetFragDataLocation(GLuint program, const char* name) {
+  return gles2::GetGLContext()->GetFragDataLocation(program, name);
+}
 void GLES2GetFramebufferAttachmentParameteriv(GLenum target,
                                               GLenum attachment,
                                               GLenum pname,
@@ -1535,6 +1538,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetFloatv",
      reinterpret_cast<GLES2FunctionPointer>(glGetFloatv),
+    },
+    {
+     "glGetFragDataLocation",
+     reinterpret_cast<GLES2FunctionPointer>(glGetFragDataLocation),
     },
     {
      "glGetFramebufferAttachmentParameteriv",

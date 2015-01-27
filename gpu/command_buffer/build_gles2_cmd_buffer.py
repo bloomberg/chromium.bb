@@ -2028,7 +2028,16 @@ _FUNCTION_INFO = {
     'cmd_args':
         'GLidProgram program, uint32_t name_bucket_id, GLint* location',
     'result': ['GLint'],
-    'error_return': -1, # http://www.opengl.org/sdk/docs/man/xhtml/glGetAttribLocation.xml
+    'error_return': -1,
+  },
+  'GetFragDataLocation': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
+    'cmd_args':
+        'GLidProgram program, uint32_t name_bucket_id, GLint* location',
+    'result': ['GLint'],
+    'error_return': -1,
+    'unsafe': True,
   },
   'GetBooleanv': {
     'type': 'GETn',
@@ -3838,7 +3847,7 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
           })
     else:
       if client_test != False:
-        file.Write("// TODO: Implement unit test for %s\n" % func.name)
+        file.Write("// TODO(zmo): Implement unit test for %s\n" % func.name)
 
   def WriteDestinationInitalizationValidation(self, func, file):
     """Writes the client side destintion initialization validation."""

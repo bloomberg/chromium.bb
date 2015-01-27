@@ -91,6 +91,7 @@
 #define glGetBufferParameteriv GLES2_GET_FUN(GetBufferParameteriv)
 #define glGetError GLES2_GET_FUN(GetError)
 #define glGetFloatv GLES2_GET_FUN(GetFloatv)
+#define glGetFragDataLocation GLES2_GET_FUN(GetFragDataLocation)
 #define glGetFramebufferAttachmentParameteriv \
   GLES2_GET_FUN(GetFramebufferAttachmentParameteriv)
 #define glGetIntegerv GLES2_GET_FUN(GetIntegerv)

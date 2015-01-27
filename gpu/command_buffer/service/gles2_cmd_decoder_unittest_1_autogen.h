@@ -1395,6 +1395,7 @@ TEST_P(GLES2DecoderTest1, GetFloatvInvalidArgs1_1) {
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);
 }
+// TODO(gman): GetFragDataLocation
 
 TEST_P(GLES2DecoderTest1, GetFramebufferAttachmentParameterivValidArgs) {
   EXPECT_CALL(*gl_, GetError())
@@ -1943,7 +1944,5 @@ TEST_P(GLES2DecoderTest1, GetTexParameterivInvalidArgs2_1) {
 // TODO(gman): GetUniformfv
 
 // TODO(gman): GetUniformiv
-
-// TODO(gman): GetUniformLocation
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_

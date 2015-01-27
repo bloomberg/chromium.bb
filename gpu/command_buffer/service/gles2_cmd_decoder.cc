@@ -1170,6 +1170,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str);
 
+  error::Error GetFragDataLocationHelper(
+    GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
+    const std::string& name_str);
+
   // Wrapper for glShaderSource.
   void DoShaderSource(
       GLuint client_id, GLsizei count, const char** data, const GLint* length);
@@ -8122,6 +8126,47 @@ error::Error GLES2DecoderImpl::HandleGetUniformLocation(
   }
   return GetUniformLocationHelper(
     c.program, c.location_shm_id, c.location_shm_offset, name_str);
+}
+
+error::Error GLES2DecoderImpl::GetFragDataLocationHelper(
+    GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
+    const std::string& name_str) {
+  GLint* location = GetSharedMemoryAs<GLint*>(
+      location_shm_id, location_shm_offset, sizeof(GLint));
+  if (!location) {
+    return error::kOutOfBounds;
+  }
+  // Require the client to init this incase the context is lost and we are no
+  // longer executing commands.
+  if (*location != -1) {
+    return error::kGenericError;
+  }
+  Program* program = GetProgramInfoNotShader(
+      client_id, "glGetFragDataLocation");
+  if (!program) {
+    return error::kNoError;
+  }
+  *location = glGetFragDataLocation(program->service_id(), name_str.c_str());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetFragDataLocation(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetFragDataLocation& c =
+      *static_cast<const gles2::cmds::GetFragDataLocation*>(cmd_data);
+  Bucket* bucket = GetBucket(c.name_bucket_id);
+  if (!bucket) {
+    return error::kInvalidArguments;
+  }
+  std::string name_str;
+  if (!bucket->GetAsString(&name_str)) {
+    return error::kInvalidArguments;
+  }
+  return GetFragDataLocationHelper(
+      c.program, c.location_shm_id, c.location_shm_offset, name_str);
 }
 
 error::Error GLES2DecoderImpl::HandleGetString(uint32 immediate_data_size,
