@@ -230,4 +230,23 @@
       ]
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'extensions_browsertests_run',
+          'type': 'none',
+          'dependencies': [
+            'extensions_browsertests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'extensions_browsertests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }
