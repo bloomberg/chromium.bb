@@ -1082,8 +1082,9 @@ void AudioContext::fireCompletionEvent()
 
     // Avoid firing the event if the document has already gone away.
     if (executionContext()) {
-        // Call the offline rendering completion event listener.
+        // Call the offline rendering completion event listener and resolve the promise too.
         dispatchEvent(OfflineAudioCompletionEvent::create(renderedBuffer));
+        m_offlineResolver->resolve(renderedBuffer);
     }
 }
 

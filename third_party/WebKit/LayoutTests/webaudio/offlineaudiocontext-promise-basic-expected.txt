@@ -1,0 +1,15 @@
+Test OfflineAudioContext.startRendering Promise
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Promise correctly rejected when calling startRendering twice
+PASS context.state is "closed"
+PASS renderedData.numberOfChannels is 2
+PASS renderedData.length is 48000
+PASS Rendered data matches expected results
+PASS OfflineAudioContext.startRendering promise succeeded
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

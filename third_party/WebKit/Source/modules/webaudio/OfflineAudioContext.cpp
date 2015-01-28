@@ -101,6 +101,22 @@ OfflineAudioContext::~OfflineAudioContext()
 {
 }
 
+ScriptPromise OfflineAudioContext::startOfflineRendering(ScriptState* scriptState)
+{
+    if (m_offlineResolver) {
+        // Can't call startRendering more than once.  Return a rejected promise now.
+        return ScriptPromise::rejectWithDOMException(
+            scriptState,
+            DOMException::create(
+                InvalidStateError,
+                "cannot call startRendering more than once"));
+    }
+
+    m_offlineResolver = ScriptPromiseResolver::create(scriptState);
+    destination()->startRendering();
+    return m_offlineResolver->promise();
+}
+
 } // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

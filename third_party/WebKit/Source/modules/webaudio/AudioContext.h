@@ -265,6 +265,7 @@ protected:
     explicit AudioContext(Document*);
     AudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
 
+    RefPtrWillBeMember<ScriptPromiseResolver> m_offlineResolver;
 private:
     void initialize();
     void uninitialize();

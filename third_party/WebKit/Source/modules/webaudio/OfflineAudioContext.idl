@@ -31,6 +31,5 @@
 ] interface OfflineAudioContext : AudioContext {
     // Offline rendering
     attribute EventHandler oncomplete;
-    void startRendering();
-
+    [CallWith=ScriptState,ImplementedAs=startOfflineRendering] Promise<AudioBuffer> startRendering();
 };

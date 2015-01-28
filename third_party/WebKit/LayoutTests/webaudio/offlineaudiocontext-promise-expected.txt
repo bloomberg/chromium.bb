@@ -1,0 +1,10 @@
+Test OfflineAudioContext.startRendering Promise with oncomplete
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS AudioBuffer returned by oncomplete and promise are identical
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

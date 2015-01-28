@@ -38,6 +38,7 @@ public:
 
     virtual ~OfflineAudioContext();
 
+    ScriptPromise startOfflineRendering(ScriptState*);
 private:
     OfflineAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
 };
