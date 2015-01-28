@@ -13,6 +13,7 @@ sys.path.append(os.path.join(SRC, 'third_party', 'pymock'))
 
 import bisect_perf_regression
 import bisect_utils
+import fetch_build
 import mock
 import source_control
 
@@ -584,7 +585,7 @@ class GitTryJobTestCases(unittest.TestCase):
                                  bisect_perf_regression._PrepareBisectBranch,
                                  parent_branch, new_branch)
 
-  def testBuilderTryJobForException(self):
+  def testStartBuilderTryJobForException(self):
     git_revision = 'ac4a9f31fe2610bd146857bbd55d7a260003a888'
     bot_name = 'linux_perf_bisect_builder'
     bisect_job_name = 'testBisectJobname'
@@ -602,16 +603,17 @@ class GitTryJobTestCases(unittest.TestCase):
         (['branch', '--set-upstream-to', parent_branch],
          ('Setuptream fails', 0)),
         (['try',
-          '-b', bot_name,
-          '-r', git_revision,
-          '-n', bisect_job_name,
-          '--svn_repo=%s' % bisect_perf_regression.SVN_REPO_URL,
+          '--bot=%s' % bot_name,
+          '--revision=%s' % git_revision,
+          '--name=%s' % bisect_job_name,
+          '--svn_repo=%s' % bisect_perf_regression.PERF_SVN_REPO_URL,
           '--diff=%s' % patch_content
          ], (None, 1)),
     ]
-    self._AssertRunGitExceptions(try_cmd,
-                                 bisect_perf_regression._BuilderTryjob,
-                                 git_revision, bot_name, bisect_job_name, patch)
+    self._AssertRunGitExceptions(
+        try_cmd, bisect_perf_regression._StartBuilderTryJob,
+        fetch_build.PERF_BUILDER, git_revision, bot_name, bisect_job_name,
+        patch)
 
   def testBuilderTryJob(self):
     git_revision = 'ac4a9f31fe2610bd146857bbd55d7a260003a888'
@@ -631,16 +633,17 @@ class GitTryJobTestCases(unittest.TestCase):
         (['branch', '--set-upstream-to', parent_branch],
          ('Setuptream fails', 0)),
         (['try',
-          '-b', bot_name,
-          '-r', git_revision,
-          '-n', bisect_job_name,
-          '--svn_repo=%s' % bisect_perf_regression.SVN_REPO_URL,
+          '--bot=%s' % bot_name,
+          '--revision=%s' % git_revision,
+          '--name=%s' % bisect_job_name,
+          '--svn_repo=%s' % bisect_perf_regression.PERF_SVN_REPO_URL,
           '--diff=%s' % patch_content
          ], (None, 0)),
     ]
     self._SetupRunGitMock(try_cmd)
-    bisect_perf_regression._BuilderTryjob(
-        git_revision, bot_name, bisect_job_name, patch)
+    bisect_perf_regression._StartBuilderTryJob(
+        fetch_build.PERF_BUILDER, git_revision, bot_name, bisect_job_name,
+        patch)
 
 
 if __name__ == '__main__':

@@ -1,35 +1,44 @@
 #!/usr/bin/env python
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Performance Test Bisect Tool
+"""Chromium auto-bisect tool
 
-This script bisects a series of changelists using binary search. It starts at
-a bad revision where a performance metric has regressed, and asks for a last
-known-good revision. It will then binary search across this revision range by
-syncing, building, and running a performance test. If the change is
-suspected to occur as a result of WebKit/V8 changes, the script will
-further bisect changes to those depots and attempt to narrow down the revision
-range.
+This script bisects a range of commits using binary search. It starts by getting
+reference values for the specified "good" and "bad" commits. Then, for revisions
+in between, it will get builds, run tests and classify intermediate revisions as
+"good" or "bad" until an adjacent "good" and "bad" revision is found; this is
+the culprit.
 
-Example usage using SVN revisions:
+If the culprit is a roll if a depedency repository (e.g. v8), it will then
+expand the revision range and continue the bisect until a culprit revision in
+the dependency repository is found.
 
-./tools/bisect_perf_regression.py -c\
-  "out/Release/performance_ui_tests --gtest_filter=ShutdownTest.SimpleUserQuit"\
-  -g 168222 -b 168232 -m shutdown/simple-user-quit
+Example usage using git commit hashes, bisecting a performance test based on
+the mean value of a particular metric:
 
-Be aware that if you're using the git workflow and specify an SVN revision,
-the script will attempt to find the git SHA1 where SVN changes up to that
-revision were merged in.
+./tools/auto_bisect/bisect_perf_regression.py
+  --command "out/Release/performance_ui_tests \
+      --gtest_filter=ShutdownTest.SimpleUserQuit"\
+  --metric shutdown/simple-user-quit
+  --good_revision 1f6e67861535121c5c819c16a666f2436c207e7b\
+  --bad-revision b732f23b4f81c382db0b23b9035f3dadc7d925bb\
 
-Example usage using git hashes:
+Example usage using git commit positions, bisecting a functional test based on
+whether it passes or fails.
 
-./tools/bisect_perf_regression.py -c\
-  "out/Release/performance_ui_tests --gtest_filter=ShutdownTest.SimpleUserQuit"\
-  -g 1f6e67861535121c5c819c16a666f2436c207e7b\
-  -b b732f23b4f81c382db0b23b9035f3dadc7d925bb\
-  -m shutdown/simple-user-quit
+./tools/auto_bisect/bisect_perf_regression.py\
+  --command "out/Release/content_unittests -single-process-tests \
+            --gtest_filter=GpuMemoryBufferImplTests"\
+  --good_revision 408222\
+  --bad_revision 408232\
+  --bisect_mode return_code\
+  --builder_type full
+
+In practice, the auto-bisect tool is usually run on tryserver.chromium.perf
+try bots, and is started by tools/run-bisect-perf-regression.py using
+config parameters from tools/auto_bisect/bisect.cfg.
 """
 
 import copy
@@ -117,7 +126,8 @@ BISECT_MASTER_BRANCH = 'master'
 # File to store 'git diff' content.
 BISECT_PATCH_FILE = 'deps_patch.txt'
 # SVN repo where the bisect try jobs are submitted.
-SVN_REPO_URL = 'svn://svn.chromium.org/chrome-try/try-perf'
+PERF_SVN_REPO_URL = 'svn://svn.chromium.org/chrome-try/try-perf'
+FULL_SVN_REPO_URL = 'svn://svn.chromium.org/chrome-try/try'
 
 
 class RunGitError(Exception):
@@ -188,13 +198,13 @@ def _ParseRevisionsFromDEPSFileManually(deps_file_contents):
   return dict(re_results)
 
 
-def _WaitUntilBuildIsReady(fetch_build_func, bot_name, builder_type,
+def _WaitUntilBuildIsReady(fetch_build_func, builder_name, builder_type,
                            build_request_id, max_timeout):
   """Waits until build is produced by bisect builder on try server.
 
   Args:
     fetch_build_func: Function to check and download build from cloud storage.
-    bot_name: Builder bot name on try server.
+    builder_name: Builder bot name on try server.
     builder_type: Builder type, e.g. "perf" or "full". Refer to the constants
         |fetch_build| which determine the valid values that can be passed.
     build_request_id: A unique ID of the build request posted to try server.
@@ -224,12 +234,12 @@ def _WaitUntilBuildIsReady(fetch_build_func, bot_name, builder_type,
       if not build_num:
         # Get the build number on try server for the current build.
         build_num = request_build.GetBuildNumFromBuilder(
-            build_request_id, bot_name, builder_type)
+            build_request_id, builder_name, builder_type)
       # Check the status of build using the build number.
       # Note: Build is treated as PENDING if build number is not found
       # on the the try server.
       build_status, status_link = request_build.GetBuildStatus(
-          build_num, bot_name, builder_type)
+          build_num, builder_name, builder_type)
       if build_status == request_build.FAILED:
         return (None, 'Failed to produce build, log: %s' % status_link)
     elapsed_time = time.time() - start_time
@@ -580,41 +590,84 @@ def _PrepareBisectBranch(parent_branch, new_branch):
     raise RunGitError('Error in git branch --set-upstream-to')
 
 
-def _BuilderTryjob(git_revision, bot_name, bisect_job_name, patch=None):
-  """Attempts to run a tryjob from the current directory.
+def _GetBuilderName(builder_type, target_platform):
+  """Gets builder bot name and build time in seconds based on platform."""
+  # TODO(prasadv, qyearsley): Make this a method of BuildArchive
+  # (which may be renamed to BuilderTryBot or Builder).
+  if builder_type == fetch_build.FULL_BUILDER:
+    # The following builder is on tryserver.chromium.linux.
+    # TODO(qyearsley): Change this name when more platforms are supported.
+    return 'bisect_builder'
+  if builder_type == fetch_build.PERF_BUILDER:
+    if bisect_utils.IsWindowsHost():
+      return 'win_perf_bisect_builder'
+    if bisect_utils.IsLinuxHost():
+      if target_platform == 'android':
+        return 'android_perf_bisect_builder'
+      return 'linux_perf_bisect_builder'
+    if bisect_utils.IsMacHost():
+      return 'mac_perf_bisect_builder'
+    raise NotImplementedError('Unsupported platform "%s".' % sys.platform)
+  raise NotImplementedError('Unsupported builder type "%s".' % builder_type)
+
+
+def _GetBuilderBuildTime():
+  """Returns the time to wait for a build after requesting one."""
+  # TODO(prasadv, qyearsley): Make this a method of BuildArchive
+  # (which may be renamed to BuilderTryBot or Builder).
+  if bisect_utils.IsWindowsHost():
+    return MAX_WIN_BUILD_TIME
+  if bisect_utils.IsLinuxHost():
+    return MAX_LINUX_BUILD_TIME
+  if bisect_utils.IsMacHost():
+    return MAX_MAC_BUILD_TIME
+  raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
+
+
+def _StartBuilderTryJob(
+    builder_type, git_revision, builder_name, job_name, patch=None):
+  """Attempts to run a try job from the current directory.
 
   Args:
-    git_revision: A Git hash revision.
-    bot_name: Name of the bisect bot to be used for try job.
-    bisect_job_name: Bisect try job name.
-    patch: A DEPS patch (used while bisecting 3rd party repositories).
+    builder_type: One of the builder types in fetch_build, e.g. "perf".
+    git_revision: A git commit hash.
+    builder_name: Name of the bisect bot to be used for try job.
+    bisect_job_name: Try job name, used to identify which bisect
+        job was responsible for requesting a build.
+    patch: A DEPS patch (used while bisecting dependency repositories),
+        or None if we're bisecting the top-level repository.
   """
+  # TODO(prasadv, qyearsley): Make this a method of BuildArchive
+  # (which may be renamed to BuilderTryBot or Builder).
   try:
     # Temporary branch for running tryjob.
     _PrepareBisectBranch(BISECT_MASTER_BRANCH, BISECT_TRYJOB_BRANCH)
     patch_content = '/dev/null'
-    # Create a temporary patch file, if it fails raise an exception.
+    # Create a temporary patch file.
     if patch:
       WriteStringToFile(patch, BISECT_PATCH_FILE)
       patch_content = BISECT_PATCH_FILE
 
-    try_cmd = ['try',
-               '-b', bot_name,
-               '-r', git_revision,
-               '-n', bisect_job_name,
-               '--svn_repo=%s' % SVN_REPO_URL,
-               '--diff=%s' % patch_content
-              ]
+    try_command = [
+        'try',
+        '--bot=%s' % builder_name,
+        '--revision=%s' % git_revision,
+        '--name=%s' % job_name,
+        '--svn_repo=%s' % _TryJobSvnRepo(builder_type),
+        '--diff=%s' % patch_content,
+    ]
     # Execute try job to build revision.
-    output, returncode = bisect_utils.RunGit(try_cmd)
+    print try_command
+    output, return_code = bisect_utils.RunGit(try_command)
 
-    if returncode:
-      raise RunGitError('Could not execute tryjob: %s.\n Error: %s' % (
-                         'git %s' % ' '.join(try_cmd), output))
+    command_string = ' '.join(['git'] + try_command)
+    if return_code:
+      raise RunGitError('Could not execute tryjob: %s.\n'
+                        'Error: %s' % (command_string, output))
     logging.info('Try job successfully submitted.\n TryJob Details: %s\n%s',
-           'git %s' % ' '.join(try_cmd), output)
+                 command_string, output)
   finally:
-    # Delete patch file if exists
+    # Delete patch file if exists.
     try:
       os.remove(BISECT_PATCH_FILE)
     except OSError as e:
@@ -623,6 +676,15 @@ def _BuilderTryjob(git_revision, bot_name, bisect_job_name, patch=None):
     # Checkout master branch and delete bisect-tryjob branch.
     bisect_utils.RunGit(['checkout', '-f', BISECT_MASTER_BRANCH])
     bisect_utils.RunGit(['branch', '-D', BISECT_TRYJOB_BRANCH])
+
+
+def _TryJobSvnRepo(builder_type):
+  """Returns an SVN repo to use for try jobs based on the builder type."""
+  if builder_type == fetch_build.PERF_BUILDER:
+    return PERF_SVN_REPO_URL
+  if builder_type == fetch_build.FULL_BUILDER:
+    return FULL_SVN_REPO_URL
+  raise NotImplementedError('Unknown builder type "%s".' % builder_type)
 
 
 class BisectPerformanceMetrics(object):
@@ -831,7 +893,8 @@ class BisectPerformanceMetrics(object):
       File path of the downloaded file if successful, otherwise None.
     """
     bucket_name, remote_path = fetch_build.GetBucketAndRemotePath(
-        revision, target_arch=self.opts.target_arch,
+        revision, builder_type=self.opts.builder_type,
+        target_arch=self.opts.target_arch,
         target_platform=self.opts.target_platform,
         deps_patch_sha=deps_patch_sha)
     output_dir = os.path.abspath(build_dir)
@@ -879,48 +942,24 @@ class BisectPerformanceMetrics(object):
     # Revert any changes to DEPS file.
     bisect_utils.CheckRunGit(['reset', '--hard', 'HEAD'], cwd=self.src_cwd)
 
-    bot_name = self._GetBuilderName(self.opts.target_platform)
-    build_timeout = self._GetBuilderBuildTime()
+    builder_name = _GetBuilderName(
+        self.opts.builder_type, self.opts.target_platform)
+    build_timeout = _GetBuilderBuildTime()
 
     try:
-      _BuilderTryjob(git_revision, bot_name, build_request_id, deps_patch)
+      _StartBuilderTryJob(self.opts.builder_type, git_revision, builder_name,
+                          job_name=build_request_id, patch=deps_patch)
     except RunGitError as e:
       logging.warn('Failed to post builder try job for revision: [%s].\n'
                    'Error: %s', git_revision, e)
       return None
 
     archive_filename, error_msg = _WaitUntilBuildIsReady(
-        fetch_build_func, bot_name, self.opts.builder_type, build_request_id,
-        build_timeout)
+        fetch_build_func, builder_name, self.opts.builder_type,
+        build_request_id, build_timeout)
     if not archive_filename:
       logging.warn('%s [revision: %s]', error_msg, git_revision)
     return archive_filename
-
-  @staticmethod
-  def _GetBuilderName(target_platform, builder_type=fetch_build.PERF_BUILDER):
-    """Gets builder bot name and build time in seconds based on platform."""
-    if builder_type != fetch_build.PERF_BUILDER:
-      raise NotImplementedError('No builder names for non-perf builds yet.')
-    if bisect_utils.IsWindowsHost():
-      return 'win_perf_bisect_builder'
-    if bisect_utils.IsLinuxHost():
-      if target_platform == 'android':
-        return 'android_perf_bisect_builder'
-      return 'linux_perf_bisect_builder'
-    if bisect_utils.IsMacHost():
-      return 'mac_perf_bisect_builder'
-    raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
-
-  @staticmethod
-  def _GetBuilderBuildTime():
-    """Returns the time to wait for a build after requesting one."""
-    if bisect_utils.IsWindowsHost():
-      return MAX_WIN_BUILD_TIME
-    if bisect_utils.IsLinuxHost():
-      return MAX_LINUX_BUILD_TIME
-    if bisect_utils.IsMacHost():
-      return MAX_MAC_BUILD_TIME
-    raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
 
   def _UnzipAndMoveBuildProducts(self, downloaded_file, build_dir,
                                  build_type='Release'):
@@ -1004,7 +1043,7 @@ class BisectPerformanceMetrics(object):
   def IsDownloadable(self, depot):
     """Checks if build can be downloaded based on target platform and depot."""
     if (self.opts.target_platform in ['chromium', 'android']
-        and self.opts.builder_type == fetch_build.PERF_BUILDER):
+        and self.opts.builder_type):
       return (depot == 'chromium' or
               'chromium' in bisect_utils.DEPOT_DEPS_NAME[depot]['from'] or
               'v8' in bisect_utils.DEPOT_DEPS_NAME[depot]['from'])

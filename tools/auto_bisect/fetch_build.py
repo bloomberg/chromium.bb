@@ -51,6 +51,8 @@ def GetBucketAndRemotePath(revision, builder_type=PERF_BUILDER,
   Returns:
     A pair of strings (bucket, path), where the archive is expected to be.
   """
+  logging.info('Creating BuildArchive, type "%s", arch "%s", platform "%s".',
+               builder_type, target_arch, target_platform)
   build_archive = BuildArchive.Create(
       builder_type, target_arch=target_arch, target_platform=target_platform,
       extra_src=extra_src)
@@ -70,7 +72,9 @@ class BuildArchive(object):
 
   @staticmethod
   def Create(builder_type, target_arch='ia32', target_platform='chromium',
-        extra_src=None):
+             extra_src=None):
+    logging.info('Creating BuildArchive, type "%s", arch "%s", platform "%s".',
+                 builder_type, target_arch, target_platform)
     if builder_type == PERF_BUILDER:
       return PerfBuildArchive(target_arch, target_platform)
     if builder_type == FULL_BUILDER:
@@ -414,4 +418,3 @@ def Main(argv):
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv))
-

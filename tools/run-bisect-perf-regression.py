@@ -148,13 +148,7 @@ def _ValidatePerfConfigFile(config_contents):
   Returns:
     True if valid.
   """
-  required_parameters = [
-      'command',
-      'repeat_count',
-      'truncate_percent',
-      'max_time_minutes',
-  ]
-  return _ValidateConfigFile(config_contents, required_parameters)
+  return _ValidateConfigFile(config_contents, required_parameters=['command'])
 
 
 def _ValidateBisectConfigFile(config_contents):
@@ -169,16 +163,9 @@ def _ValidateBisectConfigFile(config_contents):
   Returns:
     True if valid.
   """
-  required_params = [
-      'command',
-      'good_revision',
-      'bad_revision',
-      'metric',
-      'repeat_count',
-      'truncate_percent',
-      'max_time_minutes',
-  ]
-  return _ValidateConfigFile(config_contents, required_params)
+  return _ValidateConfigFile(
+      config_contents,
+      required_parameters=['command', 'good_revision', 'bad_revision'])
 
 
 def _OutputFailedResults(text_to_print):
@@ -498,13 +485,13 @@ def _RunBisectionScript(
       '--command', config['command'],
       '--good_revision', config['good_revision'],
       '--bad_revision', config['bad_revision'],
-      '--metric', config['metric'],
       '--working_directory', working_directory,
       '--output_buildbot_annotations'
   ]
 
   # Add flags for any optional config parameters if given in the config.
   options = [
+      ('metric', '--metric'),
       ('repeat_count', '--repeat_test_count'),
       ('truncate_percent', '--truncate_percent'),
       ('max_time_minutes', '--max_time_minutes'),
