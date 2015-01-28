@@ -59,6 +59,8 @@ void CSSParser::parseSheet(const CSSParserContext& context, StyleSheetContents* 
 
 bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode parserMode, StyleSheetContents* styleSheet)
 {
+    if (string.isEmpty())
+        return false;
     if (parseFastPath(declaration, propertyID, string, important, parserMode))
         return true;
     CSSParserContext context(parserMode, 0);
