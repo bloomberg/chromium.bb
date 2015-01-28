@@ -1090,6 +1090,7 @@ void AudioContext::fireCompletionEvent()
 
 void AudioContext::trace(Visitor* visitor)
 {
+    visitor->trace(m_offlineResolver);
     visitor->trace(m_renderTarget);
     visitor->trace(m_destinationNode);
     visitor->trace(m_listener);
