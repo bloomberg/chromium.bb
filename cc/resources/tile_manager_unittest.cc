@@ -564,8 +564,7 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
       std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
 
   // Ensure we can activate.
-  EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
-  EXPECT_TRUE(pending_child_raw->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_TRUE(tile_manager()->IsReadyToActivate());
 }
 
 TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {

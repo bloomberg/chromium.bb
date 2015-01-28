@@ -3439,18 +3439,18 @@ TEST_F(PictureLayerImplTest, LowResReadyToDrawNotEnoughToActivate) {
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, invalidation);
 
   // All pending layer tiles required are not ready.
-  EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
   // Initialize all low-res tiles.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->LowResTiling());
 
   // Low-res tiles should not be enough.
-  EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
   // Initialize remaining tiles.
   pending_layer_->SetAllTilesReady();
 
-  EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
 
 TEST_F(PictureLayerImplTest, HighResReadyToDrawEnoughToActivate) {
@@ -3462,13 +3462,13 @@ TEST_F(PictureLayerImplTest, HighResReadyToDrawEnoughToActivate) {
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, invalidation);
 
   // All pending layer tiles required are not ready.
-  EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
   // Initialize all high-res tiles.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
 
   // High-res tiles should be enough, since they cover everything visible.
-  EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
 
 TEST_F(PictureLayerImplTest,
@@ -3486,11 +3486,11 @@ TEST_F(PictureLayerImplTest,
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->LowResTiling());
 
   // The unshared high-res tiles are not ready, so we cannot activate.
-  EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
   // When the unshared pending high-res tiles are ready, we can activate.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
-  EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
 
 TEST_F(PictureLayerImplTest, SharedActiveHighResReadyNotEnoughToActivate) {
@@ -3505,11 +3505,11 @@ TEST_F(PictureLayerImplTest, SharedActiveHighResReadyNotEnoughToActivate) {
   active_layer_->SetAllTilesReadyInTiling(active_layer_->HighResTiling());
 
   // The unshared high-res tiles are not ready, so we cannot activate.
-  EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
   // When the unshared pending high-res tiles are ready, we can activate.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
-  EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
 
 TEST_F(NoLowResPictureLayerImplTest, ManageTilingsCreatesTilings) {
@@ -4924,7 +4924,7 @@ TEST_F(PictureLayerImplTest, ChangeInViewportAllowsTilingUpdates) {
   pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
 
   // Ensure we can't activate.
-  EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
   // Now in the same frame, move the viewport (this can happen during
   // animation).
@@ -4951,7 +4951,7 @@ TEST_F(PictureLayerImplTest, ChangeInViewportAllowsTilingUpdates) {
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
 
   // Ensure we can activate.
-  EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
 
 TEST_F(PictureLayerImplTest, CloneMissingRecordings) {

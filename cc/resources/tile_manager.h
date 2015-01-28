@@ -39,11 +39,6 @@ class ResourceProvider;
 
 class CC_EXPORT TileManagerClient {
  public:
-  // Returns the set of layers that the tile manager should consider for raster.
-  // TODO(vmpstr): Change the way we determine if we are ready to activate, so
-  // that this can be removed.
-  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers() const = 0;
-
   // Called when all tiles marked as required for activation are ready to draw.
   virtual void NotifyReadyToActivate() = 0;
 
@@ -176,6 +171,9 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
     scheduled_raster_task_limit_ = limit;
   }
 
+  bool IsReadyToActivate() const;
+  bool IsReadyToDraw() const;
+
  protected:
   TileManager(TileManagerClient* client,
               const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -259,8 +257,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
       const TilePriority& oother_priority,
       MemoryUsage* usage);
   bool TilePriorityViolatesMemoryPolicy(const TilePriority& priority);
-  bool IsReadyToActivate() const;
-  bool IsReadyToDraw() const;
+  bool AreRequiredTilesReadyToDraw(RasterTilePriorityQueue::Type type) const;
   void NotifyReadyToActivate();
   void NotifyReadyToDraw();
   void CheckIfReadyToActivate();

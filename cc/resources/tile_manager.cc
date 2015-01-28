@@ -865,31 +865,31 @@ void TileManager::SetTileTaskRunnerForTesting(
   tile_task_runner_->SetClient(this);
 }
 
-bool TileManager::IsReadyToActivate() const {
-  TRACE_EVENT0("cc", "TileManager::IsReadyToActivate");
-  const std::vector<PictureLayerImpl*>& layers = client_->GetPictureLayers();
-
-  // TODO(vmpstr): Replace this with building a REQUIRED_TO_ACTIVATE raster
-  // queue and checking if the tiles it contains are all ready to draw.
-  for (const auto& layer : layers) {
-    if (!layer->AllTilesRequiredForActivationAreReadyToDraw())
+bool TileManager::AreRequiredTilesReadyToDraw(
+    RasterTilePriorityQueue::Type type) const {
+  scoped_ptr<RasterTilePriorityQueue> raster_priority_queue(
+      client_->BuildRasterQueue(global_state_.tree_priority, type));
+  // It is insufficient to check whether the raster queue we constructed is
+  // empty. The reason for this is that there are situations (rasterize on
+  // demand) when the tile both needs raster and it's ready to draw. Hence, we
+  // have to iterate the queue to check whether the required tiles are ready to
+  // draw.
+  for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
+    if (!raster_priority_queue->Top()->IsReadyToDraw())
       return false;
   }
-
   return true;
+}
+bool TileManager::IsReadyToActivate() const {
+  TRACE_EVENT0("cc", "TileManager::IsReadyToActivate");
+  return AreRequiredTilesReadyToDraw(
+      RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION);
 }
 
 bool TileManager::IsReadyToDraw() const {
-  const std::vector<PictureLayerImpl*>& layers = client_->GetPictureLayers();
-
-  // TODO(vmpstr): Replace this with building a REQUIRED_TO_DRAW raster queue
-  // and checking if the tiles it contains are all ready to draw.
-  for (const auto& layer : layers) {
-    if (!layer->AllTilesRequiredForDrawAreReadyToDraw())
-      return false;
-  }
-
-  return true;
+  TRACE_EVENT0("cc", "TileManager::IsReadyToDraw");
+  return AreRequiredTilesReadyToDraw(
+      RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
 }
 
 void TileManager::NotifyReadyToActivate() {

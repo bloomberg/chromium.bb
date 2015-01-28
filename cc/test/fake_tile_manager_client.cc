@@ -14,11 +14,6 @@ FakeTileManagerClient::FakeTileManagerClient() {
 FakeTileManagerClient::~FakeTileManagerClient() {
 }
 
-const std::vector<PictureLayerImpl*>& FakeTileManagerClient::GetPictureLayers()
-    const {
-  return picture_layers_;
-}
-
 scoped_ptr<RasterTilePriorityQueue> FakeTileManagerClient::BuildRasterQueue(
     TreePriority tree_priority,
     RasterTilePriorityQueue::Type type) {

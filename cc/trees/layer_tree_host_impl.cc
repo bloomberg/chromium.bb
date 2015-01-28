@@ -1203,18 +1203,23 @@ scoped_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
   scoped_ptr<RasterTilePriorityQueue> queue(RasterTilePriorityQueue::Create(
       picture_layer_pairs_, tree_priority, type));
 
-  if (!queue->IsEmpty()) {
-    // Only checking the Top() tile here isn't a definite answer that there is
-    // or isn't something required for draw in this raster queue. It's just a
-    // heuristic to let us hit the common case and proactively tell the
-    // scheduler that we expect to draw within each vsync until we get all the
-    // tiles ready to draw. If we happen to miss a required for draw tile here,
-    // then we will miss telling the scheduler each frame that we intend to draw
-    // so it may make worse scheduling decisions.
-    required_for_draw_tile_is_top_of_raster_queue_ =
-        queue->Top()->required_for_draw();
-  } else {
-    required_for_draw_tile_is_top_of_raster_queue_ = false;
+  // Only check whether the top tile is required for draw if we're not building
+  // a required for activation queue.
+  // TODO(vmpstr): Remove side-effects from this function. crbug.com/451147
+  if (type != RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION) {
+    if (!queue->IsEmpty()) {
+      // Only checking the Top() tile here isn't a definite answer that there is
+      // or isn't something required for draw in this raster queue. It's just a
+      // heuristic to let us hit the common case and proactively tell the
+      // scheduler that we expect to draw within each vsync until we get all the
+      // tiles ready to draw. If we happen to miss a required for draw tile
+      // here, then we will miss telling the scheduler each frame that we intend
+      // to draw so it may make worse scheduling decisions.
+      required_for_draw_tile_is_top_of_raster_queue_ =
+          queue->Top()->required_for_draw();
+    } else {
+      required_for_draw_tile_is_top_of_raster_queue_ = false;
+    }
   }
   return queue;
 }

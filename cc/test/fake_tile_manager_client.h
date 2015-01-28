@@ -17,7 +17,6 @@ class FakeTileManagerClient : public TileManagerClient {
   ~FakeTileManagerClient() override;
 
   // TileManagerClient implementation.
-  const std::vector<PictureLayerImpl*>& GetPictureLayers() const override;
   void NotifyReadyToActivate() override {}
   void NotifyReadyToDraw() override {}
   void NotifyTileStateChanged(const Tile* tile) override {}
@@ -26,9 +25,6 @@ class FakeTileManagerClient : public TileManagerClient {
       RasterTilePriorityQueue::Type type) override;
   scoped_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
-
- private:
-  std::vector<PictureLayerImpl*> picture_layers_;
 };
 
 }  // namespace cc

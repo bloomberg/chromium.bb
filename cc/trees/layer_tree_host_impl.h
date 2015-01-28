@@ -241,7 +241,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetFullRootLayerDamage() override;
 
   // TileManagerClient implementation.
-  const std::vector<PictureLayerImpl*>& GetPictureLayers() const override;
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;
   void NotifyTileStateChanged(const Tile* tile) override;
@@ -250,6 +249,10 @@ class CC_EXPORT LayerTreeHostImpl
       RasterTilePriorityQueue::Type type) override;
   scoped_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
+
+  // Returns existing picture layers.
+  // TODO(vmpstr): Remove this, it's only used in tests.
+  const std::vector<PictureLayerImpl*>& GetPictureLayers() const;
 
   // ScrollbarAnimationControllerClient implementation.
   void PostDelayedScrollbarFade(const base::Closure& start_fade,

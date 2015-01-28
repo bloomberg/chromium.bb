@@ -98,8 +98,6 @@ class CC_EXPORT PictureLayerImpl
   bool IsOnActiveOrPendingTree() const;
   // Virtual for testing.
   virtual bool HasValidTilePriorities() const;
-  bool AllTilesRequiredForActivationAreReadyToDraw() const;
-  bool AllTilesRequiredForDrawAreReadyToDraw() const;
 
   // Used for benchmarking
   RasterSource* GetRasterSource() const { return raster_source_.get(); }
@@ -124,12 +122,6 @@ class CC_EXPORT PictureLayerImpl
   PictureLayerImpl* GetRecycledTwinLayer() const;
 
   void SanityCheckTilingState() const;
-  // Checks if all tiles required for a certain action (e.g. activation) are
-  // ready to draw.  is_tile_required_callback gets called on all candidate
-  // tiles and returns true if the tile is required for the action.
-  bool AllTilesRequiredAreReadyToDraw(
-      TileRequirementCheck is_tile_required_callback) const;
-
   bool ShouldAdjustRasterScaleDuringScaleAnimations() const;
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
