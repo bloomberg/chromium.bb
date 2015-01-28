@@ -48,9 +48,10 @@ class ServiceWorkerProviderContext
   int provider_id() const { return provider_id_; }
 
   ServiceWorkerHandleReference* controller();
-  ServiceWorkerRegistrationHandleReference* registration();
 
-  ServiceWorkerVersionAttributes GetVersionAttributes();
+  bool GetRegistrationInfoAndVersionAttributes(
+      ServiceWorkerRegistrationObjectInfo* info,
+      ServiceWorkerVersionAttributes* attrs);
   void SetVersionAttributes(ChangedVersionAttributesMask mask,
                             const ServiceWorkerVersionAttributes& attrs);
 

@@ -43,25 +43,21 @@ ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
   return controller_.get();
 }
 
-ServiceWorkerRegistrationHandleReference*
-ServiceWorkerProviderContext::registration() {
+bool ServiceWorkerProviderContext::GetRegistrationInfoAndVersionAttributes(
+    ServiceWorkerRegistrationObjectInfo* info,
+    ServiceWorkerVersionAttributes* attrs) {
   base::AutoLock lock(lock_);
-  return registration_.get();
-}
+  if (!registration_)
+    return false;
 
-ServiceWorkerVersionAttributes
-ServiceWorkerProviderContext::GetVersionAttributes() {
-  base::AutoLock lock(lock_);
-  DCHECK(registration_);
-
-  ServiceWorkerVersionAttributes attrs;
+  *info = registration_->info();
   if (installing_)
-    attrs.installing = installing_->info();
+    attrs->installing = installing_->info();
   if (waiting_)
-    attrs.waiting = waiting_->info();
+    attrs->waiting = waiting_->info();
   if (active_)
-    attrs.active = active_->info();
-  return attrs;
+    attrs->active = active_->info();
+  return true;
 }
 
 void ServiceWorkerProviderContext::SetVersionAttributes(

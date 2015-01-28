@@ -49,7 +49,9 @@ void WebServiceWorkerProviderImpl::setClient(
   // for more context)
   GetDispatcher()->AddProviderClient(provider_id_, client);
 
-  if (!context_->registration()) {
+  ServiceWorkerRegistrationObjectInfo info;
+  ServiceWorkerVersionAttributes attrs;
+  if (!context_->GetRegistrationInfoAndVersionAttributes(&info, &attrs)) {
     // This provider is not associated with any registration.
     return;
   }
@@ -57,12 +59,10 @@ void WebServiceWorkerProviderImpl::setClient(
   // Set .ready if the associated registration has the active service worker.
   if (context_->active_handle_id() != kInvalidServiceWorkerHandleId) {
     WebServiceWorkerRegistrationImpl* registration =
-        GetDispatcher()->FindServiceWorkerRegistration(
-            context_->registration()->info(), false);
+        GetDispatcher()->FindServiceWorkerRegistration(info, false);
     if (!registration) {
-      registration = GetDispatcher()->CreateServiceWorkerRegistration(
-          context_->registration()->info(), false);
-      ServiceWorkerVersionAttributes attrs = context_->GetVersionAttributes();
+      registration =
+          GetDispatcher()->CreateServiceWorkerRegistration(info, false);
       registration->SetInstalling(
           GetDispatcher()->GetServiceWorker(attrs.installing, false));
       registration->SetWaiting(

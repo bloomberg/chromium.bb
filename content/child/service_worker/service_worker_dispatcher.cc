@@ -585,14 +585,16 @@ void ServiceWorkerDispatcher::SetReadyRegistration(
   if (client == provider_clients_.end())
     return;
 
-  ServiceWorkerRegistrationObjectInfo info =
-      provider->second->registration()->info();
+  ServiceWorkerRegistrationObjectInfo info;
+  ServiceWorkerVersionAttributes attrs;
+  bool found =
+      provider->second->GetRegistrationInfoAndVersionAttributes(&info, &attrs);
+  DCHECK(found);
+
   WebServiceWorkerRegistrationImpl* registration =
       FindServiceWorkerRegistration(info, false);
   if (!registration) {
     registration = CreateServiceWorkerRegistration(info, false);
-    ServiceWorkerVersionAttributes attrs =
-        provider->second->GetVersionAttributes();
     registration->SetInstalling(GetServiceWorker(attrs.installing, false));
     registration->SetWaiting(GetServiceWorker(attrs.waiting, false));
     registration->SetActive(GetServiceWorker(attrs.active, false));

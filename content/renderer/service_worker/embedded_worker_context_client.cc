@@ -180,12 +180,7 @@ void EmbeddedWorkerContextClient::workerContextStarted(
   g_worker_client_tls.Pointer()->Set(this);
   script_context_.reset(new ServiceWorkerScriptContext(this, proxy));
 
-  // This can be nullptr on EmbeddedWorkerBrowserTests.
-  // TODO(nhiroki): Remove this workaround. |registration()| should always be
-  // valid other than the test because the registration association message
-  // arrives before starting the worker context.
-  if (provider_context_->registration())
-    SetRegistrationInServiceWorkerGlobalScope();
+  SetRegistrationInServiceWorkerGlobalScope();
 
   Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(
       embedded_worker_id_,
@@ -419,19 +414,21 @@ void EmbeddedWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope() {
   DCHECK(provider_context_);
   DCHECK(script_context_);
 
+  ServiceWorkerRegistrationObjectInfo info;
+  ServiceWorkerVersionAttributes attrs;
+  bool found =
+      provider_context_->GetRegistrationInfoAndVersionAttributes(&info, &attrs);
+  if (!found)
+    return;  // Cannot be associated with a registration in some tests.
+
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
           thread_safe_sender());
 
-  // Register a registration with the dispatcher living on the worker thread.
-  DCHECK(provider_context_->registration());
+  // Register a registration and its version attributes with the dispatcher
+  // living on the worker thread.
   scoped_ptr<WebServiceWorkerRegistrationImpl> registration(
-      dispatcher->CreateServiceWorkerRegistration(
-          provider_context_->registration()->info(), false));
-
-  // Register workers with the dispatcher living on the worker thread.
-  ServiceWorkerVersionAttributes attrs =
-      provider_context_->GetVersionAttributes();
+      dispatcher->CreateServiceWorkerRegistration(info, false));
   registration->SetInstalling(
       dispatcher->GetServiceWorker(attrs.installing, false));
   registration->SetWaiting(
