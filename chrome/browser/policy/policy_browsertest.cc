@@ -3548,7 +3548,7 @@ IN_PROC_BROWSER_TEST_F(PolicyVariationsServiceTest, VariationsURLIsValid) {
 
   const GURL url =
       chrome_variations::VariationsService::GetVariationsServerURL(
-          g_browser_process->local_state());
+          g_browser_process->local_state(), std::string());
   EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
   std::string value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));

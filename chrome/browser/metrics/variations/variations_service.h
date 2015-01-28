@@ -102,13 +102,20 @@ class VariationsService
   void StartGoogleUpdateRegistrySync();
 #endif
 
+  // Sets the value of the "restrict" URL param to the variations service that
+  // should be used for variation seed requests. This takes precedence over any
+  // value coming from policy prefs. This should be called prior to any calls
+  // to |StartRepeatedVariationsSeedFetch|.
+  void SetRestrictMode(const std::string& restrict_mode);
+
   // Exposed for testing.
   void SetCreateTrialsFromSeedCalledForTesting(bool called);
 
   // Returns the variations server URL, which can vary if a command-line flag is
   // set and/or the variations restrict pref is set in |local_prefs|. Declared
   // static for test purposes.
-  static GURL GetVariationsServerURL(PrefService* local_prefs);
+  static GURL GetVariationsServerURL(PrefService* local_prefs,
+                                     const std::string& restrict_mode_override);
 
   // Exposed for testing.
   static std::string GetDefaultVariationsServerURLForTesting();
@@ -208,7 +215,12 @@ class VariationsService
   // is pending, and will be reset by |OnURLFetchComplete|.
   scoped_ptr<net::URLFetcher> pending_seed_request_;
 
-  // The URL to use for querying the Variations server.
+  // The value of the "restrict" URL param to the variations server that has
+  // been specified via |SetRestrictMode|. If empty, the URL param will be set
+  // based on policy prefs.
+  std::string restrict_mode_;
+
+  // The URL to use for querying the variations server.
   GURL variations_server_url_;
 
   // Tracks whether |CreateTrialsFromSeed| has been called, to ensure that

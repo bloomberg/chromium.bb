@@ -326,7 +326,8 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Initialize the Variations server URL.
-  variations_server_url_ = GetVariationsServerURL(policy_pref_service_);
+  variations_server_url_ =
+      GetVariationsServerURL(policy_pref_service_, restrict_mode_);
 
   // Check that |CreateTrialsFromSeed| was called, which is necessary to
   // retrieve the serial number that will be sent to the server.
@@ -334,12 +335,11 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
 
   DCHECK(!request_scheduler_.get());
   // Note that the act of instantiating the scheduler will start the fetch, if
-  // the scheduler deems appropriate. Using Unretained is fine here since the
-  // lifespan of request_scheduler_ is guaranteed to be shorter than that of
-  // this service.
+  // the scheduler deems appropriate.
   request_scheduler_.reset(VariationsRequestScheduler::Create(
       base::Bind(&VariationsService::FetchVariationsSeed,
-          base::Unretained(this)), local_state_));
+                 weak_ptr_factory_.GetWeakPtr()),
+      local_state_));
   request_scheduler_->Start();
 }
 
@@ -366,13 +366,20 @@ void VariationsService::StartGoogleUpdateRegistrySync() {
 }
 #endif
 
+void VariationsService::SetRestrictMode(const std::string& restrict_mode) {
+  // This should be called before the server URL has been computed.
+  DCHECK(variations_server_url_.is_empty());
+  restrict_mode_ = restrict_mode;
+}
+
 void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
   create_trials_from_seed_called_ = called;
 }
 
 // static
 GURL VariationsService::GetVariationsServerURL(
-    PrefService* policy_pref_service) {
+    PrefService* policy_pref_service,
+    const std::string& restrict_mode_override) {
   std::string server_url_string(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kVariationsServerURL));
@@ -380,8 +387,8 @@ GURL VariationsService::GetVariationsServerURL(
     server_url_string = kDefaultVariationsServerURL;
   GURL server_url = GURL(server_url_string);
 
-  const std::string restrict_param =
-      GetRestrictParameterPref(policy_pref_service);
+  const std::string restrict_param = !restrict_mode_override.empty() ?
+      restrict_mode_override : GetRestrictParameterPref(policy_pref_service);
   if (!restrict_param.empty()) {
     server_url = net::AppendOrReplaceQueryParameter(server_url,
                                                     "restrict",

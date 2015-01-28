@@ -151,6 +151,69 @@ void SimulateServerResponse(int response_code, net::TestURLFetcher* fetcher) {
   fetcher->set_response_code(response_code);
 }
 
+// Helper class that abstracts away platform-specific details relating to the
+// pref store used for the "restrict" param policy.
+class TestVariationsPrefsStore {
+ public:
+  TestVariationsPrefsStore() {
+#if defined(OS_ANDROID)
+    // Android uses profile prefs as the PrefService to generate the URL.
+    VariationsService::RegisterProfilePrefs(prefs_.registry());
+#else
+    VariationsService::RegisterPrefs(prefs_.registry());
+#endif
+
+#if defined(OS_CHROMEOS)
+    cros_settings_ = chromeos::CrosSettings::Get();
+    DCHECK(cros_settings_ != NULL);
+    // Remove the real DeviceSettingsProvider and replace it with a stub that
+    // allows modifications in a test.
+    // TODO(asvitkine): Make a scoped helper class for this operation.
+    device_settings_provider_ = cros_settings_->GetProvider(
+        chromeos::kReportDeviceVersionInfo);
+    EXPECT_TRUE(device_settings_provider_ != NULL);
+    EXPECT_TRUE(cros_settings_->RemoveSettingsProvider(
+        device_settings_provider_));
+    cros_settings_->AddSettingsProvider(&stub_settings_provider_);
+#endif
+  }
+
+  ~TestVariationsPrefsStore() {
+#if defined(OS_CHROMEOS)
+    // Restore the real DeviceSettingsProvider.
+    EXPECT_TRUE(
+        cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));
+    cros_settings_->AddSettingsProvider(device_settings_provider_);
+#endif
+  }
+
+  void SetVariationsRestrictParameterPolicyValue(const std::string& value) {
+#if defined(OS_CHROMEOS)
+    cros_settings_->SetString(chromeos::kVariationsRestrictParameter, value);
+#else
+    prefs_.SetString(prefs::kVariationsRestrictParameter, value);
+#endif
+  }
+
+  PrefService* prefs() { return &prefs_; }
+
+ private:
+#if defined(OS_ANDROID)
+  // Android uses profile prefs as the PrefService to generate the URL.
+  TestingPrefServiceSyncable prefs_;
+#else
+  TestingPrefServiceSimple prefs_;
+#endif
+
+#if defined(OS_CHROMEOS)
+  chromeos::CrosSettings* cros_settings_;
+  chromeos::StubCrosSettingsProvider stub_settings_provider_;
+  chromeos::CrosSettingsProvider* device_settings_provider_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(TestVariationsPrefsStore);
+};
+
 }  // namespace
 
 class VariationsServiceTest : public ::testing::Test {
@@ -167,90 +230,35 @@ class VariationsServiceTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(VariationsServiceTest);
 };
 
-#if !defined(OS_CHROMEOS)
-TEST_F(VariationsServiceTest, VariationsURLIsValid) {
-#if defined(OS_ANDROID)
-  // Android uses profile prefs as the PrefService to generate the URL.
-  TestingPrefServiceSyncable prefs;
-  VariationsService::RegisterProfilePrefs(prefs.registry());
-#else
-  TestingPrefServiceSimple prefs;
-  VariationsService::RegisterPrefs(prefs.registry());
-#endif
+TEST_F(VariationsServiceTest, GetVariationsServerURL) {
+  TestVariationsPrefsStore prefs_store;
+  PrefService* prefs = prefs_store.prefs();
   const std::string default_variations_url =
       VariationsService::GetDefaultVariationsServerURLForTesting();
 
   std::string value;
-  GURL url = VariationsService::GetVariationsServerURL(&prefs);
+  GURL url = VariationsService::GetVariationsServerURL(prefs, std::string());
   EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
   EXPECT_FALSE(net::GetValueForKeyInQuery(url, "restrict", &value));
 
-  prefs.SetString(prefs::kVariationsRestrictParameter, "restricted");
-  url = VariationsService::GetVariationsServerURL(&prefs);
+  prefs_store.SetVariationsRestrictParameterPolicyValue("restricted");
+  url = VariationsService::GetVariationsServerURL(prefs, std::string());
   EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("restricted", value);
-}
-#else
-class VariationsServiceTestChromeOS : public VariationsServiceTest {
- protected:
-  VariationsServiceTestChromeOS() {}
 
-  void SetUp() override {
-    cros_settings_ = chromeos::CrosSettings::Get();
-    DCHECK(cros_settings_ != NULL);
-    // Remove the real DeviceSettingsProvider and replace it with a stub that
-    // allows modifications in a test.
-    device_settings_provider_ = cros_settings_->GetProvider(
-        chromeos::kReportDeviceVersionInfo);
-    EXPECT_TRUE(device_settings_provider_ != NULL);
-    EXPECT_TRUE(cros_settings_->RemoveSettingsProvider(
-        device_settings_provider_));
-    cros_settings_->AddSettingsProvider(&stub_settings_provider_);
-  }
-
-  void TearDown() override {
-    // Restore the real DeviceSettingsProvider.
-    EXPECT_TRUE(
-        cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));
-    cros_settings_->AddSettingsProvider(device_settings_provider_);
-  }
-
-  void SetVariationsRestrictParameterPolicyValue(std::string value) {
-    cros_settings_->SetString(chromeos::kVariationsRestrictParameter, value);
-  }
-
- private:
-  chromeos::CrosSettings* cros_settings_;
-  chromeos::StubCrosSettingsProvider stub_settings_provider_;
-  chromeos::CrosSettingsProvider* device_settings_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(VariationsServiceTestChromeOS);
-};
-
-TEST_F(VariationsServiceTestChromeOS, VariationsURLIsValid) {
-  TestingPrefServiceSimple prefs;
-  VariationsService::RegisterPrefs(prefs.registry());
-  const std::string default_variations_url =
-      VariationsService::GetDefaultVariationsServerURLForTesting();
-
-  std::string value;
-  GURL url = VariationsService::GetVariationsServerURL(&prefs);
-  EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
-  EXPECT_FALSE(net::GetValueForKeyInQuery(url, "restrict", &value));
-
-  SetVariationsRestrictParameterPolicyValue("restricted");
-  url = VariationsService::GetVariationsServerURL(&prefs);
+  // The override value should take precedence over what's in prefs.
+  url = VariationsService::GetVariationsServerURL(prefs, "override");
   EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
-  EXPECT_EQ("restricted", value);
+  EXPECT_EQ("override", value);
 }
-#endif
 
 TEST_F(VariationsServiceTest, VariationsURLHasOSNameParam) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
-  const GURL url = VariationsService::GetVariationsServerURL(&prefs);
+  const GURL url =
+      VariationsService::GetVariationsServerURL(&prefs, std::string());
 
   std::string value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "osname", &value));
@@ -306,8 +314,8 @@ TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
 
   TestVariationsService service(
       new web_resource::TestRequestAllowedNotifier(&prefs), &prefs);
-  const GURL url = VariationsService::GetVariationsServerURL(&prefs);
-  service.variations_server_url_ = url;
+  service.variations_server_url_ =
+      VariationsService::GetVariationsServerURL(&prefs, std::string());
   service.set_intercepts_fetch(false);
 
   net::TestURLFetcherFactory factory;
@@ -339,8 +347,8 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
 
   VariationsService service(
       new web_resource::TestRequestAllowedNotifier(&prefs), &prefs, NULL);
-  const GURL url = VariationsService::GetVariationsServerURL(&prefs);
-  service.variations_server_url_ = url;
+  service.variations_server_url_ =
+      VariationsService::GetVariationsServerURL(&prefs, std::string());
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
     net::TestURLFetcherFactory factory;
     service.DoActualFetch();
@@ -364,8 +372,8 @@ TEST_F(VariationsServiceTest, SeedDateUpdatedOn304Status) {
   net::TestURLFetcherFactory factory;
   VariationsService service(
       new web_resource::TestRequestAllowedNotifier(&prefs), &prefs, NULL);
-  const GURL url = VariationsService::GetVariationsServerURL(&prefs);
-  service.variations_server_url_ = url;
+  service.variations_server_url_ =
+      VariationsService::GetVariationsServerURL(&prefs, std::string());
   service.DoActualFetch();
   EXPECT_TRUE(
       prefs.FindPreference(prefs::kVariationsSeedDate)->IsDefaultValue());
