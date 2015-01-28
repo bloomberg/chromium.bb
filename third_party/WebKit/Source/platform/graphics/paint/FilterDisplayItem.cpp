@@ -6,9 +6,26 @@
 #include "platform/graphics/paint/FilterDisplayItem.h"
 
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebDisplayItemList.h"
 
 namespace blink {
+
+BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const FilterOperations* filterOperations, const LayoutRect& bounds)
+    : DisplayItem(client, type)
+    , m_imageFilter(imageFilter)
+    , m_bounds(bounds)
+{
+    if (filterOperations) {
+        SkiaImageFilterBuilder builder;
+        m_webFilterOperations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
+        FilterOutsets outsets = filterOperations->outsets();
+        builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
+        builder.buildFilterOperations(*filterOperations, m_webFilterOperations.get());
+    }
+}
 
 void BeginFilterDisplayItem::replay(GraphicsContext* context)
 {
