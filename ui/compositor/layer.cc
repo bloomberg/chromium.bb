@@ -557,16 +557,6 @@ void Layer::SetTextureSize(gfx::Size texture_size_in_dip) {
   texture_layer_->SetNeedsDisplay();
 }
 
-void Layer::SetTextureFlipped(bool flipped) {
-  DCHECK(texture_layer_.get());
-  texture_layer_->SetFlipped(flipped);
-}
-
-bool Layer::TextureFlipped() const {
-  DCHECK(texture_layer_.get());
-  return texture_layer_->flipped();
-}
-
 void Layer::SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
                                     gfx::Size frame_size_in_dip) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);

@@ -99,7 +99,6 @@ class CC_EXPORT TextureLayer : public Layer {
   // Sets whether this texture should be Y-flipped at draw time. Defaults to
   // true.
   void SetFlipped(bool flipped);
-  bool flipped() const { return flipped_; }
 
   // Sets whether this texture should use nearest neighbor interpolation as
   // opposed to bilinear. Defaults to false.

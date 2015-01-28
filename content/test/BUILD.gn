@@ -595,7 +595,6 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
     if (!use_aura && !is_mac) {
       sources -= [
         "../browser/compositor/buffer_queue_unittest.cc",
-        "../browser/compositor/reflector_impl_unittest.cc",
         "../browser/compositor/software_browser_compositor_output_surface_unittest.cc",
       ]
     }

@@ -38,9 +38,7 @@ ReflectorImpl::MainThreadData::MainThreadData(
     ui::Layer* mirroring_layer)
     : needs_set_mailbox(true),
       mirrored_compositor(mirrored_compositor),
-      mirroring_layer(mirroring_layer),
-      flip_texture(false) {
-}
+      mirroring_layer(mirroring_layer) {}
 
 ReflectorImpl::MainThreadData::~MainThreadData() {}
 
@@ -195,10 +193,10 @@ void ReflectorImpl::AttachToOutputSurfaceOnImplThread(
   impl.gl_helper->Flush();
   output_surface->SetReflector(this);
   // The texture doesn't have the data, so invokes full redraw now.
-  bool flip_texture = !output_surface->capabilities().flipped_output_surface;
   main_message_loop_->PostTask(
-      FROM_HERE, base::Bind(&ReflectorImpl::FullRedrawContentOnMainThread,
-                            scoped_refptr<ReflectorImpl>(this), flip_texture));
+      FROM_HERE,
+      base::Bind(&ReflectorImpl::FullRedrawContentOnMainThread,
+                 scoped_refptr<ReflectorImpl>(this)));
 }
 
 void ReflectorImpl::UpdateTextureSizeOnMainThread(gfx::Size size) {
@@ -217,7 +215,6 @@ void ReflectorImpl::UpdateTextureSizeOnMainThread(gfx::Size size) {
     main.mirroring_layer->SetTextureSize(size);
   }
   main.mirroring_layer->SetBounds(gfx::Rect(size));
-  main.mirroring_layer->SetTextureFlipped(main.flip_texture);
 }
 
 void ReflectorImpl::FullRedrawOnMainThread(gfx::Size size) {
@@ -228,24 +225,20 @@ void ReflectorImpl::FullRedrawOnMainThread(gfx::Size size) {
   main.mirroring_layer->SchedulePaint(main.mirroring_layer->bounds());
 }
 
-void ReflectorImpl::UpdateSubBufferOnMainThread(const gfx::Size& size,
-                                                const gfx::Rect& rect) {
+void ReflectorImpl::UpdateSubBufferOnMainThread(gfx::Size size,
+                                                gfx::Rect rect) {
   MainThreadData& main = GetMain();
   if (!main.mirroring_layer)
     return;
   UpdateTextureSizeOnMainThread(size);
-
-  int y = rect.y();
   // Flip the coordinates to compositor's one.
-  if (main.flip_texture)
-    y = size.height() - rect.y() - rect.height();
+  int y = size.height() - rect.y() - rect.height();
   gfx::Rect new_rect(rect.x(), y, rect.width(), rect.height());
   main.mirroring_layer->SchedulePaint(new_rect);
 }
 
-void ReflectorImpl::FullRedrawContentOnMainThread(bool flip_texture) {
+void ReflectorImpl::FullRedrawContentOnMainThread() {
   MainThreadData& main = GetMain();
-  main.flip_texture = flip_texture;
   main.mirrored_compositor->ScheduleFullRedraw();
 }
 

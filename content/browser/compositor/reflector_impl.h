@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gfx/geometry/size.h"
@@ -31,9 +30,8 @@ class BrowserCompositorOutputSurface;
 
 // A reflector implementation that copies the framebuffer content
 // to the texture, then draw it onto the mirroring compositor.
-class CONTENT_EXPORT ReflectorImpl
-    : public base::SupportsWeakPtr<ReflectorImpl>,
-      public ui::Reflector {
+class ReflectorImpl : public base::SupportsWeakPtr<ReflectorImpl>,
+                      public ui::Reflector {
  public:
   ReflectorImpl(
       ui::Compositor* mirrored_compositor,
@@ -80,8 +78,6 @@ class CONTENT_EXPORT ReflectorImpl
   void DetachFromOutputSurface();
 
  private:
-  friend class ReflectorImplTest;
-
   struct MainThreadData {
     MainThreadData(ui::Compositor* mirrored_compositor,
                    ui::Layer* mirroring_layer);
@@ -90,7 +86,6 @@ class CONTENT_EXPORT ReflectorImpl
     bool needs_set_mailbox;
     ui::Compositor* mirrored_compositor;
     ui::Layer* mirroring_layer;
-    bool flip_texture;
   };
 
   struct ImplThreadData {
@@ -115,12 +110,11 @@ class CONTENT_EXPORT ReflectorImpl
   // Request full redraw on mirroring compositor.
   void FullRedrawOnMainThread(gfx::Size size);
 
-  void UpdateSubBufferOnMainThread(const gfx::Size& size,
-                                   const gfx::Rect& rect);
+  void UpdateSubBufferOnMainThread(gfx::Size size, gfx::Rect rect);
 
   // Request full redraw on mirrored compositor so that
   // the full content will be copied to mirroring compositor.
-  void FullRedrawContentOnMainThread(bool flip_texture);
+  void FullRedrawContentOnMainThread();
 
   // This exists just to hold a reference to a ReflectorImpl in a post task,
   // so the ReflectorImpl gets deleted when the function returns.

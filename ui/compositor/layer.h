@@ -274,8 +274,6 @@ class COMPOSITOR_EXPORT Layer
                          scoped_ptr<cc::SingleReleaseCallback> release_callback,
                          gfx::Size texture_size_in_dip);
   void SetTextureSize(gfx::Size texture_size_in_dip);
-  void SetTextureFlipped(bool flipped);
-  bool TextureFlipped() const;
 
   // Begins showing delegated frames from the |frame_provider|.
   void SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
