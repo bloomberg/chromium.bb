@@ -223,7 +223,9 @@ TEST_F(DevicePermissionsManagerTest, SuspendExtension) {
   ASSERT_FALSE(FindEntry(device_permissions.get(), device3_).get());
 }
 
-TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
+// TODO(reillyg): Until crbug.com/427985 is resolved device removal
+// notifications are delivered asynchronously and so this test must be disabled.
+TEST_F(DevicePermissionsManagerTest, DISABLED_DisconnectDevice) {
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_.profile());
   AllowUsbDevice(manager, extension_, device0_);

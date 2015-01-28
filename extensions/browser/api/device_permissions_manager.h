@@ -18,6 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
@@ -134,8 +135,7 @@ class DevicePermissions {
 // Manages saved device permissions for all extensions.
 class DevicePermissionsManager : public KeyedService,
                                  public base::NonThreadSafe,
-                                 public ProcessManagerObserver,
-                                 public device::UsbService::Observer {
+                                 public ProcessManagerObserver {
  public:
   static DevicePermissionsManager* Get(content::BrowserContext* context);
 
@@ -171,6 +171,8 @@ class DevicePermissionsManager : public KeyedService,
   void Clear(const std::string& extension_id);
 
  private:
+  class FileThreadHelper;
+
   friend class DevicePermissionsManagerFactory;
   FRIEND_TEST_ALL_PREFIXES(DevicePermissionsManagerTest, SuspendExtension);
 
@@ -179,19 +181,18 @@ class DevicePermissionsManager : public KeyedService,
 
   DevicePermissions* Get(const std::string& extension_id) const;
   DevicePermissions* GetOrInsert(const std::string& extension_id);
+  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device);
 
   // ProcessManagerObserver implementation
   void OnBackgroundHostClose(const std::string& extension_id) override;
-
-  // device::UsbService::Observer implementation
-  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
 
   content::BrowserContext* context_;
   std::map<std::string, DevicePermissions*> extension_id_to_device_permissions_;
   ScopedObserver<ProcessManager, ProcessManagerObserver>
       process_manager_observer_;
-  ScopedObserver<device::UsbService, device::UsbService::Observer>
-      usb_service_observer_;
+  FileThreadHelper* helper_;
+
+  base::WeakPtrFactory<DevicePermissionsManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePermissionsManager);
 };

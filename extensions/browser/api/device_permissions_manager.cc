@@ -4,12 +4,14 @@
 
 #include "extensions/browser/api/device_permissions_manager.h"
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "device/core/device_client.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_ids.h"
@@ -24,7 +26,9 @@
 namespace extensions {
 
 using content::BrowserContext;
+using content::BrowserThread;
 using device::UsbDevice;
+using device::UsbService;
 using extensions::APIPermission;
 using extensions::Extension;
 using extensions::ExtensionHost;
@@ -377,6 +381,35 @@ DevicePermissions::DevicePermissions(const DevicePermissions* original)
       ephemeral_devices_(original->ephemeral_devices_) {
 }
 
+class DevicePermissionsManager::FileThreadHelper : public UsbService::Observer {
+ public:
+  FileThreadHelper(
+      base::WeakPtr<DevicePermissionsManager> device_permissions_manager)
+      : device_permissions_manager_(device_permissions_manager),
+        observer_(this) {}
+  virtual ~FileThreadHelper() {}
+
+  void Start() {
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    UsbService* service = device::DeviceClient::Get()->GetUsbService();
+    if (service) {
+      observer_.Add(service);
+    }
+  }
+
+ private:
+  void OnDeviceRemoved(scoped_refptr<UsbDevice> device) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DevicePermissionsManager::OnDeviceRemoved,
+                   device_permissions_manager_, device));
+  }
+
+  base::WeakPtr<DevicePermissionsManager> device_permissions_manager_;
+  ScopedObserver<UsbService, UsbService::Observer> observer_;
+};
+
 // static
 DevicePermissionsManager* DevicePermissionsManager::Get(
     BrowserContext* context) {
@@ -441,11 +474,13 @@ void DevicePermissionsManager::AllowUsbDevice(
     // Only start observing when an ephemeral device has been added so that
     // UsbService is not automatically initialized on profile creation (which it
     // would be if this call were in the constructor).
-    device::UsbService* usb_service =
-        device::DeviceClient::Get()->GetUsbService();
-    DCHECK(usb_service);
-    if (!usb_service_observer_.IsObserving(usb_service)) {
-      usb_service_observer_.Add(usb_service);
+    if (!helper_) {
+      helper_ = new FileThreadHelper(weak_factory_.GetWeakPtr());
+      // base::Unretained is safe because any task to delete helper_ will be
+      // executed after this call.
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&FileThreadHelper::Start, base::Unretained(helper_)));
     }
   }
 }
@@ -490,7 +525,8 @@ DevicePermissionsManager::DevicePermissionsManager(
     content::BrowserContext* context)
     : context_(context),
       process_manager_observer_(this),
-      usb_service_observer_(this) {
+      helper_(nullptr),
+      weak_factory_(this) {
   process_manager_observer_.Add(ProcessManager::Get(context));
 }
 
@@ -498,6 +534,10 @@ DevicePermissionsManager::~DevicePermissionsManager() {
   for (const auto& map_entry : extension_id_to_device_permissions_) {
     DevicePermissions* device_permissions = map_entry.second;
     delete device_permissions;
+  }
+  if (helper_) {
+    BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, helper_);
+    helper_ = nullptr;
   }
 }
 
@@ -540,6 +580,7 @@ void DevicePermissionsManager::OnBackgroundHostClose(
 
 void DevicePermissionsManager::OnDeviceRemoved(
     scoped_refptr<UsbDevice> device) {
+  DCHECK(CalledOnValidThread());
   for (const auto& map_entry : extension_id_to_device_permissions_) {
     // An ephemeral device cannot be identified if it is reconnected and so
     // permission to access it is cleared on disconnect.
