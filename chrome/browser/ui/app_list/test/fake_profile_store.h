@@ -26,6 +26,7 @@ class FakeProfileStore : public ProfileStore {
   Profile* GetProfileByPath(const base::FilePath& path) override;
   base::FilePath GetUserDataDir() override;
   bool IsProfileSupervised(const base::FilePath& path) override;
+  bool IsProfileLocked(const base::FilePath& path) override;
 
  private:
   base::FilePath user_data_dir_;

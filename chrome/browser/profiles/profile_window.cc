@@ -213,6 +213,9 @@ void OnUserManagerSystemProfileCreated(
   } else if (profile_open_action ==
              profiles::USER_MANAGER_SELECT_PROFILE_CHROME_MEMORY) {
     page += profiles::kUserManagerSelectProfileChromeMemory;
+  } else if (profile_open_action ==
+             profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER) {
+    page += profiles::kUserManagerSelectProfileAppLauncher;
   }
   callback.Run(system_profile, page);
 }
@@ -236,6 +239,7 @@ const char kUserManagerSelectProfileTaskManager[] = "#task-manager";
 const char kUserManagerSelectProfileAboutChrome[] = "#about-chrome";
 const char kUserManagerSelectProfileChromeSettings[] = "#chrome-settings";
 const char kUserManagerSelectProfileChromeMemory[] = "#chrome-memory";
+const char kUserManagerSelectProfileAppLauncher[] = "#app-launcher";
 
 void FindOrCreateNewWindowForProfile(
     Profile* profile,

@@ -32,6 +32,7 @@ enum UserManagerProfileSelected {
   USER_MANAGER_SELECT_PROFILE_ABOUT_CHROME,
   USER_MANAGER_SELECT_PROFILE_CHROME_SETTINGS,
   USER_MANAGER_SELECT_PROFILE_CHROME_MEMORY,
+  USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER,
 };
 
 extern const char kUserManagerDisplayTutorial[];
@@ -39,6 +40,7 @@ extern const char kUserManagerSelectProfileTaskManager[];
 extern const char kUserManagerSelectProfileAboutChrome[];
 extern const char kUserManagerSelectProfileChromeSettings[];
 extern const char kUserManagerSelectProfileChromeMemory[];
+extern const char kUserManagerSelectProfileAppLauncher[];
 
 // Activates a window for |profile| on the desktop specified by
 // |desktop_type|. If no such window yet exists, or if |always_create| is

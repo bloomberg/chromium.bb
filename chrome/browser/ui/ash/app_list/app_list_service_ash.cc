@@ -122,7 +122,8 @@ AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
 }
 
 // static
-void AppListService::InitAll(Profile* initial_profile) {
+void AppListService::InitAll(Profile* initial_profile,
+                             const base::FilePath& profile_path) {
   AppListServiceAsh::GetInstance()->Init(initial_profile);
 }
 

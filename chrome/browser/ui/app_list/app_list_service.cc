@@ -10,6 +10,7 @@
 #include "base/process/process_info.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
@@ -160,7 +161,7 @@ void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
 bool AppListService::HandleLaunchCommandLine(
     const base::CommandLine& command_line,
     Profile* launch_profile) {
-  InitAll(launch_profile);
+  InitAll(launch_profile, launch_profile->GetPath());
   if (!command_line.HasSwitch(switches::kShowAppList))
     return false;
 

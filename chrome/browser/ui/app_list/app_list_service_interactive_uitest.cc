@@ -12,17 +12,21 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_utils.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
@@ -39,6 +43,9 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
 
  protected:
   Profile* profile2_;
+  ProfileInfoCache* profile_info_cache() {
+    return &(g_browser_process->profile_manager()->GetProfileInfoCache());
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListServiceInteractiveTest);
@@ -49,6 +56,7 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
 #if defined(OS_CHROMEOS)
 #define MAYBE_ShowAndDismiss DISABLED_ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles DISABLED_SwitchAppListProfiles
+#define MAYBE_SwitchAppListLockedProfile DISABLED_SwitchAppListLockedProfile
 #define MAYBE_SwitchAppListProfilesDuringSearch \
     DISABLED_SwitchAppListProfilesDuringSearch
 #define MAYBE_ShowAppListNonDefaultProfile \
@@ -57,6 +65,7 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
 #else
 #define MAYBE_ShowAndDismiss ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles SwitchAppListProfiles
+#define MAYBE_SwitchAppListLockedProfile SwitchAppListLockedProfile
 #define MAYBE_SwitchAppListProfilesDuringSearch \
     SwitchAppListProfilesDuringSearch
 #define MAYBE_ShowAppListNonDefaultProfile ShowAppListNonDefaultProfile
@@ -105,6 +114,63 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
   ASSERT_EQ(profile2_, service->GetCurrentAppListProfile());
 
   controller->DismissView();
+}
+
+// Switch profiles on the app list while it is showing.
+IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
+                       MAYBE_SwitchAppListLockedProfile) {
+  InitSecondProfile();
+
+  AppListService* service = test::GetAppListService();
+  ASSERT_TRUE(service);
+
+  AppListControllerDelegate* controller(service->GetControllerDelegate());
+  ASSERT_TRUE(controller);
+
+  // Open the app list with the browser's profile.
+  EXPECT_FALSE(service->IsAppListVisible());
+  controller->ShowForProfileByPath(browser()->profile()->GetPath());
+  app_list::AppListModel* model = test::GetAppListModel(service);
+  ASSERT_TRUE(model);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(service->IsAppListVisible());
+  EXPECT_EQ(browser()->profile(), service->GetCurrentAppListProfile());
+  EXPECT_FALSE(UserManager::IsShowing());
+
+  // App list, go away, come against some other day.
+  service->DismissAppList();
+  ASSERT_FALSE(service->IsAppListVisible());
+
+  // If the System Profile is not loaded here then it will be created
+  // asycnhronously by the User Maanger. Forcing the Profile* to be created here
+  // ensure it is accessed synchronously later.
+  g_browser_process->profile_manager()->GetProfile(
+      ProfileManager::GetSystemProfilePath());
+
+  // Lock the second profile.
+  profile_info_cache()->SetProfileSigninRequiredAtIndex(
+      profile_info_cache()->GetIndexOfProfileWithPath(profile2_->GetPath()),
+      true);
+
+  // Attempt to open the app list with the second profile.
+  controller->ShowForProfileByPath(profile2_->GetPath());
+  // Model isn't affected by the failed attempt to show the other profile.
+  model = test::GetAppListModel(service);
+  ASSERT_TRUE(model);
+  // Ensure the app list is still in a valid state, using the original profile.
+  EXPECT_TRUE(service->GetCurrentAppListProfile());
+  EXPECT_EQ(browser()->profile(), service->GetCurrentAppListProfile());
+  base::RunLoop().RunUntilIdle();
+
+  // App list stays hidden; the UserManager shows instead.
+  EXPECT_FALSE(service->IsAppListVisible());
+  EXPECT_TRUE(UserManager::IsShowing());
+
+  controller->DismissView();
+  // We need to hide the User Manager or else the process can't die.
+  UserManager::Hide();
 }
 
 // Test switching app list profiles while search results are visibile.

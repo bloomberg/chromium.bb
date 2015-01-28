@@ -54,7 +54,8 @@ class AppListService {
   static AppListService* Get(chrome::HostDesktopType desktop_type);
 
   // Call Init for all AppListService instances on this platform.
-  static void InitAll(Profile* initial_profile);
+  static void InitAll(Profile* initial_profile,
+                      const base::FilePath& profile_path);
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

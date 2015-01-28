@@ -273,10 +273,12 @@ void ChromeBrowserMainPartsMac::PreProfileInit() {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::PRE_PROFILE_INIT);
   ChromeBrowserMainPartsPosix::PreProfileInit();
+
   // This is called here so that the app shim socket is only created after
   // taking the singleton lock.
   g_browser_process->platform_part()->app_shim_host_manager()->Init();
-  AppListService::InitAll(NULL);
+  AppListService::InitAll(NULL,
+      GetStartupProfilePath(user_data_dir(), parsed_command_line()));
 }
 
 void ChromeBrowserMainPartsMac::PostProfileInit() {

@@ -123,6 +123,7 @@ class ProfileStoreImpl : public ProfileStore {
   }
 
   Profile* GetProfileByPath(const base::FilePath& path) override {
+    DCHECK(!IsProfileLocked(path));
     return profile_manager_->GetProfileByPath(path);
   }
 
@@ -136,6 +137,14 @@ class ProfileStoreImpl : public ProfileStore {
     size_t profile_index = profile_info.GetIndexOfProfileWithPath(profile_path);
     return profile_index != std::string::npos &&
         profile_info.ProfileIsSupervisedAtIndex(profile_index);
+  }
+
+  bool IsProfileLocked(const base::FilePath& profile_path) override {
+    ProfileInfoCache& profile_info =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    size_t profile_index = profile_info.GetIndexOfProfileWithPath(profile_path);
+    return profile_index != std::string::npos &&
+        profile_info.ProfileIsSigninRequiredAtIndex(profile_index);
   }
 
  private:

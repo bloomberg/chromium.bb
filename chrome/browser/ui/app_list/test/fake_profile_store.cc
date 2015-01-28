@@ -62,3 +62,7 @@ base::FilePath FakeProfileStore::GetUserDataDir() {
 bool FakeProfileStore::IsProfileSupervised(const base::FilePath& path) {
   return false;
 }
+
+bool FakeProfileStore::IsProfileLocked(const base::FilePath& path) {
+  return false;
+}

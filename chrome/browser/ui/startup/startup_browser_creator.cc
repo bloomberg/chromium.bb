@@ -697,9 +697,12 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
               last_used_profile->GetOffTheRecordProfile()) > 0;
       if (signin_required ||
           (last_used_profile->IsGuestSession() && !has_guest_browsers)) {
-        UserManager::Show(base::FilePath(),
-                          profiles::USER_MANAGER_NO_TUTORIAL,
-                          profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+        profiles::UserManagerProfileSelected action =
+            command_line.HasSwitch(switches::kShowAppList) ?
+                profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER :
+                profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION;
+        UserManager::Show(
+            base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL, action);
         return true;
       }
     }

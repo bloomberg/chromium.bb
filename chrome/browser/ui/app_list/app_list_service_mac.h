@@ -54,6 +54,8 @@ class AppListServiceMac : public AppListServiceImpl,
 
   void ShowWindowNearDock();
   void WindowAnimationDidEnd();
+  void InitWithProfilePath(Profile* initial_profile,
+                           const base::FilePath& profile_path);
 
   // AppListService overrides:
   void Init(Profile* initial_profile) override;

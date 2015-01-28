@@ -21,10 +21,12 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/local_auth.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -145,6 +147,68 @@ bool IsAddPersonEnabled() {
   PrefService* service = g_browser_process->local_state();
   DCHECK(service);
   return service->GetBoolean(prefs::kBrowserAddPersonEnabled);
+}
+
+// Executes the action specified by the URL's Hash parameter, if any. Deletes
+// itself after the action would be performed.
+class UrlHashHelper : public chrome::BrowserListObserver {
+ public:
+  UrlHashHelper(Browser* browser, const std::string& hash);
+  ~UrlHashHelper() override;
+
+  void ExecuteUrlHash();
+
+  // chrome::BrowserListObserver overrides:
+  void OnBrowserRemoved(Browser* browser) override;
+
+ private:
+  Browser* browser_;
+  Profile* profile_;
+  chrome::HostDesktopType desktop_type_;
+  std::string hash_;
+
+  DISALLOW_COPY_AND_ASSIGN(UrlHashHelper);
+};
+
+UrlHashHelper::UrlHashHelper(Browser* browser, const std::string& hash)
+    : browser_(browser),
+      profile_(browser->profile()),
+      desktop_type_(browser->host_desktop_type()),
+      hash_(hash) {
+  BrowserList::AddObserver(this);
+}
+
+UrlHashHelper::~UrlHashHelper() {
+  BrowserList::RemoveObserver(this);
+}
+
+void UrlHashHelper::OnBrowserRemoved(Browser* browser) {
+  if (browser == browser_)
+    browser_ = nullptr;
+}
+
+void UrlHashHelper::ExecuteUrlHash() {
+  if (hash_ == profiles::kUserManagerSelectProfileAppLauncher) {
+    AppListService* app_list_service = AppListService::Get(desktop_type_);
+    app_list_service->ShowForProfile(profile_);
+    return;
+  }
+
+  Browser* target_browser = browser_;
+  if (!target_browser) {
+    target_browser = chrome::FindLastActiveWithProfile(profile_, desktop_type_);
+    if (!target_browser)
+      return;
+  }
+
+  if (hash_ == profiles::kUserManagerSelectProfileTaskManager)
+    chrome::OpenTaskManager(target_browser);
+  else if (hash_ == profiles::kUserManagerSelectProfileAboutChrome)
+    chrome::ShowAboutChrome(target_browser);
+  else if (hash_ == profiles::kUserManagerSelectProfileChromeSettings)
+    chrome::ShowSettings(target_browser);
+  else if (hash_ == profiles::kUserManagerSelectProfileChromeMemory)
+    chrome::ShowMemory(target_browser);
 }
 
 }  // namespace
@@ -723,18 +787,11 @@ void UserManagerScreenHandler::OnBrowserWindowReady(Browser* browser) {
     info_cache.SetProfileSigninRequiredAtIndex(index, false);
   }
 
-  if (url_hash_ == profiles::kUserManagerSelectProfileTaskManager) {
+  if (!url_hash_.empty()) {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&chrome::OpenTaskManager, browser));
-  } else if (url_hash_ == profiles::kUserManagerSelectProfileAboutChrome) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&chrome::ShowAboutChrome, browser));
-  } else if (url_hash_ == profiles::kUserManagerSelectProfileChromeSettings) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&chrome::ShowSettings, browser));
-  } else if (url_hash_ == profiles::kUserManagerSelectProfileChromeMemory) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&chrome::ShowMemory, browser));
+        FROM_HERE,
+        base::Bind(&UrlHashHelper::ExecuteUrlHash,
+                   base::Owned(new UrlHashHelper(browser, url_hash_))));
   }
 
   // This call is last as it deletes this object.

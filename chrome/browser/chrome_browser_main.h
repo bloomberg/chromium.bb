@@ -87,6 +87,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   const base::CommandLine& parsed_command_line() const {
     return parsed_command_line_;
   }
+  const base::FilePath& user_data_dir() const {
+    return user_data_dir_;
+  }
 
   Profile* profile() { return profile_; }
 

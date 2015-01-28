@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
+#include "chrome/browser/ui/user_manager.h"
 
 ProfileLoader::ProfileLoader(ProfileStore* profile_store)
     : profile_store_(profile_store),
@@ -31,6 +32,13 @@ void ProfileLoader::LoadProfileInvalidatingOtherLoads(
     const base::FilePath& profile_file_path,
     base::Callback<void(Profile*)> callback) {
   InvalidatePendingProfileLoads();
+
+  if (profile_store_->IsProfileLocked(profile_file_path)) {
+      UserManager::Show(base::FilePath(),
+                        profiles::USER_MANAGER_NO_TUTORIAL,
+                        profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER);
+      return;
+  }
 
   Profile* profile = profile_store_->GetProfileByPath(profile_file_path);
   if (profile) {

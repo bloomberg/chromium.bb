@@ -17,6 +17,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate_impl.h"
 #include "chrome/browser/ui/app_list/app_list_positioner.h"
@@ -337,6 +338,12 @@ void AppListServiceMac::FindAnchorPoint(const gfx::Size& window_size,
 }
 
 void AppListServiceMac::Init(Profile* initial_profile) {
+  InitWithProfilePath(initial_profile, initial_profile->GetPath());
+}
+
+void AppListServiceMac::InitWithProfilePath(
+    Profile* initial_profile,
+    const base::FilePath& profile_path) {
   // On Mac, Init() is called multiple times for a process: any time there is no
   // browser window open and a new window is opened, and during process startup
   // to handle the silent launch case (e.g. for app shims). In the startup case,
@@ -371,8 +378,17 @@ void AppListServiceMac::Init(Profile* initial_profile) {
   // OnShimLaunch(). Note that if --silent-launch is not also passed, the window
   // will instead populate via StartupBrowserCreator::Launch(). Shim-initiated
   // launches will always have --silent-launch.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowAppList))
-    ShowWindowNearDock();
+  if (base::CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kShowAppList)) {
+    // Do not show the launcher window when the profile is locked.
+    const ProfileInfoCache& profile_info_cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    size_t profile_index = profile_info_cache.
+        GetIndexOfProfileWithPath(profile_path);
+    if (profile_index != std::string::npos &&
+        !profile_info_cache.ProfileIsSigninRequiredAtIndex(profile_index))
+      ShowWindowNearDock();
+  }
 }
 
 Profile* AppListServiceMac::GetCurrentAppListProfile() {
@@ -530,8 +546,10 @@ AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
 }
 
 // static
-void AppListService::InitAll(Profile* initial_profile) {
-  AppListServiceMac::GetInstance()->Init(initial_profile);
+void AppListService::InitAll(Profile* initial_profile,
+                             const base::FilePath& profile_path) {
+  AppListServiceMac::GetInstance()->InitWithProfilePath(initial_profile,
+                                                        profile_path);
 }
 
 @implementation AppListAnimationController
