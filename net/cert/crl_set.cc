@@ -44,11 +44,11 @@ CRLSet::Result CRLSet::CheckSerial(
   while (serial.size() > 1 && serial[0] == 0x00)
     serial.remove_prefix(1);
 
-  base::hash_map<std::string, size_t>::const_iterator i =
+  base::hash_map<std::string, size_t>::const_iterator crl_index =
       crls_index_by_issuer_.find(issuer_spki_hash.as_string());
-  if (i == crls_index_by_issuer_.end())
+  if (crl_index == crls_index_by_issuer_.end())
     return UNKNOWN;
-  const std::vector<std::string>& serials = crls_[i->second].second;
+  const std::vector<std::string>& serials = crls_[crl_index->second].second;
 
   for (std::vector<std::string>::const_iterator i = serials.begin();
        i != serials.end(); ++i) {
