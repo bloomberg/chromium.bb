@@ -14,10 +14,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
-#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -48,10 +44,8 @@ void ExtensionMessageFilter::OverrideThreadForMessage(
     BrowserThread::ID* thread) {
   switch (message.type()) {
     case ExtensionHostMsg_AddListener::ID:
-    case ExtensionHostMsg_AttachGuest::ID:
     case ExtensionHostMsg_RemoveListener::ID:
     case ExtensionHostMsg_AddLazyListener::ID:
-    case ExtensionHostMsg_CreateMimeHandlerViewGuest::ID:
     case ExtensionHostMsg_RemoveLazyListener::ID:
     case ExtensionHostMsg_AddFilteredListener::ID:
     case ExtensionHostMsg_RemoveFilteredListener::ID:
@@ -80,10 +74,6 @@ bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnExtensionRemoveListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddLazyListener,
                         OnExtensionAddLazyListener)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AttachGuest,
-                        OnExtensionAttachGuest)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_CreateMimeHandlerViewGuest,
-                        OnExtensionCreateMimeHandlerViewGuest)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveLazyListener,
                         OnExtensionRemoveLazyListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddFilteredListener,
@@ -155,60 +145,6 @@ void ExtensionMessageFilter::OnExtensionAddLazyListener(
   if (!router)
     return;
   router->AddLazyEventListener(event_name, extension_id);
-}
-
-void ExtensionMessageFilter::OnExtensionAttachGuest(
-    int routing_id,
-    int element_instance_id,
-    int guest_instance_id,
-    const base::DictionaryValue& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GuestViewManager* manager =
-      GuestViewManager::FromBrowserContext(browser_context_);
-  if (!manager)
-    return;
-
-  manager->AttachGuest(render_process_id_,
-                       routing_id,
-                       element_instance_id,
-                       guest_instance_id,
-                       params);
-}
-
-void ExtensionMessageFilter::OnExtensionCreateMimeHandlerViewGuest(
-    int render_frame_id,
-    const std::string& view_id,
-    int element_instance_id,
-    const gfx::Size& element_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GuestViewManager* manager =
-      GuestViewManager::FromBrowserContext(browser_context_);
-  if (!manager)
-    return;
-
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id);
-  content::WebContents* embedder_web_contents =
-      content::WebContents::FromRenderFrameHost(rfh);
-  if (!embedder_web_contents)
-    return;
-
-  GuestViewManager::WebContentsCreatedCallback callback =
-      base::Bind(&ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback,
-                 this,
-                 element_instance_id,
-                 render_process_id_,
-                 render_frame_id,
-                 element_size);
-
-  base::DictionaryValue create_params;
-  create_params.SetString(mime_handler_view::kViewId, view_id);
-  create_params.SetInteger(guestview::kElementWidth, element_size.width());
-  create_params.SetInteger(guestview::kElementHeight, element_size.height());
-  manager->CreateGuest(MimeHandlerViewGuest::Type,
-                       embedder_web_contents,
-                       create_params,
-                       callback);
 }
 
 void ExtensionMessageFilter::OnExtensionRemoveLazyListener(
@@ -289,41 +225,6 @@ void ExtensionMessageFilter::OnExtensionRequestForIOThread(
       weak_ptr_factory_.GetWeakPtr(),
       routing_id,
       params);
-}
-
-void ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback(
-    int element_instance_id,
-    int embedder_render_process_id,
-    int embedder_render_frame_id,
-    const gfx::Size& element_size,
-    content::WebContents* web_contents) {
-  GuestViewManager* manager =
-      GuestViewManager::FromBrowserContext(browser_context_);
-  if (!manager)
-    return;
-
-  MimeHandlerViewGuest* guest_view =
-      MimeHandlerViewGuest::FromWebContents(web_contents);
-  if (!guest_view)
-    return;
-  int guest_instance_id = guest_view->guest_instance_id();
-
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      embedder_render_process_id, embedder_render_frame_id);
-  if (!rfh)
-    return;
-
-  base::DictionaryValue attach_params;
-  attach_params.SetInteger(guestview::kElementWidth, element_size.width());
-  attach_params.SetInteger(guestview::kElementHeight, element_size.height());
-  manager->AttachGuest(embedder_render_process_id,
-                       rfh->GetRenderViewHost()->GetRoutingID(),
-                       element_instance_id,
-                       guest_instance_id,
-                       attach_params);
-
-  rfh->Send(
-      new ExtensionMsg_CreateMimeHandlerViewGuestACK(element_instance_id));
 }
 
 }  // namespace extensions

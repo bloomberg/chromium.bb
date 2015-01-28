@@ -15,6 +15,7 @@
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/guest_view/guest_view_message_filter.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/constants.h"
@@ -80,6 +81,8 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
   BrowserContext* browser_context = browser_main_parts_->browser_context();
   host->AddFilter(
       new ExtensionMessageFilter(render_process_id, browser_context));
+  host->AddFilter(
+      new GuestViewMessageFilter(render_process_id, browser_context));
   // PluginInfoMessageFilter is not required because app_shell does not have
   // the concept of disabled plugins.
 #if !defined(DISABLE_NACL)

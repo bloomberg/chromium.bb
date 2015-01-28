@@ -720,6 +720,8 @@
         'browser/guest_view/guest_view_manager_factory.h',
         'browser/guest_view/guest_view_manager.cc',
         'browser/guest_view/guest_view_manager.h',
+        'browser/guest_view/guest_view_message_filter.cc',
+        'browser/guest_view/guest_view_message_filter.h',
         'browser/guest_view/guest_view.h',
         'browser/guest_view/mime_handler_view/mime_handler_stream_manager.cc',
         'browser/guest_view/mime_handler_view/mime_handler_stream_manager.h',

@@ -404,6 +404,8 @@ source_set("browser") {
       "guest_view/guest_view_manager_factory.h",
       "guest_view/guest_view_manager.cc",
       "guest_view/guest_view_manager.h",
+      "guest_view/guest_view_message_filter.cc",
+      "guest_view/guest_view_message_filter.h",
       "guest_view/guest_view.h",
       "guest_view/mime_handler_view/mime_handler_stream_manager.cc",
       "guest_view/mime_handler_view/mime_handler_stream_manager.h",
