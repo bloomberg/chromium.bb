@@ -8,5 +8,11 @@ component("core") {
     "session_manager.cc",
     "session_manager.h",
   ]
+  deps = [
+    "//base",
+  ]
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
+  }
   defines = [ "SESSION_IMPLEMENTATION" ]
 }

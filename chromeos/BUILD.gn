@@ -28,6 +28,7 @@ component("chromeos") {
     "//components/policy/proto",
     "//components/onc",
     "//crypto",
+    "//crypto:platform",
     "//google_apis",
     "//net/third_party/nss/ssl:libssl",
     "//third_party/icu",
