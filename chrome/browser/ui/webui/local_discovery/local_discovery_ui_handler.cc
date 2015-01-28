@@ -232,6 +232,8 @@ void LocalDiscoveryUIHandler::HandleRequestDeviceList(
   succeded_list_count_ = 0;
   cloud_devices_.clear();
 
+  cloud_print_printer_list_ = CreateApiFlow();
+
   if (cloud_print_printer_list_) {
     cloud_print_printer_list_->Start(
         make_scoped_ptr<GCDApiFlow::Request>(new CloudPrintPrinterList(this)));
