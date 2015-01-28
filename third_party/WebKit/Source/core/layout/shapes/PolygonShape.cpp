@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/shapes/PolygonShape.h"
+#include "core/layout/shapes/PolygonShape.h"
 
 #include "platform/geometry/LayoutPoint.h"
 #include "wtf/MathExtras.h"

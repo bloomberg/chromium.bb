@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/shapes/ShapeOutsideInfo.h"
+#include "core/layout/shapes/ShapeOutsideInfo.h"
 
 #include "core/inspector/ConsoleMessage.h"
 #include "core/rendering/FloatingObjects.h"

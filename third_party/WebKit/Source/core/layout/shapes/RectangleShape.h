@@ -30,7 +30,7 @@
 #ifndef RectangleShape_h
 #define RectangleShape_h
 
-#include "core/rendering/shapes/Shape.h"
+#include "core/layout/shapes/Shape.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"

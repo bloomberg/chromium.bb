@@ -30,7 +30,7 @@
 #ifndef ShapeOutsideInfo_h
 #define ShapeOutsideInfo_h
 
-#include "core/rendering/shapes/Shape.h"
+#include "core/layout/shapes/Shape.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShapeValue.h"
 #include "platform/geometry/FloatRect.h"

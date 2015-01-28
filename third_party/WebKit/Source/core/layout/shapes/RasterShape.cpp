@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/shapes/RasterShape.h"
+#include "core/layout/shapes/RasterShape.h"
 
 #include "wtf/MathExtras.h"
 

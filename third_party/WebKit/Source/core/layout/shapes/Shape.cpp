@@ -28,16 +28,16 @@
  */
 
 #include "config.h"
-#include "core/rendering/shapes/Shape.h"
+#include "core/layout/shapes/Shape.h"
 
 #include "core/css/BasicShapeFunctions.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/fetch/ImageResource.h"
-#include "core/rendering/shapes/BoxShape.h"
-#include "core/rendering/shapes/PolygonShape.h"
-#include "core/rendering/shapes/RasterShape.h"
-#include "core/rendering/shapes/RectangleShape.h"
+#include "core/layout/shapes/BoxShape.h"
+#include "core/layout/shapes/PolygonShape.h"
+#include "core/layout/shapes/RasterShape.h"
+#include "core/layout/shapes/RectangleShape.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/LengthFunctions.h"

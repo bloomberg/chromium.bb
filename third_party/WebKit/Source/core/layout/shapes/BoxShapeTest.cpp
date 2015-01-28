@@ -29,7 +29,7 @@
 
 #include "config.h"
 
-#include "core/rendering/shapes/BoxShape.h"
+#include "core/layout/shapes/BoxShape.h"
 
 #include "platform/geometry/FloatRoundedRect.h"
 

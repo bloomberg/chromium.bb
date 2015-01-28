@@ -30,7 +30,7 @@
 #ifndef BoxShape_h
 #define BoxShape_h
 
-#include "core/rendering/shapes/Shape.h"
+#include "core/layout/shapes/Shape.h"
 #include "platform/geometry/FloatRoundedRect.h"
 
 namespace blink {
