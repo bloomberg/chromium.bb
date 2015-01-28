@@ -220,10 +220,6 @@
 
       <command id="share" i18n-values="label:SHARE_BUTTON_LABEL" disabled
                shortcut="U+00BE" hide-shortcut-text><!-- Shortcut: '.' -->
-      <!-- The visibility is refered by preview panel.  Set hidden until
-           visibility is obtained once. -->
-      <command id="cloud-import" class="auto-visibility"
-               i18n-values="label:CLOUD_IMPORT_BUTTON_LABEL" hidden>
 
       <command id="zoom-in" shortcut="U+00BB-Ctrl">
       <command id="zoom-out" shortcut="U+00BD-Ctrl">
@@ -317,6 +313,12 @@
         </paper-input-decorator>
         <button class="clear" tabindex="-1"></button>
       </div>
+      <button id="cloud-import-button" tabindex="10"
+              i18n-values="aria-label:CLOUD_IMPORT_BUTTON_LABEL"
+              style='display: none;'>
+        <core-icon icon="cloud-queue"></core-icon>
+        <paper-ripple fit></paper-ripple>
+      </button>
       <paper-button id="view-button" tabindex="8">
         <core-icon icon="view-module"></core-icon>
       </paper-button>
@@ -393,8 +395,6 @@
               </div>
             </div>
             <div class="right buttonbar" visibleif="full-page">
-              <button id="cloud-import-button" command="#cloud-import" tabindex="10"
-                      i18n-values="aria-label:CLOUD_IMPORT_BUTTON_LABEL"></button>
               <button id="share-button" command="#share" tabindex="11"
                       i18n-values="aria-label:SHARE_BUTTON_LABEL"></button>
               <button id="tasks" class="combobutton" menu="#tasks-menu"

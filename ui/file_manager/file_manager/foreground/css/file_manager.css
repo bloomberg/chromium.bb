@@ -322,7 +322,8 @@ div.splitter {
   padding: 8px;
 }
 
-#gear-button {
+#gear-button,
+#cloud-import-button {
   -webkit-app-region: no-drag;
   -webkit-margin-end: 10px;
   background-color: transparent;
@@ -339,7 +340,8 @@ div.splitter {
   width: 32px;
 }
 
-#gear-button > core-icon {
+#gear-button > core-icon,
+#cloud-import-button > core-icon {
   margin: 8px;
 }
 
@@ -1151,20 +1153,6 @@ li[renaming=''] .filename-label {
   -webkit-margin-end: 10px;
   -webkit-margin-start: 10px;
   flex: auto;
-}
-
-button#cloud-import-button {
-  padding-left: 24px;
-  background: -webkit-image-set(
-      url(../images/files/ui/drive_badge.png) 1x,
-      url(../images/files/ui/2x/drive_badge.png) 2x) no-repeat 3px 2px;
-
-  /**
-   * Note that this is overriding a "5 fill" value on hover as a way of
-   * avoiding the fill command causing the background to be covered
-   * by the slice.
-   */
-  border-image-slice: 5;
 }
 
 /* The selection summary text at the bottom of the preview pane. */

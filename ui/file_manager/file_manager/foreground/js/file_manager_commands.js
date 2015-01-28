@@ -1018,36 +1018,6 @@ CommandHandler.COMMANDS_['share'] = /** @type {Command} */ ({
 });
 
 /**
- * Initiates cloud import.
- * @type {Command}
- */
-CommandHandler.COMMANDS_['cloud-import'] = /** @type {Command} */ ({
-  /**
-   * @param {!Event} event Command event.
-   * @param {!FileManager} fileManager
-   */
-  execute: function(event, fileManager) {
-    console.assert(fileManager.importController !== null);
-      fileManager.importController.execute();
-  },
-  /**
-   * @param {!Event} event Command event.
-   * @param {!FileManager} fileManager
-   */
-  canExecute: function(event, fileManager) {
-    if (fileManager.importController) {
-      var response = fileManager.importController.getCommandUpdate();
-      event.command.label = response.label;
-      event.canExecute = response.executable;
-      event.command.setHidden(!response.visible);
-    } else {
-      event.canExecute = false;
-      event.command.setHidden(true);
-    }
-  }
-});
-
-/**
  * Creates a shortcut of the selected folder (single only).
  * @type {Command}
  */

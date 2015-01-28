@@ -116,6 +116,25 @@ function testGetCommandUpdate_InitiatesScan() {
   mediaScanner.assertScanCount(1);
 }
 
+function testDirectoryChange_InitiatesUpdate() {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+        '/DCIM/photos1/',
+        '/DCIM/photos1/IMG00001.jpg',
+        '/DCIM/photos1/IMG00003.jpg'
+      ],
+      '/DCIM');
+
+  environment.directoryChangedListener_();
+  commandUpdateRecorder.assertCallCount(1);
+}
+
 function testUnmountInvalidatesScans() {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
@@ -338,6 +357,9 @@ TestControllerEnvironment = function(volumeInfo, directory) {
   /** @private {function(string)} */
   this.volumeUnmountListener_;
 
+  /** @private {function()} */
+  this.directoryChangedListener_;
+
   /** @public {!DirectoryEntry} */
   this.selection = [];
 
@@ -387,6 +409,12 @@ TestControllerEnvironment.prototype.isGoogleDriveMounted =
 TestControllerEnvironment.prototype.addVolumeUnmountListener =
     function(listener) {
   this.volumeUnmountListener_ = listener;
+};
+
+/** @override */
+TestControllerEnvironment.prototype.addDirectoryChangedListener =
+    function(listener) {
+  this.directoryChangedListener_ = listener;
 };
 
 /**

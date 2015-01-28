@@ -18,7 +18,8 @@ importer.ResponseId = {
  *   id: !importer.ResponseId,
  *   label: string,
  *   visible: boolean,
- *   executable: boolean
+ *   executable: boolean,
+ *   coreIcon: string
  * }}
  */
 importer.CommandUpdate;
@@ -67,6 +68,8 @@ importer.ImportController =
   }.bind(this));
   this.environment_.addVolumeUnmountListener(
       this.onVolumeUnmounted_.bind(this));
+  this.environment_.addDirectoryChangedListener(
+      this.onDirectoryChanged_.bind(this));
 };
 
 /**
@@ -170,28 +173,32 @@ importer.ImportController.createUpdate_ =
         id: responseId,
         visible: false,
         executable: false,
-        label: '** SHOULD NOT BE VISIBLE **'
+        label: '** SHOULD NOT BE VISIBLE **',
+        coreIcon: 'cloud-off'
       };
     case importer.ResponseId.SCANNING:
       return {
         id: responseId,
         visible: true,
         executable: false,
-        label: str('CLOUD_IMPORT_SCANNING_BUTTON_LABEL')
+        label: str('CLOUD_IMPORT_SCANNING_BUTTON_LABEL'),
+        coreIcon: 'autorenew'
       };
     case importer.ResponseId.NO_MEDIA:
       return {
         id: responseId,
         visible: true,
         executable: false,
-        label: str('CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL')
+        label: str('CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL'),
+        coreIcon: 'cloud-done'
       };
     case importer.ResponseId.EXECUTABLE:
       return {
         id: responseId,
         label: strf('CLOUD_IMPORT_BUTTON_LABEL', opt_fileCount),
         visible: true,
-        executable: true
+        executable: true,
+        coreIcon: 'cloud-upload'
       };
     default:
       assertNotReached('Unrecognized response id: ' + responseId);
@@ -268,6 +275,14 @@ importer.ImportController.prototype.onVolumeUnmounted_ = function(volumeId) {
 };
 
 /**
+ * @param {string} volumeId
+ * @private
+ */
+importer.ImportController.prototype.onDirectoryChanged_ = function() {
+  this.updateCommands_();
+};
+
+/**
  * Interface abstracting away the concrete file manager available
  * to commands. By hiding file manager we make it easy to test
  * ImportController.
@@ -306,6 +321,13 @@ importer.ControllerEnvironment.prototype.isGoogleDriveMounted;
  * @param {function(string)} listener
  */
 importer.ControllerEnvironment.prototype.addVolumeUnmountListener;
+
+/**
+ * Installs an 'directory-changed' listener. Listener is called when
+ * the directory changed.
+ * @param {function()} listener
+ */
+importer.ControllerEnvironment.prototype.addDirectoryChangedListener;
 
 /**
  * Class providing access to various pieces of information in the
@@ -358,6 +380,7 @@ importer.RuntimeControllerEnvironment.prototype.isGoogleDriveMounted =
 /** @override */
 importer.RuntimeControllerEnvironment.prototype.addVolumeUnmountListener =
     function(listener) {
+  // TODO(smckay): remove listeners when the page is torn down.
   chrome.fileManagerPrivate.onMountCompleted.addListener(
       /**
        * @param {!MountCompletedEvent} event
@@ -368,4 +391,64 @@ importer.RuntimeControllerEnvironment.prototype.addVolumeUnmountListener =
           listener(event.volumeMetadata.volumeId);
         }
       });
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.addDirectoryChangedListener =
+    function(listener) {
+  // TODO(smckay): remove listeners when the page is torn down.
+  this.fileManager_.directoryModel.addEventListener(
+      'directory-changed',
+      listener);
+};
+
+/**
+ * Class that adapts from the new non-command button to the old
+ * command style interface.
+ *
+ * <p>NOTE: This adapter is a stop gap bridge between the old-style
+ * Command button and our new do-it-yourself toolbar button. We used
+ * an adapter to minimize changes to RuntimeImportController while other
+ * people are working on that file. Once the dust settles we can make
+ * more transformative changes.
+ *
+ * @constructor
+ * @struct
+ *
+ * @param {!FileManager} fileManager
+ */
+importer.ButtonCommandAdapter = function(fileManager) {
+
+  /** @param {!FileManager} */
+  this.fileManager_ = fileManager;
+
+  /** @param {Element} */
+  this.buttonElement_ = document.querySelector('#cloud-import-button');
+
+  this.buttonElement_.onclick = this.execute_.bind(this);
+
+  /** @param {Element} */
+  this.iconElement_ = document.querySelector('#cloud-import-button core-icon');
+};
+
+/** @private */
+importer.ButtonCommandAdapter.prototype.execute_ = function() {
+  this.fileManager_.importController.execute();
+};
+
+/**
+ * @param {!Event} event Command event.
+ * @param {!FileManager} fileManager
+ */
+importer.ButtonCommandAdapter.prototype.update = function() {
+  if (this.fileManager_.importController) {
+    var update = fileManager.importController.getCommandUpdate();
+    this.buttonElement_.setAttribute('title', update.label);
+    this.buttonElement_.disabled = !update.executable;
+    this.buttonElement_.style.display  = update.visible ? 'block' : 'none';
+    this.iconElement_.setAttribute('icon', update.coreIcon);
+  } else {
+    this.buttonElement_.setAttribute('display', 'none');
+    this.iconElement_.setAttribute('icon', 'cloud-off');
+  }
 };
