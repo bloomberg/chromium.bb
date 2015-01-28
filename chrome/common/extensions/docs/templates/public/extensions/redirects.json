@@ -6,5 +6,6 @@
   "experimental.systemInfo_storage": "system_storage",
   "experimental_systemInfo_storage": "system_storage",
   "systemInfo_cpu": "system_cpu",
-  "systemInfo_memory": "system_memory"
+  "systemInfo_memory": "system_memory",
+  "index": "."
 }

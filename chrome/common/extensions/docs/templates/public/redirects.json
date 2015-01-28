@@ -1,9 +1,4 @@
 {
   "": "/home",
-  "apps": "/apps/about_apps",
-  "native-client": "/native-client/index",
-  "extensions": "/extensions/index",
-  "devtools": "devtools/index",
-  "multidevice": "multidevice/index",
-  "webstore": "/webstore/index"
+  "apps": "/apps/about_apps"
 }

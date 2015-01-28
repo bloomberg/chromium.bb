@@ -4,11 +4,11 @@
     "items": [
       {
         "title": "Learn Basics",
-        "href": "/devtools/index",
+        "href": "/devtools",
         "items": [
           {
             "title": "Overview",
-            "href": "/devtools/index"
+            "href": "/devtools"
           },
           {
             "title": "Development Workflow",
@@ -195,11 +195,11 @@
     "items": [
       {
         "title": "Getting Started",
-        "href": "/multidevice/index",
+        "href": "/multidevice",
         "items": [
           {
             "title": "Chrome for a Multi-Device World",
-            "href": "/multidevice/index"
+            "href": "/multidevice"
           },
           {
             "title": "Data Compression Proxy",
@@ -532,11 +532,11 @@
       },
       {
         "title": "Extensions",
-        "href": "/extensions/index",
+        "href": "/extensions",
         "items": [
           {
             "title": "Learn Basics",
-            "href": "/extensions/index",
+            "href": "/extensions",
             "items": [
               {
                 "title": "Overview",
@@ -705,11 +705,11 @@
       },
       {
         "title": "Native Client",
-        "href": "/native-client/index",
+        "href": "/native-client",
         "items": [
           {
             "title": "Learn Basics",
-            "href": "/native-client/index",
+            "href": "/native-client",
             "items": [
               {
                 "title": "Technical Overview",
@@ -937,11 +937,11 @@
       },
       {
         "title": "Store",
-        "href": "/webstore/index",
+        "href": "/webstore",
         "items": [
           {
             "title": "Distribution Overview",
-            "href": "/webstore/index"
+            "href": "/webstore"
           },
           {
             "title": "What Is the Chrome Web Store?",
