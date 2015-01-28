@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/debug/trace_event.h"
 #include "base/memory/ref_counted.h"
+#include "base/trace_event/trace_event.h"
 #include "content/common/content_export.h"
 
 namespace content {

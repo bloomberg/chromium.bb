@@ -8,11 +8,11 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
 #include "content/shell/renderer/test_runner/event_sender.h"

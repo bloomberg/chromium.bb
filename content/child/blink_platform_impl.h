@@ -6,9 +6,9 @@
 #define CONTENT_CHILD_BLINK_PLATFORM_IMPL_H_
 
 #include "base/compiler_specific.h"
-#include "base/debug/trace_event.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event.h"
 #include "content/child/webcrypto/webcrypto_impl.h"
 #include "content/child/webfallbackthemeengine_impl.h"
 #include "content/common/content_export.h"

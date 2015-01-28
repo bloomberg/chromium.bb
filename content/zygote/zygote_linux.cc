@@ -11,7 +11,6 @@
 #include <sys/wait.h>
 
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/files/file_util.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
@@ -25,6 +24,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "content/common/child_process_sandbox_support_impl_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/set_process_title.h"

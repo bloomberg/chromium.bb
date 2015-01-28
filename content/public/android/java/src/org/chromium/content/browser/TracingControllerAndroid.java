@@ -177,7 +177,7 @@ public class TracingControllerAndroid {
      * (in content/public/browser/trace_controller.h) for the format.
      * @param traceOptions Which trace options to use. See
      * TraceOptions::TraceOptions(const std::string& options_string)
-     * (in base/debug/trace_event_impl.h) for the format.
+     * (in base/trace_event/trace_event_impl.h) for the format.
      */
     public boolean startTracing(String filename, boolean showToasts, String categories,
             String traceOptions) {

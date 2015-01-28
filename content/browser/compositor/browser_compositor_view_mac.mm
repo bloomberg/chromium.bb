@@ -4,8 +4,8 @@
 
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 
-#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_resize_helper.h"

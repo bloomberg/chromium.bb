@@ -4,10 +4,10 @@
 
 #include "content/child/service_worker/service_worker_dispatcher.h"
 
-#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/trace_event.h"
 #include "content/child/child_thread.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
