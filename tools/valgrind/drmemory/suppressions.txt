@@ -711,8 +711,3 @@ system call NtOpenProcess
 KERNELBASE.dll!OpenProcess
 base.dll!base::Process::OpenWithExtraPriviles
 content.dll!content::BrowserMessageFilter::Internal::OnChannelConnected
-...
-ipc.dll!IPC::ChannelWin::HandleInternalMessage
-ipc.dll!IPC::internal::ChannelReader::DispatchInputData
-ipc.dll!IPC::internal::ChannelReader::AsyncReadComplete
-ipc.dll!IPC::ChannelWin::OnIOCompleted

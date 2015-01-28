@@ -1893,3 +1893,7 @@ UNINITIALIZED READ
 name=bug_446256
 *!`anonymous namespace'::GraphicsContextTest_trackDisplayListRecording_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
+
+UNINITIALIZED READ
+name=bug_399842
+skia.dll!S32A_Opaque_BlitRow32_SSE4
