@@ -80,6 +80,8 @@ public:
     virtual FloatRect objectBoundingBox() const override final { return m_fillBoundingBox; }
 
 protected:
+    void clearPath() { m_path.clear(); }
+
     virtual void updateShapeFromElement();
     virtual bool shapeDependentStrokeContains(const FloatPoint&);
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const;

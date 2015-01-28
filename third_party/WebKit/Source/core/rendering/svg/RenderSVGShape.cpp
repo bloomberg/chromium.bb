@@ -56,7 +56,7 @@ RenderSVGShape::~RenderSVGShape()
 
 void RenderSVGShape::updateShapeFromElement()
 {
-    m_path.clear();
+    clearPath();
     m_path = adoptPtr(new Path);
     ASSERT(RenderSVGShape::isShapeEmpty());
 

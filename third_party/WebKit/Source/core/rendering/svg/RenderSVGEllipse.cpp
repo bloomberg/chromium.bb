@@ -31,6 +31,8 @@
 #include "core/svg/SVGCircleElement.h"
 #include "core/svg/SVGEllipseElement.h"
 
+#include <cmath>
+
 namespace blink {
 
 RenderSVGEllipse::RenderSVGEllipse(SVGGraphicsElement* node)
@@ -60,7 +62,7 @@ void RenderSVGEllipse::updateShapeFromElement()
         return;
 
     if (!m_radii.isEmpty()) {
-        // Fallback to RenderSVGShape and path-based hit detection if the ellipse
+        // Fall back to RenderSVGShape and path-based hit detection if the ellipse
         // has a non-scaling or discontinuous stroke.
         if (hasNonScalingStroke() || !hasContinuousStroke()) {
             RenderSVGShape::updateShapeFromElement();
@@ -68,6 +70,8 @@ void RenderSVGEllipse::updateShapeFromElement()
             return;
         }
     }
+
+    clearPath();
 
     m_fillBoundingBox = FloatRect(m_center.x() - m_radii.width(), m_center.y() - m_radii.height(), 2 * m_radii.width(), 2 * m_radii.height());
     m_strokeBoundingBox = m_fillBoundingBox;
@@ -97,40 +101,30 @@ void RenderSVGEllipse::calculateRadiiAndCenter()
 
 bool RenderSVGEllipse::shapeDependentStrokeContains(const FloatPoint& point)
 {
-    // The optimized code below does not support discontinuous strokes so we need
-    // to fall back to RenderSVGShape::shapeDependentStrokeContains in these cases.
-    if (m_usePathFallback || !hasContinuousStroke()) {
+    // The optimized check below for circles does not support non-scaling or
+    // discontinuous strokes.
+    if (m_usePathFallback
+        || !hasContinuousStroke()
+        || m_radii.width() != m_radii.height()) {
         if (!hasPath())
             RenderSVGShape::updateShapeFromElement();
         return RenderSVGShape::shapeDependentStrokeContains(point);
     }
 
-    float halfStrokeWidth = strokeWidth() / 2;
-    FloatPoint center = FloatPoint(m_center.x() - point.x(), m_center.y() - point.y());
-
-    // This works by checking if the point satisfies the ellipse equation,
-    // (x/rX)^2 + (y/rY)^2 <= 1, for the outer but not the inner stroke.
-    float xrXOuter = center.x() / (m_radii.width() + halfStrokeWidth);
-    float yrYOuter = center.y() / (m_radii.height() + halfStrokeWidth);
-    if (xrXOuter * xrXOuter + yrYOuter * yrYOuter > 1.0)
-        return false;
-
-    float xrXInner = center.x() / (m_radii.width() - halfStrokeWidth);
-    float yrYInner = center.y() / (m_radii.height() - halfStrokeWidth);
-    return xrXInner * xrXInner + yrYInner * yrYInner >= 1.0;
+    const FloatPoint center = FloatPoint(m_center.x() - point.x(), m_center.y() - point.y());
+    const float halfStrokeWidth = strokeWidth() / 2;
+    const float r = m_radii.width();
+    return std::abs(center.length() - r) <= halfStrokeWidth;
 }
 
 bool RenderSVGEllipse::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
 {
-    if (m_usePathFallback)
-        return RenderSVGShape::shapeDependentFillContains(point, fillRule);
-
-    FloatPoint center = FloatPoint(m_center.x() - point.x(), m_center.y() - point.y());
+    const FloatPoint center = FloatPoint(m_center.x() - point.x(), m_center.y() - point.y());
 
     // This works by checking if the point satisfies the ellipse equation.
     // (x/rX)^2 + (y/rY)^2 <= 1
-    float xrX = center.x() / m_radii.width();
-    float yrY = center.y() / m_radii.height();
+    const float xrX = center.x() / m_radii.width();
+    const float yrY = center.y() / m_radii.height();
     return xrX * xrX + yrY * yrY <= 1.0;
 }
 
