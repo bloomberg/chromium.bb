@@ -226,7 +226,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
 
   RemoveAllChildViews(true);
   customize_comboboxes_.clear();
-  set_close_on_esc(false);
+  set_close_on_esc(true);
   set_close_on_deactivate(false);
 
   SetLayoutManager(new views::BoxLayout(
