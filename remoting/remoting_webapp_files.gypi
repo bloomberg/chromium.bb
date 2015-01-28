@@ -59,6 +59,7 @@
     'remoting_webapp_js_core_files': [
       'webapp/base/js/application.js',
       'webapp/base/js/base.js',
+      'webapp/base/js/ipc.js',
       'webapp/base/js/platform.js',
       'webapp/crd/js/apps_v2_migration.js',
       'webapp/crd/js/error.js',
@@ -178,6 +179,7 @@
       'webapp/unittests/base_unittest.js',
       'webapp/unittests/dns_blackhole_checker_unittest.js',
       'webapp/unittests/fallback_signal_strategy_unittest.js',
+      'webapp/unittests/ipc_unittest.js',
       'webapp/unittests/it2me_helpee_channel_unittest.js',
       'webapp/unittests/it2me_helper_channel_unittest.js',
       'webapp/unittests/it2me_service_unittest.js',
@@ -226,6 +228,7 @@
     # The JavaScript files that are used in the background page.
     'remoting_webapp_background_js_files': [
       'webapp/base/js/base.js',
+      'webapp/base/js/ipc.js',
       'webapp/base/js/message_window_helper.js',
       'webapp/base/js/message_window_manager.js',
       'webapp/crd/js/app_launcher.js',

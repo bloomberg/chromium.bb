@@ -112,6 +112,18 @@ base.values = function(dict) {
 };
 
 /**
+ * @param {*} value
+ * @return {*} a recursive copy of |value| or null if |value| is not copyable
+ *   (e.g. undefined, NaN).
+ */
+base.deepCopy = function (value) {
+  try {
+    return JSON.parse(JSON.stringify(value));
+  } catch (e) {}
+  return null;
+};
+
+/**
  * @type {boolean|undefined}
  * @private
  */

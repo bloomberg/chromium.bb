@@ -39,9 +39,9 @@ chrome.app.window = {
   current: function() {},
   /**
    * @param {string} id
-   * @param {function()=} opt_callback
+   * @return {AppWindow}
    */
-  get: function(id, opt_callback) {},
+  get: function(id) {},
   /**
    * @return {Array.<AppWindow>}
    */
@@ -88,7 +88,7 @@ chrome.runtime.connectNative = function(name) {};
 chrome.runtime.connect = function(config) {};
 
 /**
- * @param {string} extensionId
+ * @param {string?} extensionId
  * @param {*} message
  * @param {Object=} opt_options
  * @param {function(*)=} opt_callback
@@ -100,6 +100,10 @@ chrome.runtime.sendMessage = function(
 chrome.runtime.MessageSender = function(){
   /** @type {chrome.Tab} */
   this.tab = null;
+  /** @type {string} */
+  this.id = '';
+  /** @type {string} */
+  this.url = '';
 };
 
 /** @constructor */

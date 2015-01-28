@@ -28,9 +28,10 @@ chromeMocks.Event.prototype.removeListener = function(callback) {
   }
 };
 
-chromeMocks.Event.prototype.mock$fire = function(data) {
+chromeMocks.Event.prototype.mock$fire = function(var_args) {
+  var params = Array.prototype.slice.call(arguments);
   this.listeners_.forEach(function(listener){
-    listener(data);
+    listener.apply(null, params);
   });
 };
 
@@ -47,6 +48,22 @@ chromeMocks.runtime.Port = function() {
 chromeMocks.runtime.Port.prototype.disconnect = function() {};
 chromeMocks.runtime.Port.prototype.postMessage = function() {};
 
+chromeMocks.runtime.onMessage = new chromeMocks.Event();
+chromeMocks.runtime.sendMessage = function(extensionId, message,
+                                           responseCallback) {
+  base.debug.assert(
+      extensionId === null,
+      'The mock only supports sending messages to the same extension.');
+  extensionId = chrome.runtime.id;
+  window.requestAnimationFrame(function() {
+    var message_copy = base.deepCopy(message);
+    chromeMocks.runtime.onMessage.mock$fire(
+        message_copy, {id: extensionId}, responseCallback);
+  });
+};
+
+chromeMocks.runtime.id = 'extensionId';
+
 chromeMocks.storage = {};
 
 // Sample implementation of chrome.StorageArea according to
@@ -54,10 +71,6 @@ chromeMocks.storage = {};
 chromeMocks.StorageArea = function() {
   this.storage_ = {};
 };
-
-function deepCopy(value) {
-  return JSON.parse(JSON.stringify(value));
-}
 
 function getKeys(keys) {
   if (typeof keys === 'string') {
@@ -70,14 +83,14 @@ function getKeys(keys) {
 
 chromeMocks.StorageArea.prototype.get = function(keys, onDone) {
   if (!keys) {
-    onDone(deepCopy(this.storage_));
+    onDone(base.deepCopy(this.storage_));
     return;
   }
 
   var result = (typeof keys === 'object') ? keys : {};
   getKeys(keys).forEach(function(key) {
     if (key in this.storage_) {
-      result[key] = deepCopy(this.storage_[key]);
+      result[key] = base.deepCopy(this.storage_[key]);
     }
   }, this);
   onDone(result);
@@ -85,7 +98,7 @@ chromeMocks.StorageArea.prototype.get = function(keys, onDone) {
 
 chromeMocks.StorageArea.prototype.set = function(value) {
   for (var key in value) {
-    this.storage_[key] = deepCopy(value[key]);
+    this.storage_[key] = base.deepCopy(value[key]);
   }
 };
 

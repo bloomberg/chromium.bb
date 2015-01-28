@@ -41,6 +41,35 @@ test('values(obj) should return an array containing the values of |obj|',
     notEqual(output.indexOf('b'), -1, '"b" should be in the output');
 });
 
+test('deepCopy(obj) should return null on NaN and undefined',
+  function() {
+    QUnit.equal(base.deepCopy(NaN), null);
+    QUnit.equal(base.deepCopy(undefined), null);
+});
+
+test('deepCopy(obj) should copy primitive types recursively',
+  function() {
+    QUnit.equal(base.deepCopy(1), 1);
+    QUnit.equal(base.deepCopy('hello'), 'hello');
+    QUnit.equal(base.deepCopy(false), false);
+    QUnit.equal(base.deepCopy(null), null);
+    QUnit.deepEqual(base.deepCopy([1, 2]), [1, 2]);
+    QUnit.deepEqual(base.deepCopy({'key': 'value'}), {'key': 'value'});
+    QUnit.deepEqual(base.deepCopy(
+      {'key': {'key_nested': 'value_nested'}}),
+      {'key': {'key_nested': 'value_nested'}}
+    );
+    QUnit.deepEqual(base.deepCopy([1, [2, [3]]]), [1, [2, [3]]]);
+});
+
+test('modify the original after deepCopy(obj) should not affect the copy',
+  function() {
+    var original = [1, 2, 3, 4];
+    var copy = base.deepCopy(original);
+    original[2] = 1000;
+    QUnit.deepEqual(copy, [1, 2, 3, 4]);
+});
+
 test('dispose(obj) should invoke the dispose method on |obj|',
   function() {
     var obj = {
