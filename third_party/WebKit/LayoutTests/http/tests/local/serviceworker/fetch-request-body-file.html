@@ -21,7 +21,7 @@ function register() {
                   reject(msg.data.msg);
                 }
               };
-            frame.contentWindow.postMessage({}, [channel.port2], "*");
+            frame.contentWindow.postMessage({}, "*", [channel.port2]);
           });
     });
 }
@@ -39,7 +39,7 @@ function unregister_and_done(t) {
                   reject(msg.data.msg);
                 }
               };
-            frame.contentWindow.postMessage({}, [channel.port2], "*");
+            frame.contentWindow.postMessage({}, "*", [channel.port2]);
           });
     });
 }
