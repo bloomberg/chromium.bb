@@ -49,6 +49,7 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
+#include "ui/views/widget/desktop_aura/x11_pointer_grab.h"
 #include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_util.h"
@@ -953,14 +954,14 @@ void DesktopWindowTreeHostX11::SetCapture() {
   // OR
   // - The topmost window underneath the mouse is managed by Chrome.
   DesktopWindowTreeHostX11* old_capturer = g_current_capture;
+
+  // Update |g_current_capture| prior to calling OnHostLostWindowCapture() to
+  // avoid releasing pointer grab.
   g_current_capture = this;
   if (old_capturer)
     old_capturer->OnHostLostWindowCapture();
 
-  unsigned int event_mask = PointerMotionMask | ButtonReleaseMask |
-                            ButtonPressMask;
-  XGrabPointer(xdisplay_, xwindow_, True, event_mask, GrabModeAsync,
-               GrabModeAsync, None, None, CurrentTime);
+  GrabPointer(xwindow_, true, None);
 }
 
 void DesktopWindowTreeHostX11::ReleaseCapture() {
@@ -969,7 +970,7 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
     // the topmost window underneath the mouse so the capture release being
     // asynchronous is likely inconsequential.
     g_current_capture = NULL;
-    XUngrabPointer(xdisplay_, CurrentTime);
+    UngrabPointer();
 
     OnHostLostWindowCapture();
   }

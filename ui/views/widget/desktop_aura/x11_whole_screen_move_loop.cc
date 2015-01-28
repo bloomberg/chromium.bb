@@ -21,6 +21,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/views/widget/desktop_aura/x11_pointer_grab.h"
 
 namespace views {
 
@@ -186,15 +187,8 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
 }
 
 void X11WholeScreenMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {
-  if (in_move_loop_) {
-    // We cannot call GrabPointer() because we do not want to change the
-    // "owner_events" property of the active pointer grab.
-    XChangeActivePointerGrab(
-        gfx::GetXDisplay(),
-        ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-        cursor.platform(),
-        CurrentTime);
-  }
+  if (in_move_loop_)
+    ChangeActivePointerGrabCursor(cursor.platform());
 }
 
 void X11WholeScreenMoveLoop::EndMoveLoop() {
@@ -215,12 +209,12 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   // the chrome process.
 
   // Ungrab before we let go of the window.
-  XDisplay* display = gfx::GetXDisplay();
   if (grabbed_pointer_)
-    XUngrabPointer(display, CurrentTime);
+    UngrabPointer();
   else
     UpdateCursor(initial_cursor_);
 
+  XDisplay* display = gfx::GetXDisplay();
   unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
   for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
     XUngrabKey(display, esc_keycode, kModifiersMasks[i], grab_input_window_);
@@ -242,16 +236,7 @@ bool X11WholeScreenMoveLoop::GrabPointer(gfx::NativeCursor cursor) {
 
   // Pass "owner_events" as false so that X sends all mouse events to
   // |grab_input_window_|.
-  int ret = XGrabPointer(
-      display,
-      grab_input_window_,
-      False,  // owner_events
-      ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-      GrabModeAsync,
-      GrabModeAsync,
-      None,
-      cursor.platform(),
-      CurrentTime);
+  int ret = ::views::GrabPointer(grab_input_window_, false, cursor.platform());
   if (ret != GrabSuccess) {
     DLOG(ERROR) << "Grabbing pointer for dragging failed: "
                 << ui::GetX11ErrorString(display, ret);
