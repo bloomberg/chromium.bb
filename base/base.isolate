@@ -23,7 +23,7 @@
         ],
       },
     }],
-    ['OS=="win" and asan==1', {
+    ['OS=="win" and asan==1 and component=="shared_library"', {
       'variables': {
         'files': [
           '../third_party/llvm-build/Release+Asserts/lib/clang/3.7.0/lib/windows/clang_rt.asan_dynamic-i386.dll',
