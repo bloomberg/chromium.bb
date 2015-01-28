@@ -421,10 +421,12 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 
 	wl_event_loop_process_destroy_list(loop);
 
+	wl_event_loop_dispatch_idle(loop);
+
 	do {
 		n = post_dispatch_check(loop);
 	} while (n > 0);
-		
+
 	return 0;
 }
 
