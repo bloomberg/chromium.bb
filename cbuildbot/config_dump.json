@@ -20894,7 +20894,6 @@
             "test",
             "factory_install"
         ],
-        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -33327,6 +33326,7 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Preflight Chrome Uprev & Build (internal)",
+        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -33864,7 +33864,6 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Preflight Chrome Uprev & Build (internal)",
-        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
