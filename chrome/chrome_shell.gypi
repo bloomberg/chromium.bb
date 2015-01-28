@@ -48,9 +48,6 @@
       'target_name': 'libchromeshell',
       'type': 'shared_library',
       'sources': [
-        # This file must always be included in the shared_library step to ensure
-        # JNI_OnLoad is exported.
-        'app/android/chrome_jni_onload.cc',
         'android/shell/chrome_main_delegate_chrome_shell_android.cc',
         'android/shell/chrome_main_delegate_chrome_shell_android.h',
       ],
@@ -68,9 +65,6 @@
       'target_name': 'libchromesyncshell',
       'type': 'shared_library',
       'sources': [
-        # This file must always be included in the shared_library step to ensure
-        # JNI_OnLoad is exported.
-        'app/android/chrome_jni_onload.cc',
         'android/sync_shell/chrome_main_delegate_chrome_sync_shell_android.cc',
         'android/sync_shell/chrome_main_delegate_chrome_sync_shell_android.h',
       ],

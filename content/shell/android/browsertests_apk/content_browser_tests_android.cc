@@ -21,10 +21,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/app/android_library_loader_hooks.h"
-#include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/nested_message_pump_android.h"
 #include "content/public/test/test_launcher.h"
 #include "content/shell/android/shell_jni_registrar.h"
 #include "content/shell/app/shell_main_delegate.h"
@@ -96,28 +93,9 @@ static void RunTests(JNIEnv* env,
   ScopedMainEntryLogger scoped_main_entry_logger;
   main(argc, &argv[0]);
 }
-}  // namespace content
 
-// This is called by the VM when the shared library is first loaded.
-JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-
-  base::android::SetLibraryLoadedHook(&content::LibraryLoaded);
-
-  base::android::InitVM(vm);
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  if (!base::android::RegisterLibraryLoaderEntryHook(env))
-    return -1;
-
-  if (!content::android::RegisterShellJni(env))
-    return -1;
-
-  if (!content::NestedMessagePumpAndroid::RegisterJni(env))
-    return -1;
-
-  if (!content::RegisterNativesImpl(env))
-    return -1;
-
-  content::SetContentMainDelegate(new content::ShellMainDelegate());
-  return JNI_VERSION_1_4;
+bool RegisterContentBrowserTestsAndroid(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
+
+}  // namespace content

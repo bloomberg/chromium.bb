@@ -1016,7 +1016,6 @@
           ],
           'sources': [
             'shell/android/shell_library_loader.cc',
-            'shell/android/shell_library_loader.h',
           ],
           'conditions': [
             ['android_webview_build==1', {

@@ -5,10 +5,6 @@
 #ifndef CHROME_APP_ANDROID_CHROME_ANDROID_INITIALIZER_H_
 #define CHROME_APP_ANDROID_CHROME_ANDROID_INITIALIZER_H_
 
-#include <jni.h>
-
-class ChromeMainDelegateAndroid;
-
-jint RunChrome(JavaVM* vm, ChromeMainDelegateAndroid* main_delegate);
+bool RunChrome();
 
 #endif  // CHROME_APP_ANDROID_CHROME_ANDROID_INITIALIZER_H_

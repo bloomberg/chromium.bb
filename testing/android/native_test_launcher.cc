@@ -60,20 +60,6 @@ void SignalHandler(int sig, siginfo_t* info, void* reserved) {
   g_old_sa[sig].sa_sigaction(sig, info, reserved);
 }
 
-// TODO(nileshagrawal): now that we're using FIFO, test scripts can detect EOF.
-// Remove the signal handlers.
-void InstallHandlers() {
-  struct sigaction sa;
-  memset(&sa, 0, sizeof(sa));
-
-  sa.sa_sigaction = SignalHandler;
-  sa.sa_flags = SA_SIGINFO;
-
-  for (unsigned int i = 0; kExceptionSignals[i] != -1; ++i) {
-    sigaction(kExceptionSignals[i], &sa, &g_old_sa[kExceptionSignals[i]]);
-  }
-}
-
 // Writes printf() style string to Android's logger where |priority| is one of
 // the levels defined in <android/log.h>.
 void AndroidLog(int priority, const char* format, ...) {
@@ -92,8 +78,6 @@ static void RunTests(JNIEnv* env,
                      jstring jstdout_file_path,
                      jboolean jstdout_fifo,
                      jobject app_context) {
-  base::AtExitManager exit_manager;
-
   // Command line initialized basically, will be fully initialized later.
   static const char* const kInitialArgv[] = { "ChromeTestActivity" };
   base::CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);
@@ -157,16 +141,21 @@ static void RunTests(JNIEnv* env,
   main(argc, &argv[0]);
 }
 
-// This is called by the VM when the shared library is first loaded.
-JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  // Install signal handlers to detect crashes.
-  InstallHandlers();
+bool RegisterNativeTestJNI(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
 
-  base::android::InitVM(vm);
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (!RegisterNativesImpl(env)) {
-    return -1;
+
+// TODO(nileshagrawal): now that we're using FIFO, test scripts can detect EOF.
+// Remove the signal handlers.
+void InstallHandlers() {
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+
+  sa.sa_sigaction = SignalHandler;
+  sa.sa_flags = SA_SIGINFO;
+
+  for (unsigned int i = 0; kExceptionSignals[i] != -1; ++i) {
+    sigaction(kExceptionSignals[i], &sa, &g_old_sa[kExceptionSignals[i]]);
   }
-
-  return JNI_VERSION_1_4;
 }

@@ -2,16 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "base/android/jni_android.h"
+#include "base/android/jni_onload_delegate.h"
 #include "chrome/app/android/chrome_android_initializer.h"
-#include "chrome/app/android/chrome_main_delegate_android.h"
+#include "content/public/app/content_jni_onload.h"
+
+namespace {
+
+class ChromeJNIOnLoadDelegate : public base::android::JNIOnLoadDelegate {
+ public:
+  bool RegisterJNI(JNIEnv* env) override;
+  bool Init() override;
+};
+
+bool ChromeJNIOnLoadDelegate::RegisterJNI(JNIEnv* env) {
+  return true;
+}
+
+bool ChromeJNIOnLoadDelegate::Init() {
+  // TODO(michaelbai): Move the JNI registration from RunChrome() to
+  // RegisterJNI().
+  return RunChrome();
+}
+
+}  // namespace
+
 
 // This is called by the VM when the shared library is first loaded.
-// Note that this file must be included in the final shared_library build step
-// and not in a static library or the JNI_OnLoad symbol won't be included
-// because the Android build is compiled with exclude-libs=ALL to reduce symbol
-// size.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  return RunChrome(vm, ChromeMainDelegateAndroid::Create());
+  ChromeJNIOnLoadDelegate delegate;
+  if (!content::android::OnJNIOnLoad(vm, &delegate))
+    return -1;
+
+  return JNI_VERSION_1_4;
 }

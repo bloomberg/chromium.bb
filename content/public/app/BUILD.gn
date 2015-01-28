@@ -22,6 +22,7 @@
 
 public_app_shared_sources = [
   "android_library_loader_hooks.h",
+  "content_jni_onload.h",
   "content_main.h",
   "content_main_delegate.cc",
   "content_main_delegate.h",

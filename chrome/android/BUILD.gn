@@ -187,9 +187,6 @@ group("chrome_shell_base") {
 shared_library("chrome_shell") {
   testonly = true
   sources = [
-    # This file must always be included in the shared_library step to ensure
-    # JNI_OnLoad is exported.
-    "//chrome/app/android/chrome_jni_onload.cc",
     "shell/chrome_main_delegate_chrome_shell_android.cc",
     "shell/chrome_main_delegate_chrome_shell_android.h",
   ]
@@ -210,9 +207,6 @@ shared_library("chrome_shell") {
 shared_library("chrome_sync_shell") {
   testonly = true
   sources = [
-    # This file must always be included in the shared_library step to ensure
-    # JNI_OnLoad is exported.
-    #"//chrome/app/android/chrome_jni_onload.cc",
     #"sync_shell/chrome_main_delegate_chrome_sync_shell_android.cc",
     #"sync_shell/chrome_main_delegate_chrome_sync_shell_android.h",
   ]

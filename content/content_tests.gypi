@@ -264,6 +264,8 @@
       'browser/accessibility/android_granularity_movement_browsertest.cc',
       'browser/accessibility/android_hit_testing_browsertest.cc',
       'shell/android/browsertests_apk/content_browser_tests_android.cc',
+      'shell/android/browsertests_apk/content_browser_tests_android.h',
+      'shell/android/browsertests_apk/content_browser_tests_jni_onload.cc',
     ],
     'content_browsertests_webrtc_sources': [
       'browser/media/webrtc_aecdump_browsertest.cc',

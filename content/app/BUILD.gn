@@ -10,6 +10,7 @@ content_app_sources = [
   "android/app_jni_registrar.h",
   "android/child_process_service.cc",
   "android/child_process_service.h",
+  "android/content_jni_onload.cc",
   "android/content_main.cc",
   "android/content_main.h",
   "android/library_loader_hooks.cc",
