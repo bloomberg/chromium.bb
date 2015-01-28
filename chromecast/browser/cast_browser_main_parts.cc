@@ -18,17 +18,20 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
+#include "chromecast/browser/media/cast_browser_cdm_factory.h"
 #include "chromecast/browser/metrics/cast_metrics_prefs.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/browser/pref_service_helper.h"
 #include "chromecast/browser/service/cast_service.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/cast_paths.h"
+#include "chromecast/common/chromecast_switches.h"
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/net/network_change_notifier_cast.h"
 #include "chromecast/net/network_change_notifier_factory_cast.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "media/base/browser_cdm_factory.h"
 #include "media/base/media_switches.h"
 
 #if defined(OS_ANDROID)
@@ -179,6 +182,12 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   metrics::RegisterPrefs(pref_registry.get());
   cast_browser_process_->SetPrefService(
       PrefServiceHelper::CreatePrefService(pref_registry.get()));
+
+#if !defined(OS_ANDROID)
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline))
+    ::media::SetBrowserCdmFactory(new media::CastBrowserCdmFactory);
+#endif  // !defined(OS_ANDROID)
 
   url_request_context_factory_->InitializeOnUIThread();
 
