@@ -1358,15 +1358,11 @@ _x86_internal_release_boards = frozenset([
   'lemmings',
   'leon',
   'link',
-  'link_freon',
   'lulu',
   'lumpy',
   'mccloud',
-  'mccloud_freon',
   'monroe',
-  'monroe_freon',
   'panther',
-  'panther_freon',
   'panther_moblab',
   'parrot',
   'parrot_ivb',
@@ -1386,7 +1382,6 @@ _x86_internal_release_boards = frozenset([
   'swanky',
   'tidus',
   'tricky',
-  'tricky_freon',
   'winky',
   'wolf',
   'x86-alex',
@@ -1395,7 +1390,6 @@ _x86_internal_release_boards = frozenset([
   'x86-zgb',
   'x86-zgb_he',
   'zako',
-  'zako_freon',
 ])
 
 _x86_external_boards = frozenset([
@@ -1507,23 +1501,17 @@ _freon_boards = frozenset([
   'guado',
   'jecht',
   'link',
-  'link_freon',
   'lulu',
   'mccloud',
-  'mccloud_freon',
   'monroe',
-  'monroe_freon',
   'panther',
-  'panther_freon',
   'peppy',
   'peppy_freon',
   'strago',
   'rikku',
   'tidus',
   'tricky',
-  'tricky_freon',
   'zako',
-  'zako_freon',
   'samus',
 ])
 
@@ -2513,19 +2501,6 @@ wolf_release_config['hw_tests'] = HWTestConfig.SharedPoolCanary(
   suite_min_duts=6)
 _release.add_config('wolf-release', wolf_release_config)
 
-### x86 Freon Release configs.
-
-_release_freon = _release.derive(
-  # Freon release builds can't run vm_tests, bug 387507, 431110.
-  vm_tests=[],
-)
-
-_release_freon.add_config('link_freon-release',
-  _base_configs['link_freon'],
-  boards=['link_freon'],
-  useflags=append_useflags(['highdpi']),
-)
-
 ### Arm release configs.
 
 _arm_release = _release.derive(non_testable_builder)
@@ -2802,19 +2777,6 @@ _AddGroupConfig('beltino-b', 'monroe', (
     'tricky',
     'zako',
 ))
-
-_AddGroupConfig('beltino-freon', 'mccloud_freon', (
-    'monroe_freon',
-    'panther_freon',
-    'tricky_freon',
-    ),
-    important=False,
-)
-
-_AddGroupConfig('beltino-freon-b', 'zako_freon', (
-    ),
-    important=False,
-)
 
 # rambi-based boards
 _AddGroupConfig('rambi-a', 'rambi', (
