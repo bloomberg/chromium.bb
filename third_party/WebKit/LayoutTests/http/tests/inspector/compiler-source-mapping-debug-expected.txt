@@ -4,13 +4,13 @@ Tests installing compiler source map in scripts panel.
 
 
 Running: testSetBreakpoint
-Page reloaded.
 Script source was shown.
 Script execution paused.
 Call stack:
-    0) handleClick (compiled.js:2)
-    1) clickButton (compiler-source-mapping-debug.html:14)
+    0) handleClick (source1.js:16)
+    1) clickButton (compiler-source-mapping-debug.html:13)
+Script execution resumed.
 
 Running: testNo404InConsole
-Script execution resumed.
+source2.js:8 button clicked!
 

@@ -137,7 +137,7 @@ public:
     virtual void emulateNetworkConditions(ErrorString*, bool, double, double, double) override;
     virtual void setCacheDisabled(ErrorString*, bool cacheDisabled) override;
 
-    virtual void loadResourceForFrontend(ErrorString*, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtrWillBeRawPtr<LoadResourceForFrontendCallback>) override;
+    virtual void loadResourceForFrontend(ErrorString*, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtrWillBeRawPtr<LoadResourceForFrontendCallback>) override;
 
     // Called from other agents.
     void setHostId(const String&);

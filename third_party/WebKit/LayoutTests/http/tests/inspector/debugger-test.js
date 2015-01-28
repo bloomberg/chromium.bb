@@ -9,8 +9,8 @@ InspectorTest.startDebuggerTest = function(callback, quiet)
         InspectorTest._quiet = quiet;
     WebInspector.SourcesPanel.show();
 
-    InspectorTest.addSniffer(InspectorTest.debuggerModel, "_pausedScript", InspectorTest._pausedScript, true);
-    InspectorTest.addSniffer(InspectorTest.debuggerModel, "_resumedScript", InspectorTest._resumedScript, true);
+    InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_pausedScript", InspectorTest._pausedScript, true);
+    InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_resumedScript", InspectorTest._resumedScript, true);
     InspectorTest.safeWrap(callback)();
 };
 
@@ -253,18 +253,19 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
         var printed = 0;
         for (var i = 0; i < callFrames.length; i++) {
             var frame = callFrames[i];
-            var script = InspectorTest.debuggerModel.scriptForId(frame.location().scriptId);
+            var script = frame.location().script();
+            var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
             var isFramework = WebInspector.BlackboxSupport.isBlackboxedURL(script.sourceURL);
             if (options.dropFrameworkCallFrames && isFramework)
                 continue;
             var url;
             var lineNumber;
-            if (script) {
+            if (uiLocation && uiLocation.uiSourceCode.project().type() !== WebInspector.projectTypes.Debugger) {
+                url = uiLocation.uiSourceCode.name();
+                lineNumber = uiLocation.lineNumber + 1;
+            } else {
                 url = WebInspector.displayNameForURL(script.sourceURL);
                 lineNumber = frame.location().lineNumber + 1;
-            } else {
-                url = "(internal script)";
-                lineNumber = "(line number)";
             }
             var s = (isFramework ? "  * " : "    ") + (printed++) + ") " + frame.functionName + " (" + url + (options.dropLineNumbers ? "" : ":" + lineNumber) + ")";
             results.push(s);
@@ -302,7 +303,7 @@ InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointId
 {
     if (!InspectorTest._quiet)
         InspectorTest.addResult("Script execution paused.");
-    InspectorTest._pausedScriptArguments = [WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.mainTarget(), callFrames), reason, breakpointIds, asyncStackTrace, auxData];
+    InspectorTest._pausedScriptArguments = [WebInspector.DebuggerModel.CallFrame.fromPayloadArray(this.target(), callFrames), reason, breakpointIds, asyncStackTrace, auxData];
     if (InspectorTest._waitUntilPausedCallback) {
         var callback = InspectorTest._waitUntilPausedCallback;
         delete InspectorTest._waitUntilPausedCallback;

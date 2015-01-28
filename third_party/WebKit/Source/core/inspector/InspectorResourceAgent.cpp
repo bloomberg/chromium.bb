@@ -894,16 +894,18 @@ void InspectorResourceAgent::emulateNetworkConditions(ErrorString*, bool, double
 {
 }
 
-void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtrWillBeRawPtr<LoadResourceForFrontendCallback> prpCallback)
+void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtrWillBeRawPtr<LoadResourceForFrontendCallback> prpCallback)
 {
     RefPtrWillBeRawPtr<LoadResourceForFrontendCallback> callback = prpCallback;
-    LocalFrame* frame = m_pageAgent->assertFrame(errorString, frameId);
-    if (!frame)
+    Frame* frame = m_pageAgent->page()->mainFrame();
+    if (!frame || !frame->isLocalFrame()) {
+        *errorString = "No frame to use as a loader found";
         return;
+    }
 
-    Document* document = frame->document();
+    Document* document = static_cast<LocalFrame*>(frame)->document();
     if (!document) {
-        *errorString = "No Document instance for the specified frame";
+        *errorString = "No Document instance found";
         return;
     }
 

@@ -15,7 +15,7 @@ function test()
     {
         InspectorTest.recordNetwork();
         InspectorTest.addResult("Loading resource from " + url);
-        InspectorTest.NetworkAgent.loadResourceForFrontend(InspectorTest.resourceTreeModel.mainFrame.id, url, headers, callback);
+        WebInspector.NetworkManager.loadResourceForFrontend(url, headers, callback);
 
         function callback(error, statusCode, headers, content)
         {
