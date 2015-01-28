@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/hung_renderer_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
+#include "chrome/browser/ui/views/validation_message_bubble_view.h"
 #include "content/public/browser/web_contents.h"
 
 // static
@@ -65,4 +66,12 @@ void TabDialogsViews::HideManagePasswordsBubble() {
       ManagePasswordsBubbleView::manage_password_bubble()->web_contents();
   if (web_contents_ == bubble_web_contents)
     ManagePasswordsBubbleView::CloseBubble();
+}
+
+scoped_ptr<ValidationMessageBubble> TabDialogsViews::ShowValidationMessage(
+    const gfx::Rect& anchor_in_root_view,
+    const base::string16& main_text,
+    const base::string16& sub_text) {
+  return make_scoped_ptr(new ValidationMessageBubbleView(
+      web_contents_, anchor_in_root_view, main_text, sub_text));
 }

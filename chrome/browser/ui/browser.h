@@ -65,13 +65,13 @@ class SearchModel;
 class StatusBubble;
 class TabStripModel;
 class TabStripModelDelegate;
+class ValidationMessageBubble;
 struct WebApplicationInfo;
 
 namespace chrome {
 class BrowserCommandController;
 class FastUnloadController;
 class UnloadController;
-class ValidationMessageBubble;
 }
 
 namespace content {
@@ -965,7 +965,7 @@ class Browser : public TabStripModelObserver,
 
   scoped_ptr<BrowserContentTranslateDriverObserver> translate_driver_observer_;
 
-  scoped_ptr<chrome::ValidationMessageBubble> validation_message_bubble_;
+  scoped_ptr<ValidationMessageBubble> validation_message_bubble_;
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_;

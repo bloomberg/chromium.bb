@@ -1213,15 +1213,9 @@ void Browser::ShowValidationMessage(content::WebContents* web_contents,
                                     const gfx::Rect& anchor_in_root_view,
                                     const base::string16& main_text,
                                     const base::string16& sub_text) {
-  RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
-  if (rwhv) {
-    validation_message_bubble_ =
-        chrome::ValidationMessageBubble::CreateAndShow(
-            rwhv->GetRenderWidgetHost(),
-            anchor_in_root_view,
-            main_text,
-            sub_text);
-  }
+  validation_message_bubble_ =
+      TabDialogs::FromWebContents(web_contents)
+          ->ShowValidationMessage(anchor_in_root_view, main_text, sub_text);
 }
 
 void Browser::HideValidationMessage(content::WebContents* web_contents) {

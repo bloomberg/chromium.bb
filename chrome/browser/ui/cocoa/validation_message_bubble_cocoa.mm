@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/cocoa/validation_message_bubble_cocoa.h"
+
 #include "base/mac/foundation_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
@@ -9,8 +11,9 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/validation_message_bubble_controller.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
-#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/base_view.h"
@@ -134,8 +137,6 @@ anchoredAt:(NSPoint)anchorPoint
 
 // ----------------------------------------------------------------
 
-namespace {
-
 // Converts |anchor_in_root_view| in rwhv coordinates to cocoa screen
 // coordinates, and returns an NSPoint at the center of the bottom side of the
 // converted rectangle.
@@ -149,45 +150,25 @@ NSPoint GetAnchorPoint(content::RenderWidgetHost* widget_host,
   return [[view window] convertBaseToScreen:point];
 }
 
-class ValidationMessageBubbleCocoa : public chrome::ValidationMessageBubble {
- public:
-  ValidationMessageBubbleCocoa(content::RenderWidgetHost* widget_host,
-                               const gfx::Rect& anchor_in_root_view,
-                               const base::string16& main_text,
-                               const base::string16& sub_text) {
-    controller_.reset([[[ValidationMessageBubbleController alloc]
-                        init:[widget_host->GetView()->GetNativeView() window]
-                  anchoredAt:GetAnchorPoint(widget_host, anchor_in_root_view)
-                    mainText:main_text
-                     subText:sub_text] retain]);
-  }
-
-  ~ValidationMessageBubbleCocoa() override { [controller_.get() close]; }
-
-  void SetPositionRelativeToAnchor(
-      content::RenderWidgetHost* widget_host,
-      const gfx::Rect& anchor_in_root_view) override {
-    [controller_.get()
-        setAnchorPoint:GetAnchorPoint(widget_host, anchor_in_root_view)];
-  }
-
- private:
-  base::scoped_nsobject<ValidationMessageBubbleController> controller_;
-};
-
-}
-
-// ----------------------------------------------------------------
-
-namespace chrome {
-
-scoped_ptr<ValidationMessageBubble> ValidationMessageBubble::CreateAndShow(
-    content::RenderWidgetHost* widget_host,
+ValidationMessageBubbleCocoa::ValidationMessageBubbleCocoa(
+    content::WebContents* web_contents,
     const gfx::Rect& anchor_in_root_view,
     const base::string16& main_text,
     const base::string16& sub_text) {
-  return scoped_ptr<ValidationMessageBubble>(new ValidationMessageBubbleCocoa(
-      widget_host, anchor_in_root_view, main_text, sub_text)).Pass();
+  content::RenderWidgetHost* widget_host = web_contents->GetRenderViewHost();
+  controller_.reset([[[ValidationMessageBubbleController alloc]
+            init:[widget_host->GetView()->GetNativeView() window]
+      anchoredAt:GetAnchorPoint(widget_host, anchor_in_root_view)
+        mainText:main_text
+         subText:sub_text] retain]);
 }
 
+ValidationMessageBubbleCocoa::~ValidationMessageBubbleCocoa() {
+  [controller_ close];
+}
+
+void ValidationMessageBubbleCocoa::SetPositionRelativeToAnchor(
+    content::RenderWidgetHost* widget_host,
+    const gfx::Rect& anchor_in_root_view) {
+  [controller_ setAnchorPoint:GetAnchorPoint(widget_host, anchor_in_root_view)];
 }

@@ -16,8 +16,6 @@ namespace gfx {
 class Rect;
 }
 
-namespace chrome {
-
 class ValidationMessageBubble {
  public:
   // Open a tooltip-like window to show the specified messages.  The window
@@ -38,7 +36,5 @@ class ValidationMessageBubble {
       content::RenderWidgetHost* widget_host,
       const gfx::Rect& anchor_in_root_view) = 0;
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VALIDATION_MESSAGE_BUBBLE_H_

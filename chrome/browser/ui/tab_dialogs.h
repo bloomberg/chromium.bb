@@ -7,13 +7,20 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/ui/validation_message_bubble.h"
 
 class Browser;
 class Profile;
 
 namespace content {
 class WebContents;
+}
+
+namespace gfx {
+class Rect;
 }
 
 namespace ui {
@@ -51,6 +58,11 @@ class TabDialogs : public base::SupportsUserData::Data {
   // Pass true for |user_action| if this is a user initiated action.
   virtual void ShowManagePasswordsBubble(bool user_action) = 0;
   virtual void HideManagePasswordsBubble() = 0;
+
+  virtual scoped_ptr<ValidationMessageBubble> ShowValidationMessage(
+      const gfx::Rect& anchor_in_root_view,
+      const base::string16& main_text,
+      const base::string16& sub_text) = 0;
 
  protected:
   static const void* UserDataKey();
