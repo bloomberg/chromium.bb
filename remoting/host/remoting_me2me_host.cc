@@ -1447,6 +1447,8 @@ void HostProcess::ShutdownOnNetworkThread() {
     shutdown_watchdog_->SetExitCode(*exit_code_out_);
     shutdown_watchdog_->Arm();
 
+    config_watcher_.reset();
+
     if (policy_watcher_.get()) {
       policy_watcher_->StopWatching(
           base::Bind(&HostProcess::OnPolicyWatcherShutdown, this));
