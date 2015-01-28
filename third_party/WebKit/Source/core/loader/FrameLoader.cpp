@@ -563,6 +563,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
 {
     // Update the data source's request with the new URL to fake the URL change
     m_frame->document()->setURL(newURL);
+    documentLoader()->setReplacesCurrentHistoryItem(type != FrameLoadTypeStandard);
     documentLoader()->updateForSameDocumentNavigation(newURL, sameDocumentNavigationSource);
 
     // Generate start and stop notifications only when loader is completed so that we
@@ -607,7 +608,6 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         m_frame->localDOMWindow()->enqueueHashchangeEvent(oldURL, url);
     }
     m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
-    m_documentLoader->setReplacesCurrentHistoryItem(m_loadType == FrameLoadTypeStandard);
     updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, type);
 
     m_frame->view()->setWasScrolledByUser(false);
