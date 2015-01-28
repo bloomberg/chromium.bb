@@ -54,7 +54,6 @@ const char* kFilteredSchemes[] = {
   "wss"
 };
 
-
 // This class encapsulates all the state that is required during construction of
 // a new SupervisedUserURLFilter::Contents.
 class FilterBuilder {
@@ -90,7 +89,6 @@ FilterBuilder::~FilterBuilder() {
 }
 
 bool FilterBuilder::AddPattern(const std::string& pattern, int site_id) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   std::string scheme;
   std::string host;
   uint16 port;
@@ -137,15 +135,12 @@ void FilterBuilder::AddSiteList(
 }
 
 scoped_ptr<SupervisedUserURLFilter::Contents> FilterBuilder::Build() {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   contents_->url_matcher.AddConditionSets(all_conditions_);
   return contents_.Pass();
 }
 
 scoped_ptr<SupervisedUserURLFilter::Contents> CreateWhitelistFromPatterns(
     const std::vector<std::string>& patterns) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   FilterBuilder builder;
   for (const std::string& pattern : patterns) {
     // TODO(bauerb): We should create a fake site for the whitelist.
@@ -158,8 +153,6 @@ scoped_ptr<SupervisedUserURLFilter::Contents> CreateWhitelistFromPatterns(
 scoped_ptr<SupervisedUserURLFilter::Contents>
 LoadWhitelistsOnBlockingPoolThread(
     const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   FilterBuilder builder;
   for (const scoped_refptr<SupervisedUserSiteList>& site_list : site_lists)
     builder.AddSiteList(site_list);
@@ -172,7 +165,8 @@ LoadWhitelistsOnBlockingPoolThread(
 SupervisedUserURLFilter::SupervisedUserURLFilter()
     : default_behavior_(ALLOW),
       contents_(new Contents()),
-      blacklist_(NULL) {
+      blacklist_(nullptr),
+      blocking_task_runner_(BrowserThread::GetBlockingPool()) {
   // Detach from the current thread so we can be constructed on a different
   // thread than the one where we're used.
   DetachFromThread();
@@ -396,7 +390,7 @@ void SupervisedUserURLFilter::LoadWhitelists(
   DCHECK(CalledOnValidThread());
 
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&LoadWhitelistsOnBlockingPoolThread, site_lists),
       base::Bind(&SupervisedUserURLFilter::SetContents, this));
@@ -415,7 +409,7 @@ void SupervisedUserURLFilter::SetFromPatterns(
   DCHECK(CalledOnValidThread());
 
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&CreateWhitelistFromPatterns, patterns),
       base::Bind(&SupervisedUserURLFilter::SetContents, this));
@@ -462,6 +456,11 @@ void SupervisedUserURLFilter::AddObserver(Observer* observer) {
 
 void SupervisedUserURLFilter::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void SupervisedUserURLFilter::SetBlockingTaskRunnerForTesting(
+    const scoped_refptr<base::TaskRunner>& task_runner) {
+  blocking_task_runner_ = task_runner;
 }
 
 void SupervisedUserURLFilter::SetContents(scoped_ptr<Contents> contents) {

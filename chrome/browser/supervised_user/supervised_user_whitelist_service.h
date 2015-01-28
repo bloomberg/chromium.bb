@@ -98,6 +98,9 @@ class SupervisedUserWhitelistService : public syncer::SyncableService {
                          const std::string& name,
                          bool new_installation);
 
+  void GetLoadedWhitelists(
+      std::vector<scoped_refptr<SupervisedUserSiteList>>* whitelists);
+
   void NotifyWhitelistsChanged();
 
   void OnWhitelistReady(const std::string& id,

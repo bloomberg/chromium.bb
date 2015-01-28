@@ -46,34 +46,108 @@ void OnProfileDownloadedFail(const base::string16& full_name) {
   ASSERT_TRUE(false) << "Profile download should not have succeeded.";
 }
 
-class SupervisedUserURLFilterObserver :
-    public SupervisedUserURLFilter::Observer {
+// Base class for helper objects that wait for certain events to happen.
+// This class will ensure that calls to QuitRunLoop() (triggered by a subclass)
+// are balanced with Wait() calls.
+class AsyncTestHelper {
  public:
-  explicit SupervisedUserURLFilterObserver(SupervisedUserURLFilter* url_filter)
-      : url_filter_(url_filter) {
-    Reset();
-    url_filter_->AddObserver(this);
-  }
-
-  ~SupervisedUserURLFilterObserver() {
-    url_filter_->RemoveObserver(this);
-  }
-
   void Wait() {
-    message_loop_runner_->Run();
+    run_loop_->Run();
     Reset();
   }
 
-  // SupervisedUserURLFilter::Observer
-  void OnSiteListUpdated() override { message_loop_runner_->Quit(); }
+ protected:
+  AsyncTestHelper() {
+    // |quit_called_| will be initialized in Reset().
+    Reset();
+  }
+
+  ~AsyncTestHelper() {
+    EXPECT_FALSE(quit_called_);
+  }
+
+  void QuitRunLoop() {
+    // QuitRunLoop() can not be called more than once between calls to Wait().
+    ASSERT_FALSE(quit_called_);
+    quit_called_ = true;
+    run_loop_->Quit();
+  }
 
  private:
   void Reset() {
-    message_loop_runner_ = new MessageLoopRunner;
+    quit_called_ = false;
+    run_loop_.reset(new base::RunLoop);
   }
 
-  SupervisedUserURLFilter* url_filter_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  scoped_ptr<base::RunLoop> run_loop_;
+  bool quit_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncTestHelper);
+};
+
+class SupervisedUserURLFilterObserver
+    : public AsyncTestHelper,
+      public SupervisedUserURLFilter::Observer {
+ public:
+  SupervisedUserURLFilterObserver() : scoped_observer_(this) {}
+  ~SupervisedUserURLFilterObserver() {}
+
+  void Init(SupervisedUserURLFilter* url_filter) {
+    scoped_observer_.Add(url_filter);
+  }
+
+  // SupervisedUserURLFilter::Observer
+  void OnSiteListUpdated() override {
+    QuitRunLoop();
+  }
+
+ private:
+  ScopedObserver<SupervisedUserURLFilter, SupervisedUserURLFilter::Observer>
+      scoped_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserURLFilterObserver);
+};
+
+class SiteListObserver : public AsyncTestHelper {
+ public:
+  SiteListObserver() {}
+  ~SiteListObserver() {}
+
+  void Init(SupervisedUserWhitelistService* service) {
+    service->AddSiteListsChangedCallback(base::Bind(
+        &SiteListObserver::OnSiteListsChanged, base::Unretained(this)));
+
+    // The initial call to AddSiteListsChangedCallback will call
+    // OnSiteListsChanged(), so we balance it out by calling Wait().
+    Wait();
+  }
+
+  const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists() {
+    return site_lists_;
+  }
+
+  const std::vector<SupervisedUserSiteList::Site>& sites() {
+    return sites_;
+  }
+
+ private:
+  void OnSiteListsChanged(
+      const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists) {
+    site_lists_ = site_lists;
+    sites_.clear();
+    for (const scoped_refptr<SupervisedUserSiteList>& site_list : site_lists) {
+      const std::vector<SupervisedUserSiteList::Site>& sites =
+          site_list->sites();
+      sites_.insert(sites_.end(), sites.begin(), sites.end());
+    }
+
+    QuitRunLoop();
+  }
+
+  std::vector<scoped_refptr<SupervisedUserSiteList>> site_lists_;
+  std::vector<SupervisedUserSiteList::Site> sites_;
+
+  DISALLOW_COPY_AND_ASSIGN(SiteListObserver);
 };
 
 class AsyncResultHolder {
@@ -291,9 +365,20 @@ class SupervisedUserServiceExtensionTestBase
     SupervisedUserService* service =
         SupervisedUserServiceFactory::GetForProfile(profile_.get());
     service->Init();
-    service->GetWhitelistService()->AddSiteListsChangedCallback(
-        base::Bind(&SupervisedUserServiceExtensionTestBase::OnSiteListsChanged,
-                   base::Unretained(this)));
+    site_list_observer_.Init(service->GetWhitelistService());
+
+    SupervisedUserURLFilter* url_filter = service->GetURLFilterForUIThread();
+    url_filter->SetBlockingTaskRunnerForTesting(
+        base::MessageLoopProxy::current());
+    url_filter_observer_.Init(url_filter);
+
+    // Wait for the initial update to finish.
+    url_filter_observer_.Wait();
+  }
+
+  void TearDown() override {
+    // Flush the message loop, to ensure all posted tasks run.
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -322,21 +407,10 @@ class SupervisedUserServiceExtensionTestBase
     return extension;
   }
 
-  void OnSiteListsChanged(
-      const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists) {
-    site_lists_ = site_lists;
-    sites_.clear();
-    for (const scoped_refptr<SupervisedUserSiteList>& site_list : site_lists) {
-      const std::vector<SupervisedUserSiteList::Site>& sites =
-          site_list->sites();
-      sites_.insert(sites_.end(), sites.begin(), sites.end());
-    }
-  }
-
   bool is_supervised_;
   extensions::ScopedCurrentChannel channel_;
-  std::vector<scoped_refptr<SupervisedUserSiteList> > site_lists_;
-  std::vector<SupervisedUserSiteList::Site> sites_;
+  SiteListObserver site_list_observer_;
+  SupervisedUserURLFilterObserver url_filter_observer_;
 };
 
 class SupervisedUserServiceExtensionTestUnsupervised
@@ -374,11 +448,7 @@ TEST_F(SupervisedUserServiceExtensionTestUnsupervised,
 TEST_F(SupervisedUserServiceExtensionTest, ExtensionManagementPolicyProvider) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
-  SupervisedUserURLFilterObserver observer(
-      supervised_user_service->GetURLFilterForUIThread());
   ASSERT_TRUE(profile_->IsSupervised());
-  // Wait for the initial update to finish (otherwise we'll get leaks).
-  observer.Wait();
 
   // Check that a supervised user can install a theme.
   scoped_refptr<extensions::Extension> theme = MakeThemeExtension();
@@ -424,10 +494,11 @@ TEST_F(SupervisedUserServiceExtensionTest, NoContentPacks) {
   SupervisedUserURLFilter* url_filter =
       supervised_user_service->GetURLFilterForUIThread();
 
-  GURL url("http://youtube.com");
-  // ASSERT_EQ instead of ASSERT_TRUE(site_lists_.empty()) so that the error
+  // ASSERT_EQ instead of ASSERT_TRUE([...].empty()) so that the error
   // message contains the size in case of failure.
-  ASSERT_EQ(0u, site_lists_.size());
+  ASSERT_EQ(0u, site_list_observer_.site_lists().size());
+
+  GURL url("http://youtube.com");
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(url));
 }
@@ -437,8 +508,6 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   SupervisedUserURLFilter* url_filter =
       supervised_user_service->GetURLFilterForUIThread();
-  SupervisedUserURLFilterObserver observer(url_filter);
-  observer.Wait();
 
   GURL example_url("http://example.com");
   GURL moose_url("http://moose.org");
@@ -465,14 +534,16 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   base::FilePath whitelist_path =
       test_data_dir.AppendASCII("whitelists/content_pack/site_list.json");
   whitelist_service->LoadWhitelistForTesting("aaaa", whitelist_path);
-  observer.Wait();
+  site_list_observer_.Wait();
 
-  ASSERT_EQ(1u, site_lists_.size());
-  ASSERT_EQ(3u, sites_.size());
-  EXPECT_EQ(base::ASCIIToUTF16("YouTube"), sites_[0].name);
-  EXPECT_EQ(base::ASCIIToUTF16("Homestar Runner"), sites_[1].name);
-  EXPECT_EQ(base::string16(), sites_[2].name);
+  ASSERT_EQ(1u, site_list_observer_.site_lists().size());
+  ASSERT_EQ(3u, site_list_observer_.sites().size());
+  EXPECT_EQ(base::ASCIIToUTF16("YouTube"), site_list_observer_.sites()[0].name);
+  EXPECT_EQ(base::ASCIIToUTF16("Homestar Runner"),
+            site_list_observer_.sites()[1].name);
+  EXPECT_EQ(base::string16(), site_list_observer_.sites()[2].name);
 
+  url_filter_observer_.Wait();
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(example_url));
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
@@ -482,20 +553,21 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   whitelist_path =
       test_data_dir.AppendASCII("whitelists/content_pack_2/site_list.json");
   whitelist_service->LoadWhitelistForTesting("bbbb", whitelist_path);
-  observer.Wait();
+  site_list_observer_.Wait();
 
-  ASSERT_EQ(2u, site_lists_.size());
-  ASSERT_EQ(4u, sites_.size());
+  ASSERT_EQ(2u, site_list_observer_.site_lists().size());
+  ASSERT_EQ(4u, site_list_observer_.sites().size());
 
   // The site lists might be returned in any order, so we put them into a set.
   std::set<std::string> site_names;
-  for (const SupervisedUserSiteList::Site& site : sites_)
+  for (const SupervisedUserSiteList::Site& site : site_list_observer_.sites())
     site_names.insert(base::UTF16ToUTF8(site.name));
   EXPECT_EQ(1u, site_names.count("YouTube"));
   EXPECT_EQ(1u, site_names.count("Homestar Runner"));
   EXPECT_EQ(1u, site_names.count(std::string()));
   EXPECT_EQ(1u, site_names.count("Moose"));
 
+  url_filter_observer_.Wait();
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(example_url));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
@@ -503,12 +575,13 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
 
   // Unload the first whitelist.
   whitelist_service->UnloadWhitelist("aaaa");
-  observer.Wait();
+  site_list_observer_.Wait();
 
-  ASSERT_EQ(1u, site_lists_.size());
-  ASSERT_EQ(1u, sites_.size());
-  EXPECT_EQ(base::ASCIIToUTF16("Moose"), sites_[0].name);
+  ASSERT_EQ(1u, site_list_observer_.site_lists().size());
+  ASSERT_EQ(1u, site_list_observer_.sites().size());
+  EXPECT_EQ(base::ASCIIToUTF16("Moose"), site_list_observer_.sites()[0].name);
 
+  url_filter_observer_.Wait();
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(example_url));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,

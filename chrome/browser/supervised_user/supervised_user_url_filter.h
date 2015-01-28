@@ -159,6 +159,10 @@ class SupervisedUserURLFilter
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Sets a different task runner for testing.
+  void SetBlockingTaskRunnerForTesting(
+      const scoped_refptr<base::TaskRunner>& task_runner);
+
  private:
   friend class base::RefCountedThreadSafe<SupervisedUserURLFilter>;
   ~SupervisedUserURLFilter();
@@ -190,6 +194,8 @@ class SupervisedUserURLFilter
   SupervisedUserBlacklist* blacklist_;
 
   scoped_ptr<SupervisedUserAsyncURLChecker> async_url_checker_;
+
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserURLFilter);
 };

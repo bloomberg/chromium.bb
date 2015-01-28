@@ -86,7 +86,10 @@ void SupervisedUserWhitelistService::Init() {
 void SupervisedUserWhitelistService::AddSiteListsChangedCallback(
     const SiteListsChangedCallback& callback) {
   site_lists_changed_callbacks_.push_back(callback);
-  NotifyWhitelistsChanged();
+
+  std::vector<scoped_refptr<SupervisedUserSiteList>> whitelists;
+  GetLoadedWhitelists(&whitelists);
+  callback.Run(whitelists);
 }
 
 void SupervisedUserWhitelistService::LoadWhitelistForTesting(
@@ -287,10 +290,15 @@ void SupervisedUserWhitelistService::RegisterWhitelist(const std::string& id,
                  weak_ptr_factory_.GetWeakPtr(), id));
 }
 
-void SupervisedUserWhitelistService::NotifyWhitelistsChanged() {
-  std::vector<scoped_refptr<SupervisedUserSiteList> > whitelists;
+void SupervisedUserWhitelistService::GetLoadedWhitelists(
+    std::vector<scoped_refptr<SupervisedUserSiteList>>* whitelists) {
   for (const auto& whitelist : loaded_whitelists_)
-    whitelists.push_back(whitelist.second);
+    whitelists->push_back(whitelist.second);
+}
+
+void SupervisedUserWhitelistService::NotifyWhitelistsChanged() {
+  std::vector<scoped_refptr<SupervisedUserSiteList>> whitelists;
+  GetLoadedWhitelists(&whitelists);
 
   for (const auto& callback : site_lists_changed_callbacks_)
     callback.Run(whitelists);
