@@ -4810,18 +4810,10 @@ bool CSSPropertyParser::parseFontFaceSrcURI(CSSValueList* valueList)
     uriValue->setReferrer(m_context.referrer());
 
     CSSParserValue* value = m_valueList->next();
-    if (!value) {
+    if (!value || value->unit != CSSParserValue::Function || value->function->id != CSSValueFormat) {
         valueList->append(uriValue.release());
         return true;
     }
-    if (value->unit == CSSParserValue::Operator && value->iValue == ',') {
-        m_valueList->next();
-        valueList->append(uriValue.release());
-        return true;
-    }
-
-    if (value->unit != CSSParserValue::Function || value->function->id != CSSValueFormat)
-        return false;
 
     // FIXME: http://www.w3.org/TR/2011/WD-css3-fonts-20111004/ says that format() contains a comma-separated list of strings,
     // but CSSFontFaceSrcValue stores only one format. Allowing one format for now.
@@ -4830,9 +4822,7 @@ bool CSSPropertyParser::parseFontFaceSrcURI(CSSValueList* valueList)
         return false;
     uriValue->setFormat(args->current()->string);
     valueList->append(uriValue.release());
-    value = m_valueList->next();
-    if (value && value->unit == CSSParserValue::Operator && value->iValue == ',')
-        m_valueList->next();
+    m_valueList->next();
     return true;
 }
 
@@ -4841,6 +4831,7 @@ bool CSSPropertyParser::parseFontFaceSrcLocal(CSSValueList* valueList)
     CSSParserValueList* args = m_valueList->current()->function->args.get();
     if (!args || !args->size())
         return false;
+    m_valueList->next();
 
     ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy = m_context.shouldCheckContentSecurityPolicy();
     if (args->size() == 1 && args->current()->unit == CSSPrimitiveValue::CSS_STRING)
@@ -4858,10 +4849,6 @@ bool CSSPropertyParser::parseFontFaceSrcLocal(CSSValueList* valueList)
     } else
         return false;
 
-    if (CSSParserValue* value = m_valueList->next()) {
-        if (value->unit == CSSParserValue::Operator && value->iValue == ',')
-            m_valueList->next();
-    }
     return true;
 }
 
@@ -4869,7 +4856,10 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceSrc()
 {
     RefPtrWillBeRawPtr<CSSValueList> values(CSSValueList::createCommaSeparated());
 
-    while (CSSParserValue* value = m_valueList->current()) {
+    while (true) {
+        CSSParserValue* value = m_valueList->current();
+        if (!value)
+            return nullptr;
         if (value->unit == CSSPrimitiveValue::CSS_URI) {
             if (!parseFontFaceSrcURI(values.get()))
                 return nullptr;
@@ -4879,12 +4869,12 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceSrc()
         } else {
             return nullptr;
         }
-    }
-    if (!values->length())
-        return nullptr;
 
-    m_valueList->next();
-    return values.release();
+        if (!m_valueList->current())
+            return values.release();
+        if (!consumeComma(m_valueList))
+            return nullptr;
+    }
 }
 
 PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRange()
