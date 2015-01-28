@@ -228,64 +228,6 @@ function testExecute_StartsImport() {
   mediaImporter.assertImportsStarted(1);
 }
 
-function testExecute_opensDestination(callback) {
-  var controller = createController(
-      VolumeManagerCommon.VolumeType.MTP,
-      'mtp-volume',
-      [
-        '/DCIM/',
-        '/DCIM/photos0/',
-        '/DCIM/photos0/IMG00001.jpg',
-        '/DCIM/photos0/IMG00002.jpg',
-        '/DCIM/photos1/',
-        '/DCIM/photos1/IMG00001.jpg',
-        '/DCIM/photos1/IMG00003.jpg'
-      ],
-      '/DCIM');
-
-  /**
-   * Sets up an import destination.
-   * @return {!Promise<!DirectoryEntry>}
-   */
-  var makeDestination = function() {
-    return new Promise(function(resolve, reject) {
-      window.webkitRequestFileSystem(
-          TEMPORARY,
-          1024*1024,
-          function(fs) {
-            fs.root.getDirectory(
-                'foo',
-                {create:true},
-                function(directoryEntry) {
-                  resolve(directoryEntry);
-                },
-                reject);
-          },
-          reject);
-    });
-  };
-
-  reportPromise(
-      makeDestination().then(
-          // Kicks off an import to the given destination, then verifies that
-          // the import controller moved the user to the correct location.
-          function(destination) {
-            mediaImporter.setDestination(destination);
-
-            controller.getCommandUpdate();
-            mediaScanner.finalizeScans();
-            controller.getCommandUpdate();
-            controller.execute();
-
-            return environment.whenCurrentDirectoryIsSet().then(
-                function(directory) {
-                  assertEquals(destination, directory);
-                });
-          }),
-      callback);
-
-}
-
 /**
  * A stub that just provides interfaces from ImportTask that are required by
  * these tests.

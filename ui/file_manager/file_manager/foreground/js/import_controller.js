@@ -103,14 +103,6 @@ importer.ImportController.prototype.execute = function() {
   metrics.recordEnum('CloudImport.UserAction', 'IMPORT_INITIATED');
   var result = this.getScanForImport_();
   var importTask = this.importRunner_.importFromScanResult(result);
-
-  importTask.getDestination().then(
-      /**
-       * @param {!DirectoryEntry} destination
-       */
-      function(destination) {
-        this.environment_.setCurrentDirectory(destination);
-      }.bind(this));
 };
 
 /**
