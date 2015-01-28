@@ -24,8 +24,11 @@
 
 namespace media {
 
-const char kCreateSessionUMAName[] = "CreateSession";
+const char kCloseSessionUMAName[] = "CloseSession";
+const char kGenerateRequestUMAName[] = "GenerateRequest";
 const char kLoadSessionUMAName[] = "LoadSession";
+const char kRemoveSessionUMAName[] = "RemoveSession";
+const char kUpdateSessionUMAName[] = "UpdateSession";
 
 // TODO(jrummell): Pass an enum from blink. http://crbug.com/418239.
 const char kTemporarySessionType[] = "temporary";
@@ -148,7 +151,7 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
       init_data_type_as_ascii, init_data,
       base::saturated_cast<int>(init_data_length), session_type_enum,
       scoped_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
-          result, adapter_->GetKeySystemUMAPrefix() + kCreateSessionUMAName,
+          result, adapter_->GetKeySystemUMAPrefix() + kGenerateRequestUMAName,
           base::Bind(
               &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
               base::Unretained(this)))));
@@ -178,26 +181,28 @@ void WebContentDecryptionModuleSessionImpl::update(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(response);
   DCHECK(!session_id_.empty());
-  adapter_->UpdateSession(session_id_, response,
-                          base::saturated_cast<int>(response_length),
-                          scoped_ptr<SimpleCdmPromise>(
-                              new CdmResultPromise<>(result, std::string())));
+  adapter_->UpdateSession(
+      session_id_, response, base::saturated_cast<int>(response_length),
+      scoped_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
+          result, adapter_->GetKeySystemUMAPrefix() + kUpdateSessionUMAName)));
 }
 
 void WebContentDecryptionModuleSessionImpl::close(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!session_id_.empty());
-  adapter_->CloseSession(session_id_,
-                         scoped_ptr<SimpleCdmPromise>(
-                             new CdmResultPromise<>(result, std::string())));
+  adapter_->CloseSession(
+      session_id_,
+      scoped_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
+          result, adapter_->GetKeySystemUMAPrefix() + kCloseSessionUMAName)));
 }
 
 void WebContentDecryptionModuleSessionImpl::remove(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!session_id_.empty());
-  adapter_->RemoveSession(session_id_,
-                          scoped_ptr<SimpleCdmPromise>(
-                              new CdmResultPromise<>(result, std::string())));
+  adapter_->RemoveSession(
+      session_id_,
+      scoped_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
+          result, adapter_->GetKeySystemUMAPrefix() + kRemoveSessionUMAName)));
 }
 
 void WebContentDecryptionModuleSessionImpl::release(
