@@ -4,10 +4,10 @@
 
 #include "ui/accelerated_widget_mac/software_layer.h"
 
-#include "base/debug/trace_event.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/base/cocoa/animation_utils.h"
 
 @implementation SoftwareLayer

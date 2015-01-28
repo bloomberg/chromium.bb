@@ -6,9 +6,9 @@
 
 #include <map>
 
-#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/accelerated_widget_mac/io_surface_layer.h"
 #include "ui/accelerated_widget_mac/surface_handle_types.h"

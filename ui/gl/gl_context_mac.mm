@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_context_cgl.h"
 #include "ui/gl/gl_context_osmesa.h"
 #include "ui/gl/gl_context_stub.h"

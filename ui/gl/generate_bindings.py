@@ -1824,7 +1824,7 @@ def GenerateSource(file, functions, set_name, used_extensions):
   """Generates gl_bindings_autogen_x.cc"""
 
   set_header_name = "ui/gl/gl_" + set_name.lower() + "_api_implementation.h"
-  include_list = [ 'base/debug/trace_event.h',
+  include_list = [ 'base/trace_event/trace_event.h',
                    'ui/gl/gl_enums.h',
                    'ui/gl/gl_bindings.h',
                    'ui/gl/gl_context.h',

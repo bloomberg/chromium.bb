@@ -10,8 +10,8 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/OpenGL.h>
 
-#include "base/debug/trace_event.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/accelerated_widget_mac/io_surface_texture.h"
 #include "ui/base/cocoa/animation_utils.h"
