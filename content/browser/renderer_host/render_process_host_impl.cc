@@ -1446,7 +1446,7 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
   // died due to fast shutdown versus another cause.
   fast_shutdown_started_ = true;
 
-  ProcessDied(false /* already_dead */);
+  ProcessDied(false /* already_dead */, nullptr);
   return true;
 }
 
@@ -1540,7 +1540,7 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
 }
 
 void RenderProcessHostImpl::OnChannelError() {
-  ProcessDied(true /* already_dead */);
+  ProcessDied(true /* already_dead */, nullptr);
 }
 
 void RenderProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
@@ -2019,7 +2019,8 @@ void RenderProcessHostImpl::RegisterProcessHostForSite(
     map->RegisterProcess(site, process);
 }
 
-void RenderProcessHostImpl::ProcessDied(bool already_dead) {
+void RenderProcessHostImpl::ProcessDied(bool already_dead,
+                                        RendererClosedDetails* known_details) {
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
   // The OnChannelError notification can fire multiple times due to nested sync
@@ -2035,12 +2036,15 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
 
   // child_process_launcher_ can be NULL in single process mode or if fast
   // termination happened.
+  base::TerminationStatus status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
   int exit_code = 0;
-  base::TerminationStatus status =
-      child_process_launcher_.get() ?
-      child_process_launcher_->GetChildTerminationStatus(already_dead,
-                                                         &exit_code) :
-      base::TERMINATION_STATUS_NORMAL_TERMINATION;
+  if (known_details) {
+    status = known_details->status;
+    exit_code = known_details->exit_code;
+  } else if (child_process_launcher_.get()) {
+    status = child_process_launcher_->GetChildTerminationStatus(already_dead,
+                                                                &exit_code);
+  }
 
   RendererClosedDetails details(status, exit_code);
   mojo_application_host_->WillDestroySoon();
@@ -2251,6 +2255,12 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   if (WebRTCInternals::GetInstance()->aec_dump_enabled())
     EnableAecDump(WebRTCInternals::GetInstance()->aec_dump_file_path());
 #endif
+}
+
+void RenderProcessHostImpl::OnProcessLaunchFailed() {
+  RendererClosedDetails details { base::TERMINATION_STATUS_PROCESS_WAS_KILLED,
+                                  -1 };
+  ProcessDied(true, &details);
 }
 
 scoped_refptr<AudioRendererHost>

@@ -161,6 +161,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // ChildProcessLauncher::Client implementation.
   void OnProcessLaunched() override;
+  void OnProcessLaunchFailed() override;
 
   scoped_refptr<AudioRendererHost> audio_renderer_host() const;
 
@@ -331,7 +332,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SetBackgrounded(bool backgrounded);
 
   // Handle termination of our process.
-  void ProcessDied(bool already_dead);
+  void ProcessDied(bool already_dead, RendererClosedDetails* known_details);
 
   // GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
