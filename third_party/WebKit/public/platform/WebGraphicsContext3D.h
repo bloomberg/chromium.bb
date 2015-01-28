@@ -62,6 +62,8 @@ typedef uint64_t WGC3Duint64;
 typedef WGC3Duint WebGLId;
 
 struct WebGLInfo {
+    WGC3Duint vendorId;
+    WGC3Duint deviceId;
     WebString vendorInfo;
     WebString rendererInfo;
     WebString driverVersion;
