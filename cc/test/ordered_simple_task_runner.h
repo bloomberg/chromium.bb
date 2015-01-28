@@ -11,9 +11,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/test/test_now_source.h"
 
 namespace cc {

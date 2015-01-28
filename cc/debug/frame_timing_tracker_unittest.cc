@@ -4,8 +4,8 @@
 
 #include <string>
 
-#include "base/debug/trace_event_argument.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/debug/frame_timing_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"

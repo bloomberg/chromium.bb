@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/context_provider.h"
 #include "cc/quads/draw_quad.h"

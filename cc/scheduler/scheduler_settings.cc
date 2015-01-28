@@ -4,7 +4,7 @@
 
 #include "cc/scheduler/scheduler_settings.h"
 
-#include "base/debug/trace_event_argument.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/trees/layer_tree_settings.h"
 
 namespace cc {

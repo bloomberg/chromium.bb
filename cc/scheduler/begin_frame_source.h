@@ -8,8 +8,8 @@
 #include <set>
 #include <string>
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/vsync_parameter_observer.h"
 #include "cc/scheduler/delay_based_time_source.h"

@@ -4,8 +4,8 @@
 
 #include "cc/debug/traced_value.h"
 
-#include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event_argument.h"
 
 namespace cc {
 

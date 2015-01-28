@@ -5,10 +5,10 @@
 #include "cc/blink/web_layer_impl.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event_impl.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
+#include "base/trace_event/trace_event_impl.h"
 #include "cc/animation/animation.h"
 #include "cc/base/region.h"
 #include "cc/base/switches.h"

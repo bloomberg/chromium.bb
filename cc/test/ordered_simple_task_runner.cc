@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_argument.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
 
 #define TRACE_TASK(function, task) \
   TRACE_EVENT_INSTANT1(            \

@@ -4,7 +4,7 @@
 
 #include "cc/output/begin_frame_args.h"
 
-#include "base/debug/trace_event_argument.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "ui/gfx/frame_time.h"
 
 namespace cc {

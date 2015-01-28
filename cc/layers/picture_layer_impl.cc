@@ -9,8 +9,8 @@
 #include <limits>
 #include <set>
 
-#include "base/debug/trace_event_argument.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
 #include "cc/debug/debug_colors.h"

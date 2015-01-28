@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -15,6 +14,7 @@
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "cc/test/scheduler_test_common.h"

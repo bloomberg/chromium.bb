@@ -5,8 +5,8 @@
 #include "cc/layers/tiled_layer_impl.h"
 
 #include "base/basictypes.h"
-#include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/debug/debug_colors.h"

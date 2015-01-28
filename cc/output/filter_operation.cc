@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "base/debug/trace_event_argument.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/output/filter_operation.h"

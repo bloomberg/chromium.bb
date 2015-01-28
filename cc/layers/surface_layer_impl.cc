@@ -4,7 +4,7 @@
 
 #include "cc/layers/surface_layer_impl.h"
 
-#include "base/debug/trace_event_argument.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/trees/occlusion.h"

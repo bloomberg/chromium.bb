@@ -8,8 +8,8 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer.h"

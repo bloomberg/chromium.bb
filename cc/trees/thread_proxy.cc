@@ -9,9 +9,9 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_argument.h"
-#include "base/debug/trace_event_synthetic_delay.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/trace_event_synthetic_delay.h"
 #include "cc/base/swap_promise.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"

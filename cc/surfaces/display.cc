@@ -4,8 +4,8 @@
 
 #include "cc/surfaces/display.h"
 
-#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"

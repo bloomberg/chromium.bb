@@ -4,7 +4,7 @@
 
 #include "cc/output/program_binding.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/output/geometry_binding.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 

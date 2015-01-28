@@ -5,7 +5,7 @@
 #ifndef CC_DEBUG_DEVTOOLS_INSTRUMENTATION_H_
 #define CC_DEBUG_DEVTOOLS_INSTRUMENTATION_H_
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 
 namespace cc {
 namespace devtools_instrumentation {

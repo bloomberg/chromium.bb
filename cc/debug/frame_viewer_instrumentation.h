@@ -5,7 +5,7 @@
 #ifndef CC_DEBUG_FRAME_VIEWER_INSTRUMENTATION_H_
 #define CC_DEBUG_FRAME_VIEWER_INSTRUMENTATION_H_
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/resources/tile.h"
 
 namespace cc {

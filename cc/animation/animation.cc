@@ -6,8 +6,8 @@
 
 #include <cmath>
 
-#include "base/debug/trace_event.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/base/time_util.h"
 
