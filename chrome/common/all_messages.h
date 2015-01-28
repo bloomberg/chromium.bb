@@ -15,6 +15,12 @@
 
 #include "chrome/common/common_message_generator.h"
 
+#if defined(ENABLE_PRINTING)
+// TODO(dgn) remove from here when all the code using these messages is removed
+// from /chrome. (crbug.com/311308, crbug.com/450822)
+#include "components/printing/common/print_messages.h"
+#endif
+
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_messages.h"
 #endif

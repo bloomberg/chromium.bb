@@ -16,6 +16,7 @@
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
       ],
       'sources': [
+        "printing/common/printing_param_traits_macros.h",
         "printing/common/print_messages.cc",
         "printing/common/print_messages.h",
       ],

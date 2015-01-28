@@ -12,3 +12,16 @@ per-file *messages*.h=nasko@chromium.org
 per-file *messages*.h=palmer@chromium.org
 per-file *messages*.h=tsepez@chromium.org
 per-file *messages*.h=wfh@chromium.org
+
+per-file *_param_traits_macros.h=set noparent
+per-file *_param_traits_macros.h=dcheng@chromium.org
+per-file *_param_traits_macros.h=inferno@chromium.org
+per-file *_param_traits_macros.h=jln@chromium.org
+per-file *_param_traits_macros.h=jorgelo@chromium.org
+per-file *_param_traits_macros.h=jschuh@chromium.org
+per-file *_param_traits_macros.h=kenrb@chromium.org
+per-file *_param_traits_macros.h=mkwst@chromium.org
+per-file *_param_traits_macros.h=nasko@chromium.org
+per-file *_param_traits_macros.h=palmer@chromium.org
+per-file *_param_traits_macros.h=tsepez@chromium.org
+per-file *_param_traits_macros.h=wfh@chromium.org

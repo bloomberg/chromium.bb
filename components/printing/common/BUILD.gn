@@ -6,6 +6,7 @@ static_library("printing_common") {
   sources = [
     "print_messages.cc",
     "print_messages.h",
+    "printing_param_traits_macros.h",
   ]
 
   deps = [

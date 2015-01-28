@@ -10,6 +10,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "base/values.h"
+#include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/page_range.h"
 #include "printing/page_size_margins.h"
@@ -18,6 +19,9 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
+
+// Force multiple inclusion of the param traits file to generate all methods.
+#undef COMPONENTS_PRINTING_COMMON_PRINTING_PARAM_TRAITS_MACROS_H_
 
 #ifndef COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 #define COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
@@ -86,13 +90,8 @@ struct PrintHostMsg_SetOptionsFromDocument_Params {
 
 #define IPC_MESSAGE_START PrintMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(printing::MarginType,
-                          printing::MARGIN_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPrintScalingOption,
                           blink::WebPrintScalingOptionLast)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(printing::DuplexMode,
-                              printing::UNKNOWN_DUPLEX_MODE,
-                              printing::SHORT_EDGE)
 
 // Parameters for a render request.
 IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)

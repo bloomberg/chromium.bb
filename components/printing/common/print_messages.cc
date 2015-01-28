@@ -2,11 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/printing/common/print_messages.h"
-
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/geometry/size.h"
+
+#define IPC_MESSAGE_IMPL
+#include "components/printing/common/print_messages.h"
+
+// Generate constructors.
+#include "ipc/struct_constructor_macros.h"
+#include "components/printing/common/print_messages.h"
+
+// Generate destructors.
+#include "ipc/struct_destructor_macros.h"
+#include "components/printing/common/print_messages.h"
+
+// Generate param traits write methods.
+#include "ipc/param_traits_write_macros.h"
+namespace IPC {
+#include "components/printing/common/print_messages.h"
+}  // namespace IPC
+
+// Generate param traits read methods.
+#include "ipc/param_traits_read_macros.h"
+namespace IPC {
+#include "components/printing/common/print_messages.h"
+}  // namespace IPC
+
+// Generate param traits log methods.
+#include "ipc/param_traits_log_macros.h"
+namespace IPC {
+#include "components/printing/common/print_messages.h"
+}  // namespace IPC
 
 PrintMsg_Print_Params::PrintMsg_Print_Params()
   : page_size(),

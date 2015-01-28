@@ -59,7 +59,6 @@ static_library("common") {
     "//components/json_schema",
     "//components/metrics",
     "//components/policy:policy_component_common",
-    "//components/printing/common:printing_common",
     "//components/translate/core/common",
     "//components/variations",
     "//content/public/common",
@@ -144,13 +143,11 @@ static_library("common") {
   }
 
   # Printing.
-  if (!enable_basic_printing && !enable_print_preview) {
-    sources -= [
-      "print_messages.cc",
-      "print_messages.h",
+  if (enable_basic_printing || enable_print_preview) {
+    deps += [
+      "//components/printing/common:printing_common",
+      "//printing",
     ]
-  } else {
-    deps += [ "//printing" ]
     if (enable_print_preview) {
       # Full printing support.
       sources += rebase_path(gypi_values.chrome_common_service_process_sources,
