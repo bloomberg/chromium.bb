@@ -15,9 +15,17 @@
 
     'run_jscompile%': 0,
 
-    # This variable is used to define the target environment for the app
-    # being built.  The allowed values are dev, test, staging, and prod.
-    'ar_service_environment%': 'dev',
+    # The ar_service_environment variable is used to define the target
+    # environment for the app being built.
+    # The allowed values are dev, test, staging, and prod.
+    'conditions': [
+      ['buildtype == "Dev"', {
+        'ar_service_environment%': 'dev',
+      }, {  # buildtype != 'Dev'
+        # Non-dev build must have this set to 'prod'.
+        'ar_service_environment': 'prod',
+      }],
+    ],  # conditions
   },  # end of variables
 
   'target_defaults': {
@@ -90,7 +98,7 @@
           '<@(ar_generated_html_files)',
           '<(ar_app_manifest_app)',
           '<(DEPTH)/remoting/<(ar_app_manifest_common)',
-       ],
+        ],
         'outputs': [
           '<(output_dir)',
           '<(zip_path)',
