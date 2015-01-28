@@ -687,10 +687,16 @@ bool DeviceStatusCollector::GetDeviceStatus(
   if (report_hardware_status_)
     GetHardwareStatus(status);
 
-  return true;
+  return (report_activity_times_ ||
+          report_version_info_ ||
+          report_boot_mode_ ||
+          report_location_ ||
+          report_network_interfaces_ ||
+          report_users_ ||
+          report_hardware_status_);
 }
 
-bool DeviceStatusCollector::GetSessionStatus(
+bool DeviceStatusCollector::GetDeviceSessionStatus(
     em::SessionStatusReportRequest* status) {
   return false;
 }

@@ -21,7 +21,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/system/version_loader.h"
-#include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "content/public/browser/geolocation_provider.h"
 #include "content/public/common/geoposition.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -45,7 +44,7 @@ class PrefService;
 namespace policy {
 
 // Collects and summarizes the status of an enterprised-managed ChromeOS device.
-class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
+class DeviceStatusCollector {
  public:
   // TODO(bartfab): Remove this once crbug.com/125931 is addressed and a proper
   // way to mock geolocation exists.
@@ -64,14 +63,23 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
       chromeos::system::StatisticsProvider* provider,
       const LocationUpdateRequester& location_update_requester,
       const VolumeInfoFetcher& volume_info_fetcher);
-  ~DeviceStatusCollector() override;
+  virtual ~DeviceStatusCollector();
 
-  // CloudPolicyClient::StatusProvider:
-  bool GetDeviceStatus(
-      enterprise_management::DeviceStatusReportRequest* status) override;
-  bool GetSessionStatus(
-      enterprise_management::SessionStatusReportRequest* status) override;
-  void OnSubmittedSuccessfully() override;
+  // Fills in the passed proto with device status information. Will return
+  // false if no status information is filled in (because status reporting
+  // is disabled).
+  virtual bool GetDeviceStatus(
+      enterprise_management::DeviceStatusReportRequest* status);
+
+  // Fills in the passed proto with session status information. Will return
+  // false if no status information is filled in (because status reporting
+  // is disabled, or because the active session is not a kiosk session).
+  virtual bool GetDeviceSessionStatus(
+      enterprise_management::SessionStatusReportRequest* status);
+
+  // Called after the status information has successfully been submitted to
+  // the server.
+  void OnSubmittedSuccessfully();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

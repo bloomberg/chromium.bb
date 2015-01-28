@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
+#include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
@@ -113,6 +114,7 @@ DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)),
       device_store_(store.Pass()),
       state_keys_broker_(state_keys_broker),
+      task_runner_(task_runner),
       local_state_(nullptr) {
 }
 
@@ -183,6 +185,7 @@ bool DeviceCloudPolicyManagerChromeOS::IsSharkRequisition() const {
 }
 
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {
+  status_uploader_.reset();
   state_keys_update_subscription_.reset();
   CloudPolicyManager::Shutdown();
 }
@@ -225,18 +228,6 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
     scoped_ptr<CloudPolicyClient> client_to_connect,
     EnterpriseInstallAttributes* install_attributes) {
   CHECK(!service());
-  // Enable device reporting for enterprise enrolled devices. We want to do this
-  // even if management is currently inactive, in case management is turned
-  // back on in a future policy fetch.
-  if (install_attributes->IsEnterpriseDevice()) {
-    client_to_connect->SetStatusProvider(
-        scoped_ptr<CloudPolicyClient::StatusProvider>(
-            new DeviceStatusCollector(
-                local_state_,
-                chromeos::system::StatisticsProvider::GetInstance(),
-                DeviceStatusCollector::LocationUpdateRequester(),
-                DeviceStatusCollector::VolumeInfoFetcher())));
-  }
 
   // Set state keys here so the first policy fetch submits them to the server.
   if (ForcedReEnrollmentEnabled())
@@ -248,6 +239,12 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
                                 prefs::kDevicePolicyRefreshRate);
   attestation_policy_observer_.reset(
       new chromeos::attestation::AttestationPolicyObserver(client()));
+
+  // Enable device reporting for enterprise enrolled devices. We want to do this
+  // even if management is currently inactive, in case management is turned
+  // back on in a future policy fetch.
+  if (install_attributes->IsEnterpriseDevice())
+    CreateStatusUploader();
 
   NotifyConnected();
 }
@@ -265,6 +262,7 @@ void DeviceCloudPolicyManagerChromeOS::Unregister(
 }
 
 void DeviceCloudPolicyManagerChromeOS::Disconnect() {
+  status_uploader_.reset();
   core()->Disconnect();
 
   NotifyDisconnected();
@@ -315,6 +313,19 @@ void DeviceCloudPolicyManagerChromeOS::NotifyConnected() {
 void DeviceCloudPolicyManagerChromeOS::NotifyDisconnected() {
   FOR_EACH_OBSERVER(
       Observer, observers_, OnDeviceCloudPolicyManagerDisconnected());
+}
+
+void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
+  status_uploader_.reset(
+      new StatusUploader(
+          local_state_,
+          client(),
+          make_scoped_ptr(new DeviceStatusCollector(
+              local_state_,
+              chromeos::system::StatisticsProvider::GetInstance(),
+              DeviceStatusCollector::LocationUpdateRequester(),
+              DeviceStatusCollector::VolumeInfoFetcher())),
+          task_runner_));
 }
 
 }  // namespace policy

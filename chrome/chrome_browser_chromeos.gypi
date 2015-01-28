@@ -815,6 +815,8 @@
         'browser/chromeos/policy/server_backed_device_state.h',
         'browser/chromeos/policy/server_backed_state_keys_broker.cc',
         'browser/chromeos/policy/server_backed_state_keys_broker.h',
+        'browser/chromeos/policy/status_uploader.cc',
+        'browser/chromeos/policy/status_uploader.h',
         'browser/chromeos/policy/ticl_device_settings_provider.cc',
         'browser/chromeos/policy/ticl_device_settings_provider.h',
         'browser/chromeos/policy/user_cloud_external_data_manager.cc',

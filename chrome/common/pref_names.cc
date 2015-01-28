@@ -2055,6 +2055,10 @@ const char kCustomHandlersEnabled[] = "custom_handlers.enabled";
 // by the cloud policy subsystem.
 const char kDevicePolicyRefreshRate[] = "policy.device_refresh_rate";
 
+// Integer that specifies the upload rate for device and session status in
+// milliseconds.
+const char kDeviceStatusUploadRate[] = "policy.status_upload_rate";
+
 // A boolean where true means that the browser has previously attempted to
 // enable autoupdate and failed, so the next out-of-date browser start should
 // not prompt the user to enable autoupdate, it should offer to reinstall Chrome

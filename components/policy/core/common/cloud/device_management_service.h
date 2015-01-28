@@ -45,6 +45,7 @@ class POLICY_EXPORT DeviceManagementRequestJob {
     TYPE_UNREGISTRATION,
     TYPE_UPLOAD_CERTIFICATE,
     TYPE_DEVICE_STATE_RETRIEVAL,
+    TYPE_UPLOAD_STATUS,
   };
 
   typedef base::Callback<

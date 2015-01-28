@@ -45,8 +45,6 @@ CloudPolicyClient::Observer::~Observer() {}
 void CloudPolicyClient::Observer::OnRobotAuthCodesFetched(
     CloudPolicyClient* client) {}
 
-CloudPolicyClient::StatusProvider::~StatusProvider() {}
-
 CloudPolicyClient::CloudPolicyClient(
     const std::string& machine_id,
     const std::string& machine_model,
@@ -186,18 +184,6 @@ void CloudPolicyClient::FetchPolicy() {
     }
   }
 
-  // Add status data.
-  if (status_provider_) {
-    if (!status_provider_->GetDeviceStatus(
-            request->mutable_device_status_report_request())) {
-      request->clear_device_status_report_request();
-    }
-    if (!status_provider_->GetSessionStatus(
-            request->mutable_session_status_report_request())) {
-      request->clear_session_status_report_request();
-    }
-  }
-
   // Add device state keys.
   if (!state_keys_to_upload_.empty()) {
     em::DeviceStateKeyUpdateRequest* key_update_request =
@@ -276,20 +262,42 @@ void CloudPolicyClient::UploadCertificate(
   request_job_->Start(job_callback);
 }
 
+void CloudPolicyClient::UploadDeviceStatus(
+    const em::DeviceStatusReportRequest* device_status,
+    const em::SessionStatusReportRequest* session_status,
+    const CloudPolicyClient::StatusCallback& callback) {
+  CHECK(is_registered());
+  // Should pass in at least one type of status.
+  DCHECK(device_status || session_status);
+  request_job_.reset(
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_STATUS,
+                          GetRequestContext()));
+  request_job_->SetDMToken(dm_token_);
+  request_job_->SetClientID(client_id_);
+
+  em::DeviceManagementRequest* request = request_job_->GetRequest();
+  if (device_status)
+    *request->mutable_device_status_report_request() = *device_status;
+  if (session_status)
+    *request->mutable_session_status_report_request() = *session_status;
+
+  DeviceManagementRequestJob::Callback job_callback = base::Bind(
+      &CloudPolicyClient::OnStatusUploadCompleted,
+      base::Unretained(this),
+      callback);
+
+  // TODO(atwilson): Change CloudPolicyClient to support multiple requests in
+  // parallel, so status upload requests don't get cancelled by things like
+  // policy fetches (http://crbug.com/452563).
+  request_job_->Start(job_callback);
+}
+
 void CloudPolicyClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
 void CloudPolicyClient::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void CloudPolicyClient::SetStatusProvider(scoped_ptr<StatusProvider> provider) {
-  status_provider_ = provider.Pass();
-}
-
-bool CloudPolicyClient::HasStatusProviderForTest() {
-  return status_provider_;
 }
 
 void CloudPolicyClient::AddPolicyTypeToFetch(
@@ -423,8 +431,6 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
       }
       responses_[key] = new em::PolicyFetchResponse(response);
     }
-    if (status_provider_)
-      status_provider_->OnSubmittedSuccessfully();
     state_keys_to_upload_.clear();
     NotifyPolicyFetched();
   } else {
@@ -468,6 +474,18 @@ void CloudPolicyClient::OnCertificateUploadCompleted(
     return;
   }
   callback.Run(true);
+}
+
+void CloudPolicyClient::OnStatusUploadCompleted(
+    const CloudPolicyClient::StatusCallback& callback,
+    DeviceManagementStatus status,
+    int net_error,
+    const enterprise_management::DeviceManagementResponse& response) {
+  status_ = status;
+  if (status != DM_STATUS_SUCCESS)
+    NotifyClientError();
+
+  callback.Run(status == DM_STATUS_SUCCESS);
 }
 
 void CloudPolicyClient::NotifyPolicyFetched() {

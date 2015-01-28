@@ -70,24 +70,6 @@ class POLICY_EXPORT CloudPolicyClient {
     virtual void OnClientError(CloudPolicyClient* client) = 0;
   };
 
-  // Delegate interface for supplying status information to upload to the server
-  // as part of the policy fetch request.
-  class POLICY_EXPORT StatusProvider {
-   public:
-    virtual ~StatusProvider();
-
-    // Retrieves status information to send with the next policy fetch.
-    // Implementations must return true if status information was filled in.
-    virtual bool GetDeviceStatus(
-        enterprise_management::DeviceStatusReportRequest* status) = 0;
-    virtual bool GetSessionStatus(
-        enterprise_management::SessionStatusReportRequest* status) = 0;
-
-    // Called after the status information has successfully been submitted to
-    // the server.
-    virtual void OnSubmittedSuccessfully() = 0;
-  };
-
   // |provider| and |service| are weak pointers and it's the caller's
   // responsibility to keep them valid for the lifetime of CloudPolicyClient.
   // |verification_key_hash| contains an identifier telling the DMServer which
@@ -146,18 +128,20 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void UploadCertificate(const std::string& certificate_data,
                                  const StatusCallback& callback);
 
+  // Uploads device/session status to the server. As above, the client must be
+  // in a registered state. If non-null, |device_status| and |session_status|
+  // will be included in the upload status request. The |callback| will be
+  // called when the operation completes.
+  virtual void UploadDeviceStatus(
+      const enterprise_management::DeviceStatusReportRequest* device_status,
+      const enterprise_management::SessionStatusReportRequest* session_status,
+      const StatusCallback& callback);
+
   // Adds an observer to be called back upon policy and state changes.
   void AddObserver(Observer* observer);
 
   // Removes the specified observer.
   void RemoveObserver(Observer* observer);
-
-  // Sets the status provider for this client, or NULL if no provider.
-  // ClouldPolicyClient takes ownership of the passed |provider|.
-  void SetStatusProvider(scoped_ptr<StatusProvider> provider);
-
-  // Returns true if this object has a StatusProvider configured.
-  bool HasStatusProviderForTest();
 
   void set_submit_machine_id(bool submit_machine_id) {
     submit_machine_id_ = submit_machine_id;
@@ -270,6 +254,13 @@ class POLICY_EXPORT CloudPolicyClient {
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
+  // Callback for status upload requests.
+  void OnStatusUploadCompleted(
+      const StatusCallback& callback,
+      DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
   // Observer notification helpers.
   void NotifyPolicyFetched();
   void NotifyRegistrationStateChanged();
@@ -303,9 +294,6 @@ class POLICY_EXPORT CloudPolicyClient {
   // Used for issuing requests to the cloud.
   DeviceManagementService* service_;
   scoped_ptr<DeviceManagementRequestJob> request_job_;
-
-  // Status upload data is produced by |status_provider_|.
-  scoped_ptr<StatusProvider> status_provider_;
 
   // The policy responses returned by the last policy fetch operation.
   ResponseMap responses_;

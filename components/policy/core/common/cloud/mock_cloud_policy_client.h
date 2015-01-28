@@ -30,6 +30,10 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   MOCK_METHOD0(Unregister, void(void));
   MOCK_METHOD2(UploadCertificate,
                void(const std::string&, const StatusCallback&));
+  MOCK_METHOD3(UploadDeviceStatus,
+               void(const enterprise_management::DeviceStatusReportRequest*,
+                    const enterprise_management::SessionStatusReportRequest*,
+                    const StatusCallback&));
 
   // Sets the DMToken.
   void SetDMToken(const std::string& token);

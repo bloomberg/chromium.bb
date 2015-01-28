@@ -35,6 +35,7 @@ namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
 class EnterpriseInstallAttributes;
+class StatusUploader;
 
 // CloudPolicyManager specialization for device policy on Chrome OS.
 class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
@@ -102,6 +103,8 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
     return device_store_.get();
   }
 
+  bool HasStatusUploaderForTest() { return status_uploader_; }
+
  private:
   // Saves the state keys received from |session_manager_client_|.
   void OnStateKeysUpdated();
@@ -112,10 +115,20 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   void NotifyConnected();
   void NotifyDisconnected();
 
+  // Factory function to create the StatusUploader.
+  void CreateStatusUploader();
+
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.
   scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_store_;
   ServerBackedStateKeysBroker* state_keys_broker_;
+
+  // Helper object that handles updating the server with our current device
+  // state.
+  scoped_ptr<StatusUploader> status_uploader_;
+
+  // The TaskRunner used to do device status uploads.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   ServerBackedStateKeysBroker::Subscription state_keys_update_subscription_;
 
