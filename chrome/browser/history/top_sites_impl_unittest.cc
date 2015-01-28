@@ -9,6 +9,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/history/top_sites_impl.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -195,7 +196,8 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   }
 
   TopSitesImpl* top_sites() {
-    return static_cast<TopSitesImpl*>(profile_->GetTopSites());
+    return static_cast<TopSitesImpl*>(
+        TopSitesFactory::GetForProfile(profile_.get()).get());
   }
   TestingProfile* profile() {return profile_.get();}
   HistoryService* history_service() {

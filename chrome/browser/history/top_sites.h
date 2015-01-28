@@ -8,11 +8,11 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/common/thumbnail_score.h"
+#include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -38,14 +38,10 @@ class TopSitesObserver;
 //
 // Some methods should only be called from the UI thread (see method
 // descriptions below). All others are assumed to be threadsafe.
-class TopSites
-    : public base::RefCountedThreadSafe<TopSites>,
-      public content::NotificationObserver {
+class TopSites : public RefcountedKeyedService,
+                 public content::NotificationObserver {
  public:
   TopSites();
-
-  // Initializes TopSites.
-  static TopSites* Create(Profile* profile, const base::FilePath& db_name);
 
   // Sets the given thumbnail for the given URL. Returns true if the thumbnail
   // was updated. False means either the URL wasn't known to us, or we felt
@@ -119,9 +115,6 @@ class TopSites
 
   // Clear the blacklist. Should be called from the UI thread.
   virtual void ClearBlacklistedURLs() = 0;
-
-  // Shuts down top sites.
-  virtual void Shutdown() = 0;
 
   // Query history service for the list of available thumbnails. Returns the
   // task id for the request, or |base::CancelableTaskTracker::kBadTaskId| if a

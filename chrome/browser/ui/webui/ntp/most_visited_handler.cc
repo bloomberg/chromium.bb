@@ -21,6 +21,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "chrome/browser/ui/browser.h"
@@ -82,7 +83,8 @@ void MostVisitedHandler::RegisterMessages() {
   content::URLDataSource::Add(
       profile, new FaviconSource(profile, FaviconSource::FAVICON));
 
-  history::TopSites* top_sites = profile->GetTopSites();
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile);
   if (top_sites) {
     // TopSites updates itself after a delay. This is especially noticable when
     // your profile is empty. Ask TopSites to update itself when we're about to
@@ -91,7 +93,7 @@ void MostVisitedHandler::RegisterMessages() {
 
     // Register as TopSitesObserver so that we can update ourselves when the
     // TopSites changes.
-    scoped_observer_.Add(top_sites);
+    scoped_observer_.Add(top_sites.get());
   }
 
   // We pre-emptively make a fetch for the most visited pages so we have the
@@ -136,7 +138,8 @@ void MostVisitedHandler::SendPagesValue() {
     const base::DictionaryValue* url_blacklist =
         profile->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
     bool has_blacklisted_urls = !url_blacklist->empty();
-    history::TopSites* ts = profile->GetTopSites();
+    scoped_refptr<history::TopSites> ts =
+        TopSitesFactory::GetForProfile(profile);
     if (ts)
       has_blacklisted_urls = ts->HasBlacklistedItems();
 
@@ -149,7 +152,8 @@ void MostVisitedHandler::SendPagesValue() {
 }
 
 void MostVisitedHandler::StartQueryForMostVisited() {
-  history::TopSites* ts = Profile::FromWebUI(web_ui())->GetTopSites();
+  scoped_refptr<history::TopSites> ts =
+      TopSitesFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   if (ts) {
     ts->GetMostVisitedURLs(
         base::Bind(&MostVisitedHandler::OnMostVisitedUrlsAvailable,
@@ -175,7 +179,8 @@ void MostVisitedHandler::HandleRemoveUrlsFromBlacklist(
       return;
     }
     content::RecordAction(UserMetricsAction("MostVisited_UrlRemoved"));
-    history::TopSites* ts = Profile::FromWebUI(web_ui())->GetTopSites();
+    scoped_refptr<history::TopSites> ts =
+        TopSitesFactory::GetForProfile(Profile::FromWebUI(web_ui()));
     if (ts)
       ts->RemoveBlacklistedURL(GURL(url));
   }
@@ -184,7 +189,8 @@ void MostVisitedHandler::HandleRemoveUrlsFromBlacklist(
 void MostVisitedHandler::HandleClearBlacklist(const base::ListValue* args) {
   content::RecordAction(UserMetricsAction("MostVisited_BlacklistCleared"));
 
-  history::TopSites* ts = Profile::FromWebUI(web_ui())->GetTopSites();
+  scoped_refptr<history::TopSites> ts =
+      TopSitesFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   if (ts)
     ts->ClearBlacklistedURLs();
 }
@@ -250,7 +256,8 @@ void MostVisitedHandler::TopSitesChanged(history::TopSites* top_sites) {
 }
 
 void MostVisitedHandler::BlacklistUrl(const GURL& url) {
-  history::TopSites* ts = Profile::FromWebUI(web_ui())->GetTopSites();
+  scoped_refptr<history::TopSites> ts =
+      TopSitesFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   if (ts)
     ts->AddBlacklistedURL(url);
   content::RecordAction(UserMetricsAction("MostVisited_UrlBlacklisted"));

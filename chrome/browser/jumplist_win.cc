@@ -20,6 +20,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -249,7 +250,8 @@ JumpList::JumpList(Profile* profile)
   icon_dir_ = profile_->GetPath().Append(chrome::kJumpListIconDirname);
   use_profiles_category_ = HasProfilesJumplistExperiment();
 
-  history::TopSites* top_sites = profile_->GetTopSites();
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
     // TopSites updates itself after a delay. This is especially noticable when
     // your profile is empty. Ask TopSites to update itself when jumplist is
@@ -311,7 +313,8 @@ void JumpList::Terminate() {
         TabRestoreServiceFactory::GetForProfile(profile_);
     if (tab_restore_service)
       tab_restore_service->RemoveObserver(this);
-    history::TopSites* top_sites = profile_->GetTopSites();
+    scoped_refptr<history::TopSites> top_sites =
+        TopSitesFactory::GetForProfile(profile_);
     if (top_sites)
       top_sites->RemoveObserver(this);
     registrar_.reset();

@@ -38,7 +38,6 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
@@ -744,9 +743,6 @@ ProfileImpl::~ProfileImpl() {
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       this);
 
-  if (top_sites_.get())
-    top_sites_->Shutdown();
-
   if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
 
@@ -1087,18 +1083,6 @@ bool ProfileImpl::IsSameProfile(Profile* profile) {
 
 Time ProfileImpl::GetStartTime() const {
   return start_time_;
-}
-
-history::TopSites* ProfileImpl::GetTopSites() {
-  if (!top_sites_.get()) {
-    top_sites_ = history::TopSites::Create(
-        this, GetPath().Append(chrome::kTopSitesFilename));
-  }
-  return top_sites_.get();
-}
-
-history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
-  return top_sites_.get();
 }
 
 #if defined(ENABLE_SESSION_SERVICE)

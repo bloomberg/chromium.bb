@@ -371,13 +371,15 @@ void TopSitesImpl::ClearBlacklistedURLs() {
   NotifyTopSitesChanged();
 }
 
-void TopSitesImpl::Shutdown() {
+void TopSitesImpl::ShutdownOnUIThread() {
   profile_ = NULL;
   // Cancel all requests so that the service doesn't callback to us after we've
   // invoked Shutdown (this could happen if we have a pending request and
   // Shutdown is invoked).
   cancelable_task_tracker_.TryCancelAll();
-  backend_->Shutdown();
+  registrar_.RemoveAll();
+  if (backend_)
+    backend_->Shutdown();
 }
 
 // static

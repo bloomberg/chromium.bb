@@ -5,20 +5,21 @@
 #include "chrome/browser/thumbnails/thumbnail_service_impl.h"
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/history/top_sites_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef testing::Test ThumbnailServiceTest;
 
+namespace {
+
 // A mock version of TopSitesImpl, used for testing
 // ShouldAcquirePageThumbnail().
 class MockTopSites : public history::TopSitesImpl {
  public:
   explicit MockTopSites(Profile* profile)
-      : history::TopSitesImpl(profile),
-        capacity_(1) {
-  }
+      : history::TopSitesImpl(profile), capacity_(1) {}
 
   // history::TopSitesImpl overrides.
   bool IsNonForcedFull() override { return known_url_map_.size() >= capacity_; }
@@ -51,23 +52,32 @@ class MockTopSites : public history::TopSitesImpl {
   DISALLOW_COPY_AND_ASSIGN(MockTopSites);
 };
 
+// Testing factory that build a |MockTopSites| instance.
+scoped_refptr<RefcountedKeyedService> BuildMockTopSites(
+    content::BrowserContext* profile) {
+  return scoped_refptr<RefcountedKeyedService>(
+      new MockTopSites(static_cast<Profile*>(profile)));
+}
+
 // A mock version of TestingProfile holds MockTopSites.
 class MockProfile : public TestingProfile {
  public:
-  MockProfile() : mock_top_sites_(new MockTopSites(this)) {
+  MockProfile() {
+    TopSitesFactory::GetInstance()->SetTestingFactory(this, BuildMockTopSites);
   }
 
-  history::TopSites* GetTopSites() override { return mock_top_sites_.get(); }
-
   void AddKnownURL(const GURL& url, const ThumbnailScore& score) {
-    mock_top_sites_->AddKnownURL(url, score);
+    scoped_refptr<history::TopSites> top_sites =
+        TopSitesFactory::GetForProfile(this);
+    static_cast<MockTopSites*>(top_sites.get())->AddKnownURL(url, score);
   }
 
  private:
-  scoped_refptr<MockTopSites> mock_top_sites_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProfile);
 };
+
+}  // namespace
 
 TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
   const GURL kGoodURL("http://www.google.com/");
@@ -94,7 +104,9 @@ TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
   ThumbnailScore bad_score;
   bad_score.time_at_snapshot = base::Time::UnixEpoch();  // Ancient time stamp.
   profile.AddKnownURL(kGoodURL, bad_score);
-  ASSERT_TRUE(profile.GetTopSites()->IsNonForcedFull());
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(&profile);
+  ASSERT_TRUE(top_sites->IsNonForcedFull());
 
   // Should be false, as the top sites data is full, and the new URL is
   // not known.

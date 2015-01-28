@@ -16,6 +16,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/ntp_stats.h"
@@ -68,7 +69,8 @@ void SuggestionsHandler::RegisterMessages() {
 
   // TODO(georgey) change the source of the web-sites to provide our data.
   // Initial commit uses top sites as a data source.
-  history::TopSites* top_sites = profile->GetTopSites();
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile);
   if (top_sites) {
     // TopSites updates itself after a delay. This is especially noticable when
     // your profile is empty. Ask TopSites to update itself when we're about to
@@ -77,7 +79,7 @@ void SuggestionsHandler::RegisterMessages() {
 
     // Register as TopSitesObserver so that we can update ourselves when the
     // TopSites changes.
-    scoped_observer_.Add(top_sites);
+    scoped_observer_.Add(top_sites.get());
   }
 
   // Setup the suggestions sources.

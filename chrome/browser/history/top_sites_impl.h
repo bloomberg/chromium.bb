@@ -75,7 +75,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   void RemoveBlacklistedURL(const GURL& url) override;
   bool IsBlacklisted(const GURL& url) override;
   void ClearBlacklistedURLs() override;
-  void Shutdown() override;
   base::CancelableTaskTracker::TaskId StartQueryForMostVisited() override;
   bool IsKnownURL(const GURL& url) override;
   const std::string& GetCanonicalURLString(const GURL& url) const override;
@@ -84,6 +83,9 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   MostVisitedURLList GetPrepopulatePages() override;
   bool loaded() const override;
   bool AddForcedURL(const GURL& url, const base::Time& time) override;
+
+  // RefcountedKeyedService:
+  void ShutdownOnUIThread() override;
 
  protected:
   ~TopSitesImpl() override;

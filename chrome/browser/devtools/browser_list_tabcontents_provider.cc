@@ -6,6 +6,7 @@
 
 #include "base/path_service.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -28,7 +29,7 @@ std::string BrowserListTabContentsProvider::GetDiscoveryPageHTML() {
 
   for (std::set<Profile*>::iterator it = profiles.begin();
        it != profiles.end(); ++it) {
-    history::TopSites* ts = (*it)->GetTopSites();
+    scoped_refptr<history::TopSites> ts = TopSitesFactory::GetForProfile(*it);
     if (ts) {
       // TopSites updates itself after a delay. Ask TopSites to update itself
       // when we're about to show the remote debugging landing page.

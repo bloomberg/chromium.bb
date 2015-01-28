@@ -62,8 +62,6 @@ class OffTheRecordProfileImpl : public Profile {
   HostContentSettingsMap* GetHostContentSettingsMap() override;
   bool IsSameProfile(Profile* profile) override;
   Time GetStartTime() const override;
-  history::TopSites* GetTopSitesWithoutCreating() override;
-  history::TopSites* GetTopSites() override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;

@@ -57,10 +57,6 @@ namespace storage {
 class FileSystemContext;
 }
 
-namespace history {
-class TopSites;
-}
-
 namespace net {
 class SSLConfigService;
 }
@@ -188,13 +184,6 @@ class Profile : public content::BrowserContext {
   virtual bool IsChild() = 0;
   // Returns whether the profile is a legacy supervised user profile.
   virtual bool IsLegacySupervised() = 0;
-
-  // Returns a pointer to the TopSites (thumbnail manager) instance
-  // for this profile.
-  virtual history::TopSites* GetTopSites() = 0;
-
-  // Variant of GetTopSites that doesn't force creation.
-  virtual history::TopSites* GetTopSitesWithoutCreating() = 0;
 
   // Accessor. The instance is created upon first access.
   virtual ExtensionSpecialStoragePolicy*

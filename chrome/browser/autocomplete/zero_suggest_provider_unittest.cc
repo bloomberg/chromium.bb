@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -64,7 +65,6 @@ class FakeEmptyTopSites : public history::TopSites {
     return false;
   }
   void ClearBlacklistedURLs() override {}
-  void Shutdown() override {}
   base::CancelableTaskTracker::TaskId StartQueryForMostVisited() override {
     return 0;
   }
@@ -90,6 +90,10 @@ class FakeEmptyTopSites : public history::TopSites {
   bool AddForcedURL(const GURL& url, const base::Time& time) override {
     return false;
   }
+
+  // RefcountedKeyedService:
+  void ShutdownOnUIThread() override {}
+
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -107,6 +111,12 @@ void FakeEmptyTopSites::GetMostVisitedURLs(
     const GetMostVisitedURLsCallback& callback,
     bool include_forced_urls)  {
   mv_callback = callback;
+}
+
+scoped_refptr<RefcountedKeyedService> BuildFakeEmptyTopSites(
+    content::BrowserContext* profile) {
+  scoped_refptr<history::TopSites> top_sites = new FakeEmptyTopSites();
+  return top_sites;
 }
 
 }  // namespace
@@ -175,8 +185,9 @@ void ZeroSuggestProviderTest::SetUp() {
   turl_model->Add(default_t_url_);
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 
-  profile_.SetTopSites(new FakeEmptyTopSites());
-
+  profile_.DestroyTopSites();
+  TopSitesFactory::GetInstance()->SetTestingFactory(&profile_,
+                                                    BuildFakeEmptyTopSites);
   provider_ = ZeroSuggestProvider::Create(this, turl_model, &profile_);
 }
 
@@ -264,8 +275,9 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
 
   provider_->Start(input, false, true);
   EXPECT_TRUE(provider_->matches().empty());
-  static_cast<FakeEmptyTopSites*>(profile_.GetTopSites())->mv_callback.Run(
-      urls);
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(&profile_);
+  static_cast<FakeEmptyTopSites*>(top_sites.get())->mv_callback.Run(urls);
   // Should have verbatim match + most visited url match.
   EXPECT_EQ(2U, provider_->matches().size());
   provider_->Stop(false);
@@ -275,8 +287,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
   EXPECT_TRUE(provider_->matches().empty());
   // Most visited results arriving after Stop() has been called, ensure they
   // are not displayed.
-  static_cast<FakeEmptyTopSites*>(profile_.GetTopSites())->mv_callback.Run(
-      urls);
+  static_cast<FakeEmptyTopSites*>(top_sites.get())->mv_callback.Run(urls);
   EXPECT_TRUE(provider_->matches().empty());
 }
 
@@ -316,8 +327,9 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
   provider_->Start(srp_input, false, true);
   EXPECT_TRUE(provider_->matches().empty());
   // Most visited results arriving after a new request has been started.
-  static_cast<FakeEmptyTopSites*>(profile_.GetTopSites())->mv_callback.Run(
-      urls);
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(&profile_);
+  static_cast<FakeEmptyTopSites*>(top_sites.get())->mv_callback.Run(urls);
   EXPECT_TRUE(provider_->matches().empty());
 }
 

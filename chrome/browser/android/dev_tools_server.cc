@@ -21,6 +21,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -108,7 +109,8 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
   static void PopulatePageThumbnails() {
     Profile* profile =
         ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
-    history::TopSites* top_sites = profile->GetTopSites();
+    scoped_refptr<history::TopSites> top_sites =
+        TopSitesFactory::GetForProfile(profile);
     if (top_sites)
       top_sites->SyncWithHistory();
   }

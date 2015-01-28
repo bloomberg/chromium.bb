@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/api/top_sites/top_sites_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -23,7 +24,8 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    history::TopSites* top_sites = browser()->profile()->GetTopSites();
+    scoped_refptr<history::TopSites> top_sites =
+        TopSitesFactory::GetForProfile(browser()->profile());
 
     // This may return async or sync. If sync, top_sites_inited_ will be true
     // before we get to the conditional below. Otherwise, we'll run a nested

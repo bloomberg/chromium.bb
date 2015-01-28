@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
@@ -230,7 +231,8 @@ void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
 
   QueryMostVisitedURLs();
 
-  history::TopSites* top_sites = profile_->GetTopSites();
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
     // TopSites updates itself after a delay. To ensure up-to-date results,
     // force an update now.
@@ -238,7 +240,7 @@ void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
 
     // Register as TopSitesObserver so that we can update ourselves when the
     // TopSites changes.
-    scoped_observer_.Add(top_sites);
+    scoped_observer_.Add(top_sites.get());
   }
 }
 
@@ -253,7 +255,7 @@ void MostVisitedSites::GetURLThumbnail(JNIEnv* env,
   j_callback->Reset(env, j_callback_obj);
 
   std::string url_string = ConvertJavaStringToUTF8(env, url);
-  scoped_refptr<TopSites> top_sites(profile_->GetTopSites());
+  scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
 
   // If the Suggestions service is enabled and in use, create a callback to
   // fetch a server thumbnail from it, in case the local thumbnail is not found.
@@ -286,7 +288,8 @@ void MostVisitedSites::BlacklistUrl(JNIEnv* env,
 
   switch (mv_source_) {
     case TOP_SITES: {
-      TopSites* top_sites = profile_->GetTopSites();
+      scoped_refptr<TopSites> top_sites =
+          TopSitesFactory::GetForProfile(profile_);
       DCHECK(top_sites);
       top_sites->AddBlacklistedURL(GURL(url));
       break;
@@ -363,7 +366,7 @@ void MostVisitedSites::QueryMostVisitedURLs() {
 }
 
 void MostVisitedSites::InitiateTopSitesQuery() {
-  TopSites* top_sites = profile_->GetTopSites();
+  scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
   if (!top_sites)
     return;
 

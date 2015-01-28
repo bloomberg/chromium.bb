@@ -172,7 +172,7 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   // Tracks value of the kShowBookmarkBar preference.
   PrefChangeRegistrar pref_change_registrar_;
 
-  history::TopSites* top_sites_;
+  scoped_refptr<history::TopSites> top_sites_;
 
   TabRestoreService* tab_restore_service_;  // weak
 

@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "components/history/core/browser/expire_history_backend.h"
@@ -104,7 +105,6 @@ class ExpireHistoryTest : public testing::Test,
   scoped_ptr<HistoryDatabase> main_db_;
   scoped_ptr<ThumbnailDatabase> thumb_db_;
   TestingProfile profile_;
-  scoped_refptr<TopSites> top_sites_;
 
   // Time at the beginning of the test, so everybody agrees what "now" is.
   const Time now_;
@@ -132,11 +132,9 @@ class ExpireHistoryTest : public testing::Test,
     expirer_.SetDatabases(main_db_.get(), thumb_db_.get());
     profile_.CreateTopSites();
     profile_.BlockUntilTopSitesLoaded();
-    top_sites_ = profile_.GetTopSites();
   }
 
   void TearDown() override {
-    top_sites_ = NULL;
 
     ClearLastNotifications();
 
@@ -220,9 +218,11 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
 
   Time time;
   GURL gurl;
-  top_sites_->SetPageThumbnail(url_row1.url(), thumbnail, score);
-  top_sites_->SetPageThumbnail(url_row2.url(), thumbnail, score);
-  top_sites_->SetPageThumbnail(url_row3.url(), thumbnail, score);
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(&profile_);
+  top_sites->SetPageThumbnail(url_row1.url(), thumbnail, score);
+  top_sites->SetPageThumbnail(url_row2.url(), thumbnail, score);
+  top_sites->SetPageThumbnail(url_row3.url(), thumbnail, score);
 
   // Four visits.
   VisitRow visit_row1;
@@ -302,7 +302,9 @@ bool ExpireHistoryTest::HasThumbnail(URLID url_id) {
     return false;
   GURL url = info.url();
   scoped_refptr<base::RefCountedMemory> data;
-  return top_sites_->GetPageThumbnail(url, false, &data);
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(&profile_);
+  return top_sites->GetPageThumbnail(url, false, &data);
 }
 
 void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool expired) {

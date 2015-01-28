@@ -428,14 +428,6 @@ Time OffTheRecordProfileImpl::GetStartTime() const {
   return start_time_;
 }
 
-history::TopSites* OffTheRecordProfileImpl::GetTopSitesWithoutCreating() {
-  return NULL;
-}
-
-history::TopSites* OffTheRecordProfileImpl::GetTopSites() {
-  return NULL;
-}
-
 void OffTheRecordProfileImpl::SetExitType(ExitType exit_type) {
 }
 

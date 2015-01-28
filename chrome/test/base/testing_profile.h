@@ -183,11 +183,6 @@ class TestingProfile : public Profile {
   // loading.
   void CreateTopSites();
 
-  // Allows to set a test implementation |top_sites|. Testing profile owns
-  // the reference and is responsible for releasing memory.
-  void SetTopSites(history::TopSites* top_sites);
-
-  // Shuts down and nulls out the reference to TopSites.
   void DestroyTopSites();
 
   // Creates the BookmarkBarModel. If not invoked the bookmark bar model is
@@ -280,9 +275,6 @@ class TestingProfile : public Profile {
   net::CookieMonster* GetCookieMonster();
 
   PrefService* GetPrefs() override;
-
-  history::TopSites* GetTopSites() override;
-  history::TopSites* GetTopSitesWithoutCreating() override;
 
   net::URLRequestContextGetter* GetMediaRequestContext() override;
   net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
@@ -379,7 +371,6 @@ class TestingProfile : public Profile {
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   base::FilePath last_selected_directory_;
-  scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
 
 #if defined(ENABLE_EXTENSIONS)
   scoped_refptr<ExtensionSpecialStoragePolicy>

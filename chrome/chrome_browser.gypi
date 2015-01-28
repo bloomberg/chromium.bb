@@ -1511,6 +1511,8 @@
       'browser/history/top_sites_backend.h',
       'browser/history/top_sites_database.cc',
       'browser/history/top_sites_database.h',
+      'browser/history/top_sites_factory.cc',
+      'browser/history/top_sites_factory.h',
       'browser/history/top_sites_impl.cc',
       'browser/history/top_sites_impl.h',
       'browser/history/typed_url_syncable_service.cc',

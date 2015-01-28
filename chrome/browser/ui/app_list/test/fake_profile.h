@@ -59,8 +59,6 @@ class FakeProfile : public Profile {
   bool IsSupervised() override;
   bool IsChild() override;
   bool IsLegacySupervised() override;
-  history::TopSites* GetTopSites() override;
-  history::TopSites* GetTopSitesWithoutCreating() override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
   PrefService* GetOffTheRecordPrefs() override;

@@ -11,6 +11,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -337,7 +338,8 @@ void DevToolsManagerDelegateAndroid::EnumerateTargets(TargetCallback callback) {
 std::string DevToolsManagerDelegateAndroid::GetPageThumbnailData(
     const GURL& url) {
   Profile* profile = ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
-  history::TopSites* top_sites = profile->GetTopSites();
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile);
   if (top_sites) {
     scoped_refptr<base::RefCountedMemory> data;
     if (top_sites->GetPageThumbnail(url, false, &data))

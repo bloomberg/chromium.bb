@@ -112,14 +112,6 @@ bool FakeProfile::IsLegacySupervised() {
   return false;
 }
 
-history::TopSites* FakeProfile::GetTopSites() {
-  return NULL;
-}
-
-history::TopSites* FakeProfile::GetTopSitesWithoutCreating() {
-  return NULL;
-}
-
 ExtensionSpecialStoragePolicy* FakeProfile::GetExtensionSpecialStoragePolicy() {
   return NULL;
 }

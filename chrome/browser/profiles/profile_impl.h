@@ -103,8 +103,6 @@ class ProfileImpl : public Profile {
   bool IsSupervised() override;
   bool IsChild() override;
   bool IsLegacySupervised() override;
-  history::TopSites* GetTopSites() override;
-  history::TopSites* GetTopSitesWithoutCreating() override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
   chrome::ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
@@ -248,8 +246,6 @@ class ProfileImpl : public Profile {
 
   // See GetStartTime for details.
   base::Time start_time_;
-
-  scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::Preferences> chromeos_preferences_;

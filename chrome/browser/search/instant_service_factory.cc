@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search/instant_service_factory.h"
 
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -34,6 +35,7 @@ InstantServiceFactory::InstantServiceFactory()
 #if defined(ENABLE_THEMES)
   DependsOn(ThemeServiceFactory::GetInstance());
 #endif
+  DependsOn(TopSitesFactory::GetInstance());
 }
 
 InstantServiceFactory::~InstantServiceFactory() {

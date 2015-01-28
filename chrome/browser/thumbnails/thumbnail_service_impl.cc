@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/thumbnails/content_based_thumbnailing_algorithm.h"
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
@@ -37,7 +38,7 @@ void AddForcedURLOnUIThread(scoped_refptr<history::TopSites> top_sites,
                             const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (top_sites.get() != NULL)
+  if (top_sites)
     top_sites->AddForcedURL(url, base::Time::Now());
 }
 
@@ -46,7 +47,7 @@ void AddForcedURLOnUIThread(scoped_refptr<history::TopSites> top_sites,
 namespace thumbnails {
 
 ThumbnailServiceImpl::ThumbnailServiceImpl(Profile* profile)
-    : top_sites_(profile->GetTopSites()),
+    : top_sites_(TopSitesFactory::GetForProfile(profile)),
       use_thumbnail_retargeting_(IsThumbnailRetargetingEnabled()) {
 }
 
@@ -56,7 +57,7 @@ ThumbnailServiceImpl::~ThumbnailServiceImpl() {
 bool ThumbnailServiceImpl::SetPageThumbnail(const ThumbnailingContext& context,
                                             const gfx::Image& thumbnail) {
   scoped_refptr<history::TopSites> local_ptr(top_sites_);
-  if (local_ptr.get() == NULL)
+  if (!local_ptr)
     return false;
 
   return local_ptr->SetPageThumbnail(context.url, thumbnail, context.score);
@@ -67,7 +68,7 @@ bool ThumbnailServiceImpl::GetPageThumbnail(
     bool prefix_match,
     scoped_refptr<base::RefCountedMemory>* bytes) {
   scoped_refptr<history::TopSites> local_ptr(top_sites_);
-  if (local_ptr.get() == NULL)
+  if (!local_ptr)
     return false;
 
   return local_ptr->GetPageThumbnail(url, prefix_match, bytes);
@@ -75,7 +76,7 @@ bool ThumbnailServiceImpl::GetPageThumbnail(
 
 void ThumbnailServiceImpl::AddForcedURL(const GURL& url) {
   scoped_refptr<history::TopSites> local_ptr(top_sites_);
-  if (local_ptr.get() == NULL)
+  if (!local_ptr)
     return;
 
   // Adding
@@ -94,7 +95,7 @@ ThumbnailingAlgorithm* ThumbnailServiceImpl::GetThumbnailingAlgorithm()
 bool ThumbnailServiceImpl::ShouldAcquirePageThumbnail(const GURL& url) {
   scoped_refptr<history::TopSites> local_ptr(top_sites_);
 
-  if (local_ptr.get() == NULL)
+  if (!local_ptr)
     return false;
 
   // Skip if the given URL is not appropriate for history.

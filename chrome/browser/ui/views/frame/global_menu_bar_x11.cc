@@ -17,6 +17,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -425,13 +426,13 @@ void GlobalMenuBarX11::InitServer(unsigned long xid) {
                  base::Unretained(this)));
   OnBookmarkBarVisibilityChanged();
 
-  top_sites_ = profile_->GetTopSites();
+  top_sites_ = TopSitesFactory::GetForProfile(profile_);
   if (top_sites_) {
     GetTopSitesData();
 
     // Register as TopSitesObserver so that we can update ourselves when the
     // TopSites changes.
-    scoped_observer_.Add(top_sites_);
+    scoped_observer_.Add(top_sites_.get());
   }
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();

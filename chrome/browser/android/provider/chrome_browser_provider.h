@@ -211,7 +211,7 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
   // alive.
   Profile* profile_;
   bookmarks::BookmarkModel* bookmark_model_;
-  history::TopSites* top_sites_;
+  scoped_refptr<history::TopSites> top_sites_;
   FaviconService* favicon_service_;
 
   scoped_ptr<AndroidHistoryProviderService> service_;

@@ -20,6 +20,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -318,7 +319,8 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
 void ZeroSuggestProvider::Run(const GURL& suggest_url) {
   if (OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial()) {
     most_visited_urls_.clear();
-    history::TopSites* ts = profile_->GetTopSites();
+    scoped_refptr<history::TopSites> ts =
+        TopSitesFactory::GetForProfile(profile_);
     if (ts) {
       waiting_for_most_visited_urls_request_ = true;
       ts->GetMostVisitedURLs(

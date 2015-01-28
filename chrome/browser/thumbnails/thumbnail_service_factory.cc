@@ -5,6 +5,7 @@
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 
 #include "base/logging.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -16,6 +17,7 @@ ThumbnailServiceFactory::ThumbnailServiceFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
           "ThumbnailService",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(TopSitesFactory::GetInstance());
 }
 
 ThumbnailServiceFactory::~ThumbnailServiceFactory() {

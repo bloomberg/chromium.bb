@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/instant_service_observer.h"
@@ -92,7 +93,8 @@ InstantService::InstantService(Profile* profile)
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
 
-  history::TopSites* top_sites = profile_->GetTopSites();
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile_);
   if (top_sites)
     top_sites->AddObserver(this);
 
@@ -158,7 +160,8 @@ void InstantService::RemoveObserver(InstantServiceObserver* observer) {
 }
 
 void InstantService::DeleteMostVisitedItem(const GURL& url) {
-  history::TopSites* top_sites = profile_->GetTopSites();
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile_);
   if (!top_sites)
     return;
 
@@ -166,7 +169,8 @@ void InstantService::DeleteMostVisitedItem(const GURL& url) {
 }
 
 void InstantService::UndoMostVisitedDeletion(const GURL& url) {
-  history::TopSites* top_sites = profile_->GetTopSites();
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile_);
   if (!top_sites)
     return;
 
@@ -174,7 +178,8 @@ void InstantService::UndoMostVisitedDeletion(const GURL& url) {
 }
 
 void InstantService::UndoAllMostVisitedDeletions() {
-  history::TopSites* top_sites = profile_->GetTopSites();
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile_);
   if (!top_sites)
     return;
 
@@ -204,7 +209,8 @@ void InstantService::Shutdown() {
                    instant_io_context_));
   }
 
-  history::TopSites* top_sites = profile_->GetTopSites();
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile_);
   if (top_sites)
     top_sites->RemoveObserver(this);
 
