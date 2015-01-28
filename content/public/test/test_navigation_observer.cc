@@ -46,6 +46,31 @@ class TestNavigationObserver::TestWebContentsObserver
     parent_->OnDidStopLoading(web_contents());
   }
 
+  void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
+                                       const GURL& validated_url,
+                                       bool is_error_page,
+                                       bool is_iframe_srcdoc) override {
+    parent_->OnDidStartProvisionalLoadForFrame(
+        render_frame_host, validated_url, is_error_page, is_iframe_srcdoc);
+  }
+
+  void DidFailProvisionalLoad(
+      RenderFrameHost* render_frame_host,
+      const GURL& validated_url,
+      int error_code,
+      const base::string16& error_description) override {
+    parent_->OnDidFailProvisionalLoad(render_frame_host, validated_url,
+                                      error_code, error_description);
+  }
+
+  void DidCommitProvisionalLoadForFrame(
+      RenderFrameHost* render_frame_host,
+      const GURL& url,
+      ui::PageTransition transition_type) override {
+    parent_->OnDidCommitProvisionalLoadForFrame(
+        render_frame_host, url, transition_type);
+  }
+
   TestNavigationObserver* parent_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
@@ -144,6 +169,31 @@ void TestNavigationObserver::OnDidStopLoading(WebContents* web_contents) {
     navigation_started_ = false;
     message_loop_runner_->Quit();
   }
+}
+
+void TestNavigationObserver::OnDidStartProvisionalLoadForFrame(
+    RenderFrameHost* render_frame_host,
+    const GURL& validated_url,
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
+  last_navigation_succeeded_ = false;
+}
+
+void TestNavigationObserver::OnDidFailProvisionalLoad(
+    RenderFrameHost* render_frame_host,
+    const GURL& validated_url,
+    int error_code,
+    const base::string16& error_description) {
+  last_navigation_url_ = validated_url;
+  last_navigation_succeeded_ = false;
+}
+
+void TestNavigationObserver::OnDidCommitProvisionalLoadForFrame(
+    RenderFrameHost* render_frame_host,
+    const GURL& url,
+    ui::PageTransition transition_type) {
+  last_navigation_url_ = url;
+  last_navigation_succeeded_ = true;
 }
 
 }  // namespace content
