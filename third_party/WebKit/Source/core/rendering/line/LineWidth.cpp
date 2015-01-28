@@ -30,8 +30,8 @@
 #include "config.h"
 #include "core/rendering/line/LineWidth.h"
 
+#include "core/layout/LayoutRubyRun.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderRubyRun.h"
 
 namespace blink {
 
@@ -105,7 +105,7 @@ void LineWidth::commit()
     m_uncommittedWidth = 0;
 }
 
-void LineWidth::applyOverhang(RenderRubyRun* rubyRun, RenderObject* startRenderer, RenderObject* endRenderer)
+void LineWidth::applyOverhang(LayoutRubyRun* rubyRun, RenderObject* startRenderer, RenderObject* endRenderer)
 {
     int startOverhang;
     int endOverhang;

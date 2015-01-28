@@ -11,22 +11,22 @@ layer at (0,0) size 800x600
       RenderBR {BR} at (0,32) size 0x16
       RenderText {#text} at (0,57) size 159x16
         text run at (0,57) width 159: "<ruby> is defined in the "
-      RenderRuby (inline) {RUBY} at (0,0) size 186x16
-        RenderRubyRun (anonymous) at (158.02,57) size 185.70x16
-          RenderRubyText {RT} at (0,-9) size 185.70x9
+      LayoutRuby (inline) {RUBY} at (0,0) size 186x16
+        LayoutRubyRun (anonymous) at (158.02,57) size 185.70x16
+          LayoutRubyText {RT} at (0,-9) size 185.70x9
             RenderText {#text} at (78,0) size 31x9
               text run at (78,0) width 31: "HTML5"
-          RenderRubyBase (anonymous) at (0,0) size 185.70x16
+          LayoutRubyBase (anonymous) at (0,0) size 185.70x16
             RenderText {#text} at (0,0) size 186x16
               text run at (0,0) width 186: "Hypertext Markup Language"
       RenderText {#text} at (343,57) size 32x16
         text run at (343,57) width 32: " and "
-      RenderRuby (inline) {RUBY} at (0,0) size 77x16
-        RenderRubyRun (anonymous) at (370.81,57) size 83.98x16
-          RenderRubyText {RT} at (0,-9) size 83.98x9
+      LayoutRuby (inline) {RUBY} at (0,0) size 77x16
+        LayoutRubyRun (anonymous) at (370.81,57) size 83.98x16
+          LayoutRubyText {RT} at (0,-9) size 83.98x9
             RenderText {#text} at (0,0) size 85x9
               text run at (0,0) width 85: "Cascading Style Sheets"
-          RenderRubyBase (anonymous) at (0,0) size 83.98x16
+          LayoutRubyBase (anonymous) at (0,0) size 83.98x16
             RenderText {#text} at (23,0) size 38x16
               text run at (23,0) width 38: "CSS3"
       RenderText {#text} at (450,57) size 44x16

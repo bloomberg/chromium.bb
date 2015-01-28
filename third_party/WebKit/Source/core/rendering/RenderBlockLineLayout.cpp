@@ -24,13 +24,13 @@
 
 #include "core/dom/AXObjectCache.h"
 #include "core/layout/LayoutCounter.h"
+#include "core/layout/LayoutRubyRun.h"
 #include "core/rendering/BidiRunForLine.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderRegion.h"
-#include "core/rendering/RenderRubyRun.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/TrailingFloatsRootInlineBox.h"
@@ -349,7 +349,7 @@ static void updateLogicalWidthForCenterAlignedBlock(bool isLeftToRightDirection,
         logicalLeft += totalLogicalWidth > availableLogicalWidth ? (availableLogicalWidth - totalLogicalWidth) : (availableLogicalWidth - totalLogicalWidth) / 2 - trailingSpaceWidth;
 }
 
-void RenderBlockFlow::setMarginsForRubyRun(BidiRun* run, RenderRubyRun* renderer, RenderObject* previousObject, const LineInfo& lineInfo)
+void RenderBlockFlow::setMarginsForRubyRun(BidiRun* run, LayoutRubyRun* renderer, RenderObject* previousObject, const LineInfo& lineInfo)
 {
     int startOverhang;
     int endOverhang;
@@ -618,7 +618,7 @@ BidiRun* RenderBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
             if (!r->m_object->isRenderInline()) {
                 RenderBox* renderBox = toRenderBox(r->m_object);
                 if (renderBox->isRubyRun())
-                    setMarginsForRubyRun(r, toRenderRubyRun(renderBox), previousObject, lineInfo);
+                    setMarginsForRubyRun(r, toLayoutRubyRun(renderBox), previousObject, lineInfo);
                 r->m_box->setLogicalWidth(logicalWidthForChild(*renderBox).toFloat());
                 totalLogicalWidth += marginStartForChild(*renderBox) + marginEndForChild(*renderBox);
                 needsWordSpacing = true;

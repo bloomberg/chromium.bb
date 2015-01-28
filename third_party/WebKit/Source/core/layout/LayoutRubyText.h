@@ -28,41 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderRubyBase_h
-#define RenderRubyBase_h
+#ifndef LayoutRubyText_h
+#define LayoutRubyText_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
 namespace blink {
 
-class RenderRubyRun;
-
-class RenderRubyBase final : public RenderBlockFlow {
+class LayoutRubyText final : public RenderBlockFlow {
 public:
-    virtual ~RenderRubyBase();
+    LayoutRubyText(Element*);
+    virtual ~LayoutRubyText();
 
-    static RenderRubyBase* createAnonymous(Document*);
+    virtual const char* renderName() const override { return "LayoutRubyText"; }
 
-    virtual const char* renderName() const override { return "RenderRubyBase (anonymous)"; }
-
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyBase || RenderBlockFlow::isOfType(type); }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyText || RenderBlockFlow::isOfType(type); }
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
 private:
-    RenderRubyBase();
+    virtual bool avoidsFloats() const override;
 
     virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
     virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const override;
-
-    void moveChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);
-    void moveInlineChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);
-    void moveBlockChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);
-
-    // Allow RenderRubyRun to manipulate the children within ruby bases.
-    friend class RenderRubyRun;
 };
 
 } // namespace blink
 
-#endif // RenderRubyBase_h
+#endif // LayoutRubyText_h

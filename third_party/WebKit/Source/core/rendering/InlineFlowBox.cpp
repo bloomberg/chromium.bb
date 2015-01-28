@@ -22,6 +22,9 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
+#include "core/layout/LayoutRubyBase.h"
+#include "core/layout/LayoutRubyRun.h"
+#include "core/layout/LayoutRubyText.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlineFlowBoxPainter.h"
 #include "core/rendering/HitTestResult.h"
@@ -31,9 +34,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderObjectInlines.h"
-#include "core/rendering/RenderRubyBase.h"
-#include "core/rendering/RenderRubyRun.h"
-#include "core/rendering/RenderRubyText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/style/ShadowList.h"
@@ -685,8 +685,8 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
                 else
                     hasAnnotationsAfter = true;
 
-                RenderRubyRun& rubyRun = toRenderRubyRun(curr->renderer());
-                if (RenderRubyBase* rubyBase = rubyRun.rubyBase()) {
+                LayoutRubyRun& rubyRun = toLayoutRubyRun(curr->renderer());
+                if (LayoutRubyBase* rubyBase = rubyRun.rubyBase()) {
                     LayoutUnit bottomRubyBaseLeading = (curr->logicalHeight() - rubyBase->logicalBottom()) + rubyBase->logicalHeight() - (rubyBase->lastRootBox() ? rubyBase->lastRootBox()->lineBottom() : LayoutUnit());
                     LayoutUnit topRubyBaseLeading = rubyBase->logicalTop() + (rubyBase->firstRootBox() ? rubyBase->firstRootBox()->lineTop() : LayoutUnit());
                     newLogicalTop += !renderer().style()->isFlippedLinesWritingMode() ? topRubyBaseLeading : bottomRubyBaseLeading;
@@ -1175,8 +1175,8 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
             result = std::max(result, toInlineFlowBox(curr)->computeOverAnnotationAdjustment(allowedPosition));
 
         if (curr->renderer().isReplaced() && curr->renderer().isRubyRun() && curr->renderer().style()->rubyPosition() == RubyPositionBefore) {
-            RenderRubyRun& rubyRun = toRenderRubyRun(curr->renderer());
-            RenderRubyText* rubyText = rubyRun.rubyText();
+            LayoutRubyRun& rubyRun = toLayoutRubyRun(curr->renderer());
+            LayoutRubyText* rubyText = rubyRun.rubyText();
             if (!rubyText)
                 continue;
 
@@ -1223,8 +1223,8 @@ LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPos
             result = std::max(result, toInlineFlowBox(curr)->computeUnderAnnotationAdjustment(allowedPosition));
 
         if (curr->renderer().isReplaced() && curr->renderer().isRubyRun() && curr->renderer().style()->rubyPosition() == RubyPositionAfter) {
-            RenderRubyRun& rubyRun = toRenderRubyRun(curr->renderer());
-            RenderRubyText* rubyText = rubyRun.rubyText();
+            LayoutRubyRun& rubyRun = toLayoutRubyRun(curr->renderer());
+            LayoutRubyText* rubyText = rubyRun.rubyText();
             if (!rubyText)
                 continue;
 

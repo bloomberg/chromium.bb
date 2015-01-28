@@ -31,25 +31,25 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderRubyText.h"
+#include "core/layout/LayoutRubyText.h"
 
 namespace blink {
 
-RenderRubyText::RenderRubyText(Element* element)
+LayoutRubyText::LayoutRubyText(Element* element)
     : RenderBlockFlow(element)
 {
 }
 
-RenderRubyText::~RenderRubyText()
+LayoutRubyText::~LayoutRubyText()
 {
 }
 
-bool RenderRubyText::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool LayoutRubyText::isChildAllowed(RenderObject* child, RenderStyle*) const
 {
     return child->isInline();
 }
 
-ETextAlign RenderRubyText::textAlignmentForLine(bool endsWithSoftBreak) const
+ETextAlign LayoutRubyText::textAlignmentForLine(bool endsWithSoftBreak) const
 {
     ETextAlign textAlign = style()->textAlign();
     // FIXME: This check is bogus since user can set the initial value.
@@ -60,7 +60,7 @@ ETextAlign RenderRubyText::textAlignmentForLine(bool endsWithSoftBreak) const
     return JUSTIFY;
 }
 
-void RenderRubyText::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const
+void LayoutRubyText::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const
 {
     ETextAlign textAlign = style()->textAlign();
     // FIXME: This check is bogus since user can set the initial value.
@@ -81,7 +81,7 @@ void RenderRubyText::adjustInlineDirectionLineBounds(unsigned expansionOpportuni
     logicalWidth -= inset;
 }
 
-bool RenderRubyText::avoidsFloats() const
+bool LayoutRubyText::avoidsFloats() const
 {
     return true;
 }

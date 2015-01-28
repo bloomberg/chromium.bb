@@ -7,9 +7,9 @@ layer at (0,0) size 800x625 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderBlock {div} at (0,0) size 57x146 [border: (1px solid #FF0000)]
           RenderText {#text} at (2,1) size 53x48
             text run at (2,1) width 48: "\x{70BA}"
-          RenderRuby (inline) {ruby} at (0,0) size 53x48
-            RenderRubyRun (anonymous) at (1,49) size 55x48
-              RenderRubyBase (anonymous) at (0,0) size 55x48
+          LayoutRuby (inline) {ruby} at (0,0) size 53x48
+            LayoutRubyRun (anonymous) at (1,49) size 55x48
+              LayoutRubyBase (anonymous) at (0,0) size 55x48
                 RenderText {#text} at (1,0) size 53x48
                   text run at (1,0) width 48: "\x{6AFB}"
           RenderText {#text} at (2,97) size 53x48
@@ -17,9 +17,9 @@ layer at (0,0) size 800x625 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderBlock {div} at (0,146) size 784x57 [border: (1px solid #008000)]
           RenderText {#text} at (1,2) size 48x53
             text run at (1,2) width 48: "\x{70BA}"
-          RenderRuby (inline) {ruby} at (0,0) size 48x53
-            RenderRubyRun (anonymous) at (49,1) size 48x55
-              RenderRubyBase (anonymous) at (0,0) size 48x55
+          LayoutRuby (inline) {ruby} at (0,0) size 48x53
+            LayoutRubyRun (anonymous) at (49,1) size 48x55
+              LayoutRubyBase (anonymous) at (0,0) size 48x55
                 RenderText {#text} at (0,1) size 48x53
                   text run at (0,1) width 48: "\x{6AFB}"
           RenderText {#text} at (97,2) size 48x53
@@ -28,9 +28,9 @@ layer at (0,0) size 800x625 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderBlock {div} at (0,0) size 57x146 [border: (1px solid #FF0000)]
           RenderText {#text} at (2,1) size 53x48
             text run at (2,1) width 48: "\x{70BA}"
-          RenderRuby (inline) {ruby} at (0,0) size 53x48
-            RenderRubyRun (anonymous) at (1,49) size 55x48
-              RenderRubyBase (anonymous) at (0,0) size 55x48
+          LayoutRuby (inline) {ruby} at (0,0) size 53x48
+            LayoutRubyRun (anonymous) at (1,49) size 55x48
+              LayoutRubyBase (anonymous) at (0,0) size 55x48
                 RenderText {#text} at (1,0) size 53x48
                   text run at (1,0) width 48: "\x{6AFB}"
           RenderText {#text} at (2,97) size 53x48
@@ -38,9 +38,9 @@ layer at (0,0) size 800x625 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderBlock {div} at (0,146) size 784x57 [border: (1px solid #008000)]
           RenderText {#text} at (1,2) size 48x53
             text run at (1,2) width 48: "\x{70BA}"
-          RenderRuby (inline) {ruby} at (0,0) size 48x53
-            RenderRubyRun (anonymous) at (49,1) size 48x55
-              RenderRubyBase (anonymous) at (0,0) size 48x55
+          LayoutRuby (inline) {ruby} at (0,0) size 48x53
+            LayoutRubyRun (anonymous) at (49,1) size 48x55
+              LayoutRubyBase (anonymous) at (0,0) size 48x55
                 RenderText {#text} at (0,1) size 48x53
                   text run at (0,1) width 48: "\x{6AFB}"
           RenderText {#text} at (97,2) size 48x53
@@ -49,9 +49,9 @@ layer at (0,0) size 800x625 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderBlock {div} at (0,0) size 57x146 [border: (1px solid #FF0000)]
           RenderText {#text} at (2,1) size 53x48
             text run at (2,1) width 48: "\x{70BA}"
-          RenderRuby (inline) {ruby} at (0,0) size 53x48
-            RenderRubyRun (anonymous) at (1,49) size 55x48
-              RenderRubyBase (anonymous) at (0,0) size 55x48
+          LayoutRuby (inline) {ruby} at (0,0) size 53x48
+            LayoutRubyRun (anonymous) at (1,49) size 55x48
+              LayoutRubyBase (anonymous) at (0,0) size 55x48
                 RenderText {#text} at (1,0) size 53x48
                   text run at (1,0) width 48: "\x{6AFB}"
           RenderText {#text} at (2,97) size 53x48
@@ -59,9 +59,9 @@ layer at (0,0) size 800x625 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         RenderBlock {div} at (0,146) size 784x57 [border: (1px solid #008000)]
           RenderText {#text} at (1,2) size 48x53
             text run at (1,2) width 48: "\x{70BA}"
-          RenderRuby (inline) {ruby} at (0,0) size 48x53
-            RenderRubyRun (anonymous) at (49,1) size 48x55
-              RenderRubyBase (anonymous) at (0,0) size 48x55
+          LayoutRuby (inline) {ruby} at (0,0) size 48x53
+            LayoutRubyRun (anonymous) at (49,1) size 48x55
+              LayoutRubyBase (anonymous) at (0,0) size 48x55
                 RenderText {#text} at (0,1) size 48x53
                   text run at (0,1) width 48: "\x{6AFB}"
           RenderText {#text} at (97,2) size 48x53

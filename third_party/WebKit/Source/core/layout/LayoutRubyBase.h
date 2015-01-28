@@ -28,54 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderRubyRun_h
-#define RenderRubyRun_h
+#ifndef LayoutRubyBase_h
+#define LayoutRubyBase_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
 namespace blink {
 
-class RenderRubyBase;
-class RenderRubyText;
+class LayoutRubyRun;
 
-// RenderRubyRun are 'inline-block/table' like objects,and wrap a single pairing of a ruby base with its ruby text(s).
-// See RenderRuby.h for further comments on the structure
-
-class RenderRubyRun final : public RenderBlockFlow {
+class LayoutRubyBase final : public RenderBlockFlow {
 public:
-    virtual ~RenderRubyRun();
+    virtual ~LayoutRubyBase();
 
-    bool hasRubyText() const;
-    bool hasRubyBase() const;
-    RenderRubyText* rubyText() const;
-    RenderRubyBase* rubyBase() const;
-    RenderRubyBase* rubyBaseSafe(); // creates the base if it doesn't already exist
+    static LayoutRubyBase* createAnonymous(Document*);
 
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
-    virtual void layout() override;
+    virtual const char* renderName() const override { return "LayoutRubyBase (anonymous)"; }
+
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyBase || RenderBlockFlow::isOfType(type); }
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
-    virtual void removeChild(RenderObject* child) override;
-
-    void getOverhang(bool firstLine, RenderObject* startRenderer, RenderObject* endRenderer, int& startOverhang, int& endOverhang) const;
-
-    static RenderRubyRun* staticCreateRubyRun(const RenderObject* parentRuby);
-
-protected:
-    RenderRubyBase* createRubyBase() const;
 
 private:
-    RenderRubyRun();
+    LayoutRubyBase();
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyRun || RenderBlockFlow::isOfType(type); }
-    virtual const char* renderName() const override { return "RenderRubyRun (anonymous)"; }
-    virtual bool createsAnonymousWrapper() const override { return true; }
-    virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { }
+    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
+    virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const override;
+
+    void moveChildren(LayoutRubyBase* toBase, RenderObject* beforeChild = 0);
+    void moveInlineChildren(LayoutRubyBase* toBase, RenderObject* beforeChild = 0);
+    void moveBlockChildren(LayoutRubyBase* toBase, RenderObject* beforeChild = 0);
+
+    // Allow LayoutRubyRun to manipulate the children within ruby bases.
+    friend class LayoutRubyRun;
 };
-
-DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderRubyRun, isRubyRun());
 
 } // namespace blink
 
-#endif // RenderRubyRun_h
+#endif // LayoutRubyBase_h

@@ -466,9 +466,9 @@ protected:
     mutable unsigned m_hasOnlySelfCollapsingChildren : 1;
     mutable unsigned m_descendantsWithFloatsMarkedForLayout : 1;
 
-    // RenderRubyBase objects need to be able to split and merge, moving their children around
+    // LayoutRubyBase objects need to be able to split and merge, moving their children around
     // (calling moveChildTo, moveAllChildrenTo, and makeChildrenNonInline).
-    friend class RenderRubyBase;
+    friend class LayoutRubyBase;
     // FIXME-BLOCKFLOW: Remove this when the line layout stuff has all moved out of RenderBlock
     friend class LineBreaker;
 

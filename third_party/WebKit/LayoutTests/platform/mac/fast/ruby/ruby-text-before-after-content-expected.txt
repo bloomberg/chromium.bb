@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x80
   RenderBlock {HTML} at (0,0) size 800x80
     RenderBody {BODY} at (16,16) size 768x48 [color=#0000FF]
-      RenderRuby (inline) {RUBY} at (0,0) size 209x32
-        RenderRubyRun (anonymous) at (0,16) size 186.67x32
-          RenderRubyText {RT} at (0,-16) size 186.67x16
+      LayoutRuby (inline) {RUBY} at (0,0) size 209x32
+        LayoutRubyRun (anonymous) at (0,16) size 186.67x32
+          LayoutRubyText {RT} at (0,-16) size 186.67x16
             RenderInline {<pseudo:before>} at (0,0) size 62x16
               RenderTextFragment at (0,0) size 62x16
                 text run at (0,0) width 62: "BEFORE"
@@ -14,11 +14,11 @@ layer at (0,0) size 800x80
             RenderInline {<pseudo:after>} at (0,0) size 52x16
               RenderTextFragment at (136,0) size 52x16
                 text run at (136,0) width 52: "AFTER"
-          RenderRubyBase (anonymous) at (0,0) size 186.67x32
+          LayoutRubyBase (anonymous) at (0,0) size 186.67x32
             RenderText {#text} at (81,0) size 24x32
               text run at (81,0) width 24: "A"
-        RenderRubyRun (anonymous) at (186.67,16) size 21.34x32
-          RenderRubyBase (anonymous) at (0,0) size 21.34x32
+        LayoutRubyRun (anonymous) at (186.67,16) size 21.34x32
+          LayoutRubyBase (anonymous) at (0,0) size 21.34x32
             RenderText {#text} at (0,0) size 22x32
               text run at (0,0) width 22: "B"
       RenderText {#text} at (0,0) size 0x0

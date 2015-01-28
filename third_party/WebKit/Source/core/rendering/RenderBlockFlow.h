@@ -49,7 +49,7 @@ class LineInfo;
 class LineWidth;
 class RenderMultiColumnFlowThread;
 class RenderMultiColumnSpannerPlaceholder;
-class RenderRubyRun;
+class LayoutRubyRun;
 template <class Run> class BidiRunList;
 
 class RenderBlockFlow : public RenderBlock {
@@ -511,7 +511,7 @@ protected:
 private:
     InlineFlowBox* createLineBoxes(RenderObject*, const LineInfo&, InlineBox* childBox);
     RootInlineBox* constructLine(BidiRunList<BidiRun>&, const LineInfo&);
-    void setMarginsForRubyRun(BidiRun*, RenderRubyRun*, RenderObject*, const LineInfo&);
+    void setMarginsForRubyRun(BidiRun*, LayoutRubyRun*, RenderObject*, const LineInfo&);
     void computeInlineDirectionPositionsForLine(RootInlineBox*, const LineInfo&, BidiRun* firstRun, BidiRun* trailingSpaceRun, bool reachedEnd, GlyphOverflowAndFallbackFontsMap&, VerticalPositionCache&, WordMeasurements&);
     BidiRun* computeInlineDirectionPositionsForSegment(RootInlineBox*, const LineInfo&, ETextAlign, float& logicalLeft,
         float& availableLogicalWidth, BidiRun* firstRun, BidiRun* trailingSpaceRun, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache&, WordMeasurements&);

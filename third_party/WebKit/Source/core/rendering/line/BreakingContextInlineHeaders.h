@@ -24,6 +24,7 @@
 #ifndef BreakingContextInlineHeaders_h
 #define BreakingContextInlineHeaders_h
 
+#include "core/layout/LayoutRubyRun.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderCombineText.h"
@@ -31,7 +32,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderObjectInlines.h"
-#include "core/rendering/RenderRubyRun.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/break_lines.h"
 #include "core/rendering/line/LineBreaker.h"
@@ -475,7 +475,7 @@ inline void BreakingContext::handleReplaced()
         m_width.addUncommittedWidth(replacedLogicalWidth.toFloat());
     }
     if (m_current.object()->isRubyRun())
-        m_width.applyOverhang(toRenderRubyRun(m_current.object()), m_lastObject, m_nextObject);
+        m_width.applyOverhang(toLayoutRubyRun(m_current.object()), m_lastObject, m_nextObject);
     // Update prior line break context characters, using U+FFFD (OBJECT REPLACEMENT CHARACTER) for replaced element.
     m_renderTextInfo.m_lineBreakIterator.updatePriorContext(replacementCharacter);
 }

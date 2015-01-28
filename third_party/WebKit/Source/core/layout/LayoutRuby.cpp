@@ -30,16 +30,16 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderRuby.h"
+#include "core/layout/LayoutRuby.h"
 
 #include "core/frame/UseCounter.h"
-#include "core/rendering/RenderRubyRun.h"
+#include "core/layout/LayoutRubyRun.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
-//=== generic helper functions to avoid excessive code duplication ===
+// === generic helper functions to avoid excessive code duplication ===
 
 static inline bool isAnonymousRubyInlineBlock(const RenderObject* object)
 {
@@ -91,43 +91,43 @@ static RenderBlockFlow* createAnonymousRubyInlineBlock(RenderObject* ruby)
     return newBlock;
 }
 
-static RenderRubyRun* lastRubyRun(const RenderObject* ruby)
+static LayoutRubyRun* lastRubyRun(const RenderObject* ruby)
 {
     RenderObject* child = ruby->slowLastChild();
     if (child && !child->isRubyRun())
         child = child->previousSibling();
     ASSERT(!child || child->isRubyRun() || child->isBeforeContent() || child == rubyBeforeBlock(ruby));
-    return child && child->isRubyRun() ? toRenderRubyRun(child) : 0;
+    return child && child->isRubyRun() ? toLayoutRubyRun(child) : 0;
 }
 
-static inline RenderRubyRun* findRubyRunParent(RenderObject* child)
+static inline LayoutRubyRun* findRubyRunParent(RenderObject* child)
 {
     while (child && !child->isRubyRun())
         child = child->parent();
-    return toRenderRubyRun(child);
+    return toLayoutRubyRun(child);
 }
 
-//=== ruby as inline object ===
+// === ruby as inline object ===
 
-RenderRubyAsInline::RenderRubyAsInline(Element* element)
+LayoutRubyAsInline::LayoutRubyAsInline(Element* element)
     : RenderInline(element)
 {
     UseCounter::count(document(), UseCounter::RenderRuby);
 }
 
-RenderRubyAsInline::~RenderRubyAsInline()
+LayoutRubyAsInline::~LayoutRubyAsInline()
 {
 }
 
-void RenderRubyAsInline::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void LayoutRubyAsInline::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderInline::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
 }
 
-void RenderRubyAsInline::addChild(RenderObject* child, RenderObject* beforeChild)
+void LayoutRubyAsInline::addChild(RenderObject* child, RenderObject* beforeChild)
 {
-    // Insert :before and :after content before/after the RenderRubyRun(s)
+    // Insert :before and :after content before/after the LayoutRubyRun(s)
     if (child->isBeforeContent()) {
         if (child->isInline()) {
             // Add generated inline content normally
@@ -172,7 +172,7 @@ void RenderRubyAsInline::addChild(RenderObject* child, RenderObject* beforeChild
             run = run->parent();
         if (run) {
             if (beforeChild == run)
-                beforeChild = toRenderRubyRun(beforeChild)->firstChild();
+                beforeChild = toLayoutRubyRun(beforeChild)->firstChild();
             ASSERT(!beforeChild || beforeChild->isDescendantOf(run));
             run->addChild(child, beforeChild);
             return;
@@ -183,16 +183,16 @@ void RenderRubyAsInline::addChild(RenderObject* child, RenderObject* beforeChild
 
     // If the new child would be appended, try to add the child to the previous run
     // if possible, or create a new run otherwise.
-    // (The RenderRubyRun object will handle the details)
-    RenderRubyRun* lastRun = lastRubyRun(this);
+    // (The LayoutRubyRun object will handle the details)
+    LayoutRubyRun* lastRun = lastRubyRun(this);
     if (!lastRun || lastRun->hasRubyText()) {
-        lastRun = RenderRubyRun::staticCreateRubyRun(this);
+        lastRun = LayoutRubyRun::staticCreateRubyRun(this);
         RenderInline::addChild(lastRun, beforeChild);
     }
     lastRun->addChild(child);
 }
 
-void RenderRubyAsInline::removeChild(RenderObject* child)
+void LayoutRubyAsInline::removeChild(RenderObject* child)
 {
     // If the child's parent is *this (must be a ruby run or generated content or anonymous block),
     // just use the normal remove method.
@@ -211,32 +211,32 @@ void RenderRubyAsInline::removeChild(RenderObject* child)
     }
 
     // Otherwise find the containing run and remove it from there.
-    RenderRubyRun* run = findRubyRunParent(child);
+    LayoutRubyRun* run = findRubyRunParent(child);
     ASSERT(run);
     run->removeChild(child);
 }
 
-//=== ruby as block object ===
+// === ruby as block object ===
 
-RenderRubyAsBlock::RenderRubyAsBlock(Element* element)
+LayoutRubyAsBlock::LayoutRubyAsBlock(Element* element)
     : RenderBlockFlow(element)
 {
     UseCounter::count(document(), UseCounter::RenderRuby);
 }
 
-RenderRubyAsBlock::~RenderRubyAsBlock()
+LayoutRubyAsBlock::~LayoutRubyAsBlock()
 {
 }
 
-void RenderRubyAsBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
+void LayoutRubyAsBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderBlockFlow::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
 }
 
-void RenderRubyAsBlock::addChild(RenderObject* child, RenderObject* beforeChild)
+void LayoutRubyAsBlock::addChild(RenderObject* child, RenderObject* beforeChild)
 {
-    // Insert :before and :after content before/after the RenderRubyRun(s)
+    // Insert :before and :after content before/after the LayoutRubyRun(s)
     if (child->isBeforeContent()) {
         if (child->isInline()) {
             // Add generated inline content normally
@@ -281,7 +281,7 @@ void RenderRubyAsBlock::addChild(RenderObject* child, RenderObject* beforeChild)
             run = run->parent();
         if (run) {
             if (beforeChild == run)
-                beforeChild = toRenderRubyRun(beforeChild)->firstChild();
+                beforeChild = toLayoutRubyRun(beforeChild)->firstChild();
             ASSERT(!beforeChild || beforeChild->isDescendantOf(run));
             run->addChild(child, beforeChild);
             return;
@@ -292,16 +292,16 @@ void RenderRubyAsBlock::addChild(RenderObject* child, RenderObject* beforeChild)
 
     // If the new child would be appended, try to add the child to the previous run
     // if possible, or create a new run otherwise.
-    // (The RenderRubyRun object will handle the details)
-    RenderRubyRun* lastRun = lastRubyRun(this);
+    // (The LayoutRubyRun object will handle the details)
+    LayoutRubyRun* lastRun = lastRubyRun(this);
     if (!lastRun || lastRun->hasRubyText()) {
-        lastRun = RenderRubyRun::staticCreateRubyRun(this);
+        lastRun = LayoutRubyRun::staticCreateRubyRun(this);
         RenderBlockFlow::addChild(lastRun, beforeChild);
     }
     lastRun->addChild(child);
 }
 
-void RenderRubyAsBlock::removeChild(RenderObject* child)
+void LayoutRubyAsBlock::removeChild(RenderObject* child)
 {
     // If the child's parent is *this (must be a ruby run or generated content or anonymous block),
     // just use the normal remove method.
@@ -320,7 +320,7 @@ void RenderRubyAsBlock::removeChild(RenderObject* child)
     }
 
     // Otherwise find the containing run and remove it from there.
-    RenderRubyRun* run = findRubyRunParent(child);
+    LayoutRubyRun* run = findRubyRunParent(child);
     ASSERT(run);
     run->removeChild(child);
 }

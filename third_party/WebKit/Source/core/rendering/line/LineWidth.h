@@ -36,7 +36,7 @@ namespace blink {
 
 class FloatingObject;
 class RenderObject;
-class RenderRubyRun;
+class LayoutRubyRun;
 class RenderBlockFlow;
 
 enum IndentTextOrNot { DoNotIndentText, IndentText };
@@ -64,7 +64,7 @@ public:
     void shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject*);
     void addUncommittedWidth(float delta) { m_uncommittedWidth += delta; }
     void commit();
-    void applyOverhang(RenderRubyRun*, RenderObject* startRenderer, RenderObject* endRenderer);
+    void applyOverhang(LayoutRubyRun*, RenderObject* startRenderer, RenderObject* endRenderer);
     void fitBelowFloats(bool isFirstLine = false);
     void setTrailingWhitespaceWidth(float width) { m_trailingWhitespaceWidth = width; }
 

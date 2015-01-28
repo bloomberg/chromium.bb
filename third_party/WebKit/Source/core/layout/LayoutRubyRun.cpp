@@ -30,57 +30,57 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderRubyRun.h"
+#include "core/layout/LayoutRubyRun.h"
 
-#include "core/rendering/RenderRubyBase.h"
-#include "core/rendering/RenderRubyText.h"
+#include "core/layout/LayoutRubyBase.h"
+#include "core/layout/LayoutRubyText.h"
 #include "core/rendering/RenderText.h"
 
 namespace blink {
 
-RenderRubyRun::RenderRubyRun()
+LayoutRubyRun::LayoutRubyRun()
     : RenderBlockFlow(0)
 {
     setReplaced(true);
     setInline(true);
 }
 
-RenderRubyRun::~RenderRubyRun()
+LayoutRubyRun::~LayoutRubyRun()
 {
 }
 
-bool RenderRubyRun::hasRubyText() const
+bool LayoutRubyRun::hasRubyText() const
 {
     // The only place where a ruby text can be is in the first position
     // Note: As anonymous blocks, ruby runs do not have ':before' or ':after' content themselves.
     return firstChild() && firstChild()->isRubyText();
 }
 
-bool RenderRubyRun::hasRubyBase() const
+bool LayoutRubyRun::hasRubyBase() const
 {
     // The only place where a ruby base can be is in the last position
     // Note: As anonymous blocks, ruby runs do not have ':before' or ':after' content themselves.
     return lastChild() && lastChild()->isRubyBase();
 }
 
-RenderRubyText* RenderRubyRun::rubyText() const
+LayoutRubyText* LayoutRubyRun::rubyText() const
 {
     RenderObject* child = firstChild();
     // If in future it becomes necessary to support floating or positioned ruby text,
     // layout will have to be changed to handle them properly.
     ASSERT(!child || !child->isRubyText() || !child->isFloatingOrOutOfFlowPositioned());
-    return child && child->isRubyText() ? static_cast<RenderRubyText*>(child) : 0;
+    return child && child->isRubyText() ? static_cast<LayoutRubyText*>(child) : 0;
 }
 
-RenderRubyBase* RenderRubyRun::rubyBase() const
+LayoutRubyBase* LayoutRubyRun::rubyBase() const
 {
     RenderObject* child = lastChild();
-    return child && child->isRubyBase() ? static_cast<RenderRubyBase*>(child) : 0;
+    return child && child->isRubyBase() ? static_cast<LayoutRubyBase*>(child) : 0;
 }
 
-RenderRubyBase* RenderRubyRun::rubyBaseSafe()
+LayoutRubyBase* LayoutRubyRun::rubyBaseSafe()
 {
-    RenderRubyBase* base = rubyBase();
+    LayoutRubyBase* base = rubyBase();
     if (!base) {
         base = createRubyBase();
         RenderBlockFlow::addChild(base);
@@ -88,18 +88,18 @@ RenderRubyBase* RenderRubyRun::rubyBaseSafe()
     return base;
 }
 
-bool RenderRubyRun::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool LayoutRubyRun::isChildAllowed(RenderObject* child, RenderStyle*) const
 {
     return child->isRubyText() || child->isInline();
 }
 
-void RenderRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
+void LayoutRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
 {
     ASSERT(child);
 
     if (child->isRubyText()) {
         if (!beforeChild) {
-            // RenderRuby has already ascertained that we can add the child here.
+            // LayoutRuby has already ascertained that we can add the child here.
             ASSERT(!hasRubyText());
             // prepend ruby texts as first child
             RenderBlockFlow::addChild(child, firstChild());
@@ -113,7 +113,7 @@ void RenderRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
             RenderBlock* newRun = staticCreateRubyRun(ruby);
             ruby->addChild(newRun, nextSibling());
             // Add the new ruby text and move the old one to the new run
-            // Note: Doing it in this order and not using RenderRubyRun's methods,
+            // Note: Doing it in this order and not using LayoutRubyRun's methods,
             // in order to avoid automatic removal of the ruby run in case there is no
             // other child besides the old ruby text.
             RenderBlockFlow::addChild(child, beforeChild);
@@ -123,7 +123,7 @@ void RenderRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
             // Insertion before a ruby base object.
             // In this case we need insert a new run before the current one and split the base.
             RenderObject* ruby = parent();
-            RenderRubyRun* newRun = staticCreateRubyRun(ruby);
+            LayoutRubyRun* newRun = staticCreateRubyRun(ruby);
             ruby->addChild(newRun, this);
             newRun->addChild(child);
             rubyBaseSafe()->moveChildren(newRun->rubyBaseSafe(), beforeChild);
@@ -131,7 +131,7 @@ void RenderRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
     } else {
         // child is not a text -> insert it into the base
         // (append it instead if beforeChild is the ruby text)
-        RenderRubyBase* base = rubyBaseSafe();
+        LayoutRubyBase* base = rubyBaseSafe();
         if (beforeChild == base)
             beforeChild = base->firstChild();
         if (beforeChild && beforeChild->isRubyText())
@@ -141,18 +141,18 @@ void RenderRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
     }
 }
 
-void RenderRubyRun::removeChild(RenderObject* child)
+void LayoutRubyRun::removeChild(RenderObject* child)
 {
     // If the child is a ruby text, then merge the ruby base with the base of
     // the right sibling run, if possible.
     if (!beingDestroyed() && !documentBeingDestroyed() && child->isRubyText()) {
-        RenderRubyBase* base = rubyBase();
+        LayoutRubyBase* base = rubyBase();
         RenderObject* rightNeighbour = nextSibling();
         if (base && rightNeighbour && rightNeighbour->isRubyRun()) {
             // Ruby run without a base can happen only at the first run.
-            RenderRubyRun* rightRun = toRenderRubyRun(rightNeighbour);
+            LayoutRubyRun* rightRun = toLayoutRubyRun(rightNeighbour);
             if (rightRun->hasRubyBase()) {
-                RenderRubyBase* rightBase = rightRun->rubyBaseSafe();
+                LayoutRubyBase* rightBase = rightRun->rubyBaseSafe();
                 // Collect all children in a single base, then swap the bases.
                 rightBase->moveChildren(base);
                 moveChildTo(rightRun, base);
@@ -182,29 +182,29 @@ void RenderRubyRun::removeChild(RenderObject* child)
     }
 }
 
-RenderRubyBase* RenderRubyRun::createRubyBase() const
+LayoutRubyBase* LayoutRubyRun::createRubyBase() const
 {
-    RenderRubyBase* renderer = RenderRubyBase::createAnonymous(&document());
+    LayoutRubyBase* layoutObject = LayoutRubyBase::createAnonymous(&document());
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(style(), BLOCK);
     newStyle->setTextAlign(CENTER); // FIXME: use WEBKIT_CENTER?
-    renderer->setStyle(newStyle.release());
-    return renderer;
+    layoutObject->setStyle(newStyle.release());
+    return layoutObject;
 }
 
-RenderRubyRun* RenderRubyRun::staticCreateRubyRun(const RenderObject* parentRuby)
+LayoutRubyRun* LayoutRubyRun::staticCreateRubyRun(const RenderObject* parentRuby)
 {
     ASSERT(parentRuby && parentRuby->isRuby());
-    RenderRubyRun* rr = new RenderRubyRun();
+    LayoutRubyRun* rr = new LayoutRubyRun();
     rr->setDocumentForAnonymous(&parentRuby->document());
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parentRuby->style(), INLINE_BLOCK);
     rr->setStyle(newStyle.release());
     return rr;
 }
 
-RenderObject* RenderRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
+RenderObject* LayoutRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
-    // Don't bother positioning the RenderRubyRun yet.
-    RenderRubyText* rt = rubyText();
+    // Don't bother positioning the LayoutRubyRun yet.
+    LayoutRubyText* rt = rubyText();
     if (!rt)
         return 0;
     if (relayoutChildren)
@@ -213,17 +213,17 @@ RenderObject* RenderRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, S
     return rt;
 }
 
-void RenderRubyRun::layout()
+void LayoutRubyRun::layout()
 {
     RenderBlockFlow::layout();
 
-    RenderRubyText* rt = rubyText();
+    LayoutRubyText* rt = rubyText();
     if (!rt)
         return;
 
     rt->setLogicalLeft(0);
 
-    // Place the RenderRubyText such that its bottom is flush with the lineTop of the first line of the RenderRubyBase.
+    // Place the LayoutRubyText such that its bottom is flush with the lineTop of the first line of the LayoutRubyBase.
     LayoutUnit lastLineRubyTextBottom = rt->logicalHeight();
     LayoutUnit firstLineRubyTextTop = 0;
     RootInlineBox* rootBox = rt->lastRootBox();
@@ -235,7 +235,7 @@ void RenderRubyRun::layout()
 
     if (style()->isFlippedLinesWritingMode() == (style()->rubyPosition() == RubyPositionAfter)) {
         LayoutUnit firstLineTop = 0;
-        if (RenderRubyBase* rb = rubyBase()) {
+        if (LayoutRubyBase* rb = rubyBase()) {
             RootInlineBox* rootBox = rb->firstRootBox();
             if (rootBox)
                 firstLineTop = rootBox->logicalTopLayoutOverflow();
@@ -245,7 +245,7 @@ void RenderRubyRun::layout()
         rt->setLogicalTop(-lastLineRubyTextBottom + firstLineTop);
     } else {
         LayoutUnit lastLineBottom = logicalHeight();
-        if (RenderRubyBase* rb = rubyBase()) {
+        if (LayoutRubyBase* rb = rubyBase()) {
             RootInlineBox* rootBox = rb->lastRootBox();
             if (rootBox)
                 lastLineBottom = rootBox->logicalBottomLayoutOverflow();
@@ -255,19 +255,19 @@ void RenderRubyRun::layout()
         rt->setLogicalTop(-firstLineRubyTextTop + lastLineBottom);
     }
 
-    // Update our overflow to account for the new RenderRubyText position.
+    // Update our overflow to account for the new LayoutRubyText position.
     computeOverflow(clientLogicalBottom());
 }
 
-void RenderRubyRun::getOverhang(bool firstLine, RenderObject* startRenderer, RenderObject* endRenderer, int& startOverhang, int& endOverhang) const
+void LayoutRubyRun::getOverhang(bool firstLine, RenderObject* startRenderer, RenderObject* endRenderer, int& startOverhang, int& endOverhang) const
 {
     ASSERT(!needsLayout());
 
     startOverhang = 0;
     endOverhang = 0;
 
-    RenderRubyBase* rubyBase = this->rubyBase();
-    RenderRubyText* rubyText = this->rubyText();
+    LayoutRubyBase* rubyBase = this->rubyBase();
+    LayoutRubyText* rubyText = this->rubyText();
 
     if (!rubyBase || !rubyText)
         return;

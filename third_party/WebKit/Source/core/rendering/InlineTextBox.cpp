@@ -23,6 +23,8 @@
 #include "config.h"
 #include "core/rendering/InlineTextBox.h"
 
+#include "core/layout/LayoutRubyRun.h"
+#include "core/layout/LayoutRubyText.h"
 #include "core/paint/InlineTextBoxPainter.h"
 #include "core/rendering/AbstractInlineTextBox.h"
 #include "core/rendering/EllipsisBox.h"
@@ -30,8 +32,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderRubyRun.h"
-#include "core/rendering/RenderRubyText.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
 #include "wtf/Vector.h"
@@ -346,7 +346,7 @@ bool InlineTextBox::getEmphasisMarkPosition(RenderStyle* style, TextEmphasisPosi
     if (!containingBlock->parent()->isRubyRun())
         return true; // Cannot get the ruby text.
 
-    RenderRubyText* rubyText = toRenderRubyRun(containingBlock->parent())->rubyText();
+    LayoutRubyText* rubyText = toLayoutRubyRun(containingBlock->parent())->rubyText();
 
     // The emphasis marks over are suppressed only if there is a ruby text box and it not empty.
     return !rubyText || !rubyText->firstLineBox();

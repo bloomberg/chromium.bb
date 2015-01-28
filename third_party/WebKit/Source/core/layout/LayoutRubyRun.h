@@ -28,31 +28,54 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderRubyText_h
-#define RenderRubyText_h
+#ifndef LayoutRubyRun_h
+#define LayoutRubyRun_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
 namespace blink {
 
-class RenderRubyText final : public RenderBlockFlow {
+class LayoutRubyBase;
+class LayoutRubyText;
+
+// LayoutRubyRun are 'inline-block/table' like objects,and wrap a single pairing of a ruby base with its ruby text(s).
+// See LayoutRuby.h for further comments on the structure
+
+class LayoutRubyRun final : public RenderBlockFlow {
 public:
-    RenderRubyText(Element*);
-    virtual ~RenderRubyText();
+    virtual ~LayoutRubyRun();
 
-    virtual const char* renderName() const override { return "RenderRubyText"; }
+    bool hasRubyText() const;
+    bool hasRubyBase() const;
+    LayoutRubyText* rubyText() const;
+    LayoutRubyBase* rubyBase() const;
+    LayoutRubyBase* rubyBaseSafe(); // creates the base if it doesn't already exist
 
-    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyText || RenderBlockFlow::isOfType(type); }
+    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
+    virtual void layout() override;
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
+    virtual void removeChild(RenderObject* child) override;
+
+    void getOverhang(bool firstLine, RenderObject* startRenderer, RenderObject* endRenderer, int& startOverhang, int& endOverhang) const;
+
+    static LayoutRubyRun* staticCreateRubyRun(const RenderObject* parentRuby);
+
+protected:
+    LayoutRubyBase* createRubyBase() const;
 
 private:
-    virtual bool avoidsFloats() const override;
+    LayoutRubyRun();
 
-    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
-    virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const override;
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyRun || RenderBlockFlow::isOfType(type); }
+    virtual const char* renderName() const override { return "LayoutRubyRun (anonymous)"; }
+    virtual bool createsAnonymousWrapper() const override { return true; }
+    virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { }
 };
+
+DEFINE_RENDER_OBJECT_TYPE_CASTS(LayoutRubyRun, isRubyRun());
 
 } // namespace blink
 
-#endif // RenderRubyText_h
+#endif // LayoutRubyRun_h

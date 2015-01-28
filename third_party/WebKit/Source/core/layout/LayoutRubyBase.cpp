@@ -30,34 +30,35 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderRubyBase.h"
-#include "core/rendering/RenderRubyRun.h"
+#include "core/layout/LayoutRubyBase.h"
+
+#include "core/layout/LayoutRubyRun.h"
 
 namespace blink {
 
-RenderRubyBase::RenderRubyBase()
+LayoutRubyBase::LayoutRubyBase()
     : RenderBlockFlow(0)
 {
     setInline(false);
 }
 
-RenderRubyBase::~RenderRubyBase()
+LayoutRubyBase::~LayoutRubyBase()
 {
 }
 
-RenderRubyBase* RenderRubyBase::createAnonymous(Document* document)
+LayoutRubyBase* LayoutRubyBase::createAnonymous(Document* document)
 {
-    RenderRubyBase* renderer = new RenderRubyBase();
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
+    LayoutRubyBase* layoutObject = new LayoutRubyBase();
+    layoutObject->setDocumentForAnonymous(document);
+    return layoutObject;
 }
 
-bool RenderRubyBase::isChildAllowed(RenderObject* child, RenderStyle*) const
+bool LayoutRubyBase::isChildAllowed(RenderObject* child, RenderStyle*) const
 {
     return child->isInline();
 }
 
-void RenderRubyBase::moveChildren(RenderRubyBase* toBase, RenderObject* beforeChild)
+void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase, RenderObject* beforeChild)
 {
     // This function removes all children that are before (!) beforeChild
     // and appends them to toBase.
@@ -75,7 +76,7 @@ void RenderRubyBase::moveChildren(RenderRubyBase* toBase, RenderObject* beforeCh
     toBase->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
-void RenderRubyBase::moveInlineChildren(RenderRubyBase* toBase, RenderObject* beforeChild)
+void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase, RenderObject* beforeChild)
 {
     ASSERT(childrenInline());
     ASSERT_ARG(toBase, toBase);
@@ -91,9 +92,9 @@ void RenderRubyBase::moveInlineChildren(RenderRubyBase* toBase, RenderObject* be
         // We need to wrap the inline objects into an anonymous block.
         // If toBase has a suitable block, we re-use it, otherwise create a new one.
         RenderObject* lastChild = toBase->lastChild();
-        if (lastChild && lastChild->isAnonymousBlock() && lastChild->childrenInline())
+        if (lastChild && lastChild->isAnonymousBlock() && lastChild->childrenInline()) {
             toBlock = toRenderBlock(lastChild);
-        else {
+        } else {
             toBlock = toBase->createAnonymousBlock();
             toBase->children()->appendChildNode(toBase, toBlock);
         }
@@ -102,7 +103,7 @@ void RenderRubyBase::moveInlineChildren(RenderRubyBase* toBase, RenderObject* be
     moveChildrenTo(toBlock, firstChild(), beforeChild);
 }
 
-void RenderRubyBase::moveBlockChildren(RenderRubyBase* toBase, RenderObject* beforeChild)
+void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase, RenderObject* beforeChild)
 {
     ASSERT(!childrenInline());
     ASSERT_ARG(toBase, toBase);
@@ -117,7 +118,7 @@ void RenderRubyBase::moveBlockChildren(RenderRubyBase* toBase, RenderObject* bef
     RenderObject* firstChildHere = firstChild();
     RenderObject* lastChildThere = toBase->lastChild();
     if (firstChildHere->isAnonymousBlock() && firstChildHere->childrenInline()
-            && lastChildThere && lastChildThere->isAnonymousBlock() && lastChildThere->childrenInline()) {
+        && lastChildThere && lastChildThere->isAnonymousBlock() && lastChildThere->childrenInline()) {
         RenderBlock* anonBlockHere = toRenderBlock(firstChildHere);
         RenderBlock* anonBlockThere = toRenderBlock(lastChildThere);
         anonBlockHere->moveAllChildrenTo(anonBlockThere, anonBlockThere->children());
@@ -128,12 +129,12 @@ void RenderRubyBase::moveBlockChildren(RenderRubyBase* toBase, RenderObject* bef
     moveChildrenTo(toBase, firstChild(), beforeChild);
 }
 
-ETextAlign RenderRubyBase::textAlignmentForLine(bool /* endsWithSoftBreak */) const
+ETextAlign LayoutRubyBase::textAlignmentForLine(bool /* endsWithSoftBreak */) const
 {
     return JUSTIFY;
 }
 
-void RenderRubyBase::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const
+void LayoutRubyBase::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const
 {
     int maxPreferredLogicalWidth = this->maxPreferredLogicalWidth();
     if (maxPreferredLogicalWidth >= logicalWidth)

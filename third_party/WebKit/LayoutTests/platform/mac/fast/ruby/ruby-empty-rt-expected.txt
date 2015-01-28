@@ -12,16 +12,16 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,80) size 784x25
         RenderText {#text} at (0,9) size 83x16
           text run at (0,9) width 83: "<ruby> uses "
-        RenderRuby (inline) {RUBY} at (0,0) size 43x16
-          RenderRubyRun (anonymous) at (82.92,9) size 27.81x16
-            RenderRubyText {RT} at (0,-9) size 27.81x9
+        LayoutRuby (inline) {RUBY} at (0,0) size 43x16
+          LayoutRubyRun (anonymous) at (82.92,9) size 27.81x16
+            LayoutRubyText {RT} at (0,-9) size 27.81x9
               RenderText {#text} at (5,0) size 18x9
                 text run at (5,0) width 18: "ruby"
-            RenderRubyBase (anonymous) at (0,0) size 27.81x16
+            LayoutRubyBase (anonymous) at (0,0) size 27.81x16
               RenderText {#text} at (0,0) size 29x16
                 text run at (0,0) width 29: "<rt>"
-          RenderRubyRun (anonymous) at (110.73,23) size 13.48x0
-            RenderRubyText {RT} at (0,-9) size 13.48x9
+          LayoutRubyRun (anonymous) at (110.73,23) size 13.48x0
+            LayoutRubyText {RT} at (0,-9) size 13.48x9
               RenderText {#text} at (0,0) size 14x9
                 text run at (0,0) width 14: "text"
         RenderText {#text} at (124,9) size 167x16

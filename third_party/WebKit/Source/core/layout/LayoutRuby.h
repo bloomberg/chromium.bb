@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderRuby_h
-#define RenderRuby_h
+#ifndef LayoutRuby_h
+#define LayoutRuby_h
 
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
@@ -39,11 +39,11 @@ namespace blink {
 // Following the HTML 5 spec, the box object model for a <ruby> element allows several runs of ruby
 // bases with their respective ruby texts looks as follows:
 //
-// 1 RenderRuby object, corresponding to the whole <ruby> HTML element
-//      1+ RenderRubyRun (anonymous)
-//          0 or 1 RenderRubyText - shuffled to the front in order to re-use existing block layouting
+// 1 LayoutRuby object, corresponding to the whole <ruby> HTML element
+//      1+ LayoutRubyRun (anonymous)
+//          0 or 1 LayoutRubyText - shuffled to the front in order to re-use existing block layouting
 //              0-n inline object(s)
-//          0 or 1 RenderRubyBase - contains the inline objects that make up the ruby base
+//          0 or 1 LayoutRubyBase - contains the inline objects that make up the ruby base
 //              1-n inline object(s)
 //
 // Note: <rp> elements are defined as having 'display:none' and thus normally are not assigned a renderer.
@@ -51,10 +51,10 @@ namespace blink {
 // Generated :before/:after content is shunted into anonymous inline blocks
 
 // <ruby> when used as 'display:inline'
-class RenderRubyAsInline final : public RenderInline {
+class LayoutRubyAsInline final : public RenderInline {
 public:
-    RenderRubyAsInline(Element*);
-    virtual ~RenderRubyAsInline();
+    LayoutRubyAsInline(Element*);
+    virtual ~LayoutRubyAsInline();
 
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
     virtual void removeChild(RenderObject* child) override;
@@ -64,15 +64,15 @@ protected:
 
 private:
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRuby || RenderInline::isOfType(type); }
-    virtual const char* renderName() const override { return "RenderRuby (inline)"; }
+    virtual const char* renderName() const override { return "LayoutRuby (inline)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
 };
 
 // <ruby> when used as 'display:block' or 'display:inline-block'
-class RenderRubyAsBlock final : public RenderBlockFlow {
+class LayoutRubyAsBlock final : public RenderBlockFlow {
 public:
-    RenderRubyAsBlock(Element*);
-    virtual ~RenderRubyAsBlock();
+    LayoutRubyAsBlock(Element*);
+    virtual ~LayoutRubyAsBlock();
 
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
     virtual void removeChild(RenderObject* child) override;
@@ -82,11 +82,11 @@ protected:
 
 private:
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRuby || RenderBlockFlow::isOfType(type); }
-    virtual const char* renderName() const override { return "RenderRuby (block)"; }
+    virtual const char* renderName() const override { return "LayoutRuby (block)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink
 
-#endif // RenderRuby_h
+#endif // LayoutRuby_h
