@@ -192,7 +192,6 @@
       'browser/battery_status/battery_monitor_integration_browsertest.cc',
       'browser/compositor/image_transport_factory_browsertest.cc',
       'browser/bookmarklet_browsertest.cc',
-      'browser/browser_side_navigation_browsertest.cc',
       'browser/child_process_launcher_browsertest.cc',
       'browser/child_process_security_policy_browsertest.cc',
       'browser/cross_site_transfer_browsertest.cc',
