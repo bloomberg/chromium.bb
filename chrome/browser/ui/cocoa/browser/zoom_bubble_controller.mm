@@ -75,6 +75,8 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
 
 @implementation ZoomBubbleController
 
+@synthesize delegate = delegate_;
+
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                   delegate:(ZoomBubbleControllerDelegate*)delegate {
   base::scoped_nsobject<InfoBubbleWindow> window(

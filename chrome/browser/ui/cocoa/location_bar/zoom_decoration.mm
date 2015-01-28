@@ -23,6 +23,7 @@ ZoomDecoration::ZoomDecoration(LocationBarViewMac* owner)
 
 ZoomDecoration::~ZoomDecoration() {
   [bubble_ closeWithoutAnimation];
+  bubble_.delegate = nil;
 }
 
 bool ZoomDecoration::UpdateIfNecessary(
@@ -48,8 +49,8 @@ bool ZoomDecoration::UpdateIfNecessary(
 }
 
 void ZoomDecoration::ShowBubble(BOOL auto_close) {
-  if (bubble_)
-    return;
+  ZoomBubbleController* old_bubble = bubble_;
+  old_bubble.delegate = nil;
 
   content::WebContents* web_contents = owner_->GetWebContents();
   if (!web_contents)
@@ -68,6 +69,9 @@ void ZoomDecoration::ShowBubble(BOOL auto_close) {
   bubble_ = [[ZoomBubbleController alloc] initWithParentWindow:[field window]
                                                       delegate:this];
   [bubble_ showAnchoredAt:anchor autoClose:auto_close];
+
+  [old_bubble.window orderOut:nil];
+  [old_bubble closeWithoutAnimation];
 }
 
 void ZoomDecoration::CloseBubble() {
@@ -138,6 +142,7 @@ content::WebContents* ZoomDecoration::GetWebContents() {
 }
 
 void ZoomDecoration::OnClose() {
+  bubble_.delegate = nil;
   bubble_ = nil;
 
   // If the page is at default zoom then hiding the zoom decoration
