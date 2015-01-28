@@ -84,13 +84,25 @@ class RenderingHelper {
   RenderingHelper();
   ~RenderingHelper();
 
-  static bool InitializeOneOff();
+  // Initialize GL. This method must be called on the rendering
+  // thread.
+  static void InitializeOneOff(base::WaitableEvent* done);
 
-  // Create the render context and windows by the specified dimensions.
+  // Setup the platform window to display test results. This method
+  // must be called on the main thread.
+  void Setup();
+
+  // Tear down the platform window. This method must be called on the
+  // main thread.
+  void TearDown();
+
+  // Create the render context and windows by the specified
+  // dimensions. This method must be called on the rendering thread.
   void Initialize(const RenderingHelperParams& params,
                   base::WaitableEvent* done);
 
-  // Undo the effects of Initialize() and signal |*done|.
+  // Undo the effects of Initialize() and signal |*done|. This method
+  // must be called on the rendering thread.
   void UnInitialize(base::WaitableEvent* done);
 
   // Return a newly-created GLES2 texture id of the specified size, and

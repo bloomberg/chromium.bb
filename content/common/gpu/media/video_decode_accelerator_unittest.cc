@@ -72,6 +72,10 @@
 #error The VideoAccelerator tests are not supported on this platform.
 #endif  // OS_WIN
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif  // defined(USE_OZONE)
+
 using media::VideoDecodeAccelerator;
 
 namespace content {
@@ -114,6 +118,10 @@ int g_rendering_warm_up = 0;
 // values for |num_play_throughs|. This setting will override the value. A
 // special value "0" means no override.
 int g_num_play_throughs = 0;
+
+// Environment to store rendering thread.
+class VideoDecodeAcceleratorTestEnvironment;
+VideoDecodeAcceleratorTestEnvironment* g_env;
 
 // Magic constants for differentiating the reasons for NotifyResetDone being
 // called.
@@ -201,6 +209,34 @@ enum ClientState {
   CS_ERROR = 7,
   CS_DESTROYED = 8,
   CS_MAX,  // Must be last entry.
+};
+
+// Initialize the GPU thread for rendering. We only need to setup once
+// for all test cases.
+class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
+ public:
+  VideoDecodeAcceleratorTestEnvironment()
+      : rendering_thread_("GLRenderingVDAClientThread") {}
+
+  void SetUp() override {
+    rendering_thread_.Start();
+
+    base::WaitableEvent done(false, false);
+    rendering_thread_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&RenderingHelper::InitializeOneOff, &done));
+    done.Wait();
+  }
+
+  void TearDown() override { rendering_thread_.Stop(); }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetRenderingTaskRunner() const {
+    return rendering_thread_.task_runner();
+  }
+
+ private:
+  base::Thread rendering_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoDecodeAcceleratorTestEnvironment);
 };
 
 // A helper class used to manage the lifetime of a Texture.
@@ -941,52 +977,33 @@ class VideoDecodeAcceleratorTest : public ::testing::Test {
 
   std::vector<TestVideoFile*> test_video_files_;
   RenderingHelper rendering_helper_;
-  scoped_refptr<base::MessageLoopProxy> rendering_loop_proxy_;
 
  private:
-  base::Thread rendering_thread_;
   // Required for Thread to work.  Not used otherwise.
   base::ShadowingAtExitManager at_exit_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeAcceleratorTest);
 };
 
-VideoDecodeAcceleratorTest::VideoDecodeAcceleratorTest()
-    : rendering_thread_("GLRenderingVDAClientThread") {}
+VideoDecodeAcceleratorTest::VideoDecodeAcceleratorTest() {
+}
 
 void VideoDecodeAcceleratorTest::SetUp() {
   ParseAndReadTestVideoData(g_test_video_data, &test_video_files_);
-
-  // Initialize the rendering thread.
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
-#if defined(OS_WIN) || defined(USE_OZONE)
-  // For windows the decoding thread initializes the media foundation decoder
-  // which uses COM. We need the thread to be a UI thread.
-  // On Ozone, the backend initializes the event system using a UI
-  // thread.
-  options.message_loop_type = base::MessageLoop::TYPE_UI;
-#endif  // OS_WIN || USE_OZONE
-
-  rendering_thread_.StartWithOptions(options);
-  rendering_loop_proxy_ = rendering_thread_.message_loop_proxy();
 }
 
 void VideoDecodeAcceleratorTest::TearDown() {
-  rendering_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&STLDeleteElements<std::vector<TestVideoFile*> >,
-                 &test_video_files_));
+  g_env->GetRenderingTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&STLDeleteElements<std::vector<TestVideoFile*>>,
+                            &test_video_files_));
 
   base::WaitableEvent done(false, false);
-  rendering_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&RenderingHelper::UnInitialize,
-                 base::Unretained(&rendering_helper_),
-                 &done));
+  g_env->GetRenderingTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&RenderingHelper::UnInitialize,
+                            base::Unretained(&rendering_helper_), &done));
   done.Wait();
 
-  rendering_thread_.Stop();
+  rendering_helper_.TearDown();
 }
 
 void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
@@ -1054,23 +1071,22 @@ void VideoDecodeAcceleratorTest::UpdateTestVideoFileParams(
 
 void VideoDecodeAcceleratorTest::InitializeRenderingHelper(
     const RenderingHelperParams& helper_params) {
+  rendering_helper_.Setup();
+
   base::WaitableEvent done(false, false);
-  rendering_loop_proxy_->PostTask(
+  g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&RenderingHelper::Initialize,
-                 base::Unretained(&rendering_helper_),
-                 helper_params,
-                 &done));
+                 base::Unretained(&rendering_helper_), helper_params, &done));
   done.Wait();
 }
 
 void VideoDecodeAcceleratorTest::CreateAndStartDecoder(
     GLRenderingVDAClient* client,
     ClientStateNotification<ClientState>* note) {
-  rendering_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&GLRenderingVDAClient::CreateAndStartDecoder,
-                 base::Unretained(client)));
+  g_env->GetRenderingTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&GLRenderingVDAClient::CreateAndStartDecoder,
+                            base::Unretained(client)));
   ASSERT_EQ(note->Wait(), CS_DECODER_SET);
 }
 
@@ -1084,7 +1100,7 @@ void VideoDecodeAcceleratorTest::WaitUntilDecodeFinish(
 
 void VideoDecodeAcceleratorTest::WaitUntilIdle() {
   base::WaitableEvent done(false, false);
-  rendering_loop_proxy_->PostTask(
+  g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
@@ -1299,11 +1315,10 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     std::vector<unsigned char> rgb;
     bool alpha_solid;
     base::WaitableEvent done(false, false);
-    rendering_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&RenderingHelper::GetThumbnailsAsRGB,
-                 base::Unretained(&rendering_helper_),
-                 &rgb, &alpha_solid, &done));
+    g_env->GetRenderingTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&RenderingHelper::GetThumbnailsAsRGB,
+                              base::Unretained(&rendering_helper_), &rgb,
+                              &alpha_solid, &done));
     done.Wait();
 
     std::vector<std::string> golden_md5s;
@@ -1349,14 +1364,14 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     }
   }
 
-  rendering_loop_proxy_->PostTask(
+  g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&STLDeleteElements<std::vector<GLRenderingVDAClient*> >,
+      base::Bind(&STLDeleteElements<std::vector<GLRenderingVDAClient*>>,
                  &clients));
-  rendering_loop_proxy_->PostTask(
+  g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&STLDeleteElements<
-                      std::vector<ClientStateNotification<ClientState>*> >,
+                     std::vector<ClientStateNotification<ClientState>*>>,
                  &notes));
   WaitUntilIdle();
 };
@@ -1479,8 +1494,8 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
   if (g_output_log != NULL)
     OutputLogFile(g_output_log, output_string);
 
-  rendering_loop_proxy_->DeleteSoon(FROM_HERE, client);
-  rendering_loop_proxy_->DeleteSoon(FROM_HERE, note);
+  g_env->GetRenderingTaskRunner()->DeleteSoon(FROM_HERE, client);
+  g_env->GetRenderingTaskRunner()->DeleteSoon(FROM_HERE, note);
   WaitUntilIdle();
 };
 
@@ -1548,8 +1563,24 @@ int main(int argc, char **argv) {
   }
 
   base::ShadowingAtExitManager at_exit_manager;
+#if defined(OS_WIN) || defined(USE_OZONE)
+  // For windows the decoding thread initializes the media foundation decoder
+  // which uses COM. We need the thread to be a UI thread.
+  // On Ozone, the backend initializes the event system using a UI
+  // thread.
+  base::MessageLoopForUI main_loop;
+#else
   base::MessageLoop main_loop;
-  content::RenderingHelper::InitializeOneOff();
+#endif  // OS_WIN || USE_OZONE
+
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitializeForUI();
+#endif
+
+  content::g_env =
+      reinterpret_cast<content::VideoDecodeAcceleratorTestEnvironment*>(
+          testing::AddGlobalTestEnvironment(
+              new content::VideoDecodeAcceleratorTestEnvironment()));
 
   return RUN_ALL_TESTS();
 }

@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
@@ -69,6 +70,30 @@ static void CreateShader(GLuint program,
 namespace content {
 
 #if defined(USE_OZONE)
+
+class DisplayConfiguratorObserver : public ui::DisplayConfigurator::Observer {
+ public:
+  DisplayConfiguratorObserver(base::RunLoop* loop) : loop_(loop) {}
+  ~DisplayConfiguratorObserver() override {}
+
+ private:
+  // ui::DisplayConfigurator::Observer overrides:
+  void OnDisplayModeChanged(
+      const ui::DisplayConfigurator::DisplayStateList& outputs) override {
+    if (!loop_)
+      return;
+    loop_->Quit();
+    loop_ = nullptr;
+  }
+  void OnDisplayModeChangeFailed(
+      ui::MultipleDisplayState failed_new_state) override {
+    LOG(FATAL) << "Could not configure display";
+  }
+
+  base::RunLoop* loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayConfiguratorObserver);
+};
 
 class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
  public:
@@ -143,7 +168,7 @@ RenderingHelper::RenderedVideo::~RenderedVideo() {
 }
 
 // static
-bool RenderingHelper::InitializeOneOff() {
+void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 #if GL_VARIANT_GLX
   cmd_line->AppendSwitchASCII(switches::kUseGL,
@@ -151,10 +176,10 @@ bool RenderingHelper::InitializeOneOff() {
 #else
   cmd_line->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
 #endif
-#if defined(USE_OZONE)
-  ui::OzonePlatform::InitializeForUI();
-#endif
-  return gfx::GLSurface::InitializeOneOff();
+
+  if (!gfx::GLSurface::InitializeOneOff())
+    LOG(FATAL) << "Could not initialize GL";
+  done->Signal();
 }
 
 RenderingHelper::RenderingHelper() {
@@ -167,26 +192,7 @@ RenderingHelper::~RenderingHelper() {
   Clear();
 }
 
-void RenderingHelper::Initialize(const RenderingHelperParams& params,
-                                 base::WaitableEvent* done) {
-  // Use videos_.size() != 0 as a proxy for the class having already been
-  // Initialize()'d, and UnInitialize() before continuing.
-  if (videos_.size()) {
-    base::WaitableEvent done(false, false);
-    UnInitialize(&done);
-    done.Wait();
-  }
-
-  render_task_.Reset(
-      base::Bind(&RenderingHelper::RenderContent, base::Unretained(this)));
-
-  frame_duration_ = params.rendering_fps > 0
-                        ? base::TimeDelta::FromSeconds(1) / params.rendering_fps
-                        : base::TimeDelta();
-
-  render_as_thumbnails_ = params.render_as_thumbnails;
-  message_loop_ = base::MessageLoop::current();
-
+void RenderingHelper::Setup() {
 #if defined(OS_WIN)
   window_ = CreateWindowEx(0,
                            L"Static",
@@ -229,21 +235,85 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   XSelectInput(display, window_, ExposureMask);
   XMapWindow(display, window_);
 #elif defined(USE_OZONE)
+  base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+      base::MessageLoop::current());
+  base::RunLoop wait_window_resize;
+
   platform_window_delegate_.reset(new RenderingHelper::StubOzoneDelegate());
   window_ = platform_window_delegate_->accelerated_widget();
 #if defined(OS_CHROMEOS)
+  // We hold onto the main loop here to wait for the DisplayController
+  // to give us the size of the display so we can create a window of
+  // the same size.
+  base::RunLoop wait_display_setup;
+  DisplayConfiguratorObserver display_setup_observer(&wait_display_setup);
   display_configurator_.reset(new ui::DisplayConfigurator());
+  display_configurator_->AddObserver(&display_setup_observer);
   display_configurator_->Init(true);
   display_configurator_->ForceInitialConfigure(0);
+  // Make sure all the display configuration is applied.
+  wait_display_setup.Run();
+  display_configurator_->RemoveObserver(&display_setup_observer);
+
   platform_window_delegate_->platform_window()->SetBounds(
       gfx::Rect(display_configurator_->framebuffer_size()));
 #else
   platform_window_delegate_->platform_window()->SetBounds(gfx::Rect(800, 600));
 #endif
+
+  // On Ozone/DRI, platform windows are associated with the physical
+  // outputs. Association is achieved by matching the bounds of the
+  // window with the origin & modeset of the display output. Until a
+  // window is associated with a display output, we cannot get vsync
+  // events, because there is no hardware to get events from. Here we
+  // wait for the window to resized and therefore associated with
+  // display output to be sure that we will get such events.
+  wait_window_resize.RunUntilIdle();
 #else
 #error unknown platform
 #endif
   CHECK(window_ != gfx::kNullAcceleratedWidget);
+}
+
+void RenderingHelper::TearDown() {
+#if defined(OS_WIN)
+  if (window_)
+    DestroyWindow(window_);
+#elif defined(USE_X11)
+  // Destroy resources acquired in Initialize, in reverse-acquisition order.
+  if (window_) {
+    CHECK(XUnmapWindow(gfx::GetXDisplay(), window_));
+    CHECK(XDestroyWindow(gfx::GetXDisplay(), window_));
+  }
+#elif defined(USE_OZONE)
+  platform_window_delegate_.reset();
+#if defined(OS_CHROMEOS)
+  display_configurator_->PrepareForExit();
+  display_configurator_.reset();
+#endif
+#endif
+  window_ = gfx::kNullAcceleratedWidget;
+}
+
+void RenderingHelper::Initialize(const RenderingHelperParams& params,
+                                 base::WaitableEvent* done) {
+  // Use videos_.size() != 0 as a proxy for the class having already been
+  // Initialize()'d, and UnInitialize() before continuing.
+  if (videos_.size()) {
+    base::WaitableEvent done(false, false);
+    UnInitialize(&done);
+    done.Wait();
+  }
+
+  render_task_.Reset(
+      base::Bind(&RenderingHelper::RenderContent, base::Unretained(this)));
+
+  frame_duration_ = params.rendering_fps > 0
+                        ? base::TimeDelta::FromSeconds(1) / params.rendering_fps
+                        : base::TimeDelta();
+
+  render_as_thumbnails_ = params.render_as_thumbnails;
+  message_loop_ = base::MessageLoop::current();
 
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(window_);
   screen_size_ = gl_surface_->GetSize();
@@ -429,11 +499,6 @@ void RenderingHelper::WarmUpRendering(int warm_up_iterations) {
 void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
 
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
-  display_configurator_->PrepareForExit();
-  display_configurator_.reset();
-#endif
-
   render_task_.Cancel();
 
   if (render_as_thumbnails_) {
@@ -578,20 +643,6 @@ void RenderingHelper::Clear() {
   frame_count_ = 0;
   thumbnails_fbo_id_ = 0;
   thumbnails_texture_id_ = 0;
-
-#if defined(OS_WIN)
-  if (window_)
-    DestroyWindow(window_);
-#elif defined(USE_X11)
-  // Destroy resources acquired in Initialize, in reverse-acquisition order.
-  if (window_) {
-    CHECK(XUnmapWindow(gfx::GetXDisplay(), window_));
-    CHECK(XDestroyWindow(gfx::GetXDisplay(), window_));
-  }
-#elif defined(USE_OZONE)
-  platform_window_delegate_.reset();
-#endif
-  window_ = gfx::kNullAcceleratedWidget;
 }
 
 void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
