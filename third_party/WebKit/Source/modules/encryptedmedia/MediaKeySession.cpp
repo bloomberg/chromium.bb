@@ -117,6 +117,23 @@ static bool isValidSessionId(const String& sessionId)
     return true;
 }
 
+static String ConvertKeyStatusToString(const WebEncryptedMediaKeyInformation::KeyStatus status)
+{
+    switch (status) {
+    case WebEncryptedMediaKeyInformation::KeyStatus::Usable:
+        return "usable";
+    case WebEncryptedMediaKeyInformation::KeyStatus::Expired:
+        return "expired";
+    case WebEncryptedMediaKeyInformation::KeyStatus::OutputNotAllowed:
+        return "output-not-allowed";
+    case WebEncryptedMediaKeyInformation::KeyStatus::InternalError:
+        return "internal-error";
+    }
+
+    ASSERT_NOT_REACHED();
+    return "internal-error";
+}
+
 // A class holding a pending action.
 class MediaKeySession::PendingAction : public GarbageCollectedFinalized<MediaKeySession::PendingAction> {
 public:
@@ -318,6 +335,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
     , m_mediaKeys(mediaKeys)
     , m_sessionType(sessionType)
     , m_expiration(std::numeric_limits<double>::quiet_NaN())
+    , m_keyStatusesMap(new MediaKeyStatusMap())
     , m_isUninitialized(true)
     , m_isCallable(false)
     , m_isClosed(false)
@@ -373,6 +391,11 @@ String MediaKeySession::sessionId() const
 ScriptPromise MediaKeySession::closed(ScriptState* scriptState)
 {
     return m_closedPromise->promise(scriptState->world());
+}
+
+MediaKeyStatusMap* MediaKeySession::keyStatuses()
+{
+    return m_keyStatusesMap;
 }
 
 ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, const DOMArrayPiece& initData)
@@ -858,7 +881,7 @@ void MediaKeySession::expirationChanged(double updatedExpiryTimeInMS)
 
 void MediaKeySession::keysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>& keys, bool hasAdditionalUsableKey)
 {
-    WTF_LOG(Media, "MediaKeySession(%p)::keysChange with %zu keys and usable key: %d", this, keys.size(), hasAdditionalUsableKey);
+    WTF_LOG(Media, "MediaKeySession(%p)::keysStatusesChange with %zu keys and usable key: %d", this, keys.size(), hasAdditionalUsableKey);
 
     RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::keystatuseschange);
     event->setTarget(this);
@@ -867,8 +890,11 @@ void MediaKeySession::keysStatusesChange(const WebVector<WebEncryptedMediaKeyInf
     // FIXME: Attempt to resume playback if |hasAdditionalUsableKey| is true.
     // http://crbug.com/413413
 
-    // FIXME: Copy |keys| or whatever is necessary for the keyStatuses attribute.
-    // http://crbug.com/432671
+    m_keyStatusesMap->clear();
+    for (size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        m_keyStatusesMap->addEntry(key.id(), ConvertKeyStatusToString(key.status()));
+    }
 }
 
 const AtomicString& MediaKeySession::interfaceName() const
@@ -914,6 +940,7 @@ void MediaKeySession::trace(Visitor* visitor)
     visitor->trace(m_asyncEventQueue);
     visitor->trace(m_pendingActions);
     visitor->trace(m_mediaKeys);
+    visitor->trace(m_keyStatusesMap);
     visitor->trace(m_closedPromise);
     RefCountedGarbageCollectedEventTargetWithInlineData<MediaKeySession>::trace(visitor);
     ActiveDOMObject::trace(visitor);

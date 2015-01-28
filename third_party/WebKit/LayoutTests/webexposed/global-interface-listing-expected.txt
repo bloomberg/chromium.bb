@@ -1185,6 +1185,13 @@ interface MediaKeySession
     method load
     method remove
     method update
+interface MediaKeyStatusMap
+    method constructor
+    method entries
+    method get
+    method has
+    method keys
+    method values
 interface MediaKeySystemAccess
     method constructor
     method createMediaKeys

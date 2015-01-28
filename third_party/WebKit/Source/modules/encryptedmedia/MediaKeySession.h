@@ -31,6 +31,7 @@
 #include "core/dom/DOMArrayPiece.h"
 #include "core/dom/DOMException.h"
 #include "modules/EventTargetModules.h"
+#include "modules/encryptedmedia/MediaKeyStatusMap.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
@@ -68,6 +69,7 @@ public:
     String sessionId() const;
     double expiration() const { return m_expiration; }
     ScriptPromise closed(ScriptState*);
+    MediaKeyStatusMap* keyStatuses();
 
     ScriptPromise generateRequest(ScriptState*, const String& initDataType, const DOMArrayPiece& initData);
     ScriptPromise load(ScriptState*, const String& sessionId);
@@ -120,6 +122,7 @@ private:
     // Session properties.
     String m_sessionType;
     double m_expiration;
+    Member<MediaKeyStatusMap> m_keyStatusesMap;
 
     // Session states.
     bool m_isUninitialized;

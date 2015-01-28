@@ -102,6 +102,13 @@ function stringToUint8Array(str)
     return result;
 }
 
+function arrayBufferAsString(buffer)
+{
+    // MediaKeySession.keyStatuses iterators return an ArrayBuffer,
+    // so convert it into a printable string.
+    return String.fromCharCode.apply(null, new Uint8Array(buffer));
+}
+
 // Encodes data into base64 string without trailing '='.
 function base64Encode(data)
 {

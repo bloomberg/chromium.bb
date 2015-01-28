@@ -1,0 +1,18 @@
+EVENT(message)
+EVENT(keystatuseschange)
+for (var entry of keyStatuses)
+123, usable
+4567890, usable
+for (var key of keyStatuses.keys())
+123
+4567890
+for (var value of keyStatuses.values())
+usable
+usable
+for (var entry of keyStatuses.entries())
+123, usable
+4567890, usable
+This is a testharness.js-based test.
+PASS Verify MediaKeySession.keyStatuses. 
+Harness: the test ran to completion.
+
