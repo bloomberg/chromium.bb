@@ -311,7 +311,7 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
             if (isDuplicate) {
               // If the given file is a duplicate, don't import it again.  Just
               // update the progress indicator.
-              // TODO(kenobi): Update import history to mark the dupe as sync'd.
+              this.markAsImported_(entry);
               this.processedBytes_ += entry.size;
               this.notify(importer.TaskQueue.UpdateType.PROGRESS);
               return Promise.resolve();
@@ -424,6 +424,22 @@ importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
             entry,
             importer.Destination.GOOGLE_DRIVE,
             destinationUrl);
+      });
+};
+
+/**
+ * @param {!FileEntry} entry
+ * @param {!DirectoryEntry} destination
+ */
+importer.MediaImportHandler.ImportTask.prototype.markAsImported_ =
+    function(entry) {
+  this.remainingFilesCount_--;
+  this.historyLoader_.getHistory().then(
+      /** @param {!importer.ImportHistory} history */
+      function(history) {
+        history.markImported(
+            entry,
+            importer.Destination.GOOGLE_DRIVE);
       });
 };
 

@@ -201,6 +201,65 @@ function testImportCancellation(callback) {
   scanResult.finalize();
 }
 
+function testImportWithDuplicates(callback) {
+  var media = setupFileSystem([
+    '/DCIM/photos0/IMG00001.jpg',
+    '/DCIM/photos0/IMG00002.jpg',
+    '/DCIM/photos0/IMG00003.jpg',
+    '/DCIM/photos1/IMG00004.jpg',
+    '/DCIM/photos1/IMG00005.jpg',
+    '/DCIM/photos1/IMG00006.jpg'
+  ]);
+
+  /** @const {number} */
+  var EXPECTED_COPY_COUNT = 3;
+
+  var scanResult = new TestScanResult(media);
+  var importTask =
+      mediaImporter.importFromScanResult(scanResult, destinationFactory);
+  var whenImportDone = new Promise(
+      function(resolve, reject) {
+        importTask.addObserver(
+            /**
+             * @param {!importer.TaskQueue.UpdateType} updateType
+             * @param {!importer.TaskQueue.Task} task
+             */
+            function(updateType, task) {
+              switch (updateType) {
+                case importer.TaskQueue.UpdateType.SUCCESS:
+                  resolve();
+                  break;
+                case importer.TaskQueue.UpdateType.ERROR:
+                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+                  break;
+              }
+            });
+      });
+
+  // Simulate a known number of new imports followed by a bunch of duplicate
+  // imports.
+  var copyCount = 0;
+  importTask.addObserver(function(updateType) {
+    if (updateType ===
+        importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED) {
+      copyCount++;
+      if (copyCount === EXPECTED_COPY_COUNT) {
+        duplicateFinder.returnValue = true;
+      }
+    }
+  });
+
+  reportPromise(
+      whenImportDone.then(
+        function() {
+          var copiedEntries = destinationFileSystem.root.getAllChildren();
+          assertEquals(EXPECTED_COPY_COUNT, copiedEntries.length);
+        }),
+      callback);
+
+  scanResult.finalize();
+}
+
 /**
  * @param {!Array.<string>} fileNames
  * @return {!Array.<!Entry>}

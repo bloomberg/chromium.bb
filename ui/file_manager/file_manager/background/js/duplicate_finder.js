@@ -26,26 +26,97 @@ importer.DuplicateFinder.prototype.checkDuplicate;
  * @implements {importer.DuplicateFinder}
  * @struct
  */
-importer.DriveDuplicateFinder = function() {};
+importer.DriveDuplicateFinder = function() {
+  /** @private {Promise<string>} */
+  this.driveIdPromise_ = null;
+};
 
 /** @override */
 importer.DriveDuplicateFinder.prototype.checkDuplicate = function(entry) {
-  // TODO(kenobi): Implement content hash deduplication.
-  return Promise.resolve(false);
+  return importer.DriveDuplicateFinder.computeHash_(entry)
+      .then(this.findByHash_.bind(this))
+      .then(
+          /**
+           * @param {!Array<string>} urls
+           * @return {boolean}
+           */
+          function(urls) {
+            return urls.length > 0;
+          });
 };
 
 /**
- * A duplicate finder for testing.  Allows the return value to be set.
- * @constructor
- * @implements {importer.DuplicateFinder}
- * @struct
+ * Computes the content hash for the given file entry.
+ * @param {!FileEntry} entry
+ * @private
  */
-importer.TestDuplicateFinder = function() {
-  /** @type {boolean} */
-  this.returnValue = false;
+importer.DriveDuplicateFinder.computeHash_ = function(entry) {
+  return new Promise(
+      function(resolve, reject) {
+        chrome.fileManagerPrivate.computeChecksum(
+            entry.toURL(),
+            /** @param {string} result The content hash. */
+            function(result) {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+              } else {
+                resolve(result);
+              }
+            });
+      });
 };
 
-/** @override */
-importer.TestDuplicateFinder.prototype.checkDuplicate = function(entry) {
-  return Promise.resolve(this.returnValue);
+/**
+ * Finds files with content hashes matching the given hash.
+ * @param {string} hash The content hash of the file to find.
+ * @return {!Promise<Array<string>>} The URLs of the found files.  If there are
+ *     no matches, the list will be empty.
+ * @private
+ */
+importer.DriveDuplicateFinder.prototype.findByHash_ = function(hash) {
+  return this.getDriveId_()
+      .then(importer.DriveDuplicateFinder.searchFilesByHash_.bind(null, hash));
+};
+
+/**
+ * @return {!Promise<string>} ID of the user's Drive volume.
+ * @private
+ */
+importer.DriveDuplicateFinder.prototype.getDriveId_ = function() {
+  if (!this.driveIdPromise_) {
+    this.driveIdPromise_ = VolumeManager.getInstance()
+        .then(
+            /**
+             * @param {!VolumeManager} volumeManager
+             * @return {string} ID of the user's Drive volume.
+             */
+            function(volumeManager) {
+              return volumeManager.getCurrentProfileVolumeInfo(
+                  VolumeManagerCommon.VolumeType.DRIVE).volumeId;
+            });
+  }
+  return this.driveIdPromise_;
+};
+
+/**
+ * A promise-based wrapper for chrome.fileManagerPrivate.searchFilesByHashes.
+ * @param {string} hash The content hash to search for.
+ * @param {string} volumeId The volume to search.
+ * @return <!Promise<Array<string>>> A list of file URLs.
+ */
+importer.DriveDuplicateFinder.searchFilesByHash_ = function(hash, volumeId) {
+  return new Promise(
+      function(resolve, reject) {
+        chrome.fileManagerPrivate.searchFilesByHashes(
+            volumeId,
+            [hash],
+            /** @param {!Object<string, Array<string>>} urls */
+            function(urls) {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+              } else {
+                resolve(urls[hash]);
+              }
+            });
+      });
 };
