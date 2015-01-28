@@ -11,7 +11,7 @@
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
-#include "core/paint/TransformRecorder.h"
+#include "core/paint/Transform3DRecorder.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/PaintInfo.h"
@@ -23,7 +23,7 @@
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/graphics/paint/TransformDisplayItem.h"
+#include "platform/graphics/paint/Transform3DDisplayItem.h"
 
 namespace blink {
 
@@ -393,7 +393,7 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
     transform.translateRight(roundedDelta.x(), roundedDelta.y());
     LayoutSize adjustedSubPixelAccumulation = paintingInfo.subPixelAccumulation + (delta - roundedDelta);
 
-    TransformRecorder transformRecorder(*context, m_renderLayer.renderer()->displayItemClient(), transform.toAffineTransform());
+    Transform3DRecorder transform3DRecorder(*context, m_renderLayer.renderer()->displayItemClient(), transform);
 
     // Now do a paint with the root layer shifted to be us.
     LayerPaintingInfo transformedPaintingInfo(&m_renderLayer, enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect)), paintingInfo.paintBehavior,

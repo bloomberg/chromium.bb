@@ -1645,6 +1645,8 @@
             'paint/TableSectionPainter.h',
             'paint/TextPainter.cpp',
             'paint/TextPainter.h',
+            'paint/Transform3DRecorder.cpp',
+            'paint/Transform3DRecorder.h',
             'paint/TransformRecorder.cpp',
             'paint/TransformRecorder.h',
             'paint/VideoPainter.cpp',

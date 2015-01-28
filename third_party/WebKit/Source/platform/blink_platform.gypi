@@ -651,6 +651,8 @@
       'graphics/paint/FilterDisplayItem.h',
       'graphics/paint/FloatClipDisplayItem.cpp',
       'graphics/paint/FloatClipDisplayItem.h',
+      'graphics/paint/Transform3DDisplayItem.cpp',
+      'graphics/paint/Transform3DDisplayItem.h',
       'graphics/paint/TransformDisplayItem.cpp',
       'graphics/paint/TransformDisplayItem.h',
       'graphics/paint/CompositingDisplayItem.cpp',
