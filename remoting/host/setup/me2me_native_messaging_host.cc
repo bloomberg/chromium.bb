@@ -280,6 +280,12 @@ void Me2MeNativeMessagingHost::ProcessUpdateDaemonConfig(
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (needs_elevation_) {
+    if (!DelegateToElevatedHost(message.Pass()))
+      SendAsyncResult(response.Pass(), DaemonController::RESULT_FAILED);
+    return;
+  }
+
   scoped_ptr<base::DictionaryValue> config_dict =
       ConfigDictionaryFromMessage(message.Pass());
   if (!config_dict) {
@@ -333,6 +339,12 @@ void Me2MeNativeMessagingHost::ProcessStartDaemon(
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (needs_elevation_) {
+    if (!DelegateToElevatedHost(message.Pass()))
+      SendAsyncResult(response.Pass(), DaemonController::RESULT_FAILED);
+    return;
+  }
+
   bool consent;
   if (!message->GetBoolean("consent", &consent)) {
     LOG(ERROR) << "'consent' not found.";
@@ -357,6 +369,12 @@ void Me2MeNativeMessagingHost::ProcessStopDaemon(
     scoped_ptr<base::DictionaryValue> message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (needs_elevation_) {
+    if (!DelegateToElevatedHost(message.Pass()))
+      SendAsyncResult(response.Pass(), DaemonController::RESULT_FAILED);
+    return;
+  }
 
   daemon_controller_->Stop(
       base::Bind(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
