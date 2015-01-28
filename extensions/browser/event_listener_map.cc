@@ -176,15 +176,17 @@ bool EventListenerMap::HasProcessListener(content::RenderProcessHost* process,
   return false;
 }
 
-void EventListenerMap::RemoveLazyListenersForExtension(
+void EventListenerMap::RemoveListenersForExtension(
     const std::string& extension_id) {
   for (ListenerMap::iterator it = listeners_.begin(); it != listeners_.end();
        it++) {
     for (ListenerList::iterator it2 = it->second.begin();
          it2 != it->second.end();) {
-      if ((*it2)->IsLazy() && (*it2)->extension_id() == extension_id) {
-        CleanupListener(it2->get());
+      if ((*it2)->extension_id() == extension_id) {
+        linked_ptr<EventListener> listener(*it2);
+        CleanupListener(listener.get());
         it2 = it->second.erase(it2);
+        delegate_->OnListenerRemoved(listener.get());
       } else {
         it2++;
       }

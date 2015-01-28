@@ -763,8 +763,8 @@ void EventRouter::OnExtensionLoaded(content::BrowserContext* browser_context,
 void EventRouter::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
                                       UnloadedExtensionInfo::Reason reason) {
-  // Remove all registered lazy listeners from our cache.
-  listeners_.RemoveLazyListenersForExtension(extension->id());
+  // Remove all registered listeners from our cache.
+  listeners_.RemoveListenersForExtension(extension->id());
 }
 
 Event::Event(const std::string& event_name,

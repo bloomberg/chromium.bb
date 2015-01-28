@@ -154,8 +154,8 @@ class EventListenerMap {
   bool HasProcessListener(content::RenderProcessHost* process,
                           const std::string& extension_id);
 
-  // Removes any lazy listeners that |extension_id| has added.
-  void RemoveLazyListenersForExtension(const std::string& extension_id);
+  // Removes any listeners that |extension_id| has added, both lazy and regular.
+  void RemoveListenersForExtension(const std::string& extension_id);
 
   // Adds unfiltered lazy listeners as described their serialised descriptions.
   // |event_names| the names of the lazy events.

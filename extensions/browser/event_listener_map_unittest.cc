@@ -241,13 +241,13 @@ TEST_F(EventListenerMapTest, HostSuffixFilterEquality) {
   ASSERT_TRUE(filter1->Equals(filter2.get()));
 }
 
-TEST_F(EventListenerMapTest, RemoveLazyListeners) {
+TEST_F(EventListenerMapTest, RemoveListenersForExtension) {
   listeners_->AddListener(EventListener::ForExtension(
       kEvent1Name, kExt1Id, NULL, CreateHostSuffixFilter("google.com")));
   listeners_->AddListener(EventListener::ForExtension(
       kEvent2Name, kExt1Id, NULL, CreateHostSuffixFilter("google.com")));
 
-  listeners_->RemoveLazyListenersForExtension(kExt1Id);
+  listeners_->RemoveListenersForExtension(kExt1Id);
 
   scoped_ptr<Event> event(CreateNamedEvent(kEvent1Name));
   event->filter_info.SetURL(GURL("http://www.google.com"));
@@ -343,7 +343,7 @@ TEST_F(EventListenerMapTest, HasListenerForExtension) {
   ASSERT_FALSE(listeners_->HasListenerForExtension(kExt2Id, kEvent1Name));
   listeners_->RemoveListenersForProcess(process_.get());
   ASSERT_TRUE(listeners_->HasListenerForExtension(kExt1Id, kEvent1Name));
-  listeners_->RemoveLazyListenersForExtension(kExt1Id);
+  listeners_->RemoveListenersForExtension(kExt1Id);
   ASSERT_FALSE(listeners_->HasListenerForExtension(kExt1Id, kEvent1Name));
 }
 
