@@ -42,7 +42,8 @@ class WebRtcSimulcastBrowserTest : public WebRtcTestBase {
 };
 
 // Fails/times out on Win only.  http://crbug.com/452623
-#if defined(OS_WIN)
+// MSan reports errors. http://crbug.com/452892
+#if defined(OS_WIN) || defined(MEMORY_SANITIZER)
 #define MAYBE_TestVgaReturnsTwoSimulcastStreams DISABLED_TestVgaReturnsTwoSimulcastStreams
 #else
 #define MAYBE_TestVgaReturnsTwoSimulcastStreams TestVgaReturnsTwoSimulcastStreams
