@@ -1305,6 +1305,7 @@ _arm_internal_release_boards = frozenset([
   'veyron_mighty',
   'veyron_minnie',
   'veyron_pinky',
+  'veyron_rialto',
   'veyron_speedy',
   'whirlwind',
 ])
@@ -2855,6 +2856,7 @@ _AddGroupConfig('veyron', 'veyron_pinky', (
 _AddGroupConfig('veyron-b', 'veyron_gus', (
     'veyron_jaq',
     'veyron_minnie',
+    'veyron_rialto',
     ),
     important=False,
 )
