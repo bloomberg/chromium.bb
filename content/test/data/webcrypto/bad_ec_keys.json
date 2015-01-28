@@ -69,7 +69,7 @@
       "x": "nLPPaTA9r8dh1ORoe07PA55tNKuWSvgIENjVWKSo1vc",
       "y": "LVEjOheIkgqG7gihlix576MX-3h54pfa0hRtuZX6HHg"
     },
-    "error": "OperationError"
+    "error": "DataError"
   },
 
   // Import Error: Incorrect kty.
@@ -203,7 +203,7 @@
       "x": "5V_ubEnY1SP1znv5wEJc5P9lBwi33lz7CVkBUjl5p_BCYC2zCFRzU2mBO1w_Xvho",
       "y": "KPWcxdxQlJKpiNOKjiUZ3j0MT9D72wmT448YUGwXYGxeJCSSRvHOlJg6U2HFvpg-"
     },
-    "error": "OperationError"
+    "error": "DataError"
   },
 
 // --------------------------------------------------------------------------

@@ -123,8 +123,6 @@ Status VerifyEcKeyAfterSpkiOrPkcs8Import(
   enc_flags &= ~EC_PKEY_NO_PUBKEY;
   EC_KEY_set_enc_flags(ec.get(), enc_flags);
 
-  // TODO(eroman): Is this necessary? From my tests it seems that BoringSSL
-  // already does these checks when setting the public key's affine coordinates.
   if (!EC_KEY_check_key(ec.get()))
     return Status::ErrorEcKeyInvalid();
 
@@ -407,10 +405,11 @@ Status EcAlgorithm::ImportKeyJwk(const CryptoData& key_data,
   if (status.IsError())
     return status;
 
-  // TODO(eroman): This internally runs EC_KEY_check_key(). Can avoid calling it
-  // again by the JWK import code if private key were set before public key.
+  // TODO(eroman): Distinguish more accurately between a DataError and
+  // OperationError. In general if this fails it was due to the key being an
+  // invalid EC key.
   if (!EC_KEY_set_public_key_affine_coordinates(ec.get(), x.get(), y.get()))
-    return Status::OperationError();
+    return Status::DataError();
 
   // Extract the "d" parameters.
   if (is_private_key) {
