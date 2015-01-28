@@ -133,7 +133,13 @@ class Observer : public chrome::BrowserListObserver,
     if (dock) {
       [item setIndentationLevel:1];
     } else {
-      gfx::Image itemIcon = itemData.icon;
+      gfx::Image itemIcon;
+      bool isRectangle;
+      // Always use the low-res, small default avatars in the menu.
+      AvatarMenu::GetImageForMenuButton(itemData.profile_path,
+                                        &itemIcon,
+                                        &isRectangle);
+
       // The image might be too large and need to be resized (i.e. if this is
       // a signed-in user using the GAIA profile photo).
       if (itemIcon.Width() > profiles::kAvatarIconWidth ||
