@@ -34,6 +34,7 @@
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/FloatConversion.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -42,7 +43,15 @@ SVGRenderingContext::~SVGRenderingContext()
     if (m_filter) {
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
         ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->filter() == m_filter);
-        m_filter->finishEffect(m_object, m_paintInfo.context);
+
+        DrawingRecorder recorder(m_originalPaintInfo->context, m_object->displayItemClient(), DisplayItem::SVGFilter, LayoutRect::infiniteRect());
+        m_filter->finishEffect(m_object, m_originalPaintInfo->context);
+
+        // Reset the paint info after the filter effect has been completed.
+        // This isn't strictly required (e.g., m_paintInfo.rect is not used
+        // after this).
+        m_paintInfo.context = m_originalPaintInfo->context;
+        m_paintInfo.rect = m_originalPaintInfo->rect;
     }
 
     if (m_masker) {
@@ -149,9 +158,14 @@ bool SVGRenderingContext::applyFilterIfNecessary(SVGResources* resources)
         if (m_object->style()->svgStyle().hasFilter())
             return false;
     } else if (RenderSVGResourceFilter* filter = resources->filter()) {
-        if (!filter->prepareEffect(m_object, m_paintInfo.context))
+        GraphicsContext* filterContext = filter->prepareEffect(m_object, m_paintInfo.context);
+        if (!filterContext)
             return false;
         m_filter = filter;
+
+        // Because the filter needs to cache its contents we replace the context
+        // during filtering with the filter's context.
+        m_paintInfo.context = filterContext;
 
         // Because we cache the filter contents and do not invalidate on paint
         // invalidation rect changes, we need to paint the entire filter region

@@ -28,6 +28,8 @@
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {
 
@@ -43,6 +45,8 @@ public:
 
     RefPtrWillBeMember<SVGFilter> filter;
     RefPtrWillBeMember<SVGFilterBuilder> builder;
+    OwnPtr<DisplayItemList> m_displayItemList;
+    OwnPtr<GraphicsContext> m_context;
     FloatRect boundaries;
     bool m_needToEndFilter;
 
@@ -50,8 +54,6 @@ private:
     FilterData() : m_needToEndFilter(false) { }
 
 };
-
-class GraphicsContext;
 
 class RenderSVGResourceFilter final : public RenderSVGResourceContainer {
 public:
@@ -69,7 +71,9 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
 
-    bool prepareEffect(RenderObject*, GraphicsContext*);
+    // Returns the context that should be used to paint the filter contents, or
+    // null if there is an error.
+    GraphicsContext* prepareEffect(RenderObject*, GraphicsContext*);
     void finishEffect(RenderObject*, GraphicsContext*);
 
     FloatRect resourceBoundingBox(const RenderObject*);

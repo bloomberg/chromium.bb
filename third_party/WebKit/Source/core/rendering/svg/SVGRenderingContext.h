@@ -54,6 +54,7 @@ public:
     SVGRenderingContext(RenderObject& object, const PaintInfo& paintInfo)
         : m_object(&object)
         , m_paintInfo(paintInfo)
+        , m_originalPaintInfo(&paintInfo)
         , m_filter(nullptr)
         , m_clipper(nullptr)
         , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
@@ -90,6 +91,7 @@ private:
 
     RawPtrWillBeMember<RenderObject> m_object;
     PaintInfo m_paintInfo;
+    const PaintInfo* m_originalPaintInfo;
     RawPtrWillBeMember<RenderSVGResourceFilter> m_filter;
     RawPtrWillBeMember<RenderSVGResourceClipper> m_clipper;
     RenderSVGResourceClipper::ClipperState m_clipperState;

@@ -199,6 +199,11 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "svg/filters",
+    "args": ["--enable-slimming-paint"]
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "fast/css",
     "args": ["--enable-slimming-paint"]
   },

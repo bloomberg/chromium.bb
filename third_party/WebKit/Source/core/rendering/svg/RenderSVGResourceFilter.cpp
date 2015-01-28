@@ -112,11 +112,21 @@ PassRefPtrWillBeRawPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitive
     return builder.release();
 }
 
-static void beginDeferredFilter(GraphicsContext* context, FilterData* filterData)
+static GraphicsContext* beginDeferredFilter(GraphicsContext* context, FilterData* filterData)
 {
-    // FIXME: Create a new GraphicsContext here to replace the existing context instead
-    // of nesting recordings.
+    ASSERT(!filterData->m_needToEndFilter);
+
+    // For slimming paint we need to create a new context so the contents of the
+    // filter can be drawn and cached.
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        filterData->m_displayItemList = DisplayItemList::create();
+        filterData->m_context = adoptPtr(new GraphicsContext(nullptr, filterData->m_displayItemList.get()));
+        context = filterData->m_context.get();
+    }
+
     context->beginRecording(filterData->boundaries);
+    filterData->m_needToEndFilter = true;
+    return context;
 }
 
 static void endDeferredFilter(GraphicsContext* context, FilterData* filterData)
@@ -124,7 +134,25 @@ static void endDeferredFilter(GraphicsContext* context, FilterData* filterData)
     // FIXME: maybe filterData should just hold onto SourceGraphic after creation?
     SourceGraphic* sourceGraphic = static_cast<SourceGraphic*>(filterData->builder->getEffectById(SourceGraphic::effectName()));
     ASSERT(sourceGraphic);
+
+    // For slimming paint we need to use the context that contains the filtered
+    // content.
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        ASSERT(filterData->m_displayItemList);
+        ASSERT(filterData->m_context);
+        filterData->m_displayItemList->replay(filterData->m_context.get());
+        context = filterData->m_context.get();
+    }
+
     sourceGraphic->setPicture(context->endRecording());
+
+    // Content is cached by the source graphic so temporaries can be freed.
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        filterData->m_displayItemList = nullptr;
+        filterData->m_context = nullptr;
+    }
+
+    filterData->m_needToEndFilter = false;
 }
 
 static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData, SVGFilterElement* filterElement)
@@ -178,7 +206,7 @@ static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData,
     context->restore();
 }
 
-bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContext* context)
+GraphicsContext* RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
@@ -187,7 +215,7 @@ bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContex
 
     if (m_filter.contains(object)) {
         // The filter has already begun or there is a filter cycle.
-        return false;
+        return nullptr;
     }
 
     OwnPtrWillBeRawPtr<FilterData> filterData = FilterData::create();
@@ -196,7 +224,7 @@ bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContex
     SVGFilterElement* filterElement = toSVGFilterElement(element());
     filterData->boundaries = SVGLengthContext::resolveRectangle<SVGFilterElement>(filterElement, filterElement->filterUnits()->currentValue()->enumValue(), targetBoundingBox);
     if (filterData->boundaries.isEmpty())
-        return false;
+        return nullptr;
 
     // Create the SVGFilter object.
     FloatRect drawingRegion = object->strokeBoundingBox();
@@ -207,19 +235,17 @@ bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContex
     // Create all relevant filter primitives.
     filterData->builder = buildPrimitives(filterData->filter.get());
     if (!filterData->builder)
-        return false;
+        return nullptr;
 
     FilterEffect* lastEffect = filterData->builder->lastEffect();
     if (!lastEffect)
-        return false;
+        return nullptr;
 
     lastEffect->determineFilterPrimitiveSubregion(ClipToFilterRegion);
 
     FilterData* data = filterData.get();
     m_filter.set(object, filterData.release());
-    beginDeferredFilter(context, data);
-    data->m_needToEndFilter = true;
-    return true;
+    return beginDeferredFilter(context, data);
 }
 
 void RenderSVGResourceFilter::finishEffect(RenderObject* object, GraphicsContext* context)
@@ -235,7 +261,6 @@ void RenderSVGResourceFilter::finishEffect(RenderObject* object, GraphicsContext
         endDeferredFilter(context, filterData);
 
     drawDeferredFilter(context, filterData, toSVGFilterElement(element()));
-    filterData->m_needToEndFilter = false;
 }
 
 FloatRect RenderSVGResourceFilter::resourceBoundingBox(const RenderObject* object)

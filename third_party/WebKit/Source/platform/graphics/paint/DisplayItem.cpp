@@ -78,6 +78,7 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case PageWidgetDelegateClip: return "PageWidgetDelegateClip";
     case PageWidgetDelegateBackgroundFallback: return "PageWidgetDelegateBackgroundFallback";
     case ViewBackground: return "ViewBackground";
+    case SVGFilter: return "SVGFilter";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";
