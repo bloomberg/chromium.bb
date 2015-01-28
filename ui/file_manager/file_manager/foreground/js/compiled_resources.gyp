@@ -52,6 +52,7 @@
           '../../background/js/file_operation_handler.js',
           '../../background/js/device_handler.js',
           '../../background/js/drive_sync_handler.js',
+          '../../background/js/duplicate_finder.js',
           '../../background/js/volume_manager.js',
           '../../background/js/progress_center.js',
           '../../background/js/app_window_wrapper.js',

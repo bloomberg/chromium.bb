@@ -47,7 +47,7 @@ function setUp() {
   mtpDcimEntry = new MockDirectoryEntry(mtpVolumeInfo.fileSystem, '/DCIM');
   downloadsEntry = new MockDirectoryEntry(
       volumeManager.getCurrentProfileVolumeInfo(
-          VolumeManagerCommon.VolumeType.DOWNLOADS),
+          VolumeManagerCommon.VolumeType.DOWNLOADS).fileSystem,
       '/hello-world');
 
   cloudImportBanner = new CloudImportBanner(directoryModel, volumeManager);

@@ -23,23 +23,20 @@ var destinationVolume;
 /** @type {!TestCallRecorder} */
 var commandUpdateRecorder;
 
-function setUp() {
-  // Set up string assets.
-  loadTimeData.data = {
-    CLOUD_IMPORT_BUTTON_LABEL: 'Import it!',
-    CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL: 'Not enough space!',
-    CLOUD_IMPORT_SCANNING_BUTTON_LABEL: 'Scanning... ...!'
-  };
+// Set up string assets.
+loadTimeData.data = {
+  CLOUD_IMPORT_BUTTON_LABEL: 'Import it!',
+  CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL: 'No new media',
+  CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL: 'Not enough space!',
+  CLOUD_IMPORT_SCANNING_BUTTON_LABEL: 'Scanning... ...!',
+  DRIVE_DIRECTORY_LABEL: 'My Drive',
+  DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
+};
 
+function setUp() {
   // Stub out metrics support.
   metrics = {
     recordEnum: function() {}
-  };
-
-  // Set up string assets.
-  loadTimeData.data = {
-    DRIVE_DIRECTORY_LABEL: 'My Drive',
-    DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
   };
 
   commandUpdateRecorder = new TestCallRecorder();
@@ -175,8 +172,9 @@ function testGetCommandUpdate_CanExecuteAfterScanIsFinalized() {
       ],
       '/DCIM');
 
+  var fileSystem = new MockFileSystem('testFs');
   mediaScanner.fileEntries.push(
-      new MockFileEntry(null, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
+      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
   controller.getCommandUpdate();
   mediaScanner.finalizeScans();
 

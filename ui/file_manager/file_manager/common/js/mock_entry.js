@@ -83,11 +83,12 @@ MockFileSystem.prototype.findChildren_ = function(directory) {
 /**
  * Base class of mock entries.
  *
- * @param {TestFileSystem} filesystem File system where the entry is localed.
+ * @param {MockFileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path of the entry.
  * @constructor
  */
 function MockEntry(filesystem, fullPath) {
+  filesystem.entries[fullPath] = this;
   this.filesystem = filesystem;
   this.fullPath = fullPath;
 }
@@ -139,8 +140,25 @@ MockEntry.prototype.getParent = function(
 MockEntry.prototype.moveTo = function(parent, opt_newName, onSuccess, onError) {
   Promise.resolve().then(function() {
     this.filesystem.entries[this.fullPath] = null;
-    return this.clone(joinPath(parent.fullPath, opt_newName || this.name));
+    return this.clone(
+        joinPath(parent.fullPath, opt_newName || this.name),
+        parent.filesystem);
   }.bind(this)).then(onSuccess, onError);
+};
+
+/**
+ * @param {MockDirectoryEntry} parent
+ * @param {string=} opt_newName
+ * @param {function(!MockEntry)} successCallback
+ * @param {function} errorCallback
+ */
+MockEntry.prototype.copyTo =
+    function(parent, opt_newName, successCallback, errorCallback) {
+  Promise.resolve().then(function() {
+    return this.clone(
+        joinPath(parent.fullPath, opt_newName || this.name),
+        parent.filesystem);
+  }.bind(this)).then(successCallback, errorCallback);
 };
 
 /**
@@ -159,9 +177,10 @@ MockEntry.prototype.remove = function(onSuccess, onError) {
  * Clones the entry with the new fullpath.
  *
  * @param {string} fullpath New fullpath.
+ * @param {FileSystem} opt_filesystem New file system
  * @return {MockEntry} Cloned entry.
  */
-MockEntry.prototype.clone = function(fullpath) {
+MockEntry.prototype.clone = function(fullpath, opt_filesystem) {
   throw new Error('Not implemented.');
 };
 
@@ -203,8 +222,9 @@ MockFileEntry.prototype.getMetadata = function(onSuccess, onError) {
 /**
  * @override
  */
-MockFileEntry.prototype.clone = function(path) {
-  return new MockFileEntry(this.filesystem, path, this.metadata);
+MockFileEntry.prototype.clone = function(path, opt_filesystem) {
+  return new MockFileEntry(
+      opt_filesystem || this.filesystem, path, this.metadata);
 };
 
 /**
@@ -228,11 +248,19 @@ MockDirectoryEntry.prototype = {
 /**
  * @override
  */
-MockDirectoryEntry.prototype.clone = function(path) {
-  return new MockDirectoryEntry(this.filesystem, path);
+MockDirectoryEntry.prototype.clone = function(path, opt_filesystem) {
+  return new MockDirectoryEntry(opt_filesystem || this.filesystem, path);
 };
 
 /**
+ * Returns all children of the supplied directoryEntry.
+ * @return {!Array.<!Entry>}
+ */
+MockDirectoryEntry.prototype.getAllChildren = function() {
+  return this.filesystem.findChildren_(this);
+};
+
+  /**
  * Returns a file under the directory.
  *
  * @param {string} path Path.

@@ -179,6 +179,7 @@
         "background/js/background_base.js",
         "background/js/device_handler.js",
         "background/js/drive_sync_handler.js",
+        "background/js/duplicate_finder.js",
         "background/js/file_operation_handler.js",
         "background/js/file_operation_manager.js",
         "background/js/file_operation_util.js",

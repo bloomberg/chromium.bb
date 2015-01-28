@@ -90,7 +90,8 @@ function FileBrowserBackground() {
   this.mediaImportHandler =
       new importer.MediaImportHandler(
           this.progressCenter,
-          this.historyLoader);
+          this.historyLoader,
+          new importer.DriveDuplicateFinder());
 
   /**
    * Promise of string data.

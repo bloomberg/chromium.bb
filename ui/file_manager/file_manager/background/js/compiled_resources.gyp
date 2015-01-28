@@ -29,6 +29,7 @@
           'app_window_wrapper.js',
           'device_handler.js',
           'drive_sync_handler.js',
+          'duplicate_finder.js',
           'file_operation_handler.js',
           'file_operation_manager.js',
           'file_operation_util.js',

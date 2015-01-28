@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @type {!MockFileSystem} */
+var fileSystem;
+
+function setUp() {
+  fileSystem = new MockFileSystem('volumeId');
+}
+
 /**
  * Mock of MetadataProvider.
  *
@@ -60,22 +67,6 @@ function getLatest(metadataCache, entries, type) {
 }
 
 /**
- * Invokes a callback function depending on the result of promise.
- *
- * @param {Promise} promise Promise.
- * @param {function(boolean)} calllback Callback function. True is passed if the
- * test failed.
- */
-function reportPromise(promise, callback) {
-  promise.then(function() {
-    callback(/* error */ false);
-  }, function(error) {
-    console.error(error.stack || error);
-    callback(/* error */ true);
-  });
-}
-
-/**
  * Confirms metadata is cached for the same entry.
  *
  * @param {function(boolean=)} callback Callback to be called when test
@@ -84,7 +75,7 @@ function reportPromise(promise, callback) {
 function testCache(callback) {
   var provider = new MockProvider('instrument');
   var metadataCache = new MetadataCache([provider]);
-  var entry = new MockFileEntry('volumeId', '/music.txt');
+  var entry = new MockFileEntry(fileSystem, '/music.txt');
 
   var metadataFromProviderPromise =
       getMetadata(metadataCache, [entry], 'instrument');
@@ -119,8 +110,8 @@ function testNoCacheForDifferentEntries(callback) {
   var provider = new MockProvider('instrument');
   var metadataCache = new MetadataCache([provider]);
 
-  var entry1 = new MockFileEntry('volumeId', '/music1.txt');
-  var entry2 = new MockFileEntry('volumeId', '/music2.txt');
+  var entry1 = new MockFileEntry(fileSystem, '/music1.txt');
+  var entry2 = new MockFileEntry(fileSystem, '/music2.txt');
 
   var entry1MetadataPromise =
       getMetadata(metadataCache, [entry1], 'instrument');
@@ -155,7 +146,7 @@ function testNoCacheForDifferentTypes(callback) {
   ];
   var metadataCache = new MetadataCache(providers);
 
-  var entry = new MockFileEntry('volumeId', '/music.txt');
+  var entry = new MockFileEntry(fileSystem, '/music.txt');
   var instrumentMedatataPromise =
       getMetadata(metadataCache, [entry], 'instrument');
   var beatMetadataPromise = getMetadata(metadataCache, [entry], 'beat');
@@ -192,7 +183,7 @@ function testGetDiffrentTypesInVeriousOrders(callback) {
     });
   };
 
-  var entry1 = new MockFileEntry('volumeId', '/music1.txt');
+  var entry1 = new MockFileEntry(fileSystem, '/music1.txt');
   var promise1 = Promise.all([
     getAndCheckMetadata(entry1, 'instrument', {name: 'banjo'}),
     getAndCheckMetadata(entry1, 'beat', {number: 2}),
@@ -204,7 +195,7 @@ function testGetDiffrentTypesInVeriousOrders(callback) {
   assertEquals(1, providers[0].callbackPool.length);
   assertEquals(1, providers[1].callbackPool.length);
 
-  var entry2 = new MockFileEntry('volumeId', '/music2.txt');
+  var entry2 = new MockFileEntry(fileSystem, '/music2.txt');
   var promise2 = Promise.all([
     getAndCheckMetadata(entry2, 'instrument', {name: 'banjo'}),
     getAndCheckMetadata(
@@ -216,7 +207,7 @@ function testGetDiffrentTypesInVeriousOrders(callback) {
   assertEquals(2, providers[0].callbackPool.length);
   assertEquals(2, providers[1].callbackPool.length);
 
-  var entry3 = new MockFileEntry('volumeId', '/music3.txt');
+  var entry3 = new MockFileEntry(fileSystem, '/music3.txt');
   var promise3 = Promise.all([
     getAndCheckMetadata(
         entry3,
@@ -250,7 +241,7 @@ function testGetCached(callback) {
   var provider = new MockProvider('instrument');
   var metadataCache = new MetadataCache([provider]);
 
-  var entry = new MockFileEntry('volumeId', '/music.txt');
+  var entry = new MockFileEntry(fileSystem, '/music.txt');
 
   // Check the cache does exist before calling getMetadata.
   assertEquals(null, metadataCache.getCached(entry, 'instrument'));
@@ -278,7 +269,7 @@ function testGetCached(callback) {
 function testGetLatest(callback) {
   var provider = new MockProvider('instrument');
   var metadataCache = new MetadataCache([provider]);
-  var entry = new MockFileEntry('volumeId', '/music.txt');
+  var entry = new MockFileEntry(fileSystem, '/music.txt');
 
   var promise = getLatest(metadataCache, [entry], 'instrument');
   assertEquals(1, provider.callbackPool.length);
@@ -298,7 +289,7 @@ function testGetLatest(callback) {
 function testGetLatestToIgnoreCache(callback) {
   var provider = new MockProvider('instrument');
   var metadataCache = new MetadataCache([provider]);
-  var entry = new MockFileEntry('volumeId', '/music.txt');
+  var entry = new MockFileEntry(fileSystem, '/music.txt');
 
   var promise1 = getMetadata(metadataCache, [entry], 'instrument');
   assertEquals(1, provider.callbackPool.length);
@@ -329,7 +320,7 @@ function testGetLatestToIgnoreCache(callback) {
 function testGetLatestAndPreviousCall(callback) {
   var provider = new MockProvider('instrument');
   var metadataCache = new MetadataCache([provider]);
-  var entry = new MockFileEntry('volumeId', '/music.txt');
+  var entry = new MockFileEntry(fileSystem, '/music.txt');
 
   var promise1 = getMetadata(metadataCache, [entry], 'instrument');
   assertEquals(1, provider.callbackPool.length);
@@ -359,7 +350,7 @@ function testClear(callback) {
     new MockProvider('beat')
   ];
   var metadataCache = new MetadataCache(providers);
-  var entry = new MockFileEntry('volumeId', '/music.txt');
+  var entry = new MockFileEntry(fileSystem, '/music.txt');
 
   var promise1 = getMetadata(metadataCache, [entry], 'instrument');
   var promise2 = getMetadata(metadataCache, [entry], 'beat');
@@ -401,7 +392,7 @@ function testAddObserver() {
   var metadataCache = new MetadataCache(providers);
 
   var directoryEntry = new MockFileEntry(
-      'volumeId',
+      fileSystem,
       '/mu\\^$.*.+?|&{}[si]()<>cs');
   var observerCalls = [];
   var observerCallback = function(entries, properties) {
@@ -411,7 +402,7 @@ function testAddObserver() {
   metadataCache.addObserver(directoryEntry, MetadataCache.CHILDREN,
       'filesystem', observerCallback);
 
-  var fileEntry1 = new MockFileEntry('volumeId',
+  var fileEntry1 = new MockFileEntry(fileSystem,
       '/mu\\^$.*.+?|&{}[si]()<>cs/foo.mp3');
   var fileEntry1URL = fileEntry1.toURL();
   metadataCache.set(fileEntry1, 'filesystem', 'test1');
@@ -419,7 +410,7 @@ function testAddObserver() {
   assertArrayEquals([fileEntry1], observerCalls[0].entries);
   assertEquals('test1', observerCalls[0].properties[fileEntry1URL]);
 
-  var fileEntry2 = new MockFileEntry('volumeId',
+  var fileEntry2 = new MockFileEntry(fileSystem,
       '/mu\\^$.*.+?|&{}[si]()<>cs/f.[o]o.mp3');
   var fileEntry2URL = fileEntry2.toURL();
   metadataCache.set(fileEntry2, 'filesystem', 'test2');
@@ -428,14 +419,14 @@ function testAddObserver() {
   assertEquals('test2', observerCalls[1].properties[fileEntry2URL]);
 
   // Descendant case does not invoke the observer.
-  var fileEntry3 = new MockFileEntry('volumeId',
+  var fileEntry3 = new MockFileEntry(fileSystem,
       '/mu\\^$.*.+?|&{}[si]()<>cs/foo/bar.mp3');
   metadataCache.set(fileEntry3, 'filesystem', 'test3');
   assertEquals(2, observerCalls.length);
 
   // This case does not invoke the observer.
   // (This is a case which matches when regexp special chars are not escaped).
-  var fileEntry4 = new MockFileEntry('volumeId', '/&{}i<>cs/foo.mp3');
+  var fileEntry4 = new MockFileEntry(fileSystem, '/&{}i<>cs/foo.mp3');
   metadataCache.set(fileEntry4);
   assertEquals(2, observerCalls.length);
 }
@@ -444,7 +435,6 @@ function testAddObserver() {
  * Tests content provider.
  */
 function testContentProvider(callback) {
-  var fileSystem = new MockFileSystem('volumeId');
   var entry = new MockFileEntry(fileSystem, '/sample.txt');
   var metadataCache = new MetadataCache([new ContentProvider({
     start: function() {},

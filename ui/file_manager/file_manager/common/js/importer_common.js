@@ -578,7 +578,7 @@ importer.RuntimeLogger.prototype.writeLine_ = function(type, line, writer) {
       }.bind(this));
 };
 
-/** @type {importer.Logger} */
+/** @private {importer.Logger} */
 importer.logger_ = null;
 
 /**

@@ -17,11 +17,14 @@ var importHistory;
 /** @type {!VolumeInfo} */
 var drive;
 
-/** @type {!MockFileSystem} */
-var fileSystem;
-
 /** @type {!MockCopyTo} */
 var mockCopier;
+
+/** @type {!MockFileSystem} */
+var destinationFileSystem;
+
+/** @type {!importer.DuplicateFinder} */
+var duplicateFinder;
 
 // Set up string assets.
 loadTimeData.data = {
@@ -31,6 +34,8 @@ loadTimeData.data = {
 };
 
 function setUp() {
+  importer.setupTestLogger();
+
   progressCenter = new MockProgressCenter();
 
   // Replaces fileOperationUtil.copyTo with test function.
@@ -49,9 +54,11 @@ function setUp() {
 
   importHistory = new importer.TestImportHistory();
   mediaScanner = new TestMediaScanner();
+  destinationFileSystem = new MockFileSystem(destinationFactory);
+  duplicateFinder = new importer.TestDuplicateFinder();
+
   mediaImporter = new importer.MediaImportHandler(
-      progressCenter,
-      importHistory);
+      progressCenter, importHistory, duplicateFinder);
 }
 
 function testImportMedia(callback) {
@@ -59,16 +66,14 @@ function testImportMedia(callback) {
     '/DCIM/photos0/IMG00001.jpg',
     '/DCIM/photos0/IMG00002.jpg',
     '/DCIM/photos0/IMG00003.jpg',
-    '/DCIM/photos1/IMG00001.jpg',
-    '/DCIM/photos1/IMG00002.jpg',
-    '/DCIM/photos1/IMG00003.jpg'
+    '/DCIM/photos1/IMG00004.jpg',
+    '/DCIM/photos1/IMG00005.jpg',
+    '/DCIM/photos1/IMG00006.jpg'
   ]);
 
-  var destinationFileSystem = new MockFileSystem('fake-destination');
-  var destination = function() { return destinationFileSystem.root; };
-
   var scanResult = new TestScanResult(media);
-  var importTask = mediaImporter.importFromScanResult(scanResult, destination);
+  var importTask =
+      mediaImporter.importFromScanResult(scanResult, destinationFactory);
   var whenImportDone = new Promise(
       function(resolve, reject) {
         importTask.addObserver(
@@ -91,15 +96,8 @@ function testImportMedia(callback) {
   reportPromise(
       whenImportDone.then(
         function() {
-          assertEquals(media.length, mockCopier.copiedFiles.length);
-          mockCopier.copiedFiles.forEach(
-            /** @param {!MockCopyTo.CopyInfo} copy */
-            function(copy) {
-              // Verify the copied file is one of the expected files.
-              assertTrue(media.indexOf(copy.source) >= 0);
-              // Verify that the files are being copied to the right locations.
-              assertEquals(destination(), copy.destination);
-            });
+          var copiedEntries = destinationFileSystem.root.getAllChildren();
+          assertEquals(media.length, copiedEntries.length);
         }),
       callback);
 
@@ -112,11 +110,9 @@ function testUpdatesHistoryAfterImport(callback) {
     '/DCIM/photos1/IMG00003.jpg'
   ]);
 
-  var destinationFileSystem = new MockFileSystem('fake-destination');
-  var destination = function() { return destinationFileSystem.root; };
-
   var scanResult = new TestScanResult(entries);
-  var importTask = mediaImporter.importFromScanResult(scanResult, destination);
+  var importTask =
+      mediaImporter.importFromScanResult(scanResult, destinationFactory);
   var whenImportDone = new Promise(
       function(resolve, reject) {
         importTask.addObserver(
@@ -157,19 +153,17 @@ function testImportCancellation(callback) {
     '/DCIM/photos0/IMG00001.jpg',
     '/DCIM/photos0/IMG00002.jpg',
     '/DCIM/photos0/IMG00003.jpg',
-    '/DCIM/photos1/IMG00001.jpg',
-    '/DCIM/photos1/IMG00002.jpg',
-    '/DCIM/photos1/IMG00003.jpg'
+    '/DCIM/photos1/IMG00004.jpg',
+    '/DCIM/photos1/IMG00005.jpg',
+    '/DCIM/photos1/IMG00006.jpg'
   ]);
 
   /** @const {number} */
   var EXPECTED_COPY_COUNT = 3;
 
-  var destinationFileSystem = new MockFileSystem('fake-destination');
-  var destination = function() { return destinationFileSystem.root; };
-
   var scanResult = new TestScanResult(media);
-  var importTask = mediaImporter.importFromScanResult(scanResult, destination);
+  var importTask =
+      mediaImporter.importFromScanResult(scanResult, destinationFactory);
   var whenImportCancelled = new Promise(
       function(resolve, reject) {
         importTask.addObserver(
@@ -184,31 +178,25 @@ function testImportCancellation(callback) {
             });
       });
 
+  // Simulate cancellation after the expected number of copies is done.
+  var copyCount = 0;
+  importTask.addObserver(function(updateType) {
+    if (updateType ===
+        importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED) {
+      copyCount++;
+      if (copyCount === EXPECTED_COPY_COUNT) {
+        importTask.requestCancel();
+      }
+    }
+  });
+
   reportPromise(
       whenImportCancelled.then(
         function() {
-          assertEquals(EXPECTED_COPY_COUNT, mockCopier.copiedFiles.length);
-          mockCopier.copiedFiles.forEach(
-            /** @param {!MockCopyTo.CopyInfo} copy */
-            function(copy) {
-              // Verify the copied file is one of the expected files.
-              assertTrue(media.indexOf(copy.source) >= 0);
-              // Verify that the files are being copied to the right locations.
-              assertEquals(destination(), copy.destination);
-            });
+          var copiedEntries = destinationFileSystem.root.getAllChildren();
+          assertEquals(EXPECTED_COPY_COUNT, copiedEntries.length);
         }),
       callback);
-
-  // Simulate cancellation after the expected number of copies is done.
-  var copyCount = 0;
-  mockCopier.onCopy(
-      /** @param {!MockCopyTo.CopyInfo} copy */
-      function(copy) {
-        mockCopier.doCopy(copy);
-        if (++copyCount === EXPECTED_COPY_COUNT) {
-          importTask.requestCancel();
-        }
-      });
 
   scanResult.finalize();
 }
@@ -219,7 +207,7 @@ function testImportCancellation(callback) {
  */
 function setupFileSystem(fileNames) {
   // Set up a filesystem with some files.
-  fileSystem = new MockFileSystem('fake-media-volume');
+  var fileSystem = new MockFileSystem('fake-media-volume');
   fileSystem.populate(fileNames);
 
   return fileNames.map(
@@ -228,6 +216,10 @@ function setupFileSystem(fileNames) {
       });
 }
 
+/** @return {!DirectoryEntry} The destination root, for testing. */
+function destinationFactory() {
+  return destinationFileSystem.root;
+}
 
 /**
  * Replaces fileOperationUtil.copyTo with some mock functionality for testing.
@@ -244,9 +236,6 @@ function MockCopyTo() {
   this.progressCallback_ = null;
   this.successCallback_ = null;
   this.errorCallback_ = null;
-
-  // Default copy callback just does the copy.
-  this.copyCallback_ = this.doCopy.bind(this);
 }
 
 /**
@@ -276,31 +265,18 @@ MockCopyTo.prototype.copyTo_ = function(source, parent, newName,
   this.successCallback_ = successCallback;
   this.errorCallback_ = errorCallback;
 
-  this.copyCallback_({
+  // Log the copy, then copy the file.
+  this.copiedFiles.push({
     source: source,
     destination: parent,
     newName: newName
   });
-};
-
-/**
- * Set a callback to be called whenever #copyTo_ is called.  This can be used to
- * simulate errors, etc, during copying.  The default copy callback just calls
- * #doCopy.
- * @param {!function(!MockCopyTo.CopyInfo)} copyCallback
- */
-MockCopyTo.prototype.onCopy = function(copyCallback) {
-  this.copyCallback_ = copyCallback;
-};
-
-/**
- * Completes the given copy.  Call this in the callback passed to #onCopy, to
- * simulate the current copy operation completing successfully.
- * @param {!MockCopyTo.CopyInfo} copy
- */
-MockCopyTo.prototype.doCopy = function(copy) {
-  this.copiedFiles.push(copy);
-  this.entryChangedCallback_(copy.source.toURL(),
-      copy.destination);
-  this.successCallback_();
+  source.copyTo(
+      parent,
+      newName,
+      function(newEntry) {
+        this.entryChangedCallback_(source.toURL(), parent);
+        this.successCallback_(newEntry);
+      }.bind(this),
+      this.errorCallback_.bind(this));
 };
