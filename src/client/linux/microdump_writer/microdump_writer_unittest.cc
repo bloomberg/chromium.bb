@@ -44,10 +44,6 @@
 
 using namespace google_breakpad;
 
-// Length of a formatted GUID string =
-// sizeof(MDGUID) * 2 + 4 (for dashes) + 1 (null terminator)
-const int kGUIDStringSize = 37;
-
 namespace {
 
 typedef testing::Test MicrodumpWriterTest;
