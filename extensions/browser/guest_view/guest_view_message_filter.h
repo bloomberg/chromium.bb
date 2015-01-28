@@ -34,7 +34,7 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   GuestViewMessageFilter(int render_process_id,
                          content::BrowserContext* context);
 
-  int render_process_id() { return render_process_id_; }
+  int render_process_id() const { return render_process_id_; }
 
  private:
   friend class content::BrowserThread;
@@ -49,14 +49,14 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers on the UI thread.
-  void OnExtensionAttachGuest(int routing_id,
-                              int element_instance_id,
-                              int guest_instance_id,
-                              const base::DictionaryValue& attach_params);
-  void OnExtensionCreateMimeHandlerViewGuest(int render_frame_id,
-                                             const std::string& view_id,
-                                             int element_instance_id,
-                                             const gfx::Size& element_size);
+  void OnAttachGuest(int routing_id,
+                     int element_instance_id,
+                     int guest_instance_id,
+                     const base::DictionaryValue& attach_params);
+  void OnCreateMimeHandlerViewGuest(int render_frame_id,
+                                    const std::string& view_id,
+                                    int element_instance_id,
+                                    const gfx::Size& element_size);
 
   // Runs on UI thread.
   void MimeHandlerViewGuestCreatedCallback(int element_instance_id,
@@ -68,7 +68,7 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   const int render_process_id_;
 
   // Should only be accessed on the UI thread.
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* const browser_context_;
 
   // Weak pointers produced by this factory are bound to the IO thread.
   base::WeakPtrFactory<GuestViewMessageFilter> weak_ptr_factory_;

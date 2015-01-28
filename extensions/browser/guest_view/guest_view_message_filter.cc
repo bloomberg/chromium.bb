@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,12 +15,15 @@
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message_macros.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
+using content::RenderFrameHost;
+using content::WebContents;
 
 namespace extensions {
 
 GuestViewMessageFilter::GuestViewMessageFilter(int render_process_id,
-                                               content::BrowserContext* context)
+                                               BrowserContext* context)
     : BrowserMessageFilter(ExtensionMsgStart),
       render_process_id_(render_process_id),
       browser_context_(context),
@@ -54,23 +57,21 @@ void GuestViewMessageFilter::OnDestruct() const {
 bool GuestViewMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GuestViewMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AttachGuest,
-                        OnExtensionAttachGuest)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AttachGuest, OnAttachGuest)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CreateMimeHandlerViewGuest,
-                        OnExtensionCreateMimeHandlerViewGuest)
+                        OnCreateMimeHandlerViewGuest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void GuestViewMessageFilter::OnExtensionAttachGuest(
+void GuestViewMessageFilter::OnAttachGuest(
     int routing_id,
     int element_instance_id,
     int guest_instance_id,
     const base::DictionaryValue& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GuestViewManager* manager =
-      GuestViewManager::FromBrowserContext(browser_context_);
+  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
   if (!manager)
     return;
 
@@ -81,21 +82,18 @@ void GuestViewMessageFilter::OnExtensionAttachGuest(
                        params);
 }
 
-void GuestViewMessageFilter::OnExtensionCreateMimeHandlerViewGuest(
+void GuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
     int render_frame_id,
     const std::string& view_id,
     int element_instance_id,
     const gfx::Size& element_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GuestViewManager* manager =
-      GuestViewManager::FromBrowserContext(browser_context_);
+  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
   if (!manager)
     return;
 
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id);
-  content::WebContents* embedder_web_contents =
-      content::WebContents::FromRenderFrameHost(rfh);
+  auto rfh = RenderFrameHost::FromID(render_process_id_, render_frame_id);
+  auto embedder_web_contents = WebContents::FromRenderFrameHost(rfh);
   if (!embedder_web_contents)
     return;
 
@@ -122,20 +120,18 @@ void GuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
     int embedder_render_process_id,
     int embedder_render_frame_id,
     const gfx::Size& element_size,
-    content::WebContents* web_contents) {
-  GuestViewManager* manager =
-      GuestViewManager::FromBrowserContext(browser_context_);
+    WebContents* web_contents) {
+  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
   if (!manager)
     return;
 
-  MimeHandlerViewGuest* guest_view =
-      MimeHandlerViewGuest::FromWebContents(web_contents);
+  auto guest_view = MimeHandlerViewGuest::FromWebContents(web_contents);
   if (!guest_view)
     return;
-  int guest_instance_id = guest_view->guest_instance_id();
 
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      embedder_render_process_id, embedder_render_frame_id);
+  int guest_instance_id = guest_view->guest_instance_id();
+  auto rfh = RenderFrameHost::FromID(embedder_render_process_id,
+                                     embedder_render_frame_id);
   if (!rfh)
     return;
 
