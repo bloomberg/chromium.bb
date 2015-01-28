@@ -24,6 +24,9 @@ _EXTRA_COMMAND_LINE_FILE = (
     'org.chromium.native_test.ChromeNativeTestActivity.CommandLineFile')
 _EXTRA_COMMAND_LINE_FLAGS = (
     'org.chromium.native_test.ChromeNativeTestActivity.CommandLineFlags')
+_EXTRA_ENABLE_TEST_SERVER_SPAWNER = (
+    'org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner'
+        '.EnableTestServerSpawner')
 
 _MAX_SHARD_SIZE = 256
 
@@ -39,6 +42,10 @@ class _ApkDelegate(object):
     self._package = apk_helper.GetPackageName(self._apk)
     self._runner = apk_helper.GetInstrumentationName(self._apk)
     self._component = '%s/%s' % (self._package, self._runner)
+    self._enable_test_server_spawner = False
+
+  def EnableTestServerSpawner(self):
+    self._enable_test_server_spawner = True
 
   def Install(self, device):
     device.Install(self._apk)
@@ -47,11 +54,14 @@ class _ApkDelegate(object):
     with device_temp_file.DeviceTempFile(device.adb) as command_line_file:
       device.WriteFile(command_line_file.name, '_ %s' % flags)
 
+      extras = {
+        _EXTRA_COMMAND_LINE_FILE: command_line_file.name,
+      }
+      if self._enable_test_server_spawner:
+        extras[_EXTRA_ENABLE_TEST_SERVER_SPAWNER] = '1'
+
       return device.StartInstrumentation(
-          self._component,
-          extras={_EXTRA_COMMAND_LINE_FILE: command_line_file.name},
-          raw=False,
-          **kwargs)
+          self._component, extras=extras, raw=False, **kwargs)
 
   def Clear(self, device):
     device.ClearApplicationState(self._package)
@@ -70,6 +80,9 @@ class _ExeDelegate(object):
     else:
       self._deps_host_path = None
     self._test_run = tr
+
+  def EnableTestServerSpawner(self):
+    pass
 
   def Install(self, device):
     # TODO(jbudorick): Look into merging this with normal data deps pushing if
@@ -130,8 +143,6 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     elif self._test_instance.exe:
       self._delegate = _ExeDelegate(self, self._test_instance.exe)
 
-    self._servers = {}
-
   #override
   def TestPackage(self):
     return self._test_instance._suite
@@ -150,14 +161,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
           for h, d in host_device_tuples]
       dev.PushChangedFiles(host_device_tuples)
 
-      self._servers[str(dev)] = []
       if self.TestPackage() in _SUITE_REQUIRES_TEST_SERVER_SPAWNER:
-        self._servers[str(dev)].append(
-            local_test_server_spawner.LocalTestServerSpawner(
-                ports.AllocateTestServerPort(), dev, self.GetTool(dev)))
-
-      for s in self._servers[str(dev)]:
-        s.SetUp()
+        self._delegate.EnableTestServerSpawner()
 
     self._env.parallel_devices.pMap(individual_device_set_up,
                                     self._test_instance.GetDataDependencies())
@@ -189,8 +194,6 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     # Run the test.
     output = self._delegate.RunWithFlags(device, '--gtest_filter=%s' % test,
                                          timeout=900, retries=0)
-    for s in self._servers[str(device)]:
-      s.Reset()
     self._delegate.Clear(device)
 
     # Parse the output.
@@ -200,9 +203,5 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def TearDown(self):
-    def individual_device_tear_down(dev):
-      for s in self._servers[str(dev)]:
-        s.TearDown()
-
-    self._env.parallel_devices.pMap(individual_device_tear_down)
+    pass
 

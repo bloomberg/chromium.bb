@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.test;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -16,9 +17,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.RequestLine;
 import org.apache.http.StatusLine;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.FileEntity;
-import org.apache.http.impl.DefaultHttpServerConnection;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 import org.apache.http.params.BasicHttpParams;
@@ -26,15 +25,14 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.params.HttpParams;
 
 import org.chromium.base.test.BaseInstrumentationTestRunner;
+import org.chromium.net.test.BaseHttpTestServer;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -74,38 +72,30 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
 
     @Override
     public void onStart() {
-        if (mRunTestHttpServer) startTestHttpServer();
+        if (mRunTestHttpServer) {
+            try {
+                startTestHttpServer();
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to start HTTP test server", e);
+                finish(Activity.RESULT_CANCELED, null);
+            }
+        }
         super.onStart();
     }
 
-    private void startTestHttpServer() {
-        Object startLock = new Object();
-        mHttpServer = new TestHttpServer(Environment.getExternalStorageDirectory(), 8000,
-                                         startLock);
+    private void startTestHttpServer() throws IOException {
+        mHttpServer = new TestHttpServer(Environment.getExternalStorageDirectory(), 8000);
         mHttpServerThread = new Thread(mHttpServer);
         mHttpServerThread.start();
-        synchronized (startLock) {
-            try {
-                while (!mHttpServer.hasStarted()) {
-                    startLock.wait();
-                }
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Interrupted while starting test http server: " + e.toString());
-            }
-        }
     }
 
-    private static class TestHttpServer implements Runnable {
+    private static class TestHttpServer extends BaseHttpTestServer {
         private static final String TAG = "ChromeInstrumentationTestRunner.TestHttpServer";
 
-        private AtomicBoolean mHasStarted;
-        private AtomicBoolean mKeepRunning;
-        private int mPort;
         private final File mRootDirectory;
         private final String mRootPath;
-        private ServerSocket mServerSocket;
-        private Object mStartLock;
 
+        private static final int ACCEPT_TIMEOUT_MS = 5000;
         private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
         private static final Map<String, String> EXTENSION_CONTENT_TYPE_MAP;
         static {
@@ -132,62 +122,26 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
             EXTENSION_CONTENT_TYPE_MAP = Collections.unmodifiableMap(m);
         }
 
-        public TestHttpServer(File rootDirectory, int port, Object startLock) {
-            mHasStarted = new AtomicBoolean(false);
-            mKeepRunning = new AtomicBoolean(true);
-            mPort = port;
+        public TestHttpServer(File rootDirectory, int port) throws IOException {
+            super(port, ACCEPT_TIMEOUT_MS);
             mRootDirectory = rootDirectory;
             mRootPath = mRootDirectory.getAbsolutePath();
-            mServerSocket = null;
-            mStartLock = startLock;
         }
 
         @Override
-        public void run() {
-            synchronized (mStartLock) {
-                try {
-                    mServerSocket = new ServerSocket(mPort);
-                } catch (IOException e) {
-                    Log.e(TAG, "Could not open server socket on " + Integer.toString(mPort)
-                            + ": " + e.toString());
-                    return;
-                } finally {
-                    mHasStarted.set(true);
-                    mStartLock.notify();
-                }
-            }
-
-            HttpParams httpParams = new BasicHttpParams();
-            httpParams.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_0);
-
-            while (mKeepRunning.get()) {
-                try {
-                    Socket sock = mServerSocket.accept();
-                    if (!sock.getInetAddress().isLoopbackAddress()) {
-                        Log.w(TAG, "Remote connections forbidden.");
-                        sock.close();
-                        continue;
-                    }
-
-                    DefaultHttpServerConnection conn = new DefaultHttpServerConnection();
-                    conn.bind(sock, httpParams);
-
-                    HttpRequest request = conn.receiveRequestHeader();
-                    HttpResponse response = generateResponse(request);
-
-                    conn.sendResponseHeader(response);
-                    conn.sendResponseEntity(response);
-                    conn.close();
-                    sock.close();
-                } catch (IOException e) {
-                    Log.e(TAG, "Error while handling incoming connection: " + e.toString());
-                } catch (HttpException e) {
-                    Log.e(TAG, "Error while handling HTTP request: " + e.toString());
-                }
-            }
+        protected boolean validateSocket(Socket sock) {
+            return !sock.getInetAddress().isLoopbackAddress();
         }
 
-        private HttpResponse generateResponse(HttpRequest request) {
+        @Override
+        protected HttpParams getConnectionParams() {
+            HttpParams httpParams = new BasicHttpParams();
+            httpParams.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_0);
+            return httpParams;
+        }
+
+        @Override
+        protected HttpResponse handleGet(HttpRequest request) throws HttpException {
             RequestLine requestLine = request.getRequestLine();
 
             String requestPath = requestLine.getUri();
@@ -200,11 +154,7 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
             int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
             String reason = "";
             HttpEntity entity = null;
-            if (!HttpGet.METHOD_NAME.equals(requestLine.getMethod())) {
-                Log.w(TAG, "Client made request using unsupported method: "
-                        + requestLine.getMethod());
-                status = HttpStatus.SC_METHOD_NOT_ALLOWED;
-            } else if (!requestedPath.startsWith(mRootPath)) {
+            if (!requestedPath.startsWith(mRootPath)) {
                 Log.w(TAG, "Client tried to request something outside of " + mRootPath + ": "
                         + requestedPath);
                 status = HttpStatus.SC_FORBIDDEN;
@@ -239,14 +189,6 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
             }
             return response;
         }
-
-        public boolean hasStarted() {
-            return mHasStarted.get();
-        }
-
-        public void stopServer() {
-            mKeepRunning.set(false);
-        }
     }
 
     @Override
@@ -256,7 +198,7 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
     }
 
     private void stopTestHttpServer() {
-        mHttpServer.stopServer();
+        mHttpServer.stop();
         try {
             mHttpServerThread.join();
         } catch (InterruptedException e) {

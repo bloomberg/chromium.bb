@@ -587,7 +587,7 @@ class DeviceUtils(object):
     if raw:
       cmd.append('-r')
     for k, v in extras.iteritems():
-      cmd.extend(['-e', k, v])
+      cmd.extend(['-e', str(k), str(v)])
     cmd.append(component)
     return self.RunShellCommand(cmd, check_return=True)
 

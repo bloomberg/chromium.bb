@@ -12,13 +12,17 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 
+import org.chromium.net.test.TestServerSpawner;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -32,9 +36,15 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
     public static final String EXTRA_ONLY_OUTPUT_FAILURES =
             "org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner."
                     + "OnlyOutputFailures";
+    public static final String EXTRA_ENABLE_TEST_SERVER_SPAWNER =
+            "org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner."
+                    + "EnableTestServerSpawner";
 
     private static final String TAG = "ChromeNativeTestInstrumentationTestRunner";
+
+    private static final int ACCEPT_TIMEOUT_MS = 5000;
     private static final Pattern RE_TEST_OUTPUT = Pattern.compile("\\[ *([^ ]*) *\\] ?([^ ]+) .*");
+    private static final int SERVER_SPAWNER_PORT = 0;
 
     private static interface ResultsBundleGenerator {
         public Bundle generate(Map<String, TestResult> rawResults);
@@ -46,6 +56,10 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
     private Bundle mLogBundle;
     private ResultsBundleGenerator mBundleGenerator;
     private boolean mOnlyOutputFailures;
+
+    private boolean mEnableTestServerSpawner;
+    private TestServerSpawner mTestServerSpawner;
+    private Thread mTestServerSpawnerThread;
 
     @Override
     public void onCreate(Bundle arguments) {
@@ -63,14 +77,53 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
         mLogBundle = new Bundle();
         mBundleGenerator = new RobotiumBundleGenerator();
         mOnlyOutputFailures = arguments.containsKey(EXTRA_ONLY_OUTPUT_FAILURES);
+        mEnableTestServerSpawner = arguments.containsKey(EXTRA_ENABLE_TEST_SERVER_SPAWNER);
+        mTestServerSpawner = null;
+        mTestServerSpawnerThread = null;
         start();
     }
 
     @Override
     public void onStart() {
         super.onStart();
+
+        setUp();
         Bundle results = runTests();
+        tearDown();
+
         finish(Activity.RESULT_OK, results);
+    }
+
+    private void setUp() {
+        if (mEnableTestServerSpawner) {
+            Log.i(TAG, "Test server spawner enabled.");
+            try {
+                mTestServerSpawner = new TestServerSpawner(SERVER_SPAWNER_PORT, ACCEPT_TIMEOUT_MS);
+
+                File portFile = new File(
+                        Environment.getExternalStorageDirectory(), "net-test-server-ports");
+                OutputStreamWriter writer =
+                        new OutputStreamWriter(new FileOutputStream(portFile));
+                writer.write(Integer.toString(mTestServerSpawner.getServerPort()) + ":0");
+                writer.close();
+
+                mTestServerSpawnerThread = new Thread(mTestServerSpawner);
+                mTestServerSpawnerThread.start();
+            } catch (IOException e) {
+                Log.e(TAG, "Error creating TestServerSpawner: " + e.toString());
+            }
+        }
+    }
+
+    private void tearDown() {
+        if (mTestServerSpawnerThread != null) {
+            try {
+                mTestServerSpawner.stop();
+                mTestServerSpawnerThread.join();
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Interrupted while shutting down test server spawner: " + e.toString());
+            }
+        }
     }
 
     /** Runs the tests in the ChromeNativeTestActivity and returns a Bundle containing the results.
