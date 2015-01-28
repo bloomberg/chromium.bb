@@ -59,6 +59,18 @@ class UnitTestPlatformDelegate {
   ~UnitTestPlatformDelegate() {}
 };
 
+// Runs tests serially, each in its own process.
+void RunUnitTestsSerially(TestLauncher* test_launcher,
+                          UnitTestPlatformDelegate* platform_delegate,
+                          const std::vector<std::string>& test_names,
+                          int launch_flags);
+
+// Runs tests in batches (each batch in its own process).
+void RunUnitTestsBatch(TestLauncher* test_launcher,
+                       UnitTestPlatformDelegate* platform_delegate,
+                       const std::vector<std::string>& test_names,
+                       int launch_flags);
+
 // Test launcher delegate for unit tests (mostly to support batching).
 class UnitTestLauncherDelegate : public TestLauncherDelegate {
  public:
@@ -68,15 +80,6 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
   ~UnitTestLauncherDelegate() override;
 
  private:
-  struct GTestCallbackState {
-    GTestCallbackState();
-    ~GTestCallbackState();
-
-    TestLauncher* test_launcher;
-    std::vector<std::string> test_names;
-    FilePath output_file;
-  };
-
   // TestLauncherDelegate:
   bool GetTests(std::vector<SplitTestName>* output) override;
   bool ShouldRunTest(const std::string& test_case_name,
@@ -85,39 +88,6 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
                   const std::vector<std::string>& test_names) override;
   size_t RetryTests(TestLauncher* test_launcher,
                     const std::vector<std::string>& test_names) override;
-
-  // Runs tests serially, each in its own process.
-  void RunSerially(TestLauncher* test_launcher,
-                   const std::vector<std::string>& test_names);
-
-  // Runs tests in batches (each batch in its own process).
-  void RunBatch(TestLauncher* test_launcher,
-                const std::vector<std::string>& test_names);
-
-  // Callback for batched tests.
-  void GTestCallback(const GTestCallbackState& callback_state,
-                     int exit_code,
-                     const TimeDelta& elapsed_time,
-                     bool was_timeout,
-                     const std::string& output);
-
-  // Callback for serialized tests.
-  void SerialGTestCallback(const GTestCallbackState& callback_state,
-                           const std::vector<std::string>& test_names,
-                           int exit_code,
-                           const TimeDelta& elapsed_time,
-                           bool was_timeout,
-                           const std::string& output);
-
-  // Interprets test results and reports to the test launcher. Returns true
-  // on success.
-  static bool ProcessTestResults(TestLauncher* test_launcher,
-                                 const std::vector<std::string>& test_names,
-                                 const base::FilePath& output_file,
-                                 const std::string& output,
-                                 int exit_code,
-                                 bool was_timeout,
-                                 std::vector<std::string>* tests_to_relaunch);
 
   ThreadChecker thread_checker_;
 

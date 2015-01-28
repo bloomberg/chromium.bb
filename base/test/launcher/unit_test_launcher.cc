@@ -216,230 +216,9 @@ void InitGoogleTestWChar(int* argc, wchar_t** argv) {
 }
 #endif  // defined(OS_WIN)
 
-}  // namespace
-
-int LaunchUnitTests(int argc,
-                    char** argv,
-                    const RunTestSuiteCallback& run_test_suite) {
-  CommandLine::Init(argc, argv);
-  return LaunchUnitTestsInternal(run_test_suite, SysInfo::NumberOfProcessors(),
-                                 true, Bind(&InitGoogleTestChar, &argc, argv));
-}
-
-int LaunchUnitTestsSerially(int argc,
-                            char** argv,
-                            const RunTestSuiteCallback& run_test_suite) {
-  CommandLine::Init(argc, argv);
-  return LaunchUnitTestsInternal(run_test_suite, 1, true,
-                                 Bind(&InitGoogleTestChar, &argc, argv));
-}
-
-#if defined(OS_WIN)
-int LaunchUnitTests(int argc,
-                    wchar_t** argv,
-                    bool use_job_objects,
-                    const RunTestSuiteCallback& run_test_suite) {
-  // Windows CommandLine::Init ignores argv anyway.
-  CommandLine::Init(argc, NULL);
-  return LaunchUnitTestsInternal(run_test_suite, SysInfo::NumberOfProcessors(),
-                                 use_job_objects,
-                                 Bind(&InitGoogleTestWChar, &argc, argv));
-}
-#endif  // defined(OS_WIN)
-
-UnitTestLauncherDelegate::UnitTestLauncherDelegate(
-    UnitTestPlatformDelegate* platform_delegate,
-    size_t batch_limit,
-    bool use_job_objects)
-    : platform_delegate_(platform_delegate),
-      batch_limit_(batch_limit),
-      use_job_objects_(use_job_objects) {
-}
-
-UnitTestLauncherDelegate::~UnitTestLauncherDelegate() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-UnitTestLauncherDelegate::GTestCallbackState::GTestCallbackState() {
-}
-
-UnitTestLauncherDelegate::GTestCallbackState::~GTestCallbackState() {
-}
-
-bool UnitTestLauncherDelegate::GetTests(std::vector<SplitTestName>* output) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return platform_delegate_->GetTests(output);
-}
-
-bool UnitTestLauncherDelegate::ShouldRunTest(const std::string& test_case_name,
-                                             const std::string& test_name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // There is no additional logic to disable specific tests.
-  return true;
-}
-
-size_t UnitTestLauncherDelegate::RunTests(
-    TestLauncher* test_launcher,
-    const std::vector<std::string>& test_names) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  std::vector<std::string> batch;
-  for (size_t i = 0; i < test_names.size(); i++) {
-    batch.push_back(test_names[i]);
-
-    // Use 0 to indicate unlimited batch size.
-    if (batch.size() >= batch_limit_ && batch_limit_ != 0) {
-      RunBatch(test_launcher, batch);
-      batch.clear();
-    }
-  }
-
-  RunBatch(test_launcher, batch);
-
-  return test_names.size();
-}
-
-size_t UnitTestLauncherDelegate::RetryTests(
-    TestLauncher* test_launcher,
-    const std::vector<std::string>& test_names) {
-  MessageLoop::current()->PostTask(
-      FROM_HERE, Bind(&UnitTestLauncherDelegate::RunSerially, Unretained(this),
-                      test_launcher, test_names));
-  return test_names.size();
-}
-
-void UnitTestLauncherDelegate::RunSerially(
-    TestLauncher* test_launcher,
-    const std::vector<std::string>& test_names) {
-  if (test_names.empty())
-    return;
-
-  std::vector<std::string> new_test_names(test_names);
-  std::string test_name(new_test_names.back());
-  new_test_names.pop_back();
-
-  // Create a dedicated temporary directory to store the xml result data
-  // per run to ensure clean state and make it possible to launch multiple
-  // processes in parallel.
-  base::FilePath output_file;
-  CHECK(platform_delegate_->CreateTemporaryFile(&output_file));
-
-  std::vector<std::string> current_test_names;
-  current_test_names.push_back(test_name);
-  CommandLine cmd_line(platform_delegate_->GetCommandLineForChildGTestProcess(
-      current_test_names, output_file));
-
-  GTestCallbackState callback_state;
-  callback_state.test_launcher = test_launcher;
-  callback_state.test_names = current_test_names;
-  callback_state.output_file = output_file;
-
-  test_launcher->LaunchChildGTestProcess(
-      cmd_line,
-      platform_delegate_->GetWrapperForChildGTestProcess(),
-      TestTimeouts::test_launcher_timeout(),
-      use_job_objects_ ? TestLauncher::USE_JOB_OBJECTS : 0,
-      Bind(&UnitTestLauncherDelegate::SerialGTestCallback, Unretained(this),
-           callback_state, new_test_names));
-}
-
-void UnitTestLauncherDelegate::RunBatch(
-    TestLauncher* test_launcher,
-    const std::vector<std::string>& test_names) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (test_names.empty())
-    return;
-
-  // Create a dedicated temporary directory to store the xml result data
-  // per run to ensure clean state and make it possible to launch multiple
-  // processes in parallel.
-  base::FilePath output_file;
-  CHECK(platform_delegate_->CreateTemporaryFile(&output_file));
-
-  CommandLine cmd_line(platform_delegate_->GetCommandLineForChildGTestProcess(
-      test_names, output_file));
-
-  // Adjust the timeout depending on how many tests we're running
-  // (note that e.g. the last batch of tests will be smaller).
-  // TODO(phajdan.jr): Consider an adaptive timeout, which can change
-  // depending on how many tests ran and how many remain.
-  // Note: do NOT parse child's stdout to do that, it's known to be
-  // unreliable (e.g. buffering issues can mix up the output).
-  base::TimeDelta timeout =
-      test_names.size() * TestTimeouts::test_launcher_timeout();
-
-  GTestCallbackState callback_state;
-  callback_state.test_launcher = test_launcher;
-  callback_state.test_names = test_names;
-  callback_state.output_file = output_file;
-
-  test_launcher->LaunchChildGTestProcess(
-      cmd_line,
-      platform_delegate_->GetWrapperForChildGTestProcess(),
-      timeout,
-      use_job_objects_ ? TestLauncher::USE_JOB_OBJECTS : 0,
-      Bind(&UnitTestLauncherDelegate::GTestCallback, Unretained(this),
-           callback_state));
-}
-
-void UnitTestLauncherDelegate::GTestCallback(
-    const GTestCallbackState& callback_state,
-    int exit_code,
-    const TimeDelta& elapsed_time,
-    bool was_timeout,
-    const std::string& output) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<std::string> tests_to_relaunch;
-  ProcessTestResults(callback_state.test_launcher, callback_state.test_names,
-                     callback_state.output_file, output, exit_code, was_timeout,
-                     &tests_to_relaunch);
-
-  // Relaunch requested tests in parallel, but only use single
-  // test per batch for more precise results (crashes, test passes
-  // but non-zero exit codes etc).
-  for (size_t i = 0; i < tests_to_relaunch.size(); i++) {
-    std::vector<std::string> batch;
-    batch.push_back(tests_to_relaunch[i]);
-    RunBatch(callback_state.test_launcher, batch);
-  }
-
-  // The temporary file's directory is also temporary.
-  DeleteFile(callback_state.output_file.DirName(), true);
-}
-
-void UnitTestLauncherDelegate::SerialGTestCallback(
-    const GTestCallbackState& callback_state,
-    const std::vector<std::string>& test_names,
-    int exit_code,
-    const TimeDelta& elapsed_time,
-    bool was_timeout,
-    const std::string& output) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<std::string> tests_to_relaunch;
-  bool called_any_callbacks =
-      ProcessTestResults(callback_state.test_launcher,
-                         callback_state.test_names, callback_state.output_file,
-                         output, exit_code, was_timeout, &tests_to_relaunch);
-
-  // There is only one test, there cannot be other tests to relaunch
-  // due to a crash.
-  DCHECK(tests_to_relaunch.empty());
-
-  // There is only one test, we should have called back with its result.
-  DCHECK(called_any_callbacks);
-
-  // The temporary file's directory is also temporary.
-  DeleteFile(callback_state.output_file.DirName(), true);
-
-  MessageLoop::current()->PostTask(
-      FROM_HERE, Bind(&UnitTestLauncherDelegate::RunSerially, Unretained(this),
-                      callback_state.test_launcher, test_names));
-}
-
-// static
-bool UnitTestLauncherDelegate::ProcessTestResults(
+// Interprets test results and reports to the test launcher. Returns true
+// on success.
+bool ProcessTestResults(
     TestLauncher* test_launcher,
     const std::vector<std::string>& test_names,
     const base::FilePath& output_file,
@@ -572,6 +351,246 @@ bool UnitTestLauncherDelegate::ProcessTestResults(
   }
 
   return called_any_callback;
+}
+
+// TODO(phajdan.jr): Pass parameters directly with C++11 variadic templates.
+struct GTestCallbackState {
+  TestLauncher* test_launcher;
+  UnitTestPlatformDelegate* platform_delegate;
+  std::vector<std::string> test_names;
+  int launch_flags;
+  FilePath output_file;
+};
+
+void GTestCallback(
+    const GTestCallbackState& callback_state,
+    int exit_code,
+    const TimeDelta& elapsed_time,
+    bool was_timeout,
+    const std::string& output) {
+  std::vector<std::string> tests_to_relaunch;
+  ProcessTestResults(callback_state.test_launcher, callback_state.test_names,
+                     callback_state.output_file, output, exit_code, was_timeout,
+                     &tests_to_relaunch);
+
+  // Relaunch requested tests in parallel, but only use single
+  // test per batch for more precise results (crashes, test passes
+  // but non-zero exit codes etc).
+  for (size_t i = 0; i < tests_to_relaunch.size(); i++) {
+    std::vector<std::string> batch;
+    batch.push_back(tests_to_relaunch[i]);
+    RunUnitTestsBatch(callback_state.test_launcher,
+             callback_state.platform_delegate,
+             batch,
+             callback_state.launch_flags);
+  }
+
+  // The temporary file's directory is also temporary.
+  DeleteFile(callback_state.output_file.DirName(), true);
+}
+
+void SerialGTestCallback(
+    const GTestCallbackState& callback_state,
+    const std::vector<std::string>& test_names,
+    int exit_code,
+    const TimeDelta& elapsed_time,
+    bool was_timeout,
+    const std::string& output) {
+  std::vector<std::string> tests_to_relaunch;
+  bool called_any_callbacks =
+      ProcessTestResults(callback_state.test_launcher,
+                         callback_state.test_names, callback_state.output_file,
+                         output, exit_code, was_timeout, &tests_to_relaunch);
+
+  // There is only one test, there cannot be other tests to relaunch
+  // due to a crash.
+  DCHECK(tests_to_relaunch.empty());
+
+  // There is only one test, we should have called back with its result.
+  DCHECK(called_any_callbacks);
+
+  // The temporary file's directory is also temporary.
+  DeleteFile(callback_state.output_file.DirName(), true);
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&RunUnitTestsSerially,
+           callback_state.test_launcher,
+           callback_state.platform_delegate,
+           test_names,
+           callback_state.launch_flags));
+}
+
+}  // namespace
+
+int LaunchUnitTests(int argc,
+                    char** argv,
+                    const RunTestSuiteCallback& run_test_suite) {
+  CommandLine::Init(argc, argv);
+  return LaunchUnitTestsInternal(run_test_suite, SysInfo::NumberOfProcessors(),
+                                 true, Bind(&InitGoogleTestChar, &argc, argv));
+}
+
+int LaunchUnitTestsSerially(int argc,
+                            char** argv,
+                            const RunTestSuiteCallback& run_test_suite) {
+  CommandLine::Init(argc, argv);
+  return LaunchUnitTestsInternal(run_test_suite, 1, true,
+                                 Bind(&InitGoogleTestChar, &argc, argv));
+}
+
+#if defined(OS_WIN)
+int LaunchUnitTests(int argc,
+                    wchar_t** argv,
+                    bool use_job_objects,
+                    const RunTestSuiteCallback& run_test_suite) {
+  // Windows CommandLine::Init ignores argv anyway.
+  CommandLine::Init(argc, NULL);
+  return LaunchUnitTestsInternal(run_test_suite, SysInfo::NumberOfProcessors(),
+                                 use_job_objects,
+                                 Bind(&InitGoogleTestWChar, &argc, argv));
+}
+#endif  // defined(OS_WIN)
+
+void RunUnitTestsSerially(
+    TestLauncher* test_launcher,
+    UnitTestPlatformDelegate* platform_delegate,
+    const std::vector<std::string>& test_names,
+    int launch_flags) {
+  if (test_names.empty())
+    return;
+
+  std::vector<std::string> new_test_names(test_names);
+  std::string test_name(new_test_names.back());
+  new_test_names.pop_back();
+
+  // Create a dedicated temporary directory to store the xml result data
+  // per run to ensure clean state and make it possible to launch multiple
+  // processes in parallel.
+  base::FilePath output_file;
+  CHECK(platform_delegate->CreateTemporaryFile(&output_file));
+
+  std::vector<std::string> current_test_names;
+  current_test_names.push_back(test_name);
+  CommandLine cmd_line(platform_delegate->GetCommandLineForChildGTestProcess(
+      current_test_names, output_file));
+
+  GTestCallbackState callback_state;
+  callback_state.test_launcher = test_launcher;
+  callback_state.platform_delegate = platform_delegate;
+  callback_state.test_names = current_test_names;
+  callback_state.launch_flags = launch_flags;
+  callback_state.output_file = output_file;
+
+  test_launcher->LaunchChildGTestProcess(
+      cmd_line,
+      platform_delegate->GetWrapperForChildGTestProcess(),
+      TestTimeouts::test_launcher_timeout(),
+      launch_flags,
+      Bind(&SerialGTestCallback, callback_state, new_test_names));
+}
+
+void RunUnitTestsBatch(
+    TestLauncher* test_launcher,
+    UnitTestPlatformDelegate* platform_delegate,
+    const std::vector<std::string>& test_names,
+    int launch_flags) {
+  if (test_names.empty())
+    return;
+
+  // Create a dedicated temporary directory to store the xml result data
+  // per run to ensure clean state and make it possible to launch multiple
+  // processes in parallel.
+  base::FilePath output_file;
+  CHECK(platform_delegate->CreateTemporaryFile(&output_file));
+
+  CommandLine cmd_line(platform_delegate->GetCommandLineForChildGTestProcess(
+      test_names, output_file));
+
+  // Adjust the timeout depending on how many tests we're running
+  // (note that e.g. the last batch of tests will be smaller).
+  // TODO(phajdan.jr): Consider an adaptive timeout, which can change
+  // depending on how many tests ran and how many remain.
+  // Note: do NOT parse child's stdout to do that, it's known to be
+  // unreliable (e.g. buffering issues can mix up the output).
+  base::TimeDelta timeout =
+      test_names.size() * TestTimeouts::test_launcher_timeout();
+
+  GTestCallbackState callback_state;
+  callback_state.test_launcher = test_launcher;
+  callback_state.platform_delegate = platform_delegate;
+  callback_state.test_names = test_names;
+  callback_state.launch_flags = launch_flags;
+  callback_state.output_file = output_file;
+
+  test_launcher->LaunchChildGTestProcess(
+      cmd_line,
+      platform_delegate->GetWrapperForChildGTestProcess(),
+      timeout,
+      launch_flags,
+      Bind(&GTestCallback, callback_state));
+}
+
+UnitTestLauncherDelegate::UnitTestLauncherDelegate(
+    UnitTestPlatformDelegate* platform_delegate,
+    size_t batch_limit,
+    bool use_job_objects)
+    : platform_delegate_(platform_delegate),
+      batch_limit_(batch_limit),
+      use_job_objects_(use_job_objects) {
+}
+
+UnitTestLauncherDelegate::~UnitTestLauncherDelegate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+bool UnitTestLauncherDelegate::GetTests(std::vector<SplitTestName>* output) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return platform_delegate_->GetTests(output);
+}
+
+bool UnitTestLauncherDelegate::ShouldRunTest(const std::string& test_case_name,
+                                             const std::string& test_name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // There is no additional logic to disable specific tests.
+  return true;
+}
+
+size_t UnitTestLauncherDelegate::RunTests(
+    TestLauncher* test_launcher,
+    const std::vector<std::string>& test_names) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  int launch_flags = use_job_objects_ ? TestLauncher::USE_JOB_OBJECTS : 0;
+
+  std::vector<std::string> batch;
+  for (size_t i = 0; i < test_names.size(); i++) {
+    batch.push_back(test_names[i]);
+
+    // Use 0 to indicate unlimited batch size.
+    if (batch.size() >= batch_limit_ && batch_limit_ != 0) {
+      RunUnitTestsBatch(test_launcher, platform_delegate_, batch, launch_flags);
+      batch.clear();
+    }
+  }
+
+  RunUnitTestsBatch(test_launcher, platform_delegate_, batch, launch_flags);
+
+  return test_names.size();
+}
+
+size_t UnitTestLauncherDelegate::RetryTests(
+    TestLauncher* test_launcher,
+    const std::vector<std::string>& test_names) {
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&RunUnitTestsSerially,
+           test_launcher,
+           platform_delegate_,
+           test_names,
+           use_job_objects_ ? TestLauncher::USE_JOB_OBJECTS : 0));
+  return test_names.size();
 }
 
 }  // namespace base
