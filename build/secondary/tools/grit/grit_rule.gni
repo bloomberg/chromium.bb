@@ -54,7 +54,6 @@
 #       If set, output_dir is not added to include_dirs.
 #
 #   deps  (optional)
-#   data_deps  (optional)
 #   visibility  (optional)
 #       Normal meaning.
 #
@@ -413,9 +412,6 @@ template("grit") {
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
-    }
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
     }
   }
 
