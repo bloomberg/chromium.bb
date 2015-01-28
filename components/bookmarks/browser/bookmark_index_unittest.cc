@@ -153,6 +153,9 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatching) {
     // Trivial test case of only one term, exact match.
     { "a;b",                        "A",        "a" },
 
+    // Two terms, exact matches.
+    { "a b;b",                      "a b",      "a b" },
+
     // Prefix match, one term.
     { "abcd;abc;b",                 "abc",      "abcd;abc" },
 
@@ -176,13 +179,17 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatching) {
     // Prefix matches against multiple candidates.
     { "abc1 abc2 abc3 abc4",        "abc",      "abc1 abc2 abc3 abc4"},
 
+    // Multiple prefix matches (with a lot of redundancy) against multiple
+    // candidates.
+    { "abc1 abc2 abc3 abc4 def1 def2 def3 def4",
+      "abc def abc def abc def abc def abc def",
+      "abc1 abc2 abc3 abc4 def1 def2 def3 def4"},
+
     // Prefix match on the first term.
     { "abc",                        "a",        "" },
 
     // Prefix match on subsequent terms.
     { "abc def",                    "abc d",    "" },
-
-
   };
   for (size_t i = 0; i < arraysize(data); ++i) {
     std::vector<std::string> titles;

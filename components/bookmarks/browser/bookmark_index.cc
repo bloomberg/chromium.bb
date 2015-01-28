@@ -11,6 +11,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_match.h"
@@ -62,40 +63,6 @@ struct NodeTypedCountPairExtractNodeFunctor
 
 }  // namespace
 
-// Used when finding the set of bookmarks that match a query. Each match
-// represents a set of terms (as an interator into the Index) matching the
-// query as well as the set of nodes that contain those terms in their titles.
-struct BookmarkIndex::Match {
-  // List of terms matching the query.
-  std::list<Index::const_iterator> terms;
-
-  // The set of nodes matching the terms. As an optimization this is empty
-  // when we match only one term, and is filled in when we get more than one
-  // term. We can do this as when we have only one matching term we know
-  // the set of matching nodes is terms.front()->second.
-  //
-  // Use nodes_begin() and nodes_end() to get an iterator over the set as
-  // it handles the necessary switching between nodes and terms.front().
-  NodeSet nodes;
-
-  // Returns an iterator to the beginning of the matching nodes. See
-  // description of nodes for why this should be used over nodes.begin().
-  NodeSet::const_iterator nodes_begin() const;
-
-  // Returns an iterator to the beginning of the matching nodes. See
-  // description of nodes for why this should be used over nodes.end().
-  NodeSet::const_iterator nodes_end() const;
-};
-
-BookmarkIndex::NodeSet::const_iterator
-    BookmarkIndex::Match::nodes_begin() const {
-  return nodes.empty() ? terms.front()->second.begin() : nodes.begin();
-}
-
-BookmarkIndex::NodeSet::const_iterator BookmarkIndex::Match::nodes_end() const {
-  return nodes.empty() ? terms.front()->second.end() : nodes.end();
-}
-
 BookmarkIndex::BookmarkIndex(BookmarkClient* client,
                              const std::string& languages)
     : client_(client),
@@ -143,7 +110,7 @@ void BookmarkIndex::GetBookmarksMatching(
   if (terms.empty())
     return;
 
-  Matches matches;
+  NodeSet matches;
   for (size_t i = 0; i < terms.size(); ++i) {
     if (!GetBookmarksMatchingTerm(
             terms[i], i == 0, matching_algorithm, &matches)) {
@@ -172,23 +139,12 @@ void BookmarkIndex::GetBookmarksMatching(
     AddMatchToResults(*i, &parser, query_nodes.get(), results);
 }
 
-void BookmarkIndex::SortMatches(const Matches& matches,
+void BookmarkIndex::SortMatches(const NodeSet& matches,
                                 Nodes* sorted_nodes) const {
-  NodeSet nodes;
-  for (Matches::const_iterator i = matches.begin(); i != matches.end(); ++i) {
-#if !defined(OS_ANDROID)
-    nodes.insert(i->nodes_begin(), i->nodes_end());
-#else
-    // Work around a bug in the implementation of std::set::insert in the STL
-    // used on android (http://crbug.com/367050).
-    for (NodeSet::const_iterator n = i->nodes_begin(); n != i->nodes_end(); ++n)
-      nodes.insert(nodes.end(), *n);
-#endif
-  }
-  sorted_nodes->reserve(sorted_nodes->size() + nodes.size());
+  sorted_nodes->reserve(matches.size());
   if (client_->SupportsTypedCountForNodes()) {
     NodeTypedCountPairs node_typed_counts;
-    client_->GetTypedCountForNodes(nodes, &node_typed_counts);
+    client_->GetTypedCountForNodes(matches, &node_typed_counts);
     std::sort(node_typed_counts.begin(),
               node_typed_counts.end(),
               NodeTypedCountPairSortFunctor());
@@ -197,7 +153,7 @@ void BookmarkIndex::SortMatches(const Matches& matches,
                    std::back_inserter(*sorted_nodes),
                    NodeTypedCountPairExtractNodeFunctor());
   } else {
-    sorted_nodes->insert(sorted_nodes->end(), nodes.begin(), nodes.end());
+    sorted_nodes->insert(sorted_nodes->end(), matches.begin(), matches.end());
   }
 }
 
@@ -254,7 +210,7 @@ bool BookmarkIndex::GetBookmarksMatchingTerm(
     const base::string16& term,
     bool first_term,
     query_parser::MatchingAlgorithm matching_algorithm,
-    Matches* matches) {
+    NodeSet* matches) {
   Index::const_iterator i = index_.lower_bound(term);
   if (i == index_.end())
     return false;
@@ -266,73 +222,35 @@ bool BookmarkIndex::GetBookmarksMatchingTerm(
       return false;  // No bookmarks with this term.
 
     if (first_term) {
-      Match match;
-      match.terms.push_back(i);
-      matches->push_back(match);
+      (*matches) = i->second;
       return true;
     }
-    CombineMatchesInPlace(i, matches);
-  } else if (first_term) {
-    // This is the first term and we're doing a prefix match. Loop through
-    // index adding all entries that start with term to matches.
-    while (i != index_.end() &&
-           i->first.size() >= term.size() &&
-           term.compare(0, term.size(), i->first, 0, term.size()) == 0) {
-      Match match;
-      match.terms.push_back(i);
-      matches->push_back(match);
-      ++i;
-    }
+    *matches = base::STLSetIntersection<NodeSet>(i->second, *matches);
   } else {
-    // Prefix match and not the first term. Loop through index combining
-    // current matches in matches with term, placing result in result.
-    Matches result;
+    // Loop through index adding all entries that start with term to
+    // |prefix_matches|.
+    NodeSet tmp_prefix_matches;
+    // If this is the first term, then store the result directly in |matches|
+    // to avoid calling stl intersection (which requires a copy).
+    NodeSet* prefix_matches = first_term ? matches : &tmp_prefix_matches;
     while (i != index_.end() &&
            i->first.size() >= term.size() &&
            term.compare(0, term.size(), i->first, 0, term.size()) == 0) {
-      CombineMatches(i, *matches, &result);
+#if !defined(OS_ANDROID)
+      prefix_matches->insert(i->second.begin(), i->second.end());
+#else
+      // Work around a bug in the implementation of std::set::insert in the STL
+      // used on android (http://crbug.com/367050).
+      for (NodeSet::const_iterator n = i->second.begin(); n != i->second.end();
+           ++n)
+        prefix_matches->insert(prefix_matches->end(), *n);
+#endif
       ++i;
     }
-    matches->swap(result);
+    if (!first_term)
+      *matches = base::STLSetIntersection<NodeSet>(*prefix_matches, *matches);
   }
   return !matches->empty();
-}
-
-void BookmarkIndex::CombineMatchesInPlace(const Index::const_iterator& index_i,
-                                          Matches* matches) {
-  for (size_t i = 0; i < matches->size(); ) {
-    Match* match = &((*matches)[i]);
-    NodeSet intersection;
-    std::set_intersection(match->nodes_begin(), match->nodes_end(),
-                          index_i->second.begin(), index_i->second.end(),
-                          std::inserter(intersection, intersection.begin()));
-    if (intersection.empty()) {
-      matches->erase(matches->begin() + i);
-    } else {
-      match->terms.push_back(index_i);
-      match->nodes.swap(intersection);
-      ++i;
-    }
-  }
-}
-
-void BookmarkIndex::CombineMatches(const Index::const_iterator& index_i,
-                                   const Matches& current_matches,
-                                   Matches* result) {
-  for (size_t i = 0; i < current_matches.size(); ++i) {
-    const Match& match = current_matches[i];
-    NodeSet intersection;
-    std::set_intersection(match.nodes_begin(), match.nodes_end(),
-                          index_i->second.begin(), index_i->second.end(),
-                          std::inserter(intersection, intersection.begin()));
-    if (!intersection.empty()) {
-      result->push_back(Match());
-      Match& combined_match = result->back();
-      combined_match.terms = match.terms;
-      combined_match.terms.push_back(index_i);
-      combined_match.nodes.swap(intersection);
-    }
-  }
 }
 
 std::vector<base::string16> BookmarkIndex::ExtractQueryWords(
