@@ -16,7 +16,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/scored_history_match.h"
@@ -27,7 +26,6 @@
 
 class HistoryService;
 class HistoryQuickProviderTest;
-class Profile;
 
 namespace base {
 class Time;
@@ -91,13 +89,13 @@ class InMemoryURLIndex : public HistoryServiceObserver,
     virtual void OnCacheSaveFinished(bool succeeded) = 0;
   };
 
-  // |profile|, which may be NULL during unit testing, is used to register for
-  // history changes. |history_dir| is a path to the directory containing the
-  // history database within the profile wherein the cache and transaction
-  // journals will be stored. |languages| gives a list of language encodings by
-  // which URLs and omnibox searches are broken down into words and characters.
-  InMemoryURLIndex(Profile* profile,
-                   HistoryService* history_service,
+  // |history_service| which may be null during unit testing is used to register
+  // |as an HistoryServiceObserver. |history_dir| is a path to the directory
+  // containing the history database within the profile wherein the cache and
+  // transaction journals will be stored. |languages| gives a list of language
+  // encodings by which URLs and omnibox searches are broken down into words and
+  // characters.
+  InMemoryURLIndex(HistoryService* history_service,
                    const base::FilePath& history_dir,
                    const std::string& languages,
                    HistoryClient* client);
@@ -148,9 +146,6 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, ExpireRow);
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
 
-  // Creating one of me without a history path is not allowed (tests excepted).
-  InMemoryURLIndex();
-
   // HistoryDBTask used to rebuild our private data from the history database.
   class RebuildPrivateDataFromHistoryDBTask : public HistoryDBTask {
    public:
@@ -167,7 +162,7 @@ class InMemoryURLIndex : public HistoryServiceObserver,
     ~RebuildPrivateDataFromHistoryDBTask() override;
 
     InMemoryURLIndex* index_;  // Call back to this index at completion.
-    std::string languages_;  // Languages for word-breaking.
+    std::string languages_;    // Languages for word-breaking.
     std::set<std::string> scheme_whitelist_;  // Schemes to be indexed.
     bool succeeded_;  // Indicates if the rebuild was successful.
     scoped_refptr<URLIndexPrivateData> data_;  // The rebuilt private data.
@@ -185,8 +180,8 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   // provided as a hook for unit testing.)
   bool GetCacheFilePath(base::FilePath* file_path);
 
-  // Restores the index's private data from the cache file stored in the
-  // profile directory.
+  // Restores the index's private data from the cache file stored in the history
+  // directory.
   void PostRestoreFromCacheFileTask();
 
   // Schedules a history task to rebuild our private data from the history
@@ -219,7 +214,7 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   void OnCacheRestored(URLIndexPrivateData* private_data);
 
   // Posts a task to cache the index private data and write the cache file to
-  // the profile directory.
+  // the history directory.
   void PostSaveToCacheFileTask();
 
   // Saves private_data_ to the given |path|. Runs on the UI thread.
@@ -263,16 +258,15 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   // Returns the set of whitelisted schemes. For unit testing only.
   const std::set<std::string>& scheme_whitelist() { return scheme_whitelist_; }
 
-  // The profile, may be null when testing.
-  Profile* profile_;
+  // The HistoryService; may be null when testing.
   HistoryService* history_service_;
 
-  // The HistoryClient; may be NULL when testing.
+  // The HistoryClient; may be null when testing.
   HistoryClient* history_client_;
 
   // Directory where cache file resides. This is, except when unit testing,
-  // the same directory in which the profile's history database is found. It
-  // should never be empty.
+  // the same directory in which the history database is found. It should never
+  // be empty.
   base::FilePath history_dir_;
 
   // Languages used during the word-breaking process during indexing.
@@ -302,9 +296,6 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   // temporary safety check to insure that the cache is saved before the
   // index has been destructed.
   bool needs_to_be_cached_;
-
-  ScopedObserver<HistoryService, HistoryServiceObserver>
-      history_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };

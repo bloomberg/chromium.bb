@@ -963,7 +963,7 @@ bool HistoryService::Init(
     std::string languages =
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
     in_memory_url_index_.reset(new history::InMemoryURLIndex(
-        profile_, this, history_dir_, languages, history_client_));
+        this, history_dir_, languages, history_client_));
     in_memory_url_index_->Init();
   }
 

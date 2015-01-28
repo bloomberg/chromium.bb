@@ -35,6 +35,7 @@ using base::ASCIIToUTF16;
 
 namespace {
 const size_t kMaxMatches = 3;
+const char kTestLanguages[] = "en,ja,hi,zh";
 }  // namespace
 
 // The test version of the history url database table ('url') is contained in
@@ -88,10 +89,17 @@ class InMemoryURLIndexTest : public testing::Test {
  protected:
   // Test setup.
   void SetUp() override;
+  void TearDown() override;
 
   // Allows the database containing the test data to be customized by
   // subclasses.
   virtual base::FilePath::StringType TestDBName() const;
+
+  // Allows the test to control when the InMemoryURLIndex is initialized.
+  virtual bool InitializeInMemoryURLIndexInSetUp() const;
+
+  // Initialize the InMemoryURLIndex for the tests.
+  void InitializeInMemoryURLIndex();
 
   // Validates that the given |term| is contained in |cache| and that it is
   // marked as in-use.
@@ -123,10 +131,9 @@ class InMemoryURLIndexTest : public testing::Test {
                               const URLIndexPrivateData& actual);
 
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<InMemoryURLIndex> url_index_;
   TestingProfile profile_;
   HistoryService* history_service_;
-
-  scoped_ptr<InMemoryURLIndex> url_index_;
   HistoryDatabase* history_database_;
 };
 
@@ -273,17 +280,32 @@ void InMemoryURLIndexTest::SetUp() {
     transaction.Commit();
   }
 
-  url_index_.reset(new InMemoryURLIndex(&profile_,
-                                        history_service_,
-                                        base::FilePath(),
-                                        "en,ja,hi,zh",
-                                        history_service_->history_client()));
-  url_index_->Init();
-  url_index_->RebuildFromHistory(history_database_);
+  if (InitializeInMemoryURLIndexInSetUp())
+    InitializeInMemoryURLIndex();
+}
+
+void InMemoryURLIndexTest::TearDown() {
+  // Ensure that the InMemoryURLIndex no longer observer HistoryService before
+  // it is destroyed in order to prevent HistoryService calling dead observer.
+  if (url_index_)
+    url_index_->ShutDown();
 }
 
 base::FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
     return FILE_PATH_LITERAL("url_history_provider_test.db.txt");
+}
+
+bool InMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp() const {
+  return true;
+}
+
+void InMemoryURLIndexTest::InitializeInMemoryURLIndex() {
+  DCHECK(!url_index_);
+  url_index_.reset(new InMemoryURLIndex(history_service_, base::FilePath(),
+                                        kTestLanguages,
+                                        history_service_->history_client()));
+  url_index_->Init();
+  url_index_->RebuildFromHistory(history_database_);
 }
 
 void InMemoryURLIndexTest::CheckTerm(
@@ -420,10 +442,15 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
 class LimitedInMemoryURLIndexTest : public InMemoryURLIndexTest {
  protected:
   base::FilePath::StringType TestDBName() const override;
+  bool InitializeInMemoryURLIndexInSetUp() const override;
 };
 
 base::FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {
   return FILE_PATH_LITERAL("url_history_provider_test_limited.db.txt");
+}
+
+bool LimitedInMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp() const {
+  return false;
 }
 
 TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
@@ -434,13 +461,8 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   uint64 row_count = 0;
   while (statement.Step()) ++row_count;
   EXPECT_EQ(1U, row_count);
-  url_index_.reset(new InMemoryURLIndex(&profile_,
-                                        history_service_,
-                                        base::FilePath(),
-                                        "en,ja,hi,zh",
-                                        history_service_->history_client()));
-  url_index_->Init();
-  url_index_->RebuildFromHistory(history_database_);
+
+  InitializeInMemoryURLIndex();
   URLIndexPrivateData& private_data(*GetPrivateData());
 
   // history_info_map_ should have the same number of items as were filtered.
@@ -1173,6 +1195,7 @@ class InMemoryURLIndexCacheTest : public testing::Test {
 
  protected:
   void SetUp() override;
+  void TearDown() override;
 
   // Pass-through functions to simplify our friendship with InMemoryURLIndex.
   void set_history_dir(const base::FilePath& dir_path);
@@ -1184,10 +1207,14 @@ class InMemoryURLIndexCacheTest : public testing::Test {
 
 void InMemoryURLIndexCacheTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  HistoryClient history_client;
   base::FilePath path(temp_dir_.path());
-  url_index_.reset(new InMemoryURLIndex(
-      NULL, nullptr, path, "en,ja,hi,zh", &history_client));
+  url_index_.reset(
+      new InMemoryURLIndex(nullptr, path, kTestLanguages, nullptr));
+}
+
+void InMemoryURLIndexCacheTest::TearDown() {
+  if (url_index_)
+    url_index_->ShutDown();
 }
 
 void InMemoryURLIndexCacheTest::set_history_dir(
