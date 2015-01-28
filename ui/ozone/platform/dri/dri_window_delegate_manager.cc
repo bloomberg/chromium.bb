@@ -41,9 +41,4 @@ DriWindowDelegate* DriWindowDelegateManager::GetWindowDelegate(
   return NULL;
 }
 
-bool DriWindowDelegateManager::HasWindowDelegate(
-    gfx::AcceleratedWidget widget) {
-  return delegate_map_.find(widget) != delegate_map_.end();
-}
-
 }  // namespace ui

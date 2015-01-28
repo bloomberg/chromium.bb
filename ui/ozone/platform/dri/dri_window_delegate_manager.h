@@ -31,9 +31,6 @@ class DriWindowDelegateManager {
   // be called only if a valid delegate has been associated with |widget|.
   DriWindowDelegate* GetWindowDelegate(gfx::AcceleratedWidget widget);
 
-  // Check if |widget| has a valid delegate associated with it.
-  bool HasWindowDelegate(gfx::AcceleratedWidget widget);
-
  private:
   typedef base::ScopedPtrHashMap<gfx::AcceleratedWidget, DriWindowDelegate>
       WidgetToDelegateMap;

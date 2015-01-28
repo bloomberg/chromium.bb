@@ -12,7 +12,6 @@ namespace ui {
 class DriWindowDelegate;
 class DriWindowDelegateManager;
 class GbmWrapper;
-class ScreenManager;
 
 class GbmSurfaceFactory : public DriSurfaceFactory {
  public:
@@ -20,7 +19,6 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   ~GbmSurfaceFactory() override;
 
   void InitializeGpu(GbmWrapper* gbm,
-                     ScreenManager* screen_manager,
                      DriWindowDelegateManager* window_manager);
 
   // DriSurfaceFactory:
@@ -51,10 +49,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   bool CanCreateNativePixmap(BufferUsage usage) override;
 
  private:
-  DriWindowDelegate* GetOrCreateWindowDelegate(gfx::AcceleratedWidget widget);
-
   GbmWrapper* gbm_;                // Not owned.
-  ScreenManager* screen_manager_;  // Not owned.
   bool allow_surfaceless_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceFactory);

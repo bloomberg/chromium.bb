@@ -229,16 +229,10 @@ bool DriGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
 
 void DriGpuPlatformSupport::OnCreateWindowDelegate(
     gfx::AcceleratedWidget widget) {
-  // Due to how the GPU process starts up this IPC call may happen after the IPC
-  // to create a surface. Since a surface wants to know the window associated
-  // with it, we create it ahead of time. So when this call happens we do not
-  // create a delegate if it already exists.
-  if (!window_manager_->HasWindowDelegate(widget)) {
-    scoped_ptr<DriWindowDelegate> delegate(new DriWindowDelegateImpl(
-        widget, drm_, window_manager_, screen_manager_));
-    delegate->Initialize();
-    window_manager_->AddWindowDelegate(widget, delegate.Pass());
-  }
+  scoped_ptr<DriWindowDelegate> delegate(new DriWindowDelegateImpl(
+      widget, drm_, window_manager_, screen_manager_));
+  delegate->Initialize();
+  window_manager_->AddWindowDelegate(widget, delegate.Pass());
 }
 
 void DriGpuPlatformSupport::OnDestroyWindowDelegate(

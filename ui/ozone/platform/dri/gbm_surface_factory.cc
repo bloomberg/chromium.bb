@@ -16,7 +16,7 @@
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surfaceless.h"
 #include "ui/ozone/platform/dri/gbm_wrapper.h"
-#include "ui/ozone/platform/dri/screen_manager.h"
+#include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -76,10 +76,8 @@ GbmSurfaceFactory::~GbmSurfaceFactory() {}
 
 void GbmSurfaceFactory::InitializeGpu(
     GbmWrapper* gbm,
-    ScreenManager* screen_manager,
     DriWindowDelegateManager* window_manager) {
   gbm_ = gbm;
-  screen_manager_ = screen_manager;
   window_manager_ = window_manager;
 }
 
@@ -121,9 +119,8 @@ bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
 
 scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
-  DriWindowDelegate* delegate = GetOrCreateWindowDelegate(widget);
-
-  scoped_ptr<GbmSurface> surface(new GbmSurface(delegate, gbm_));
+  scoped_ptr<GbmSurface> surface(
+      new GbmSurface(window_manager_->GetWindowDelegate(widget), gbm_));
   if (!surface->Initialize())
     return nullptr;
 
@@ -136,8 +133,8 @@ GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
   if (!allow_surfaceless_)
     return nullptr;
 
-  DriWindowDelegate* delegate = GetOrCreateWindowDelegate(widget);
-  return scoped_ptr<SurfaceOzoneEGL>(new GbmSurfaceless(delegate));
+  return scoped_ptr<SurfaceOzoneEGL>(
+      new GbmSurfaceless(window_manager_->GetWindowDelegate(widget)));
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
@@ -206,18 +203,6 @@ bool GbmSurfaceFactory::CanCreateNativePixmap(BufferUsage usage) {
   }
   NOTREACHED();
   return false;
-}
-
-DriWindowDelegate* GbmSurfaceFactory::GetOrCreateWindowDelegate(
-    gfx::AcceleratedWidget widget) {
-  if (!window_manager_->HasWindowDelegate(widget)) {
-    scoped_ptr<DriWindowDelegate> delegate(new DriWindowDelegateImpl(
-        widget, gbm_, window_manager_, screen_manager_));
-    delegate->Initialize();
-    window_manager_->AddWindowDelegate(widget, delegate.Pass());
-  }
-
-  return window_manager_->GetWindowDelegate(widget);
 }
 
 }  // namespace ui
