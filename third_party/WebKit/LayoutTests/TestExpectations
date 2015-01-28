@@ -461,9 +461,6 @@ crbug.com/396823 [ Mac ] virtual/regionbasedmulticol/fast/multicol/multicol-with
 
 crbug.com/442730 inspector/sources/debugger/watch-expressions-preserve-expansion.html [ Pass Failure ]
 
-crbug.com/450612 fast/table/generated-caption.html [ NeedsRebaseline ]
-crbug.com/450612 virtual/slimmingpaint/fast/table/generated-caption.html [ NeedsRebaseline ]
-
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
