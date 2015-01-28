@@ -9875,12 +9875,6 @@ I don't think this site should be blocked!
       </if>
 
       <!-- Captive portal interstitial -->
-      <message name="IDS_CAPTIVE_PORTAL_TITLE_WIRED" desc="Title in the error page when a secure request is blocked because the network is redirecting the request to another page until the user logs in">
-        Connect to Network
-      </message>
-      <message name="IDS_CAPTIVE_PORTAL_TITLE_WIFI" desc="Title in the error page when a secure request is blocked because the Wi-fi is redirecting the request to another page until the user logs in">
-        Connect to Wi-Fi
-      </message>
       <message name="IDS_CAPTIVE_PORTAL_HEADING_WIRED" desc="Heading in the error page when a secure request is blocked because a captive portal is manipulating a wired connection (e.g. ethernet)">
         Connect to network
       </message>

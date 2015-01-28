@@ -97,8 +97,8 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("tabTitle",
       l10n_util::GetStringUTF16(
           is_wifi_connection_ ?
-          IDS_CAPTIVE_PORTAL_TITLE_WIFI :
-          IDS_CAPTIVE_PORTAL_TITLE_WIRED));
+          IDS_CAPTIVE_PORTAL_HEADING_WIFI :
+          IDS_CAPTIVE_PORTAL_HEADING_WIRED));
   load_time_data->SetString("heading",
       l10n_util::GetStringUTF16(
           is_wifi_connection_ ?
