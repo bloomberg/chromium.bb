@@ -23,7 +23,7 @@ namespace tracing {
 // Example: BeginTracing("test_MyTest*,test_OtherStuff");
 // Example: BeginTracing("-excluded_category1,-excluded_category2");
 //
-// See base/debug/trace_event.h for documentation of included and excluded
+// See base/trace_event/trace_event.h for documentation of included and excluded
 // category_patterns.
 bool BeginTracing(const std::string& category_patterns) WARN_UNUSED_RESULT;
 

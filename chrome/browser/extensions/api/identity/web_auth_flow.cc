@@ -5,11 +5,11 @@
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 
 #include "base/base64.h"
-#include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/prefs/pref_service_syncable_factory.h"
 
-#include "base/debug/trace_event.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/pref_value_store.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"

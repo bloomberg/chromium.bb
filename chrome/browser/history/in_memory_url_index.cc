@@ -4,9 +4,9 @@
 
 #include "chrome/browser/history/in_memory_url_index.h"
 
-#include "base/debug/trace_event.h"
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/url_index_private_data.h"
 #include "chrome/common/url_constants.h"

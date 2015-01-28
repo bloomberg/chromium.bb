@@ -4,8 +4,8 @@
 
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 
-#include "base/debug/trace_event.h"
 #include "base/sys_info.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"

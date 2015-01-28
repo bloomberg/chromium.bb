@@ -5,9 +5,9 @@
 #include "chrome/browser/profiles/profile_destroyer.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_process_host.h"
 

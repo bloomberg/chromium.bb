@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "base/debug/trace_event.h"
 #include "base/files/file.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/abort.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/add_watcher.h"

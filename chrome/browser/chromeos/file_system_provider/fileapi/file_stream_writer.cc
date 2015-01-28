@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_writer.h"
 
-#include "base/debug/trace_event.h"
 #include "base/memory/ref_counted.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"

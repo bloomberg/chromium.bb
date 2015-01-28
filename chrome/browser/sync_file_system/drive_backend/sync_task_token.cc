@@ -5,8 +5,8 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_backend/task_dependency_manager.h"
 

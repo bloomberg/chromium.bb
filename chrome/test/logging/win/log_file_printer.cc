@@ -14,11 +14,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/test/logging/win/log_file_reader.h"
 
 namespace {

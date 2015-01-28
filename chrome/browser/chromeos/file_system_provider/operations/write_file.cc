@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/write_file.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"

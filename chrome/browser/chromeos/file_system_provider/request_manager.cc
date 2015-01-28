@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 
-#include "base/debug/trace_event.h"
 #include "base/files/file.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 
 namespace chromeos {
 namespace file_system_provider {

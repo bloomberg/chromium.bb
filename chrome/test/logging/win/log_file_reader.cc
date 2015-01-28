@@ -4,11 +4,11 @@
 
 #include "chrome/test/logging/win/log_file_reader.h"
 
-#include "base/debug/trace_event_win.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging_win.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/trace_event_win.h"
 #include "base/win/event_trace_consumer.h"
 #include "chrome/test/logging/win/mof_data_parser.h"
 
@@ -39,9 +39,10 @@ logging::LogSeverity EventLevelToSeverity(uint8 level) {
   }
 }
 
-// TODO(grt) This reverses a mapping produced by base/debug/trace_event_win.cc's
-// TraceEventETWProvider::TraceEvent.  TraceEventETWProvider should expose a way
-// to map an event type back to a trace type.
+// TODO(grt): This reverses a mapping produced by
+// base/trace_event/trace_event_win.cc's TraceEventETWProvider::TraceEvent.
+// TraceEventETWProvider should expose a way to map an event type back to a
+// trace type.
 char EventTypeToTraceType(uint8 event_type) {
   switch (event_type) {
     case base::debug::kTraceEventTypeBegin:
@@ -259,4 +260,4 @@ void ReadLogFile(const base::FilePath& log_file, LogFileDelegate* delegate) {
   LogFileReader::ReadFile(log_file, delegate);
 }
 
-}  // logging_win
+}  // namespace logging_win
