@@ -45,6 +45,10 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
+
 namespace {
 // User dictionary keys.
 const char kKeyUsername[] = "username";
@@ -633,8 +637,13 @@ void UserManagerScreenHandler::SendUserList() {
   base::ListValue users_list;
   const ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-
   user_auth_type_map_.clear();
+
+  // Profile deletion is not allowed in Metro mode.
+  bool can_remove = true;
+#if defined(USE_ASH)
+  can_remove = !ash::Shell::HasInstance();
+#endif
 
   for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
     base::DictionaryValue* profile_value = new base::DictionaryValue();
@@ -657,7 +666,7 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->SetBoolean(
         kKeyNeedsSignin, info_cache.ProfileIsSigninRequiredAtIndex(i));
     profile_value->SetBoolean(kKeyIsOwner, false);
-    profile_value->SetBoolean(kKeyCanRemove, true);
+    profile_value->SetBoolean(kKeyCanRemove, can_remove);
     profile_value->SetBoolean(kKeyIsDesktop, true);
     profile_value->SetString(
         kKeyAvatarUrl, GetAvatarImageAtIndex(i, info_cache));

@@ -123,6 +123,13 @@ cr.define('options.browser_options', function() {
     },
 
     /**
+     * @type {boolean} whether the items in this list are deletable.
+     */
+    get canDeleteItems() {
+      return this.canDeleteItems_;
+    },
+
+    /**
      * If false, items in this list will not be deletable.
      * @private
      */

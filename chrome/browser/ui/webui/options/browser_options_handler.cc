@@ -138,6 +138,10 @@
 #include "chrome/browser/local_discovery/privet_notifications.h"
 #endif
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
+
 using base::UserMetricsAction;
 using content::BrowserContext;
 using content::BrowserThread;
@@ -607,6 +611,14 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
   if (ShouldShowMultiProfilesUserList())
     values->Set("profilesInfo", GetProfilesInfoList().release());
+
+  // Profile deletion is not allowed for supervised users, or any users
+  // using Metro mode.
+  bool allow_deletion = !Profile::FromWebUI(web_ui())->IsSupervised();
+#if defined(USE_ASH)
+  allow_deletion = allow_deletion && !ash::Shell::HasInstance();
+#endif
+  values->SetBoolean("allowProfileDeletion", allow_deletion);
 
   values->SetBoolean("profileIsGuest",
                      Profile::FromWebUI(web_ui())->IsOffTheRecord());

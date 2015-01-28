@@ -350,6 +350,8 @@ cr.define('options', function() {
         };
         if (loadTimeData.getBoolean('profileIsSupervised')) {
           $('profiles-create').disabled = true;
+        }
+        if (!loadTimeData.getBoolean('allowProfileDeletion')) {
           $('profiles-delete').disabled = true;
           $('profiles-list').canDeleteItems = false;
         }
@@ -1406,14 +1408,13 @@ cr.define('options', function() {
       var selectedProfile = profilesList.selectedItem;
       var hasSelection = selectedProfile != null;
       var hasSingleProfile = profilesList.dataModel.length == 1;
-      var isSupervised = loadTimeData.getBoolean('profileIsSupervised');
       $('profiles-manage').disabled = !hasSelection ||
           !selectedProfile.isCurrentProfile;
       if (hasSelection && !selectedProfile.isCurrentProfile)
         $('profiles-manage').title = loadTimeData.getString('currentUserOnly');
       else
         $('profiles-manage').title = '';
-      $('profiles-delete').disabled = isSupervised ||
+      $('profiles-delete').disabled = !profilesList.canDeleteItems ||
                                       (!hasSelection && !hasSingleProfile);
       if (OptionsPage.isSettingsApp()) {
         $('profiles-app-list-switch').disabled = !hasSelection ||
