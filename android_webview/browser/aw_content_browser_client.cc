@@ -399,7 +399,7 @@ void AwContentBrowserClient::RequestPermission(
       }
       delegate->RequestGeolocationPermission(origin, result_callback);
       break;
-    case content::PERMISSION_PROTECTED_MEDIA:
+    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
       if (!delegate) {
         DVLOG(0) << "Dropping ProtectedMediaIdentifierPermission request";
         result_callback.Run(false);
@@ -436,7 +436,7 @@ void AwContentBrowserClient::CancelPermissionRequest(
     case content::PERMISSION_GEOLOCATION:
       delegate->CancelGeolocationPermissionRequests(origin);
       break;
-    case content::PERMISSION_PROTECTED_MEDIA:
+    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
       delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
       break;
     case content::PERMISSION_MIDI_SYSEX:

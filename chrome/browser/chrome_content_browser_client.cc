@@ -1913,7 +1913,7 @@ void ChromeContentBrowserClient::RequestPermission(
                               user_gesture,
                               result_callback);
       break;
-    case content::PERMISSION_PROTECTED_MEDIA:
+    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
 #if defined(OS_ANDROID)
       ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(profile)
           ->RequestPermission(web_contents,
@@ -1962,7 +1962,7 @@ content::PermissionStatus ChromeContentBrowserClient::GetPermissionStatus(
     case content::PERMISSION_GEOLOCATION:
       context = GeolocationPermissionContextFactory::GetForProfile(profile);
       break;
-    case content::PERMISSION_PROTECTED_MEDIA:
+    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
 #if defined(OS_ANDROID)
       context = ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
           profile);
@@ -2018,7 +2018,7 @@ void ChromeContentBrowserClient::CancelPermissionRequest(
       GeolocationPermissionContextFactory::GetForProfile(profile)
           ->CancelPermissionRequest(web_contents, request_id);
       break;
-    case content::PERMISSION_PROTECTED_MEDIA:
+    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
 #if defined(OS_ANDROID)
       ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(profile)
           ->CancelPermissionRequest(web_contents, request_id);
@@ -2048,7 +2048,7 @@ static ContentSettingsType PermissionToContentSetting(
     case content::PERMISSION_GEOLOCATION:
       return CONTENT_SETTINGS_TYPE_GEOLOCATION;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    case content::PERMISSION_PROTECTED_MEDIA:
+    case content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
       return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
 #endif
     default:

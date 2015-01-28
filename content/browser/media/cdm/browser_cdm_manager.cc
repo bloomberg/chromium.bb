@@ -517,7 +517,7 @@ void BrowserCdmManager::RequestSessionPermission(
   WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
   DCHECK(web_contents);
   GetContentClient()->browser()->RequestPermission(
-      content::PERMISSION_PROTECTED_MEDIA, web_contents,
+      content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER, web_contents,
       0,  // bridge id
       security_origin,
       // Only implemented for Android infobars which do not support

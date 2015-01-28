@@ -111,7 +111,7 @@ void RecordPermissionRequest(
       break;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-      type = content::PERMISSION_PROTECTED_MEDIA;
+      type = content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
       break;
 #endif
     default:

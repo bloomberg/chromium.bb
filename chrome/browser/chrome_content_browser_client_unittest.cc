@@ -174,7 +174,8 @@ TEST_F(PermissionBrowserClientTest, GetPermissionStatusDefault) {
   CheckPermissionStatus(PERMISSION_NOTIFICATIONS, PERMISSION_STATUS_ASK);
   CheckPermissionStatus(PERMISSION_GEOLOCATION, PERMISSION_STATUS_ASK);
 #if defined(OS_ANDROID)
-  CheckPermissionStatus(PERMISSION_PROTECTED_MEDIA, PERMISSION_STATUS_ASK);
+  CheckPermissionStatus(PERMISSION_PROTECTED_MEDIA_IDENTIFIER,
+                        PERMISSION_STATUS_ASK);
 #endif
 }
 
@@ -195,7 +196,8 @@ TEST_F(PermissionBrowserClientTest, GetPermissionStatusAfterSet) {
 #if defined(OS_ANDROID)
   SetPermission(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
                 CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PERMISSION_PROTECTED_MEDIA, PERMISSION_STATUS_GRANTED);
+  CheckPermissionStatus(PERMISSION_PROTECTED_MEDIA_IDENTIFIER,
+                        PERMISSION_STATUS_GRANTED);
 #endif
 }
 
