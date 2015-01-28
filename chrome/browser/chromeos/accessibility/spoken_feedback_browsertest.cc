@@ -11,10 +11,8 @@
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -64,22 +62,28 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    AccessibilityManager::SetBrailleControllerForTest(nullptr);
+    AccessibilityManager::SetBrailleControllerForTest(NULL);
   }
 
   void SendKeyPress(ui::KeyboardCode key) {
-    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        nullptr, key, false, false, false, false)));
+    ASSERT_NO_FATAL_FAILURE(
+        ASSERT_TRUE(
+            ui_test_utils::SendKeyPressToWindowSync(
+                NULL, key, false, false, false, false)));
   }
 
   void SendKeyPressWithControl(ui::KeyboardCode key) {
-    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        nullptr, key, true, false, false, false)));
+    ASSERT_NO_FATAL_FAILURE(
+        ASSERT_TRUE(
+            ui_test_utils::SendKeyPressToWindowSync(
+                NULL, key, true, false, false, false)));
   }
 
   void SendKeyPressWithSearchAndShift(ui::KeyboardCode key) {
-    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        nullptr, key, false, true, false, true)));
+    ASSERT_NO_FATAL_FAILURE(
+        ASSERT_TRUE(
+            ui_test_utils::SendKeyPressToWindowSync(
+                NULL, key, false, true, false, true)));
   }
 
   void RunJavaScriptInChromeVoxBackgroundPage(const std::string& script) {
@@ -98,7 +102,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
         "window.ontouchstart = function() {};");
   }
 
-  bool PerformAcceleratorAction(ash::AcceleratorAction action) {
+ bool PerformAcceleratorAction(ash::AcceleratorAction action) {
     ash::AcceleratorController* controller =
         ash::Shell::GetInstance()->accelerator_controller();
     return controller->PerformActionIfEnabled(action);
@@ -554,29 +558,20 @@ IN_PROC_BROWSER_TEST_F(GuestSpokenFeedbackTest, FocusToolbar) {
 // Spoken feedback tests of the out-of-box experience.
 //
 
-class OobeSpokenFeedbackTest : public LoginManagerTest {
+class OobeSpokenFeedbackTest : public InProcessBrowserTest {
  protected:
-  OobeSpokenFeedbackTest() : LoginManagerTest(false) {}
+  OobeSpokenFeedbackTest() {}
   ~OobeSpokenFeedbackTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    LoginManagerTest::SetUpCommandLine(command_line);
-    // Many bots don't have keyboard/mice which triggers the HID detection
-    // dialog in the OOBE.  Avoid confusing the tests with that.
-    command_line->AppendSwitch(chromeos::switches::kDisableHIDDetectionOnOOBE);
+    command_line->AppendSwitch(chromeos::switches::kLoginManager);
+    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }
 
-  // Waits until the OOBE screen signals it is ready.
-  void WaitUntilJSIsReady() {
-    LoginDisplayHostImpl* host = static_cast<LoginDisplayHostImpl*>(
-        LoginDisplayHostImpl::default_host());
-    ASSERT_NE(nullptr, host);
-    chromeos::OobeUI* oobe_ui = host->GetOobeUI();
-    ASSERT_NE(nullptr, oobe_ui);
-    base::RunLoop run_loop;
-    const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
-    if (!oobe_ui_ready)
-      run_loop.Run();
+  void SetUpOnMainThread() override {
+    AccessibilityManager::Get()->
+        SetProfileForTest(ProfileHelper::GetSigninProfile());
   }
 
   SpeechMonitor speech_monitor_;
@@ -585,7 +580,8 @@ class OobeSpokenFeedbackTest : public LoginManagerTest {
   DISALLOW_COPY_AND_ASSIGN(OobeSpokenFeedbackTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
+// Test is flaky: http://crbug.com/346797
+IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
   ui_controls::EnableUIControls();
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
@@ -594,34 +590,18 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
   views::Widget* widget = web_ui_login_view->GetWidget();
   gfx::NativeWindow window = widget->GetNativeWindow();
 
-  WaitUntilJSIsReady();
-
-  // We expect to be in the language select dropdown for this test to work,
-  // so fail early if that's not the case.
-  ASSERT_TRUE(
-      js_checker().GetBool("document.activeElement.id == 'language-select'"));
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ui::A11Y_NOTIFICATION_NONE);
-  ASSERT_TRUE(speech_monitor_.SkipChromeVoxEnabledMessage());
-  // There's no guarantee that ChromeVox speaks anything when injected after
-  // the page loads, which is by design.  Tab forward and then backward
-  // to make sure we get the right feedback from the language and keyboard
-  // selection fields.
-  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      window, ui::VKEY_TAB, false, false, false, false));
+  EXPECT_TRUE(speech_monitor_.SkipChromeVoxEnabledMessage());
 
-  while (speech_monitor_.GetNextUtterance() != "Select your keyboard:") {
-  }
-  EXPECT_EQ("U S", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Select your language:", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("English ( United States)", speech_monitor_.GetNextUtterance());
   EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(),
                            "Combo box * of *"));
-  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      window, ui::VKEY_TAB, false, true /*shift*/, false, false));
-  while (speech_monitor_.GetNextUtterance() != "Select your language:") {
-  }
-  EXPECT_EQ("English ( United States)", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(
-      MatchPattern(speech_monitor_.GetNextUtterance(), "Combo box * of *"));
+  ASSERT_TRUE(
+      ui_test_utils::SendKeyPressToWindowSync(
+          window, ui::VKEY_TAB, false, false, false, false));
+  EXPECT_EQ("Select your keyboard:", speech_monitor_.GetNextUtterance());
 }
 
 }  // namespace chromeos
