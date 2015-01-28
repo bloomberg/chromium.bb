@@ -73,8 +73,6 @@ void CustomButton::SetState(ButtonState state) {
 
   state_ = state;
   StateChanged();
-  if (state_changed_delegate_.get())
-    state_changed_delegate_->StateChanged(state_);
   SchedulePaint();
 }
 
