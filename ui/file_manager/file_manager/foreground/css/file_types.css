@@ -74,7 +74,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='excel'] {
       url(chrome://theme/IDR_FILETYPE_FOLDER_SHARED@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'],
 list:focus [selected] .shared[file-type-icon='folder'],
 list.autocomplete-suggestions [selected] .shared[file-type-icon='folder'] {
   background-image: -webkit-image-set(
@@ -82,7 +81,6 @@ list.autocomplete-suggestions [selected] .shared[file-type-icon='folder'] {
       url(chrome://theme/IDR_FILETYPE_FOLDER_SHARED_WHITE@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='folder'],
 list:focus [selected] [file-type-icon='folder'],
 list.autocomplete-suggestions [selected] [file-type-icon='folder'] {
   background-image: -webkit-image-set(
@@ -96,7 +94,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='folder'] {
       url(chrome://theme/IDR_FILETYPE_FORM@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='form'],
 list:focus [selected] [file-type-icon='form'],
 list.autocomplete-suggestions [selected] [file-type-icon='form'] {
   background-image: -webkit-image-set(
@@ -110,7 +107,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='form'] {
       url(chrome://theme/IDR_FILETYPE_GDOC@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gdoc'],
 list:focus [selected] [file-type-icon='gdoc'],
 list.autocomplete-suggestions [selected] [file-type-icon='gdoc'] {
   background-image: -webkit-image-set(
@@ -124,7 +120,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='gdoc'] {
       url(chrome://theme/IDR_FILETYPE_GDRAW@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gdraw'],
 list:focus [selected] [file-type-icon='gdraw'],
 list.autocomplete-suggestions [selected] [file-type-icon='gdraw'] {
   background-image: -webkit-image-set(
@@ -138,7 +133,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='gdraw'] {
       url(chrome://theme/IDR_FILETYPE_GLINK@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='glink'],
 list:focus [selected] [file-type-icon='glink'],
 list.autocomplete-suggestions [selected] [file-type-icon='glink'] {
   background-image: -webkit-image-set(
@@ -152,7 +146,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='glink'] {
       url(chrome://theme/IDR_FILETYPE_GSHEET@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gsheet'],
 list:focus [selected] [file-type-icon='gsheet'],
 list.autocomplete-suggestions [selected] [file-type-icon='gsheet'] {
   background-image: -webkit-image-set(
@@ -166,7 +159,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='gsheet'] {
       url(chrome://theme/IDR_FILETYPE_GSLIDES@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gslides'],
 list:focus [selected] [file-type-icon='gslides'],
 list.autocomplete-suggestions [selected] [file-type-icon='gslides'] {
   background-image: -webkit-image-set(
@@ -180,7 +172,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='gslides'] {
       url(chrome://theme/IDR_FILETYPE_GTABLE@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gtable'],
 list:focus [selected] [file-type-icon='gtable'],
 list.autocomplete-suggestions [selected] [file-type-icon='gtable'] {
   background-image: -webkit-image-set(
@@ -194,7 +185,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='gtable'] {
       url(chrome://theme/IDR_FILETYPE_FORM@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gform'],
 list:focus [selected] [file-type-icon='gform'],
 list.autocomplete-suggestions [selected] [file-type-icon='gform'] {
   background-image: -webkit-image-set(
@@ -208,7 +198,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='gform'] {
       url(chrome://theme/IDR_FILETYPE_GMAP@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gmap'],
 list:focus [selected] [file-type-icon='gmap'],
 list.autocomplete-suggestions [selected] [file-type-icon='gmap'] {
   background-image: -webkit-image-set(
@@ -222,7 +211,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='gmap'] {
       url(chrome://theme/IDR_FILETYPE_IMAGE@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='image'],
 list:focus [selected] [file-type-icon='image'],
 list.autocomplete-suggestions [selected] [file-type-icon='image'] {
   background-image: -webkit-image-set(
@@ -236,7 +224,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='image'] {
       url(chrome://theme/IDR_FILETYPE_PDF@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='pdf'],
 list:focus [selected] [file-type-icon='pdf'],
 list.autocomplete-suggestions [selected] [file-type-icon='pdf'] {
   background-image: -webkit-image-set(
@@ -250,7 +237,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='pdf'] {
       url(chrome://theme/IDR_FILETYPE_PPT@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='ppt'],
 list:focus [selected] [file-type-icon='ppt'],
 list.autocomplete-suggestions [selected] [file-type-icon='ppt'] {
   background-image: -webkit-image-set(
@@ -264,7 +250,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='ppt'] {
       url(chrome://theme/IDR_FILETYPE_SCRIPT@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='script'],
 list:focus [selected] [file-type-icon='script'],
 list.autocomplete-suggestions [selected] [file-type-icon='script'] {
   background-image: -webkit-image-set(
@@ -278,7 +263,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='script'] {
       url(chrome://theme/IDR_FILETYPE_SITES@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='sites'],
 list:focus [selected] [file-type-icon='sites'],
 list.autocomplete-suggestions [selected] [file-type-icon='sites'] {
   background-image: -webkit-image-set(
@@ -292,7 +276,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='sites'] {
       url(chrome://theme/IDR_FILETYPE_VIDEO@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='video'],
 list:focus [selected] [file-type-icon='video'],
 list.autocomplete-suggestions [selected] [file-type-icon='video'] {
   background-image: -webkit-image-set(
@@ -306,7 +289,6 @@ list.autocomplete-suggestions [selected] [file-type-icon='video'] {
       url(chrome://theme/IDR_FILETYPE_WORD@2x) 2x);
 }
 
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='word'],
 list:focus [selected] [file-type-icon='word'],
 list.autocomplete-suggestions [selected] [file-type-icon='word'] {
   background-image: -webkit-image-set(
@@ -362,132 +344,117 @@ list.autocomplete-suggestions [selected] [file-type-icon='word'] {
 /* Icons for volume types. */
 
 [volume-type-icon='archive'] {
-  background-position: center 2px;
   background-image: -webkit-image-set(
       url(../images/volumes/black_archive.png) 1x,
       url(../images/volumes/2x/black_archive.png) 2x);
+  background-size: 14px;
 }
 
-list:focus li[selected] [volume-type-icon='archive'],
-tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='archive'] {
+list:focus li[selected] [volume-type-icon='archive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/white_archive.png) 1x,
       url(../images/volumes/2x/white_archive.png) 2x);
 }
 
 [volume-type-icon='downloads'] {
-  background-position: center 2px;
   background-image: -webkit-image-set(
       url(../images/volumes/black_downloads.png) 1x,
       url(../images/volumes/2x/black_downloads.png) 2x);
+  background-size: 14px;
 }
 
-list:focus li[selected] [volume-type-icon='downloads'],
-tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='downloads'] {
+list:focus li[selected] [volume-type-icon='downloads'] {
   background-image: -webkit-image-set(
       url(../images/volumes/white_downloads.png) 1x,
       url(../images/volumes/2x/white_downloads.png) 2x);
 }
 
 [volume-type-icon='drive'] {
-  background-position: center 2px;
   background-image: -webkit-image-set(
       url(../images/volumes/black_drive.png) 1x,
       url(../images/volumes/2x/black_drive.png) 2x);
+  background-size: 14px;
 }
 
-list:focus li[selected] [volume-type-icon='drive'],
-tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='drive'] {
+list:focus li[selected] [volume-type-icon='drive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/white_drive.png) 1x,
       url(../images/volumes/2x/white_drive.png) 2x);
 }
 
 [volume-type-icon='drive_offline'] {
-  background-position: center 2px;
   background-image: -webkit-image-set(
       url(../images/volumes/black_offline.png) 1x,
       url(../images/volumes/2x/black_offline.png) 2x);
+  background-size: 14px;
 }
 
-list:focus li[selected] [volume-type-icon='drive_offline'],
-tree:focus .tree-item[selected] > .tree-row >
-    [volume-type-icon='drive_offline'] {
+list:focus li[selected] [volume-type-icon='drive_offline'] {
   background-image: -webkit-image-set(
       url(../images/volumes/white_offline.png) 1x,
       url(../images/volumes/2x/white_offline.png) 2x);
 }
 
 [volume-type-icon='drive_shared_with_me'] {
-  background-position: center 2px;
   background-image: -webkit-image-set(
       url(../images/volumes/black_shared.png) 1x,
       url(../images/volumes/2x/black_shared.png) 2x);
+  background-size: 14px;
 }
 
-list:focus li[selected] [volume-type-icon='drive_shared_with_me'],
-tree:focus .tree-item[selected] > .tree-row >
-    [volume-type-icon='drive_shared_with_me'] {
+list:focus li[selected] [volume-type-icon='drive_shared_with_me'] {
   background-image: -webkit-image-set(
       url(../images/volumes/white_shared.png) 1x,
       url(../images/volumes/2x/white_shared.png) 2x);
 }
 
 [volume-type-icon='drive_recent'] {
-  background-position: center 2px;
   background-image: -webkit-image-set(
       url(../images/volumes/black_recent.png) 1x,
       url(../images/volumes/2x/black_recent.png) 2x);
+  background-size: 14px;
 }
 
-list:focus li[selected] [volume-type-icon='drive_recent'],
-tree:focus .tree-item[selected] > .tree-row >
-    [volume-type-icon='drive_recent'] {
+list:focus li[selected] [volume-type-icon='drive_recent'] {
   background-image: -webkit-image-set(
       url(../images/volumes/white_recent.png) 1x,
       url(../images/volumes/2x/white_recent.png) 2x);
 }
 
 [volume-type-icon='removable'] {
-  background-position: center 2px;
   background-image: -webkit-image-set(
       url(../images/volumes/black_usb.png) 1x,
       url(../images/volumes/2x/black_usb.png) 2x);
+  background-size: 14px;
 }
 
-list:focus li[selected] [volume-type-icon='removable'],
-tree:focus .tree-item[selected] > .tree-row >
-    [volume-type-icon='removable'] {
+list:focus li[selected] [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/white_usb.png) 1x,
       url(../images/volumes/2x/white_usb.png) 2x);
 }
 
 [volume-type-icon='removable'][volume-subtype='sd'] {
-  background-position: center 2px;
   background-image: -webkit-image-set(
       url(../images/volumes/black_sd.png) 1x,
       url(../images/volumes/2x/black_sd.png) 2x);
+  background-size: 14px;
 }
 
-list:focus li[selected] [volume-type-icon='removable'][volume-subtype='sd'],
-tree:focus .tree-item[selected] > .tree-row >
-    [volume-type-icon='removable'][volume-subtype='sd'] {
+list:focus li[selected] [volume-type-icon='removable'][volume-subtype='sd'] {
   background-image: -webkit-image-set(
       url(../images/volumes/white_sd.png) 1x,
       url(../images/volumes/2x/white_sd.png) 2x);
 }
 
 [volume-type-icon='removable'][volume-subtype='optical'] {
-  background-position: center 2px;
   background-image: -webkit-image-set(
       url(../images/volumes/black_optical.png) 1x,
       url(../images/volumes/2x/black_optical.png) 2x);
+  background-size: 14px;
 }
 
 list:focus li[selected]
-    [volume-type-icon='removable'][volume-subtype='optical'],
-tree:focus .tree-item[selected] > .tree-row >
     [volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
       url(../images/volumes/white_optical.png) 1x,
@@ -495,14 +462,13 @@ tree:focus .tree-item[selected] > .tree-row >
 }
 
 [volume-type-icon='mtp'] {
-  background-position: center 2px;
   background-image: -webkit-image-set(
     url(../images/volumes/black_phone.png) 1x,
     url(../images/volumes/2x/black_phone.png) 2x);
+  background-size: 14px;
 }
 
-list:focus li[selected] [volume-type-icon='mtp'],
-tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='mtp'] {
+list:focus li[selected] [volume-type-icon='mtp'] {
   background-image: -webkit-image-set(
     url(../images/volumes/white_phone.png) 1x,
     url(../images/volumes/2x/white_phone.png) 2x);
@@ -515,15 +481,12 @@ tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='mtp'] {
 }
 
 list:focus li[selected]
-    [volume-type-icon='removable'][volume-subtype='unknown'],
-tree:focus .tree-item[selected] > .tree-row >
     [volume-type-icon='removable'][volume-subtype='unknown'] {
   background-image: -webkit-image-set(
       url(../images/volumes/white_hdd.png) 1x,
       url(../images/volumes/2x/white_hdd.png) 2x);
 }
 
-list:focus li[selected] [volume-type-icon='provided'],
-tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='provided']{
+list:focus li[selected] [volume-type-icon='provided'] {
   -webkit-filter: contrast(0) brightness(200%);
 }

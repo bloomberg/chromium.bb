@@ -17,37 +17,37 @@ tree {
   white-space: nowrap;
 }
 
-.expand-icon {
-  -webkit-transform: rotate(-90deg);
-  -webkit-transition: all 150ms;
-  background-image: -webkit-canvas(tree-triangle);
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
-  background-size: 8px 5px;
-  display: inline-block;
-  height: 16px;
+.tree-row > .expand-icon {
   position: relative;
-  vertical-align: top;
 }
 
-html[dir=rtl] .expand-icon {
+.tree-row > .expand-icon > core-icon {
+  -webkit-transform: rotate(-90deg);
+  -webkit-transition: all 150ms;
+  height: 16px;
+  left: 10px;
+  position: absolute;
+  top: 10px;
+  width: 16px;
+}
+
+html[dir=rtl] .tree-row > .expand-icon > core-icon {
   -webkit-transform: rotate(90deg);
 }
 
-.tree-item[expanded] > .tree-row > .expand-icon {
+.tree-item[expanded] > .tree-row > .expand-icon > core-icon {
   -webkit-transform: rotate(0);
-  background-image: -webkit-canvas(tree-triangle);
 }
 
-.tree-row .expand-icon {
+.tree-row > .expand-icon {
   visibility: hidden;
 }
 
-.tree-row[may-have-children] .expand-icon {
+.tree-row[may-have-children] > .expand-icon {
   visibility: visible;
 }
 
-.tree-row[has-children=false] .expand-icon {
+.tree-row[has-children=false] > .expand-icon {
   visibility: hidden;
 }
 

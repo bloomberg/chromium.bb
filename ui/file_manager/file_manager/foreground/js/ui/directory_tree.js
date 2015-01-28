@@ -40,8 +40,11 @@ Object.freeze(DirectoryItemTreeBaseMethods);
 
 var TREE_ITEM_INNTER_HTML =
     '<div class="tree-row">' +
-    ' <span class="expand-icon"></span>' +
-    ' <span class="icon"></span>' +
+    ' <paper-ripple fit></paper-ripple>' +
+    ' <span class="expand-icon">' +
+    '  <core-icon icon="expand-more" class="expand-icon"></core-icon>' +
+    ' </span>' +
+    ' <core-icon class="icon"></core-icon>' +
     ' <span class="label entry-name"></span>' +
     '</div>' +
     '<div class="tree-children"></div>';
@@ -351,7 +354,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
   if (location && location.rootType && location.isRootEntry) {
     icon.setAttribute('volume-type-icon', location.rootType);
   } else {
-    icon.setAttribute('file-type-icon', 'folder');
+    icon.icon = 'folder';
     item.updateSharedStatusIcon();
   }
 
@@ -399,7 +402,10 @@ SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
       [this.dirEntry_],
       'external',
       function(metadata) {
-        icon.classList.toggle('shared', metadata[0] && metadata[0].shared);
+        if (metadata[0] && metadata[0].shared)
+          icon.icon = 'folder-shared';
+        else
+          icon.icon = 'folder';
       });
 };
 

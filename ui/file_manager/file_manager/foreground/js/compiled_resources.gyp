@@ -116,7 +116,6 @@
           './ui/search_box.js',
           './ui/share_dialog.js',
           './ui/suggest_apps_dialog.js',
-          './ui/tree.css.js',
           './main_window_component.js',
           './volume_manager_wrapper.js',
           './metadata/byte_reader.js',

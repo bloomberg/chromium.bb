@@ -141,12 +141,13 @@ a:focus {
   min-width: 100px;
   overflow: hidden;
   position: relative;
-  width: 190px;
+  width: 272px;
 }
 
 .dialog-navigation-list-contents {
   display: flex;
   flex: 1 1 auto;
+  margin-top: 8px;
   position: relative;
 }
 
@@ -182,6 +183,7 @@ div.splitter {
 
 #directory-tree .tree-row {
   align-items: center;
+  color: rgb(90, 90, 90);
   cursor: pointer;
   display: flex;
   line-height: 29px;
@@ -197,56 +199,36 @@ div.splitter {
   flex: none;
   height: 37px;
   left: 3px;
-  margin: -12px -10px -13px -13px;
+  margin: -12px -4px -13px;
   right: 3px;
   top: 0;
   width: 37px;
 }
 
-#directory-tree:focus .tree-row[selected] > .expand-icon {
-  background-image: -webkit-canvas(tree-triangle-inverted);
-}
-
 #directory-tree .tree-row > .volume-icon {
-  background-position: center 3px;
-  background-repeat: no-repeat;
   flex: none;
-  height: 24px;
-  width: 24px;
+  height: 16px;
+  width: 16px;
 }
 
 #directory-tree .tree-row > .label {
   display: block;
   flex: auto;
-  margin: 0 3px;
+  margin: 0 6px;
   overflow-x: hidden;
   text-overflow: ellipsis;
+}
+
+#directory-tree .tree-row > paper-ripple {
+  color: rgb(27, 168, 243);
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
 #directory-tree .tree-row[lead][selected],
 #directory-tree .tree-row[lead],
 #directory-tree .tree-row[selected],
-#directory-tree .tree-row[anchor],
-#directory-tree .tree-row:active {
-  background-color: rgb(225, 225, 225);
-}
-
-#directory-tree:focus .tree-item.accepts > .tree-row,
-#directory-tree:focus .tree-row[lead][selected],
-#directory-tree:focus .tree-row[lead],
-#directory-tree:focus .tree-row[selected],
-#directory-tree:focus .tree-row[anchor] {
-  background-color: rgb(193, 209, 232);
-}
-
-#directory-tree:focus .tree-item.accepts > .tree-row,
-#directory-tree:focus .tree-row[lead][selected],
-#directory-tree:focus .tree-row[lead],
-#directory-tree:focus .tree-row[selected],
-#directory-tree:focus .tree-row[anchor] {
-  background-color: rgb(66, 129, 244);
-  color: white;
+#directory-tree .tree-row[anchor] {
+  color: rgb(27, 168, 243);
 }
 
 /* Make top-level items thicker and Drive volume's expand-icon invisible */
@@ -272,9 +254,6 @@ div.splitter {
 }
 
 #directory-tree:focus .tree-row[selected] > div.root-eject {
-  background: -webkit-image-set(
-      url(../images/files/ui/eject_white.png) 1x,
-      url(../images/files/ui/2x/eject_white.png) 2x) no-repeat center;
   opacity: 1;
 }
 
@@ -824,6 +803,7 @@ body[type='full-page'] .detail-name .detail-icon {
 
 @-webkit-keyframes acceptsBlink {
   0% {
+    color: rgb(90, 90, 90);
     background-color: transparent;
   }
 }
