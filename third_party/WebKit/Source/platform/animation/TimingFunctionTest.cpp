@@ -417,7 +417,7 @@ TEST_F(TimingFunctionTest, StepsEvaluate)
 static void checkSteps(int steps, StepsTimingFunction::StepAtPosition position, double expectedSplit)
 {
     Vector<TimingFunction::PartitionRegion> regions = Vector<TimingFunction::PartitionRegion>();
-    RefPtrWillBeRawPtr<TimingFunction> stepsFunction = StepsTimingFunction::create(steps, position);
+    RefPtr<TimingFunction> stepsFunction = StepsTimingFunction::create(steps, position);
     stepsFunction->partition(regions);
 
     EXPECT_EQ(regions.size(), 2ul);
