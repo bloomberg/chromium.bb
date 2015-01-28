@@ -49,7 +49,8 @@ DEFAULT_SIZES = "1600x1200,3840x2560"
 # resolution is supported in this case.
 DEFAULT_SIZE_NO_RANDR = "1600x1200"
 
-SCRIPT_PATH = sys.path[0]
+SCRIPT_PATH = os.path.abspath(sys.argv[0])
+SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
 
 IS_INSTALLED = (os.path.basename(sys.argv[0]) != 'linux_me2me_host.py')
 
@@ -445,7 +446,7 @@ class Desktop:
     subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
 
     # Monitor for any automatic resolution changes from the desktop environment.
-    args = [sys.argv[0], "--watch-resolution", str(initial_size[0]),
+    args = [SCRIPT_PATH, "--watch-resolution", str(initial_size[0]),
             str(initial_size[1])]
 
     # It is not necessary to wait() on the process here, as this script's main
@@ -608,9 +609,9 @@ def locate_executable(exe_name):
   if IS_INSTALLED:
     # If the script is running from its installed location, search the host
     # binary only in the same directory.
-    paths_to_try = [ SCRIPT_PATH ]
+    paths_to_try = [ SCRIPT_DIR ]
   else:
-    paths_to_try = map(lambda p: os.path.join(SCRIPT_PATH, p),
+    paths_to_try = map(lambda p: os.path.join(SCRIPT_DIR, p),
                        [".", "../../../out/Debug", "../../../out/Release" ])
   for path in paths_to_try:
     exe_path = os.path.join(path, exe_name)
@@ -885,7 +886,7 @@ class RelaunchInhibitor:
 
 def relaunch_self():
   cleanup()
-  os.execvp(sys.argv[0], sys.argv)
+  os.execvp(SCRIPT_PATH, sys.argv)
 
 
 def waitpid_with_timeout(pid, deadline):
