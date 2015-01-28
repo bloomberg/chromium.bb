@@ -30,11 +30,8 @@ class RunClosureTask : public WebWorkerRunLoop::Task {
 } // namespace
 
 struct WorkerTaskRunner::ThreadLocalState {
-  ThreadLocalState(int id, const WebWorkerRunLoop& loop)
-      : id_(id), run_loop_(loop) {
-  }
+  explicit ThreadLocalState(int id) : id_(id) {}
   int id_;
-  WebWorkerRunLoop run_loop_;
   ObserverList<WorkerTaskRunner::Observer> stop_observers_;
 };
 
@@ -90,7 +87,7 @@ WorkerTaskRunner::~WorkerTaskRunner() {
 void WorkerTaskRunner::OnWorkerRunLoopStarted(const WebWorkerRunLoop& loop) {
   DCHECK(!current_tls_.Get());
   int id = id_sequence_.GetNext();
-  current_tls_.Set(new ThreadLocalState(id, loop));
+  current_tls_.Set(new ThreadLocalState(id));
 
   base::AutoLock locker_(loop_map_lock_);
   loop_map_[id] = loop;
