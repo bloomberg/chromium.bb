@@ -35,7 +35,8 @@ function runTest() {
     // Check that mono buffer can be set.
     try {
         var monoBuffer = context.createBuffer(1, 1024, context.sampleRate);
-        source.buffer = monoBuffer;
+        var testSource = context.createBufferSource();
+        testSource.buffer = monoBuffer;
         testPassed("Mono buffer can be set.");
     } catch(e) {
         testFailed("Mono buffer can not be set.");
@@ -44,7 +45,8 @@ function runTest() {
     // Check that stereo buffer can be set.
     try {
         var stereoBuffer = context.createBuffer(2, 1024, context.sampleRate);
-        source.buffer = stereoBuffer;
+        var testSource = context.createBufferSource();
+        testSource.buffer = stereoBuffer;
         testPassed("Stereo buffer can be set.");
     } catch(e) {
         testFailed("Stereo buffer can not be set.");
@@ -54,7 +56,8 @@ function runTest() {
     for (var i = 3; i < 10; ++i) {
         try {
             var buffer = context.createBuffer(i, 1024, context.sampleRate);
-            source.buffer = buffer;
+            var testSource = context.createBufferSource();
+            testSource.buffer = buffer;
             var message = i + " channels buffer can be set.";
             testPassed(message);
         } catch(e) {

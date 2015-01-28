@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/UseCounter.h"
 #include "platform/audio/AudioUtilities.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -340,6 +341,12 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
 void AudioBufferSourceNode::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+
+    if (m_buffer) {
+        // Setting the buffer more than once is deprecated.  Change this to a DOM exception in M45
+        // or so.
+        UseCounter::countDeprecation(context()->executionContext(), UseCounter::AudioBufferSourceBufferOnce);
+    }
 
     // The context must be locked since changing the buffer can re-configure the number of channels that are output.
     AudioContext::AutoLocker contextLocker(context());

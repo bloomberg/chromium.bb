@@ -617,6 +617,7 @@ public:
         Fetch = 675,
         FetchBodyStream = 676,
         XMLHttpRequestAsynchronous = 677,
+        AudioBufferSourceBufferOnce = 678,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
