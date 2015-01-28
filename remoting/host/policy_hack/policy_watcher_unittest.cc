@@ -12,7 +12,6 @@
 #include "policy/policy_constants.h"
 #include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/policy_hack/mock_policy_callback.h"
-#include "remoting/host/policy_hack/policy_service_watcher.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,7 +34,7 @@ class PolicyWatcherTest : public testing::Test {
 
     // Retaining a raw pointer to keep control over policy contents.
     policy_loader_ = new policy::FakeAsyncPolicyLoader(message_loop_proxy_);
-    policy_watcher_ = PolicyServiceWatcher::CreateFromPolicyLoader(
+    policy_watcher_ = PolicyWatcher::CreateFromPolicyLoader(
         message_loop_proxy_, make_scoped_ptr(policy_loader_));
 
     nat_true_.SetBoolean(policy::key::kRemoteAccessHostFirewallTraversal, true);

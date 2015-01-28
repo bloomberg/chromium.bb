@@ -189,8 +189,6 @@
       'host/pin_hash.h',
       'host/policy_hack/policy_watcher.cc',
       'host/policy_hack/policy_watcher.h',
-      'host/policy_hack/policy_service_watcher.cc',
-      'host/policy_hack/policy_service_watcher.h',
       'host/register_support_host_request.cc',
       'host/register_support_host_request.h',
       'host/remote_input_filter.cc',

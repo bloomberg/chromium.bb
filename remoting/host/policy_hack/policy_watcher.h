@@ -6,48 +6,45 @@
 #define REMOTING_HOST_POLICY_HACK_POLICY_WATCHER_H_
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
-#include "base/values.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "components/policy/core/common/policy_service.h"
 
 namespace base {
+class DictionaryValue;
 class SingleThreadTaskRunner;
-class TimeDelta;
-class WaitableEvent;
 }  // namespace base
 
 namespace policy {
-class PolicyService;
+class AsyncPolicyLoader;
+class ConfigurationPolicyProvider;
+class SchemaRegistry;
 }  // namespace policy
 
 namespace remoting {
 namespace policy_hack {
 
-// Watches for changes to the managed remote access host policies.
-// If StartWatching() has been called, then before this object can be deleted,
-// StopWatching() have completed (the provided |done| event must be signaled).
-class PolicyWatcher {
+// Watches for changes to the managed remote access host policies.  If
+// StartWatching() has been called, then before this object can be deleted,
+// StopWatching() has to be completed (the provided |done| event must be
+// signaled).
+class PolicyWatcher : public policy::PolicyService::Observer {
  public:
   // Called first with all policies, and subsequently with any changed policies.
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)>
       PolicyUpdatedCallback;
 
-  // TODO(lukasza): PolicyErrorCallback never gets called by
-  // PolicyServiceWatcher.  Need to either 1) remove error-handling from
-  // PolicyWatcher or 2) add error-handling around PolicyService
-  // 2a) Add policy name/type validation via policy::Schema::Normalize.
-  // 2b) Consider exposing parsing errors from policy::ConfigDirPolicyLoader.
+  // TODO(lukasza): PolicyErrorCallback never gets called by PolicyWatcher.
+  // Need to either 1) remove error-handling from PolicyWatcher or 2) add
+  // error-handling around PolicyService 2a) Add policy name/type validation via
+  // policy::Schema::Normalize.  2b) Consider exposing parsing errors from
+  // policy::ConfigDirPolicyLoader.
 
   // Called after detecting malformed policies.
   typedef base::Callback<void()> PolicyErrorCallback;
 
-  // Derived classes specify which |task_runner| should be used for calling
-  // their StartWatchingInternal and StopWatchingInternal methods.
-  // Derived classes promise back to call UpdatePolicies and other instance
-  // methods on the same |task_runner|.
-  explicit PolicyWatcher(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-
-  virtual ~PolicyWatcher();
+  ~PolicyWatcher() override;
 
   // This guarantees that the |policy_updated_callback| is called at least once
   // with the current policies.  After that, |policy_updated_callback| will be
@@ -94,12 +91,11 @@ class PolicyWatcher {
       policy::PolicyService* policy_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
- protected:
-  virtual void StartWatchingInternal() = 0;
-  virtual void StopWatchingInternal() = 0;
+ private:
+  friend class PolicyWatcherTest;
 
   // Used to check if the class is on the right thread.
-  bool OnPolicyWatcherThread() const;
+  bool OnPolicyServiceThread() const;
 
   // Takes the policy dictionary from the OS specific store and extracts the
   // relevant policies.
@@ -114,14 +110,36 @@ class PolicyWatcher {
   // The counter is reset whenever policy has been successfully read.
   void SignalTransientPolicyError();
 
-  friend class PolicyWatcherTest;
+  // |policy_service_task_runner| is the task runner where it is safe
+  // to call |policy_service_| methods and where we expect to get callbacks
+  // from |policy_service_|.
+  PolicyWatcher(
+      const scoped_refptr<base::SingleThreadTaskRunner>&
+          policy_service_task_runner,
+      policy::PolicyService* policy_service,
+      scoped_ptr<policy::PolicyService> owned_policy_service,
+      scoped_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider,
+      scoped_ptr<policy::SchemaRegistry> owned_schema_registry);
 
-  // Returns a DictionaryValue containing the default values for each policy.
-  const base::DictionaryValue& Defaults() const;
+  // Creates PolicyWatcher that wraps the owned |async_policy_loader| with an
+  // appropriate PolicySchema.
+  //
+  // |policy_service_task_runner| is passed through to the constructor of
+  // PolicyWatcher.
+  static scoped_ptr<PolicyWatcher> CreateFromPolicyLoader(
+      const scoped_refptr<base::SingleThreadTaskRunner>&
+          policy_service_task_runner,
+      scoped_ptr<policy::AsyncPolicyLoader> async_policy_loader);
 
- private:
-  void StopWatchingOnPolicyWatcherThread();
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  // PolicyService::Observer interface.
+  void OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                       const policy::PolicyMap& previous,
+                       const policy::PolicyMap& current) override;
+  void OnPolicyServiceInitialized(policy::PolicyDomain domain) override;
+
+  void StopWatchingOnPolicyServiceThread();
+
+  scoped_refptr<base::SingleThreadTaskRunner> policy_service_task_runner_;
 
   PolicyUpdatedCallback policy_updated_callback_;
   PolicyErrorCallback policy_error_callback_;
@@ -129,10 +147,21 @@ class PolicyWatcher {
 
   scoped_ptr<base::DictionaryValue> old_policies_;
   scoped_ptr<base::DictionaryValue> default_values_;
+
+  // TODO(lukasza): Remove - components/policy filters out mistyped values.
   scoped_ptr<base::DictionaryValue> bad_type_values_;
 
-  // Allows us to cancel any inflight FileWatcher events or scheduled reloads.
-  base::WeakPtrFactory<PolicyWatcher> weak_factory_;
+  policy::PolicyService* policy_service_;
+
+  // Order of fields below is important to ensure destruction takes object
+  // dependencies into account:
+  // - |owned_policy_service_| uses |owned_policy_provider_|
+  // - |owned_policy_provider_| uses |owned_schema_registry_|
+  scoped_ptr<policy::SchemaRegistry> owned_schema_registry_;
+  scoped_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider_;
+  scoped_ptr<policy::PolicyService> owned_policy_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyWatcher);
 };
 
 }  // namespace policy_hack
