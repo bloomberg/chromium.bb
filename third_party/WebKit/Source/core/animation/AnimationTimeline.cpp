@@ -226,6 +226,8 @@ void AnimationTimeline::setCurrentTime(double currentTime)
 
 void AnimationTimeline::setCurrentTimeInternal(double currentTime)
 {
+    if (!document())
+        return;
     m_zeroTime = m_playbackRate == 0
         ? currentTime
         : (document()->animationClock().currentTime() - currentTime) / m_playbackRate;
@@ -277,6 +279,8 @@ void AnimationTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
 
 void AnimationTimeline::setPlaybackRate(double playbackRate)
 {
+    if (!document())
+        return;
     double currentTime = currentTimeInternal();
     m_playbackRate = playbackRate;
     m_zeroTime = playbackRate == 0
