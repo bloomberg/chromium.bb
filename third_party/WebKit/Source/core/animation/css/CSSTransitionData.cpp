@@ -30,7 +30,7 @@ Timing CSSTransitionData::convertToTiming(size_t index) const
     ASSERT(index < m_propertyList.size());
     // Note that the backwards fill part is required for delay to work.
     Timing timing = CSSTimingData::convertToTiming(index);
-    timing.fillMode = Timing::FillModeNone;
+    timing.fillMode = Timing::FillModeBoth;
     return timing;
 }
 
