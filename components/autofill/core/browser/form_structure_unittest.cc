@@ -94,6 +94,16 @@ TEST(FormStructureTest, AutofillCount) {
   field.form_control_type = "password";
   form.fields.push_back(field);
 
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("city");
+  field.name = ASCIIToUTF16("city");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
   field.label = ASCIIToUTF16("state");
   field.name = ASCIIToUTF16("state");
   field.form_control_type = "select-one";
@@ -107,7 +117,7 @@ TEST(FormStructureTest, AutofillCount) {
   // Only text and select fields that are heuristically matched are counted.
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
-  EXPECT_EQ(1U, form_structure->autofill_count());
+  EXPECT_EQ(3U, form_structure->autofill_count());
 
   // Add a field with should_autocomplete=false. This should not be considered a
   // fillable field.
@@ -119,14 +129,14 @@ TEST(FormStructureTest, AutofillCount) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
-  EXPECT_EQ(2U, form_structure->autofill_count());
+  EXPECT_EQ(4U, form_structure->autofill_count());
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kRespectAutocompleteOffForAutofill);
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
-  EXPECT_EQ(1U, form_structure->autofill_count());
+  EXPECT_EQ(3U, form_structure->autofill_count());
 }
 
 TEST(FormStructureTest, SourceURL) {
@@ -2257,7 +2267,6 @@ TEST(FormStructureTest, CheckFormSignature) {
       std::string("https://login.facebook.com&login_form&email&first&"
                   "random1234&random&1random&random")),
       form_structure->FormSignature());
-
 }
 
 TEST(FormStructureTest, ToFormData) {
@@ -2420,6 +2429,8 @@ TEST(FormStructureTest, ParseQueryResponse) {
 
   FormStructure::ParseQueryResponse(response, forms.get());
 
+  ASSERT_GE(forms[0]->field_count(), 2U);
+  ASSERT_GE(forms[1]->field_count(), 2U);
   EXPECT_EQ(7, forms[0]->field(0)->server_type());
   EXPECT_EQ(30, forms[0]->field(1)->server_type());
   EXPECT_EQ(9, forms[1]->field(0)->server_type());
@@ -2455,6 +2466,7 @@ TEST(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
 
   FormStructure::ParseQueryResponse(response, forms.get());
 
+  ASSERT_GE(forms[0]->field_count(), 2U);
   EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(0)->server_type());
   EXPECT_EQ(76, forms[0]->field(1)->server_type());
 }

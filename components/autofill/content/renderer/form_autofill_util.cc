@@ -1157,6 +1157,7 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     FormFieldData* field) {
   form->origin = origin;
   form->user_submitted = false;
+  form->is_form_tag = false;
 
   return FormOrFieldsetsToFormData(nullptr, element, fieldsets,
                                    control_elements, requirements, extract_mask,

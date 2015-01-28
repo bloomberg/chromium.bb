@@ -135,15 +135,24 @@ TEST(FormFieldTest, ParseFormFields) {
   field_data.label = ASCIIToUTF16("Is PO Box");
   fields.push_back(new AutofillField(field_data, field_data.label));
 
-  // reset is_checkable to false.
+  // reset |is_checkable| to false.
   field_data.is_checkable = false;
+
   field_data.label = ASCIIToUTF16("Address line2");
   fields.push_back(new AutofillField(field_data, field_data.label));
 
   ServerFieldTypeMap field_type_map;
-  FormField::ParseFormFields(fields.get(), &field_type_map);
+  FormField::ParseFormFields(fields.get(), true, &field_type_map);
+  // Does not parse since there are only 2 recognized fields.
+  ASSERT_EQ(0U, field_type_map.size());
+
+  field_data.label = ASCIIToUTF16("City");
+  fields.push_back(new AutofillField(field_data, field_data.label));
+
   // Checkable element shouldn't interfere with inference of Address line2.
-  EXPECT_EQ(2U, field_type_map.size());
+  field_type_map.clear();
+  FormField::ParseFormFields(fields.get(), true, &field_type_map);
+  ASSERT_EQ(3U, field_type_map.size());
 
   EXPECT_EQ(ADDRESS_HOME_LINE1,
             field_type_map.find(ASCIIToUTF16("Address line1"))->second);

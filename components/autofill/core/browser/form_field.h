@@ -29,6 +29,7 @@ class FormField {
   // The association is stored into |map|.  Each field has a derived unique name
   // that is used as the key into the |map|.
   static void ParseFormFields(const std::vector<AutofillField*>& fields,
+                              bool is_form_tag,
                               ServerFieldTypeMap* map);
 
  protected:

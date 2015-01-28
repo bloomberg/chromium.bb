@@ -43,7 +43,7 @@ struct FormDataPredictions;
 // in the fields along with additional information needed by Autofill.
 class FormStructure {
  public:
-  FormStructure(const FormData& form);
+  explicit FormStructure(const FormData& form);
   virtual ~FormStructure();
 
   // Runs several heuristics against the form fields to determine their possible
@@ -253,6 +253,9 @@ class FormStructure {
 
   // True if the form contains at least one password field.
   bool has_password_field_;
+
+  // True if the form is a <form>.
+  bool is_form_tag_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

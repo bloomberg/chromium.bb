@@ -353,7 +353,8 @@ FormStructure::FormStructure(const FormData& form)
       active_field_count_(0),
       upload_required_(USE_UPLOAD_RATES),
       has_author_specified_types_(false),
-      has_password_field_(false) {
+      has_password_field_(false),
+      is_form_tag_(form.is_form_tag) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
   for (std::vector<FormFieldData>::const_iterator field =
@@ -397,7 +398,7 @@ void FormStructure::DetermineHeuristicTypes() {
 
   if (!has_author_specified_types_) {
     ServerFieldTypeMap field_type_map;
-    FormField::ParseFormFields(fields_.get(), &field_type_map);
+    FormField::ParseFormFields(fields_.get(), is_form_tag_, &field_type_map);
     for (size_t i = 0; i < field_count(); ++i) {
       AutofillField* field = fields_[i];
       ServerFieldTypeMap::iterator iter =
