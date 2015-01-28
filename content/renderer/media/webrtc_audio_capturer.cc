@@ -434,6 +434,11 @@ int WebRtcAudioCapturer::MaxVolume() const {
   return WebRtcAudioDeviceImpl::kMaxVolumeLevel;
 }
 
+media::AudioParameters WebRtcAudioCapturer::GetOutputFormat() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return audio_processor_->OutputFormat();
+}
+
 void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
                                   int audio_delay_milliseconds,
                                   double volume,

@@ -67,6 +67,11 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
 
   webrtc::AudioTrackInterface* GetAudioAdapter() override;
 
+  // Returns the output format of the capture source. May return an invalid
+  // AudioParameters if the format is not yet available.
+  // Called on the main render thread.
+  media::AudioParameters GetOutputFormat() const;
+
   // Method called by the capturer to deliver the capture data.
   // Called on the capture audio thread.
   void Capture(const media::AudioBus& audio_bus,

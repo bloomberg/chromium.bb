@@ -52,6 +52,16 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     // Send a reply to the currently pending |Configure()| request.
     void SendConfigureReply(int32_t result);
 
+    // MediaStreamAudioSink overrides:
+    // These two functions should be called on the audio thread.
+    // NOTE: For this specific instance, |OnSetFormat()| is also called on the
+    // main thread. However, the call to |OnSetFormat()| happens before this
+    // sink is added to an audio track, also on the main thread, which should
+    // avoid any potential races.
+    void OnData(const media::AudioBus& audio_bus,
+                base::TimeTicks estimated_capture_time) override;
+    void OnSetFormat(const media::AudioParameters& params) override;
+
    private:
     // Initializes buffers on the main thread.
     void SetFormatOnMainThread(int bytes_per_second, int bytes_per_frame);
@@ -61,12 +71,6 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     // Send enqueue buffer message on the main thread.
     void SendEnqueueBufferMessageOnMainThread(int32_t index,
                                               int32_t buffers_generation);
-
-    // MediaStreamAudioSink overrides:
-    // These two functions should be called on the audio thread.
-    void OnData(const media::AudioBus& audio_bus,
-                base::TimeTicks estimated_capture_time) override;
-    void OnSetFormat(const media::AudioParameters& params) override;
 
     // Unowned host which is available during the AudioSink's lifespan.
     // It is mainly used in the main thread. But the audio thread will use

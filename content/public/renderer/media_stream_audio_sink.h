@@ -37,6 +37,11 @@ class CONTENT_EXPORT MediaStreamAudioSink : public MediaStreamSink {
   static void RemoveFromAudioTrack(MediaStreamAudioSink* sink,
                                    const blink::WebMediaStreamTrack& track);
 
+  // Returns the format of the audio track.
+  // Called on the main render thread.
+  static media::AudioParameters GetFormatFromAudioTrack(
+      const blink::WebMediaStreamTrack& track);
+
   // Callback called to deliver audio data. The data in |audio_bus| respects the
   // AudioParameters passed in the last call to OnSetFormat().  Called on
   // real-time audio thread.

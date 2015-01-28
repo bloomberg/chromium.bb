@@ -43,4 +43,17 @@ void MediaStreamAudioSink::RemoveFromAudioTrack(
   audio_track->RemoveSink(sink);
 }
 
+media::AudioParameters MediaStreamAudioSink::GetFormatFromAudioTrack(
+    const blink::WebMediaStreamTrack& track) {
+  MediaStreamTrack* native_track = MediaStreamTrack::GetTrack(track);
+  if (!native_track->is_local_track()) {
+    LOG(ERROR) << "Can't get format from a remote audio track";
+    return media::AudioParameters();
+  }
+
+  WebRtcLocalAudioTrack* audio_track =
+      static_cast<WebRtcLocalAudioTrack*>(native_track);
+  return audio_track->GetOutputFormat();
+}
+
 }  // namespace content

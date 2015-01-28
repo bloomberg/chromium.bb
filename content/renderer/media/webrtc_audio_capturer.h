@@ -105,6 +105,10 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // call Stop()
   void Stop();
 
+  // Returns the output format.
+  // Called on the main render thread.
+  media::AudioParameters GetOutputFormat() const;
+
   // Used by the unittests to inject their own source to the capturer.
   void SetCapturerSourceForTesting(
       const scoped_refptr<media::AudioCapturerSource>& source,

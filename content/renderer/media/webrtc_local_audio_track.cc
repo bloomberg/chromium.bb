@@ -40,6 +40,15 @@ WebRtcLocalAudioTrack::~WebRtcLocalAudioTrack() {
   Stop();
 }
 
+media::AudioParameters WebRtcLocalAudioTrack::GetOutputFormat() const {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  if (webaudio_source_.get()) {
+    return media::AudioParameters();
+  } else {
+    return capturer_->GetOutputFormat();
+  }
+}
+
 void WebRtcLocalAudioTrack::Capture(const media::AudioBus& audio_bus,
                                     base::TimeTicks estimated_capture_time,
                                     bool force_report_nonzero_energy) {
