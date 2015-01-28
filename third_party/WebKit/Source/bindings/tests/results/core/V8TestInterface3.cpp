@@ -9,6 +9,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Iterator.h"
@@ -89,6 +90,41 @@ static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     TestInterface3V8Internal::entriesMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestInterface3", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+    ScriptValue callback;
+    ScriptValue thisArg;
+    {
+        if (!info[0]->IsFunction()) {
+            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+                exceptionState.throwIfNeeded();
+            return;
+        }
+        callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+        thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+    }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    impl->forEach(scriptState, ScriptValue(scriptState, info.This()), callback, thisArg, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+}
+
+static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterface3V8Internal::forEachMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -206,6 +242,12 @@ static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> func
             "entries", TestInterface3V8Internal::entriesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, entriesMethodConfiguration, isolate);
+    }
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        const V8DOMConfiguration::MethodConfiguration forEachMethodConfiguration = {
+            "forEach", TestInterface3V8Internal::forEachMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
+        };
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, forEachMethodConfiguration, isolate);
     }
 
     // Custom toString template

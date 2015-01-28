@@ -29,6 +29,39 @@ entry = 1,1
 entry = 2,4
 entry = 3,9
 entry = 4,16
+PASS internals.forEach("not a function") threw exception TypeError: Failed to execute 'forEach' on 'Internals': The callback provided as parameter 1 is not a function..
+callback called
+PASS internals.forEach(function () { debug("callback called"); throw Error("stop!"); }) threw exception Error: stop!.
+thisArg, 0, 0, [object Internals]
+thisArg, 1, 1, [object Internals]
+thisArg, 4, 2, [object Internals]
+thisArg, 9, 3, [object Internals]
+thisArg, 16, 4, [object Internals]
+0: [object Window]
+1: [object Window]
+4: [object Window]
+9: [object Window]
+16: [object Window]
+0: [object Window]
+1: [object Window]
+4: [object Window]
+9: [object Window]
+16: [object Window]
+0: undefined
+1: undefined
+4: undefined
+9: undefined
+16: undefined
+0: null
+1: null
+4: null
+9: null
+16: null
+0: number
+1: number
+4: number
+9: number
+16: number
 PASS successfullyParsed is true
 
 TEST COMPLETE

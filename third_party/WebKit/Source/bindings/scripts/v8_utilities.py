@@ -201,6 +201,7 @@ CALL_WITH_ARGUMENTS = {
     'ActiveWindow': 'callingDOMWindow(info.GetIsolate())',
     'FirstWindow': 'enteredDOMWindow(info.GetIsolate())',
     'Document': 'document',
+    'ThisValue': 'ScriptValue(scriptState, info.This())',
 }
 # List because key order matters, as we want arguments in deterministic order
 CALL_WITH_VALUES = [
@@ -210,6 +211,7 @@ CALL_WITH_VALUES = [
     'ActiveWindow',
     'FirstWindow',
     'Document',
+    'ThisValue',
 ]
 
 

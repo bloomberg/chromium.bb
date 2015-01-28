@@ -712,6 +712,7 @@ interface FormData
     method constructor
     method delete
     method entries
+    method forEach
     method get
     method getAll
     method has
@@ -1012,6 +1013,7 @@ interface Headers
     method constructor
     method delete
     method entries
+    method forEach
     method get
     method getAll
     method has
@@ -1188,6 +1190,7 @@ interface MediaKeySession
 interface MediaKeyStatusMap
     method constructor
     method entries
+    method forEach
     method get
     method has
     method keys

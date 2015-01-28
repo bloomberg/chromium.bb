@@ -6,6 +6,7 @@
 #define Iterable_h
 
 #include "bindings/core/v8/V8IteratorResultValue.h"
+#include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Iterator.h"
 
 namespace blink {
@@ -36,6 +37,41 @@ public:
         if (!source)
             return nullptr;
         return new IterableIterator<EntrySelector>(source);
+    }
+
+    void forEach(ScriptState* scriptState, const ScriptValue& thisValue, const ScriptValue& callback, const ScriptValue& thisArg, ExceptionState& exceptionState)
+    {
+        IterationSource* source = this->startIteration(scriptState, exceptionState);
+
+        v8::Isolate* isolate = scriptState->isolate();
+        v8::TryCatch tryCatch(isolate);
+
+        v8::Local<v8::Object> creationContext(scriptState->context()->Global());
+        v8::Local<v8::Function> v8Callback(callback.v8Value().As<v8::Function>());
+        v8::Local<v8::Value> v8ThisArg(thisArg.v8Value());
+        v8::Local<v8::Value> args[3];
+
+        args[2] = thisValue.v8Value();
+
+        while (true) {
+            KeyType key;
+            ValueType value;
+
+            if (!source->next(scriptState, key, value, exceptionState))
+                return;
+
+            ASSERT(!exceptionState.hadException());
+
+            args[0] = toV8(value, creationContext, isolate);
+            args[1] = toV8(key, creationContext, isolate);
+
+            V8ScriptRunner::callFunction(v8Callback, scriptState->executionContext(), v8ThisArg, 3, args, isolate);
+
+            if (tryCatch.HasCaught()) {
+                exceptionState.rethrowV8Exception(tryCatch.Exception());
+                return;
+            }
+        }
     }
 
     class IterationSource : public GarbageCollectedFinalized<IterationSource> {

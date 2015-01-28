@@ -13,7 +13,5 @@
     // This function returns undefined if |!this->has(id)|.
     [ImplementedAs=getForBinding, CallWith=ScriptState] any get(DOMString id);
     boolean has(DOMString key);
-    // FIXME: Implement forEach.
-    // void forEach (ForEachCallback callback);
     readonly maplike<DOMString, MIDIInput>;
 };

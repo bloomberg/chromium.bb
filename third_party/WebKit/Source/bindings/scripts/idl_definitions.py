@@ -505,11 +505,12 @@ class IdlOperation(TypedObject):
         self.extended_attributes = {}
         self.specials = []
         self.is_constructor = False
+        self.idl_name = idl_name
+        self.is_static = False
 
         if not node:
-            self.is_static = False
             return
-        self.idl_name = idl_name
+
         self.name = node.GetName()  # FIXME: should just be: or ''
         # FIXME: AST should use None internally
         if self.name == '_unnamed_':
@@ -574,14 +575,19 @@ class IdlOperation(TypedObject):
 ################################################################################
 
 class IdlArgument(TypedObject):
-    def __init__(self, idl_name, node):
+    def __init__(self, idl_name, node=None):
         self.extended_attributes = {}
         self.idl_type = None
-        self.is_optional = node.GetProperty('OPTIONAL')  # syntax: (optional T)
+        self.is_optional = False  # syntax: (optional T)
         self.is_variadic = False  # syntax: (T...)
         self.idl_name = idl_name
-        self.name = node.GetName()
         self.default_value = None
+
+        if not node:
+            return
+
+        self.is_optional = node.GetProperty('OPTIONAL')
+        self.name = node.GetName()
 
         children = node.GetChildren()
         for child in children:

@@ -10,6 +10,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Iterator.h"
@@ -621,6 +622,41 @@ static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestInterface5", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+    ScriptValue callback;
+    ScriptValue thisArg;
+    {
+        if (!info[0]->IsFunction()) {
+            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+                exceptionState.throwIfNeeded();
+            return;
+        }
+        callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+        thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+    }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    impl->forEach(scriptState, ScriptValue(scriptState, info.This()), callback, thisArg, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+}
+
+static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterface5ImplementationV8Internal::forEachMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
@@ -852,6 +888,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterface5Methods[] =
     {"keys", TestInterface5ImplementationV8Internal::keysMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"values", TestInterface5ImplementationV8Internal::valuesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"entries", TestInterface5ImplementationV8Internal::entriesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"forEach", TestInterface5ImplementationV8Internal::forEachMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
 };
 
 static void installV8TestInterface5Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)

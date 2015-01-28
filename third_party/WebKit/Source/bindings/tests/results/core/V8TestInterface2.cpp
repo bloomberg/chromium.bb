@@ -9,6 +9,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8HiddenValue.h"
@@ -290,6 +291,41 @@ static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestInterface2", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+    ScriptValue callback;
+    ScriptValue thisArg;
+    {
+        if (!info[0]->IsFunction()) {
+            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+                exceptionState.throwIfNeeded();
+            return;
+        }
+        callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+        thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+    }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    impl->forEach(scriptState, ScriptValue(scriptState, info.This()), callback, thisArg, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+}
+
+static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterface2V8Internal::forEachMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
@@ -548,6 +584,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] =
     {"keys", TestInterface2V8Internal::keysMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"values", TestInterface2V8Internal::valuesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"entries", TestInterface2V8Internal::entriesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"forEach", TestInterface2V8Internal::forEachMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"toString", TestInterface2V8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 };
 

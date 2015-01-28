@@ -25,6 +25,10 @@ PASS inputs.has('MockInputID') is true
 PASS inputs.has('MockOutputID') is false
 PASS inputs.get('MockInputID') is input
 PASS inputs.get('MockOutputID') is undefined.
+inputs.forEach(...)
+PASS forEachInput is input
+PASS forEachInputKey is inputKey
+PASS forEachMap is inputs
 for (var output of outputs.values())
 PASS output.id is "MockOutputID"
 PASS output.manufacturer is "MockOutputManufacturer"
@@ -42,6 +46,10 @@ PASS outputs.has('MockOutputID') is true
 PASS outputs.has('MockInputID') is false
 PASS outputs.get('MockOutputID') is output
 PASS outputs.get('MockInputID') is undefined.
+outputs.forEach(...)
+PASS forEachOutput is output
+PASS forEachOutputKey is outputKey
+PASS forEachMap is outputs
 PASS a note on message is sent without timestamp
 PASS a note on message is sent with timestamp
 PASS output.send([0xfff, 0x45, 0x7f]) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The value at index 0 (4095) is greater than 0xFF..

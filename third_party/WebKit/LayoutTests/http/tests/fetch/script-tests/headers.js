@@ -116,13 +116,25 @@ test(function() {
     }
 
     // 'entries()'
+    var entries = [];
     for (var header of headers.entries()) {
       var key = header[0], value = header[1];
       assert_not_equals(key, deleteKey.toLowerCase());
       assert_true(key in expectedValueMap);
       assert_equals(headers.get(key), expectedValueMap[key]);
       assert_equals(value, expectedValueMap[key]);
+      entries.push(header);
     }
+
+    // 'forEach()'
+    var thisObject = {};
+    headers.forEach(function (value, key, headersObject) {
+      var header = entries.shift();
+      assert_equals(key, header[0]);
+      assert_equals(value, header[1]);
+      assert_equals(thisObject, this);
+      assert_equals(headersObject, headers);
+    }, thisObject);
 
     // 'append()', 'getAll()'
     var allValues = headers.getAll('X-Fetch-Test');

@@ -37,7 +37,7 @@ import itertools
 from operator import itemgetter
 
 import idl_definitions
-from idl_definitions import IdlOperation
+from idl_definitions import IdlOperation, IdlArgument
 import idl_types
 from idl_types import IdlType, inherits_interface
 import v8_attributes
@@ -332,6 +332,15 @@ def interface_context(interface):
             operation.extended_attributes.update(extended_attributes)
         return v8_methods.method_context(interface, operation)
 
+    def generated_argument(idl_type, name, is_optional=False, extended_attributes=None):
+        argument = IdlArgument(interface.idl_name)
+        argument.idl_type = idl_type
+        argument.name = name
+        argument.is_optional = is_optional
+        if extended_attributes:
+            argument.extended_attributes.update(extended_attributes)
+        return argument
+
     # [Iterable], iterable<>, maplike<> and setlike<>
     iterator_method = None
     # FIXME: support Iterable in partial interfaces. However, we don't
@@ -361,6 +370,11 @@ def interface_context(interface):
             'CallWith': 'ScriptState',
         })
 
+        forEach_extended_attributes = used_extended_attributes.copy()
+        forEach_extended_attributes.update({
+            'CallWith': ['ScriptState', 'ThisValue'],
+        })
+
         def generated_iterator_method(name):
             return generated_method(
                 return_type=IdlType('Iterator'),
@@ -374,6 +388,14 @@ def interface_context(interface):
                 generated_iterator_method('keys'),
                 generated_iterator_method('values'),
                 generated_iterator_method('entries'),
+
+                # void forEach(Function callback, [Default=Undefined] optional any thisArg)
+                generated_method(IdlType('void'), 'forEach',
+                                 arguments=[generated_argument(IdlType('Function'), 'callback'),
+                                            generated_argument(IdlType('any'), 'thisArg',
+                                                               is_optional=True,
+                                                               extended_attributes={'Default': 'Undefined'})],
+                                 extended_attributes=forEach_extended_attributes),
             ])
 
         # FIXME: maplike<> and setlike<> should also imply the presence of a

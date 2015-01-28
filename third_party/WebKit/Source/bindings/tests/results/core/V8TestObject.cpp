@@ -10785,6 +10785,41 @@ static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    ScriptValue callback;
+    ScriptValue thisArg;
+    {
+        if (!info[0]->IsFunction()) {
+            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+                exceptionState.throwIfNeeded();
+            return;
+        }
+        callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+        thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+    }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    impl->forEach(scriptState, ScriptValue(scriptState, info.This()), callback, thisArg, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+}
+
+static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::forEachMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -11216,6 +11251,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"keys", TestObjectV8Internal::keysMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"values", TestObjectV8Internal::valuesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"entries", TestObjectV8Internal::entriesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"forEach", TestObjectV8Internal::forEachMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"toString", TestObjectV8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 };
 
