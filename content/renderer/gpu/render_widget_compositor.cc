@@ -403,6 +403,11 @@ void RenderWidgetCompositor::Initialize() {
   settings.scrollbar_fade_delay_ms = 500;
   settings.scrollbar_fade_resize_delay_ms = 500;
   settings.scrollbar_fade_duration_ms = 300;
+
+  // When pinching in, only show the pinch-viewport overlay scrollbars if the
+  // page scale is at least some threshold away from the minimum. i.e. don't
+  // show the pinch scrollbars when at minimum scale.
+  settings.scrollbar_show_scale_threshold = 1.05f;
 #endif
 
   if (cmd->HasSwitch(switches::kEnableLowResTiling))

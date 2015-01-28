@@ -6,6 +6,7 @@
 
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -23,6 +24,7 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
   LayerTreeImplTest() {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
+    settings.scrollbar_show_scale_threshold = 1.1f;
     host_impl_.reset(
         new FakeLayerTreeHostImpl(settings, &proxy_, &shared_bitmap_manager_));
     EXPECT_TRUE(host_impl_->InitializeRenderer(FakeOutputSurface::Create3d()));
@@ -1369,6 +1371,73 @@ TEST_F(LayerTreeImplTest,
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
+}
+
+TEST_F(LayerTreeImplTest, MakeScrollbarsInvisibleNearMinPageScale) {
+  const int kThumbThickness = 10;
+  const int kTrackStart = 0;
+  const bool kIsLeftSideVerticalScrollbar = false;
+  const bool kIsOverlayScrollbar = true;
+
+  LayerTreeImpl* active_tree = host_impl().active_tree();
+
+  scoped_ptr<LayerImpl> scroll_layer = LayerImpl::Create(active_tree, 1);
+  scoped_ptr<SolidColorScrollbarLayerImpl> vertical_scrollbar_layer =
+      SolidColorScrollbarLayerImpl::Create(active_tree,
+                                           2,
+                                           VERTICAL,
+                                           kThumbThickness,
+                                           kTrackStart,
+                                           kIsLeftSideVerticalScrollbar,
+                                           kIsOverlayScrollbar);
+  scoped_ptr<SolidColorScrollbarLayerImpl> horizontal_scrollbar_layer =
+      SolidColorScrollbarLayerImpl::Create(active_tree,
+                                           3,
+                                           HORIZONTAL,
+                                           kThumbThickness,
+                                           kTrackStart,
+                                           kIsLeftSideVerticalScrollbar,
+                                           kIsOverlayScrollbar);
+
+  scoped_ptr<LayerImpl> clip_layer = LayerImpl::Create(active_tree, 4);
+  scoped_ptr<LayerImpl> page_scale_layer = LayerImpl::Create(active_tree, 5);
+
+  scroll_layer->SetScrollClipLayer(clip_layer->id());
+
+  LayerImpl* scroll_layer_ptr = scroll_layer.get();
+  LayerImpl* page_scale_layer_ptr = page_scale_layer.get();
+
+  clip_layer->AddChild(page_scale_layer.Pass());
+  page_scale_layer_ptr->AddChild(scroll_layer.Pass());
+
+  vertical_scrollbar_layer->SetScrollLayerAndClipLayerByIds(
+      scroll_layer_ptr->id(),
+      clip_layer->id());
+  horizontal_scrollbar_layer->SetScrollLayerAndClipLayerByIds(
+      scroll_layer_ptr->id(),
+      clip_layer->id());
+
+  active_tree->PushPageScaleFromMainThread(1.0f, 1.0f, 4.0f);
+  active_tree->SetViewportLayersFromIds(
+      Layer::INVALID_ID,  // Overscroll
+      page_scale_layer_ptr->id(),
+      scroll_layer_ptr->id(),
+      Layer::INVALID_ID);  // Outer Scroll
+
+  EXPECT_TRUE(vertical_scrollbar_layer->hide_layer_and_subtree());
+  EXPECT_TRUE(horizontal_scrollbar_layer->hide_layer_and_subtree());
+
+  active_tree->PushPageScaleFromMainThread(1.05f, 1.0f, 4.0f);
+  EXPECT_TRUE(vertical_scrollbar_layer->hide_layer_and_subtree());
+  EXPECT_TRUE(horizontal_scrollbar_layer->hide_layer_and_subtree());
+
+  active_tree->PushPageScaleFromMainThread(1.1f, 1.0f, 4.0f);
+  EXPECT_FALSE(vertical_scrollbar_layer->hide_layer_and_subtree());
+  EXPECT_FALSE(horizontal_scrollbar_layer->hide_layer_and_subtree());
+
+  active_tree->PushPageScaleFromMainThread(1.5f, 1.0f, 4.0f);
+  EXPECT_FALSE(vertical_scrollbar_layer->hide_layer_and_subtree());
+  EXPECT_FALSE(horizontal_scrollbar_layer->hide_layer_and_subtree());
 }
 
 TEST_F(LayerTreeImplTest,

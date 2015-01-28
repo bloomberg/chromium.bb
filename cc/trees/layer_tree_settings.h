@@ -47,6 +47,7 @@ class CC_EXPORT LayerTreeSettings {
   int scrollbar_fade_delay_ms;
   int scrollbar_fade_resize_delay_ms;
   int scrollbar_fade_duration_ms;
+  float scrollbar_show_scale_threshold;
   SkColor solid_color_scrollbar_color;
   bool calculate_top_controls_position;
   bool timeout_and_draw_when_animation_checkerboards;

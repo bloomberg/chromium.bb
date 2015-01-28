@@ -343,6 +343,7 @@ class CC_EXPORT LayerTreeImpl {
   bool SetPageScaleFactorLimits(float min_page_scale_factor,
                                 float max_page_scale_factor);
   void DidUpdatePageScale();
+  void HideInnerViewportScrollbarsIfNearMinimumScale();
 
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;

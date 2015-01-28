@@ -1347,15 +1347,8 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
     // scrolls that move the pinch virtual viewport (i.e. trigger from
     // either inner or outer viewport).
     if (scrollbar_animation_controller_) {
-      // When both non-overlay and overlay scrollbars are both present, don't
-      // animate the overlay scrollbars when page scale factor is at the min.
-      // Non-overlay scrollbars also shouldn't trigger animations.
-      bool is_animatable_scrollbar =
-          scrollbar_layer->is_overlay_scrollbar() &&
-          ((layer_tree_impl()->current_page_scale_factor() >
-            layer_tree_impl()->min_page_scale_factor()) ||
-           !layer_tree_impl()->settings().use_pinch_zoom_scrollbars);
-      if (is_animatable_scrollbar)
+      // Non-overlay scrollbars shouldn't trigger animations.
+      if (scrollbar_layer->is_overlay_scrollbar())
         scrollbar_animation_controller_->DidScrollUpdate(on_resize);
     }
   }

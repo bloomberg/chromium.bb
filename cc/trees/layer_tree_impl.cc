@@ -395,6 +395,29 @@ void LayerTreeImpl::DidUpdatePageScale() {
   }
 
   ForceScrollbarParameterUpdateAfterScaleChange(page_scale_layer());
+
+  HideInnerViewportScrollbarsIfNearMinimumScale();
+}
+
+void LayerTreeImpl::HideInnerViewportScrollbarsIfNearMinimumScale() {
+  if (!InnerViewportContainerLayer())
+    return;
+
+  LayerImpl::ScrollbarSet* scrollbars =
+      InnerViewportContainerLayer()->scrollbars();
+
+  if (!scrollbars)
+    return;
+
+  for (LayerImpl::ScrollbarSet::iterator it = scrollbars->begin();
+       it != scrollbars->end();
+       ++it) {
+    ScrollbarLayerImplBase* scrollbar = *it;
+    float minimum_scale_to_show_at =
+        min_page_scale_factor() * settings().scrollbar_show_scale_threshold;
+    scrollbar->SetHideLayerAndSubtree(
+        current_page_scale_factor() < minimum_scale_to_show_at);
+  }
 }
 
 SyncedProperty<ScaleGroup>* LayerTreeImpl::page_scale_factor() {
@@ -475,6 +498,8 @@ void LayerTreeImpl::SetViewportLayersFromIds(
       LayerById(outer_viewport_scroll_layer_id);
   DCHECK(outer_viewport_scroll_layer_ ||
          outer_viewport_scroll_layer_id == Layer::INVALID_ID);
+
+  HideInnerViewportScrollbarsIfNearMinimumScale();
 
   if (!root_layer_scroll_offset_delegate_)
     return;
