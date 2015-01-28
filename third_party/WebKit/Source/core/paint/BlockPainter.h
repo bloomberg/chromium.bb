@@ -23,6 +23,7 @@ public:
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintObject(const PaintInfo&, const LayoutPoint&);
     void paintChildren(const PaintInfo&, const LayoutPoint&);
+    void paintChild(RenderBox*, const PaintInfo&, const LayoutPoint&);
     void paintChildAsInlineBlock(RenderBox*, const PaintInfo&, const LayoutPoint&);
     void paintOverflowControlsIfNeeded(const PaintInfo&, const LayoutPoint&);
 
@@ -40,7 +41,6 @@ private:
     void paintContents(const PaintInfo&, const LayoutPoint&);
     void paintColumnContents(const PaintInfo&, const LayoutPoint&, bool paintFloats = false);
     void paintColumnRules(const PaintInfo&, const LayoutPoint&);
-    void paintChild(RenderBox*, const PaintInfo&, const LayoutPoint&);
     void paintSelection(const PaintInfo&, const LayoutPoint&);
     void paintContinuationOutlines(const PaintInfo&, const LayoutPoint&);
 

@@ -17,9 +17,6 @@ public:
     GridPainter(RenderGrid& renderGrid) : m_renderGrid(renderGrid) { }
 
     void paintChildren(const PaintInfo&, const LayoutPoint&);
-    void paintChild(RenderBox&, const PaintInfo&, const LayoutPoint&);
-
-    void paint(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
     RenderGrid& m_renderGrid;

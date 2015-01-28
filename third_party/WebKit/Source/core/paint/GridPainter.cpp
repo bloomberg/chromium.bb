@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/GridPainter.h"
 
+#include "core/paint/BlockPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderGrid.h"
 
@@ -74,16 +75,9 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& p
         if (current == previous)
             continue;
 
-        paintChild(*current, paintInfo, paintOffset);
+        BlockPainter(m_renderGrid).paintChild(current, paintInfo, paintOffset);
         previous = current;
     }
-}
-
-void GridPainter::paintChild(RenderBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    LayoutPoint childPoint = m_renderGrid.flipForWritingModeForChild(&child, paintOffset);
-    if (!child.hasSelfPaintingLayer() && !child.isFloating())
-        child.paint(paintInfo, childPoint);
 }
 
 } // namespace blink
