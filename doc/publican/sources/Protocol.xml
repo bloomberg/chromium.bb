@@ -282,9 +282,16 @@
   <section id="sect-Protocol-Surface">
     <title>Surfaces</title>
     <para>
-      Surfaces are created by the client.
-      Clients don't know the global position of their surfaces, and
-      cannot access other clients surfaces.
+      A surface manages a rectangular grid of pixels that clients create
+      for displaying their content to the screen.  Clients don't know
+      the global position of their surfaces, and cannot access other
+      clients' surfaces.
+    </para>
+    <para>
+      Once the client has finished writing pixels, it 'commits' the
+      buffer; this permits the compositor to access the buffer and read
+      the pixels.  When the compositor is finished, it releases the
+      buffer back to the client.
     </para>
     <para>
       See <xref linkend="protocol-spec-wl_surface"/> for the protocol
