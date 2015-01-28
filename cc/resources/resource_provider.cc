@@ -1087,43 +1087,31 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
 
 ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
     ResourceProvider* resource_provider,
-    ResourceProvider::ResourceId resource_id)
-    : resource_provider_(resource_provider),
-      resource_(resource_provider->LockForWrite(resource_id)) {
-}
-
-ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  resource_provider_->UnlockForWrite(resource_);
-}
-
-SkSurface* ResourceProvider::ScopedWriteLockGr::GetSkSurface(
+    ResourceProvider::ResourceId resource_id,
     bool use_distance_field_text,
     bool can_use_lcd_text,
-    int msaa_sample_count) {
+    int msaa_sample_count)
+    : resource_provider_(resource_provider),
+      resource_(resource_provider->LockForWrite(resource_id)) {
+  // Create the sk_surface.
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(resource_->locked_for_write);
 
-  bool create_surface =
-      !resource_->sk_surface.get() ||
-      !SurfaceHasMatchingProperties(use_distance_field_text, can_use_lcd_text);
-  if (create_surface) {
-    resource_provider_->LazyAllocate(resource_);
+  resource_provider_->LazyAllocate(resource_);
 
-    GrBackendTextureDesc desc;
-    desc.fFlags = kRenderTarget_GrBackendTextureFlag;
-    desc.fWidth = resource_->size.width();
-    desc.fHeight = resource_->size.height();
-    desc.fConfig = ToGrPixelConfig(resource_->format);
-    desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-    desc.fTextureHandle = resource_->gl_id;
-    desc.fSampleCnt = msaa_sample_count;
+  GrBackendTextureDesc desc;
+  desc.fFlags = kRenderTarget_GrBackendTextureFlag;
+  desc.fWidth = resource_->size.width();
+  desc.fHeight = resource_->size.height();
+  desc.fConfig = ToGrPixelConfig(resource_->format);
+  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+  desc.fTextureHandle = resource_->gl_id;
+  desc.fSampleCnt = msaa_sample_count;
 
-    class GrContext* gr_context = resource_provider_->GrContext();
-    skia::RefPtr<GrTexture> gr_texture =
-        skia::AdoptRef(gr_context->wrapBackendTexture(desc));
-    if (!gr_texture)
-      return nullptr;
+  class GrContext* gr_context = resource_provider_->GrContext();
+  skia::RefPtr<GrTexture> gr_texture =
+      skia::AdoptRef(gr_context->wrapBackendTexture(desc));
+  if (gr_texture) {
     uint32_t flags = use_distance_field_text
                          ? SkSurfaceProps::kUseDistanceFieldFonts_Flag
                          : 0;
@@ -1134,22 +1122,14 @@ SkSurface* ResourceProvider::ScopedWriteLockGr::GetSkSurface(
       surface_props =
           SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
     }
-    resource_->sk_surface = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
+    sk_surface_ = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
         gr_texture->asRenderTarget(), &surface_props));
   }
-  return resource_->sk_surface.get();
 }
 
-bool ResourceProvider::ScopedWriteLockGr::SurfaceHasMatchingProperties(
-    bool use_distance_field_text,
-    bool can_use_lcd_text) const {
-  const SkSurface* surface = resource_->sk_surface.get();
-  bool surface_uses_distance_field_text =
-      surface->props().isUseDistanceFieldFonts();
-  bool surface_can_use_lcd_text =
-      surface->props().pixelGeometry() != kUnknown_SkPixelGeometry;
-  return use_distance_field_text == surface_uses_distance_field_text &&
-         can_use_lcd_text == surface_can_use_lcd_text;
+ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  resource_provider_->UnlockForWrite(resource_);
 }
 
 ResourceProvider::SynchronousFence::SynchronousFence(

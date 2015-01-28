@@ -332,20 +332,19 @@ class CC_EXPORT ResourceProvider {
   class CC_EXPORT ScopedWriteLockGr {
    public:
     ScopedWriteLockGr(ResourceProvider* resource_provider,
-                      ResourceProvider::ResourceId resource_id);
+                      ResourceProvider::ResourceId resource_id,
+                      bool use_distance_field_text,
+                      bool can_use_lcd_text,
+                      int msaa_sample_count);
     ~ScopedWriteLockGr();
 
-    SkSurface* GetSkSurface(bool use_distance_field_text,
-                            bool can_use_lcd_text,
-                            int msaa_sample_count);
+    SkSurface* get_sk_surface() { return sk_surface_.get(); }
 
    private:
-    bool SurfaceHasMatchingProperties(bool use_distance_field_text,
-                                      bool can_use_lcd_text) const;
-
     ResourceProvider* resource_provider_;
     ResourceProvider::Resource* resource_;
     base::ThreadChecker thread_checker_;
+    skia::RefPtr<SkSurface> sk_surface_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGr);
   };
@@ -495,7 +494,6 @@ class CC_EXPORT ResourceProvider {
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
     gfx::GpuMemoryBuffer* gpu_memory_buffer;
-    skia::RefPtr<SkSurface> sk_surface;
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;
 

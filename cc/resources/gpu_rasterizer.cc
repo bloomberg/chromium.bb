@@ -119,16 +119,15 @@ void GpuRasterizer::AddToMultiPictureDraw(const Tile* tile,
       use_distance_field_text_ ||
       tile->raster_source()->ShouldAttemptToUseDistanceFieldText();
   scoped_ptr<ResourceProvider::ScopedWriteLockGr> lock(
-      new ResourceProvider::ScopedWriteLockGr(resource_provider_,
-                                              resource->id()));
-  SkSurface* sk_surface = lock->GetSkSurface(
-      use_distance_field_text, tile->raster_source()->CanUseLCDText(),
-      msaa_sample_count_);
+      new ResourceProvider::ScopedWriteLockGr(
+          resource_provider_, resource->id(), use_distance_field_text,
+          tile->raster_source()->CanUseLCDText(), msaa_sample_count_));
 
-  locks->push_back(lock.Pass());
-
+  SkSurface* sk_surface = lock->get_sk_surface();
   if (!sk_surface)
     return;
+
+  locks->push_back(lock.Pass());
 
   SkRTreeFactory factory;
   SkPictureRecorder recorder;
