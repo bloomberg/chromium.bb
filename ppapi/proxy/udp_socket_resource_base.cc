@@ -320,6 +320,11 @@ void UDPSocketResourceBase::OnPluginMsgPushRecvResult(
 void UDPSocketResourceBase::OnPluginMsgSendToReply(
     const ResourceMessageReplyParams& params,
     int32_t bytes_written) {
+  // This can be empty if the socket was closed, but there are still tasks
+  // to be posted for this resource.
+  if (sendto_callbacks_.empty())
+    return;
+
   scoped_refptr<TrackedCallback> callback = sendto_callbacks_.front();
   sendto_callbacks_.pop();
   if (!TrackedCallback::IsPending(callback))
