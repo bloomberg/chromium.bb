@@ -4,9 +4,13 @@
 
 #include "ui/events/ozone/evdev/input_controller_evdev.h"
 
+#include <algorithm>
 #include <linux/input.h>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 
@@ -40,6 +44,74 @@ void SetGestureBoolProperty(GesturePropertyProvider* provider,
     property->SetBoolValue(values);
   }
 }
+
+// Return the values in an array in one string. Used for touch logging.
+template <typename T>
+std::string DumpArrayProperty(const std::vector<T>& value, const char* format) {
+  std::string ret;
+  for (size_t i = 0; i < value.size(); ++i) {
+    if (i > 0)
+      ret.append(", ");
+    ret.append(base::StringPrintf(format, value[i]));
+  }
+  return ret;
+}
+
+// Return the values in a gesture property in one string. Used for touch
+// logging.
+std::string DumpGesturePropertyValue(GesturesProp* property) {
+  switch (property->type()) {
+    case GesturePropertyProvider::PT_INT:
+      return DumpArrayProperty(property->GetIntValue(), "%d");
+      break;
+    case GesturePropertyProvider::PT_SHORT:
+      return DumpArrayProperty(property->GetShortValue(), "%d");
+      break;
+    case GesturePropertyProvider::PT_BOOL:
+      return DumpArrayProperty(property->GetBoolValue(), "%d");
+      break;
+    case GesturePropertyProvider::PT_STRING:
+      return "\"" + property->GetStringValue() + "\"";
+      break;
+    case GesturePropertyProvider::PT_REAL:
+      return DumpArrayProperty(property->GetDoubleValue(), "%lf");
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return std::string();
+}
+
+// Dump touch device property values to a string.
+void DumpTouchDeviceStatus(EventFactoryEvdev* event_factory,
+                           GesturePropertyProvider* provider,
+                           std::string* status) {
+  // We use DT_ALL since we want gesture property values for all devices that
+  // run with the gesture library, not just mice or touchpads.
+  std::vector<int> ids;
+  event_factory->GetDeviceIdsByType(DT_ALL, &ids);
+
+  // Dump the property names and values for each device.
+  for (size_t i = 0; i < ids.size(); ++i) {
+    std::vector<std::string> names = provider->GetPropertyNamesById(ids[i]);
+    status->append("\n");
+    status->append(base::StringPrintf("ID %d:\n", ids[i]));
+    status->append(base::StringPrintf(
+        "Device \'%s\':\n", provider->GetDeviceNameById(ids[i]).c_str()));
+
+    // Note that, unlike X11, we don't maintain the "atom" concept here.
+    // Therefore, the property name indices we output here shouldn't be treated
+    // as unique identifiers of the properties.
+    std::sort(names.begin(), names.end());
+    for (size_t j = 0; j < names.size(); ++j) {
+      status->append(base::StringPrintf("\t%s (%lu):", names[j].c_str(), j));
+      GesturesProp* property = provider->GetProperty(ids[i], names[j]);
+      status->append("\t" + DumpGesturePropertyValue(property) + '\n');
+    }
+  }
+}
+
 #endif
 
 }  // namespace
@@ -182,6 +254,20 @@ void InputControllerEvdev::SetPrimaryButtonRight(bool right) {
 
 void InputControllerEvdev::SetTapToClickPaused(bool state) {
   SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused", state);
+}
+
+void InputControllerEvdev::GetTouchDeviceStatus(
+    const GetTouchDeviceStatusReply& reply) {
+  scoped_ptr<std::string> status(new std::string);
+#if defined(USE_EVDEV_GESTURES)
+  std::string* status_ptr = status.get();
+  base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
+      FROM_HERE, base::Bind(&DumpTouchDeviceStatus, event_factory_,
+                            gesture_property_provider_, status_ptr),
+      base::Bind(reply, base::Passed(&status)));
+#else
+  reply.Run(status.Pass());
+#endif
 }
 
 }  // namespace ui
