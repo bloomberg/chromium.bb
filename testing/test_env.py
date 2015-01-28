@@ -126,6 +126,9 @@ def run_executable(cmd, env):
 
   if asan:
     extra_env.update(get_asan_env(cmd, lsan))
+    # ASan is not yet sandbox-friendly on Windows (http://crbug.com/382867).
+    if sys.platform == 'win32':
+      cmd.append('--no-sandbox')
   if lsan:
     cmd.append('--no-sandbox')
 
