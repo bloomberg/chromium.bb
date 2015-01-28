@@ -652,7 +652,7 @@ void LoadKeymap(const std::string& layout_name,
     reply_runner->PostTask(FROM_HERE, base::Bind(reply_callback, layout_name,
                                                  base::Passed(&keymap_str)));
   } else {
-    LOG(ERROR) << "Keymap file failed to load: " << layout_name;
+    LOG(FATAL) << "Keymap file failed to load: " << layout_name;
   }
 }
 #endif
@@ -730,7 +730,7 @@ void XkbKeyboardLayoutEngine::OnKeymapLoaded(
     if (layout_name == current_layout_name_)
       SetKeymap(keymap);
   } else {
-    LOG(ERROR) << "Keymap file failed to load: " << layout_name;
+    LOG(FATAL) << "Keymap file failed to load: " << layout_name;
   }
 }
 
