@@ -34,7 +34,7 @@ ServiceWorkerRegistrationHandleReference(
       sender_(sender) {
   DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId, info_.handle_id);
   DCHECK(sender_.get());
-  if (increment_ref_in_ctor)
+  if (!increment_ref_in_ctor)
     return;
   sender_->Send(
       new ServiceWorkerHostMsg_IncrementRegistrationRefCount(info_.handle_id));

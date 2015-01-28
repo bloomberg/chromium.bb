@@ -104,8 +104,8 @@ void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
                                    attrs.waiting.handle_id);
   SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
                                    attrs.active.handle_id);
-  SendRegistrationObjectDestroyed(thread_safe_sender_.get(),
-                                  registration_handle_id);
+  // Don't have to decrement registration refcount because the sender of the
+  // SetVersionAttributes message doesn't increment it.
 }
 
 void ServiceWorkerMessageFilter::OnStaleSetControllerServiceWorker(
