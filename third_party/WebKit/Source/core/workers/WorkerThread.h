@@ -63,6 +63,9 @@ public:
     virtual void start();
     virtual void stop();
 
+    void didStartRunLoop();
+    void didStopRunLoop();
+
     // Can be used to wait for this worker thread to shut down.
     // (This is signalled on the main thread, so it's assumed to be waited on the worker context thread)
     WebWaitableEvent* shutdownEvent() { return m_shutdownEvent.get(); }

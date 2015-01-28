@@ -70,9 +70,4 @@ bool WebWorkerRunLoop::equals(const WebWorkerRunLoop& o) const
     return m_workerThread == o.m_workerThread;
 }
 
-bool WebWorkerRunLoop::lessThan(const WebWorkerRunLoop& o) const
-{
-    return m_workerThread < o.m_workerThread;
-}
-
 } // namespace blink

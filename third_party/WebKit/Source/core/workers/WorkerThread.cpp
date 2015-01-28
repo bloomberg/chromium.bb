@@ -309,9 +309,8 @@ void WorkerThread::initialize()
         PlatformThreadData::current().threadTimers().setSharedTimer(m_sharedTimer.get());
     }
 
-    // The corresponding call to didStopWorkerRunLoop is in
-    // ~WorkerScriptController.
-    blink::Platform::current()->didStartWorkerRunLoop(blink::WebWorkerRunLoop(this));
+    // The corresponding call to stopRunLoop() is in ~WorkerScriptController().
+    didStartRunLoop();
 
     // Notify proxy that a new WorkerGlobalScope has been created and started.
     m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
@@ -449,6 +448,18 @@ void WorkerThread::stopInternal()
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
     m_debuggerMessageQueue.kill();
     postTask(WorkerThreadShutdownStartTask::create());
+}
+
+void WorkerThread::didStartRunLoop()
+{
+    ASSERT(isCurrentThread());
+    blink::Platform::current()->didStartWorkerRunLoop(WebWorkerRunLoop(this));
+}
+
+void WorkerThread::didStopRunLoop()
+{
+    ASSERT(isCurrentThread());
+    blink::Platform::current()->didStopWorkerRunLoop(WebWorkerRunLoop(this));
 }
 
 void WorkerThread::terminateAndWaitForAllWorkers()

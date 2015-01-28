@@ -42,10 +42,9 @@ public:
     // Returns true if the task was posted to a non-terminated loop.
     BLINK_EXPORT bool postTask(Task*);
     BLINK_EXPORT bool equals(const WebWorkerRunLoop&) const;
-    BLINK_EXPORT bool lessThan(const WebWorkerRunLoop&) const;
 
 #if BLINK_IMPLEMENTATION
-    WebWorkerRunLoop(WorkerThread*);
+    explicit WebWorkerRunLoop(WorkerThread*);
 #endif
 
 private:
@@ -55,11 +54,6 @@ private:
 inline bool operator==(const WebWorkerRunLoop& a, const WebWorkerRunLoop& b)
 {
     return a.equals(b);
-}
-
-inline bool operator<(const WebWorkerRunLoop& a, const WebWorkerRunLoop& b)
-{
-    return a.lessThan(b);
 }
 
 }
