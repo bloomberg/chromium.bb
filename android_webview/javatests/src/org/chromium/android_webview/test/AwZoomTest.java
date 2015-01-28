@@ -120,12 +120,12 @@ public class AwZoomTest extends AwTestBase {
 
     private void zoomByOnUiThreadAndWait(final float delta) throws Throwable {
         final float previousScale = getPixelScaleOnUiThread(mAwContents);
-        assertTrue(runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
-            public Boolean call() throws Exception {
-                return mAwContents.zoomBy(delta);
+            public void run() {
+                mAwContents.zoomBy(delta);
             }
-        }));
+        });
         // The zoom level is updated asynchronously.
         waitForScaleChange(previousScale);
     }

@@ -1710,7 +1710,8 @@ public class AwContents implements SmartClipProvider {
         if (!canZoomIn()) {
             return false;
         }
-        return zoomBy(1.25f);
+        zoomBy(1.25f);
+        return true;
     }
 
     /**
@@ -1722,7 +1723,8 @@ public class AwContents implements SmartClipProvider {
         if (!canZoomOut()) {
             return false;
         }
-        return zoomBy(0.8f);
+        zoomBy(0.8f);
+        return true;
     }
 
     /**
@@ -1730,12 +1732,12 @@ public class AwContents implements SmartClipProvider {
      */
     // This method uses the term 'zoom' for legacy reasons, but relates
     // to what chrome calls the 'page scale factor'.
-    public boolean zoomBy(float delta) {
-        if (isDestroyed()) return false;
+    public void zoomBy(float delta) {
+        if (isDestroyed()) return;
         if (delta < 0.01f || delta > 100.0f) {
             throw new IllegalStateException("zoom delta value outside [0.01, 100] range.");
         }
-        return mContentViewCore.pinchByDelta(delta);
+        mContentViewCore.pinchByDelta(delta);
     }
 
     /**

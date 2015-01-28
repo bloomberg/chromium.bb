@@ -1448,12 +1448,15 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         return mAwContents.zoomOut();
     }
 
+    // TODO(paulmiller) Return void for consistency with AwContents.zoomBy and WebView.zoomBy -
+    // tricky because frameworks WebViewProvider.zoomBy must change simultaneously
     @Override
     public boolean zoomBy(float factor) {
         mFactory.startYourEngines(true);
         // This is an L API and therefore we can enforce stricter threading constraints.
         checkThread();
-        return mAwContents.zoomBy(factor);
+        mAwContents.zoomBy(factor);
+        return true;
     }
 
     @Override
