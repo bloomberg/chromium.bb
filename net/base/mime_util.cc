@@ -475,9 +475,8 @@ static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
       return base::android::BuildInfo::GetInstance()->sdk_int() >= 19;
 
     case MimeUtil::OPUS:
-      // TODO(vigneshv): Change this similar to the VP9 check once Opus is
-      // supported on Android (http://crbug.com/318436).
-      return false;
+      // Opus is supported only in Lollipop+ (API Level 21).
+      return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
 
     case MimeUtil::THEORA:
       return false;
