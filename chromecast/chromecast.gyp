@@ -520,6 +520,11 @@
           'sources': [
             'app/cast_main.cc',
           ],
+          # TODO(dougsteed): remove when Chromecast moves to boringssl.
+          # Allow the cast shell to find the NSS module in the same directory.
+          'ldflags': [
+            '-Wl,-rpath=\$$ORIGIN'
+          ],
         },
       ],  # end of targets
     }],
