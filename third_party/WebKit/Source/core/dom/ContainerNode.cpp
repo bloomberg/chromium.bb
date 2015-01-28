@@ -872,8 +872,6 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
         RenderObject* p = o;
         if (RenderObject* oFirstChild = o->slowFirstChild()) {
             o = oFirstChild;
-        } else if (o->isRenderInline() && toRenderInline(o)->continuation()) {
-            o = toRenderInline(o)->continuation();
         } else if (o->nextSibling()) {
             o = o->nextSibling();
         } else {
@@ -918,6 +916,25 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
     return false;
 }
 
+static inline RenderObject* endOfContinuations(RenderObject* renderer)
+{
+    RenderObject* prev = nullptr;
+    RenderObject* cur = renderer;
+
+    if (!cur->isRenderInline() && !cur->isRenderBlock())
+        return nullptr;
+
+    while (cur) {
+        prev = cur;
+        if (cur->isRenderInline())
+            cur = toRenderInline(cur)->continuation();
+        else
+            cur = toRenderBlock(cur)->continuation();
+    }
+
+    return prev;
+}
+
 bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
 {
     if (!renderer())
@@ -930,17 +947,32 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
         return true;
     }
 
+    RenderObject* startContinuation = nullptr;
     // Find the last text/image child, to get a position.
     while (o) {
         if (RenderObject* oLastChild = o->slowLastChild()) {
             o = oLastChild;
-        } else if (o->isRenderInline() && toRenderInline(o)->continuation()) {
-            o = toRenderInline(o)->continuation();
-        } else if (o->previousSibling()) {
+        } else if (o != renderer() && o->previousSibling()) {
             o = o->previousSibling();
         } else {
             RenderObject* prev = nullptr;
             while (!prev) {
+                // Check if the current renderer has contiunation and move the location for finding the renderer
+                // to the end of continuations if there is the continuation.
+                // Skip to check the contiunation on contiunations section
+                if (startContinuation == o) {
+                    startContinuation = nullptr;
+                } else if (!startContinuation) {
+                    if (RenderObject* continuation = endOfContinuations(o)) {
+                        startContinuation = o;
+                        prev = continuation;
+                        break;
+                    }
+                }
+                // Prevent to overrun out of own render tree
+                if (o == renderer()) {
+                    return false;
+                }
                 o = o->parent();
                 if (!o)
                     return false;
