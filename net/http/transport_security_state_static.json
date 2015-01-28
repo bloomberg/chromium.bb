@@ -1778,7 +1778,7 @@
     { "name": "uspsoig.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "notalone.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "aids.gov", "include_subdomains": true, "mode": "force-https" },
-    { "name": "itdashboard.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "itdashboard.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "paymentaccuracy.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "cao.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "cfo.gov", "include_subdomains": true, "mode": "force-https" },
@@ -1787,7 +1787,8 @@
     { "name": "bfelob.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "max.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "save.gov", "include_subdomains": true, "mode": "force-https" },
-    { "name": "saveaward.gov", "include_subdomains": true, "mode": "force-https" }
+    { "name": "saveaward.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "ustr.gov", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
