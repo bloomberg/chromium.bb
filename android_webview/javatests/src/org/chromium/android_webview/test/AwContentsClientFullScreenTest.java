@@ -267,6 +267,11 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         // We need to wait because the surface view is first transfered, and then removed
         // asynchronously.
         VideoSurfaceViewUtils.waitAndAssertContainsZeroVideoHoleSurfaceViews(this, customView);
+
+        // Exit fullscreen and verify that the video hole surface is re-created.
+        DOMUtils.exitFullscreen(mContentViewCore.getWebContents());
+        VideoSurfaceViewUtils.pollAndAssertContainsOneVideoHoleSurfaceView(this,
+                mTestContainerView);
     }
 
     @MediumTest
@@ -478,6 +483,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
                 }
             }
         }));
+        // TODO: Test that inline video is actually displayed.
     }
 
     private void assertContainsContentVideoView() throws Exception {

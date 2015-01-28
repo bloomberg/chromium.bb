@@ -21,7 +21,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/android/media_player_bridge.h"
@@ -137,8 +136,6 @@ BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {
 }
 
 void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
-  if (WebContentsDelegate* delegate = web_contents_->GetDelegate())
-    delegate->ExitFullscreenModeForTab(web_contents_);
   if (RenderWidgetHostViewAndroid* view_android =
       static_cast<RenderWidgetHostViewAndroid*>(
           web_contents_->GetRenderWidgetHostView())) {

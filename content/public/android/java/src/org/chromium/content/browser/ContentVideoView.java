@@ -378,8 +378,8 @@ public class ContentVideoView extends FrameLayout
     }
 
     public void exitFullscreen(boolean relaseMediaPlayer) {
-        destroyContentVideoView(false);
         if (mNativeContentVideoView != 0) {
+            destroyContentVideoView(false);
             if (mUmaRecorded && !mPossibleAccidentalChange) {
                 long currentTime = System.currentTimeMillis();
                 long timeBeforeOrientationChange = mOrientationChangedTime - mPlaybackStartTime;

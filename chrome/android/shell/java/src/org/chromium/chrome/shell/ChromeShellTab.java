@@ -12,7 +12,6 @@ import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -127,12 +126,6 @@ public class ChromeShellTab extends Tab {
         public void toggleFullscreenModeForTab(boolean enterFullscreen) {
             mIsFullscreen = enterFullscreen;
             super.toggleFullscreenModeForTab(enterFullscreen);
-
-            if (!mIsFullscreen) {
-                ContentVideoView videoView = ContentVideoView.getContentVideoView();
-                if (videoView != null) videoView.exitFullscreen(false);
-            }
-
         }
 
         @Override
