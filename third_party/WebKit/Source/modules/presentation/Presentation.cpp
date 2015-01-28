@@ -9,13 +9,17 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
+#include "modules/presentation/AvailableChangeEvent.h"
+#include "modules/presentation/PresentationController.h"
 
 namespace blink {
 
-Presentation::Presentation(ExecutionContext* executionContext)
-    : ContextLifecycleObserver(executionContext)
+Presentation::Presentation(LocalFrame* frame)
+    : DOMWindowProperty(frame)
 {
 }
 
@@ -24,9 +28,13 @@ Presentation::~Presentation()
 }
 
 // static
-Presentation* Presentation::create(ExecutionContext* executionContext)
+Presentation* Presentation::create(LocalFrame* frame)
 {
-    return new Presentation(executionContext);
+    Presentation* presentation = new Presentation(frame);
+    PresentationController* controller = presentation->presentationController();
+    if (controller)
+        controller->setPresentation(presentation);
+    return presentation;
 }
 
 const AtomicString& Presentation::interfaceName() const
@@ -36,14 +44,16 @@ const AtomicString& Presentation::interfaceName() const
 
 ExecutionContext* Presentation::executionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    if (!frame())
+        return nullptr;
+    return frame()->document();
 }
 
 void Presentation::trace(Visitor* visitor)
 {
     visitor->trace(m_session);
     RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::trace(visitor);
-    ContextLifecycleObserver::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 PresentationSession* Presentation::session() const
@@ -51,7 +61,7 @@ PresentationSession* Presentation::session() const
     return m_session.get();
 }
 
-ScriptPromise Presentation::startSession(ScriptState* state, const String& senderId, const String& presentationId)
+ScriptPromise Presentation::startSession(ScriptState* state, const String& presentationUrl, const String& presentationId)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
     ScriptPromise promise = resolver->promise();
@@ -59,12 +69,71 @@ ScriptPromise Presentation::startSession(ScriptState* state, const String& sende
     return promise;
 }
 
-ScriptPromise Presentation::joinSession(ScriptState* state, const String& senderId, const String& presentationId)
+ScriptPromise Presentation::joinSession(ScriptState* state, const String& presentationUrl, const String& presentationId)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
     ScriptPromise promise = resolver->promise();
     resolver->reject(DOMException::create(NotSupportedError, "The method is not supported yet."));
     return promise;
+}
+
+bool Presentation::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+{
+    bool hadEventListeners = hasEventListeners(EventTypeNames::availablechange);
+    if (!RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::addEventListener(eventType, listener, useCapture))
+        return false;
+
+    if (hasEventListeners(EventTypeNames::availablechange) && !hadEventListeners) {
+        PresentationController* controller = presentationController();
+        if (controller)
+            controller->updateAvailableChangeWatched(true);
+    }
+
+    return true;
+}
+
+bool Presentation::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+{
+    bool hadEventListeners = hasEventListeners(EventTypeNames::availablechange);
+    if (!RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::removeEventListener(eventType, listener, useCapture))
+        return false;
+
+    if (hadEventListeners && !hasEventListeners(EventTypeNames::availablechange)) {
+        PresentationController* controller = presentationController();
+        if (controller)
+            controller->updateAvailableChangeWatched(false);
+    }
+
+    return true;
+}
+
+void Presentation::removeAllEventListeners()
+{
+    bool hadEventListeners = hasEventListeners(EventTypeNames::availablechange);
+    RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::removeAllEventListeners();
+
+    if (hadEventListeners) {
+        PresentationController* controller = presentationController();
+        if (controller)
+            controller->updateAvailableChangeWatched(false);
+    }
+}
+
+void Presentation::didChangeAvailability(bool available)
+{
+    dispatchEvent(AvailableChangeEvent::create(EventTypeNames::availablechange, available));
+}
+
+bool Presentation::isAvailableChangeWatched() const
+{
+    return hasEventListeners(EventTypeNames::availablechange);
+}
+
+PresentationController* Presentation::presentationController()
+{
+    if (!frame())
+        return nullptr;
+    return PresentationController::from(*frame());
 }
 
 } // namespace blink

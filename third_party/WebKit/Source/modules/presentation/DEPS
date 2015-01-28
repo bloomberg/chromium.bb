@@ -3,6 +3,7 @@ include_rules = [
     "+core",
     "+heap",
     "-modules",
+    "+modules/EventModules.h",
     "+modules/EventTargetModules.h",
     "+modules/presentation",
     "+platform",

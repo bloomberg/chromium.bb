@@ -5,8 +5,8 @@
 #ifndef NavigatorPresentation_h
 #define NavigatorPresentation_h
 
-#include "core/frame/DOMWindowProperty.h"
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -15,8 +15,7 @@ class Presentation;
 
 class NavigatorPresentation final
     : public NoBaseWillBeGarbageCollectedFinalized<NavigatorPresentation>
-    , public WillBeHeapSupplement<Navigator>
-    , public DOMWindowProperty {
+    , public WillBeHeapSupplement<Navigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorPresentation);
 public:
     virtual ~NavigatorPresentation();
@@ -29,7 +28,7 @@ public:
 private:
     static const char* supplementName();
 
-    explicit NavigatorPresentation(LocalFrame*);
+    NavigatorPresentation();
 
     Presentation* presentation();
 

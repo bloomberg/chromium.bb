@@ -141,6 +141,8 @@ interface AudioTrackList
     method getTrackById
 interface AutocompleteErrorEvent
     method constructor
+interface AvailableChangeEvent
+    method constructor
 interface BarProp
     method constructor
 interface BatteryManager

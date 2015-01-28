@@ -76,6 +76,7 @@ class WebServiceWorkerProvider;
 class WebSocketHandle;
 class WebPlugin;
 class WebPluginPlaceholder;
+class WebPresentationClient;
 class WebPushClient;
 class WebRTCPeerConnectionHandler;
 class WebScreenOrientationClient;
@@ -331,6 +332,12 @@ public:
 
     // Used to access the embedder for the Push API.
     virtual WebPushClient* pushClient() { return 0; }
+
+
+    // Presentation API ----------------------------------------------------
+
+    // Used to access the embedder for the Presentation API.
+    virtual WebPresentationClient* presentationClient() { return 0; }
 
 
     // Editing -------------------------------------------------------------

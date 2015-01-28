@@ -1,0 +1,65 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef PresentationController_h
+#define PresentationController_h
+
+#include "core/frame/FrameDestructionObserver.h"
+#include "modules/presentation/Presentation.h"
+#include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
+#include "public/platform/WebPresentationController.h"
+
+namespace blink {
+
+class LocalFrame;
+class WebPresentationClient;
+
+// The coordinator between the various page exposed properties and the content
+// layer represented via |WebPresentationClient|.
+class PresentationController final
+    : public NoBaseWillBeGarbageCollectedFinalized<PresentationController>
+    , public WillBeHeapSupplement<LocalFrame>
+    , public FrameDestructionObserver
+    , public WebPresentationController {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
+    WTF_MAKE_NONCOPYABLE(PresentationController);
+public:
+    virtual ~PresentationController();
+
+    static PassOwnPtrWillBeRawPtr<PresentationController> create(LocalFrame&, WebPresentationClient*);
+
+    static const char* supplementName();
+    static PresentationController* from(LocalFrame&);
+
+    static void provideTo(LocalFrame&, WebPresentationClient*);
+
+    // Implementation of HeapSupplement.
+    virtual void trace(Visitor*) override;
+
+    // Implementation of WebPresentationController.
+    virtual void didChangeAvailability(bool available) override;
+    virtual bool isAvailableChangeWatched() const override;
+    virtual void onClientDestroyed() override;
+
+    // Called when the first listener was added to or the last listener was removed from the
+    // |availablechange| event.
+    void updateAvailableChangeWatched(bool watched);
+
+    // Connects the |Presentation| object with this controller.
+    void setPresentation(Presentation*);
+
+private:
+    PresentationController(LocalFrame&, WebPresentationClient*);
+
+    // Implementation of FrameDestructionObserver.
+    virtual void willDetachFrameHost() override;
+
+    WebPresentationClient* m_client;
+    PersistentWillBeMember<Presentation> m_presentation;
+};
+
+} // namespace blink
+
+#endif // PresentationController_h
