@@ -40,6 +40,7 @@
 #include "content/browser/time_zone_monitor.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
+#include "content/common/content_switches_internal.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1087,6 +1088,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   device_monitor_mac_.reset(new DeviceMonitorMac());
 #endif
 
+#if defined(OS_WIN)
+  LOCAL_HISTOGRAM_BOOLEAN("Windows.Win32kRendererLockdown",
+                          IsWin32kRendererLockdownEnabled());
+#endif
   // RDH needs the IO thread to be created
   {
     TRACE_EVENT0("startup",

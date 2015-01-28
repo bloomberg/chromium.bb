@@ -8,6 +8,9 @@
 namespace content {
 
 bool IsPinchToZoomEnabled();
+#if defined(OS_WIN)
+bool IsWin32kRendererLockdownEnabled();
+#endif
 
 } // namespace content
 

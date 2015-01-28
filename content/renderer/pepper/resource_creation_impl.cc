@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/resource_creation_impl.h"
 
+#include "content/common/content_switches_internal.h"
 #include "content/renderer/pepper/ppb_audio_impl.h"
 #include "content/renderer/pepper/ppb_broker_impl.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
@@ -24,7 +25,6 @@
 #if defined(OS_WIN)
 #include "base/command_line.h"
 #include "base/win/windows_version.h"
-#include "content/public/common/content_switches.h"
 #endif
 
 using ppapi::InputEventData;
@@ -140,10 +140,8 @@ PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance instance,
   // TODO(ananta)
   // Look into whether this causes a loss of functionality. From cursory
   // testing things seem to work well.
-  if (switches::IsWin32kRendererLockdownEnabled() &&
-      base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (IsWin32kRendererLockdownEnabled())
     return CreateImageDataSimple(instance, format, size, init_to_zero);
-  }
 #endif
   return PPB_ImageData_Impl::Create(instance,
                                     ppapi::PPB_ImageData_Shared::PLATFORM,

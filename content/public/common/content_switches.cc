@@ -4,9 +4,6 @@
 
 #include "content/public/common/content_switches.h"
 
-#include "base/command_line.h"
-#include "base/metrics/field_trial.h"
-
 namespace switches {
 
 // The number of MSAA samples for canvas2D. Requires MSAA support by GPU to
@@ -964,20 +961,6 @@ const char kEnableNpapi[]                   = "enable-npapi";
 #if defined(ENABLE_PLUGINS)
 // Enables the plugin power saver feature.
 const char kEnablePluginPowerSaver[] = "enable-plugin-power-saver";
-#endif
-
-#if defined(OS_WIN)
-bool IsWin32kRendererLockdownEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("Win32kLockdown");
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(kEnableWin32kRendererLockDown))
-    return true;
-  if (cmd_line->HasSwitch(kDisableWin32kRendererLockDown))
-    return false;
-  // Default.
-  return group_name == "Enabled";
-}
 #endif
 
 // Don't dump stuff here, follow the same order as the header.

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "content/common/content_switches_internal.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/pepper_audio_input_host.h"
@@ -35,9 +36,7 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 #if defined(OS_WIN)
-#include "base/command_line.h"
 #include "base/win/windows_version.h"
-#include "content/public/common/content_switches.h"
 #endif
 
 using ppapi::host::ResourceHost;
@@ -145,10 +144,8 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
       // TODO(ananta)
       // Look into whether this causes a loss of functionality. From cursory
       // testing things seem to work well.
-      if (switches::IsWin32kRendererLockdownEnabled() &&
-          base::win::GetVersion() >= base::win::VERSION_WIN8) {
+      if (IsWin32kRendererLockdownEnabled())
         image_type = ppapi::PPB_ImageData_Shared::SIMPLE;
-      }
 #endif
       scoped_refptr<PPB_ImageData_Impl> image_data(new PPB_ImageData_Impl(
           instance, image_type));
