@@ -32,7 +32,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
       int id,
       InputDeviceType type,
       const EventDeviceInfo& info,
-      EventModifiersEvdev* modifiers,
       CursorDelegateEvdev* cursor,
       const KeyEventDispatchCallback& key_callback,
       const MouseMoveEventDispatchCallback& mouse_move_callback,
@@ -78,9 +77,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
 
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
-
-  // Modifier key state (shift, ctrl, etc).
-  EventModifiersEvdev* modifiers_;
 
   // Callbacks for dispatching events.
   KeyEventDispatchCallback key_callback_;

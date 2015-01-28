@@ -10,6 +10,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace base {
@@ -18,6 +19,7 @@ class TimeDelta;
 
 namespace gfx {
 class PointF;
+class Vector2d;
 class Vector2dF;
 }
 
@@ -70,6 +72,44 @@ struct EVENTS_OZONE_EVDEV_EXPORT MouseButtonEventParams {
 
 typedef base::Callback<void(const MouseButtonEventParams& params)>
     MouseButtonEventDispatchCallback;
+
+struct EVENTS_OZONE_EVDEV_EXPORT MouseWheelEventParams {
+  MouseWheelEventParams(int device_id,
+                        const gfx::PointF& location,
+                        const gfx::Vector2d& delta);
+  MouseWheelEventParams(const MouseWheelEventParams& other);
+  ~MouseWheelEventParams();
+
+  int device_id;
+  gfx::PointF location;
+  gfx::Vector2d delta;
+};
+
+typedef base::Callback<void(const MouseWheelEventParams& params)>
+    MouseWheelEventDispatchCallback;
+
+struct EVENTS_OZONE_EVDEV_EXPORT ScrollEventParams {
+  ScrollEventParams(int device_id,
+                    EventType type,
+                    const gfx::PointF location,
+                    const gfx::Vector2dF delta,
+                    const gfx::Vector2dF ordinal_delta,
+                    int finger_count,
+                    const base::TimeDelta timestamp);
+  ScrollEventParams(const ScrollEventParams& other);
+  ~ScrollEventParams();
+
+  int device_id;
+  EventType type;
+  const gfx::PointF location;
+  const gfx::Vector2dF delta;
+  const gfx::Vector2dF ordinal_delta;
+  int finger_count;
+  const base::TimeDelta timestamp;
+};
+
+typedef base::Callback<void(const ScrollEventParams& params)>
+    ScrollEventDispatchCallback;
 
 struct EVENTS_OZONE_EVDEV_EXPORT TouchEventParams {
   TouchEventParams(int device_id,

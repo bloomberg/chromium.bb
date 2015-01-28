@@ -26,7 +26,6 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
  public:
   MockEventConverterEvdevImpl(
       int fd,
-      EventModifiersEvdev* modifiers,
       CursorDelegateEvdev* cursor,
       const KeyEventDispatchCallback& key_callback,
       const MouseMoveEventDispatchCallback& mouse_move_callback,
@@ -36,7 +35,6 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
                                 1,
                                 INPUT_DEVICE_UNKNOWN,
                                 EventDeviceInfo(),
-                                modifiers,
                                 cursor,
                                 key_callback,
                                 mouse_move_callback,
@@ -133,7 +131,7 @@ class EventConverterEvdevImplTest : public testing::Test {
                    base::Unretained(this))));
 
     device_.reset(new ui::MockEventConverterEvdevImpl(
-        events_in_, event_factory_->modifiers(), cursor_.get(),
+        events_in_, cursor_.get(),
         base::Bind(&ui::EventFactoryEvdev::PostKeyEvent,
                    base::Unretained(event_factory_.get())),
         base::Bind(&ui::EventFactoryEvdev::PostMouseMoveEvent,

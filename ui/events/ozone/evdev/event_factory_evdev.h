@@ -78,13 +78,12 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   InputController* input_controller() { return &input_controller_; }
 
-  // Transitional accessors for testing.
-  EventModifiersEvdev* modifiers() { return &modifiers_; }
-
   // Post events to UI.
   void PostKeyEvent(const KeyEventParams& params);
   void PostMouseMoveEvent(const MouseMoveEventParams& params);
   void PostMouseButtonEvent(const MouseButtonEventParams& params);
+  void PostMouseWheelEvent(const MouseWheelEventParams& parms);
+  void PostScrollEvent(const ScrollEventParams& params);
   void PostTouchEvent(const TouchEventParams& params);
 
  protected:

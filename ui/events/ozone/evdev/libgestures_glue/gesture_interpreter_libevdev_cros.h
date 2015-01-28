@@ -19,7 +19,6 @@
 namespace ui {
 
 class EventDeviceInfo;
-class EventModifiersEvdev;
 class CursorDelegateEvdev;
 struct GestureDeviceProperties;
 class GesturePropertyProvider;
@@ -42,13 +41,13 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
  public:
   GestureInterpreterLibevdevCros(
       int id,
-      EventModifiersEvdev* modifiers,
       CursorDelegateEvdev* cursor,
       GesturePropertyProvider* property_provider,
       const KeyEventDispatchCallback& key_callback,
       const MouseMoveEventDispatchCallback& mouse_move_callback,
       const MouseButtonEventDispatchCallback& mouse_button_callback,
-      const EventDispatchCallback& callback);
+      const MouseWheelEventDispatchCallback& mouse_wheel_callback,
+      const ScrollEventDispatchCallback& scroll_callback);
   ~GestureInterpreterLibevdevCros() override;
 
   // Overriden from ui::EventReaderLibevdevCros::Delegate
@@ -81,7 +80,6 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   void OnGesturePinch(const Gesture* gesture, const GesturePinch* pinch);
   void OnGestureMetrics(const Gesture* gesture, const GestureMetrics* metrics);
 
-  void Dispatch(scoped_ptr<Event> event);
   void DispatchMouseButton(unsigned int modifier, bool down);
   void DispatchChangedKeys(Evdev* evdev, const timeval& time);
 
@@ -96,9 +94,6 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   // should be processed.
   scoped_ptr<std::set<int>> allowed_keys_;
 
-  // Shared modifier state.
-  EventModifiersEvdev* modifiers_;
-
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
 
@@ -109,7 +104,8 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   KeyEventDispatchCallback key_callback_;
   MouseMoveEventDispatchCallback mouse_move_callback_;
   MouseButtonEventDispatchCallback mouse_button_callback_;
-  EventDispatchCallback dispatch_callback_;
+  MouseWheelEventDispatchCallback mouse_wheel_callback_;
+  ScrollEventDispatchCallback scroll_callback_;
 
   // Gestures interpretation state.
   gestures::GestureInterpreter* interpreter_;

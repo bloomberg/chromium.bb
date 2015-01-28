@@ -15,7 +15,6 @@
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
-#include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_timer_provider.h"
@@ -88,22 +87,22 @@ const int kGestureSwipeFingerCount = 3;
 
 GestureInterpreterLibevdevCros::GestureInterpreterLibevdevCros(
     int id,
-    EventModifiersEvdev* modifiers,
     CursorDelegateEvdev* cursor,
     GesturePropertyProvider* property_provider,
     const KeyEventDispatchCallback& key_callback,
     const MouseMoveEventDispatchCallback& mouse_move_callback,
     const MouseButtonEventDispatchCallback& mouse_button_callback,
-    const EventDispatchCallback& callback)
+    const MouseWheelEventDispatchCallback& mouse_wheel_callback,
+    const ScrollEventDispatchCallback& scroll_callback)
     : id_(id),
       is_mouse_(false),
-      modifiers_(modifiers),
       cursor_(cursor),
       property_provider_(property_provider),
       key_callback_(key_callback),
       mouse_move_callback_(mouse_move_callback),
       mouse_button_callback_(mouse_button_callback),
-      dispatch_callback_(callback),
+      mouse_wheel_callback_(mouse_wheel_callback),
+      scroll_callback_(scroll_callback),
       interpreter_(NULL),
       evdev_(NULL),
       device_properties_(new GestureDeviceProperties) {
@@ -294,23 +293,14 @@ void GestureInterpreterLibevdevCros::OnGestureScroll(
 
   // TODO(spang): Use scroll->start_time
   if (is_mouse_) {
-    Dispatch(make_scoped_ptr(new MouseWheelEvent(
-        gfx::Vector2d(scroll->dx, scroll->dy),
-        cursor_->GetLocation(),
-        cursor_->GetLocation(),
-        modifiers_->GetModifierFlags(),
-        0)));
+    mouse_wheel_callback_.Run(MouseWheelEventParams(
+        id_, cursor_->GetLocation(), gfx::Vector2d(scroll->dx, scroll->dy)));
   } else {
-    Dispatch(make_scoped_ptr(new ScrollEvent(
-        ET_SCROLL,
-        cursor_->GetLocation(),
-        StimeToTimedelta(gesture->end_time),
-        modifiers_->GetModifierFlags(),
-        scroll->dx,
-        scroll->dy,
-        scroll->ordinal_dx,
-        scroll->ordinal_dy,
-        kGestureScrollFingerCount)));
+    scroll_callback_.Run(ScrollEventParams(
+        id_, ET_SCROLL, cursor_->GetLocation(),
+        gfx::Vector2dF(scroll->dx, scroll->dy),
+        gfx::Vector2dF(scroll->ordinal_dx, scroll->ordinal_dy),
+        kGestureScrollFingerCount, StimeToTimedelta(gesture->end_time)));
   }
 }
 
@@ -362,15 +352,10 @@ void GestureInterpreterLibevdevCros::OnGestureFling(const Gesture* gesture,
                                                   : ET_SCROLL_FLING_CANCEL);
 
   // Fling is like 2-finger scrolling but with velocity instead of displacement.
-  Dispatch(make_scoped_ptr(new ScrollEvent(type,
-                                           cursor_->GetLocation(),
-                                           StimeToTimedelta(gesture->end_time),
-                                           modifiers_->GetModifierFlags(),
-                                           fling->vx,
-                                           fling->vy,
-                                           fling->ordinal_vx,
-                                           fling->ordinal_vy,
-                                           kGestureScrollFingerCount)));
+  scroll_callback_.Run(ScrollEventParams(
+      id_, type, cursor_->GetLocation(), gfx::Vector2dF(fling->vx, fling->vy),
+      gfx::Vector2dF(fling->ordinal_vx, fling->ordinal_vy),
+      kGestureScrollFingerCount, StimeToTimedelta(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureSwipe(const Gesture* gesture,
@@ -385,15 +370,11 @@ void GestureInterpreterLibevdevCros::OnGestureSwipe(const Gesture* gesture,
     return;  // No cursor!
 
   // Swipe is 3-finger scrolling.
-  Dispatch(make_scoped_ptr(new ScrollEvent(ET_SCROLL,
-                                           cursor_->GetLocation(),
-                                           StimeToTimedelta(gesture->end_time),
-                                           modifiers_->GetModifierFlags(),
-                                           swipe->dx,
-                                           swipe->dy,
-                                           swipe->ordinal_dx,
-                                           swipe->ordinal_dy,
-                                           kGestureSwipeFingerCount)));
+  scroll_callback_.Run(ScrollEventParams(
+      id_, ET_SCROLL, cursor_->GetLocation(),
+      gfx::Vector2dF(swipe->dx, swipe->dy),
+      gfx::Vector2dF(swipe->ordinal_dx, swipe->ordinal_dy),
+      kGestureSwipeFingerCount, StimeToTimedelta(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureSwipeLift(
@@ -407,15 +388,10 @@ void GestureInterpreterLibevdevCros::OnGestureSwipeLift(
   // Turn a swipe lift into a fling start.
   // TODO(spang): Figure out why and put it in this comment.
 
-  Dispatch(make_scoped_ptr(new ScrollEvent(ET_SCROLL_FLING_START,
-                                           cursor_->GetLocation(),
-                                           StimeToTimedelta(gesture->end_time),
-                                           modifiers_->GetModifierFlags(),
-                                           /* x_offset */ 0,
-                                           /* y_offset */ 0,
-                                           /* x_offset_ordinal */ 0,
-                                           /* y_offset_ordinal */ 0,
-                                           kGestureScrollFingerCount)));
+  scroll_callback_.Run(ScrollEventParams(
+      id_, ET_SCROLL_FLING_START, cursor_->GetLocation(),
+      gfx::Vector2dF() /* delta */, gfx::Vector2dF() /* ordinal_delta */,
+      kGestureScrollFingerCount, StimeToTimedelta(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGesturePinch(const Gesture* gesture,
@@ -437,10 +413,6 @@ void GestureInterpreterLibevdevCros::OnGestureMetrics(
                                  metrics->data[1],
                                  metrics->type);
   NOTIMPLEMENTED();
-}
-
-void GestureInterpreterLibevdevCros::Dispatch(scoped_ptr<Event> event) {
-  dispatch_callback_.Run(event.Pass());
 }
 
 void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int button,

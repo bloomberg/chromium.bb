@@ -44,6 +44,39 @@ MouseButtonEventParams::MouseButtonEventParams(
 MouseButtonEventParams::~MouseButtonEventParams() {
 }
 
+MouseWheelEventParams::MouseWheelEventParams(int device_id,
+                                             const gfx::PointF& location,
+                                             const gfx::Vector2d& delta)
+    : device_id(device_id), location(location), delta(delta) {
+}
+
+MouseWheelEventParams::MouseWheelEventParams(
+    const MouseWheelEventParams& other) = default;
+
+MouseWheelEventParams::~MouseWheelEventParams() {
+}
+
+ScrollEventParams::ScrollEventParams(int device_id,
+                                     EventType type,
+                                     const gfx::PointF location,
+                                     const gfx::Vector2dF delta,
+                                     const gfx::Vector2dF ordinal_delta,
+                                     int finger_count,
+                                     const base::TimeDelta timestamp)
+    : device_id(device_id),
+      type(type),
+      location(location),
+      delta(delta),
+      ordinal_delta(ordinal_delta),
+      finger_count(finger_count),
+      timestamp(timestamp) {
+}
+
+ScrollEventParams::ScrollEventParams(const ScrollEventParams& other) = default;
+
+ScrollEventParams::~ScrollEventParams() {
+}
+
 TouchEventParams::TouchEventParams(int device_id,
                                    int touch_id,
                                    EventType type,

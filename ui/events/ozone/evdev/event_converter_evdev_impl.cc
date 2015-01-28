@@ -27,7 +27,6 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
     int id,
     InputDeviceType type,
     const EventDeviceInfo& devinfo,
-    EventModifiersEvdev* modifiers,
     CursorDelegateEvdev* cursor,
     const KeyEventDispatchCallback& key_callback,
     const MouseMoveEventDispatchCallback& mouse_move_callback,
@@ -38,7 +37,6 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
       x_offset_(0),
       y_offset_(0),
       cursor_(cursor),
-      modifiers_(modifiers),
       key_callback_(key_callback),
       mouse_move_callback_(mouse_move_callback),
       mouse_button_callback_(mouse_button_callback) {
