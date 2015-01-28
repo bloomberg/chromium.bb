@@ -69,7 +69,7 @@ class MockDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
   MockDeviceEventDispatcherEvdev(
       const base::Callback<void(const TouchEventParams& params)>& callback)
       : callback_(callback) {}
-  ~MockDeviceEventDispatcherEvdev() {}
+  ~MockDeviceEventDispatcherEvdev() override {}
 
   // DeviceEventDispatcherEvdev:
   void DispatchKeyEvent(const KeyEventParams& params) override {}

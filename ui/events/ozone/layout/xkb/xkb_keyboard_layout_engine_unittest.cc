@@ -20,8 +20,8 @@ class VkTestXkbKeyCodeConverter : public XkbKeyCodeConverter {
   VkTestXkbKeyCodeConverter() {
     invalid_xkb_keycode_ = static_cast<xkb_keycode_t>(DomCode::NONE);
   }
-  virtual ~VkTestXkbKeyCodeConverter(){}
-  virtual xkb_keycode_t DomCodeToXkbKeyCode(DomCode dom_code) const override {
+  ~VkTestXkbKeyCodeConverter() override {}
+  xkb_keycode_t DomCodeToXkbKeyCode(DomCode dom_code) const override {
     return static_cast<xkb_keycode_t>(dom_code);
   }
 };
@@ -58,7 +58,7 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
       xkb_flag_map_.push_back(e);
     }
   }
-  virtual ~VkTestXkbKeyboardLayoutEngine() {}
+  ~VkTestXkbKeyboardLayoutEngine() override {}
 
   void SetEntry(const Entry* entry) { entry_ = entry; }
 
@@ -78,7 +78,7 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
   }
 
   // XkbKeyboardLayoutEngine overrides:
-  virtual bool XkbLookup(xkb_keycode_t xkb_keycode,
+  bool XkbLookup(xkb_keycode_t xkb_keycode,
                          xkb_mod_mask_t xkb_flags,
                          xkb_keysym_t* xkb_keysym,
                          base::char16* character) const override {
@@ -104,7 +104,7 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
 class XkbLayoutEngineVkTest : public testing::Test {
  public:
   XkbLayoutEngineVkTest() {}
-  virtual ~XkbLayoutEngineVkTest() {}
+  ~XkbLayoutEngineVkTest() override {}
 
   void SetUp() override {
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
