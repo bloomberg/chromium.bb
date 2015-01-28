@@ -239,15 +239,11 @@ class PEImageAsData : public PEImage {
 };
 
 inline bool PEImage::IsOrdinal(LPCSTR name) {
-#pragma warning(push)
-#pragma warning(disable: 4311)
-  // This cast generates a warning because it is 32 bit specific.
-  return reinterpret_cast<DWORD>(name) <= 0xFFFF;
-#pragma warning(pop)
+  return reinterpret_cast<uintptr_t>(name) <= 0xFFFF;
 }
 
 inline WORD PEImage::ToOrdinal(LPCSTR name) {
-  return reinterpret_cast<WORD>(name);
+  return static_cast<WORD>(reinterpret_cast<intptr_t>(name));
 }
 
 inline HMODULE PEImage::module() const {
