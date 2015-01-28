@@ -260,6 +260,8 @@ void CustomHomePagesTableModel::LoadAllTitles() {
           &task_tracker_);
     }
   }
+  if (entries_.empty())
+    observer_->OnModelChanged();
 }
 
 void CustomHomePagesTableModel::OnGotOneOfManyTitles(const GURL& entry_url,
