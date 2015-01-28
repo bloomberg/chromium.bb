@@ -5,20 +5,17 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class SimpleScrollPage(page_module.Page):
+class SimplePage(page_module.Page):
   def __init__(self, url, page_set, credentials='', name=''):
-    super(SimpleScrollPage, self).__init__(
+    super(SimplePage, self).__init__(
         url, page_set=page_set, name=name,
         credentials_path='data/credentials.json')
     self.credentials = credentials
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
-    action_runner.ScrollPage()
-    interaction.End()
+    pass
 
-class Google(SimpleScrollPage):
+class Google(SimplePage):
   def __init__(self, page_set):
     super(Google, self).__init__(
       url='https://www.google.com/#hl=en&q=barack+obama', page_set=page_set)
@@ -28,7 +25,7 @@ class Google(SimpleScrollPage):
     action_runner.WaitForElement(text='Next')
 
 
-class Gmail(SimpleScrollPage):
+class Gmail(SimplePage):
   def __init__(self, page_set):
     super(Gmail, self).__init__(
       url='https://mail.google.com/mail/',
@@ -42,7 +39,7 @@ class Gmail(SimpleScrollPage):
         'document.getElementById("gb") !== null')
 
 
-class GoogleCalendar(SimpleScrollPage):
+class GoogleCalendar(SimplePage):
   def __init__(self, page_set):
     super(GoogleCalendar, self).__init__(
       url='https://www.google.com/calendar/',
@@ -61,7 +58,7 @@ class GoogleCalendar(SimpleScrollPage):
     action_runner.WaitForElement('div[class~="navForward"]')
 
 
-class Youtube(SimpleScrollPage):
+class Youtube(SimplePage):
   def __init__(self, page_set):
     super(Youtube, self).__init__(
       url='http://www.youtube.com',
@@ -73,7 +70,7 @@ class Youtube(SimpleScrollPage):
     action_runner.Wait(2)
 
 
-class Facebook(SimpleScrollPage):
+class Facebook(SimplePage):
   def __init__(self, page_set):
     super(Facebook, self).__init__(
       url='http://www.facebook.com/barackobama',
@@ -112,17 +109,17 @@ class Top10PageSet(page_set_module.PageSet):
     self.AddUserStory(Facebook(self))
 
     # #6 (Alexa) most visited worldwide,Picked an interesting page
-    self.AddUserStory(SimpleScrollPage('http://en.wikipedia.org/wiki/Wikipedia',
+    self.AddUserStory(SimplePage('http://en.wikipedia.org/wiki/Wikipedia',
                                   self, name='Wikipedia'))
 
     # #1 world commerce website by visits; #3 commerce in the US by time spent
-    self.AddUserStory(SimpleScrollPage('http://www.amazon.com', self))
+    self.AddUserStory(SimplePage('http://www.amazon.com', self))
 
     # #4 Alexa
-    self.AddUserStory(SimpleScrollPage('http://www.yahoo.com/', self))
+    self.AddUserStory(SimplePage('http://www.yahoo.com/', self))
 
     # #16 Alexa
-    self.AddUserStory(SimpleScrollPage('http://www.bing.com/', self))
+    self.AddUserStory(SimplePage('http://www.bing.com/', self))
 
     # #20 Alexa
-    self.AddUserStory(SimpleScrollPage('http://www.ask.com/', self))
+    self.AddUserStory(SimplePage('http://www.ask.com/', self))

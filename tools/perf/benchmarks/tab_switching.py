@@ -35,7 +35,9 @@ class TabSwitchingTypical25(benchmark.Benchmark):
   metric. The pages were chosen from Alexa top ranking sites.
   """
   test = tab_switching.TabSwitching
-  page_set = page_sets.Typical25PageSet
+
+  def CreatePageSet(self, options):
+    return page_sets.Typical25PageSet(make_pages_with_no_interactions=True)
 
   @classmethod
   def Name(cls):
