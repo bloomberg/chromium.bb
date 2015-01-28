@@ -36,6 +36,7 @@ class SSLErrorInfo {
     UNKNOWN,
     CERT_WEAK_KEY_DH,
     CERT_PINNED_KEY_MISSING,
+    CERT_VALIDITY_TOO_LONG,
     END_OF_ENUM
   };
 

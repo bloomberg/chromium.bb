@@ -70,6 +70,9 @@ unit tests.
 - comodo.chain.pem : A certificate chain for www.comodo.com which should be
      recognised as EV. Expires Jun 20 2015.
 
+- twitter-chain.pem : A certificate chain for twitter.com which should be
+     valid. Expires May 9 2016.
+
 ===== Manually generated certificates
 - client.p12 : A PKCS #12 file containing a client certificate and a private
      key created for testing.  The password is "12345".
@@ -129,8 +132,8 @@ unit tests.
 - expired_cert.pem
 - ok_cert.pem
 - root_ca_cert.pem
-     These certificates are the common certificates used by the Python test
-     server for simulating HTTPS connections.
+    These certificates are the common certificates used by the Python test
+    server for simulating HTTPS connections.
 
 - name_constraint_bad.pem
 - name_constraint_good.pem
@@ -146,6 +149,23 @@ unit tests.
 
 - punycodetest.pem : A test self-signed server certificate with punycode name.
      The common name is "xn--wgv71a119e.com" (日本語.com)
+
+- 10_year_validity.pem
+- 11_year_validity.pem
+- 39_months_after_2015_04.pem
+- 40_months_after_2015_04.pem
+- 60_months_after_2012_07.pem
+- 61_months_after_2012_07.pem
+- pre_br_validity_bad_121.pem
+- pre_br_validity_bad_2020.pem
+- pre_br_validity_ok.pem
+- start_after_expiry.pem
+    Certs to test that the maximum validity durations set by the CA/Browser
+    Forum Baseline Requirements are enforced.
+
+- reject_intranet_hosts.pem
+   A certificate with a non-IANA delegated domain, which is rejected since a CA
+   cannot validate the applicant controls that domain.
 
 ===== From net/data/ssl/scripts/generate-weak-test-chains.sh
 - 2048-rsa-root.pem
@@ -252,5 +272,3 @@ unit tests.
      containing the intermediate, which can be served via a URLRequestFilter.
      aia-intermediate.der is stored in DER form for convenience, since that is
      the form expected of certificates discovered via AIA.
-
-
