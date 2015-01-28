@@ -238,6 +238,7 @@ v8.log
 /remoting/remoting_version_resources.xml
 /remoting/remoting_windows_resources.xml
 /remoting/tools/internal/
+/remoting/webapp/app_remoting/internal/
 /sandbox/linux/seccomp-legacy/
 /sdch/open-vcdiff
 /seccompsandbox
