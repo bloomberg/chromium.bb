@@ -115,6 +115,13 @@ var checkJsonpError = checkJsonpResult.bind(this, 'error');
 var checkJsonpSuccess = checkJsonpResult.bind(this, 'success');
 var hasCustomHeader =
   checkJsonpHeader.bind(this, 'x-serviceworker-test', 'test');
+var hasCustomHeader2 = function(url, data) {
+  checkJsonpHeader('x-serviceworker-s', 'test1', url, data);
+  checkJsonpHeader('x-serviceworker-test', 'test2,test3', url, data);
+  checkJsonpHeader('x-serviceworker-ua', 'test4', url, data);
+  checkJsonpHeader('x-serviceworker-u', 'test5', url, data);
+  checkJsonpHeader('x-serviceworker-v', 'test6', url, data);
+};
 var noCustomHeader =
   checkJsonpHeader.bind(this, 'x-serviceworker-test', undefined);
 var methodIsGET = checkJsonpMethod.bind(this, 'GET');
@@ -255,6 +262,13 @@ function getRequestInit(params) {
   }
   if (params['headers'] === 'CUSTOM') {
     init['headers'] = {'X-ServiceWorker-Test': 'test'};
+  } else if (params['headers'] === 'CUSTOM2') {
+    init['headers'] = [['X-ServiceWorker-Test', 'test2'],
+                       ['X-ServiceWorker-ua', 'test4'],
+                       ['X-ServiceWorker-V', 'test6'],
+                       ['X-ServiceWorker-s', 'test1'],
+                       ['X-ServiceWorker-Test', 'test3'],
+                       ['X-ServiceWorker-U', 'test5']];
   } else if (params['headers'] === '{}') {
     init['headers'] = {};
   }

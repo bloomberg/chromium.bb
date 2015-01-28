@@ -86,6 +86,39 @@ var TEST_TARGETS = [
 
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=*',
    [fetchResolved, hasBody], [checkJsonpError]],
+
+  // Credential check with CORS preflight.
+
+  // Resolved because Authentication is not applied to CORS preflight.
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit&ACAOrigin=*&PACAOrigin=*&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchResolved, hasBody], [checkJsonpError]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=*&PACAOrigin=*&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchResolved, hasBody], [checkJsonpError]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&PACAOrigin=http://127.0.0.1:8000&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchResolved, hasBody, typeCors], [authCheck2]],
+
+  // Rejected because CORS preflight response returns 401.
+  [OTHER_BASE_URL + 'PAuth&mode=cors&credentials=omit&ACAOrigin=*&PACAOrigin=*&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'PAuth&mode=cors&credentials=same-origin&ACAOrigin=*&pACAOrigin=*&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'PAuth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&PACAOrigin=http://127.0.0.1:8000&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchRejected]],
+
+  // Check that Access-Control-Allow-Origin/Access-Control-Allow-Credentials
+  // headers are checked in both CORS preflight and main fetch.
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&PACAOrigin=http://127.0.0.1:8000&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*&PACAOrigin=http://127.0.0.1:8000&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&PACAOrigin=*&ACACredentials=true&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&PACAOrigin=http://127.0.0.1:8000&ACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&PACAOrigin=http://127.0.0.1:8000&PACACredentials=true&method=PUT&PACAMethods=PUT&PreflightTest=200',
+   [fetchRejected]],
 ];
 
 if (self.importScripts) {

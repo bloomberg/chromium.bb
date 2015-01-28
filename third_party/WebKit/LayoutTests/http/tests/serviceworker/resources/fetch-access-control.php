@@ -1,21 +1,48 @@
 <?php
 header('X-ServiceWorker-ServerHeader: SetInTheServer');
-if (isset($_GET['ACAOrigin'])) {
-    $origins = explode(',', $_GET['ACAOrigin']);
+
+$prefix = '';
+// If PreflightTest is set:
+// - Use PACAOrign, PACAHeaders, PACAMethods, PACACredentials, PACEHeaders,
+//   PAuth, and PAuthFail parameters in preflight.
+// - Use $_GET['PreflightTest'] as HTTP status code.
+// - Check Access-Control-Request-Method/Headers headers with
+//   PACRMethod/Headers parameter, if set, in preflight.
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS' && isset($_GET['PreflightTest'])) {
+    $prefix = 'P';
+
+    if (isset($_GET['PACRMethod']) &&
+        $_GET['PACRMethod'] !=
+        $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) {
+        header("HTTP/1.1 400");
+        exit;
+    }
+    if (isset($_GET['PACRHeaders']) &&
+        $_GET['PACRHeaders'] !=
+        $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']) {
+        header("HTTP/1.1 400");
+        exit;
+    }
+    header("HTTP/1.1 {$_GET['PreflightTest']}");
+}
+
+if (isset($_GET[$prefix . 'ACAOrigin'])) {
+    $origins = explode(',', $_GET[$prefix . 'ACAOrigin']);
     for ($i = 0; $i < sizeof($origins); ++$i)
         header("Access-Control-Allow-Origin: " . $origins[$i], false);
 }
+if (isset($_GET[$prefix . 'ACAHeaders']))
+    header('Access-Control-Allow-Headers: ' . $_GET[$prefix . 'ACAHeaders']);
+if (isset($_GET[$prefix . 'ACAMethods']))
+    header('Access-Control-Allow-Methods: ' . $_GET[$prefix . 'ACAMethods']);
+if (isset($_GET[$prefix . 'ACACredentials']))
+    header('Access-Control-Allow-Credentials: ' .
+           $_GET[$prefix . 'ACACredentials']);
+if (isset($_GET[$prefix . 'ACEHeaders']))
+    header('Access-Control-Expose-Headers: ' . $_GET[$prefix . 'ACEHeaders']);
 
-if (isset($_GET['ACAHeaders']))
-    header("Access-Control-Allow-Headers: {$_GET['ACAHeaders']}");
-if (isset($_GET['ACAMethods']))
-    header("Access-Control-Allow-Methods: {$_GET['ACAMethods']}");
-if (isset($_GET['ACACredentials']))
-    header("Access-Control-Allow-Credentials: {$_GET['ACACredentials']}");
-if (isset($_GET['ACEHeaders']))
-    header("Access-Control-Expose-Headers: {$_GET['ACEHeaders']}");
-
-if ((isset($_GET['Auth']) and !isset($_SERVER['PHP_AUTH_USER'])) || isset($_GET['AuthFail'])) {
+if ((isset($_GET[$prefix . 'Auth']) and !isset($_SERVER['PHP_AUTH_USER'])) ||
+    isset($_GET[$prefix . 'AuthFail'])) {
     header('WWW-Authenticate: Basic realm="Restricted"');
     header('HTTP/1.0 401 Unauthorized');
     echo 'Authentication canceled';
