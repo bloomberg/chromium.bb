@@ -347,9 +347,6 @@ extern const char kExtensionResourceInvalidRequestURL[];
 
 extern const char kSyncGoogleDashboardURL[];
 
-// "Learn more" URL for the auto password generation.
-extern const char kAutoPasswordGenerationLearnMoreURL[];
-
 extern const char kPasswordManagerLearnMoreURL[];
 extern const char kPasswordManagerAccountDashboardURL[];
 
