@@ -145,7 +145,7 @@ public:
     virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const { }
 
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
-    virtual void deviceOrPageScaleFactorChanged() const { }
+    virtual void pageScaleFactorChanged() const { }
     virtual void layoutUpdated(LocalFrame*) const { }
 
     virtual void mouseDidMoveOverElement(const HitTestResult&) = 0;

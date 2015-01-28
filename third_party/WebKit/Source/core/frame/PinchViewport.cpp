@@ -187,6 +187,7 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
     if (scale != m_scale) {
         m_scale = scale;
         valuesChanged = true;
+        frameHost().chrome().client().pageScaleFactorChanged();
     }
 
     // Old-style pinch sets scale here but we shouldn't call into the

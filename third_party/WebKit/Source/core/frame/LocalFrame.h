@@ -146,7 +146,7 @@ namespace blink {
         float textZoomFactor() const { return m_textZoomFactor; }
         void setPageAndTextZoomFactors(float pageZoomFactor, float textZoomFactor);
 
-        void deviceOrPageScaleFactorChanged();
+        void deviceScaleFactorChanged();
         double devicePixelRatio() const;
 
         PassOwnPtr<DragImage> nodeImage(Node&);

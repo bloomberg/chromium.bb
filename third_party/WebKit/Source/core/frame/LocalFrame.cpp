@@ -573,12 +573,12 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
     document->updateLayoutIgnorePendingStylesheets();
 }
 
-void LocalFrame::deviceOrPageScaleFactorChanged()
+void LocalFrame::deviceScaleFactorChanged()
 {
     document()->mediaQueryAffectingValueChanged();
     for (RefPtrWillBeRawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
-            toLocalFrame(child.get())->deviceOrPageScaleFactorChanged();
+            toLocalFrame(child.get())->deviceScaleFactorChanged();
     }
 }
 

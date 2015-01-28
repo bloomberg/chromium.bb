@@ -274,6 +274,8 @@ public:
     virtual void acceptLanguagesChanged() override;
 
     // WebViewImpl
+    void enableViewport();
+    void disableViewport();
 
     float defaultMinimumPageScaleFactor() const;
     float defaultMaximumPageScaleFactor() const;
@@ -372,7 +374,7 @@ public:
     void willInsertBody(WebLocalFrameImpl*);
     void didRemoveAllPendingStylesheet(WebLocalFrameImpl*);
     void didChangeContentsSize();
-    void deviceOrPageScaleFactorChanged();
+    void pageScaleFactorChanged();
 
     // Returns true if popup menus should be rendered by the browser, false if
     // they should be rendered by WebKit (which is the default).

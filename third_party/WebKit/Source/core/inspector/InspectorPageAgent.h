@@ -169,7 +169,7 @@ public:
     String scriptPreprocessorSource() { return m_scriptPreprocessorSource; }
     const AtomicString& resourceSourceMapURL(const String& url);
     bool deviceMetricsOverrideEnabled();
-    void deviceOrPageScaleFactorChanged();
+    void pageScaleFactorChanged();
     bool screencastEnabled();
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
     InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }

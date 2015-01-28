@@ -330,8 +330,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
         if (view && !settings().pinchVirtualViewportEnabled())
             view->setVisibleContentScaleFactor(scale);
 
-        deprecatedLocalMainFrame()->deviceOrPageScaleFactorChanged();
-        m_chrome->client().deviceOrPageScaleFactorChanged();
+        m_chrome->client().pageScaleFactorChanged();
 
         // FIXME: In virtual-viewport pinch mode, scale doesn't change the fixed-pos viewport;
         // remove once it's the only pinch mode in town.
@@ -358,10 +357,8 @@ void Page::setDeviceScaleFactor(float scaleFactor)
     m_deviceScaleFactor = scaleFactor;
     setNeedsRecalcStyleInAllFrames();
 
-    if (mainFrame() && mainFrame()->isLocalFrame()) {
-        deprecatedLocalMainFrame()->deviceOrPageScaleFactorChanged();
-        m_chrome->client().deviceOrPageScaleFactorChanged();
-    }
+    if (mainFrame() && mainFrame()->isLocalFrame())
+        deprecatedLocalMainFrame()->deviceScaleFactorChanged();
 }
 
 void Page::setDeviceColorProfile(const Vector<char>& profile)

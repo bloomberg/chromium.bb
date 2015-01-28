@@ -254,7 +254,7 @@ InspectorTest.assertGreaterOrEqual = function(a, b, message)
 InspectorTest.navigate = function(url, callback)
 {
     InspectorTest._pageLoadedCallback = InspectorTest.safeWrap(callback);
-    InspectorTest.evaluateInPage("window.location = '" + url + "'");
+    InspectorTest.evaluateInPage("window.location.replace('" + url + "')");
 }
 
 InspectorTest.hardReloadPage = function(callback, scriptToEvaluateOnLoad, scriptPreprocessor)

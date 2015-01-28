@@ -63,6 +63,12 @@ void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportDescrip
     m_constraintsDirty = true;
 }
 
+void PageScaleConstraintsSet::clearPageDefinedConstraints()
+{
+    m_pageDefinedConstraints = PageScaleConstraints();
+    m_constraintsDirty = true;
+}
+
 void PageScaleConstraintsSet::setUserAgentConstraints(const PageScaleConstraints& userAgentConstraints)
 {
     m_userAgentConstraints = userAgentConstraints;

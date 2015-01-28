@@ -52,6 +52,7 @@ public:
     const PageScaleConstraints& pageDefinedConstraints() const { return m_pageDefinedConstraints; }
     void updatePageDefinedConstraints(const ViewportDescription&, Length legacyFallbackWidth);
     void adjustForAndroidWebViewQuirks(const ViewportDescription&, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode, bool nonUserScalableQuirkEnabled);
+    void clearPageDefinedConstraints();
 
     // Constraints may also be set from Chromium -- this overrides any
     // page-defined values.

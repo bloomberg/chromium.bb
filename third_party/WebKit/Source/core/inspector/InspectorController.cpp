@@ -426,9 +426,9 @@ bool InspectorController::handleKeyboardEvent(LocalFrame* frame, const PlatformK
     return false;
 }
 
-void InspectorController::deviceOrPageScaleFactorChanged()
+void InspectorController::pageScaleFactorChanged()
 {
-    m_pageAgent->deviceOrPageScaleFactorChanged();
+    m_pageAgent->pageScaleFactorChanged();
 }
 
 bool InspectorController::deviceEmulationEnabled()

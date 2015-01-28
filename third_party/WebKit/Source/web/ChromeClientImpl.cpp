@@ -525,9 +525,9 @@ void ChromeClientImpl::contentsSizeChanged(LocalFrame* frame, const IntSize& siz
     frame->loader().restoreScrollPositionAndViewState();
 }
 
-void ChromeClientImpl::deviceOrPageScaleFactorChanged() const
+void ChromeClientImpl::pageScaleFactorChanged() const
 {
-    m_webView->deviceOrPageScaleFactorChanged();
+    m_webView->pageScaleFactorChanged();
 }
 
 void ChromeClientImpl::layoutUpdated(LocalFrame* frame) const

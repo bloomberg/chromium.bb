@@ -3066,7 +3066,6 @@ void WebViewImpl::setPageScaleFactorAndLocation(float scaleFactor, const FloatPo
     page()->frameHost().pinchViewport().setScaleAndLocation(
         clampPageScaleFactorToLimits(scaleFactor),
         location);
-    deviceOrPageScaleFactorChanged();
 }
 
 void WebViewImpl::setPageScaleFactor(float scaleFactor)
@@ -3086,7 +3085,6 @@ void WebViewImpl::setPageScaleFactor(float scaleFactor)
     }
 
     page()->frameHost().pinchViewport().setScale(scaleFactor);
-    deviceOrPageScaleFactorChanged();
 }
 
 void WebViewImpl::setMainFrameScrollOffset(const WebPoint& origin)
@@ -3347,6 +3345,18 @@ WebSize WebViewImpl::contentsPreferredMinimumSize()
     int widthScaled = document->renderView()->minPreferredLogicalWidth(); // Already accounts for zoom.
     int heightScaled = static_cast<int>(document->documentElement()->scrollHeight() * zoomLevelToZoomFactor(zoomLevel()));
     return IntSize(widthScaled, heightScaled);
+}
+
+void WebViewImpl::enableViewport()
+{
+    settings()->setViewportEnabled(true);
+}
+
+void WebViewImpl::disableViewport()
+{
+    settings()->setViewportEnabled(false);
+    m_pageScaleConstraintsSet.clearPageDefinedConstraints();
+    updateMainFrameLayoutSize();
 }
 
 float WebViewImpl::defaultMinimumPageScaleFactor() const
@@ -3991,11 +4001,11 @@ void WebViewImpl::didChangeContentsSize()
     m_pageScaleConstraintsSet.didChangeContentsSize(contentsSize(), pageScaleFactor());
 }
 
-void WebViewImpl::deviceOrPageScaleFactorChanged()
+void WebViewImpl::pageScaleFactorChanged()
 {
     m_pageScaleConstraintsSet.setNeedsReset(false);
     updateLayerTreeViewport();
-    m_page->inspectorController().deviceOrPageScaleFactorChanged();
+    m_page->inspectorController().pageScaleFactorChanged();
 }
 
 bool WebViewImpl::useExternalPopupMenus()

@@ -115,7 +115,7 @@ public:
     virtual IntRect rootViewToScreen(const IntRect&) const override;
     virtual WebScreenInfo screenInfo() const override;
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const override;
-    virtual void deviceOrPageScaleFactorChanged() const override;
+    virtual void pageScaleFactorChanged() const override;
     virtual void layoutUpdated(LocalFrame*) const override;
     virtual void mouseDidMoveOverElement(const HitTestResult&) override;
     virtual void setToolTip(const WTF::String& tooltipText, TextDirection) override;

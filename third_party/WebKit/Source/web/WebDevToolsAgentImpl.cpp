@@ -411,7 +411,7 @@ void WebDevToolsAgentImpl::enableMobileEmulation()
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
     m_originalViewportEnabled = RuntimeEnabledFeatures::cssViewportEnabled();
     RuntimeEnabledFeatures::setCSSViewportEnabled(true);
-    m_webViewImpl->settings()->setViewportEnabled(true);
+    m_webViewImpl->enableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(true);
     m_webViewImpl->settings()->setShrinksViewportContentToFit(true);
     m_webViewImpl->setZoomFactorOverride(1);
@@ -427,7 +427,7 @@ void WebDevToolsAgentImpl::disableMobileEmulation()
         return;
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
     RuntimeEnabledFeatures::setCSSViewportEnabled(m_originalViewportEnabled);
-    m_webViewImpl->settings()->setViewportEnabled(false);
+    m_webViewImpl->disableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(false);
     m_webViewImpl->settings()->setShrinksViewportContentToFit(false);
     m_webViewImpl->setZoomFactorOverride(0);

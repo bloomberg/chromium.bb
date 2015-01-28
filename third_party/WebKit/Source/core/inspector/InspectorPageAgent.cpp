@@ -1248,7 +1248,7 @@ void InspectorPageAgent::didRecalculateStyle(int)
         m_overlay->update();
 }
 
-void InspectorPageAgent::deviceOrPageScaleFactorChanged()
+void InspectorPageAgent::pageScaleFactorChanged()
 {
     if (m_enabled)
         m_overlay->update();
