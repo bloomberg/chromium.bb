@@ -59,14 +59,18 @@ public:
 private:
     bool isOutside() const;
     bool isOverlapping() const;
+    LayoutUnit computeInitialPositionAdjustment(LayoutUnit&) const;
     bool shouldSwitchDirection(InlineFlowBox*, LayoutUnit) const;
 
-    void moveBoxesByStep(LayoutUnit);
-    bool switchDirection(bool&, LayoutUnit&);
+    void moveBoxesBy(LayoutUnit distance)
+    {
+        if (m_cueWritingDirection == VTTCue::Horizontal)
+            m_cueBox.setY(m_cueBox.location().y() + distance);
+        else
+            m_cueBox.setX(m_cueBox.location().x() + distance);
+    }
 
-    bool findFirstLineBox(InlineFlowBox*&);
-    bool initializeLayoutParameters(InlineFlowBox*, LayoutUnit&, LayoutUnit&);
-    void placeBoxInDefaultPosition(LayoutUnit, bool&);
+    InlineFlowBox* findFirstLineBox() const;
 
     LayoutPoint m_specifiedPosition;
     RenderVTTCue& m_cueBox;
@@ -74,28 +78,15 @@ private:
     float m_linePosition;
 };
 
-bool SnapToLinesLayouter::findFirstLineBox(InlineFlowBox*& firstLineBox)
+InlineFlowBox* SnapToLinesLayouter::findFirstLineBox() const
 {
-    if (m_cueBox.firstChild()->isRenderInline())
-        firstLineBox = toRenderInline(m_cueBox.firstChild())->firstLineBox();
-    else
-        return false;
-
-    return true;
+    if (!m_cueBox.firstChild()->isRenderInline())
+        return nullptr;
+    return toRenderInline(m_cueBox.firstChild())->firstLineBox();
 }
 
-bool SnapToLinesLayouter::initializeLayoutParameters(InlineFlowBox* firstLineBox, LayoutUnit& step, LayoutUnit& position)
+LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& step) const
 {
-    ASSERT(m_cueBox.firstChild());
-
-    // 4. Horizontal: Let step be the height of the first line box in boxes.
-    //    Vertical: Let step be the width of the first line box in boxes.
-    step = m_cueWritingDirection == VTTCue::Horizontal ? firstLineBox->size().height() : firstLineBox->size().width();
-
-    // 5. If step is zero, then jump to the step labeled done positioning below.
-    if (!step)
-        return false;
-
     // 6. Let line position be the text track cue computed line position.
     // 7. Round line position to an integer by adding 0.5 and then flooring it.
     LayoutUnit linePosition = floorf(m_linePosition + 0.5f);
@@ -105,7 +96,7 @@ bool SnapToLinesLayouter::initializeLayoutParameters(InlineFlowBox* firstLineBox
         linePosition = -(linePosition + 1);
 
     // 9. Let position be the result of multiplying step and line position.
-    position = step * linePosition;
+    LayoutUnit position = step * linePosition;
 
     // 10. Vertical Growing Left: Decrease position by the width of the
     // bounding box of the boxes in boxes, then increase position by step.
@@ -125,28 +116,7 @@ bool SnapToLinesLayouter::initializeLayoutParameters(InlineFlowBox* firstLineBox
         // ... and negate step.
         step = -step;
     }
-    return true;
-}
-
-void SnapToLinesLayouter::placeBoxInDefaultPosition(LayoutUnit position, bool& switched)
-{
-    // 12. Move all boxes in boxes ...
-    if (m_cueWritingDirection == VTTCue::Horizontal) {
-        // Horizontal: ... down by the distance given by position
-        m_cueBox.setY(m_cueBox.location().y() + position);
-    } else {
-        // Vertical: ... right by the distance given by position
-        m_cueBox.setX(m_cueBox.location().x() + position);
-    }
-
-    // 13. Remember the position of all the boxes in boxes as their specified position.
-    m_specifiedPosition = m_cueBox.location();
-
-    // 14. Let best position be null. It will hold a position for boxes, much like specified position in the previous step.
-    // 15. Let best position score be null.
-
-    // 16. Let switched be false.
-    switched = false;
+    return position;
 }
 
 bool SnapToLinesLayouter::isOutside() const
@@ -193,62 +163,42 @@ bool SnapToLinesLayouter::shouldSwitchDirection(InlineFlowBox* firstLineBox, Lay
     return false;
 }
 
-void SnapToLinesLayouter::moveBoxesByStep(LayoutUnit step)
-{
-    // 22. Horizontal: Move all the boxes in boxes down by the distance
-    // given by step. (If step is negative, then this will actually
-    // result in an upwards movement of the boxes in absolute terms.)
-    if (m_cueWritingDirection == VTTCue::Horizontal)
-        m_cueBox.setY(m_cueBox.location().y() + step);
-
-    // 22. Vertical: Move all the boxes in boxes right by the distance
-    // given by step. (If step is negative, then this will actually
-    // result in a leftwards movement of the boxes in absolute terms.)
-    else
-        m_cueBox.setX(m_cueBox.location().x() + step);
-}
-
-bool SnapToLinesLayouter::switchDirection(bool& switched, LayoutUnit& step)
-{
-    // 24. Switch direction: If switched is true, then move all the boxes in
-    // boxes back to their best position, and jump to the step labeled done
-    // positioning below.
-
-    // 25. Otherwise, move all the boxes in boxes back to their specified
-    // position as determined in the earlier step.
-    m_cueBox.setLocation(m_specifiedPosition);
-
-    // XX. If switched is true, jump to the step labeled done
-    // positioning below.
-    if (switched)
-        return false;
-
-    // 26. Negate step.
-    step = -step;
-
-    // 27. Set switched to true.
-    switched = true;
-    return true;
-}
-
 void SnapToLinesLayouter::layout()
 {
     // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings
     // Step 13, "If cue's text track cue snap-to-lines flag is set".
 
-    InlineFlowBox* firstLineBox;
-    if (!findFirstLineBox(firstLineBox))
+    InlineFlowBox* firstLineBox = findFirstLineBox();
+    if (!firstLineBox)
         return;
 
-    // Step 1 skipped.
+    // Steps 1-3 skipped.
+    // 4. Horizontal: Let step be the height of the first line box in boxes.
+    //    Vertical: Let step be the width of the first line box in boxes.
+    LayoutUnit step = m_cueWritingDirection == VTTCue::Horizontal ? firstLineBox->size().height() : firstLineBox->size().width();
 
-    LayoutUnit step;
-    LayoutUnit position;
-    if (!initializeLayoutParameters(firstLineBox, step, position))
+    // 5. If step is zero, then jump to the step labeled done positioning below.
+    if (!step)
         return;
 
-    bool switched;
-    placeBoxInDefaultPosition(position, switched);
+    // Steps 6-11.
+    LayoutUnit positionAdjustment = computeInitialPositionAdjustment(step);
+
+    // 12. Move all boxes in boxes ...
+    // Horizontal: ... down by the distance given by position
+    // Vertical: ... right by the distance given by position
+    moveBoxesBy(positionAdjustment);
+
+    // 13. Remember the position of all the boxes in boxes as their specified
+    // position.
+    m_specifiedPosition = m_cueBox.location();
+
+    // 14. Let best position be null. It will hold a position for boxes, much
+    // like specified position in the previous step.
+    // 15. Let best position score be null.
+
+    // 16. Let switched be false.
+    bool switched = false;
 
     // Step 17 skipped. (margin == 0; title area == video area)
 
@@ -267,12 +217,36 @@ void SnapToLinesLayouter::layout()
         // as their best position, and set best position score to current
         // position score.
         if (!shouldSwitchDirection(firstLineBox, step)) {
-            // 22. Move all the boxes in boxes ...
-            moveBoxesByStep(step);
+            // 22. Horizontal: Move all the boxes in boxes down by the distance
+            // given by step. (If step is negative, then this will actually
+            // result in an upwards movement of the boxes in absolute terms.)
+            // Vertical: Move all the boxes in boxes right by the distance
+            // given by step. (If step is negative, then this will actually
+            // result in a leftwards movement of the boxes in absolute terms.)
+            moveBoxesBy(step);
+
             // 23. Jump back to the step labeled step loop.
-        } else if (!switchDirection(switched, step)) {
-            break;
+            continue;
         }
+
+        // 24. Switch direction: If switched is true, then move all the boxes in
+        // boxes back to their best position, and jump to the step labeled done
+        // positioning below.
+
+        // 25. Otherwise, move all the boxes in boxes back to their specified
+        // position as determined in the earlier step.
+        m_cueBox.setLocation(m_specifiedPosition);
+
+        // XX. If switched is true, jump to the step labeled done
+        // positioning below.
+        if (switched)
+            break;
+
+        // 26. Negate step.
+        step = -step;
+
+        // 27. Set switched to true.
+        switched = true;
 
         // 28. Jump back to the step labeled step loop.
     }
@@ -356,6 +330,8 @@ void RenderVTTCue::layout()
     // have positioning information.
     if (!m_cue->regionId().isEmpty())
         return;
+
+    ASSERT(firstChild());
 
     LayoutState state(*this, locationOffset());
 
