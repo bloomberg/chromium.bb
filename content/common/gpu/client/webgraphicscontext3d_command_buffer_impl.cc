@@ -21,8 +21,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
-#include "base/tracked_objects.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -128,17 +128,13 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
 
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::MaybeInitializeGL");
 
-  // Below, we perform an expensive one-time initialization that is required to
-  // get first pixels to the screen. This can't be called "jank" since there is
-  // nothing on the screen. Using TaskStopwatch to exclude the operation from
-  // jank calculations.
-  tracked_objects::TaskStopwatch stopwatch;
-  stopwatch.Start();
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "125248 WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL"));
 
   if (!CreateContext(surface_id_ != 0)) {
     Destroy();
-
-    stopwatch.Stop();
 
     initialize_failed_ = true;
     return false;
@@ -156,8 +152,6 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
                  weak_ptr_factory_.GetWeakPtr()));
 
   real_gl_->SetErrorMessageCallback(getErrorMessageCallback());
-
-  stopwatch.Stop();
 
   visible_ = true;
   initialized_ = true;

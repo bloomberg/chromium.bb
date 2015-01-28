@@ -7,10 +7,10 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
-#include "base/tracked_objects.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -194,12 +194,10 @@ void BrowserGpuChannelHostFactory::EstablishRequest::FinishOnMain() {
 void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   {
-    // Since the current task synchronously waits for establishing a GPU
-    // channel, it shouldn't be tallied because its execution time has nothing
-    // to do with its efficiency. Using task stopwatch to exclude the waiting
-    // time from the current task run time.
-    tracked_objects::TaskStopwatch stopwatch;
-    stopwatch.Start();
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "125248 BrowserGpuChannelHostFactory::EstablishRequest::Wait"));
 
     // We're blocking the UI thread, which is generally undesirable.
     // In this case we need to wait for this before we can show any UI
@@ -209,8 +207,6 @@ void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
                  "BrowserGpuChannelHostFactory::EstablishGpuChannelSync");
     base::ThreadRestrictions::ScopedAllowWait allow_wait;
     event_.Wait();
-
-    stopwatch.Stop();
   }
   FinishOnMain();
 }
@@ -331,6 +327,11 @@ CreateCommandBufferResult BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
         &request,
         surface_id,
         init_params));
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "125248 BrowserGpuChannelHostFactory::CreateViewCommandBuffer"));
+
   // We're blocking the UI thread, which is generally undesirable.
   // In this case we need to wait for this before we can show any UI /anyway/,
   // so it won't cause additional jank.
