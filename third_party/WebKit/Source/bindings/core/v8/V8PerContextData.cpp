@@ -133,26 +133,8 @@ v8::Local<v8::Object> V8PerContextData::prototypeForType(const WrapperTypeInfo* 
 
 void V8PerContextData::addCustomElementBinding(CustomElementDefinition* definition, PassOwnPtr<CustomElementBinding> binding)
 {
-    ASSERT(!m_customElementBindings.contains(definition));
-    m_customElementBindings.add(definition, binding);
+    m_customElementBindings.append(binding);
 }
-
-#if !ENABLE(OILPAN)
-void V8PerContextData::clearCustomElementBinding(CustomElementDefinition* definition)
-{
-    CustomElementBindingMap::iterator it = m_customElementBindings.find(definition);
-    ASSERT_WITH_SECURITY_IMPLICATION(it != m_customElementBindings.end());
-    m_customElementBindings.remove(it);
-}
-#endif
-
-CustomElementBinding* V8PerContextData::customElementBinding(CustomElementDefinition* definition)
-{
-    CustomElementBindingMap::const_iterator it = m_customElementBindings.find(definition);
-    ASSERT_WITH_SECURITY_IMPLICATION(it != m_customElementBindings.end());
-    return it->value.get();
-}
-
 
 static v8::Handle<v8::Value> createDebugData(const char* worldName, int debugId, v8::Isolate* isolate)
 {

@@ -39,10 +39,13 @@ PassOwnPtr<CustomElementBinding> CustomElementBinding::create(v8::Isolate* isola
 }
 
 CustomElementBinding::CustomElementBinding(v8::Isolate* isolate, v8::Handle<v8::Object> prototype)
-    : m_isolate(isolate)
-    , m_prototype(isolate, prototype)
+    : m_prototype(isolate, prototype)
 {
     ASSERT(!m_prototype.isEmpty());
+}
+
+CustomElementBinding::~CustomElementBinding()
+{
 }
 
 } // namespace blink

@@ -69,7 +69,6 @@ private:
 
     V8PerContextData* creationContextData();
 
-    RawPtrWillBeMember<CustomElementDefinition> m_owner;
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Object> m_prototype;
     ScopedPersistent<v8::Function> m_created;

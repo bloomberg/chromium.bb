@@ -91,7 +91,6 @@ static void weakCallback(const v8::WeakCallbackData<T, ScopedPersistent<T> >& da
 V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptState* scriptState, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
     : CustomElementLifecycleCallbacks(flagSet(attached, detached, attributeChanged))
     , ContextLifecycleObserver(scriptState->executionContext())
-    , m_owner(nullptr)
     , m_scriptState(scriptState)
     , m_prototype(scriptState->isolate(), prototype)
     , m_created(scriptState->isolate(), created)
@@ -123,29 +122,18 @@ V8PerContextData* V8CustomElementLifecycleCallbacks::creationContextData()
 
 V8CustomElementLifecycleCallbacks::~V8CustomElementLifecycleCallbacks()
 {
-#if !ENABLE(OILPAN)
-    if (!m_owner)
-        return;
-
-    v8::HandleScope handleScope(m_scriptState->isolate());
-    if (V8PerContextData* perContextData = creationContextData())
-        perContextData->clearCustomElementBinding(m_owner);
-#endif
 }
 
 bool V8CustomElementLifecycleCallbacks::setBinding(CustomElementDefinition* owner, PassOwnPtr<CustomElementBinding> binding)
 {
-    ASSERT(!m_owner);
-
     V8PerContextData* perContextData = creationContextData();
     if (!perContextData)
         return false;
 
-    m_owner = owner;
-
-    // Bindings retrieve the prototype when needed from per-context data.
+    // The context is responsible for keeping the prototype
+    // alive. This in turn keeps callbacks alive through hidden
+    // references; see CALLBACK_LIST(SET_HIDDEN_VALUE).
     perContextData->addCustomElementBinding(owner, binding);
-
     return true;
 }
 
@@ -157,32 +145,27 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
-    element->setCustomElementState(Element::Upgraded);
-
     if (!m_scriptState->contextIsValid())
         return;
+
+    element->setCustomElementState(Element::Upgraded);
+
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Handle<v8::Context> context = m_scriptState->context();
     v8::Handle<v8::Object> receiver = m_scriptState->world().domDataStore().get(element, isolate);
-    if (!receiver.IsEmpty()) {
-        // Swizzle the prototype of the existing wrapper. We don't need to
-        // worry about non-existent wrappers; they will get the right
-        // prototype when wrapped.
-        v8::Handle<v8::Object> prototype = m_prototype.newLocal(isolate);
-        if (prototype.IsEmpty())
-            return;
-        receiver->SetPrototype(prototype);
-    }
+    if (receiver.IsEmpty())
+        receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
+
+    // Swizzle the prototype of the wrapper.
+    v8::Handle<v8::Object> prototype = m_prototype.newLocal(isolate);
+    if (prototype.IsEmpty())
+        return;
+    receiver->SetPrototype(prototype);
 
     v8::Handle<v8::Function> callback = m_created.newLocal(isolate);
     if (callback.IsEmpty())
         return;
-
-    if (receiver.IsEmpty())
-        receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
-
-    ASSERT(!receiver.IsEmpty());
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
@@ -257,7 +240,6 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
 
 void V8CustomElementLifecycleCallbacks::trace(Visitor* visitor)
 {
-    visitor->trace(m_owner);
     CustomElementLifecycleCallbacks::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
 }

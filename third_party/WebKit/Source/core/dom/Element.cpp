@@ -3392,38 +3392,4 @@ void Element::trace(Visitor* visitor)
     ContainerNode::trace(visitor);
 }
 
-v8::Handle<v8::Object> Element::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (isCustomElement())
-        return wrapCustomElement(isolate, creationContext);
-    return ContainerNode::wrap(creationContext, isolate);
-}
-
-v8::Handle<v8::Object> Element::wrapCustomElement(v8::Isolate* isolate, v8::Handle<v8::Object> creationContext)
-{
-    // It's possible that no one except for the new wrapper owns this object at
-    // this moment, so we have to prevent GC to collect this object until the
-    // object gets associated with the wrapper.
-    RefPtrWillBeRawPtr<Element> protect(this);
-
-    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
-
-    ASSERT(!creationContext.IsEmpty());
-    v8::Handle<v8::Context> context = creationContext->CreationContext();
-
-    if (!isUpgradedCustomElement() || DOMWrapperWorld::world(context).isIsolatedWorld())
-        return ContainerNode::wrap(creationContext, isolate);
-
-    const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType, this);
-    if (wrapper.IsEmpty())
-        return v8::Handle<v8::Object>();
-
-    V8PerContextData* perContextData = V8PerContextData::from(context);
-    if (perContextData)
-        wrapper->SetPrototype(perContextData->customElementBinding(customElementDefinition())->prototype());
-
-    return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType, wrapper);
-}
-
 } // namespace blink
