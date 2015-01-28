@@ -200,7 +200,7 @@ class UsbApiTest : public ShellApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, DeviceHandling) {
-  EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(4);
+  EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(2);
   ASSERT_TRUE(RunAppTest("api_test/usb/device_handling"));
 }
 

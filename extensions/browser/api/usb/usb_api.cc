@@ -940,7 +940,7 @@ void UsbCloseDeviceFunction::AsyncWorkStart() {
   if (!device_handle.get())
     return;
 
-  device_handle->Close();
+  // The device handle is closed when the resource is destroyed.
   RemoveUsbDeviceResource(parameters_->handle.handle);
   AsyncWorkCompleted();
 }
