@@ -442,6 +442,15 @@ chrome.fileManagerPrivate.searchDrive = function(searchParams, callback) {};
 chrome.fileManagerPrivate.searchDriveMetadata = function(searchParams, callback) {};
 
 /**
+ * Search for files in the given volume, whose content hash matches the list of
+ * given hashes.
+ * @param {string} volumeId
+ * @param {!Array<string>} hashes
+ * @param {function(!Object<string, !Array<string>>)} callback
+ */
+chrome.fileManagerPrivate.searchFilesByHashes = function(volumeId, hashes, callback) {};
+
+/**
  * Create a zip file for the selected files. |dirURL| URL of the directory
  * containing the selected files. |selectionUrls| URLs of the selected files.
  * The files must be under the     directory specified by dirURL. |destName|
@@ -549,6 +558,13 @@ chrome.fileManagerPrivate.visitDesktop = function(profileId, callback) {};
  * @param {string} type
  */
 chrome.fileManagerPrivate.openInspector = function(type) {};
+
+/**
+ * Computes an MD5 checksum for the given file.
+ * @param {string} fileUrl
+ * @param {function(string)} callback
+ */
+chrome.fileManagerPrivate.computeChecksum = function(fileUrl, callback) {};
 
 /**
  * Gets the MIME type of a file.
