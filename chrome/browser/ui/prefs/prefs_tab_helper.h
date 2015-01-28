@@ -8,7 +8,6 @@
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -34,6 +33,7 @@ class PrefsTabHelper : public content::NotificationObserver,
 
   static void InitIncognitoUserPrefStore(OverlayUserPrefStore* pref_store);
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void GetServiceInstance();
 
  protected:
   // Update the RenderView's WebPreferences. Exposed as protected for testing.
@@ -42,6 +42,7 @@ class PrefsTabHelper : public content::NotificationObserver,
  private:
   explicit PrefsTabHelper(content::WebContents* contents);
   friend class content::WebContentsUserData<PrefsTabHelper>;
+  friend class PrefWatcher;
 
   // content::NotificationObserver overrides:
   void Observe(int type,
@@ -51,14 +52,12 @@ class PrefsTabHelper : public content::NotificationObserver,
   // Update the WebContents's RendererPreferences.
   void UpdateRendererPreferences();
 
-  Profile* GetProfile();
-
   void OnFontFamilyPrefChanged(const std::string& pref_name);
   void OnWebPrefChanged(const std::string& pref_name);
 
   content::WebContents* web_contents_;
+  Profile* profile_;
   content::NotificationRegistrar registrar_;
-  PrefChangeRegistrar pref_change_registrar_;
   scoped_ptr<base::CallbackList<void(void)>::Subscription>
       style_sheet_subscription_;
   scoped_ptr<chrome::ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 
+#include <set>
 #include <string>
 
+#include "base/memory/singleton.h"
 #include "base/prefs/overlay_user_pref_store.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -14,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -21,6 +25,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -328,25 +335,16 @@ void RegisterLocalizedFontPref(
 
 }  // namespace
 
-PrefsTabHelper::PrefsTabHelper(WebContents* contents)
-    : web_contents_(contents),
-      weak_ptr_factory_(this) {
-  PrefService* prefs = GetProfile()->GetPrefs();
-  pref_change_registrar_.Init(prefs);
-  if (prefs) {
-    // If the tab is in an incognito profile, we track changes in the default
-    // zoom level of the parent profile instead.
-    Profile* profile_to_track = GetProfile()->GetOriginalProfile();
-    chrome::ChromeZoomLevelPrefs* zoom_level_prefs =
-        profile_to_track->GetZoomLevelPrefs();
+// Watching all these settings per tab is slow when a user has a lot of tabs and
+// and they use session restore. So watch them once per profile.
+// http://crbug.com/452693
+class PrefWatcher : public KeyedService {
+ public:
+  explicit PrefWatcher(Profile* profile) : profile_(profile) {
+    pref_change_registrar_.Init(profile_->GetPrefs());
 
     base::Closure renderer_callback = base::Bind(
-        &PrefsTabHelper::UpdateRendererPreferences, base::Unretained(this));
-    // Tests should not need to create a ZoomLevelPrefs.
-    if (zoom_level_prefs) {
-      default_zoom_level_subscription_ =
-          zoom_level_prefs->RegisterDefaultZoomLevelCallback(renderer_callback);
-    }
+        &PrefWatcher::UpdateRendererPreferences, base::Unretained(this));
     pref_change_registrar_.Add(prefs::kAcceptLanguages, renderer_callback);
     pref_change_registrar_.Add(prefs::kEnableDoNotTrack, renderer_callback);
     pref_change_registrar_.Add(prefs::kEnableReferrers, renderer_callback);
@@ -356,7 +354,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
 #endif
 
     PrefChangeRegistrar::NamedChangeCallback webkit_callback = base::Bind(
-        &PrefsTabHelper::OnWebPrefChanged, base::Unretained(this));
+        &PrefWatcher::OnWebPrefChanged, base::Unretained(this));
     for (int i = 0; i < kPrefsToObserveLength; ++i) {
       const char* pref_name = kPrefsToObserve[i];
       pref_change_registrar_.Add(pref_name, webkit_callback);
@@ -385,17 +383,109 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
                                   webkit_callback);
   }
 
+  static PrefWatcher* Get(Profile* profile);
+
+  void RegisterHelper(PrefsTabHelper* helper) {
+    helpers_.insert(helper);
+  }
+
+  void UnregisterHelper(PrefsTabHelper* helper) {
+    helpers_.erase(helper);
+  }
+
+ private:
+  // KeyedService overrides:
+  void Shutdown() override {
+    pref_change_registrar_.RemoveAll();
+  }
+
+  void UpdateRendererPreferences() {
+    for (const auto& helper : helpers_)
+      helper->UpdateRendererPreferences();
+  }
+
+  void OnWebPrefChanged(const std::string& pref_name) {
+    for (const auto& helper : helpers_)
+      helper->OnWebPrefChanged(pref_name);
+  }
+
+  Profile* profile_;
+  PrefChangeRegistrar pref_change_registrar_;
+  std::set<PrefsTabHelper*> helpers_;
+};
+
+class PrefWatcherFactory : public BrowserContextKeyedServiceFactory {
+ public:
+  static PrefWatcher* GetForProfile(Profile* profile) {
+    return static_cast<PrefWatcher*>(
+        GetInstance()->GetServiceForBrowserContext(profile, true));
+  }
+
+  static PrefWatcherFactory* GetInstance() {
+    return Singleton<PrefWatcherFactory>::get();
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<PrefWatcherFactory>;
+
+  PrefWatcherFactory() : BrowserContextKeyedServiceFactory(
+      "PrefWatcher",
+      BrowserContextDependencyManager::GetInstance()) {
+  }
+
+  ~PrefWatcherFactory() override {}
+
+  // BrowserContextKeyedServiceFactory:
+  KeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* browser_context) const override {
+    return new PrefWatcher(Profile::FromBrowserContext(browser_context));
+  }
+
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override {
+    return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+  }
+};
+
+// static
+PrefWatcher* PrefWatcher::Get(Profile* profile) {
+  return PrefWatcherFactory::GetForProfile(profile);
+}
+
+PrefsTabHelper::PrefsTabHelper(WebContents* contents)
+    : web_contents_(contents),
+      profile_(Profile::FromBrowserContext(web_contents_->GetBrowserContext())),
+      weak_ptr_factory_(this) {
+  PrefService* prefs = profile_->GetPrefs();
+  if (prefs) {
+    // If the tab is in an incognito profile, we track changes in the default
+    // zoom level of the parent profile instead.
+    Profile* profile_to_track = profile_->GetOriginalProfile();
+    chrome::ChromeZoomLevelPrefs* zoom_level_prefs =
+        profile_to_track->GetZoomLevelPrefs();
+
+    base::Closure renderer_callback = base::Bind(
+        &PrefsTabHelper::UpdateRendererPreferences, base::Unretained(this));
+    // Tests should not need to create a ZoomLevelPrefs.
+    if (zoom_level_prefs) {
+      default_zoom_level_subscription_ =
+          zoom_level_prefs->RegisterDefaultZoomLevelCallback(renderer_callback);
+    }
+
+    PrefWatcher::Get(profile_)->RegisterHelper(this);
+  }
+
   content::RendererPreferences* render_prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(render_prefs,
-                                                      GetProfile(),
+                                                      profile_,
                                                       web_contents_);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
-                     ThemeServiceFactory::GetForProfile(GetProfile())));
+                     ThemeServiceFactory::GetForProfile(profile_)));
 #endif
 #if defined(USE_AURA)
   registrar_.Add(this,
@@ -405,6 +495,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
 }
 
 PrefsTabHelper::~PrefsTabHelper() {
+  PrefWatcher::Get(profile_)->UnregisterHelper(this);
 }
 
 // static
@@ -575,6 +666,11 @@ void PrefsTabHelper::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
+// static
+void PrefsTabHelper::GetServiceInstance() {
+  PrefWatcherFactory::GetInstance();
+}
+
 void PrefsTabHelper::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
@@ -604,14 +700,9 @@ void PrefsTabHelper::UpdateRendererPreferences() {
   content::RendererPreferences* prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
-      prefs, GetProfile(), web_contents_);
+      prefs, profile_, web_contents_);
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 }
-
-Profile* PrefsTabHelper::GetProfile() {
-  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-}
-
 void PrefsTabHelper::OnFontFamilyPrefChanged(const std::string& pref_name) {
   // When a font family pref's value goes from non-empty to the empty string, we
   // must add it to the usual WebPreferences struct passed to the renderer.
@@ -630,7 +721,7 @@ void PrefsTabHelper::OnFontFamilyPrefChanged(const std::string& pref_name) {
   if (pref_names_util::ParseFontNamePrefPath(pref_name,
                                              &generic_family,
                                              &script)) {
-    PrefService* prefs = GetProfile()->GetPrefs();
+    PrefService* prefs = profile_->GetPrefs();
     std::string pref_value = prefs->GetString(pref_name);
     if (pref_value.empty()) {
       WebPreferences web_prefs =
