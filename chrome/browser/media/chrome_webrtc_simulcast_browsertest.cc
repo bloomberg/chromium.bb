@@ -33,6 +33,9 @@ class WebRtcSimulcastBrowserTest : public WebRtcTestBase {
     // Just answer 'allow' to GetUserMedia invocations.
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
 
+    // The video playback will not work without a GPU, so force its use here.
+    command_line->AppendSwitch(switches::kUseGpuInTests);
+
     // Use fake devices in order to run on VMs.
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
