@@ -13,10 +13,6 @@
 struct EmbeddedWorkerMsg_StartWorker_Params;
 class GURL;
 
-namespace WebKit {
-class WebEmbeddedWorker;
-}
-
 namespace content {
 
 // A tiny dispatcher which handles embedded worker start/stop messages.
