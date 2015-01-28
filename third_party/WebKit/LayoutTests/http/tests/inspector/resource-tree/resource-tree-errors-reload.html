@@ -16,7 +16,7 @@ function test()
 
     // Resources panel has heavy initialization that does not work well with reloading-from-test.
     InspectorTest.runAfterPendingDispatches(function() {
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, frameNavigated);
+        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, frameNavigated);
         InspectorTest.reloadPage(pageReloaded);
     });
 
@@ -44,7 +44,7 @@ function test()
 
     function step1()
     {
-        var resource = WebInspector.resourceTreeModel.resourceForURL("http://127.0.0.1:8000/inspector/resource-tree/resource-tree-errors-reload.html");
+        var resource = InspectorTest.resourceTreeModel.resourceForURL("http://127.0.0.1:8000/inspector/resource-tree/resource-tree-errors-reload.html");
         InspectorTest.addResult("Number of errors for the main resource: " + resource.errors);
         InspectorTest.completeTest();
     }

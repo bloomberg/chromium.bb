@@ -11,7 +11,7 @@ function testFunction()
 
 var test = function()
 {
-    var testName = WebInspector.resourceTreeModel.inspectedPageURL();
+    var testName = InspectorTest.resourceTreeModel.inspectedPageURL();
     testName = testName.substring(testName.lastIndexOf('/') + 1);
     InspectorTest.startDebuggerTest(step1);
     var testSourceFrame;
@@ -24,23 +24,23 @@ var test = function()
     {
         testSourceFrame = sourceFrame;
         InspectorTest.addResult("Main resource was shown.");
-        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
-        WebInspector.debuggerModel.disableDebugger();
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
+        InspectorTest.debuggerModel.disableDebugger();
     }
 
     function step3()
     {
-        WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
+        InspectorTest.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
         InspectorTest.addResult("Debugger disabled.");
         InspectorTest.setBreakpoint(testSourceFrame, 8, "", true);
         InspectorTest.addResult("Breakpoint added");
-        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
-        WebInspector.debuggerModel.enableDebugger();
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
+        InspectorTest.debuggerModel.enableDebugger();
     }
 
     function step4()
     {
-        WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
+        InspectorTest.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
         InspectorTest.addResult("Debugger was enabled");
         InspectorTest.runTestFunctionAndWaitUntilPaused(step5);
     }
@@ -53,8 +53,8 @@ var test = function()
     function step6()
     {
         InspectorTest.addResult("Disable debugger again");
-        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step7, this);
-        WebInspector.debuggerModel.disableDebugger();
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step7, this);
+        InspectorTest.debuggerModel.disableDebugger();
     }
 
     function step7()
@@ -63,8 +63,8 @@ var test = function()
         var breakpoint = WebInspector.breakpointManager.findBreakpointOnLine(testSourceFrame.uiSourceCode(), 8);
         breakpoint.remove();
         InspectorTest.addResult("Breakpoint removed");
-        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step8, this);
-        WebInspector.debuggerModel.enableDebugger();
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step8, this);
+        InspectorTest.debuggerModel.enableDebugger();
     }
 
     function step8()

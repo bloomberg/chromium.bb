@@ -17,7 +17,7 @@ function test()
         InspectorTest.addResult("Did step into");
     }
 
-    InspectorTest.addSniffer(WebInspector.debuggerModel, "stepInto", didStepInto, true);
+    InspectorTest.addSniffer(InspectorTest.debuggerModel, "stepInto", didStepInto, true);
 
     function testLiveEditWhenPausedDoesNotCauseCursorMove(oldText, newText, next)
     {
@@ -34,7 +34,7 @@ function test()
         {
             sourceFrame = panel.visibleView;
             InspectorTest.removeBreakpoint(sourceFrame, 8);
-            InspectorTest.addSniffer(WebInspector.debuggerModel, "_didEditScriptSource", didEditScriptSource);
+            InspectorTest.addSniffer(InspectorTest.debuggerModel, "_didEditScriptSource", didEditScriptSource);
             InspectorTest.replaceInSource(sourceFrame, oldText, newText);
             InspectorTest.addResult("Moving cursor to (0, 0).");
             sourceFrame.setSelection(WebInspector.TextRange.createFromLocation(0, 0));
@@ -71,7 +71,7 @@ function test()
         {
             sourceFrame = panel.visibleView;
             InspectorTest.removeBreakpoint(sourceFrame, 8);
-            InspectorTest.addSniffer(WebInspector.debuggerModel, "_didEditScriptSource", didEditScriptSource);
+            InspectorTest.addSniffer(InspectorTest.debuggerModel, "_didEditScriptSource", didEditScriptSource);
             InspectorTest.replaceInSource(sourceFrame, oldText, newText);
             InspectorTest.addResult("Moving cursor to (0, 0).");
             sourceFrame.setSelection(WebInspector.TextRange.createFromLocation(0, 0));

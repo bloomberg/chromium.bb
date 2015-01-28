@@ -18,10 +18,10 @@ function onload()
 
 function test()
 {
-    WebInspector.databaseModel.enable();
+    InspectorTest.databaseModel.enable();
     function run()
     {
-        var databases = WebInspector.databaseModel.databases();
+        var databases = InspectorTest.databaseModel.databases();
         for (var i = 0; i < databases.length; ++i) {
             InspectorTest.addResult("Name: " + databases[i].name);
             InspectorTest.addResult("Version: " + databases[i].version);

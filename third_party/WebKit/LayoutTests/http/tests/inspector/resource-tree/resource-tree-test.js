@@ -12,7 +12,7 @@ InspectorTest.dumpResources = function(formatter)
             results.push({ resource: resource, text: resource.url });
     }
 
-    WebInspector.resourceTreeModel.forAllResources(formatterWrapper);
+    InspectorTest.resourceTreeModel.forAllResources(formatterWrapper);
 
     function comparator(result1, result2)
     {
@@ -27,10 +27,10 @@ InspectorTest.dumpResources = function(formatter)
 InspectorTest.dumpResourcesURLMap = function()
 {
     var results = [];
-    WebInspector.resourceTreeModel.forAllResources(collect);
+    InspectorTest.resourceTreeModel.forAllResources(collect);
     function collect(resource)
     {
-        results.push({ url: resource.url, resource: WebInspector.resourceTreeModel.resourceForURL(resource.url) });
+        results.push({ url: resource.url, resource: InspectorTest.resourceTreeModel.resourceForURL(resource.url) });
     }
 
     function comparator(result1, result2)

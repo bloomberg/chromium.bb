@@ -7,7 +7,7 @@ function test()
 {
     var indexedDBModel = new WebInspector.IndexedDBModel(WebInspector.targetManager.mainTarget());
     indexedDBModel.enable();
-    var mainFrameId = WebInspector.resourceTreeModel.mainFrame.id;
+    var mainFrameId = InspectorTest.resourceTreeModel.mainFrame.id;
     var databaseName = "testDatabase1";
     var securityOrigin = "http://127.0.0.1:8000";
     var databaseId = new WebInspector.IndexedDBModel.DatabaseId(securityOrigin, databaseName);

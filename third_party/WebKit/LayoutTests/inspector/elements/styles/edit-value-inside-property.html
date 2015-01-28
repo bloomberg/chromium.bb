@@ -31,7 +31,7 @@ function test()
 
     function onNodeFound(node)
     {
-        WebInspector.cssModel.getInlineStylesAsync(node.id, onInlineStyle);
+        InspectorTest.cssModel.getInlineStylesAsync(node.id, onInlineStyle);
     }
 
     function onInlineStyle(inlineStyle)

@@ -11,7 +11,7 @@ function test()
 
     function step1(error, result, wasThrown)
     {
-        var localStorageHandle = WebInspector.runtimeModel.createRemoteObject(result);
+        var localStorageHandle = InspectorTest.runtimeModel.createRemoteObject(result);
         localStorageHandle.getOwnProperties(step2);
     }
 

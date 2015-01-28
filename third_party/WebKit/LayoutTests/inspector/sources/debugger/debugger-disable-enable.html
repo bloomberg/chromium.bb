@@ -11,7 +11,7 @@ function testFunction()
 
 var test = function()
 {
-    var testName = WebInspector.resourceTreeModel.inspectedPageURL();
+    var testName = InspectorTest.resourceTreeModel.inspectedPageURL();
     testName = testName.substring(testName.lastIndexOf('/') + 1);
     InspectorTest.startDebuggerTest(step1);
 
@@ -24,8 +24,8 @@ var test = function()
     {
         InspectorTest.addResult("Main resource was shown.");
         InspectorTest.setBreakpoint(sourceFrame, 8, "", true);
-        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
-        WebInspector.debuggerModel.disableDebugger();
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
+        InspectorTest.debuggerModel.disableDebugger();
     }
 
     function step3()
@@ -38,8 +38,8 @@ var test = function()
     function step4()
     {
         InspectorTest.addResult("function evaluated without a pause on the breakpoint.");
-        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step5, this);
-        WebInspector.debuggerModel.enableDebugger();
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step5, this);
+        InspectorTest.debuggerModel.enableDebugger();
     }
 
     function step5()

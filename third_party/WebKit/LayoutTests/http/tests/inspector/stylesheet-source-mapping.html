@@ -38,7 +38,7 @@ function test()
 
     function createMockStyleSheetHeader(url, sourceMapURL)
     {
-        const frame = WebInspector.resourceTreeModel.mainFrame;
+        const frame = InspectorTest.resourceTreeModel.mainFrame;
         return {
             styleSheetId: styleSheetId,
             frameId: frame.id,
@@ -53,8 +53,8 @@ function test()
     function createMockStyleSheetResource(url, mimeType, content)
     {
         const documentURL = "http://localhost:8000/inspector/stylesheet-source-mapping.html";
-        const frame = WebInspector.resourceTreeModel.mainFrame;
-        var resource = new WebInspector.Resource(WebInspector.resourceTreeModel.target(), null, url, documentURL, frame.id, frame.loaderId, WebInspector.resourceTypes.Stylesheet, mimeType);
+        const frame = InspectorTest.resourceTreeModel.mainFrame;
+        var resource = new WebInspector.Resource(InspectorTest.resourceTreeModel.target(), null, url, documentURL, frame.id, frame.loaderId, WebInspector.resourceTypes.Stylesheet, mimeType);
         resource.requestContent = function(callback)
         {
             callback(content, false, mimeType);

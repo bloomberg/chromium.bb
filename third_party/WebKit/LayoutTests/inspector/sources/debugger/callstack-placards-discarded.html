@@ -14,7 +14,7 @@ var test = function()
     InspectorTest.runDebuggerTestSuite([
         function testCallStackPlacardsDiscarded(next)
         {
-            WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, didPause, this);
+            InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, didPause, this);
             var previousCount = undefined;
             function didPause(event)
             {
@@ -55,7 +55,7 @@ var test = function()
     function liveLocationsCount()
     {
         var count = 0;
-        var infos = WebInspector.debuggerWorkspaceBinding._targetToData.get(WebInspector.debuggerModel.target()).scriptDataMap.valuesArray();
+        var infos = WebInspector.debuggerWorkspaceBinding._targetToData.get(InspectorTest.debuggerModel.target()).scriptDataMap.valuesArray();
         infos.forEach(function(info) {
             count += info._locations.size;
         });

@@ -55,7 +55,7 @@ function test()
         function didGetObjectByHeapObjectId(error, object)
         {
             if (!error)
-                remoteObjects.push(WebInspector.runtimeModel.createRemoteObject(object));
+                remoteObjects.push(InspectorTest.runtimeModel.createRemoteObject(object));
 
             if (++resolvedObjectsCount  === bodyWrapperIds.length)
                 requestPropertiesOfResolvedObjects();

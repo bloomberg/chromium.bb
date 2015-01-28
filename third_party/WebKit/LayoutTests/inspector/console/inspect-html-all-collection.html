@@ -13,7 +13,7 @@ function test()
             InspectorTest.completeTest();
             return;
         }
-        var htmlAllCollection = WebInspector.runtimeModel.createRemoteObject(result);
+        var htmlAllCollection = InspectorTest.runtimeModel.createRemoteObject(result);
         htmlAllCollection.callFunctionJSON("function(collection) { return this.length + collection.length; }", [{objectId: htmlAllCollection.objectId}], didGetLength.bind(this));
     }
 

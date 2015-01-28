@@ -29,7 +29,7 @@ function test()
 
     function step1()
     {
-        WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequest);
+        InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequest);
         InspectorTest.reloadPage(step2);
     }
 

@@ -30,7 +30,7 @@ function test()
 
     function step3()
     {
-        var childFrame = WebInspector.resourceTreeModel.mainFrame.childFrames[0];
+        var childFrame = InspectorTest.resourceTreeModel.mainFrame.childFrames[0];
         InspectorTest.addResult("Child frame url: " + childFrame.url);
         var childFrameResource = childFrame.resources()[0];
         InspectorTest.addResult("Child frame resource url: " + childFrameResource.url);

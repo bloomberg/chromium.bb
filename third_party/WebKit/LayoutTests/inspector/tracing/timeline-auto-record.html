@@ -17,7 +17,7 @@ function test()
     WebInspector.ConsolePanel.show();
     InspectorTest.runWhenPageLoads(step1);
     InspectorTest.addResult("Reloading page on console panel");
-    WebInspector.resourceTreeModel.reloadPage();
+    InspectorTest.resourceTreeModel.reloadPage();
 
     function step1()
     {
@@ -25,7 +25,7 @@ function test()
         InspectorTest.runWhenPageLoads(callbackBarrier.createCallback());
         callbackBarrier.callWhenDone(recordingStopped);
         InspectorTest.addResult("Reloading page on timeline panel");
-        WebInspector.resourceTreeModel.reloadPage();
+        InspectorTest.resourceTreeModel.reloadPage();
     }
 
     function recordingStarted()

@@ -39,7 +39,7 @@ function test() {
             dumpRequests();
     }
 
-    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequestFinished);
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequestFinished);
     InspectorTest.recordNetwork();
     InspectorTest.evaluateInPage("loadResources()");
 }

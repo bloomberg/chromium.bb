@@ -30,13 +30,13 @@ function test()
 
             function step1(error, result, wasThrown)
             {
-                obj1 = WebInspector.runtimeModel.createRemoteObject(result);
+                obj1 = InspectorTest.runtimeModel.createRemoteObject(result);
                 InspectorTest.RuntimeAgent.evaluate("symbol1", step2);
             }
 
             function step2(error, result, wasThrown)
             {
-                name = WebInspector.RemoteObject.toCallArgument(WebInspector.runtimeModel.createRemoteObject(result));
+                name = WebInspector.RemoteObject.toCallArgument(InspectorTest.runtimeModel.createRemoteObject(result));
                 next();
             }
         },

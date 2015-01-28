@@ -22,13 +22,13 @@ function test()
 
             function step1(error, result, wasThrown)
             {
-                obj1 = WebInspector.runtimeModel.createRemoteObject(result);
+                obj1 = InspectorTest.runtimeModel.createRemoteObject(result);
                 InspectorTest.RuntimeAgent.evaluate("object2", step2);
             }
 
             function step2(error, result, wasThrown)
             {
-                obj2 = WebInspector.runtimeModel.createRemoteObject(result);
+                obj2 = InspectorTest.runtimeModel.createRemoteObject(result);
                 next();
             }
         },

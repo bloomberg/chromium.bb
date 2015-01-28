@@ -24,7 +24,7 @@ f3();
 
 var test = function()
 {
-    var testName = WebInspector.resourceTreeModel.inspectedPageURL();
+    var testName = InspectorTest.resourceTreeModel.inspectedPageURL();
     testName = testName.substring(testName.lastIndexOf('/') + 1);
 
     InspectorTest.startDebuggerTest(step1);
@@ -32,9 +32,9 @@ var test = function()
     function step1()
     {
         InspectorTest.addResult("Did load front-end");
-        InspectorTest.addResult("Paused: " + !!WebInspector.debuggerModel.debuggerPausedDetails());
+        InspectorTest.addResult("Paused: " + !!InspectorTest.debuggerModel.debuggerPausedDetails());
         InspectorTest.reloadPage(didReload.bind(this));
-        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, didPauseAfterReload, this); 
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, didPauseAfterReload, this); 
     }
 
     function didReload()
@@ -53,7 +53,7 @@ var test = function()
     var callFrameIndex = 0;
     function dumpNextCallFrame(next)
     {
-        var callFrames = WebInspector.debuggerModel.callFrames;
+        var callFrames = InspectorTest.debuggerModel.callFrames;
         if (callFrameIndex === callFrames.length) {
             next();
             return;

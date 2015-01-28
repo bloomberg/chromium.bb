@@ -7,14 +7,14 @@
 function test()
 {
     var defaultScriptMapping;
-    var target = WebInspector.debuggerModel.target();
+    var target = InspectorTest.debuggerModel.target();
 
     function createResourceScriptMapping()
     {
         InspectorTest.createWorkspace();
         InspectorTest.testTargetManager.addTarget(target);
-        defaultScriptMapping = new WebInspector.DefaultScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testDebuggerWorkspaceBinding);
-        var resourceScriptMapping = new WebInspector.ResourceScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testDebuggerWorkspaceBinding);
+        defaultScriptMapping = new WebInspector.DefaultScriptMapping(InspectorTest.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testDebuggerWorkspaceBinding);
+        var resourceScriptMapping = new WebInspector.ResourceScriptMapping(InspectorTest.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testDebuggerWorkspaceBinding);
         return resourceScriptMapping;
     }
 
@@ -26,7 +26,7 @@ function test()
 
     function resetModels()
     {
-        WebInspector.debuggerModel._reset();
+        InspectorTest.debuggerModel._reset();
     }
 
     InspectorTest.runTestSuite([

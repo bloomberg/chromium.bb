@@ -29,7 +29,7 @@ function test()
         function testOpenUISourceCode(next)
         {
             var resource;
-            WebInspector.resourceTreeModel.forAllResources(function(r) {
+            InspectorTest.resourceTreeModel.forAllResources(function(r) {
                 if (r.url.indexOf("inspector-test.js") !== -1) {
                     resource = r;
                     return true;

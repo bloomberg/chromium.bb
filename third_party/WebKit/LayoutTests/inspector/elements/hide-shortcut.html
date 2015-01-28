@@ -44,14 +44,14 @@ function test()
             function callback()
             {
                 InspectorTest.addResult("=== Added hide shortcut ===");
-                WebInspector.cssModel.getComputedStyleAsync(parentNode.id, callback2);
+                InspectorTest.cssModel.getComputedStyleAsync(parentNode.id, callback2);
             }
 
             function callback2(style)
             {
                 InspectorTest.addResult("=== Parent node is hidden ===");
                 InspectorTest.addResult(style.getLiveProperty("visibility").propertyText);
-                WebInspector.cssModel.getComputedStyleAsync(childNode.id, callback3);
+                InspectorTest.cssModel.getComputedStyleAsync(childNode.id, callback3);
             }
 
             function callback3(style)
@@ -69,14 +69,14 @@ function test()
             function callback()
             {
                 InspectorTest.addResult("=== Removed hide shortcut ===");
-                WebInspector.cssModel.getComputedStyleAsync(parentNode.id, callback2);
+                InspectorTest.cssModel.getComputedStyleAsync(parentNode.id, callback2);
             }
 
             function callback2(style)
             {
                 InspectorTest.addResult("=== Parent node is visible ===");
                 InspectorTest.addResult(style.getLiveProperty("visibility").propertyText);
-                WebInspector.cssModel.getComputedStyleAsync(childNode.id, callback3);
+                InspectorTest.cssModel.getComputedStyleAsync(childNode.id, callback3);
             }
 
             function callback3(style)
@@ -114,7 +114,7 @@ function test()
             function callback()
             {
                 InspectorTest.addResult("=== Added hide shortcut in frame ===");
-                WebInspector.cssModel.getComputedStyleAsync(frameNode.id, callback2);
+                InspectorTest.cssModel.getComputedStyleAsync(frameNode.id, callback2);
             }
 
             function callback2(style)
@@ -132,7 +132,7 @@ function test()
 
         function callback()
         {
-            WebInspector.cssModel.getComputedStyleAsync(pseudoNode.id, callback2);
+            InspectorTest.cssModel.getComputedStyleAsync(pseudoNode.id, callback2);
         }
 
         function callback2(style)

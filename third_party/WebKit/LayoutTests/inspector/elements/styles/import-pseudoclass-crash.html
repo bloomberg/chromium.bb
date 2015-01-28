@@ -11,7 +11,7 @@ function test()
 
     function nodeFound(node)
     {
-        WebInspector.cssModel.getMatchedStylesAsync(node.id, true, false, matchedStylesCallback);
+        InspectorTest.cssModel.getMatchedStylesAsync(node.id, true, false, matchedStylesCallback);
     }
 
     var styleSheetId;

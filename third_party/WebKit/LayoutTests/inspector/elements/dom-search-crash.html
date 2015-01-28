@@ -7,12 +7,12 @@ function test()
     InspectorTest.runTestSuite([
         function testSetUp(next)
         {
-            WebInspector.domModel.requestDocument(next);
+            InspectorTest.domModel.requestDocument(next);
         },
 
         function testNoCrash(next)
         {
-            WebInspector.domModel.performSearch("FooBar", false, next);
+            InspectorTest.domModel.performSearch("FooBar", false, next);
         }
     ]);
 }

@@ -30,11 +30,11 @@ function test()
         {
             InspectorTest.evaluateInPage("testSetNewValue()");
 
-            WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
+            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
             function listener(event)
             {
                 InspectorTest.addResult("WebInspector.DOMModel.Events.AttrModified should be issued");
-                WebInspector.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
+                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
                 next();
             }
         },
@@ -43,18 +43,18 @@ function test()
         {
             InspectorTest.evaluateInPage("testSetSameValue()");
 
-            WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
+            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
             function listener(event)
             {
                 InspectorTest.addResult("WebInspector.DOMModel.Events.AttrModified should not be issued");
-                WebInspector.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
+                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
             }
 
             InspectorTest.addSniffer(WebInspector.DOMNode.prototype, "_setAttributesPayload", callback);
             function callback()
             {
                 InspectorTest.addResult("WebInspector.DOMNode.prototype._setAttributesPayload should be called");
-                WebInspector.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
+                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
                 next();
             }
         }

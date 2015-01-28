@@ -60,7 +60,7 @@ function test() {
         }
     }
     console.log(WebInspector.Network);
-    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdated, onRequest);
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdated, onRequest);
     InspectorTest.evaluateInPage('sendMessages()');
 }
 </script>

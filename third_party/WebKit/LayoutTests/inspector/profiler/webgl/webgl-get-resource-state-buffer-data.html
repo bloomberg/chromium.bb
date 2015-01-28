@@ -108,7 +108,7 @@ function test()
                 if (!remoteObject)
                     InspectorTest.addResult("FAIL: Internal error in the protocol: no \"remoteObject\" property in a CallArgument");
                 else {
-                    var obj = WebInspector.runtimeModel.createRemoteObject(remoteObject);
+                    var obj = InspectorTest.runtimeModel.createRemoteObject(remoteObject);
                     obj.getOwnProperties(didGetOwnProperties.bind(null, descriptor.value.description));
                     return;
                 }

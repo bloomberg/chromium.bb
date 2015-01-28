@@ -66,7 +66,7 @@ var test = function()
     {
         if (!pageReloaded)
             return;
-        if (WebInspector.cssModel.styleSheetHeaders().length !== pendingStyleSheetsCount)
+        if (InspectorTest.cssModel.styleSheetHeaders().length !== pendingStyleSheetsCount)
             return;
         WebInspector.AuditRuleResult.resourceDomain = function() {
             return "[domain]";

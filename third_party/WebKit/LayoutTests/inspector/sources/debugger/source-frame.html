@@ -58,7 +58,7 @@ function test()
                 if (this !== shownSourceFrame)
                     return;
                 InspectorTest.addResult("Message added to source frame: " + message.messageText());
-                WebInspector.consoleModel.requestClearMessages();
+                InspectorTest.consoleModel.requestClearMessages();
             }
 
             function clearMessages()
@@ -76,7 +76,7 @@ function test()
 
             InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "show", didShowSourceFrame);
 
-            WebInspector.resourceTreeModel.forAllResources(visit);
+            InspectorTest.resourceTreeModel.forAllResources(visit);
             function visit(resource)
             {
                 if (resource.url.indexOf("debugger-test.js") !== -1) {

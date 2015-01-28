@@ -54,7 +54,7 @@ function test()
 {
     function forEachScriptMatchingURL(url, handler)
     {
-        var scripts = WebInspector.debuggerModel._scripts;
+        var scripts = InspectorTest.debuggerModel._scripts;
         for (var id in scripts) {
             if (scripts[id].sourceURL.indexOf(url) !== -1)
                 handler(scripts[id]);

@@ -163,7 +163,7 @@ function test()
 
     function replaceInSource(sourceFrame, string, replacement, callback)
     {
-        InspectorTest.addSniffer(WebInspector.debuggerModel, "_didEditScriptSource", callback);
+        InspectorTest.addSniffer(InspectorTest.debuggerModel, "_didEditScriptSource", callback);
         InspectorTest.replaceInSource(sourceFrame, string, replacement);
         InspectorTest.commitSource(sourceFrame);
     }

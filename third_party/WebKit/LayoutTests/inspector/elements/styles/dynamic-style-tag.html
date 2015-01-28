@@ -32,7 +32,7 @@ function test()
 
     function step1()
     {
-        var styleSheets = WebInspector.cssModel.allStyleSheets();
+        var styleSheets = InspectorTest.cssModel.allStyleSheets();
         styleSheets.sort();
         for (var i = 0; i < styleSheets.length; ++i)
             InspectorTest.CSSAgent.getStyleSheetText(styleSheets[i].id, dumpStyleSheet.bind(null, styleSheets[i], i === styleSheets.length - 1));

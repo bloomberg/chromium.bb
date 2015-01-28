@@ -42,7 +42,7 @@ InspectorTest.createAndNavigateIFrame = function(url, callback)
 
 InspectorTest.navigateIFrame = function(frameId, url, callback)
 {
-    var frame = WebInspector.resourceTreeModel.frameForId(frameId)
+    var frame = InspectorTest.resourceTreeModel.frameForId(frameId)
     InspectorTest.evaluateInPage("navigateIFrame(unescape('" + escape(frame.name) +"'), unescape('" + escape(url) + "'))");
     InspectorTest.addSniffer(WebInspector.ResourceTreeModel.prototype, "_frameNavigated", frameNavigated);
 
@@ -54,7 +54,7 @@ InspectorTest.navigateIFrame = function(frameId, url, callback)
 
 InspectorTest.removeIFrame = function(frameId, callback)
 {
-    var frame = WebInspector.resourceTreeModel.frameForId(frameId)
+    var frame = InspectorTest.resourceTreeModel.frameForId(frameId)
     InspectorTest.evaluateInPage("removeIFrame(unescape('" + escape(frame.name) +"'))");
     InspectorTest.addSniffer(WebInspector.ResourceTreeModel.prototype, "_frameDetached", frameDetached);
 
@@ -66,7 +66,7 @@ InspectorTest.removeIFrame = function(frameId, callback)
 
 InspectorTest.swapFrameCache = function(frameId)
 {
-    var frame = WebInspector.resourceTreeModel.frameForId(frameId);
+    var frame = InspectorTest.resourceTreeModel.frameForId(frameId);
     InspectorTest.evaluateInPage("swapFrameCache(unescape('" + escape(frame.name) +"'))");
 }
 
@@ -104,7 +104,7 @@ InspectorTest.frameIdToString = function(frameId)
 {
     if (!InspectorTest.framesByFrameId)
         InspectorTest.framesByFrameId = {};
-    var frame = WebInspector.resourceTreeModel.frameForId(frameId);
+    var frame = InspectorTest.resourceTreeModel.frameForId(frameId);
     if (!frame)
         frame = InspectorTest.framesByFrameId[frameId];
     InspectorTest.framesByFrameId[frameId] = frame;

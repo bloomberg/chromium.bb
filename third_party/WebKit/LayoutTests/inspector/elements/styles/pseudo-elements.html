@@ -178,8 +178,8 @@ function test()
             executeAndDumpTree("removeNode()", WebInspector.DOMModel.Events.NodeRemoved, callback);
             function callback()
             {
-                InspectorTest.addResult("inspected:before DOMNode in DOMAgent: " + !!(WebInspector.domModel.nodeForId(inspectedBefore.id)));
-                InspectorTest.addResult("inspected:after DOMNode in DOMAgent: " + !!(WebInspector.domModel.nodeForId(inspectedAfter.id)));
+                InspectorTest.addResult("inspected:before DOMNode in DOMAgent: " + !!(InspectorTest.domModel.nodeForId(inspectedBefore.id)));
+                InspectorTest.addResult("inspected:after DOMNode in DOMAgent: " + !!(InspectorTest.domModel.nodeForId(inspectedAfter.id)));
                 next();
             }
         }
@@ -187,12 +187,12 @@ function test()
 
     function executeAndDumpTree(pageFunction, eventName, next)
     {
-        WebInspector.domModel.addEventListener(eventName, domCallback, this);
+        InspectorTest.domModel.addEventListener(eventName, domCallback, this);
         InspectorTest.evaluateInPage(pageFunction);
 
         function domCallback()
         {
-            WebInspector.domModel.removeEventListener(eventName, domCallback, this);
+            InspectorTest.domModel.removeEventListener(eventName, domCallback, this);
             InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
         }
 

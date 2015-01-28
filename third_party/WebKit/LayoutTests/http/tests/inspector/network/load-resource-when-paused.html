@@ -27,9 +27,9 @@ var test = function()
 
     function step2()
     {
-        var mainResourceURL = WebInspector.resourceTreeModel.mainFrame.url;
+        var mainResourceURL = InspectorTest.resourceTreeModel.mainFrame.url;
         var resourceURL = WebInspector.ParsedURL.completeURL(mainResourceURL, "resources/resource.php");
-        InspectorTest.NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, resourceURL, undefined, resourceContentLoaded);
+        InspectorTest.NetworkAgent.loadResourceForFrontend(InspectorTest.resourceTreeModel.mainFrame.id, resourceURL, undefined, resourceContentLoaded);
     }
 
     function resourceContentLoaded(error, statusCode, headers, content)

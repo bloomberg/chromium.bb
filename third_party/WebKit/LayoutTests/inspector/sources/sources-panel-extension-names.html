@@ -24,17 +24,17 @@ function test()
             var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
             WebInspector.networkProject.addFileForURL(mockContentScriptURL, contentProvider, true);
             InspectorTest.dumpNavigatorView(contentScriptsNavigatorView, "contentScripts", "  ");
-            WebInspector.runtimeModel._executionContextCreated(mockExecutionContext);
+            InspectorTest.runtimeModel._executionContextCreated(mockExecutionContext);
             InspectorTest.dumpNavigatorView(contentScriptsNavigatorView, "contentScripts", "  ");
             // cleanup after test
             WebInspector.networkProject.reset();
-            WebInspector.runtimeModel._executionContextsCleared();
+            InspectorTest.runtimeModel._executionContextsCleared();
             next();
         },
 
         function testAddExecutionContextBeforeFile(next)
         {
-            WebInspector.runtimeModel._executionContextCreated(mockExecutionContext);
+            InspectorTest.runtimeModel._executionContextCreated(mockExecutionContext);
             var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
             WebInspector.networkProject.addFileForURL(mockContentScriptURL, contentProvider, true);
             InspectorTest.dumpNavigatorView(contentScriptsNavigatorView, "contentScripts", "  ");

@@ -3,7 +3,7 @@ function initialize_StylesTests()
 
 InspectorTest.waitForStylesheetsOnFrontend = function(styleSheetsCount, callback)
 {
-    var styleSheets = WebInspector.cssModel.allStyleSheets();
+    var styleSheets = InspectorTest.cssModel.allStyleSheets();
     if (styleSheets.length >= styleSheetsCount) {
         callback(styleSheets);
         return;
@@ -11,16 +11,16 @@ InspectorTest.waitForStylesheetsOnFrontend = function(styleSheetsCount, callback
 
     function onStyleSheetAdded()
     {
-        var styleSheets = WebInspector.cssModel.allStyleSheets();
+        var styleSheets = InspectorTest.cssModel.allStyleSheets();
         if (styleSheets.length < styleSheetsCount)
             return;
 
-        WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, onStyleSheetAdded, this);
+        InspectorTest.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, onStyleSheetAdded, this);
         styleSheets.sort(styleSheetComparator);
         callback(null, styleSheets);
     }
 
-    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, onStyleSheetAdded, this);
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, onStyleSheetAdded, this);
 }
 
 }

@@ -15,7 +15,7 @@ function test()
 
     function step2()
     {
-        WebInspector.domModel.undo();
+        InspectorTest.domModel.undo();
         InspectorTest.waitForStyles("other", step3);
     }
 

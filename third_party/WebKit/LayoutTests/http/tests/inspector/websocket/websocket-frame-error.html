@@ -27,7 +27,7 @@ function test() {
             }
         }
     }
-    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdated, onRequest);
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdated, onRequest);
     InspectorTest.evaluateInPage("sendMessages()");
 }
 </script>

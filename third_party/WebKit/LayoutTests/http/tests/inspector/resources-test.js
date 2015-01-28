@@ -9,8 +9,8 @@ InspectorTest.requestURLComparer = function(r1, r2)
 
 InspectorTest.runAfterCachedResourcesProcessed = function(callback)
 {
-    if (!WebInspector.resourceTreeModel._cachedResourcesProcessed)
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, callback);
+    if (!InspectorTest.resourceTreeModel._cachedResourcesProcessed)
+        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, callback);
     else
         callback();
 }
@@ -27,13 +27,13 @@ InspectorTest.runAfterResourcesAreFinished = function(resourceURLs, callback)
                 delete resourceURLsMap[url];
         }
         if (!Object.keys(resourceURLsMap).length) {
-            WebInspector.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, checkResources);
+            InspectorTest.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, checkResources);
             callback();
         }
     }
     checkResources();
     if (Object.keys(resourceURLsMap).length)
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, checkResources);
+        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, checkResources);
 }
 
 InspectorTest.showResource = function(resourceURL, callback)
@@ -65,7 +65,7 @@ InspectorTest.showResource = function(resourceURL, callback)
 InspectorTest.resourceMatchingURL = function(resourceURL)
 {
     var result = null;
-    WebInspector.resourceTreeModel.forAllResources(visit);
+    InspectorTest.resourceTreeModel.forAllResources(visit);
     function visit(resource)
     {
         if (resource.url.indexOf(resourceURL) !== -1) {

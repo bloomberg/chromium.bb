@@ -33,7 +33,7 @@ function test() {
         {
             installHooks();
 
-            WebInspector.resourceTreeModel.forAllResources(function(r) {
+            InspectorTest.resourceTreeModel.forAllResources(function(r) {
                 if (r.url.indexOf("inspector-test.js") !== -1) {
                     resource = r;
                     return true;
@@ -52,7 +52,7 @@ function test() {
 
             function firstXhrCallback()
             {
-                requestWithResource = WebInspector.networkLog.requestForURL(resource.url);
+                requestWithResource = InspectorTest.networkLog.requestForURL(resource.url);
                 InspectorTest.evaluateInPage("loadResource('missing.js')", secondXhrCallback);
             }
 

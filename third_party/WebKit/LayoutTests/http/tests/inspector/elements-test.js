@@ -67,7 +67,7 @@ InspectorTest.findNode = function(matchFunction, callback)
             callback(null);
     }
 
-    WebInspector.domModel.requestDocument(documentRequested.bind(this));
+    InspectorTest.domModel.requestDocument(documentRequested.bind(this));
     function documentRequested(doc)
     {
         pendingRequests++;
@@ -86,16 +86,16 @@ InspectorTest.nodeWithId = function(idValue, callback)
 
 InspectorTest.querySelector = function(selector, callback)
 {
-    WebInspector.domModel.requestDocument(documentRequested.bind(this));
+    InspectorTest.domModel.requestDocument(documentRequested.bind(this));
 
     function documentRequested(doc)
     {
-        WebInspector.domModel.querySelector(doc.id, selector, nodeSelected);
+        InspectorTest.domModel.querySelector(doc.id, selector, nodeSelected);
     }
 
     function nodeSelected(nodeId)
     {
-        callback(WebInspector.domModel.nodeForId(nodeId));
+        callback(InspectorTest.domModel.nodeForId(nodeId));
     }
 }
 
@@ -639,7 +639,7 @@ InspectorTest.expandElementsTree = function(callback)
 
 InspectorTest.dumpDOMAgentTree = function(node)
 {
-    if (!WebInspector.domModel._document)
+    if (!InspectorTest.domModel._document)
         return;
 
     function dump(node, prefix)
@@ -691,7 +691,7 @@ InspectorTest.generateUndoTest = function(testBody)
                     InspectorTest.addResult("== Expanded: ==");
                     InspectorTest.dumpElementsTree(testNode);
                 }
-                WebInspector.domModel.undo(redo);
+                InspectorTest.domModel.undo(redo);
             }
         }
 
@@ -707,7 +707,7 @@ InspectorTest.generateUndoTest = function(testBody)
                     InspectorTest.addResult("== Expanded: ==");
                     InspectorTest.dumpElementsTree(testNode);
                 }
-                WebInspector.domModel.redo(done);
+                InspectorTest.domModel.redo(done);
             }
         }
 

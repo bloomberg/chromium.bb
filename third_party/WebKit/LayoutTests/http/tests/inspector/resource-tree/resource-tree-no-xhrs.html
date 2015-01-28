@@ -9,7 +9,7 @@ function test()
 
     function step2()
     {
-        var resource = WebInspector.resourceTreeModel.resourceForURL("http://127.0.0.1:8000/inspector/resource-tree/resources/resource.php");
+        var resource = InspectorTest.resourceTreeModel.resourceForURL("http://127.0.0.1:8000/inspector/resource-tree/resources/resource.php");
         InspectorTest.assertTrue(!resource, "XHR resource should not be added to resourceTreeModel.");
         InspectorTest.completeTest();
     }

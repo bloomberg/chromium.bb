@@ -13,10 +13,10 @@ function test()
     function step1()
     {
         // Reset resourceTreeModel.
-        WebInspector.resourceTreeModel.mainFrame._remove();
+        InspectorTest.resourceTreeModel.mainFrame._remove();
 
         for (var eventName in WebInspector.ResourceTreeModel.EventTypes)
-            WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes[eventName], eventHandler.bind(this, eventName));
+            InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes[eventName], eventHandler.bind(this, eventName));
 
         function eventHandler(eventName, event)
         {
@@ -43,21 +43,21 @@ function test()
 
         // Simulate navigation to new render view: do not attach root frame.
         InspectorTest.addResult("Navigating root frame");
-        WebInspector.resourceTreeModel._frameNavigated(createFramePayload("root1"));
+        InspectorTest.resourceTreeModel._frameNavigated(createFramePayload("root1"));
         InspectorTest.addResult("Navigating child frame 1");
-        WebInspector.resourceTreeModel._frameAttached("child1", "root1");
-        WebInspector.resourceTreeModel._frameNavigated(createFramePayload("child1", "root1"));
+        InspectorTest.resourceTreeModel._frameAttached("child1", "root1");
+        InspectorTest.resourceTreeModel._frameNavigated(createFramePayload("child1", "root1"));
         InspectorTest.addResult("Navigating child frame 1 to a different URL");
-        WebInspector.resourceTreeModel._frameNavigated(createFramePayload("child1", "root1", "child1-new"));
+        InspectorTest.resourceTreeModel._frameNavigated(createFramePayload("child1", "root1", "child1-new"));
         InspectorTest.addResult("Navigating child frame 2");
-        WebInspector.resourceTreeModel._frameAttached("child2", "root1");
-        WebInspector.resourceTreeModel._frameNavigated(createFramePayload("child2", "root1"));
+        InspectorTest.resourceTreeModel._frameAttached("child2", "root1");
+        InspectorTest.resourceTreeModel._frameNavigated(createFramePayload("child2", "root1"));
         InspectorTest.addResult("Detaching child frame 1");
-        WebInspector.resourceTreeModel._frameDetached("child1");
+        InspectorTest.resourceTreeModel._frameDetached("child1");
 
         InspectorTest.addResult("Navigating root frame");
-        WebInspector.resourceTreeModel._frameAttached("root2");
-        WebInspector.resourceTreeModel._frameNavigated(createFramePayload("root2"));
+        InspectorTest.resourceTreeModel._frameAttached("root2");
+        InspectorTest.resourceTreeModel._frameNavigated(createFramePayload("root2"));
         InspectorTest.completeTest();
     }
 

@@ -17,7 +17,7 @@ InspectorTest.recordNetwork = function()
 
 InspectorTest.networkRequests = function()
 {
-    return WebInspector.networkLog.requests.slice();
+    return WebInspector.NetworkLog.requests();
 }
 
 InspectorTest.dumpNetworkRequests = function()

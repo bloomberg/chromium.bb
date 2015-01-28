@@ -24,7 +24,7 @@ var test = function()
 
     function step1()
     {
-        var testName = WebInspector.resourceTreeModel.inspectedPageURL();
+        var testName = InspectorTest.resourceTreeModel.inspectedPageURL();
         testName = testName.substring(testName.lastIndexOf('/') + 1);
         InspectorTest.showScriptSource(testName, step2);
     }
@@ -38,13 +38,13 @@ var test = function()
     function step3()
     {
         InspectorTest.completeDebuggerTest(); return;
-        WebInspector.debuggerModel.setSelectedCallFrame(WebInspector.debuggerModel.debuggerPausedDetails().callFrames[1]);
+        InspectorTest.debuggerModel.setSelectedCallFrame(InspectorTest.debuggerModel.debuggerPausedDetails().callFrames[1]);
         sourceFrame._toggleFormatSource(step4);
     }
 
     function step4()
     {
-        InspectorTest.assertEquals("testFunction", WebInspector.debuggerModel.selectedCallFrame().functionName);
+        InspectorTest.assertEquals("testFunction", InspectorTest.debuggerModel.selectedCallFrame().functionName);
         sourceFrame._toggleFormatSource(step5);
     }
 

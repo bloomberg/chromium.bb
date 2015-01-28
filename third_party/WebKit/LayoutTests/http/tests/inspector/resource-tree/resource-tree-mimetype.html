@@ -6,8 +6,8 @@
 <script>
 function test()
 {
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, step2);
-    WebInspector.resourceTreeModel._fetchResourceTree();
+    InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, step2);
+    InspectorTest.resourceTreeModel._fetchResourceTree();
 
     function step2()
     {

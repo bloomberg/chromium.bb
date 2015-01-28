@@ -94,7 +94,7 @@ function test()
             function breakpointResolved(callback, breakpointId, locations)
             {
                 var location = locations[0];
-                script = WebInspector.debuggerModel.scriptForId(location.scriptId);
+                script = InspectorTest.debuggerModel.scriptForId(location.scriptId);
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Editing source:");
@@ -146,7 +146,7 @@ function test()
             function breakpointResolved(callback, breakpointId, locations)
             {
                 var location = locations[0];
-                script = WebInspector.debuggerModel.scriptForId(location.scriptId);
+                script = InspectorTest.debuggerModel.scriptForId(location.scriptId);
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Editing source:");
@@ -198,7 +198,7 @@ function test()
             function breakpointResolved(callback, breakpointId, locations)
             {
                 var location = locations[0];
-                script = WebInspector.debuggerModel.scriptForId(location.scriptId);
+                script = InspectorTest.debuggerModel.scriptForId(location.scriptId);
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Editing source:");
@@ -216,7 +216,7 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Committing edited source:");
-                InspectorTest.addSniffer(WebInspector.debuggerModel, "_didEditScriptSource", commitFailed);
+                InspectorTest.addSniffer(InspectorTest.debuggerModel, "_didEditScriptSource", commitFailed);
                 InspectorTest.commitSource(javaScriptSourceFrame);
             }
 
@@ -263,7 +263,7 @@ function test()
             function breakpointResolved(callback, breakpointId, locations)
             {
                 var location = locations[0];
-                script = WebInspector.debuggerModel.scriptForId(location.scriptId);
+                script = InspectorTest.debuggerModel.scriptForId(location.scriptId);
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Editing source:");
@@ -281,7 +281,7 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Committing edited source:");
-                InspectorTest.addSniffer(WebInspector.debuggerModel, "_didEditScriptSource", commitFailed);
+                InspectorTest.addSniffer(InspectorTest.debuggerModel, "_didEditScriptSource", commitFailed);
                 InspectorTest.commitSource(javaScriptSourceFrame);
             }
 

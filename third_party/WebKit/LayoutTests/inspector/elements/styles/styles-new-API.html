@@ -228,7 +228,7 @@ function test()
 
             function setRuleSelector(rule)
             {
-                var orm = WebInspector.CSSRule.parsePayload(WebInspector.cssModel, rule);
+                var orm = WebInspector.CSSRule.parsePayload(InspectorTest.cssModel, rule);
                 InspectorTest.CSSAgent.setRuleSelector(orm.styleSheetId, orm.selectorRange, "html *, body[foo=\"bar\"]", didSetSelector);
             }
 
@@ -327,7 +327,7 @@ function test()
                 InspectorTest.CSSAgent.addRule(styleSheetId, "body {}", range, ruleAdded);
             }
 
-            var frameId = WebInspector.resourceTreeModel.mainFrame.id;
+            var frameId = InspectorTest.resourceTreeModel.mainFrame.id;
             InspectorTest.CSSAgent.createStyleSheet(frameId, viaInspectorStyleSheetCreated.bind(this));
         },
 
@@ -361,7 +361,7 @@ function test()
                     InspectorTest.completeTest();
                     return;
                 }
-                callback(WebInspector.CSSStyleDeclaration.parsePayload(WebInspector.cssModel, payload));
+                callback(WebInspector.CSSStyleDeclaration.parsePayload(InspectorTest.cssModel, payload));
             }
 
             function stylesCallback(error, matchedCSSRules)
@@ -380,7 +380,7 @@ function test()
                 // border-width: 0px;
                 // padding-top: 1px; [d]
 
-                var orm = WebInspector.CSSStyleDeclaration.parsePayload(WebInspector.cssModel, matchedCSSRules[1].rule.style);
+                var orm = WebInspector.CSSStyleDeclaration.parsePayload(InspectorTest.cssModel, matchedCSSRules[1].rule.style);
                 orm.propertyAt(0).setDisabled(true, step1);
 
                 function step1(orm)

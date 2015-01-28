@@ -4,13 +4,13 @@ InspectorTest.preloadPanel("sources");
 
 InspectorTest.startDebuggerTest = function(callback, quiet)
 {
-    console.assert(WebInspector.debuggerModel.debuggerEnabled(), "Debugger has to be enabled");
+    console.assert(InspectorTest.debuggerModel.debuggerEnabled(), "Debugger has to be enabled");
     if (quiet !== undefined)
         InspectorTest._quiet = quiet;
     WebInspector.SourcesPanel.show();
 
-    InspectorTest.addSniffer(WebInspector.debuggerModel, "_pausedScript", InspectorTest._pausedScript, true);
-    InspectorTest.addSniffer(WebInspector.debuggerModel, "_resumedScript", InspectorTest._resumedScript, true);
+    InspectorTest.addSniffer(InspectorTest.debuggerModel, "_pausedScript", InspectorTest._pausedScript, true);
+    InspectorTest.addSniffer(InspectorTest.debuggerModel, "_resumedScript", InspectorTest._resumedScript, true);
     InspectorTest.safeWrap(callback)();
 };
 
@@ -253,7 +253,7 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
         var printed = 0;
         for (var i = 0; i < callFrames.length; i++) {
             var frame = callFrames[i];
-            var script = WebInspector.debuggerModel.scriptForId(frame.location().scriptId);
+            var script = InspectorTest.debuggerModel.scriptForId(frame.location().scriptId);
             var isFramework = WebInspector.BlackboxSupport.isBlackboxedURL(script.sourceURL);
             if (options.dropFrameworkCallFrames && isFramework)
                 continue;
@@ -464,8 +464,8 @@ InspectorTest.setQuiet = function(quiet)
 InspectorTest.queryScripts = function(filter)
 {
     var scripts = [];
-    for (var scriptId in WebInspector.debuggerModel._scripts) {
-        var script = WebInspector.debuggerModel._scripts[scriptId];
+    for (var scriptId in InspectorTest.debuggerModel._scripts) {
+        var script = InspectorTest.debuggerModel._scripts[scriptId];
         if (!filter || filter(script))
             scripts.push(script);
     }

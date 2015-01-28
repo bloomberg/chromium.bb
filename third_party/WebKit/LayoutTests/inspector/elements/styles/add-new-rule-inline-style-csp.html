@@ -48,7 +48,7 @@ function test()
                     InspectorTest.completeTest();
                 } else {
                     dumpProperties(newStyle);
-                    WebInspector.cssModel.setRuleSelector(rule, nodeId, "body", successCallback, failureCallback);
+                    InspectorTest.cssModel.setRuleSelector(rule, nodeId, "body", successCallback, failureCallback);
                 }
             }
 
@@ -71,7 +71,7 @@ function test()
 
         function testModifyInlineStyle(next)
         {
-            WebInspector.cssModel.getInlineStylesAsync(nodeId, stylesCallback);
+            InspectorTest.cssModel.getInlineStylesAsync(nodeId, stylesCallback);
 
             function stylesCallback(inlineStyle)
             {

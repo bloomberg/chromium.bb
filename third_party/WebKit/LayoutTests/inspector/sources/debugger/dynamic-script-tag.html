@@ -13,7 +13,7 @@ var test = function()
         {
             var consoleMessagesCount = 2;
 
-            var messages = WebInspector.consoleModel.messages();
+            var messages = InspectorTest.consoleModel.messages();
             for (var i = 0; i < messages.length; ++i)
                 processMessage(messages[i]);
             checkWhenScriptsLoaded();
@@ -38,7 +38,7 @@ var test = function()
                 }
 
                 InspectorTest.addResult("Both dynamic scripts were loaded.");
-                var scripts = Object.values(WebInspector.debuggerModel.scripts);
+                var scripts = Object.values(InspectorTest.debuggerModel.scripts);
 
                 function filterOutInlineAndStandaloneScripts(script)
                 {
@@ -52,7 +52,7 @@ var test = function()
 
         function testOpenDevToolsThenReload(next)
         {
-            WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, scriptParsed);
+            InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, scriptParsed);
             InspectorTest.addResult("Reloading page.");
             InspectorTest.reloadPage(onPageReloaded);
 
@@ -71,7 +71,7 @@ var test = function()
                     // that the first one that has document url as a sourceURL is inline.
                     InspectorTest.addResult("The first script with document url as a sourceURL to be seen is " + (script.isInlineScript() ? "" : "not ") + "inline script.");
                     InspectorTest.assertTrue(script.isInlineScript(), "Only inline scripts should have document url as a sourceURL.");
-                    WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, scriptParsed);
+                    InspectorTest.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, scriptParsed);
                     if (!--eventsCountBeforeNext)
                         next();            
                 }

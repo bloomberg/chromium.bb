@@ -42,7 +42,7 @@ InspectorTest.evaluateInPage = function(code, callback)
     function mycallback(error, result, wasThrown)
     {
         if (!error)
-            callback(WebInspector.runtimeModel.createRemoteObject(result), wasThrown);
+            callback(InspectorTest.runtimeModel.createRemoteObject(result), wasThrown);
     }
     InspectorTest.RuntimeAgent.evaluate(code, "console", false, mycallback);
 }
@@ -66,7 +66,12 @@ InspectorTest.invokePageFunctionAsync = function(functionName, callback)
         {
             testRunner.evaluateInWebInspector(evalCallbackCallId, "InspectorTest.didInvokePageFunctionAsync(" + callId + ", " + JSON.stringify(result) + ");");
         }
-        eval(functionName + "(" + evalCallback + ")");
+        try {
+            eval(functionName + "(" + evalCallback + ")");
+        } catch(e) {
+            console.error(e);
+            evalCallback(String(e));
+        }
     }
     InspectorTest.evaluateInPage("(" + asyncEvalWrapper.toString() + ")(" + id + ", unescape('" + escape(functionName) + "'))");
 }
@@ -668,14 +673,41 @@ InspectorTest.TimeoutMock.prototype = {
 WebInspector.targetManager.observeTargets({
     targetAdded: function(target)
     {
-        if (!WebInspector.domModel)
-            WebInspector.domModel = target.domModel;
-        if (!WebInspector.consoleModel)
-            WebInspector.consoleModel = target.consoleModel;
-        if (!WebInspector.networkManager)
-            WebInspector.networkManager = target.networkManager;
-        if (!WebInspector.timelineManager)
-            WebInspector.timelineManager = target.timelineManager;
+        if (InspectorTest.CSSAgent)
+            return;
+        InspectorTest.CSSAgent = target.cssAgent();
+        InspectorTest.CanvasAgent = target.canvasAgent();
+        InspectorTest.ConsoleAgent = target.consoleAgent();
+        InspectorTest.DOMAgent = target.domAgent();
+        InspectorTest.DOMDebuggerAgent = target.domdebuggerAgent();
+        InspectorTest.DebuggerAgent = target.debuggerAgent();
+        InspectorTest.HeapProfilerAgent = target.heapProfilerAgent();
+        InspectorTest.InspectorAgent = target.inspectorAgent();
+        InspectorTest.LayerTreeAgent = target.layerTreeAgent();
+        InspectorTest.NetworkAgent = target.networkAgent();
+        InspectorTest.PageAgent = target.pageAgent();
+        InspectorTest.ProfilerAgent = target.profilerAgent();
+        InspectorTest.RuntimeAgent = target.runtimeAgent();
+        InspectorTest.WorkerAgent = target.workerAgent();
+
+        InspectorTest.consoleModel = target.consoleModel;
+        InspectorTest.networkManager = target.networkManager;
+        InspectorTest.resourceTreeModel = target.resourceTreeModel;
+        InspectorTest.networkLog = target.networkLog;
+        InspectorTest.debuggerModel = target.debuggerModel;
+        InspectorTest.runtimeModel = target.runtimeModel;
+        InspectorTest.domModel = target.domModel;
+        InspectorTest.cssModel = target.cssModel;
+        InspectorTest.workerManager = target.workerManager;
+        InspectorTest.powerProfiler = target.powerProfiler;
+        InspectorTest.databaseModel = target.databaseModel;
+        InspectorTest.domStorageModel = target.domStorageModel;
+        InspectorTest.cpuProfilerModel = target.cpuProfilerModel;
+        InspectorTest.heapProfilerModel = target.heapProfilerModel;
+        InspectorTest.indexedDBModel = target.indexedDBModel;
+        InspectorTest.layerTreeModel = target.layerTreeModel;
+        InspectorTest.animationModel = target.animationModel;
+        InspectorTest.serviceWorkerCacheModel = target.serviceWorkerCacheModel;
     },
 
     targetRemoved: function(target) { }
@@ -687,21 +719,6 @@ InspectorTest.preloadPanel = function(panelName)
 {
     InspectorTest._panelsToPreload.push(panelName);
 }
-
-InspectorTest.CSSAgent = WebInspector.targetManager.mainTarget().cssAgent();
-InspectorTest.CanvasAgent = WebInspector.targetManager.mainTarget().canvasAgent();
-InspectorTest.ConsoleAgent = WebInspector.targetManager.mainTarget().consoleAgent();
-InspectorTest.DOMAgent = WebInspector.targetManager.mainTarget().domAgent();
-InspectorTest.DOMDebuggerAgent = WebInspector.targetManager.mainTarget().domdebuggerAgent();
-InspectorTest.DebuggerAgent = WebInspector.targetManager.mainTarget().debuggerAgent();
-InspectorTest.HeapProfilerAgent = WebInspector.targetManager.mainTarget().heapProfilerAgent();
-InspectorTest.InspectorAgent = WebInspector.targetManager.mainTarget().inspectorAgent();
-InspectorTest.LayerTreeAgent = WebInspector.targetManager.mainTarget().layerTreeAgent();
-InspectorTest.NetworkAgent = WebInspector.targetManager.mainTarget().networkAgent();
-InspectorTest.PageAgent = WebInspector.targetManager.mainTarget().pageAgent();
-InspectorTest.ProfilerAgent = WebInspector.targetManager.mainTarget().profilerAgent();
-InspectorTest.RuntimeAgent = WebInspector.targetManager.mainTarget().runtimeAgent();
-InspectorTest.WorkerAgent = WebInspector.targetManager.mainTarget().workerAgent();
 
 };  // initialize_InspectorTest
 

@@ -24,7 +24,7 @@ InspectorTest.setUpTestSuite = function(next)
 
         for (var key in WebInspector.DOMModel.Events) {
             var eventName = WebInspector.DOMModel.Events[key];
-            WebInspector.domModel.addEventListener(eventName, InspectorTest.recordEvent.bind(InspectorTest, eventName));
+            InspectorTest.domModel.addEventListener(eventName, InspectorTest.recordEvent.bind(InspectorTest, eventName));
         }
 
         next();
@@ -74,7 +74,7 @@ InspectorTest.setOuterHTMLUseUndo = function(newText, next)
     function bringBack()
     {
         InspectorTest.addResult("\nBringing things back\n");
-        WebInspector.domModel.undo(InspectorTest._dumpOuterHTML.bind(InspectorTest, true, next));
+        InspectorTest.domModel.undo(InspectorTest._dumpOuterHTML.bind(InspectorTest, true, next));
     }
 }
 

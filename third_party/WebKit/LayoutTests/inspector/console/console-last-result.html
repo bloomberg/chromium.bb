@@ -23,7 +23,7 @@ function test()
 
             function step1()
             {
-                WebInspector.consoleModel.requestClearMessages();
+                InspectorTest.consoleModel.requestClearMessages();
                 InspectorTest.runAfterPendingDispatches(step2);
             }
 

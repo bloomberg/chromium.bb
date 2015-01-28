@@ -7,12 +7,12 @@ function test()
 {
     var indexedDBModel = new WebInspector.IndexedDBModel(WebInspector.targetManager.mainTarget());
     indexedDBModel.enable();
-    var mainFrameId = WebInspector.resourceTreeModel.mainFrame.id;
+    var mainFrameId = InspectorTest.resourceTreeModel.mainFrame.id;
 
     function dumpDatabaseNames()
     {
         InspectorTest.addResult("Dumping database names:");
-        var securityOrigins = WebInspector.resourceTreeModel.securityOrigins();
+        var securityOrigins = InspectorTest.resourceTreeModel.securityOrigins();
         var securityOrigin = securityOrigins[0];
         var names = indexedDBModel._databaseNamesBySecurityOrigin[securityOrigin];
         for (var i = 0; i < names.length; ++i)

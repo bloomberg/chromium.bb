@@ -36,7 +36,7 @@ function test()
             InspectorTest.dumpElementsTree(containerNode);
             step4();
         }
-        WebInspector.domModel.undo(callback);
+        InspectorTest.domModel.undo(callback);
     }
 
     function step4()
@@ -47,7 +47,7 @@ function test()
             InspectorTest.dumpElementsTree(containerNode);
             InspectorTest.completeTest();
         }
-        WebInspector.domModel.undo(callback);
+        InspectorTest.domModel.undo(callback);
     }
 }
 

@@ -18,7 +18,7 @@ function createCraftedIframe()
 function test()
 {
     for (var eventName in WebInspector.ResourceTreeModel.EventTypes)
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes[eventName], eventHandler.bind(this, eventName));
+        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes[eventName], eventHandler.bind(this, eventName));
 
     var frames = [];
     function frameId(frame) {

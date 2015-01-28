@@ -53,9 +53,9 @@ function test()
             break;
         }
 
-        var resource = new WebInspector.Resource(WebInspector.resourceTreeModel.target(), null, url, documentURL, frameId, loaderId, type, mimeType);
+        var resource = new WebInspector.Resource(InspectorTest.resourceTreeModel.target(), null, url, documentURL, frameId, loaderId, type, mimeType);
         mockContentsMap[url] = content;
-        WebInspector.resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, resource);
+        InspectorTest.resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, resource);
 
         return resource;
     }
@@ -66,7 +66,7 @@ function test()
         var resourceId = ++lastResourceId + "";
         var url = documentURL + "/" + resourceId;
         var script = InspectorTest.createScriptMock(url, 0, 0, false, content);
-        WebInspector.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ParsedScriptSource, script);
+        InspectorTest.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ParsedScriptSource, script);
     }
 
     function finishResource(resource)
@@ -84,8 +84,8 @@ function test()
         target.debuggerModel = new WebInspector.SDKModel(WebInspector.DebuggerModel, target);
         target.debuggerModel._registerScript = function() {};
         target.cssModel = new WebInspector.CSSStyleModel(target);
-        WebInspector.resourceTreeModel = target.resourceTreeModel;
-        WebInspector.debuggerModel = target.debuggerModel;
+        InspectorTest.resourceTreeModel = target.resourceTreeModel;
+        InspectorTest.debuggerModel = target.debuggerModel;
         InspectorTest.createWorkspace();
     }
 

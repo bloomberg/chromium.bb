@@ -35,7 +35,7 @@ function test()
 {
     function forEachHeaderMatchingURL(url, handler)
     {
-        var headers = WebInspector.cssModel.styleSheetHeaders();
+        var headers = InspectorTest.cssModel.styleSheetHeaders();
         for (var i = 0; i < headers.length; ++i) {
             if (headers[i].sourceURL.indexOf(url) !== -1)
                 handler(headers[i]);

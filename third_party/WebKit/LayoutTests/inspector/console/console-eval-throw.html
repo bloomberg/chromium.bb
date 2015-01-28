@@ -8,12 +8,12 @@ function test()
     function dumpMessages(next, message)
     {
         InspectorTest.dumpConsoleMessages();
-        WebInspector.consoleModel.requestClearMessages();
+        InspectorTest.consoleModel.requestClearMessages();
         
-        WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
+        InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
 
         function afterCleared() {
-            WebInspector.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
+            InspectorTest.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
             next();
         }
     }

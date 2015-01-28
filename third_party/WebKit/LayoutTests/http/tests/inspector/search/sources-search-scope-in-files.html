@@ -18,7 +18,7 @@ function test()
 
     function loadResource(name)
     {
-        var urlPrefix = WebInspector.resourceTreeModel.inspectedPageURL().substr(0, WebInspector.resourceTreeModel.inspectedPageURL().lastIndexOf("/") + 1);
+        var urlPrefix = InspectorTest.resourceTreeModel.inspectedPageURL().substr(0, InspectorTest.resourceTreeModel.inspectedPageURL().lastIndexOf("/") + 1);
         var url = urlPrefix + "resources/" + name;
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, false);

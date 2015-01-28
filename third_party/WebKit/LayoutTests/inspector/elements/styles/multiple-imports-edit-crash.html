@@ -14,13 +14,13 @@
 
 function test()
 {
-    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded, this);
-    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded, this);
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
     InspectorTest.nodeWithId("inspected", nodeFound);
 
     function nodeFound(node)
     {
-        WebInspector.cssModel.getMatchedStylesAsync(node.id, true, false, matchedStylesCallback);
+        InspectorTest.cssModel.getMatchedStylesAsync(node.id, true, false, matchedStylesCallback);
     }
 
     var styleSheetId;

@@ -35,7 +35,7 @@ function test()
     {
         divNode = node;
         WebInspector.panels.elements._setPseudoClassForNode(divNode, "hover", true);
-        WebInspector.cssModel.forcePseudoState(divNode, "active", true);
+        InspectorTest.cssModel.forcePseudoState(divNode, "active", true);
         InspectorTest.selectNodeAndWaitForStyles("div", divSelected1);
     }
 

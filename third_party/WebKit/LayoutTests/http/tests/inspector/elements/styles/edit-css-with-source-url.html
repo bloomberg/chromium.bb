@@ -53,13 +53,13 @@ function test()
             {
                 dumpUISourceCodeContents();
                 InspectorTest.addResult("Loading stylesheet with sourceURL:");
-                WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetLoaded);
+                InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetLoaded);
                 InspectorTest.evaluateInPage("loadStylesheet()");
             }
   
             function stylesheetLoaded()
             {
-                WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetLoaded);
+                InspectorTest.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetLoaded);
                 InspectorTest.addResult("Stylesheet loaded.");
                 InspectorTest.selectNodeAndWaitForStyles("inspected", nodeSelected);
             }

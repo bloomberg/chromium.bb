@@ -52,7 +52,7 @@ function test()
             if (!nodeIds[i])
                 InspectorTest.addResult("no results");
             else {
-                var node = WebInspector.domModel.nodeForId(nodeIds[i]);
+                var node = InspectorTest.domModel.nodeForId(nodeIds[i]);
                 InspectorTest.addResult("node id: " + node.getAttribute("id"));
             }
         }

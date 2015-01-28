@@ -12,7 +12,7 @@ function test()
 
     function fetchStyleSheet()
     {
-        var styleSheets = WebInspector.cssModel.allStyleSheets();
+        var styleSheets = InspectorTest.cssModel.allStyleSheets();
         for (var i = 0; i < styleSheets.length; ++i) {
             var styleSheetHeader = styleSheets[i];
             if (styleSheetHeader.sourceURL.indexOf("different-rule-types.css") === -1)

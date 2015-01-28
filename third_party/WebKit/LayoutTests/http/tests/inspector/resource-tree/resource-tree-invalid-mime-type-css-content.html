@@ -12,7 +12,7 @@ function test()
 
     function step1()
     {
-        WebInspector.resourceTreeModel.forAllResources(findCSSResource);
+        InspectorTest.resourceTreeModel.forAllResources(findCSSResource);
         function findCSSResource(resource)
         {
             if (resource.url.indexOf("stylesheet-text-plain.php") !== -1)

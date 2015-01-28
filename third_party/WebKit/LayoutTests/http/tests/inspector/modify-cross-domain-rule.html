@@ -18,7 +18,7 @@ function test()
 
             function selectCallback()
             {
-                var idToDOMNode = WebInspector.domModel._idToDOMNode;
+                var idToDOMNode = InspectorTest.domModel._idToDOMNode;
                 for (var id in idToDOMNode) {
                     node = idToDOMNode[id];
                     if (node.getAttribute && node.getAttribute("id") === "inspected") {
@@ -32,7 +32,7 @@ function test()
                     return;
                 }
 
-                WebInspector.cssModel.getMatchedStylesAsync(nodeId, false, false, callback);
+                InspectorTest.cssModel.getMatchedStylesAsync(nodeId, false, false, callback);
             }
 
             function callback(rules)
@@ -65,7 +65,7 @@ function test()
                     InspectorTest.completeTest();
                 } else {
                     dumpProperties(newStyle);
-                    WebInspector.cssModel.setRuleSelector(rule, nodeId, "body", successCallback, failureCallback);
+                    InspectorTest.cssModel.setRuleSelector(rule, nodeId, "body", successCallback, failureCallback);
                 }
             }
 

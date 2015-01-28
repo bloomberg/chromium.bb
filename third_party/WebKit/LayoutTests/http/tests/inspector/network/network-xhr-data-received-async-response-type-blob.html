@@ -17,7 +17,7 @@ function test()
 
     function dataReceived(requestId, time, dataLength, encodedDataLength)
     {
-        var request = WebInspector.networkLog.requestForId(requestId);
+        var request = InspectorTest.networkLog.requestForId(requestId);
         if (/resource\.php/.exec(request.url)) {
             InspectorTest.addResult("Received data for resource.php");
             InspectorTest.addResult("SUCCESS");

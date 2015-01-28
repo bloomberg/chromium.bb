@@ -22,7 +22,7 @@ function test()
         }
         if (result.type === "error")
             testController.notifyDone("Exception:" + result);
-        var objectProxy = WebInspector.runtimeModel.createRemoteObject(result);
+        var objectProxy = InspectorTest.runtimeModel.createRemoteObject(result);
         objectProxy.getOwnProperties(getPropertiesCallback);
     }
 

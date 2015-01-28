@@ -30,7 +30,7 @@ var test = function()
         watchExpressionsSection.watchExpressions.push("windowa.document");
         watchExpressionsSection.update();
 
-        var testName = WebInspector.resourceTreeModel.inspectedPageURL();
+        var testName = InspectorTest.resourceTreeModel.inspectedPageURL();
         testName = testName.substring(testName.lastIndexOf('/') + 1);
         InspectorTest.showScriptSource(testName, didShowScriptSource);
     }

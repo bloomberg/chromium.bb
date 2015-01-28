@@ -20,8 +20,8 @@ function test()
 {
     function callback()
     {
-        WebInspector.domStorageModel.enable();
-        var storages = WebInspector.domStorageModel.storages();
+        InspectorTest.domStorageModel.enable();
+        var storages = InspectorTest.domStorageModel.storages();
         for (var i = 0; i < storages.length; ++i) {
             InspectorTest.addResult("SecurityOrigin: " + storages[i].securityOrigin);
             InspectorTest.addResult("IsLocalStorage: " + storages[i].isLocalStorage);

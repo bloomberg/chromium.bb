@@ -103,7 +103,7 @@ function test()
                 InspectorTest.addResult("======== Appended with text=========");
                 InspectorTest.dumpElementsTree(containerNode);
                 var newNode = InspectorTest.expandedNodeWithId("child-with-text");
-                if (WebInspector.domModel.nodeForId(newNode.firstChild.id))
+                if (InspectorTest.domModel.nodeForId(newNode.firstChild.id))
                     InspectorTest.addResult("Success: child text is bound");
                 else
                     InspectorTest.addResult("Failed: child text is not bound");
@@ -124,7 +124,7 @@ function test()
             {
                 InspectorTest.dumpElementsTree(containerNode);
                 var newNode = InspectorTest.expandedNodeWithId("child3");
-                if (WebInspector.domModel.nodeForId(newNode.firstChild.id))
+                if (InspectorTest.domModel.nodeForId(newNode.firstChild.id))
                     InspectorTest.addResult("Success: child text is bound");
                 else
                     InspectorTest.addResult("Failed: child text is not bound");
