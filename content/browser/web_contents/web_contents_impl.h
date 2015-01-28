@@ -752,6 +752,10 @@ class CONTENT_EXPORT WebContentsImpl
                          RenderFrameHost* render_frame_host,
                          const IPC::Message& message);
 
+  // Checks whether render_frame_message_source_ is set to non-null value,
+  // otherwise it terminates the main frame renderer process.
+  bool HasValidFrameSource();
+
   // IPC message handlers.
   void OnThemeColorChanged(SkColor theme_color);
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
