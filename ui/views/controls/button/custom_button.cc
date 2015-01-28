@@ -273,7 +273,10 @@ void CustomButton::ShowContextMenu(const gfx::Point& p,
 }
 
 void CustomButton::OnDragDone() {
-  SetState(STATE_NORMAL);
+  // Only reset the state to normal if the button isn't currently disabled
+  // (since disabled buttons may still be able to be dragged).
+  if (state_ != STATE_DISABLED)
+    SetState(STATE_NORMAL);
 }
 
 void CustomButton::GetAccessibleState(ui::AXViewState* state) {
