@@ -6,61 +6,38 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_INVALIDATOR_H_
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
 
 namespace invalidation {
 class InvalidationService;
-class TiclInvalidationService;
 }
 
 namespace policy {
 
 class CloudPolicyInvalidator;
 
-// This class provides invalidations for device policy via a
-// |CloudPolicyInvalidator| backed by an |InvalidationService|. If an affiliated
-// user with a connected invalidation service is logged in, that service is used
-// to conserve server resources. If there are no logged-in users matching these
-// criteria, a device-global |TiclInvalidationService| is spun up.
-// The class monitors the status of the invalidation services and switches
-// between them whenever the service currently in use disconnects or the
-// device-global invalidation service can be replaced with another service that
-// just connected.
-class DeviceCloudPolicyInvalidator : public content::NotificationObserver {
+// This class manages the lifetime of a device-global |CloudPolicyInvalidator|
+// that handles device policy invalidations. It relies on an
+// |AffiliatedInvalidationServiceProvider| to provide it with access to a shared
+// |InvalidationService| to back the |CloudPolicyInvalidator|. Whenever the
+// shared |InvalidationService| changes, the |CloudPolicyInvalidator| destroyed
+// and re-created.
+class DeviceCloudPolicyInvalidator
+    : public AffiliatedInvalidationServiceProvider::Consumer {
  public:
-  DeviceCloudPolicyInvalidator();
+  explicit DeviceCloudPolicyInvalidator(
+      AffiliatedInvalidationServiceProvider* invalidation_service_provider);
   ~DeviceCloudPolicyInvalidator() override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // AffiliatedInvalidationServiceProvider::Consumer:
+  void OnInvalidationServiceSet(
+      invalidation::InvalidationService* invalidation_service) override;
+
+  CloudPolicyInvalidator* GetInvalidatorForTest() const;
 
  private:
-  friend class DeviceCloudPolicyInvalidatorTest;
-
-  // Helper that monitors the status of a single |InvalidationService|.
-  class InvalidationServiceObserver;
-
-  // Status updates received from |InvalidationServiceObserver|s.
-  void OnInvalidationServiceConnected(
-      invalidation::InvalidationService* invalidation_service);
-  void OnInvalidationServiceDisconnected(
-      invalidation::InvalidationService* invalidation_service);
-
-  // Attempt to create a |CloudPolicyInvalidator| backed by a connected
-  // invalidation service. If no connected invalidation service is available for
-  // use, a |CloudPolicyInvalidator| will be created later when a connected
-  // service becomes available.
-  // Further ensures that a device-global invalidation service is running iff
-  // there is no other connected service available for use.
-  void TryToCreateInvalidator();
-
   // Create a |CloudPolicyInvalidator| backed by the |invalidation_service|.
   void CreateInvalidator(
       invalidation::InvalidationService* invalidation_service);
@@ -68,30 +45,12 @@ class DeviceCloudPolicyInvalidator : public content::NotificationObserver {
   // Destroy the current |CloudPolicyInvalidator|, if any.
   void DestroyInvalidator();
 
-  // Destroy the device-global invalidation service, if any.
-  void DestroyDeviceInvalidationService();
-
-  content::NotificationRegistrar registrar_;
-
-  // Device-global invalidation service.
-  scoped_ptr<invalidation::TiclInvalidationService>
-      device_invalidation_service_;
-
-  // State observer for the device-global invalidation service.
-  scoped_ptr<InvalidationServiceObserver> device_invalidation_service_observer_;
-
-  // State observers for logged-in users' invalidation services.
-  ScopedVector<InvalidationServiceObserver>
-      profile_invalidation_service_observers_;
-
-  // The invalidation service backing the current |CloudPolicyInvalidator|. NULL
-  // if no |CloudPolicyInvalidator| exists.
-  invalidation::InvalidationService* invalidation_service_;
+  AffiliatedInvalidationServiceProvider* invalidation_service_provider_;
 
   // The highest invalidation version that was handled already.
   int64 highest_handled_invalidation_version_;
 
-  // The current |CloudPolicyInvalidator|. NULL if no connected invalidation
+  // The current |CloudPolicyInvalidator|. nullptr if no connected invalidation
   // service is available.
   scoped_ptr<CloudPolicyInvalidator> invalidator_;
 

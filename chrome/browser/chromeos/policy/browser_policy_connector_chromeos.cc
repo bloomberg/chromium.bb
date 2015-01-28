@@ -192,7 +192,8 @@ void BrowserPolicyConnectorChromeOS::Init(
               content::BrowserThread::IO),
           request_context));
   device_local_account_policy_service_->Connect(device_management_service());
-  device_cloud_policy_invalidator_.reset(new DeviceCloudPolicyInvalidator);
+  device_cloud_policy_invalidator_.reset(new DeviceCloudPolicyInvalidator(
+      affiliated_invalidation_service_provider_.get()));
 
   SetTimezoneIfPolicyAvailable();
 
@@ -212,18 +213,9 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
   // the DeviceOAuth2TokenService that is destroyed before Shutdown() is called.
   if (affiliated_invalidation_service_provider_)
     affiliated_invalidation_service_provider_->Shutdown();
-
-  // Let the |device_cloud_policy_invalidator_| unregister itself as an
-  // observer of per-Profile InvalidationServices and the device-global
-  // invalidation::TiclInvalidationService it may have created as an observer of
-  // the DeviceOAuth2TokenService that is destroyed before Shutdown() is called.
-  device_cloud_policy_invalidator_.reset();
 }
 
 void BrowserPolicyConnectorChromeOS::Shutdown() {
-  // Verify that PreShutdown() has been called first.
-  DCHECK(!device_cloud_policy_invalidator_);
-
   network_configuration_updater_.reset();
 
   if (device_local_account_policy_service_)

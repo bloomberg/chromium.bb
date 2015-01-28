@@ -94,6 +94,10 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
     return highest_handled_invalidation_version_;
   }
 
+  invalidation::InvalidationService* invalidation_service_for_test() const {
+    return invalidation_service_;
+  }
+
   // syncer::InvalidationHandler:
   void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
   void OnIncomingInvalidation(
