@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class FilterData final : public NoBaseWillBeGarbageCollected<FilterData> {
+class FilterData final : public NoBaseWillBeGarbageCollectedFinalized<FilterData> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<FilterData> create()
