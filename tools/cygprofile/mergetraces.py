@@ -101,7 +101,7 @@ def Convert (call_lines, startAddr, endAddr):
      list of calls as tuples (sec, usec, pid:tid, callee)
   """
   converted_calls = []
-  call_addresses = []
+  call_addresses = set()
   for fields in call_lines:
     secs = int (fields[0])
     usecs = int (fields[1])
@@ -111,7 +111,7 @@ def Convert (call_lines, startAddr, endAddr):
     if (callee >= startAddr and callee < endAddr
         and (not callee in call_addresses)):
       converted_calls.append((secs, usecs, fields[2], (callee - startAddr)))
-      call_addresses.append(callee)
+      call_addresses.add(callee)
   return converted_calls
 
 def Timestamp(trace_entry):
