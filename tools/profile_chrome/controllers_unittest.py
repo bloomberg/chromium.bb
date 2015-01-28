@@ -18,6 +18,7 @@ class BaseControllerTest(unittest.TestCase):
     self.package_info = profiler.GetSupportedBrowsers()[self.browser]
     self.device = device_utils.DeviceUtils(devices[0])
 
+    self.device.old_interface.CloseApplication(self.package_info.package)
     self.device.StartActivity(
         intent.Intent(activity=self.package_info.activity,
                       package=self.package_info.package),
