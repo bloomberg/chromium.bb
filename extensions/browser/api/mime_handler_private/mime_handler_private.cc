@@ -60,6 +60,10 @@ void MimeHandlerServiceImpl::GetStreamInfo(
 
 void MimeHandlerServiceImpl::AbortStream(
     const mojo::Callback<void()>& callback) {
+  if (!stream_) {
+    callback.Run();
+    return;
+  }
   stream_->Abort(base::Bind(&MimeHandlerServiceImpl::OnStreamClosed,
                             weak_factory_.GetWeakPtr(), callback));
 }

@@ -59,6 +59,7 @@
         'browser/api/declarative_webrequest/webrequest_condition_unittest.cc',
         'browser/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc',
         'browser/api/idle/idle_api_unittest.cc',
+        'browser/api/mime_handler_private/mime_handler_private_unittest.cc',
         'browser/api/power/power_api_unittest.cc',
         'browser/api/sockets_tcp/sockets_tcp_api_unittest.cc',
         'browser/api/sockets_udp/sockets_udp_api_unittest.cc',

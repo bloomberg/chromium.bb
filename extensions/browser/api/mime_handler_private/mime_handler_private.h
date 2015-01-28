@@ -10,6 +10,7 @@
 
 namespace extensions {
 class StreamContainer;
+class MimeHandlerServiceImplTest;
 
 class MimeHandlerServiceImpl
     : public mojo::InterfaceImpl<mime_handler::MimeHandlerService> {
@@ -19,6 +20,8 @@ class MimeHandlerServiceImpl
       mojo::InterfaceRequest<mime_handler::MimeHandlerService> request);
 
  private:
+  friend class MimeHandlerServiceImplTest;
+
   explicit MimeHandlerServiceImpl(
       base::WeakPtr<StreamContainer> stream_container);
   ~MimeHandlerServiceImpl() override;

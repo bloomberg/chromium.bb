@@ -41,13 +41,14 @@ StreamContainer::StreamContainer(scoped_ptr<content::StreamInfo> stream,
       handler_url_(handler_url),
       extension_id_(extension_id),
       weak_factory_(this) {
+  DCHECK(stream_);
 }
 
 StreamContainer::~StreamContainer() {
 }
 
 void StreamContainer::Abort(const base::Closure& callback) {
-  if (!stream_) {
+  if (!stream_->handle) {
     callback.Run();
     return;
   }
