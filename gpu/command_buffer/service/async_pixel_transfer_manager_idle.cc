@@ -5,10 +5,10 @@
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_idle.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_synthetic_delay.h"
 #include "ui/gl/scoped_binders.h"
 
 namespace gpu {

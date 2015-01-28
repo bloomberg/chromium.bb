@@ -5,6 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_TRACE_EVENT_H_
 #define GPU_COMMAND_BUFFER_COMMON_TRACE_EVENT_H_
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_TRACE_EVENT_H_

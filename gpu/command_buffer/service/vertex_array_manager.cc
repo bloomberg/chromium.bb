@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/vertex_array_manager.h"
-#include "base/debug/trace_event.h"
+
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"

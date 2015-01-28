@@ -7,9 +7,9 @@
 #include <deque>
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "ui/gl/gl_version_info.h"

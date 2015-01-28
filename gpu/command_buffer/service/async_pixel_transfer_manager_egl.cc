@@ -8,13 +8,13 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_synthetic_delay.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"

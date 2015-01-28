@@ -10,10 +10,10 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 
 namespace gpu {

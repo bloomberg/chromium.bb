@@ -5,7 +5,7 @@
 #include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_idle.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_share_group.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_stub.h"
