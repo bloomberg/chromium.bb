@@ -113,6 +113,7 @@ var checkJsonpAuth = function(username, password, cookie, url, data) {
 };
 var checkJsonpError = checkJsonpResult.bind(this, 'error');
 var checkJsonpSuccess = checkJsonpResult.bind(this, 'success');
+var checkJsonpNoRedirect = checkJsonpResult.bind(this, 'noredirect');
 var hasCustomHeader =
   checkJsonpHeader.bind(this, 'x-serviceworker-test', 'test');
 var hasCustomHeader2 = function(url, data) {

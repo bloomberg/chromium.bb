@@ -5,7 +5,9 @@ if (isset($_GET['Status'])) {
   header ("HTTP/1.1 302");
 }
 $url = $_GET['Redirect'];
-header("Location: $url");
+if ($url != "noLocation") {
+  header("Location: $url");
+}
 if (isset($_GET['ACAOrigin'])) {
   $origins = explode(',', $_GET['ACAOrigin']);
   for ($i = 0; $i < sizeof($origins); ++$i)
@@ -19,4 +21,7 @@ if (isset($_GET['ACACredentials']))
     header("Access-Control-Allow-Credentials: {$_GET['ACACredentials']}");
 if (isset($_GET['ACEHeaders']))
     header("Access-Control-Expose-Headers: {$_GET['ACEHeaders']}");
+if (isset($_GET['NoRedirectTest'])) {
+    echo "report({jsonpResult:'noredirect'});";
+}
 ?>
