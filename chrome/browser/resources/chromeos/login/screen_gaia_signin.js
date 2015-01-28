@@ -289,6 +289,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (data.localizedStrings)
         params.localizedStrings = data.localizedStrings;
 
+      if (this.isWebviewSignin) {
+        data.useEmbedded = false;
+        params.gaiaPath = 'ChromeOsEmbeddedSetup';
+      }
+
       if (data.useEmbedded)
         params.gaiaPath = 'EmbeddedSignIn';
 
