@@ -56,8 +56,10 @@ public:
 private:
     InspectorAnimationAgent(InspectorDOMAgent*);
 
-    PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimationNode(AnimationNode*);
-    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(AnimationPlayer&, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
+    typedef TypeBuilder::Animation::AnimationPlayer::Type::Enum AnimationType;
+
+    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(AnimationPlayer&);
+    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(AnimationPlayer&, AnimationType, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> > buildArrayForAnimationPlayers(Element&, const WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> >);
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;

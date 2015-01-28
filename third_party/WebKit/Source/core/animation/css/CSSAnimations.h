@@ -53,6 +53,7 @@ public:
     CSSAnimations();
 
     const AtomicString getAnimationNameForInspector(const AnimationPlayer&);
+    bool isTransitionAnimationForInspector(const AnimationPlayer&) const;
 
     static const StylePropertyShorthand& animatableProperties();
     static bool isAllowedAnimation(CSSPropertyID);
