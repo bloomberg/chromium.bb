@@ -271,7 +271,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
   // Keep track of the tilings that were used so that tilings that are
   // unused can be considered for removal.
-  std::vector<PictureLayerTiling*> seen_tilings;
+  last_append_quads_tilings_.clear();
 
   // Ignore missing tiles outside of viewport for tile priority. This is
   // normally the same as draw viewport but can be independently overridden by
@@ -398,8 +398,10 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     if (iter.resolution() != LOW_RESOLUTION)
       only_used_low_res_last_append_quads_ = false;
 
-    if (seen_tilings.empty() || seen_tilings.back() != iter.CurrentTiling())
-      seen_tilings.push_back(iter.CurrentTiling());
+    if (last_append_quads_tilings_.empty() ||
+        last_append_quads_tilings_.back() != iter.CurrentTiling()) {
+      last_append_quads_tilings_.push_back(iter.CurrentTiling());
+    }
   }
 
   if (missing_tile_count) {
@@ -416,7 +418,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
   // that this is at the expense of doing cause more frequent re-painting. A
   // better scheme would be to maintain a tighter visible_content_rect for the
   // finer tilings.
-  CleanUpTilingsOnActiveLayer(seen_tilings);
+  CleanUpTilingsOnActiveLayer(last_append_quads_tilings_);
 }
 
 bool PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
@@ -437,6 +439,14 @@ bool PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
     return false;
   }
 
+  // Remove any non-ideal tilings that were not used last time we generated
+  // quads to save memory and processing time. Note that pending tree should
+  // only have one or two tilings (high and low res), so only clean up the
+  // active layer. This cleans it up here in case AppendQuads didn't run.
+  // If it did run, this would not remove any additional tilings.
+  if (GetTree() == ACTIVE_TREE)
+    CleanUpTilingsOnActiveLayer(last_append_quads_tilings_);
+
   UpdateIdealScales();
 
   if (!raster_contents_scale_ || ShouldAdjustRasterScale()) {
@@ -455,7 +465,6 @@ bool PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
 
   if (draw_transform_is_animating())
     raster_source_->SetShouldAttemptToUseDistanceFieldText();
-
   return UpdateTilePriorities(occlusion_in_content_space);
 }
 
@@ -997,7 +1006,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
 }
 
 void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
-    std::vector<PictureLayerTiling*> used_tilings) {
+    const std::vector<PictureLayerTiling*>& used_tilings) {
   DCHECK(layer_tree_impl()->IsActiveTree());
   if (tilings_->num_tilings() == 0)
     return;

@@ -121,6 +121,14 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   void ResetAllTilesPriorities();
   PictureLayerTilingSet* GetTilings() { return tilings_.get(); }
 
+  // Add the given tiling as a "used" tiling during AppendQuads. This ensures
+  // that future calls to UpdateTiles don't delete the tiling.
+  void MarkAllTilingsUsed() {
+    last_append_quads_tilings_.clear();
+    for (size_t i = 0; i < tilings_->num_tilings(); ++i)
+      last_append_quads_tilings_.push_back(tilings_->tiling_at(i));
+  }
+
   size_t release_resources_count() const { return release_resources_count_; }
   void reset_release_resources_count() { release_resources_count_ = 0; }
 

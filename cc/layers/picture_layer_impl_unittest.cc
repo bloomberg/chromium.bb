@@ -793,6 +793,10 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
   // Add a non-shared tiling on the active tree.
   PictureLayerTiling* tiling = active_layer_->AddTiling(3.f);
   tiling->CreateAllTilesForTesting();
+
+  // Ensure UpdateTiles won't remove any tilings.
+  active_layer_->MarkAllTilingsUsed();
+
   // Then setup a new pending tree and activate it.
   SetupTreesWithFixedTileSize(pending_pile, active_pile, gfx::Size(50, 50),
                               layer_invalidation);
@@ -1076,6 +1080,9 @@ TEST_F(PictureLayerImplTest, PinchGestureTilings) {
   EXPECT_BOTH_EQ(tilings()->tiling_at(1)->contents_scale(),
                  2.f * low_res_factor);
 
+  // Ensure UpdateTiles won't remove any tilings.
+  active_layer_->MarkAllTilingsUsed();
+
   // Start a pinch gesture.
   host_impl_.PinchGestureBegin();
 
@@ -1089,6 +1096,9 @@ TEST_F(PictureLayerImplTest, PinchGestureTilings) {
                   active_layer_->tilings()->tiling_at(1)->contents_scale());
   EXPECT_FLOAT_EQ(2.0f * low_res_factor,
                   active_layer_->tilings()->tiling_at(2)->contents_scale());
+
+  // Ensure UpdateTiles won't remove any tilings.
+  active_layer_->MarkAllTilingsUsed();
 
   // Zoom out further, close to our low-res scale factor. We should
   // use that tiling as high-res, and not create a new tiling.
@@ -1126,6 +1136,9 @@ TEST_F(PictureLayerImplTest, SnappedTilingDuringZoom) {
   EXPECT_FLOAT_EQ(0.0625f,
                   active_layer_->tilings()->tiling_at(1)->contents_scale());
 
+  // Ensure UpdateTiles won't remove any tilings.
+  active_layer_->MarkAllTilingsUsed();
+
   // Start a pinch gesture.
   host_impl_.PinchGestureBegin();
 
@@ -1139,6 +1152,9 @@ TEST_F(PictureLayerImplTest, SnappedTilingDuringZoom) {
                   active_layer_->tilings()->tiling_at(1)->contents_scale());
   EXPECT_FLOAT_EQ(0.0625,
                   active_layer_->tilings()->tiling_at(2)->contents_scale());
+
+  // Ensure UpdateTiles won't remove any tilings.
+  active_layer_->MarkAllTilingsUsed();
 
   // Zoom out further, close to our low-res scale factor. We should
   // use that tiling as high-res, and not create a new tiling.
@@ -1179,6 +1195,11 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   EXPECT_EQ(2u, active_layer_->tilings()->num_tilings());
   EXPECT_EQ(1.f, active_layer_->HighResTiling()->contents_scale());
 
+  // Ensure UpdateTiles won't remove any tilings. Note this is unrelated to
+  // |used_tilings| variable, and it's here only to ensure that active_layer_
+  // won't remove tilings before the test has a chance to verify behavior.
+  active_layer_->MarkAllTilingsUsed();
+
   // We only have ideal tilings, so they aren't removed.
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
@@ -1210,6 +1231,9 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   EXPECT_FLOAT_EQ(
       1.f * low_res_factor,
       active_layer_->tilings()->tiling_at(3)->contents_scale());
+
+  // Ensure UpdateTiles won't remove any tilings.
+  active_layer_->MarkAllTilingsUsed();
 
   // Mark the non-ideal tilings as used. They won't be removed.
   used_tilings.clear();
@@ -1302,6 +1326,9 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
   EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), low_res_factor);
   EXPECT_BOTH_EQ(num_tilings(), 2u);
+
+  // Ensure UpdateTiles won't remove any tilings.
+  active_layer_->MarkAllTilingsUsed();
 
   // Page scale animation, new high res, but no low res. We still have
   // a tiling at the previous scale, it's just not marked as low res on the
@@ -3769,6 +3796,11 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   SetContentsScaleOnBothLayers(scale, device_scale, page_scale, 1.f, false);
   ASSERT_EQ(1u, active_layer_->tilings()->num_tilings());
 
+  // Ensure UpdateTiles won't remove any tilings. Note this is unrelated to
+  // |used_tilings| variable, and it's here only to ensure that active_layer_
+  // won't remove tilings before the test has a chance to verify behavior.
+  active_layer_->MarkAllTilingsUsed();
+
   // We only have ideal tilings, so they aren't removed.
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
@@ -3796,6 +3828,9 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(1.f,
                   active_layer_->tilings()->tiling_at(1)->contents_scale());
+
+  // Ensure UpdateTiles won't remove any tilings.
+  active_layer_->MarkAllTilingsUsed();
 
   // Mark the non-ideal tilings as used. They won't be removed.
   used_tilings.clear();
