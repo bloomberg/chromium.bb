@@ -982,6 +982,10 @@ gfx::Size DesktopNativeWidgetAura::GetMaximumSize() const {
   return native_widget_delegate_->GetMaximumSize();
 }
 
+ui::TextInputClient* DesktopNativeWidgetAura::GetFocusedTextInputClient() {
+  return GetWidget()->GetFocusedTextInputClient();
+}
+
 gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
   return cursor_;
 }

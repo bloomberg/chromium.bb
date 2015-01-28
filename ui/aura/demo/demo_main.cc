@@ -45,6 +45,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
 
   void OnBoundsChanged(const gfx::Rect& old_bounds,
                        const gfx::Rect& new_bounds) override {}
+  ui::TextInputClient* GetFocusedTextInputClient() override { return nullptr; }
   gfx::NativeCursor GetCursor(const gfx::Point& point) override {
     return gfx::kNullCursor;
   }
@@ -81,7 +82,7 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
   }
 
   ~DemoWindowTreeClient() override {
-    aura::client::SetWindowTreeClient(window_, NULL);
+    aura::client::SetWindowTreeClient(window_, nullptr);
   }
 
   // Overridden from aura::client::WindowTreeClient:

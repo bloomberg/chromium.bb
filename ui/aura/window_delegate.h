@@ -25,6 +25,7 @@ class GestureEvent;
 class KeyEvent;
 class Layer;
 class MouseEvent;
+class TextInputClient;
 class Texture;
 class TouchEvent;
 }
@@ -43,6 +44,10 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   // Called when the Window's position and/or size changes.
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) = 0;
+
+  // Returns the focused text input client within this window.
+  // This function does not look at child windows.
+  virtual ui::TextInputClient* GetFocusedTextInputClient() = 0;
 
   // Returns the native cursor for the specified point, in window coordinates,
   // or NULL for the default cursor.

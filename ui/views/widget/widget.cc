@@ -439,9 +439,9 @@ void Widget::NotifyNativeViewHierarchyChanged() {
 }
 
 void Widget::NotifyWillRemoveView(View* view) {
-    FOR_EACH_OBSERVER(WidgetRemovalsObserver,
-                      removals_observers_,
-                      OnWillRemoveView(this, view));
+  FOR_EACH_OBSERVER(WidgetRemovalsObserver,
+                    removals_observers_,
+                    OnWillRemoveView(this, view));
 }
 
 // Converted methods (see header) ----------------------------------------------
@@ -756,6 +756,12 @@ FocusManager* Widget::GetFocusManager() {
 const FocusManager* Widget::GetFocusManager() const {
   const Widget* toplevel_widget = GetTopLevelWidget();
   return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
+}
+
+ui::TextInputClient* Widget::GetFocusedTextInputClient() {
+  FocusManager* focus_manager = GetFocusManager();
+  View* view = focus_manager ? focus_manager->GetFocusedView() : nullptr;
+  return view ? view->GetTextInputClient() : nullptr;
 }
 
 InputMethod* Widget::GetInputMethod() {
