@@ -414,6 +414,56 @@ TEST_F(TimingFunctionTest, StepsEvaluate)
     EXPECT_EQ(1.00, stepsTimingCustomEnd->evaluate(2.00, 0));
 }
 
+static void checkSteps(int steps, StepsTimingFunction::StepAtPosition position, double expectedSplit)
+{
+    Vector<TimingFunction::PartitionRegion> regions = Vector<TimingFunction::PartitionRegion>();
+    RefPtrWillBeRawPtr<TimingFunction> stepsFunction = StepsTimingFunction::create(steps, position);
+    stepsFunction->partition(regions);
+
+    EXPECT_EQ(regions.size(), 2ul);
+    EXPECT_EQ(regions.at(0).half, TimingFunction::RangeHalf::Lower);
+    EXPECT_EQ(regions.at(1).half, TimingFunction::RangeHalf::Upper);
+
+    EXPECT_EQ(0, regions.at(0).start);
+    EXPECT_EQ(regions.at(0).end, regions.at(1).start);
+    EXPECT_EQ(1, regions.at(1).end);
+
+    double split = regions.at(0).end;
+    EXPECT_FLOAT_EQ(split, expectedSplit);
+
+    double dt = 2e-5;
+    EXPECT_TRUE(stepsFunction->evaluate(split - dt, 0) < 0.5);
+    EXPECT_TRUE(stepsFunction->evaluate(split, 0) >= 0.5);
+    EXPECT_TRUE(stepsFunction->evaluate(split + dt, 0) >= 0.5);
+}
+
+TEST_F(TimingFunctionTest, StepsPartitioning)
+{
+    checkSteps(1, StepsTimingFunction::StepAtPosition::Start, 0.0);
+    checkSteps(1, StepsTimingFunction::StepAtPosition::Middle, 0.5);
+    checkSteps(1, StepsTimingFunction::StepAtPosition::End, 1.0);
+
+    checkSteps(2, StepsTimingFunction::StepAtPosition::Start, 0.0);
+    checkSteps(2, StepsTimingFunction::StepAtPosition::Middle, 0.25);
+    checkSteps(2, StepsTimingFunction::StepAtPosition::End, 0.5);
+
+    checkSteps(3, StepsTimingFunction::StepAtPosition::Start, 1.0 / 3.0);
+    checkSteps(3, StepsTimingFunction::StepAtPosition::Middle, 0.5);
+    checkSteps(3, StepsTimingFunction::StepAtPosition::End, 2.0 / 3.0);
+
+    checkSteps(4, StepsTimingFunction::StepAtPosition::Start, 0.25);
+    checkSteps(4, StepsTimingFunction::StepAtPosition::Middle, 0.375);
+    checkSteps(4, StepsTimingFunction::StepAtPosition::End, 0.5);
+
+    checkSteps(5, StepsTimingFunction::StepAtPosition::Start, 0.4);
+    checkSteps(5, StepsTimingFunction::StepAtPosition::Middle, 0.5);
+    checkSteps(5, StepsTimingFunction::StepAtPosition::End, 0.6);
+
+    checkSteps(8, StepsTimingFunction::StepAtPosition::Start, 0.375);
+    checkSteps(8, StepsTimingFunction::StepAtPosition::Middle, 0.4375);
+    checkSteps(8, StepsTimingFunction::StepAtPosition::End, 0.5);
+}
+
 } // namespace
 
 } // namespace blink

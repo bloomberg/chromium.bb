@@ -170,6 +170,47 @@ double StepsTimingFunction::evaluate(double fraction, double) const
     return clampTo(floor((m_steps * fraction) + startOffset) / m_steps, 0.0, 1.0);
 }
 
+void StepsTimingFunction::partition(Vector<PartitionRegion>& regions) const
+{
+    double split = 0.0;
+
+    if (m_steps % 2 == 0) {
+        switch (m_stepAtPosition) {
+        case Start:
+            split = 0.5 - (1.0 / m_steps);
+            break;
+        case Middle:
+            split = 0.5 - (0.5 / m_steps);
+            break;
+        case End:
+            split = 0.5;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+            return;
+        }
+    } else {
+        switch (m_stepAtPosition) {
+        case Start:
+            split = 0.5 - (0.5 / m_steps);
+            break;
+        case Middle:
+            split = 0.5;
+            break;
+        case End:
+            split = 0.5 + (0.5 / m_steps);
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+            return;
+        }
+    }
+
+    regions.append(PartitionRegion(TimingFunction::RangeHalf::Lower, 0.0, split));
+    regions.append(PartitionRegion(TimingFunction::RangeHalf::Upper, split, 1.0));
+}
+
+
 // Equals operators
 bool operator==(const LinearTimingFunction& lhs, const TimingFunction& rhs)
 {

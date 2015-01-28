@@ -232,7 +232,7 @@ public:
 
     virtual double evaluate(double fraction, double) const override;
     virtual void range(double* minValue, double* maxValue) const override;
-    virtual void partition(Vector<PartitionRegion>& regions) const override { ASSERT_NOT_REACHED(); }
+    virtual void partition(Vector<PartitionRegion>& regions) const override;
 
     int numberOfSteps() const { return m_steps; }
     StepAtPosition stepAtPosition() const { return m_stepAtPosition; }
