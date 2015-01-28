@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_details.h"
@@ -69,10 +68,6 @@ bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
 #if defined(OS_CHROMEOS)
   return false;
 #endif
-
-  // Sync must be allowed.
-  if (!profile->GetOriginalProfile()->IsSyncAccessible())
-    return false;
 
   // To enable this feature for testing pass "--google-profile-info".
   if (switches::IsGoogleProfileInfo())
