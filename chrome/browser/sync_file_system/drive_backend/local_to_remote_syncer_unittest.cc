@@ -211,10 +211,10 @@ class LocalToRemoteSyncerTest : public testing::Test {
     return status;
   }
 
-  ScopedVector<google_apis::ResourceEntry>
+  ScopedVector<google_apis::FileResource>
   GetResourceEntriesForParentAndTitle(const std::string& parent_folder_id,
                                       const std::string& title) {
-    ScopedVector<google_apis::ResourceEntry> entries;
+    ScopedVector<google_apis::FileResource> entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->SearchByTitle(
                   parent_folder_id, title, &entries));
@@ -223,28 +223,28 @@ class LocalToRemoteSyncerTest : public testing::Test {
 
   std::string GetFileIDForParentAndTitle(const std::string& parent_folder_id,
                                          const std::string& title) {
-    ScopedVector<google_apis::ResourceEntry> entries =
+    ScopedVector<google_apis::FileResource> entries =
         GetResourceEntriesForParentAndTitle(parent_folder_id, title);
     if (entries.size() != 1)
       return std::string();
-    return entries[0]->resource_id();
+    return entries[0]->file_id();
   }
 
   void VerifyTitleUniqueness(
       const std::string& parent_folder_id,
       const std::string& title,
-      google_apis::ResourceEntry::ResourceEntryKind kind) {
-    ScopedVector<google_apis::ResourceEntry> entries;
+      test_util::FileResourceKind kind) {
+    ScopedVector<google_apis::FileResource> entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->SearchByTitle(
                   parent_folder_id, title, &entries));
     ASSERT_EQ(1u, entries.size());
-    EXPECT_EQ(kind, entries[0]->kind());
+    EXPECT_EQ(kind, test_util::GetFileResourceKind(*entries[0]));
   }
 
   void VerifyFileDeletion(const std::string& parent_folder_id,
                           const std::string& title) {
-    ScopedVector<google_apis::ResourceEntry> entries;
+    ScopedVector<google_apis::FileResource> entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->SearchByTitle(
                   parent_folder_id, title, &entries));
@@ -288,11 +288,11 @@ TEST_F(LocalToRemoteSyncerTest, CreateFile) {
   ASSERT_FALSE(folder_id.empty());
 
   VerifyTitleUniqueness(
-      app_root, "file1", google_apis::ResourceEntry::ENTRY_KIND_FILE);
+      app_root, "file1", test_util::RESOURCE_KIND_FILE);
   VerifyTitleUniqueness(
-      app_root, "folder", google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
+      app_root, "folder", test_util::RESOURCE_KIND_FOLDER);
   VerifyTitleUniqueness(
-      folder_id, "file2", google_apis::ResourceEntry::ENTRY_KIND_FILE);
+      folder_id, "file2", test_util::RESOURCE_KIND_FILE);
 }
 
 TEST_F(LocalToRemoteSyncerTest, CreateFileOnMissingPath) {
@@ -322,11 +322,11 @@ TEST_F(LocalToRemoteSyncerTest, CreateFileOnMissingPath) {
   ASSERT_FALSE(folder_id2.empty());
 
   VerifyTitleUniqueness(
-      app_root, "folder1", google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
+      app_root, "folder1", test_util::RESOURCE_KIND_FOLDER);
   VerifyTitleUniqueness(
-      folder_id1, "folder2", google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
+      folder_id1, "folder2", test_util::RESOURCE_KIND_FOLDER);
   VerifyTitleUniqueness(
-      folder_id2, "file", google_apis::ResourceEntry::ENTRY_KIND_FILE);
+      folder_id2, "file", test_util::RESOURCE_KIND_FILE);
 }
 
 TEST_F(LocalToRemoteSyncerTest, DeleteFile) {
@@ -346,9 +346,9 @@ TEST_F(LocalToRemoteSyncerTest, DeleteFile) {
       URL(kOrigin, "folder")));
 
   VerifyTitleUniqueness(
-      app_root, "file", google_apis::ResourceEntry::ENTRY_KIND_FILE);
+      app_root, "file", test_util::RESOURCE_KIND_FILE);
   VerifyTitleUniqueness(
-      app_root, "folder", google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
+      app_root, "folder", test_util::RESOURCE_KIND_FOLDER);
 
   EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_DELETE,
@@ -378,11 +378,13 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFolder) {
       URL(kOrigin, "foo")));
 
   // There should exist both file and folder on remote.
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, "foo");
   ASSERT_EQ(2u, entries.size());
-  EXPECT_EQ(google_apis::ResourceEntry::ENTRY_KIND_FOLDER, entries[0]->kind());
-  EXPECT_EQ(google_apis::ResourceEntry::ENTRY_KIND_FILE, entries[1]->kind());
+  EXPECT_EQ(test_util::RESOURCE_KIND_FOLDER,
+            test_util::GetFileResourceKind(*entries[0]));
+  EXPECT_EQ(test_util::RESOURCE_KIND_FILE,
+            test_util::GetFileResourceKind(*entries[1]));
 }
 
 TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFolderOnFile) {
@@ -401,11 +403,13 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFolderOnFile) {
       URL(kOrigin, "foo")));
 
   // There should exist both file and folder on remote.
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, "foo");
   ASSERT_EQ(2u, entries.size());
-  EXPECT_EQ(google_apis::ResourceEntry::ENTRY_KIND_FILE, entries[0]->kind());
-  EXPECT_EQ(google_apis::ResourceEntry::ENTRY_KIND_FOLDER, entries[1]->kind());
+  EXPECT_EQ(test_util::RESOURCE_KIND_FILE,
+            test_util::GetFileResourceKind(*entries[0]));
+  EXPECT_EQ(test_util::RESOURCE_KIND_FOLDER,
+            test_util::GetFileResourceKind(*entries[1]));
 }
 
 TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFile) {
@@ -424,11 +428,13 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFile) {
       URL(kOrigin, "foo")));
 
   // There should exist both files on remote.
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, "foo");
   ASSERT_EQ(2u, entries.size());
-  EXPECT_EQ(google_apis::ResourceEntry::ENTRY_KIND_FILE, entries[0]->kind());
-  EXPECT_EQ(google_apis::ResourceEntry::ENTRY_KIND_FILE, entries[1]->kind());
+  EXPECT_EQ(test_util::RESOURCE_KIND_FILE,
+            test_util::GetFileResourceKind(*entries[0]));
+  EXPECT_EQ(test_util::RESOURCE_KIND_FILE,
+            test_util::GetFileResourceKind(*entries[1]));
 }
 
 TEST_F(LocalToRemoteSyncerTest, Conflict_UpdateDeleteOnFile) {
@@ -454,12 +460,13 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_UpdateDeleteOnFile) {
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "foo")));
 
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, "foo");
   ASSERT_EQ(1u, entries.size());
-  EXPECT_EQ(google_apis::ResourceEntry::ENTRY_KIND_FILE, entries[0]->kind());
-  EXPECT_TRUE(!entries[0]->deleted());
-  EXPECT_NE(file_id, entries[0]->resource_id());
+  EXPECT_EQ(test_util::RESOURCE_KIND_FILE,
+            test_util::GetFileResourceKind(*entries[0]));
+  EXPECT_TRUE(!entries[0]->labels().is_trashed());
+  EXPECT_NE(file_id, entries[0]->file_id());
 }
 
 TEST_F(LocalToRemoteSyncerTest, Conflict_CreateDeleteOnFile) {
@@ -483,12 +490,13 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateDeleteOnFile) {
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "foo")));
 
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, "foo");
   ASSERT_EQ(1u, entries.size());
-  EXPECT_EQ(google_apis::ResourceEntry::ENTRY_KIND_FILE, entries[0]->kind());
-  EXPECT_TRUE(!entries[0]->deleted());
-  EXPECT_NE(file_id, entries[0]->resource_id());
+  EXPECT_EQ(test_util::RESOURCE_KIND_FILE,
+            test_util::GetFileResourceKind(*entries[0]));
+  EXPECT_TRUE(!entries[0]->labels().is_trashed());
+  EXPECT_NE(file_id, entries[0]->file_id());
 }
 
 TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFolderOnFolder) {
@@ -505,15 +513,17 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFolderOnFolder) {
                  SYNC_FILE_TYPE_DIRECTORY),
       URL(kOrigin, "foo")));
 
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, "foo");
   ASSERT_EQ(2u, entries.size());
-  EXPECT_EQ(google_apis::ResourceEntry::ENTRY_KIND_FOLDER, entries[0]->kind());
-  EXPECT_EQ(google_apis::ResourceEntry::ENTRY_KIND_FOLDER, entries[1]->kind());
-  EXPECT_TRUE(!entries[0]->deleted());
-  EXPECT_TRUE(!entries[1]->deleted());
-  EXPECT_TRUE(folder_id == entries[0]->resource_id() ||
-              folder_id == entries[1]->resource_id());
+  EXPECT_EQ(test_util::RESOURCE_KIND_FOLDER,
+            test_util::GetFileResourceKind(*entries[0]));
+  EXPECT_EQ(test_util::RESOURCE_KIND_FOLDER,
+            test_util::GetFileResourceKind(*entries[1]));
+  EXPECT_TRUE(!entries[0]->labels().is_trashed());
+  EXPECT_TRUE(!entries[1]->labels().is_trashed());
+  EXPECT_TRUE(folder_id == entries[0]->file_id() ||
+              folder_id == entries[1]->file_id());
 
   TrackerIDSet trackers;
   EXPECT_TRUE(GetMetadataDatabase()->FindTrackersByFileID(

@@ -60,11 +60,6 @@ std::string TranslateQuery(const std::string& original_query);
 // into the new format.
 std::string CanonicalizeResourceId(const std::string& resource_id);
 
-// Converts FileResource to ResourceEntry.
-scoped_ptr<google_apis::ResourceEntry>
-ConvertFileResourceToResourceEntry(
-    const google_apis::FileResource& file_resource);
-
 // Returns the (base-16 encoded) MD5 digest of the file content at |file_path|,
 // or an empty string if an error is found.
 std::string GetMd5Digest(const base::FilePath& file_path);

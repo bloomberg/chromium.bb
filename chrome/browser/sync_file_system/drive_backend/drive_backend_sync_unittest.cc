@@ -411,16 +411,16 @@ class DriveBackendSyncTest : public testing::Test,
     }
     EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
 
-    ScopedVector<google_apis::ResourceEntry> remote_entries;
+    ScopedVector<google_apis::FileResource> remote_entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_service_helper_->ListFilesInFolder(
                   sync_root_folder_id, &remote_entries));
-    std::map<std::string, const google_apis::ResourceEntry*> app_root_by_title;
-    for (ScopedVector<google_apis::ResourceEntry>::iterator itr =
+    std::map<std::string, const google_apis::FileResource*> app_root_by_title;
+    for (ScopedVector<google_apis::FileResource>::iterator itr =
              remote_entries.begin();
          itr != remote_entries.end();
          ++itr) {
-      const google_apis::ResourceEntry& remote_entry = **itr;
+      const google_apis::FileResource& remote_entry = **itr;
       EXPECT_FALSE(ContainsKey(app_root_by_title, remote_entry.title()));
       app_root_by_title[remote_entry.title()] = *itr;
     }
@@ -434,7 +434,7 @@ class DriveBackendSyncTest : public testing::Test,
       ASSERT_TRUE(ContainsKey(app_root_by_title, app_id));
       VerifyConsistencyForFolder(
           app_id, base::FilePath(),
-          app_root_by_title[app_id]->resource_id(),
+          app_root_by_title[app_id]->file_id(),
           file_system);
     }
   }
@@ -445,14 +445,14 @@ class DriveBackendSyncTest : public testing::Test,
                                   CannedSyncableFileSystem* file_system) {
     SCOPED_TRACE(testing::Message() << "Verifying folder: " << path.value());
 
-    ScopedVector<google_apis::ResourceEntry> remote_entries;
+    ScopedVector<google_apis::FileResource> remote_entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_service_helper_->ListFilesInFolder(
                   folder_id, &remote_entries));
-    std::map<std::string, const google_apis::ResourceEntry*>
+    std::map<std::string, const google_apis::FileResource*>
         remote_entry_by_title;
     for (size_t i = 0; i < remote_entries.size(); ++i) {
-      google_apis::ResourceEntry* remote_entry = remote_entries[i];
+      google_apis::FileResource* remote_entry = remote_entries[i];
       EXPECT_FALSE(ContainsKey(remote_entry_by_title, remote_entry->title()))
           << "title: " << remote_entry->title();
       remote_entry_by_title[remote_entry->title()] = remote_entry;
@@ -473,17 +473,17 @@ class DriveBackendSyncTest : public testing::Test,
       SCOPED_TRACE(testing::Message() << "Verifying entry: " << title);
 
       ASSERT_TRUE(ContainsKey(remote_entry_by_title, title));
-      const google_apis::ResourceEntry& remote_entry =
+      const google_apis::FileResource& remote_entry =
           *remote_entry_by_title[title];
       if (local_entry.is_directory) {
-        ASSERT_TRUE(remote_entry.is_folder());
+        ASSERT_TRUE(remote_entry.IsDirectory());
         VerifyConsistencyForFolder(app_id, entry_url.path(),
-                                   remote_entry.resource_id(),
+                                   remote_entry.file_id(),
                                    file_system);
       } else {
-        ASSERT_TRUE(remote_entry.is_file());
+        ASSERT_FALSE(remote_entry.IsDirectory());
         VerifyConsistencyForFile(app_id, entry_url.path(),
-                                 remote_entry.resource_id(),
+                                 remote_entry.file_id(),
                                  file_system);
       }
       remote_entry_by_title.erase(title);

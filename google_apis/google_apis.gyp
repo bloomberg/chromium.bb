@@ -57,8 +57,6 @@
             'drive/drive_common_callbacks.h',
             'drive/gdata_errorcode.cc',
             'drive/gdata_errorcode.h',
-            'drive/gdata_wapi_parser.cc',
-            'drive/gdata_wapi_parser.h',
             'drive/request_sender.cc',
             'drive/request_sender.h',
             'drive/request_util.cc',

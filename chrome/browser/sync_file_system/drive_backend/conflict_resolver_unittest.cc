@@ -238,10 +238,10 @@ class ConflictResolverTest : public testing::Test {
     return status;
   }
 
-  ScopedVector<google_apis::ResourceEntry>
+  ScopedVector<google_apis::FileResource>
   GetResourceEntriesForParentAndTitle(const std::string& parent_folder_id,
                                       const std::string& title) {
-    ScopedVector<google_apis::ResourceEntry> entries;
+    ScopedVector<google_apis::FileResource> entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->SearchByTitle(
                   parent_folder_id, title, &entries));
@@ -252,14 +252,14 @@ class ConflictResolverTest : public testing::Test {
       const std::string& parent_folder_id,
       const std::string& title,
       const std::string& primary_file_id,
-      google_apis::ResourceEntry::ResourceEntryKind kind) {
-    ScopedVector<google_apis::ResourceEntry> entries;
+      test_util::FileResourceKind kind) {
+    ScopedVector<google_apis::FileResource> entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->SearchByTitle(
                   parent_folder_id, title, &entries));
     ASSERT_EQ(1u, entries.size());
-    EXPECT_EQ(primary_file_id, entries[0]->resource_id());
-    EXPECT_EQ(kind, entries[0]->kind());
+    EXPECT_EQ(primary_file_id, entries[0]->file_id());
+    EXPECT_EQ(kind, test_util::GetFileResourceKind(*entries[0]));
   }
 
   void VerifyLocalChangeConsistency(
@@ -308,14 +308,14 @@ TEST_F(ConflictResolverTest, ResolveConflict_Files) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
   ASSERT_EQ(4u, entries.size());
 
   // Only primary file should survive.
   EXPECT_EQ(SYNC_STATUS_OK, RunConflictResolver());
   VerifyConflictResolution(app_root, kTitle, primary,
-                           google_apis::ResourceEntry::ENTRY_KIND_FILE);
+                           test_util::RESOURCE_KIND_FILE);
 }
 
 TEST_F(ConflictResolverTest, ResolveConflict_Folders) {
@@ -334,14 +334,14 @@ TEST_F(ConflictResolverTest, ResolveConflict_Folders) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
   ASSERT_EQ(4u, entries.size());
 
   // Only primary file should survive.
   EXPECT_EQ(SYNC_STATUS_OK, RunConflictResolver());
   VerifyConflictResolution(app_root, kTitle, primary,
-                           google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
+                           test_util::RESOURCE_KIND_FOLDER);
 }
 
 TEST_F(ConflictResolverTest, ResolveConflict_FilesAndFolders) {
@@ -360,14 +360,14 @@ TEST_F(ConflictResolverTest, ResolveConflict_FilesAndFolders) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
   ASSERT_EQ(4u, entries.size());
 
   // Only primary file should survive.
   EXPECT_EQ(SYNC_STATUS_OK, RunConflictResolver());
   VerifyConflictResolution(app_root, kTitle, primary,
-                           google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
+                           test_util::RESOURCE_KIND_FOLDER);
 }
 
 TEST_F(ConflictResolverTest, ResolveConflict_RemoteFolderOnLocalFile) {
@@ -392,14 +392,14 @@ TEST_F(ConflictResolverTest, ResolveConflict_RemoteFolderOnLocalFile) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
   ASSERT_EQ(2u, entries.size());
 
   // Run conflict resolver. Only primary file should survive.
   EXPECT_EQ(SYNC_STATUS_OK, RunConflictResolver());
   VerifyConflictResolution(app_root, kTitle, primary,
-                           google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
+                           test_util::RESOURCE_KIND_FOLDER);
 
   // Continue to run remote-to-local sync.
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
@@ -440,14 +440,14 @@ TEST_F(ConflictResolverTest, ResolveConflict_RemoteNestedFolderOnLocalFile) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 
-  ScopedVector<google_apis::ResourceEntry> entries =
+  ScopedVector<google_apis::FileResource> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
   ASSERT_EQ(2u, entries.size());
 
   // Run conflict resolver. Only primary file should survive.
   EXPECT_EQ(SYNC_STATUS_OK, RunConflictResolver());
   VerifyConflictResolution(app_root, kTitle, primary,
-                           google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
+                           test_util::RESOURCE_KIND_FOLDER);
 
   // Continue to run remote-to-local sync.
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());

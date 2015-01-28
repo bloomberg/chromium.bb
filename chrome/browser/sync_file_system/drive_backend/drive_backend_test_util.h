@@ -43,6 +43,15 @@ scoped_ptr<FileTracker> CreatePlaceholderTracker(
     int64 tracker_id,
     const FileTracker* parent_tracker);
 
+// The return value type of GetFileResourceKind().
+enum FileResourceKind {
+  RESOURCE_KIND_FILE,
+  RESOURCE_KIND_FOLDER,
+};
+
+// Returns the kind of the given FileResourceKind.
+FileResourceKind GetFileResourceKind(const google_apis::FileResource& resource);
+
 }  // namespace test_util
 }  // namespace drive_backend
 }  // namespace sync_file_system

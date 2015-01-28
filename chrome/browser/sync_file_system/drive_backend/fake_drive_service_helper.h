@@ -10,7 +10,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 
 namespace base {
 class FilePath;
@@ -61,11 +60,12 @@ class FakeDriveServiceHelper {
       std::string* sync_root_folder_id);
   google_apis::GDataErrorCode ListFilesInFolder(
       const std::string& folder_id,
-      ScopedVector<google_apis::ResourceEntry>* entries);
+      ScopedVector<google_apis::FileResource>* entries);
   google_apis::GDataErrorCode SearchByTitle(
       const std::string& folder_id,
       const std::string& title,
-      ScopedVector<google_apis::ResourceEntry>* entries);
+      ScopedVector<google_apis::FileResource>* entries);
+
   google_apis::GDataErrorCode GetFileResource(
       const std::string& file_id,
       scoped_ptr<google_apis::FileResource>* entry);
@@ -80,7 +80,7 @@ class FakeDriveServiceHelper {
  private:
   google_apis::GDataErrorCode CompleteListing(
       scoped_ptr<google_apis::FileList> list,
-      ScopedVector<google_apis::ResourceEntry>* entries);
+      ScopedVector<google_apis::FileResource>* entries);
 
   void Initialize();
 

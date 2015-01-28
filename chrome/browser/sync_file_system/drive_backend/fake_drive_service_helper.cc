@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -22,7 +21,6 @@ using google_apis::AboutResource;
 using google_apis::FileList;
 using google_apis::FileResource;
 using google_apis::GDataErrorCode;
-using google_apis::ResourceEntry;
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -233,7 +231,7 @@ GDataErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
 
 GDataErrorCode FakeDriveServiceHelper::ListFilesInFolder(
     const std::string& folder_id,
-    ScopedVector<ResourceEntry>* entries) {
+    ScopedVector<FileResource>* entries) {
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<FileList> list;
   fake_drive_service_->GetFileListInDirectory(
@@ -249,7 +247,7 @@ GDataErrorCode FakeDriveServiceHelper::ListFilesInFolder(
 GDataErrorCode FakeDriveServiceHelper::SearchByTitle(
     const std::string& folder_id,
     const std::string& title,
-    ScopedVector<ResourceEntry>* entries) {
+    ScopedVector<FileResource>* entries) {
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<FileList> list;
   fake_drive_service_->SearchByTitle(
@@ -310,13 +308,14 @@ GDataErrorCode FakeDriveServiceHelper::GetAboutResource(
 
 GDataErrorCode FakeDriveServiceHelper::CompleteListing(
     scoped_ptr<FileList> list,
-    ScopedVector<ResourceEntry>* entries) {
+    ScopedVector<FileResource>* entries) {
   while (true) {
     entries->reserve(entries->size() + list->items().size());
-    for (ScopedVector<FileResource>::const_iterator itr =
-             list->items().begin(); itr != list->items().end(); ++itr) {
-      entries->push_back(
-          drive::util::ConvertFileResourceToResourceEntry(**itr).release());
+    std::vector<FileResource*> tmp;
+    list->mutable_items()->release(&tmp);
+    for (std::vector<FileResource*>::const_iterator itr =
+             tmp.begin(); itr != tmp.end(); ++itr) {
+      entries->push_back(*itr);
     }
 
     GURL next_feed = list->next_link();

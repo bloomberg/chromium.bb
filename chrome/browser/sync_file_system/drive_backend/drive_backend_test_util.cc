@@ -124,6 +124,14 @@ scoped_ptr<FileTracker> CreatePlaceholderTracker(
   return tracker.Pass();
 }
 
+FileResourceKind GetFileResourceKind(
+    const google_apis::FileResource& resource) {
+  if (resource.IsDirectory())
+    return RESOURCE_KIND_FOLDER;
+  else
+    return RESOURCE_KIND_FILE;
+}
+
 }  // namespace test_util
 }  // namespace drive_backend
 }  // namespace sync_file_system

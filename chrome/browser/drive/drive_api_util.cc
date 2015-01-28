@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 #include "net/base/escape.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
@@ -129,29 +128,6 @@ std::string CanonicalizeResourceId(const std::string& resource_id) {
                      &stripped_resource_id))
     return stripped_resource_id;
   return resource_id;
-}
-
-scoped_ptr<google_apis::ResourceEntry>
-ConvertFileResourceToResourceEntry(
-    const google_apis::FileResource& file_resource) {
-  scoped_ptr<google_apis::ResourceEntry> entry(new google_apis::ResourceEntry);
-
-  // ResourceEntry
-  entry->set_resource_id(file_resource.file_id());
-  if (file_resource.IsDirectory())
-    entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
-  else if (file_resource.IsHostedDocument())
-    entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_UNKNOWN);
-  else
-    entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_FILE);
-  entry->set_title(file_resource.title());
-
-  // If file is removed completely, that information is only available in
-  // ChangeResource, and is reflected in |removed_|. If file is trashed, the
-  // file entry still exists but with its "trashed" label true.
-  entry->set_deleted(file_resource.labels().is_trashed());
-
-  return entry.Pass();
 }
 
 std::string GetMd5Digest(const base::FilePath& file_path) {
