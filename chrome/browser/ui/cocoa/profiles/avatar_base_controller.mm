@@ -93,7 +93,7 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
   }
 
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override {
-    if (profile_->GetPath() == profile_path)
+    if (!switches::IsNewAvatarMenu() && profile_->GetPath() == profile_path)
       [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 

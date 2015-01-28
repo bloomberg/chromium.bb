@@ -256,6 +256,11 @@ class UserManagerScreenHandler::ProfileUpdateObserver
     user_manager_handler_->SendUserList();
   }
 
+  void OnProfileHighResAvatarLoaded(
+      const base::FilePath& profile_path) override {
+    user_manager_handler_->SendUserList();
+  }
+
   void OnProfileSigninRequiredChanged(
       const base::FilePath& profile_path) override {
     user_manager_handler_->SendUserList();

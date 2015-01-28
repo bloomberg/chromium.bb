@@ -40,7 +40,6 @@ class NewAvatarButton : public views::LabelButton,
                            const base::string16& profile_name) override;
   void OnProfileNameChanged(const base::FilePath& profile_path,
                             const base::string16& old_profile_name) override;
-  void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
   void OnProfileSupervisedUserIdChanged(
       const base::FilePath& profile_path) override;
 

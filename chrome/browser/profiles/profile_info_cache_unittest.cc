@@ -546,6 +546,7 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
   GetCache()->AddProfileToCache(path_1, ASCIIToUTF16("name_1"),
                                 base::string16(), 0, std::string());
   EXPECT_EQ(1U, GetCache()->GetNumberOfProfiles());
+  base::RunLoop().RunUntilIdle();
 
   // We haven't downloaded any high-res avatars yet.
   EXPECT_EQ(0U, GetCache()->cached_avatar_images_.size());
@@ -676,4 +677,3 @@ TEST_F(ProfileInfoCacheTest,
   EXPECT_EQ(name_4, GetCache()->GetNameOfProfileAtIndex(
       GetCache()->GetIndexOfProfileWithPath(path_4)));
 }
-
