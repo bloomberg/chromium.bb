@@ -65,6 +65,9 @@ class MimeHandlerViewContainer : public GuestViewContainer,
                         double finish_time,
                         int64_t total_encoded_data_length) override;
 
+  // GuestViewContainer overrides.
+  void OnRenderFrameDestroyed() override;
+
   // Post a JavaScript message to the guest.
   void PostMessage(v8::Isolate* isolate,
                    v8::Handle<v8::Value> message);

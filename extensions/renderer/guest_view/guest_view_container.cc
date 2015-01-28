@@ -61,6 +61,7 @@ bool GuestViewContainer::HandlesMessage(const IPC::Message& msg) {
 }
 
 void GuestViewContainer::RenderFrameDestroyed() {
+  OnRenderFrameDestroyed();
   render_frame_ = nullptr;
 }
 

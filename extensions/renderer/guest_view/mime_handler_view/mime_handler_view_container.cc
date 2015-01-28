@@ -102,9 +102,11 @@ MimeHandlerViewContainer::~MimeHandlerViewContainer() {
   if (loader_)
     loader_->cancel();
 
-  g_mime_handler_view_container_map.Get()[render_frame()].erase(this);
-  if (g_mime_handler_view_container_map.Get()[render_frame()].empty())
-    g_mime_handler_view_container_map.Get().erase(render_frame());
+  if (render_frame()) {
+    g_mime_handler_view_container_map.Get()[render_frame()].erase(this);
+    if (g_mime_handler_view_container_map.Get()[render_frame()].empty())
+      g_mime_handler_view_container_map.Get().erase(render_frame());
+  }
 }
 
 // static
@@ -119,6 +121,9 @@ MimeHandlerViewContainer::FromRenderFrame(content::RenderFrame* render_frame) {
 }
 
 void MimeHandlerViewContainer::Ready() {
+  if (!render_frame())
+    return;
+
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   blink::WebURLLoaderOptions options;
   // The embedded plugin is allowed to be cross-origin.
@@ -135,6 +140,10 @@ void MimeHandlerViewContainer::Ready() {
 void MimeHandlerViewContainer::DidFinishLoading() {
   DCHECK(!is_embedded_);
   CreateMimeHandlerViewGuest();
+}
+
+void MimeHandlerViewContainer::OnRenderFrameDestroyed() {
+  g_mime_handler_view_container_map.Get().erase(render_frame());
 }
 
 void MimeHandlerViewContainer::DidReceiveData(const char* data,

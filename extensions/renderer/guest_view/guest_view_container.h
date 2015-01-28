@@ -28,6 +28,8 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   int render_view_routing_id() const { return render_view_routing_id_; }
   content::RenderFrame* render_frame() const { return render_frame_; }
 
+  virtual void OnRenderFrameDestroyed() {}
+
  private:
   class RenderFrameLifetimeObserver;
 
