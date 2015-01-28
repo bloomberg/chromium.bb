@@ -78,8 +78,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddFullChunk) {
 
   SBFullHash full_hash1, full_hash2;
   for (int i = 0; i < 32; ++i) {
-    full_hash1.full_hash[i] = i % 2 ? '1' : '0';
-    full_hash2.full_hash[i] = i % 2 ? '3' : '2';
+    full_hash1.full_hash[i] = (i % 2) ? '1' : '0';
+    full_hash2.full_hash[i] = (i % 2) ? '3' : '2';
   }
 
   ScopedVector<SBChunkData> chunks;
