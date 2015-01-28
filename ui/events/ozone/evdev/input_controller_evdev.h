@@ -55,7 +55,6 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   void SetMouseSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
   void SetTapToClickPaused(bool state) override;
-  void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply) override;
   void DisableInternalTouchpad() override;
   void EnableInternalTouchpad() override;
   void DisableInternalKeyboardExceptKeys(

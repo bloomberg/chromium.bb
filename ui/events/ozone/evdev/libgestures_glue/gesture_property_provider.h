@@ -96,13 +96,6 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   // clicked "OK").
   GesturesProp* GetProperty(const DeviceId device_id, const std::string& name);
 
-  // Get the names of all properties of one device. Mostly used for the logging
-  // purpose.
-  std::vector<std::string> GetPropertyNamesById(const DeviceId device_id);
-
-  // Get the (Evdev) device name. Mostly used for the logging purpose.
-  std::string GetDeviceNameById(const DeviceId device_id);
-
  private:
   friend class GesturesPropFunctionsWrapper;
 

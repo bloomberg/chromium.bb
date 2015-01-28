@@ -877,30 +877,6 @@ GesturesProp* GesturePropertyProvider::GetProperty(const DeviceId device_id,
   return FindProperty(device_id, name);
 }
 
-std::vector<std::string> GesturePropertyProvider::GetPropertyNamesById(
-    const DeviceId device_id) {
-  internal::GestureDevicePropertyData* device_data =
-      device_data_map_.get(device_id);
-  if (!device_data)
-    return std::vector<std::string>();
-
-  // Dump all property names of the device.
-  std::vector<std::string> names;
-  for (internal::ScopedPropertiesMap::const_iterator it =
-           device_data->properties.begin();
-       it != device_data->properties.end(); ++it)
-    names.push_back(it->first);
-  return names;
-}
-
-std::string GesturePropertyProvider::GetDeviceNameById(
-    const DeviceId device_id) {
-  DeviceMap::const_iterator it = device_map_.find(device_id);
-  if (it == device_map_.end())
-    return std::string();
-  return std::string(it->second->info.name);
-}
-
 void GesturePropertyProvider::RegisterDevice(const DeviceId id,
                                              const DevicePtr device) {
   DeviceMap::const_iterator it = device_map_.find(id);

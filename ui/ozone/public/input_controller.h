@@ -6,9 +6,7 @@
 #define UI_OZONE_PUBLIC_INPUT_CONTROLLER_H_
 
 #include <set>
-#include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
@@ -28,9 +26,6 @@ enum class DomCode;
 // script that is originally located at /opt/google/chrome/.
 class OZONE_EXPORT InputController {
  public:
-  typedef base::Callback<void(scoped_ptr<std::string>)>
-      GetTouchDeviceStatusReply;
-
   InputController() {}
   virtual ~InputController() {}
 
@@ -59,9 +54,6 @@ class OZONE_EXPORT InputController {
   // Mouse settings.
   virtual void SetMouseSensitivity(int value) = 0;
   virtual void SetPrimaryButtonRight(bool right) = 0;
-
-  // Touch log collection.
-  virtual void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply) = 0;
 
   // Temporarily enable/disable Tap-to-click. Used to enhance the user
   // experience in some use cases (e.g., typing, watching video).
