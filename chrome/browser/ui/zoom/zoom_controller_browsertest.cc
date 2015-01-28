@@ -64,7 +64,35 @@ class ZoomChangedWatcher : public ZoomObserver {
   DISALLOW_COPY_AND_ASSIGN(ZoomChangedWatcher);
 };
 
-typedef InProcessBrowserTest ZoomControllerBrowserTest;
+class ZoomControllerBrowserTest : public InProcessBrowserTest {
+ public:
+  ZoomControllerBrowserTest() {}
+  ~ZoomControllerBrowserTest() override {}
+
+  void TestResetOnNavigation(ZoomController::ZoomMode zoom_mode) {
+    DCHECK(zoom_mode == ZoomController::ZOOM_MODE_ISOLATED ||
+           zoom_mode == ZoomController::ZOOM_MODE_MANUAL);
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+        browser(), GURL("about:blank"), 1);
+    ZoomController* zoom_controller =
+        ZoomController::FromWebContents(web_contents);
+    double zoom_level = zoom_controller->GetDefaultZoomLevel();
+    zoom_controller->SetZoomMode(zoom_mode);
+
+    // When the navigation occurs, the zoom_mode will be reset to
+    // ZOOM_MODE_DEFAULT, and this will be reflected in the event that
+    // is generated.
+    ZoomController::ZoomChangedEventData zoom_change_data(
+        web_contents, zoom_level, zoom_level, ZoomController::ZOOM_MODE_DEFAULT,
+        false);
+    ZoomChangedWatcher zoom_change_watcher(web_contents, zoom_change_data);
+
+    ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
+    zoom_change_watcher.Wait();
+  }
+};  // ZoomControllerBrowserTest
 
 #if defined(OS_ANDROID)
 #define MAYBE_CrashedTabsDoNotChangeZoom DISABLED_CrashedTabsDoNotChangeZoom
@@ -164,25 +192,12 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, Observe) {
 }
 
 IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, PerTabModeResetSendsEvent) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), GURL("about:blank"), 1);
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(web_contents);
-  double zoom_level = zoom_controller->GetDefaultZoomLevel();
-  zoom_controller->SetZoomMode(ZoomController::ZOOM_MODE_ISOLATED);
+  TestResetOnNavigation(ZoomController::ZOOM_MODE_ISOLATED);
+}
 
-  // When the navigation occurs, the ZOOM_MODE_ISOLATED will be reset to
-  // ZOOM_MODE_DEFAULT, and this will be reflected in the event that
-  // is generated.
-  ZoomController::ZoomChangedEventData zoom_change_data(
-      web_contents, zoom_level, zoom_level, ZoomController::ZOOM_MODE_DEFAULT,
-      false);
-  ZoomChangedWatcher zoom_change_watcher(web_contents, zoom_change_data);
-
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
-  zoom_change_watcher.Wait();
+// Regression test: crbug.com/450909.
+IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, NavigationResetsManualMode) {
+  TestResetOnNavigation(ZoomController::ZOOM_MODE_MANUAL);
 }
 
 #if !defined(OS_CHROMEOS)

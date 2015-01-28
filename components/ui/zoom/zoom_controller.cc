@@ -236,13 +236,14 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
 }
 
 void ZoomController::ResetZoomModeOnNavigationIfNeeded(const GURL& url) {
-  if (zoom_mode_ != ZOOM_MODE_ISOLATED)
+  if (zoom_mode_ != ZOOM_MODE_ISOLATED && zoom_mode_ != ZOOM_MODE_MANUAL)
     return;
 
   int render_process_id = web_contents()->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents()->GetRenderViewHost()->GetRoutingID();
   content::HostZoomMap* zoom_map =
     content::HostZoomMap::GetForWebContents(web_contents());
+  zoom_level_ = zoom_map->GetDefaultZoomLevel();
   double old_zoom_level = zoom_map->GetZoomLevel(web_contents());
   double new_zoom_level = zoom_map->GetZoomLevelForHostAndScheme(
       url.scheme(), net::GetHostOrSpecFromURL(url));
