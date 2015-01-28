@@ -100,6 +100,7 @@ def _JoinLines(lines):
 
 class DeviceUtils(object):
 
+  _MAX_ADB_COMMAND_LENGTH = 512
   _VALID_SHELL_VARIABLE = re.compile('^[a-zA-Z_][a-zA-Z0-9_]*$')
 
   def __init__(self, device, default_timeout=_DEFAULT_TIMEOUT,
@@ -461,6 +462,15 @@ class DeviceUtils(object):
       # using double quotes here to allow interpolation of shell variables
       return '%s=%s' % (key, cmd_helper.DoubleQuote(value))
 
+    def do_run(cmd):
+      try:
+        return self.adb.Shell(cmd)
+      except device_errors.AdbCommandFailedError as exc:
+        if check_return:
+          raise
+        else:
+          return exc.output
+
     if not isinstance(cmd, basestring):
       cmd = ' '.join(cmd_helper.SingleQuote(s) for s in cmd)
     if env:
@@ -474,13 +484,14 @@ class DeviceUtils(object):
     if timeout is None:
       timeout = self._default_timeout
 
-    try:
-      output = self.adb.Shell(cmd)
-    except device_errors.AdbCommandFailedError as e:
-      if check_return:
-        raise
-      else:
-        output = e.output
+    if len(cmd) < self._MAX_ADB_COMMAND_LENGTH:
+      output = do_run(cmd)
+    else:
+      with device_temp_file.DeviceTempFile(self.adb, suffix='.sh') as script:
+        self._WriteFileWithPush(script.name, cmd)
+        logging.info('Large shell command will be run from file: %s ...',
+                     cmd[:100])
+        output = do_run('sh %s' % script.name_quoted)
 
     output = output.splitlines()
     if single_line:
@@ -915,6 +926,12 @@ class DeviceUtils(object):
     return _JoinLines(self.RunShellCommand(
         ['cat', device_path], as_root=as_root, check_return=True))
 
+  def _WriteFileWithPush(self, device_path, contents):
+    with tempfile.NamedTemporaryFile() as host_temp:
+      host_temp.write(contents)
+      host_temp.flush()
+      self.adb.Push(host_temp.name, device_path)
+
   @decorators.WithTimeoutAndRetriesFromInstance()
   def WriteFile(self, device_path, contents, as_root=False, force_push=False,
                 timeout=None, retries=None):
@@ -937,24 +954,25 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    if len(contents) < 512 and not force_push:
+    if not force_push and len(contents) < self._MAX_ADB_COMMAND_LENGTH:
+      # If the contents are small, for efficieny we write the contents with
+      # a shell command rather than pushing a file.
       cmd = 'echo -n %s > %s' % (cmd_helper.SingleQuote(contents),
                                  cmd_helper.SingleQuote(device_path))
       self.RunShellCommand(cmd, as_root=as_root, check_return=True)
+    elif as_root and self.NeedsSU():
+      # Adb does not allow to "push with su", so we first push to a temp file
+      # on a safe location, and then copy it to the desired location with su.
+      with device_temp_file.DeviceTempFile(self.adb) as device_temp:
+        self._WriteFileWithPush(device_temp.name, contents)
+        # Here we need 'cp' rather than 'mv' because the temp and
+        # destination files might be on different file systems (e.g.
+        # on internal storage and an external sd card).
+        self.RunShellCommand(['cp', device_temp.name, device_path],
+                             as_root=True, check_return=True)
     else:
-      with tempfile.NamedTemporaryFile() as host_temp:
-        host_temp.write(contents)
-        host_temp.flush()
-        if as_root and self.NeedsSU():
-          with device_temp_file.DeviceTempFile(self.adb) as device_temp:
-            self.adb.Push(host_temp.name, device_temp.name)
-            # Here we need 'cp' rather than 'mv' because the temp and
-            # destination files might be on different file systems (e.g.
-            # on internal storage and an external sd card)
-            self.RunShellCommand(['cp', device_temp.name, device_path],
-                                 as_root=True, check_return=True)
-        else:
-          self.adb.Push(host_temp.name, device_path)
+      # If root is not needed, we can push directly to the desired location.
+      self._WriteFileWithPush(device_path, contents)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def Ls(self, device_path, timeout=None, retries=None):

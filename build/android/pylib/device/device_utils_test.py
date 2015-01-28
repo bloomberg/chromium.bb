@@ -21,6 +21,7 @@ import sys
 import unittest
 
 from pylib import android_commands
+from pylib import cmd_helper
 from pylib import constants
 from pylib.device import adb_wrapper
 from pylib.device import device_errors
@@ -105,6 +106,7 @@ class MockTempFile(object):
   def __init__(self, name='/tmp/some/file'):
     self.file = mock.MagicMock(spec=file)
     self.file.name = name
+    self.file.name_quoted = cmd_helper.SingleQuote(name)
 
   def __enter__(self):
     return self.file
@@ -556,6 +558,30 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsNewImplTest):
     with self.assertCall(
         self.call.adb.Shell("cd '/some test/path with/spaces' && ls"), ''):
       self.device.RunShellCommand('ls', cwd='/some test/path with/spaces')
+
+  def testRunShellCommand_withHugeCmd(self):
+    payload = 'hi! ' * 1024
+    expected_cmd = "echo '%s'" % payload
+    with self.assertCalls(
+      (mock.call.pylib.utils.device_temp_file.DeviceTempFile(
+          self.adb, suffix='.sh'), MockTempFile('/sdcard/temp-123.sh')),
+      self.call.device._WriteFileWithPush('/sdcard/temp-123.sh', expected_cmd),
+      (self.call.adb.Shell('sh /sdcard/temp-123.sh'), payload + '\n')):
+      self.assertEquals([payload],
+                        self.device.RunShellCommand(['echo', payload]))
+
+  def testRunShellCommand_withHugeCmdAmdSU(self):
+    payload = 'hi! ' * 1024
+    expected_cmd = """su -c sh -c 'echo '"'"'%s'"'"''""" % payload
+    with self.assertCalls(
+      (self.call.device.NeedsSU(), True),
+      (mock.call.pylib.utils.device_temp_file.DeviceTempFile(
+          self.adb, suffix='.sh'), MockTempFile('/sdcard/temp-123.sh')),
+      self.call.device._WriteFileWithPush('/sdcard/temp-123.sh', expected_cmd),
+      (self.call.adb.Shell('sh /sdcard/temp-123.sh'), payload + '\n')):
+      self.assertEquals(
+          [payload],
+          self.device.RunShellCommand(['echo', payload], as_root=True))
 
   def testRunShellCommand_withSu(self):
     with self.assertCalls(
@@ -1095,48 +1121,48 @@ class DeviceUtilsReadFileTest(DeviceUtilsNewImplTest):
 
 class DeviceUtilsWriteFileTest(DeviceUtilsNewImplTest):
 
-  def testWriteFile_withPush(self):
+  def testWriteFileWithPush_success(self):
     tmp_host = MockTempFile('/tmp/file/on.host')
-    contents = 'some large contents ' * 26 # 20 * 26 = 520 chars
+    contents = 'some interesting contents'
     with self.assertCalls(
         (mock.call.tempfile.NamedTemporaryFile(), tmp_host),
         self.call.adb.Push('/tmp/file/on.host', '/path/to/device/file')):
-      self.device.WriteFile('/path/to/device/file', contents)
-      tmp_host.file.write.assert_called_once_with(contents)
+      self.device._WriteFileWithPush('/path/to/device/file', contents)
+    tmp_host.file.write.assert_called_once_with(contents)
 
-  def testWriteFile_withPushForced(self):
+  def testWriteFileWithPush_rejected(self):
     tmp_host = MockTempFile('/tmp/file/on.host')
-    contents = 'tiny contents'
-    with self.assertCalls(
-        (mock.call.tempfile.NamedTemporaryFile(), tmp_host),
-        self.call.adb.Push('/tmp/file/on.host', '/path/to/device/file')):
-      self.device.WriteFile('/path/to/device/file', contents, force_push=True)
-      tmp_host.file.write.assert_called_once_with(contents)
-
-  def testWriteFile_withPushAndSU(self):
-    tmp_host = MockTempFile('/tmp/file/on.host')
-    contents = 'some large contents ' * 26 # 20 * 26 = 520 chars
-    with self.assertCalls(
-        (mock.call.tempfile.NamedTemporaryFile(), tmp_host),
-        (self.call.device.NeedsSU(), True),
-        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
-         MockTempFile('/external/path/tmp/on.device')),
-        self.call.adb.Push('/tmp/file/on.host', '/external/path/tmp/on.device'),
-        self.call.device.RunShellCommand(
-            ['cp', '/external/path/tmp/on.device', '/path/to/device/file'],
-            as_root=True, check_return=True)):
-      self.device.WriteFile('/path/to/device/file', contents, as_root=True)
-      tmp_host.file.write.assert_called_once_with(contents)
-
-  def testWriteFile_withPush_rejected(self):
-    tmp_host = MockTempFile('/tmp/file/on.host')
-    contents = 'some large contents ' * 26 # 20 * 26 = 520 chars
+    contents = 'some interesting contents'
     with self.assertCalls(
         (mock.call.tempfile.NamedTemporaryFile(), tmp_host),
         (self.call.adb.Push('/tmp/file/on.host', '/path/to/device/file'),
          self.CommandError())):
       with self.assertRaises(device_errors.CommandFailedError):
-        self.device.WriteFile('/path/to/device/file', contents)
+        self.device._WriteFileWithPush('/path/to/device/file', contents)
+
+  def testWriteFile_withPush(self):
+    contents = 'some large contents ' * 26 # 20 * 26 = 520 chars
+    with self.assertCalls(
+        self.call.device._WriteFileWithPush('/path/to/device/file', contents)):
+      self.device.WriteFile('/path/to/device/file', contents)
+
+  def testWriteFile_withPushForced(self):
+    contents = 'tiny contents'
+    with self.assertCalls(
+        self.call.device._WriteFileWithPush('/path/to/device/file', contents)):
+      self.device.WriteFile('/path/to/device/file', contents, force_push=True)
+
+  def testWriteFile_withPushAndSU(self):
+    contents = 'some large contents ' * 26 # 20 * 26 = 520 chars
+    with self.assertCalls(
+        (self.call.device.NeedsSU(), True),
+        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
+         MockTempFile('/sdcard/tmp/on.device')),
+        self.call.device._WriteFileWithPush('/sdcard/tmp/on.device', contents),
+        self.call.device.RunShellCommand(
+            ['cp', '/sdcard/tmp/on.device', '/path/to/device/file'],
+            as_root=True, check_return=True)):
+      self.device.WriteFile('/path/to/device/file', contents, as_root=True)
 
   def testWriteFile_withEcho(self):
     with self.assertCall(self.call.adb.Shell(
