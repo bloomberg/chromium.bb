@@ -128,6 +128,13 @@ bool isValidProtocol(const String& protocol)
     return true;
 }
 
+void KURL::initialize()
+{
+    // This must be called before we create other threads to
+    // avoid racy static local initialization.
+    blankURL();
+}
+
 String KURL::strippedForUseAsReferrer() const
 {
     if (!protocolIsInHTTPFamily())

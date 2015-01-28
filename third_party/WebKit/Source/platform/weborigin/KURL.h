@@ -46,6 +46,10 @@ enum ParsedURLStringTag { ParsedURLString };
 
 class PLATFORM_EXPORT KURL {
 public:
+    // This must be called during initialization (before we create
+    // other threads).
+    static void initialize();
+
     KURL();
     KURL(const KURL&);
     KURL& operator=(const KURL&);

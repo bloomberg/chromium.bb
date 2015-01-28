@@ -56,6 +56,7 @@
 #include "platform/FontFamilyNames.h"
 #include "platform/Partitions.h"
 #include "platform/PlatformThreadData.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/text/StringStatics.h"
 
 namespace blink {
@@ -103,6 +104,7 @@ void CoreInitializer::init()
     QualifiedName::init();
     Partitions::init();
     EventTracer::initialize();
+    KURL::initialize();
 
     registerEventFactory();
 
