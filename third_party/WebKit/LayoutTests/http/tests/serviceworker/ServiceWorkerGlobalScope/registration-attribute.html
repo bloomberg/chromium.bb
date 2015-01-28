@@ -15,9 +15,19 @@ promise_test(function(t) {
         })
       .then(function() { return with_iframe(scope); })
       .then(function(frame) {
+          var expected_events_seen = [
+            'updatefound',
+            'install',
+            'statechange(installed)',
+            'statechange(activating)',
+            'activate',
+            'statechange(activated)',
+            'fetch',
+          ];
+
           assert_equals(
               frame.contentDocument.body.textContent,
-              'PASS',
+              expected_events_seen.toString(),
               'Service Worker should respond to fetch');
           frame.remove();
           return service_worker_unregister_and_done(t, scope);
