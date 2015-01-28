@@ -414,23 +414,29 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const Sty
 
 static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const RenderStyle& style, const RenderObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
-    static const CSSPropertyID propertiesBeforeSlashSeperator[] = {
-        CSSPropertyBackgroundColor,
-        CSSPropertyBackgroundImage,
-        CSSPropertyBackgroundRepeat,
-        CSSPropertyBackgroundAttachment,
-        CSSPropertyBackgroundPosition
-    };
-    static const CSSPropertyID propertiesAfterSlashSeperator[] = {
-        CSSPropertyBackgroundSize,
-        CSSPropertyBackgroundOrigin,
-        CSSPropertyBackgroundClip
-    };
-
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
-    list->append(valuesForShorthandProperty(StylePropertyShorthand(CSSPropertyBackground, propertiesBeforeSlashSeperator, WTF_ARRAY_LENGTH(propertiesBeforeSlashSeperator)), style, renderer, styledNode, allowVisitedStyle));
-    list->append(valuesForShorthandProperty(StylePropertyShorthand(CSSPropertyBackground, propertiesAfterSlashSeperator, WTF_ARRAY_LENGTH(propertiesAfterSlashSeperator)), style, renderer, styledNode, allowVisitedStyle));
-    return list.release();
+    RefPtrWillBeRawPtr<CSSValueList> ret = CSSValueList::createCommaSeparated();
+    const FillLayer* currLayer = &style.backgroundLayers();
+    for (; currLayer; currLayer = currLayer->next()) {
+        RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
+        RefPtrWillBeRawPtr<CSSValueList> beforeSlash = CSSValueList::createSpaceSeparated();
+        if (!currLayer->next()) { // color only for final layer
+            RefPtrWillBeRawPtr<CSSValue> value = RenderStyleCSSValueMapping::get(CSSPropertyBackgroundColor, style, renderer, styledNode, allowVisitedStyle);
+            ASSERT(value);
+            beforeSlash->append(value);
+        }
+        beforeSlash->append(currLayer->image() ? currLayer->image()->cssValue() : cssValuePool().createIdentifierValue(CSSValueNone));
+        beforeSlash->append(valueForFillRepeat(currLayer->repeatX(), currLayer->repeatY()));
+        beforeSlash->append(cssValuePool().createValue(currLayer->attachment()));
+        beforeSlash->append(createPositionListForLayer(CSSPropertyBackgroundPosition, *currLayer, style));
+        list->append(beforeSlash);
+        RefPtrWillBeRawPtr<CSSValueList> afterSlash = CSSValueList::createSpaceSeparated();
+        afterSlash->append(valueForFillSize(currLayer->size(), style));
+        afterSlash->append(cssValuePool().createValue(currLayer->origin()));
+        afterSlash->append(cssValuePool().createValue(currLayer->clip()));
+        list->append(afterSlash);
+        ret->append(list);
+    }
+    return ret.release();
 }
 
 static ContentPosition resolveContentAlignmentAuto(ContentPosition position, ContentDistributionType distribution, Node* element)
