@@ -49,10 +49,6 @@
 struct IDWriteFactory;
 #endif
 
-#if OS(ANDROID)
-#include <unicode/uscript.h>
-#endif
-
 class SkTypeface;
 
 namespace blink {
