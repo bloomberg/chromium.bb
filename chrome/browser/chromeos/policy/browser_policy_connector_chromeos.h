@@ -24,6 +24,7 @@ class URLRequestContextGetter;
 
 namespace policy {
 
+class AffiliatedInvalidationServiceProvider;
 class ConsumerManagementService;
 class DeviceCloudPolicyInitializer;
 class DeviceCloudPolicyInvalidator;
@@ -150,6 +151,8 @@ class BrowserPolicyConnectorChromeOS
   // Components of the device cloud policy implementation.
   scoped_ptr<ServerBackedStateKeysBroker> state_keys_broker_;
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
+  scoped_ptr<AffiliatedInvalidationServiceProvider>
+      affiliated_invalidation_service_provider_;
   scoped_ptr<ConsumerManagementService> consumer_management_service_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_;
   PrefService* local_state_;

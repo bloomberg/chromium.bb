@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_invalidator.h"
@@ -152,6 +153,9 @@ void BrowserPolicyConnectorChromeOS::Init(
   local_state_ = local_state;
   ChromeBrowserPolicyConnector::Init(local_state, request_context);
 
+  affiliated_invalidation_service_provider_.reset(
+      new AffiliatedInvalidationServiceProvider);
+
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kEnableConsumerManagement)) {
@@ -201,6 +205,13 @@ void BrowserPolicyConnectorChromeOS::Init(
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {
+  // Let the |affiliated_invalidation_service_provider_| unregister itself as an
+  // observer of per-Profile InvalidationServices and the device-global
+  // invalidation::TiclInvalidationService it may have created as an observer of
+  // the DeviceOAuth2TokenService that is destroyed before Shutdown() is called.
+  if (affiliated_invalidation_service_provider_)
+    affiliated_invalidation_service_provider_->Shutdown();
+
   // Let the |device_cloud_policy_invalidator_| unregister itself as an
   // observer of per-Profile InvalidationServices and the device-global
   // invalidation::TiclInvalidationService it may have created as an observer of

@@ -727,6 +727,8 @@
         'browser/chromeos/platform_keys/platform_keys_service.h',
         'browser/chromeos/platform_keys/platform_keys_service_factory.cc',
         'browser/chromeos/platform_keys/platform_keys_service_factory.h',
+        'browser/chromeos/policy/affiliated_invalidation_service_provider.cc',
+        'browser/chromeos/policy/affiliated_invalidation_service_provider.h',
         'browser/chromeos/policy/auto_enrollment_client.cc',
         'browser/chromeos/policy/auto_enrollment_client.h',
         'browser/chromeos/policy/browser_policy_connector_chromeos.cc',

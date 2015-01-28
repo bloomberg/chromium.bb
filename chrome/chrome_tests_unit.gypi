@@ -1244,6 +1244,7 @@
       'browser/chromeos/ownership/fake_owner_settings_service.cc',
       'browser/chromeos/ownership/fake_owner_settings_service.h',
       'browser/chromeos/ownership/owner_settings_service_chromeos_unittest.cc',
+      'browser/chromeos/policy/affiliated_invalidation_service_provider_unittest.cc',
       'browser/chromeos/policy/auto_enrollment_client_unittest.cc',
       'browser/chromeos/policy/cloud_external_data_manager_base_unittest.cc',
       'browser/chromeos/policy/cloud_external_data_policy_observer_unittest.cc',
