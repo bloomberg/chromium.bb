@@ -1009,7 +1009,11 @@ LRESULT HWNDMessageHandler::HandleKeyboardMessage(unsigned int message,
                                                   LPARAM l_param,
                                                   bool* handled) {
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
-  LRESULT ret = OnKeyEvent(message, w_param, l_param);
+  LRESULT ret = 0;
+  if ((message == WM_CHAR) || (message == WM_SYSCHAR))
+    ret = OnImeMessages(message, w_param, l_param);
+  else
+    ret = OnKeyEvent(message, w_param, l_param);
   *handled = IsMsgHandled();
   return ret;
 }
