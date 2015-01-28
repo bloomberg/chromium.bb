@@ -1,6 +1,7 @@
 per-file chromeos_switches.cc=*
 per-file chromeos_switches.h=*
 per-file chromeos.gyp=*
+per-file BUILD.gn=*
 
 zelidrag@chromium.org
 stevenjb@chromium.org
