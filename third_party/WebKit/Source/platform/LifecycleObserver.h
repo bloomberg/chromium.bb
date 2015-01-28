@@ -34,12 +34,10 @@ namespace blink {
 
 template<typename T>
 class LifecycleObserver : public WillBeGarbageCollectedMixin {
-    // FIXME: Oilpan: Remove the pre-finalizer by moving LifecycleNotifer
-    // to Oilpan's heap and making LifecycleNotifer::m_observers
+    // FIXME: Oilpan: Remove the pre-finalizer by moving LifecycleNotifier
+    // to Oilpan's heap and making LifecycleNotifier::m_observers
     // a hash set of weak members.
-#if ENABLE(OILPAN)
-    USING_PRE_FINALIZER(LifecycleObserver, dispose);
-#endif
+    WILL_BE_USING_PRE_FINALIZER(LifecycleObserver, dispose);
 public:
     typedef T Context;
 

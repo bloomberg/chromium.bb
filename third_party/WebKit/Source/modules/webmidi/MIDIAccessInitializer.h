@@ -19,9 +19,7 @@ class MIDIOptions;
 class ScriptState;
 
 class MIDIAccessInitializer : public ScriptPromiseResolver, public MIDIAccessorClient {
-#if ENABLE(OILPAN)
-    USING_PRE_FINALIZER(MIDIAccessInitializer, dispose);
-#endif
+    WILL_BE_USING_PRE_FINALIZER(MIDIAccessInitializer, dispose);
 public:
     struct PortDescriptor {
         String id;
@@ -74,6 +72,5 @@ private:
 };
 
 } // namespace blink
-
 
 #endif // MIDIAccessInitializer_h

@@ -40,9 +40,7 @@ class RenderScrollbarPart;
 class RenderStyle;
 
 class RenderScrollbar final : public Scrollbar {
-#if ENABLE(OILPAN)
-    USING_PRE_FINALIZER(RenderScrollbar, destroyParts);
-#endif
+    WILL_BE_USING_PRE_FINALIZER(RenderScrollbar, destroyParts);
 public:
     static PassRefPtrWillBeRawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = 0);
     virtual ~RenderScrollbar();

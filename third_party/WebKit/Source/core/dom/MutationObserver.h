@@ -53,16 +53,14 @@ class Node;
 typedef unsigned char MutationObserverOptions;
 typedef unsigned char MutationRecordDeliveryOptions;
 
-typedef WillBeHeapHashSet<RefPtrWillBeMember<MutationObserver> > MutationObserverSet;
-typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<MutationObserverRegistration> > MutationObserverRegistrationSet;
-typedef WillBeHeapVector<RefPtrWillBeMember<MutationObserver> > MutationObserverVector;
-typedef WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > MutationRecordVector;
+using MutationObserverSet = WillBeHeapHashSet<RefPtrWillBeMember<MutationObserver>>;
+using MutationObserverRegistrationSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<MutationObserverRegistration>>;
+using MutationObserverVector = WillBeHeapVector<RefPtrWillBeMember<MutationObserver>>;
+using MutationRecordVector = WillBeHeapVector<RefPtrWillBeMember<MutationRecord>>;
 
 class MutationObserver final : public RefCountedWillBeGarbageCollectedFinalized<MutationObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-#if ENABLE(OILPAN)
-    USING_PRE_FINALIZER(MutationObserver, dispose);
-#endif
+    WILL_BE_USING_PRE_FINALIZER(MutationObserver, dispose);
 public:
     enum MutationType {
         ChildList = 1 << 0,
@@ -89,7 +87,7 @@ public:
     ~MutationObserver();
 
     void observe(Node*, const MutationObserverInit&, ExceptionState&);
-    WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > takeRecords();
+    MutationRecordVector takeRecords();
     void disconnect();
     void observationStarted(MutationObserverRegistration*);
     void observationEnded(MutationObserverRegistration*);
@@ -99,7 +97,6 @@ public:
     WillBeHeapHashSet<RawPtrWillBeMember<Node> > getObservedNodes() const;
 
     void trace(Visitor*);
-    void dispose();
 
 private:
     struct ObserverLessThan;
@@ -107,6 +104,8 @@ private:
     explicit MutationObserver(PassOwnPtrWillBeRawPtr<MutationCallback>);
     void deliver();
     bool shouldBeSuspended() const;
+
+    void dispose();
 
     OwnPtrWillBeMember<MutationCallback> m_callback;
     MutationRecordVector m_records;

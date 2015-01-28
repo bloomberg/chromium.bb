@@ -21,6 +21,9 @@ MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MID
     : ScriptPromiseResolver(scriptState)
     , m_requestSysex(false)
 {
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(*this);
+#endif
     if (options.hasSysex())
         m_requestSysex = options.sysex();
 }
