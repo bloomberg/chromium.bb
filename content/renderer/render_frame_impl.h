@@ -566,7 +566,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void RemoveObserver(RenderFrameObserver* observer);
 
   // Builds and sends DidCommitProvisionalLoad to the host.
-  void SendDidCommitProvisionalLoad(blink::WebFrame* frame);
+  void SendDidCommitProvisionalLoad(blink::WebFrame* frame,
+                                    blink::WebHistoryCommitType commit_type);
 
   // Gets the focused element. If no such element exists then the element will
   // be NULL.
