@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_info_interface.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -98,7 +99,9 @@ class Observer : public chrome::BrowserListObserver,
 }
 
 - (IBAction)newProfile:(id)sender {
-  avatarMenu_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_MENU);
+  profiles::CreateAndSwitchToNewProfile(chrome::HOST_DESKTOP_TYPE_NATIVE,
+                                        ProfileManager::CreateCallback(),
+                                        ProfileMetrics::ADD_NEW_USER_MENU);
 }
 
 - (BOOL)insertItemsIntoMenu:(NSMenu*)menu

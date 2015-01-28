@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -893,5 +894,7 @@ void GlobalMenuBarX11::OnEditProfileItemActivated(DbusmenuMenuitem* sender,
 
 void GlobalMenuBarX11::OnCreateProfileItemActivated(DbusmenuMenuitem* sender,
                                                     unsigned int timestamp) {
-  avatar_menu_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_MENU);
+  profiles::CreateAndSwitchToNewProfile(chrome::HOST_DESKTOP_TYPE_NATIVE,
+                                        ProfileManager::CreateCallback(),
+                                        ProfileMetrics::ADD_NEW_USER_MENU);
 }
