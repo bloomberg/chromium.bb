@@ -21620,6 +21620,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.WakeOnWiFiThrottled"
+    enum="WakeOnWiFiThrottled">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks whether wake on WiFi was disabled
+    during a period of system suspension because of too many dark resume wakes.
+    This metric is only recorded for system suspends where wake on WiFi
+    functionality has been programmed into the NIC.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.WiFiConnectionStatusAfterWake"
     enum="WiFiConnectionStatusAfterWake">
   <owner>samueltan@chromium.org</owner>
@@ -58851,6 +58862,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Packet"/>
   <int value="2" label="DarkConnect"/>
   <int value="3" label="Packet and DarkConnect"/>
+</enum>
+
+<enum name="WakeOnWiFiThrottled" type="int">
+  <summary>
+    Whether or not wake on WiFi was disabled during suspend because of excessive
+    dark resume wakes. Corresponds to WakeOnWiFiThrottled in shill/metrics.h
+  </summary>
+  <int value="0"
+      label="False (Wake on WiFi was not disabled due to excessive dark
+             resume wakes"/>
+  <int value="1"
+      label="True (Wake on WiFi was disabled due to exessive dark resume
+             wakes"/>
 </enum>
 
 <enum name="WalletApiCall" type="int">
