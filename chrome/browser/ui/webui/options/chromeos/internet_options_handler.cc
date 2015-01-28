@@ -34,7 +34,6 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
-#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_event_log.h"
@@ -88,7 +87,6 @@ const char kUpdateCarrierFunction[] =
 
 // Setter methods called from JS that still need to be converted to match
 // networkingPrivate methods.
-const char kSetApnMessage[] = "setApn";
 const char kSetCarrierMessage[] = "setCarrier";
 const char kShowMorePlanInfoMessage[] = "showMorePlanInfo";
 const char kSimOperationMessage[] = "simOperation";
@@ -283,9 +281,6 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kShowMorePlanInfoMessage,
       base::Bind(&InternetOptionsHandler::ShowMorePlanInfoCallback,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kSetApnMessage,
-      base::Bind(&InternetOptionsHandler::SetApnCallback,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSetCarrierMessage,
       base::Bind(&InternetOptionsHandler::SetCarrierCallback,
                  base::Unretained(this)));
@@ -327,66 +322,6 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(
     return;
   }
   ui::NetworkConnect::Get()->ShowMobileSetup(service_path);
-}
-
-void InternetOptionsHandler::SetApnCallback(const base::ListValue* args) {
-  std::string service_path;
-  if (!args->GetString(0, &service_path)) {
-    NOTREACHED();
-    return;
-  }
-  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
-      service_path,
-      base::Bind(&InternetOptionsHandler::SetApnProperties,
-                 weak_factory_.GetWeakPtr(), base::Owned(args->DeepCopy())),
-      base::Bind(&ShillError, "SetApnCallback"));
-}
-
-void InternetOptionsHandler::SetApnProperties(
-    const base::ListValue* args,
-    const std::string& service_path,
-    const base::DictionaryValue& shill_properties) {
-  std::string apn, username, password;
-  if (!args->GetString(1, &apn) ||
-      !args->GetString(2, &username) ||
-      !args->GetString(3, &password)) {
-    NOTREACHED();
-    return;
-  }
-  NET_LOG_EVENT("SetApnCallback", service_path);
-
-  if (apn.empty()) {
-    std::vector<std::string> properties_to_clear;
-    properties_to_clear.push_back(shill::kCellularApnProperty);
-    NetworkHandler::Get()->network_configuration_handler()->ClearProperties(
-      service_path, properties_to_clear,
-      base::Bind(&base::DoNothing),
-      base::Bind(&ShillError, "ClearCellularApnProperties"));
-    return;
-  }
-
-  const base::DictionaryValue* shill_apn_dict = NULL;
-  std::string network_id;
-  if (shill_properties.GetDictionaryWithoutPathExpansion(
-          shill::kCellularApnProperty, &shill_apn_dict)) {
-    shill_apn_dict->GetStringWithoutPathExpansion(
-        shill::kApnNetworkIdProperty, &network_id);
-  }
-  base::DictionaryValue properties;
-  base::DictionaryValue* apn_dict = new base::DictionaryValue;
-  apn_dict->SetStringWithoutPathExpansion(shill::kApnProperty, apn);
-  apn_dict->SetStringWithoutPathExpansion(shill::kApnNetworkIdProperty,
-                                          network_id);
-  apn_dict->SetStringWithoutPathExpansion(shill::kApnUsernameProperty,
-                                          username);
-  apn_dict->SetStringWithoutPathExpansion(shill::kApnPasswordProperty,
-                                          password);
-  properties.SetWithoutPathExpansion(shill::kCellularApnProperty, apn_dict);
-  NetworkHandler::Get()->network_configuration_handler()->SetProperties(
-      service_path, properties,
-      NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::Bind(&base::DoNothing),
-      base::Bind(&ShillError, "SetApnProperties"));
 }
 
 void InternetOptionsHandler::CarrierStatusCallback() {

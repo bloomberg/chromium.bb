@@ -767,6 +767,9 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                          state,
                          add_to_visible);
     base::StringValue technology_value(shill::kNetworkTechnologyGsm);
+    devices->SetDeviceProperty("/device/cellular1",
+                               shill::kTechnologyFamilyProperty,
+                               technology_value);
     services->SetServiceProperty(kCellularServicePath,
                                  shill::kNetworkTechnologyProperty,
                                  technology_value);
@@ -789,6 +792,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     services->SetServiceProperty(kCellularServicePath,
                                  shill::kRoamingStateProperty,
                                  base::StringValue(shill::kRoamingStateHome));
+    profiles->AddService(shared_profile, kCellularServicePath);
   }
 
   // VPN

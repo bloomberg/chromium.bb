@@ -51,10 +51,6 @@ class InternetOptionsHandler
 
   // Callbacks to set network state properties.
   void ShowMorePlanInfoCallback(const base::ListValue* args);
-  void SetApnCallback(const base::ListValue* args);
-  void SetApnProperties(const base::ListValue* args,
-                        const std::string& service_path,
-                        const base::DictionaryValue& shill_properties);
   void CarrierStatusCallback();
   void SetCarrierCallback(const base::ListValue* args);
   void SimOperationCallback(const base::ListValue* args);

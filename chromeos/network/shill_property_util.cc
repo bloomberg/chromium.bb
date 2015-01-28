@@ -247,6 +247,9 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
         CopyStringFromDictionary(service_properties, shill::kWifiHexSsid, dest);
     success &= CopyStringFromDictionary(
         service_properties, shill::kModeProperty, dest);
+  } else if (type == shill::kTypeCellular) {
+    success &= CopyStringFromDictionary(
+        service_properties, shill::kNetworkTechnologyProperty, dest);
   } else if (type == shill::kTypeVPN) {
     success &= CopyStringFromDictionary(
         service_properties, shill::kNameProperty, dest);

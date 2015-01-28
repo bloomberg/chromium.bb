@@ -179,10 +179,16 @@ cr.define('options.internet', function() {
    * @extends {cr.ui.pageManager.Page}
    */
   function DetailsInternetPage() {
-    // Cached Apn properties
+    // If non-negative, indicates a custom entry in select-apn.
     this.userApnIndex_ = -1;
-    this.selectedApnIndex_ = -1;
+
+    // The custom APN properties associated with entry |userApnIndex_|.
     this.userApn_ = {};
+
+    // The currently selected APN entry in $('select-apn') (which may or may not
+    // == userApnIndex_).
+    this.selectedApnIndex_ = -1;
+
     // We show the Proxy configuration tab for remembered networks and when
     // configuring a proxy from the login screen.
     this.showProxy_ = false;
@@ -784,18 +790,29 @@ cr.define('options.internet', function() {
     },
 
     /**
-     * Helper method called from initializeDetailsPage to initialize the Apn
-     * list.
+     * Helper method to insert a 'user' option into the Apn list.
+     * @param {Object} userOption The 'user' apn dictionary
      * @private
      */
-    initializeApnList_: function() {
-      var onc = this.onc_;
-
+    insertApnUserOption_: function(userOption) {
+      // Add the 'user' option before the last option ('other')
       var apnSelector = $('select-apn');
-      // Clear APN lists, keep only last element that "other".
-      while (apnSelector.length != 1) {
-        apnSelector.remove(0);
-      }
+      assert(apnSelector.length > 0);
+      var otherOption = apnSelector[apnSelector.length - 1];
+      apnSelector.add(userOption, otherOption);
+      this.userApnIndex_ = apnSelector.length - 2;
+      this.selectedApnIndex_ = this.userApnIndex_;
+    },
+
+    /**
+     * Helper method called from initializeApnList to populate the Apn list.
+     * @param {Array} apnList List of available APNs.
+     * @private
+     */
+    populateApnList_: function(apnList) {
+      var onc = this.onc_;
+      var apnSelector = $('select-apn');
+      assert(apnSelector.length == 1);
       var otherOption = apnSelector[0];
       var activeApn = onc.getActiveValue('Cellular.APN.AccessPointName');
       var activeUsername = onc.getActiveValue('Cellular.APN.Username');
@@ -806,7 +823,6 @@ cr.define('options.internet', function() {
           onc.getActiveValue('Cellular.LastGoodAPN.Username');
       var lastGoodPassword =
           onc.getActiveValue('Cellular.LastGoodAPN.Password');
-      var apnList = onc.getActiveValue('Cellular.APNList');
       for (var i = 0; i < apnList.length; i++) {
         var apnDict = apnList[i];
         var option = document.createElement('option');
@@ -816,30 +832,58 @@ cr.define('options.internet', function() {
         option.textContent =
             name ? (name + ' (' + accessPointName + ')') : accessPointName;
         option.value = i;
-        // Insert new option before "other" option.
+        // Insert new option before 'other' option.
         apnSelector.add(option, otherOption);
         if (this.selectedApnIndex_ != -1)
           continue;
-        // If this matches the active Apn, or LastGoodApn (or there is no last
-        // good APN), set it as the selected Apn.
-        if ((activeApn == accessPointName &&
-             activeUsername == apnDict['Username'] &&
-             activePassword == apnDict['Password']) ||
-            (!activeApn && !lastGoodApn) ||
-            (!activeApn &&
-             lastGoodApn == accessPointName &&
-             lastGoodUsername == apnDict['Username'] &&
-             lastGoodPassword == apnDict['Password'])) {
+        // If this matches the active Apn name, or LastGoodApn name (or there
+        // is no last good APN), set it as the selected Apn.
+        if ((activeApn == accessPointName) ||
+            (!activeApn && (!lastGoodApn || lastGoodApn == accessPointName))) {
           this.selectedApnIndex_ = i;
         }
       }
       if (this.selectedApnIndex_ == -1 && activeApn) {
-        var activeOption = document.createElement('option');
-        activeOption.textContent = activeApn;
-        activeOption.value = -1;
-        apnSelector.add(activeOption, otherOption);
-        this.selectedApnIndex_ = apnSelector.length - 2;
-        this.userApnIndex_ = this.selectedApnIndex_;
+        this.userApn_ = activeApn;
+        // Create a 'user' entry for any active apn not in the list.
+        var userOption = document.createElement('option');
+        userOption.textContent = activeApn;
+        userOption.value = -1;
+        this.insertApnUserOption_(userOption);
+      }
+    },
+
+    /**
+     * Helper method called from initializeDetailsPage to initialize the Apn
+     * list.
+     * @private
+     */
+    initializeApnList_: function() {
+      this.selectedApnIndex_ = -1;
+      this.userApnIndex_ = -1;
+
+      var onc = this.onc_;
+      var apnSelector = $('select-apn');
+
+      // Clear APN lists, keep only last element, 'other'.
+      while (apnSelector.length != 1)
+        apnSelector.remove(0);
+
+      var apnList = onc.getActiveValue('Cellular.APNList');
+      if (apnList) {
+        // Populate the list with the existing APNs.
+        this.populateApnList_(apnList);
+      } else {
+        // Create a single 'default' entry.
+        var otherOption = apnSelector[0];
+        var defaultOption = document.createElement('option');
+        defaultOption.textContent =
+            loadTimeData.getString('cellularApnUseDefault');
+        defaultOption.value = -1;
+        // Add 'default' entry before 'other' option
+        apnSelector.add(defaultOption, otherOption);
+        assert(apnSelector.length == 2);  // 'default', 'other'
+        this.selectedApnIndex_ = 0;  // Select 'default'
       }
       assert(this.selectedApnIndex_ >= 0);
       apnSelector.selectedIndex = this.selectedApnIndex_;
@@ -848,36 +892,48 @@ cr.define('options.internet', function() {
     },
 
     /**
+     * Helper function for setting APN properties.
+     * @param {Object} apnValue Dictionary of APN properties.
+     * @private
+     */
+    setActiveApn_: function(apnValue) {
+      var activeApn = {};
+      var apnName = apnValue['AccessPointName'];
+      if (apnName) {
+        activeApn['AccessPointName'] = apnName;
+        activeApn['Username'] = stringFromValue(apnValue['Username']);
+        activeApn['Password'] = stringFromValue(apnValue['Password']);
+      }
+      // Set the cached ONC data.
+      this.onc_.setProperty('Cellular.APN', activeApn);
+      // Set an ONC object with just the APN values.
+      var oncData = new OncData({});
+      oncData.setProperty('Cellular.APN', activeApn);
+      // TODO(stevenjb): chrome.networkingPrivate.setProperties
+      chrome.send('setProperties', [this.servicePath_, oncData.getData()]);
+    },
+
+    /**
      * Event Listener for the cellular-apn-use-default button.
      * @private
      */
     setDefaultApn_: function() {
-      var onc = this.onc_;
       var apnSelector = $('select-apn');
 
+      // Remove the 'user' entry if it exists.
       if (this.userApnIndex_ != -1) {
+        assert(this.userApnIndex_ < apnSelector.length - 1);
         apnSelector.remove(this.userApnIndex_);
         this.userApnIndex_ = -1;
       }
 
-      var iApn = -1;
-      var apnList = onc.getActiveValue('Cellular.APNList');
-      if (apnList != undefined && apnList.length > 0) {
-        iApn = 0;
-        var defaultApn = apnList[iApn];
-        var activeApn = {};
-        activeApn['AccessPointName'] =
-            stringFromValue(defaultApn['AccessPointName']);
-        activeApn['Username'] = stringFromValue(defaultApn['Username']);
-        activeApn['Password'] = stringFromValue(defaultApn['Password']);
-        onc.setProperty('Cellular.APN', activeApn);
-        chrome.send('setApn', [this.servicePath_,
-                               activeApn['AccessPointName'],
-                               activeApn['Username'],
-                               activeApn['Password']]);
-      }
+      var apnList = this.onc_.getActiveValue('Cellular.APNList');
+      var iApn = (apnList != undefined && apnList.length > 0) ? 0 : -1;
       apnSelector.selectedIndex = iApn;
       this.selectedApnIndex_ = iApn;
+
+      // Clear any user APN entry to inform Chrome to use the default APN.
+      this.setActiveApn_({});
 
       updateHidden('.apn-list-view', false);
       updateHidden('.apn-details-view', true);
@@ -891,32 +947,29 @@ cr.define('options.internet', function() {
       if (apnValue == '')
         return;
 
-      var onc = this.onc_;
       var apnSelector = $('select-apn');
 
       var activeApn = {};
       activeApn['AccessPointName'] = stringFromValue(apnValue);
       activeApn['Username'] = stringFromValue($('cellular-apn-username').value);
       activeApn['Password'] = stringFromValue($('cellular-apn-password').value);
-      onc.setProperty('Cellular.APN', activeApn);
+      this.setActiveApn_(activeApn);
+      // Set the user selected APN.
       this.userApn_ = activeApn;
-      chrome.send('setApn', [this.servicePath_,
-                             activeApn['AccessPointName'],
-                             activeApn['Username'],
-                             activeApn['Password']]);
 
+      // Remove any existing 'user' entry.
       if (this.userApnIndex_ != -1) {
+        assert(this.userApnIndex_ < apnSelector.length - 1);
         apnSelector.remove(this.userApnIndex_);
         this.userApnIndex_ = -1;
       }
 
+      // Create a new 'user' entry with the new active apn.
       var option = document.createElement('option');
       option.textContent = activeApn['AccessPointName'];
       option.value = -1;
       option.selected = true;
-      apnSelector.add(option, apnSelector[apnSelector.length - 1]);
-      this.userApnIndex_ = apnSelector.length - 2;
-      this.selectedApnIndex_ = this.userApnIndex_;
+      this.insertApnUserOption_(option);
 
       updateHidden('.apn-list-view', false);
       updateHidden('.apn-details-view', true);
@@ -927,9 +980,7 @@ cr.define('options.internet', function() {
      * @private
      */
     cancelApn_: function() {
-      $('select-apn').selectedIndex = this.selectedApnIndex_;
-      updateHidden('.apn-list-view', false);
-      updateHidden('.apn-details-view', true);
+      this.initializeApnList_();
     },
 
     /**
@@ -939,31 +990,31 @@ cr.define('options.internet', function() {
     selectApn_: function() {
       var onc = this.onc_;
       var apnSelector = $('select-apn');
-      var apnDict;
       if (apnSelector[apnSelector.selectedIndex].value != -1) {
         var apnList = onc.getActiveValue('Cellular.APNList');
         var apnIndex = apnSelector.selectedIndex;
         assert(apnIndex < apnList.length);
-        apnDict = apnList[apnIndex];
-        chrome.send('setApn', [this.servicePath_,
-                               stringFromValue(apnDict['AccessPointName']),
-                               stringFromValue(apnDict['Username']),
-                               stringFromValue(apnDict['Password'])]);
         this.selectedApnIndex_ = apnIndex;
+        this.setActiveApn_(apnList[apnIndex]);
       } else if (apnSelector.selectedIndex == this.userApnIndex_) {
-        apnDict = this.userApn_;
-        chrome.send('setApn', [this.servicePath_,
-                               stringFromValue(apnDict['AccessPointName']),
-                               stringFromValue(apnDict['Username']),
-                               stringFromValue(apnDict['Password'])]);
         this.selectedApnIndex_ = apnSelector.selectedIndex;
-      } else {
-        $('cellular-apn').value =
-            stringFromValue(onc.getActiveValue('Cellular.APN.AccessPointName'));
-        $('cellular-apn-username').value =
-            stringFromValue(onc.getActiveValue('Cellular.APN.Username'));
-        $('cellular-apn-password').value =
-            stringFromValue(onc.getActiveValue('Cellular.APN.Password'));
+        this.setActiveApn_(this.userApn_);
+      } else { // 'Other'
+        var apnDict;
+        if (this.userApn_['AccessPointName']) {
+          // Fill in the details fields with the existing 'user' config.
+          apnDict = this.userApn_;
+        } else {
+          // No 'user' config, use the current values.
+          apnDict = {};
+          apnDict['AccessPointName'] =
+              onc.getActiveValue('Cellular.APN.AccessPointName');
+          apnDict['Username'] = onc.getActiveValue('Cellular.APN.Username');
+          apnDict['Password'] = onc.getActiveValue('Cellular.APN.Password');
+        }
+        $('cellular-apn').value = stringFromValue(apnDict['AccessPointName']);
+        $('cellular-apn-username').value = stringFromValue(apnDict['Username']);
+        $('cellular-apn-password').value = stringFromValue(apnDict['Password']);
         updateHidden('.apn-list-view', true);
         updateHidden('.apn-details-view', false);
       }
