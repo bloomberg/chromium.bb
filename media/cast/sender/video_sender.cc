@@ -8,9 +8,9 @@
 #include <cstring>
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/trace_event/trace_event.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/sender/external_video_encoder.h"

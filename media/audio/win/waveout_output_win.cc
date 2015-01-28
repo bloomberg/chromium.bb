@@ -10,8 +10,8 @@
 
 #include "base/atomicops.h"
 #include "base/basictypes.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/win/audio_manager_win.h"
 

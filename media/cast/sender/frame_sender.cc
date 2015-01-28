@@ -4,7 +4,7 @@
 
 #include "media/cast/sender/frame_sender.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 
 namespace media {
 namespace cast {

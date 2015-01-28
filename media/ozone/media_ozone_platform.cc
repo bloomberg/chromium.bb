@@ -4,8 +4,8 @@
 
 #include "media/ozone/media_ozone_platform.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/ozone/platform_object.h"
 #include "ui/ozone/platform_selection.h"
 

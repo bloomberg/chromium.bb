@@ -5,9 +5,9 @@
 #include "media/audio/audio_output_device.h"
 
 #include "base/basictypes.h"
-#include "base/debug/trace_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/base/limits.h"
 

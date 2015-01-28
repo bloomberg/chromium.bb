@@ -9,10 +9,10 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_pull_fifo.h"
 

@@ -5,12 +5,12 @@
 #include "media/audio/audio_output_controller.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/scoped_histogram_timer.h"
 

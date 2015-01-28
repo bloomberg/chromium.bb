@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"

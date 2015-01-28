@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/big_endian.h"
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "media/cast/logging/logging_impl.h"
 
 namespace media {

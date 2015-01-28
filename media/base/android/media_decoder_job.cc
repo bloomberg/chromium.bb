@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/bind_to_current_loop.h"
