@@ -181,13 +181,6 @@ static_library("extensions") {
             "//chrome")
   }
 
-  if (is_desktop_linux) {
-    sources += rebase_path(
-            gypi_values.chrome_browser_extensions_networking_private_sources_linux,
-            ".",
-            "//chrome")
-  }
-
   if (is_win) {
     deps += [
       "//third_party/iaccessible2",

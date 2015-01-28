@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_SERVICE_CLIENT_H_
-#define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_SERVICE_CLIENT_H_
+#ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_SERVICE_CLIENT_H_
+#define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_SERVICE_CLIENT_H_
 
 #include <string>
 #include <vector>
@@ -17,11 +17,11 @@
 #include "base/supports_user_data.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/wifi/wifi_service.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate.h"
 #include "net/base/network_change_notifier.h"
 
 namespace base {
@@ -167,4 +167,4 @@ class NetworkingPrivateServiceClient
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_SERVICE_CLIENT_H_
+#endif  // EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_SERVICE_CLIENT_H_

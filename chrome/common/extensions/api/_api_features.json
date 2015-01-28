@@ -539,10 +539,6 @@
     "dependencies": ["permission:musicManagerPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "networkingPrivate": {
-    "dependencies": ["permission:networkingPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "notificationProvider": {
     "dependencies": ["permission:notificationProvider"],
     "contexts": ["blessed_extension"]

@@ -1,13 +1,13 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_FACTORY_H_
-#define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_FACTORY_H_
+#ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_FACTORY_H_
+#define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate.h"
 
 namespace context {
 class BrowserContext;
@@ -68,4 +68,4 @@ class NetworkingPrivateDelegateFactory
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_FACTORY_H_
+#endif  // EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_FACTORY_H_

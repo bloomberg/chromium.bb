@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
+#include "extensions/browser/api/networking_private/networking_private_service_client.h"
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/worker_pool.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_observer.h"
-#include "chrome/common/extensions/api/networking_private.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/networking_private/networking_private_api.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate_observer.h"
+#include "extensions/common/api/networking_private.h"
 
 using content::BrowserThread;
 using wifi::WiFiService;

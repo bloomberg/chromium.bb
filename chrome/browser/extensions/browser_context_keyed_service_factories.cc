@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting_api.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
@@ -121,9 +120,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::MediaPlayerAPI::GetFactoryInstance();
 #endif
   extensions::MenuManagerFactory::GetInstance();
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
-  extensions::NetworkingPrivateEventRouterFactory::GetInstance();
-#endif
   extensions::OmniboxAPI::GetFactoryInstance();
 #if defined(ENABLE_PLUGINS)
   extensions::PluginManager::GetFactoryInstance();

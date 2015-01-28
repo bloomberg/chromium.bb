@@ -192,20 +192,35 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
-  "u2fDevices": [
-    {
-      "channel": "stable",
-      "extension_types": ["extension", "platform_app"],
-      "whitelist": [
-        "496B6890097EB6E19809ADEADD095A8721FBB2E0",  // FIDO U2F APIs
-        "AD8ED80B705E1818AAD4684F9FF62B43D6D79620",  // FIDO U2F APIs (dev)
-        "E24F1786D842E91E74C27929B0B3715A4689A473",  // CryptoToken
-        "A28C9619C4C41306FA5236FB4D94DA812F504DE8",  // CryptoToken (dev)
-        "6F9E349A0561C78A0D3F41496FE521C5151C7F71",  // Security Key
-        "C06709A259378015404ED20F75C7D08547E0F10B"   // Security Key (dev)
-      ]
-    }
-  ],
+  "networkingPrivate": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "platforms": ["chromeos", "mac", "win", "linux"],
+    "whitelist": [
+      "0DE0F05680A4A056BCEC864ED8DDA84296F82B40",  // http://crbug.com/434651
+      "1C93BD3CF875F4A73C0B2A163BB8FBDA8B8B3D80",  // http://crbug.com/293683
+      "A3BC37E2148AC4E99BE4B16AF9D42DD1E592BBBE",  // http://crbug.com/293683
+      "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578",  // http://crbug.com/234235
+      "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB",  // http://crbug.com/234235
+      "307E96539209F95A1A8740C713E6998A73657D96",  // http://crbug.com/329690
+      "11B478CEC461C766A2DC1E5BEEB7970AE06DC9C2",  // http://crbug.com/380890
+      "0EFB879311E9EFBB7C45251F89EC655711B1F6ED",  // http://crbug.com/380890
+      "9193D3A51E2FE33B496CDA53EA330423166E7F02",  // http://crbug.com/380890
+      "F9119B8B18C7C82B51E7BC6FF816B694F2EC3E89",  // http://crbug.com/380890
+      "63ED55E43214C211F82122ED56407FF1A807F2A3",  // Dev
+      "FA01E0B81978950F2BC5A50512FD769725F57510",  // Beta
+      "B11A93E7E5B541F8010245EBDE2C74647D6C14B9",  // Canary
+      "F155646B5D1CA545F7E1E4E20D573DFDD44C2540",  // Google Cast Beta
+      "16CA7A47AAE4BE49B1E75A6B960C3875E945B264",  // Google Cast Stable
+      "7AE714FFD394E073F0294CFA134C9F91DB5FBAA4",  // CCD Development
+      "C7DA3A55C2355F994D3FDDAD120B426A0DF63843",  // CCD Testing
+      "75E3CFFFC530582C583E4690EF97C70B9C8423B7",  // CCD Release
+      "4F25792AF1AA7483936DE29C07806F203C7170A0",  // http://crbug.com/407693
+      "BD8781D757D830FC2E85470A1B6E8A718B7EE0D9",  // http://crbug.com/407693
+      "4AC2B6C63C6480D150DFDA13E4A5956EB1D0DDBB",  // http://crbug.com/407693
+      "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/407693
+    ]
+  },
   "power": {
     "channel": "stable",
     "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ]
@@ -298,6 +313,20 @@
       "channel": "stable",
       "extension_types": ["hosted_app"],
       "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
+  "u2fDevices": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "platform_app"],
+      "whitelist": [
+        "496B6890097EB6E19809ADEADD095A8721FBB2E0",  // FIDO U2F APIs
+        "AD8ED80B705E1818AAD4684F9FF62B43D6D79620",  // FIDO U2F APIs (dev)
+        "E24F1786D842E91E74C27929B0B3715A4689A473",  // CryptoToken
+        "A28C9619C4C41306FA5236FB4D94DA812F504DE8",  // CryptoToken (dev)
+        "6F9E349A0561C78A0D3F41496FE521C5151C7F71",  // Security Key
+        "C06709A259378015404ED20F75C7D08547E0F10B"   // Security Key (dev)
+      ]
     }
   ],
   "unlimitedStorage": {

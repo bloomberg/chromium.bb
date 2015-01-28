@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/networking_private/networking_private_chromeos.h"
+#include "extensions/browser/api/networking_private/networking_private_chromeos.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
-#include "chrome/common/extensions/api/networking_private.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/login/login_state.h"
@@ -26,6 +23,9 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/api/networking_private/networking_private_api.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/api/networking_private.h"
 
 using chromeos::NetworkHandler;
 using chromeos::NetworkTypePattern;
@@ -58,23 +58,21 @@ bool GetServicePathFromGuid(const std::string& guid,
 bool GetUserIdHash(content::BrowserContext* browser_context,
                    std::string* user_hash,
                    std::string* error) {
-  std::string profile_user_hash =
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(
-          static_cast<Profile*>(browser_context));
+  std::string context_user_hash =
+      extensions::ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(
+          browser_context);
 
   // Currently Chrome OS only configures networks for the primary user.
   // Configuration attempts from other browser contexts should fail.
-  // TODO(stevenjb): use an ExtensionsBrowserClient method to access
-  // ProfileHelper when moving this to src/extensions.
-  if (profile_user_hash != chromeos::LoginState::Get()->primary_user_hash()) {
+  if (context_user_hash != chromeos::LoginState::Get()->primary_user_hash()) {
     // Disallow class requiring a user id hash from a non-primary user context
     // to avoid complexities with the policy code.
     LOG(ERROR) << "networkingPrivate API call from non primary user: "
-               << profile_user_hash;
+               << context_user_hash;
     *error = "Error.NonPrimaryUser";
     return false;
   }
-  *user_hash = profile_user_hash;
+  *user_hash = context_user_hash;
   return true;
 }
 
@@ -106,7 +104,8 @@ NetworkingPrivateChromeOS::NetworkingPrivateChromeOS(
       browser_context_(browser_context) {
 }
 
-NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() {}
+NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() {
+}
 
 void NetworkingPrivateChromeOS::GetProperties(
     const std::string& guid,
@@ -141,8 +140,7 @@ void NetworkingPrivateChromeOS::GetManagedProperties(
   }
 
   GetManagedConfigurationHandler()->GetManagedProperties(
-      user_id_hash,
-      service_path,
+      user_id_hash, service_path,
       base::Bind(&NetworkHandlerDictionaryCallback, success_callback),
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
@@ -183,9 +181,7 @@ void NetworkingPrivateChromeOS::SetProperties(
   }
 
   GetManagedConfigurationHandler()->SetProperties(
-      service_path,
-      *properties,
-      success_callback,
+      service_path, *properties, success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
@@ -202,9 +198,7 @@ void NetworkingPrivateChromeOS::CreateNetwork(
   }
 
   GetManagedConfigurationHandler()->CreateConfiguration(
-      user_id_hash,
-      *properties,
-      success_callback,
+      user_id_hash, *properties, success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
@@ -235,8 +229,7 @@ void NetworkingPrivateChromeOS::StartConnect(
 
   const bool check_error_state = false;
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
-      service_path,
-      success_callback,
+      service_path, success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback),
       check_error_state);
 }
@@ -252,8 +245,7 @@ void NetworkingPrivateChromeOS::StartDisconnect(
   }
 
   NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
-      service_path,
-      success_callback,
+      service_path, success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
@@ -263,9 +255,7 @@ void NetworkingPrivateChromeOS::SetWifiTDLSEnabledState(
     const StringCallback& success_callback,
     const FailureCallback& failure_callback) {
   NetworkHandler::Get()->network_device_handler()->SetWifiTDLSEnabled(
-      ip_or_mac_address,
-      enabled,
-      success_callback,
+      ip_or_mac_address, enabled, success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
@@ -274,8 +264,7 @@ void NetworkingPrivateChromeOS::GetWifiTDLSStatus(
     const StringCallback& success_callback,
     const FailureCallback& failure_callback) {
   NetworkHandler::Get()->network_device_handler()->GetWifiTDLSStatus(
-      ip_or_mac_address,
-      success_callback,
+      ip_or_mac_address, success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 

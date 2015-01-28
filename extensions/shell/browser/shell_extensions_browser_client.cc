@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_extensions_browser_client.h"
 
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/generated_api_registration.h"
@@ -18,6 +19,10 @@
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/browser/shell_runtime_api_delegate.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/login/login_state.h"
+#endif
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -70,6 +75,13 @@ BrowserContext* ShellExtensionsBrowserClient::GetOriginalContext(
     BrowserContext* context) {
   return context;
 }
+
+#if defined(OS_CHROMEOS)
+std::string ShellExtensionsBrowserClient::GetUserIdHashFromContext(
+    content::BrowserContext* context) {
+  return chromeos::LoginState::Get()->primary_user_hash();;
+}
+#endif
 
 bool ShellExtensionsBrowserClient::IsGuestSession(
     BrowserContext* context) const {

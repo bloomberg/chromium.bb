@@ -4573,9 +4573,6 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_PROMPT_WARNING_ACTIVITY_LOG_PRIVATE" desc="Permission string for the observing other extensions' API calls">
         Monitor the behavior of other extensions, including visited URLs
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORKING_PRIVATE" desc="Permission string for Networking Private API.">
-        Manage network connections
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_DESKTOP_CAPTURE" desc="Permission string for Desktop Capture API.">
         Capture content of your screen
       </message>

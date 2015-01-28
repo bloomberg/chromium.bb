@@ -62,7 +62,6 @@
       'mdns.idl',
       'media_galleries.idl',
       'metrics_private.json',
-      'networking_private.json',
       'notification_provider.idl',
       'notifications.idl',
       'omnibox.json',

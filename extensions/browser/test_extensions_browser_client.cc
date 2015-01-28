@@ -72,6 +72,13 @@ BrowserContext* TestExtensionsBrowserClient::GetOriginalContext(
   return main_context_;
 }
 
+#if defined(OS_CHROMEOS)
+std::string TestExtensionsBrowserClient::GetUserIdHashFromContext(
+    content::BrowserContext* context) {
+  return "";
+}
+#endif
+
 bool TestExtensionsBrowserClient::IsGuestSession(
     BrowserContext* context) const {
   return false;

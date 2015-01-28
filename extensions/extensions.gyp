@@ -323,6 +323,7 @@
         '../components/components.gyp:copresence_endpoints',
         '../components/components.gyp:keyed_service_content',
         '../components/components.gyp:keyed_service_core',
+        '../components/components.gyp:onc_component',
         '../components/components.gyp:pref_registry',
         '../components/components.gyp:sessions_content',
         '../components/components.gyp:storage_monitor',
@@ -490,6 +491,19 @@
         'browser/api/messaging/native_message_host.cc',
         'browser/api/mime_handler_private/mime_handler_private.cc',
         'browser/api/mime_handler_private/mime_handler_private.h',
+        'browser/api/networking_private/networking_private_api.cc',
+        'browser/api/networking_private/networking_private_api.h',
+        'browser/api/networking_private/networking_private_chromeos.cc',
+        'browser/api/networking_private/networking_private_chromeos.h',
+        'browser/api/networking_private/networking_private_delegate.cc',
+        'browser/api/networking_private/networking_private_delegate.h',
+        'browser/api/networking_private/networking_private_delegate_factory.cc',
+        'browser/api/networking_private/networking_private_delegate_factory.h',
+        'browser/api/networking_private/networking_private_delegate_observer.h',
+        'browser/api/networking_private/networking_private_event_router.h',
+        'browser/api/networking_private/networking_private_event_router_chromeos.cc',
+        'browser/api/networking_private/networking_private_event_router_factory.cc',
+        'browser/api/networking_private/networking_private_event_router_factory.h',
         'browser/api/power/power_api.cc',
         'browser/api/power/power_api.h',
         'browser/api/power/power_api_manager.cc',
@@ -870,6 +884,29 @@
             'browser/api/vpn_provider/vpn_service.h',
             'browser/api/vpn_provider/vpn_service_factory.h'
           ]
+        }],
+        ['OS == "win" or OS == "mac"', {
+          'dependencies': [
+            '../components/components.gyp:wifi_component',
+          ],
+          'sources': [
+            'browser/api/networking_private/networking_private_event_router_nonchromeos.cc',
+            'browser/api/networking_private/networking_private_service_client.cc',
+            'browser/api/networking_private/networking_private_service_client.h',
+          ],
+        }],
+        ['OS == "linux" and chromeos == 0', {
+          'dependencies': [
+            '../build/linux/system.gyp:dbus',
+            '../dbus/dbus.gyp:dbus',
+          ],
+          'sources': [
+            'browser/api/networking_private/networking_private_event_router_nonchromeos.cc',
+            'browser/api/networking_private/networking_private_linux.cc',
+            'browser/api/networking_private/networking_private_linux.h',
+            'browser/api/networking_private/network_config_dbus_constants_linux.cc',
+            'browser/api/networking_private/network_config_dbus_constants_linux.h',
+          ],
         }],
         ['OS != "linux"', {
           'sources': [

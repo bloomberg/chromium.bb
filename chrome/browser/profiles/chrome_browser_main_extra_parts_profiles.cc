@@ -14,7 +14,6 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_verify_delegate_factory_impl.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
@@ -52,6 +51,7 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "apps/browser_context_keyed_service_factories.h"

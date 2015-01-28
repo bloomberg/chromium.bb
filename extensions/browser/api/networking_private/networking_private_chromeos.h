@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CHROMEOS_H_
-#define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CHROMEOS_H_
+#ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CHROMEOS_H_
+#define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CHROMEOS_H_
 
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate.h"
 
 namespace context {
 class BrowserContext;
@@ -76,4 +76,4 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CHROMEOS_H_
+#endif  // EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CHROMEOS_H_

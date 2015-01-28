@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_
+#ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_
+#define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_
 
 #include <string>
 
@@ -238,7 +238,6 @@ class NetworkingPrivateRequestNetworkScanFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateRequestNetworkScanFunction);
 };
 
-
 // Implements the chrome.networkingPrivate.startConnect method.
 class NetworkingPrivateStartConnectFunction : public AsyncExtensionFunction {
  public:
@@ -407,4 +406,4 @@ class NetworkingPrivateGetCaptivePortalStatusFunction
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_
+#endif  // EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_

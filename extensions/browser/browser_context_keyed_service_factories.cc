@@ -9,6 +9,7 @@
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/api/idle/idle_manager_factory.h"
 #include "extensions/browser/api/management/management_api.h"
+#include "extensions/browser/api/networking_private/networking_private_event_router_factory.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/api/socket/socket.h"
@@ -44,6 +45,9 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   HidDeviceManager::GetFactoryInstance();
   IdleManagerFactory::GetInstance();
   ManagementAPI::GetFactoryInstance();
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+  NetworkingPrivateEventRouterFactory::GetInstance();
+#endif
   ProcessManagerFactory::GetInstance();
   RendererStartupHelperFactory::GetInstance();
   RuntimeAPI::GetFactoryInstance();

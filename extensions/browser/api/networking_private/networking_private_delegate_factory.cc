@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/extensions/api/networking_private/networking_private_chromeos.h"
+#include "extensions/browser/api/networking_private/networking_private_chromeos.h"
 #elif defined(OS_LINUX)
-#include "chrome/browser/extensions/api/networking_private/networking_private_linux.h"
+#include "extensions/browser/api/networking_private/networking_private_linux.h"
 #elif defined(OS_WIN) || defined(OS_MACOSX)
-#include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
 #include "components/wifi/wifi_service.h"
+#include "extensions/browser/api/networking_private/networking_private_service_client.h"
 #endif
 
 namespace extensions {

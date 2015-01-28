@@ -170,6 +170,19 @@ source_set("browser") {
       "api/messaging/native_message_host.cc",
       "api/mime_handler_private/mime_handler_private.cc",
       "api/mime_handler_private/mime_handler_private.h",
+      "api/networking_private/networking_private_api.cc",
+      "api/networking_private/networking_private_api.h",
+      "api/networking_private/networking_private_chromeos.cc",
+      "api/networking_private/networking_private_chromeos.h",
+      "api/networking_private/networking_private_delegate.cc",
+      "api/networking_private/networking_private_delegate.h",
+      "api/networking_private/networking_private_delegate_factory.cc",
+      "api/networking_private/networking_private_delegate_factory.h",
+      "api/networking_private/networking_private_delegate_observer.h",
+      "api/networking_private/networking_private_event_router.h",
+      "api/networking_private/networking_private_event_router_chromeos.cc",
+      "api/networking_private/networking_private_event_router_factory.cc",
+      "api/networking_private/networking_private_event_router_factory.h",
       "api/power/power_api.cc",
       "api/power/power_api.h",
       "api/power/power_api_manager.cc",
@@ -544,18 +557,46 @@ source_set("browser") {
 
     if (is_chromeos) {
       deps += [ "//chromeos" ]
+    }
+
+    if (is_chromeos) {
+      sources += [ "api/audio/audio_service_chromeos.cc" ]
+    } else if (is_linux) {
+      sources += [ "api/audio/audio_service_linux.cc" ]
+    } else {
+      sources += [ "api/audio/audio_service.cc" ]
+    }
+
+    if (is_chromeos) {
       sources += [
-        "api/audio/audio_service_chromeos.cc",
         "api/vpn_provider/vpn_provider_api.cc",
         "api/vpn_provider/vpn_provider_api.h",
         "api/vpn_provider/vpn_service.cc",
         "api/vpn_provider/vpn_service.h",
         "api/vpn_provider/vpn_service_factory.h",
       ]
-    } else if (is_linux) {
-      sources += [ "api/audio/audio_service_linux.cc" ]
-    } else {
-      sources += [ "api/audio/audio_service.cc" ]
+    }
+
+    if (is_desktop_linux) {
+      configs += [ "//build/config/linux:dbus" ]
+      deps += [
+        "//dbus",
+        "//components/onc",
+      ]
+      sources += [
+        "api/networking_private/networking_private_event_router_nonchromeos.cc",
+        "api/networking_private/networking_private_linux.cc",
+        "api/networking_private/networking_private_linux.h",
+        "api/networking_private/network_config_dbus_constants_linux.cc",
+        "api/networking_private/network_config_dbus_constants_linux.h",
+      ]
+    } else if (is_win || is_mac) {
+      deps += [ "//components/wifi_component" ]
+      sources += [
+        "api/networking_private/networking_private_event_router_nonchromeos.cc",
+        "api/networking_private/networking_private_service_client.cc",
+        "api/networking_private/networking_private_service_client.h",
+      ]
     }
   }
 

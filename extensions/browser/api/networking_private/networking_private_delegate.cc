@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate.h"
 
-#include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
-#include "chrome/common/extensions/api/networking_private.h"
+#include "extensions/browser/api/networking_private/networking_private_api.h"
+#include "extensions/common/api/networking_private.h"
 
 namespace extensions {
 

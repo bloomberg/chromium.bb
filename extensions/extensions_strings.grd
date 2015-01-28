@@ -359,6 +359,9 @@
       <message name="IDS_DEVICE_UNKNOWN_VENDOR" desc="String used when no human-readable vendor name is available for a device.">
         Vendor <ph name="VENDOR_ID">$1<ex>0x1234</ex></ph>
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORKING_PRIVATE" desc="Permission string for Networking Private API.">
+        Manage network connections
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
         Access your serial devices
       </message>

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/networking_private/networking_private_event_router.h"
+#include "extensions/browser/api/networking_private/networking_private_event_router.h"
 
-#include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_observer.h"
-#include "chrome/common/extensions/api/networking_private.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/api/networking_private/networking_private_api.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate_observer.h"
+#include "extensions/common/api/networking_private.h"
 
 namespace extensions {
 
@@ -60,9 +60,9 @@ NetworkingPrivateEventRouterImpl::NetworkingPrivateEventRouterImpl(
   if (!event_router)
     return;
   event_router->RegisterObserver(
-      this, api::networking_private::OnNetworksChanged::kEventName);
+      this, core_api::networking_private::OnNetworksChanged::kEventName);
   event_router->RegisterObserver(
-      this, api::networking_private::OnNetworkListChanged::kEventName);
+      this, core_api::networking_private::OnNetworkListChanged::kEventName);
   StartOrStopListeningForNetworkChanges();
 }
 
@@ -107,9 +107,9 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
 
   bool should_listen =
       event_router->HasEventListener(
-          api::networking_private::OnNetworksChanged::kEventName) ||
+          core_api::networking_private::OnNetworksChanged::kEventName) ||
       event_router->HasEventListener(
-          api::networking_private::OnNetworkListChanged::kEventName);
+          core_api::networking_private::OnNetworkListChanged::kEventName);
 
   if (should_listen && !listening_) {
     NetworkingPrivateDelegate* delegate =
@@ -135,9 +135,10 @@ void NetworkingPrivateEventRouterImpl::OnNetworksChangedEvent(
   if (!event_router)
     return;
   scoped_ptr<base::ListValue> args(
-      api::networking_private::OnNetworksChanged::Create(network_guids));
+      core_api::networking_private::OnNetworksChanged::Create(network_guids));
   scoped_ptr<extensions::Event> netchanged_event(new extensions::Event(
-      api::networking_private::OnNetworksChanged::kEventName, args.Pass()));
+      core_api::networking_private::OnNetworksChanged::kEventName,
+      args.Pass()));
   event_router->BroadcastEvent(netchanged_event.Pass());
 }
 
@@ -147,9 +148,10 @@ void NetworkingPrivateEventRouterImpl::OnNetworkListChangedEvent(
   if (!event_router)
     return;
   scoped_ptr<base::ListValue> args(
-      api::networking_private::OnNetworkListChanged::Create(network_guids));
+      core_api::networking_private::OnNetworkListChanged::Create(
+          network_guids));
   scoped_ptr<extensions::Event> netlistchanged_event(new extensions::Event(
-      api::networking_private::OnNetworkListChanged::kEventName,
+      core_api::networking_private::OnNetworkListChanged::kEventName,
       args.Pass()));
   event_router->BroadcastEvent(netlistchanged_event.Pass());
 }

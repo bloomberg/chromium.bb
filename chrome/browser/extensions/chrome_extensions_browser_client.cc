@@ -39,6 +39,7 @@
 #include "extensions/browser/url_request_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chromeos/chromeos_switches.h"
 #else
@@ -98,6 +99,14 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(
     content::BrowserContext* context) {
   return static_cast<Profile*>(context)->GetOriginalProfile();
 }
+
+#if defined(OS_CHROMEOS)
+std::string ChromeExtensionsBrowserClient::GetUserIdHashFromContext(
+    content::BrowserContext* context) {
+  return chromeos::ProfileHelper::GetUserIdHashFromProfile(
+      static_cast<Profile*>(context));
+}
+#endif
 
 bool ChromeExtensionsBrowserClient::IsGuestSession(
     content::BrowserContext* context) const {

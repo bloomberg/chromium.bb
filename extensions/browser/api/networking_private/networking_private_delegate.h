@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_H_
-#define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_H_
+#ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_H_
+#define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_H_
 
 #include <string>
 
@@ -13,22 +13,18 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
-
 class BrowserContext;
-
-}  // content
+}
 
 namespace extensions {
 
 class NetworkingPrivateDelegateObserver;
 
-namespace api {
+namespace core_api {
 namespace networking_private {
-
 struct VerificationProperties;
-
 }  // networking_private
-}  // api
+}  // core_api
 
 // Base class for platform dependent networkingPrivate API implementations.
 // All inputs and results for this class use ONC values. See
@@ -42,7 +38,7 @@ class NetworkingPrivateDelegate : public KeyedService {
   typedef base::Callback<void(const std::string&)> StringCallback;
   typedef base::Callback<void(scoped_ptr<base::ListValue>)> NetworkListCallback;
   typedef base::Callback<void(const std::string&)> FailureCallback;
-  typedef api::networking_private::VerificationProperties
+  typedef core_api::networking_private::VerificationProperties
       VerificationProperties;
 
   // The Verify* methods will be forwarded to a delegate implementation if
@@ -172,4 +168,4 @@ class NetworkingPrivateDelegate : public KeyedService {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_H_
+#endif  // EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_H_

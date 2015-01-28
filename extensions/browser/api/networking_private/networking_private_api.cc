@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
+#include "extensions/browser/api/networking_private/networking_private_api.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_factory.h"
-#include "chrome/common/extensions/api/networking_private.h"
 #include "components/onc/onc_constants.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/extension_function_registry.h"
+#include "extensions/common/api/networking_private.h"
 
 namespace {
 
@@ -25,9 +25,9 @@ extensions::NetworkingPrivateDelegate* GetDelegate(
 
 }  // namespace
 
-namespace private_api = extensions::api::networking_private;
-
 namespace extensions {
+
+namespace private_api = core_api::networking_private;
 
 namespace networking_private {
 
@@ -52,10 +52,11 @@ bool NetworkingPrivateGetPropertiesFunction::RunAsync() {
       private_api::GetProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->GetProperties(
-      params->network_guid,
-      base::Bind(&NetworkingPrivateGetPropertiesFunction::Success, this),
-      base::Bind(&NetworkingPrivateGetPropertiesFunction::Failure, this));
+  GetDelegate(browser_context())
+      ->GetProperties(
+          params->network_guid,
+          base::Bind(&NetworkingPrivateGetPropertiesFunction::Success, this),
+          base::Bind(&NetworkingPrivateGetPropertiesFunction::Failure, this));
   return true;
 }
 
@@ -82,11 +83,13 @@ bool NetworkingPrivateGetManagedPropertiesFunction::RunAsync() {
       private_api::GetManagedProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->GetManagedProperties(
-      params->network_guid,
-      base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Success, this),
-      base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Failure,
-                 this));
+  GetDelegate(browser_context())
+      ->GetManagedProperties(
+          params->network_guid,
+          base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Success,
+                     this),
+          base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Failure,
+                     this));
   return true;
 }
 
@@ -113,10 +116,10 @@ bool NetworkingPrivateGetStateFunction::RunAsync() {
       private_api::GetState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->GetState(
-      params->network_guid,
-      base::Bind(&NetworkingPrivateGetStateFunction::Success, this),
-      base::Bind(&NetworkingPrivateGetStateFunction::Failure, this));
+  GetDelegate(browser_context())
+      ->GetState(params->network_guid,
+                 base::Bind(&NetworkingPrivateGetStateFunction::Success, this),
+                 base::Bind(&NetworkingPrivateGetStateFunction::Failure, this));
   return true;
 }
 
@@ -146,11 +149,11 @@ bool NetworkingPrivateSetPropertiesFunction::RunAsync() {
   scoped_ptr<base::DictionaryValue> properties_dict(
       params->properties.ToValue());
 
-  GetDelegate(browser_context())->SetProperties(
-      params->network_guid,
-      properties_dict.Pass(),
-      base::Bind(&NetworkingPrivateSetPropertiesFunction::Success, this),
-      base::Bind(&NetworkingPrivateSetPropertiesFunction::Failure, this));
+  GetDelegate(browser_context())
+      ->SetProperties(
+          params->network_guid, properties_dict.Pass(),
+          base::Bind(&NetworkingPrivateSetPropertiesFunction::Success, this),
+          base::Bind(&NetworkingPrivateSetPropertiesFunction::Failure, this));
   return true;
 }
 
@@ -178,11 +181,11 @@ bool NetworkingPrivateCreateNetworkFunction::RunAsync() {
   scoped_ptr<base::DictionaryValue> properties_dict(
       params->properties.ToValue());
 
-  GetDelegate(browser_context())->CreateNetwork(
-      params->shared,
-      properties_dict.Pass(),
-      base::Bind(&NetworkingPrivateCreateNetworkFunction::Success, this),
-      base::Bind(&NetworkingPrivateCreateNetworkFunction::Failure, this));
+  GetDelegate(browser_context())
+      ->CreateNetwork(
+          params->shared, properties_dict.Pass(),
+          base::Bind(&NetworkingPrivateCreateNetworkFunction::Success, this),
+          base::Bind(&NetworkingPrivateCreateNetworkFunction::Failure, this));
   return true;
 }
 
@@ -215,13 +218,11 @@ bool NetworkingPrivateGetNetworksFunction::RunAsync() {
   const int limit =
       params->filter.limit ? *params->filter.limit : kDefaultNetworkListLimit;
 
-  GetDelegate(browser_context())->GetNetworks(
-      network_type,
-      configured_only,
-      visible_only,
-      limit,
-      base::Bind(&NetworkingPrivateGetNetworksFunction::Success, this),
-      base::Bind(&NetworkingPrivateGetNetworksFunction::Failure, this));
+  GetDelegate(browser_context())
+      ->GetNetworks(
+          network_type, configured_only, visible_only, limit,
+          base::Bind(&NetworkingPrivateGetNetworksFunction::Success, this),
+          base::Bind(&NetworkingPrivateGetNetworksFunction::Failure, this));
   return true;
 }
 
@@ -252,13 +253,13 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunAsync() {
   const bool configured_only = false;
   const bool visible_only = true;
 
-  GetDelegate(browser_context())->GetNetworks(
-      network_type,
-      configured_only,
-      visible_only,
-      kDefaultNetworkListLimit,
-      base::Bind(&NetworkingPrivateGetVisibleNetworksFunction::Success, this),
-      base::Bind(&NetworkingPrivateGetVisibleNetworksFunction::Failure, this));
+  GetDelegate(browser_context())
+      ->GetNetworks(
+          network_type, configured_only, visible_only, kDefaultNetworkListLimit,
+          base::Bind(&NetworkingPrivateGetVisibleNetworksFunction::Success,
+                     this),
+          base::Bind(&NetworkingPrivateGetVisibleNetworksFunction::Failure,
+                     this));
   return true;
 }
 
@@ -295,17 +296,17 @@ bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunSync() {
     if (!(*iter)->GetAsString(&type))
       NOTREACHED();
     if (type == ::onc::network_type::kEthernet) {
-      enabled_networks_list->AppendString(api::networking_private::ToString(
-          api::networking_private::NETWORK_TYPE_ETHERNET));
+      enabled_networks_list->AppendString(
+          private_api::ToString(private_api::NETWORK_TYPE_ETHERNET));
     } else if (type == ::onc::network_type::kWiFi) {
-      enabled_networks_list->AppendString(api::networking_private::ToString(
-          api::networking_private::NETWORK_TYPE_WIFI));
+      enabled_networks_list->AppendString(
+          private_api::ToString(private_api::NETWORK_TYPE_WIFI));
     } else if (type == ::onc::network_type::kWimax) {
-      enabled_networks_list->AppendString(api::networking_private::ToString(
-          api::networking_private::NETWORK_TYPE_WIMAX));
+      enabled_networks_list->AppendString(
+          private_api::ToString(private_api::NETWORK_TYPE_WIMAX));
     } else if (type == ::onc::network_type::kCellular) {
-      enabled_networks_list->AppendString(api::networking_private::ToString(
-          api::networking_private::NETWORK_TYPE_CELLULAR));
+      enabled_networks_list->AppendString(
+          private_api::ToString(private_api::NETWORK_TYPE_CELLULAR));
     } else {
       LOG(ERROR) << "networkingPrivate: Unexpected type: " << type;
     }
@@ -326,8 +327,8 @@ bool NetworkingPrivateEnableNetworkTypeFunction::RunSync() {
       private_api::EnableNetworkType::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  return GetDelegate(browser_context())->EnableNetworkType(
-      private_api::ToString(params->network_type));
+  return GetDelegate(browser_context())
+      ->EnableNetworkType(private_api::ToString(params->network_type));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -341,8 +342,8 @@ bool NetworkingPrivateDisableNetworkTypeFunction::RunSync() {
   scoped_ptr<private_api::DisableNetworkType::Params> params =
       private_api::DisableNetworkType::Params::Create(*args_);
 
-  return GetDelegate(browser_context())->DisableNetworkType(
-      private_api::ToString(params->network_type));
+  return GetDelegate(browser_context())
+      ->DisableNetworkType(private_api::ToString(params->network_type));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,10 +369,11 @@ bool NetworkingPrivateStartConnectFunction::RunAsync() {
       private_api::StartConnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->StartConnect(
-      params->network_guid,
-      base::Bind(&NetworkingPrivateStartConnectFunction::Success, this),
-      base::Bind(&NetworkingPrivateStartConnectFunction::Failure, this));
+  GetDelegate(browser_context())
+      ->StartConnect(
+          params->network_guid,
+          base::Bind(&NetworkingPrivateStartConnectFunction::Success, this),
+          base::Bind(&NetworkingPrivateStartConnectFunction::Failure, this));
   return true;
 }
 
@@ -396,10 +398,11 @@ bool NetworkingPrivateStartDisconnectFunction::RunAsync() {
       private_api::StartDisconnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->StartDisconnect(
-      params->network_guid,
-      base::Bind(&NetworkingPrivateStartDisconnectFunction::Success, this),
-      base::Bind(&NetworkingPrivateStartDisconnectFunction::Failure, this));
+  GetDelegate(browser_context())
+      ->StartDisconnect(
+          params->network_guid,
+          base::Bind(&NetworkingPrivateStartDisconnectFunction::Success, this),
+          base::Bind(&NetworkingPrivateStartDisconnectFunction::Failure, this));
   return true;
 }
 
@@ -425,10 +428,13 @@ bool NetworkingPrivateVerifyDestinationFunction::RunAsync() {
       private_api::VerifyDestination::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->VerifyDestination(
-      params->properties,
-      base::Bind(&NetworkingPrivateVerifyDestinationFunction::Success, this),
-      base::Bind(&NetworkingPrivateVerifyDestinationFunction::Failure, this));
+  GetDelegate(browser_context())
+      ->VerifyDestination(
+          params->properties,
+          base::Bind(&NetworkingPrivateVerifyDestinationFunction::Success,
+                     this),
+          base::Bind(&NetworkingPrivateVerifyDestinationFunction::Failure,
+                     this));
   return true;
 }
 
@@ -455,13 +461,15 @@ bool NetworkingPrivateVerifyAndEncryptCredentialsFunction::RunAsync() {
       private_api::VerifyAndEncryptCredentials::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->VerifyAndEncryptCredentials(
-      params->network_guid,
-      params->properties,
-      base::Bind(&NetworkingPrivateVerifyAndEncryptCredentialsFunction::Success,
-                 this),
-      base::Bind(&NetworkingPrivateVerifyAndEncryptCredentialsFunction::Failure,
-                 this));
+  GetDelegate(browser_context())
+      ->VerifyAndEncryptCredentials(
+          params->network_guid, params->properties,
+          base::Bind(
+              &NetworkingPrivateVerifyAndEncryptCredentialsFunction::Success,
+              this),
+          base::Bind(
+              &NetworkingPrivateVerifyAndEncryptCredentialsFunction::Failure,
+              this));
   return true;
 }
 
@@ -489,12 +497,13 @@ bool NetworkingPrivateVerifyAndEncryptDataFunction::RunAsync() {
       private_api::VerifyAndEncryptData::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->VerifyAndEncryptData(
-      params->properties,
-      params->data,
-      base::Bind(&NetworkingPrivateVerifyAndEncryptDataFunction::Success, this),
-      base::Bind(&NetworkingPrivateVerifyAndEncryptDataFunction::Failure,
-                 this));
+  GetDelegate(browser_context())
+      ->VerifyAndEncryptData(
+          params->properties, params->data,
+          base::Bind(&NetworkingPrivateVerifyAndEncryptDataFunction::Success,
+                     this),
+          base::Bind(&NetworkingPrivateVerifyAndEncryptDataFunction::Failure,
+                     this));
   return true;
 }
 
@@ -522,13 +531,13 @@ bool NetworkingPrivateSetWifiTDLSEnabledStateFunction::RunAsync() {
       private_api::SetWifiTDLSEnabledState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->SetWifiTDLSEnabledState(
-      params->ip_or_mac_address,
-      params->enabled,
-      base::Bind(&NetworkingPrivateSetWifiTDLSEnabledStateFunction::Success,
-                 this),
-      base::Bind(&NetworkingPrivateSetWifiTDLSEnabledStateFunction::Failure,
-                 this));
+  GetDelegate(browser_context())
+      ->SetWifiTDLSEnabledState(
+          params->ip_or_mac_address, params->enabled,
+          base::Bind(&NetworkingPrivateSetWifiTDLSEnabledStateFunction::Success,
+                     this),
+          base::Bind(&NetworkingPrivateSetWifiTDLSEnabledStateFunction::Failure,
+                     this));
 
   return true;
 }
@@ -557,10 +566,13 @@ bool NetworkingPrivateGetWifiTDLSStatusFunction::RunAsync() {
       private_api::GetWifiTDLSStatus::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->GetWifiTDLSStatus(
-      params->ip_or_mac_address,
-      base::Bind(&NetworkingPrivateGetWifiTDLSStatusFunction::Success, this),
-      base::Bind(&NetworkingPrivateGetWifiTDLSStatusFunction::Failure, this));
+  GetDelegate(browser_context())
+      ->GetWifiTDLSStatus(
+          params->ip_or_mac_address,
+          base::Bind(&NetworkingPrivateGetWifiTDLSStatusFunction::Success,
+                     this),
+          base::Bind(&NetworkingPrivateGetWifiTDLSStatusFunction::Failure,
+                     this));
 
   return true;
 }
@@ -589,12 +601,13 @@ bool NetworkingPrivateGetCaptivePortalStatusFunction::RunAsync() {
       private_api::GetCaptivePortalStatus::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())->GetCaptivePortalStatus(
-      params->network_guid,
-      base::Bind(&NetworkingPrivateGetCaptivePortalStatusFunction::Success,
-                 this),
-      base::Bind(&NetworkingPrivateGetCaptivePortalStatusFunction::Failure,
-                 this));
+  GetDelegate(browser_context())
+      ->GetCaptivePortalStatus(
+          params->network_guid,
+          base::Bind(&NetworkingPrivateGetCaptivePortalStatusFunction::Success,
+                     this),
+          base::Bind(&NetworkingPrivateGetCaptivePortalStatusFunction::Failure,
+                     this));
   return true;
 }
 

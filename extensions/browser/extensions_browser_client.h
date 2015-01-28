@@ -88,6 +88,13 @@ class ExtensionsBrowserClient {
   virtual content::BrowserContext* GetOriginalContext(
       content::BrowserContext* context) = 0;
 
+#if defined(OS_CHROMEOS)
+  // Returns a user id hash from |context| or an empty string if no hash could
+  // be extracted.
+  virtual std::string GetUserIdHashFromContext(
+      content::BrowserContext* context) = 0;
+#endif
+
   // Returns true if |context| corresponds to a guest session.
   virtual bool IsGuestSession(content::BrowserContext* context) const = 0;
 

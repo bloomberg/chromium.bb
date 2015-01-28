@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate.h"
 
 namespace base {
 class SequencedTaskRunner;

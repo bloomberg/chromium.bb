@@ -52,6 +52,10 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) override;
   content::BrowserContext* GetOriginalContext(
       content::BrowserContext* context) override;
+#if defined(OS_CHROMEOS)
+  std::string GetUserIdHashFromContext(
+      content::BrowserContext* context) override;
+#endif
   bool IsGuestSession(content::BrowserContext* context) const override;
   bool IsExtensionIncognitoEnabled(
       const std::string& extension_id,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/networking_private/networking_private_linux.h"
+#include "extensions/browser/api/networking_private/networking_private_linux.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,9 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/extensions/api/networking_private/network_config_dbus_constants_linux.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_delegate_observer.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,6 +19,9 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
+#include "extensions/browser/api/networking_private/network_config_dbus_constants_linux.h"
+#include "extensions/browser/api/networking_private/networking_private_api.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate_observer.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 

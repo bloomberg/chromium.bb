@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/networking_private/network_config_dbus_constants_linux.h"
+#include "extensions/browser/api/networking_private/network_config_dbus_constants_linux.h"
 
 namespace extensions {
 
