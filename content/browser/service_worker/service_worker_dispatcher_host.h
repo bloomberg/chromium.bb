@@ -94,7 +94,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnProviderDestroyed(int provider_id);
   void OnSetHostedVersionId(int provider_id, int64 version_id);
   void OnWorkerReadyForInspection(int embedded_worker_id);
-  void OnWorkerScriptLoaded(int embedded_worker_id, int thread_id);
+  void OnWorkerScriptLoaded(int embedded_worker_id,
+                            int thread_id,
+                            int provider_id);
   void OnWorkerScriptLoadFailed(int embedded_worker_id);
   void OnWorkerScriptEvaluated(int embedded_worker_id, bool success);
   void OnWorkerStarted(int embedded_worker_id);

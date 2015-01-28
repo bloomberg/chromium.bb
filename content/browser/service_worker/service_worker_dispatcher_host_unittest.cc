@@ -35,6 +35,7 @@ static void SaveStatusCallback(bool* called,
 }
 
 static const int kRenderProcessId = 1;
+static const int kRenderFrameId = 1;
 
 class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
  public:
@@ -129,7 +130,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
 
   ServiceWorkerProviderHost* CreateServiceWorkerProviderHost(int provider_id) {
     return new ServiceWorkerProviderHost(kRenderProcessId,
-                                         MSG_ROUTING_NONE,
+                                         kRenderFrameId,
                                          provider_id,
                                          context()->AsWeakPtr(),
                                          dispatcher_host_.get());

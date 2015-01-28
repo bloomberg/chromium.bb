@@ -184,7 +184,8 @@ void EmbeddedWorkerContextClient::workerContextStarted(
 
   Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(
       embedded_worker_id_,
-      WorkerTaskRunner::Instance()->CurrentWorkerId()));
+      WorkerTaskRunner::Instance()->CurrentWorkerId(),
+      provider_context_->provider_id()));
 
   // Schedule a task to send back WorkerStarted asynchronously,
   // so that at the time we send it we can be sure that the worker

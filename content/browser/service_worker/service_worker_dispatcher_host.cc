@@ -659,11 +659,18 @@ void ServiceWorkerDispatcherHost::OnWorkerReadyForInspection(
 
 void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(
     int embedded_worker_id,
-    int thread_id) {
+    int thread_id,
+    int provider_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnWorkerScriptLoaded");
   if (!GetContext())
     return;
+
+  ServiceWorkerProviderHost* provider_host =
+      GetContext()->GetProviderHost(render_process_id_, provider_id);
+  DCHECK(provider_host);
+  provider_host->SetReadyToSendMessagesToWorker(thread_id);
+
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
   if (!registry->CanHandle(embedded_worker_id))
     return;

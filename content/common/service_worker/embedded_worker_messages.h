@@ -63,9 +63,10 @@ IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerReadyForInspection,
 
 // Renderer -> Browser message to indicate that the worker has loadedd the
 // script.
-IPC_MESSAGE_CONTROL2(EmbeddedWorkerHostMsg_WorkerScriptLoaded,
+IPC_MESSAGE_CONTROL3(EmbeddedWorkerHostMsg_WorkerScriptLoaded,
                      int /* embedded_worker_id */,
-                     int /* thread_id */)
+                     int /* thread_id */,
+                     int /* provider_id */)
 
 // Renderer -> Browser message to indicate that the worker has failed to load
 // the script.

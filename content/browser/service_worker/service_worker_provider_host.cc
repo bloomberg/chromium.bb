@@ -46,16 +46,23 @@ void FocusOnUIThread(int render_process_id,
 }  // anonymous namespace
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
-    int render_process_id, int render_frame_id, int provider_id,
+    int render_process_id,
+    int render_frame_id,
+    int provider_id,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerDispatcherHost* dispatcher_host)
     : render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
+      render_thread_id_(kDocumentMainThreadId),
       provider_id_(provider_id),
       context_(context),
       dispatcher_host_(dispatcher_host),
       allow_association_(true) {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
+  if (render_frame_id == MSG_ROUTING_NONE) {
+    // Actual thread id is set when the worker context gets started.
+    render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
+  }
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
@@ -119,8 +126,10 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
   bool should_notify_controllerchange =
       previous_version && version && version->skip_waiting();
 
-  dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
-      kDocumentMainThreadId, provider_id(),
+  // SetController message should be sent only for the document context.
+  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
+  Send(new ServiceWorkerMsg_SetControllerServiceWorker(
+      render_thread_id_, provider_id(),
       CreateAndRegisterServiceWorkerHandle(version),
       should_notify_controllerchange));
 }
@@ -161,6 +170,7 @@ void ServiceWorkerProviderHost::AssociateRegistration(
 }
 
 void ServiceWorkerProviderHost::DisassociateRegistration() {
+  queued_events_.clear();
   if (!associated_registration_.get())
     return;
   DecreaseProcessReference(associated_registration_->pattern());
@@ -168,10 +178,13 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
   associated_registration_ = NULL;
   SetControllerVersionAttribute(NULL);
 
-  if (dispatcher_host_) {
-    dispatcher_host_->Send(new ServiceWorkerMsg_DisassociateRegistration(
-        kDocumentMainThreadId, provider_id()));
-  }
+  if (!dispatcher_host_)
+    return;
+
+  // Disassociation message should be sent only for the document context.
+  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
+  Send(new ServiceWorkerMsg_DisassociateRegistration(
+      render_thread_id_, provider_id()));
 }
 
 scoped_ptr<ServiceWorkerRequestHandler>
@@ -240,12 +253,11 @@ void ServiceWorkerProviderHost::PostMessage(
       UpdateMessagePortsWithNewRoutes(sent_message_port_ids,
                                       &new_routing_ids);
 
-  dispatcher_host_->Send(
-      new ServiceWorkerMsg_MessageToDocument(
-          kDocumentMainThreadId, provider_id(),
-          message,
-          sent_message_port_ids,
-          new_routing_ids));
+  Send(new ServiceWorkerMsg_MessageToDocument(
+      kDocumentMainThreadId, provider_id(),
+      message,
+      sent_message_port_ids,
+      new_routing_ids));
 }
 
 void ServiceWorkerProviderHost::Focus(const FocusCallback& callback) {
@@ -260,7 +272,7 @@ void ServiceWorkerProviderHost::Focus(const FocusCallback& callback) {
 void ServiceWorkerProviderHost::GetClientInfo(
     int embedded_worker_id,
     int request_id) {
-  dispatcher_host_->Send(new ServiceWorkerMsg_GetClientInfo(
+  Send(new ServiceWorkerMsg_GetClientInfo(
       kDocumentMainThreadId, embedded_worker_id, request_id, provider_id()));
 }
 
@@ -272,6 +284,8 @@ void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(
 
 void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
+  DCHECK_NE(MSG_ROUTING_NONE, render_frame_id_);
+  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
 
   for (const GURL& pattern : associated_patterns_)
     DecreaseProcessReference(pattern);
@@ -279,13 +293,14 @@ void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   if (associated_registration_.get()) {
     DecreaseProcessReference(associated_registration_->pattern());
     if (dispatcher_host_) {
-      dispatcher_host_->Send(new ServiceWorkerMsg_DisassociateRegistration(
-          kDocumentMainThreadId, provider_id()));
+      Send(new ServiceWorkerMsg_DisassociateRegistration(
+          render_thread_id_, provider_id()));
     }
   }
 
   render_process_id_ = ChildProcessHost::kInvalidUniqueID;
   render_frame_id_ = MSG_ROUTING_NONE;
+  render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
   provider_id_ = kInvalidServiceWorkerProviderId;
   dispatcher_host_ = nullptr;
 }
@@ -297,9 +312,11 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
     ServiceWorkerDispatcherHost* new_dispatcher_host) {
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, new_process_id);
+  DCHECK_NE(MSG_ROUTING_NONE, new_frame_id);
 
   render_process_id_ = new_process_id;
   render_frame_id_ = new_frame_id;
+  render_thread_id_ = kDocumentMainThreadId;
   provider_id_ = new_provider_id;
   dispatcher_host_ = new_dispatcher_host;
 
@@ -310,8 +327,8 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
     IncreaseProcessReference(associated_registration_->pattern());
     SendAssociateRegistrationMessage();
     if (dispatcher_host_ && associated_registration_->active_version()) {
-      dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
-          kDocumentMainThreadId, provider_id(),
+      Send(new ServiceWorkerMsg_SetControllerServiceWorker(
+          render_thread_id_, provider_id(),
           CreateAndRegisterServiceWorkerHandle(
               associated_registration_->active_version()),
           false /* shouldNotifyControllerChange */));
@@ -324,10 +341,14 @@ void ServiceWorkerProviderHost::SendUpdateFoundMessage(
   if (!dispatcher_host_)
     return;  // Could be nullptr in some tests.
 
-  // TODO(nhiroki): Queue the message if a receiver's thread is not ready yet
-  // (http://crbug.com/437677).
-  dispatcher_host_->Send(new ServiceWorkerMsg_UpdateFound(
-      kDocumentMainThreadId, object_info));
+  if (!IsReadyToSendMessages()) {
+    queued_events_.push_back(
+        base::Bind(&ServiceWorkerProviderHost::SendUpdateFoundMessage,
+                   AsWeakPtr(), object_info));
+    return;
+  }
+
+  Send(new ServiceWorkerMsg_UpdateFound(render_thread_id_, object_info));
 }
 
 void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(
@@ -341,6 +362,16 @@ void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(
   if (!changed_mask.changed())
     return;
 
+  if (!IsReadyToSendMessages()) {
+    queued_events_.push_back(
+        base::Bind(&ServiceWorkerProviderHost::SendSetVersionAttributesMessage,
+                   AsWeakPtr(), registration_handle_id, changed_mask,
+                   make_scoped_refptr(installing_version),
+                   make_scoped_refptr(waiting_version),
+                   make_scoped_refptr(active_version)));
+    return;
+  }
+
   ServiceWorkerVersionAttributes attrs;
   if (changed_mask.installing_changed())
     attrs.installing = CreateAndRegisterServiceWorkerHandle(installing_version);
@@ -349,10 +380,8 @@ void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(
   if (changed_mask.active_changed())
     attrs.active = CreateAndRegisterServiceWorkerHandle(active_version);
 
-  // TODO(nhiroki): Queue the message if a receiver's thread is not ready yet
-  // (http://crbug.com/437677).
-  dispatcher_host_->Send(new ServiceWorkerMsg_SetVersionAttributes(
-      kDocumentMainThreadId, provider_id_, registration_handle_id,
+  Send(new ServiceWorkerMsg_SetVersionAttributes(
+      render_thread_id_, provider_id_, registration_handle_id,
       changed_mask.changed(), attrs));
 }
 
@@ -362,10 +391,25 @@ void ServiceWorkerProviderHost::SendServiceWorkerStateChangedMessage(
   if (!dispatcher_host_)
     return;
 
-  // TODO(nhiroki): Queue the message if a receiver's thread is not ready yet
-  // (http://crbug.com/437677).
-  dispatcher_host_->Send(new ServiceWorkerMsg_ServiceWorkerStateChanged(
-      kDocumentMainThreadId, worker_handle_id, state));
+  if (!IsReadyToSendMessages()) {
+    queued_events_.push_back(base::Bind(
+        &ServiceWorkerProviderHost::SendServiceWorkerStateChangedMessage,
+        AsWeakPtr(), worker_handle_id, state));
+    return;
+  }
+
+  Send(new ServiceWorkerMsg_ServiceWorkerStateChanged(
+      render_thread_id_, worker_handle_id, state));
+}
+
+void ServiceWorkerProviderHost::SetReadyToSendMessagesToWorker(
+    int render_thread_id) {
+  DCHECK(!IsReadyToSendMessages());
+  render_thread_id_ = render_thread_id;
+
+  for (const auto& event : queued_events_)
+    event.Run();
+  queued_events_.clear();
 }
 
 void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
@@ -384,8 +428,10 @@ void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
   attrs.active = CreateAndRegisterServiceWorkerHandle(
       associated_registration_->active_version());
 
+  // Association message should be sent only for the document context.
+  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
   dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(
-      kDocumentMainThreadId, provider_id(), handle->GetObjectInfo(), attrs));
+      render_thread_id_, provider_id(), handle->GetObjectInfo(), attrs));
 }
 
 void ServiceWorkerProviderHost::IncreaseProcessReference(
@@ -404,8 +450,18 @@ void ServiceWorkerProviderHost::DecreaseProcessReference(
   }
 }
 
+bool ServiceWorkerProviderHost::IsReadyToSendMessages() const {
+  return render_thread_id_ != kInvalidEmbeddedWorkerThreadId;
+}
+
 bool ServiceWorkerProviderHost::IsContextAlive() {
   return context_ != NULL;
+}
+
+void ServiceWorkerProviderHost::Send(IPC::Message* message) const {
+  DCHECK(dispatcher_host_);
+  DCHECK(IsReadyToSendMessages());
+  dispatcher_host_->Send(message);
 }
 
 }  // namespace content

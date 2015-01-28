@@ -47,6 +47,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
  public:
   typedef base::Callback<void(bool)> FocusCallback;
 
+  // If |render_frame_id| is MSG_ROUTING_NONE, this provider host works for the
+  // worker context.
   ServiceWorkerProviderHost(int render_process_id,
                             int render_frame_id,
                             int provider_id,
@@ -161,7 +163,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return dispatcher_host_;
   }
 
-  // Called from ServiceWorkerRegistrationHandle.
+  // Sends event messages to the renderer. Events for the worker are queued up
+  // until the worker thread id is known via SetReadyToSendMessagesToWorker().
   void SendUpdateFoundMessage(
       const ServiceWorkerRegistrationObjectInfo& object_info);
   void SendSetVersionAttributesMessage(
@@ -170,11 +173,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ServiceWorkerVersion* installing_version,
       ServiceWorkerVersion* waiting_version,
       ServiceWorkerVersion* active_version);
-
-  // Called from ServiceWorkerHandle.
   void SendServiceWorkerStateChangedMessage(
       int worker_handle_id,
       blink::WebServiceWorkerState state);
+
+  // Sets the worker thread id and flushes queued events.
+  void SetReadyToSendMessagesToWorker(int render_thread_id);
 
  private:
   friend class ServiceWorkerProviderHostTest;
@@ -198,8 +202,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void IncreaseProcessReference(const GURL& pattern);
   void DecreaseProcessReference(const GURL& pattern);
 
+  bool IsReadyToSendMessages() const;
+  void Send(IPC::Message* message) const;
+
   int render_process_id_;
   int render_frame_id_;
+  int render_thread_id_;
   int provider_id_;
   GURL document_url_;
   GURL topmost_frame_url_;
@@ -212,6 +220,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
   bool allow_association_;
+
+  std::vector<base::Closure> queued_events_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };

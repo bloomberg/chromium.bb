@@ -26,6 +26,7 @@ namespace content {
 namespace {
 
 const int kRenderProcessId = 88;  // A dummy ID for testing.
+const int kRenderFrameId = 44;  // A dummy ID for testing.
 
 void VerifyStateChangedMessage(int expected_handle_id,
                               blink::WebServiceWorkerState expected_state,
@@ -88,7 +89,7 @@ class ServiceWorkerHandleTest : public testing::Test {
         helper_->context()->AsWeakPtr());
 
     provider_host_.reset(new ServiceWorkerProviderHost(
-        kRenderProcessId, MSG_ROUTING_NONE, 1,
+        kRenderProcessId, kRenderFrameId, 1,
         helper_->context()->AsWeakPtr(), dispatcher_host_.get()));
 
     helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
