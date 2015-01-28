@@ -336,6 +336,12 @@ bool ContentBrowserClient::CheckMediaAccessPermission(
   return false;
 }
 
+PresentationServiceDelegate*
+ContentBrowserClient::GetPresentationServiceDelegate(
+    WebContents* web_contents) {
+  return nullptr;
+}
+
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return nullptr;

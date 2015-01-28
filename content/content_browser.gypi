@@ -178,6 +178,8 @@
       'public/browser/plugin_service.h',
       'public/browser/plugin_service_filter.h',
       'public/browser/power_save_blocker.h',
+      'public/browser/presentation_screen_availability_listener.h',
+      'public/browser/presentation_service_delegate.h',
       'public/browser/profiler_controller.h',
       'public/browser/profiler_subscriber.h',
       'public/browser/push_messaging_service.h',

@@ -96,6 +96,7 @@ class MediaObserver;
 class NavigatorConnectContext;
 class NavigatorConnectServiceFactory;
 class PlatformNotificationService;
+class PresentationServiceDelegate;
 class QuotaPermissionContext;
 class RenderFrameHost;
 class RenderProcessHost;
@@ -601,6 +602,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void OverridePageVisibilityState(
       RenderFrameHost* render_frame_host,
       blink::WebPageVisibilityState* visibility_state) {}
+
+  // Allows an embedder to provide its own PresentationServiceDelegate
+  // implementation. Returns nullptr if unavailable.
+  virtual PresentationServiceDelegate* GetPresentationServiceDelegate(
+      WebContents* web_contents);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching
