@@ -160,10 +160,6 @@ void ReleaseCopiedNativeEvent(const base::NativeEvent& event) {
   [event release];
 }
 
-void IncrementTouchIdRefCount(const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
-}
-
 void ClearTouchIdIfReleased(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
 }

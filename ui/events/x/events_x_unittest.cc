@@ -300,54 +300,47 @@ int GetTouchIdForTrackingId(uint32 tracking_id) {
   return -1;
 }
 
-TEST_F(EventsXTest, TouchEventIdRefcounting) {
+TEST_F(EventsXTest, TouchEventNotRemovingFromNativeMapping) {
   std::vector<unsigned int> devices;
   devices.push_back(0);
   ui::SetUpTouchDevicesForTest(devices);
   std::vector<Valuator> valuators;
 
-  const int kTrackingId0 = 5;
-  const int kTrackingId1 = 7;
+  const int kTrackingId = 5;
 
-  // Increment ref count once for first touch.
+  // Two touch presses with the same tracking id.
   ui::ScopedXI2Event xpress0;
   xpress0.InitTouchEvent(
-      0, XI_TouchBegin, kTrackingId0, gfx::Point(10, 10), valuators);
+      0, XI_TouchBegin, kTrackingId, gfx::Point(10, 10), valuators);
   scoped_ptr<ui::TouchEvent> upress0(new ui::TouchEvent(xpress0));
-  EXPECT_EQ(0, GetTouchIdForTrackingId(kTrackingId0));
+  EXPECT_EQ(0, GetTouchIdForTrackingId(kTrackingId));
 
-  // Increment ref count 4 times for second touch.
   ui::ScopedXI2Event xpress1;
   xpress1.InitTouchEvent(
-      0, XI_TouchBegin, kTrackingId1, gfx::Point(20, 20), valuators);
+      0, XI_TouchBegin, kTrackingId, gfx::Point(20, 20), valuators);
+  ui::TouchEvent upress1(xpress1);
+  EXPECT_EQ(0, GetTouchIdForTrackingId(kTrackingId));
 
-  for (int i = 0; i < 4; ++i) {
-    ui::TouchEvent upress1(xpress1);
-    EXPECT_EQ(1, GetTouchIdForTrackingId(kTrackingId1));
-  }
-
-  ui::ScopedXI2Event xrelease1;
-  xrelease1.InitTouchEvent(
-      0, XI_TouchEnd, kTrackingId1, gfx::Point(10, 10), valuators);
-
-  // Decrement ref count 3 times for second touch.
-  for (int i = 0; i < 3; ++i) {
-    ui::TouchEvent urelease1(xrelease1);
-    EXPECT_EQ(1, GetTouchIdForTrackingId(kTrackingId1));
-  }
-
-  // This should clear the touch id of the second touch.
-  scoped_ptr<ui::TouchEvent> urelease1(new ui::TouchEvent(xrelease1));
-  urelease1.reset();
-  EXPECT_EQ(-1, GetTouchIdForTrackingId(kTrackingId1));
-
-  // This should clear the touch id of the first touch.
+  // The first touch release shouldn't clear the mapping from the
+  // tracking id.
   ui::ScopedXI2Event xrelease0;
   xrelease0.InitTouchEvent(
-      0, XI_TouchEnd, kTrackingId0, gfx::Point(10, 10), valuators);
-  scoped_ptr<ui::TouchEvent> urelease0(new ui::TouchEvent(xrelease0));
-  urelease0.reset();
-  EXPECT_EQ(-1, GetTouchIdForTrackingId(kTrackingId0));
+      0, XI_TouchEnd, kTrackingId, gfx::Point(10, 10), valuators);
+  {
+    ui::TouchEvent urelease0(xrelease0);
+    urelease0.set_should_remove_native_touch_id_mapping(false);
+  }
+  EXPECT_EQ(0, GetTouchIdForTrackingId(kTrackingId));
+
+  // The second touch release should clear the mapping from the
+  // tracking id.
+  ui::ScopedXI2Event xrelease1;
+  xrelease1.InitTouchEvent(
+      0, XI_TouchEnd, kTrackingId, gfx::Point(10, 10), valuators);
+  {
+    ui::TouchEvent urelease1(xrelease1);
+  }
+  EXPECT_EQ(-1, GetTouchIdForTrackingId(kTrackingId));
 }
 
 TEST_F(EventsXTest, NumpadKeyEvents) {
