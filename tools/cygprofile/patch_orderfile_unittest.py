@@ -3,8 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import patch_orderfile
 import unittest
+
+import patch_orderfile
+import symbol_extractor
 
 
 class TestPatchOrderFile(unittest.TestCase):
@@ -15,78 +17,39 @@ class TestPatchOrderFile(unittest.TestCase):
     self.assertEquals(
         "this.does.contain", patch_orderfile._RemoveClone(with_clone))
 
-  def testGetSymbolInfosFromStreamWithSize(self):
-    lines = [
-        "00210d59 00000002 t _ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev"]
-    test_name = "_ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev"
-    test_offset = 0x210d59
+  def testAliasClonedSymbols(self):
+    symbol_infos = [
+        symbol_extractor.SymbolInfo(name='aSymbol', offset=0x42, size=0x12),
+        symbol_extractor.SymbolInfo(name='aSymbol.clone.', offset=8, size=1)]
     (offset_to_symbol_infos, name_to_symbol_infos) = \
-        patch_orderfile._GetSymbolInfosFromStream(lines)
-    self.assertEquals(len(offset_to_symbol_infos), 1)
+        patch_orderfile._GroupSymbolInfos(symbol_infos)
+    self.assertEquals(len(offset_to_symbol_infos), 2)
+    for i in range(2):
+      s = symbol_infos[i]
+      matching = offset_to_symbol_infos[s.offset][0]
+      self.assertEquals(matching.offset, s.offset)
+      self.assertEquals(matching.size, s.size)
     self.assertEquals(len(name_to_symbol_infos), 1)
-    self.assertIn(test_name, name_to_symbol_infos)
-    self.assertIn(test_offset, offset_to_symbol_infos)
+    self.assertEquals(len(name_to_symbol_infos['aSymbol']), 2)
 
-    self.assertEquals(len(name_to_symbol_infos[test_name]), 1)
-    s = name_to_symbol_infos[test_name][0]
-    self.assertEquals(test_offset, s.offset)
-    self.assertEquals(2, s.size)
-    self.assertEquals(test_name, s.name)
-
-    self.assertEquals(len(offset_to_symbol_infos[test_offset]), 1)
-    s = offset_to_symbol_infos[test_offset][0]
-    self.assertEquals(test_offset, s.offset)
-    self.assertEquals(2, s.size)
-    self.assertEquals(test_name, s.name)
-
-  def testGetSymbolInfosFromStreamWithoutSize(self):
-    lines = [
-        "0070ee8c T WebRtcSpl_ComplexBitReverse"]
-    test_name = "WebRtcSpl_ComplexBitReverse"
-    test_offset = 0x70ee8c
-    (offset_to_symbol_infos, name_to_symbol_infos) = \
-        patch_orderfile._GetSymbolInfosFromStream(lines)
+  def testGroupSymbolsByOffset(self):
+    symbol_infos = (
+        symbol_extractor.SymbolInfo(name='aSymbol', offset=0x42, size=0x12),
+        symbol_extractor.SymbolInfo(name='anotherSymbol', offset=0x42, size=1))
+    (offset_to_symbol_infos, _) = \
+        patch_orderfile._GroupSymbolInfos(symbol_infos)
     self.assertEquals(len(offset_to_symbol_infos), 1)
-    self.assertEquals(len(name_to_symbol_infos), 1)
-    self.assertIn(test_name, name_to_symbol_infos)
-    self.assertIn(test_offset, offset_to_symbol_infos)
-
-    self.assertEquals(len(name_to_symbol_infos[test_name]), 1)
-    s = name_to_symbol_infos[test_name][0]
-    self.assertEquals(test_offset, s.offset)
-    self.assertEquals(-1, s.size)
-    self.assertEquals(test_name, s.name)
-
-    self.assertEquals(len(offset_to_symbol_infos[test_offset]), 1)
-    s = offset_to_symbol_infos[test_offset][0]
-    self.assertEquals(test_offset, s.offset)
-    self.assertEquals(-1, s.size)
-    self.assertEquals(test_name, s.name)
-
-  def testGetSymbolsFromStream(self):
-    lines = [".text.startup.",
-             ".text.with.a.prefix",
-             "",
-             "_ZN2v88internal33HEnvironmentLivenessAnalysisPhase3RunEv",
-             ".text",
-             ".text.*"]
-    names = patch_orderfile._GetSymbolsFromStream(lines)
-    self.assertEquals(len(names), 2)
-    self.assertEquals(
-        names[0], "with.a.prefix")
-    self.assertEquals(
-        names[1], "_ZN2v88internal33HEnvironmentLivenessAnalysisPhase3RunEv")
-
+    self.assertEquals(tuple(offset_to_symbol_infos[0x42]), symbol_infos)
 
   def testExpandSymbols(self):
     symbol_name = "dummySymbol"
     symbol_name2 = "other"
     profiled_symbol_names = [symbol_name, "symbolThatShouldntMatch"]
     name_to_symbol_infos = {symbol_name: [
-        patch_orderfile.SymbolInfo(0x42, 0x12, symbol_name)]}
+        symbol_extractor.SymbolInfo(symbol_name, 0x42, 0x12)]}
     offset_to_symbol_infos = {
-        0x42: [patch_orderfile.SymbolInfo(0x42, 0x12, symbol_name),
-               patch_orderfile.SymbolInfo(0x42, 0x12, symbol_name2)]}
+        0x42: [symbol_extractor.SymbolInfo(symbol_name, 0x42, 0x12),
+               symbol_extractor.SymbolInfo(symbol_name2, 0x42, 0x12)]}
     symbol_names = patch_orderfile._ExpandSymbols(
         profiled_symbol_names, name_to_symbol_infos, offset_to_symbol_infos)
     self.assertEquals(len(symbol_names), 3)

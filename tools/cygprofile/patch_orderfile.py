@@ -26,15 +26,13 @@ The general pipeline is:
 
 import collections
 import logging
-import subprocess
 import sys
+
+import symbol_extractor
 
 # Prefixes for the symbols. We strip them from the incoming symbols, and add
 # them back in the output file.
 _PREFIXES = ('.text.startup.', '.text.hot.', '.text.unlikely.', '.text.')
-
-
-SymbolInfo = collections.namedtuple('SymbolInfo', ['offset', 'size', 'name'])
 
 
 def _RemoveClone(name):
@@ -45,61 +43,41 @@ def _RemoveClone(name):
   return name
 
 
-def _GetSymbolInfosFromStream(nm_lines):
-  """Parses the output of nm, and get all the symbols from a binary.
+def _GroupSymbolInfos(symbol_infos):
+  """Group the symbol infos by name and offset.
 
   Args:
-    nm_lines: An iterable of lines
+    symbol_infos: an iterable of SymbolInfo
 
   Returns:
-    The same output as GetSymbolsFromBinary.
+    The same output as _GroupSymbolInfosFromBinary.
   """
-  # TODO(lizeb): Consider switching to objdump to simplify parsing.
-  symbol_infos = []
-  for line in nm_lines:
-    # We are interested in two types of lines:
-    # This:
-    # 00210d59 00000002 t _ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev
-    # offset size <symbol_type> symbol_name
-    # And that:
-    # 0070ee8c T WebRtcSpl_ComplexBitReverse
-    # In the second case we don't have a size, so use -1 as a sentinel
-    parts = line.split()
-    if len(parts) == 4:
-      symbol_infos.append(SymbolInfo(
-          offset=int(parts[0], 16), size=int(parts[1], 16), name=parts[3]))
-    elif len(parts) == 3:
-      symbol_infos.append(SymbolInfo(
-          offset=int(parts[0], 16), size=-1, name=parts[2]))
   # Map the addresses to symbols.
   offset_to_symbol_infos = collections.defaultdict(list)
   name_to_symbol_infos = collections.defaultdict(list)
   for symbol in symbol_infos:
-    symbol = SymbolInfo(symbol[0], symbol[1], _RemoveClone(symbol[2]))
+    symbol = symbol_extractor.SymbolInfo(name=_RemoveClone(symbol.name),
+                                         offset=symbol.offset,
+                                         size=symbol.size)
     offset_to_symbol_infos[symbol.offset].append(symbol)
     name_to_symbol_infos[symbol.name].append(symbol)
-  return (offset_to_symbol_infos, name_to_symbol_infos)
+  return (dict(offset_to_symbol_infos), dict(name_to_symbol_infos))
 
 
-def _GetSymbolInfosFromBinary(binary_filename):
-  """Runs nm to get all the symbols from a binary.
+def _GroupSymbolInfosFromBinary(binary_filename):
+  """Group all the symbols from a binary by name and offset.
 
   Args:
     binary_filename: path to the binary.
 
   Returns:
-    A tuple of collection.defaultdict:
+    A tuple of dict:
     (offset_to_symbol_infos, name_to_symbol_infos):
     - offset_to_symbol_infos: {offset: [symbol_info1, ...]}
     - name_to_symbol_infos: {name: [symbol_info1, ...]}
   """
-  command = 'nm -S -n %s | egrep "( t )|( W )|( T )"' % binary_filename
-  p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-  try:
-    result = _GetSymbolInfosFromStream(p.stdout)
-    return result
-  finally:
-    p.wait()
+  symbol_infos = symbol_extractor.SymbolInfosFromBinary(binary_filename)
+  return _GroupSymbolInfos(symbol_infos)
 
 
 def _StripPrefix(line):
@@ -230,7 +208,7 @@ def main(argv):
     return 1
   orderfile_filename = argv[1]
   binary_filename = argv[2]
-  (offset_to_symbol_infos, name_to_symbol_infos) = _GetSymbolInfosFromBinary(
+  (offset_to_symbol_infos, name_to_symbol_infos) = _GroupSymbolInfosFromBinary(
       binary_filename)
   profiled_symbols = _GetSymbolsFromOrderfile(orderfile_filename)
   expanded_symbols = _ExpandSymbols(
