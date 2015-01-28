@@ -1,7 +1,6 @@
 gab@chromium.org
 grt@chromium.org
 robertshield@chromium.org
-tommi@chromium.org
 
 # Syzygy files.
 per-file mini_installer_syzygy.gyp=chrisha@chromium.org
