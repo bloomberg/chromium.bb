@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/android/banners/app_banner_metrics_ids.h"
@@ -13,11 +14,15 @@
 #include "chrome/browser/android/banners/app_banner_utilities.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/render_messages.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/manifest.h"
 #include "jni/AppBannerManager_jni.h"
 #include "net/base/load_flags.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -32,8 +37,7 @@ const char kBannerTag[] = "google-play-id";
 namespace banners {
 
 AppBannerManager::AppBannerManager(JNIEnv* env, jobject obj)
-    : MetaTagObserver(kBannerTag),
-      weak_java_banner_view_manager_(env, obj) {}
+    : weak_java_banner_view_manager_(env, obj) {}
 
 AppBannerManager::~AppBannerManager() {
 }
@@ -73,6 +77,47 @@ void AppBannerManager::DidNavigateMainFrame(
   Java_AppBannerManager_dismissCurrentBanner(env, jobj.obj(), DISMISS_NAVIGATE);
 }
 
+void AppBannerManager::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  if (render_frame_host->GetParent())
+    return;
+  validated_url_ = validated_url;
+
+  // See if the page has a manifest. Using Unretained(this) here is safe as the
+  // lifetime of this object extends beyond the lifetime of the web_contents(),
+  // and when web_contents() is destroyed it will call OnDidGetManifest.
+  web_contents()->GetManifest(base::Bind(&AppBannerManager::OnDidGetManifest,
+                                         base::Unretained(this)));
+}
+
+void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
+  if (web_contents()->IsBeingDestroyed())
+    return;
+
+  if (manifest.IsEmpty()) {
+    // No manifest, see if there is a play store meta tag.
+    Send(new ChromeViewMsg_RetrieveMetaTagContent(routing_id(),
+                                                  validated_url_,
+                                                  kBannerTag));
+    return;
+  }
+
+  // TODO(benwells): Check triggering parameters here and if there is a meta
+  // tag.
+  // TODO(dfalcantara): Show banner for web site with manifest.
+}
+
+bool AppBannerManager::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(AppBannerManager, message)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidRetrieveMetaTagContent,
+                        OnDidRetrieveMetaTagContent)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
   if (bitmap) {
     JNIEnv* env = base::android::AttachCurrentThread();
@@ -97,9 +142,17 @@ void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
   fetcher_.reset();
 }
 
-void AppBannerManager::HandleMetaTagContent(const std::string& tag_content,
-                                            const GURL& expected_url) {
+void AppBannerManager::OnDidRetrieveMetaTagContent(
+    bool success,
+    const std::string& tag_name,
+    const std::string& tag_content,
+    const GURL& expected_url) {
   DCHECK(web_contents());
+  if (!success || tag_name != kBannerTag || validated_url_ != expected_url ||
+      tag_content.size() >= chrome::kMaxMetaTagAttributeLength) {
+    return;
+  }
+
   banners::TrackDisplayEvent(DISPLAY_BANNER_REQUESTED);
 
   if (!AppBannerSettingsHelper::IsAllowed(web_contents(),

@@ -8,12 +8,13 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/android/meta_tag_observer.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
+struct Manifest;
 }  // namespace content
 
 /**
@@ -57,7 +58,7 @@ struct LoadCommittedDetails;
 namespace banners {
 
 class AppBannerManager : public chrome::BitmapFetcherDelegate,
-                         public MetaTagObserver {
+                         public content::WebContentsObserver {
  public:
   AppBannerManager(JNIEnv* env, jobject obj);
   virtual ~AppBannerManager();
@@ -83,18 +84,31 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
+  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                             const GURL& validated_url) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+
 
   // BitmapFetcherDelegate overrides.
   virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
 
  private:
-  // Kicks off the process of showing a banner for the package designated by
-  // |tag_content| on the page at the |expected_url|.
-  virtual void HandleMetaTagContent(const std::string& tag_content,
-                                    const GURL& expected_url) override;
+  // Called when the manifest has been retrieved, or if there is no manifest to
+  // retrieve.
+  void OnDidGetManifest(const content::Manifest& manifest);
+
+  // Called when the renderer has returned information about the meta tag.
+  // If there is some metadata for the play store tag, this kicks off the
+  // process of showing a banner for the package designated by |tag_content| on
+  // the page at the |expected_url|.
+  void OnDidRetrieveMetaTagContent(bool success,
+                                   const std::string& tag_name,
+                                   const std::string& tag_content,
+                                   const GURL& expected_url);
 
   // Fetches the icon for an app.
   scoped_ptr<chrome::BitmapFetcher> fetcher_;
+  GURL validated_url_;
 
   // AppBannerManager on the Java side.
   JavaObjectWeakGlobalRef weak_java_banner_view_manager_;

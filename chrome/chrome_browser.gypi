@@ -98,8 +98,6 @@
       'browser/android/logo_bridge.h',
       'browser/android/logo_service.cc',
       'browser/android/logo_service.h',
-      'browser/android/meta_tag_observer.cc',
-      'browser/android/meta_tag_observer.h',
       'browser/android/new_tab_page_prefs.cc',
       'browser/android/new_tab_page_prefs.h',
       'browser/android/new_tab_page_url_handler.cc',
