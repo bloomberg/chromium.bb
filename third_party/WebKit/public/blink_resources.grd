@@ -55,6 +55,8 @@
         <include name="IDR_SUGGESTION_PICKER_JS" file="../Source/web/resources/suggestionPicker.js" type="BINDATA"/>
         <include name="IDR_COLOR_SUGGESTION_PICKER_CSS" file="../Source/web/resources/colorSuggestionPicker.css" type="BINDATA"/>
         <include name="IDR_COLOR_SUGGESTION_PICKER_JS" file="../Source/web/resources/colorSuggestionPicker.js" type="BINDATA"/>
+        <include name="IDR_LIST_PICKER_CSS" file="../Source/web/resources/listPicker.css" type="BINDATA"/>
+        <include name="IDR_LIST_PICKER_JS" file="../Source/web/resources/listPicker.js" type="BINDATA"/>
       </if>
       <if expr="pp_ifdef('use_concatenated_impulse_responses')">
         <include name="IDR_AUDIO_SPATIALIZATION_COMPOSITE" file="../Source/platform/audio/resources/Composite.wav" type="BINDATA"/>

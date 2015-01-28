@@ -1,0 +1,10 @@
+select {
+    display: block;
+    overflow-y: auto;
+}
+
+select hr {
+    border-style: none;
+    border-bottom: 1px solid black;
+    margin: 0 0.5em;
+}
