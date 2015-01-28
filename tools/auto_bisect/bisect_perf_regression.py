@@ -11,7 +11,7 @@ in between, it will get builds, run tests and classify intermediate revisions as
 "good" or "bad" until an adjacent "good" and "bad" revision is found; this is
 the culprit.
 
-If the culprit is a roll if a depedency repository (e.g. v8), it will then
+If the culprit is a roll of a depedency repository (e.g. v8), it will then
 expand the revision range and continue the bisect until a culprit revision in
 the dependency repository is found.
 
