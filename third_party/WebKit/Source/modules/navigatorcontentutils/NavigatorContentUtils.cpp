@@ -54,6 +54,7 @@ static void initCustomSchemeHandlerWhitelist()
         "mms",
         "news",
         "nntp",
+        "openpgp4fpr",
         "sip",
         "sms",
         "smsto",

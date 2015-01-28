@@ -18,6 +18,7 @@ PASS Valid scheme "mailto" allowed.
 PASS Valid scheme "mms" allowed.
 PASS Valid scheme "news" allowed.
 PASS Valid scheme "nntp" allowed.
+PASS Valid scheme "openpgp4fpr" allowed.
 PASS Valid scheme "sip" allowed.
 PASS Valid scheme "sms" allowed.
 PASS Valid scheme "smsto" allowed.
