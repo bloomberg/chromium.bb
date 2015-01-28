@@ -696,6 +696,10 @@ bool EasyUnlockPrivateGetUserInfoFunction::RunSync() {
     users[0]->logged_in = service->GetType() == EasyUnlockService::TYPE_REGULAR;
     users[0]->data_ready = users[0]->logged_in ||
                            service->GetRemoteDevices() != NULL;
+
+    EasyUnlockService::UserSettings user_settings =
+        EasyUnlockService::GetUserSettings(user_id);
+    users[0]->require_close_proximity = user_settings.require_close_proximity;
   }
   results_ = easy_unlock_private::GetUserInfo::Results::Create(users);
   return true;

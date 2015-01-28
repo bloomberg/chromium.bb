@@ -406,6 +406,7 @@ extern const char kPushMessagingRegistrationCount[];
 
 extern const char kEasyUnlockAllowed[];
 extern const char kEasyUnlockEnabled[];
+extern const char kEasyUnlockLocalStateUserPrefs[];
 extern const char kEasyUnlockPairing[];
 extern const char kEasyUnlockProximityRequired[];
 extern const char kEasyUnlockShowTutorial[];

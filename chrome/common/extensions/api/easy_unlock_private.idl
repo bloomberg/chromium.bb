@@ -143,6 +143,10 @@ namespace easyUnlockPrivate {
     // the signin screen.
     boolean loggedIn;
 
+    // Whether to require the remote device to be in very close proximity before
+    // allowing unlock (~1 feet).
+    boolean requireCloseProximity;
+
     // Whether all data needed to use Easy unlock service has been loaded for
     // the user.
     boolean dataReady;

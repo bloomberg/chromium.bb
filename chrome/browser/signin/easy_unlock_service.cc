@@ -65,6 +65,13 @@ PrefService* GetLocalState() {
 
 }  // namespace
 
+EasyUnlockService::UserSettings::UserSettings()
+    : require_close_proximity(false) {
+}
+
+EasyUnlockService::UserSettings::~UserSettings() {
+}
+
 // static
 EasyUnlockService* EasyUnlockService::Get(Profile* profile) {
   return EasyUnlockServiceFactory::GetForProfile(profile);
@@ -233,6 +240,7 @@ void EasyUnlockService::RegisterProfilePrefs(
 
 // static
 void EasyUnlockService::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kEasyUnlockLocalStateUserPrefs);
   registry->RegisterDictionaryPref(prefs::kEasyUnlockHardlockState);
 #if defined(OS_CHROMEOS)
   EasyUnlockTpmKeyManager::RegisterLocalStatePrefs(registry);
@@ -253,6 +261,33 @@ void EasyUnlockService::ResetLocalStateForUser(const std::string& user_id) {
 #if defined(OS_CHROMEOS)
   EasyUnlockTpmKeyManager::ResetLocalStateForUser(user_id);
 #endif
+}
+
+// static
+EasyUnlockService::UserSettings EasyUnlockService::GetUserSettings(
+    const std::string& user_id) {
+  DCHECK(!user_id.empty());
+  UserSettings user_settings;
+
+  PrefService* local_state = GetLocalState();
+  if (!local_state)
+    return user_settings;
+
+  const base::DictionaryValue* all_user_prefs_dict =
+      local_state->GetDictionary(prefs::kEasyUnlockLocalStateUserPrefs);
+  if (!all_user_prefs_dict)
+    return user_settings;
+
+  const base::DictionaryValue* user_prefs_dict;
+  if (!all_user_prefs_dict->GetDictionaryWithoutPathExpansion(user_id,
+                                                              &user_prefs_dict))
+    return user_settings;
+
+  user_prefs_dict->GetBooleanWithoutPathExpansion(
+      prefs::kEasyUnlockProximityRequired,
+      &user_settings.require_close_proximity);
+
+  return user_settings;
 }
 
 bool EasyUnlockService::IsAllowed() {

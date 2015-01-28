@@ -1214,6 +1214,12 @@ const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 // Whether Easy Unlock is enabled.
 const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
 
+// A dictionary in local state containing each user's Easy Unlock profile
+// preferences, so they can be accessed outside of the user's profile. The value
+// is a dictionary containing an entry for each user. Each user's entry mirrors
+// their profile's Easy Unlock preferences.
+const char kEasyUnlockLocalStateUserPrefs[] = "easy_unlock.user_prefs";
+
 // Preference storing Easy Unlock pairing data.
 const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 

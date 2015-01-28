@@ -89,6 +89,10 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   scoped_ptr<chromeos::ShortLivedUserContext> short_lived_user_context_;
 #endif
 
+  // Updates local state with the preference from the user's profile, so they
+  // can be accessed on the sign-in screen.
+  void SyncProfilePrefsToLocalState();
+
   PrefChangeRegistrar registrar_;
 
   TurnOffFlowStatus turn_off_flow_status_;

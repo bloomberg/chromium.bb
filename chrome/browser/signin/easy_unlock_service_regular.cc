@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -257,6 +258,9 @@ void EasyUnlockServiceRegular::InitializeInternal() {
       prefs::kEasyUnlockAllowed,
       base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
                  base::Unretained(this)));
+  registrar_.Add(prefs::kEasyUnlockProximityRequired,
+                 base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
+                            base::Unretained(this)));
   OnPrefsChanged();
 }
 
@@ -288,6 +292,7 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() {
 }
 
 void EasyUnlockServiceRegular::OnPrefsChanged() {
+  SyncProfilePrefsToLocalState();
   UpdateAppState();
 }
 
@@ -309,4 +314,25 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(
     const std::string& error_message) {
   LOG(WARNING) << "Failed to turn off Smart Lock: " << error_message;
   SetTurnOffFlowStatus(FAIL);
+}
+
+void EasyUnlockServiceRegular::SyncProfilePrefsToLocalState() {
+  PrefService* local_state =
+      g_browser_process ? g_browser_process->local_state() : NULL;
+  PrefService* profile_prefs = profile()->GetPrefs();
+  if (!local_state || !profile_prefs)
+    return;
+
+  // Create the dictionary of Easy Unlock preferences for the current user. The
+  // items in the dictionary are the same profile prefs used for Easy Unlock.
+  scoped_ptr<base::DictionaryValue> user_prefs_dict(
+      new base::DictionaryValue());
+  user_prefs_dict->SetBooleanWithoutPathExpansion(
+      prefs::kEasyUnlockProximityRequired,
+      profile_prefs->GetBoolean(prefs::kEasyUnlockProximityRequired));
+
+  DictionaryPrefUpdate update(local_state,
+                              prefs::kEasyUnlockLocalStateUserPrefs);
+  std::string user_email = GetUserEmail();
+  update->SetWithoutPathExpansion(user_email, user_prefs_dict.Pass());
 }
