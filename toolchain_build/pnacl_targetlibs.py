@@ -475,12 +475,12 @@ def TargetLibs(bias_arch, is_canonical):
               command.Mkdir(clang_libdir, parents=True),
               command.Command(MakeCommand() + [
                   '-f',
-                  command.path.join('%(compiler_rt_src)s', 'lib',
+                  command.path.join('%(compiler_rt_src)s', 'lib', 'builtins',
                                     'Makefile-pnacl-bitcode'),
                   'libgcc.a', 'CC=' + PnaclTool('clang'),
                   'AR=' + PnaclTool('ar')] +
                   ['SRC_DIR=' + command.path.join('%(abs_compiler_rt_src)s',
-                                                  'lib'),
+                                                  'lib', 'builtins'),
                    'CFLAGS=' + ' '.join([
                      '-DPNACL_' + TargetArch(bias_arch).replace('-', '_')])
                   ]),
@@ -651,12 +651,12 @@ def TranslatorLibs(arch, is_canonical):
           'commands': [
               command.Command(MakeCommand() + [
                   '-f',
-                  command.path.join('%(compiler_rt_src)s', 'lib',
+                  command.path.join('%(compiler_rt_src)s', 'lib', 'builtins',
                                     'Makefile-pnacl'),
                   'libgcc.a', 'CC=' + PnaclTool('clang'),
                   'AR=' + PnaclTool('ar')] +
                   ['SRC_DIR=' + command.path.join('%(abs_compiler_rt_src)s',
-                                                  'lib'),
+                                                  'lib', 'builtins'),
                    'CFLAGS=-arch ' + arch + ' -DPNACL_' +
                     arch.replace('-', '_') + ' --pnacl-allow-translate -O3 ' +
                    NewlibIsystemCflags('le32')]),
