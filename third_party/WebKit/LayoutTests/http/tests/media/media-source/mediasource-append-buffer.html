@@ -324,7 +324,7 @@
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
-              var halfIndex = (initSegment.length + 1) / 2;
+              var halfIndex = (initSegment.length - 1) / 2;
               var partialInitSegment = initSegment.subarray(0, halfIndex);
               var remainingInitSegment = initSegment.subarray(halfIndex);
               var mediaSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.media[0]);
@@ -363,7 +363,7 @@
           {
               var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
               var mediaSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.media[0]);
-              var halfIndex = (mediaSegment.length + 1) / 2;
+              var halfIndex = (mediaSegment.length - 1) / 2;
               var partialMediaSegment = mediaSegment.subarray(0, halfIndex);
               var remainingMediaSegment = mediaSegment.subarray(halfIndex);
 
