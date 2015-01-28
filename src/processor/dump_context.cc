@@ -43,7 +43,6 @@
 #define snprintf _snprintf
 #else  // _WIN32
 #include <unistd.h>
-#define O_BINARY 0
 #endif  // _WIN32
 
 #include "processor/logging.h"
