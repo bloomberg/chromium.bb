@@ -86,8 +86,8 @@ public:
     TextDirection direction() const;
     KURL iconURL() const { return m_iconUrl; }
 
-    static const String& permissionString(WebNotificationPermission);
-    static const String& permission(ExecutionContext*);
+    static String permissionString(WebNotificationPermission);
+    static String permission(ExecutionContext*);
     static WebNotificationPermission checkPermission(ExecutionContext*);
     static void requestPermission(ExecutionContext*, NotificationPermissionCallback* = nullptr);
 

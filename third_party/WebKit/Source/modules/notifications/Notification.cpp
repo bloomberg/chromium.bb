@@ -190,26 +190,22 @@ TextDirection Notification::direction() const
     return dir() == "rtl" ? RTL : LTR;
 }
 
-const String& Notification::permissionString(WebNotificationPermission permission)
+String Notification::permissionString(WebNotificationPermission permission)
 {
-    DEFINE_STATIC_LOCAL(const String, allowedPermission, ("granted"));
-    DEFINE_STATIC_LOCAL(const String, deniedPermission, ("denied"));
-    DEFINE_STATIC_LOCAL(const String, defaultPermission, ("default"));
-
     switch (permission) {
     case WebNotificationPermissionAllowed:
-        return allowedPermission;
+        return "granted";
     case WebNotificationPermissionDenied:
-        return deniedPermission;
+        return "denied";
     case WebNotificationPermissionDefault:
-        return defaultPermission;
+        return "default";
     }
 
     ASSERT_NOT_REACHED();
-    return deniedPermission;
+    return "denied";
 }
 
-const String& Notification::permission(ExecutionContext* context)
+String Notification::permission(ExecutionContext* context)
 {
     return permissionString(checkPermission(context));
 }
