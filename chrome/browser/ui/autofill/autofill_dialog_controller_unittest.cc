@@ -743,8 +743,8 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
     const DetailInputs& inputs =
         controller()->RequestedFieldsForSection(section);
     AutofillProfile full_profile(test::GetVerifiedProfile());
-    for (size_t i = 0; i < inputs.size(); ++i) {
-      const ServerFieldType type = inputs[i].type;
+    for (size_t j = 0; j < inputs.size(); ++j) {
+      const ServerFieldType type = inputs[j].type;
       outputs[type] = full_profile.GetInfo(AutofillType(type), "en-US");
     }
 
@@ -2966,10 +2966,10 @@ TEST_F(AutofillDialogControllerTest, InputEditability) {
   controller()->OnDidGetWalletItems(items.Pass());
   EXPECT_TRUE(controller()->IsEditingExistingData(SECTION_CC_BILLING));
 
-  const DetailInputs& inputs =
-      controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
   FieldValueMap outputs;
-  CopyInitialValues(inputs, &outputs);
+  CopyInitialValues(
+      controller()->RequestedFieldsForSection(SECTION_CC_BILLING),
+      &outputs);
   controller()->GetView()->SetUserInput(SECTION_CC_BILLING, outputs);
 
   for (size_t i = 0; i < arraysize(sections); ++i) {
