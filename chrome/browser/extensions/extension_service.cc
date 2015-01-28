@@ -1410,11 +1410,14 @@ void ExtensionService::ReloadExtensionsForTest() {
 }
 
 void ExtensionService::SetReadyAndNotifyListeners() {
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   ready_->Signal();
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
+  UMA_HISTOGRAM_TIMES("Extensions.ExtensionServiceNotifyReadyListenersTime",
+                      base::TimeTicks::Now() - start_time);
 }
 
 void ExtensionService::OnLoadedInstalledExtensions() {

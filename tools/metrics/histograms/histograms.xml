@@ -8144,6 +8144,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ExtensionServiceNotifyReadyListenersTime">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Time taken for the ExtensionService to notify all ready listeners that the
+    extension system is now ready. This happens as part of the total
+    initialization time of ExtensionService, measured in
+    Extensions.ExtensionServiceInitTime.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ExtensionUninstalled">
   <owner>kalman@chromium.org</owner>
   <summary>An extension has been uninstalled.</summary>
@@ -8405,9 +8415,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.LoadAllComponentTime" units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Time taken to load all component extensions at browser startup. This happens
+    as part of the total initialization time of ExtensionService, measured in
+    Extensions.ExtensionServiceInitTime.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.LoadAllTime" units="milliseconds">
   <owner>kalman@chromium.org</owner>
-  <summary>Time taken to load all extensions at browser startup.</summary>
+  <summary>
+    Time taken to load all non-component extensions at browser startup. This
+    happens as part of the total initialization time of ExtensionService,
+    measured in Extensions.ExtensionServiceInitTime.
+  </summary>
 </histogram>
 
 <histogram name="Extensions.LoadApp">

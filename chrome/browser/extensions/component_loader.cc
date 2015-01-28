@@ -10,7 +10,9 @@
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
@@ -124,11 +126,14 @@ ComponentLoader::~ComponentLoader() {
 }
 
 void ComponentLoader::LoadAll() {
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   for (RegisteredComponentExtensions::iterator it =
           component_extensions_.begin();
       it != component_extensions_.end(); ++it) {
     Load(*it);
   }
+  UMA_HISTOGRAM_TIMES("Extensions.LoadAllComponentTime",
+                      base::TimeTicks::Now() - start_time);
 }
 
 base::DictionaryValue* ComponentLoader::ParseManifest(
