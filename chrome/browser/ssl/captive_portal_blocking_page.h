@@ -37,6 +37,10 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
   // SecurityInterstitialPage method:
   const void* GetTypeForTesting() const override;
 
+  void SetWiFiConnectionForTesting(bool is_wifi_connection) {
+    is_wifi_connection_ = is_wifi_connection;
+  }
+
  protected:
   // SecurityInterstitialPage methods:
   void PopulateInterstitialStrings(
@@ -49,6 +53,8 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
  private:
   // URL of the login page, opened when the user clicks the "Connect" button.
   GURL login_url_;
+  // True if on a Wi-Fi connection.
+  bool is_wifi_connection_;
   base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPage);

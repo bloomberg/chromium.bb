@@ -53,6 +53,48 @@ class CaptivePortalBlockingPageTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPageTest);
 };
 
+// If the connection is not a Wi-Fi connection, the wired network version of the
+// captive portal interstitial should be displayed.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
+                       ShowWiredNetworkInterstitial) {
+  const GURL kLandingUrl("http://captive.portal/landing_url");
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  DCHECK(contents);
+  // Blocking page is owned by the interstitial.
+  CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
+      contents, GURL(kBrokenSSL), kLandingUrl, base::Callback<void(bool)>());
+  blocking_page->SetWiFiConnectionForTesting(false);
+  blocking_page->Show();
+
+  WaitForInterstitialAttach(contents);
+  EXPECT_TRUE(
+      WaitForRenderFrameReady(contents->GetInterstitialPage()->GetMainFrame()));
+  EXPECT_FALSE(
+      IsInterstitialDisplayingText(contents->GetInterstitialPage(), "Wi-Fi"));
+}
+
+// If the connection is a Wi-Fi connection, the Wi-Fi version of the captive
+// portal interstitial should be displayed.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
+                       ShowWiFiInterstitial) {
+  const GURL kLandingUrl("http://captive.portal/landing_url");
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  DCHECK(contents);
+  // Blocking page is owned by the interstitial.
+  CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
+      contents, GURL(kBrokenSSL), kLandingUrl, base::Callback<void(bool)>());
+  blocking_page->SetWiFiConnectionForTesting(true);
+  blocking_page->Show();
+
+  WaitForInterstitialAttach(contents);
+  EXPECT_TRUE(
+      WaitForRenderFrameReady(contents->GetInterstitialPage()->GetMainFrame()));
+  EXPECT_TRUE(
+      IsInterstitialDisplayingText(contents->GetInterstitialPage(), "Wi-Fi"));
+}
+
 // The captive portal interstitial should show the login url if the login url
 // is different than the captive portal ping url (i.e. the portal intercepts
 // requests via HTTP redirects).
@@ -65,6 +107,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
   // Blocking page is owned by the interstitial.
   CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
       contents, GURL(kBrokenSSL), kLandingUrl, base::Callback<void(bool)>());
+  blocking_page->SetWiFiConnectionForTesting(false);
   blocking_page->Show();
 
   WaitForInterstitialAttach(contents);
@@ -89,6 +132,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
   // Blocking page is owned by the interstitial.
   CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
       contents, GURL(kBrokenSSL), kLandingUrl, base::Callback<void(bool)>());
+  blocking_page->SetWiFiConnectionForTesting(false);
   blocking_page->Show();
 
   WaitForInterstitialAttach(contents);
@@ -130,6 +174,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageIDNTest,
   // Blocking page is owned by the interstitial.
   CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
       contents, GURL(kBrokenSSL), landing_url, base::Callback<void(bool)>());
+  blocking_page->SetWiFiConnectionForTesting(false);
   blocking_page->Show();
 
   WaitForInterstitialAttach(contents);

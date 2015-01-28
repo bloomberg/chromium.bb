@@ -9878,17 +9878,29 @@ I don't think this site should be blocked!
       </if>
 
       <!-- Captive portal interstitial -->
-      <message name="IDS_CAPTIVE_PORTAL_TITLE" desc="Title in the error page when a secure request is blocked because the network is redirecting the request to another page until the user logs in">
+      <message name="IDS_CAPTIVE_PORTAL_TITLE_WIRED" desc="Title in the error page when a secure request is blocked because the network is redirecting the request to another page until the user logs in">
         Connect to Network
       </message>
-      <message name="IDS_CAPTIVE_PORTAL_HEADING" desc="Heading in the error page when a secure request is blocked because a captive portal is manipulating a connection">
+      <message name="IDS_CAPTIVE_PORTAL_TITLE_WIFI" desc="Title in the error page when a secure request is blocked because the Wi-fi is redirecting the request to another page until the user logs in">
+        Connect to Wi-Fi
+      </message>
+      <message name="IDS_CAPTIVE_PORTAL_HEADING_WIRED" desc="Heading in the error page when a secure request is blocked because a captive portal is manipulating a wired connection (e.g. ethernet)">
         Connect to network
       </message>
-      <message name="IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the captive portal error page for network connections.">
+      <message name="IDS_CAPTIVE_PORTAL_HEADING_WIFI" desc="Heading in the error page when a secure request is blocked because a captive portal is manipulating a Wi-Fi connection">
+        Connect to Wi-Fi
+      </message>
+      <message name="IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIRED" desc="The primary explanatory paragraph for the captive portal error page for wired network connections.">
         The network you are using may require you to visit <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="LOGIN_URL">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;strong&gt;</ph>.
       </message>
-      <message name="IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL" desc="The primary explanatory paragraph for the captive portal error page for network connections when the captive portal login url isn't available.">
+      <message name="IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIFI" desc="The primary explanatory paragraph for the captive portal error page for Wi-Fi connections.">
+        The Wi-Fi you are using may require you to visit <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="LOGIN_URL">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;strong&gt;</ph>.
+      </message>
+      <message name="IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIRED" desc="The primary explanatory paragraph for the captive portal error page for network connections when the captive portal login url isn't available.">
         The network you are using may require you to visit its login page.
+      </message>
+      <message name="IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIFI" desc="The primary explanatory paragraph for the captive portal error page for Wi-Fi connections when the captive portal login url isn't available.">
+        The Wi-Fi you are using may require you to visit its login page.
       </message>
       <message name="IDS_CAPTIVE_PORTAL_BUTTON_OPEN_LOGIN_PAGE" desc="Text for the open login page button">
         Connect

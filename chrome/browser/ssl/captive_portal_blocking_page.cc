@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -37,6 +38,15 @@ void RecordUMA(CaptivePortalBlockingPageEvent event) {
                             CAPTIVE_PORTAL_BLOCKING_PAGE_EVENT_COUNT);
 }
 
+bool IsWifiConnection() {
+  // |net::NetworkChangeNotifier::GetConnectionType| isn't accurate on Linux and
+  // Windows. See https://crbug.com/160537 for details.
+  // TODO(meacer): Add heuristics to get a more accurate connection type on
+  //               these platforms.
+  return net::NetworkChangeNotifier::GetConnectionType() ==
+      net::NetworkChangeNotifier::CONNECTION_WIFI;
+}
+
 const char kOpenLoginPageCommand[] = "openLoginPage";
 
 } // namespace
@@ -52,6 +62,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       login_url_(login_url),
+      is_wifi_connection_(IsWifiConnection()),
       callback_(callback) {
   DCHECK(login_url_.is_valid());
   RecordUMA(SHOW_ALL);
@@ -84,9 +95,15 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
       "primaryButtonText",
       l10n_util::GetStringUTF16(IDS_CAPTIVE_PORTAL_BUTTON_OPEN_LOGIN_PAGE));
   load_time_data->SetString("tabTitle",
-      l10n_util::GetStringUTF16(IDS_CAPTIVE_PORTAL_TITLE));
+      l10n_util::GetStringUTF16(
+          is_wifi_connection_ ?
+          IDS_CAPTIVE_PORTAL_TITLE_WIFI :
+          IDS_CAPTIVE_PORTAL_TITLE_WIRED));
   load_time_data->SetString("heading",
-      l10n_util::GetStringUTF16(IDS_CAPTIVE_PORTAL_HEADING));
+      l10n_util::GetStringUTF16(
+          is_wifi_connection_ ?
+          IDS_CAPTIVE_PORTAL_HEADING_WIFI :
+          IDS_CAPTIVE_PORTAL_HEADING_WIRED));
 
   if (login_url_.spec() == captive_portal::CaptivePortalDetector::kDefaultURL) {
     // Captive portal may intercept requests without HTTP redirects, in which
@@ -95,7 +112,9 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
     load_time_data->SetString(
         "primaryParagraph",
         l10n_util::GetStringUTF16(
-            IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL));
+            is_wifi_connection_ ?
+            IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIFI :
+            IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIRED));
   } else {
     std::string languages;
     Profile* profile = Profile::FromBrowserContext(
@@ -108,8 +127,11 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
       base::i18n::WrapStringWithLTRFormatting(&login_host);
     load_time_data->SetString(
         "primaryParagraph",
-        l10n_util::GetStringFUTF16(IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH,
-                                   login_host));
+        l10n_util::GetStringFUTF16(
+            is_wifi_connection_ ?
+            IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIFI :
+            IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIRED,
+            login_host));
   }
 
   // Fill the empty strings to avoid getting debug warnings.
