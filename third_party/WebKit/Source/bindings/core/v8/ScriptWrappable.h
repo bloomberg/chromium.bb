@@ -79,7 +79,7 @@ public:
 
     void setWrapper(v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
     {
-        ASSERT(!containsWrapper());
+        RELEASE_ASSERT(!containsWrapper());
         if (!*wrapper)
             return;
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(toScriptWrappable(wrapper) == this);
@@ -161,6 +161,7 @@ protected:
 private:
     void disposeWrapper(v8::Local<v8::Object> wrapper)
     {
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(toScriptWrappable(wrapper) == this);
         RELEASE_ASSERT(containsWrapper());
         RELEASE_ASSERT(wrapper == m_wrapper);
         m_wrapper.Reset();
