@@ -860,8 +860,8 @@ v8::Local<v8::Context> toV8Context(ExecutionContext*, DOMWrapperWorld&);
 v8::Local<v8::Context> toV8Context(Frame*, DOMWrapperWorld&);
 
 // Returns the frame object of the window object associated with
-// a context, if the window is currently being displayed in the LocalFrame.
-LocalFrame* toFrameIfNotDetached(v8::Handle<v8::Context>);
+// a context, if the window is currently being displayed in a Frame.
+Frame* toFrameIfNotDetached(v8::Handle<v8::Context>);
 
 EventTarget* toEventTarget(v8::Isolate*, v8::Handle<v8::Value>);
 

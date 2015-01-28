@@ -245,6 +245,11 @@ DOMWindow* LocalFrame::domWindow() const
     return m_domWindow.get();
 }
 
+WindowProxy* LocalFrame::windowProxy(DOMWrapperWorld& world)
+{
+    return m_script->windowProxy(world);
+}
+
 void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList)
 {
     m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), lockBackForwardList);

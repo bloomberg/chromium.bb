@@ -11,7 +11,7 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<WindowProxyManager> WindowProxyManager::create(Frame* frame)
+PassOwnPtrWillBeRawPtr<WindowProxyManager> WindowProxyManager::create(Frame& frame)
 {
     return adoptPtrWillBeNoop(new WindowProxyManager(frame));
 }
@@ -103,10 +103,10 @@ void WindowProxyManager::setWorldDebugId(int worldId, int debuggerId)
     V8PerContextDebugData::setContextDebugData(context, worldName, debuggerId);
 }
 
-WindowProxyManager::WindowProxyManager(Frame* frame)
-    : m_frame(frame)
+WindowProxyManager::WindowProxyManager(Frame& frame)
+    : m_frame(&frame)
     , m_isolate(v8::Isolate::GetCurrent())
-    , m_windowProxy(WindowProxy::create(frame, DOMWrapperWorld::mainWorld(), m_isolate))
+    , m_windowProxy(WindowProxy::create(&frame, DOMWrapperWorld::mainWorld(), m_isolate))
 {
 }
 

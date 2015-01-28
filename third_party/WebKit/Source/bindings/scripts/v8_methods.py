@@ -274,7 +274,7 @@ def cpp_value(interface, method, number_of_arguments):
     arguments = method.arguments[:number_of_arguments]
     cpp_arguments = []
     if 'ImplementedInPrivateScript' in method.extended_attributes:
-        cpp_arguments.append('toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())')
+        cpp_arguments.append('toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()))')
         cpp_arguments.append('impl')
 
     if method.is_constructor:

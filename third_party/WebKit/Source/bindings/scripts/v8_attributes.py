@@ -213,7 +213,7 @@ def getter_expression(interface, attribute, context):
     getter_name = scoped_name(interface, attribute, this_getter_base_name)
 
     if 'ImplementedInPrivateScript' in attribute.extended_attributes:
-        arguments.append('toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())')
+        arguments.append('toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()))')
         arguments.append('impl')
         arguments.append('&result')
     arguments.extend(v8_utilities.call_with_arguments(
@@ -361,7 +361,7 @@ def setter_expression(interface, attribute, context):
         arguments.append('*impl')
     idl_type = attribute.idl_type
     if 'ImplementedInPrivateScript' in extended_attributes:
-        arguments.append('toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())')
+        arguments.append('toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()))')
         arguments.append('impl')
         arguments.append('cppValue')
     elif idl_type.base_type == 'EventHandler':

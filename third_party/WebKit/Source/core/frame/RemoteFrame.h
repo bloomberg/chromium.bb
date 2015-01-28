@@ -14,6 +14,7 @@ class Event;
 class RemoteDOMWindow;
 class RemoteFrameClient;
 class RemoteFrameView;
+class WindowProxyManager;
 
 class RemoteFrame: public Frame {
 public:
@@ -25,11 +26,12 @@ public:
     void trace(Visitor*) override;
     virtual bool isRemoteFrame() const override { return true; }
     virtual DOMWindow* domWindow() const override;
+    WindowProxy* windowProxy(DOMWrapperWorld&) override;
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
     virtual void reload(ReloadPolicy, ClientRedirectPolicy) override;
     virtual void detach() override;
     virtual RemoteSecurityContext* securityContext() const override;
-    void printNavigationErrorMessage(const Frame&, const char* reason) { }
+    void printNavigationErrorMessage(const Frame&, const char* reason) override { }
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.
@@ -40,7 +42,6 @@ public:
 
     RemoteFrameView* view() const;
 
-
 private:
     RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
@@ -49,6 +50,7 @@ private:
     RefPtrWillBeMember<RemoteFrameView> m_view;
     RefPtr<RemoteSecurityContext> m_securityContext;
     RefPtrWillBeMember<RemoteDOMWindow> m_domWindow;
+    OwnPtrWillBeMember<WindowProxyManager> m_windowProxyManager;
 };
 
 inline RemoteFrameView* RemoteFrame::view() const

@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/frame/RemoteFrame.h"
 
+#include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/frame/RemoteDOMWindow.h"
 #include "core/frame/RemoteFrameClient.h"
@@ -18,6 +19,7 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client, FrameHost* host, Fram
     : Frame(client, host, owner)
     , m_securityContext(RemoteSecurityContext::create())
     , m_domWindow(RemoteDOMWindow::create(*this))
+    , m_windowProxyManager(WindowProxyManager::create(*this))
 {
 }
 
@@ -43,6 +45,11 @@ DOMWindow* RemoteFrame::domWindow() const
     return m_domWindow.get();
 }
 
+WindowProxy* RemoteFrame::windowProxy(DOMWrapperWorld& world)
+{
+    return m_windowProxyManager->windowProxy(world);
+}
+
 void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList)
 {
     // The process where this frame actually lives won't have sufficient information to determine
@@ -62,6 +69,7 @@ void RemoteFrame::detach()
     detachChildren();
     if (!client())
         return;
+    m_windowProxyManager->clearForClose();
     Frame::detach();
 }
 

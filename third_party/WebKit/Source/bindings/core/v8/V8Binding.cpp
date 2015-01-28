@@ -815,15 +815,15 @@ ExecutionContext* callingExecutionContext(v8::Isolate* isolate)
     return toExecutionContext(context);
 }
 
-LocalFrame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
+Frame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
 {
-    LocalDOMWindow* window = toLocalDOMWindow(toDOMWindow(context));
+    DOMWindow* window = toDOMWindow(context);
     if (window && window->isCurrentlyDisplayedInFrame())
         return window->frame();
-    // We return 0 here because |context| is detached from the LocalFrame. If we
+    // We return 0 here because |context| is detached from the Frame. If we
     // did return |frame| we could get in trouble because the frame could be
     // navigated to another security origin.
-    return 0;
+    return nullptr;
 }
 
 EventTarget* toEventTarget(v8::Isolate* isolate, v8::Handle<v8::Value> value)
@@ -854,12 +854,12 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& w
 
 v8::Local<v8::Context> toV8Context(Frame* frame, DOMWrapperWorld& world)
 {
-    if (!frame || frame->isRemoteFrame())
+    if (!frame)
         return v8::Local<v8::Context>();
-    v8::Local<v8::Context> context = toLocalFrame(frame)->script().windowProxy(world)->context();
+    v8::Local<v8::Context> context = frame->windowProxy(world)->context();
     if (context.IsEmpty())
         return v8::Local<v8::Context>();
-    LocalFrame* attachedFrame = toFrameIfNotDetached(context);
+    Frame* attachedFrame = toFrameIfNotDetached(context);
     return frame == attachedFrame ? context : v8::Local<v8::Context>();
 }
 

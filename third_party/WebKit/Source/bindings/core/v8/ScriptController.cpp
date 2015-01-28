@@ -47,7 +47,6 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/WindowProxy.h"
-#include "bindings/core/v8/WindowProxyManager.h"
 #include "bindings/core/v8/npruntime_impl.h"
 #include "bindings/core/v8/npruntime_priv.h"
 #include "core/dom/Document.h"
@@ -93,7 +92,7 @@ bool ScriptController::canAccessFromCurrentOrigin(LocalFrame *frame)
 }
 
 ScriptController::ScriptController(LocalFrame* frame)
-    : m_windowProxyManager(WindowProxyManager::create(frame))
+    : m_windowProxyManager(WindowProxyManager::create(*frame))
     , m_sourceURL(0)
     , m_windowScriptNPObject(0)
 {

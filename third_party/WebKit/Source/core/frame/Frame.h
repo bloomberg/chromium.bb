@@ -37,6 +37,7 @@
 namespace blink {
 
 class ChromeClient;
+class DOMWrapperWorld;
 class Document;
 class FrameClient;
 class FrameHost;
@@ -49,6 +50,7 @@ class RenderPart;
 class SecurityContext;
 class Settings;
 class WebLayer;
+class WindowProxy;
 
 class Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
 public:
@@ -60,6 +62,7 @@ public:
     virtual bool isRemoteFrame() const { return false; }
 
     virtual DOMWindow* domWindow() const = 0;
+    virtual WindowProxy* windowProxy(DOMWrapperWorld&) = 0;
 
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) = 0;
     virtual void reload(ReloadPolicy, ClientRedirectPolicy) = 0;

@@ -72,7 +72,7 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> co
     if (global.IsEmpty())
         return 0;
 
-    return toFrameIfNotDetached(context);
+    return toLocalFrame(toFrameIfNotDetached(context));
 }
 
 void PageScriptDebugServer::setPreprocessorSource(const String& preprocessorSource)

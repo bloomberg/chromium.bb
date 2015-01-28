@@ -20,7 +20,7 @@ class WindowProxy;
 
 class WindowProxyManager final : public NoBaseWillBeGarbageCollectedFinalized<WindowProxyManager> {
 public:
-    static PassOwnPtrWillBeRawPtr<WindowProxyManager> create(Frame*);
+    static PassOwnPtrWillBeRawPtr<WindowProxyManager> create(Frame&);
 
     ~WindowProxyManager();
     void trace(Visitor*);
@@ -42,7 +42,7 @@ public:
 private:
     typedef WillBeHeapHashMap<int, OwnPtrWillBeMember<WindowProxy> > IsolatedWorldMap;
 
-    explicit WindowProxyManager(Frame*);
+    explicit WindowProxyManager(Frame&);
 
     RawPtrWillBeMember<Frame> m_frame;
     v8::Isolate* const m_isolate;
