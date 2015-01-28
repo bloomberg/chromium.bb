@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -187,6 +186,13 @@ PasswordStoreChangeList FormsToRemoveChangeList(
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, **i));
   }
   return changes;
+}
+
+// Moves the content of |second| to the end of |first|.
+void AppendSecondToFirst(ScopedVector<autofill::PasswordForm>* first,
+                         ScopedVector<autofill::PasswordForm>* second) {
+  first->insert(first->end(), second->begin(), second->end());
+  second->weak_clear();
 }
 
 }  // namespace
@@ -418,70 +424,62 @@ PasswordForm* BestKeychainFormForForm(
   return partial_match;
 }
 
-// Returns entries from |forms| that are blacklist entries, after removing
-// them from |forms|.
-std::vector<PasswordForm*> ExtractBlacklistForms(
-    std::vector<PasswordForm*>* forms) {
-  std::vector<PasswordForm*> blacklist_forms;
-  for (std::vector<PasswordForm*>::iterator i = forms->begin();
-       i != forms->end();) {
-    PasswordForm* form = *i;
-    if (form->blacklisted_by_user) {
-      blacklist_forms.push_back(form);
-      i = forms->erase(i);
-    } else {
-      ++i;
-    }
+// Moves entries from |forms| that are blacklist entries into |blacklist|.
+void ExtractBlacklistForms(ScopedVector<autofill::PasswordForm>* forms,
+                           ScopedVector<autofill::PasswordForm>* blacklist) {
+  blacklist->reserve(blacklist->size() + forms->size());
+  ScopedVector<autofill::PasswordForm> non_blacklist;
+  for (auto& form : *forms) {
+    if (form->blacklisted_by_user)
+      blacklist->push_back(form);
+    else
+      non_blacklist.push_back(form);
+    form = nullptr;
   }
-  return blacklist_forms;
+  forms->swap(non_blacklist);
 }
 
-// Deletes and removes from v any element that exists in s.
-template <class T>
-void DeleteVectorElementsInSet(std::vector<T*>* v, const std::set<T*>& s) {
-  for (typename std::vector<T*>::iterator i = v->begin(); i != v->end();) {
-    T* element = *i;
-    if (s.find(element) != s.end()) {
-      delete element;
-      i = v->erase(i);
-    } else {
-      ++i;
-    }
-  }
-}
-
-void MergePasswordForms(std::vector<PasswordForm*>* keychain_forms,
-                        std::vector<PasswordForm*>* database_forms,
-                        std::vector<PasswordForm*>* merged_forms) {
+// Takes |keychain_forms| and |database_forms| and moves the following 2 types
+// of forms to |merged_forms|: (1) blacklisted |database_forms|, (2)
+// |database_forms| which have a corresponding entry in |keychain_forms|. The
+// database forms of type (2) have their password value updated from the
+// corresponding keychain form, and all the keychain forms corresponding to some
+// database form are removed from |keychain_forms| and deleted.
+void MergePasswordForms(ScopedVector<autofill::PasswordForm>* keychain_forms,
+                        ScopedVector<autofill::PasswordForm>* database_forms,
+                        ScopedVector<autofill::PasswordForm>* merged_forms) {
   // Pull out the database blacklist items, since they are used as-is rather
   // than being merged with keychain forms.
-  std::vector<PasswordForm*> database_blacklist_forms =
-      ExtractBlacklistForms(database_forms);
+  ExtractBlacklistForms(database_forms, merged_forms);
 
   // Merge the normal entries.
-  std::set<PasswordForm*> used_keychain_forms;
-  for (std::vector<PasswordForm*>::iterator i = database_forms->begin();
-       i != database_forms->end();) {
-    PasswordForm* db_form = *i;
-    PasswordForm* best_match = BestKeychainFormForForm(*db_form,
-                                                       keychain_forms);
+  ScopedVector<autofill::PasswordForm> unused_database_forms;
+  unused_database_forms.reserve(database_forms->size());
+  std::set<autofill::PasswordForm*> used_keychain_forms;
+  for (auto& db_form : *database_forms) {
+    PasswordForm* best_match =
+        BestKeychainFormForForm(*db_form, &keychain_forms->get());
     if (best_match) {
       used_keychain_forms.insert(best_match);
       db_form->password_value = best_match->password_value;
       merged_forms->push_back(db_form);
-      i = database_forms->erase(i);
     } else {
-      ++i;
+      unused_database_forms.push_back(db_form);
     }
+    db_form = nullptr;
   }
-
-  // Add in the blacklist entries from the database.
-  merged_forms->insert(merged_forms->end(),
-                       database_blacklist_forms.begin(),
-                       database_blacklist_forms.end());
+  database_forms->swap(unused_database_forms);
 
   // Clear out all the Keychain entries we used.
-  DeleteVectorElementsInSet(keychain_forms, used_keychain_forms);
+  ScopedVector<autofill::PasswordForm> unused_keychain_forms;
+  unused_keychain_forms.reserve(keychain_forms->size());
+  for (auto& keychain_form : *keychain_forms) {
+    if (!ContainsKey(used_keychain_forms, keychain_form)) {
+      unused_keychain_forms.push_back(keychain_form);
+      keychain_form = nullptr;
+    }
+  }
+  keychain_forms->swap(unused_keychain_forms);
 }
 
 std::vector<ItemFormPair> ExtractAllKeychainItemAttributesIntoPasswordForms(
@@ -504,9 +502,9 @@ std::vector<ItemFormPair> ExtractAllKeychainItemAttributesIntoPasswordForms(
   return item_form_pairs;
 }
 
-std::vector<PasswordForm*> GetPasswordsForForms(
-    const AppleKeychain& keychain,
-    std::vector<PasswordForm*>* database_forms) {
+void GetPasswordsForForms(const AppleKeychain& keychain,
+                          ScopedVector<autofill::PasswordForm>* database_forms,
+                          ScopedVector<autofill::PasswordForm>* passwords) {
   // First load the attributes of all items in the keychain without loading
   // their password data, and then match items in |database_forms| against them.
   // This avoids individually searching through the keychain for passwords
@@ -522,29 +520,27 @@ std::vector<PasswordForm*> GetPasswordsForForms(
   // Next, compare the attributes of the PasswordForms in |database_forms|
   // against those in |item_form_pairs|, and extract password data for each
   // matching PasswordForm using its corresponding SecKeychainItemRef.
-  std::vector<PasswordForm*> merged_forms;
-  for (std::vector<PasswordForm*>::iterator i = database_forms->begin();
-       i != database_forms->end();) {
-    std::vector<PasswordForm*> db_form_container(1, *i);
-    std::vector<PasswordForm*> keychain_matches =
-        ExtractPasswordsMergeableWithForm(keychain, item_form_pairs, **i);
-    MergePasswordForms(&keychain_matches, &db_form_container, &merged_forms);
-    if (db_form_container.empty()) {
-      i = database_forms->erase(i);
-    } else {
-      ++i;
-    }
-    STLDeleteElements(&keychain_matches);
-  }
+  ScopedVector<autofill::PasswordForm> unused_db_forms;
+  unused_db_forms.reserve(database_forms->size());
+  for (auto& db_form : *database_forms) {
+    ScopedVector<autofill::PasswordForm> keychain_matches =
+        ExtractPasswordsMergeableWithForm(keychain, item_form_pairs, *db_form);
 
-  // Clean up temporary PasswordForms and SecKeychainItemRefs.
+    ScopedVector<autofill::PasswordForm> db_form_container;
+    db_form_container.push_back(db_form);
+    db_form = nullptr;
+    MergePasswordForms(&keychain_matches, &db_form_container, passwords);
+    unused_db_forms.insert(unused_db_forms.end(), db_form_container.begin(),
+                           db_form_container.end());
+    db_form_container.weak_clear();
+  }
+  database_forms->swap(unused_db_forms);
+
   STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
                                        item_form_pairs.end());
-  for (std::vector<SecKeychainItemRef>::iterator i = keychain_items.begin();
-       i != keychain_items.end(); ++i) {
-    keychain.Free(*i);
+  for (SecKeychainItemRef item : keychain_items) {
+    keychain.Free(item);
   }
-  return merged_forms;
 }
 
 // TODO(stuartmorgan): signon_realm for proxies is not yet supported.
@@ -590,11 +586,11 @@ bool FormIsValidAndMatchesOtherForm(const PasswordForm& query_form,
       query_form, other_form, STRICT_FORM_MATCH);
 }
 
-std::vector<PasswordForm*> ExtractPasswordsMergeableWithForm(
+ScopedVector<autofill::PasswordForm> ExtractPasswordsMergeableWithForm(
     const AppleKeychain& keychain,
     const std::vector<ItemFormPair>& item_form_pairs,
     const PasswordForm& query_form) {
-  std::vector<PasswordForm*> matches;
+  ScopedVector<autofill::PasswordForm> matches;
   for (std::vector<ItemFormPair>::const_iterator i = item_form_pairs.begin();
        i != item_form_pairs.end(); ++i) {
     if (FormIsValidAndMatchesOtherForm(query_form, *(i->second))) {
@@ -602,16 +598,14 @@ std::vector<PasswordForm*> ExtractPasswordsMergeableWithForm(
       // returned forms.
       scoped_ptr<PasswordForm> form_with_password(new PasswordForm());
       internal_keychain_helpers::FillPasswordFormFromKeychainItem(
-          keychain,
-          *(i->first),
-          form_with_password.get(),
+          keychain, *(i->first), form_with_password.get(),
           true);  // Load password attributes and data.
       // Do not include blacklisted items found in the keychain.
       if (!form_with_password->blacklisted_by_user)
         matches.push_back(form_with_password.release());
     }
   }
-  return matches;
+  return matches.Pass();
 }
 
 }  // namespace internal_keychain_helpers
@@ -623,12 +617,12 @@ MacKeychainPasswordFormAdapter::MacKeychainPasswordFormAdapter(
     : keychain_(keychain), finds_only_owned_(false) {
 }
 
-std::vector<PasswordForm*> MacKeychainPasswordFormAdapter::PasswordsFillingForm(
+ScopedVector<autofill::PasswordForm>
+MacKeychainPasswordFormAdapter::PasswordsFillingForm(
     const std::string& signon_realm,
     PasswordForm::Scheme scheme) {
   std::vector<SecKeychainItemRef> keychain_items =
       MatchingKeychainItems(signon_realm, scheme, NULL, NULL);
-
   return ConvertKeychainItemsToForms(&keychain_items);
 }
 
@@ -681,8 +675,8 @@ std::vector<SecKeychainItemRef>
   return matches;
 }
 
-std::vector<PasswordForm*>
-    MacKeychainPasswordFormAdapter::GetAllPasswordFormPasswords() {
+ScopedVector<autofill::PasswordForm>
+MacKeychainPasswordFormAdapter::GetAllPasswordFormPasswords() {
   std::vector<SecKeychainItemRef> items = GetAllPasswordFormKeychainItems();
   return ConvertKeychainItemsToForms(&items);
 }
@@ -745,21 +739,20 @@ void MacKeychainPasswordFormAdapter::SetFindsOnlyOwnedItems(
   finds_only_owned_ = finds_only_owned;
 }
 
-std::vector<PasswordForm*>
-    MacKeychainPasswordFormAdapter::ConvertKeychainItemsToForms(
-        std::vector<SecKeychainItemRef>* items) {
-  std::vector<PasswordForm*> keychain_forms;
-  for (std::vector<SecKeychainItemRef>::const_iterator i = items->begin();
-       i != items->end(); ++i) {
-    PasswordForm* form = new PasswordForm();
+ScopedVector<autofill::PasswordForm>
+MacKeychainPasswordFormAdapter::ConvertKeychainItemsToForms(
+    std::vector<SecKeychainItemRef>* items) {
+  ScopedVector<autofill::PasswordForm> forms;
+  for (SecKeychainItemRef item : *items) {
+    scoped_ptr<PasswordForm> form(new PasswordForm());
     if (internal_keychain_helpers::FillPasswordFormFromKeychainItem(
-            *keychain_, *i, form, true)) {
-      keychain_forms.push_back(form);
+            *keychain_, item, form.get(), true)) {
+      forms.push_back(form.release());
     }
-    keychain_->Free(*i);
+    keychain_->Free(item);
   }
   items->clear();
-  return keychain_forms;
+  return forms.Pass();
 }
 
 SecKeychainItemRef MacKeychainPasswordFormAdapter::KeychainItemForForm(
@@ -983,15 +976,15 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {
   PasswordStoreChangeList changes;
-  ScopedVector<PasswordForm> forms;
+  ScopedVector<PasswordForm> forms_to_remove;
   if (login_metadata_db_ &&
       login_metadata_db_->GetLoginsCreatedBetween(delete_begin, delete_end,
-                                                  &forms.get()) &&
+                                                  &forms_to_remove) &&
       login_metadata_db_->RemoveLoginsCreatedBetween(delete_begin,
                                                      delete_end)) {
-    RemoveKeychainForms(forms.get());
-    CleanOrphanedForms(&forms.get());
-    changes = FormsToRemoveChangeList(forms.get());
+    RemoveKeychainForms(forms_to_remove.get());
+    CleanOrphanedForms(&forms_to_remove);  // Add the orphaned forms.
+    changes = FormsToRemoveChangeList(forms_to_remove.get());
     LogStatsForBulkDeletion(changes.size());
   }
   return changes;
@@ -1001,14 +994,14 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsSyncedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {
   PasswordStoreChangeList changes;
-  ScopedVector<PasswordForm> forms;
+  ScopedVector<PasswordForm> forms_to_remove;
   if (login_metadata_db_ &&
       login_metadata_db_->GetLoginsSyncedBetween(delete_begin, delete_end,
-                                                 &forms.get()) &&
+                                                 &forms_to_remove) &&
       login_metadata_db_->RemoveLoginsSyncedBetween(delete_begin, delete_end)) {
-    RemoveKeychainForms(forms.get());
-    CleanOrphanedForms(&forms.get());
-    changes = FormsToRemoveChangeList(forms.get());
+    RemoveKeychainForms(forms_to_remove.get());
+    CleanOrphanedForms(&forms_to_remove);  // Add the orphaned forms_to_remove.
+    changes = FormsToRemoveChangeList(forms_to_remove.get());
     LogStatsForBulkDeletionDuringRollback(changes.size());
   }
   return changes;
@@ -1022,97 +1015,92 @@ void PasswordStoreMac::GetLoginsImpl(
       prompt_policy == ALLOW_PROMPT);
 
   if (!login_metadata_db_) {
-    callback_runner.Run(std::vector<PasswordForm*>());
+    callback_runner.Run(ScopedVector<autofill::PasswordForm>());
     return;
   }
 
   ScopedVector<PasswordForm> database_forms;
-  login_metadata_db_->GetLogins(form, &database_forms.get());
+  login_metadata_db_->GetLogins(form, &database_forms);
 
   // Let's gather all signon realms we want to match with keychain entries.
   std::set<std::string> realm_set;
   realm_set.insert(form.signon_realm);
-  for (std::vector<PasswordForm*>::const_iterator db_form =
-           database_forms.begin();
-       db_form != database_forms.end();
-       ++db_form) {
+  for (const autofill::PasswordForm* db_form : database_forms) {
     // TODO(vabr): We should not be getting different schemes here.
     // http://crbug.com/340112
-    if (form.scheme != (*db_form)->scheme)
+    if (form.scheme != db_form->scheme)
       continue;  // Forms with different schemes never match.
-    const std::string& original_singon_realm((*db_form)->original_signon_realm);
+    const std::string& original_singon_realm(db_form->original_signon_realm);
     if (!original_singon_realm.empty())
       realm_set.insert(original_singon_realm);
   }
-  std::vector<PasswordForm*> keychain_forms;
+  ScopedVector<autofill::PasswordForm> keychain_forms;
   for (std::set<std::string>::const_iterator realm = realm_set.begin();
-       realm != realm_set.end();
-       ++realm) {
+       realm != realm_set.end(); ++realm) {
     MacKeychainPasswordFormAdapter keychain_adapter(keychain_.get());
-    std::vector<PasswordForm*> temp_keychain_forms =
+    ScopedVector<autofill::PasswordForm> temp_keychain_forms =
         keychain_adapter.PasswordsFillingForm(*realm, form.scheme);
-    keychain_forms.insert(keychain_forms.end(),
-                          temp_keychain_forms.begin(),
-                          temp_keychain_forms.end());
+    AppendSecondToFirst(&keychain_forms, &temp_keychain_forms);
   }
 
-  std::vector<PasswordForm*> matched_forms;
-  internal_keychain_helpers::MergePasswordForms(&keychain_forms,
-                                                &database_forms.get(),
-                                                &matched_forms);
+  ScopedVector<autofill::PasswordForm> matched_forms;
+  internal_keychain_helpers::MergePasswordForms(
+      &keychain_forms, &database_forms, &matched_forms);
 
   // Strip any blacklist entries out of the unused Keychain array, then take
   // all the entries that are left (which we can use as imported passwords).
   ScopedVector<PasswordForm> keychain_blacklist_forms;
-  internal_keychain_helpers::ExtractBlacklistForms(&keychain_forms).swap(
-      keychain_blacklist_forms.get());
+  internal_keychain_helpers::ExtractBlacklistForms(&keychain_forms,
+                                                   &keychain_blacklist_forms);
   matched_forms.insert(matched_forms.end(),
                        keychain_forms.begin(),
                        keychain_forms.end());
-  keychain_forms.clear();
+  keychain_forms.weak_clear();
 
   if (!database_forms.empty()) {
     RemoveDatabaseForms(database_forms.get());
     NotifyLoginsChanged(FormsToRemoveChangeList(database_forms.get()));
   }
 
-  callback_runner.Run(matched_forms);
+  callback_runner.Run(matched_forms.Pass());
 }
 
 void PasswordStoreMac::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
-  FillBlacklistLogins(request->result());
+  ScopedVector<autofill::PasswordForm> obtained_forms;
+  FillBlacklistLogins(&obtained_forms);
+  request->result()->swap(obtained_forms.get());
   ForwardLoginsResult(request);
 }
 
 void PasswordStoreMac::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
-  FillAutofillableLogins(request->result());
+  ScopedVector<autofill::PasswordForm> obtained_forms;
+  FillAutofillableLogins(&obtained_forms);
+  request->result()->swap(obtained_forms.get());
   ForwardLoginsResult(request);
 }
 
 bool PasswordStoreMac::FillAutofillableLogins(
-         std::vector<PasswordForm*>* forms) {
+    ScopedVector<autofill::PasswordForm>* forms) {
   DCHECK(thread_->message_loop() == base::MessageLoop::current());
 
   ScopedVector<PasswordForm> database_forms;
   if (!login_metadata_db_ ||
-      !login_metadata_db_->GetAutofillableLogins(&database_forms.get()))
+      !login_metadata_db_->GetAutofillableLogins(&database_forms))
     return false;
 
-  std::vector<PasswordForm*> merged_forms =
-      internal_keychain_helpers::GetPasswordsForForms(*keychain_,
-                                                      &database_forms.get());
+  internal_keychain_helpers::GetPasswordsForForms(*keychain_, &database_forms,
+                                                  forms);
 
   if (!database_forms.empty()) {
     RemoveDatabaseForms(database_forms.get());
     NotifyLoginsChanged(FormsToRemoveChangeList(database_forms.get()));
   }
 
-  forms->insert(forms->end(), merged_forms.begin(), merged_forms.end());
   return true;
 }
 
 bool PasswordStoreMac::FillBlacklistLogins(
-         std::vector<PasswordForm*>* forms) {
+    ScopedVector<autofill::PasswordForm>* forms) {
   DCHECK(thread_->message_loop() == base::MessageLoop::current());
   return login_metadata_db_ && login_metadata_db_->GetBlacklistLogins(forms);
 }
@@ -1129,21 +1117,19 @@ bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
     const autofill::PasswordForm& form) {
   DCHECK(login_metadata_db_);
   bool has_match = false;
-  std::vector<PasswordForm*> database_forms;
+  ScopedVector<autofill::PasswordForm> database_forms;
   login_metadata_db_->GetLogins(form, &database_forms);
-  for (std::vector<PasswordForm*>::iterator i = database_forms.begin();
-       i != database_forms.end(); ++i) {
+  for (const autofill::PasswordForm* db_form : database_forms) {
     // Below we filter out forms with non-empty original_signon_realm, because
     // those signal fuzzy matches, and we are only interested in exact ones.
-    if ((*i)->original_signon_realm.empty() &&
+    if (db_form->original_signon_realm.empty() &&
         internal_keychain_helpers::FormsMatchForMerge(
-            form, **i, internal_keychain_helpers::STRICT_FORM_MATCH) &&
-        (*i)->origin == form.origin) {
+            form, *db_form, internal_keychain_helpers::STRICT_FORM_MATCH) &&
+        db_form->origin == form.origin) {
       has_match = true;
       break;
     }
   }
-  STLDeleteElements(&database_forms);
   return has_match;
 }
 
@@ -1166,19 +1152,24 @@ void PasswordStoreMac::RemoveKeychainForms(
   }
 }
 
-void PasswordStoreMac::CleanOrphanedForms(std::vector<PasswordForm*>* forms) {
-  DCHECK(forms);
+void PasswordStoreMac::CleanOrphanedForms(
+    ScopedVector<autofill::PasswordForm>* orphaned_forms) {
+  DCHECK(orphaned_forms);
   DCHECK(login_metadata_db_);
 
-  std::vector<PasswordForm*> database_forms;
+  ScopedVector<autofill::PasswordForm> database_forms;
   login_metadata_db_->GetAutofillableLogins(&database_forms);
 
-  ScopedVector<PasswordForm> merged_forms;
-  merged_forms.get() = internal_keychain_helpers::GetPasswordsForForms(
-      *keychain_, &database_forms);
+  // Filter forms with corresponding Keychain entry out of |database_forms|.
+  ScopedVector<PasswordForm> forms_with_keychain_entry;
+  internal_keychain_helpers::GetPasswordsForForms(*keychain_, &database_forms,
+                                                  &forms_with_keychain_entry);
 
   // Clean up any orphaned database entries.
-  RemoveDatabaseForms(database_forms);
+  RemoveDatabaseForms(database_forms.get());
 
-  forms->insert(forms->end(), database_forms.begin(), database_forms.end());
+  // Move the orphaned DB forms to the output parameter.
+  orphaned_forms->insert(orphaned_forms->end(), database_forms.begin(),
+                         database_forms.end());
+  database_forms.weak_clear();
 }

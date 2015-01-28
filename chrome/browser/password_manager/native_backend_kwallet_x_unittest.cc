@@ -124,7 +124,7 @@ class TestKWallet {
 // value is false.
 void CheckGetAutofillableLoginsFails(
     PasswordStoreX::NativeBackend* backend,
-    PasswordStoreX::NativeBackend::PasswordFormList* forms) {
+    ScopedVector<autofill::PasswordForm>* forms) {
   EXPECT_FALSE(backend->GetAutofillableLogins(forms));
 }
 
@@ -599,13 +599,12 @@ void NativeBackendKWalletTest::CheckPasswordForms(
     TestKWallet::Blob value;
     EXPECT_TRUE(wallet_.readEntry(folder, entries[i], &value));
     Pickle pickle(reinterpret_cast<const char*>(value.data()), value.size());
-    std::vector<PasswordForm*> forms;
+    ScopedVector<autofill::PasswordForm> forms;
     NativeBackendKWalletStub::DeserializeValue(entries[i], pickle, &forms);
     const std::vector<const PasswordForm*>& expect = sorted_expected[i].second;
     EXPECT_EQ(expect.size(), forms.size());
     for (size_t j = 0; j < forms.size() && j < expect.size(); ++j)
       CheckPasswordForm(*expect[j], *forms[j]);
-    STLDeleteElements(&forms);
   }
 }
 
@@ -710,7 +709,7 @@ TEST_F(NativeBackendKWalletTest, BasicListLogins) {
       base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
                  base::Unretained(&backend), form_google_));
 
-  std::vector<PasswordForm*> form_list;
+  ScopedVector<autofill::PasswordForm> form_list;
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(
@@ -721,7 +720,6 @@ TEST_F(NativeBackendKWalletTest, BasicListLogins) {
 
   // Quick check that we got something back.
   EXPECT_EQ(1u, form_list.size());
-  STLDeleteElements(&form_list);
 
   EXPECT_FALSE(wallet_.hasFolder("Chrome Form Data"));
 
@@ -822,7 +820,7 @@ TEST_F(NativeBackendKWalletTest, RemoveNonexistentLogin) {
                  base::Unretained(&backend), form_isc_));
 
   // Make sure we can still get the first form back.
-  std::vector<PasswordForm*> form_list;
+  ScopedVector<autofill::PasswordForm> form_list;
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(
@@ -833,7 +831,6 @@ TEST_F(NativeBackendKWalletTest, RemoveNonexistentLogin) {
 
   // Quick check that we got something back.
   EXPECT_EQ(1u, form_list.size());
-  STLDeleteElements(&form_list);
 
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
@@ -887,7 +884,7 @@ TEST_F(NativeBackendKWalletTest, ListLoginsAppends) {
                  base::Unretained(&backend), form_google_));
 
   // Send the same request twice with the same list both times.
-  std::vector<PasswordForm*> form_list;
+  ScopedVector<autofill::PasswordForm> form_list;
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(
@@ -903,7 +900,6 @@ TEST_F(NativeBackendKWalletTest, ListLoginsAppends) {
 
   // Quick check that we got two results back.
   EXPECT_EQ(2u, form_list.size());
-  STLDeleteElements(&form_list);
 
   EXPECT_FALSE(wallet_.hasFolder("Chrome Form Data"));
 
@@ -1004,8 +1000,8 @@ void NativeBackendKWalletPickleTest::CheckVersion3Pickle() {
   CreateVersion3Pickle(form, &pickle);
 
   ScopedVector<PasswordForm> form_list;
-  NativeBackendKWalletStub::DeserializeValue(form.signon_realm,
-                                             pickle, &form_list.get());
+  NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle,
+                                             &form_list);
 
   EXPECT_EQ(1u, form_list.size());
   if (form_list.size() > 0)
@@ -1021,8 +1017,8 @@ void NativeBackendKWalletPickleTest::CheckVersion2Pickle() {
   CreateVersion2Pickle(form, &pickle);
 
   ScopedVector<PasswordForm> form_list;
-  NativeBackendKWalletStub::DeserializeValue(form.signon_realm,
-                                             pickle, &form_list.get());
+  NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle,
+                                             &form_list);
 
   EXPECT_EQ(1u, form_list.size());
   if (form_list.size() > 0)
@@ -1035,7 +1031,7 @@ void NativeBackendKWalletPickleTest::CheckVersion1Pickle() {
   PasswordForm form = form_google_;
   CreateVersion1Pickle(form, &pickle);
 
-  std::vector<PasswordForm*> form_list;
+  ScopedVector<autofill::PasswordForm> form_list;
   NativeBackendKWalletStub::DeserializeValue(form.signon_realm,
                                              pickle, &form_list);
 
@@ -1044,7 +1040,6 @@ void NativeBackendKWalletPickleTest::CheckVersion1Pickle() {
   EXPECT_EQ(1u, form_list.size());
   if (form_list.size() > 0)
     CheckPasswordForm(old_form_google_, *form_list[0]);
-  STLDeleteElements(&form_list);
 }
 
 void NativeBackendKWalletPickleTest::CheckVersion0Pickle(
@@ -1053,13 +1048,12 @@ void NativeBackendKWalletPickleTest::CheckVersion0Pickle(
   PasswordForm form = old_form_google_;
   form.scheme = scheme;
   CreateVersion0Pickle(size_32, form, &pickle);
-  std::vector<PasswordForm*> form_list;
+  ScopedVector<autofill::PasswordForm> form_list;
   NativeBackendKWalletStub::DeserializeValue(form.signon_realm,
                                              pickle, &form_list);
   EXPECT_EQ(1u, form_list.size());
   if (form_list.size() > 0)
     CheckPasswordForm(form, *form_list[0]);
-  STLDeleteElements(&form_list);
 }
 
 // Check that if KWallet fails to respond, the backend propagates the error.
@@ -1076,7 +1070,7 @@ TEST_F(NativeBackendKWalletTest, GetAllLoginsErrorHandling) {
                  base::Unretained(&backend), form_google_));
 
   // Verify that nothing is in fact returned, because KWallet fails to respond.
-  std::vector<PasswordForm*> form_list;
+  ScopedVector<autofill::PasswordForm> form_list;
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
                           base::Bind(&CheckGetAutofillableLoginsFails,
                                      base::Unretained(&backend), &form_list));

@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -223,8 +224,8 @@ class PasswordStore : protected PasswordStoreSync,
       base::Time delete_begin,
       base::Time delete_end) = 0;
 
-  typedef base::Callback<void(const std::vector<autofill::PasswordForm*>&)>
-      ConsumerCallbackRunner;  // Owns all PasswordForms in the vector.
+  typedef base::Callback<void(ScopedVector<autofill::PasswordForm>)>
+      ConsumerCallbackRunner;
 
   // Should find all PasswordForms with the same signon_realm. The results
   // will then be scored by the PasswordFormManager. Once they are found
@@ -241,7 +242,7 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Dispatches the result to the PasswordStoreConsumer on the original caller's
   // thread so the callback can be executed there. This should be the UI thread.
-  virtual void ForwardLoginsResult(GetLoginsRequest* request);
+  static void ForwardLoginsResult(GetLoginsRequest* request);
 
   // Log UMA stats for number of bulk deletions.
   void LogStatsForBulkDeletion(int num_deletions);
@@ -289,9 +290,9 @@ class PasswordStore : protected PasswordStoreSync,
   // |ForwardLoginsResult|. Temporarily used as an adapter between the API of
   // |GetLoginsImpl| and |PasswordStoreConsumer|.
   // TODO(dubroy): Get rid of this.
-  void CopyAndForwardLoginsResult(
+  static void CopyAndForwardLoginsResult(
       PasswordStore::GetLoginsRequest* request,
-      const std::vector<autofill::PasswordForm*>& matched_forms);
+      ScopedVector<autofill::PasswordForm> matched_forms);
 
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
   // Creates PasswordSyncableService instance on the background thread.

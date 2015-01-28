@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 
 class PasswordWebDataService;
@@ -48,9 +49,9 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
       const ConsumerCallbackRunner& callback_runner) override;
 
   void GetIE7LoginIfNecessary(
-    const autofill::PasswordForm& form,
-    const ConsumerCallbackRunner& callback_runner,
-    const std::vector<autofill::PasswordForm*>& matched_forms);
+      const autofill::PasswordForm& form,
+      const ConsumerCallbackRunner& callback_runner,
+      ScopedVector<autofill::PasswordForm> matched_forms);
 
   scoped_ptr<DBHandler> db_handler_;
 

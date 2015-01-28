@@ -56,9 +56,9 @@ class PasswordStoreDefault : public PasswordStore {
   void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
   void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
   bool FillAutofillableLogins(
-      std::vector<autofill::PasswordForm*>* forms) override;
+      ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(
-      std::vector<autofill::PasswordForm*>* forms) override;
+      ScopedVector<autofill::PasswordForm>* forms) override;
 
  protected:
   inline bool DeleteAndRecreateDatabaseFile() {

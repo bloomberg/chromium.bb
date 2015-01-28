@@ -98,14 +98,13 @@ void TestPasswordStore::GetLoginsImpl(
     const autofill::PasswordForm& form,
     PasswordStore::AuthorizationPromptPolicy prompt_policy,
     const PasswordStore::ConsumerCallbackRunner& runner) {
-  std::vector<autofill::PasswordForm*> matched_forms;
+  ScopedVector<autofill::PasswordForm> matched_forms;
   std::vector<autofill::PasswordForm> forms =
       stored_passwords_[form.signon_realm];
-  for (std::vector<autofill::PasswordForm>::iterator it = forms.begin();
-       it != forms.end(); ++it) {
-    matched_forms.push_back(new autofill::PasswordForm(*it));
+  for (const auto& stored_form : forms) {
+    matched_forms.push_back(new autofill::PasswordForm(stored_form));
   }
-  runner.Run(matched_forms);
+  runner.Run(matched_forms.Pass());
 }
 
 PasswordStoreChangeList TestPasswordStore::RemoveLoginsCreatedBetweenImpl(
@@ -123,12 +122,12 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginsSyncedBetweenImpl(
 }
 
 bool TestPasswordStore::FillAutofillableLogins(
-    std::vector<autofill::PasswordForm*>* forms) {
+    ScopedVector<autofill::PasswordForm>* forms) {
   return true;
 }
 
 bool TestPasswordStore::FillBlacklistLogins(
-    std::vector<autofill::PasswordForm*>* forms) {
+    ScopedVector<autofill::PasswordForm>* forms) {
   return true;
 }
 

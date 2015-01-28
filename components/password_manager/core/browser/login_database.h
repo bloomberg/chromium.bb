@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "sql/connection.h"
@@ -66,33 +68,32 @@ class LoginDatabase {
 
   // Loads a list of matching password forms into the specified vector |forms|.
   // The list will contain all possibly relevant entries to the observed |form|,
-  // including blacklisted matches. The caller owns |forms| after the call.
+  // including blacklisted matches.
   bool GetLogins(const autofill::PasswordForm& form,
-                 std::vector<autofill::PasswordForm*>* forms) const;
+                 ScopedVector<autofill::PasswordForm>* forms) const;
 
   // Loads all logins created from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
-  // direction. The caller owns |forms| after the call.
+  // direction.
   bool GetLoginsCreatedBetween(
       base::Time begin,
       base::Time end,
-      std::vector<autofill::PasswordForm*>* forms) const;
+      ScopedVector<autofill::PasswordForm>* forms) const;
 
   // Loads all logins synced from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
-  // direction. The caller owns |forms| after the call.
+  // direction.
   bool GetLoginsSyncedBetween(
       base::Time begin,
       base::Time end,
-      std::vector<autofill::PasswordForm*>* forms) const;
+      ScopedVector<autofill::PasswordForm>* forms) const;
 
   // Loads the complete list of autofillable password forms (i.e., not blacklist
-  // entries) into |forms|. The caller owns |forms| after the call.
-  bool GetAutofillableLogins(std::vector<autofill::PasswordForm*>* forms) const;
+  // entries) into |forms|.
+  bool GetAutofillableLogins(ScopedVector<autofill::PasswordForm>* forms) const;
 
-  // Loads the complete list of blacklist forms into |forms|. The caller owns
-  // |forms| after the call.
-  bool GetBlacklistLogins(std::vector<autofill::PasswordForm*>* forms) const;
+  // Loads the complete list of blacklist forms into |forms|.
+  bool GetBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms) const;
 
   // Deletes the login database file on disk, and creates a new, empty database.
   // This can be used after migrating passwords to some other store, to ensure
@@ -144,7 +145,7 @@ class LoginDatabase {
   // |forms|.
   bool GetAllLoginsWithBlacklistSetting(
       bool blacklisted,
-      std::vector<autofill::PasswordForm*>* forms) const;
+      ScopedVector<autofill::PasswordForm>* forms) const;
 
   base::FilePath db_path_;
   mutable sql::Connection db_;

@@ -65,9 +65,9 @@ class TestPasswordStore : public PasswordStore {
   void GetBlacklistLoginsImpl(
       PasswordStore::GetLoginsRequest* request) override {}
   bool FillAutofillableLogins(
-      std::vector<autofill::PasswordForm*>* forms) override;
+      ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(
-      std::vector<autofill::PasswordForm*>* forms) override;
+      ScopedVector<autofill::PasswordForm>* forms) override;
 
  private:
   PasswordMap stored_passwords_;

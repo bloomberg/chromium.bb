@@ -24,7 +24,6 @@ using content::BrowserThread;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using password_manager::PasswordStoreDefault;
-using std::vector;
 
 namespace {
 
@@ -130,7 +129,8 @@ struct LoginLessThan {
 };
 }  // anonymous namespace
 
-void PasswordStoreX::SortLoginsByOrigin(NativeBackend::PasswordFormList* list) {
+void PasswordStoreX::SortLoginsByOrigin(
+    std::vector<autofill::PasswordForm*>* list) {
   // In login_database.cc, the query has ORDER BY origin_url. Simulate that.
   std::sort(list->begin(), list->end(), LoginLessThan());
 }
@@ -140,9 +140,9 @@ void PasswordStoreX::GetLoginsImpl(
     AuthorizationPromptPolicy prompt_policy,
     const ConsumerCallbackRunner& callback_runner) {
   CheckMigration();
-  std::vector<autofill::PasswordForm*> matched_forms;
+  ScopedVector<autofill::PasswordForm> matched_forms;
   if (use_native_backend() && backend_->GetLogins(form, &matched_forms)) {
-    SortLoginsByOrigin(&matched_forms);
+    SortLoginsByOrigin(&matched_forms.get());
     // The native backend may succeed and return no data even while locked, if
     // the query did not match anything stored. So we continue to allow fallback
     // until we perform a write operation, or until a read returns actual data.
@@ -154,13 +154,15 @@ void PasswordStoreX::GetLoginsImpl(
     return;
   }
   // The consumer will be left hanging unless we reply.
-  callback_runner.Run(matched_forms);
+  callback_runner.Run(matched_forms.Pass());
 }
 
 void PasswordStoreX::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
   CheckMigration();
+  ScopedVector<autofill::PasswordForm> obtained_forms;
   if (use_native_backend() &&
-      backend_->GetAutofillableLogins(request->result())) {
+      backend_->GetAutofillableLogins(&obtained_forms)) {
+    request->result()->swap(obtained_forms.get());
     SortLoginsByOrigin(request->result());
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
     if (request->result()->size() > 0)
@@ -175,8 +177,9 @@ void PasswordStoreX::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
 
 void PasswordStoreX::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
   CheckMigration();
-  if (use_native_backend() &&
-      backend_->GetBlacklistLogins(request->result())) {
+  ScopedVector<autofill::PasswordForm> obtained_forms;
+  if (use_native_backend() && backend_->GetBlacklistLogins(&obtained_forms)) {
+    request->result()->swap(obtained_forms.get());
     SortLoginsByOrigin(request->result());
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
     if (request->result()->size() > 0)
@@ -189,7 +192,8 @@ void PasswordStoreX::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
   ForwardLoginsResult(request);
 }
 
-bool PasswordStoreX::FillAutofillableLogins(vector<PasswordForm*>* forms) {
+bool PasswordStoreX::FillAutofillableLogins(
+    ScopedVector<autofill::PasswordForm>* forms) {
   CheckMigration();
   if (use_native_backend() && backend_->GetAutofillableLogins(forms)) {
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
@@ -202,7 +206,8 @@ bool PasswordStoreX::FillAutofillableLogins(vector<PasswordForm*>* forms) {
   return false;
 }
 
-bool PasswordStoreX::FillBlacklistLogins(vector<PasswordForm*>* forms) {
+bool PasswordStoreX::FillBlacklistLogins(
+    ScopedVector<autofill::PasswordForm>* forms) {
   CheckMigration();
   if (use_native_backend() && backend_->GetBlacklistLogins(forms)) {
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
@@ -250,7 +255,7 @@ bool PasswordStoreX::allow_default_store() {
 
 ssize_t PasswordStoreX::MigrateLogins() {
   DCHECK(backend_.get());
-  vector<PasswordForm*> forms;
+  ScopedVector<autofill::PasswordForm> forms;
   bool ok = PasswordStoreDefault::FillAutofillableLogins(&forms) &&
       PasswordStoreDefault::FillBlacklistLogins(&forms);
   if (ok) {
@@ -283,6 +288,5 @@ ssize_t PasswordStoreX::MigrateLogins() {
     }
   }
   ssize_t result = ok ? forms.size() : -1;
-  STLDeleteElements(&forms);
   return result;
 }

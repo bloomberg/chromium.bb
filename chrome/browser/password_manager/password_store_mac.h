@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -80,9 +81,9 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
   void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
   bool FillAutofillableLogins(
-      std::vector<autofill::PasswordForm*>* forms) override;
+      ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(
-      std::vector<autofill::PasswordForm*>* forms) override;
+      ScopedVector<autofill::PasswordForm>* forms) override;
 
   // Adds the given form to the Keychain if it's something we want to store
   // there (i.e., not a blacklist entry). Returns true if the operation
@@ -103,9 +104,9 @@ class PasswordStoreMac : public password_manager::PasswordStore {
       const std::vector<autofill::PasswordForm*>& forms);
 
   // Searches the database for forms without a corresponding entry in the
-  // keychain. Removes those forms from the database, and returns them in
-  // |forms|. Ownership of |forms| is passed to the caller.
-  void CleanOrphanedForms(std::vector<autofill::PasswordForm*>* forms);
+  // keychain. Removes those forms from the database, and adds them to
+  // |orphaned_forms|.
+  void CleanOrphanedForms(ScopedVector<autofill::PasswordForm>* orphaned_forms);
 
   scoped_ptr<crypto::AppleKeychain> keychain_;
 

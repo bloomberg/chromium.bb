@@ -78,40 +78,36 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginImpl(
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {
-  std::vector<PasswordForm*> forms;
+  ScopedVector<autofill::PasswordForm> forms;
   PasswordStoreChangeList changes;
   if (login_db_ &&
       login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
     if (login_db_->RemoveLoginsCreatedBetween(delete_begin, delete_end)) {
-      for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
-           it != forms.end(); ++it) {
+      for (const auto* form : forms) {
         changes.push_back(
-            PasswordStoreChange(PasswordStoreChange::REMOVE, **it));
+            PasswordStoreChange(PasswordStoreChange::REMOVE, *form));
       }
       LogStatsForBulkDeletion(changes.size());
     }
   }
-  STLDeleteElements(&forms);
   return changes;
 }
 
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {
-  std::vector<PasswordForm*> forms;
+  ScopedVector<autofill::PasswordForm> forms;
   PasswordStoreChangeList changes;
   if (login_db_ &&
       login_db_->GetLoginsSyncedBetween(delete_begin, delete_end, &forms)) {
     if (login_db_->RemoveLoginsSyncedBetween(delete_begin, delete_end)) {
-      for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
-           it != forms.end(); ++it) {
+      for (const auto* form : forms) {
         changes.push_back(
-            PasswordStoreChange(PasswordStoreChange::REMOVE, **it));
+            PasswordStoreChange(PasswordStoreChange::REMOVE, *form));
       }
       LogStatsForBulkDeletionDuringRollback(changes.size());
     }
   }
-  STLDeleteElements(&forms);
   return changes;
 }
 
@@ -119,31 +115,41 @@ void PasswordStoreDefault::GetLoginsImpl(
     const autofill::PasswordForm& form,
     AuthorizationPromptPolicy prompt_policy,
     const ConsumerCallbackRunner& callback_runner) {
-  std::vector<PasswordForm*> matched_forms;
+  ScopedVector<autofill::PasswordForm> matched_forms;
   if (login_db_)
     login_db_->GetLogins(form, &matched_forms);
-  callback_runner.Run(matched_forms);
+  callback_runner.Run(matched_forms.Pass());
 }
 
 void PasswordStoreDefault::GetAutofillableLoginsImpl(
     GetLoginsRequest* request) {
-  FillAutofillableLogins(request->result());
+  // TODO(vabr) -- request should have a ScopedVector<autofill::PasswordForm>
+  // instead of using |logins| here.
+  DCHECK(request->result()->empty());
+  ScopedVector<autofill::PasswordForm> logins;
+  FillAutofillableLogins(&logins);
+  logins.swap(*request->result());
   ForwardLoginsResult(request);
 }
 
 void PasswordStoreDefault::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
-  FillBlacklistLogins(request->result());
+  // TODO(vabr) -- request should have a ScopedVector<autofill::PasswordForm>
+  // instead of using |logins| here.
+  DCHECK(request->result()->empty());
+  ScopedVector<autofill::PasswordForm> logins;
+  FillBlacklistLogins(&logins);
+  logins.swap(*request->result());
   ForwardLoginsResult(request);
 }
 
 bool PasswordStoreDefault::FillAutofillableLogins(
-    std::vector<PasswordForm*>* forms) {
+    ScopedVector<autofill::PasswordForm>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_ && login_db_->GetAutofillableLogins(forms);
 }
 
 bool PasswordStoreDefault::FillBlacklistLogins(
-    std::vector<PasswordForm*>* forms) {
+    ScopedVector<autofill::PasswordForm>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_ && login_db_->GetBlacklistLogins(forms);
 }

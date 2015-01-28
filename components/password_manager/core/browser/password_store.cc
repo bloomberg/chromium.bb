@@ -145,7 +145,7 @@ void PasswordStore::GetLogins(const PasswordForm& form,
   request->set_ignore_logins_cutoff(ignore_logins_cutoff);
 
   ConsumerCallbackRunner callback_runner = base::Bind(
-      &PasswordStore::CopyAndForwardLoginsResult, this, base::Owned(request));
+      &PasswordStore::CopyAndForwardLoginsResult, base::Owned(request));
   ScheduleTask(base::Bind(&PasswordStore::GetLoginsImpl, this, form,
                           prompt_policy, callback_runner));
 }
@@ -207,17 +207,18 @@ PasswordStore::GetBackgroundTaskRunner() {
   return db_thread_runner_;
 }
 
+// static
 void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
   request->ApplyIgnoreLoginsCutoff();
   request->ForwardResult();
 }
 
+// static
 void PasswordStore::CopyAndForwardLoginsResult(
     PasswordStore::GetLoginsRequest* request,
-    const std::vector<PasswordForm*>& matched_forms) {
-  // Copy the contents of |matched_forms| into the request. The request takes
-  // ownership of the PasswordForm elements.
-  *(request->result()) = matched_forms;
+    ScopedVector<autofill::PasswordForm> matched_forms) {
+  // Move the contents of |matched_forms| into the request.
+  request->result()->swap(matched_forms.get());
   ForwardLoginsResult(request);
 }
 

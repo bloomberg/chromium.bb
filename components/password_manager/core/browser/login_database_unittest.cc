@@ -87,7 +87,7 @@ class LoginDatabaseTest : public testing::Test {
   LoginDatabase& db() { return *db_; }
 
   void TestNonHTMLFormPSLMatching(const PasswordForm::Scheme& scheme) {
-    ScopedVector<PasswordForm> result;
+    ScopedVector<autofill::PasswordForm> result;
 
     base::Time now = base::Time::Now();
 
@@ -114,7 +114,7 @@ class LoginDatabaseTest : public testing::Test {
     // Add them and make sure they are there.
     EXPECT_EQ(AddChangeForForm(non_html_auth), db().AddLogin(non_html_auth));
     EXPECT_EQ(AddChangeForForm(html_form), db().AddLogin(html_form));
-    EXPECT_TRUE(db().GetAutofillableLogins(&result.get()));
+    EXPECT_TRUE(db().GetAutofillableLogins(&result));
     EXPECT_EQ(2U, result.size());
     result.clear();
 
@@ -123,11 +123,11 @@ class LoginDatabaseTest : public testing::Test {
     second_non_html_auth.signon_realm = "http://second.example.com/Realm";
 
     // This shouldn't match anything.
-    EXPECT_TRUE(db().GetLogins(second_non_html_auth, &result.get()));
+    EXPECT_TRUE(db().GetLogins(second_non_html_auth, &result));
     EXPECT_EQ(0U, result.size());
 
     // non-html auth still matches against itself.
-    EXPECT_TRUE(db().GetLogins(non_html_auth, &result.get()));
+    EXPECT_TRUE(db().GetLogins(non_html_auth, &result));
     ASSERT_EQ(1U, result.size());
     EXPECT_EQ(result[0]->signon_realm, "http://example.com/Realm");
 
@@ -139,7 +139,7 @@ class LoginDatabaseTest : public testing::Test {
   // retrieved from the database.
   void TestRetrievingIPAddress(const PasswordForm::Scheme& scheme) {
     SCOPED_TRACE(testing::Message() << "scheme = " << scheme);
-    ScopedVector<PasswordForm> result;
+    ScopedVector<autofill::PasswordForm> result;
 
     base::Time now = base::Time::Now();
     std::string origin("http://56.7.8.90");
@@ -153,7 +153,7 @@ class LoginDatabaseTest : public testing::Test {
     ip_form.date_created = now;
 
     EXPECT_EQ(AddChangeForForm(ip_form), db().AddLogin(ip_form));
-    EXPECT_TRUE(db().GetLogins(ip_form, &result.get()));
+    EXPECT_TRUE(db().GetLogins(ip_form, &result));
     ASSERT_EQ(1U, result.size());
     EXPECT_EQ(result[0]->signon_realm, origin);
 
@@ -167,7 +167,7 @@ class LoginDatabaseTest : public testing::Test {
 };
 
 TEST_F(LoginDatabaseTest, Logins) {
-  std::vector<PasswordForm*> result;
+  ScopedVector<autofill::PasswordForm> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -183,14 +183,12 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(1U, result.size());
   FormsAreEqual(form, *result[0]);
-  delete result[0];
   result.clear();
 
   // Match against an exact copy.
   EXPECT_TRUE(db().GetLogins(form, &result));
   ASSERT_EQ(1U, result.size());
   FormsAreEqual(form, *result[0]);
-  delete result[0];
   result.clear();
 
   // The example site changes...
@@ -201,7 +199,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   // Match against an inexact copy
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // Uh oh, the site changed origin & action URLs all at once!
@@ -211,7 +208,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   // signon_realm is the same, should match.
   EXPECT_TRUE(db().GetLogins(form3, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // Imagine the site moves to a secure server for login.
@@ -227,21 +223,17 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_EQ(AddChangeForForm(form4), db().AddLogin(form4));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(2U, result.size());
-  delete result[0];
-  delete result[1];
   result.clear();
 
   // Now the match works
   EXPECT_TRUE(db().GetLogins(form4, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // The user chose to forget the original but not the new.
   EXPECT_TRUE(db().RemoveLogin(form));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // The old form wont match the new site (http vs https).
@@ -256,7 +248,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   // It will match in this case.
   EXPECT_TRUE(db().GetLogins(form5, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // User changes his password.
@@ -270,7 +261,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   // matches
   EXPECT_TRUE(db().GetLogins(form5, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
   // Only one record.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -284,7 +274,6 @@ TEST_F(LoginDatabaseTest, Logins) {
 #endif
   // Preferred login.
   EXPECT_TRUE(form6.preferred);
-  delete result[0];
   result.clear();
 
   // Make sure everything can disappear.
@@ -294,7 +283,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
-  std::vector<PasswordForm*> result;
+  ScopedVector<autofill::PasswordForm> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -318,13 +307,11 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // Match against an exact copy.
   EXPECT_TRUE(db().GetLogins(form, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // We go to the mobile site.
@@ -341,12 +328,10 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
 
   // Try to remove PSL matched form
   EXPECT_FALSE(db().RemoveLogin(*result[0]));
-  delete result[0];
   result.clear();
   // Ensure that the original form is still there
   EXPECT_TRUE(db().GetLogins(form, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 }
 
@@ -373,7 +358,7 @@ TEST_F(LoginDatabaseTest, TestIPAddressMatches_other) {
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
-  std::vector<PasswordForm*> result;
+  ScopedVector<autofill::PasswordForm> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -397,13 +382,11 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // Match against an exact copy.
   EXPECT_TRUE(db().GetLogins(form, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // We go to a different site on the same domain where feature is not needed.
@@ -422,7 +405,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
 // instead of GetUniqueStatement, since REGEXP is in use. See
 // http://crbug.com/248608.
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
-  std::vector<PasswordForm*> result;
+  ScopedVector<autofill::PasswordForm> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -446,13 +429,11 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // Match against an exact copy.
   EXPECT_TRUE(db().GetLogins(form, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // We go to the mobile site.
@@ -466,7 +447,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   EXPECT_EQ(1U, result.size());
   EXPECT_EQ("https://mobile.foo.com/", result[0]->signon_realm);
   EXPECT_EQ("https://foo.com/", result[0]->original_signon_realm);
-  delete result[0];
   result.clear();
 
   // Add baz.com desktop site.
@@ -486,8 +466,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(2U, result.size());
-  delete result[0];
-  delete result[1];
   result.clear();
 
   // We go to the mobile site of baz.com.
@@ -501,7 +479,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   EXPECT_EQ(1U, result.size());
   EXPECT_EQ("https://m.baz.com/", result[0]->signon_realm);
   EXPECT_EQ("https://baz.com/", result[0]->original_signon_realm);
-  delete result[0];
   result.clear();
 }
 
@@ -515,7 +492,7 @@ PasswordForm GetFormWithNewSignonRealm(PasswordForm form,
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
-  std::vector<PasswordForm*> result;
+  ScopedVector<autofill::PasswordForm> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -539,7 +516,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // Example password form that has - in the domain name.
@@ -550,63 +526,53 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
   EXPECT_EQ(AddChangeForForm(form_dash), db().AddLogin(form_dash));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(2U, result.size());
-  delete result[0];
-  delete result[1];
   result.clear();
 
   // Match against an exact copy.
   EXPECT_TRUE(db().GetLogins(form, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // www.foo.com should match.
   PasswordForm form2 = GetFormWithNewSignonRealm(form, "http://www.foo.com/");
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // a.b.foo.com should match.
   form2 = GetFormWithNewSignonRealm(form, "http://a.b.foo.com/");
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // a-b.foo.com should match.
   form2 = GetFormWithNewSignonRealm(form, "http://a-b.foo.com/");
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // foo-bar.com should match.
   form2 = GetFormWithNewSignonRealm(form, "http://foo-bar.com/");
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // www.foo-bar.com should match.
   form2 = GetFormWithNewSignonRealm(form, "http://www.foo-bar.com/");
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // a.b.foo-bar.com should match.
   form2 = GetFormWithNewSignonRealm(form, "http://a.b.foo-bar.com/");
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // a-b.foo-bar.com should match.
   form2 = GetFormWithNewSignonRealm(form, "http://a-b.foo-bar.com/");
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(1U, result.size());
-  delete result[0];
   result.clear();
 
   // foo.com with port 1337 should not match.
@@ -660,15 +626,8 @@ static bool AddTimestampedLogin(LoginDatabase* db,
   return db->AddLogin(form) == AddChangeForForm(form);
 }
 
-static void ClearResults(std::vector<PasswordForm*>* results) {
-  for (size_t i = 0; i < results->size(); ++i) {
-    delete (*results)[i];
-  }
-  results->clear();
-}
-
 TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
-  std::vector<PasswordForm*> result;
+  ScopedVector<autofill::PasswordForm> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -690,12 +649,12 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   // Verify inserts worked.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(4U, result.size());
-  ClearResults(&result);
+  result.clear();
 
   // Get everything from today's date and on.
   EXPECT_TRUE(db().GetLoginsCreatedBetween(now, base::Time(), &result));
   EXPECT_EQ(2U, result.size());
-  ClearResults(&result);
+  result.clear();
 
   // Delete everything from today's date and on.
   db().RemoveLoginsCreatedBetween(now, base::Time());
@@ -703,7 +662,7 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   // Should have deleted half of what we inserted.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(2U, result.size());
-  ClearResults(&result);
+  result.clear();
 
   // Delete with 0 date (should delete all).
   db().RemoveLoginsCreatedBetween(base::Time(), base::Time());
@@ -730,12 +689,12 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
       AddTimestampedLogin(&db(), "http://4.com", "foo4", now + one_day, false));
 
   // Verify inserts worked.
-  EXPECT_TRUE(db().GetAutofillableLogins(&result.get()));
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(4U, result.size());
   result.clear();
 
   // Get everything from today's date and on.
-  EXPECT_TRUE(db().GetLoginsSyncedBetween(now, base::Time(), &result.get()));
+  EXPECT_TRUE(db().GetLoginsSyncedBetween(now, base::Time(), &result));
   ASSERT_EQ(2U, result.size());
   EXPECT_EQ("http://3.com", result[0]->signon_realm);
   EXPECT_EQ("http://4.com", result[1]->signon_realm);
@@ -745,7 +704,7 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   db().RemoveLoginsSyncedBetween(now, base::Time());
 
   // Should have deleted half of what we inserted.
-  EXPECT_TRUE(db().GetAutofillableLogins(&result.get()));
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(2U, result.size());
   EXPECT_EQ("http://1.com", result[0]->signon_realm);
   EXPECT_EQ("http://2.com", result[1]->signon_realm);
@@ -755,12 +714,12 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   db().RemoveLoginsSyncedBetween(base::Time(), now);
 
   // Verify nothing is left.
-  EXPECT_TRUE(db().GetAutofillableLogins(&result.get()));
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
 }
 
 TEST_F(LoginDatabaseTest, BlacklistedLogins) {
-  std::vector<PasswordForm*> result;
+  ScopedVector<autofill::PasswordForm> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetBlacklistLogins(&result));
@@ -793,13 +752,13 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   EXPECT_TRUE(db().GetLogins(form, &result));
   ASSERT_EQ(1U, result.size());
   FormsAreEqual(form, *result[0]);
-  ClearResults(&result);
+  result.clear();
 
   // So should GetAllBlacklistedLogins.
   EXPECT_TRUE(db().GetBlacklistLogins(&result));
   ASSERT_EQ(1U, result.size());
   FormsAreEqual(form, *result[0]);
-  ClearResults(&result);
+  result.clear();
 }
 
 TEST_F(LoginDatabaseTest, VectorSerialization) {
@@ -820,7 +779,7 @@ TEST_F(LoginDatabaseTest, VectorSerialization) {
 }
 
 TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
-  std::vector<autofill::PasswordForm*> result;
+  ScopedVector<autofill::PasswordForm> result;
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(0U, result.size());
@@ -872,7 +831,7 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   EXPECT_TRUE(result[0]->username_element.empty());
   EXPECT_TRUE(result[0]->password_element.empty());
   EXPECT_TRUE(result[0]->submit_element.empty());
-  ClearResults(&result);
+  result.clear();
 
   // Let's say this login form worked. Now update the stored credentials with
   // 'action', 'username_element', 'password_element' and 'submit_element' from
@@ -895,7 +854,7 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   expected_form.password_value.clear();
 #endif  // OS_MACOSX && !OS_IOS
   EXPECT_EQ(expected_form, *result[0]);
-  ClearResults(&result);
+  result.clear();
 }
 
 TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
@@ -929,7 +888,7 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
 
   // Make sure both passwords exist.
   ScopedVector<autofill::PasswordForm> result;
-  EXPECT_TRUE(db().GetAutofillableLogins(&result.get()));
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(2U, result.size());
   result.clear();
 
@@ -940,7 +899,7 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
             db().UpdateLogin(complete_form));
 
   // Both still exist now.
-  EXPECT_TRUE(db().GetAutofillableLogins(&result.get()));
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(2U, result.size());
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -1025,7 +984,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   EXPECT_EQ(UpdateChangeForForm(form), db().UpdateLogin(form));
 
   ScopedVector<autofill::PasswordForm> result;
-  EXPECT_TRUE(db().GetLogins(form, &result.get()));
+  EXPECT_TRUE(db().GetLogins(form, &result));
   ASSERT_EQ(1U, result.size());
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // On Mac, passwords are not stored in login database, instead they're in
@@ -1232,7 +1191,7 @@ TEST_F(LoginDatabaseMigrationTest, MigrationV1ToVCurrent) {
       LoginDatabase db(database_path_);
       ASSERT_TRUE(db.Init());
       // Verifies that the final version can save all the appropriate fields.
-      std::vector<PasswordForm*> result;
+      ScopedVector<autofill::PasswordForm> result;
       PasswordForm form;
       GenerateExamplePasswordForm(&form);
       db.AddLogin(form);
@@ -1240,7 +1199,6 @@ TEST_F(LoginDatabaseMigrationTest, MigrationV1ToVCurrent) {
       ASSERT_EQ(1U, result.size());
       FormsAreEqual(form, *result[0]);
       EXPECT_TRUE(db.RemoveLogin(form));
-      delete result[0];
       result.clear();
     }
     // New date, in microseconds since platform independent epoch.

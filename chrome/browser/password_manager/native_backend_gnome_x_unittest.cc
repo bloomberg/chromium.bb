@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/prefs/pref_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -502,7 +501,7 @@ class NativeBackendGnomeTest : public testing::Test {
       target_form.signon_realm.append("Realm");
       target_form.scheme = scheme;
     }
-    std::vector<PasswordForm*> form_list;
+    ScopedVector<autofill::PasswordForm> form_list;
     BrowserThread::PostTask(
         BrowserThread::DB,
         FROM_HERE,
@@ -523,7 +522,6 @@ class NativeBackendGnomeTest : public testing::Test {
     EXPECT_EQ(1u, form_list.size());
     if (result)
       *result = *form_list[0];
-    STLDeleteElements(&form_list);
     return true;
   }
 
@@ -549,7 +547,7 @@ class NativeBackendGnomeTest : public testing::Test {
     PasswordForm m_facebook_lookup;
     m_facebook_lookup.origin = kMobileURL;
     m_facebook_lookup.signon_realm = kMobileURL.spec();
-    std::vector<PasswordForm*> form_list;
+    ScopedVector<autofill::PasswordForm> form_list;
     BrowserThread::PostTask(
         BrowserThread::DB,
         FROM_HERE,
@@ -561,7 +559,7 @@ class NativeBackendGnomeTest : public testing::Test {
     EXPECT_EQ(1u, mock_keyring_items.size());
     EXPECT_EQ(1u, form_list.size());
     PasswordForm m_facebook = *form_list[0];
-    STLDeleteElements(&form_list);
+    form_list.clear();
     EXPECT_EQ(kMobileURL, m_facebook.origin);
     EXPECT_EQ(kMobileURL.spec(), m_facebook.signon_realm);
 
@@ -621,7 +619,7 @@ class NativeBackendGnomeTest : public testing::Test {
     EXPECT_EQ(kMobileURL, form_list[index_non_psl]->origin);
     EXPECT_EQ(kMobileURL.spec(), form_list[index_non_psl]->signon_realm);
     EXPECT_EQ(kOldPassword, form_list[index_non_psl]->password_value);
-    STLDeleteElements(&form_list);
+    form_list.clear();
 
     // Check that www.facebook.com login was modified by the update.
     BrowserThread::PostTask(
@@ -641,7 +639,6 @@ class NativeBackendGnomeTest : public testing::Test {
     EXPECT_EQ(form_facebook_.signon_realm,
               form_list[index_non_psl]->signon_realm);
     EXPECT_EQ(kNewPassword, form_list[index_non_psl]->password_value);
-    STLDeleteElements(&form_list);
   }
 
   void CheckMatchingWithScheme(const PasswordForm::Scheme& scheme) {
@@ -775,7 +772,7 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
       base::Bind(base::IgnoreResult( &NativeBackendGnome::AddLogin),
                  base::Unretained(&backend), form_google_));
 
-  std::vector<PasswordForm*> form_list;
+  ScopedVector<autofill::PasswordForm> form_list;
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(
@@ -786,7 +783,6 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
 
   // Quick check that we got something back.
   EXPECT_EQ(1u, form_list.size());
-  STLDeleteElements(&form_list);
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -952,7 +948,7 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
                  base::Unretained(&backend), form_isc_));
 
   // Make sure we can still get the first form back.
-  std::vector<PasswordForm*> form_list;
+  ScopedVector<autofill::PasswordForm> form_list;
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(
@@ -963,7 +959,6 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
 
   // Quick check that we got something back.
   EXPECT_EQ(1u, form_list.size());
-  STLDeleteElements(&form_list);
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1046,7 +1041,7 @@ TEST_F(NativeBackendGnomeTest, ListLoginsAppends) {
                  base::Unretained(&backend), form_google_));
 
   // Send the same request twice with the same list both times.
-  std::vector<PasswordForm*> form_list;
+  ScopedVector<autofill::PasswordForm> form_list;
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(
@@ -1062,7 +1057,6 @@ TEST_F(NativeBackendGnomeTest, ListLoginsAppends) {
 
   // Quick check that we got two results back.
   EXPECT_EQ(2u, form_list.size());
-  STLDeleteElements(&form_list);
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 
@@ -34,8 +35,6 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   // with return values rather than implicit consumer notification.
   class NativeBackend {
    public:
-    typedef std::vector<autofill::PasswordForm*> PasswordFormList;
-
     virtual ~NativeBackend() {}
 
     virtual bool Init() = 0;
@@ -60,9 +59,11 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
         password_manager::PasswordStoreChangeList* changes) = 0;
 
     virtual bool GetLogins(const autofill::PasswordForm& form,
-                           PasswordFormList* forms) = 0;
-    virtual bool GetAutofillableLogins(PasswordFormList* forms) = 0;
-    virtual bool GetBlacklistLogins(PasswordFormList* forms) = 0;
+                           ScopedVector<autofill::PasswordForm>* forms) = 0;
+    virtual bool GetAutofillableLogins(
+        ScopedVector<autofill::PasswordForm>* forms) = 0;
+    virtual bool GetBlacklistLogins(
+        ScopedVector<autofill::PasswordForm>* forms) = 0;
   };
 
   // Takes ownership of |login_db| and |backend|. |backend| may be NULL in which
@@ -96,12 +97,12 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
   void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
   bool FillAutofillableLogins(
-      std::vector<autofill::PasswordForm*>* forms) override;
+      ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(
-      std::vector<autofill::PasswordForm*>* forms) override;
+      ScopedVector<autofill::PasswordForm>* forms) override;
 
   // Sort logins by origin, like the ORDER BY clause in login_database.cc.
-  void SortLoginsByOrigin(NativeBackend::PasswordFormList* list);
+  void SortLoginsByOrigin(std::vector<autofill::PasswordForm*>* list);
 
   // Check to see whether migration is necessary, and perform it if so.
   void CheckMigration();

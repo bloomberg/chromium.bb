@@ -264,7 +264,7 @@ password_manager::PasswordStoreChangeList NativeBackendLibsecret::AddLogin(
   // We'd add the new one first, and then delete the original, but then the
   // delete might actually delete the newly-added entry!
   ScopedVector<autofill::PasswordForm> forms;
-  AddUpdateLoginSearch(form, &forms.get(), SEARCH_USE_SUBMIT);
+  AddUpdateLoginSearch(form, SEARCH_USE_SUBMIT, &forms);
   password_manager::PasswordStoreChangeList changes;
   if (forms.size() > 0) {
     if (forms.size() > 1) {
@@ -297,7 +297,7 @@ bool NativeBackendLibsecret::UpdateLogin(
   changes->clear();
 
   ScopedVector<autofill::PasswordForm> forms;
-  AddUpdateLoginSearch(form, &forms.get(), SEARCH_IGNORE_SUBMIT);
+  AddUpdateLoginSearch(form, SEARCH_IGNORE_SUBMIT, &forms);
 
   bool removed = false;
   for (size_t i = 0; i < forms.size(); ++i) {
@@ -352,15 +352,16 @@ bool NativeBackendLibsecret::RemoveLoginsSyncedBetween(
   return RemoveLoginsBetween(delete_begin, delete_end, SYNC_TIMESTAMP, changes);
 }
 
-bool NativeBackendLibsecret::GetLogins(const PasswordForm& form,
-                                       PasswordFormList* forms) {
-  return GetLoginsList(forms, &form, ALL_LOGINS);
+bool NativeBackendLibsecret::GetLogins(
+    const PasswordForm& form,
+    ScopedVector<autofill::PasswordForm>* forms) {
+  return GetLoginsList(&form, ALL_LOGINS, forms);
 }
 
 void NativeBackendLibsecret::AddUpdateLoginSearch(
     const autofill::PasswordForm& lookup_form,
-    PasswordFormList* forms,
-    AddUpdateLoginSearchOptions options) {
+    AddUpdateLoginSearchOptions options,
+    ScopedVector<autofill::PasswordForm>* forms) {
   LibsecretAttributesBuilder attrs;
   attrs.Append("origin_url", lookup_form.origin.spec());
   attrs.Append("username_element", UTF16ToUTF8(lookup_form.username_element));
@@ -426,17 +427,20 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
   return true;
 }
 
-bool NativeBackendLibsecret::GetAutofillableLogins(PasswordFormList* forms) {
-  return GetLoginsList(forms, nullptr, AUTOFILLABLE_LOGINS);
+bool NativeBackendLibsecret::GetAutofillableLogins(
+    ScopedVector<autofill::PasswordForm>* forms) {
+  return GetLoginsList(nullptr, AUTOFILLABLE_LOGINS, forms);
 }
 
-bool NativeBackendLibsecret::GetBlacklistLogins(PasswordFormList* forms) {
-  return GetLoginsList(forms, nullptr, BLACKLISTED_LOGINS);
+bool NativeBackendLibsecret::GetBlacklistLogins(
+    ScopedVector<autofill::PasswordForm>* forms) {
+  return GetLoginsList(nullptr, BLACKLISTED_LOGINS, forms);
 }
 
-bool NativeBackendLibsecret::GetLoginsList(PasswordFormList* forms,
-                                           const PasswordForm* lookup_form,
-                                           GetLoginsListOptions options) {
+bool NativeBackendLibsecret::GetLoginsList(
+    const PasswordForm* lookup_form,
+    GetLoginsListOptions options,
+    ScopedVector<autofill::PasswordForm>* forms) {
   LibsecretAttributesBuilder attrs;
   attrs.Append("application", app_string_);
   if (options != ALL_LOGINS)
@@ -464,16 +468,17 @@ bool NativeBackendLibsecret::GetLoginsList(PasswordFormList* forms,
   return ConvertFormList(found, lookup_form, forms);
 }
 
-bool NativeBackendLibsecret::GetAllLogins(PasswordFormList* forms) {
-  return GetLoginsList(forms, nullptr, ALL_LOGINS);
+bool NativeBackendLibsecret::GetAllLogins(
+    ScopedVector<autofill::PasswordForm>* forms) {
+  return GetLoginsList(nullptr, ALL_LOGINS, forms);
 }
 
 bool NativeBackendLibsecret::GetLoginsBetween(
     base::Time get_begin,
     base::Time get_end,
     TimestampToCompare date_to_compare,
-    PasswordFormList* forms) {
-  PasswordFormList all_forms;
+    ScopedVector<autofill::PasswordForm>* forms) {
+  ScopedVector<autofill::PasswordForm> all_forms;
   if (!GetAllLogins(&all_forms))
     return false;
 
@@ -481,12 +486,11 @@ bool NativeBackendLibsecret::GetLoginsBetween(
       date_to_compare == CREATION_TIMESTAMP
           ? &autofill::PasswordForm::date_created
           : &autofill::PasswordForm::date_synced;
-  for (size_t i = 0; i < all_forms.size(); ++i) {
-    if (get_begin <= all_forms[i]->*date_member &&
-        (get_end.is_null() || all_forms[i]->*date_member < get_end)) {
-      forms->push_back(all_forms[i]);
-    } else {
-      delete all_forms[i];
+  for (auto& saved_form : all_forms) {
+    if (get_begin <= saved_form->*date_member &&
+        (get_end.is_null() || saved_form->*date_member < get_end)) {
+      forms->push_back(saved_form);
+      saved_form = nullptr;
     }
   }
 
@@ -501,7 +505,7 @@ bool NativeBackendLibsecret::RemoveLoginsBetween(
   DCHECK(changes);
   changes->clear();
   ScopedVector<autofill::PasswordForm> forms;
-  if (!GetLoginsBetween(get_begin, get_end, date_to_compare, &forms.get()))
+  if (!GetLoginsBetween(get_begin, get_end, date_to_compare, &forms))
     return false;
 
   bool ok = true;
@@ -519,7 +523,7 @@ bool NativeBackendLibsecret::RemoveLoginsBetween(
 bool NativeBackendLibsecret::ConvertFormList(
     GList* found,
     const PasswordForm* lookup_form,
-    NativeBackendLibsecret::PasswordFormList* forms) {
+    ScopedVector<autofill::PasswordForm>* forms) {
   password_manager::PSLDomainMatchMetric psl_domain_match_metric =
       password_manager::PSL_DOMAIN_MATCH_NONE;
   GError* error = nullptr;

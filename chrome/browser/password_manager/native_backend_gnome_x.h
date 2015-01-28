@@ -20,6 +20,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_x.h"
@@ -105,9 +106,10 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
       base::Time delete_end,
       password_manager::PasswordStoreChangeList* changes) override;
   bool GetLogins(const autofill::PasswordForm& form,
-                 PasswordFormList* forms) override;
-  bool GetAutofillableLogins(PasswordFormList* forms) override;
-  bool GetBlacklistLogins(PasswordFormList* forms) override;
+                 ScopedVector<autofill::PasswordForm>* forms) override;
+  bool GetAutofillableLogins(
+      ScopedVector<autofill::PasswordForm>* forms) override;
+  bool GetBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms) override;
 
  private:
   enum TimestampToCompare {
@@ -119,17 +121,18 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
   bool RawAddLogin(const autofill::PasswordForm& form);
 
   // Reads PasswordForms from the keyring with the given autofillability state.
-  bool GetLoginsList(PasswordFormList* forms, bool autofillable);
+  bool GetLoginsList(bool autofillable,
+                     ScopedVector<autofill::PasswordForm>* forms);
 
   // Helper for GetLoginsCreatedBetween().
-  bool GetAllLogins(PasswordFormList* forms);
+  bool GetAllLogins(ScopedVector<autofill::PasswordForm>* forms);
 
   // Retrieves password created/synced in the time interval. Returns |true| if
   // the operation succeeded.
   bool GetLoginsBetween(base::Time get_begin,
                         base::Time get_end,
                         TimestampToCompare date_to_compare,
-                        PasswordFormList* forms);
+                        ScopedVector<autofill::PasswordForm>* forms);
 
   // Removes password created/synced in the time interval. Returns |true| if the
   // operation succeeded. |changes| will contain the changes applied.
