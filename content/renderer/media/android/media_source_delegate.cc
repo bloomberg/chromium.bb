@@ -413,10 +413,11 @@ void MediaSourceDelegate::OnBufferReady(
     case DemuxerStream::kOk:
       data->access_units[index].status = status;
       if (buffer->end_of_stream()) {
-        data->access_units[index].end_of_stream = true;
+        data->access_units[index].is_end_of_stream = true;
         data->access_units.resize(index + 1);
         break;
       }
+      data->access_units[index].is_key_frame = buffer->is_key_frame();
       // TODO(ycheo): We assume that the inputed stream will be decoded
       // right away.
       // Need to implement this properly using MediaPlayer.OnInfoListener.

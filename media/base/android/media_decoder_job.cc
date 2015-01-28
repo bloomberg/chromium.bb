@@ -45,7 +45,7 @@ MediaDecoderJob::MediaDecoderJob(
       drm_bridge_(NULL),
       drain_decoder_(false) {
   InitializeReceivedData();
-  eos_unit_.end_of_stream = true;
+  eos_unit_.is_end_of_stream = true;
 }
 
 MediaDecoderJob::~MediaDecoderJob() {
@@ -246,7 +246,7 @@ MediaCodecStatus MediaDecoderJob::QueueInputBuffer(const AccessUnit& unit) {
 
   // TODO(qinmin): skip frames if video is falling far behind.
   DCHECK_GE(input_buf_index, 0);
-  if (unit.end_of_stream || unit.data.empty()) {
+  if (unit.is_end_of_stream || unit.data.empty()) {
     media_codec_bridge_->QueueEOS(input_buf_index);
     return MEDIA_CODEC_INPUT_END_OF_STREAM;
   }
@@ -386,7 +386,7 @@ void MediaDecoderJob::DecodeInternal(
   }
 
   if (skip_eos_enqueue_) {
-    if (unit.end_of_stream || unit.data.empty()) {
+    if (unit.is_end_of_stream || unit.data.empty()) {
       input_eos_encountered_ = true;
       output_eos_encountered_ = true;
       callback.Run(MEDIA_CODEC_OUTPUT_END_OF_STREAM, kNoTimestamp(),
@@ -591,7 +591,7 @@ void MediaDecoderJob::RequestCurrentChunkIfEmpty() {
   current_demuxer_data_index_ = inactive_demuxer_data_index();
   const AccessUnit last_access_unit =
       received_data_[current_demuxer_data_index_].access_units.back();
-  if (!last_access_unit.end_of_stream &&
+  if (!last_access_unit.is_end_of_stream &&
       last_access_unit.status != DemuxerStream::kAborted) {
     RequestData(base::Closure());
   }

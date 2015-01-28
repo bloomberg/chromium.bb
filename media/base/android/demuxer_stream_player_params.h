@@ -41,13 +41,14 @@ struct MEDIA_EXPORT AccessUnit {
   ~AccessUnit();
 
   DemuxerStream::Status status;
-  bool end_of_stream;
+  bool is_end_of_stream;
   // TODO(ycheo): Use the shared memory to transfer the block data.
   std::vector<uint8> data;
   base::TimeDelta timestamp;
   std::vector<char> key_id;
   std::vector<char> iv;
   std::vector<media::SubsampleEntry> subsamples;
+  bool is_key_frame;
 };
 
 struct MEDIA_EXPORT DemuxerData {

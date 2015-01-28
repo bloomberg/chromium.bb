@@ -423,7 +423,7 @@ class MediaSourcePlayerTest : public testing::Test {
     data.type = is_audio ? DemuxerStream::AUDIO : DemuxerStream::VIDEO;
     data.access_units.resize(1);
     data.access_units[0].status = DemuxerStream::kOk;
-    data.access_units[0].end_of_stream = true;
+    data.access_units[0].is_end_of_stream = true;
     return data;
   }
 

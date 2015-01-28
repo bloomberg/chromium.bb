@@ -18,7 +18,7 @@ DemuxerConfigs::DemuxerConfigs()
 
 DemuxerConfigs::~DemuxerConfigs() {}
 
-AccessUnit::AccessUnit() : end_of_stream(false) {}
+AccessUnit::AccessUnit() : is_end_of_stream(false), is_key_frame(false) {}
 
 AccessUnit::~AccessUnit() {}
 
