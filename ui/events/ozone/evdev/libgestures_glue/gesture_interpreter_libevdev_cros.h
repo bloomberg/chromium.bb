@@ -20,7 +20,6 @@ namespace ui {
 
 class EventDeviceInfo;
 class EventModifiersEvdev;
-class MouseButtonMapEvdev;
 class CursorDelegateEvdev;
 struct GestureDeviceProperties;
 class GesturePropertyProvider;
@@ -41,13 +40,15 @@ class GesturePropertyProvider;
 class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
     : public EventReaderLibevdevCros::Delegate {
  public:
-  GestureInterpreterLibevdevCros(int id,
-                                 EventModifiersEvdev* modifiers,
-                                 MouseButtonMapEvdev* button_map,
-                                 CursorDelegateEvdev* cursor,
-                                 GesturePropertyProvider* property_provider,
-                                 const KeyEventDispatchCallback& key_callback,
-                                 const EventDispatchCallback& callback);
+  GestureInterpreterLibevdevCros(
+      int id,
+      EventModifiersEvdev* modifiers,
+      CursorDelegateEvdev* cursor,
+      GesturePropertyProvider* property_provider,
+      const KeyEventDispatchCallback& key_callback,
+      const MouseMoveEventDispatchCallback& mouse_move_callback,
+      const MouseButtonEventDispatchCallback& mouse_button_callback,
+      const EventDispatchCallback& callback);
   ~GestureInterpreterLibevdevCros() override;
 
   // Overriden from ui::EventReaderLibevdevCros::Delegate
@@ -98,9 +99,6 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   // Shared modifier state.
   EventModifiersEvdev* modifiers_;
 
-  // Shared mouse button map.
-  MouseButtonMapEvdev* button_map_;
-
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
 
@@ -109,6 +107,8 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
 
   // Callbacks for dispatching events.
   KeyEventDispatchCallback key_callback_;
+  MouseMoveEventDispatchCallback mouse_move_callback_;
+  MouseButtonEventDispatchCallback mouse_button_callback_;
   EventDispatchCallback dispatch_callback_;
 
   // Gestures interpretation state.

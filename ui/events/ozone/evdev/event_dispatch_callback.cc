@@ -15,6 +15,35 @@ KeyEventParams::KeyEventParams(const KeyEventParams& other) = default;
 KeyEventParams::~KeyEventParams() {
 }
 
+MouseMoveEventParams::MouseMoveEventParams(int device_id,
+                                           const gfx::PointF& location)
+    : device_id(device_id), location(location) {
+}
+
+MouseMoveEventParams::MouseMoveEventParams(const MouseMoveEventParams& other) =
+    default;
+
+MouseMoveEventParams::~MouseMoveEventParams() {
+}
+
+MouseButtonEventParams::MouseButtonEventParams(int device_id,
+                                               const gfx::PointF& location,
+                                               unsigned int button,
+                                               bool down,
+                                               bool allow_remap)
+    : device_id(device_id),
+      location(location),
+      button(button),
+      down(down),
+      allow_remap(allow_remap) {
+}
+
+MouseButtonEventParams::MouseButtonEventParams(
+    const MouseButtonEventParams& other) = default;
+
+MouseButtonEventParams::~MouseButtonEventParams() {
+}
+
 TouchEventParams::TouchEventParams(int device_id,
                                    int touch_id,
                                    EventType type,

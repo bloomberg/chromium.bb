@@ -11,10 +11,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
-#include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 
 namespace ui {
@@ -23,22 +24,23 @@ const char kTestDevicePath[] = "/dev/input/test-device";
 
 class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
  public:
-  MockEventConverterEvdevImpl(int fd,
-                              EventModifiersEvdev* modifiers,
-                              MouseButtonMapEvdev* button_map,
-                              CursorDelegateEvdev* cursor,
-                              const KeyEventDispatchCallback& key_callback,
-                              const EventDispatchCallback& callback)
+  MockEventConverterEvdevImpl(
+      int fd,
+      EventModifiersEvdev* modifiers,
+      CursorDelegateEvdev* cursor,
+      const KeyEventDispatchCallback& key_callback,
+      const MouseMoveEventDispatchCallback& mouse_move_callback,
+      const MouseButtonEventDispatchCallback& mouse_button_callback)
       : EventConverterEvdevImpl(fd,
                                 base::FilePath(kTestDevicePath),
                                 1,
                                 INPUT_DEVICE_UNKNOWN,
                                 EventDeviceInfo(),
                                 modifiers,
-                                button_map,
                                 cursor,
                                 key_callback,
-                                callback) {
+                                mouse_move_callback,
+                                mouse_button_callback) {
     Start();
   }
   ~MockEventConverterEvdevImpl() override {}
@@ -77,6 +79,35 @@ class MockCursorEvdev : public CursorDelegateEvdev {
   DISALLOW_COPY_AND_ASSIGN(MockCursorEvdev);
 };
 
+class MockDeviceManager : public ui::DeviceManager {
+ public:
+  MockDeviceManager() {}
+  ~MockDeviceManager() override {}
+
+  // DeviceManager:
+  void ScanDevices(DeviceEventObserver* observer) override {}
+  void AddObserver(DeviceEventObserver* observer) override {}
+  void RemoveObserver(DeviceEventObserver* observer) override {}
+};
+
+class TestEventFactoryEvdev : public EventFactoryEvdev {
+ public:
+  TestEventFactoryEvdev(CursorDelegateEvdev* cursor,
+                        DeviceManager* device_manager,
+                        KeyboardLayoutEngine* keyboard_layout_engine,
+                        const EventDispatchCallback& callback)
+      : EventFactoryEvdev(cursor, device_manager, keyboard_layout_engine),
+        callback_(callback) {}
+  ~TestEventFactoryEvdev() override {}
+
+ private:
+  void PostUiEvent(scoped_ptr<Event> event) override {
+    callback_.Run(event.Pass());
+  }
+
+  EventDispatchCallback callback_;
+};
+
 }  // namespace ui
 
 // Test fixture.
@@ -94,27 +125,24 @@ class EventConverterEvdevImplTest : public testing::Test {
     events_out_ = evdev_io[1];
 
     cursor_.reset(new ui::MockCursorEvdev());
-    modifiers_.reset(new ui::EventModifiersEvdev());
-    button_map_.reset(new ui::MouseButtonMapEvdev());
-
-    const ui::EventDispatchCallback callback =
+    device_manager_.reset(new ui::MockDeviceManager());
+    event_factory_.reset(new ui::TestEventFactoryEvdev(
+        cursor_.get(), device_manager_.get(),
+        ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
         base::Bind(&EventConverterEvdevImplTest::DispatchEventForTest,
-                   base::Unretained(this));
-    const ui::KeyEventDispatchCallback key_callback =
-        base::Bind(&EventConverterEvdevImplTest::DispatchKeyEventForTest,
-                   base::Unretained(this));
-    keyboard_.reset(new ui::KeyboardEvdev(
-        modifiers_.get(),
-        ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(), callback));
+                   base::Unretained(this))));
+
     device_.reset(new ui::MockEventConverterEvdevImpl(
-        events_in_, modifiers_.get(), button_map_.get(), cursor_.get(),
-        key_callback, callback));
+        events_in_, event_factory_->modifiers(), cursor_.get(),
+        base::Bind(&ui::EventFactoryEvdev::PostKeyEvent,
+                   base::Unretained(event_factory_.get())),
+        base::Bind(&ui::EventFactoryEvdev::PostMouseMoveEvent,
+                   base::Unretained(event_factory_.get())),
+        base::Bind(&ui::EventFactoryEvdev::PostMouseButtonEvent,
+                   base::Unretained(event_factory_.get()))));
   }
   void TearDown() override {
     device_.reset();
-    keyboard_.reset();
-    modifiers_.reset();
-    button_map_.reset();
     cursor_.reset();
     close(events_in_);
     close(events_out_);
@@ -122,8 +150,6 @@ class EventConverterEvdevImplTest : public testing::Test {
 
   ui::MockCursorEvdev* cursor() { return cursor_.get(); }
   ui::MockEventConverterEvdevImpl* device() { return device_.get(); }
-  ui::EventModifiersEvdev* modifiers() { return modifiers_.get(); }
-  ui::MouseButtonMapEvdev* button_map() { return button_map_.get(); }
 
   unsigned size() { return dispatched_events_.size(); }
   ui::KeyEvent* dispatched_event(unsigned index) {
@@ -144,16 +170,11 @@ class EventConverterEvdevImplTest : public testing::Test {
     dispatched_events_.push_back(event.release());
   }
 
-  void DispatchKeyEventForTest(const ui::KeyEventParams& params) {
-    keyboard_->OnKeyChange(params.code, params.down);
-  }
-
   base::MessageLoopForUI ui_loop_;
 
   scoped_ptr<ui::MockCursorEvdev> cursor_;
-  scoped_ptr<ui::EventModifiersEvdev> modifiers_;
-  scoped_ptr<ui::MouseButtonMapEvdev> button_map_;
-  scoped_ptr<ui::KeyboardEvdev> keyboard_;
+  scoped_ptr<ui::DeviceManager> device_manager_;
+  scoped_ptr<ui::EventFactoryEvdev> event_factory_;
   scoped_ptr<ui::MockEventConverterEvdevImpl> device_;
 
   ScopedVector<ui::Event> dispatched_events_;

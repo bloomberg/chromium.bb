@@ -26,16 +26,17 @@ namespace ui {
 class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
     : public EventConverterEvdev {
  public:
-  EventConverterEvdevImpl(int fd,
-                          base::FilePath path,
-                          int id,
-                          InputDeviceType type,
-                          const EventDeviceInfo& info,
-                          EventModifiersEvdev* modifiers,
-                          MouseButtonMapEvdev* button_map,
-                          CursorDelegateEvdev* cursor,
-                          const KeyEventDispatchCallback& key_callback,
-                          const EventDispatchCallback& callback);
+  EventConverterEvdevImpl(
+      int fd,
+      base::FilePath path,
+      int id,
+      InputDeviceType type,
+      const EventDeviceInfo& info,
+      EventModifiersEvdev* modifiers,
+      CursorDelegateEvdev* cursor,
+      const KeyEventDispatchCallback& key_callback,
+      const MouseMoveEventDispatchCallback& mouse_move_callback,
+      const MouseButtonEventDispatchCallback& mouse_button_callback);
   ~EventConverterEvdevImpl() override;
 
   // EventConverterEvdev:
@@ -81,12 +82,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   // Modifier key state (shift, ctrl, etc).
   EventModifiersEvdev* modifiers_;
 
-  // Shared mouse button map.
-  MouseButtonMapEvdev* button_map_;
-
   // Callbacks for dispatching events.
   KeyEventDispatchCallback key_callback_;
-  EventDispatchCallback callback_;
+  MouseMoveEventDispatchCallback mouse_move_callback_;
+  MouseButtonEventDispatchCallback mouse_button_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(EventConverterEvdevImpl);
 };

@@ -40,6 +40,37 @@ struct EVENTS_OZONE_EVDEV_EXPORT KeyEventParams {
 typedef base::Callback<void(const KeyEventParams& params)>
     KeyEventDispatchCallback;
 
+struct EVENTS_OZONE_EVDEV_EXPORT MouseMoveEventParams {
+  MouseMoveEventParams(int device_id, const gfx::PointF& location);
+  MouseMoveEventParams(const MouseMoveEventParams& other);
+  ~MouseMoveEventParams();
+
+  int device_id;
+  gfx::PointF location;
+};
+
+typedef base::Callback<void(const MouseMoveEventParams& params)>
+    MouseMoveEventDispatchCallback;
+
+struct EVENTS_OZONE_EVDEV_EXPORT MouseButtonEventParams {
+  MouseButtonEventParams(int device_id,
+                         const gfx::PointF& location,
+                         unsigned int button,
+                         bool down,
+                         bool allow_remap);
+  MouseButtonEventParams(const MouseButtonEventParams& other);
+  ~MouseButtonEventParams();
+
+  int device_id;
+  gfx::PointF location;
+  unsigned int button;
+  bool down;
+  bool allow_remap;
+};
+
+typedef base::Callback<void(const MouseButtonEventParams& params)>
+    MouseButtonEventDispatchCallback;
+
 struct EVENTS_OZONE_EVDEV_EXPORT TouchEventParams {
   TouchEventParams(int device_id,
                    int touch_id,

@@ -28,10 +28,10 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
     InputDeviceType type,
     const EventDeviceInfo& devinfo,
     EventModifiersEvdev* modifiers,
-    MouseButtonMapEvdev* button_map,
     CursorDelegateEvdev* cursor,
     const KeyEventDispatchCallback& key_callback,
-    const EventDispatchCallback& callback)
+    const MouseMoveEventDispatchCallback& mouse_move_callback,
+    const MouseButtonEventDispatchCallback& mouse_button_callback)
     : EventConverterEvdev(fd, path, id, type),
       has_keyboard_(devinfo.HasKeyboard()),
       has_touchpad_(devinfo.HasTouchpad()),
@@ -39,9 +39,9 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
       y_offset_(0),
       cursor_(cursor),
       modifiers_(modifiers),
-      button_map_(button_map),
       key_callback_(key_callback),
-      callback_(callback) {
+      mouse_move_callback_(mouse_move_callback),
+      mouse_button_callback_(mouse_button_callback) {
 }
 
 EventConverterEvdevImpl::~EventConverterEvdevImpl() {
@@ -144,25 +144,9 @@ void EventConverterEvdevImpl::DispatchMouseButton(const input_event& input) {
   if (!cursor_)
     return;
 
-  unsigned int modifier;
-  const int button = button_map_->GetMappedButton(input.code);
-  if (button == BTN_LEFT)
-    modifier = EVDEV_MODIFIER_LEFT_MOUSE_BUTTON;
-  else if (button == BTN_RIGHT)
-    modifier = EVDEV_MODIFIER_RIGHT_MOUSE_BUTTON;
-  else if (button == BTN_MIDDLE)
-    modifier = EVDEV_MODIFIER_MIDDLE_MOUSE_BUTTON;
-  else
-    return;
-
-  int flag = modifiers_->GetEventFlagFromModifier(modifier);
-  modifiers_->UpdateModifier(modifier, input.value);
-  callback_.Run(make_scoped_ptr(
-      new MouseEvent(input.value ? ET_MOUSE_PRESSED : ET_MOUSE_RELEASED,
-                     cursor_->GetLocation(),
-                     cursor_->GetLocation(),
-                     modifiers_->GetModifierFlags() | flag,
-                     flag)));
+  mouse_button_callback_.Run(MouseButtonEventParams(id_, cursor_->GetLocation(),
+                                                    input.code, input.value,
+                                                    /* allow_remap */ true));
 }
 
 void EventConverterEvdevImpl::FlushEvents() {
@@ -171,12 +155,8 @@ void EventConverterEvdevImpl::FlushEvents() {
 
   cursor_->MoveCursor(gfx::Vector2dF(x_offset_, y_offset_));
 
-  callback_.Run(make_scoped_ptr(
-      new MouseEvent(ui::ET_MOUSE_MOVED,
-                     cursor_->GetLocation(),
-                     cursor_->GetLocation(),
-                     modifiers_->GetModifierFlags(),
-                     /* changed_button_flags */ 0)));
+  mouse_move_callback_.Run(MouseMoveEventParams(id_, cursor_->GetLocation()));
+
   x_offset_ = 0;
   y_offset_ = 0;
 }

@@ -52,11 +52,12 @@ struct OpenInputDeviceParams {
   // Callback for dispatching events. Call on UI thread only.
   EventDispatchCallback dispatch_callback;
   KeyEventDispatchCallback key_callback;
+  MouseMoveEventDispatchCallback mouse_move_callback;
+  MouseButtonEventDispatchCallback mouse_button_callback;
   TouchEventDispatchCallback touch_callback;
 
   // State shared between devices. Must not be dereferenced on worker thread.
   EventModifiersEvdev* modifiers;
-  MouseButtonMapEvdev* button_map;
   CursorDelegateEvdev* cursor;
 #if defined(USE_EVDEV_GESTURES)
   GesturePropertyProvider* gesture_property_provider;
@@ -86,8 +87,9 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   if (UseGesturesLibraryForDevice(devinfo)) {
     scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp =
         make_scoped_ptr(new GestureInterpreterLibevdevCros(
-            params.id, params.modifiers, params.button_map, params.cursor,
+            params.id, params.modifiers, params.cursor,
             params.gesture_property_provider, params.key_callback,
+            params.mouse_move_callback, params.mouse_button_callback,
             params.dispatch_callback));
     return make_scoped_ptr(new EventReaderLibevdevCros(
         fd, params.path, params.id, type, devinfo, gesture_interp.Pass()));
@@ -111,8 +113,8 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   // Everything else: use EventConverterEvdevImpl.
   return make_scoped_ptr<EventConverterEvdevImpl>(new EventConverterEvdevImpl(
       fd, params.path, params.id, type, devinfo, params.modifiers,
-      params.button_map, params.cursor, params.key_callback,
-      params.dispatch_callback));
+      params.cursor, params.key_callback, params.mouse_move_callback,
+      params.mouse_button_callback));
 }
 
 // Open an input device. Opening may put the calling thread to sleep, and
@@ -204,6 +206,48 @@ void EventFactoryEvdev::PostKeyEvent(const KeyEventParams& params) {
   keyboard_.OnKeyChange(params.code, params.down);
 }
 
+void EventFactoryEvdev::PostMouseMoveEvent(const MouseMoveEventParams& params) {
+  scoped_ptr<MouseEvent> event(new MouseEvent(ui::ET_MOUSE_MOVED,
+                                              params.location, params.location,
+                                              modifiers_.GetModifierFlags(),
+                                              /* changed_button_flags */ 0));
+  event->set_source_device_id(params.device_id);
+  PostUiEvent(event.Pass());
+}
+
+void EventFactoryEvdev::PostMouseButtonEvent(
+    const MouseButtonEventParams& params) {
+  // Mouse buttons can be remapped, touchpad taps & clicks cannot.
+  unsigned int button = params.button;
+  if (params.allow_remap)
+    button = button_map_.GetMappedButton(button);
+
+  int modifier = EVDEV_MODIFIER_NONE;
+  switch (button) {
+    case BTN_LEFT:
+      modifier = EVDEV_MODIFIER_LEFT_MOUSE_BUTTON;
+      break;
+    case BTN_RIGHT:
+      modifier = EVDEV_MODIFIER_RIGHT_MOUSE_BUTTON;
+      break;
+    case BTN_MIDDLE:
+      modifier = EVDEV_MODIFIER_MIDDLE_MOUSE_BUTTON;
+      break;
+    default:
+      return;
+  }
+
+  int flag = modifiers_.GetEventFlagFromModifier(modifier);
+  modifiers_.UpdateModifier(modifier, params.down);
+
+  scoped_ptr<MouseEvent> event(new MouseEvent(
+      params.down ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
+      params.location, params.location, modifiers_.GetModifierFlags() | flag,
+      /* changed_button_flags */ flag));
+  event->set_source_device_id(params.device_id);
+  PostUiEvent(event.Pass());
+}
+
 void EventFactoryEvdev::PostTouchEvent(const TouchEventParams& params) {
   float x = params.location.x();
   float y = params.location.y();
@@ -271,10 +315,15 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
       params->path = event.path();
       params->dispatch_callback = dispatch_callback_;
       params->modifiers = &modifiers_;
-      params->button_map = &button_map_;
       params->cursor = cursor_;
       params->key_callback = base::Bind(&EventFactoryEvdev::PostKeyEvent,
                                         weak_ptr_factory_.GetWeakPtr());
+      params->mouse_move_callback =
+          base::Bind(&EventFactoryEvdev::PostMouseMoveEvent,
+                     weak_ptr_factory_.GetWeakPtr());
+      params->mouse_button_callback =
+          base::Bind(&EventFactoryEvdev::PostMouseButtonEvent,
+                     weak_ptr_factory_.GetWeakPtr());
       params->touch_callback = base::Bind(&EventFactoryEvdev::PostTouchEvent,
                                           weak_ptr_factory_.GetWeakPtr());
 
