@@ -1,2 +1,0 @@
-# http://crbug.com/451988
-LayerTreeHostPictureTestTwinLayer.RunSingleThread_DirectRenderer_ImplSidePaint
