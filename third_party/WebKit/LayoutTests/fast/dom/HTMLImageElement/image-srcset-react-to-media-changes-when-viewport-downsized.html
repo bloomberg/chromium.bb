@@ -1,32 +1,33 @@
 <!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
+<title>Test that does not load a low quality resource when viewport is downsized</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<iframe style="width: 120px;"></iframe>
 <script>
-var jsTestIsAsync = true;
-var img;
-
-onload = function() {
-    var iframe = document.getElementById('frame');
+async_test(function(t) {
+    var iframe = document.querySelector('iframe');
     var iframeDoc = iframe.contentWindow.document;
 
+    document.body.offsetTop;
     iframeDoc.body.innerHTML = '<img id="srcset" srcset="resources/blue_rect.jpg 90w, resources/image-set-4x.png 120w">';
 
     img = iframeDoc.getElementById('srcset');
 
     var first = true;
-    img.onload = function() {
-        if (first) {
-            first = false;
-            shouldNotBe('img.currentSrc.indexOf("image-set-4x")', '-1');
-            iframe.style.width = '90px';
-            setTimeout(function() { finishJSTest(); }, 200);
-        } else {
-            testFailed('onload should not fire a second time');
-        }
-    };
-    img.onerror = function() {
-        testFailed('Image should have loaded');
-    };
-}
-</script>
+    img.onload = t.step_func(function() {
+        assert_true(first);
+        first = false;
+        assert_equals(img.currentSrc.indexOf("blue_rect.jpg"), -1);
 
-<iframe id="frame" style="width: 120px;"></iframe>
+        iframe.style.width = '90px';
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                setTimeout(t.step_func(function() {
+                    assert_equals(img.currentSrc.indexOf("blue_rect.jpg"), -1);
+                    t.done();
+                }), 0);
+            });
+        });
+    });
+});
+</script>
