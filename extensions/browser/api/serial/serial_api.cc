@@ -130,18 +130,14 @@ bool SerialConnectFunction::Prepare() {
 void SerialConnectFunction::AsyncWorkStart() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   connection_ = CreateSerialConnection(params_->path, extension_->id());
-  connection_->Open(base::Bind(&SerialConnectFunction::OnConnected, this));
+  connection_->Open(*params_->options.get(),
+                    base::Bind(&SerialConnectFunction::OnConnected, this));
 }
 
 void SerialConnectFunction::OnConnected(bool success) {
   DCHECK(connection_);
 
-  if (success) {
-    if (!connection_->Configure(*params_->options.get())) {
-      delete connection_;
-      connection_ = NULL;
-    }
-  } else {
+  if (!success) {
     delete connection_;
     connection_ = NULL;
   }

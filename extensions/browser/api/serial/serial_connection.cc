@@ -239,9 +239,21 @@ void SerialConnection::set_paused(bool paused) {
   }
 }
 
-void SerialConnection::Open(const OpenCompleteCallback& callback) {
+void SerialConnection::Open(const core_api::serial::ConnectionOptions& options,
+                            const OpenCompleteCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  io_handler_->Open(port_, callback);
+  if (options.persistent.get())
+    set_persistent(*options.persistent);
+  if (options.name.get())
+    set_name(*options.name);
+  if (options.buffer_size.get())
+    set_buffer_size(*options.buffer_size);
+  if (options.receive_timeout.get())
+    set_receive_timeout(*options.receive_timeout);
+  if (options.send_timeout.get())
+    set_send_timeout(*options.send_timeout);
+  io_handler_->Open(port_, *device::serial::ConnectionOptions::From(options),
+                    callback);
 }
 
 bool SerialConnection::Receive(const ReceiveCompleteCallback& callback) {

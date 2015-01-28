@@ -31,6 +31,7 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   // Initiates an asynchronous Open of the device.
   virtual void Open(const std::string& port,
+                    const serial::ConnectionOptions& options,
                     const OpenCompleteCallback& callback);
 
   // Signals that the access request for |port| is complete.
@@ -74,7 +75,7 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   // Performs platform-specific port configuration. Returns |true| iff
   // configuration was successful.
-  virtual bool ConfigurePort(const serial::ConnectionOptions& options) = 0;
+  bool ConfigurePort(const serial::ConnectionOptions& options);
 
   // Performs a platform-specific port configuration query. Fills values in an
   // existing ConnectionInfo. Returns |true| iff port configuration was
@@ -106,6 +107,9 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   // Platform-specific write cancelation.
   virtual void CancelWriteImpl() = 0;
+
+  // Platform-specific port configuration applies options_ to the device.
+  virtual bool ConfigurePortImpl() = 0;
 
   // Requests access to the underlying serial device, if needed.
   virtual void RequestAccess(
@@ -164,11 +168,15 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   bool write_canceled() const { return write_canceled_; }
 
+  const serial::ConnectionOptions& options() const { return options_; }
+
   // Possibly fixes up a serial port path name in a platform-specific manner.
   static std::string MaybeFixUpPortName(const std::string& port_name);
 
  private:
   friend class base::RefCounted<SerialIoHandler>;
+
+  void MergeConnectionOptions(const serial::ConnectionOptions& options);
 
   // Continues an Open operation on the FILE thread.
   void StartOpen(const std::string& port,
@@ -185,6 +193,9 @@ class SerialIoHandler : public base::NonThreadSafe,
   // File for the opened serial device. This value is only modified from the IO
   // thread.
   base::File file_;
+
+  // Currently applied connection options.
+  serial::ConnectionOptions options_;
 
   scoped_ptr<WritableBuffer> pending_read_buffer_;
   serial::ReceiveError read_cancel_reason_;

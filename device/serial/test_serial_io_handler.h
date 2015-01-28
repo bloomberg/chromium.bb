@@ -21,12 +21,13 @@ class TestSerialIoHandler : public SerialIoHandler {
 
   // SerialIoHandler overrides.
   void Open(const std::string& port,
+            const serial::ConnectionOptions& options,
             const OpenCompleteCallback& callback) override;
-  bool ConfigurePort(const serial::ConnectionOptions& options) override;
   void ReadImpl() override;
   void CancelReadImpl() override;
   void WriteImpl() override;
   void CancelWriteImpl() override;
+  bool ConfigurePortImpl() override;
   serial::DeviceControlSignalsPtr GetControlSignals() const override;
   serial::ConnectionInfoPtr GetPortInfo() const override;
   bool Flush() const override;

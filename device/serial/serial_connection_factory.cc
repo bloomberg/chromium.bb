@@ -95,6 +95,10 @@ SerialConnectionFactory::ConnectTask::ConnectTask(
       connection_request_(connection_request.Pass()),
       sink_(sink.Pass()),
       source_(source.Pass()) {
+  if (!options_) {
+    options_ = serial::ConnectionOptions::New();
+  }
+  FillDefaultConnectionOptions(options_.get());
 }
 
 void SerialConnectionFactory::ConnectTask::Run() {
@@ -109,19 +113,16 @@ SerialConnectionFactory::ConnectTask::~ConnectTask() {
 void SerialConnectionFactory::ConnectTask::Connect() {
   io_handler_ = factory_->io_handler_factory_.Run();
   io_handler_->Open(
-      path_,
+      path_, *options_,
       base::Bind(&SerialConnectionFactory::ConnectTask::OnConnected, this));
 }
 
 void SerialConnectionFactory::ConnectTask::OnConnected(bool success) {
   DCHECK(io_handler_.get());
-  if (!success)
+  if (!success) {
     return;
-  if (!options_)
-    options_ = serial::ConnectionOptions::New();
-  FillDefaultConnectionOptions(options_.get());
-  if (!io_handler_->ConfigurePort(*options_))
-    return;
+  }
+
   mojo::BindToRequest(
       new SerialConnection(io_handler_, sink_.Pass(), source_.Pass()),
       &connection_request_);

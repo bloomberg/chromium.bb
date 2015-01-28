@@ -196,6 +196,88 @@ void SerialIoHandlerPosix::CancelWriteImpl() {
   QueueWriteCompleted(0, write_cancel_reason());
 }
 
+bool SerialIoHandlerPosix::ConfigurePortImpl() {
+  struct termios config;
+  if (tcgetattr(file().GetPlatformFile(), &config) != 0) {
+    VPLOG(1) << "Failed to get port attributes";
+    return false;
+  }
+
+  // Set flags for 'raw' operation
+  config.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
+  config.c_iflag &=
+      ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+  config.c_oflag &= ~OPOST;
+
+  // CLOCAL causes the system to disregard the DCD signal state.
+  // CREAD enables reading from the port.
+  config.c_cflag |= (CLOCAL | CREAD);
+
+  DCHECK(options().bitrate);
+  speed_t bitrate_opt = B0;
+  if (BitrateToSpeedConstant(options().bitrate, &bitrate_opt)) {
+    cfsetispeed(&config, bitrate_opt);
+    cfsetospeed(&config, bitrate_opt);
+  } else {
+    // Attempt to set a custom speed.
+    if (!SetCustomBitrate(file().GetPlatformFile(), &config,
+                          options().bitrate)) {
+      return false;
+    }
+  }
+
+  DCHECK(options().data_bits != serial::DATA_BITS_NONE);
+  config.c_cflag &= ~CSIZE;
+  switch (options().data_bits) {
+    case serial::DATA_BITS_SEVEN:
+      config.c_cflag |= CS7;
+      break;
+    case serial::DATA_BITS_EIGHT:
+    default:
+      config.c_cflag |= CS8;
+      break;
+  }
+
+  DCHECK(options().parity_bit != serial::PARITY_BIT_NONE);
+  switch (options().parity_bit) {
+    case serial::PARITY_BIT_EVEN:
+      config.c_cflag |= PARENB;
+      config.c_cflag &= ~PARODD;
+      break;
+    case serial::PARITY_BIT_ODD:
+      config.c_cflag |= (PARODD | PARENB);
+      break;
+    case serial::PARITY_BIT_NO:
+    default:
+      config.c_cflag &= ~(PARODD | PARENB);
+      break;
+  }
+
+  DCHECK(options().stop_bits != serial::STOP_BITS_NONE);
+  switch (options().stop_bits) {
+    case serial::STOP_BITS_TWO:
+      config.c_cflag |= CSTOPB;
+      break;
+    case serial::STOP_BITS_ONE:
+    default:
+      config.c_cflag &= ~CSTOPB;
+      break;
+  }
+
+  DCHECK(options().has_cts_flow_control);
+  if (options().cts_flow_control) {
+    config.c_cflag |= CRTSCTS;
+  } else {
+    config.c_cflag &= ~CRTSCTS;
+  }
+
+  if (tcsetattr(file().GetPlatformFile(), TCSANOW, &config) != 0) {
+    VPLOG(1) << "Failed to set port attributes";
+    return false;
+  }
+  return true;
+}
+
 SerialIoHandlerPosix::SerialIoHandlerPosix(
     scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
     scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop)
@@ -282,96 +364,19 @@ void SerialIoHandlerPosix::EnsureWatchingWrites() {
   }
 }
 
-bool SerialIoHandlerPosix::ConfigurePort(
-    const serial::ConnectionOptions& options) {
-  struct termios config;
-  tcgetattr(file().GetPlatformFile(), &config);
-  if (options.bitrate) {
-    speed_t bitrate_opt = B0;
-    if (BitrateToSpeedConstant(options.bitrate, &bitrate_opt)) {
-      cfsetispeed(&config, bitrate_opt);
-      cfsetospeed(&config, bitrate_opt);
-    } else {
-      // Attempt to set a custom speed.
-      if (!SetCustomBitrate(
-              file().GetPlatformFile(), &config, options.bitrate)) {
-        return false;
-      }
-    }
-  }
-  if (options.data_bits != serial::DATA_BITS_NONE) {
-    config.c_cflag &= ~CSIZE;
-    switch (options.data_bits) {
-      case serial::DATA_BITS_SEVEN:
-        config.c_cflag |= CS7;
-        break;
-      case serial::DATA_BITS_EIGHT:
-      default:
-        config.c_cflag |= CS8;
-        break;
-    }
-  }
-  if (options.parity_bit != serial::PARITY_BIT_NONE) {
-    switch (options.parity_bit) {
-      case serial::PARITY_BIT_EVEN:
-        config.c_cflag |= PARENB;
-        config.c_cflag &= ~PARODD;
-        break;
-      case serial::PARITY_BIT_ODD:
-        config.c_cflag |= (PARODD | PARENB);
-        break;
-      case serial::PARITY_BIT_NO:
-      default:
-        config.c_cflag &= ~(PARODD | PARENB);
-        break;
-    }
-  }
-  if (options.stop_bits != serial::STOP_BITS_NONE) {
-    switch (options.stop_bits) {
-      case serial::STOP_BITS_TWO:
-        config.c_cflag |= CSTOPB;
-        break;
-      case serial::STOP_BITS_ONE:
-      default:
-        config.c_cflag &= ~CSTOPB;
-        break;
-    }
-  }
-  if (options.has_cts_flow_control) {
-    if (options.cts_flow_control) {
-      config.c_cflag |= CRTSCTS;
-    } else {
-      config.c_cflag &= ~CRTSCTS;
-    }
-  }
-  return tcsetattr(file().GetPlatformFile(), TCSANOW, &config) == 0;
-}
-
-bool SerialIoHandlerPosix::PostOpen() {
-  struct termios config;
-  tcgetattr(file().GetPlatformFile(), &config);
-
-  // Set flags for 'raw' operation
-  config.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
-  config.c_iflag &=
-      ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-  config.c_oflag &= ~OPOST;
-
-  // CLOCAL causes the system to disregard the DCD signal state.
-  // CREAD enables reading from the port.
-  config.c_cflag |= (CLOCAL | CREAD);
-
-  return tcsetattr(file().GetPlatformFile(), TCSANOW, &config) == 0;
-}
-
 bool SerialIoHandlerPosix::Flush() const {
-  return tcflush(file().GetPlatformFile(), TCIOFLUSH) == 0;
+  if (tcflush(file().GetPlatformFile(), TCIOFLUSH) != 0) {
+    VPLOG(1) << "Failed to flush port";
+    return false;
+  }
+  return true;
 }
 
 serial::DeviceControlSignalsPtr SerialIoHandlerPosix::GetControlSignals()
     const {
   int status;
   if (ioctl(file().GetPlatformFile(), TIOCMGET, &status) == -1) {
+    VPLOG(1) << "Failed to get port control signals";
     return serial::DeviceControlSignalsPtr();
   }
 
@@ -388,6 +393,7 @@ bool SerialIoHandlerPosix::SetControlSignals(
   int status;
 
   if (ioctl(file().GetPlatformFile(), TIOCMGET, &status) == -1) {
+    VPLOG(1) << "Failed to get port control signals";
     return false;
   }
 
@@ -407,12 +413,17 @@ bool SerialIoHandlerPosix::SetControlSignals(
     }
   }
 
-  return ioctl(file().GetPlatformFile(), TIOCMSET, &status) == 0;
+  if (ioctl(file().GetPlatformFile(), TIOCMSET, &status) != 0) {
+    VPLOG(1) << "Failed to set port control signals";
+    return false;
+  }
+  return true;
 }
 
 serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
   struct termios config;
   if (tcgetattr(file().GetPlatformFile(), &config) == -1) {
+    VPLOG(1) << "Failed to get port info";
     return serial::ConnectionInfoPtr();
   }
   serial::ConnectionInfoPtr info(serial::ConnectionInfo::New());

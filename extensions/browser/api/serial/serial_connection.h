@@ -73,7 +73,8 @@ class SerialConnection : public ApiResource,
   // Initiates an asynchronous Open of the device. It is the caller's
   // responsibility to ensure that this SerialConnection stays alive
   // until |callback| is run.
-  void Open(const OpenCompleteCallback& callback);
+  void Open(const core_api::serial::ConnectionOptions& options,
+            const OpenCompleteCallback& callback);
 
   // Begins an asynchronous receive operation. Calling this while a Receive
   // is already pending is a no-op and returns |false| without calling

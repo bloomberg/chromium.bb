@@ -18,17 +18,16 @@ class SerialIoHandlerPosix : public SerialIoHandler,
   void WriteImpl() override;
   void CancelReadImpl() override;
   void CancelWriteImpl() override;
+  bool ConfigurePortImpl() override;
   bool Flush() const override;
   serial::DeviceControlSignalsPtr GetControlSignals() const override;
   bool SetControlSignals(
       const serial::HostControlSignals& control_signals) override;
-  bool ConfigurePort(const serial::ConnectionOptions& options) override;
   serial::ConnectionInfoPtr GetPortInfo() const override;
   void RequestAccess(
       const std::string& port,
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
       scoped_refptr<base::MessageLoopProxy> ui_message_loop) override;
-  bool PostOpen() override;
 
  private:
   friend class SerialIoHandler;

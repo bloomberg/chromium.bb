@@ -176,78 +176,86 @@ class GetControlSignalsTestIoHandler : public TestIoHandlerBase {
 class ConfigurePortTestIoHandler : public TestIoHandlerBase {
  public:
   ConfigurePortTestIoHandler() {}
-  bool ConfigurePort(
-      const device::serial::ConnectionOptions& options) override {
+  bool ConfigurePortImpl() override {
     static const device::serial::ConnectionOptions expected_options[] = {
+        // Each JavaScript call to chrome.serial.update only modifies a single
+        // property of the connection however this function can only check the
+        // final value of all options. The modified option is marked with "set".
         GenerateConnectionOptions(9600,
                                   device::serial::DATA_BITS_EIGHT,
                                   device::serial::PARITY_BIT_NO,
                                   device::serial::STOP_BITS_ONE,
                                   OPTIONAL_VALUE_FALSE),
-        GenerateConnectionOptions(57600,
-                                  device::serial::DATA_BITS_NONE,
-                                  device::serial::PARITY_BIT_NONE,
-                                  device::serial::STOP_BITS_NONE,
-                                  OPTIONAL_VALUE_UNSET),
-        GenerateConnectionOptions(0,
-                                  device::serial::DATA_BITS_SEVEN,
-                                  device::serial::PARITY_BIT_NONE,
-                                  device::serial::STOP_BITS_NONE,
-                                  OPTIONAL_VALUE_UNSET),
-        GenerateConnectionOptions(0,
+        GenerateConnectionOptions(57600,  // set
                                   device::serial::DATA_BITS_EIGHT,
-                                  device::serial::PARITY_BIT_NONE,
-                                  device::serial::STOP_BITS_NONE,
-                                  OPTIONAL_VALUE_UNSET),
-        GenerateConnectionOptions(0,
-                                  device::serial::DATA_BITS_NONE,
                                   device::serial::PARITY_BIT_NO,
-                                  device::serial::STOP_BITS_NONE,
-                                  OPTIONAL_VALUE_UNSET),
-        GenerateConnectionOptions(0,
-                                  device::serial::DATA_BITS_NONE,
-                                  device::serial::PARITY_BIT_ODD,
-                                  device::serial::STOP_BITS_NONE,
-                                  OPTIONAL_VALUE_UNSET),
-        GenerateConnectionOptions(0,
-                                  device::serial::DATA_BITS_NONE,
-                                  device::serial::PARITY_BIT_EVEN,
-                                  device::serial::STOP_BITS_NONE,
-                                  OPTIONAL_VALUE_UNSET),
-        GenerateConnectionOptions(0,
-                                  device::serial::DATA_BITS_NONE,
-                                  device::serial::PARITY_BIT_NONE,
                                   device::serial::STOP_BITS_ONE,
-                                  OPTIONAL_VALUE_UNSET),
-        GenerateConnectionOptions(0,
-                                  device::serial::DATA_BITS_NONE,
-                                  device::serial::PARITY_BIT_NONE,
-                                  device::serial::STOP_BITS_TWO,
-                                  OPTIONAL_VALUE_UNSET),
-        GenerateConnectionOptions(0,
-                                  device::serial::DATA_BITS_NONE,
-                                  device::serial::PARITY_BIT_NONE,
-                                  device::serial::STOP_BITS_NONE,
                                   OPTIONAL_VALUE_FALSE),
-        GenerateConnectionOptions(0,
-                                  device::serial::DATA_BITS_NONE,
-                                  device::serial::PARITY_BIT_NONE,
-                                  device::serial::STOP_BITS_NONE,
-                                  OPTIONAL_VALUE_TRUE),
+        GenerateConnectionOptions(57600,
+                                  device::serial::DATA_BITS_SEVEN,  // set
+                                  device::serial::PARITY_BIT_NO,
+                                  device::serial::STOP_BITS_ONE,
+                                  OPTIONAL_VALUE_FALSE),
+        GenerateConnectionOptions(57600,
+                                  device::serial::DATA_BITS_EIGHT,  // set
+                                  device::serial::PARITY_BIT_NO,
+                                  device::serial::STOP_BITS_ONE,
+                                  OPTIONAL_VALUE_FALSE),
+        GenerateConnectionOptions(57600,
+                                  device::serial::DATA_BITS_EIGHT,
+                                  device::serial::PARITY_BIT_NO,  // set
+                                  device::serial::STOP_BITS_ONE,
+                                  OPTIONAL_VALUE_FALSE),
+        GenerateConnectionOptions(57600,
+                                  device::serial::DATA_BITS_EIGHT,
+                                  device::serial::PARITY_BIT_ODD,  // set
+                                  device::serial::STOP_BITS_ONE,
+                                  OPTIONAL_VALUE_FALSE),
+        GenerateConnectionOptions(57600,
+                                  device::serial::DATA_BITS_EIGHT,
+                                  device::serial::PARITY_BIT_EVEN,  // set
+                                  device::serial::STOP_BITS_ONE,
+                                  OPTIONAL_VALUE_FALSE),
+        GenerateConnectionOptions(57600,
+                                  device::serial::DATA_BITS_EIGHT,
+                                  device::serial::PARITY_BIT_EVEN,
+                                  device::serial::STOP_BITS_ONE,  // set
+                                  OPTIONAL_VALUE_FALSE),
+        GenerateConnectionOptions(57600,
+                                  device::serial::DATA_BITS_EIGHT,
+                                  device::serial::PARITY_BIT_EVEN,
+                                  device::serial::STOP_BITS_TWO,  // set
+                                  OPTIONAL_VALUE_FALSE),
+        GenerateConnectionOptions(57600,
+                                  device::serial::DATA_BITS_EIGHT,
+                                  device::serial::PARITY_BIT_EVEN,
+                                  device::serial::STOP_BITS_TWO,
+                                  OPTIONAL_VALUE_FALSE),  // set
+        GenerateConnectionOptions(57600,
+                                  device::serial::DATA_BITS_EIGHT,
+                                  device::serial::PARITY_BIT_EVEN,
+                                  device::serial::STOP_BITS_TWO,
+                                  OPTIONAL_VALUE_TRUE),  // set
     };
-    if (num_calls() >= arraysize(expected_options))
-      return false;
 
-    EXPECT_EQ(expected_options[num_calls()].bitrate, options.bitrate);
-    EXPECT_EQ(expected_options[num_calls()].data_bits, options.data_bits);
-    EXPECT_EQ(expected_options[num_calls()].parity_bit, options.parity_bit);
-    EXPECT_EQ(expected_options[num_calls()].stop_bits, options.stop_bits);
+    if (!TestIoHandlerBase::ConfigurePortImpl()) {
+      return false;
+    }
+
+    if (num_calls() >= arraysize(expected_options)) {
+      return false;
+    }
+
+    EXPECT_EQ(expected_options[num_calls()].bitrate, options().bitrate);
+    EXPECT_EQ(expected_options[num_calls()].data_bits, options().data_bits);
+    EXPECT_EQ(expected_options[num_calls()].parity_bit, options().parity_bit);
+    EXPECT_EQ(expected_options[num_calls()].stop_bits, options().stop_bits);
     EXPECT_EQ(expected_options[num_calls()].has_cts_flow_control,
-              options.has_cts_flow_control);
+              options().has_cts_flow_control);
     EXPECT_EQ(expected_options[num_calls()].cts_flow_control,
-              options.cts_flow_control);
+              options().cts_flow_control);
     record_call();
-    return TestSerialIoHandler::ConfigurePort(options);
+    return true;
   }
 
  private:
@@ -275,6 +283,7 @@ class FailToConnectTestIoHandler : public TestIoHandlerBase {
  public:
   FailToConnectTestIoHandler() {}
   void Open(const std::string& port,
+            const device::serial::ConnectionOptions& options,
             const OpenCompleteCallback& callback) override {
     callback.Run(false);
     return;

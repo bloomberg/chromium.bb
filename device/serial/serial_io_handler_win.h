@@ -19,11 +19,11 @@ class SerialIoHandlerWin : public SerialIoHandler,
   virtual void WriteImpl() override;
   virtual void CancelReadImpl() override;
   virtual void CancelWriteImpl() override;
+  virtual bool ConfigurePortImpl() override;
   virtual bool Flush() const override;
   virtual serial::DeviceControlSignalsPtr GetControlSignals() const override;
   virtual bool SetControlSignals(
       const serial::HostControlSignals& control_signals) override;
-  virtual bool ConfigurePort(const serial::ConnectionOptions& options) override;
   virtual serial::ConnectionInfoPtr GetPortInfo() const override;
   virtual bool PostOpen() override;
 

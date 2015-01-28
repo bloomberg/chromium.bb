@@ -28,6 +28,7 @@ class FakeSerialDeviceEnumerator : public SerialDeviceEnumerator {
 class FailToOpenIoHandler : public TestSerialIoHandler {
  public:
   void Open(const std::string& port,
+            const serial::ConnectionOptions& options,
             const OpenCompleteCallback& callback) override {
     callback.Run(false);
   }
