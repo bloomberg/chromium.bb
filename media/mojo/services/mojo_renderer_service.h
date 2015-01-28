@@ -6,12 +6,14 @@
 #define MEDIA_MOJO_SERVICES_MOJO_RENDERER_SERVICE_H_
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"
+#include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
@@ -29,7 +31,8 @@ class Renderer;
 
 // A mojo::MediaRenderer implementation that uses media::AudioRenderer to
 // decode and render audio to a sink obtained from the ApplicationConnection.
-class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
+class MEDIA_EXPORT MojoRendererService
+    : NON_EXPORTED_BASE(public mojo::InterfaceImpl<mojo::MediaRenderer>) {
  public:
   MojoRendererService();
   ~MojoRendererService() override;

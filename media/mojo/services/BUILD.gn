@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/media_options.gni")
 import("//testing/test.gni")
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
@@ -11,6 +12,12 @@ import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 # - service: Mojo interface implementations.
 # - unittests: Unit tests for a particular class/file.
 # - test: Tests for a particular app, e.g. media.
+
+config("enable_media_mojo_renderer_config") {
+  if (enable_media_mojo_renderer) {
+    defines = [ "ENABLE_MEDIA_MOJO_RENDERER" ]
+  }
+}
 
 source_set("converters") {
   sources = [
@@ -41,7 +48,6 @@ source_set("cdm_proxy") {
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/interfaces/application",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
-    "//third_party/mojo/src/mojo/public/cpp/application",
   ]
 
   sources = [
@@ -83,6 +89,8 @@ source_set("renderer_proxy") {
     "mojo_renderer_impl.h",
   ]
 
+  public_configs = [ ":enable_media_mojo_renderer_config" ]
+
   deps = [
     ":converters",
     "//base",
@@ -91,7 +99,6 @@ source_set("renderer_proxy") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
-    "//third_party/mojo/src/mojo/public/cpp/application",
     "//third_party/mojo/src/mojo/public/interfaces/application",
   ]
 }
@@ -124,6 +131,8 @@ source_set("renderer_service") {
   sources = [
     "renderer_config_default.cc",
   ]
+
+  public_configs = [ ":enable_media_mojo_renderer_config" ]
 
   deps = [
     ":renderer_service_generic",

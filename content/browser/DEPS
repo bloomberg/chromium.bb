@@ -8,6 +8,7 @@ include_rules = [
   "+media/base",  # For Android JNI registration.
   "+media/filters",  # For reporting GPU decoding UMA.
   "+media/midi",  # For Web MIDI API
+  "+media/mojo",  # For mojo media services.
   "+media/video",  # For Video Device monitoring in Mac.
   "+mojo",
   "+sql",

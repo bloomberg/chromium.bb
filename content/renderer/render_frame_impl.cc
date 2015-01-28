@@ -102,7 +102,6 @@
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
-#include "media/filters/default_renderer_factory.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
@@ -164,6 +163,13 @@
 #include "content/renderer/media/crypto/pepper_cdm_wrapper_impl.h"
 #elif defined(ENABLE_BROWSER_CDMS)
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
+#endif
+
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#include "content/renderer/media/media_renderer_service_provider.h"
+#include "media/mojo/services/mojo_renderer_factory.h"
+#else
+#include "media/filters/default_renderer_factory.h"
 #endif
 
 using blink::WebContextMenuData;
@@ -1875,7 +1881,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client) {
-  return createMediaPlayer(frame, url, client, NULL);
+  return createMediaPlayer(frame, url, client, nullptr);
 }
 
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
@@ -1921,6 +1927,11 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   scoped_ptr<media::CdmFactory> cdm_factory(new RenderCdmFactory());
 #endif
 
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+  scoped_ptr<media::RendererFactory> media_renderer_factory(
+      new media::MojoRendererFactory(make_scoped_ptr(
+          new MediaRendererServiceProvider(GetServiceRegistry()))));
+#else
   scoped_ptr<media::RendererFactory> media_renderer_factory =
       GetContentClient()->renderer()->CreateMediaRendererFactory(this);
 
@@ -1929,6 +1940,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
         media_log, render_thread->GetGpuFactories(),
         *render_thread->GetAudioHardwareConfig()));
   }
+#endif  // defined(ENABLE_MEDIA_MOJO_RENDERER)
 
   return new media::WebMediaPlayerImpl(
       frame, client, weak_factory_.GetWeakPtr(), media_renderer_factory.Pass(),

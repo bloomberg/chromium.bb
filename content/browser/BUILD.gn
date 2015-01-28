@@ -442,4 +442,8 @@ source_set("browser") {
   if (is_linux && use_openssl) {
     deps += [ "//third_party/boringssl" ]
   }
+
+  if (enable_media_mojo_renderer) {
+    deps += [ "//media/mojo/services:renderer_service" ]
+  }
 }

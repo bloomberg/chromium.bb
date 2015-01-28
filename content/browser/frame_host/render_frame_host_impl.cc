@@ -65,6 +65,11 @@
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 #endif
 
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "media/mojo/services/mojo_renderer_service.h"
+#endif
+
 using base::TimeDelta;
 
 namespace content {
@@ -1274,6 +1279,14 @@ void RenderFrameHostImpl::OnHidePopup() {
 }
 #endif
 
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+static void CreateMediaRendererService(
+    mojo::InterfaceRequest<mojo::MediaRenderer> request) {
+  media::MojoRendererService* service = new media::MojoRendererService();
+  mojo::BindToRequest(service, &request);
+}
+#endif
+
 void RenderFrameHostImpl::RegisterMojoServices() {
   GeolocationServiceContext* geolocation_service_context =
       delegate_ ? delegate_->GetGeolocationServiceContext() : NULL;
@@ -1294,6 +1307,11 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   GetServiceRegistry()->AddService<PermissionService>(
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
+
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+  GetServiceRegistry()->AddService<mojo::MediaRenderer>(
+      base::Bind(&CreateMediaRendererService));
+#endif
 }
 
 void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {
