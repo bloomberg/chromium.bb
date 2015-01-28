@@ -93,4 +93,49 @@ TEST_F(ColorProfileTest, GetDisplayColorProfileForEmptyOffScreenBounds) {
   EXPECT_FALSE(TestColorProfileForBounds(TestWindowBounds()));
 }
 
+bool TestColorProfileForWindow(NSWindow* window) {
+  std::vector<char> color_profile;
+  return gfx::GetDisplayColorProfile(window, &color_profile);
+}
+
+TEST_F(ColorProfileTest, GetDisplayColorProfileForOnScreenWindow) {
+  MoveTestWindowTo(gfx::Rect(10, 10, 100, 100));
+  EXPECT_FALSE(TestWindowBounds().IsEmpty());
+  EXPECT_TRUE(TestWindowContainedOnScreen());
+  EXPECT_TRUE(TestColorProfileForWindow(test_window()));
+}
+
+TEST_F(ColorProfileTest, GetDisplayColorProfileForPartiallyOnScreenWindow) {
+  MoveTestWindowTo(gfx::Rect(-50, -50, 80, 80));
+  EXPECT_FALSE(TestWindowBounds().IsEmpty());
+  EXPECT_TRUE(TestWindowOnScreen());
+  EXPECT_TRUE(TestColorProfileForWindow(test_window()));
+}
+
+TEST_F(ColorProfileTest, GetDisplayColorProfileForOffScreenWindow) {
+  MoveTestWindowTo(gfx::Rect(-100, -100, 10, 10));
+  EXPECT_FALSE(TestWindowBounds().IsEmpty());
+  EXPECT_FALSE(TestWindowOnScreen());
+  EXPECT_TRUE(TestColorProfileForWindow(test_window()));
+}
+
+TEST_F(ColorProfileTest, GetDisplayColorProfileForEmptyOnScreenWindow) {
+  MoveTestWindowTo(gfx::Rect(10, 10, 0, 0));
+  EXPECT_TRUE(TestWindowBounds().IsEmpty());
+  EXPECT_FALSE(TestWindowOnScreen());
+  EXPECT_FALSE(TestColorProfileForWindow(test_window()));
+}
+
+TEST_F(ColorProfileTest, GetDisplayColorProfileForEmptyOffScreenWindow) {
+  MoveTestWindowTo(gfx::Rect(-100, -100, 0, 0));
+  EXPECT_TRUE(TestWindowBounds().IsEmpty());
+  EXPECT_FALSE(TestWindowOnScreen());
+  EXPECT_FALSE(TestColorProfileForWindow(test_window()));
+}
+
+TEST_F(ColorProfileTest, GetDisplayColorProfileForNullWindow) {
+  EXPECT_FALSE(TestColorProfileForWindow(nullptr));
+  EXPECT_FALSE(TestColorProfileForWindow(nil));
+}
+
 }  // namespace

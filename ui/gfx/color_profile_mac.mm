@@ -54,6 +54,24 @@ bool GetDisplayColorProfile(const gfx::Rect& bounds,
   return true;
 }
 
+GFX_EXPORT bool GetDisplayColorProfile(gfx::NativeWindow window,
+                                       std::vector<char>* profile) {
+  DCHECK(profile->empty());
+
+  NSColorSpace* color_space = [window colorSpace];
+  if (!color_space || NSIsEmptyRect([window frame]))
+    return false;
+
+  if ([color_space isEqual:[NSColorSpace sRGBColorSpace]])
+    return true;
+  NSData* profile_data = [color_space ICCProfileData];
+  const char* data = static_cast<const char*>([profile_data bytes]);
+  size_t length = [profile_data length];
+  if (data && !gfx::InvalidColorProfileLength(length))
+    profile->assign(data, data + length);
+  return true;
+}
+
 void ReadColorProfile(std::vector<char>* profile) {
   CGColorSpaceRef monitor_color_space(base::mac::GetSystemColorSpace());
   base::ScopedCFTypeRef<CFDataRef> icc_profile(
