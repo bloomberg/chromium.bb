@@ -326,7 +326,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
 #if defined(ENABLE_WEBRTC)
   webrtc_logging_message_filter_ = new WebRtcLoggingMessageFilter(
-      content::RenderThread::Get()->GetIOMessageLoopProxy());
+      RenderThread::Get()->GetIOMessageLoopProxy());
 #endif
   search_bouncer_.reset(new SearchBouncer());
 
@@ -347,7 +347,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 #if defined(ENABLE_EXTENSIONS)
   thread->AddFilter(new CastIPCDispatcher(
-      content::RenderThread::Get()->GetIOMessageLoopProxy()));
+      RenderThread::Get()->GetIOMessageLoopProxy()));
 #endif
 
   thread->RegisterExtension(extensions_v8::ExternalExtension::Get());
@@ -1142,7 +1142,8 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
         NOTREACHED() << "unable to load template. ID: " << resource_id;
       } else {
         base::DictionaryValue error_strings;
-        LocalizedError::GetAppErrorStrings(failed_url, extension,
+        const std::string locale = RenderThread::Get()->GetLocale();
+        LocalizedError::GetAppErrorStrings(failed_url, extension, locale,
                                            &error_strings);
         // "t" is the id of the template's root node.
         *error_html = webui::GetTemplatesHtml(template_html, &error_strings,

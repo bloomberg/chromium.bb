@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -330,7 +331,9 @@ void MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest(
                     l10n_util::GetStringUTF16(IDS_CANCEL));
   strings.SetString("ok_button",
                     l10n_util::GetStringUTF16(IDS_OK));
-  webui::SetFontAndTextDirection(&strings);
+
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, &strings);
 
   // The webui differs based on whether the network is activated or not. If the
   // network is activated, the webui goes straight to portal. Otherwise the

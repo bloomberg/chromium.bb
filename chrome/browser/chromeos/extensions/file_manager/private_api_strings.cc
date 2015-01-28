@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/system/statistics_provider.h"
@@ -542,7 +543,10 @@ bool FileManagerPrivateGetStringsFunction::RunSync() {
       "NO_ACTION_FOR_FILE_URL",
       base::StringPrintf(kHelpURLFormat, kNoActionForFileHelpNumber));
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
-  webui::SetFontAndTextDirection(dict);
+
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, dict);
+
   return true;
 }
 

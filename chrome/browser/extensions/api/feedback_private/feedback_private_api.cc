@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
@@ -122,7 +123,8 @@ bool FeedbackPrivateGetStringsFunction::RunSync() {
              IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX);
 #undef SET_STRING
 
-  webui::SetFontAndTextDirection(dict);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, dict);
 
   if (test_callback_ && !test_callback_->is_null())
     test_callback_->Run();

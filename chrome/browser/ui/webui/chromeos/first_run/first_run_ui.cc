@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_handler.h"
 #include "chrome/common/url_constants.h"
@@ -85,7 +86,8 @@ content::WebUIDataSource* CreateDataSource() {
   source->SetDefaultResource(IDR_FIRST_RUN_HTML);
   source->AddResourcePath(kFirstRunJSPath, IDR_FIRST_RUN_JS);
   base::DictionaryValue localized_strings;
-  webui::SetFontAndTextDirection(&localized_strings);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
   SetLocalizedStrings(&localized_strings);
   source->AddLocalizedStrings(localized_strings);
   return source;

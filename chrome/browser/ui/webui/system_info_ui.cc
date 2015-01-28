@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/feedback/system_logs/about_system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
@@ -139,7 +140,10 @@ void SystemInfoUIHTMLSource::RequestComplete() {
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_COLLAPSE));
   strings.SetString("parseError",
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_PARSE_ERROR));
-  webui::SetFontAndTextDirection(&strings);
+
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, &strings);
+
   if (response_.get()) {
     base::ListValue* details = new base::ListValue();
     strings.Set("details", details);

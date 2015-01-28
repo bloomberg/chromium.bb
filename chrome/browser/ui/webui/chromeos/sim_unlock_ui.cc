@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -322,7 +323,8 @@ void SimUnlockUIHTMLSource::StartDataRequest(
   strings.SetString("oldPin", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_OLD_PIN));
 
-  webui::SetFontAndTextDirection(&strings);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, &strings);
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

@@ -131,9 +131,11 @@ void ParsePathAndScale(const GURL& url,
   }
 }
 
-void SetFontAndTextDirection(base::DictionaryValue* localized_strings) {
+void SetLoadTimeDataDefaults(const std::string& app_locale,
+                             base::DictionaryValue* localized_strings) {
   localized_strings->SetString("fontfamily", GetFontFamily());
   localized_strings->SetString("fontsize", GetFontSize());
+  localized_strings->SetString("language", l10n_util::GetLanguage(app_locale));
   localized_strings->SetString("textdirection", GetTextDirection());
 }
 

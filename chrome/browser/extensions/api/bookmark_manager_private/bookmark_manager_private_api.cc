@@ -15,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
@@ -518,7 +519,8 @@ bool BookmarkManagerPrivateGetStringsFunction::RunAsync() {
   localized_strings->SetString("cancel",
       l10n_util::GetStringUTF16(IDS_CANCEL));
 
-  webui::SetFontAndTextDirection(localized_strings);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
 
   SetResult(localized_strings);
 

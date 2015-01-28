@@ -477,10 +477,6 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
   }
 }
 
-bool LocaleIsRTL() {
-  return base::i18n::IsRTL();
-}
-
 // Returns a dictionary containing the strings for the settings menu under the
 // wrench, and the advanced settings button.
 base::DictionaryValue* GetStandardMenuItemsText() {
@@ -517,9 +513,7 @@ void LocalizedError::GetStrings(int error_code,
                                 const std::string& accept_languages,
                                 scoped_ptr<error_page::ErrorPageParams> params,
                                 base::DictionaryValue* error_strings) {
-  bool rtl = LocaleIsRTL();
-  error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
-  webui::SetFontAndTextDirection(error_strings);
+  webui::SetLoadTimeDataDefaults(locale, error_strings);
 
   // Grab the strings and settings that depend on the error type.  Init
   // options with default values.
@@ -555,7 +549,7 @@ void LocalizedError::GetStrings(int error_code,
       failed_url, accept_languages, net::kFormatUrlOmitNothing,
       net::UnescapeRule::NORMAL, NULL, NULL, NULL));
   // URLs are always LTR.
-  if (rtl)
+  if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&failed_url_string);
   error_strings->SetString("title",
       l10n_util::GetStringFUTF16(options.title_resource_id, failed_url_string));
@@ -856,15 +850,15 @@ bool LocalizedError::HasStrings(const std::string& error_domain,
 void LocalizedError::GetAppErrorStrings(
     const GURL& display_url,
     const extensions::Extension* app,
+    const std::string& locale,
     base::DictionaryValue* error_strings) {
   DCHECK(app);
 
-  bool rtl = LocaleIsRTL();
-  error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
+  webui::SetLoadTimeDataDefaults(locale, error_strings);
 
   base::string16 failed_url(base::ASCIIToUTF16(display_url.spec()));
   // URLs are always LTR.
-  if (rtl)
+  if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&failed_url);
   error_strings->SetString(
      "url", l10n_util::GetStringFUTF16(IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,

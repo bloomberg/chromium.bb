@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_audio_history_handler.h"
 #include "chrome/browser/search/hotword_client.h"
@@ -21,6 +21,7 @@
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "extensions/browser/event_router.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 namespace extensions {
 
@@ -389,8 +390,8 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
       "finishedWait",
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_WAIT));
 
-  localized_strings->SetString("textdirection",
-      base::i18n::IsRTL() ? "rtl" : "ltr");
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
 
   SetResult(localized_strings);
   return true;

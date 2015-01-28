@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
@@ -71,7 +72,8 @@ void CertificateManagerDialogHTMLSource::StartDataRequest(
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   scoped_refptr<base::RefCountedMemory> response_bytes;
-  webui::SetFontAndTextDirection(localized_strings_.get());
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, localized_strings_.get());
 
   if (path == kLocalizedStringsFile) {
     // Return dynamically-generated strings from memory.

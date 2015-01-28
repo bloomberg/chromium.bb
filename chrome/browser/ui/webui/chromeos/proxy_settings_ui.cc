@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
@@ -67,7 +68,8 @@ void ProxySettingsHTMLSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  webui::SetFontAndTextDirection(localized_strings_.get());
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, localized_strings_.get());
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

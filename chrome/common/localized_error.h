@@ -57,6 +57,7 @@ class LocalizedError {
   // part of the app.
   static void GetAppErrorStrings(const GURL& display_url,
                                  const extensions::Extension* app,
+                                 const std::string& locale,
                                  base::DictionaryValue* error_strings);
 #endif
 

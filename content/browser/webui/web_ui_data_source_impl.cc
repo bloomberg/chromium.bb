@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "content/grit/content_resources.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "third_party/mojo/src/mojo/public/js/constants.h"
 #include "ui/base/webui/jstemplate_builder.h"
@@ -231,8 +232,10 @@ void WebUIDataSourceImpl::StartDataRequest(
 void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
     const URLDataSource::GotDataCallback& callback) {
   std::string template_data;
-  if (!disable_set_font_strings_)
-    webui::SetFontAndTextDirection(&localized_strings_);
+  if (!disable_set_font_strings_) {
+    std::string locale = GetContentClient()->browser()->GetApplicationLocale();
+    webui::SetLoadTimeDataDefaults(locale, &localized_strings_);
+  }
 
   webui::AppendJsonJS(&localized_strings_, &template_data);
   callback.Run(base::RefCountedString::TakeString(&template_data));

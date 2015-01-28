@@ -7,12 +7,12 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -34,6 +34,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
+#include "ui/base/webui/web_ui_util.h"
 
 using content::BrowserThread;
 using content::InterstitialPage;
@@ -87,8 +88,8 @@ std::string MergeSessionLoadPage::GetHTMLContents() {
   strings.SetString("heading",
                     l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE));
 
-  bool rtl = base::i18n::IsRTL();
-  strings.SetString("textdirection", rtl ? "rtl" : "ltr");
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, &strings);
 
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

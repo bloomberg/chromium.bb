@@ -497,9 +497,11 @@ AppLaunchSplashScreenActor*
 
 void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   // Note, handlers_[0] is a GenericHandler used by the WebUI.
-  for (size_t i = 0; i < handlers_.size(); ++i)
+  for (size_t i = 0; i < handlers_.size(); ++i) {
     handlers_[i]->GetLocalizedStrings(localized_strings);
-  webui::SetFontAndTextDirection(localized_strings);
+  }
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
   kiosk_app_menu_handler_->GetLocalizedStrings(localized_strings);
 
 #if defined(GOOGLE_CHROME_BUILD)

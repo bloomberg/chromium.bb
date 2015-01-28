@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -59,7 +60,8 @@ content::WebUIDataSource* UserManagerUI::CreateUIDataSource(
 void UserManagerUI::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
   user_manager_screen_handler_->GetLocalizedValues(localized_strings);
-  webui::SetFontAndTextDirection(localized_strings);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
 
 #if defined(GOOGLE_CHROME_BUILD)
   localized_strings->SetString("buildType", "chrome");

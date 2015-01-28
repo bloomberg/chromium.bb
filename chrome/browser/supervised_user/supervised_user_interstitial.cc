@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -267,7 +268,8 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
   strings.SetString("requestSentMessage", request_sent_message);
   strings.SetString("requestFailedMessage", request_failed_message);
 
-  webui::SetFontAndTextDirection(&strings);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, &strings);
 
   std::string html =
       ResourceBundle::GetSharedInstance()

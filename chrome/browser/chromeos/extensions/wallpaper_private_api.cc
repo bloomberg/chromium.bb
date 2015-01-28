@@ -276,7 +276,8 @@ bool WallpaperPrivateGetStringsFunction::RunSync() {
              IDS_CURRENT_WALLPAPER_SET_BY_MESSAGE);
 #undef SET_STRING
 
-  webui::SetFontAndTextDirection(dict);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, dict);
 
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();

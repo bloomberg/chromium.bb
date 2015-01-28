@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
@@ -63,7 +64,8 @@ base::string16 SecurityInterstitialPage::GetFormattedHostName() const {
 std::string SecurityInterstitialPage::GetHTMLContents() {
   base::DictionaryValue load_time_data;
   PopulateInterstitialStrings(&load_time_data);
-  webui::SetFontAndTextDirection(&load_time_data);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, &load_time_data);
   std::string html = ResourceBundle::GetSharedInstance()
                          .GetRawDataResource(IDR_SECURITY_INTERSTITIAL_HTML)
                          .as_string();

@@ -1038,7 +1038,8 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   load_time_data.SetString(
       "summary_desc",
       l10n_util::GetStringUTF16(IDS_MEMORY_USAGE_SUMMARY_DESC));
-  webui::SetFontAndTextDirection(&load_time_data);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, &load_time_data);
   load_time_data.Set("jstemplateData", root.release());
 
   std::string data;
