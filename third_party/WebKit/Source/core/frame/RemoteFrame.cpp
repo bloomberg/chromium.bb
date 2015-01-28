@@ -37,6 +37,7 @@ void RemoteFrame::trace(Visitor* visitor)
 {
     visitor->trace(m_view);
     visitor->trace(m_domWindow);
+    visitor->trace(m_windowProxyManager);
     Frame::trace(visitor);
 }
 
