@@ -4393,6 +4393,7 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {
   // TODO(clamy): Same-document navigations should not be sent back to the
   // browser.
   // TODO(clamy): Data urls should not be sent back to the browser either.
+  Send(new FrameHostMsg_DidStartLoading(routing_id_, true));
   Send(new FrameHostMsg_BeginNavigation(routing_id_,
                                         MakeBeginNavigationParams(request),
                                         MakeCommonNavigationParams(request)));
