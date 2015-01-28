@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "ui/events/ozone/device/device_event_observer.h"
+#include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
@@ -45,13 +46,18 @@ class GesturePropertyProvider;
 #endif
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
-class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
-                                                    public PlatformEventSource {
+class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev
+    : public DeviceEventObserver,
+      public PlatformEventSource,
+      public DeviceEventDispatcherEvdev {
  public:
   EventFactoryEvdev(CursorDelegateEvdev* cursor,
                     DeviceManager* device_manager,
                     KeyboardLayoutEngine* keyboard_layout_engine);
   ~EventFactoryEvdev() override;
+
+  // Initialize. Must be called with a valid message loop.
+  void Init();
 
   // Get a list of device ids that matches a device type. Return true if the
   // list is not empty. |device_ids| can be NULL.
@@ -78,13 +84,13 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   InputController* input_controller() { return &input_controller_; }
 
-  // Post events to UI.
-  void PostKeyEvent(const KeyEventParams& params);
-  void PostMouseMoveEvent(const MouseMoveEventParams& params);
-  void PostMouseButtonEvent(const MouseButtonEventParams& params);
-  void PostMouseWheelEvent(const MouseWheelEventParams& parms);
-  void PostScrollEvent(const ScrollEventParams& params);
-  void PostTouchEvent(const TouchEventParams& params);
+  // DeviceEventDispatchEvdev:
+  void DispatchKeyEvent(const KeyEventParams& params) override;
+  void DispatchMouseMoveEvent(const MouseMoveEventParams& params) override;
+  void DispatchMouseButtonEvent(const MouseButtonEventParams& params) override;
+  void DispatchMouseWheelEvent(const MouseWheelEventParams& params) override;
+  void DispatchScrollEvent(const ScrollEventParams& params) override;
+  void DispatchTouchEvent(const TouchEventParams& params) override;
 
  protected:
   // DeviceEventObserver overrides:
@@ -149,6 +155,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   // Object for controlling input devices.
   InputControllerEvdev input_controller_;
+
+  // Whether we've set up the device factory & done initial scan.
+  bool initialized_;
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_;

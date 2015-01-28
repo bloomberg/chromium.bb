@@ -19,6 +19,8 @@ namespace ui {
 
 class TouchEvent;
 
+class DeviceEventDispatcherEvdev;
+
 class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
     : public EventConverterEvdev {
  public:
@@ -29,7 +31,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
                            base::FilePath path,
                            int id,
                            InputDeviceType type,
-                           const TouchEventDispatchCallback& touch_callback);
+                           DeviceEventDispatcherEvdev* dispatcher);
   ~TouchEventConverterEvdev() override;
 
   // EventConverterEvdev:
@@ -69,8 +71,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
       const InProgressEvents& event, const base::TimeDelta& delta);
   void ReportEvents(base::TimeDelta delta);
 
-  // Callback for dispatching events.
-  TouchEventDispatchCallback touch_callback_;
+  // Dispatcher for events.
+  DeviceEventDispatcherEvdev* dispatcher_;
 
   // Set if we have seen a SYN_DROPPED and not yet re-synced with the device.
   bool syn_dropped_;

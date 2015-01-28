@@ -28,6 +28,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_switches.h"
+#include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 
 namespace {
 
@@ -74,9 +75,9 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
     base::FilePath path,
     int id,
     InputDeviceType type,
-    const TouchEventDispatchCallback& touch_callback)
+    DeviceEventDispatcherEvdev* dispatcher)
     : EventConverterEvdev(fd, path, id, type),
-      touch_callback_(touch_callback),
+      dispatcher_(dispatcher),
       syn_dropped_(false),
       is_type_a_(false),
       current_slot_(0) {
@@ -272,7 +273,7 @@ void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
 void TouchEventConverterEvdev::ReportEvent(int touch_id,
                                            const InProgressEvents& event,
                                            const base::TimeDelta& timestamp) {
-  touch_callback_.Run(TouchEventParams(
+  dispatcher_->DispatchTouchEvent(TouchEventParams(
       id_, touch_id, event.type_, gfx::PointF(event.x_, event.y_),
       gfx::Vector2dF(event.radius_x_, event.radius_y_), event.pressure_,
       timestamp));

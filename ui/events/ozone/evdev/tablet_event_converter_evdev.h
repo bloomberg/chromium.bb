@@ -18,18 +18,18 @@ struct input_event;
 
 namespace ui {
 
+class DeviceEventDispatcherEvdev;
+
 class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
     : public EventConverterEvdev {
  public:
-  TabletEventConverterEvdev(
-      int fd,
-      base::FilePath path,
-      int id,
-      InputDeviceType type,
-      CursorDelegateEvdev* cursor,
-      const EventDeviceInfo& info,
-      const MouseMoveEventDispatchCallback& mouse_move_callback,
-      const MouseButtonEventDispatchCallback& mouse_button_callback);
+  TabletEventConverterEvdev(int fd,
+                            base::FilePath path,
+                            int id,
+                            InputDeviceType type,
+                            CursorDelegateEvdev* cursor,
+                            const EventDeviceInfo& info,
+                            DeviceEventDispatcherEvdev* dispatcher);
   ~TabletEventConverterEvdev() override;
 
   // EventConverterEvdev:
@@ -54,9 +54,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
 
-  // Callbacks for dispatching events.
-  MouseMoveEventDispatchCallback mouse_move_callback_;
-  MouseButtonEventDispatchCallback mouse_button_callback_;
+  // Dispatcher for events.
+  DeviceEventDispatcherEvdev* dispatcher_;
 
   int y_abs_location_;
   int x_abs_location_;

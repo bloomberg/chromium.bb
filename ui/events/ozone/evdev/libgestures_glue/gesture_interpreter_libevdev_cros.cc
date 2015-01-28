@@ -13,6 +13,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
+#include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
@@ -89,20 +90,12 @@ GestureInterpreterLibevdevCros::GestureInterpreterLibevdevCros(
     int id,
     CursorDelegateEvdev* cursor,
     GesturePropertyProvider* property_provider,
-    const KeyEventDispatchCallback& key_callback,
-    const MouseMoveEventDispatchCallback& mouse_move_callback,
-    const MouseButtonEventDispatchCallback& mouse_button_callback,
-    const MouseWheelEventDispatchCallback& mouse_wheel_callback,
-    const ScrollEventDispatchCallback& scroll_callback)
+    DeviceEventDispatcherEvdev* dispatcher)
     : id_(id),
       is_mouse_(false),
       cursor_(cursor),
       property_provider_(property_provider),
-      key_callback_(key_callback),
-      mouse_move_callback_(mouse_move_callback),
-      mouse_button_callback_(mouse_button_callback),
-      mouse_wheel_callback_(mouse_wheel_callback),
-      scroll_callback_(scroll_callback),
+      dispatcher_(dispatcher),
       interpreter_(NULL),
       evdev_(NULL),
       device_properties_(new GestureDeviceProperties) {
@@ -277,7 +270,8 @@ void GestureInterpreterLibevdevCros::OnGestureMove(const Gesture* gesture,
   cursor_->MoveCursor(gfx::Vector2dF(move->dx, move->dy));
   // TODO(spang): Use move->ordinal_dx, move->ordinal_dy
   // TODO(spang): Use move->start_time, move->end_time
-  mouse_move_callback_.Run(MouseMoveEventParams(id_, cursor_->GetLocation()));
+  dispatcher_->DispatchMouseMoveEvent(
+      MouseMoveEventParams(id_, cursor_->GetLocation()));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureScroll(
@@ -293,10 +287,10 @@ void GestureInterpreterLibevdevCros::OnGestureScroll(
 
   // TODO(spang): Use scroll->start_time
   if (is_mouse_) {
-    mouse_wheel_callback_.Run(MouseWheelEventParams(
+    dispatcher_->DispatchMouseWheelEvent(MouseWheelEventParams(
         id_, cursor_->GetLocation(), gfx::Vector2d(scroll->dx, scroll->dy)));
   } else {
-    scroll_callback_.Run(ScrollEventParams(
+    dispatcher_->DispatchScrollEvent(ScrollEventParams(
         id_, ET_SCROLL, cursor_->GetLocation(),
         gfx::Vector2dF(scroll->dx, scroll->dy),
         gfx::Vector2dF(scroll->ordinal_dx, scroll->ordinal_dy),
@@ -352,7 +346,7 @@ void GestureInterpreterLibevdevCros::OnGestureFling(const Gesture* gesture,
                                                   : ET_SCROLL_FLING_CANCEL);
 
   // Fling is like 2-finger scrolling but with velocity instead of displacement.
-  scroll_callback_.Run(ScrollEventParams(
+  dispatcher_->DispatchScrollEvent(ScrollEventParams(
       id_, type, cursor_->GetLocation(), gfx::Vector2dF(fling->vx, fling->vy),
       gfx::Vector2dF(fling->ordinal_vx, fling->ordinal_vy),
       kGestureScrollFingerCount, StimeToTimedelta(gesture->end_time)));
@@ -370,7 +364,7 @@ void GestureInterpreterLibevdevCros::OnGestureSwipe(const Gesture* gesture,
     return;  // No cursor!
 
   // Swipe is 3-finger scrolling.
-  scroll_callback_.Run(ScrollEventParams(
+  dispatcher_->DispatchScrollEvent(ScrollEventParams(
       id_, ET_SCROLL, cursor_->GetLocation(),
       gfx::Vector2dF(swipe->dx, swipe->dy),
       gfx::Vector2dF(swipe->ordinal_dx, swipe->ordinal_dy),
@@ -388,7 +382,7 @@ void GestureInterpreterLibevdevCros::OnGestureSwipeLift(
   // Turn a swipe lift into a fling start.
   // TODO(spang): Figure out why and put it in this comment.
 
-  scroll_callback_.Run(ScrollEventParams(
+  dispatcher_->DispatchScrollEvent(ScrollEventParams(
       id_, ET_SCROLL_FLING_START, cursor_->GetLocation(),
       gfx::Vector2dF() /* delta */, gfx::Vector2dF() /* ordinal_delta */,
       kGestureScrollFingerCount, StimeToTimedelta(gesture->end_time)));
@@ -418,8 +412,8 @@ void GestureInterpreterLibevdevCros::OnGestureMetrics(
 void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int button,
                                                          bool down) {
   bool allow_remap = is_mouse_;
-  mouse_button_callback_.Run(MouseButtonEventParams(id_, cursor_->GetLocation(),
-                                                    button, down, allow_remap));
+  dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
+      id_, cursor_->GetLocation(), button, down, allow_remap));
 }
 
 void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,
@@ -447,7 +441,7 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,
         continue;
 
       // Dispatch key press or release to keyboard.
-      key_callback_.Run(KeyEventParams(id_, key, value));
+      dispatcher_->DispatchKeyEvent(KeyEventParams(id_, key, value));
     }
   }
 

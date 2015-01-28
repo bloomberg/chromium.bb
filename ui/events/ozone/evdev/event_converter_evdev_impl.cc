@@ -9,6 +9,7 @@
 
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
 
 namespace ui {
@@ -28,18 +29,14 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
     InputDeviceType type,
     const EventDeviceInfo& devinfo,
     CursorDelegateEvdev* cursor,
-    const KeyEventDispatchCallback& key_callback,
-    const MouseMoveEventDispatchCallback& mouse_move_callback,
-    const MouseButtonEventDispatchCallback& mouse_button_callback)
+    DeviceEventDispatcherEvdev* dispatcher)
     : EventConverterEvdev(fd, path, id, type),
       has_keyboard_(devinfo.HasKeyboard()),
       has_touchpad_(devinfo.HasTouchpad()),
       x_offset_(0),
       y_offset_(0),
       cursor_(cursor),
-      key_callback_(key_callback),
-      mouse_move_callback_(mouse_move_callback),
-      mouse_button_callback_(mouse_button_callback) {
+      dispatcher_(dispatcher) {
 }
 
 EventConverterEvdevImpl::~EventConverterEvdevImpl() {
@@ -120,7 +117,7 @@ void EventConverterEvdevImpl::ConvertKeyEvent(const input_event& input) {
   DomCode key_code = KeycodeConverter::NativeKeycodeToDomCode(
       EvdevCodeToNativeCode(input.code));
   if (!allowed_keys_ || allowed_keys_->count(key_code)) {
-    key_callback_.Run(
+    dispatcher_->DispatchKeyEvent(
         KeyEventParams(id_, input.code, input.value != kKeyReleaseValue));
   }
 }
@@ -142,9 +139,9 @@ void EventConverterEvdevImpl::DispatchMouseButton(const input_event& input) {
   if (!cursor_)
     return;
 
-  mouse_button_callback_.Run(MouseButtonEventParams(id_, cursor_->GetLocation(),
-                                                    input.code, input.value,
-                                                    /* allow_remap */ true));
+  dispatcher_->DispatchMouseButtonEvent(
+      MouseButtonEventParams(id_, cursor_->GetLocation(), input.code,
+                             input.value, /* allow_remap */ true));
 }
 
 void EventConverterEvdevImpl::FlushEvents() {
@@ -153,7 +150,8 @@ void EventConverterEvdevImpl::FlushEvents() {
 
   cursor_->MoveCursor(gfx::Vector2dF(x_offset_, y_offset_));
 
-  mouse_move_callback_.Run(MouseMoveEventParams(id_, cursor_->GetLocation()));
+  dispatcher_->DispatchMouseMoveEvent(
+      MouseMoveEventParams(id_, cursor_->GetLocation()));
 
   x_offset_ = 0;
   y_offset_ = 0;

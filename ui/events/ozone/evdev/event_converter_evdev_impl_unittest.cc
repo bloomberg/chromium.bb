@@ -24,21 +24,16 @@ const char kTestDevicePath[] = "/dev/input/test-device";
 
 class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
  public:
-  MockEventConverterEvdevImpl(
-      int fd,
-      CursorDelegateEvdev* cursor,
-      const KeyEventDispatchCallback& key_callback,
-      const MouseMoveEventDispatchCallback& mouse_move_callback,
-      const MouseButtonEventDispatchCallback& mouse_button_callback)
+  MockEventConverterEvdevImpl(int fd,
+                              CursorDelegateEvdev* cursor,
+                              DeviceEventDispatcherEvdev* dispatcher)
       : EventConverterEvdevImpl(fd,
                                 base::FilePath(kTestDevicePath),
                                 1,
                                 INPUT_DEVICE_UNKNOWN,
                                 EventDeviceInfo(),
                                 cursor,
-                                key_callback,
-                                mouse_move_callback,
-                                mouse_button_callback) {
+                                dispatcher) {
     Start();
   }
   ~MockEventConverterEvdevImpl() override {}
@@ -130,14 +125,8 @@ class EventConverterEvdevImplTest : public testing::Test {
         base::Bind(&EventConverterEvdevImplTest::DispatchEventForTest,
                    base::Unretained(this))));
 
-    device_.reset(new ui::MockEventConverterEvdevImpl(
-        events_in_, cursor_.get(),
-        base::Bind(&ui::EventFactoryEvdev::PostKeyEvent,
-                   base::Unretained(event_factory_.get())),
-        base::Bind(&ui::EventFactoryEvdev::PostMouseMoveEvent,
-                   base::Unretained(event_factory_.get())),
-        base::Bind(&ui::EventFactoryEvdev::PostMouseButtonEvent,
-                   base::Unretained(event_factory_.get()))));
+    device_.reset(new ui::MockEventConverterEvdevImpl(events_in_, cursor_.get(),
+                                                      event_factory_.get()));
   }
   void TearDown() override {
     device_.reset();

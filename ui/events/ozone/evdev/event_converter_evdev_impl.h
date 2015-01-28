@@ -23,19 +23,18 @@ struct input_event;
 
 namespace ui {
 
+class DeviceEventDispatcherEvdev;
+
 class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
     : public EventConverterEvdev {
  public:
-  EventConverterEvdevImpl(
-      int fd,
-      base::FilePath path,
-      int id,
-      InputDeviceType type,
-      const EventDeviceInfo& info,
-      CursorDelegateEvdev* cursor,
-      const KeyEventDispatchCallback& key_callback,
-      const MouseMoveEventDispatchCallback& mouse_move_callback,
-      const MouseButtonEventDispatchCallback& mouse_button_callback);
+  EventConverterEvdevImpl(int fd,
+                          base::FilePath path,
+                          int id,
+                          InputDeviceType type,
+                          const EventDeviceInfo& info,
+                          CursorDelegateEvdev* cursor,
+                          DeviceEventDispatcherEvdev* dispatcher);
   ~EventConverterEvdevImpl() override;
 
   // EventConverterEvdev:
@@ -79,9 +78,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   CursorDelegateEvdev* cursor_;
 
   // Callbacks for dispatching events.
-  KeyEventDispatchCallback key_callback_;
-  MouseMoveEventDispatchCallback mouse_move_callback_;
-  MouseButtonEventDispatchCallback mouse_button_callback_;
+  DeviceEventDispatcherEvdev* dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(EventConverterEvdevImpl);
 };

@@ -41,12 +41,10 @@ namespace ui {
 
 class MockTabletEventConverterEvdev : public TabletEventConverterEvdev {
  public:
-  MockTabletEventConverterEvdev(
-      int fd,
-      base::FilePath path,
-      CursorDelegateEvdev* cursor,
-      const MouseMoveEventDispatchCallback& mouse_move_callback,
-      const MouseButtonEventDispatchCallback& mouse_button_callback);
+  MockTabletEventConverterEvdev(int fd,
+                                base::FilePath path,
+                                CursorDelegateEvdev* cursor,
+                                DeviceEventDispatcherEvdev* dispatcher);
   ~MockTabletEventConverterEvdev() override {};
 
   void ConfigureReadMock(struct input_event* queue,
@@ -98,16 +96,14 @@ MockTabletEventConverterEvdev::MockTabletEventConverterEvdev(
     int fd,
     base::FilePath path,
     CursorDelegateEvdev* cursor,
-    const MouseMoveEventDispatchCallback& mouse_move_callback,
-    const MouseButtonEventDispatchCallback& mouse_button_callback)
+    DeviceEventDispatcherEvdev* dispatcher)
     : TabletEventConverterEvdev(fd,
                                 path,
                                 1,
                                 INPUT_DEVICE_UNKNOWN,
                                 cursor,
                                 EventDeviceInfo(),
-                                mouse_move_callback,
-                                mouse_button_callback) {
+                                dispatcher) {
   // Real values taken from Wacom Intuos 4
   x_abs_min_ = 0;
   x_abs_range_ = 65024;
@@ -191,10 +187,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
                    base::Unretained(this))));
     device_.reset(new ui::MockTabletEventConverterEvdev(
         events_in_, base::FilePath(kTestDevicePath), cursor_.get(),
-        base::Bind(&ui::EventFactoryEvdev::PostMouseMoveEvent,
-                   base::Unretained(event_factory_.get())),
-        base::Bind(&ui::EventFactoryEvdev::PostMouseButtonEvent,
-                   base::Unretained(event_factory_.get()))));
+        event_factory_.get()));
   }
 
   void TearDown() override {

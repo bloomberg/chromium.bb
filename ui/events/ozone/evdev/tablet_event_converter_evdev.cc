@@ -9,6 +9,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
+#include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 
 namespace ui {
 
@@ -19,12 +20,10 @@ TabletEventConverterEvdev::TabletEventConverterEvdev(
     InputDeviceType type,
     CursorDelegateEvdev* cursor,
     const EventDeviceInfo& info,
-    const MouseMoveEventDispatchCallback& mouse_move_callback,
-    const MouseButtonEventDispatchCallback& mouse_button_callback)
+    DeviceEventDispatcherEvdev* dispatcher)
     : EventConverterEvdev(fd, path, id, type),
       cursor_(cursor),
-      mouse_move_callback_(mouse_move_callback),
-      mouse_button_callback_(mouse_button_callback),
+      dispatcher_(dispatcher),
       stylus_(0),
       abs_value_dirty_(false) {
   x_abs_min_ = info.GetAbsMinimum(ABS_X);
@@ -145,7 +144,7 @@ void TabletEventConverterEvdev::DispatchMouseButton(const input_event& input) {
 
   bool down = input.value;
 
-  mouse_button_callback_.Run(MouseButtonEventParams(
+  dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
       id_, cursor_->GetLocation(), button, down, false /* allow_remap */));
 }
 
@@ -164,7 +163,8 @@ void TabletEventConverterEvdev::FlushEvents() {
 
   UpdateCursor();
 
-  mouse_move_callback_.Run(MouseMoveEventParams(id_, cursor_->GetLocation()));
+  dispatcher_->DispatchMouseMoveEvent(
+      MouseMoveEventParams(id_, cursor_->GetLocation()));
 
   abs_value_dirty_ = false;
 }
