@@ -2699,6 +2699,11 @@ _release.add_config('rush_ryu-release',
   hw_tests=[],
 )
 
+_release.add_config('whirlwind-release',
+  _base_configs['whirlwind'],
+  important=True,
+)
+
 ### Per-chipset release groups
 
 def _AddGroupConfig(name, base_board, group_boards=(),
