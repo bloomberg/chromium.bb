@@ -44,6 +44,7 @@ Actual:<br>
 </a>
 
 <script>
+document.getElementsByTagName("a")[1].offsetTop; // Force application of initial style.
 requestAnimationFrame(function() {
   rectA.classList.add('active');
   rectB.classList.add('active');
