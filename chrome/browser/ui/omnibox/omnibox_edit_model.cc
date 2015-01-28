@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -553,6 +554,10 @@ void OmniboxEditModel::Revert() {
 void OmniboxEditModel::StartAutocomplete(
     bool has_selected_text,
     bool prevent_inline_autocomplete) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 OmniboxEditModel::StartAutocomplete"));
   size_t cursor_position;
   if (inline_autocomplete_text_.empty()) {
     // Cursor position is equivalent to the current selection's end.

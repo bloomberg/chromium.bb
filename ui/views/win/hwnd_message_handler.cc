@@ -1450,7 +1450,15 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   // creation time.
   ClientAreaSizeChanged();
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile7(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnCreate7"));
+
   delegate_->HandleCreate();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile8(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnCreate8"));
 
   WTSRegisterSessionNotification(hwnd(), NOTIFY_FOR_THIS_SESSION);
 
@@ -2775,10 +2783,21 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   // so use the weak ptr to check if destruction occured or not.
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
   bool handled = delegate_->HandleMouseEvent(event);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile8(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 HWNDMessageHandler::HandleMouseEventInternal8"));
+
   if (!ref.get())
     return 0;
   if (!handled && message == WM_NCLBUTTONDOWN && w_param != HTSYSMENU &&
       delegate_->IsUsingCustomFrame()) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile9(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::HandleMouseEventInternal9"));
+
     // TODO(msw): Eliminate undesired painting, or re-evaluate this workaround.
     // DefWindowProc for WM_NCLBUTTONDOWN does weird non-client painting, so we
     // need to call it inside a ScopedRedrawLock. This may cause other negative
@@ -2787,8 +2806,14 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     handled = true;
   }
 
-  if (ref.get())
+  if (ref.get()) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile10(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 HWNDMessageHandler::HandleMouseEventInternal10"));
+
     SetMsgHandled(handled);
+  }
   return 0;
 }
 
