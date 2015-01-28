@@ -86,7 +86,8 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     }
 
     base::FilePath apprtc_dir =
-        GetSourceDir().Append(FILE_PATH_LITERAL("out/apprtc"));
+        GetSourceDir().Append(FILE_PATH_LITERAL(
+            "out/webrtc-samples/samples/web/content/apprtc"));
     if (!base::PathExists(apprtc_dir)) {
       LOG(ERROR) << "Missing AppRTC code at " <<
           apprtc_dir.value() << ". " << kAdviseOnGclientSolution;
@@ -225,7 +226,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
   base::Process collider_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, DISABLED_MANUAL_WorksOnApprtc) {
+IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   // Disabled on Win XP: http://code.google.com/p/webrtc/issues/detail?id=2703.
   if (OnWinXp())
     return;
@@ -256,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, DISABLED_MANUAL_WorksOnApprtc) {
 }
 
 #if defined(OS_LINUX)
-#define MAYBE_MANUAL_FirefoxApprtcInteropTest DISABLED_MANUAL_FirefoxApprtcInteropTest
+#define MAYBE_MANUAL_FirefoxApprtcInteropTest MANUAL_FirefoxApprtcInteropTest
 #else
 // Not implemented yet on Windows and Mac.
 #define MAYBE_MANUAL_FirefoxApprtcInteropTest DISABLED_MANUAL_FirefoxApprtcInteropTest
