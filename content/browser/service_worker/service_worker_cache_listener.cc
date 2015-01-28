@@ -5,8 +5,8 @@
 #include "content/browser/service_worker/service_worker_cache_listener.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_cache.h"
 #include "content/browser/service_worker/service_worker_cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_core.h"

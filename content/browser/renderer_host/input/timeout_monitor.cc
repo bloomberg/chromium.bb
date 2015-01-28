@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 
 using base::TimeDelta;
 using base::TimeTicks;

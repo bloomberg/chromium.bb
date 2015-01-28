@@ -5,7 +5,7 @@
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_version.h"
 
 namespace content {

@@ -4,8 +4,8 @@
 
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 
 namespace content {

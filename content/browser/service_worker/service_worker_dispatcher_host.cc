@@ -4,9 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"

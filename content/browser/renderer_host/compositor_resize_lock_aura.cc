@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/compositor_resize_lock_aura.h"
 
-#include "base/debug/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"

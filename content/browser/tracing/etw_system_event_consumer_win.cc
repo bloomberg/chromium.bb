@@ -5,12 +5,12 @@
 #include "content/browser/tracing/etw_system_event_consumer_win.h"
 
 #include "base/base64.h"
-#include "base/debug/trace_event_impl.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {

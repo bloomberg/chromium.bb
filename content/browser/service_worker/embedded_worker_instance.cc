@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/debug/trace_event.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"

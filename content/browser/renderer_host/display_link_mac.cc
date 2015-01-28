@@ -4,8 +4,8 @@
 
 #include "content/browser/renderer_host/display_link_mac.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 

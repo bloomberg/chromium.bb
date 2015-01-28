@@ -4,9 +4,9 @@
 
 #include "content/browser/android/composited_touch_handle_drawable.h"
 
-#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "jni/HandleViewResources_jni.h"
 #include "ui/gfx/android/java_bitmap.h"

@@ -5,8 +5,8 @@
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 
 #include "base/auto_reset.h"
-#include "base/debug/trace_event.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "ui/gfx/geometry/point_f.h"

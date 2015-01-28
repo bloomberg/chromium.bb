@@ -7,11 +7,11 @@
 #include <cmath>
 
 #include "base/bind.h"
-#include "base/debug/trace_event_impl.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event_impl.h"
 
 namespace content {
 namespace devtools {

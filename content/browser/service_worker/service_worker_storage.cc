@@ -5,12 +5,12 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 
 #include "base/bind_helpers.h"
-#include "base/debug/trace_event.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_info.h"
