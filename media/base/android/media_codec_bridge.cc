@@ -291,6 +291,12 @@ void MediaCodecBridge::GetOutputFormat(int* width, int* height) {
   *height = Java_MediaCodecBridge_getOutputHeight(env, j_media_codec_.obj());
 }
 
+int MediaCodecBridge::GetOutputSamplingRate() {
+  JNIEnv* env = AttachCurrentThread();
+
+  return Java_MediaCodecBridge_getOutputSamplingRate(env, j_media_codec_.obj());
+}
+
 MediaCodecStatus MediaCodecBridge::QueueInputBuffer(
     int index,
     const uint8* data,

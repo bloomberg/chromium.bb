@@ -40,9 +40,11 @@ AudioDecoderJob::AudioDecoderJob(
                       on_demuxer_config_changed_cb),
       audio_codec_(kUnknownAudioCodec),
       num_channels_(0),
-      sampling_rate_(0),
+      config_sampling_rate_(0),
       volume_(-1.0),
-      bytes_per_frame_(0) {
+      bytes_per_frame_(0),
+      output_sampling_rate_(0),
+      frame_count_(0) {
 }
 
 AudioDecoderJob::~AudioDecoderJob() {}
@@ -51,15 +53,22 @@ bool AudioDecoderJob::HasStream() const {
   return audio_codec_ != kUnknownAudioCodec;
 }
 
+void AudioDecoderJob::Flush() {
+  MediaDecoderJob::Flush();
+  frame_count_ = 0;
+}
+
 void AudioDecoderJob::SetDemuxerConfigs(const DemuxerConfigs& configs) {
   // TODO(qinmin): split DemuxerConfig for audio and video separately so we
   // can simply store the stucture here.
   audio_codec_ = configs.audio_codec;
   num_channels_ = configs.audio_channels;
-  sampling_rate_ = configs.audio_sampling_rate;
+  config_sampling_rate_ = configs.audio_sampling_rate;
   set_is_content_encrypted(configs.is_audio_encrypted);
   audio_extra_data_ = configs.audio_extra_data;
   bytes_per_frame_ = kBytesPerAudioOutputSample * num_channels_;
+  if (!media_codec_bridge_)
+    output_sampling_rate_ = config_sampling_rate_;
 }
 
 void AudioDecoderJob::SetVolume(double volume) {
@@ -74,6 +83,14 @@ void AudioDecoderJob::SetBaseTimestamp(base::TimeDelta base_timestamp) {
     audio_timestamp_helper_->SetBaseTimestamp(base_timestamp_);
 }
 
+void AudioDecoderJob::ResetTimestampHelper() {
+  if (audio_timestamp_helper_)
+    base_timestamp_ = audio_timestamp_helper_->GetTimestamp();
+  audio_timestamp_helper_.reset(
+      new AudioTimestampHelper(output_sampling_rate_));
+  audio_timestamp_helper_->SetBaseTimestamp(base_timestamp_);
+}
+
 void AudioDecoderJob::ReleaseOutputBuffer(
     int output_buffer_index,
     size_t size,
@@ -85,9 +102,10 @@ void AudioDecoderJob::ReleaseOutputBuffer(
     int64 head_position = (static_cast<AudioCodecBridge*>(
         media_codec_bridge_.get()))->PlayOutputBuffer(
             output_buffer_index, size);
-    audio_timestamp_helper_->AddFrames(size / bytes_per_frame_);
-    int64 frames_to_play =
-        audio_timestamp_helper_->frame_count() - head_position;
+    size_t new_frames_count = size / bytes_per_frame_;
+    frame_count_ += new_frames_count;
+    audio_timestamp_helper_->AddFrames(new_frames_count);
+    int64 frames_to_play = frame_count_ - head_position;
     DCHECK_GE(frames_to_play, 0);
     current_presentation_timestamp =
         audio_timestamp_helper_->GetTimestamp() -
@@ -109,7 +127,7 @@ bool AudioDecoderJob::AreDemuxerConfigsChanged(
     const DemuxerConfigs& configs) const {
   return audio_codec_ != configs.audio_codec ||
      num_channels_ != configs.audio_channels ||
-     sampling_rate_ != configs.audio_sampling_rate ||
+     config_sampling_rate_ != configs.audio_sampling_rate ||
      is_content_encrypted() != configs.is_audio_encrypted ||
      audio_extra_data_.size() != configs.audio_extra_data.size() ||
      !std::equal(audio_extra_data_.begin(),
@@ -123,7 +141,7 @@ bool AudioDecoderJob::CreateMediaCodecBridgeInternal() {
     return false;
 
   if (!(static_cast<AudioCodecBridge*>(media_codec_bridge_.get()))->Start(
-      audio_codec_, sampling_rate_, num_channels_, &audio_extra_data_[0],
+      audio_codec_, config_sampling_rate_, num_channels_, &audio_extra_data_[0],
       audio_extra_data_.size(), true, GetMediaCrypto().obj())) {
     media_codec_bridge_.reset();
     return false;
@@ -131,11 +149,10 @@ bool AudioDecoderJob::CreateMediaCodecBridgeInternal() {
 
   SetVolumeInternal();
 
-  // Need to pass the base timestamp to the new decoder.
-  if (audio_timestamp_helper_)
-    base_timestamp_ = audio_timestamp_helper_->GetTimestamp();
-  audio_timestamp_helper_.reset(new AudioTimestampHelper(sampling_rate_));
-  audio_timestamp_helper_->SetBaseTimestamp(base_timestamp_);
+  // Reset values used to track codec bridge output
+  frame_count_ = 0;
+  ResetTimestampHelper();
+
   return true;
 }
 
@@ -144,6 +161,15 @@ void AudioDecoderJob::SetVolumeInternal() {
     static_cast<AudioCodecBridge*>(media_codec_bridge_.get())->SetVolume(
         volume_);
   }
+}
+
+void AudioDecoderJob::OnOutputFormatChanged() {
+  DCHECK(media_codec_bridge_);
+
+  int old_sampling_rate = output_sampling_rate_;
+  output_sampling_rate_ = media_codec_bridge_->GetOutputSamplingRate();
+  if (output_sampling_rate_ != old_sampling_rate)
+    ResetTimestampHelper();
 }
 
 }  // namespace media

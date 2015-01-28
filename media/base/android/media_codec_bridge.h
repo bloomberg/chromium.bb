@@ -107,6 +107,10 @@ class MEDIA_EXPORT MediaCodecBridge {
   // returns a format change by returning INFO_OUTPUT_FORMAT_CHANGED
   void GetOutputFormat(int* width, int* height);
 
+  // Used for checking for new sampling rate after DequeueInputBuffer() returns
+  // INFO_OUTPUT_FORMAT_CHANGED
+  int GetOutputSamplingRate();
+
   // Submits a byte array to the given input buffer. Call this after getting an
   // available buffer from DequeueInputBuffer().  If |data| is NULL, assume the
   // input buffer has already been populated (but still obey |size|).

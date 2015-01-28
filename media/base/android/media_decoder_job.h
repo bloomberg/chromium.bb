@@ -231,6 +231,11 @@ class MediaDecoderJob {
   // new DemuxerConfigs, or false otherwise.
   virtual bool IsCodecReconfigureNeeded(const DemuxerConfigs& configs) const;
 
+  // Signals to decoder job that decoder has updated output format. Decoder job
+  // may need to do internal reconfiguration in order to correctly interpret
+  // incoming buffers
+  virtual void OnOutputFormatChanged();
+
   // Update the output format from the decoder, returns true if the output
   // format changes, or false otherwise.
   virtual bool UpdateOutputFormat();

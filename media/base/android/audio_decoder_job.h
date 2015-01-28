@@ -29,6 +29,7 @@ class AudioDecoderJob : public MediaDecoderJob {
 
   // MediaDecoderJob implementation.
   virtual bool HasStream() const override;
+  virtual void Flush() override;
   virtual void SetDemuxerConfigs(const DemuxerConfigs& configs) override;
 
   // Sets the volume of the audio output.
@@ -49,17 +50,26 @@ class AudioDecoderJob : public MediaDecoderJob {
   virtual bool AreDemuxerConfigsChanged(
       const DemuxerConfigs& configs) const override;
   virtual bool CreateMediaCodecBridgeInternal() override;
+  virtual void OnOutputFormatChanged() override;
 
   // Helper method to set the audio output volume.
   void SetVolumeInternal();
 
+  void ResetTimestampHelper();
+
   // Audio configs from the demuxer.
   AudioCodec audio_codec_;
   int num_channels_;
-  int sampling_rate_;
+  int config_sampling_rate_;
   std::vector<uint8> audio_extra_data_;
   double volume_;
   int bytes_per_frame_;
+
+  // Audio output sample rate
+  int output_sampling_rate_;
+
+  // Frame count to sync with audio codec output
+  int64 frame_count_;
 
   // Base timestamp for the |audio_timestamp_helper_|.
   base::TimeDelta base_timestamp_;
