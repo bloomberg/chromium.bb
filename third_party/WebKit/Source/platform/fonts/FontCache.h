@@ -180,9 +180,6 @@ private:
     static int32_t s_statusFontHeight;
 #endif
 
-#if OS(MACOSX) || OS(ANDROID)
-    friend class ComplexTextController;
-#endif
     friend class SimpleFontData; // For fontDataFromFontPlatformData
     friend class FontFallbackList;
 };
