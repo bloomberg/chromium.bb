@@ -7,8 +7,8 @@
 #include <queue>
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
-#include "base/debug/trace_event_argument.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/test/test_now_source.h"
 #include "content/renderer/scheduler/task_queue_selector.h"
 

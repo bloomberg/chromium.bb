@@ -4,8 +4,8 @@
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl_surface_texture.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "content/common/android/surface_texture_manager.h"
 #include "ui/gl/gl_bindings.h"
 

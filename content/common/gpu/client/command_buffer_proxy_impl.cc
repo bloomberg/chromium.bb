@@ -5,10 +5,10 @@
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 
 #include "base/callback.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"

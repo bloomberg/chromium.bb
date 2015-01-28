@@ -12,10 +12,10 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-#include "base/debug/trace_event.h"
 #include "base/files/file_util.h"
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
+#include "base/trace_event/trace_event.h"
 #include "skia/ext/refptr.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkData.h"

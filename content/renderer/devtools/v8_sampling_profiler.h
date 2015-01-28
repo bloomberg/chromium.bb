@@ -5,8 +5,8 @@
 #ifndef CONTENT_RENDERER_DEVTOOLS_V8_SAMPLING_PROFILER_H_
 #define CONTENT_RENDERER_DEVTOOLS_V8_SAMPLING_PROFILER_H_
 
-#include "base/debug/trace_event_impl.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/trace_event/trace_event_impl.h"
 #include "content/common/content_export.h"
 
 namespace content {

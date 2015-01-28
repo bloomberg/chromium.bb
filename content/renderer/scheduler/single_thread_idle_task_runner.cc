@@ -4,8 +4,8 @@
 
 #include "content/renderer/scheduler/single_thread_idle_task_runner.h"
 
-#include "base/debug/trace_event.h"
 #include "base/location.h"
+#include "base/trace_event/trace_event.h"
 
 namespace content {
 

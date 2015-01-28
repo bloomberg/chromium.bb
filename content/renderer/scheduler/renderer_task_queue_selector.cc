@@ -4,9 +4,9 @@
 
 #include "content/renderer/scheduler/renderer_task_queue_selector.h"
 
-#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/pending_task.h"
+#include "base/trace_event/trace_event_argument.h"
 
 namespace content {
 

@@ -8,7 +8,6 @@
 #include <list>
 
 #include "base/compiler_specific.h"
-#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
@@ -16,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/trace_event/trace_event.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/p2p/host_address_request.h"
 #include "content/renderer/p2p/socket_client_delegate.h"

@@ -4,9 +4,9 @@
 
 #include "content/renderer/devtools/v8_sampling_profiler.h"
 
-#include "base/debug/trace_event.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/platform_thread.h"
+#include "base/trace_event/trace_event.h"
 
 namespace content {
 

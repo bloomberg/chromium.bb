@@ -11,9 +11,9 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/bitstream_buffer.h"

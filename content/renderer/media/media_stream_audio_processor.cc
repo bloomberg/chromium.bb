@@ -5,9 +5,9 @@
 #include "content/renderer/media/media_stream_audio_processor.h"
 
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/rtc_media_constraints.h"
