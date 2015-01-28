@@ -43,9 +43,6 @@
 
 #if OS(WIN)
 #include "SkFontMgr.h"
-#include <windows.h>
-#include <objidl.h>
-#include <mlang.h>
 struct IDWriteFactory;
 #endif
 
