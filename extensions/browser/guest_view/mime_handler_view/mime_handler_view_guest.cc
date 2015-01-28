@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
@@ -18,6 +19,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -123,8 +125,15 @@ void MimeHandlerViewGuest::CreateWebContents(
   // goes under the same process as the extension.
   ProcessManager* process_manager = ProcessManager::Get(browser_context());
   content::SiteInstance* guest_site_instance =
-      process_manager->GetSiteInstanceForURL(
-          Extension::GetBaseURLFromExtensionId(GetOwnerSiteURL().host()));
+      process_manager->GetSiteInstanceForURL(stream_->handler_url());
+
+  // Clear the zoom level for the mime handler extension. The extension is
+  // responsible for managing its own zoom. This is necessary for OOP PDF, as
+  // otherwise the UI is zoomed and the calculations to determine the PDF size
+  // mix zoomed and unzoomed units.
+  content::HostZoomMap::Get(guest_site_instance)
+      ->SetZoomLevelForHostAndScheme(kExtensionScheme, stream_->extension_id(),
+                                     0);
 
   WebContents::CreateParams params(browser_context(), guest_site_instance);
   params.guest_delegate = this;

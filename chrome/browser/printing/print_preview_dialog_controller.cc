@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -384,6 +385,13 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
                                initiator);
 
   WebContents* preview_dialog = web_dialog_delegate->GetWebContents();
+
+  // Clear the zoom level for the print preview dialog so it isn't affected by
+  // the default zoom level. This also controls the zoom level of the OOP PDF
+  // extension when iframed by the print preview dialog.
+  GURL print_url(chrome::kChromeUIPrintURL);
+  content::HostZoomMap::Get(preview_dialog->GetSiteInstance())
+      ->SetZoomLevelForHostAndScheme(print_url.scheme(), print_url.host(), 0);
   EnableInternalPDFPluginForContents(preview_dialog);
   PrintViewManager::CreateForWebContents(preview_dialog);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
