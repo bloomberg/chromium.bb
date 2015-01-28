@@ -485,14 +485,13 @@ FileManager.prototype = /** @struct */ {
     importer.importEnabled().then(
         function(enabled) {
           if (enabled) {
-            var commandAdapter = new importer.ButtonCommandAdapter(this);
             this.importController_ = new importer.ImportController(
                 new importer.RuntimeControllerEnvironment(this),
                 /** @type {!importer.MediaScanner} */ (
                     this.mediaScanner_),
                 /** @type {!importer.ImportRunner} */ (
                     this.mediaImportHandler_),
-                commandAdapter.update.bind(commandAdapter));
+                new importer.RuntimeCommandWidget());
           }
         }.bind(this));
 

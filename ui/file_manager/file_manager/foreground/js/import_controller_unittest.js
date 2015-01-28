@@ -20,8 +20,8 @@ var sourceVolume;
 /** @type {!VolumeInfo} */
 var destinationVolume;
 
-/** @type {!TestCallRecorder} */
-var commandUpdateRecorder;
+/** @type {!importer.TestCommandWidget} */
+var widget;
 
 // Set up string assets.
 loadTimeData.data = {
@@ -39,7 +39,7 @@ function setUp() {
     recordEnum: function() {}
   };
 
-  commandUpdateRecorder = new TestCallRecorder();
+  widget = new importer.TestCommandWidget();
 
   volumeManager = new MockVolumeManager();
   MockVolumeManager.installMockSingleton(volumeManager);
@@ -113,7 +113,7 @@ function testGetCommandUpdate_InitiatesScan() {
   mediaScanner.assertScanCount(1);
 }
 
-function testDirectoryChange_InitiatesUpdate() {
+function testDirectoryChange_PushesUpdate() {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
       'mtp-volume',
@@ -121,15 +121,11 @@ function testDirectoryChange_InitiatesUpdate() {
         '/DCIM/',
         '/DCIM/photos0/',
         '/DCIM/photos0/IMG00001.jpg',
-        '/DCIM/photos0/IMG00002.jpg',
-        '/DCIM/photos1/',
-        '/DCIM/photos1/IMG00001.jpg',
-        '/DCIM/photos1/IMG00003.jpg'
       ],
       '/DCIM');
 
   environment.directoryChangedListener_();
-  commandUpdateRecorder.assertCallCount(1);
+  widget.updates.assertCallCount(1);
 }
 
 function testUnmountInvalidatesScans() {
@@ -155,6 +151,23 @@ function testUnmountInvalidatesScans() {
   environment.simulateUnmount();
   controller.getCommandUpdate();
   mediaScanner.assertScanCount(2);
+}
+
+function testVolumeUnmount_PushesUpdate() {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+      ],
+      '/DCIM');
+
+  // Faux unmount the volume, then request an update again.
+  // A fresh new scan should be started.
+  environment.simulateUnmount();
+  widget.updates.assertCallCount(1);
 }
 
 function testGetCommandUpdate_CanExecuteAfterScanIsFinalized() {
@@ -183,6 +196,26 @@ function testGetCommandUpdate_CanExecuteAfterScanIsFinalized() {
   assertTrue(response.executable);
 }
 
+function testFinalizeScans_PushesUpdate() {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+      ],
+      '/DCIM');
+
+  var fileSystem = new MockFileSystem('testFs');
+  mediaScanner.fileEntries.push(
+      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
+  controller.getCommandUpdate();
+  mediaScanner.finalizeScans();
+
+  widget.updates.assertCallCount(1);
+}
+
 function testGetCommandUpdate_CannotExecuteEmptyScanResult() {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
@@ -206,7 +239,7 @@ function testGetCommandUpdate_CannotExecuteEmptyScanResult() {
   assertFalse(response.executable);
 }
 
-function testExecute_StartsImport() {
+function testClick_StartsImport() {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
       'mtp-volume',
@@ -215,16 +248,12 @@ function testExecute_StartsImport() {
         '/DCIM/photos0/',
         '/DCIM/photos0/IMG00001.jpg',
         '/DCIM/photos0/IMG00002.jpg',
-        '/DCIM/photos1/',
-        '/DCIM/photos1/IMG00001.jpg',
-        '/DCIM/photos1/IMG00003.jpg'
       ],
       '/DCIM');
 
-  controller.getCommandUpdate();
-  mediaScanner.finalizeScans();
-  controller.getCommandUpdate();
-  controller.execute();
+  // First we need to force the controller into a scanning state.
+  environment.directoryChangedListener_();
+  widget.executeListener();
   mediaImporter.assertImportsStarted(1);
 }
 
@@ -373,6 +402,32 @@ TestControllerEnvironment.prototype.whenCurrentDirectoryIsSet = function() {
 };
 
 /**
+ * Test implementation of importer.CommandWidget.
+ *
+ * @constructor
+ * @implements {importer.CommandWidget}
+ * @struct
+ */
+importer.TestCommandWidget = function() {
+
+  /** @public {function()} */
+  this.executeListener;
+
+  /** @public {!TestCallRecorder} */
+  this.updates = new TestCallRecorder();
+};
+
+/** @override */
+importer.TestCommandWidget.prototype.addExecuteListener = function(listener) {
+  this.executeListener = listener;
+};
+
+/** @override */
+importer.TestCommandWidget.prototype.update = function(update) {
+  this.updates.callback(update);
+};
+
+/**
  * @param {!VolumeManagerCommon.VolumeType} volumeType
  * @param {string} volumeId
  * @param {!Array.<string>} fileNames
@@ -393,7 +448,7 @@ function createController(volumeType, volumeId, fileNames, currentDirectory) {
       environment,
       mediaScanner,
       mediaImporter,
-      commandUpdateRecorder.callback);
+      widget);
 }
 
 /**

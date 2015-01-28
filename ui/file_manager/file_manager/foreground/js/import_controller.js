@@ -36,10 +36,10 @@ importer.CommandUpdate;
  *     volume lookup and so-on.
  * @param {!importer.MediaScanner} scanner
  * @param {!importer.ImportRunner} importRunner
- * @param {function()} commandUpdateHandler
+ * @param {!importer.CommandWidget} commandWidget
  */
 importer.ImportController =
-    function(environment, scanner, importRunner, commandUpdateHandler) {
+    function(environment, scanner, importRunner, commandWidget) {
 
   /** @private {!importer.ControllerEnvironment} */
   this.environment_ = environment;
@@ -50,8 +50,8 @@ importer.ImportController =
   /** @private {!importer.MediaScanner} */
   this.scanner_ = scanner;
 
-  /** @private {function()} */
-  this.updateCommands_ = commandUpdateHandler;
+  /** @private {!importer.CommandWidget} */
+  this.commandWidget_ = commandWidget;
 
   /**
    * A cache of scans by volumeId, directory URL.
@@ -63,13 +63,20 @@ importer.ImportController =
   var listener = this.onScanEvent_.bind(this);
   this.scanner_.addObserver(listener);
   // Remove the observer when the foreground window is closed.
-  window.addEventListener('pagehide', function() {
-    this.scanner_.removeObserver(listener);
-  }.bind(this));
+  window.addEventListener(
+      'pagehide',
+      function() {
+        this.scanner_.removeObserver(listener);
+      }.bind(this));
+
   this.environment_.addVolumeUnmountListener(
       this.onVolumeUnmounted_.bind(this));
+
   this.environment_.addDirectoryChangedListener(
       this.onDirectoryChanged_.bind(this));
+
+  this.commandWidget_.addExecuteListener(
+      this.execute.bind(this));
 };
 
 /**
@@ -90,7 +97,7 @@ importer.ImportController.prototype.onScanEvent_ = function(event, result) {
   }
   if (event === importer.ScanEvent.FINALIZED ||
       event === importer.ScanEvent.INVALIDATED) {
-    this.updateCommands_();
+    this.pushUpdate_();
   }
 };
 
@@ -106,8 +113,15 @@ importer.ImportController.prototype.execute = function() {
 };
 
 /**
- * Called by the 'cloud-import' command when it wants an update
- * on the command state.
+ * Push an update to the command widget.
+ * @private
+ */
+importer.ImportController.prototype.pushUpdate_ = function() {
+  this.commandWidget_.update(this.getCommandUpdate());
+};
+
+/**
+ * Returns an update describing the state of the CommandWidget.
  *
  * @return {!importer.CommandUpdate} response
  */
@@ -264,14 +278,12 @@ importer.ImportController.prototype.onVolumeUnmounted_ = function(volumeId) {
   if (this.cachedScans_.hasOwnProperty(volumeId)) {
     delete this.cachedScans_[volumeId];
   }
+  this.pushUpdate_();
 };
 
-/**
- * @param {string} volumeId
- * @private
- */
+/** @private */
 importer.ImportController.prototype.onDirectoryChanged_ = function() {
-  this.updateCommands_();
+  this.pushUpdate_();
 };
 
 /**
@@ -398,49 +410,60 @@ importer.RuntimeControllerEnvironment.prototype.addDirectoryChangedListener =
  * Class that adapts from the new non-command button to the old
  * command style interface.
  *
- * <p>NOTE: This adapter is a stop gap bridge between the old-style
- * Command button and our new do-it-yourself toolbar button. We used
- * an adapter to minimize changes to RuntimeImportController while other
- * people are working on that file. Once the dust settles we can make
- * more transformative changes.
+ * @interface
+ */
+importer.CommandWidget = function() {};
+
+/**
+ * Install a listener that get's called when the user wants to initiate
+ * import.
+ *
+ * @param {function()} listener
+ */
+importer.CommandWidget.prototype.addExecuteListener;
+
+/**
+ * @param {!importer.CommandUpdate} update
+ */
+importer.CommandWidget.prototype.update;
+
+/**
+ * Runtime implementation of CommandWidget.
  *
  * @constructor
+ * @implements {importer.CommandWidget}
  * @struct
- *
- * @param {!FileManager} fileManager
  */
-importer.ButtonCommandAdapter = function(fileManager) {
-
-  /** @param {!FileManager} */
-  this.fileManager_ = fileManager;
-
-  /** @param {Element} */
+importer.RuntimeCommandWidget = function() {
+  /** @private {Element} */
   this.buttonElement_ = document.querySelector('#cloud-import-button');
 
-  this.buttonElement_.onclick = this.execute_.bind(this);
+  this.buttonElement_.onclick = this.notifyExecuteListener_.bind(this);
 
-  /** @param {Element} */
+  /** @private {Element} */
   this.iconElement_ = document.querySelector('#cloud-import-button core-icon');
+
+  /** @private {function()} */
+  this.listener_;
+};
+
+/** @override */
+importer.RuntimeCommandWidget.prototype.addExecuteListener =
+    function(listener) {
+  console.assert(!this.listener_);
+  this.listener_ = listener;
 };
 
 /** @private */
-importer.ButtonCommandAdapter.prototype.execute_ = function() {
-  this.fileManager_.importController.execute();
+importer.RuntimeCommandWidget.prototype.notifyExecuteListener_ = function() {
+  console.assert(!!this.listener_);
+  this.listener_();
 };
 
-/**
- * @param {!Event} event Command event.
- * @param {!FileManager} fileManager
- */
-importer.ButtonCommandAdapter.prototype.update = function() {
-  if (this.fileManager_.importController) {
-    var update = fileManager.importController.getCommandUpdate();
+/** @override */
+importer.RuntimeCommandWidget.prototype.update = function(update) {
     this.buttonElement_.setAttribute('title', update.label);
     this.buttonElement_.disabled = !update.executable;
     this.buttonElement_.style.display  = update.visible ? 'block' : 'none';
     this.iconElement_.setAttribute('icon', update.coreIcon);
-  } else {
-    this.buttonElement_.setAttribute('display', 'none');
-    this.iconElement_.setAttribute('icon', 'cloud-off');
-  }
 };
