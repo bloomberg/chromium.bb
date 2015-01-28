@@ -23,11 +23,6 @@ namespace {
 // scrolling is active and possible.
 const double kAsyncTouchMoveIntervalSec = .2;
 
-// A slop region just larger than that used by many web applications. When
-// touchmove's are being sent asynchronously, movement outside this region will
-// trigger an immediate async touchmove to cancel potential tap-related logic.
-const double kApplicationSlopRegionLengthDipsSqared = 15. * 15.;
-
 // A sanity check on touches received to ensure that touch movement outside
 // the platform slop region will cause scrolling, as indicated by the event's
 // |causesScrollingIfUncanceled| bit.
@@ -48,12 +43,6 @@ bool ShouldTouchTriggerTimeout(const WebTouchEvent& event) {
   return (event.type == WebInputEvent::TouchStart ||
           event.type == WebInputEvent::TouchMove) &&
          !WebInputEventTraits::IgnoresAckDisposition(event);
-}
-
-bool OutsideApplicationSlopRegion(const WebTouchEvent& event,
-                                  const gfx::PointF& anchor) {
-  return (gfx::PointF(event.touches[0].position) - anchor).LengthSquared() >
-         kApplicationSlopRegionLengthDipsSqared;
 }
 
 }  // namespace
@@ -368,7 +357,6 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
       drop_remaining_touches_in_sequence_(false),
       touchmove_slop_suppressor_(new TouchMoveSlopSuppressor),
       send_touch_events_async_(false),
-      needs_async_touchmove_for_outer_slop_region_(false),
       last_sent_touch_timestamp_sec_(0),
       touch_scrolling_mode_(config.touch_scrolling_mode) {
   DCHECK(client);
@@ -471,15 +459,12 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
     // application be sent touches at key points in the gesture stream,
     // e.g., when the application slop region is exceeded or touchmove
     // coalescing fails because of different modifiers.
-    const bool send_touchmove_now =
-        size() > 1 ||
-        (touch.event.timeStampSeconds >=
-         last_sent_touch_timestamp_sec_ + kAsyncTouchMoveIntervalSec) ||
-        (needs_async_touchmove_for_outer_slop_region_ &&
-         OutsideApplicationSlopRegion(touch.event,
-                                      touch_sequence_start_position_)) ||
-        (pending_async_touchmove_ &&
-         !pending_async_touchmove_->CanCoalesceWith(touch));
+    bool send_touchmove_now = size() > 1;
+    send_touchmove_now |= pending_async_touchmove_ &&
+                          !pending_async_touchmove_->CanCoalesceWith(touch);
+    send_touchmove_now |=
+        touch.event.timeStampSeconds >=
+        last_sent_touch_timestamp_sec_ + kAsyncTouchMoveIntervalSec;
 
     if (!send_touchmove_now) {
       if (!pending_async_touchmove_) {
@@ -553,10 +538,8 @@ void TouchEventQueue::OnGestureScrollEvent(
       drop_remaining_touches_in_sequence_ = true;
     }
 
-    if (touch_scrolling_mode_ == TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE) {
-      needs_async_touchmove_for_outer_slop_region_ = true;
+    if (touch_scrolling_mode_ == TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE)
       pending_async_touchmove_.reset();
-    }
 
     return;
   }
@@ -609,8 +592,6 @@ void TouchEventQueue::OnGestureEventAck(
   // A valid |pending_async_touchmove_| will be flushed when the next event is
   // forwarded.
   send_touch_events_async_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
-  if (!send_touch_events_async_)
-    needs_async_touchmove_for_outer_slop_region_ = false;
 }
 
 void TouchEventQueue::OnHasTouchEventHandlers(bool has_handlers) {
@@ -694,16 +675,6 @@ scoped_ptr<CoalescedWebTouchEvent> TouchEventQueue::PopTouchEvent() {
 
 void TouchEventQueue::SendTouchEventImmediately(
     const TouchEventWithLatencyInfo& touch) {
-  if (needs_async_touchmove_for_outer_slop_region_) {
-    // Any event other than a touchmove (e.g., touchcancel or secondary
-    // touchstart) after a scroll has started will interrupt the need to send a
-    // an outer slop-region exceeding touchmove.
-    if (touch.event.type != WebInputEvent::TouchMove ||
-        OutsideApplicationSlopRegion(touch.event,
-                                     touch_sequence_start_position_))
-      needs_async_touchmove_for_outer_slop_region_ = false;
-  }
-
   client_->SendTouchEventImmediately(touch);
 }
 

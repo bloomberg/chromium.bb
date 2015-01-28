@@ -1827,16 +1827,6 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  // As soon as a touchmove exceeds the outer slop region it will be forwarded
-  // immediately.
-  MoveTouchPoint(0, 0, 20);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_FALSE(HasPendingAsyncTouchMove());
-  EXPECT_FALSE(sent_event().cancelable);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
   // Subsequent touchmove's should be deferred.
   MoveTouchPoint(0, 0, 25);
   EXPECT_TRUE(HasPendingAsyncTouchMove());
@@ -1934,6 +1924,61 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
+}
+
+TEST_F(TouchEventQueueTest, AsyncTouchFlushedByTouchEnd) {
+  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
+
+  PressTouchPoint(0, 0);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Initiate async touchmove dispatch after the start of a scroll sequence.
+  MoveTouchPoint(0, 0, 5);
+  WebGestureEvent followup_scroll;
+  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  MoveTouchPoint(0, 0, 10);
+  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Now queue a second touchmove and verify it's not (yet) dispatched.
+  MoveTouchPoint(0, 0, 100);
+  EXPECT_TRUE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Return the touch sequence to the original touchstart position. Note that
+  // this (0, 0) touchmove will coalesce with the previous (0, 100) touchmove.
+  MoveTouchPoint(0, 0, 0);
+  EXPECT_TRUE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Queuing the final touchend should flush the pending, async touchmove.
+  ReleaseTouchPoint(0);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
+  EXPECT_FALSE(sent_event().cancelable);
+  EXPECT_EQ(0, sent_event().touches[0].position.x);
+  EXPECT_EQ(0, sent_event().touches[0].position.y);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+  // Touchend is not cancelable during async touch dispatch.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_IGNORED);
+  EXPECT_EQ(WebInputEvent::TouchEnd, sent_event().type);
+  EXPECT_FALSE(sent_event().cancelable);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
 }
 
 // Ensure that async touch dispatch and touch ack timeout interactions work

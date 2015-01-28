@@ -228,7 +228,6 @@ class CONTENT_EXPORT TouchEventQueue {
   // until a sufficient time period has elapsed since the last sent touch event.
   // For details see the design doc at http://goo.gl/lVyJAa.
   bool send_touch_events_async_;
-  bool needs_async_touchmove_for_outer_slop_region_;
   scoped_ptr<TouchEventWithLatencyInfo> pending_async_touchmove_;
   double last_sent_touch_timestamp_sec_;
 
