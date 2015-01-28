@@ -17,20 +17,23 @@ public class NavigationParams {
     public final int pageTransitionType;
     // Is the navigation a redirect (in which case url is the "target" address).
     public final boolean isRedirect;
+    // True if the target url can't be handled by Chrome's internal protocol handlers.
+    public final boolean isExternalProtocol;
 
     public NavigationParams(String url, boolean isPost, boolean hasUserGesture,
-            int pageTransitionType, boolean isRedirect) {
+            int pageTransitionType, boolean isRedirect, boolean isExternalProtocol) {
         this.url = url;
         this.isPost = isPost;
         this.hasUserGesture = hasUserGesture;
         this.pageTransitionType = pageTransitionType;
         this.isRedirect = isRedirect;
+        this.isExternalProtocol = isExternalProtocol;
     }
 
     @CalledByNative
     public static NavigationParams create(String url, boolean isPost, boolean hasUserGesture,
-            int pageTransitionType, boolean isRedirect) {
-        return new NavigationParams(url, isPost, hasUserGesture, pageTransitionType,
-                isRedirect);
+            int pageTransitionType, boolean isRedirect, boolean isExternalProtocol) {
+        return new NavigationParams(
+                url, isPost, hasUserGesture, pageTransitionType, isRedirect, isExternalProtocol);
     }
 }

@@ -17,12 +17,10 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
   ScopedJavaLocalRef<jstring> jstring_url =
       ConvertUTF8ToJavaString(env, params.url().spec());
 
-  return Java_NavigationParams_create(env,
-                                      jstring_url.obj(),
-                                      params.is_post(),
-                                      params.has_user_gesture(),
-                                      params.transition_type(),
-                                      params.is_redirect());
+  return Java_NavigationParams_create(
+      env, jstring_url.obj(), params.is_post(), params.has_user_gesture(),
+      params.transition_type(), params.is_redirect(),
+      params.is_external_protocol());
 }
 
 // Register native methods.

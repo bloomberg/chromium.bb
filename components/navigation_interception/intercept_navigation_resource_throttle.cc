@@ -9,11 +9,14 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/page_transition_types.h"
 
@@ -110,13 +113,13 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
   if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id))
     return false;
 
-  NavigationParams navigation_params(url,
-                                     Referrer(GURL(request_->referrer()),
-                                              info->GetReferrerPolicy()),
-                                     info->HasUserGesture(),
-                                     method == "POST",
-                                     info->GetPageTransition(),
-                                     is_redirect);
+  bool is_external_protocol =
+      !info->GetContext()->GetRequestContext()->job_factory()->IsHandledURL(
+          url);
+  NavigationParams navigation_params(
+      url, Referrer(GURL(request_->referrer()), info->GetReferrerPolicy()),
+      info->HasUserGesture(), method == "POST", info->GetPageTransition(),
+      is_redirect, is_external_protocol);
 
   BrowserThread::PostTask(
       BrowserThread::UI,

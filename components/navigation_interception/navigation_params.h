@@ -19,7 +19,8 @@ class NavigationParams {
                    bool has_user_gesture,
                    bool is_post,
                    ui::PageTransition page_transition_type,
-                   bool is_redirect);
+                   bool is_redirect,
+                   bool is_external_protocol);
   NavigationParams(const NavigationParams& other);
   void operator=(const NavigationParams& rhs);
 
@@ -30,6 +31,7 @@ class NavigationParams {
   bool is_post() const { return is_post_; }
   ui::PageTransition transition_type() const { return transition_type_; }
   bool is_redirect() const { return is_redirect_; }
+  bool is_external_protocol() const { return is_external_protocol_; }
 
  private:
   void Assign(const NavigationParams& other);
@@ -40,6 +42,7 @@ class NavigationParams {
   bool is_post_;
   ui::PageTransition transition_type_;
   bool is_redirect_;
+  bool is_external_protocol_;
 };
 
 }  // namespace navigation_interception

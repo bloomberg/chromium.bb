@@ -10,19 +10,20 @@ NavigationParams::NavigationParams(const NavigationParams& other) {
   Assign(other);
 }
 
-NavigationParams::NavigationParams(
-    const GURL& url,
-    const content::Referrer& referrer,
-    bool has_user_gesture,
-    bool is_post,
-    ui::PageTransition transition_type,
-    bool is_redirect)
+NavigationParams::NavigationParams(const GURL& url,
+                                   const content::Referrer& referrer,
+                                   bool has_user_gesture,
+                                   bool is_post,
+                                   ui::PageTransition transition_type,
+                                   bool is_redirect,
+                                   bool is_external_protocol)
     : url_(url),
       referrer_(referrer),
       has_user_gesture_(has_user_gesture),
       is_post_(is_post),
       transition_type_(transition_type),
-      is_redirect_(is_redirect) {
+      is_redirect_(is_redirect),
+      is_external_protocol_(is_external_protocol) {
 }
 
 void NavigationParams::operator=(const NavigationParams& rhs) {
@@ -36,6 +37,7 @@ void NavigationParams::Assign(const NavigationParams& other) {
   is_post_ = other.is_post();
   transition_type_ = other.transition_type();
   is_redirect_ = other.is_redirect();
+  is_external_protocol_ = other.is_external_protocol();
 }
 
 }  // namespace navigation_interception
