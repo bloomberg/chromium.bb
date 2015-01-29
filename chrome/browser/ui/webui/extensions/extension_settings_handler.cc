@@ -400,7 +400,11 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   else
     extension_data->SetInteger("order", 2);
 
-  if (!ExtensionActionAPI::GetBrowserActionVisibility(prefs, extension->id())) {
+  // Don't show the "show button" for the browser action if the toolbar
+  // redesign is enabled, because "hidden" buttons are now just hidden in the
+  // wrench menu.
+  if (!ExtensionActionAPI::GetBrowserActionVisibility(prefs, extension->id()) &&
+      !FeatureSwitch::extension_action_redesign()->IsEnabled()) {
     extension_data->SetBoolean("enable_show_button", true);
   }
 
