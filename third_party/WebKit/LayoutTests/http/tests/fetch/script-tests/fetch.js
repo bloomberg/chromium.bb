@@ -71,6 +71,31 @@ async_test(function(t) {
       .catch(unreached_rejection(t));
   }, 'Request/response url attribute getter with fragment');
 
+async_test(function(t) {
+    var redirect_target_url =
+      'http://127.0.0.1:8000/serviceworker/resources/fetch-status.php' +
+      '?status=200';
+    var redirect_original_url =
+      'http://127.0.0.1:8000/serviceworker/resources/redirect.php?Redirect=' +
+      redirect_target_url;
+
+    var request = new Request(redirect_original_url);
+    assert_equals(request.url, redirect_original_url,
+      'Request\'s url is the original URL');
+
+    fetch(request)
+      .then(function(response) {
+          assert_equals(response.status, 200);
+          assert_equals(response.statusText, 'OK');
+          assert_equals(response.url, redirect_target_url,
+            'Response\'s url is locationURL');
+          assert_equals(request.url, redirect_original_url,
+            'Request\'s url remains the original URL');
+          t.done();
+        })
+      .catch(unreached_rejection(t));
+  }, 'Request/response url attribute getter with redirect');
+
 function evalJsonp(text) {
   return new Promise(function(resolve) {
       var report = resolve;
