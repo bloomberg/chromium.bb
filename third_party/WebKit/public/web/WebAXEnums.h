@@ -222,6 +222,16 @@ enum WebAXTextDirection {
     WebAXTextDirectionBT
 };
 
+// Sort direction, only used for roles = WebAXRoleRowHeader and
+// WebAXRoleColumnHeader.
+enum WebAXSortDirection {
+    WebAXSortDirectionUndefined = 0,
+    WebAXSortDirectionNone,
+    WebAXSortDirectionAscending,
+    WebAXSortDirectionDescending,
+    WebAXSortDirectionOther
+};
+
 // Expanded State.
 // These values must match blink::AccessibilityExpanded values.
 // Enforced in AssertMatchingEnums.cpp.

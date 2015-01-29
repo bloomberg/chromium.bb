@@ -50,8 +50,10 @@ public:
     virtual void rowIndexRange(pair<unsigned, unsigned>& rowRange);
     // fills in the start location and column span of cell
     virtual void columnIndexRange(pair<unsigned, unsigned>& columnRange);
-
+    // In the case of cells that act as row or column headers.
+    virtual SortDirection sortDirection() const override final;
     virtual AccessibilityRole scanToDecideHeaderRole();
+
 protected:
     virtual AXObject* parentTable() const;
     int m_rowIndex;

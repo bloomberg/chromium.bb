@@ -104,7 +104,7 @@ bool AXTable::isDataTable() const
     if (!m_renderer || !node())
         return false;
 
-    // Do not consider it a data table is it has an ARIA role.
+    // Do not consider it a data table if it has an ARIA role.
     if (hasARIARole())
         return false;
 

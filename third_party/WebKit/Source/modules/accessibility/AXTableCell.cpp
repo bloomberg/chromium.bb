@@ -197,6 +197,26 @@ void AXTableCell::columnIndexRange(pair<unsigned, unsigned>& columnRange)
     columnRange.second = cell->colSpan();
 }
 
+SortDirection AXTableCell::sortDirection() const
+{
+    if (roleValue() != RowHeaderRole
+        && roleValue() != ColumnHeaderRole)
+        return SortDirectionUndefined;
+
+    const AtomicString& ariaSort = getAttribute(aria_sortAttr);
+    if (ariaSort.isEmpty())
+        return SortDirectionUndefined;
+    if (equalIgnoringCase(ariaSort, "none"))
+        return SortDirectionNone;
+    if (equalIgnoringCase(ariaSort, "ascending"))
+        return SortDirectionAscending;
+    if (equalIgnoringCase(ariaSort, "descending"))
+        return SortDirectionDescending;
+    if (equalIgnoringCase(ariaSort, "other"))
+        return SortDirectionOther;
+    return SortDirectionUndefined;
+}
+
 AXObject* AXTableCell::titleUIElement() const
 {
     // Try to find if the first cell in this row is a <th>. If it is,

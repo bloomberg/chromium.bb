@@ -249,6 +249,14 @@ enum AccessibilityTextDirection {
     AccessibilityTextDirectionBottomToTop
 };
 
+enum SortDirection {
+    SortDirectionUndefined = 0,
+    SortDirectionNone,
+    SortDirectionAscending,
+    SortDirectionDescending,
+    SortDirectionOther
+};
+
 enum AccessibilityExpanded {
     ExpandedUndefined = 0,
     ExpandedCollapsed,
@@ -477,6 +485,7 @@ public:
     virtual bool supportsARIAFlowTo() const { return false; }
     virtual bool supportsARIAOwns() const { return false; }
     bool supportsRangeValue() const;
+    virtual SortDirection sortDirection() const { return SortDirectionUndefined; }
 
     // ARIA trees.
     // Used by an ARIA tree to get all its rows.

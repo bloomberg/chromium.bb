@@ -1242,6 +1242,14 @@ unsigned WebAXObject::cellRowSpan() const
     return rowRange.second;
 }
 
+WebAXSortDirection WebAXObject::sortDirection() const
+{
+    if (isDetached())
+        return WebAXSortDirectionUndefined;
+
+    return static_cast<WebAXSortDirection>(m_private->sortDirection());
+}
+
 void WebAXObject::loadInlineTextBoxes() const
 {
     if (isDetached())

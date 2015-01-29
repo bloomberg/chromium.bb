@@ -211,6 +211,7 @@ public:
     BLINK_EXPORT unsigned cellColumnSpan() const;
     BLINK_EXPORT unsigned cellRowIndex() const;
     BLINK_EXPORT unsigned cellRowSpan() const;
+    BLINK_EXPORT WebAXSortDirection sortDirection() const;
 
     // Load inline text boxes for just this subtree, even if
     // settings->inlineTextBoxAccessibilityEnabled() is false.

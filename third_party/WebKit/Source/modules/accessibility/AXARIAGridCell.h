@@ -48,7 +48,7 @@ public:
     virtual void rowIndexRange(pair<unsigned, unsigned>& rowRange) override;
     // fills in the start location and column span of cell
     virtual void columnIndexRange(pair<unsigned, unsigned>& columnRange) override;
-    virtual AccessibilityRole scanToDecideHeaderRole() override;
+    virtual AccessibilityRole scanToDecideHeaderRole() override final;
 
 protected:
     bool isAriaColumnHeader() const;
