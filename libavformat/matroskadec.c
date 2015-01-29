@@ -38,7 +38,9 @@
 #include "libavutil/dict.h"
 #include "libavutil/intfloat.h"
 #include "libavutil/intreadwrite.h"
+#if CONFIG_LZO
 #include "libavutil/lzo.h"
+#endif
 #include "libavutil/mathematics.h"
 #include "libavutil/time_internal.h"
 

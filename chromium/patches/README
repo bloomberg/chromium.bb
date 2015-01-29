@@ -1,34 +1,50 @@
-Current Status as of May 16, 2014
+Current Status as of February 2, 2015
 
 Upstream cherry-picks:
 
+  None
+
 Current patches:
 
-to_upstream/
+  Remove UNCHECKED_BITSTREAM_READER defines
+    Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs. In Chromium
+    all codecs should use the safe bitstream reader.
 
-ugly/
-01_enable_checked_bitstream.patch
-  dalecurtis: Removes "#define UNCHECKED_BITSTREAM_READER 1" from all codecs
-  defining it. In Chromium, all codecs should use the safe bitstream reader.
+  Harden libavformat/matroskadec.c
+    Add CONFIG_SIPR_DECODER and CONFIG_LZO checks to remove code that may be a
+    security risk. Discuss with cevans before removing.
 
-02_compile_with_disabled_features.patch
-  dalecurtis: Add CONFIG_* checks to compile out code which we don't use which
-  might be a security risk.  Discuss with cevans before removing.  Upstream does
-  not want this patch.
-  wolenetz: In M27 merge, added call to matroska_read_close(s) in to this patch
-  in matroska_read_header() to mitigate memory leak caught by valgrind.
-  Confirmed with rbultje that this conforms to API (on error in
-  matroska_read_header(), resulting state should be same as prior to call; and
-  no double-free is expected to result from this either.)
+    Add call to matroska_read_close() to mitigate memory leak caught by
+    valgrind.
 
-preserve_m27_avcodecids.patch
-  wolenetz: Insert a deprecated placeholder into AVCodecID enum such that
-  the resulting IDs are either new IDs since M27 or have same enumeration as
-  M27.  This is specific to the M29 roll.
-  See https://ffmpeg.org/trac/ffmpeg/ticket/2575
-  See also http://crbug.com/241212
+  Preserve AVCodecID enum in libavcodec/avcodec.h (http://crbug.com/241212)
+    Insert AV_CODEC_ID_SNOW into the AVCodecID enum to avoid breaking
+    histograms.
 
-w32pthreads_xp_fixes_and_vp8_workaround.patch
-  dalecurtis: pthreads emulation incorrectly assumed Vista+.  Additionally due
-  to use of static variables in header file, duplicate initialization is needed.
-  reported upstream which is working on a proper fix.
+  Fix pthreads emulation on Windows XP
+    Emulation assumes Vista+ inside (_WIN32_WINNT >= 0x0600) checks. Replace
+    with WINDOWS_XP_SUPPORT_NEEDED define in compat/w32pthreads.h.
+
+    Add call to w32thread_init() in libavcodec/vp8.c.
+
+  Disable FMA3 instructions in libavutil/log.c (http://crbug.com/440892)
+    Remove call to _set_FMA3_enable() on Windows. Remove once we are using
+    VS2015.
+
+  C++11 compatability for string concatenation (http://crbug.com/454590)
+    Add spaces between string literals and tokens in libavutil/timer.h and
+    libavutil/internal.h.
+
+  Misc things that were not documented
+    Add CONFIG_ERROR_RESILIENCE guard around some code in
+    libavcodec/h264_slice.c.
+
+    Enable av_max_alloc(0) to remove alloc size bound in libavutil/mem.c.
+
+    Misc changes in libavformat/mp3dec.c.
+
+    Add FF_DISABLE_DEPRECATION_WARNINGS/FF_ENABLE_DEPRECATION_WARNINGS pairs in
+    libavformat/mux.c.
+
+    Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() from
+    libavutil/arm/intmath.h due to compilation failure.

@@ -3,10 +3,10 @@
 #define FFMPEG_CONFIG_H
 #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-shared --disable-bzlib --disable-error-resilience --disable-iconv --disable-lzo --disable-network --disable-symver --disable-xlib --disable-zlib --disable-dxva2 --disable-vaapi --disable-vda --disable-vdpau --enable-decoder='theora,vorbis,vp8' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav' --enable-parser='opus,vp3,vorbis,vp8' --optflags='\0-fno-omit-frame-pointer -O2\0' --enable-pic --enable-yasm --cc=clang --cxx=clang++ --arch=i686 --extra-cflags=-m32 --extra-ldflags=-m32"
 #define FFMPEG_LICENSE "LGPL version 2.1 or later"
-#define CONFIG_THIS_YEAR 2014
+#define CONFIG_THIS_YEAR 2015
 #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
 #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
-#define CC_IDENT "Apple LLVM version 5.0 (clang-500.2.79) (based on LLVM 3.3svn)"
+#define CC_IDENT "Apple LLVM version 6.0 (clang-600.0.56) (based on LLVM 3.5svn)"
 #define av_restrict restrict
 #define EXTERN_PREFIX "_"
 #define EXTERN_ASM _
@@ -174,7 +174,6 @@
 #define HAVE_ASM_TYPES_H 0
 #define HAVE_CDIO_PARANOIA_H 0
 #define HAVE_CDIO_PARANOIA_PARANOIA_H 0
-#define HAVE_CL_CL_H 0
 #define HAVE_DEV_BKTR_IOCTL_BT848_H 0
 #define HAVE_DEV_BKTR_IOCTL_METEOR_H 0
 #define HAVE_DEV_IC_BT8XX_H 0
@@ -266,7 +265,6 @@
 #define HAVE_LZO1X_999_COMPRESS 0
 #define HAVE_MACH_ABSOLUTE_TIME 1
 #define HAVE_MAPVIEWOFFILE 0
-#define HAVE_MOVEFILEEXA 0
 #define HAVE_MEMALIGN 0
 #define HAVE_MKSTEMP 1
 #define HAVE_MMAP 1
@@ -303,13 +301,14 @@
 #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
 #define HAVE_INLINE_ASM_DIRECT_SYMBOL_REFS 1
 #define HAVE_PRAGMA_DEPRECATED 1
-#define HAVE_RSYNC_CONTIMEOUT 1
+#define HAVE_RSYNC_CONTIMEOUT 0
 #define HAVE_SYMVER_ASM_LABEL 0
 #define HAVE_SYMVER_GNU_ASM 0
 #define HAVE_VFP_ARGS 0
 #define HAVE_XFORM_ASM 0
 #define HAVE_XMM_CLOBBERS 1
 #define HAVE_CONDITION_VARIABLE_PTR 0
+#define HAVE_DXVA_PICPARAMS_HEVC 0
 #define HAVE_SOCKLEN_T 0
 #define HAVE_STRUCT_ADDRINFO 0
 #define HAVE_STRUCT_GROUP_SOURCE_REQ 0
@@ -335,7 +334,8 @@
 #define HAVE_PERL 1
 #define HAVE_POD2MAN 1
 #define HAVE_SDL 0
-#define HAVE_TEXI2HTML 1
+#define HAVE_SECTION_DATA_REL_RO 0
+#define HAVE_TEXI2HTML 0
 #define HAVE_THREADS 1
 #define HAVE_VDPAU_X11 0
 #define HAVE_XLIB 0
@@ -351,7 +351,7 @@
 #define CONFIG_PARSERS 1
 #define CONFIG_PROTOCOLS 0
 #define CONFIG_DOC 0
-#define CONFIG_HTMLPAGES 1
+#define CONFIG_HTMLPAGES 0
 #define CONFIG_MANPAGES 1
 #define CONFIG_PODPAGES 1
 #define CONFIG_TXTPAGES 1
@@ -401,6 +401,7 @@
 #define CONFIG_LIBOPENCORE_AMRNB 0
 #define CONFIG_LIBOPENCORE_AMRWB 0
 #define CONFIG_LIBOPENCV 0
+#define CONFIG_LIBOPENH264 0
 #define CONFIG_LIBOPENJPEG 0
 #define CONFIG_LIBOPUS 0
 #define CONFIG_LIBPULSE 0
@@ -435,6 +436,7 @@
 #define CONFIG_LIBZMQ 0
 #define CONFIG_LIBZVBI 0
 #define CONFIG_LZMA 0
+#define CONFIG_NVENC 0
 #define CONFIG_OPENAL 0
 #define CONFIG_OPENCL 0
 #define CONFIG_OPENGL 0
@@ -923,6 +925,7 @@
 #define CONFIG_VIMA_DECODER 0
 #define CONFIG_SSA_DECODER 0
 #define CONFIG_ASS_DECODER 0
+#define CONFIG_CCAPTION_DECODER 0
 #define CONFIG_DVBSUB_DECODER 0
 #define CONFIG_DVDSUB_DECODER 0
 #define CONFIG_JACOSUB_DECODER 0
@@ -1010,6 +1013,7 @@
 #define CONFIG_DTS_DEMUXER 0
 #define CONFIG_DTSHD_DEMUXER 0
 #define CONFIG_DV_DEMUXER 0
+#define CONFIG_DVBSUB_DEMUXER 0
 #define CONFIG_DXA_DEMUXER 0
 #define CONFIG_EA_DEMUXER 0
 #define CONFIG_EA_CDATA_DEMUXER 0
@@ -1235,6 +1239,7 @@
 #define CONFIG_MSMPEG4V2_ENCODER 0
 #define CONFIG_MSMPEG4V3_ENCODER 0
 #define CONFIG_MSVIDEO1_ENCODER 0
+#define CONFIG_NVENC_ENCODER 0
 #define CONFIG_PAM_ENCODER 0
 #define CONFIG_PBM_ENCODER 0
 #define CONFIG_PCX_ENCODER 0
@@ -1364,6 +1369,7 @@
 #define CONFIG_LIBXAVS_ENCODER 0
 #define CONFIG_LIBXVID_ENCODER 0
 #define CONFIG_LIBAACPLUS_ENCODER 0
+#define CONFIG_LIBOPENH264_ENCODER 0
 #define CONFIG_ADELAY_FILTER 0
 #define CONFIG_AECHO_FILTER 0
 #define CONFIG_AEVAL_FILTER 0
@@ -1432,6 +1438,7 @@
 #define CONFIG_CODECVIEW_FILTER 0
 #define CONFIG_COLORBALANCE_FILTER 0
 #define CONFIG_COLORCHANNELMIXER_FILTER 0
+#define CONFIG_COLORLEVELS_FILTER 0
 #define CONFIG_COLORMATRIX_FILTER 0
 #define CONFIG_COPY_FILTER 0
 #define CONFIG_CROP_FILTER 0
@@ -1447,6 +1454,7 @@
 #define CONFIG_DRAWTEXT_FILTER 0
 #define CONFIG_EDGEDETECT_FILTER 0
 #define CONFIG_ELBG_FILTER 0
+#define CONFIG_EQ_FILTER 0
 #define CONFIG_EXTRACTPLANES_FILTER 0
 #define CONFIG_FADE_FILTER 0
 #define CONFIG_FIELD_FILTER 0
@@ -1457,6 +1465,7 @@
 #define CONFIG_FRAMEPACK_FILTER 0
 #define CONFIG_FRAMESTEP_FILTER 0
 #define CONFIG_FREI0R_FILTER 0
+#define CONFIG_FSPP_FILTER 0
 #define CONFIG_GEQ_FILTER 0
 #define CONFIG_GRADFUN_FILTER 0
 #define CONFIG_HALDCLUT_FILTER 0
@@ -1493,8 +1502,10 @@
 #define CONFIG_PHASE_FILTER 0
 #define CONFIG_PIXDESCTEST_FILTER 0
 #define CONFIG_PP_FILTER 0
+#define CONFIG_PP7_FILTER 0
 #define CONFIG_PSNR_FILTER 0
 #define CONFIG_PULLUP_FILTER 0
+#define CONFIG_QP_FILTER 0
 #define CONFIG_REMOVELOGO_FILTER 0
 #define CONFIG_ROTATE_FILTER 0
 #define CONFIG_SAB_FILTER 0
@@ -1508,6 +1519,7 @@
 #define CONFIG_SETSAR_FILTER 0
 #define CONFIG_SETTB_FILTER 0
 #define CONFIG_SHOWINFO_FILTER 0
+#define CONFIG_SHOWPALETTE_FILTER 0
 #define CONFIG_SHUFFLEPLANES_FILTER 0
 #define CONFIG_SIGNALSTATS_FILTER 0
 #define CONFIG_SMARTBLUR_FILTER 0
@@ -1517,6 +1529,7 @@
 #define CONFIG_SUBTITLES_FILTER 0
 #define CONFIG_SUPER2XSAI_FILTER 0
 #define CONFIG_SWAPUV_FILTER 0
+#define CONFIG_TBLEND_FILTER 0
 #define CONFIG_TELECINE_FILTER 0
 #define CONFIG_THUMBNAIL_FILTER 0
 #define CONFIG_TILE_FILTER 0
@@ -1524,6 +1537,7 @@
 #define CONFIG_TRANSPOSE_FILTER 0
 #define CONFIG_TRIM_FILTER 0
 #define CONFIG_UNSHARP_FILTER 0
+#define CONFIG_USPP_FILTER 0
 #define CONFIG_VFLIP_FILTER 0
 #define CONFIG_VIDSTABDETECT_FILTER 0
 #define CONFIG_VIDSTABTRANSFORM_FILTER 0
@@ -1560,6 +1574,7 @@
 #define CONFIG_H264_VDA_HWACCEL 0
 #define CONFIG_H264_VDA_OLD_HWACCEL 0
 #define CONFIG_H264_VDPAU_HWACCEL 0
+#define CONFIG_HEVC_DXVA2_HWACCEL 0
 #define CONFIG_MPEG1_XVMC_HWACCEL 0
 #define CONFIG_MPEG1_VDPAU_HWACCEL 0
 #define CONFIG_MPEG2_XVMC_HWACCEL 0
@@ -1705,6 +1720,7 @@
 #define CONFIG_ROQ_MUXER 0
 #define CONFIG_RSO_MUXER 0
 #define CONFIG_RTP_MUXER 0
+#define CONFIG_RTP_MPEGTS_MUXER 0
 #define CONFIG_RTSP_MUXER 0
 #define CONFIG_SAP_MUXER 0
 #define CONFIG_SEGMENT_MUXER 0

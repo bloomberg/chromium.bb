@@ -471,7 +471,6 @@ static int mp3_seek(AVFormatContext *s, int stream_index, int64_t timestamp,
 
 static const AVOption options[] = {
     { "usetoc", "use table of contents", offsetof(MP3DecContext, usetoc), AV_OPT_TYPE_INT, {.i64 = -1}, -1, 1, AV_OPT_FLAG_DECODING_PARAM},
-    { "end_pad", "end padding", offsetof(MP3DecContext, end_pad), AV_OPT_TYPE_INT, {.i64 = 0}, 0, INT_MAX, AV_OPT_FLAG_METADATA},
     { NULL },
 };
 

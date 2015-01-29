@@ -13,7 +13,7 @@ for os in linux linux-noasm mac win win-vs2013; do
     for arch in arm arm-neon arm64 ia32 x64 mipsel; do
       # Don't waste time on non-existent configs, if no config.h then skip.
       [ ! -e "build.$arch.$os/$target/config.h" ] && continue
-      for f in config.h config.asm libavutil/avconfig.h; do
+      for f in config.h config.asm libavutil/avconfig.h libavutil/ffversion.h; do
         FROM="build.$arch.$os/$target/$f"
         TO="chromium/config/$target/$os/$arch/$f"
         if [ "$(dirname $f)" != "" ]; then mkdir -p $(dirname $TO); fi

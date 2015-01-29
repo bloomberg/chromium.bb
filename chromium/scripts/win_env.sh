@@ -31,6 +31,10 @@ if [ ! -d $VSPATH ]; then
 fi
 
 function add_path {
+  if [ ! -d "$1" ]; then
+    echo "Cannot add '$1' to path; directory does not exist." >&2
+    exit 1
+  fi
   if [ -z "$path" ]; then
     path="$1"
     return
@@ -39,6 +43,10 @@ function add_path {
 }
 
 function add_include_path {
+  if [ ! -d "$1" ]; then
+    echo "Cannot add '$1' to include path; directory does not exist." >&2
+    exit 1
+  fi
   if [ -z "$include" ]; then
     include="$(cygpath -w $1)"
     return
@@ -47,6 +55,10 @@ function add_include_path {
 }
 
 function add_lib_path {
+  if [ -d "$1" ]; then
+    echo "Cannot add '$1' to lib path; directory does not exist." >&2
+    exit 1
+  fi
   if [ -z "$lib" ]; then
     lib="$(cygpath -w $1)"
     return
@@ -61,7 +73,7 @@ case "$2" in
     add_path $VSPATH/VC/bin/amd64
 
     add_lib_path $VSPATH/VC/lib
-    add_lib_path $VSPATH/win8sdk/Lib/win8/um/x86
+    add_lib_path $VSPATH/win8sdk/Lib/winv6.3/um/x86
     add_lib_path $VSPATH/VC/atlmfc/lib
     ;;
 
@@ -70,7 +82,7 @@ case "$2" in
     add_path $VSPATH/VC/bin/amd64
 
     add_lib_path $VSPATH/VC/lib/amd64
-    add_lib_path $VSPATH/win8sdk/Lib/win8/um/x64
+    add_lib_path $VSPATH/win8sdk/Lib/winv6.3/um/x64
     add_lib_path $VSPATH/VC/atlmfc/lib/amd64
     ;;
 
