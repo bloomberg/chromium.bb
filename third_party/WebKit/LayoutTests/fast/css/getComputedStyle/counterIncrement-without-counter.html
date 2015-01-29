@@ -5,9 +5,10 @@
 <body>
     <div id="console"></div>
     <script>
+        description("Test that the initial value of 'counter-increment' and 'counter-reset' is 'none'.");
         var style = window.getComputedStyle(document.body, null);
-        shouldBe("style.counterIncrement", "'';");
-        shouldBe("style.counterReset", "'';");
+        shouldBeEqualToString("style.counterIncrement", "none");
+        shouldBeEqualToString("style.counterReset", "none");
     </script>
 </body>
 </html>

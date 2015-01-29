@@ -325,15 +325,18 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 
 {% macro apply_counter(property_id, action) %}
 {% set property = properties[property_id] %}
-{{declare_initial_function(property_id)}} { }
+{{declare_initial_function(property_id)}} {
+    state.style()->clear{{action}}Directives();
+}
 
 {{declare_inherit_function(property_id)}}
 {
     const CounterDirectiveMap* parentMap = state.parentStyle()->counterDirectives();
-    if (!parentMap || parentMap->isEmpty())
+    if (!parentMap)
         return;
 
     CounterDirectiveMap& map = state.style()->accessCounterDirectives();
+    ASSERT(!parentMap->isEmpty());
 
     typedef CounterDirectiveMap::const_iterator Iterator;
     Iterator end = parentMap->end();
@@ -345,17 +348,14 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 
 {{declare_value_function(property_id)}}
 {
-    CounterDirectiveMap& map = state.style()->accessCounterDirectives();
-    typedef CounterDirectiveMap::iterator Iterator;
-
-    Iterator end = map.end();
-    for (Iterator it = map.begin(); it != end; ++it)
-        it->value.clear{{action}}();
+    state.style()->clear{{action}}Directives();
 
     if (!value->isValueList()) {
         ASSERT(value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
         return;
     }
+
+    CounterDirectiveMap& map = state.style()->accessCounterDirectives();
 
     CSSValueList* list = toCSSValueList(value);
 
@@ -378,6 +378,7 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
         directives.addIncrementValue(value);
         {% endif %}
     }
+    ASSERT(!map.isEmpty());
 }
 {% endmacro %}
 {{apply_counter('CSSPropertyCounterIncrement', 'Increment')}}

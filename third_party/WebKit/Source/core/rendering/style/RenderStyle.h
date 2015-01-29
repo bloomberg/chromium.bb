@@ -1428,6 +1428,8 @@ public:
     const CounterDirectiveMap* counterDirectives() const;
     CounterDirectiveMap& accessCounterDirectives();
     const CounterDirectives getCounterDirectives(const AtomicString& identifier) const;
+    void clearIncrementDirectives();
+    void clearResetDirectives();
 
     QuotesData* quotes() const { return rareInheritedData->quotes.get(); }
     void setQuotes(PassRefPtr<QuotesData>);

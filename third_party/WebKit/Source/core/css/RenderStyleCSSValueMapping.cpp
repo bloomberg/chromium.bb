@@ -995,14 +995,22 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForCounterDirectives(const RenderSt
 {
     const CounterDirectiveMap* map = style.counterDirectives();
     if (!map)
-        return nullptr;
+        return cssValuePool().createIdentifierValue(CSSValueNone);
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (const auto& item : *map) {
+        bool isValidCounterValue = propertyID == CSSPropertyCounterIncrement ? item.value.isIncrement() : item.value.isReset();
+        if (!isValidCounterValue)
+            continue;
+
         list->append(cssValuePool().createValue(item.key, CSSPrimitiveValue::CSS_STRING));
         short number = propertyID == CSSPropertyCounterIncrement ? item.value.incrementValue() : item.value.resetValue();
         list->append(cssValuePool().createValue((double)number, CSSPrimitiveValue::CSS_NUMBER));
     }
+
+    if (!list->length())
+        return cssValuePool().createIdentifierValue(CSSValueNone);
+
     return list.release();
 }
 

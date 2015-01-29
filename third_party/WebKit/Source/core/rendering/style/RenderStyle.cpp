@@ -1024,6 +1024,34 @@ const CounterDirectives RenderStyle::getCounterDirectives(const AtomicString& id
     return CounterDirectives();
 }
 
+void RenderStyle::clearIncrementDirectives()
+{
+    if (!counterDirectives())
+        return;
+
+    // This makes us copy even if we may not be removing any items.
+    CounterDirectiveMap& map = accessCounterDirectives();
+    typedef CounterDirectiveMap::iterator Iterator;
+
+    Iterator end = map.end();
+    for (Iterator it = map.begin(); it != end; ++it)
+        it->value.clearIncrement();
+}
+
+void RenderStyle::clearResetDirectives()
+{
+    if (!counterDirectives())
+        return;
+
+    // This makes us copy even if we may not be removing any items.
+    CounterDirectiveMap& map = accessCounterDirectives();
+    typedef CounterDirectiveMap::iterator Iterator;
+
+    Iterator end = map.end();
+    for (Iterator it = map.begin(); it != end; ++it)
+        it->value.clearReset();
+}
+
 const AtomicString& RenderStyle::hyphenString() const
 {
     const AtomicString& hyphenationString = rareInheritedData.get()->hyphenationString;
