@@ -381,6 +381,12 @@ void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
   last_idle_check_ = now;
 }
 
+bool DeviceStatusCollector::IsAutoLaunchedKioskSession() {
+  // TODO(atwilson): Determine if the currently active session is an
+  // autolaunched kiosk session (http://crbug.com/452968).
+  return false;
+}
+
 void DeviceStatusCollector::SampleHardwareStatus() {
   // If hardware reporting has been disabled, do nothing here.
   if (!report_hardware_status_)
@@ -590,6 +596,10 @@ void DeviceStatusCollector::GetNetworkInterfaces(
     if (!(*device)->path().empty())
       interface->set_device_path((*device)->path());
   }
+
+  // Don't write any network state if we aren't in a kiosk session.
+  if (!IsAutoLaunchedKioskSession())
+    return;
 
   // Walk the various networks and store their state in the status report.
   chromeos::NetworkStateHandler::NetworkStateList state_list;

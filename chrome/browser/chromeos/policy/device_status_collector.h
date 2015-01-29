@@ -99,6 +99,11 @@ class DeviceStatusCollector {
   // Callback which receives the results of the idle state check.
   void IdleStateCallback(ui::IdleState state);
 
+  // Returns true if the currently active session is an auto-launched
+  // kiosk session (this enables functionality such as network reporting).
+  // Virtual to allow mocking.
+  virtual bool IsAutoLaunchedKioskSession();
+
   // Samples the current CPU and RAM usage and updates our cache of samples.
   void SampleResourceUsage();
 
