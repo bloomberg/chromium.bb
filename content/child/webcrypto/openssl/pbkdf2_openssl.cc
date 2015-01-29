@@ -75,14 +75,6 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
     const std::vector<uint8_t>& password =
         SymKeyOpenSsl::Cast(base_key)->raw_key_data();
 
-    // TODO(xun.sun): Empty password would derive random keys with
-    // PKCS5_PBKDF2_HMAC().
-    // https://code.google.com/p/chromium/issues/detail?id=449409
-    //
-    // Rejecting them until it is addressed in BoringSSL.
-    if (password.empty())
-      return Status::ErrorPbkdf2EmptyPassword();
-
     if (keylen_bytes == 0)
       return Status::Success();
 

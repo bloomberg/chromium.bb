@@ -268,9 +268,6 @@ class CONTENT_EXPORT Status {
   // No length parameter was provided for PBKDF2's Derive Bits operation.
   static Status ErrorPbkdf2DeriveBitsLengthNotSpecified();
 
-  // An empty password was provided for PBKDF2
-  static Status ErrorPbkdf2EmptyPassword();
-
  private:
   enum Type { TYPE_ERROR, TYPE_SUCCESS };
 

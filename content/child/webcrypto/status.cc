@@ -353,11 +353,6 @@ Status Status::ErrorPbkdf2DeriveBitsLengthNotSpecified() {
       "No length was specified for the PBKDF2 Derive Bits operation.");
 }
 
-Status Status::ErrorPbkdf2EmptyPassword() {
-  return Status(blink::WebCryptoErrorTypeOperation,
-                "The password for PBKDF2 must not be empty.");
-}
-
 Status::Status(blink::WebCryptoErrorType error_type,
                const std::string& error_details_utf8)
     : type_(TYPE_ERROR),
