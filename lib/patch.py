@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import calendar
 import collections
+import logging
 import os
 import random
 import re
@@ -1416,61 +1417,65 @@ class GerritPatch(GerritFetchOnlyPatch):
     New interface:
       https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#json-entities
     """
-    _convert_tm = lambda tm: calendar.timegm(
-        time.strptime(tm.partition('.')[0], '%Y-%m-%d %H:%M:%S'))
-    _convert_user = lambda u: {
-        'name': u.get('name', '??unknown??'),
-        'email': u.get('email'),
-        'username': u.get('name', '??unknown??'),
-    }
-    change_id = change['change_id'].split('~')[-1]
-    patch_dict = {
-        'project': change['project'],
-        'branch': change['branch'],
-        'createdOn': _convert_tm(change['created']),
-        'lastUpdated': _convert_tm(change['updated']),
-        'id': change_id,
-        'owner': _convert_user(change['owner']),
-        'number': str(change['_number']),
-        'url': gob_util.GetChangePageUrl(host, change['_number']),
-        'status': change['status'],
-        'subject': change.get('subject'),
-    }
-    current_revision = change.get('current_revision', '')
-    current_revision_info = change.get('revisions', {}).get(current_revision)
-    if current_revision_info:
-      approvals = []
-      for label, label_data in change['labels'].iteritems():
-        # Skip unknown labels.
-        if label not in constants.GERRIT_ON_BORG_LABELS:
-          continue
-        for review_data in label_data.get('all', []):
-          granted_on = review_data.get('date', change['created'])
-          approvals.append({
-              'type': constants.GERRIT_ON_BORG_LABELS[label],
-              'description': label,
-              'value': str(review_data.get('value', '0')),
-              'grantedOn': _convert_tm(granted_on),
-              'by': _convert_user(review_data),
-          })
-
-      date = current_revision_info['commit']['committer']['date']
-      patch_dict['currentPatchSet'] = {
-          'approvals': approvals,
-          'ref': current_revision_info['fetch']['http']['ref'],
-          'revision': current_revision,
-          'number': str(current_revision_info['_number']),
-          'date': _convert_tm(date),
-          'draft': current_revision_info.get('draft', False),
+    try:
+      _convert_tm = lambda tm: calendar.timegm(
+          time.strptime(tm.partition('.')[0], '%Y-%m-%d %H:%M:%S'))
+      _convert_user = lambda u: {
+          'name': u.get('name', '??unknown??'),
+          'email': u.get('email'),
+          'username': u.get('name', '??unknown??'),
       }
+      change_id = change['change_id'].split('~')[-1]
+      patch_dict = {
+          'project': change['project'],
+          'branch': change['branch'],
+          'createdOn': _convert_tm(change['created']),
+          'lastUpdated': _convert_tm(change['updated']),
+          'id': change_id,
+          'owner': _convert_user(change['owner']),
+          'number': str(change['_number']),
+          'url': gob_util.GetChangePageUrl(host, change['_number']),
+          'status': change['status'],
+          'subject': change.get('subject'),
+      }
+      current_revision = change.get('current_revision', '')
+      current_revision_info = change.get('revisions', {}).get(current_revision)
+      if current_revision_info:
+        approvals = []
+        for label, label_data in change['labels'].iteritems():
+          # Skip unknown labels.
+          if label not in constants.GERRIT_ON_BORG_LABELS:
+            continue
+          for review_data in label_data.get('all', []):
+            granted_on = review_data.get('date', change['created'])
+            approvals.append({
+                'type': constants.GERRIT_ON_BORG_LABELS[label],
+                'description': label,
+                'value': str(review_data.get('value', '0')),
+                'grantedOn': _convert_tm(granted_on),
+                'by': _convert_user(review_data),
+            })
 
-      current_commit = current_revision_info.get('commit')
-      if current_commit:
-        patch_dict['commitMessage'] = current_commit['message']
-        parents = current_commit.get('parents', [])
-        patch_dict['dependsOn'] = [{'revision': p['commit']} for p in parents]
+        date = current_revision_info['commit']['committer']['date']
+        patch_dict['currentPatchSet'] = {
+            'approvals': approvals,
+            'ref': current_revision_info['fetch']['http']['ref'],
+            'revision': current_revision,
+            'number': str(current_revision_info['_number']),
+            'date': _convert_tm(date),
+            'draft': current_revision_info.get('draft', False),
+        }
 
-    return patch_dict
+        current_commit = current_revision_info.get('commit')
+        if current_commit:
+          patch_dict['commitMessage'] = current_commit['message']
+          parents = current_commit.get('parents', [])
+          patch_dict['dependsOn'] = [{'revision': p['commit']} for p in parents]
+
+      return patch_dict
+    except:
+      logging.error('Error while converting:\n%s', change, exc_info=True)
+      raise
 
   def __reduce__(self):
     """Used for pickling to re-create patch object."""
