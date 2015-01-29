@@ -75,6 +75,12 @@ VP8Decoder::DecodeResult VP8Decoder::Decode() {
     if (new_pic_size != pic_size_) {
       DVLOG(2) << "New resolution: " << new_pic_size.ToString();
       pic_size_ = new_pic_size;
+
+      DCHECK(!curr_pic_);
+      last_frame_ = nullptr;
+      golden_frame_ = nullptr;
+      alt_frame_ = nullptr;
+
       return kAllocateNewSurfaces;
     }
 
