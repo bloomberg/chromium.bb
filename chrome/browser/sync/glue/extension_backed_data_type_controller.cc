@@ -4,12 +4,12 @@
 
 #include "chrome/browser/sync/glue/extension_backed_data_type_controller.h"
 
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
@@ -17,17 +17,6 @@
 using content::BrowserThread;
 
 namespace browser_sync {
-
-namespace {
-
-// Helper method to generate a hash from an extension id.
-std::string IdToHash(const std::string extension_id) {
-  std::string hash = base::SHA1HashString(extension_id);
-  hash = base::HexEncode(hash.c_str(), hash.length());
-  return hash;
-}
-
-}  // namespace
 
 ExtensionBackedDataTypeController::ExtensionBackedDataTypeController(
     syncer::ModelType type,
@@ -108,7 +97,7 @@ bool ExtensionBackedDataTypeController::IsSyncingExtensionEnabled() const {
 
 bool ExtensionBackedDataTypeController::DoesExtensionMatch(
     const extensions::Extension& extension) const {
-  return IdToHash(extension.id()) == extension_hash_;
+  return crx_file::id_util::HashedIdInHex(extension.id()) == extension_hash_;
 }
 
 bool ExtensionBackedDataTypeController::StartModels() {

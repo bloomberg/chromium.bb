@@ -5,6 +5,7 @@
 #include "components/crx_file/id_util.h"
 
 #include "base/files/file_path.h"
+#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "crypto/sha2.h"
@@ -51,6 +52,12 @@ std::string GenerateIdForPath(const base::FilePath& path) {
       std::string(reinterpret_cast<const char*>(new_path.value().data()),
                   new_path.value().size() * sizeof(base::FilePath::CharType));
   return GenerateId(path_bytes);
+}
+
+std::string HashedIdInHex(const std::string& id) {
+  const std::string id_hash = base::SHA1HashString(id);
+  DCHECK_EQ(base::kSHA1Length, id_hash.length());
+  return base::HexEncode(id_hash.c_str(), id_hash.length());
 }
 
 base::FilePath MaybeNormalizePath(const base::FilePath& path) {

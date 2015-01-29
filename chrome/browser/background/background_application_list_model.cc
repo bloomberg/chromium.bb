@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <set>
 
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
@@ -292,16 +292,15 @@ bool BackgroundApplicationListModel::RequiresBackgroundModeForPushMessaging(
   // uses push messaging.
   // TODO(dimich): remove this whitelist once we have a better way to keep
   // listening for GCM. http://crbug.com/311268
-  std::string id_hash = base::SHA1HashString(extension.id());
-  std::string hexencoded_id_hash = base::HexEncode(id_hash.c_str(),
-                                                   id_hash.length());
+  std::string hexencoded_id_hash =
+      crx_file::id_util::HashedIdInHex(extension.id());
   // The id starting from "9A04..." is a one from unit test.
   if (hexencoded_id_hash == "C41AD9DCD670210295614257EF8C9945AD68D86E" ||
       hexencoded_id_hash == "9A0417016F345C934A1A88F55CA17C05014EEEBA")
      return false;
 
-   return true;
- }
+  return true;
+}
 
 // static
 bool BackgroundApplicationListModel::IsBackgroundApp(

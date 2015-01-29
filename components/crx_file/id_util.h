@@ -21,11 +21,14 @@ extern const size_t kIdSize;
 // always generate the same output ID.
 std::string GenerateId(const std::string& input);
 
-// Generate an ID for an extension in the given path.
+// Generates an ID for an extension in the given path.
 // Used while developing extensions, before they have a key.
 std::string GenerateIdForPath(const base::FilePath& path);
 
-// Normalize the path for use by the extension. On Windows, this will make
+// Returns the hash of an extension ID in hex.
+std::string HashedIdInHex(const std::string& id);
+
+// Normalizes the path for use by the extension. On Windows, this will make
 // sure the drive letter is uppercase.
 base::FilePath MaybeNormalizePath(const base::FilePath& path);
 

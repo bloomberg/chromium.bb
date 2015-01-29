@@ -51,7 +51,7 @@ const char kMediaStreamSourceTab[] = "tab";
 
 // Whitelisted extensions that do not check for a browser action grant because
 // they provide API's.
-const char* const whitelisted_extensions[] = {
+const char* const kWhitelist[] = {
   "enhhojjnijigcajfphajepfemndkmdlo",  // Dev
   "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Trusted Tester
   "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
@@ -93,9 +93,8 @@ bool TabCaptureCaptureFunction::RunSync() {
           switches::kWhitelistedExtensionID) != extension_id &&
       !SimpleFeature::IsIdInList(
           extension_id,
-          std::set<std::string>(
-              whitelisted_extensions,
-              whitelisted_extensions + arraysize(whitelisted_extensions)))) {
+          std::set<std::string>(kWhitelist,
+                                kWhitelist + arraysize(kWhitelist)))) {
     error_ = kGrantError;
     return false;
   }
@@ -141,8 +140,7 @@ bool TabCaptureCaptureFunction::RunSync() {
     constraint->SetString(kMediaStreamSourceId, device_id);
   }
 
-  extensions::TabCaptureRegistry* registry =
-      extensions::TabCaptureRegistry::Get(GetProfile());
+  TabCaptureRegistry* registry = TabCaptureRegistry::Get(GetProfile());
   if (!registry->AddRequest(target_contents, extension_id)) {
     error_ = kCapturingSameTab;
     return false;
@@ -159,8 +157,7 @@ bool TabCaptureCaptureFunction::RunSync() {
 }
 
 bool TabCaptureGetCapturedTabsFunction::RunSync() {
-  extensions::TabCaptureRegistry* registry =
-      extensions::TabCaptureRegistry::Get(GetProfile());
+  TabCaptureRegistry* registry = TabCaptureRegistry::Get(GetProfile());
   base::ListValue* const list = new base::ListValue();
   if (registry)
     registry->GetCapturedTabs(extension()->id(), list);

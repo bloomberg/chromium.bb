@@ -6,13 +6,13 @@
 
 #include <algorithm>
 
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/common/extensions/command.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/manifest_constants.h"
@@ -74,12 +74,12 @@ EnhancedBookmarkKeyService::GetEnhancedBookmarkExtension() const {
   extensions::ExtensionSet::const_iterator loc =
       std::find_if(extensions.begin(), extensions.end(),
                    [](scoped_refptr<const extensions::Extension> extension) {
-                     static const char enhanced_extension_hash[] =
+                     static const char enhanced_ext_hash[] =
                          // http://crbug.com/312900
                          "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2";
-                     std::string hash = base::SHA1HashString(extension->id());
-                     return base::HexEncode(hash.c_str(), hash.length()) ==
-                         enhanced_extension_hash;
+                     std::string hashed_id =
+                         crx_file::id_util::HashedIdInHex(extension->id());
+                     return hashed_id == enhanced_ext_hash;
                    });
   return loc != extensions.end() ? loc->get() : nullptr;
 }

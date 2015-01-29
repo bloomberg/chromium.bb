@@ -128,7 +128,7 @@ AppWindowCreateFunction::AppWindowCreateFunction()
 
 bool AppWindowCreateFunction::RunAsync() {
   // Don't create app window if the system is shutting down.
-  if (extensions::ExtensionsBrowserClient::Get()->IsShuttingDown())
+  if (ExtensionsBrowserClient::Get()->IsShuttingDown())
     return false;
 
   scoped_ptr<Create::Params> params(Create::Params::Create(*args_));
@@ -139,7 +139,7 @@ bool AppWindowCreateFunction::RunAsync() {
   // path.
   GURL absolute = GURL(params->url);
   if (absolute.has_scheme()) {
-    if (extension()->location() == extensions::Manifest::COMPONENT) {
+    if (extension()->location() == Manifest::COMPONENT) {
       url = absolute;
     } else {
       // Show error when url passed isn't local.
@@ -208,7 +208,7 @@ bool AppWindowCreateFunction::RunAsync() {
       return false;
 
     if (!AppWindowClient::Get()->IsCurrentChannelOlderThanDev() ||
-        extension()->location() == extensions::Manifest::COMPONENT) {
+        extension()->location() == Manifest::COMPONENT) {
       if (options->type == app_window::WINDOW_TYPE_PANEL) {
         create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
       }
@@ -217,7 +217,7 @@ bool AppWindowCreateFunction::RunAsync() {
     if (!GetFrameOptions(*options, &create_params))
       return false;
 
-    if (extension()->GetType() == extensions::Manifest::TYPE_EXTENSION) {
+    if (extension()->GetType() == Manifest::TYPE_EXTENSION) {
       // Whitelisted IME extensions are allowed to use this API to create IME
       // specific windows to show accented characters or suggestions.
       if (!extension()->permissions_data()->HasAPIPermission(
@@ -247,7 +247,7 @@ bool AppWindowCreateFunction::RunAsync() {
     }
 
     if (options->alpha_enabled.get()) {
-      const char* whitelist[] = {
+      const char* const kWhitelist[] = {
 #if defined(OS_CHROMEOS)
         "B58B99751225318C7EB8CF4688B5434661083E07",  // http://crbug.com/410550
         "06BE211D5F014BAB34BC22D9DDA09C63A81D828E",  // http://crbug.com/425539
@@ -265,10 +265,10 @@ bool AppWindowCreateFunction::RunAsync() {
         "0F585FB1D0FDFBEBCE1FEB5E9DFFB6DA476B8C9B"
       };
       if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev() &&
-          !extensions::SimpleFeature::IsIdInList(
+          !SimpleFeature::IsIdInList(
               extension_id(),
-              std::set<std::string>(whitelist,
-                                    whitelist + arraysize(whitelist)))) {
+              std::set<std::string>(kWhitelist,
+                                    kWhitelist + arraysize(kWhitelist)))) {
         error_ = app_window_constants::kAlphaEnabledWrongChannel;
         return false;
       }
@@ -495,9 +495,9 @@ AppWindow::Frame AppWindowCreateFunction::GetFrameFromString(
            switches::kEnableExperimentalExtensionApis))) {
      inject_html_titlebar_ = true;
      return AppWindow::FRAME_NONE;
-   }
+  }
 
-   if (frame_string == kNoneFrameOption)
+  if (frame_string == kNoneFrameOption)
     return AppWindow::FRAME_NONE;
 
   return AppWindow::FRAME_CHROME;

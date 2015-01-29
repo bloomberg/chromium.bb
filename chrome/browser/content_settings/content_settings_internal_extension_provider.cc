@@ -28,7 +28,7 @@ namespace {
 
 // This is the set of extensions that are allowed to access the internal
 // remoting viewer plugin.
-const char* kRemotingViewerWhitelist[] = {
+const char* const kRemotingViewerWhitelist[] = {
     "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
     "kgngmbheleoaphbjbaiobfdepmghbfah",  // Pre-release Chrome Remote Desktop
     "odkaodonbgfohohmklejpjiejmcipmib",  // Dogfood Chrome Remote Desktop
@@ -83,9 +83,10 @@ bool InternalExtensionProvider::SetWebsiteSetting(
 void InternalExtensionProvider::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {}
 
-void InternalExtensionProvider::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
+void InternalExtensionProvider::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case extensions::NOTIFICATION_EXTENSION_HOST_CREATED: {
       const extensions::ExtensionHost* host =
@@ -94,7 +95,7 @@ void InternalExtensionProvider::Observe(int type,
         SetContentSettingForExtension(host->extension(), CONTENT_SETTING_BLOCK);
 
         // White-list CRD's v2 app, until crbug.com/134216 is complete.
-        const char* kAppWhitelist[] = {
+        const char* const kAppWhitelist[] = {
           "2775E568AC98F9578791F1EAB65A1BF5F8CEF414",
           "4AA3C5D69A4AECBD236CAD7884502209F0F5C169",
           "97B23E01B2AA064E8332EE43A7A85C628AADC3F2",
