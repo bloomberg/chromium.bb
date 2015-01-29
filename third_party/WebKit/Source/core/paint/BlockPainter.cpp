@@ -94,26 +94,26 @@ void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, con
 void BlockPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     for (RenderBox* child = m_renderBlock.firstChildBox(); child; child = child->nextSiblingBox())
-        paintChild(child, paintInfo, paintOffset);
+        paintChild(*child, paintInfo, paintOffset);
 }
 
-void BlockPainter::paintChild(RenderBox* child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChild(RenderBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutPoint childPoint = m_renderBlock.flipForWritingModeForChild(child, paintOffset);
-    if (!child->hasSelfPaintingLayer() && !child->isFloating() && !child->isColumnSpanAll())
-        child->paint(paintInfo, childPoint);
+    LayoutPoint childPoint = m_renderBlock.flipForWritingModeForChild(&child, paintOffset);
+    if (!child.hasSelfPaintingLayer() && !child.isFloating() && !child.isColumnSpanAll())
+        child.paint(paintInfo, childPoint);
 }
 
 void BlockPainter::paintChildrenOfFlexibleBox(RenderFlexibleBox& renderFlexibleBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     for (RenderBox* child = renderFlexibleBox.orderIterator().first(); child; child = renderFlexibleBox.orderIterator().next())
-        BlockPainter(renderFlexibleBox).paintChildAsInlineBlock(child, paintInfo, paintOffset);
+        BlockPainter(renderFlexibleBox).paintChildAsInlineBlock(*child, paintInfo, paintOffset);
 }
 
-void BlockPainter::paintChildAsInlineBlock(RenderBox* child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChildAsInlineBlock(RenderBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutPoint childPoint = m_renderBlock.flipForWritingModeForChild(child, paintOffset);
-    if (!child->hasSelfPaintingLayer() && !child->isFloating())
+    LayoutPoint childPoint = m_renderBlock.flipForWritingModeForChild(&child, paintOffset);
+    if (!child.hasSelfPaintingLayer() && !child.isFloating())
         paintAsInlineBlock(child, paintInfo, childPoint);
 }
 
@@ -126,10 +126,10 @@ void BlockPainter::paintInlineBox(InlineBox& inlineBox, const PaintInfo& paintIn
     if (inlineBox.parent()->renderer().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
         childPoint = inlineBox.renderer().containingBlock()->flipForWritingModeForChild(&toRenderBox(inlineBox.renderer()), childPoint);
 
-    paintAsInlineBlock(&inlineBox.renderer(), paintInfo, childPoint);
+    paintAsInlineBlock(inlineBox.renderer(), paintInfo, childPoint);
 }
 
-void BlockPainter::paintAsInlineBlock(RenderObject* renderer, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
+void BlockPainter::paintAsInlineBlock(RenderObject& renderer, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
 {
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
         return;
@@ -141,16 +141,16 @@ void BlockPainter::paintAsInlineBlock(RenderObject* renderer, const PaintInfo& p
     bool preservePhase = paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip;
     PaintInfo info(paintInfo);
     info.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
-    renderer->paint(info, childPoint);
+    renderer.paint(info, childPoint);
     if (!preservePhase) {
         info.phase = PaintPhaseChildBlockBackgrounds;
-        renderer->paint(info, childPoint);
+        renderer.paint(info, childPoint);
         info.phase = PaintPhaseFloat;
-        renderer->paint(info, childPoint);
+        renderer.paint(info, childPoint);
         info.phase = PaintPhaseForeground;
-        renderer->paint(info, childPoint);
+        renderer.paint(info, childPoint);
         info.phase = PaintPhaseOutline;
-        renderer->paint(info, childPoint);
+        renderer.paint(info, childPoint);
     }
 }
 

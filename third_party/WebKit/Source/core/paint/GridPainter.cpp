@@ -75,7 +75,7 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& p
         if (current == previous)
             continue;
 
-        BlockPainter(m_renderGrid).paintChild(current, paintInfo, paintOffset);
+        BlockPainter(m_renderGrid).paintChild(*current, paintInfo, paintOffset);
         previous = current;
     }
 }
