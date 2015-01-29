@@ -105,20 +105,28 @@ remoting.V2AppLauncher.prototype.launch = function(opt_launchArgs) {
    * @param {function(*=):void} reject
    */
   return new Promise(function(resolve, reject) {
-    chrome.app.window.create(url, {
-        'width': 800,
-        'height': 600,
-        'frame': 'none',
-        'id': String(remoting.V2AppLauncher.nextWindowId_++)
-      },
-      /** @param {AppWindow=} appWindow */
-      function(appWindow) {
-        if (!appWindow) {
-          reject(new Error(chrome.runtime.lastError.message));
-        } else {
-          resolve(appWindow.id);
-        }
-      });
+    var START_FULLSCREEN = 'start-fullscreen';
+    /** @param {Object} values */
+    var onValues = function(values) {
+      /** @type {string} */
+      var state = values[START_FULLSCREEN] ? 'fullscreen' : 'normal';
+      chrome.app.window.create(url, {
+          'width': 800,
+          'height': 600,
+          'frame': 'none',
+          'id': String(remoting.V2AppLauncher.nextWindowId_++),
+          'state': state
+        },
+        /** @param {AppWindow=} appWindow */
+        function(appWindow) {
+          if (!appWindow) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else {
+            resolve(appWindow.id);
+          }
+        });
+    };
+    chrome.storage.local.get(START_FULLSCREEN, onValues);
   });
 };
 

@@ -4,23 +4,6 @@
 
 'use strict';
 
-/** @suppress {duplicate} */
-var remoting = remoting || {};
-
-remoting.initGlobalEventHandlers = function() {
-  window.addEventListener('resize', remoting.onResize, false);
-  // When a window goes full-screen, a resize event is triggered, but the
-  // Fullscreen.isActive call is not guaranteed to return true until the
-  // full-screen event is triggered. In apps v2, the size of the window's
-  // client area is calculated differently in full-screen mode, so register
-  // for both events.
-  remoting.fullscreen.addListener(remoting.onResize);
-  if (!base.isAppsV2()) {
-    window.addEventListener('beforeunload', remoting.promptClose, false);
-    window.addEventListener('unload', remoting.disconnect, false);
-  }
-}
-
 /**
  * @param {Array.<{event: string, id: string,
  *     fn: function(Event):void}>} actions Array of actions to register.

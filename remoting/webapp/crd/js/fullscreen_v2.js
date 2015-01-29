@@ -53,6 +53,8 @@ remoting.FullscreenAppsV2 = function() {
       this.onRestored_.bind(this));
   chrome.app.window.current().onMinimized.addListener(
       this.onMinimized_.bind(this));
+
+  document.body.classList.toggle('fullscreen', this.isActive());
 };
 
 /**

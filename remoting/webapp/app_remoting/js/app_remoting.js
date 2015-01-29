@@ -92,7 +92,9 @@ remoting.AppRemoting.prototype.init = function(connector) {
   remoting.initGlobalObjects();
   remoting.initIdentity(remoting.onUserInfoAvailable);
 
-  remoting.initGlobalEventHandlers();
+  // TODO(jamiewalch): Remove ClientSession's dependency on remoting.fullscreen
+  // so that this is no longer required.
+  remoting.fullscreen = new remoting.FullscreenAppsV2();
 
   var restoreHostWindows = function() {
     if (remoting.clientSession) {

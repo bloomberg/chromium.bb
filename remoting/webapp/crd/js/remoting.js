@@ -26,12 +26,6 @@ remoting.initGlobalObjects = function() {
   console.log(remoting.getExtensionInfo());
   l10n.localize();
 
-  if (base.isAppsV2()) {
-    remoting.fullscreen = new remoting.FullscreenAppsV2();
-  } else {
-    remoting.fullscreen = new remoting.FullscreenAppsV1();
-  }
-
   remoting.stats = new remoting.ConnectionStats(
       document.getElementById('statistics'));
   remoting.formatIq = new remoting.FormatIq();

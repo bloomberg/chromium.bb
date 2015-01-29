@@ -66,19 +66,47 @@ remoting.DesktopRemoting.prototype.init = function() {
   remoting.initIdentity(remoting.onUserInfoAvailable);
 
   remoting.initElementEventHandlers();
-  remoting.initGlobalEventHandlers();
 
   if (base.isAppsV2()) {
-    remoting.fullscreen = new remoting.FullscreenAppsV2();
     remoting.windowFrame = new remoting.WindowFrame(
         document.getElementById('title-bar'));
     remoting.optionsMenu = remoting.windowFrame.createOptionsMenu();
+
+    var START_FULLSCREEN = 'start-fullscreen';
+    remoting.fullscreen = new remoting.FullscreenAppsV2();
+    remoting.fullscreen.addListener(function(isFullscreen) {
+      chrome.storage.local.set({START_FULLSCREEN: isFullscreen});
+    });
+    // TODO(jamiewalch): This should be handled by the background page when the
+    // window is created, but due to crbug.com/51587 it needs to be done here.
+    // Remove this hack once that bug is fixed.
+    chrome.storage.local.get(
+        START_FULLSCREEN,
+        /** @param {Object} values */
+        function(values) {
+          if (values[START_FULLSCREEN]) {
+            remoting.fullscreen.activate(true);
+          }
+        }
+    );
+
   } else {
     remoting.fullscreen = new remoting.FullscreenAppsV1();
     remoting.toolbar = new remoting.Toolbar(
         document.getElementById('session-toolbar'));
     remoting.optionsMenu = remoting.toolbar.createOptionsMenu();
+
+    window.addEventListener('beforeunload', remoting.promptClose, false);
+    window.addEventListener('unload', remoting.disconnect, false);
   }
+
+  // When a window goes full-screen, a resize event is triggered, but the
+  // Fullscreen.isActive call is not guaranteed to return true until the
+  // full-screen event is triggered. In apps v2, the size of the window's
+  // client area is calculated differently in full-screen mode, so register
+  // for both events.
+  window.addEventListener('resize', remoting.onResize, false);
+  remoting.fullscreen.addListener(remoting.onResize);
 
   remoting.initHostlist_();
 

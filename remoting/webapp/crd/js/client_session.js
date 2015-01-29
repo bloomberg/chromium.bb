@@ -607,13 +607,8 @@ remoting.ClientSession.prototype.removePlugin = function() {
     this.plugin_ = null;
   }
 
-  // Leave full-screen mode, and stop listening for related events.
-  var listener = this.callOnFullScreenChanged_;
-  remoting.fullscreen.activate(
-      false,
-      function() {
-        remoting.fullscreen.removeListener(listener);
-      });
+  // Stop listening for full-screen events.
+  remoting.fullscreen.removeListener(this.callOnFullScreenChanged_);
   this.updateClientSessionUi_(null);
 
   this.container_.removeEventListener('mousemove',
