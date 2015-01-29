@@ -1793,6 +1793,8 @@ const char kPermissionBrokerServiceName[] = "org.chromium.PermissionBroker";
 
 // Methods
 const char kRequestPathAccess[] = "RequestPathAccess";
+const char kRequestTcpPortAccess[] = "RequestTcpPortAccess";
+const char kRequestUdpPortAccess[] = "RequestUdpPortAccess";
 }  // namespace permission_broker
 
 namespace system_clock {
@@ -1958,5 +1960,11 @@ const char kOperationModeServer[] = "server";
 const char kOperationModeBridge[] = "bridge";
 
 }  // namespace apmanager
+
+namespace firewalld {
+const char kFirewalldInterface[] = "org.chromium.Firewalld";
+const char kServicePath[] = "/org/chromium/Firewalld";
+const char kServiceName[] = "org.chromium.Firewalld";
+}  // namespace firewalld
 
 #endif  // DBUS_SERVICE_CONSTANTS_H_
