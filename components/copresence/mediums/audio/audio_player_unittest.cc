@@ -99,13 +99,19 @@ class AudioPlayerTest : public testing::Test,
 
   void PlayAndVerifySamples(
       const scoped_refptr<media::AudioBusRefCounted>& samples) {
+    DCHECK_LT(samples->frames(), kMaxFrameCount);
+
     buffer_ = media::AudioBus::Create(1, kMaxFrameCount);
+    buffer_index_ = 0;
     player_->Play(samples);
     player_->FlushAudioLoopForTesting();
+    player_->Stop();
 
     int differences = 0;
-    for (int i = 0; i < samples->frames(); ++i)
-      differences += (buffer_->channel(0)[i] != samples->channel(0)[i]);
+    for (int i = 0; i < kMaxFrameCount; ++i) {
+      differences += (buffer_->channel(0)[i] !=
+                      samples->channel(0)[i % samples->frames()]);
+    }
     ASSERT_EQ(0, differences);
 
     buffer_.reset();
@@ -125,7 +131,7 @@ class AudioPlayerTest : public testing::Test,
   }
 
   static const int kDefaultFrameCount = 1024;
-  static const int kMaxFrameCount = 1024 * 10;
+  static const int kMaxFrameCount = 1024 * 100;
 
   scoped_ptr<media::AudioBus> buffer_;
   int buffer_index_;
@@ -180,10 +186,24 @@ TEST_F(AudioPlayerTest, OutOfOrderPlayAndStopMultiple) {
 }
 
 TEST_F(AudioPlayerTest, PlayingEndToEnd) {
-  const int kNumSamples = kDefaultFrameCount * 10;
+  const int kNumSamples = kDefaultFrameCount * 7 + 321;
   CreatePlayer();
 
   PlayAndVerifySamples(CreateRandomAudioRefCounted(0x1337, 1, kNumSamples));
+
+  DeletePlayer();
+}
+
+TEST_F(AudioPlayerTest, PlayingEndToEndRepeated) {
+  const int kNumSamples = kDefaultFrameCount * 7 + 537;
+  CreatePlayer();
+
+  PlayAndVerifySamples(CreateRandomAudioRefCounted(0x1337, 1, kNumSamples));
+
+  PlayAndVerifySamples(
+      CreateRandomAudioRefCounted(0x7331, 1, kNumSamples - 3123));
+
+  PlayAndVerifySamples(CreateRandomAudioRefCounted(0xf00d, 1, kNumSamples * 2));
 
   DeletePlayer();
 }
