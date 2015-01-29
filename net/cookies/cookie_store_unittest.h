@@ -30,6 +30,8 @@ const char kUrlGoogle[] = "http://www.google.izzle";
 const char kUrlGoogleFoo[] = "http://www.google.izzle/foo";
 const char kUrlGoogleBar[] = "http://www.google.izzle/bar";
 const char kUrlGoogleSecure[] = "https://www.google.izzle";
+const char kUrlGoogleWebSocket[] = "ws://www.google.izzle";
+const char kUrlGoogleWebSocketSecure[] = "wss://www.google.izzle";
 const char kValidCookieLine[] = "A=B; path=/";
 const char kValidDomainCookieLine[] = "A=B; path=/; domain=google.izzle";
 

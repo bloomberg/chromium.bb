@@ -24,7 +24,8 @@ bool DomainIsHostOnly(const std::string& domain_string) {
 
 std::string GetEffectiveDomain(const std::string& scheme,
                                const std::string& host) {
-  if (scheme == "http" || scheme == "https") {
+  if (scheme == "http" || scheme == "https" || scheme == "ws" ||
+      scheme == "wss") {
     return registry_controlled_domains::GetDomainAndRegistry(
         host,
         registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
@@ -265,6 +266,5 @@ std::string SerializeRequestCookieLine(
   return buffer;
 }
 
-}  // namespace cookie_utils
+}  // namespace cookie_util
 }  // namespace net
-

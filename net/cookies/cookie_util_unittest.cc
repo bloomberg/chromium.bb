@@ -43,8 +43,6 @@ void CheckSerialize(
   EXPECT_EQ(str_expected, net::cookie_util::SerializeRequestCookieLine(prc));
 }
 
-} // namespace
-
 TEST(CookieUtilTest, TestDomainIsHostOnly) {
   const struct {
     const char* str;
@@ -194,3 +192,20 @@ TEST(CookieUtilTest, TestRequestCookieParsing) {
     CheckSerialize(tests[i].parsed, tests[i].str);
   }
 }
+
+TEST(CookieUtilTest, TestGetEffectiveDomain) {
+  // Note: registry_controlled_domains::GetDomainAndRegistry is tested in its
+  // own unittests.
+  EXPECT_EQ("example.com",
+            net::cookie_util::GetEffectiveDomain("http", "www.example.com"));
+  EXPECT_EQ("example.com",
+            net::cookie_util::GetEffectiveDomain("https", "www.example.com"));
+  EXPECT_EQ("example.com",
+            net::cookie_util::GetEffectiveDomain("ws", "www.example.com"));
+  EXPECT_EQ("example.com",
+            net::cookie_util::GetEffectiveDomain("wss", "www.example.com"));
+  EXPECT_EQ("www.example.com",
+            net::cookie_util::GetEffectiveDomain("ftp", "www.example.com"));
+}
+
+}  // namespace

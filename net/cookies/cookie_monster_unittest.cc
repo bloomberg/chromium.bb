@@ -2611,6 +2611,67 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteCanonicalCookie) {
   EXPECT_TRUE(callback.result());
 }
 
+// Ensure that cookies for http, https, ws, and wss all share the same storage
+// and policies when GetAllCookiesForURLAsync is used. This test is part of
+// MultiThreadedCookieMonsterTest in order to test and use
+// GetAllCookiesForURLAsync, but it does not use any additional threads.
+TEST_F(MultiThreadedCookieMonsterTest, GetAllCookiesForURLEffectiveDomain) {
+  std::vector<CanonicalCookie*> cookies;
+  // This cookie will be freed by the CookieMonster.
+  cookies.push_back(CanonicalCookie::Create(url_google_, kValidCookieLine,
+                                            Time::Now(), CookieOptions()));
+  CanonicalCookie cookie = *cookies[0];
+  scoped_refptr<NewMockPersistentCookieStore> store(
+      new NewMockPersistentCookieStore);
+  scoped_refptr<CookieMonster> cm(new CookieMonster(store.get(), NULL));
+
+  CookieMonster::PersistentCookieStore::LoadedCallback loaded_callback;
+  ::testing::StrictMock<::testing::MockFunction<void(int)>> checkpoint;
+  const std::string key =
+      cookie_util::GetEffectiveDomain(url_google_.scheme(), url_google_.host());
+
+  ::testing::InSequence s;
+  EXPECT_CALL(checkpoint, Call(0));
+  EXPECT_CALL(*store, Load(::testing::_));
+  EXPECT_CALL(*store, LoadCookiesForKey(key, ::testing::_))
+      .WillOnce(::testing::SaveArg<1>(&loaded_callback));
+  EXPECT_CALL(checkpoint, Call(1));
+  // LoadCookiesForKey will never be called after checkpoint.Call(1) although
+  // we will call GetAllCookiesForURLAsync again, because all URLs below share
+  // the same key.
+  EXPECT_CALL(*store, LoadCookiesForKey(::testing::_, ::testing::_)).Times(0);
+
+  GetCookieListCallback callback;
+  checkpoint.Call(0);
+  GetAllCookiesForURLTask(cm.get(), url_google_, &callback);
+  checkpoint.Call(1);
+  ASSERT_FALSE(callback.did_run());
+  // Pass the cookies to the CookieMonster.
+  loaded_callback.Run(cookies);
+  // Now GetAllCookiesForURLTask is done.
+  ASSERT_TRUE(callback.did_run());
+  // See that the callback was called with the cookies.
+  ASSERT_EQ(1u, callback.cookies().size());
+  EXPECT_TRUE(cookie.IsEquivalent(callback.cookies()[0]));
+
+  // All urls in |urls| should share the same cookie domain.
+  const GURL kUrls[] = {
+      url_google_,
+      url_google_secure_,
+      GURL(kUrlGoogleWebSocket),
+      GURL(kUrlGoogleWebSocketSecure),
+  };
+  for (const GURL& url : kUrls) {
+    // Call the function with |url| and verify it is done synchronously without
+    // calling LoadCookiesForKey.
+    GetCookieListCallback callback;
+    GetAllCookiesForURLTask(cm.get(), url, &callback);
+    ASSERT_TRUE(callback.did_run());
+    ASSERT_EQ(1u, callback.cookies().size());
+    EXPECT_TRUE(cookie.IsEquivalent(callback.cookies()[0]));
+  }
+}
+
 TEST_F(CookieMonsterTest, InvalidExpiryTime) {
   std::string cookie_line =
       std::string(kValidCookieLine) + "; expires=Blarg arg arg";
