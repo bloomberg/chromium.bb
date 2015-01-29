@@ -2566,6 +2566,13 @@ _arm_release.add_config('nyan_blaze-release',
   useflags=append_useflags(['highdpi']),
 )
 
+_arm_release.add_config('veyron_rialto-release',
+  _base_configs['veyron_rialto'],
+  # rialto does not use Chrome.
+  sync_chrome=False,
+  chrome_sdk=False,
+)
+
 # Now generate generic release configs if we haven't created anything more
 # specific above already.
 def _AddReleaseConfigs():
