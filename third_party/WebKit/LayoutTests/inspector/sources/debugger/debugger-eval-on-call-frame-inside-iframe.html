@@ -76,7 +76,7 @@ var test = function()
     function step3()
     {
         var pane = WebInspector.panels.sources.sidebarPanes.callstack;
-        pane._placardSelected(pane.placards[1]);
+        pane._callFrameSelected(pane.callFrames[1]);
         InspectorTest.runAfterPendingDispatches(step4);
     }
 

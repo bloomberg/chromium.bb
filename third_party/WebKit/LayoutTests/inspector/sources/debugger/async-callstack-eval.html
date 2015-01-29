@@ -47,8 +47,9 @@ var test = function()
         InspectorTest.captureStackTrace(callFrames, asyncStackTrace);
 
         var pane = WebInspector.panels.sources.sidebarPanes.callstack;
-        InspectorTest.addResult("Select call frame: " + pane.placards[1].title);
-        pane._placardSelected(pane.placards[1]);
+        var frame = pane.callFrames[1];
+        InspectorTest.addResult("Select call frame: " + frame.title());
+        pane._callFrameSelected(frame);
         InspectorTest.runAfterPendingDispatches(step3);
     }
 

@@ -81,14 +81,14 @@ function test()
         {
             var index = callStackPane._selectedCallFrameIndex();
             InspectorTest.assertGreaterOrEqual(index, 0);
-            var placard = callStackPane.placards[index];
-            InspectorTest.addResult((index + 1) + ") " + placard.title + " " + placard.subtitle);
+            var frame = callStackPane.callFrames[index];
+            InspectorTest.addResult((index + 1) + ") " + frame.title() + " " + frame.subtitle());
             expandScopeChain();
         }
 
         function expandScopeChain()
         {
-            // Expand all but global scopes. Expanding global scope takes for too long
+            // Expand all but global scopes. Expanding global scope takes too long
             // so we keep it collapsed.
             var sections = scopeChainPane._sections;
             // global scope is always the last one.
@@ -111,8 +111,8 @@ function test()
 
             // Dump up to the testFunction() - we don't care what was before.
             var index = callStackPane._selectedCallFrameIndex();
-            var placard = callStackPane.placards[index];
-            if (placard.title !== "testFunction" && callStackPane._selectNextCallFrameOnStack())
+            var frame = callStackPane.callFrames[index];
+            if (frame.title() !== "testFunction" && callStackPane._selectNextCallFrameOnStack())
                 InspectorTest.runAfterPendingDispatches(printNextCallFrame);
             else
                 InspectorTest.completeDebuggerTest();
