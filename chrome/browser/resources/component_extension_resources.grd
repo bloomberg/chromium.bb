@@ -171,6 +171,10 @@
         <include name="IDR_PDF_PDF_SCRIPTING_API_JS" file="pdf/pdf_scripting_api.js" type="BINDATA" />
         <include name="IDR_PDF_CONTENT_SCRIPT_JS" file="pdf/content_script.js" type="BINDATA" />
 
+        <include name="IDR_PDF_PDF_PANE_CSS" file="pdf/elements/pdf-pane/pdf-pane.css" type="BINDATA" />
+        <include name="IDR_PDF_PDF_PANE_HTML" file="pdf/elements/pdf-pane/pdf-pane.html" type="BINDATA" />
+        <include name="IDR_PDF_PDF_PANE_JS" file="pdf/elements/pdf-pane/pdf-pane.js" type="BINDATA" />
+
         <include name="IDR_PDF_VIEWER_BUTTON_CSS" file="pdf/elements/viewer-button/viewer-button.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_HTML" file="pdf/elements/viewer-button/viewer-button.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_JS" file="pdf/elements/viewer-button/viewer-button.js" type="BINDATA" />

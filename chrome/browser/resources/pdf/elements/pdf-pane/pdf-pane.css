@@ -1,0 +1,33 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host /deep/ paper-dialog {
+  background-color: rgb(66, 66, 66);
+  color: rgb(250, 250, 250);
+  /* Since the pane slides in from the right, we want the scrollbar to be on
+   * the left. Setting direction to rtl achieves this.
+   */
+  direction: rtl;
+  font-family: Roboto, 'Helvetica Neue', Helvetica, Arial;
+  height: calc(100% - 64px);
+  margin: 0;
+  right: 0;
+  top: 64px;
+  width: 22em;
+}
+
+#reset-content {
+  direction: ltr;
+}
+
+:host /deep/ #scroller > h1 {
+  direction: ltr;
+  font-family: Roboto, 'Helvetica Neue', Helvetica, Arial;
+}
+
+hr {
+  background: rgb(66, 66, 66);
+  border: 0;
+  border-bottom: 1px dashed rgb(250, 250, 250);
+}
