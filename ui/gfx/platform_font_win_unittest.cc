@@ -150,6 +150,7 @@ TEST(PlatformFontWinTest, Metrics_SkiaVersusGDI) {
     EXPECT_EQ(h_font_gdi->font_size(), h_font_skia->font_size());
     EXPECT_EQ(h_font_gdi->style(), h_font_skia->style());
     EXPECT_EQ(h_font_gdi->font_name(), h_font_skia->font_name());
+    EXPECT_EQ(h_font_gdi->ave_char_width(), h_font_skia->ave_char_width());
 
     EXPECT_LE(abs(h_font_gdi->cap_height() - h_font_skia->cap_height()), 1);
     EXPECT_LE(abs(h_font_gdi->baseline() - h_font_skia->baseline()), 1);

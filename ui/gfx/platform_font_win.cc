@@ -509,11 +509,11 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
 
   // The metrics retrieved from skia don't have the average character width. In
   // any case if we get the average character width from skia then use that or
-  // use the text extent technique as documented by microsoft. See
-  // GetAverageCharWidthInDialogUnits for details.
+  // the average character width in the TEXTMETRIC structure.
+  // TODO(ananta): Investigate whether it is possible to retrieve this value
+  // from DirectWrite.
   const int ave_char_width =
-      skia_metrics.fAvgCharWidth == 0 ?
-          HFontRef::GetAverageCharWidthInDialogUnits(gdi_font)
+      skia_metrics.fAvgCharWidth == 0 ? font_metrics.tmAveCharWidth
               : skia_metrics.fAvgCharWidth;
 
   int style = 0;
