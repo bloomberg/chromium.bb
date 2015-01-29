@@ -444,15 +444,14 @@ class ExtensionLoadedNotificationObserver
         IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK));
     NSString* message(l10n_util::GetNSStringWithFixup(
         IDS_EXTENSION_INSTALLED_SIGNIN_PROMO));
+    message = [link stringByAppendingString:message];
 
     HyperlinkTextView* view = promo_.get();
-    [view setMessageAndLink:message
-                   withLink:link
-                   atOffset:0
-                       font:font
-               messageColor:[NSColor blackColor]
-                  linkColor:gfx::SkColorToCalibratedNSColor(
-                                chrome_style::GetLinkColor())];
+    [view setMessage:message withFont:font messageColor:[NSColor blackColor]];
+    [view addLinkRange:NSMakeRange(0, [link length])
+              withName:@""
+             linkColor:gfx::SkColorToCalibratedNSColor(
+                           chrome_style::GetLinkColor())];
 
     // HACK! The TextView does not report correct height even after you stuff
     // it with text (it tells you it is single-line even if it is multiline), so

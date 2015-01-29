@@ -81,21 +81,19 @@ const int kFontSize = 11;
   const base::string16 promoText =  l10n_util::GetStringFUTF16(
       IDS_BOOKMARK_SYNC_PROMO_MESSAGE,
       linkText, &offset);
-  const base::string16 promoTextWithoutLink =
-      promoText.substr(0, offset) +
-      promoText.substr(offset + linkText.size());
-
+  NSString* nsPromoText = SysUTF16ToNSString(promoText);
+  NSString* nsLinkText = SysUTF16ToNSString(linkText);
   NSFont* font = [NSFont labelFontOfSize:kFontSize];
   NSColor* linkColor = gfx::SkColorToCalibratedNSColor(
       chrome_style::GetLinkColor());
 
   textView_.reset([[HyperlinkTextView alloc] init]);
-  [textView_ setMessageAndLink:base::SysUTF16ToNSString(promoTextWithoutLink)
-                      withLink:base::SysUTF16ToNSString(linkText)
-                      atOffset:offset
-                          font:font
-                  messageColor:gfx::SkColorToDeviceNSColor(kTextColor)
-                     linkColor:linkColor];
+  [textView_ setMessage:nsPromoText
+               withFont:font
+           messageColor:gfx::SkColorToDeviceNSColor(kTextColor)];
+  [textView_ addLinkRange:NSMakeRange(offset, [nsLinkText length])
+                 withName:@""
+                linkColor:linkColor];
   [textView_ setRefusesFirstResponder:YES];
   [[textView_ textContainer] setLineFragmentPadding:0.0];
   RemoveUnderlining(textView_, offset, linkText.size());

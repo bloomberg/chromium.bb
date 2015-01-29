@@ -11,6 +11,7 @@
 @class BrowserWindowController;
 class Browser;
 @class GTMUILocalizerAndLayoutTweaker;
+@class HyperlinkTextView;
 
 // The ExclusiveAccessBubbleWindowController manages the bubble that informs the
 // user of different exclusive access state like fullscreen mode, mouse lock,
@@ -35,7 +36,7 @@ class Browser;
   // text views cannot conveniently be created in IB. The xib file contains
   // a text field |exitLabelPlaceholder_| that's replaced by this text view
   // |exitLabel_| in -awakeFromNib.
-  base::scoped_nsobject<NSTextView> exitLabel_;
+  base::scoped_nsobject<HyperlinkTextView> exitLabel_;
 
   base::scoped_nsobject<NSTimer> hideTimer_;
   base::scoped_nsobject<NSAnimation> hideAnimation_;

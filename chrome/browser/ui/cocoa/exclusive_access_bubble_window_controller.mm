@@ -214,34 +214,36 @@ const float kHideDuration = 0.7;
   [exitLabel_.get() setDelegate:self];
 
   NSString* exitLinkText;
-  NSString* exitUnlinkedText;
+  NSString* exitLinkedText;
   if (bubbleType_ ==
           EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION ||
       bubbleType_ == EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION) {
     exitLinkText = @"";
-    exitUnlinkedText =
+    exitLinkedText =
         [@" " stringByAppendingString:l10n_util::GetNSStringF(
                                           IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
                                           l10n_util::GetStringUTF16(
                                               IDS_APP_ESC_KEY))];
   } else {
     exitLinkText = l10n_util::GetNSString(IDS_EXIT_FULLSCREEN_MODE);
-    exitUnlinkedText =
-        [@" " stringByAppendingString:l10n_util::GetNSStringF(
-                                          IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
-                                          l10n_util::GetStringUTF16(
-                                              IDS_APP_ESC_KEY))];
+    NSString* messageText = l10n_util::GetNSStringF(
+                                   IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
+                                   l10n_util::GetStringUTF16(IDS_APP_ESC_KEY));
+    exitLinkedText =
+        [NSString stringWithFormat:@"%@ %@", exitLinkText, messageText];
   }
 
   NSFont* font = [NSFont
       systemFontOfSize:[NSFont
                            systemFontSizeForControlSize:NSRegularControlSize]];
-  [(HyperlinkTextView*)exitLabel_.get() setMessageAndLink:exitUnlinkedText
-                                                 withLink:exitLinkText
-                                                 atOffset:0
-                                                     font:font
-                                             messageColor:[NSColor blackColor]
-                                                linkColor:[NSColor blueColor]];
+  [exitLabel_.get() setMessage:exitLinkedText
+                      withFont:font
+                  messageColor:[NSColor blackColor]];
+  if ([exitLinkText length] != 0) {
+    [exitLabel_.get() addLinkRange:NSMakeRange(0, [exitLinkText length])
+                          withName:@""
+                         linkColor:[NSColor blueColor]];
+  }
   [exitLabel_.get() setAlignment:NSRightTextAlignment];
 
   NSRect labelFrame = [exitLabel_ frame];
