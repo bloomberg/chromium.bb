@@ -364,7 +364,9 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
   // signed out, then we should show the user manager instead. By switching
   // the active profile to the guest profile we ensure that no
   // browser windows will be opened for the guest profile.
-  if (switches::IsNewProfileManagement() && !profile->IsGuestSession()) {
+  if (switches::IsNewProfileManagement() &&
+      profile &&
+      !profile->IsGuestSession()) {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t profile_index = cache.GetIndexOfProfileWithPath(profile_path);
