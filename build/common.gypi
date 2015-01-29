@@ -2983,6 +2983,11 @@
       ['v8_use_external_startup_data==1', {
        'defines': ['V8_USE_EXTERNAL_STARTUP_DATA'],
       }],
+      ['use_lto==1 and (target_arch=="ia32" or target_arch=="x64")', {
+        # Required for third_party/zlib/crc_folding.c and various other code
+        # that uses SSE.
+        'ldflags': ['-Wl,-plugin-opt,mcpu=corei7-avx'],
+      }],
     ],  # conditions for 'target_defaults'
     'target_conditions': [
       ['<(use_libpci)==1', {
@@ -5781,18 +5786,39 @@
           ['_toolset=="target"', {
             'cflags': [
               '-flto',
+            ],
+          }],
+        ],
+      },
+    }],
+    ['use_lto==1 and clang==0', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'cflags': [
               '-ffat-lto-objects',
             ],
           }],
         ],
       },
     }],
-    ['use_lto==1 or use_lto_o2==1', {
+    ['(use_lto==1 or use_lto_o2==1) and clang==0', {
       'target_defaults': {
         'target_conditions': [
           ['_toolset=="target"', {
             'ldflags': [
               '-flto=32',
+            ],
+          }],
+        ],
+      },
+    }],
+    ['(use_lto==1 or use_lto_o2==1) and clang==1', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'ldflags': [
+              '-flto',
             ],
           }],
         ],
