@@ -102,7 +102,7 @@ class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
     platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
         this, gfx::Rect());
   }
-  virtual ~StubOzoneDelegate() {}
+  ~StubOzoneDelegate() override {}
 
   void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
 
