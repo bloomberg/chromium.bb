@@ -188,6 +188,7 @@ public class InfoBarContainer extends ScrollView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        super.onTouchEvent(event);
         // Consume all touch events so they do not reach the ContentView.
         return true;
     }
