@@ -91,9 +91,6 @@ class InMemoryHistoryBackend : public HistoryServiceObserver {
   void OnKeywordSearchTermDeleted(HistoryService* history_service,
                                   URLID url_id) override;
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAll);
-
   // Handler for HISTORY_URL_VISITED and HISTORY_URLS_MODIFIED.
   void OnURLVisitedOrModified(const URLRow& url_row);
 
