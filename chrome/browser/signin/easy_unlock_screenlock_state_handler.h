@@ -45,6 +45,11 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
     // transmission power is too high, indicating that the phone is (probably)
     // more than 1 foot away, and therefore is not allowed to unlock the device.
     STATE_TX_POWER_TOO_HIGH,
+    // A phone eligible to unlock the device is found; but (a) the phone is
+    // locked, and (b) the local device's transmission power is too high,
+    // indicating that the phone is (probably) more than 1 foot away, and
+    // therefore is not allowed to unlock the device.
+    STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH,
     // The device can be unlocked using Easy Unlock.
     STATE_AUTHENTICATED
   };

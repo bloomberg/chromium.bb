@@ -25,6 +25,11 @@ ScreenlockBridge::UserPodCustomIcon GetIconForState(
     case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
       return ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED;
     case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
+    case EasyUnlockScreenlockStateHandler::
+             STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
+      // TODO(isherman): This icon is currently identical to the regular locked
+      // icon.  Once the reduced proximity range flag is removed, consider
+      // deleting the redundant icon.
       return ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED_WITH_PROXIMITY_HINT;
     case EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING:
       return ScreenlockBridge::USER_POD_CUSTOM_ICON_SPINNER;
@@ -55,6 +60,10 @@ size_t GetTooltipResourceId(EasyUnlockScreenlockStateHandler::State state) {
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_RSSI_TOO_LOW;
     case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TX_POWER_TOO_HIGH;
+    case EasyUnlockScreenlockStateHandler::
+             STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
+      return
+          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
     case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS;
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
@@ -69,8 +78,9 @@ bool TooltipContainsDeviceType(EasyUnlockScreenlockStateHandler::State state) {
          state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE ||
          state == EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH ||
          state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED ||
-         state == EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW ||
-         state == EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH;
+         state == EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH ||
+         state == EasyUnlockScreenlockStateHandler::
+                      STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
 }
 
 }  // namespace

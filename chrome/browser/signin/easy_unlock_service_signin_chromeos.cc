@@ -245,6 +245,10 @@ void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
       case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
         event = chromeos::PASSWORD_SIGN_IN_TX_POWER_TOO_HIGH;
         break;
+      case EasyUnlockScreenlockStateHandler::
+               STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
+        event = chromeos::PASSWORD_SIGN_IN_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
+        break;
       case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
         event = chromeos::PASSWORD_SIGN_IN_WITH_AUTHENTICATED_PHONE;
         break;

@@ -74,6 +74,9 @@ EasyUnlockScreenlockStateHandler::State ToScreenlockStateHandlerState(
       return EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW;
     case easy_unlock_private::STATE_TX_POWER_TOO_HIGH:
       return EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH;
+    case easy_unlock_private::STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
+      return EasyUnlockScreenlockStateHandler::
+                 STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
     case easy_unlock_private::STATE_AUTHENTICATED:
       return EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED;
     default:
