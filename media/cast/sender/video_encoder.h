@@ -48,6 +48,14 @@ class VideoEncoder {
   // encoder affinity (defined as offering some sort of performance benefit).
   // This is an optional capability and by default returns null.
   virtual scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory();
+
+  // Instructs the encoder to finish and emit all frames that have been
+  // submitted for encoding. An encoder may hold a certain number of frames for
+  // analysis. Under certain network conditions, particularly when there is
+  // network congestion, it is necessary to flush out of the encoder all
+  // submitted frames so that eventually new frames may be encoded. Like
+  // EncodeVideoFrame(), the encoder will process this request asynchronously.
+  virtual void EmitFrames();
 };
 
 }  // namespace cast

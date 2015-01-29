@@ -36,6 +36,7 @@ class H264VideoToolboxEncoder : public VideoEncoder {
   void GenerateKeyFrame() override;
   void LatestFrameIdToReference(uint32 frame_id) override;
   scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory() override;
+  void EmitFrames() override;
 
  private:
   // Initialize the compression session.

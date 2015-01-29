@@ -48,6 +48,7 @@ class MEDIA_EXPORT VideoToolboxGlue {
   CFStringRef kVTCompressionPropertyKey_AverageBitRate() const;
   CFStringRef kVTCompressionPropertyKey_ColorPrimaries() const;
   CFStringRef kVTCompressionPropertyKey_ExpectedFrameRate() const;
+  CFStringRef kVTCompressionPropertyKey_MaxFrameDelayCount() const;
   CFStringRef kVTCompressionPropertyKey_MaxKeyFrameInterval() const;
   CFStringRef kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration() const;
   CFStringRef kVTCompressionPropertyKey_ProfileLevel() const;
@@ -89,6 +90,9 @@ class MEDIA_EXPORT VideoToolboxGlue {
   CVPixelBufferPoolRef VTCompressionSessionGetPixelBufferPool(
       VTCompressionSessionRef session) const;
   void VTCompressionSessionInvalidate(VTCompressionSessionRef session) const;
+  OSStatus VTCompressionSessionCompleteFrames(
+      VTCompressionSessionRef session,
+      CoreMediaGlue::CMTime completeUntilPresentationTimeStamp) const;
 
   // Originally from VTSession.h
   OSStatus VTSessionSetProperty(VTSessionRef session,

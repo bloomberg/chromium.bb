@@ -186,6 +186,14 @@ void VideoSender::InsertRawVideoFrame(
       VLOG(1) << "New target delay: " << new_target_delay.InMilliseconds();
       playout_delay_change_cb_.Run(new_target_delay);
     }
+
+    // Some encoder implementations have a frame window for analysis. Since we
+    // are dropping this frame, unless we instruct the encoder to flush all the
+    // frames that have been enqueued for encoding, frames_in_encoder_ and
+    // last_enqueued_frame_reference_time_ will never be updated and we will
+    // drop every subsequent frame for the rest of the session.
+    video_encoder_->EmitFrames();
+
     return;
   }
 

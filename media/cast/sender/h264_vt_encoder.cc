@@ -335,6 +335,11 @@ void H264VideoToolboxEncoder::ConfigureSession(
   SetSessionProperty(
       videotoolbox_glue_->kVTCompressionPropertyKey_YCbCrMatrix(),
       kCVImageBufferYCbCrMatrix_ITU_R_709_2);
+  if (video_config.max_number_of_video_buffers_used > 0) {
+    SetSessionProperty(
+        videotoolbox_glue_->kVTCompressionPropertyKey_MaxFrameDelayCount(),
+        video_config.max_number_of_video_buffers_used);
+  }
 }
 
 void H264VideoToolboxEncoder::Teardown() {
@@ -428,6 +433,21 @@ H264VideoToolboxEncoder::CreateVideoFrameFactory() {
       base::scoped_policy::RETAIN);
   return scoped_ptr<VideoFrameFactory>(
       new VideoFrameFactoryCVPixelBufferPoolImpl(pool));
+}
+
+void H264VideoToolboxEncoder::EmitFrames() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!compression_session_) {
+    DLOG(ERROR) << " compression session is null";
+    return;
+  }
+
+  OSStatus status = videotoolbox_glue_->VTCompressionSessionCompleteFrames(
+      compression_session_, CoreMediaGlue::CMTime{0, 0, 0, 0});
+  if (status != noErr) {
+    DLOG(ERROR) << " VTCompressionSessionCompleteFrames failed: " << status;
+  }
 }
 
 bool H264VideoToolboxEncoder::SetSessionProperty(CFStringRef key,

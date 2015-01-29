@@ -97,7 +97,19 @@ struct VideoSenderConfig {
   int max_qp;
   int min_qp;
   int max_frame_rate;  // TODO(miu): Should be double, not int.
-  int max_number_of_video_buffers_used;  // Max value depend on codec.
+
+  // This field is used differently by various encoders. It defaults to 1.
+  //
+  // For VP8, it should be 1 to operate in single-buffer mode, or 3 to operate
+  // in multi-buffer mode. See
+  // http://www.webmproject.org/docs/encoder-parameters/ for details.
+  //
+  // For H.264 on Mac or iOS, it controls the max number of frames the encoder
+  // may hold before emitting a frame. A larger window may allow higher encoding
+  // efficiency at the cost of latency and memory. Set to 0 to let the encoder
+  // choose a suitable value for the platform and other encoding settings.
+  int max_number_of_video_buffers_used;
+
   Codec codec;
   int number_of_encode_threads;
 

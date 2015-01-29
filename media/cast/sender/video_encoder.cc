@@ -12,5 +12,8 @@ scoped_ptr<VideoFrameFactory> VideoEncoder::CreateVideoFrameFactory() {
   return nullptr;
 }
 
+void VideoEncoder::EmitFrames() {
+}
+
 }  // namespace cast
 }  // namespace media

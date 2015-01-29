@@ -34,6 +34,9 @@ struct VideoToolboxGlue::Library {
   typedef CVPixelBufferPoolRef (*VTCompressionSessionGetPixelBufferPoolMethod)(
       VTCompressionSessionRef);
   typedef void (*VTCompressionSessionInvalidateMethod)(VTCompressionSessionRef);
+  typedef OSStatus (*VTCompressionSessionCompleteFramesMethod)(
+      VTCompressionSessionRef,
+      CoreMediaGlue::CMTime);
   typedef OSStatus (*VTSessionSetPropertyMethod)(VTSessionRef,
                                                  CFStringRef,
                                                  CFTypeRef);
@@ -43,12 +46,14 @@ struct VideoToolboxGlue::Library {
   VTCompressionSessionGetPixelBufferPoolMethod
       VTCompressionSessionGetPixelBufferPool;
   VTCompressionSessionInvalidateMethod VTCompressionSessionInvalidate;
+  VTCompressionSessionCompleteFramesMethod VTCompressionSessionCompleteFrames;
   VTSessionSetPropertyMethod VTSessionSetProperty;
 
   CFStringRef* kVTCompressionPropertyKey_AllowFrameReordering;
   CFStringRef* kVTCompressionPropertyKey_AverageBitRate;
   CFStringRef* kVTCompressionPropertyKey_ColorPrimaries;
   CFStringRef* kVTCompressionPropertyKey_ExpectedFrameRate;
+  CFStringRef* kVTCompressionPropertyKey_MaxFrameDelayCount;
   CFStringRef* kVTCompressionPropertyKey_MaxKeyFrameInterval;
   CFStringRef* kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration;
   CFStringRef* kVTCompressionPropertyKey_ProfileLevel;
@@ -86,12 +91,14 @@ class VideoToolboxGlue::Loader {
     LOAD_SYMBOL(VTCompressionSessionEncodeFrame)
     LOAD_SYMBOL(VTCompressionSessionGetPixelBufferPool)
     LOAD_SYMBOL(VTCompressionSessionInvalidate)
+    LOAD_SYMBOL(VTCompressionSessionCompleteFrames)
     LOAD_SYMBOL(VTSessionSetProperty)
 
     LOAD_SYMBOL(kVTCompressionPropertyKey_AllowFrameReordering)
     LOAD_SYMBOL(kVTCompressionPropertyKey_AverageBitRate)
     LOAD_SYMBOL(kVTCompressionPropertyKey_ColorPrimaries)
     LOAD_SYMBOL(kVTCompressionPropertyKey_ExpectedFrameRate)
+    LOAD_SYMBOL(kVTCompressionPropertyKey_MaxFrameDelayCount)
     LOAD_SYMBOL(kVTCompressionPropertyKey_MaxKeyFrameInterval)
     LOAD_SYMBOL(kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration)
     LOAD_SYMBOL(kVTCompressionPropertyKey_ProfileLevel)
@@ -189,6 +196,13 @@ void VideoToolboxGlue::VTCompressionSessionInvalidate(
   library_->VTCompressionSessionInvalidate(session);
 }
 
+OSStatus VideoToolboxGlue::VTCompressionSessionCompleteFrames(
+    VTCompressionSessionRef session,
+    CoreMediaGlue::CMTime completeUntilPresentationTimeStamp) const {
+  return library_->VTCompressionSessionCompleteFrames(
+      session, completeUntilPresentationTimeStamp);
+}
+
 OSStatus VideoToolboxGlue::VTSessionSetProperty(VTSessionRef session,
                                                 CFStringRef propertyKey,
                                                 CFTypeRef propertyValue) const {
@@ -202,6 +216,7 @@ KEY_ACCESSOR(kVTCompressionPropertyKey_AllowFrameReordering)
 KEY_ACCESSOR(kVTCompressionPropertyKey_AverageBitRate)
 KEY_ACCESSOR(kVTCompressionPropertyKey_ColorPrimaries)
 KEY_ACCESSOR(kVTCompressionPropertyKey_ExpectedFrameRate)
+KEY_ACCESSOR(kVTCompressionPropertyKey_MaxFrameDelayCount)
 KEY_ACCESSOR(kVTCompressionPropertyKey_MaxKeyFrameInterval)
 KEY_ACCESSOR(kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration)
 KEY_ACCESSOR(kVTCompressionPropertyKey_ProfileLevel)
