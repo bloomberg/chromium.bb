@@ -8,7 +8,7 @@
   'target_conditions': [
     ['_toolset=="target"', {
       'conditions': [
-        ['use_lto==1 or use_lto_o2==1', {
+        ['OS=="android" and (use_lto==1 or use_lto_o2==1)', {
           'cflags!': [
             '-flto',
             '-ffat-lto-objects',
