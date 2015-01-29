@@ -138,6 +138,8 @@ AccessibilityEventRecorderWin::AccessibilityEventRecorderWin(
       GetCurrentProcessId(),
       0,  // Hook all threads
       WINEVENT_INCONTEXT);
+  LOG(INFO) << "SetWinEventHook handle: " << win_event_hook_handle_;
+  CHECK(win_event_hook_handle_);
 }
 
 AccessibilityEventRecorderWin::~AccessibilityEventRecorderWin() {
@@ -153,6 +155,16 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     LONG child_id,
     DWORD event_thread,
     DWORD event_time) {
+  // http://crbug.com/440579 TODO(dmazzoni): remove most logging in this file,
+  // or change to VLOG(1), once flakiness on CrWinClang testers is fixed.
+  LOG(INFO) << "OnWinEventHook handle=" << handle
+            << " event=" << event
+            << " hwnd=" << hwnd
+            << " obj_id=" << obj_id
+            << " child_id=" << child_id
+            << " event_thread=" << event_thread
+            << " event_time=" << event_time;
+
   base::win::ScopedComPtr<IAccessible> browser_accessible;
   HRESULT hr = AccessibleObjectFromWindow(
       hwnd,
@@ -163,7 +175,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     // Note: our event hook will pick up some superfluous events we
     // don't care about, so it's safe to just ignore these failures.
     // Same below for other HRESULT checks.
-    VLOG(1) << "Ignoring result " << hr << " from AccessibleObjectFromWindow";
+    LOG(INFO) << "Ignoring result " << hr << " from AccessibleObjectFromWindow";
     return;
   }
 
@@ -171,21 +183,21 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   base::win::ScopedComPtr<IDispatch> dispatch;
   hr = browser_accessible->get_accChild(childid_variant, dispatch.Receive());
   if (!SUCCEEDED(hr) || !dispatch) {
-    VLOG(1) << "Ignoring result " << hr << " and result " << dispatch
-            << " from get_accChild";
+    LOG(INFO) << "Ignoring result " << hr << " and result " << dispatch
+              << " from get_accChild";
     return;
   }
 
   base::win::ScopedComPtr<IAccessible> iaccessible;
   hr = dispatch.QueryInterface(iaccessible.Receive());
   if (!SUCCEEDED(hr)) {
-    VLOG(1) << "Ignoring result " << hr << " from QueryInterface";
+    LOG(INFO) << "Ignoring result " << hr << " from QueryInterface";
     return;
   }
 
   std::string event_str = AccessibilityEventToStringUTF8(event);
   if (event_str.empty()) {
-    VLOG(1) << "Ignoring event " << event;
+    LOG(INFO) << "Ignoring event " << event;
     return;
   }
 
@@ -228,6 +240,8 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
       }
     }
   }
+
+  LOG(INFO) << "Got event log: " << log;
 
   event_logs_.push_back(log);
 }
