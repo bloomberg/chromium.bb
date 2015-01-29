@@ -26,6 +26,9 @@ from pylint.checkers import BaseChecker
 from pylint.interfaces import IAstroidChecker
 
 
+# pylint: disable=too-few-public-methods
+
+
 class DocStringChecker(BaseChecker):
   """PyLint AST based checker to verify PEP 257 compliance
 
@@ -38,8 +41,7 @@ class DocStringChecker(BaseChecker):
 
   __implements__ = IAstroidChecker
 
-  # pylint: disable=too-few-public-methods,multiple-statements
-  # pylint: disable=class-missing-docstring
+  # pylint: disable=class-missing-docstring,multiple-statements
   class _MessageCP001(object): pass
   class _MessageCP002(object): pass
   class _MessageCP003(object): pass
@@ -54,8 +56,7 @@ class DocStringChecker(BaseChecker):
   class _MessageCP012(object): pass
   class _MessageCP013(object): pass
   class _MessageCP014(object): pass
-  # pylint: enable=too-few-public-methods,multiple-statements
-  # pylint: enable=class-missing-docstring
+  # pylint: enable=class-missing-docstring,multiple-statements
 
   name = 'doc_string_checker'
   priority = -1
@@ -308,11 +309,9 @@ class Py3kCompatChecker(BaseChecker):
 
   __implements__ = IAstroidChecker
 
-  # pylint: disable=too-few-public-methods,multiple-statements
-  # pylint: disable=class-missing-docstring
+  # pylint: disable=class-missing-docstring,multiple-statements
   class _MessageR9100(object): pass
-  # pylint: enable=too-few-public-methods,multiple-statements
-  # pylint: enable=class-missing-docstring
+  # pylint: enable=class-missing-docstring,multiple-statements
 
   name = 'py3k_compat_checker'
   priority = -1
@@ -351,6 +350,55 @@ class Py3kCompatChecker(BaseChecker):
   def visit_import(self, _node):
     """Process 'import' statements"""
     self.saw_imports = True
+
+
+class SourceChecker(BaseChecker):
+  """Make sure we enforce py3k compatible features"""
+
+  __implements__ = IAstroidChecker
+
+  # pylint: disable=class-missing-docstring,multiple-statements
+  class _MessageR9200(object): pass
+  class _MessageR9201(object): pass
+  class _MessageR9202(object): pass
+  # pylint: enable=class-missing-docstring,multiple-statements
+
+  name = 'source_checker'
+  priority = -1
+  MSG_ARGS = 'offset:%(offset)i: {%(line)s}'
+  msgs = {
+      'R9200': ('Shebang should be #!/usr/bin/python2 or #!/usr/bin/python3',
+                ('bad-shebang'), _MessageR9200),
+      'R9201': ('Shebang is missing, but file is executable',
+                ('missing-shebang'), _MessageR9201),
+      'R9202': ('Shebang is set, but file is not executable',
+                ('spurious-shebang'), _MessageR9202),
+  }
+  options = ()
+
+  def visit_module(self, node):
+    """Called when the whole file has been read"""
+    stream = node.file_stream
+    stream.seek(0)
+    self._check_shebang(node, stream)
+
+  def _check_shebang(self, _node, stream):
+    """Verify the shebang is version specific"""
+    st = os.fstat(stream.fileno())
+    mode = st.st_mode
+    executable = bool(mode & 0o0111)
+
+    shebang = stream.readline()
+    if shebang[0:2] != '#!':
+      if executable:
+        self.add_message('R9201')
+      return
+    elif not executable:
+      self.add_message('R9202')
+
+    parts = shebang.split()
+    if parts[0] not in ('#!/usr/bin/python2', '#!/usr/bin/python3'):
+      self.add_message('R9200')
 
 
 def register(linter):
