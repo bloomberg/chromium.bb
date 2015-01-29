@@ -11,7 +11,8 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
-#include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/events/ozone/evdev/input_device_factory_evdev.h"
+#include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 
 #if defined(USE_EVDEV_GESTURES)
@@ -84,7 +85,7 @@ std::string DumpGesturePropertyValue(GesturesProp* property) {
 }
 
 // Dump touch device property values to a string.
-void DumpTouchDeviceStatus(EventFactoryEvdev* event_factory,
+void DumpTouchDeviceStatus(InputDeviceFactoryEvdev* event_factory,
                            GesturePropertyProvider* provider,
                            std::string* status) {
   // We use DT_ALL since we want gesture property values for all devices that
@@ -117,7 +118,6 @@ void DumpTouchDeviceStatus(EventFactoryEvdev* event_factory,
 }  // namespace
 
 InputControllerEvdev::InputControllerEvdev(
-    EventFactoryEvdev* event_factory,
     KeyboardEvdev* keyboard,
     MouseButtonMapEvdev* button_map
 #if defined(USE_EVDEV_GESTURES)
@@ -125,7 +125,7 @@ InputControllerEvdev::InputControllerEvdev(
     GesturePropertyProvider* gesture_property_provider
 #endif
     )
-    : event_factory_(event_factory),
+    : input_device_factory_(nullptr),
       keyboard_(keyboard),
       button_map_(button_map)
 #if defined(USE_EVDEV_GESTURES)
@@ -138,12 +138,21 @@ InputControllerEvdev::InputControllerEvdev(
 InputControllerEvdev::~InputControllerEvdev() {
 }
 
+void InputControllerEvdev::SetInputDeviceFactory(
+    InputDeviceFactoryEvdev* input_device_factory) {
+  input_device_factory_ = input_device_factory;
+}
+
 bool InputControllerEvdev::HasMouse() {
-  return event_factory_->GetDeviceIdsByType(DT_MOUSE, NULL);
+  if (!input_device_factory_)
+    return false;
+  return input_device_factory_->GetDeviceIdsByType(DT_MOUSE, NULL);
 }
 
 bool InputControllerEvdev::HasTouchpad() {
-  return event_factory_->GetDeviceIdsByType(DT_TOUCHPAD, NULL);
+  if (!input_device_factory_)
+    return false;
+  return input_device_factory_->GetDeviceIdsByType(DT_TOUCHPAD, NULL);
 }
 
 bool InputControllerEvdev::IsCapsLockEnabled() {
@@ -177,28 +186,36 @@ void InputControllerEvdev::GetAutoRepeatRate(base::TimeDelta* delay,
 }
 
 void InputControllerEvdev::DisableInternalTouchpad() {
-  event_factory_->DisableInternalTouchpad();
+  if (input_device_factory_)
+    input_device_factory_->DisableInternalTouchpad();
 }
 
 void InputControllerEvdev::EnableInternalTouchpad() {
-  event_factory_->EnableInternalTouchpad();
+  if (input_device_factory_)
+    input_device_factory_->EnableInternalTouchpad();
 }
 
 void InputControllerEvdev::DisableInternalKeyboardExceptKeys(
     scoped_ptr<std::set<DomCode>> excepted_keys) {
-  event_factory_->DisableInternalKeyboardExceptKeys(excepted_keys.Pass());
+  if (input_device_factory_) {
+    input_device_factory_->DisableInternalKeyboardExceptKeys(
+        excepted_keys.Pass());
+  }
 }
 
 void InputControllerEvdev::EnableInternalKeyboard() {
-  event_factory_->EnableInternalKeyboard();
+  if (input_device_factory_)
+    input_device_factory_->EnableInternalKeyboard();
 }
 
 void InputControllerEvdev::SetIntPropertyForOneType(const EventDeviceType type,
                                                     const std::string& name,
                                                     int value) {
+  if (!input_device_factory_)
+    return;
 #if defined(USE_EVDEV_GESTURES)
   std::vector<int> ids;
-  event_factory_->GetDeviceIdsByType(type, &ids);
+  input_device_factory_->GetDeviceIdsByType(type, &ids);
   for (size_t i = 0; i < ids.size(); ++i) {
     SetGestureIntProperty(gesture_property_provider_, ids[i], name, value);
   }
@@ -211,9 +228,11 @@ void InputControllerEvdev::SetIntPropertyForOneType(const EventDeviceType type,
 void InputControllerEvdev::SetBoolPropertyForOneType(const EventDeviceType type,
                                                      const std::string& name,
                                                      bool value) {
+  if (!input_device_factory_)
+    return;
 #if defined(USE_EVDEV_GESTURES)
   std::vector<int> ids;
-  event_factory_->GetDeviceIdsByType(type, &ids);
+  input_device_factory_->GetDeviceIdsByType(type, &ids);
   for (size_t i = 0; i < ids.size(); ++i) {
     SetGestureBoolProperty(gesture_property_provider_, ids[i], name, value);
   }
@@ -262,7 +281,7 @@ void InputControllerEvdev::GetTouchDeviceStatus(
 #if defined(USE_EVDEV_GESTURES)
   std::string* status_ptr = status.get();
   base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&DumpTouchDeviceStatus, event_factory_,
+      FROM_HERE, base::Bind(&DumpTouchDeviceStatus, input_device_factory_,
                             gesture_property_provider_, status_ptr),
       base::Bind(reply, base::Passed(&status)));
 #else

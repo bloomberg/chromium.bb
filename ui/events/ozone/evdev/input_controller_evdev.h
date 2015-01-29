@@ -14,7 +14,7 @@
 
 namespace ui {
 
-class EventFactoryEvdev;
+class InputDeviceFactoryEvdev;
 class KeyboardEvdev;
 class MouseButtonMapEvdev;
 
@@ -25,8 +25,7 @@ class GesturePropertyProvider;
 // Ozone InputController implementation for the Linux input subsystem ("evdev").
 class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
  public:
-  InputControllerEvdev(EventFactoryEvdev* event_factory,
-                       KeyboardEvdev* keyboard,
+  InputControllerEvdev(KeyboardEvdev* keyboard,
                        MouseButtonMapEvdev* button_map
 #if defined(USE_EVDEV_GESTURES)
                        ,
@@ -34,6 +33,10 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
 #endif
                        );
   ~InputControllerEvdev() override;
+
+  // Initialize device factory. This would be in the constructor if it was
+  // built early enough for that to be possible.
+  void SetInputDeviceFactory(InputDeviceFactoryEvdev* input_device_factory);
 
   // InputController:
   bool HasMouse() override;
@@ -71,8 +74,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
                                  const std::string& name,
                                  bool value);
 
-  // Event factory object which manages device event converters.
-  EventFactoryEvdev* event_factory_;
+  // Factory for devices. Needed to update device config.
+  InputDeviceFactoryEvdev* input_device_factory_;
 
   // Keyboard state.
   KeyboardEvdev* keyboard_;
