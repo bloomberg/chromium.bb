@@ -46,13 +46,8 @@ void DriverOSMESA::InitializeStaticBindings() {
       GetGLProcAddress("OSMesaMakeCurrent"));
   fn.OSMesaPixelStoreFn = reinterpret_cast<OSMesaPixelStoreProc>(
       GetGLProcAddress("OSMesaPixelStore"));
-}
-
-void DriverOSMESA::InitializeDynamicBindings(GLContext* context) {
-  DCHECK(context && context->IsCurrent(NULL));
-  const GLVersionInfo* ver = context->GetVersionInfo();
-  ALLOW_UNUSED_LOCAL(ver);
-  std::string extensions = context->GetExtensions() + " ";
+  std::string extensions(GetPlatformExtensions());
+  extensions += " ";
   ALLOW_UNUSED_LOCAL(extensions);
 
   if (g_debugBindingsInitialized)

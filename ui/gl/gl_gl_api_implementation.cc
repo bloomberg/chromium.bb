@@ -85,7 +85,7 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
   }
 
   if (type == GL_FLOAT && gfx::g_version_info->is_angle &&
-      gfx::g_version_info->is_es2) {
+      gfx::g_version_info->is_es && gfx::g_version_info->major_version == 2) {
     // It's possible that the texture is using a sized internal format, and
     // ANGLE exposing GLES2 API doesn't support those.
     // TODO(oetuaho@nvidia.com): Remove these conversions once ANGLE has the

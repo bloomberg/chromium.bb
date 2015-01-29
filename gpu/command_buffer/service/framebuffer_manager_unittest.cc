@@ -126,10 +126,12 @@ class FramebufferInfoTest : public GpuServiceTest {
   }
 
  protected:
-  void SetUp() override { InitializeContext("", ""); }
+  void SetUp() override {
+    InitializeContext("2.0", "GL_EXT_framebuffer_object");
+  }
 
   void InitializeContext(const char* gl_version, const char* extensions) {
-    GpuServiceTest::SetUp();
+    GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
         extensions, "", gl_version);
     feature_info_->Initialize();

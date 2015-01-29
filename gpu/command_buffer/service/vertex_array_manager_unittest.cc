@@ -29,7 +29,7 @@ class VertexArrayManagerTest : public GpuServiceTest {
 
  protected:
   void SetUp() override {
-    GpuServiceTest::SetUp();
+    GpuServiceTest::SetUpWithGLVersion("2.1", "GL_ARB_vertex_array_object");
     manager_.reset(new VertexArrayManager());
   }
 

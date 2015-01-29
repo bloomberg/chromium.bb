@@ -99,11 +99,6 @@ bool InitializeDynamicGLBindings(GLImplementation implementation,
   switch (implementation) {
     case kGLImplementationEGLGLES2:
       InitializeDynamicGLBindingsGL(context);
-      InitializeDynamicGLBindingsEGL(context);
-      break;
-    case kGLImplementationOSMesaGL:
-      InitializeDynamicGLBindingsGL(context);
-      InitializeDynamicGLBindingsOSMESA(context);
       break;
     case kGLImplementationMockGL:
       if (!context) {

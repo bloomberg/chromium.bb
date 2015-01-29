@@ -30,14 +30,12 @@ void DriverEGL::InitializeStaticBindings() {
       GetGLProcAddress("eglBindTexImage"));
   fn.eglChooseConfigFn = reinterpret_cast<eglChooseConfigProc>(
       GetGLProcAddress("eglChooseConfig"));
-  fn.eglClientWaitSyncKHRFn = reinterpret_cast<eglClientWaitSyncKHRProc>(
-      GetGLProcAddress("eglClientWaitSyncKHR"));
+  fn.eglClientWaitSyncKHRFn = 0;
   fn.eglCopyBuffersFn =
       reinterpret_cast<eglCopyBuffersProc>(GetGLProcAddress("eglCopyBuffers"));
   fn.eglCreateContextFn = reinterpret_cast<eglCreateContextProc>(
       GetGLProcAddress("eglCreateContext"));
-  fn.eglCreateImageKHRFn = reinterpret_cast<eglCreateImageKHRProc>(
-      GetGLProcAddress("eglCreateImageKHR"));
+  fn.eglCreateImageKHRFn = 0;
   fn.eglCreatePbufferFromClientBufferFn =
       reinterpret_cast<eglCreatePbufferFromClientBufferProc>(
           GetGLProcAddress("eglCreatePbufferFromClientBuffer"));
@@ -45,18 +43,15 @@ void DriverEGL::InitializeStaticBindings() {
       GetGLProcAddress("eglCreatePbufferSurface"));
   fn.eglCreatePixmapSurfaceFn = reinterpret_cast<eglCreatePixmapSurfaceProc>(
       GetGLProcAddress("eglCreatePixmapSurface"));
-  fn.eglCreateSyncKHRFn = reinterpret_cast<eglCreateSyncKHRProc>(
-      GetGLProcAddress("eglCreateSyncKHR"));
+  fn.eglCreateSyncKHRFn = 0;
   fn.eglCreateWindowSurfaceFn = reinterpret_cast<eglCreateWindowSurfaceProc>(
       GetGLProcAddress("eglCreateWindowSurface"));
   fn.eglDestroyContextFn = reinterpret_cast<eglDestroyContextProc>(
       GetGLProcAddress("eglDestroyContext"));
-  fn.eglDestroyImageKHRFn = reinterpret_cast<eglDestroyImageKHRProc>(
-      GetGLProcAddress("eglDestroyImageKHR"));
+  fn.eglDestroyImageKHRFn = 0;
   fn.eglDestroySurfaceFn = reinterpret_cast<eglDestroySurfaceProc>(
       GetGLProcAddress("eglDestroySurface"));
-  fn.eglDestroySyncKHRFn = reinterpret_cast<eglDestroySyncKHRProc>(
-      GetGLProcAddress("eglDestroySyncKHR"));
+  fn.eglDestroySyncKHRFn = 0;
   fn.eglGetConfigAttribFn = reinterpret_cast<eglGetConfigAttribProc>(
       GetGLProcAddress("eglGetConfigAttrib"));
   fn.eglGetConfigsFn =
@@ -71,22 +66,16 @@ void DriverEGL::InitializeStaticBindings() {
       reinterpret_cast<eglGetDisplayProc>(GetGLProcAddress("eglGetDisplay"));
   fn.eglGetErrorFn =
       reinterpret_cast<eglGetErrorProc>(GetGLProcAddress("eglGetError"));
-  fn.eglGetPlatformDisplayEXTFn =
-      reinterpret_cast<eglGetPlatformDisplayEXTProc>(
-          GetGLProcAddress("eglGetPlatformDisplayEXT"));
+  fn.eglGetPlatformDisplayEXTFn = 0;
   fn.eglGetProcAddressFn = reinterpret_cast<eglGetProcAddressProc>(
       GetGLProcAddress("eglGetProcAddress"));
-  fn.eglGetSyncAttribKHRFn = reinterpret_cast<eglGetSyncAttribKHRProc>(
-      GetGLProcAddress("eglGetSyncAttribKHR"));
-  fn.eglGetSyncValuesCHROMIUMFn =
-      reinterpret_cast<eglGetSyncValuesCHROMIUMProc>(
-          GetGLProcAddress("eglGetSyncValuesCHROMIUM"));
+  fn.eglGetSyncAttribKHRFn = 0;
+  fn.eglGetSyncValuesCHROMIUMFn = 0;
   fn.eglInitializeFn =
       reinterpret_cast<eglInitializeProc>(GetGLProcAddress("eglInitialize"));
   fn.eglMakeCurrentFn =
       reinterpret_cast<eglMakeCurrentProc>(GetGLProcAddress("eglMakeCurrent"));
-  fn.eglPostSubBufferNVFn = reinterpret_cast<eglPostSubBufferNVProc>(
-      GetGLProcAddress("eglPostSubBufferNV"));
+  fn.eglPostSubBufferNVFn = 0;
   fn.eglQueryAPIFn =
       reinterpret_cast<eglQueryAPIProc>(GetGLProcAddress("eglQueryAPI"));
   fn.eglQueryContextFn = reinterpret_cast<eglQueryContextProc>(
@@ -95,9 +84,7 @@ void DriverEGL::InitializeStaticBindings() {
       reinterpret_cast<eglQueryStringProc>(GetGLProcAddress("eglQueryString"));
   fn.eglQuerySurfaceFn = reinterpret_cast<eglQuerySurfaceProc>(
       GetGLProcAddress("eglQuerySurface"));
-  fn.eglQuerySurfacePointerANGLEFn =
-      reinterpret_cast<eglQuerySurfacePointerANGLEProc>(
-          GetGLProcAddress("eglQuerySurfacePointerANGLE"));
+  fn.eglQuerySurfacePointerANGLEFn = 0;
   fn.eglReleaseTexImageFn = reinterpret_cast<eglReleaseTexImageProc>(
       GetGLProcAddress("eglReleaseTexImage"));
   fn.eglReleaseThreadFn = reinterpret_cast<eglReleaseThreadProc>(
@@ -116,15 +103,9 @@ void DriverEGL::InitializeStaticBindings() {
       reinterpret_cast<eglWaitGLProc>(GetGLProcAddress("eglWaitGL"));
   fn.eglWaitNativeFn =
       reinterpret_cast<eglWaitNativeProc>(GetGLProcAddress("eglWaitNative"));
-  fn.eglWaitSyncKHRFn =
-      reinterpret_cast<eglWaitSyncKHRProc>(GetGLProcAddress("eglWaitSyncKHR"));
-}
-
-void DriverEGL::InitializeDynamicBindings(GLContext* context) {
-  DCHECK(context && context->IsCurrent(NULL));
-  const GLVersionInfo* ver = context->GetVersionInfo();
-  ALLOW_UNUSED_LOCAL(ver);
-  std::string extensions = context->GetExtensions() + " ";
+  fn.eglWaitSyncKHRFn = 0;
+  std::string extensions(GetPlatformExtensions());
+  extensions += " ";
   ALLOW_UNUSED_LOCAL(extensions);
 
   ext.b_EGL_ANGLE_d3d_share_handle_client_buffer =
@@ -143,12 +124,96 @@ void DriverEGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("EGL_KHR_fence_sync ") != std::string::npos;
   ext.b_EGL_KHR_gl_texture_2D_image =
       extensions.find("EGL_KHR_gl_texture_2D_image ") != std::string::npos;
+  ext.b_EGL_KHR_image = extensions.find("EGL_KHR_image ") != std::string::npos;
   ext.b_EGL_KHR_image_base =
       extensions.find("EGL_KHR_image_base ") != std::string::npos;
+  ext.b_EGL_KHR_reusable_sync =
+      extensions.find("EGL_KHR_reusable_sync ") != std::string::npos;
   ext.b_EGL_KHR_wait_sync =
       extensions.find("EGL_KHR_wait_sync ") != std::string::npos;
   ext.b_EGL_NV_post_sub_buffer =
       extensions.find("EGL_NV_post_sub_buffer ") != std::string::npos;
+
+  debug_fn.eglClientWaitSyncKHRFn = 0;
+  if (ext.b_EGL_KHR_fence_sync || ext.b_EGL_KHR_reusable_sync) {
+    fn.eglClientWaitSyncKHRFn = reinterpret_cast<eglClientWaitSyncKHRProc>(
+        GetGLProcAddress("eglClientWaitSyncKHR"));
+    DCHECK(fn.eglClientWaitSyncKHRFn);
+  }
+
+  debug_fn.eglCreateImageKHRFn = 0;
+  if (ext.b_EGL_KHR_image || ext.b_EGL_KHR_image_base ||
+      ext.b_EGL_KHR_gl_texture_2D_image) {
+    fn.eglCreateImageKHRFn = reinterpret_cast<eglCreateImageKHRProc>(
+        GetGLProcAddress("eglCreateImageKHR"));
+    DCHECK(fn.eglCreateImageKHRFn);
+  }
+
+  debug_fn.eglCreateSyncKHRFn = 0;
+  if (ext.b_EGL_KHR_fence_sync || ext.b_EGL_KHR_reusable_sync) {
+    fn.eglCreateSyncKHRFn = reinterpret_cast<eglCreateSyncKHRProc>(
+        GetGLProcAddress("eglCreateSyncKHR"));
+    DCHECK(fn.eglCreateSyncKHRFn);
+  }
+
+  debug_fn.eglDestroyImageKHRFn = 0;
+  if (ext.b_EGL_KHR_image || ext.b_EGL_KHR_image_base) {
+    fn.eglDestroyImageKHRFn = reinterpret_cast<eglDestroyImageKHRProc>(
+        GetGLProcAddress("eglDestroyImageKHR"));
+    DCHECK(fn.eglDestroyImageKHRFn);
+  }
+
+  debug_fn.eglDestroySyncKHRFn = 0;
+  if (ext.b_EGL_KHR_fence_sync || ext.b_EGL_KHR_reusable_sync) {
+    fn.eglDestroySyncKHRFn = reinterpret_cast<eglDestroySyncKHRProc>(
+        GetGLProcAddress("eglDestroySyncKHR"));
+    DCHECK(fn.eglDestroySyncKHRFn);
+  }
+
+  debug_fn.eglGetPlatformDisplayEXTFn = 0;
+  if (ext.b_EGL_ANGLE_platform_angle) {
+    fn.eglGetPlatformDisplayEXTFn =
+        reinterpret_cast<eglGetPlatformDisplayEXTProc>(
+            GetGLProcAddress("eglGetPlatformDisplayEXT"));
+    DCHECK(fn.eglGetPlatformDisplayEXTFn);
+  }
+
+  debug_fn.eglGetSyncAttribKHRFn = 0;
+  if (ext.b_EGL_KHR_fence_sync || ext.b_EGL_KHR_reusable_sync) {
+    fn.eglGetSyncAttribKHRFn = reinterpret_cast<eglGetSyncAttribKHRProc>(
+        GetGLProcAddress("eglGetSyncAttribKHR"));
+    DCHECK(fn.eglGetSyncAttribKHRFn);
+  }
+
+  debug_fn.eglGetSyncValuesCHROMIUMFn = 0;
+  if (ext.b_EGL_CHROMIUM_sync_control) {
+    fn.eglGetSyncValuesCHROMIUMFn =
+        reinterpret_cast<eglGetSyncValuesCHROMIUMProc>(
+            GetGLProcAddress("eglGetSyncValuesCHROMIUM"));
+    DCHECK(fn.eglGetSyncValuesCHROMIUMFn);
+  }
+
+  debug_fn.eglPostSubBufferNVFn = 0;
+  if (ext.b_EGL_NV_post_sub_buffer) {
+    fn.eglPostSubBufferNVFn = reinterpret_cast<eglPostSubBufferNVProc>(
+        GetGLProcAddress("eglPostSubBufferNV"));
+    DCHECK(fn.eglPostSubBufferNVFn);
+  }
+
+  debug_fn.eglQuerySurfacePointerANGLEFn = 0;
+  if (ext.b_EGL_ANGLE_query_surface_pointer) {
+    fn.eglQuerySurfacePointerANGLEFn =
+        reinterpret_cast<eglQuerySurfacePointerANGLEProc>(
+            GetGLProcAddress("eglQuerySurfacePointerANGLE"));
+    DCHECK(fn.eglQuerySurfacePointerANGLEFn);
+  }
+
+  debug_fn.eglWaitSyncKHRFn = 0;
+  if (ext.b_EGL_KHR_fence_sync || ext.b_EGL_KHR_wait_sync) {
+    fn.eglWaitSyncKHRFn = reinterpret_cast<eglWaitSyncKHRProc>(
+        GetGLProcAddress("eglWaitSyncKHR"));
+    DCHECK(fn.eglWaitSyncKHRFn);
+  }
 
   if (g_debugBindingsInitialized)
     InitializeDebugBindings();

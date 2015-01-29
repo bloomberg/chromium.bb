@@ -18,10 +18,6 @@ void InitializeStaticGLBindingsGLX() {
   g_current_glx_context = g_real_glx;
 }
 
-void InitializeDynamicGLBindingsGLX(GLContext* context) {
-  g_driver_glx.InitializeDynamicBindings(context);
-}
-
 void InitializeDebugGLBindingsGLX() {
   g_driver_glx.InitializeDebugBindings();
 }

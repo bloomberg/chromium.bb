@@ -184,8 +184,6 @@ static void GL_BINDING_CALL Mock_glCullFace(GLenum mode);
 static void GL_BINDING_CALL
 Mock_glDeleteBuffers(GLsizei n, const GLuint* buffers);
 static void GL_BINDING_CALL
-Mock_glDeleteBuffersARB(GLsizei n, const GLuint* buffers);
-static void GL_BINDING_CALL
 Mock_glDeleteFencesAPPLE(GLsizei n, const GLuint* fences);
 static void GL_BINDING_CALL
 Mock_glDeleteFencesNV(GLsizei n, const GLuint* fences);
@@ -334,7 +332,6 @@ static void GL_BINDING_CALL Mock_glFramebufferTextureLayer(GLenum target,
                                                            GLint layer);
 static void GL_BINDING_CALL Mock_glFrontFace(GLenum mode);
 static void GL_BINDING_CALL Mock_glGenBuffers(GLsizei n, GLuint* buffers);
-static void GL_BINDING_CALL Mock_glGenBuffersARB(GLsizei n, GLuint* buffers);
 static void GL_BINDING_CALL Mock_glGenFencesAPPLE(GLsizei n, GLuint* fences);
 static void GL_BINDING_CALL Mock_glGenFencesNV(GLsizei n, GLuint* fences);
 static void GL_BINDING_CALL
@@ -448,6 +445,8 @@ static void GL_BINDING_CALL
 Mock_glGetProgramiv(GLuint program, GLenum pname, GLint* params);
 static void GL_BINDING_CALL
 Mock_glGetQueryObjecti64v(GLuint id, GLenum pname, GLint64* params);
+static void GL_BINDING_CALL
+Mock_glGetQueryObjecti64vEXT(GLuint id, GLenum pname, GLint64* params);
 static void GL_BINDING_CALL
 Mock_glGetQueryObjectiv(GLuint id, GLenum pname, GLint* params);
 static void GL_BINDING_CALL

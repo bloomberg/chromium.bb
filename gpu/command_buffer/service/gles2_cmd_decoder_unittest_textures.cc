@@ -131,7 +131,6 @@ TEST_P(GLES2DecoderManualInitTest, SetTextureFiltersBeforeGenerateMipmap) {
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::SET_TEXTURE_FILTER_BEFORE_GENERATING_MIPMAP));
   InitState init;
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoderWithCommandLine(init, &command_line);
 
@@ -641,7 +640,6 @@ TEST_P(GLES2DecoderTest, CopyTexImage2DGLError) {
 TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DBucketBadBucket) {
   InitState init;
   init.extensions = "GL_EXT_texture_compression_s3tc";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 
@@ -679,7 +677,6 @@ struct S3TCTestData {
 TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
   InitState init;
   init.extensions = "GL_EXT_texture_compression_s3tc";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   const uint32 kBucketId = 123;
@@ -1090,7 +1087,6 @@ TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
 
 TEST_P(GLES2DecoderManualInitTest, DefaultTextureZero) {
   InitState init;
-  init.gl_version = "3.0";
   InitDecoder(init);
 
   BindTexture cmd1;
@@ -1108,7 +1104,6 @@ TEST_P(GLES2DecoderManualInitTest, DefaultTextureZero) {
 
 TEST_P(GLES2DecoderManualInitTest, DefaultTextureBGR) {
   InitState init;
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 
@@ -1131,7 +1126,6 @@ TEST_P(GLES2DecoderManualInitTest, DefaultTextureBGR) {
 // Test that default texture 0 is immutable.
 TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameterf) {
   InitState init;
-  init.gl_version = "3.0";
   InitDecoder(init);
 
   {
@@ -1163,7 +1157,6 @@ TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameterf) {
 
 TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameteri) {
   InitState init;
-  init.gl_version = "3.0";
   InitDecoder(init);
 
   {
@@ -1195,7 +1188,6 @@ TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameteri) {
 
 TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameterfv) {
   InitState init;
-  init.gl_version = "3.0";
   InitDecoder(init);
 
   {
@@ -1235,7 +1227,6 @@ TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameterfv) {
 
 TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameteriv) {
   InitState init;
-  init.gl_version = "3.0";
   InitDecoder(init);
 
   {
@@ -1275,7 +1266,6 @@ TEST_P(GLES2DecoderManualInitTest, NoDefaultTexParameteriv) {
 
 TEST_P(GLES2DecoderManualInitTest, NoDefaultTexImage2D) {
   InitState init;
-  init.gl_version = "3.0";
   InitDecoder(init);
 
   BindTexture cmd1;
@@ -1300,7 +1290,6 @@ TEST_P(GLES2DecoderManualInitTest, NoDefaultTexImage2D) {
 
 TEST_P(GLES2DecoderManualInitTest, NoDefaultTexSubImage2D) {
   InitState init;
-  init.gl_version = "3.0";
   InitDecoder(init);
 
   BindTexture cmd1;
@@ -1328,7 +1317,6 @@ TEST_P(GLES2DecoderManualInitTest, NoDefaultTexSubImage2D) {
 TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_RECTANGLE_ARB, kNewServiceId));
@@ -1346,7 +1334,6 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
 TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleGetBinding) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindTexture(
@@ -1377,7 +1364,6 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleGetBinding) {
 TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTextureDefaults) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindTexture(
@@ -1394,7 +1380,6 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTextureDefaults) {
 TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParam) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 
@@ -1443,7 +1428,6 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParam) {
 TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParamInvalid) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 
@@ -1476,7 +1460,6 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParamInvalid) {
 TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2DError) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 
@@ -1632,7 +1615,6 @@ TEST_P(
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::TEXSUBIMAGE2D_FASTER_THAN_TEXIMAGE2D));
   InitState init;
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoderWithCommandLine(init, &command_line);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -1834,7 +1816,6 @@ TEST_P(GLES2DecoderTest, CopyTexSubImage2DClearsUnclearedBackBufferSizedTexture)
 TEST_P(GLES2DecoderManualInitTest, CompressedImage2DMarksTextureAsCleared) {
   InitState init;
   init.extensions = "GL_EXT_texture_compression_s3tc";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 
@@ -2663,7 +2644,6 @@ TEST_P(GLES2DecoderManualInitTest, TexSubImage2DFloatDoesClearOnGLES3) {
 TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatConvertsFormatDesktop) {
   InitState init;
   init.extensions = "GL_ARB_texture_float";
-  init.gl_version = "2.1";
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(
@@ -2742,7 +2722,6 @@ class GLES2DecoderCompressedFormatsTest : public GLES2DecoderManualInitTest {
   void CheckFormats(const char* extension, const GLenum* formats, int count) {
     InitState init;
     init.extensions = extension;
-    init.gl_version = "3.0";
     init.bind_generates_resource = true;
     InitDecoder(init);
 
@@ -2814,7 +2793,6 @@ TEST_P(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsETC1) {
 
 TEST_P(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
   InitState init;
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 

@@ -4,35 +4,35 @@
 
 #include "ui/gl/gl_version_info.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 
 namespace gfx {
 
 GLVersionInfo::GLVersionInfo(const char* version_str, const char* renderer_str)
     : is_es(false),
-      is_es1(false),
-      is_es2(false),
-      is_es3(false),
-      is_gl1(false),
-      is_gl2(false),
-      is_gl3(false),
-      is_gl4(false),
-      is_angle(false) {
+      is_angle(false),
+      major_version(0),
+      minor_version(0),
+      is_es3(false) {
   if (version_str) {
     std::string lstr(base::StringToLowerASCII(std::string(version_str)));
-    is_es = (lstr.substr(0, 9) == "opengl es");
-    if (is_es) {
-      is_es1 = (lstr.substr(9, 2) == "-c" && lstr.substr(13, 2) == "1.");
-      is_es2 = (lstr.substr(9, 3) == " 2.");
-      is_es3 = (lstr.substr(9, 3) == " 3.");
-    } else {
-      is_gl2 = (lstr.substr(0, 2) == "2.");
-      is_gl3 = (lstr.substr(0, 2) == "3.");
-      is_gl4 = (lstr.substr(0, 2) == "4.");
-      // In early GL versions, GetString output format is implementation
-      // dependent.
-      is_gl1 = !is_gl2 && !is_gl3 && !is_gl4;
+    is_es = (lstr.length() > 12) && (lstr.substr(0, 9) == "opengl es");
+    if (is_es)
+      lstr = lstr.substr(10, 3);
+    base::StringTokenizer tokenizer(lstr.begin(), lstr.end(), ".");
+    unsigned major, minor;
+    if (tokenizer.GetNext() &&
+        base::StringToUint(tokenizer.token_piece(), &major)) {
+      major_version = major;
+      if (tokenizer.GetNext() &&
+          base::StringToUint(tokenizer.token_piece(), &minor)) {
+        minor_version = minor;
+      }
     }
+    if (is_es && major_version == 3)
+      is_es3 = true;
   }
   if (renderer_str) {
     is_angle = StartsWithASCII(renderer_str, "ANGLE", true);

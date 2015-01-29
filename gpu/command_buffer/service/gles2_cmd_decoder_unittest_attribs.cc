@@ -356,7 +356,6 @@ class GLES2DecoderEmulatedVertexArraysOESTest
 
   void SetUp() override {
     InitState init;
-    init.gl_version = "3.0";
     init.bind_generates_resource = true;
     init.use_native_vao = false;
     InitDecoder(init);

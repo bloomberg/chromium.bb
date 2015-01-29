@@ -1032,7 +1032,6 @@ TEST_P(GLES2DecoderManualInitTest, ClearUniformsBeforeFirstProgramUse) {
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::CLEAR_UNIFORMS_BEFORE_FIRST_PROGRAM_USE));
   InitState init;
-  init.gl_version = "3.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;

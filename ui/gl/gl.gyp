@@ -40,6 +40,7 @@
         'android/surface_texture.h',
         'android/surface_texture_listener.cc',
         'android/surface_texture_listener.h',
+        'gl_bindings.cc',
         'gl_bindings.h',
         'gl_bindings_autogen_gl.cc',
         'gl_bindings_autogen_gl.h',

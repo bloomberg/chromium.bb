@@ -5,6 +5,8 @@
 #ifndef UI_GL_GL_BINDINGS_H_
 #define UI_GL_GL_BINDINGS_H_
 
+#include <string>
+
 // Includes the platform independent and platform dependent GL headers.
 // Only include this in cc files. It pulls in system headers, including
 // the X11 headers on linux, which define all kinds of macros that are
@@ -345,51 +347,59 @@ struct GL_EXPORT DriverGL {
 
 struct GL_EXPORT DriverOSMESA {
   void InitializeStaticBindings();
-  void InitializeDynamicBindings(GLContext* context);
   void InitializeDebugBindings();
   void ClearBindings();
 
   ProcsOSMESA fn;
   ProcsOSMESA debug_fn;
   ExtensionsOSMESA ext;
+
+ private:
+  static std::string GetPlatformExtensions();
 };
 
 #if defined(OS_WIN)
 struct GL_EXPORT DriverWGL {
   void InitializeStaticBindings();
-  void InitializeDynamicBindings(GLContext* context);
   void InitializeDebugBindings();
   void ClearBindings();
 
   ProcsWGL fn;
   ProcsWGL debug_fn;
   ExtensionsWGL ext;
+
+ private:
+  static std::string GetPlatformExtensions();
 };
 #endif
 
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || defined(USE_OZONE)
 struct GL_EXPORT DriverEGL {
   void InitializeStaticBindings();
-  void InitializeDynamicBindings(GLContext* context);
   void InitializeDebugBindings();
   void ClearBindings();
 
   ProcsEGL fn;
   ProcsEGL debug_fn;
   ExtensionsEGL ext;
+
+ private:
+  static std::string GetPlatformExtensions();
 };
 #endif
 
 #if defined(USE_X11)
 struct GL_EXPORT DriverGLX {
   void InitializeStaticBindings();
-  void InitializeDynamicBindings(GLContext* context);
   void InitializeDebugBindings();
   void ClearBindings();
 
   ProcsGLX fn;
   ProcsGLX debug_fn;
   ExtensionsGLX ext;
+
+ private:
+  static std::string GetPlatformExtensions();
 };
 #endif
 

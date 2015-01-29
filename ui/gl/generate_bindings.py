@@ -12,6 +12,7 @@ import re
 import platform
 import sys
 from subprocess import call
+from collections import namedtuple
 
 HEADER_PATHS = [
   '../../third_party/khronos',
@@ -20,22 +21,19 @@ HEADER_PATHS = [
   '../../gpu',
 ]
 
-"""In case there are multiple versions of the same function, one that's listed
-first takes priority if its conditions are met. If the function is an extension
-function, finding the extension from the extension string is a condition for
-binding it. The last version of the function is treated as a fallback option in
-case no other versions were bound, so a non-null function pointer in the
-bindings does not guarantee that the function is supported.
+UNCONDITIONALLY_BOUND_EXTENSIONS = set([
+  'WGL_ARB_extensions_string',
+  'WGL_EXT_extensions_string',
+  'GL_CHROMIUM_gles_depth_binding_hack', # crbug.com/448206
+])
 
-Function binding conditions can be specified manually by supplying a versions
+"""Function binding conditions can be specified manually by supplying a versions
 array instead of the names array. Each version has the following keys:
    name: Mandatory. Name of the function. Multiple versions can have the same
          name but different conditions.
-   gl_versions: List of GL versions where the function is found.
-   extensions: Extensions where the function is found. If not specified, the
-               extensions are determined based on GL header files.
-               If the function exists in an extension header, you may specify
-               an empty array to prevent making that a condition for binding.
+   extensions: Extra Extensions for which the function is bound. Only needed
+               in some cases where the extension cannot be parsed from the
+               headers.
 
 By default, the function gets its name from the first name in its names or
 versions array. This can be overridden by supplying a 'known_as' key.
@@ -48,15 +46,15 @@ GL_FUNCTIONS = [
   'names': ['glAttachShader'],
   'arguments': 'GLuint program, GLuint shader', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glBeginQuery',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glBeginQuery' }],
   'arguments': 'GLenum target, GLuint id', },
 { 'return_type': 'void',
-  'names': ['glBeginQueryARB', 'glBeginQueryEXT'],
+  'versions': [{ 'name': 'glBeginQueryARB' },
+               { 'name': 'glBeginQueryEXT',
+                 'extensions': ['GL_EXT_occlusion_query_boolean'] }],
   'arguments': 'GLenum target, GLuint id', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glBeginTransformFeedback',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glBeginTransformFeedback' }],
   'arguments': 'GLenum primitiveMode', },
 { 'return_type': 'void',
   'names': ['glBindAttribLocation'],
@@ -65,12 +63,10 @@ GL_FUNCTIONS = [
   'names': ['glBindBuffer'],
   'arguments': 'GLenum target, GLuint buffer', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glBindBufferBase',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glBindBufferBase' }],
   'arguments': 'GLenum target, GLuint index, GLuint buffer', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glBindBufferRange',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glBindBufferRange' }],
   'arguments': 'GLenum target, GLuint index, GLuint buffer, GLintptr offset, '
                'GLsizeiptr size', },
 { 'return_type': 'void',
@@ -87,22 +83,18 @@ GL_FUNCTIONS = [
   'names': ['glBindRenderbufferEXT', 'glBindRenderbuffer'],
   'arguments': 'GLenum target, GLuint renderbuffer', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glBindSampler',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glBindSampler' }],
   'arguments': 'GLuint unit, GLuint sampler', },
 { 'return_type': 'void',
   'names': ['glBindTexture'],
   'arguments': 'GLenum target, GLuint texture', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glBindTransformFeedback',
-                 'gl_versions': ['gl4', 'es3'] }],
+  'versions': [{ 'name': 'glBindTransformFeedback' }],
   'arguments': 'GLenum target, GLuint id', },
 { 'return_type': 'void',
   'known_as': 'glBindVertexArrayOES',
   'versions': [{ 'name': 'glBindVertexArray',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] },
-               { 'name': 'glBindVertexArray',
-                 'extensions': ['GL_ARB_vertex_array_object'] },
+                 'extensions': ['GL_ARB_vertex_array_object'], },
                { 'name': 'glBindVertexArrayOES' },
                { 'name': 'glBindVertexArrayAPPLE',
                  'extensions': ['GL_APPLE_vertex_array_object'] }],
@@ -164,27 +156,24 @@ GL_FUNCTIONS = [
   'names': ['glClear'],
   'arguments': 'GLbitfield mask', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glClearBufferfi',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glClearBufferfi' }],
   'arguments': 'GLenum buffer, GLint drawbuffer, const GLfloat depth, '
                'GLint stencil', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glClearBufferfv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glClearBufferfv' }],
   'arguments': 'GLenum buffer, GLint drawbuffer, const GLfloat* value', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glClearBufferiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glClearBufferiv' }],
   'arguments': 'GLenum buffer, GLint drawbuffer, const GLint* value', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glClearBufferuiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glClearBufferuiv' }],
   'arguments': 'GLenum buffer, GLint drawbuffer, const GLuint* value', },
 { 'return_type': 'void',
   'names': ['glClearColor'],
   'arguments': 'GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha', },
 { 'return_type': 'void',
-  'names': ['glClearDepth'],
+  'versions': [{ 'name': 'glClearDepth',
+                 'extensions': ['GL_CHROMIUM_gles_depth_binding_hack'] }],
   'arguments': 'GLclampd depth', },
 { 'return_type': 'void',
   'names': ['glClearDepthf'],
@@ -193,7 +182,8 @@ GL_FUNCTIONS = [
   'names': ['glClearStencil'],
   'arguments': 'GLint s', },
 { 'return_type': 'GLenum',
-  'names': ['glClientWaitSync'],
+  'versions': [{ 'name': 'glClientWaitSync',
+                 'extensions': ['GL_ARB_sync'] }],
   'arguments': 'GLsync sync, GLbitfield flags, GLuint64 timeout', },
 { 'return_type': 'void',
   'names': ['glColorMask'],
@@ -208,8 +198,7 @@ GL_FUNCTIONS = [
       'GLenum target, GLint level, GLenum internalformat, GLsizei width, '
       'GLsizei height, GLint border, GLsizei imageSize, const void* data', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glCompressedTexImage3D',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glCompressedTexImage3D' }],
   'arguments':
       'GLenum target, GLint level, GLenum internalformat, GLsizei width, '
       'GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, '
@@ -222,15 +211,13 @@ GL_FUNCTIONS = [
       'const void* data', },
 # TODO(zmo): wait for MOCK_METHOD11.
 # { 'return_type': 'void',
-#   'versions': [{ 'name': 'glCompressedTexSubImage3D',
-#                  'gl_versions': ['gl3', 'gl4', 'es3'] }],
+#   'versions': [{ 'name': 'glCompressedTexSubImage3D' }],
 #   'arguments':
 #       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
 #       'GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, '
 #       'GLenum format, GLsizei imageSize, const void* data', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glCopyBufferSubData',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.1 or higher.
+  'versions': [{ 'name': 'glCopyBufferSubData' }],
   'arguments':
       'GLenum readTarget, GLenum writeTarget, GLintptr readOffset, '
       'GLintptr writeOffset, GLsizeiptr size', },
@@ -245,8 +232,7 @@ GL_FUNCTIONS = [
       'GLenum target, GLint level, GLint xoffset, '
       'GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glCopyTexSubImage3D',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glCopyTexSubImage3D' }],
   'arguments':
       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
       'GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height', },
@@ -260,7 +246,8 @@ GL_FUNCTIONS = [
   'names': ['glCullFace'],
   'arguments': 'GLenum mode', },
 { 'return_type': 'void',
-  'names': ['glDeleteBuffersARB', 'glDeleteBuffers'],
+  'names': ['glDeleteBuffers'],
+  'known_as': 'glDeleteBuffersARB',
   'arguments': 'GLsizei n, const GLuint* buffers', },
 { 'return_type': 'void',
   'known_as': 'glDeleteFencesAPPLE',
@@ -277,38 +264,36 @@ GL_FUNCTIONS = [
   'names': ['glDeleteProgram'],
   'arguments': 'GLuint program', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glDeleteQueries',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glDeleteQueries' }],
   'arguments': 'GLsizei n, const GLuint* ids', },
 { 'return_type': 'void',
-  'names': ['glDeleteQueriesARB', 'glDeleteQueriesEXT'],
+  'versions': [{ 'name': 'glDeleteQueriesARB'},
+               { 'name': 'glDeleteQueriesEXT',
+                 'extensions': ['GL_EXT_occlusion_query_boolean'] }],
   'arguments': 'GLsizei n, const GLuint* ids', },
 { 'return_type': 'void',
   'names': ['glDeleteRenderbuffersEXT', 'glDeleteRenderbuffers'],
   'arguments': 'GLsizei n, const GLuint* renderbuffers', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glDeleteSamplers',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glDeleteSamplers' }],
   'arguments': 'GLsizei n, const GLuint* samplers', },
 { 'return_type': 'void',
   'names': ['glDeleteShader'],
   'arguments': 'GLuint shader', },
 { 'return_type': 'void',
-  'names': ['glDeleteSync'],
+  'versions': [{ 'name': 'glDeleteSync',
+                 'extensions': ['GL_ARB_sync'] }],
   'arguments': 'GLsync sync', },
 { 'return_type': 'void',
   'names': ['glDeleteTextures'],
   'arguments': 'GLsizei n, const GLuint* textures', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glDeleteTransformFeedbacks',
-                 'gl_versions': ['gl4', 'es3'] }],
+  'versions': [{ 'name': 'glDeleteTransformFeedbacks' }],
   'arguments': 'GLsizei n, const GLuint* ids', },
 { 'return_type': 'void',
   'known_as': 'glDeleteVertexArraysOES',
   'versions': [{ 'name': 'glDeleteVertexArrays',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] },
-               { 'name': 'glDeleteVertexArrays',
-                 'extensions': ['GL_ARB_vertex_array_object'] },
+                 'extensions': ['GL_ARB_vertex_array_object'], },
                { 'name': 'glDeleteVertexArraysOES' },
                { 'name': 'glDeleteVertexArraysAPPLE',
                  'extensions': ['GL_APPLE_vertex_array_object'] }],
@@ -320,7 +305,8 @@ GL_FUNCTIONS = [
   'names': ['glDepthMask'],
   'arguments': 'GLboolean flag', },
 { 'return_type': 'void',
-  'names': ['glDepthRange'],
+ 'versions': [{ 'name': 'glDepthRange',
+                'extensions': ['GL_CHROMIUM_gles_depth_binding_hack'] }],
   'arguments': 'GLclampd zNear, GLclampd zFar', },
 { 'return_type': 'void',
   'names': ['glDepthRangef'],
@@ -365,8 +351,7 @@ GL_FUNCTIONS = [
       'GLenum mode, GLsizei count, GLenum type, const void* indices, '
       'GLsizei primcount', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glDrawRangeElements',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glDrawRangeElements' }],
   'arguments': 'GLenum mode, GLuint start, GLuint end, GLsizei count, '
                'GLenum type, const void* indices', },
 { 'return_type': 'void',
@@ -382,18 +367,19 @@ GL_FUNCTIONS = [
   'names': ['glEnableVertexAttribArray'],
   'arguments': 'GLuint index', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glEndQuery',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glEndQuery' }],
   'arguments': 'GLenum target', },
 { 'return_type': 'void',
-  'names': ['glEndQueryARB', 'glEndQueryEXT'],
+  'versions': [{ 'name': 'glEndQueryARB' },
+               { 'name': 'glEndQueryEXT',
+                 'extensions': ['GL_EXT_occlusion_query_boolean'] }],
   'arguments': 'GLenum target', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glEndTransformFeedback',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glEndTransformFeedback' }],
   'arguments': 'void', },
 { 'return_type': 'GLsync',
-  'names': ['glFenceSync'],
+  'versions': [{ 'name': 'glFenceSync',
+                 'extensions': ['GL_ARB_sync'] }],
   'arguments': 'GLenum condition, GLbitfield flags', },
 { 'return_type': 'void',
   'names': ['glFinish'],
@@ -433,15 +419,15 @@ GL_FUNCTIONS = [
       'GLenum target, GLenum attachment, GLenum textarget, GLuint texture, '
       'GLint level, GLsizei samples', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glFramebufferTextureLayer',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glFramebufferTextureLayer' }],
   'arguments': 'GLenum target, GLenum attachment, GLuint texture, GLint level, '
                'GLint layer', },
 { 'return_type': 'void',
   'names': ['glFrontFace'],
   'arguments': 'GLenum mode', },
 { 'return_type': 'void',
-  'names': ['glGenBuffersARB', 'glGenBuffers'],
+  'names': ['glGenBuffers'],
+  'known_as': 'glGenBuffersARB',
   'arguments': 'GLsizei n, GLuint* buffers', },
 { 'return_type': 'void',
   'names': ['glGenerateMipmapEXT', 'glGenerateMipmap'],
@@ -458,32 +444,29 @@ GL_FUNCTIONS = [
   'names': ['glGenFramebuffersEXT', 'glGenFramebuffers'],
   'arguments': 'GLsizei n, GLuint* framebuffers', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGenQueries',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glGenQueries' }],
   'arguments': 'GLsizei n, GLuint* ids', },
 { 'return_type': 'void',
-  'names': ['glGenQueriesARB', 'glGenQueriesEXT'],
+  'versions': [{ 'name': 'glGenQueriesARB', },
+               { 'name' : 'glGenQueriesEXT',
+                 'extensions': ['GL_EXT_occlusion_query_boolean'] }],
   'arguments': 'GLsizei n, GLuint* ids', },
 { 'return_type': 'void',
   'names': ['glGenRenderbuffersEXT', 'glGenRenderbuffers'],
   'arguments': 'GLsizei n, GLuint* renderbuffers', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGenSamplers',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glGenSamplers' }],
   'arguments': 'GLsizei n, GLuint* samplers', },
 { 'return_type': 'void',
   'names': ['glGenTextures'],
   'arguments': 'GLsizei n, GLuint* textures', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGenTransformFeedbacks',
-                 'gl_versions': ['gl4', 'es3'] }],
+  'versions': [{ 'name': 'glGenTransformFeedbacks' }],
   'arguments': 'GLsizei n, GLuint* ids', },
 { 'return_type': 'void',
   'known_as': 'glGenVertexArraysOES',
   'versions': [{ 'name': 'glGenVertexArrays',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] },
-               { 'name': 'glGenVertexArrays',
-                 'extensions': ['GL_ARB_vertex_array_object'] },
+                 'extensions': ['GL_ARB_vertex_array_object'], },
                { 'name': 'glGenVertexArraysOES' },
                { 'name': 'glGenVertexArraysAPPLE',
                  'extensions': ['GL_APPLE_vertex_array_object'] }],
@@ -499,18 +482,15 @@ GL_FUNCTIONS = [
       'GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, '
       'GLint* size, GLenum* type, char* name', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetActiveUniformBlockiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.1 or higher.
+  'versions': [{ 'name': 'glGetActiveUniformBlockiv' }],
   'arguments': 'GLuint program, GLuint uniformBlockIndex, GLenum pname, '
                'GLint* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetActiveUniformBlockName',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.1 or higher.
+  'versions': [{ 'name': 'glGetActiveUniformBlockName' }],
   'arguments': 'GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, '
                'GLsizei* length, char* uniformBlockName', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetActiveUniformsiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.1 or higher.
+  'versions': [{ 'name': 'glGetActiveUniformsiv' }],
   'arguments': 'GLuint program, GLsizei uniformCount, '
                'const GLuint* uniformIndices, GLenum pname, GLint* params', },
 { 'return_type': 'void',
@@ -539,8 +519,7 @@ GL_FUNCTIONS = [
   'names': ['glGetFloatv'],
   'arguments': 'GLenum pname, GLfloat* params', },
 { 'return_type': 'GLint',
-  'versions': [{ 'name': 'glGetFragDataLocation',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glGetFragDataLocation' }],
   'arguments': 'GLuint program, const char* name', },
 { 'return_type': 'void',
   'names': ['glGetFramebufferAttachmentParameterivEXT',
@@ -554,30 +533,26 @@ GL_FUNCTIONS = [
             'glGetGraphicsResetStatus'],
   'arguments': 'void', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetInteger64i_v',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glGetInteger64i_v' }],
   'arguments': 'GLenum target, GLuint index, GLint64* data', },
 { 'return_type': 'void',
   'names': ['glGetInteger64v'],
   'arguments': 'GLenum pname, GLint64* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetIntegeri_v',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glGetIntegeri_v' }],
   'arguments': 'GLenum target, GLuint index, GLint* data', },
 { 'return_type': 'void',
   'names': ['glGetIntegerv'],
   'arguments': 'GLenum pname, GLint* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetInternalformativ',
-                 'gl_versions': ['gl4', 'es3'] }],  # GL 4.2 or higher.
+  'versions': [{ 'name': 'glGetInternalformativ' }],
   'arguments': 'GLenum target, GLenum internalformat, GLenum pname, '
                'GLsizei bufSize, GLint* params', },
 { 'return_type': 'void',
   'known_as': 'glGetProgramBinary',
   'versions': [{ 'name': 'glGetProgramBinaryOES' },
                { 'name': 'glGetProgramBinary',
-                 'extensions': ['GL_ARB_get_program_binary'] },
-               { 'name': 'glGetProgramBinary' }],
+                 'extensions': ['GL_ARB_get_program_binary'] }],
   'arguments': 'GLuint program, GLsizei bufSize, GLsizei* length, '
                'GLenum* binaryFormat, GLvoid* binary' },
 { 'return_type': 'void',
@@ -588,42 +563,45 @@ GL_FUNCTIONS = [
   'names': ['glGetProgramiv'],
   'arguments': 'GLuint program, GLenum pname, GLint* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetQueryiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glGetQueryiv' }],
   'arguments': 'GLenum target, GLenum pname, GLint* params', },
 { 'return_type': 'void',
-  'names': ['glGetQueryivARB', 'glGetQueryivEXT'],
+  'versions': [{ 'name': 'glGetQueryivARB' },
+               { 'name': 'glGetQueryivEXT',
+                 'extensions': ['GL_EXT_occlusion_query_boolean'] }],
   'arguments': 'GLenum target, GLenum pname, GLint* params', },
 { 'return_type': 'void',
-  'names': ['glGetQueryObjecti64v'],
+  'versions': [{ 'name': 'glGetQueryObjecti64v',
+                 'extensions': ['GL_ARB_timer_query'] },
+               { 'name': 'glGetQueryObjecti64vEXT' }],
   'arguments': 'GLuint id, GLenum pname, GLint64* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetQueryObjectiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'names': ['glGetQueryObjectiv'],
   'arguments': 'GLuint id, GLenum pname, GLint* params', },
 { 'return_type': 'void',
   'names': ['glGetQueryObjectivARB', 'glGetQueryObjectivEXT'],
   'arguments': 'GLuint id, GLenum pname, GLint* params', },
 { 'return_type': 'void',
-  'names': ['glGetQueryObjectui64v', 'glGetQueryObjectui64vEXT'],
+  'versions': [{ 'name': 'glGetQueryObjectui64v',
+                 'extensions': ['GL_ARB_timer_query'] },
+               { 'name': 'glGetQueryObjectui64vEXT' }],
   'arguments': 'GLuint id, GLenum pname, GLuint64* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetQueryObjectuiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glGetQueryObjectuiv' }],
   'arguments': 'GLuint id, GLenum pname, GLuint* params', },
 { 'return_type': 'void',
-  'names': ['glGetQueryObjectuivARB', 'glGetQueryObjectuivEXT'],
+  'versions': [{ 'name': 'glGetQueryObjectuivARB' },
+               { 'name': 'glGetQueryObjectuivEXT',
+                 'extensions': ['GL_EXT_occlusion_query_boolean'] }],
   'arguments': 'GLuint id, GLenum pname, GLuint* params', },
 { 'return_type': 'void',
   'names': ['glGetRenderbufferParameterivEXT', 'glGetRenderbufferParameteriv'],
   'arguments': 'GLenum target, GLenum pname, GLint* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetSamplerParameterfv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glGetSamplerParameterfv' }],
   'arguments': 'GLuint sampler, GLenum pname, GLfloat* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetSamplerParameteriv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glGetSamplerParameteriv' }],
   'arguments': 'GLuint sampler, GLenum pname, GLint* params', },
 { 'return_type': 'void',
   'names': ['glGetShaderInfoLog'],
@@ -644,7 +622,8 @@ GL_FUNCTIONS = [
   'names': ['glGetString'],
   'arguments': 'GLenum name', },
 { 'return_type': 'void',
-  'names': ['glGetSynciv'],
+  'versions': [{ 'name': 'glGetSynciv',
+                 'extensions': ['GL_ARB_sync'] }],
   'arguments':
     'GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length,'
     'GLint* values', },
@@ -661,8 +640,7 @@ GL_FUNCTIONS = [
   'names': ['glGetTexParameteriv'],
   'arguments': 'GLenum target, GLenum pname, GLint* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetTransformFeedbackVarying',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glGetTransformFeedbackVarying' }],
   'arguments': 'GLuint program, GLuint index, GLsizei bufSize, '
                'GLsizei* length, GLenum* type, char* name', },
 { 'return_type': 'void',
@@ -670,15 +648,13 @@ GL_FUNCTIONS = [
   'arguments':
       'GLuint shader, GLsizei bufsize, GLsizei* length, char* source', },
 { 'return_type': 'GLuint',
-  'versions': [{ 'name': 'glGetUniformBlockIndex',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.1 or higher.
+  'versions': [{ 'name': 'glGetUniformBlockIndex' }],
   'arguments': 'GLuint program, const char* uniformBlockName', },
 { 'return_type': 'void',
   'names': ['glGetUniformfv'],
   'arguments': 'GLuint program, GLint location, GLfloat* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetUniformIndices',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.1 or higher.
+  'versions': [{ 'name': 'glGetUniformIndices' }],
   'arguments': 'GLuint program, GLsizei uniformCount, '
                'const char* const* uniformNames, GLuint* uniformIndices', },
 { 'return_type': 'void',
@@ -703,13 +679,11 @@ GL_FUNCTIONS = [
   'names': ['glInsertEventMarkerEXT'],
   'arguments': 'GLsizei length, const char* marker', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glInvalidateFramebuffer',
-                 'gl_versions': ['gl4', 'es3'] }],  # GL 4.3 or higher.
+  'versions': [{ 'name': 'glInvalidateFramebuffer' }],
   'arguments': 'GLenum target, GLsizei numAttachments, '
       'const GLenum* attachments' },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glInvalidateSubFramebuffer',
-                 'gl_versions': ['gl4', 'es3'] }],  # GL 4.3 or higher.
+  'versions': [{ 'name': 'glInvalidateSubFramebuffer' }],
   'arguments':
       'GLenum target, GLsizei numAttachments, const GLenum* attachments, '
       'GLint x, GLint y, GLint width, GLint height', },
@@ -734,38 +708,36 @@ GL_FUNCTIONS = [
   'names': ['glIsProgram'],
   'arguments': 'GLuint program', },
 { 'return_type': 'GLboolean',
-  'versions': [{ 'name': 'glIsQuery',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glIsQuery' }],
   'arguments': 'GLuint query', },
 { 'return_type': 'GLboolean',
-  'names': ['glIsQueryARB', 'glIsQueryEXT'],
+  'versions': [{ 'name': 'glIsQueryARB' },
+               { 'name': 'glIsQueryEXT',
+                 'extensions': ['GL_EXT_occlusion_query_boolean'] }],
   'arguments': 'GLuint query', },
 { 'return_type': 'GLboolean',
   'names': ['glIsRenderbufferEXT', 'glIsRenderbuffer'],
   'arguments': 'GLuint renderbuffer', },
 { 'return_type': 'GLboolean',
-  'versions': [{ 'name': 'glIsSampler',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glIsSampler' }],
   'arguments': 'GLuint sampler', },
 { 'return_type': 'GLboolean',
   'names': ['glIsShader'],
   'arguments': 'GLuint shader', },
 { 'return_type': 'GLboolean',
-  'names': ['glIsSync'],
+  'versions': [{ 'name': 'glIsSync',
+                 'extensions': ['GL_ARB_sync'] }],
   'arguments': 'GLsync sync', },
 { 'return_type': 'GLboolean',
   'names': ['glIsTexture'],
   'arguments': 'GLuint texture', },
 { 'return_type': 'GLboolean',
-  'versions': [{ 'name': 'glIsTransformFeedback',
-                 'gl_versions': ['gl4', 'es3'] }],
+  'versions': [{ 'name': 'glIsTransformFeedback' }],
   'arguments': 'GLuint id', },
 { 'return_type': 'GLboolean',
   'known_as': 'glIsVertexArrayOES',
   'versions': [{ 'name': 'glIsVertexArray',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] },
-               { 'name': 'glIsVertexArray',
-                 'extensions': ['GL_ARB_vertex_array_object'] },
+                 'extensions': ['GL_ARB_vertex_array_object'], },
                { 'name': 'glIsVertexArrayOES' },
                { 'name': 'glIsVertexArrayAPPLE',
                  'extensions': ['GL_APPLE_vertex_array_object'] }],
@@ -783,8 +755,6 @@ GL_FUNCTIONS = [
 { 'return_type': 'void*',
   'known_as': 'glMapBufferRange',
   'versions': [{ 'name': 'glMapBufferRange',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] },
-               { 'name': 'glMapBufferRange',
                  'extensions': ['GL_ARB_map_buffer_range'] },
                { 'name': 'glMapBufferRangeEXT',
                  'extensions': ['GL_EXT_map_buffer_range'] }],
@@ -793,24 +763,17 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'known_as': 'glMatrixLoadfEXT',
   'versions': [{ 'name': 'glMatrixLoadfEXT',
-                 'gl_versions': ['gl4'],
-                 'extensions': ['GL_EXT_direct_state_access'] },
-               { 'name': 'glMatrixLoadfEXT',
-                 'gl_versions': ['es3'],
-                 'extensions': ['GL_NV_path_rendering'] }],
+                 'extensions': ['GL_EXT_direct_state_access',
+                                'GL_NV_path_rendering'] }],
   'arguments': 'GLenum matrixMode, const GLfloat* m' },
 { 'return_type': 'void',
   'known_as': 'glMatrixLoadIdentityEXT',
   'versions': [{ 'name': 'glMatrixLoadIdentityEXT',
-                 'gl_versions': ['gl4'],
-                 'extensions': ['GL_EXT_direct_state_access'] },
-               { 'name': 'glMatrixLoadIdentityEXT',
-                 'gl_versions': ['es3'],
-                 'extensions': ['GL_NV_path_rendering'] }],
+                 'extensions': ['GL_EXT_direct_state_access',
+                                'GL_NV_path_rendering'] },],
   'arguments': 'GLenum matrixMode' },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glPauseTransformFeedback',
-                 'gl_versions': ['gl4', 'es3'] }],
+  'versions': [{ 'name': 'glPauseTransformFeedback' }],
   'arguments': 'void', },
 { 'return_type': 'void',
   'names': ['glPixelStorei'],
@@ -828,20 +791,20 @@ GL_FUNCTIONS = [
   'known_as': 'glProgramBinary',
   'versions': [{ 'name': 'glProgramBinaryOES' },
                { 'name': 'glProgramBinary',
-                 'extensions': ['GL_ARB_get_program_binary'] },
-               { 'name': 'glProgramBinary' }],
+                 'extensions': ['GL_ARB_get_program_binary'] }],
   'arguments': 'GLuint program, GLenum binaryFormat, '
                'const GLvoid* binary, GLsizei length' },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glProgramParameteri',
-                 'extensions': ['GL_ARB_get_program_binary'] },
-               { 'name': 'glProgramParameteri' }],
+                 'extensions': ['GL_ARB_get_program_binary'] }],
   'arguments': 'GLuint program, GLenum pname, GLint value' },
 { 'return_type': 'void',
   'names': ['glPushGroupMarkerEXT'],
   'arguments': 'GLsizei length, const char* marker', },
 { 'return_type': 'void',
-  'names': ['glQueryCounter', 'glQueryCounterEXT'],
+  'versions': [{ 'name': 'glQueryCounter',
+                 'extensions': ['GL_ARB_timer_query'] },
+               { 'name': 'glQueryCounterEXT' }],
   'arguments': 'GLuint id, GLenum target', },
 { 'return_type': 'void',
   'names': ['glReadBuffer'],
@@ -894,27 +857,22 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glResumeTransformFeedback',
-                 'gl_versions': ['gl4', 'es3'] }],
+  'versions': [{ 'name': 'glResumeTransformFeedback' }],
   'arguments': 'void', },
 { 'return_type': 'void',
   'names': ['glSampleCoverage'],
   'arguments': 'GLclampf value, GLboolean invert', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glSamplerParameterf',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glSamplerParameterf' }],
   'arguments': 'GLuint sampler, GLenum pname, GLfloat param', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glSamplerParameterfv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glSamplerParameterfv' }],
   'arguments': 'GLuint sampler, GLenum pname, const GLfloat* params', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glSamplerParameteri',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glSamplerParameteri' }],
   'arguments': 'GLuint sampler, GLenum pname, GLint param', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glSamplerParameteriv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.2 or higher.
+  'versions': [{ 'name': 'glSamplerParameteriv' }],
   'arguments': 'GLuint sampler, GLenum pname, const GLint* params', },
 { 'return_type': 'void',
   'names': ['glScissor'],
@@ -984,8 +942,7 @@ GL_FUNCTIONS = [
       'GLsizei height, GLint border, GLenum format, GLenum type, '
       'const void* pixels', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glTexImage3D',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glTexImage3D' }],
   'arguments':
       'GLenum target, GLint level, GLint internalformat, GLsizei width, '
       'GLsizei height, GLsizei depth, GLint border, GLenum format, '
@@ -1005,16 +962,13 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'known_as': 'glTexStorage2DEXT',
   'versions': [{ 'name': 'glTexStorage2D',
-                 'gl_versions': ['es3'] },
-               { 'name': 'glTexStorage2D',
                  'extensions': ['GL_ARB_texture_storage'] },
                { 'name': 'glTexStorage2DEXT',
                  'extensions': ['GL_EXT_texture_storage'] }],
   'arguments': 'GLenum target, GLsizei levels, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glTexStorage3D',
-                 'gl_versions': ['gl4', 'es3'] }],  # GL 4.2 or higher.
+  'versions': [{ 'name': 'glTexStorage3D' }],
   'arguments': 'GLenum target, GLsizei levels, GLenum internalformat, '
                'GLsizei width, GLsizei height, GLsizei depth', },
 { 'return_type': 'void',
@@ -1025,15 +979,13 @@ GL_FUNCTIONS = [
      'const void* pixels', },
 # TODO(zmo): wait for MOCK_METHOD11.
 # { 'return_type': 'void',
-#   'versions': [{ 'name': 'glTexSubImage3D',
-#                  'gl_versions': ['gl3', 'gl4', 'es3'] }],
+#   'versions': [{ 'name': 'glTexSubImage3D' }],
 #   'arguments':
 #       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
 #       'GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, '
 #       'GLenum format, GLenum type, const void* pixels', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glTransformFeedbackVaryings',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glTransformFeedbackVaryings' }],
   'arguments': 'GLuint program, GLsizei count, const char* const* varyings, '
                'GLenum bufferMode', },
 { 'return_type': 'void',
@@ -1049,12 +1001,10 @@ GL_FUNCTIONS = [
   'names': ['glUniform1iv'],
   'arguments': 'GLint location, GLsizei count, const GLint* v', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniform1ui',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniform1ui' }],
   'arguments': 'GLint location, GLuint v0', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniform1uiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniform1uiv' }],
   'arguments': 'GLint location, GLsizei count, const GLuint* v', },
 { 'return_type': 'void',
   'names': ['glUniform2f'],
@@ -1069,12 +1019,10 @@ GL_FUNCTIONS = [
   'names': ['glUniform2iv'],
   'arguments': 'GLint location, GLsizei count, const GLint* v', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniform2ui',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniform2ui' }],
   'arguments': 'GLint location, GLuint v0, GLuint v1', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniform2uiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniform2uiv' }],
   'arguments': 'GLint location, GLsizei count, const GLuint* v', },
 { 'return_type': 'void',
   'names': ['glUniform3f'],
@@ -1089,12 +1037,10 @@ GL_FUNCTIONS = [
   'names': ['glUniform3iv'],
   'arguments': 'GLint location, GLsizei count, const GLint* v', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniform3ui',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniform3ui' }],
   'arguments': 'GLint location, GLuint v0, GLuint v1, GLuint v2', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniform3uiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniform3uiv' }],
   'arguments': 'GLint location, GLsizei count, const GLuint* v', },
 { 'return_type': 'void',
   'names': ['glUniform4f'],
@@ -1109,16 +1055,13 @@ GL_FUNCTIONS = [
   'names': ['glUniform4iv'],
   'arguments': 'GLint location, GLsizei count, const GLint* v', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniform4ui',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniform4ui' }],
   'arguments': 'GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniform4uiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniform4uiv' }],
   'arguments': 'GLint location, GLsizei count, const GLuint* v', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniformBlockBinding',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.1 or higher.
+  'versions': [{ 'name': 'glUniformBlockBinding' }],
   'arguments': 'GLuint program, GLuint uniformBlockIndex, '
                'GLuint uniformBlockBinding', },
 { 'return_type': 'void',
@@ -1126,13 +1069,11 @@ GL_FUNCTIONS = [
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniformMatrix2x3fv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniformMatrix2x3fv' }],
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniformMatrix2x4fv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniformMatrix2x4fv' }],
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'void',
@@ -1140,13 +1081,11 @@ GL_FUNCTIONS = [
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniformMatrix3x2fv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniformMatrix3x2fv' }],
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniformMatrix3x4fv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniformMatrix3x4fv' }],
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'void',
@@ -1154,13 +1093,11 @@ GL_FUNCTIONS = [
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniformMatrix4x2fv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniformMatrix4x2fv' }],
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glUniformMatrix4x3fv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glUniformMatrix4x3fv' }],
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'GLboolean',
@@ -1204,24 +1141,19 @@ GL_FUNCTIONS = [
   'arguments':
       'GLuint index, GLuint divisor', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glVertexAttribI4i',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glVertexAttribI4i' }],
   'arguments': 'GLuint indx, GLint x, GLint y, GLint z, GLint w', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glVertexAttribI4iv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glVertexAttribI4iv' }],
   'arguments': 'GLuint indx, const GLint* values', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glVertexAttribI4ui',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glVertexAttribI4ui' }],
   'arguments': 'GLuint indx, GLuint x, GLuint y, GLuint z, GLuint w', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glVertexAttribI4uiv',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glVertexAttribI4uiv' }],
   'arguments': 'GLuint indx, const GLuint* values', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glVertexAttribIPointer',
-                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'versions': [{ 'name': 'glVertexAttribIPointer' }],
   'arguments': 'GLuint indx, GLint size, GLenum type, GLsizei stride, '
                'const void* ptr', },
 { 'return_type': 'void',
@@ -1232,7 +1164,8 @@ GL_FUNCTIONS = [
   'names': ['glViewport'],
   'arguments': 'GLint x, GLint y, GLsizei width, GLsizei height', },
 { 'return_type': 'GLenum',
-  'names': ['glWaitSync'],
+  'versions': [{ 'name': 'glWaitSync',
+                 'extensions': ['GL_ARB_sync'] }],
   'arguments':
     'GLsync sync, GLbitfield flags, GLuint64 timeout', },
 ]
@@ -1675,8 +1608,11 @@ GLX_FUNCTIONS = [
 
 FUNCTION_SETS = [
   [GL_FUNCTIONS, 'gl', [
-      'GL/glext.h',
+      'GL/gl.h',
+      'noninclude/GL/glext.h',
       'GLES2/gl2ext.h',
+      'GLES3/gl3.h',
+      'GLES3/gl31.h',
       # Files below are Chromium-specific and shipped with Chromium sources.
       'GL/glextchromium.h',
       'GLES2/gl2chromium.h',
@@ -1693,8 +1629,8 @@ FUNCTION_SETS = [
       'EGL_ANGLE_surface_d3d_texture_2d_share_handle',
     ],
   ],
-  [WGL_FUNCTIONS, 'wgl', ['GL/wglext.h'], []],
-  [GLX_FUNCTIONS, 'glx', ['GL/glx.h', 'GL/glxext.h'], []],
+  [WGL_FUNCTIONS, 'wgl', ['noninclude/GL/wglext.h'], []],
+  [GLX_FUNCTIONS, 'glx', ['GL/glx.h', 'noninclude/GL/glxext.h'], []],
 ]
 
 GLES2_HEADERS_WITH_ENUMS = [
@@ -1719,6 +1655,53 @@ LICENSE_AND_HEADER = """\
 // DO NOT EDIT!
 
 """
+
+GLVersion = namedtuple('GLVersion', 'is_es major_version minor_version')
+
+def GLVersionBindAlways(version):
+  return version.major_version <= 2
+
+
+def GetStaticBinding(func):
+  """If this function has a name assigned to it that should  be bound always,
+  then return this name.
+
+  This will be the case if either a function name is specified
+  that depends on an extension from UNCONDITIONALLY_BOUND_EXTENSIONS,
+  or if the GL version it depends on is assumed to be available (e.g. <=2.1).
+  There can only be one name that satisfies this condition (or the bindings
+  would be ambiguous)."""
+
+  static_bindings = set([])
+
+  for version in func['versions']:
+    if 'extensions' in version:
+      extensions = version['extensions']
+      num_unconditional_extensions = len(
+          extensions & UNCONDITIONALLY_BOUND_EXTENSIONS)
+      if num_unconditional_extensions:
+        static_bindings.add(version['name'])
+    elif 'gl_versions' in version:
+      versions = [v for v in version['gl_versions'] if GLVersionBindAlways(v)]
+      # It's only unconditional if it exists in GL and GLES
+      if len(versions) == 2:
+        assert versions[0].is_es != versions[1].is_es
+        static_bindings.add(version['name'])
+    else:
+        static_bindings.add(version['name'])
+
+  # Avoid ambiguous bindings (static binding with different names)
+  assert len(static_bindings) <= 1
+  if len(static_bindings):
+    static_name = static_bindings.pop()
+    # Avoid ambiguous bindings (static and dynamic bindings with
+    # different names)
+    assert len([v['name'] for v in func['versions']
+               if v['name'] != static_name]) == 0, func
+    return static_name
+  else:
+    return None
+
 
 def GenerateHeader(file, functions, set_name, used_extensions):
   """Generates gl_bindings_autogen_x.h"""
@@ -1831,6 +1814,7 @@ def GenerateSource(file, functions, set_name, used_extensions):
                    'ui/gl/gl_implementation.h',
                    'ui/gl/gl_version_info.h',
                    set_header_name ]
+
   includes_string = "\n".join(["#include \"{0}\"".format(h)
                                for h in sorted(include_list)])
 
@@ -1854,17 +1838,16 @@ namespace gfx {
   # is initialized. This is done to provide clear asserts on debug build and to
   # avoid crashing in case of a bug on release build.
   file.write('\n')
+  num_dynamic = 0
   for func in functions:
-    unique_names = set([version['name'] for version in func['versions']])
-    if len(unique_names) > 1:
-      file.write('%s %sNotBound(%s) {\n' %
-          (func['return_type'], func['known_as'], func['arguments']))
-      file.write('  NOTREACHED();\n')
-      return_type = func['return_type'].lower()
-      # Returning 0 works for booleans, integers and pointers.
-      if return_type != 'void':
-        file.write('  return 0;\n')
-      file.write('}\n')
+    static_binding = GetStaticBinding(func)
+    if static_binding:
+      func['static_binding'] = static_binding
+    else:
+      num_dynamic = num_dynamic + 1
+
+  print "[%s] %d static bindings, %d dynamic bindings" % (
+      set_name, len(functions) - num_dynamic, num_dynamic)
 
   # Write function to initialize the function pointers that are always the same
   # and to initialize bindings where choice of the function depends on the
@@ -1879,100 +1862,81 @@ namespace gfx {
         (known_as, known_as, version_name))
 
   for func in functions:
-    unique_names = set([version['name'] for version in func['versions']])
-    if len(unique_names) == 1:
-      WriteFuncBinding(file, func['known_as'], func['known_as'])
+    if 'static_binding' in func:
+      WriteFuncBinding(file, func['known_as'], func['static_binding'])
     else:
-      file.write('  fn.%sFn = reinterpret_cast<%sProc>(%sNotBound);\n' %
-          (func['known_as'], func['known_as'], func['known_as']))
+      file.write('  fn.%sFn = 0;\n' % func['known_as'])
 
-  file.write('}\n')
-  file.write('\n')
-
-  # Write function to initialize bindings where choice of the function depends
-  # on the extension string or the GL version.
-  file.write("""void Driver%s::InitializeDynamicBindings(GLContext* context) {
+  if set_name == 'gl':
+    # Write the deferred bindings for GL that need a current context and depend
+    # on GL_VERSION and GL_EXTENSIONS.
+    file.write('}\n\n')
+    file.write("""void DriverGL::InitializeDynamicBindings(GLContext* context) {
   DCHECK(context && context->IsCurrent(NULL));
   const GLVersionInfo* ver = context->GetVersionInfo();
   ALLOW_UNUSED_LOCAL(ver);
   std::string extensions = context->GetExtensions() + " ";
   ALLOW_UNUSED_LOCAL(extensions);
 
-""" % set_name.upper())
+""")
+  else:
+    file.write("""std::string extensions(GetPlatformExtensions());
+  extensions += " ";
+  ALLOW_UNUSED_LOCAL(extensions);
+
+""")
+
   for extension in sorted(used_extensions):
     # Extra space at the end of the extension name is intentional, it is used
     # as a separator
     file.write('  ext.b_%s = extensions.find("%s ") != std::string::npos;\n' %
         (extension, extension))
 
-  def WrapOr(cond):
-    if ' || ' in cond:
-      return '(%s)' % cond
-    return cond
+  def GetGLVersionCondition(gl_version):
+    if GLVersionBindAlways(gl_version):
+      if gl_version.is_es:
+        return 'ver->is_es'
+      else:
+        return '!ver->is_es'
+    elif gl_version.is_es:
+      return 'ver->IsAtLeastGLES(%du, %du)' % (
+          gl_version.major_version, gl_version.minor_version)
+    else:
+      return 'ver->IsAtLeastGL(%du, %du)' % (
+          gl_version.major_version, gl_version.minor_version)
 
-  def WrapAnd(cond):
-    if ' && ' in cond:
-      return '(%s)' % cond
-    return cond
-
-  def VersionCondition(version):
+  def GetBindingCondition(version):
     conditions = []
     if 'gl_versions' in version:
-      gl_versions = version['gl_versions']
-      version_cond = ' || '.join(['ver->is_%s' % gl for gl in gl_versions])
-      conditions.append(WrapOr(version_cond))
+      conditions.extend(
+          [GetGLVersionCondition(v) for v in version['gl_versions']])
     if 'extensions' in version and version['extensions']:
-      ext_cond = ' || '.join(['ext.b_%s' % e for e in version['extensions']])
-      conditions.append(WrapOr(ext_cond))
-    return ' && '.join(conditions)
+      conditions.extend(
+          ['ext.b_%s' % e for e in version['extensions']])
+    return ' || '.join(conditions)
 
   def WriteConditionalFuncBinding(file, func):
-    # Functions with only one version are always bound unconditionally
-    assert len(func['versions']) > 1
+    assert len(func['versions']) > 0
     known_as = func['known_as']
     i = 0
     first_version = True
     while i < len(func['versions']):
       version = func['versions'][i]
-      cond = VersionCondition(version)
-      combined_conditions = [WrapAnd(cond)]
-      last_version = i + 1 == len(func['versions'])
-      while not last_version and \
-          func['versions'][i + 1]['name'] == version['name']:
-        i += 1
-        combinable_cond = VersionCondition(func['versions'][i])
-        combined_conditions.append(WrapAnd(combinable_cond))
-        last_version = i + 1 == len(func['versions'])
-      if len(combined_conditions) > 1:
-        if [1 for cond in combined_conditions if cond == '']:
-          cond = ''
-        else:
-          cond = ' || '.join(combined_conditions)
-      # Don't make the last possible binding conditional on anything else but
-      # that the function isn't already bound to avoid verbose specification
-      # of functions which have both ARB and core versions with the same name,
-      # and to be able to bind to mock extension functions in unit tests which
-      # call InitializeDynamicGLBindings with a stub context that doesn't have
-      # extensions in its extension string.
-      # TODO(oetuaho@nvidia.com): Get rid of the fallback.
-      # http://crbug.com/325668
-      if cond != '' and not last_version:
-        if not first_version:
-          file.write('  if (!fn.%sFn && (%s)) {\n  ' % (known_as, cond))
-        else:
-          file.write('  if (%s) {\n  ' % cond)
-      elif not first_version:
-        file.write('  if (!fn.%sFn) {\n  ' % known_as)
+      cond = GetBindingCondition(version)
+      if first_version:
+        file.write('  if (%s) {\n  ' % cond)
+      else:
+        file.write('  else if (%s) {\n  ' % (cond))
+
       WriteFuncBinding(file, known_as, version['name'])
+      file.write('DCHECK(fn.%sFn);\n' % known_as)
       file.write('}\n')
       i += 1
       first_version = False
 
   for func in functions:
-    unique_names = set([version['name'] for version in func['versions']])
-    if len(unique_names) > 1:
+    if not 'static_binding' in func:
       file.write('\n')
-      file.write('  fn.%sFn = 0;\n' % func['known_as'])
       file.write('  debug_fn.%sFn = 0;\n' % func['known_as'])
       WriteConditionalFuncBinding(file, func)
 
@@ -2275,15 +2239,18 @@ const size_t GLEnums::enum_to_string_table_len_ =
 """)
 
 
-def ParseExtensionFunctionsFromHeader(header_file):
+def ParseFunctionsFromHeader(header_file, extensions, versions):
   """Parse a C extension header file and return a map from extension names to
   a list of functions.
 
   Args:
     header_file: Line-iterable C header file.
   Returns:
-    Map of extension name => functions.
+    Map of extension name => functions, Map of gl version => functions.
+    Functions will only be in either one of the two maps.
   """
+  version_start = re.compile(
+      r'#ifndef GL_(ES_|)VERSION((?:_[0-9])+)$')
   extension_start = re.compile(
       r'#ifndef ((?:GL|EGL|WGL|GLX)_[A-Z]+_[a-zA-Z]\w+)')
   extension_function = re.compile(r'.+\s+([a-z]+\w+)\s*\(')
@@ -2291,58 +2258,108 @@ def ParseExtensionFunctionsFromHeader(header_file):
   macro_start = re.compile(r'^#(if|ifdef|ifndef).*')
   macro_end = re.compile(r'^#endif.*')
   macro_depth = 0
+  current_version = None
+  current_version_depth = 0
   current_extension = None
   current_extension_depth = 0
-  extensions = collections.defaultdict(lambda: [])
+
+  # Pick up all core functions here, since some of them are missing in the
+  # Khronos headers.
+  hdr = os.path.basename(header_file.name)
+  if hdr == "gl.h":
+    current_version = GLVersion(False, 1, 0)
+
+  line_num = 1
   for line in header_file:
+    version_match = version_start.match(line)
     if macro_start.match(line):
       macro_depth += 1
+      if version_match:
+        if current_version:
+          raise RuntimeError('Nested GL version macro in %s at line %d' % (
+              header_file.name, line_num))
+        current_version_depth = macro_depth
+        es = version_match.group(1)
+        major_version, minor_version =\
+            version_match.group(2).lstrip('_').split('_')
+        is_es = len(es) > 0
+        if (not is_es) and (major_version == '1'):
+          minor_version = 0
+        current_version = GLVersion(
+            is_es, int(major_version), int(minor_version))
     elif macro_end.match(line):
       macro_depth -= 1
       if macro_depth < current_extension_depth:
         current_extension = None
+      if macro_depth < current_version_depth:
+        current_version = None
+
     match = extension_start.match(line)
-    if match:
+    if match and not version_match:
+      if current_version and hdr != "gl.h":
+        raise RuntimeError('Nested GL version macro in %s at line %d' % (
+            header_file.name, line_num))
       current_extension = match.group(1)
       current_extension_depth = macro_depth
-      assert current_extension not in extensions, \
-          "Duplicate extension: " + current_extension
+
     match = extension_function.match(line)
-    if match and current_extension and not typedef.match(line):
-      extensions[current_extension].append(match.group(1))
-  return extensions
+    if match and not typedef.match(line):
+      if current_extension:
+        extensions[current_extension].add(match.group(1))
+      elif current_version:
+        versions[current_version].add(match.group(1))
+    line_num = line_num + 1
 
 
-def GetExtensionFunctions(extension_headers):
-  """Parse extension functions from a list of header files.
+def GetDynamicFunctions(extension_headers):
+  """Parse all optional functions from a list of header files.
 
   Args:
     extension_headers: List of header file names.
   Returns:
-    Map of extension name => list of functions.
+    Map of extension name => list of functions,
+    Map of gl version => list of functions.
   """
-  extensions = {}
+  extensions = collections.defaultdict(lambda: set([]))
+  gl_versions = collections.defaultdict(lambda: set([]))
   for header in extension_headers:
-    extensions.update(ParseExtensionFunctionsFromHeader(open(header)))
-  return extensions
+    ParseFunctionsFromHeader(open(header), extensions, gl_versions)
+  return extensions, gl_versions
 
 
-def GetFunctionToExtensionMap(extensions):
+def GetFunctionToExtensionsMap(extensions):
   """Construct map from a function names to extensions which define the
   function.
 
   Args:
     extensions: Map of extension name => functions.
   Returns:
-    Map of function name => extension name.
+    Map of function name => extension names.
   """
   function_to_extensions = {}
   for extension, functions in extensions.items():
     for function in functions:
       if not function in function_to_extensions:
-        function_to_extensions[function] = []
-      function_to_extensions[function].append(extension)
+        function_to_extensions[function] = set([])
+      function_to_extensions[function].add(extension)
   return function_to_extensions
+
+def GetFunctionToGLVersionsMap(gl_versions):
+  """Construct map from a function names to GL versions which define the
+  function.
+
+  Args:
+    extensions: Map of gl versions => functions.
+  Returns:
+    Map of function name => gl versions.
+  """
+  function_to_gl_versions = {}
+  for gl_version, functions in gl_versions.items():
+    for function in functions:
+      if not function in function_to_gl_versions:
+        function_to_gl_versions[function] = set([])
+      function_to_gl_versions[function].add(gl_version)
+  return function_to_gl_versions
 
 
 def LooksLikeExtensionFunction(function):
@@ -2351,6 +2368,13 @@ def LooksLikeExtensionFunction(function):
   vendor = re.match(r'\w+?([A-Z][A-Z]+)$', function)
   return vendor is not None and not vendor.group(1) in ['GL', 'API', 'DC']
 
+
+def SortVersions(key):
+   # Prefer functions from the core for binding
+  if 'gl_versions' in key:
+    return 0
+  else:
+    return 1
 
 def FillExtensionsFromHeaders(functions, extension_headers, extra_extensions):
   """Determine which functions belong to extensions based on extension headers,
@@ -2365,30 +2389,70 @@ def FillExtensionsFromHeaders(functions, extension_headers, extra_extensions):
     Set of used extensions.
   """
   # Parse known extensions.
-  extensions = GetExtensionFunctions(extension_headers)
-  functions_to_extensions = GetFunctionToExtensionMap(extensions)
+  extensions, gl_versions = GetDynamicFunctions(extension_headers)
+  functions_to_extensions = GetFunctionToExtensionsMap(extensions)
+  functions_to_gl_versions = GetFunctionToGLVersionsMap(gl_versions)
 
   # Fill in the extension information.
   used_extensions = set()
+  used_functions_by_version = collections.defaultdict(lambda: set([]))
   for func in functions:
     for version in func['versions']:
       name = version['name']
+
+      # There should only be one version entry per name string.
+      if len([v for v in func['versions'] if v['name'] == name]) > 1:
+        raise RuntimeError(
+            'Duplicate version entries with same name for %s' % name)
+
       # Make sure we know about all extensions and extension functions.
+      extensions_from_headers = set([])
+      if name in functions_to_extensions:
+        extensions_from_headers = set(functions_to_extensions[name])
+
+      explicit_extensions = set([])
       if 'extensions' in version:
+        explicit_extensions = set(version['extensions'])
+
+      in_both = explicit_extensions.intersection(extensions_from_headers)
+      if len(in_both):
+        print "[%s] Specified redundant extensions for binding: %s" % (
+            name, ', '.join(in_both))
+      diff = explicit_extensions - extensions_from_headers
+      if len(diff):
+        print "[%s] Specified extra extensions for binding: %s" % (
+            name, ', '.join(diff))
+
+      all_extensions = extensions_from_headers.union(explicit_extensions)
+      if len(all_extensions):
+        version['extensions'] = all_extensions
+
+      if 'extensions' in version:
+        assert len(version['extensions'])
         used_extensions.update(version['extensions'])
-      elif name in functions_to_extensions:
-        # If there are multiple versions with the same name, assume that they
-        # already have all the correct conditions, we can't just blindly add
-        # the same extension conditions to all of them
-        if len([v for v in func['versions'] if v['name'] == name]) == 1:
-          version['extensions'] = functions_to_extensions[name]
-          used_extensions.update(version['extensions'])
-      elif LooksLikeExtensionFunction(name):
+
+      if not 'extensions' in version and LooksLikeExtensionFunction(name):
         raise RuntimeError('%s looks like an extension function but does not '
             'belong to any of the known extensions.' % name)
 
+      if name in functions_to_gl_versions:
+        assert not 'gl_versions' in version
+        version['gl_versions'] = functions_to_gl_versions[name]
+        for v in version['gl_versions']:
+          used_functions_by_version[v].add(name)
+
+    func['versions'] = sorted(func['versions'], key=SortVersions)
+
   # Add extensions that do not have any functions.
   used_extensions.update(extra_extensions)
+
+  # Print out used function count by GL(ES) version.
+  for v in sorted([v for v in used_functions_by_version if v.is_es]):
+    print "OpenGL ES %d.%d: %d used functions" % (
+        v.major_version, v.minor_version, len(used_functions_by_version[v]))
+  for v in sorted([v for v in used_functions_by_version if not v.is_es]):
+    print "OpenGL %d.%d: %d used functions" % (
+        v.major_version, v.minor_version, len(used_functions_by_version[v]))
 
   return used_extensions
 

@@ -225,7 +225,17 @@ class BaseGpuTest : public GpuServiceTest {
 
  protected:
   void SetUp() override {
-    GpuServiceTest::SetUp();
+    const char* gl_version = "3.2";
+    const char* extensions = nullptr;
+    if (GetTracerType() == kTracerTypeDisjointTimer) {
+      gl_version = "opengl es 3.0";
+      extensions = "GL_EXT_disjoint_timer_query";
+    } else if (GetTracerType() == kTracerTypeARBTimer) {
+      // TODO(sievers): The tracer should not depend on ARB_occlusion_query.
+      // Try merge Query APIs (core, ARB, EXT) into a single binding each.
+      extensions = "GL_ARB_timer_query GL_ARB_occlusion_query";
+    }
+    GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
     gl_fake_queries_.Reset();
     gl_surface_ = new gfx::GLSurfaceStub();
     gl_context_ = new gfx::GLContextStub();

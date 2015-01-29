@@ -14,7 +14,6 @@ namespace gfx {
 class GLContext;
 
 void InitializeStaticGLBindingsOSMESA();
-void InitializeDynamicGLBindingsOSMESA(GLContext* context);
 void InitializeDebugGLBindingsOSMESA();
 void ClearGLBindingsOSMESA();
 

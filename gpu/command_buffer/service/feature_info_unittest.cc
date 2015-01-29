@@ -42,7 +42,7 @@ class FeatureInfoTest : public GpuServiceTest {
   }
 
   void SetupInitExpectations(const char* extensions) {
-    SetupInitExpectationsWithGLVersion(extensions, "", "");
+    SetupInitExpectationsWithGLVersion(extensions, "", "3.0");
   }
 
   void SetupInitExpectationsWithGLVersion(

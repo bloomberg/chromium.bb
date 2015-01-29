@@ -479,12 +479,6 @@ MockGLInterface::Mock_glDeleteBuffers(GLsizei n, const GLuint* buffers) {
 }
 
 void GL_BINDING_CALL
-MockGLInterface::Mock_glDeleteBuffersARB(GLsizei n, const GLuint* buffers) {
-  MakeFunctionUnique("glDeleteBuffersARB");
-  interface_->DeleteBuffersARB(n, buffers);
-}
-
-void GL_BINDING_CALL
 MockGLInterface::Mock_glDeleteFencesAPPLE(GLsizei n, const GLuint* fences) {
   MakeFunctionUnique("glDeleteFencesAPPLE");
   interface_->DeleteFencesAPPLE(n, fences);
@@ -915,12 +909,6 @@ MockGLInterface::Mock_glGenBuffers(GLsizei n, GLuint* buffers) {
 }
 
 void GL_BINDING_CALL
-MockGLInterface::Mock_glGenBuffersARB(GLsizei n, GLuint* buffers) {
-  MakeFunctionUnique("glGenBuffersARB");
-  interface_->GenBuffersARB(n, buffers);
-}
-
-void GL_BINDING_CALL
 MockGLInterface::Mock_glGenFencesAPPLE(GLsizei n, GLuint* fences) {
   MakeFunctionUnique("glGenFencesAPPLE");
   interface_->GenFencesAPPLE(n, fences);
@@ -1247,6 +1235,14 @@ MockGLInterface::Mock_glGetQueryObjecti64v(GLuint id,
                                            GLenum pname,
                                            GLint64* params) {
   MakeFunctionUnique("glGetQueryObjecti64v");
+  interface_->GetQueryObjecti64v(id, pname, params);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glGetQueryObjecti64vEXT(GLuint id,
+                                              GLenum pname,
+                                              GLint64* params) {
+  MakeFunctionUnique("glGetQueryObjecti64vEXT");
   interface_->GetQueryObjecti64v(id, pname, params);
 }
 
@@ -2650,8 +2646,6 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glCullFace);
   if (strcmp(name, "glDeleteBuffers") == 0)
     return reinterpret_cast<void*>(Mock_glDeleteBuffers);
-  if (strcmp(name, "glDeleteBuffersARB") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteBuffersARB);
   if (strcmp(name, "glDeleteFencesAPPLE") == 0)
     return reinterpret_cast<void*>(Mock_glDeleteFencesAPPLE);
   if (strcmp(name, "glDeleteFencesNV") == 0)
@@ -2776,8 +2770,6 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glFrontFace);
   if (strcmp(name, "glGenBuffers") == 0)
     return reinterpret_cast<void*>(Mock_glGenBuffers);
-  if (strcmp(name, "glGenBuffersARB") == 0)
-    return reinterpret_cast<void*>(Mock_glGenBuffersARB);
   if (strcmp(name, "glGenFencesAPPLE") == 0)
     return reinterpret_cast<void*>(Mock_glGenFencesAPPLE);
   if (strcmp(name, "glGenFencesNV") == 0)
@@ -2871,6 +2863,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glGetProgramiv);
   if (strcmp(name, "glGetQueryObjecti64v") == 0)
     return reinterpret_cast<void*>(Mock_glGetQueryObjecti64v);
+  if (strcmp(name, "glGetQueryObjecti64vEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glGetQueryObjecti64vEXT);
   if (strcmp(name, "glGetQueryObjectiv") == 0)
     return reinterpret_cast<void*>(Mock_glGetQueryObjectiv);
   if (strcmp(name, "glGetQueryObjectivARB") == 0)

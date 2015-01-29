@@ -18,10 +18,6 @@ void InitializeStaticGLBindingsWGL() {
   g_current_wgl_context = g_real_wgl;
 }
 
-void InitializeDynamicGLBindingsWGL(GLContext* context) {
-  g_driver_wgl.InitializeDynamicBindings(context);
-}
-
 void InitializeDebugGLBindingsWGL() {
   g_driver_wgl.InitializeDebugBindings();
 }

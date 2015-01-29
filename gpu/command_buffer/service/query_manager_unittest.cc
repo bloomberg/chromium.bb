@@ -38,7 +38,7 @@ class QueryManagerTest : public GpuServiceTest {
 
  protected:
   void SetUp() override {
-    GpuServiceTest::SetUp();
+    GpuServiceTest::SetUpWithGLVersion("2.1", "GL_ARB_occlusion_query");
     engine_.reset(new MockCommandBufferEngine());
     decoder_.reset(new MockGLES2Decoder());
     decoder_->set_engine(engine_.get());

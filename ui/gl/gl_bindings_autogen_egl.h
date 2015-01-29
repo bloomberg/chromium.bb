@@ -163,7 +163,9 @@ struct ExtensionsEGL {
   bool b_EGL_CHROMIUM_sync_control;
   bool b_EGL_KHR_fence_sync;
   bool b_EGL_KHR_gl_texture_2D_image;
+  bool b_EGL_KHR_image;
   bool b_EGL_KHR_image_base;
+  bool b_EGL_KHR_reusable_sync;
   bool b_EGL_KHR_wait_sync;
   bool b_EGL_NV_post_sub_buffer;
 };

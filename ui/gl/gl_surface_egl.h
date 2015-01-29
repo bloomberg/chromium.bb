@@ -49,6 +49,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
  private:
 #if defined(OS_WIN)
+  friend struct DriverEGL;
   static EGLDisplay GetPlatformDisplay(EGLNativeDisplayType native_display);
 #endif
 

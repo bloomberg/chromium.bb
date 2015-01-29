@@ -38,7 +38,7 @@ void GpuServiceTest::SetUpWithGLVersion(const char* gl_version,
 }
 
 void GpuServiceTest::SetUp() {
-  SetUpWithGLVersion("2.0", NULL);
+  SetUpWithGLVersion("2.0", "GL_EXT_framebuffer_object");
 }
 
 void GpuServiceTest::TearDown() {

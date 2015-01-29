@@ -62,7 +62,6 @@ void GLES2DecoderRGBBackbufferTest::SetUp() {
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::CLEAR_ALPHA_IN_READPIXELS));
   InitState init;
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoderWithCommandLine(init, &command_line);
   SetupDefaultProgram();
@@ -268,7 +267,6 @@ TEST_P(GLES2DecoderTest, IsTexture) {
 
 TEST_P(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
   InitState init;
-  init.gl_version = "3.0";
   InitDecoder(init);
 
   BindTexture cmd1;
@@ -704,7 +702,6 @@ TEST_P(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
 TEST_P(GLES2DecoderManualInitTest, GpuMemoryManagerCHROMIUM) {
   InitState init;
   init.extensions = "GL_ARB_texture_rectangle";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 
@@ -780,7 +777,6 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerInitialSize) {
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
   InitState init;
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   // Expect that initial size - size is 0.
@@ -793,7 +789,6 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
   InitState init;
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -850,7 +845,6 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexStorage2DEXT) {
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
   InitState init;
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -877,7 +871,6 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerCopyTexImage2D) {
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
   InitState init;
-  init.gl_version = "3.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
@@ -914,7 +907,6 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerRenderbufferStorage) {
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
   InitState init;
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindRenderbuffer(
@@ -950,7 +942,6 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
   InitState init;
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
@@ -989,7 +980,6 @@ TEST_P(GLES2DecoderManualInitTest, ImmutableCopyTexImage2D) {
   const GLint kBorder = 0;
   InitState init;
   init.extensions = "GL_EXT_texture_storage";
-  init.gl_version = "3.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;

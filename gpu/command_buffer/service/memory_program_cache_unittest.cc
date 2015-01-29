@@ -86,7 +86,7 @@ class MemoryProgramCacheTest : public GpuServiceTest {
 
  protected:
   void SetUp() override {
-    GpuServiceTest::SetUp();
+    GpuServiceTest::SetUpWithGLVersion("3.0", "GL_ARB_get_program_binary");
 
     vertex_shader_ = shader_manager_.CreateShader(kVertexShaderClientId,
                                                   kVertexShaderServiceId,

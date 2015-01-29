@@ -320,16 +320,9 @@ bool InitializeDynamicGLBindings(GLImplementation implementation,
     GLContext* context) {
   switch (implementation) {
     case kGLImplementationOSMesaGL:
-      InitializeDynamicGLBindingsGL(context);
-      InitializeDynamicGLBindingsOSMESA(context);
-      break;
     case kGLImplementationEGLGLES2:
-      InitializeDynamicGLBindingsGL(context);
-      InitializeDynamicGLBindingsEGL(context);
-      break;
     case kGLImplementationDesktopGL:
       InitializeDynamicGLBindingsGL(context);
-      InitializeDynamicGLBindingsWGL(context);
       break;
     case kGLImplementationMockGL:
       if (!context) {

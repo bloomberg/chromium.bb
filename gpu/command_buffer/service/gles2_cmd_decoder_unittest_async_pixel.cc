@@ -57,7 +57,6 @@ using namespace cmds;
 TEST_P(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   InitState init;
   init.extensions = "GL_CHROMIUM_async_pixel_transfers";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 
@@ -319,7 +318,6 @@ TEST_P(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
 TEST_P(GLES2DecoderManualInitTest, AsyncPixelTransferManager) {
   InitState init;
   init.extensions = "GL_CHROMIUM_async_pixel_transfers";
-  init.gl_version = "3.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 

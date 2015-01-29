@@ -17,10 +17,6 @@ void InitializeStaticGLBindingsOSMESA() {
   g_current_osmesa_context = g_real_osmesa;
 }
 
-void InitializeDynamicGLBindingsOSMESA(GLContext* context) {
-  g_driver_osmesa.InitializeDynamicBindings(context);
-}
-
 void InitializeDebugGLBindingsOSMESA() {
   g_driver_osmesa.InitializeDebugBindings();
 }

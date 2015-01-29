@@ -15,7 +15,6 @@ class GLContext;
 struct GLWindowSystemBindingInfo;
 
 void InitializeStaticGLBindingsGLX();
-void InitializeDynamicGLBindingsGLX(GLContext* context);
 void InitializeDebugGLBindingsGLX();
 void ClearGLBindingsGLX();
 bool GetGLWindowSystemBindingInfoGLX(GLWindowSystemBindingInfo* info);
