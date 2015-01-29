@@ -20,6 +20,11 @@ const char kAppOemManifestFile[] = "app-mode-oem-manifest";
 // Possible values: parallel|postpone. Default: parallel.
 const char kAshWebUIInit[] = "ash-webui-init";
 
+// Default wallpaper to use for kids accounts
+// (as paths to trusted, non-user-writable JPEG files).
+const char kChildWallpaperLarge[] = "child-wallpaper-large";
+const char kChildWallpaperSmall[] = "child-wallpaper-small";
+
 // Specifies the URL of the consumer device management backend.
 const char kConsumerDeviceManagementUrl[] = "consumer-device-management-url";
 

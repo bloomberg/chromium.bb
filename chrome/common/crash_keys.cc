@@ -277,6 +277,8 @@ static bool IsBoringSwitch(const std::string& flag) {
     ::switches::kV,
     ::switches::kVModule,
     // Cros/CC flgas are specified as raw strings to avoid dependency.
+    "child-wallpaper-large",
+    "child-wallpaper-small",
     "default-wallpaper-large",
     "default-wallpaper-small",
     "guest-wallpaper-large",

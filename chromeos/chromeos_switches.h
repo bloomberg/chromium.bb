@@ -24,6 +24,8 @@ namespace switches {
 CHROMEOS_EXPORT extern const char kAppOemManifestFile[];
 CHROMEOS_EXPORT extern const char kArtifactsDir[];
 CHROMEOS_EXPORT extern const char kAshWebUIInit[];
+CHROMEOS_EXPORT extern const char kChildWallpaperLarge[];
+CHROMEOS_EXPORT extern const char kChildWallpaperSmall[];
 CHROMEOS_EXPORT extern const char kConsumerDeviceManagementUrl[];
 CHROMEOS_EXPORT extern const char kDefaultWallpaperIsOem[];
 CHROMEOS_EXPORT extern const char kDefaultWallpaperLarge[];
