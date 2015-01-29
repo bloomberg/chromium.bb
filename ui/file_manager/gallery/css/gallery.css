@@ -692,7 +692,6 @@ input[type='checkbox']:checked {
   background-image: -webkit-image-set(
       url(../images/100/icon_redo.png) 1x,
       url(../images/200/icon_redo.png) 2x);
-  position: absolute;  /* Exclude from center-packing*/
 }
 
 .gallery > .toolbar button.redo:active,
