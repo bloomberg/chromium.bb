@@ -17,6 +17,12 @@ class TopSites;
 template <typename T>
 struct DefaultSingletonTraits;
 
+namespace history {
+class TopSites;
+}
+
+class Profile;
+
 // Used for creating and fetching a per-profile instance of the
 // TopSites.
 class TopSitesFactory : public RefcountedBrowserContextKeyedServiceFactory {

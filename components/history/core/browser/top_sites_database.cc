@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/top_sites_database.h"
+#include "components/history/core/browser/top_sites_database.h"
 
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/history/top_sites.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/top_sites.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "sql/connection.h"
 #include "sql/recovery.h"
@@ -136,8 +136,8 @@ enum RecoveryEventType {
 };
 
 void RecordRecoveryEvent(RecoveryEventType recovery_event) {
-  UMA_HISTOGRAM_ENUMERATION("History.TopSitesRecovery",
-                            recovery_event, RECOVERY_EVENT_MAX);
+  UMA_HISTOGRAM_ENUMERATION("History.TopSitesRecovery", recovery_event,
+                            RECOVERY_EVENT_MAX);
 }
 
 // Most corruption comes down to atomic updates between pages being broken
@@ -295,8 +295,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // database was empty to start with.  If the percentage results are very low,
   // something is awry.
   int64 final_size = 0;
-  if (original_size > 0 &&
-      base::GetFileSize(db_path, &final_size) &&
+  if (original_size > 0 && base::GetFileSize(db_path, &final_size) &&
       final_size > 0) {
     UMA_HISTOGRAM_PERCENTAGE("History.TopSitesRecoveredPercentage",
                              final_size * 100 / original_size);
@@ -499,8 +498,8 @@ void TopSitesDatabase::SetPageThumbnail(const MostVisitedURL& url,
   transaction.Commit();
 }
 
-bool TopSitesDatabase::UpdatePageThumbnail(
-    const MostVisitedURL& url, const Images& thumbnail) {
+bool TopSitesDatabase::UpdatePageThumbnail(const MostVisitedURL& url,
+                                           const Images& thumbnail) {
   sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE thumbnails SET "
@@ -562,8 +561,7 @@ void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
     UpdatePageRankNoTransaction(url, new_rank);
 }
 
-void TopSitesDatabase::UpdatePageRank(const MostVisitedURL& url,
-                                      int new_rank) {
+void TopSitesDatabase::UpdatePageRank(const MostVisitedURL& url, int new_rank) {
   DCHECK((url.last_forced_time.ToInternalValue() == 0) ==
          (new_rank != kRankOfForcedURL))
       << "Thumbnail without a forced time stamp has a forced rank, or the "
@@ -575,8 +573,8 @@ void TopSitesDatabase::UpdatePageRank(const MostVisitedURL& url,
 }
 
 // Caller should have a transaction open.
-void TopSitesDatabase::UpdatePageRankNoTransaction(
-    const MostVisitedURL& url, int new_rank) {
+void TopSitesDatabase::UpdatePageRankNoTransaction(const MostVisitedURL& url,
+                                                   int new_rank) {
   DCHECK_GT(db_->transaction_nesting(), 0);
   DCHECK((url.last_forced_time.is_null()) == (new_rank != kRankOfForcedURL))
       << "Thumbnail without a forced time stamp has a forced rank, or the "
@@ -654,8 +652,7 @@ void TopSitesDatabase::UpdatePageRankNoTransaction(
   set_statement.Run();
 }
 
-bool TopSitesDatabase::GetPageThumbnail(const GURL& url,
-                                        Images* thumbnail) {
+bool TopSitesDatabase::GetPageThumbnail(const GURL& url, Images* thumbnail) {
   sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT thumbnail, boring_score, good_clipping, at_top, last_updated "
@@ -723,8 +720,7 @@ sql::Connection* TopSitesDatabase::CreateDB(const base::FilePath& db_name) {
   scoped_ptr<sql::Connection> db(new sql::Connection());
   // Settings copied from ThumbnailDatabase.
   db->set_histogram_tag("TopSites");
-  db->set_error_callback(base::Bind(&DatabaseErrorCallback,
-                                    db.get(), db_name));
+  db->set_error_callback(base::Bind(&DatabaseErrorCallback, db.get(), db_name));
   db->set_page_size(4096);
   db->set_cache_size(32);
 

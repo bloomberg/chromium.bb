@@ -26,7 +26,6 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/history/top_sites_impl.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -59,6 +58,7 @@
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_db_task.h"
+#include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
@@ -263,9 +263,11 @@ KeyedService* BuildWebDataService(content::BrowserContext* context) {
 
 scoped_refptr<RefcountedKeyedService> BuildTopSites(
     content::BrowserContext* profile) {
-  history::TopSitesImpl* top_sites =
-      new history::TopSitesImpl(static_cast<Profile*>(profile));
-  top_sites->Init(profile->GetPath().Append(chrome::kTopSitesFilename));
+  history::TopSitesImpl* top_sites = new history::TopSitesImpl(
+      static_cast<Profile*>(profile), history::PrepopulatedPageList());
+  top_sites->Init(
+      profile->GetPath().Append(chrome::kTopSitesFilename),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
   return make_scoped_refptr(top_sites);
 }
 

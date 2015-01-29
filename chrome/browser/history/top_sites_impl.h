@@ -21,12 +21,14 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/history/top_sites_backend.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/page_usage_data.h"
+#include "components/history/core/browser/top_sites.h"
+#include "components/history/core/browser/top_sites_backend.h"
 #include "components/history/core/common/thumbnail_score.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -37,6 +39,7 @@ namespace base {
 class FilePath;
 class RefCountedBytes;
 class RefCountedMemory;
+class SingleThreadTaskRunner;
 }
 
 namespace history {
@@ -48,12 +51,16 @@ class TopSitesImplTest;
 // thread. All other methods must be invoked on the UI thread. All mutations
 // to internal state happen on the UI thread and are scheduled to update the
 // db using TopSitesBackend.
-class TopSitesImpl : public TopSites, public HistoryServiceObserver {
+class TopSitesImpl : public TopSites,
+                     public HistoryServiceObserver,
+                     public content::NotificationObserver {
  public:
-  explicit TopSitesImpl(Profile* profile);
+  TopSitesImpl(Profile* profile,
+               const PrepopulatedPageList& prepopulated_pages);
 
   // Initializes TopSitesImpl.
-  void Init(const base::FilePath& db_name);
+  void Init(const base::FilePath& db_name,
+            const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner);
 
   bool SetPageThumbnail(const GURL& url,
                         const gfx::Image& thumbnail,
@@ -80,7 +87,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   const std::string& GetCanonicalURLString(const GURL& url) const override;
   bool IsNonForcedFull() override;
   bool IsForcedFull() override;
-  MostVisitedURLList GetPrepopulatePages() override;
+  PrepopulatedPageList GetPrepopulatedPages() override;
   bool loaded() const override;
   bool AddForcedURL(const GURL& url, const base::Time& time) override;
 
@@ -264,7 +271,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   TempImages temp_images_;
 
   // URL List of prepopulated page.
-  std::vector<GURL> prepopulated_page_urls_;
+  PrepopulatedPageList prepopulated_pages_;
 
   // Are we loaded?
   bool loaded_;

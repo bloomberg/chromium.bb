@@ -6,12 +6,11 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/top_sites_database.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/tools/profiles/thumbnail-inl.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/top_sites_database.h"
+#include "components/history/core/test/database_test_utils.h"
+#include "components/history/core/test/thumbnail-inl.h"
 #include "sql/connection.h"
 #include "sql/recovery.h"
 #include "sql/test/scoped_error_ignorer.h"
@@ -30,17 +29,6 @@ const GURL kUrl1 = GURL("http://www.google.com/chrome/intl/en/welcome.html");
 
 // URL with url_rank 2 in golden files.
 const GURL kUrl2 = GURL("https://chrome.google.com/webstore?hl=en");
-
-// Create the test database at |db_path| from the golden file at
-// |ascii_path| in the "History/" subdir of the test data dir.
-WARN_UNUSED_RESULT bool CreateDatabaseFromSQL(const base::FilePath &db_path,
-                                                const char* ascii_path) {
-  base::FilePath sql_path;
-  if (!PathService::Get(chrome::DIR_TEST_DATA, &sql_path))
-    return false;
-  sql_path = sql_path.AppendASCII("History").AppendASCII(ascii_path);
-  return sql::test::CreateDatabaseFromSQL(db_path, sql_path);
-}
 
 // Verify that the up-to-date database has the expected tables and
 // columns.  Functional tests only check whether the things which

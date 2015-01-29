@@ -10,11 +10,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/history/core/browser/top_sites.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/omnibox/omnibox_field_trial.h"
@@ -84,8 +84,8 @@ class FakeEmptyTopSites : public history::TopSites {
   bool loaded() const override {
     return false;
   }
-  history::MostVisitedURLList GetPrepopulatePages() override {
-    return history::MostVisitedURLList();
+  history::PrepopulatedPageList GetPrepopulatedPages() override {
+    return history::PrepopulatedPageList();
   }
   bool AddForcedURL(const GURL& url, const base::Time& time) override {
     return false;
@@ -93,11 +93,6 @@ class FakeEmptyTopSites : public history::TopSites {
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override {}
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {}
 
   // A test-specific field for controlling when most visited callback is run
   // after top sites have been requested.

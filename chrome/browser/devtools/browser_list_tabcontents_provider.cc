@@ -5,12 +5,12 @@
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
 
 #include "base/path_service.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/history/core/browser/top_sites.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 

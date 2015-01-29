@@ -12,11 +12,11 @@
 #include "base/values.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/visit_filter.h"
 
 

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/history/core/browser/top_sites.h"
 #include "content/public/browser/web_contents.h"
 
 namespace chrome {

@@ -5,7 +5,6 @@
 #include "chrome/browser/search/instant_service.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/render_messages.h"
+#include "components/history/core/browser/top_sites.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"

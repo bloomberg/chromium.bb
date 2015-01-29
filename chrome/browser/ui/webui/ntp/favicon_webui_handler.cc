@@ -13,9 +13,10 @@
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "components/history/core/browser/top_sites.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -96,16 +97,19 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(
     return;
 
   GURL url(path);
-  // Intercept requests for prepopulated pages.
-  for (size_t i = 0; i < history::kPrepopulatedPagesCount; i++) {
-    if (url.spec() ==
-        l10n_util::GetStringUTF8(history::kPrepopulatedPages[i].url_id)) {
-      base::StringValue dom_id_value(dom_id);
-      scoped_ptr<base::StringValue> color(
-          SkColorToCss(history::kPrepopulatedPages[i].color));
-      web_ui()->CallJavascriptFunction("ntp.setFaviconDominantColor",
-                                       dom_id_value, *color);
-      return;
+  // Intercept requests for prepopulated pages if TopSites exists.
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  if (top_sites) {
+    for (const auto& prepopulated_page : top_sites->GetPrepopulatedPages()) {
+      if (url == prepopulated_page.most_visited.url) {
+        base::StringValue dom_id_value(dom_id);
+        scoped_ptr<base::StringValue> color(
+            SkColorToCss(prepopulated_page.color));
+        web_ui()->CallJavascriptFunction("ntp.setFaviconDominantColor",
+                                         dom_id_value, *color);
+        return;
+      }
     }
   }
 

@@ -145,6 +145,7 @@
             'history/core/browser/history_types_unittest.cc',
             'history/core/browser/in_memory_url_index_types_unittest.cc',
             'history/core/browser/top_sites_cache_unittest.cc',
+            'history/core/browser/top_sites_database_unittest.cc',
             'history/core/browser/url_database_unittest.cc',
             'history/core/browser/url_utils_unittest.cc',
             'history/core/browser/visit_database_unittest.cc',
@@ -366,6 +367,9 @@
             'components.gyp:google_core_browser',
             'components.gyp:history_core_browser',
             'components.gyp:history_core_common',
+            'components.gyp:history_core_test_support',
+
+            # Dependencies of invalidation
             'components.gyp:invalidation',
             'components.gyp:invalidation_test_support',
             'components.gyp:json_schema',

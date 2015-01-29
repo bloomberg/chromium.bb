@@ -6,11 +6,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/top_sites/top_sites_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/history/core/browser/top_sites.h"
 
 namespace utils = extension_function_test_utils;
 
@@ -20,12 +20,17 @@ namespace {
 
 class TopSitesExtensionTest : public InProcessBrowserTest {
  public:
-  TopSitesExtensionTest() : top_sites_inited_(false), waiting_(false) {
-  }
+  TopSitesExtensionTest()
+      : top_sites_prepopulated_pages_size_(0),
+        top_sites_inited_(false),
+        waiting_(false) {}
 
   void SetUpOnMainThread() override {
     scoped_refptr<history::TopSites> top_sites =
         TopSitesFactory::GetForProfile(browser()->profile());
+
+    top_sites_prepopulated_pages_size_ =
+        top_sites->GetPrepopulatedPages().size();
 
     // This may return async or sync. If sync, top_sites_inited_ will be true
     // before we get to the conditional below. Otherwise, we'll run a nested
@@ -41,6 +46,10 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
     // By this point, we know topsites has loaded. We can run the tests now.
   }
 
+  size_t top_sites_prepopulated_pages_size() const {
+    return top_sites_prepopulated_pages_size_;
+  }
+
  private:
   void OnTopSitesAvailable(const history::MostVisitedURLList& data) {
     if (waiting_) {
@@ -50,6 +59,7 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
     top_sites_inited_ = true;
   }
 
+  size_t top_sites_prepopulated_pages_size_;
   bool top_sites_inited_;
   bool waiting_;
 };
@@ -66,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(TopSitesExtensionTest, GetTopSites) {
       get_top_sites_function.get(), "[]", browser()));
   base::ListValue* list;
   ASSERT_TRUE(result->GetAsList(&list));
-  EXPECT_GE(list->GetSize(), arraysize(history::kPrepopulatedPages));
+  EXPECT_GE(list->GetSize(), top_sites_prepopulated_pages_size());
 }
 
 }  // namespace extensions

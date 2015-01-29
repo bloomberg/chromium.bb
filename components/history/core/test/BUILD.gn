@@ -5,6 +5,8 @@
 static_library("test") {
   testonly = true
   sources = [
+    "database_test_utils.cc",
+    "database_test_utils.h",
     "history_client_fake_bookmarks.cc",
     "history_client_fake_bookmarks.h",
     "history_unittest_base.cc",

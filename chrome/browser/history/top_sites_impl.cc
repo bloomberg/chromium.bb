@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
@@ -94,12 +95,14 @@ static const int64 kMaxUpdateIntervalMinutes = 60;
 // artifacts for these small sized, highly detailed images.
 static const int kTopSitesImageQuality = 100;
 
-TopSitesImpl::TopSitesImpl(Profile* profile)
+TopSitesImpl::TopSitesImpl(Profile* profile,
+                           const PrepopulatedPageList& prepopulated_pages)
     : backend_(NULL),
       cache_(new TopSitesCache()),
       thread_safe_cache_(new TopSitesCache()),
       profile_(profile),
       last_num_urls_changed_(0),
+      prepopulated_pages_(prepopulated_pages),
       loaded_(false),
       history_service_observer_(this) {
   if (!profile_)
@@ -111,17 +114,14 @@ TopSitesImpl::TopSitesImpl(Profile* profile)
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    content::NotificationService::AllSources());
   }
-  for (int i = 0; i < kPrepopulatedPagesCount; i++) {
-    int url_id = kPrepopulatedPages[i].url_id;
-    prepopulated_page_urls_.push_back(
-        GURL(l10n_util::GetStringUTF8(url_id)));
-  }
 }
 
-void TopSitesImpl::Init(const base::FilePath& db_name) {
+void TopSitesImpl::Init(
+    const base::FilePath& db_name,
+    const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner) {
   // Create the backend here, rather than in the constructor, so that
   // unit tests that do not need the backend can run without a problem.
-  backend_ = new TopSitesBackend;
+  backend_ = new TopSitesBackend(db_task_runner);
   backend_->Init(db_name);
   backend_->GetMostVisitedThumbnails(
       base::Bind(&TopSitesImpl::OnGotMostVisitedThumbnails,
@@ -243,12 +243,11 @@ bool TopSitesImpl::GetPageThumbnail(
   }
 
   // Resource bundle is thread safe.
-  for (int i = 0; i < kPrepopulatedPagesCount; i++) {
-    if (url == prepopulated_page_urls_[i]) {
-      *bytes = ResourceBundle::GetSharedInstance().
-          LoadDataResourceBytesForScale(
-              kPrepopulatedPages[i].thumbnail_id,
-              ui::SCALE_FACTOR_100P);
+  for (const auto& prepopulated_page : prepopulated_pages_) {
+    if (url == prepopulated_page.most_visited.url) {
+      *bytes =
+          ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+              prepopulated_page.thumbnail_id, ui::SCALE_FACTOR_100P);
       return true;
     }
   }
@@ -588,16 +587,8 @@ int TopSitesImpl::GetRedirectDistanceForURL(const MostVisitedURL& most_visited,
   return 0;
 }
 
-MostVisitedURLList TopSitesImpl::GetPrepopulatePages() {
-  MostVisitedURLList urls;
-  urls.resize(kPrepopulatedPagesCount);
-  for (int i = 0; i < kPrepopulatedPagesCount; ++i) {
-    MostVisitedURL& url = urls[i];
-    url.url = GURL(prepopulated_page_urls_[i]);
-    url.redirects.push_back(url.url);
-    url.title = l10n_util::GetStringUTF16(kPrepopulatedPages[i].title_id);
-  }
-  return urls;
+PrepopulatedPageList TopSitesImpl::GetPrepopulatedPages() {
+  return prepopulated_pages_;
 }
 
 bool TopSitesImpl::loaded() const {
@@ -640,11 +631,10 @@ bool TopSitesImpl::AddForcedURL(const GURL& url, const base::Time& time) {
 bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls,
                                         size_t num_forced_urls) {
   bool added = false;
-  MostVisitedURLList prepopulate_urls = GetPrepopulatePages();
-  for (size_t i = 0; i < prepopulate_urls.size(); ++i) {
+  for (const auto& prepopulated_page : prepopulated_pages_) {
     if (urls->size() - num_forced_urls < kNonForcedTopSitesNumber &&
-        IndexOf(*urls, prepopulate_urls[i].url) == -1) {
-      urls->push_back(prepopulate_urls[i]);
+        IndexOf(*urls, prepopulated_page.most_visited.url) == -1) {
+      urls->push_back(prepopulated_page.most_visited);
       added = true;
     }
   }
@@ -727,7 +717,7 @@ std::string TopSitesImpl::GetURLHash(const GURL& url) {
 }
 
 base::TimeDelta TopSitesImpl::GetUpdateDelay() {
-  if (cache_->top_sites().size() <= kPrepopulatedPagesCount)
+  if (cache_->top_sites().size() <= prepopulated_pages_.size())
     return base::TimeDelta::FromSeconds(30);
 
   int64 range = kMaxUpdateIntervalMinutes - kMinUpdateIntervalMinutes;

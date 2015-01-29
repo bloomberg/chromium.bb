@@ -14,6 +14,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../ui/base/ui_base.gyp:ui_base',
@@ -63,8 +64,14 @@
         'history/core/browser/page_usage_data.h',
         'history/core/browser/thumbnail_database.cc',
         'history/core/browser/thumbnail_database.h',
+        'history/core/browser/top_sites.cc',
+        'history/core/browser/top_sites.h',
+        'history/core/browser/top_sites_backend.cc',
+        'history/core/browser/top_sites_backend.h',
         'history/core/browser/top_sites_cache.cc',
         'history/core/browser/top_sites_cache.h',
+        'history/core/browser/top_sites_database.cc',
+        'history/core/browser/top_sites_database.h',
         'history/core/browser/top_sites_observer.h',
         'history/core/browser/url_database.cc',
         'history/core/browser/url_database.h',
@@ -152,6 +159,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'history/core/test/database_test_utils.cc',
+        'history/core/test/database_test_utils.h',
         'history/core/test/history_client_fake_bookmarks.cc',
         'history/core/test/history_client_fake_bookmarks.h',
         'history/core/test/history_unittest_base.cc',

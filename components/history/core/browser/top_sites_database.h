@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_TOP_SITES_DATABASE_H_
-#define CHROME_BROWSER_HISTORY_TOP_SITES_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_DATABASE_H_
 
 #include <map>
 #include <string>
@@ -86,8 +86,7 @@ class TopSitesDatabase {
 
   // Updates thumbnail of a URL that's already in the database.
   // Returns true if the database query succeeds.
-  bool UpdatePageThumbnail(const MostVisitedURL& url,
-                           const Images& thumbnail);
+  bool UpdatePageThumbnail(const MostVisitedURL& url, const Images& thumbnail);
 
   // Returns |url|'s current rank or kRankOfNonExistingURL if not present.
   int GetURLRank(const MostVisitedURL& url);
@@ -107,4 +106,4 @@ class TopSitesDatabase {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_TOP_SITES_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_DATABASE_H_

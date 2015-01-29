@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
@@ -19,6 +19,7 @@
 #include "chrome/common/favicon/favicon_url_parser.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/history/core/browser/top_sites.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -96,17 +97,19 @@ void FaviconSource::StartDataRequest(
                 callback, url, parsed.size_in_dip, parsed.device_scale_factor)),
         &cancelable_task_tracker_);
   } else {
-    // Intercept requests for prepopulated pages.
-    for (int i = 0; i < history::kPrepopulatedPagesCount; i++) {
-      if (url.spec() ==
-          l10n_util::GetStringUTF8(history::kPrepopulatedPages[i].url_id)) {
-        ui::ScaleFactor resource_scale_factor =
-            ui::GetSupportedScaleFactor(parsed.device_scale_factor);
-        callback.Run(
-            ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-                history::kPrepopulatedPages[i].favicon_id,
-                resource_scale_factor));
-        return;
+    // Intercept requests for prepopulated pages if TopSites exists.
+    scoped_refptr<history::TopSites> top_sites =
+        TopSitesFactory::GetForProfile(profile_);
+    if (top_sites) {
+      for (const auto& prepopulated_page : top_sites->GetPrepopulatedPages()) {
+        if (url == prepopulated_page.most_visited.url) {
+          ui::ScaleFactor resource_scale_factor =
+              ui::GetSupportedScaleFactor(parsed.device_scale_factor);
+          callback.Run(
+              ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+                  prepopulated_page.favicon_id, resource_scale_factor));
+          return;
+        }
       }
     }
 

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_THUMBNAILS_THUMBNAIL_SERVICE_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
+#include "components/history/core/browser/top_sites.h"
 
 namespace base {
 class RefCountedMemory;

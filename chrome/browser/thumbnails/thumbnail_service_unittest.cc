@@ -19,7 +19,8 @@ namespace {
 class MockTopSites : public history::TopSitesImpl {
  public:
   explicit MockTopSites(Profile* profile)
-      : history::TopSitesImpl(profile), capacity_(1) {}
+      : history::TopSitesImpl(profile, history::PrepopulatedPageList()),
+        capacity_(1) {}
 
   // history::TopSitesImpl overrides.
   bool IsNonForcedFull() override { return known_url_map_.size() >= capacity_; }

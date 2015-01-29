@@ -113,7 +113,6 @@
       'browser/history/in_memory_url_index_unittest.cc',
       'browser/history/scored_history_match_unittest.cc',
       'browser/history/thumbnail_database_unittest.cc',
-      'browser/history/top_sites_database_unittest.cc',
       'browser/history/top_sites_impl_unittest.cc',
       'browser/history/typed_url_syncable_service_unittest.cc',
       'browser/history/web_history_service_unittest.cc',

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_TOP_SITES_BACKEND_H_
-#define CHROME_BROWSER_HISTORY_TOP_SITES_BACKEND_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_BACKEND_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_BACKEND_H_
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -14,6 +14,7 @@
 namespace base {
 class CancelableTaskTracker;
 class FilePath;
+class SingleThreadTaskRunner;
 }
 
 namespace history {
@@ -30,7 +31,8 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
   typedef base::Callback<void(const scoped_refptr<MostVisitedThumbnails>&)>
       GetMostVisitedThumbnailsCallback;
 
-  TopSitesBackend();
+  explicit TopSitesBackend(
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner);
 
   void Init(const base::FilePath& path);
 
@@ -62,7 +64,7 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
  private:
   friend class base::RefCountedThreadSafe<TopSitesBackend>;
 
-  virtual ~TopSitesBackend();
+  ~TopSitesBackend();
 
   // Invokes Init on the db_.
   void InitDBOnDBThread(const base::FilePath& path);
@@ -88,10 +90,11 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
   base::FilePath db_path_;
 
   scoped_ptr<TopSitesDatabase> db_;
+  scoped_refptr<base::SingleThreadTaskRunner> db_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesBackend);
 };
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_TOP_SITES_BACKEND_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_BACKEND_H_
