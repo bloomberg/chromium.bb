@@ -12,6 +12,9 @@
 #   $(builddir)/en-US
 # * run xmlto on $(builddir)/en-US, output to $(builddir)/Wayland/en-US
 
+doxydir := $(top_builddir)/doc/doxygen
+html_destdir := $(builddir)/Wayland/en-US/html
+
 publican_sources = \
 	$(srcdir)/sources/Wayland.ent \
 	$(srcdir)/sources/Wayland.xml \
@@ -25,9 +28,7 @@ publican_sources = \
 	$(srcdir)/sources/Protocol.xml \
 	$(srcdir)/sources/Compositors.xml \
 	$(srcdir)/sources/images/icon.svg  \
-	$(srcdir)/sources/images/wayland-architecture.png \
-	$(srcdir)/sources/images/wayland.png  \
-	$(srcdir)/sources/images/x-architecture.png
+	$(srcdir)/sources/images/wayland.png
 
 css_sources = \
 	$(srcdir)/sources/css/brand.css \
@@ -38,9 +39,11 @@ css_sources = \
 
 img_sources = \
 	$(srcdir)/sources/images/icon.svg \
-	$(srcdir)/sources/images/wayland-architecture.png \
-	$(srcdir)/sources/images/wayland.png \
-	$(srcdir)/sources/images/x-architecture.png
+	$(srcdir)/sources/images/wayland.png
+
+doxygen_img_sources := \
+	$(doxydir)/xml/wayland-architecture.png \
+	$(doxydir)/xml/x-architecture.png
 
 if HAVE_XMLTO
 if HAVE_XSLTPROC
@@ -51,18 +54,15 @@ XMLTO_PARAM = \
 	--stringparam toc.section.depth=1 \
 	--stringparam html.stylesheet=css/default.css
 
-doxydir := $(top_builddir)/doc/doxygen
-
-html_destdir = $(builddir)/Wayland/en-US/html
-
 # Listing various directories that might need to be created.
 alldirs := $(builddir)/en-US $(builddir)/en-US/images $(html_destdir) $(html_destdir)/css $(html_destdir)/images
 
 
 html_css_targets = $(addprefix $(html_destdir)/css/,$(notdir $(css_sources)))
 html_img_targets = $(addprefix $(html_destdir)/images/,$(notdir $(img_sources)))
+doxygen_img_targets := $(doxygen_img_sources:$(doxydir)/xml/%=$(html_destdir)/images/%)
 
-$(builddir)/Wayland: $(publican_targets) $(html_css_targets) $(html_img_targets) | $(builddir)/en-US
+$(builddir)/Wayland: $(publican_targets) $(html_css_targets) $(html_img_targets) $(doxygen_img_targets) | $(builddir)/en-US
 	$(AM_V_GEN)$(XMLTO) $(XMLTO_PARAM) html $(builddir)/en-US/Wayland.xml -o $(html_destdir)
 	@touch $@
 
@@ -70,6 +70,9 @@ $(html_destdir)/css/%: $(srcdir)/sources/css/% | $(html_destdir)/css
 	$(AM_V_GEN)cp -f $< $@
 
 $(html_destdir)/images/%: $(srcdir)/sources/images/% | $(html_destdir)/images
+	$(AM_V_GEN)cp -f $< $@
+
+$(html_destdir)/images/%: $(doxydir)/xml/% | $(html_destdir)/images
 	$(AM_V_GEN)cp -f $< $@
 
 pubdir = $(docdir)/Wayland/en-US
@@ -101,6 +104,10 @@ $(builddir)/en-US/%API.xml: $(doxydir)/xml/%/index.xml $(srcdir)/doxygen-to-publ
 # This is required for out-of-source-tree build as publican does not allow us
 # to specify the location of the source code.
 $(builddir)/en-US/%: $(srcdir)/sources/% $(publican_sources) | $(builddir)/en-US/images
+	$(AM_V_GEN)cp -f $< $@
+	$(AM_V_at)chmod a+w $@
+
+$(builddir)/en-US/images/%: $(doxydir)/xml/% | $(builddir)/en-US/images
 	$(AM_V_GEN)cp -f $< $@
 	$(AM_V_at)chmod a+w $@
 

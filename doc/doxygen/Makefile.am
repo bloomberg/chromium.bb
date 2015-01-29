@@ -1,4 +1,6 @@
 
+.SUFFIXES = .gv .png
+
 noinst_DATA = xml/Client/index.xml xml/Server/index.xml
 dist_noinst_DATA = wayland.doxygen.in
 
@@ -22,15 +24,21 @@ scanned_src_files_man =					\
 	$(top_srcdir)/src/wayland-client.c	\
 	$(top_srcdir)/src/wayland-client.h
 
+diagramsdir := dot
+diagramssrc := $(wildcard $(diagramsdir)/*.gv)
+diagrams := $(patsubst $(diagramsdir)/%,xml/%,$(diagramssrc:.gv=.png))
+
 # find all man/man3/wl_foo.3 pages
 # for this to work, we need to create them before the man target (hence
 # all-local below)
 dist_man3_MANS = $(shell test -d man && find man/man3 -name "wl_*.3" -printf "man/man3/%P\n")
 
 # Listing various directories that might need to be created.
-alldirs := xml/Client xml/Server man/man3
+alldirs := xml xml/Client xml/Server man/man3
 
-xml/%/index.xml: $(scanned_src_files_%) wayland.doxygen | xml/%
+$(diagrams): $(diagramssrc)
+
+xml/%/index.xml: $(scanned_src_files_%) wayland.doxygen $(diagrams) | xml/%
 	$(AM_V_GEN)(cat wayland.doxygen; \
           echo "GENERATE_XML=YES"; \
           echo "XML_OUTPUT=xml/$*"; \
@@ -44,6 +52,9 @@ man/man3/wl_display.3: $(scanned_src_files_man) wayland.doxygen | man/man3
           echo "JAVADOC_AUTOBRIEF=NO"; \
           echo "INPUT= $(scanned_src_files_man)"; \
           ) | $(DOXYGEN) -
+
+xml/%.png: $(diagramsdir)/%.gv | xml
+	$(AM_V_GEN)$(DOT) -Tpng -o$@ $<
 
 # general rule to create one of the listed directories.
 $(alldirs):

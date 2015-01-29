@@ -27,6 +27,7 @@ AM_SILENT_RULES([yes])
 # Check for programs
 AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_GREP
 
 # check if we have C++ compiler. This is hacky workaround,
 # for a reason why it is this way see
@@ -134,6 +135,18 @@ if test "x$enable_documentation" = "xyes"; then
 	if test "x$XMLTO" = "x"; then
 		AC_MSG_ERROR([Documentation build requested but xmlto not found. Install xmlto or disable the documentation using --disable-documentation])
 	fi
+
+	AC_PATH_PROG(DOT, dot)
+	if test "x$DOT" = "x"; then
+		AC_MSG_ERROR([Documentation build requested but graphviz's dot not found. Install graphviz or disable the documentation using --disable-documentation])
+	fi
+	AC_MSG_CHECKING([for compatible dot version])
+	dot_version=`$DOT -V 2>&1|$GREP -oP '(?<=version\W)@<:@0-9.@:>@*(?=\W(.*))'`
+	AS_VERSION_COMPARE([$dot_version], [2.26.0],
+	                   [AC_MSG_RESULT([no])
+	                    AC_MSG_ERROR([Graphviz dot $dot_version too old. Graphviz 2.26+ required for documentation build. Install required graphviz version or disable the documentation using --disable-documentation])],
+	                   [AC_MSG_RESULT([yes])],
+	                   [AC_MSG_RESULT([yes])])
 
 	AC_CONFIG_FILES([
 	doc/doxygen/wayland.doxygen
