@@ -1,7 +1,13 @@
 include_rules = [
+  "+native_client/src/include",
+  "+native_client/src/public",
   "+native_client/src/shared/imc/nacl_imc_c.h",
+  "+native_client/src/shared/platform",
+  "+native_client/src/shared/srpc",
   "+native_client/src/trusted/desc",
   "+native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h",
   "+native_client/src/trusted/service_runtime/include",
   "+native_client/src/trusted/service_runtime/nacl_error_code.h",
+  "+ppapi/cpp",
+  "+ppapi/utility",
 ]

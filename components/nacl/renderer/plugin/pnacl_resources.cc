@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
+#include "components/nacl/renderer/plugin/pnacl_resources.h"
 
+#include "components/nacl/renderer/plugin/plugin.h"
+#include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/native_client/src/trusted/plugin/plugin.h"
-#include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
 

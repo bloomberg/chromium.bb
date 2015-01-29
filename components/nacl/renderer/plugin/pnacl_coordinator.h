@@ -2,22 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_COORDINATOR_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_COORDINATOR_H_
+#ifndef COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_COORDINATOR_H_
+#define COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_COORDINATOR_H_
 
 #include <vector>
 
+#include "components/nacl/renderer/plugin/nacl_subprocess.h"
+#include "components/nacl/renderer/plugin/plugin_error.h"
+#include "components/nacl/renderer/plugin/pnacl_resources.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-
 #include "ppapi/cpp/completion_callback.h"
-
-#include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
-#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
-
 #include "ppapi/utility/completion_callback_factory.h"
 
 struct PP_PNaClOptions;
@@ -191,4 +188,4 @@ class PnaclCoordinator {
 //----------------------------------------------------------------------
 
 }  // namespace plugin;
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_COORDINATOR_H_
+#endif  // COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_COORDINATOR_H_

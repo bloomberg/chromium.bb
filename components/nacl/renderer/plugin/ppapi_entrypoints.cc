@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h"
+#include "components/nacl/renderer/plugin/ppapi_entrypoints.h"
 
+#include "components/nacl/renderer/plugin/module_ppapi.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/internal_module.h"
-#include "ppapi/native_client/src/trusted/plugin/module_ppapi.h"
 
 namespace nacl_plugin {
 

@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/native_client/src/trusted/plugin/plugin.h"
+#include "components/nacl/renderer/plugin/plugin.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
 
 #include <string>
 
+#include "components/nacl/renderer/plugin/nacl_subprocess.h"
+#include "components/nacl/renderer/plugin/plugin_error.h"
+#include "components/nacl/renderer/plugin/service_runtime.h"
+#include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
@@ -16,15 +20,9 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/module.h"
-
-#include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
-#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
-#include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
 

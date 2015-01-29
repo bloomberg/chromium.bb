@@ -1,7 +1,5 @@
 include_rules = [
   "+native_client/src/include",
-  "+native_client/src/public",
   "+native_client/src/shared/platform",
-  "+native_client/src/shared/srpc",
   "+native_client/src/untrusted",
 ]

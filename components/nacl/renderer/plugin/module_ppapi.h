@@ -4,6 +4,9 @@
  * found in the LICENSE file.
  */
 
+#ifndef COMPONENTS_NACL_RENDERER_PLUGIN_MODULE_PPAPI_H_
+#define COMPONENTS_NACL_RENDERER_PLUGIN_MODULE_PPAPI_H_
+
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/module.h"
 
@@ -32,3 +35,5 @@ namespace pp {
 Module* CreateModule();
 
 }  // namespace pp
+
+#endif  // COMPONENTS_NACL_RENDERER_PLUGIN_MODULE_PPAPI_H_

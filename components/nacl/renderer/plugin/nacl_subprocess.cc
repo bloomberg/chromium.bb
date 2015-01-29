@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
+#include "components/nacl/renderer/plugin/nacl_subprocess.h"
 
 #include <stdarg.h>
 
 #include <sstream>
 
+#include "components/nacl/renderer/plugin/plugin_error.h"
+#include "components/nacl/renderer/plugin/srpc_params.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/native_client/src/trusted/plugin/srpc_params.h"
 
 namespace plugin {
 

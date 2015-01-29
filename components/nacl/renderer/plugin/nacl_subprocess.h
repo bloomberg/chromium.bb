@@ -8,16 +8,15 @@
 // a NaCl module for a compiler could be loaded to translate LLVM bitcode
 // into native code.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_SUBPROCESS_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_SUBPROCESS_H_
+#ifndef COMPONENTS_NACL_RENDERER_PLUGIN_NACL_SUBPROCESS_H_
+#define COMPONENTS_NACL_RENDERER_PLUGIN_NACL_SUBPROCESS_H_
 
 #include <stdarg.h>
 
+#include "components/nacl/renderer/plugin/service_runtime.h"
+#include "components/nacl/renderer/plugin/srpc_client.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
-
-#include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
-#include "ppapi/native_client/src/trusted/plugin/srpc_client.h"
 
 namespace plugin {
 
@@ -83,4 +82,4 @@ class NaClSubprocess {
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_SUBPROCESS_H_
+#endif  // COMPONENTS_NACL_RENDERER_PLUGIN_NACL_SUBPROCESS_H_

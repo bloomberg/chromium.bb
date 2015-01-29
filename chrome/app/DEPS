@@ -15,6 +15,7 @@ include_rules = [
   "+components/browser_watcher",
   "+components/metrics/client_info.h",
   "+components/nacl/common",
+  "+components/nacl/renderer/plugin/ppapi_entrypoints.h",
   "+components/nacl/zygote",
   "+components/startup_metric_utils",
   "+content/public/app",
@@ -23,7 +24,6 @@ include_rules = [
   "+grit",  # For generated headers
   "+native_client/src/trusted/service_runtime/osx",
   "+policy",  # For generated headers and source
-  "+ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h",
   "+remoting/client/plugin",
   "+sandbox",
 ]

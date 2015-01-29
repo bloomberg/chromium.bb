@@ -7,15 +7,15 @@
 // A representation of an SRPC connection.  These can be either to the
 // service runtime or to untrusted NaCl threads.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLIENT_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLIENT_H_
+#ifndef COMPONENTS_NACL_RENDERER_PLUGIN_SRPC_CLIENT_H_
+#define COMPONENTS_NACL_RENDERER_PLUGIN_SRPC_CLIENT_H_
 
 #include <map>
 #include <string>
 
+#include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace nacl {
 class DescWrapper;
@@ -65,4 +65,4 @@ class SrpcClient {
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLIENT_H_
+#endif  // COMPONENTS_NACL_RENDERER_PLUGIN_SRPC_CLIENT_H_

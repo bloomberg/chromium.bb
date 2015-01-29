@@ -6,8 +6,8 @@
 
 // A collection of debugging related interfaces.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_UTILITY_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_UTILITY_H_
+#ifndef COMPONENTS_NACL_RENDERER_PLUGIN_UTILITY_H_
+#define COMPONENTS_NACL_RENDERER_PLUGIN_UTILITY_H_
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
@@ -74,4 +74,4 @@ extern int NaClPluginDebugPrintCheckEnv();
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_UTILITY_H_
+#endif  // COMPONENTS_NACL_RENDERER_PLUGIN_UTILITY_H_

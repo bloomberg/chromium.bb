@@ -696,7 +696,7 @@ if (!is_android) {
         "../browser/extensions/extension_nacl_browsertest.cc",
         "../browser/nacl_host/test/gdb_debug_stub_browsertest.cc",
       ]
-      deps += [ "//ppapi/native_client/src/trusted/plugin:nacl_trusted_plugin" ]
+      deps += [ "//components/nacl/renderer/plugin:nacl_trusted_plugin" ]
 
       if (enable_nacl_untrusted) {
         sources += [

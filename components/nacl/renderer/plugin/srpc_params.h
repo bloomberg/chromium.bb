@@ -4,8 +4,8 @@
 
 // Parameter types for SRPC Invocation.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_PARAMS_H
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_PARAMS_H
+#ifndef COMPONENTS_NACL_RENDERER_PLUGIN_SRPC_PARAMS_H
+#define COMPONENTS_NACL_RENDERER_PLUGIN_SRPC_PARAMS_H
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability_string.h"
@@ -47,4 +47,4 @@ class SrpcParams {
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_PARAMS_H
+#endif  // COMPONENTS_NACL_RENDERER_PLUGIN_SRPC_PARAMS_H

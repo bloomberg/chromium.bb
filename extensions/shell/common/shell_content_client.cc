@@ -17,8 +17,8 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "components/nacl/common/nacl_constants.h"
+#include "components/nacl/renderer/plugin/ppapi_entrypoints.h"
 #include "content/public/common/pepper_plugin_info.h"
-#include "ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #endif
 

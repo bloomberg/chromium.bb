@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/nacl/renderer/plugin/sel_ldr_launcher_chrome.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "ppapi/native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
 
 namespace plugin {
 

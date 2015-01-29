@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_ENTRYPOINTS_H_
-#define PPAPI_NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_ENTRYPOINTS_H_
+#ifndef PPAPI_COMPONENTS_NACL_RENDERER_PLUGIN_PPAPI_ENTRYPOINTS_H_
+#define PPAPI_COMPONENTS_NACL_RENDERER_PLUGIN_PPAPI_ENTRYPOINTS_H_
 
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
@@ -18,4 +18,4 @@ void PPP_ShutdownModule();
 
 }  // namespace nacl_plugin
 
-#endif  // PPAPI_NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_ENTRYPOINTS_H_
+#endif  // PPAPI_COMPONENTS_NACL_RENDERER_PLUGIN_PPAPI_ENTRYPOINTS_H_

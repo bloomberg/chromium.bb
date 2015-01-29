@@ -185,7 +185,7 @@
           'dependencies': [
             'nacl_common',
             '../content/content.gyp:content_renderer',
-            '../ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin',
+            '../components/nacl/renderer/plugin/plugin.gyp:nacl_trusted_plugin',
             '../third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
             '../third_party/WebKit/public/blink.gyp:blink',
           ],

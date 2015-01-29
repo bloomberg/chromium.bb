@@ -322,7 +322,7 @@ source_set("test_support") {
   }
 
   # TODO(gyp) if (enable_plugins and enable_nacl) {
-  #  deps += [ "'<(DEPTH)/ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin'," ]
+  #  deps += [ "'<(DEPTH)/components/nacl/renderer/plugin/plugin.gyp:nacl_trusted_plugin'," ]
   # }
 
   if (enable_remoting) {

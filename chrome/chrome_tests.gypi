@@ -2031,10 +2031,6 @@
             'browser/extensions/extension_nacl_browsertest.cc',
             'browser/nacl_host/test/gdb_debug_stub_browsertest.cc',
           ],
-          'dependencies': [
-            # Runtime dependency.
-            '../ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin',
-          ],
           'conditions': [
             ['disable_nacl_untrusted==0', {
               'sources': [

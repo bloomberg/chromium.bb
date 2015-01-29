@@ -6,39 +6,35 @@
 
 #define NACL_LOG_MODULE_NAME "Plugin_ServiceRuntime"
 
-#include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
+#include "components/nacl/renderer/plugin/service_runtime.h"
 
 #include <string.h>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
-
-#include "native_client/src/include/portability_io.h"
-#include "native_client/src/include/portability_string.h"
+#include "components/nacl/renderer/plugin/plugin.h"
+#include "components/nacl/renderer/plugin/plugin_error.h"
+#include "components/nacl/renderer/plugin/pnacl_resources.h"
+#include "components/nacl/renderer/plugin/sel_ldr_launcher_chrome.h"
+#include "components/nacl/renderer/plugin/srpc_client.h"
+#include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
+#include "native_client/src/include/portability_io.h"
+#include "native_client/src/include/portability_string.h"
+#include "native_client/src/public/imc_types.h"
+#include "native_client/src/public/nacl_file_info.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-
-#include "native_client/src/public/imc_types.h"
-#include "native_client/src/public/nacl_file_info.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
-
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/core.h"
 #include "ppapi/cpp/completion_callback.h"
-
-#include "ppapi/native_client/src/trusted/plugin/plugin.h"
-#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
-#include "ppapi/native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
-#include "ppapi/native_client/src/trusted/plugin/srpc_client.h"
-#include "ppapi/native_client/src/trusted/plugin/utility.h"
+#include "ppapi/cpp/core.h"
 
 namespace plugin {
 

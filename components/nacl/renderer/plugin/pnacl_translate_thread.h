@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_TRANSLATE_THREAD_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_TRANSLATE_THREAD_H_
+#ifndef COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_TRANSLATE_THREAD_H_
+#define COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_TRANSLATE_THREAD_H_
 
 #include <deque>
 #include <vector>
 
+#include "components/nacl/renderer/plugin/plugin_error.h"
+#include "components/nacl/renderer/plugin/service_runtime.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
-#include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-
+#include "native_client/src/shared/platform/nacl_threads.h"
 #include "ppapi/cpp/completion_callback.h"
-
-#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
 
 struct PP_PNaClOptions;
 
@@ -131,4 +129,4 @@ class PnaclTranslateThread {
 };
 
 }
-#endif // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_TRANSLATE_THREAD_H_
+#endif // COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_TRANSLATE_THREAD_H_

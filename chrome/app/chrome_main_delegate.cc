@@ -112,7 +112,7 @@
 
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_switches.h"
-#include "ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h"
+#include "components/nacl/renderer/plugin/ppapi_entrypoints.h"
 #endif
 
 #if defined(ENABLE_REMOTING)

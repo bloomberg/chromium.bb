@@ -4,14 +4,14 @@
  * found in the LICENSE file.
  */
 
-#include "ppapi/native_client/src/trusted/plugin/srpc_client.h"
+#include "components/nacl/renderer/plugin/srpc_client.h"
 
 #include <string.h>
 
+#include "components/nacl/renderer/plugin/plugin.h"
+#include "components/nacl/renderer/plugin/srpc_params.h"
+#include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "ppapi/native_client/src/trusted/plugin/plugin.h"
-#include "ppapi/native_client/src/trusted/plugin/srpc_params.h"
-#include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
 

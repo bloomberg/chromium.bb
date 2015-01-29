@@ -22,7 +22,7 @@
     ],
   },
   'includes': [
-    '../../../../../native_client/build/common.gypi',
+    '../../../../native_client/build/common.gypi',
   ],
   'target_defaults': {
     'variables': {

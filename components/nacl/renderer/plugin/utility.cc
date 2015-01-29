@@ -8,11 +8,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
 

@@ -48,7 +48,7 @@
           }],
           ['enable_plugins==1 and disable_nacl==0', {
             'chromium_child_dependencies': [
-              '<(DEPTH)/ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin',
+              '<(DEPTH)/components/nacl/renderer/plugin/plugin.gyp:nacl_trusted_plugin',
             ],
           }],
           ['remoting==1', {

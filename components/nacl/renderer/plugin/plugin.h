@@ -6,28 +6,25 @@
 // The portable representation of an instance and root scriptable object.
 // The PPAPI version of the plugin instantiates a subclass of this class.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PLUGIN_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PLUGIN_H_
+#ifndef COMPONENTS_NACL_RENDERER_PLUGIN_PLUGIN_H_
+#define COMPONENTS_NACL_RENDERER_PLUGIN_PLUGIN_H_
 
 #include <stdio.h>
 
 #include <string>
 
+#include "components/nacl/renderer/plugin/nacl_subprocess.h"
+#include "components/nacl/renderer/plugin/pnacl_coordinator.h"
+#include "components/nacl/renderer/plugin/service_runtime.h"
+#include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
-
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/uma_private.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/view.h"
-
-#include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
-#include "ppapi/native_client/src/trusted/plugin/pnacl_coordinator.h"
-#include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
-#include "ppapi/native_client/src/trusted/plugin/utility.h"
-
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace nacl {
@@ -184,4 +181,4 @@ class Plugin : public pp::Instance {
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PLUGIN_H_
+#endif  // COMPONENTS_NACL_RENDERER_PLUGIN_PLUGIN_H_
