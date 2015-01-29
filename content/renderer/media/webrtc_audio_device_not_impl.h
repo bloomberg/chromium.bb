@@ -28,7 +28,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
   // TODO(henrika): it is possible to add functionality in these methods.
   // Only adding very basic support for now without triggering any callback
   // in the webrtc::AudioDeviceObserver interface.
-  int32_t ChangeUniqueId(const int32_t id) override;
   int64_t TimeUntilNextProcess() override;
   int32_t Process() override;
 
