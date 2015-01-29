@@ -72,6 +72,13 @@ class MailboxManagerTest : public GpuServiceTest {
                           cleared);
   }
 
+  void SetLevelCleared(Texture* texture,
+                       GLenum target,
+                       GLint level,
+                       bool cleared) {
+    texture->SetLevelCleared(target, level, cleared);
+  }
+
   GLenum SetParameter(Texture* texture, GLenum pname, GLint param) {
     return texture->SetParameteri(feature_info_.get(), pname, param);
   }
@@ -536,6 +543,51 @@ TEST_F(MailboxManagerSyncTest, ProduceAndClobber) {
   DestroyTexture(tmp_texture);
 
   DestroyTexture(old_texture);
+  DestroyTexture(texture);
+  DestroyTexture(new_texture);
+
+  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
+  EXPECT_EQ(NULL, manager2_->ConsumeTexture(name));
+}
+
+TEST_F(MailboxManagerSyncTest, ClearedStateSynced) {
+  const GLuint kNewTextureId = 1234;
+
+  Texture* texture = DefineTexture();
+  EXPECT_TRUE(texture->SafeToRenderFrom());
+
+  Mailbox name = Mailbox::Generate();
+
+  manager_->ProduceTexture(name, texture);
+  EXPECT_EQ(texture, manager_->ConsumeTexture(name));
+
+  // Synchronize
+  manager_->PushTextureUpdates(0);
+  manager2_->PullTextureUpdates(0);
+
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .WillOnce(SetArgPointee<1>(kNewTextureId));
+  SetupUpdateTexParamExpectations(
+      kNewTextureId, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+  Texture* new_texture = manager2_->ConsumeTexture(name);
+  EXPECT_FALSE(new_texture == NULL);
+  EXPECT_NE(texture, new_texture);
+  EXPECT_EQ(kNewTextureId, new_texture->service_id());
+  EXPECT_TRUE(texture->SafeToRenderFrom());
+
+  // Change cleared to false.
+  SetLevelCleared(texture, texture->target(), 0, false);
+  EXPECT_FALSE(texture->SafeToRenderFrom());
+
+  // Synchronize
+  manager_->PushTextureUpdates(0);
+  SetupUpdateTexParamExpectations(
+      kNewTextureId, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+  manager2_->PullTextureUpdates(0);
+
+  // Cleared state should be synced.
+  EXPECT_FALSE(new_texture->SafeToRenderFrom());
+
   DestroyTexture(texture);
   DestroyTexture(new_texture);
 

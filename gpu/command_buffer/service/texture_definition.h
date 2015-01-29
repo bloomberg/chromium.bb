@@ -58,6 +58,8 @@ class TextureDefinition {
   scoped_refptr<NativeImageBuffer> image() const { return image_buffer_; }
 
  private:
+  bool SafeToRenderFrom() const;
+
   struct LevelInfo {
     LevelInfo(GLenum target,
               GLenum internal_format,

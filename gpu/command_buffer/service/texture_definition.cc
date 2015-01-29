@@ -413,7 +413,8 @@ bool TextureDefinition::Matches(const Texture* texture) const {
   if (texture->min_filter_ != min_filter_ ||
       texture->mag_filter_ != mag_filter_ ||
       texture->wrap_s_ != wrap_s_ ||
-      texture->wrap_t_ != wrap_t_) {
+      texture->wrap_t_ != wrap_t_ ||
+      texture->SafeToRenderFrom() != SafeToRenderFrom()) {
     return false;
   }
 
@@ -421,6 +422,17 @@ bool TextureDefinition::Matches(const Texture* texture) const {
   if (image_buffer_.get() && !texture->GetLevelImage(texture->target(), 0))
     return false;
 
+  return true;
+}
+
+bool TextureDefinition::SafeToRenderFrom() const {
+  for (const std::vector<LevelInfo>& face_info : level_infos_) {
+    for (const LevelInfo& level_info : face_info) {
+      if (!level_info.cleared) {
+        return false;
+      }
+    }
+  }
   return true;
 }
 
