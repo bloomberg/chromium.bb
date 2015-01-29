@@ -83,7 +83,8 @@ void GpuRasterizer::RasterizeTiles(
     update_tile_draw_info.Run(tile, resource.Pass(), analysis);
   }
 
-  multi_picture_draw_.draw();
+  // If MSAA is enabled, tell Skia to resolve each render target after draw.
+  multi_picture_draw_.draw(msaa_sample_count_ > 0);
 }
 
 void GpuRasterizer::PerformSolidColorAnalysis(
