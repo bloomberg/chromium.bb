@@ -136,9 +136,10 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)mouseMoved:(NSEvent*)theEvent {
-  hoverPoint_ = [self convertPoint:[theEvent locationInWindow]
-                          fromView:nil];
-  [self setNeedsDisplay:YES];
+  if (state_ == NSOffState) {
+    hoverPoint_ = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+    [self setNeedsDisplay:YES];
+  }
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {

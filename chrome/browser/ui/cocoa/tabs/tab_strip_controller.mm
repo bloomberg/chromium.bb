@@ -1867,6 +1867,12 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 }
 
 - (void)mouseMoved:(NSEvent*)event {
+  // We don't want the draggged tab to repeatedly redraw its glow unnecessarily.
+  // We also want the dragged tab to keep the glow even when it slides behind
+  // another tab.
+  if ([dragController_ draggedTab])
+    return;
+
   // Use hit test to figure out what view we are hovering over.
   NSView* targetView = [tabStripView_ hitTest:[event locationInWindow]];
 

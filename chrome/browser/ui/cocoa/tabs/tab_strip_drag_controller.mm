@@ -40,6 +40,8 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
 
 @implementation TabStripDragController
 
+@synthesize draggedTab = draggedTab_;
+
 - (id)initWithTabStripController:(TabStripController*)controller {
   if ((self = [super init])) {
     tabStrip_ = controller;

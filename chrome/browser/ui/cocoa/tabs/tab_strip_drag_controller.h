@@ -59,6 +59,9 @@
   TabWindowController* targetController_;  // weak. Controller being targeted
 }
 
+// The tab being dragged, or nil if not dragging a tab.
+@property(readonly) TabController* draggedTab;
+
 // Designated initializer.
 - (id)initWithTabStripController:(TabStripController*)controller;
 
