@@ -95,7 +95,8 @@ remoting.ButterBar.prototype.onStateLoaded_ =
   } else if (showHangouts) {
     this.show_(/*i18n-content*/'HANGOUTS_INVITATION',
                ['<a id="hangouts-accept" ' +
-                'href="https://plus.google.com/hangouts/_?gid=818572447316">',
+                'href="https://plus.google.com/hangouts/_?gid=818572447316" ' +
+                'target="_blank">',
                 '</a>'],
                remoting.ButterBar.kHangoutsStorageKey_);
   }
