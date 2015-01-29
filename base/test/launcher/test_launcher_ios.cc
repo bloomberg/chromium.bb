@@ -129,6 +129,14 @@ class IOSUnitTestPlatformDelegate : public base::UnitTestPlatformDelegate {
     return dir_exe_.AppendASCII("iossim").value();
   }
 
+  void RelaunchTests(base::TestLauncher* test_launcher,
+                     const std::vector<std::string>& test_names,
+                     int launch_flags) override {
+    // Relaunch all tests in one big batch, since overhead of smaller batches
+    // is too big for serialized runs inside ios simulator.
+    RunUnitTestsBatch(test_launcher, this, test_names, launch_flags);
+  }
+
  private:
   // Directory containing test launcher's executable.
   base::FilePath dir_exe_;

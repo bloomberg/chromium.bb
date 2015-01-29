@@ -121,6 +121,18 @@ class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
     return std::string();
   }
 
+  void RelaunchTests(TestLauncher* test_launcher,
+                     const std::vector<std::string>& test_names,
+                     int launch_flags) override {
+    // Relaunch requested tests in parallel, but only use single
+    // test per batch for more precise results (crashes, etc).
+    for (const std::string& test_name : test_names) {
+      std::vector<std::string> batch;
+      batch.push_back(test_name);
+      RunUnitTestsBatch(test_launcher, this, batch, launch_flags);
+    }
+  }
+
   DISALLOW_COPY_AND_ASSIGN(DefaultUnitTestPlatformDelegate);
 };
 
@@ -302,24 +314,10 @@ bool ProcessTestResults(
     if (!has_non_success_test && exit_code != 0) {
       // This is a bit surprising case: all tests are marked as successful,
       // but the exit code was not zero. This can happen e.g. under memory
-      // tools that report leaks this way.
-
-      if (final_results.size() == 1) {
-        // Easy case. One test only so we know the non-zero exit code
-        // was caused by that one test.
-        final_results[0].status = TestResult::TEST_FAILURE_ON_EXIT;
-      } else {
-        // Harder case. Discard the results and request relaunching all
-        // tests without batching. This will trigger above branch on
-        // relaunch leading to more precise results.
-        LOG(WARNING) << "Not sure which test caused non-zero exit code, "
-                     << "relaunching all of them without batching.";
-
-        for (size_t i = 0; i < final_results.size(); i++)
-          tests_to_relaunch->push_back(final_results[i].full_name);
-
-        return false;
-      }
+      // tools that report leaks this way. Mark all tests as a failure on exit,
+      // and for more precise info they'd need to be retried serially.
+      for (size_t i = 0; i < final_results.size(); i++)
+        final_results[i].status = TestResult::TEST_FAILURE_ON_EXIT;
     }
 
     for (size_t i = 0; i < final_results.size(); i++) {
@@ -373,16 +371,11 @@ void GTestCallback(
                      callback_state.output_file, output, exit_code, was_timeout,
                      &tests_to_relaunch);
 
-  // Relaunch requested tests in parallel, but only use single
-  // test per batch for more precise results (crashes, test passes
-  // but non-zero exit codes etc).
-  for (size_t i = 0; i < tests_to_relaunch.size(); i++) {
-    std::vector<std::string> batch;
-    batch.push_back(tests_to_relaunch[i]);
-    RunUnitTestsBatch(callback_state.test_launcher,
-             callback_state.platform_delegate,
-             batch,
-             callback_state.launch_flags);
+  if (!tests_to_relaunch.empty()) {
+    callback_state.platform_delegate->RelaunchTests(
+        callback_state.test_launcher,
+        tests_to_relaunch,
+        callback_state.launch_flags);
   }
 
   // The temporary file's directory is also temporary.
