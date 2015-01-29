@@ -23,12 +23,14 @@ publican_sources = \
 	$(srcdir)/sources/Foreword.xml \
 	$(srcdir)/sources/Preface.xml \
 	$(srcdir)/sources/Revision_History.xml \
-	$(srcdir)/sources/Introduction.xml \
-	$(srcdir)/sources/Architecture.xml \
 	$(srcdir)/sources/Protocol.xml \
 	$(srcdir)/sources/Compositors.xml \
 	$(srcdir)/sources/images/icon.svg  \
 	$(srcdir)/sources/images/wayland.png
+
+processed_sources := \
+	$(srcdir)/sources/Architecture.xml \
+	$(srcdir)/sources/Introduction.xml
 
 css_sources = \
 	$(srcdir)/sources/css/brand.css \
@@ -44,6 +46,10 @@ img_sources = \
 doxygen_img_sources := \
 	$(doxydir)/xml/wayland-architecture.png \
 	$(doxydir)/xml/x-architecture.png
+
+map_sources := \
+	$(doxydir)/xml/x-architecture.map \
+	$(doxydir)/xml/wayland-architecture.map
 
 if HAVE_XMLTO
 if HAVE_XSLTPROC
@@ -61,8 +67,10 @@ alldirs := $(builddir)/en-US $(builddir)/en-US/images $(html_destdir) $(html_des
 html_css_targets = $(addprefix $(html_destdir)/css/,$(notdir $(css_sources)))
 html_img_targets = $(addprefix $(html_destdir)/images/,$(notdir $(img_sources)))
 doxygen_img_targets := $(doxygen_img_sources:$(doxydir)/xml/%=$(html_destdir)/images/%)
+map_targets := $(map_sources:$(doxydir)/xml/%=$(builddir)/en-US/images/%)
+processed_targets := $(processed_sources:$(srcdir)/sources/%=$(builddir)/en-US/%)
 
-$(builddir)/Wayland: $(publican_targets) $(html_css_targets) $(html_img_targets) $(doxygen_img_targets) | $(builddir)/en-US
+$(builddir)/Wayland: $(publican_targets) $(html_css_targets) $(html_img_targets) $(processed_targets) $(doxygen_img_targets) | $(builddir)/en-US
 	$(AM_V_GEN)$(XMLTO) $(XMLTO_PARAM) html $(builddir)/en-US/Wayland.xml -o $(html_destdir)
 	@touch $@
 
@@ -110,6 +118,13 @@ $(builddir)/en-US/%: $(srcdir)/sources/% $(publican_sources) | $(builddir)/en-US
 $(builddir)/en-US/images/%: $(doxydir)/xml/% | $(builddir)/en-US/images
 	$(AM_V_GEN)cp -f $< $@
 	$(AM_V_at)chmod a+w $@
+
+# More specific rule to override explicitly listed targets and perform xslt
+# modifications on them.
+# Note that we can't use $< as all targets must be there
+$(processed_targets): $(processed_sources) $(map_targets) $(srcdir)/merge-mapcoords.xsl | $(builddir)/en-US/images
+	$(AM_V_GEN)$(XSLTPROC) --stringparam basedir $(builddir)/en-US \
+		$(srcdir)/merge-mapcoords.xsl $(addprefix $(srcdir)/sources/,$(notdir $@)) > $@
 
 # general rule to create one of the listed directories.
 $(alldirs):

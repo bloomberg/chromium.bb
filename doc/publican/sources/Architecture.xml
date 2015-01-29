@@ -16,19 +16,27 @@
     <para>
       This is where we are now with X:
     </para>
-    <mediaobject>
-      <imageobject>
-	<imagedata fileref="images/x-architecture.png" format="PNG" />
-      </imageobject>
-      <textobject>
-        <phrase>
-          X architecture diagram
-        </phrase>
-      </textobject>
-    </mediaobject>
+    <figure>
+      <title>X architecture diagram</title>
+      <mediaobjectco>
+	<imageobjectco>
+	  <areaspec id="map1" units="other" otherunits="imagemap">
+	    <area id="area1_1" linkends="x_flow_1" x_steal="#step_1"/>
+	    <area id="area1_2" linkends="x_flow_2" x_steal="#step_2"/>
+	    <area id="area1_3" linkends="x_flow_3" x_steal="#step_3"/>
+	    <area id="area1_4" linkends="x_flow_4" x_steal="#step_4"/>
+	    <area id="area1_5" linkends="x_flow_5" x_steal="#step_5"/>
+	    <area id="area1_6" linkends="x_flow_6" x_steal="#step_6"/>
+	  </areaspec>
+	  <imageobject>
+	    <imagedata fileref="images/x-architecture.png" format="PNG" />
+	  </imageobject>
+	</imageobjectco>
+      </mediaobjectco>
+    </figure>
     <para>
       <orderedlist>
-	<listitem>
+	<listitem id="x_flow_1">
 	  <para>
 	    The kernel gets an event from an input
 	    device and sends it to X through the evdev
@@ -39,7 +47,7 @@
 	    event standard.
 	  </para>
 	</listitem>
-	<listitem>
+	<listitem id="x_flow_2">
 	  <para>
 	    The X server determines which window the
 	    event affects and sends it to the clients
@@ -53,7 +61,7 @@
 	    etc).
 	  </para>
 	</listitem>
-	<listitem>
+	<listitem id="x_flow_3">
 	  <para>
 	    The client looks at the event and decides
 	    what to do. Often the UI will have to change
@@ -64,7 +72,7 @@
 	    X server.
 	  </para>
 	</listitem>
-	<listitem>
+	<listitem id="x_flow_4">
 	  <para>
 	    When the X server receives the rendering
 	    request, it sends it to the driver to let it
@@ -74,7 +82,7 @@
 	    the compositor as a damage event.
 	  </para>
 	</listitem>
-	<listitem>
+	<listitem id="x_flow_5">
 	  <para>
 	    The damage event tells the compositor that
 	    something changed in the window and that it
@@ -86,7 +94,7 @@
 	    to go through the X server to render this.
 	  </para>
 	</listitem>
-	<listitem>
+	<listitem id="x_flow_6">
 	  <para>
 	    The X server receives the rendering requests
 	    from the compositor and either copies the
@@ -125,19 +133,25 @@
       to the clients and lets the client send the damage event
       directly to the compositor:
     </para>
-    <mediaobject>
-      <imageobject>
-	<imagedata fileref="images/wayland-architecture.png" format="PNG" />
-      </imageobject>
-      <textobject>
-        <phrase>
-          Wayland architecture diagram
-        </phrase>
-      </textobject>
-    </mediaobject>
+    <figure>
+      <title>Wayland architecture diagram</title>
+      <mediaobjectco>
+	<imageobjectco>
+	  <areaspec id="mapB" units="other" otherunits="imagemap">
+	    <area id="areaB_1" linkends="wayland_flow_1" x_steal="#step_1"/>
+	    <area id="areaB_2" linkends="wayland_flow_2" x_steal="#step_2"/>
+	    <area id="areaB_3" linkends="wayland_flow_3" x_steal="#step_3"/>
+	    <area id="areaB_4" linkends="wayland_flow_4" x_steal="#step_4"/>
+	  </areaspec>
+	  <imageobject>
+	    <imagedata fileref="images/wayland-architecture.png" format="PNG" />
+	  </imageobject>
+	</imageobjectco>
+      </mediaobjectco>
+    </figure>
     <para>
       <orderedlist>
-	<listitem>
+	<listitem id="wayland_flow_1">
 	  <para>
 	    The kernel gets an event and sends
 	    it to the compositor. This
@@ -146,7 +160,7 @@
 	    input drivers in the kernel.
 	  </para>
 	</listitem>
-	<listitem>
+	<listitem id="wayland_flow_2">
 	  <para>
 	    The compositor looks through its
 	    scenegraph to determine which window
@@ -168,7 +182,7 @@
 	    transformation for the input events.
 	  </para>
 	</listitem>
-	<listitem>
+	<listitem id="wayland_flow_3">
 	  <para>
 	    As in the X case, when the client
 	    receives the event, it updates the
@@ -180,7 +194,7 @@
 	    updated.
 	  </para>
 	</listitem>
-	<listitem>
+	<listitem id="wayland_flow_4">
 	  <para>
 	    The compositor collects damage
 	    requests from its clients and then
