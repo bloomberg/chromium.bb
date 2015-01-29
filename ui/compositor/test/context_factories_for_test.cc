@@ -29,7 +29,8 @@ ui::ContextFactory* InitializeContextFactoryForTests(bool enable_pixel_output) {
     enable_pixel_output = true;
   if (enable_pixel_output)
     g_disable_null_draw = new gfx::DisableNullDrawGLBindings;
-  g_implicit_factory = new InProcessContextFactory();
+  bool context_factory_for_test = true;
+  g_implicit_factory = new InProcessContextFactory(context_factory_for_test);
   return g_implicit_factory;
 }
 

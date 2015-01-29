@@ -27,8 +27,6 @@ class TestCompositorHostOzone : public TestCompositorHost {
   void Show() override;
   ui::Compositor* GetCompositor() override;
 
-  void Draw();
-
   gfx::Rect bounds_;
 
   ui::ContextFactory* context_factory_;
@@ -62,11 +60,6 @@ void TestCompositorHostOzone::Show() {
 
 ui::Compositor* TestCompositorHostOzone::GetCompositor() {
   return compositor_.get();
-}
-
-void TestCompositorHostOzone::Draw() {
-  if (compositor_.get())
-    compositor_->Draw();
 }
 
 // static

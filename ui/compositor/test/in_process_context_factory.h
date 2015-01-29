@@ -17,7 +17,7 @@ namespace ui {
 
 class InProcessContextFactory : public ContextFactory {
  public:
-  InProcessContextFactory();
+  explicit InProcessContextFactory(bool context_factory_for_test);
   ~InProcessContextFactory() override;
 
   // If true (the default) an OutputSurface is created that does not display
@@ -51,6 +51,8 @@ class InProcessContextFactory : public ContextFactory {
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   uint32_t next_surface_id_namespace_;
   bool use_test_surface_;
+
+  const bool context_factory_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessContextFactory);
 };
