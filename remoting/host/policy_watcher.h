@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_POLICY_HACK_POLICY_WATCHER_H_
-#define REMOTING_HOST_POLICY_HACK_POLICY_WATCHER_H_
+#ifndef REMOTING_HOST_POLICY_WATCHER_H_
+#define REMOTING_HOST_POLICY_WATCHER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -23,7 +23,6 @@ class SchemaRegistry;
 }  // namespace policy
 
 namespace remoting {
-namespace policy_hack {
 
 // Watches for changes to the managed remote access host policies.  If
 // StartWatching() has been called, then before this object can be deleted,
@@ -147,8 +146,6 @@ class PolicyWatcher : public policy::PolicyService::Observer {
 
   scoped_ptr<base::DictionaryValue> old_policies_;
   scoped_ptr<base::DictionaryValue> default_values_;
-
-  // TODO(lukasza): Remove - components/policy filters out mistyped values.
   scoped_ptr<base::DictionaryValue> bad_type_values_;
 
   policy::PolicyService* policy_service_;
@@ -164,7 +161,6 @@ class PolicyWatcher : public policy::PolicyService::Observer {
   DISALLOW_COPY_AND_ASSIGN(PolicyWatcher);
 };
 
-}  // namespace policy_hack
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_POLICY_HACK_POLICY_WATCHER_H_
+#endif  // REMOTING_HOST_POLICY_WATCHER_H_

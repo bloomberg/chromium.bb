@@ -58,7 +58,7 @@
 #include "remoting/host/logging.h"
 #include "remoting/host/me2me_desktop_environment.h"
 #include "remoting/host/pairing_registry_delegate.h"
-#include "remoting/host/policy_hack/policy_watcher.h"
+#include "remoting/host/policy_watcher.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/shutdown_watchdog.h"
 #include "remoting/host/signaling_connector.h"
@@ -324,7 +324,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool enable_vp9_;
   int64_t frame_recorder_buffer_size_;
 
-  scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
+  scoped_ptr<PolicyWatcher> policy_watcher_;
   std::string host_domain_;
   bool host_username_match_required_;
   bool allow_nat_traversal_;
@@ -554,8 +554,8 @@ void HostProcess::OnConfigUpdated(
     // already loaded so PolicyWatcher has to be started here. Separate policy
     // loading from policy verifications and move |policy_watcher_|
     // initialization to StartOnNetworkThread().
-    policy_watcher_ = policy_hack::PolicyWatcher::Create(
-        nullptr, context_->network_task_runner());
+    policy_watcher_ =
+        PolicyWatcher::Create(nullptr, context_->network_task_runner());
     policy_watcher_->StartWatching(
         base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)),
         base::Bind(&HostProcess::OnPolicyError, base::Unretained(this)));

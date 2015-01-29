@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,13 +11,27 @@
 #include "components/policy/core/common/fake_async_policy_loader.h"
 #include "policy/policy_constants.h"
 #include "remoting/host/dns_blackhole_checker.h"
-#include "remoting/host/policy_hack/mock_policy_callback.h"
-#include "remoting/host/policy_hack/policy_watcher.h"
+#include "remoting/host/policy_watcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
-namespace policy_hack {
+
+class MockPolicyCallback {
+ public:
+  MockPolicyCallback(){};
+
+  // TODO(lukasza): gmock cannot mock a method taking scoped_ptr<T>...
+  MOCK_METHOD1(OnPolicyUpdatePtr, void(const base::DictionaryValue* policies));
+  void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
+    OnPolicyUpdatePtr(policies.get());
+  }
+
+  MOCK_METHOD0(OnPolicyError, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPolicyCallback);
+};
 
 class PolicyWatcherTest : public testing::Test {
  public:
@@ -25,12 +39,6 @@ class PolicyWatcherTest : public testing::Test {
 
   void SetUp() override {
     message_loop_proxy_ = base::MessageLoopProxy::current();
-    policy_updated_callback_ = base::Bind(
-        &MockPolicyCallback::OnPolicyUpdate,
-        base::Unretained(&mock_policy_callback_));
-    policy_error_callback_ = base::Bind(
-        &MockPolicyCallback::OnPolicyError,
-        base::Unretained(&mock_policy_callback_));
 
     // Retaining a raw pointer to keep control over policy contents.
     policy_loader_ = new policy::FakeAsyncPolicyLoader(message_loop_proxy_);
@@ -81,7 +89,7 @@ class PolicyWatcherTest : public testing::Test {
     unknown_policies_.SetString("UnknownPolicyTwo", std::string());
 
     const char kOverrideNatTraversalToFalse[] =
-      "{ \"RemoteAccessHostFirewallTraversal\": false }";
+        "{ \"RemoteAccessHostFirewallTraversal\": false }";
     nat_true_and_overridden_.SetBoolean(
         policy::key::kRemoteAccessHostFirewallTraversal, true);
     nat_true_and_overridden_.SetString(
@@ -123,8 +131,10 @@ class PolicyWatcherTest : public testing::Test {
  protected:
   void StartWatching() {
     policy_watcher_->StartWatching(
-        policy_updated_callback_,
-        policy_error_callback_);
+        base::Bind(&MockPolicyCallback::OnPolicyUpdate,
+                   base::Unretained(&mock_policy_callback_)),
+        base::Bind(&MockPolicyCallback::OnPolicyError,
+                   base::Unretained(&mock_policy_callback_)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -161,8 +171,6 @@ class PolicyWatcherTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockPolicyCallback mock_policy_callback_;
-  PolicyWatcher::PolicyUpdatedCallback policy_updated_callback_;
-  PolicyWatcher::PolicyErrorCallback policy_error_callback_;
 
   // |policy_loader_| is owned by |policy_watcher_|. PolicyWatcherTest retains
   // a raw pointer to |policy_loader_| in order to control the simulated / faked
@@ -352,8 +360,7 @@ TEST_F(PolicyWatcherTest, NatNoneThenFalseThenTrue) {
               OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_false_)));
-  EXPECT_CALL(mock_policy_callback_,
-              OnPolicyUpdatePtr(IsPolicies(&nat_true_)));
+  EXPECT_CALL(mock_policy_callback_, OnPolicyUpdatePtr(IsPolicies(&nat_true_)));
 
   SetPolicies(empty_);
   StartWatching();
@@ -364,9 +371,9 @@ TEST_F(PolicyWatcherTest, NatNoneThenFalseThenTrue) {
 
 TEST_F(PolicyWatcherTest, ChangeOneRepeatedlyThenTwo) {
   testing::InSequence sequence;
-  EXPECT_CALL(mock_policy_callback_,
-              OnPolicyUpdatePtr(IsPolicies(
-                  &nat_true_domain_empty_others_default_)));
+  EXPECT_CALL(
+      mock_policy_callback_,
+      OnPolicyUpdatePtr(IsPolicies(&nat_true_domain_empty_others_default_)));
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&domain_full_)));
   EXPECT_CALL(mock_policy_callback_,
@@ -479,7 +486,7 @@ TEST_F(PolicyWatcherTest, UdpPortRange) {
 const int kMaxTransientErrorRetries = 5;
 
 TEST_F(PolicyWatcherTest, SingleTransientErrorDoesntTriggerErrorCallback) {
-  EXPECT_CALL(mock_policy_callback_, OnPolicyErrorPtr()).Times(0);
+  EXPECT_CALL(mock_policy_callback_, OnPolicyError()).Times(0);
 
   StartWatching();
   SignalTransientErrorForTest();
@@ -487,7 +494,7 @@ TEST_F(PolicyWatcherTest, SingleTransientErrorDoesntTriggerErrorCallback) {
 }
 
 TEST_F(PolicyWatcherTest, MultipleTransientErrorsTriggerErrorCallback) {
-  EXPECT_CALL(mock_policy_callback_, OnPolicyErrorPtr());
+  EXPECT_CALL(mock_policy_callback_, OnPolicyError());
 
   StartWatching();
   for (int i = 0; i < kMaxTransientErrorRetries; i++) {
@@ -499,7 +506,7 @@ TEST_F(PolicyWatcherTest, MultipleTransientErrorsTriggerErrorCallback) {
 TEST_F(PolicyWatcherTest, PolicyUpdateResetsTransientErrorsCounter) {
   testing::InSequence s;
   EXPECT_CALL(mock_policy_callback_, OnPolicyUpdatePtr(testing::_));
-  EXPECT_CALL(mock_policy_callback_, OnPolicyErrorPtr()).Times(0);
+  EXPECT_CALL(mock_policy_callback_, OnPolicyError()).Times(0);
 
   StartWatching();
   for (int i = 0; i < (kMaxTransientErrorRetries - 1); i++) {
@@ -581,5 +588,4 @@ TEST_F(PolicyWatcherTest, TestRealChromotingPolicy) {
 
 #endif
 
-}  // namespace policy_hack
 }  // namespace remoting

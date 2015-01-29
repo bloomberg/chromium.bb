@@ -19,7 +19,7 @@
 #include "remoting/host/host_status_logger.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me_desktop_environment.h"
-#include "remoting/host/policy_hack/policy_watcher.h"
+#include "remoting/host/policy_watcher.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
@@ -38,22 +38,22 @@ const int kMaxLoginAttempts = 5;
 
 It2MeHost::It2MeHost(
     scoped_ptr<ChromotingHostContext> host_context,
-    scoped_ptr<policy_hack::PolicyWatcher> policy_watcher,
+    scoped_ptr<PolicyWatcher> policy_watcher,
     scoped_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory,
     base::WeakPtr<It2MeHost::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid)
-  : host_context_(host_context.Pass()),
-    task_runner_(host_context_->ui_task_runner()),
-    observer_(observer),
-    xmpp_server_config_(xmpp_server_config),
-    directory_bot_jid_(directory_bot_jid),
-    state_(kDisconnected),
-    failed_login_attempts_(0),
-    policy_watcher_(policy_watcher.Pass()),
-    confirmation_dialog_factory_(confirmation_dialog_factory.Pass()),
-    nat_traversal_enabled_(false),
-    policy_received_(false) {
+    : host_context_(host_context.Pass()),
+      task_runner_(host_context_->ui_task_runner()),
+      observer_(observer),
+      xmpp_server_config_(xmpp_server_config),
+      directory_bot_jid_(directory_bot_jid),
+      state_(kDisconnected),
+      failed_login_attempts_(0),
+      policy_watcher_(policy_watcher.Pass()),
+      confirmation_dialog_factory_(confirmation_dialog_factory.Pass()),
+      nat_traversal_enabled_(false),
+      policy_received_(false) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
@@ -534,9 +534,8 @@ scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
     const std::string& directory_bot_jid) {
   scoped_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory(
       new It2MeConfirmationDialogFactory());
-  scoped_ptr<policy_hack::PolicyWatcher> policy_watcher =
-      policy_hack::PolicyWatcher::Create(policy_service_,
-                                         context->network_task_runner());
+  scoped_ptr<PolicyWatcher> policy_watcher =
+      PolicyWatcher::Create(policy_service_, context->network_task_runner());
   return new It2MeHost(context.Pass(), policy_watcher.Pass(),
                        confirmation_dialog_factory.Pass(),
                        observer, xmpp_server_config, directory_bot_jid);

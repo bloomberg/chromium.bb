@@ -30,12 +30,9 @@ class DesktopEnvironmentFactory;
 class HostEventLogger;
 class HostNPScriptObject;
 class HostStatusLogger;
+class PolicyWatcher;
 class RegisterSupportHostRequest;
 class RsaKeyPair;
-
-namespace policy_hack {
-class PolicyWatcher;
-}  // namespace policy_hack
 
 // These state values are duplicated in host_session.js. Remember to update
 // both copies when making changes.
@@ -65,7 +62,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   It2MeHost(
       scoped_ptr<ChromotingHostContext> context,
-      scoped_ptr<policy_hack::PolicyWatcher> policy_watcher,
+      scoped_ptr<PolicyWatcher> policy_watcher,
       scoped_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory,
       base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
@@ -168,7 +165,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   scoped_ptr<ChromotingHost> host_;
   int failed_login_attempts_;
 
-  scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
+  scoped_ptr<PolicyWatcher> policy_watcher_;
   scoped_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory_;
   scoped_ptr<It2MeConfirmationDialogProxy> confirmation_dialog_proxy_;
 

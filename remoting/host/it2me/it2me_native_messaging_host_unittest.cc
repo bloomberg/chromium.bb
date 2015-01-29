@@ -19,7 +19,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/native_messaging/native_messaging_pipe.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
-#include "remoting/host/policy_hack/policy_watcher.h"
+#include "remoting/host/policy_watcher.h"
 #include "remoting/host/setup/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,7 +69,7 @@ void VerifyCommonProperties(scoped_ptr<base::DictionaryValue> response,
 class MockIt2MeHost : public It2MeHost {
  public:
   MockIt2MeHost(scoped_ptr<ChromotingHostContext> context,
-                scoped_ptr<policy_hack::PolicyWatcher> policy_watcher,
+                scoped_ptr<PolicyWatcher> policy_watcher,
                 base::WeakPtr<It2MeHost::Observer> observer,
                 const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
                 const std::string& directory_bot_jid)

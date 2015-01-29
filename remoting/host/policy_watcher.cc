@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Most of this code is copied from:
 //   src/chrome/browser/policy/asynchronous_policy_loader.{h,cc}
 
-#include "remoting/host/policy_hack/policy_watcher.h"
+#include "remoting/host/policy_watcher.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -38,7 +38,6 @@
 #endif
 
 namespace remoting {
-namespace policy_hack {
 
 namespace key = ::policy::key;
 
@@ -52,9 +51,8 @@ scoped_ptr<base::DictionaryValue> CopyGoodValuesAndAddDefaults(
     const base::DictionaryValue* default_values,
     const base::DictionaryValue* bad_type_values) {
   scoped_ptr<base::DictionaryValue> to(default_values->DeepCopy());
-  for (base::DictionaryValue::Iterator i(*default_values);
-       !i.IsAtEnd(); i.Advance()) {
-
+  for (base::DictionaryValue::Iterator i(*default_values); !i.IsAtEnd();
+       i.Advance()) {
     const base::Value* value = nullptr;
 
     // If the policy isn't in |from|, use the default.
@@ -139,9 +137,8 @@ void PolicyWatcher::UpdatePolicies(
   transient_policy_error_retry_counter_ = 0;
 
   // Use default values for any missing policies.
-  scoped_ptr<base::DictionaryValue> new_policies =
-      CopyGoodValuesAndAddDefaults(
-          new_policies_raw, default_values_.get(), bad_type_values_.get());
+  scoped_ptr<base::DictionaryValue> new_policies = CopyGoodValuesAndAddDefaults(
+      new_policies_raw, default_values_.get(), bad_type_values_.get());
 
   // Find the changed policies.
   scoped_ptr<base::DictionaryValue> changed_policies(
@@ -316,5 +313,4 @@ scoped_ptr<PolicyWatcher> PolicyWatcher::Create(
 #endif
 }
 
-}  // namespace policy_hack
 }  // namespace remoting
