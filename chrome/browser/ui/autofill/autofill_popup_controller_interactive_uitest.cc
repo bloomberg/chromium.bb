@@ -96,8 +96,14 @@ class AutofillPopupControllerBrowserTest
   scoped_ptr<TestAutofillExternalDelegate> autofill_external_delegate_;
 };
 
+#if defined(OS_MACOSX)
+// Fails on Mac OS, see crbug/453256
+#define MAYBE_DoNotHidePopupOnWindowMove DISABLED_DoNotHidePopupOnWindowMove
+#else
+#define MAYBE_DoNotHidePopupOnWindowMove DoNotHidePopupOnWindowMove
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
-                       DoNotHidePopupOnWindowMove) {
+                       MAYBE_DoNotHidePopupOnWindowMove) {
   GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
