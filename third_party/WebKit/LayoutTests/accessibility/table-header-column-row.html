@@ -1,4 +1,5 @@
 <script src="../resources/js-test.js"></script>
+<script src="../resources/accessibility-helper.js"></script>
 <table width="50%" border="1">
   <caption>
     scope test
@@ -99,36 +100,7 @@ description("This tests that AXRoles for header cells are assigned.");
 
 if (window.testRunner)
     testRunner.dumpAsText();
-
-function buildAccessibilityTree(accessibilityObject, indent) {
-    if (accessibilityObject.role == 'AXRole: AXColumn' || accessibilityObject.role == 'AXRole: AXTableHeaderContainer')
-        return true;
-    var str = "";
-    for (var i = 0; i < indent; i++)
-       str += "    ";
-    str += accessibilityObject.role;
-    str += " " + accessibilityObject.stringValue;
-
-    if (accessibilityObject.role == '')
-        str += accessibilityObject.allAttributes();
-
-    str += "\n";
-    document.getElementById("console").innerText += str;
-
-    if (accessibilityObject.stringValue.indexOf('End of test') >= 0)
-        return false;
-
-    var count = accessibilityObject.childrenCount;
-    for (var i = 0; i < count; ++i) {
-        if (!buildAccessibilityTree(accessibilityObject.childAtIndex(i), indent + 1))
-            return false;
-    }
-
-    return true;
-}
-
 if (window.accessibilityController) {
-    var body = accessibilityController.focusedElement;
-    buildAccessibilityTree(body, 0);
+    buildAccessibilityTree(accessibilityController.focusedElement, 0, 1, ['AXColumn', 'AXTableHeaderContainer']);
 }
 </script>

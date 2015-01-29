@@ -1,35 +1,21 @@
 <html>
-<head>
 <script src="../resources/js-test.js"></script>
+<script src="../resources/accessibility-helper.js"></script>
+<body>
 
-  <script>
+<p>Before</p>
+
+<iframe id="iframe" src="data:text/html,<body><button>Click me</button></body>"></iframe>
+
+<p>After</p>
+
+<p>End of test</p>
+
+<p id="description"></p>
+<div id="console"></div>
+<script>
     if (window.testRunner)
         testRunner.waitUntilDone();
-
-    function buildAccessibilityTree(accessibilityObject, indent) {
-        var str = "";
-        for (var i = 0; i < indent; i++)
-            str += "    ";
-        str += accessibilityObject.role;
-        str += " " + accessibilityObject.stringValue;
-
-        if (accessibilityObject.role == '')
-            str += accessibilityObject.allAttributes();
-
-        str += "\n";
-        document.getElementById("console").innerText += str;
-
-        if (accessibilityObject.stringValue.indexOf('End of test') >= 0)
-            return false;
-
-        var count = accessibilityObject.childrenCount;
-        for (var i = 0; i < count; ++i) {
-            if (!buildAccessibilityTree(accessibilityObject.childAtIndex(i), indent + 1))
-                return false;
-        }
-
-        return true;
-    }
 
     function runTest()
     {
@@ -50,7 +36,7 @@
             window.frameButtonRole = window.frameButton.role;
 
             document.getElementById("console").innerText += "\nBefore:\n";
-            buildAccessibilityTree(root, 0);
+            buildAccessibilityTree(root, 0, 1);
 
             // Remove the iframe.
             document.body.removeChild(document.getElementById("iframe"));
@@ -65,7 +51,7 @@
             window.newAfter = newBody.childAtIndex(1).childAtIndex(0);
 
             document.getElementById("console").innerText += "\nAfter:\n";
-            buildAccessibilityTree(newRoot, 0);
+            buildAccessibilityTree(newRoot, 0, 1);
             document.getElementById("console").innerText += "\n";
 
             // Make sure that the accessibility objects from the iframe's nodes
@@ -89,21 +75,6 @@
     window.addEventListener('load', function() {
         setTimeout(runTest, 10);
     }, false);
-    
-  </script>
-</head>
-<body>
-
-<p>Before</p>
-
-<iframe id="iframe" src="data:text/html,<body><button>Click me</button></body>"></iframe>
-
-<p>After</p>
-
-<p>End of test</p>
-
-<p id="description"></p>
-<div id="console"></div>
-
+</script>
 </body>
 </html>

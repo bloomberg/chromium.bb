@@ -1,4 +1,5 @@
 <script src="../resources/js-test.js"></script>
+<script src="../resources/accessibility-helper.js"></script>
 <ul role="presentation">
 <li role="listitem">Item 1</li>
 <li role="listitem">Item 2</li>
@@ -18,34 +19,7 @@ description("This tests that the presentation role is inherited.");
 
 if (window.testRunner)
     testRunner.dumpAsText();
-
-function buildAccessibilityTree(accessibilityObject, indent) {
-    var str = "";
-    for (var i = 0; i < indent; i++)
-       str += "    ";
-    str += accessibilityObject.role;
-    str += " " + accessibilityObject.stringValue;
-
-    if (accessibilityObject.role == '')
-        str += accessibilityObject.allAttributes();
-
-    str += "\n";
-    document.getElementById("console").innerText += str;
-
-    if (accessibilityObject.stringValue.indexOf('End of test') >= 0)
-        return false;
-
-    var count = accessibilityObject.childrenCount;
-    for (var i = 0; i < count; ++i) {
-        if (!buildAccessibilityTree(accessibilityObject.childAtIndex(i), indent + 1))
-            return false;
-    }
-
-    return true;
-}
-
 if (window.accessibilityController) {
-    var body = accessibilityController.focusedElement;
-    buildAccessibilityTree(body, 0);
+    buildAccessibilityTree(accessibilityController.focusedElement, 0, 1);
 }
 </script>

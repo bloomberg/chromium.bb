@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN"> 
 <html> 
 <head>
-<script> 
+<!-- <script> 
 
     function buildAccessibilityTree(accessibilityObject, indent) {
         var str = "";
@@ -23,8 +23,9 @@
 
         return true;
     }
-</script> 
-<script src="../resources/js-test.js"></script> 
+</script> -->
+<script src="../resources/js-test.js"></script>
+<script src="../resources/accessibility-helper.js"></script>
 </head> 
 <body> 
  
@@ -36,8 +37,6 @@
 
 <div>End of test</div>
 
-<pre id="tree"></pre>
- 
 <p id="description"></p> 
 <div id="console"></div> 
  
@@ -46,7 +45,7 @@
  
     if (window.accessibilityController) {
         // First build up full accessibility tree.
-        document.getElementById("tree").innerText += "Before:\n";
+        document.getElementById("console").innerText += "Before:\n";
         document.body.focus();
         buildAccessibilityTree(accessibilityController.focusedElement, 0);
         
@@ -54,7 +53,7 @@
         document.body.removeChild(document.body.children[2])
         
         // Build up full accessibility tree again.
-        document.getElementById("tree").innerText += "After:\n";
+        document.getElementById("console").innerText += "After:\n";
         document.body.focus();
         buildAccessibilityTree(accessibilityController.focusedElement, 0);
     }
