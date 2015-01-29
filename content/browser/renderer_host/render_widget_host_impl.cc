@@ -610,12 +610,15 @@ void RenderWidgetHostImpl::WasResized() {
   }
 
   bool size_changed = true;
+  bool width_changed = true;
   bool side_payload_changed = screen_info_out_of_date_;
   scoped_ptr<ViewMsg_Resize_Params> params(new ViewMsg_Resize_Params);
 
   GetResizeParams(params.get());
   if (old_resize_params_) {
     size_changed = old_resize_params_->new_size != params->new_size;
+    width_changed =
+        old_resize_params_->new_size.width() != params->new_size.width();
     side_payload_changed =
         side_payload_changed ||
         old_resize_params_->physical_backing_size !=
@@ -646,7 +649,7 @@ void RenderWidgetHostImpl::WasResized() {
   }
 
   if (delegate_)
-    delegate_->RenderWidgetWasResized(this);
+    delegate_->RenderWidgetWasResized(this, width_changed);
 }
 
 void RenderWidgetHostImpl::ResizeRectChanged(const gfx::Rect& new_rect) {

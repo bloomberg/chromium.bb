@@ -536,8 +536,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetGotFocus(RenderWidgetHostImpl* render_widget_host) override;
-  void RenderWidgetWasResized(
-      RenderWidgetHostImpl* render_widget_host) override;
+  void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
+                              bool width_changed) override;
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;

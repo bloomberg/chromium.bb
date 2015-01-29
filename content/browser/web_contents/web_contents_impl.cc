@@ -1352,12 +1352,14 @@ void WebContentsImpl::RenderWidgetGotFocus(
 }
 
 void WebContentsImpl::RenderWidgetWasResized(
-    RenderWidgetHostImpl* render_widget_host) {
+    RenderWidgetHostImpl* render_widget_host,
+    bool width_changed) {
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(GetMainFrame());
   if (!rfh || render_widget_host != rfh->GetRenderWidgetHost())
     return;
 
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, MainFrameWasResized());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    MainFrameWasResized(width_changed));
 }
 
 bool WebContentsImpl::PreHandleKeyboardEvent(

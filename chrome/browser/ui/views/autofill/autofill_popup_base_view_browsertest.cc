@@ -50,10 +50,10 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
         .WillRepeatedly(Return(native_view));
     EXPECT_CALL(mock_delegate_, ViewDestroyed());
 
-    view_ =
-        new AutofillPopupBaseView(&mock_delegate_,
-                                  views::Widget::GetWidgetForNativeWindow(
-                                      browser()->window()->GetNativeWindow()));
+    view_ = new AutofillPopupBaseView(
+        &mock_delegate_,
+        views::Widget::GetWidgetForNativeWindow(
+            browser()->window()->GetNativeWindow())->GetFocusManager());
   }
 
   void ShowView() {

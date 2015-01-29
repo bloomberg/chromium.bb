@@ -240,7 +240,13 @@ void ChromeAutofillClient::DidNavigateAnyFrame(
     HideRequestAutocompleteDialog();
 }
 
-void ChromeAutofillClient::MainFrameWasResized() {
+void ChromeAutofillClient::MainFrameWasResized(bool width_changed) {
+#if defined(OS_ANDROID)
+  // Ignore virtual keyboard showing and hiding a strip of suggestions.
+  if (!width_changed)
+    return;
+#endif
+
   HideAutofillPopup();
 }
 

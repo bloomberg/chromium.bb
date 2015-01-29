@@ -96,23 +96,33 @@ class AutofillPopupControllerBrowserTest
   scoped_ptr<TestAutofillExternalDelegate> autofill_external_delegate_;
 };
 
-// Autofill UI isn't currently hidden on window move on Mac.
-// http://crbug.com/180566
-#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
-                       HidePopupOnWindowConfiguration) {
+                       DoNotHidePopupOnWindowMove) {
+  GenerateTestAutofillPopup(autofill_external_delegate_.get());
+
+  EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
+
+  // Move the window, which should not cause the popup to hide.
+  gfx::Rect new_bounds = browser()->window()->GetBounds() - gfx::Vector2d(1, 1);
+  browser()->window()->SetBounds(new_bounds);
+
+  EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
+                       HidePopupOnWindowResize) {
   GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
 
   // Resize the window, which should cause the popup to hide.
-  gfx::Rect new_bounds = browser()->window()->GetBounds() - gfx::Vector2d(1, 1);
+  gfx::Rect new_bounds = browser()->window()->GetBounds();
+  new_bounds.Inset(1, 1);
   browser()->window()->SetBounds(new_bounds);
 
   autofill_external_delegate_->WaitForPopupHidden();
   EXPECT_TRUE(autofill_external_delegate_->popup_hidden());
 }
-#endif // !defined(OS_MACOSX)
 
 // This test checks that the browser doesn't crash if the delegate is deleted
 // before the popup is hidden.

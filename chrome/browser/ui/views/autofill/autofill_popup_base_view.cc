@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "ui/views/border.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace autofill {
@@ -28,9 +29,9 @@ const SkColor AutofillPopupBaseView::kWarningTextColor =
 
 AutofillPopupBaseView::AutofillPopupBaseView(
     AutofillPopupViewDelegate* delegate,
-    views::Widget* observing_widget)
+    views::FocusManager* focus_manager)
     : delegate_(delegate),
-      observing_widget_(observing_widget),
+      focus_manager_(focus_manager),
       weak_ptr_factory_(this) {}
 
 AutofillPopupBaseView::~AutofillPopupBaseView() {
@@ -44,14 +45,11 @@ AutofillPopupBaseView::~AutofillPopupBaseView() {
 void AutofillPopupBaseView::DoShow() {
   const bool initialize_widget = !GetWidget();
   if (initialize_widget) {
-    observing_widget_->AddObserver(this);
-
-    views::FocusManager* focus_manager = observing_widget_->GetFocusManager();
-    focus_manager->RegisterAccelerator(
+    focus_manager_->RegisterAccelerator(
         ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE),
         ui::AcceleratorManager::kNormalPriority,
         this);
-    focus_manager->RegisterAccelerator(
+    focus_manager_->RegisterAccelerator(
         ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE),
         ui::AcceleratorManager::kNormalPriority,
         this);
@@ -100,8 +98,7 @@ void AutofillPopupBaseView::DoHide() {
 }
 
 void AutofillPopupBaseView::RemoveObserver() {
-  observing_widget_->GetFocusManager()->UnregisterAccelerators(this);
-  observing_widget_->RemoveObserver(this);
+  focus_manager_->UnregisterAccelerators(this);
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
@@ -115,12 +112,6 @@ void AutofillPopupBaseView::OnNativeFocusChange(
     gfx::NativeView focused_now) {
   if (GetWidget() && GetWidget()->GetNativeView() != focused_now)
     HideController();
-}
-
-void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,
-                                                  const gfx::Rect& new_bounds) {
-  DCHECK_EQ(widget, observing_widget_);
-  HideController();
 }
 
 void AutofillPopupBaseView::OnMouseCaptureLost() {

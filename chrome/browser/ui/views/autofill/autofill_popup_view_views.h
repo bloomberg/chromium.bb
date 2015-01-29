@@ -16,11 +16,8 @@ namespace autofill {
 class AutofillPopupViewViews : public AutofillPopupBaseView,
                                public AutofillPopupView {
  public:
-  // The observing widget should be the top level widget for the native
-  // view, which we need to listen to for several signals that indicate the
-  // popup should be closed.
   AutofillPopupViewViews(AutofillPopupController* controller,
-                         views::Widget* observing_widget);
+                         views::FocusManager* focus_manager);
 
  private:
   ~AutofillPopupViewViews() override;

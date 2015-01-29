@@ -264,7 +264,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void WasHidden() {}
 
   // Invoked when the main frame changes size.
-  virtual void MainFrameWasResized() {}
+  virtual void MainFrameWasResized(bool width_changed) {}
 
   // This methods is invoked when the title of the WebContents is set. If the
   // title was explicitly set, |explicit_set| is true, otherwise the title was

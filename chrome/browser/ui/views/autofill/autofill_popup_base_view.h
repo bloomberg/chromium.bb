@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace content {
 class WebContents;
@@ -19,13 +18,16 @@ namespace gfx {
 class Point;
 }
 
+namespace views {
+class FocusManager;
+}
+
 namespace autofill {
 
 // Class that deals with the event handling for Autofill-style popups. This
 // class should only be instantiated by sub-classes.
 class AutofillPopupBaseView : public views::WidgetDelegateView,
-                              public views::WidgetFocusChangeListener,
-                              public views::WidgetObserver {
+                              public views::WidgetFocusChangeListener {
  public:
   static const SkColor kBorderColor;
   static const SkColor kHoveredBackgroundColor;
@@ -36,7 +38,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
  protected:
   explicit AutofillPopupBaseView(AutofillPopupViewDelegate* delegate,
-                                 views::Widget* observing_widget);
+                                 views::FocusManager* focus_manager);
   ~AutofillPopupBaseView() override;
 
   // Show this popup. Idempotent.
@@ -65,11 +67,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   void OnNativeFocusChange(gfx::NativeView focused_before,
                            gfx::NativeView focused_now) override;
 
-  // views::WidgetObserver implementation.
-  void OnWidgetBoundsChanged(views::Widget* widget,
-                             const gfx::Rect& new_bounds) override;
-
-  // Stop observing the |observing_widget_|.
+  // Stop observing accelerators and focus changes.
   void RemoveObserver();
 
   void SetSelection(const gfx::Point& point);
@@ -86,8 +84,8 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // Controller for this popup. Weak reference.
   AutofillPopupViewDelegate* delegate_;
 
-  // The widget that |this| observes. Weak reference.
-  views::Widget* observing_widget_;
+  // The focus manager that |this| observes. Weak reference.
+  views::FocusManager* focus_manager_;
 
   base::WeakPtrFactory<AutofillPopupBaseView> weak_ptr_factory_;
 

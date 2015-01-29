@@ -83,7 +83,7 @@ class ChromeAutofillClient
       content::RenderFrameHost* render_frame_host,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  void MainFrameWasResized() override;
+  void MainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
 
   // ZoomObserver implementation.

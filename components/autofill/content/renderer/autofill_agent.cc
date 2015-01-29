@@ -324,12 +324,6 @@ void AutofillAgent::FormControlElementClicked(
   if (!single_click_autofill) {
     // Show full suggestions when clicking on an already-focused form field. On
     // the initial click (not focused yet), only show password suggestions.
-#if defined(OS_ANDROID)
-    // TODO(gcasto): Remove after crbug.com/430318 has been fixed.
-    if (!was_focused)
-      return;
-#endif
-
     options.show_full_suggestion_list =
         options.show_full_suggestion_list || was_focused;
     options.show_password_suggestions_only = !was_focused;
@@ -381,6 +375,7 @@ void AutofillAgent::TextFieldDidChangeImpl(
     }
 
     if (password_autofill_agent_->TextDidChangeInTextField(*input_element)) {
+      is_popup_possibly_visible_ = true;
       element_ = element;
       return;
     }

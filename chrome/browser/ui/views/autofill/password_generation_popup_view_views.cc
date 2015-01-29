@@ -119,8 +119,8 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
 
 PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
     PasswordGenerationPopupController* controller,
-    views::Widget* observing_widget)
-    : AutofillPopupBaseView(controller, observing_widget),
+    views::FocusManager* focus_manager)
+    : AutofillPopupBaseView(controller, focus_manager),
       password_view_(NULL),
       font_list_(ResourceBundle::GetSharedInstance().GetFontList(
           ResourceBundle::SmallFont)),
@@ -273,7 +273,8 @@ PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
   if (!observing_widget)
     return NULL;
 
-  return new PasswordGenerationPopupViewViews(controller, observing_widget);
+  return new PasswordGenerationPopupViewViews(
+      controller, observing_widget->GetFocusManager());
 }
 
 void PasswordGenerationPopupViewViews::GetAccessibleState(
