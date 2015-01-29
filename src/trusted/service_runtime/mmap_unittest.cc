@@ -90,7 +90,7 @@ static struct NaClDesc *MakeTempFileNaClDesc(size_t file_size) {
 // These tests are extremely slow in debug builds on Windows 8 (About ten
 // minutes, vs. a few seconds otherwise.) Release builds should be enough.
 // See http://crbug.com/452222.
-#if !NACL_WINDOWS || defined(NDEBUG) || NACL_ARCH(NACL_BUILD_SUBARCH) != 64
+#if !NACL_WINDOWS || defined(NDEBUG) || NACL_BUILD_SUBARCH != 64
 
 // These tests are disabled for ARM/MIPS because the ARM/MIPS sandboxes are
 // zero-based, and sel_addrspace_(arm/mips).c do not work when allocating a
