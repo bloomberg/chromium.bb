@@ -84,6 +84,8 @@
         '-funwind-tables',
         # This causes an "unused argument" warning in C targets.
         '-stdlib=libc++',
+        # ld_bfd.py cannot link LTO objects.
+        '-flto',
       ],
       'conditions': [
         ['clang==1', {
