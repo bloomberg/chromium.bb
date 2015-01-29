@@ -52,6 +52,11 @@ Element.prototype.checked;
 /** @type {Window} */
 HTMLIFrameElement.prototype.contentWindow;
 
+/**
+ * @param {string} selector
+ * @return {?HTMLElement}.
+ */
+HTMLElement.prototype.querySelector = function(selector) {};
 
 /**
  * @param {string} name
@@ -114,6 +119,11 @@ Event.prototype.initMouseEvent = function(
 /** @type {Object} */
 Event.prototype.data = {};
 
+/**
+ * @param {*} value
+ * @return {boolean} whether value is an integer or not.
+ */
+Number.isInteger = function(value) {};
 
 // Chrome implements XMLHttpRequest.responseURL starting from Chrome 37.
 /** @type {string} */

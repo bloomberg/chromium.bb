@@ -19,10 +19,12 @@
  *   appLauncher.close(appId);
  */
 
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
+
+(function() {
+
+'use strict';
 
 /** @interface */
 remoting.AppLauncher = function() {};
@@ -91,14 +93,22 @@ remoting.V1AppLauncher.prototype.close = function(id) {
  */
 remoting.V2AppLauncher = function() {};
 
+var APP_MAIN_URL = 'main.html';
+
 /**
- * @type {number}
- * @private
+ * @param {string} id
  */
-remoting.V2AppLauncher.nextWindowId_ = 0;
+remoting.V2AppLauncher.prototype.restart = function(id) {
+  this.close(id).then(function() {
+    // Not using the launch() method because we want to launch a new window with
+    // the same id, such that the size and positioning of the original window
+    // can be preserved.
+    return chrome.app.window.create(APP_MAIN_URL, {'id' : id, 'frame': 'none'});
+  });
+};
 
 remoting.V2AppLauncher.prototype.launch = function(opt_launchArgs) {
-  var url = base.urlJoin('main.html', opt_launchArgs);
+  var url = base.urlJoin(APP_MAIN_URL, opt_launchArgs);
 
   /**
    * @param {function(*=):void} resolve
@@ -114,7 +124,7 @@ remoting.V2AppLauncher.prototype.launch = function(opt_launchArgs) {
           'width': 800,
           'height': 600,
           'frame': 'none',
-          'id': String(remoting.V2AppLauncher.nextWindowId_++),
+          'id': String(getNextWindowId()),
           'state': state
         },
         /** @param {AppWindow=} appWindow */
@@ -131,10 +141,35 @@ remoting.V2AppLauncher.prototype.launch = function(opt_launchArgs) {
 };
 
 remoting.V2AppLauncher.prototype.close = function(id) {
-  var appWindow = chrome.app.window.get(id);
-  if (!appWindow) {
-    return Promise.reject(new Error(chrome.runtime.lastError.message));
-  }
-  appWindow.close();
-  return Promise.resolve();
+  /**
+   * @param {function(*=):void} resolve
+   * @param {function(*=):void} reject
+   */
+  return new Promise(function(resolve, reject) {
+    var appWindow = chrome.app.window.get(id);
+    if (!appWindow) {
+      return Promise.reject(new Error(chrome.runtime.lastError.message));
+    }
+    appWindow.onClosed.addListener(resolve);
+    appWindow.close();
+  });
 };
+
+/**
+ * @return {number} the next available window id.
+ */
+function getNextWindowId() {
+  var appWindows = chrome.app.window.getAll();
+  var lastId = /** @type(number) */ (0);
+  appWindows.forEach(function(appWindow) {
+    base.debug.assert(Number.isInteger(appWindow.id),
+                      "Window Id should be an integer");
+    var id = parseInt(appWindow.id, 10);
+    if (lastId <= id) {
+      lastId = id;
+    }
+  });
+  return ++lastId;
+}
+
+})();

@@ -306,6 +306,12 @@ remoting.DesktopRemoting.prototype.handleError = function(errorTag) {
   console.error('Connection failed: ' + errorTag);
   remoting.accessCode = '';
 
+  if (errorTag === remoting.Error.AUTHENTICATION_FAILED) {
+    remoting.setMode(remoting.AppMode.HOME);
+    remoting.handleAuthFailureAndRelaunch();
+    return;
+  }
+
   // Reset the refresh flag so that the next connection will retry if needed.
   this.refreshHostJidIfOffline_ = true;
 

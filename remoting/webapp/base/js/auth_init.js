@@ -16,34 +16,6 @@ var remoting = remoting || {};
  */
 remoting.initIdentity = function(onUserInfoAvailable) {
 
-  /**
-   * Show the authorization consent UI and register a one-shot event handler to
-   * continue the authorization process.
-   *
-   * @param {function():void} authContinue Callback to invoke when the user
-   *     clicks "Continue".
-   */
-  function promptForConsent(authContinue) {
-    /** @type {HTMLElement} */
-    var dialog = document.getElementById('auth-dialog');
-    /** @type {HTMLElement} */
-    var button = document.getElementById('auth-button');
-    var consentGranted = function(event) {
-      dialog.hidden = true;
-      button.removeEventListener('click', consentGranted, false);
-      authContinue();
-      remoting.windowShape.updateClientWindowShape();
-    };
-    dialog.hidden = false;
-
-    /** @type {HTMLElement} */
-    var dialog_border = document.getElementById('auth-dialog-border');
-    remoting.authDialog = new remoting.AuthDialog(dialog_border);
-    remoting.windowShape.addCallback(remoting.authDialog);
-
-    button.addEventListener('click', consentGranted, false);
-  }
-
   /** @param {remoting.Error} error */
   function onGetIdentityInfoError(error) {
     // No need to show the error message for NOT_AUTHENTICATED
@@ -54,16 +26,38 @@ remoting.initIdentity = function(onUserInfoAvailable) {
   }
 
   if (base.isAppsV2()) {
-    remoting.identity = new remoting.Identity(promptForConsent);
+    remoting.identity =
+        new remoting.Identity(remoting.AuthDialog.getInstance());
   } else {
     // TODO(garykac) Remove this and replace with identity.
     remoting.oauth2 = new remoting.OAuth2();
-    if (!remoting.oauth2.isAuthenticated()) {
-      document.getElementById('auth-dialog').hidden = false;
+    var oauth2 = /** @type {*} */ (remoting.oauth2);
+    remoting.identity = /** @type {remoting.Identity} */ (oauth2);
+    if (!remoting.identity.isAuthenticated()) {
+      remoting.AuthDialog.getInstance().show().then(function() {
+        remoting.oauth2.doAuthRedirect(function(){
+          window.location.reload();
+        });
+      });
     }
-    remoting.identity = remoting.oauth2;
   }
 
   remoting.identity.getUserInfo(onUserInfoAvailable,
                                 onGetIdentityInfoError);
-}
+};
+
+/**
+ * Removes the cached token and restarts the app.
+ *
+ * @return {void}  Nothing.
+ */
+remoting.handleAuthFailureAndRelaunch = function() {
+  remoting.identity.removeCachedAuthToken(function(){
+    if (base.isAppsV2()) {
+      base.Ipc.invoke('remoting.ActivationHandler.restart',
+                      chrome.app.window.current().id);
+    } else {
+      window.location.reload();
+    }
+  });
+};

@@ -482,9 +482,7 @@ remoting.HostList.prototype.onLocalHostStarted = function(
  */
 remoting.HostList.prototype.onErrorClick_ = function() {
   if (this.lastError_ == remoting.Error.AUTHENTICATION_FAILED) {
-    remoting.oauth2.doAuthRedirect(function() {
-      window.location.reload();
-    });
+    remoting.handleAuthFailureAndRelaunch();
   } else {
     this.refresh(remoting.updateLocalHostState);
   }

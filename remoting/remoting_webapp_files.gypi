@@ -231,6 +231,7 @@
       'webapp/base/js/ipc.js',
       'webapp/base/js/message_window_helper.js',
       'webapp/base/js/message_window_manager.js',
+      'webapp/crd/js/activation_handler.js',
       'webapp/crd/js/app_launcher.js',
       'webapp/crd/js/background.js',
       'webapp/crd/js/client_session.js',

@@ -402,7 +402,7 @@ remoting.It2MeHelpeeChannel.prototype.fetchOAuthToken_ = function() {
         if (error != remoting.Error.NOT_AUTHENTICATED) {
           throw new Error('Unexpected error fetch auth token: ' + error);
         }
-        oauth2.doAuthRedirect(onAuthenticated);
+        oauth2.removeCachedAuthToken();
       };
       oauth2.callWithToken(resolve, onError);
     });

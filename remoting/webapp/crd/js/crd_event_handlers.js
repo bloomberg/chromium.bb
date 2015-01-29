@@ -38,27 +38,6 @@ remoting.initElementEventHandlers = function() {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
     remoting.app.getSessionConnector().reconnect();
   };
-  var doAuthRedirect = function() {
-    if (!base.isAppsV2()) {
-      remoting.oauth2.doAuthRedirect(function() {
-        window.location.reload();
-      });
-    }
-  };
-  var fixAuthError = function() {
-    if (base.isAppsV2()) {
-      var onRefresh = function() {
-        remoting.hostList.display();
-      };
-      var refreshHostList = function() {
-        goHome();
-        remoting.hostList.refresh(onRefresh);
-      };
-      remoting.identity.removeCachedAuthToken(refreshHostList);
-    } else {
-      doAuthRedirect();
-    }
-  };
   /** @param {Event} event The event. */
   var stopDaemon = function(event) {
     remoting.hostSetupDialog.showForStop();
@@ -105,11 +84,11 @@ remoting.initElementEventHandlers = function() {
   ];
   /** @type {Array.<{event: string, id: string, fn: function(Event):void}>} */
   var auth_actions = [
-      { event: 'click', id: 'auth-button', fn: doAuthRedirect },
       { event: 'click', id: 'cancel-connect-button', fn: goHome },
       { event: 'click', id: 'sign-out', fn:remoting.signOut },
       { event: 'click', id: 'token-refresh-error-ok', fn: goHome },
-      { event: 'click', id: 'token-refresh-error-sign-in', fn: fixAuthError }
+      { event: 'click', id: 'token-refresh-error-sign-in',
+        fn: remoting.handleAuthFailureAndRelaunch }
   ];
   registerEventListeners(it2me_actions);
   registerEventListeners(me2me_actions);

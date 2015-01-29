@@ -82,15 +82,19 @@ remoting.OAuth2.prototype.isAuthenticated = function() {
 };
 
 /**
- * Removes all storage, and effectively unauthenticates the user.
+ * Remove the cached auth token, if any.
  *
+ * @param {function():void=} opt_onDone Completion callback.
  * @return {void} Nothing.
  */
-remoting.OAuth2.prototype.clear = function() {
+remoting.OAuth2.prototype.removeCachedAuthToken = function(opt_onDone) {
   window.localStorage.removeItem(this.KEY_EMAIL_);
   window.localStorage.removeItem(this.KEY_FULLNAME_);
   this.clearAccessToken_();
   this.clearRefreshToken_();
+  if (opt_onDone) {
+   opt_onDone();
+  }
 };
 
 /**

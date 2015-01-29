@@ -2,22 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
+
+(function() {
+
+'use strict';
+
+var instance_ = null;
 
 /**
  * @constructor
  * @implements {remoting.WindowShape.ClientUI}
- * @param {HTMLElement} element The dialog DOM element.
+ * @implements {remoting.Identity.ConsentDialog}
+ * @param {HTMLElement} rootElement The dialog DOM element.
+ * @private
  */
-remoting.AuthDialog = function(element) {
+remoting.AuthDialog = function(rootElement) {
   /**
    * @type {HTMLElement}
    * @private
    */
-  this.element_ = element;
+  this.rootElement_ = rootElement;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.borderElement_ = rootElement.querySelector('#auth-dialog-border');
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.authButton_ = rootElement.querySelector('#auth-button');
+
+  /**
+   * @type {base.Deferred}
+   * @private
+   */
+  this.onAuthButtonDeferred_ = null;
+
+  this.authButton_.addEventListener('click', this.onClick_.bind(this), false);
+  remoting.windowShape.addCallback(this);
 };
 
 /**
@@ -25,12 +52,53 @@ remoting.AuthDialog = function(element) {
  *     rects List of rectangles.
  */
 remoting.AuthDialog.prototype.addToRegion = function(rects) {
-  var rect = /** @type {ClientRect} */(this.element_.getBoundingClientRect());
+  var rect =
+      /** @type {ClientRect} */(this.borderElement_.getBoundingClientRect());
   rects.push({left: rect.left,
               top: rect.top,
               width: rect.width,
               height: rect.height});
-}
+};
 
-/** @type {remoting.AuthDialog} */
-remoting.authDialog = null;
+/** @private */
+remoting.AuthDialog.prototype.onClick_ = function() {
+  this.rootElement_.hidden = true;
+  this.onAuthButtonDeferred_.resolve();
+  this.onAuthButtonDeferred_ = null;
+  remoting.windowShape.updateClientWindowShape();
+};
+
+/**
+ * @return {Promise} A Promise object that resolves when the user clicks on the
+ *   auth button.
+ */
+remoting.AuthDialog.prototype.show = function() {
+  if (this.isVisible()) {
+    return Promise.reject('Auth dialog is already showing.');
+  }
+  this.rootElement_.hidden = false;
+  base.debug.assert(this.onAuthButtonDeferred_ === null);
+  remoting.windowShape.updateClientWindowShape();
+  this.onAuthButtonDeferred_ = new base.Deferred();
+  return this.onAuthButtonDeferred_.promise();
+};
+
+/**
+ * @return {boolean} whether the auth dialog is visible or not.
+ */
+remoting.AuthDialog.prototype.isVisible = function() {
+  return !this.rootElement_.hidden;
+};
+
+/**
+ * @return {remoting.AuthDialog}
+ */
+remoting.AuthDialog.getInstance = function() {
+  if (!instance_) {
+    var rootElement = document.getElementById('auth-dialog');
+    instance_ = new remoting.AuthDialog(rootElement);
+  }
+  return instance_;
+};
+
+})();

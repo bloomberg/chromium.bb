@@ -109,10 +109,11 @@ remoting.promptClose = function() {
  * Also clear all local storage, to avoid leaking information.
  */
 remoting.signOut = function() {
-  remoting.oauth2.clear();
-  chrome.storage.local.clear();
-  remoting.setMode(remoting.AppMode.HOME);
-  document.getElementById('auth-dialog').hidden = false;
+  remoting.oauth2.removeCachedAuthToken(function(){
+    chrome.storage.local.clear();
+    remoting.setMode(remoting.AppMode.HOME);
+    window.location.reload();
+  });
 };
 
 /**
@@ -193,9 +194,13 @@ remoting.showErrorMessage = function(error) {
       document.getElementById('token-refresh-error-message'),
       error);
   var auth_failed = (error == remoting.Error.AUTHENTICATION_FAILED);
-  document.getElementById('token-refresh-auth-failed').hidden = !auth_failed;
-  document.getElementById('token-refresh-other-error').hidden = auth_failed;
-  remoting.setMode(remoting.AppMode.TOKEN_REFRESH_FAILED);
+  if (base.isAppsV2()) {
+    remoting.handleAuthFailureAndRelaunch();
+  } else {
+    document.getElementById('token-refresh-auth-failed').hidden = !auth_failed;
+    document.getElementById('token-refresh-other-error').hidden = auth_failed;
+    remoting.setMode(remoting.AppMode.TOKEN_REFRESH_FAILED);
+  }
 };
 
 /**
