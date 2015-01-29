@@ -410,7 +410,7 @@ PDFViewer.prototype = {
       case 'navigate':
         // If in print preview, always open a new tab.
         if (this.isPrintPreview_)
-          this.navigate_(message.data.url, true);
+          this.navigator_.navigate(message.data.url, true);
         else
           this.navigator_.navigate(message.data.url, message.data.newTab);
         break;
