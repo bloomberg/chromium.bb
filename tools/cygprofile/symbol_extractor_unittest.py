@@ -8,70 +8,81 @@ import unittest
 
 class TestSymbolInfo(unittest.TestCase):
   def testIgnoresBlankLine(self):
-    symbol_info = symbol_extractor.FromNmLine('')
+    symbol_info = symbol_extractor._FromObjdumpLine('')
     self.assertIsNone(symbol_info)
 
   def testIgnoresMalformedLine(self):
-    line = ('00210d59 00000002 t _ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev '
-            'too many fields')
-    symbol_info = symbol_extractor.FromNmLine(line)
+    # This line is too short.
+    line = ('00c1b228      F .text  00000060 _ZN20trace_event')
+    symbol_info = symbol_extractor._FromObjdumpLine(line)
     self.assertIsNone(symbol_info)
-    # Wrong marker
-    line = '00210d59 00000002 A _ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev'
-    symbol_info = symbol_extractor.FromNmLine(line)
-    self.assertIsNone(symbol_info)
-    # Too short
-    line = '00210d59 t'
-    symbol_info = symbol_extractor.FromNmLine(line)
+    # This line has the wrong marker.
+    line = '00c1b228 l     f .text  00000060 _ZN20trace_event'
+    symbol_info = symbol_extractor._FromObjdumpLine(line)
     self.assertIsNone(symbol_info)
 
-  def testSymbolInfoWithSize(self):
-    line = '00210d59 00000002 t _ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev'
-    test_name = '_ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev'
-    test_offset = 0x210d59
-    test_size = 2
-    symbol_info = symbol_extractor.FromNmLine(line)
+  def testAssertionErrorOnInvalidLines(self):
+    # This line has an invalid scope.
+    line = ('00c1b228 z     F .text  00000060 _ZN20trace_event')
+    self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
+    # This line has too many fields.
+    line = ('00c1b228 l     F .text  00000060 _ZN20trace_event too many')
+    self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
+    # This line has invalid characters in the symbol.
+    line = ('00c1b228 l     F .text  00000060 _ZN20trace_$bad')
+    self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
+
+  def testSymbolInfo(self):
+    line = ('00c1c05c l     F .text  0000002c '
+            '_GLOBAL__sub_I_chrome_main_delegate.cc')
+    test_name = '_GLOBAL__sub_I_chrome_main_delegate.cc'
+    test_offset = 0x00c1c05c
+    test_size = 0x2c
+    test_section = '.text'
+    symbol_info = symbol_extractor._FromObjdumpLine(line)
     self.assertIsNotNone(symbol_info)
     self.assertEquals(test_offset, symbol_info.offset)
     self.assertEquals(test_size, symbol_info.size)
     self.assertEquals(test_name, symbol_info.name)
+    self.assertEquals(test_section, symbol_info.section)
 
-  def testSymbolInfoWithoutSize(self):
-    line = '0070ee8c T WebRtcSpl_ComplexBitReverse'
-    test_name = 'WebRtcSpl_ComplexBitReverse'
-    test_offset = 0x70ee8c
-    symbol_info = symbol_extractor.FromNmLine(line)
+  def testHiddenSymbol(self):
+    line = ('00c1c05c l     F .text  0000002c '
+            '.hidden _GLOBAL__sub_I_chrome_main_delegate.cc')
+    test_name = '_GLOBAL__sub_I_chrome_main_delegate.cc'
+    test_offset = 0x00c1c05c
+    test_size = 0x2c
+    test_section = '.text'
+    symbol_info = symbol_extractor._FromObjdumpLine(line)
     self.assertIsNotNone(symbol_info)
     self.assertEquals(test_offset, symbol_info.offset)
-    self.assertEquals(-1, symbol_info.size)
+    self.assertEquals(test_size, symbol_info.size)
     self.assertEquals(test_name, symbol_info.name)
+    self.assertEquals(test_section, symbol_info.section)
 
 
 class TestSymbolInfosFromStream(unittest.TestCase):
   def testSymbolInfosFromStream(self):
     lines = ['Garbage',
              '',
-             ('00210d59 00000002 t _ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev '
-              'too many fields'),
-             '00210d59 00000002 t _ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev',
-             '00210d59 00000002 A _ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev',
-             '0070ee8c T WebRtcSpl_ComplexBitReverse']
-    symbol_infos = symbol_extractor.SymbolInfosFromStream(lines)
+             '00c1c05c l     F .text  0000002c first',
+             ''
+             'more garbage',
+             '00155 g     F .text  00000012 second']
+    symbol_infos = symbol_extractor._SymbolInfosFromStream(lines)
     self.assertEquals(len(symbol_infos), 2)
-    first = symbol_extractor.SymbolInfo(
-        '_ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev', 0x00210d59, 2)
+    first = symbol_extractor.SymbolInfo('first', 0x00c1c05c, 0x2c, '.text')
     self.assertEquals(first, symbol_infos[0])
-    second = symbol_extractor.SymbolInfo(
-        'WebRtcSpl_ComplexBitReverse', 0x0070ee8c, -1)
+    second = symbol_extractor.SymbolInfo('second', 0x00155, 0x12, '.text')
     self.assertEquals(second, symbol_infos[1])
 
 
 class TestSymbolInfoMappings(unittest.TestCase):
   def setUp(self):
     self.symbol_infos = [
-        symbol_extractor.SymbolInfo('firstNameAtOffset', 0x42, 42),
-        symbol_extractor.SymbolInfo('secondNameAtOffset', 0x42, 42),
-        symbol_extractor.SymbolInfo('thirdSymbol', 0x64, 20)]
+        symbol_extractor.SymbolInfo('firstNameAtOffset', 0x42, 42, '.text'),
+        symbol_extractor.SymbolInfo('secondNameAtOffset', 0x42, 42, '.text'),
+        symbol_extractor.SymbolInfo('thirdSymbol', 0x64, 20, '.text')]
 
   def testGroupSymbolInfosByOffset(self):
     offset_to_symbol_info = symbol_extractor.GroupSymbolInfosByOffset(
@@ -83,7 +94,7 @@ class TestSymbolInfoMappings(unittest.TestCase):
     self.assertIn(0x64, offset_to_symbol_info)
     self.assertEquals(offset_to_symbol_info[0x64][0], self.symbol_infos[2])
 
-  def testCreateNameToSymbolInfos(self):
+  def testCreateNameToSymbolInfo(self):
     name_to_symbol_info = symbol_extractor.CreateNameToSymbolInfo(
         self.symbol_infos)
     self.assertEquals(len(name_to_symbol_info), 3)
@@ -91,7 +102,6 @@ class TestSymbolInfoMappings(unittest.TestCase):
       name = self.symbol_infos[i].name
       self.assertIn(name, name_to_symbol_info)
       self.assertEquals(self.symbol_infos[i], name_to_symbol_info[name])
-
 
 
 if __name__ == '__main__':

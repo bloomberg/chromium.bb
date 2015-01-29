@@ -19,8 +19,10 @@ class TestPatchOrderFile(unittest.TestCase):
 
   def testAliasClonedSymbols(self):
     symbol_infos = [
-        symbol_extractor.SymbolInfo(name='aSymbol', offset=0x42, size=0x12),
-        symbol_extractor.SymbolInfo(name='aSymbol.clone.', offset=8, size=1)]
+        symbol_extractor.SymbolInfo(name='aSymbol', offset=0x42, size=0x12,
+                                    section='.text'),
+        symbol_extractor.SymbolInfo(name='aSymbol.clone.', offset=8, size=1,
+                                    section='.text')]
     (offset_to_symbol_infos, name_to_symbol_infos) = \
         patch_orderfile._GroupSymbolInfos(symbol_infos)
     self.assertEquals(len(offset_to_symbol_infos), 2)
@@ -34,8 +36,10 @@ class TestPatchOrderFile(unittest.TestCase):
 
   def testGroupSymbolsByOffset(self):
     symbol_infos = (
-        symbol_extractor.SymbolInfo(name='aSymbol', offset=0x42, size=0x12),
-        symbol_extractor.SymbolInfo(name='anotherSymbol', offset=0x42, size=1))
+        symbol_extractor.SymbolInfo(name='aSymbol', offset=0x42, size=0x12,
+                                    section='.text'),
+        symbol_extractor.SymbolInfo(name='anotherSymbol', offset=0x42, size=1,
+                                    section='.text'))
     (offset_to_symbol_infos, _) = \
         patch_orderfile._GroupSymbolInfos(symbol_infos)
     self.assertEquals(len(offset_to_symbol_infos), 1)
@@ -46,10 +50,13 @@ class TestPatchOrderFile(unittest.TestCase):
     symbol_name2 = "other"
     profiled_symbol_names = [symbol_name, "symbolThatShouldntMatch"]
     name_to_symbol_infos = {symbol_name: [
-        symbol_extractor.SymbolInfo(symbol_name, 0x42, 0x12)]}
+        symbol_extractor.SymbolInfo(symbol_name, 0x42, 0x12,
+                                    section='.text')]}
     offset_to_symbol_infos = {
-        0x42: [symbol_extractor.SymbolInfo(symbol_name, 0x42, 0x12),
-               symbol_extractor.SymbolInfo(symbol_name2, 0x42, 0x12)]}
+        0x42: [symbol_extractor.SymbolInfo(symbol_name, 0x42, 0x12,
+                                           section='.text'),
+               symbol_extractor.SymbolInfo(symbol_name2, 0x42, 0x12,
+                                           section='.text')]}
     symbol_names = patch_orderfile._ExpandSymbols(
         profiled_symbol_names, name_to_symbol_infos, offset_to_symbol_infos)
     self.assertEquals(len(symbol_names), 3)

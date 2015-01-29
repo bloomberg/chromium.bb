@@ -12,68 +12,68 @@ import subprocess
 import sys
 
 sys.path.insert(
-    0, os.path.join(sys.path[0], '..', '..', 'third_party', 'android_platform',
-                    'development', 'scripts'))
+    0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
+                    'third_party', 'android_platform', 'development',
+                    'scripts'))
 import symbol
 
 
 # TODO(lizeb): Change symbol.ARCH to the proper value when "arm" is no longer
 # the only possible value.
-_NM_BINARY = symbol.ToolPath('nm')
+_OBJDUMP_BINARY = symbol.ToolPath('objdump')
 
 
-SymbolInfo = collections.namedtuple('SymbolInfo', ('name', 'offset', 'size'))
+SymbolInfo = collections.namedtuple('SymbolInfo', ('name', 'offset', 'size',
+                                                   'section'))
 
 
-def FromNmLine(line):
-  """Create a SymbolInfo by parsing a properly formatted nm output line.
+def _FromObjdumpLine(line):
+  """Create a SymbolInfo by parsing a properly formatted objdump output line.
 
   Args:
-    line: line from nm
+    line: line from objdump
 
   Returns:
     An instance of SymbolInfo if the line represents a symbol, None otherwise.
   """
-  # We are interested in two types of lines:
-  # This:
-  # 00210d59 00000002 t _ZN34BrowserPluginHostMsg_Attach_ParamsD2Ev
-  # offset size <symbol_type> symbol_name
-  # And that:
-  # 0070ee8c T WebRtcSpl_ComplexBitReverse
-  # In the second case we don't have a size, so use -1 as a sentinel
-  if not re.search(' (t|W|T) ', line):
-    return None
+  # All of the symbol lines we care about are in the form
+  # 0000000000  g    F   .text.foo     000000000 [.hidden] foo
+  # where g (global) might also be l (local) or w (weak).
   parts = line.split()
-  if len(parts) == 4:
-    return SymbolInfo(
-        offset=int(parts[0], 16), size=int(parts[1], 16), name=parts[3])
-  elif len(parts) == 3:
-    return SymbolInfo(
-        offset=int(parts[0], 16), size=-1, name=parts[2])
-  else:
+  if len(parts) < 6 or parts[2] != 'F':
     return None
 
+  assert len(parts) == 6 or (len(parts) == 7 and parts[5] == '.hidden')
+  accepted_scopes = set(['g', 'l', 'w'])
+  assert parts[1] in accepted_scopes
 
-def SymbolInfosFromStream(nm_lines):
-  """Parses the output of nm, and get all the symbols from a binary.
+  offset = int(parts[0], 16)
+  section = parts[3]
+  size = int(parts[4], 16)
+  name = parts[-1].rstrip('\n')
+  assert re.match('^[a-zA-Z0-9_.]+$', name)
+  return SymbolInfo(name=name, offset=offset, section=section, size=size)
+
+
+def _SymbolInfosFromStream(objdump_lines):
+  """Parses the output of objdump, and get all the symbols from a binary.
 
   Args:
-    nm_lines: An iterable of lines
+    objdump_lines: An iterable of lines
 
   Returns:
     A list of SymbolInfo.
   """
-  # TODO(lizeb): Consider switching to objdump to simplify parsing.
   symbol_infos = []
-  for line in nm_lines:
-    symbol_info = FromNmLine(line)
+  for line in objdump_lines:
+    symbol_info = _FromObjdumpLine(line)
     if symbol_info is not None:
       symbol_infos.append(symbol_info)
   return symbol_infos
 
 
 def SymbolInfosFromBinary(binary_filename):
-  """Runs nm to get all the symbols from a binary.
+  """Runs objdump to get all the symbols from a binary.
 
   Args:
     binary_filename: path to the binary.
@@ -81,10 +81,10 @@ def SymbolInfosFromBinary(binary_filename):
   Returns:
     A list of SymbolInfo from the binary.
   """
-  command = (_NM_BINARY, '-S', '-n', binary_filename)
+  command = (_OBJDUMP_BINARY, '-t', '-w', binary_filename)
   p = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE)
   try:
-    result = SymbolInfosFromStream(p.stdout)
+    result = _SymbolInfosFromStream(p.stdout)
     return result
   finally:
     p.wait()

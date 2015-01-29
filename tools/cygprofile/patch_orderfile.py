@@ -58,7 +58,8 @@ def _GroupSymbolInfos(symbol_infos):
   for symbol in symbol_infos:
     symbol = symbol_extractor.SymbolInfo(name=_RemoveClone(symbol.name),
                                          offset=symbol.offset,
-                                         size=symbol.size)
+                                         size=symbol.size,
+                                         section=symbol.section)
     offset_to_symbol_infos[symbol.offset].append(symbol)
     name_to_symbol_infos[symbol.name].append(symbol)
   return (dict(offset_to_symbol_infos), dict(name_to_symbol_infos))
