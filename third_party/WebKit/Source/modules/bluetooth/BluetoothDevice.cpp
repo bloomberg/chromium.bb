@@ -5,19 +5,18 @@
 #include "config.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 
-#include "public/platform/WebBluetoothDevice.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
 
-BluetoothDevice::BluetoothDevice(const String& instanceId)
-    : m_instanceId(instanceId)
+BluetoothDevice::BluetoothDevice(const WebBluetoothDevice& webDevice)
+    : m_webDevice(webDevice)
 {
 }
 
 BluetoothDevice* BluetoothDevice::create(const WebBluetoothDevice& webDevice)
 {
-    return new BluetoothDevice(webDevice.instanceId);
+    return new BluetoothDevice(webDevice);
 }
 
 BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver*, WebBluetoothDevice* webDeviceRawPointer)

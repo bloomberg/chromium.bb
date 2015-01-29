@@ -5,7 +5,7 @@
 // https://webbluetoothcg.github.io/web-bluetooth/#idl-def-BluetoothDevice
 
 // Implement BluetoothDevice interface: http://crbug.com/421668
-// enum VendorIdSource {
+// enum VendorIDSource {
 //     "bluetooth",
 //     "usb"
 // };
@@ -19,12 +19,12 @@
 // : ServiceEventHandlers 
 {
 // Implement BluetoothDevice interface: http://crbug.com/421668
-    readonly    attribute DOMString       instanceId;
+    readonly    attribute DOMString       instanceID;
 //    readonly    attribute DOMString?      name;
 //    readonly    attribute long?           deviceClass;
-//    readonly    attribute VendorIdSource? vendorIdSource;
-//    readonly    attribute long?           vendorId;
-//    readonly    attribute long?           productId;
+//    readonly    attribute VendorIDSource? vendorIDSource;
+//    readonly    attribute long?           vendorID;
+//    readonly    attribute long?           productID;
 //    readonly    attribute long?           productVersion;
 //    readonly    attribute boolean?        paired;
 //    readonly    attribute boolean?        connected;
