@@ -2254,11 +2254,12 @@ class ServerRunner(testserver_base.TestServerRunner):
     self.option_parser.add_option('--ssl-bulk-cipher', action='append',
                                   help='Specify the bulk encryption '
                                   'algorithm(s) that will be accepted by the '
-                                  'SSL server. Valid values are "aes256", '
-                                  '"aes128", "3des", "rc4". If omitted, all '
-                                  'algorithms will be used. This option may '
-                                  'appear multiple times, indicating '
-                                  'multiple algorithms should be enabled.');
+                                  'SSL server. Valid values are "aes128gcm", '
+                                  '"aes256", "aes128", "3des", "rc4". If '
+                                  'omitted, all algorithms will be used. This '
+                                  'option may appear multiple times, '
+                                  'indicating multiple algorithms should be '
+                                  'enabled.');
     self.option_parser.add_option('--ssl-key-exchange', action='append',
                                   help='Specify the key exchange algorithm(s)'
                                   'that will be accepted by the SSL server. '

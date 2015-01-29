@@ -1385,21 +1385,6 @@ class TLSConnection(TLSRecordLayer):
 
     def _serverGetClientHello(self, settings, certChain, verifierDB,
                                 sessionCache, anon, fallbackSCSV):
-        #Initialize acceptable cipher suites
-        cipherSuites = []
-        if verifierDB:
-            if certChain:
-                cipherSuites += \
-                    CipherSuite.getSrpCertSuites(settings)
-            cipherSuites += CipherSuite.getSrpSuites(settings)
-        elif certChain:
-            cipherSuites += CipherSuite.getDheCertSuites(settings)
-            cipherSuites += CipherSuite.getCertSuites(settings)
-        elif anon:
-            cipherSuites += CipherSuite.getAnonSuites(settings)
-        else:
-            assert(False)
-
         #Tentatively set version to most-desirable version, so if an error
         #occurs parsing the ClientHello, this is what we'll use for the
         #error alert
@@ -1451,7 +1436,22 @@ class TLSConnection(TLSRecordLayer):
 
         else:
             #Set the version to the client's version
-            self.version = clientHello.client_version  
+            self.version = clientHello.client_version
+
+        #Initialize acceptable cipher suites
+        cipherSuites = []
+        if verifierDB:
+            if certChain:
+                cipherSuites += \
+                    CipherSuite.getSrpCertSuites(settings, self.version)
+            cipherSuites += CipherSuite.getSrpSuites(settings, self.version)
+        elif certChain:
+            cipherSuites += CipherSuite.getDheCertSuites(settings, self.version)
+            cipherSuites += CipherSuite.getCertSuites(settings, self.version)
+        elif anon:
+            cipherSuites += CipherSuite.getAnonSuites(settings, self.version)
+        else:
+            assert(False)
 
         #If resumption was requested and we have a session cache...
         if clientHello.session_id and sessionCache:

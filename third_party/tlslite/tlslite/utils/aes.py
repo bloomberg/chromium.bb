@@ -12,6 +12,7 @@ class AES(object):
         if len(IV) != 16:
             raise AssertionError()
         self.isBlockCipher = True
+        self.isAEAD = False
         self.block_size = 16
         self.implementation = implementation
         if len(key)==16:

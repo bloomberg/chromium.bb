@@ -34,3 +34,5 @@ Local Modifications:
 - patches/save_client_hello.patch: Save the parsed ClientHello on TLSConnection
   so tests can query it.
 - patches/certificate_request.patch: Fix client auth for TLS 1.2.
+- patches/aes_gcm.patch: Implement AES-GCM and never select TLS 1.2 ciphers
+  unless >= TLS 1.2 is negotiated.

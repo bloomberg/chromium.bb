@@ -70,6 +70,8 @@ void GetCiphersList(int cipher, base::ListValue* values) {
     values->Append(new base::StringValue("aes256"));
   if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_3DES)
     values->Append(new base::StringValue("3des"));
+  if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_AES128GCM)
+    values->Append(new base::StringValue("aes128gcm"));
 }
 
 base::StringValue* GetTLSIntoleranceType(

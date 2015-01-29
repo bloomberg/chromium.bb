@@ -318,8 +318,10 @@ def clientTestCmd(argv):
 
     print("Test 23 - throughput test")
     for implementation in implementations:
-        for cipher in ["aes128", "aes256", "3des", "rc4"]:
+        for cipher in ["aes128gcm", "aes128", "aes256", "3des", "rc4"]:
             if cipher == "3des" and implementation not in ("openssl", "pycrypto"):
+                continue
+            if cipher == "aes128gcm" and implementation not in ("pycrypto", "python"):
                 continue
 
             print("Test 23:", end=' ')
@@ -678,8 +680,10 @@ def serverTestCmd(argv):
 
     print("Test 23 - throughput test")
     for implementation in implementations:
-        for cipher in ["aes128", "aes256", "3des", "rc4"]:
+        for cipher in ["aes128gcm", "aes128", "aes256", "3des", "rc4"]:
             if cipher == "3des" and implementation not in ("openssl", "pycrypto"):
+                continue
+            if cipher == "aes128gcm" and implementation not in ("pycrypto", "python"):
                 continue
 
             print("Test 23:", end=' ')

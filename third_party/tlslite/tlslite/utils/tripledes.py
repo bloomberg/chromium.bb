@@ -12,6 +12,7 @@ class TripleDES(object):
         if len(IV) != 8:
             raise ValueError()
         self.isBlockCipher = True
+        self.isAEAD = False
         self.block_size = 8
         self.implementation = implementation
         self.name = "3des"

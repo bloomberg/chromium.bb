@@ -11,7 +11,8 @@ from __future__ import generators
 
 from .utils.compat import *
 from .utils.cryptomath import *
-from .utils.cipherfactory import createAES, createRC4, createTripleDES
+from .utils.cipherfactory import createAESGCM, createAES, createRC4, \
+     createTripleDES
 from .utils.codec import *
 from .errors import *
 from .messages import *
@@ -592,10 +593,30 @@ class TLSRecordLayer(object):
             if self.fault == Fault.badMAC:
                 macBytes[0] = (macBytes[0]+1) % 256
 
-        #Encrypt for Block or Stream Cipher
+        #Encrypt for non-NULL cipher.
         if self._writeState.encContext:
+            #Seal (for AEAD)
+            if self._writeState.encContext.isAEAD:
+                #Assemble the authenticated data.
+                seqNumBytes = self._writeState.getSeqNumBytes()
+                authData = seqNumBytes + bytearray([contentType,
+                                                    self.version[0],
+                                                    self.version[1],
+                                                    len(b)//256,
+                                                    len(b)%256])
+
+                #The nonce is always the fixed nonce and the sequence number.
+                nonce = self._writeState.fixedNonce + seqNumBytes
+                assert len(nonce) == self._writeState.encContext.nonceLength
+
+                b = self._writeState.encContext.seal(nonce, b, authData)
+
+                #The only AEAD supported, AES-GCM, has an explicit variable
+                #nonce.
+                b = seqNumBytes + b
+
             #Add padding and encrypt (for Block Cipher):
-            if self._writeState.encContext.isBlockCipher:
+            elif self._writeState.encContext.isBlockCipher:
 
                 #Add TLS 1.1 fixed block
                 if self.version >= (3,2):
@@ -967,6 +988,43 @@ class TLSRecordLayer(object):
 
     def _decryptRecord(self, recordType, b):
         if self._readState.encContext:
+            #Open if it's an AEAD.
+            if self._readState.encContext.isAEAD:
+                #The only AEAD supported, AES-GCM, has an explicit variable
+                #nonce.
+                explicitNonceLength = 8
+                if explicitNonceLength > len(b):
+                    #Publicly invalid.
+                    for result in self._sendError(
+                            AlertDescription.bad_record_mac,
+                            "MAC failure (or padding failure)"):
+                        yield result
+                nonce = self._readState.fixedNonce + b[:explicitNonceLength]
+                b = b[8:]
+
+                if self._readState.encContext.tagLength > len(b):
+                    #Publicly invalid.
+                    for result in self._sendError(
+                            AlertDescription.bad_record_mac,
+                            "MAC failure (or padding failure)"):
+                        yield result
+
+                #Assemble the authenticated data.
+                seqnumBytes = self._readState.getSeqNumBytes()
+                plaintextLen = len(b) - self._readState.encContext.tagLength
+                authData = seqnumBytes + bytearray([recordType, self.version[0],
+                                                    self.version[1],
+                                                    plaintextLen//256,
+                                                    plaintextLen%256])
+
+                b = self._readState.encContext.open(nonce, b, authData)
+                if b is None:
+                    for result in self._sendError(
+                            AlertDescription.bad_record_mac,
+                            "MAC failure (or padding failure)"):
+                        yield result
+                yield b
+                return
 
             #Decrypt if it's a block cipher
             if self._readState.encContext.isBlockCipher:
@@ -1064,7 +1122,11 @@ class TLSRecordLayer(object):
 
     def _calcPendingStates(self, cipherSuite, masterSecret,
             clientRandom, serverRandom, implementations):
-        if cipherSuite in CipherSuite.aes128Suites:
+        if cipherSuite in CipherSuite.aes128GcmSuites:
+            keyLength = 16
+            ivLength = 4
+            createCipherFunc = createAESGCM
+        elif cipherSuite in CipherSuite.aes128Suites:
             keyLength = 16
             ivLength = 16
             createCipherFunc = createAES
@@ -1083,7 +1145,10 @@ class TLSRecordLayer(object):
         else:
             raise AssertionError()
             
-        if cipherSuite in CipherSuite.shaSuites:
+        if cipherSuite in CipherSuite.aeadSuites:
+            macLength = 0
+            digestmod = None
+        elif cipherSuite in CipherSuite.shaSuites:
             macLength = 20
             digestmod = hashlib.sha1        
         elif cipherSuite in CipherSuite.sha256Suites:
@@ -1092,8 +1157,12 @@ class TLSRecordLayer(object):
         elif cipherSuite in CipherSuite.md5Suites:
             macLength = 16
             digestmod = hashlib.md5
+        else:
+            raise AssertionError()
 
-        if self.version == (3,0):
+        if not digestmod:
+            createMACFunc = None
+        elif self.version == (3,0):
             createMACFunc = createMAC_SSL
         elif self.version in ((3,1), (3,2), (3,3)):
             createMACFunc = createHMAC
@@ -1128,16 +1197,28 @@ class TLSRecordLayer(object):
         serverKeyBlock = p.getFixBytes(keyLength)
         clientIVBlock  = p.getFixBytes(ivLength)
         serverIVBlock  = p.getFixBytes(ivLength)
-        clientPendingState.macContext = createMACFunc(
-            compatHMAC(clientMACBlock), digestmod=digestmod)
-        serverPendingState.macContext = createMACFunc(
-            compatHMAC(serverMACBlock), digestmod=digestmod)
-        clientPendingState.encContext = createCipherFunc(clientKeyBlock,
-                                                         clientIVBlock,
-                                                         implementations)
-        serverPendingState.encContext = createCipherFunc(serverKeyBlock,
-                                                         serverIVBlock,
-                                                         implementations)
+        if digestmod:
+            # Legacy cipher.
+            clientPendingState.macContext = createMACFunc(
+                compatHMAC(clientMACBlock), digestmod=digestmod)
+            serverPendingState.macContext = createMACFunc(
+                compatHMAC(serverMACBlock), digestmod=digestmod)
+            clientPendingState.encContext = createCipherFunc(clientKeyBlock,
+                                                             clientIVBlock,
+                                                             implementations)
+            serverPendingState.encContext = createCipherFunc(serverKeyBlock,
+                                                             serverIVBlock,
+                                                             implementations)
+        else:
+            # AEAD.
+            clientPendingState.macContext = None
+            serverPendingState.macContext = None
+            clientPendingState.encContext = createCipherFunc(clientKeyBlock,
+                                                             implementations)
+            serverPendingState.encContext = createCipherFunc(serverKeyBlock,
+                                                             implementations)
+            clientPendingState.fixedNonce = clientIVBlock
+            serverPendingState.fixedNonce = serverIVBlock
 
         #Assign new connection states to pending states
         if self._client:
