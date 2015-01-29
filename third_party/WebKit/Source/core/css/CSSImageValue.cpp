@@ -29,6 +29,7 @@
 #include "core/rendering/style/StyleFetchedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
 
@@ -61,7 +62,7 @@ StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* fetcher, const Re
         m_accessedImage = true;
 
         FetchRequest request(ResourceRequest(m_absoluteURL), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
-        request.mutableResourceRequest().setHTTPReferrer(m_referrer);
+        request.mutableResourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrer.referrerPolicy, request.url(), m_referrer.referrer));
 
         if (options.corsEnabled == IsCORSEnabled)
             request.setCrossOriginAccessControl(fetcher->document()->securityOrigin(), options.allowCredentials, options.credentialsRequested);

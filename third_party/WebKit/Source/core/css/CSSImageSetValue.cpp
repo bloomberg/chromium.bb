@@ -35,6 +35,8 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/rendering/style/StyleFetchedImageSet.h"
 #include "core/rendering/style/StylePendingImage.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -67,7 +69,7 @@ void CSSImageSetValue::fillImageSet()
 
         ImageWithScale image;
         image.imageURL = imageURL;
-        image.referrer = imageValue->referrer();
+        image.referrer = SecurityPolicy::generateReferrer(imageValue->referrer().referrerPolicy, KURL(ParsedURLString, imageURL), imageValue->referrer().referrer);
         image.scaleFactor = scaleFactor;
         m_imagesInSet.append(image);
         ++i;

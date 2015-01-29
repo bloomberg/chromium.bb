@@ -60,20 +60,15 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
 {
     bool isMainResource = type == FetchMainResource;
     if (!isMainResource) {
-        String outgoingReferrer;
-        ReferrerPolicy referrerPolicy;
         String outgoingOrigin;
-        if (request.httpReferrer().isNull()) {
-            outgoingReferrer = document->outgoingReferrer();
-            referrerPolicy = document->referrerPolicy();
+        if (!request.didSetHTTPReferrer()) {
             outgoingOrigin = document->outgoingOrigin();
+            request.setHTTPReferrer(SecurityPolicy::generateReferrer(document->referrerPolicy(), request.url(), document->outgoingReferrer()));
         } else {
-            outgoingReferrer = request.httpReferrer();
-            referrerPolicy = request.referrerPolicy();
-            outgoingOrigin = SecurityOrigin::createFromString(outgoingReferrer)->toString();
+            RELEASE_ASSERT(SecurityPolicy::generateReferrer(request.referrerPolicy(), request.url(), request.httpReferrer()).referrer == request.httpReferrer());
+            outgoingOrigin = SecurityOrigin::createFromString(request.httpReferrer())->toString();
         }
 
-        request.setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, request.url(), outgoingReferrer));
         request.addHTTPOriginIfNeeded(AtomicString(outgoingOrigin));
     }
 

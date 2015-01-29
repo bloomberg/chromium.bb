@@ -35,6 +35,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontCustomPlatformData.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -87,7 +88,7 @@ FontResource* CSSFontFaceSrcValue::fetch(Document* document)
         if (shouldSetCrossOriginAccessControl(request.url(), securityOrigin)) {
             request.setCrossOriginAccessControl(securityOrigin, DoNotAllowStoredCredentials);
         }
-        request.mutableResourceRequest().setHTTPReferrer(m_referrer);
+        request.mutableResourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrer.referrerPolicy, request.url(), m_referrer.referrer));
         m_fetched = document->fetcher()->fetchFont(request);
     } else {
         // FIXME: CSSFontFaceSrcValue::fetch is invoked when @font-face rule
