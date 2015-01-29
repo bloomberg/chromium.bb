@@ -1,0 +1,21 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module presentation;
+
+interface PresentationService {
+    // Returns the last screen availability state if it’s changed since the last
+    // time the method was called. The client has to call this method again when
+    // handling the result (provided via Mojo callback) to get the next update
+    // about the availability status.
+    // May start discovery of the presentation screens. The implementation might
+    // stop discovery once there are no active calls to GetScreenAvailability.
+    // |presentation_url| can be specified to help the implementation to filter
+    // out incompatible screens.
+    GetScreenAvailability(string? presentation_url) => (bool available);
+
+    // Called when the frame no longer listens to the
+    // |availablechange| event.
+    OnScreenAvailabilityListenerRemoved();
+};

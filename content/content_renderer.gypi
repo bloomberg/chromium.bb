@@ -312,6 +312,8 @@
       'renderer/net_info_helper.h',
       'renderer/notification_permission_dispatcher.cc',
       'renderer/notification_permission_dispatcher.h',
+      'renderer/presentation/presentation_dispatcher.cc',
+      'renderer/presentation/presentation_dispatcher.h',
       'renderer/push_messaging/push_messaging_dispatcher.cc',
       'renderer/push_messaging/push_messaging_dispatcher.h',
       'renderer/render_font_warmup_win.cc',

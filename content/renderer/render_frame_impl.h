@@ -52,6 +52,7 @@ class WebGeolocationClient;
 class WebMouseEvent;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
+class WebPresentationClient;
 class WebPushClient;
 class WebSecurityOrigin;
 struct WebCompositionUnderline;
@@ -84,6 +85,7 @@ class MidiDispatcher;
 class NotificationPermissionDispatcher;
 class PageState;
 class PepperPluginInstanceImpl;
+class PresentationDispatcher;
 class PushMessagingDispatcher;
 class RendererAccessibility;
 class RendererCdmManager;
@@ -484,6 +486,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void willOpenWebSocket(blink::WebSocketHandle* handle);
   virtual blink::WebGeolocationClient* geolocationClient();
   virtual blink::WebPushClient* pushClient();
+  virtual blink::WebPresentationClient* presentationClient();
   virtual void willStartUsingPeerConnectionHandler(
       blink::WebLocalFrame* frame,
       blink::WebRTCPeerConnectionHandler* handler);
@@ -844,6 +847,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // The push messaging dispatcher attached to this frame, lazily initialized.
   PushMessagingDispatcher* push_messaging_dispatcher_;
+
+  // The presentation dispatcher implementation attached to this frame, lazily
+  // initialized.
+  PresentationDispatcher* presentation_dispatcher_;
 
   ServiceRegistryImpl service_registry_;
 

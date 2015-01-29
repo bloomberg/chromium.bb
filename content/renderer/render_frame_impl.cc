@@ -83,6 +83,7 @@
 #include "content/renderer/notification_permission_dispatcher.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
+#include "content/renderer/presentation/presentation_dispatcher.h"
 #include "content/renderer/push_messaging/push_messaging_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
@@ -695,6 +696,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 #endif
       geolocation_dispatcher_(NULL),
       push_messaging_dispatcher_(NULL),
+      presentation_dispatcher_(NULL),
       screen_orientation_dispatcher_(NULL),
       manifest_manager_(NULL),
       accessibility_mode_(AccessibilityModeOff),
@@ -3363,6 +3365,12 @@ blink::WebGeolocationClient* RenderFrameImpl::geolocationClient() {
   if (!geolocation_dispatcher_)
     geolocation_dispatcher_ = new GeolocationDispatcher(this);
   return geolocation_dispatcher_;
+}
+
+blink::WebPresentationClient* RenderFrameImpl::presentationClient() {
+  if (!presentation_dispatcher_)
+    presentation_dispatcher_ = new PresentationDispatcher(this);
+  return presentation_dispatcher_;
 }
 
 blink::WebPushClient* RenderFrameImpl::pushClient() {
