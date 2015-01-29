@@ -2,7 +2,6 @@ include_rules = [
   "+content/app/strings/grit",  # For generated headers
   "+content/public/browser",
   "+device/battery",  # For battery status service.
-  "+device/bluetooth",  # For Web Bluetooth API in content/*/bluetooth.
   "+device/vibration",  # For Vibration API
   "+media/audio",  # For audio input for speech input feature.
   "+media/base",  # For Android JNI registration.
