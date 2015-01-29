@@ -222,6 +222,10 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
           : GaiaUrls::GetInstance()->gaia_url();
   params.SetString("gaiaUrl", gaia_url.spec());
 
+  if (command_line->HasSwitch(switches::kGaiaEndpointChromeOS)) {
+    params.SetString("gaiaEndpoint", command_line->GetSwitchValueASCII(
+                                         switches::kGaiaEndpointChromeOS));
+  }
   if (context.embedded_signin_enabled) {
     params.SetBoolean("useEmbedded", true);
     // We set 'constrained' here to switch troubleshooting page on embedded

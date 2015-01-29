@@ -6,6 +6,9 @@
 
 #include "base/command_line.h"
 
+// TODO(rsorokin): alphabetize all of these switches so they
+// match the order from the .h file
+
 namespace chromeos {
 namespace switches {
 
@@ -280,6 +283,10 @@ const char kDisableMemoryPressureSystemChromeOS[] =
 
 // Enables waking the device based on the receipt of some network packets.
 const char kWakeOnPackets[] = "wake-on-packets";
+
+// Specifies the path for GAIA endpoint. The default value is
+// "ServiceLogin?skipvpage=true&sarp=1&rm=hide".
+const char kGaiaEndpointChromeOS[] = "gaia-endpoint-chromeos";
 
 // Screenshot testing: specifies the directory where the golden screenshots are
 // stored.
