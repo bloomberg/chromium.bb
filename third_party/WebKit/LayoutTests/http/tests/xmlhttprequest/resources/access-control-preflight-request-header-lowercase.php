@@ -1,6 +1,4 @@
 <?php
-require_once '../../resources/portabilityLayer.php';
-
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Max-Age: 0");
 

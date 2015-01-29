@@ -85,7 +85,10 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
     const HTTPHeaderMap& requestHeaderFields = request.httpHeaderFields();
 
     if (requestHeaderFields.size() > 0) {
-        StringBuilder headerBuffer;
+        // Sort header names lexicographically: https://crbug.com/452391
+        // Fetch API Spec:
+        //   https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
+        Vector<String> headers;
         for (const auto& header : requestHeaderFields) {
             if (equalIgnoringCase(header.key, "referer")) {
                 // When the request is from a Worker, referrer header was added
@@ -93,11 +96,16 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
                 // Access-Control-Request-Headers header.
                 continue;
             }
+            headers.append(header.key.lower());
+        }
+        std::sort(headers.begin(), headers.end(), WTF::codePointCompareLessThan);
+        StringBuilder headerBuffer;
+        for (const String& header : headers) {
             if (!headerBuffer.isEmpty())
                 headerBuffer.appendLiteral(", ");
-            headerBuffer.append(header.key);
+            headerBuffer.append(header);
         }
-        preflightRequest.setHTTPHeaderField("Access-Control-Request-Headers", AtomicString(headerBuffer.toString().lower()));
+        preflightRequest.setHTTPHeaderField("Access-Control-Request-Headers", AtomicString(headerBuffer.toString()));
     }
 
     return preflightRequest;

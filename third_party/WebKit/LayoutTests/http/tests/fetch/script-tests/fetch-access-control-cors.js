@@ -131,10 +131,10 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-serviceworker-test&PreflightTest=200&PACRMethod=GET&PACRHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET, hasCustomHeader]],
-  // FIXME: https://crbug.com/452391
-  // [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM2&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-servicEworker-u, x-servicEworker-ua, x-servicewOrker-test, x-sErviceworker-s, x-sErviceworker-v&PreflightTest=200&PACRMethod=GET&PACRHeaders=x-serviceworker-s, x-serviceworker-test, x-serviceworker-u, x-serviceworker-ua, x-serviceworker-v',
-  //  [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
-  //  [methodIsGET, hasCustomHeader2]],
+  // Test Access-Control-Request-Headers is sorted https://crbug.com/452391
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM2&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-servicEworker-u, x-servicEworker-ua, x-servicewOrker-test, x-sErviceworker-s, x-sErviceworker-v&PreflightTest=200&PACRMethod=GET&PACRHeaders=x-serviceworker-s, x-serviceworker-test, x-serviceworker-u, x-serviceworker-ua, x-serviceworker-v',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, hasCustomHeader2]],
 
   // method=POST
 
@@ -235,10 +235,10 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-serviceworker-test&PreflightTest=200&PACRMethod=POST&PACRHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsPOST, hasCustomHeader]],
-  // FIXME: https://crbug.com/452391
-  // [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM2&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-servicEworker-u, x-servicEworker-ua, x-servicewOrker-test, x-sErviceworker-s, x-sErviceworker-v&PreflightTest=200&PACRMethod=POST&PACRHeaders=x-serviceworker-s, x-serviceworker-test, x-serviceworker-u, x-serviceworker-ua, x-serviceworker-v',
-  //  [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
-  //  [methodIsPOST, hasCustomHeader2]],
+  // Test Access-Control-Request-Headers is sorted https://crbug.com/452391
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM2&ACAOrigin=*&PACAOrigin=*&PACAHeaders=x-servicEworker-u, x-servicEworker-ua, x-servicewOrker-test, x-sErviceworker-s, x-sErviceworker-v&PreflightTest=200&PACRMethod=POST&PACRHeaders=x-serviceworker-s, x-serviceworker-test, x-serviceworker-u, x-serviceworker-ua, x-serviceworker-v',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPOST, hasCustomHeader2]],
 
   // method=PUT
 
@@ -346,10 +346,10 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=PUT&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAMethods=PUT&PACAHeaders=x-serviceworker-test&PreflightTest=200&PACRMethod=PUT&PACRHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsPUT, hasCustomHeader]],
-  // FIXME: https://crbug.com/452391
-  // [OTHER_BASE_URL + 'mode=cors&method=PUT&headers=CUSTOM2&ACAOrigin=*&PACAOrigin=*&PACAMethods=PUT&PACAHeaders=x-servicEworker-u, x-servicEworker-ua, x-servicewOrker-test, x-sErviceworker-s, x-sErviceworker-v&PreflightTest=200&PACRMethod=PUT&PACRHeaders=x-serviceworker-s, x-serviceworker-test, x-serviceworker-u, x-serviceworker-ua, x-serviceworker-v',
-  //  [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
-  //  [methodIsPUT, hasCustomHeader2]],
+  // Test Access-Control-Request-Headers is sorted https://crbug.com/452391
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&headers=CUSTOM2&ACAOrigin=*&PACAOrigin=*&PACAMethods=PUT&PACAHeaders=x-servicEworker-u, x-servicEworker-ua, x-servicewOrker-test, x-sErviceworker-s, x-sErviceworker-v&PreflightTest=200&PACRMethod=PUT&PACRHeaders=x-serviceworker-s, x-serviceworker-test, x-serviceworker-u, x-serviceworker-ua, x-serviceworker-v',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPUT, hasCustomHeader2]],
 
   // method=XXX
 
@@ -458,10 +458,10 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'mode=cors&method=XXX&headers=CUSTOM&ACAOrigin=*&PACAOrigin=*&PACAMethods=XXX&PACAHeaders=x-serviceworker-test&PreflightTest=200&PACRMethod=XXX&PACRHeaders=x-serviceworker-test',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsXXX, hasCustomHeader]],
-  // FIXME: https://crbug.com/452391
-  // [OTHER_BASE_URL + 'mode=cors&method=XXX&headers=CUSTOM2&ACAOrigin=*&PACAOrigin=*&PACAMethods=XXX&PACAHeaders=x-servicEworker-u, x-servicEworker-ua, x-servicewOrker-test, x-sErviceworker-s, x-sErviceworker-v&PreflightTest=200&PACRMethod=XXX&PACRHeaders=x-serviceworker-s, x-serviceworker-test, x-serviceworker-u, x-serviceworker-ua, x-serviceworker-v',
-  //  [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
-  //  [methodIsXXX, hasCustomHeader2]],
+  // Test Access-Control-Request-Headers is sorted https://crbug.com/452391
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&headers=CUSTOM2&ACAOrigin=*&PACAOrigin=*&PACAMethods=XXX&PACAHeaders=x-servicEworker-u, x-servicEworker-ua, x-servicewOrker-test, x-sErviceworker-s, x-sErviceworker-v&PreflightTest=200&PACRMethod=XXX&PACRHeaders=x-serviceworker-s, x-serviceworker-test, x-serviceworker-u, x-serviceworker-ua, x-serviceworker-v',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsXXX, hasCustomHeader2]],
 ];
 
 if (self.importScripts) {
