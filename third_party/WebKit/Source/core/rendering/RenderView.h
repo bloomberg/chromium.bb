@@ -46,6 +46,7 @@ public:
     explicit RenderView(Document*);
     virtual ~RenderView();
     virtual void trace(Visitor*) override;
+    void willBeDestroyed() override;
 
     bool hitTest(const HitTestRequest&, HitTestResult&);
     bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);

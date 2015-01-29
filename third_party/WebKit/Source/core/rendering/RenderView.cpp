@@ -981,4 +981,10 @@ double RenderView::layoutViewportHeight() const
     return viewHeight(IncludeScrollbars) / scale;
 }
 
+void RenderView::willBeDestroyed()
+{
+    RenderBlockFlow::willBeDestroyed();
+    m_compositor.clear();
+}
+
 } // namespace blink
