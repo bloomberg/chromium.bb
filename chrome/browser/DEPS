@@ -160,12 +160,8 @@ include_rules = [
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
-  "+third_party/WebKit/public/platform/WebCursorInfo.h",
-  "+third_party/WebKit/public/platform/WebNotificationPermission.h",
   "+third_party/WebKit/public/platform/WebPushPermissionStatus.h",
-  "+third_party/WebKit/public/platform/WebRect.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
-  "+third_party/WebKit/public/platform/WebScreenInfo.h",
   "+third_party/WebKit/public/platform/WebScreenOrientationLockType.h",
   "+third_party/WebKit/public/web/WebCache.h",
   "+third_party/WebKit/public/web/WebContextMenuData.h",
