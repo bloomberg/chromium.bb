@@ -138,18 +138,13 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
   _AddRepo('portage-stable')
 
   # Locate the board repo by name.
-  board_no_variant = board.split('_', 1)[0]
-  search_boards = [board_no_variant]
-  if board != board_no_variant:
-    search_boards.append(board)
-  for b in search_boards:
-    # Load the public & private versions if available.
-    found_pub = _AddRepo(b, optional=True)
-    found_priv = _AddRepo('%s-private' % b, optional=True)
+  # Load the public & private versions if available.
+  found_pub = _AddRepo(board, optional=True)
+  found_priv = _AddRepo('%s-private' % board, optional=True)
 
-    # If neither public nor private board was found, die.
-    if not found_pub and not found_priv:
-      raise MissingOverlayException('board overlay not found: %s' % b)
+  # If neither public nor private board was found, die.
+  if not found_pub and not found_priv:
+    raise MissingOverlayException('board overlay not found: %s' % board)
 
   return ret
 

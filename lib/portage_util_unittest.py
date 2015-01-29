@@ -468,7 +468,7 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
 
     # Seed the board overlays.
-    conf_data = 'repo-name = %(repo-name)s'
+    conf_data = 'repo-name = %(repo-name)s\nmasters = %(masters)s'
     conf_path = os.path.join(self.tempdir, 'src', '%(private)soverlays',
                              'overlay-%(board)s', 'metadata', 'layout.conf')
 
@@ -476,18 +476,24 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
                   self.PUB2_ONLY):
       settings = {
           'board': board,
+          'masters': '',
           'private': '',
           'repo-name': board,
       }
+      if '_' in board:
+        settings['masters'] = board.split('_')[0]
       osutils.WriteFile(conf_path % settings,
                         conf_data % settings)
 
     for board in (self.PUB_PRIV, self.PUB_PRIV_VARIANT, self.PRIV_ONLY):
       settings = {
           'board': board,
+          'masters': '',
           'private': 'private-',
           'repo-name': '%s-private' % board,
       }
+      if '_' in board:
+        settings['masters'] = board.split('_')[0]
       osutils.WriteFile(conf_path % settings,
                         conf_data % settings)
 
@@ -495,9 +501,10 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
     conf_path = os.path.join(self.tempdir, 'src', 'third_party', '%(overlay)s',
                              'metadata', 'layout.conf')
     osutils.WriteFile(conf_path % {'overlay': 'chromiumos-overlay'},
-                      conf_data % {'repo-name': 'chromiumos'})
+                      conf_data % {'repo-name': 'chromiumos', 'masters': ''})
     osutils.WriteFile(conf_path % {'overlay': 'portage-stable'},
-                      conf_data % {'repo-name': 'portage-stable'})
+                      conf_data % {'repo-name': 'portage-stable',
+                                   'masters': ''})
 
     # Now build up the list of overlays that we'll use in tests below.
     self.overlays = {}
