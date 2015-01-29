@@ -40,6 +40,11 @@ def debug(extra_options):
               ' '.join(extra_options))
 
 
+def stack(out_dir):
+  return run ('adb logcat -d | third_party/android_tools/ndk/ndk-stack ' + \
+              '-sym ' + out_dir + '/lib')
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('command',
@@ -50,6 +55,7 @@ def main():
                                'proguard',
                                'test',
                                'build-test',
+                               'stack',
                                'debug',
                                'build-debug'])
   parser.add_argument('-r', '--release', action='store_true',
@@ -83,6 +89,8 @@ def main():
   if (options.command=='build-test'):
     return build(out_dir) or install(release_arg) or \
         test(release_arg, extra_options)
+  if (options.command=='stack'):
+    return stack(out_dir)
   if (options.command=='debug'):
     return install(release_arg) or debug(extra_options)
   if (options.command=='build-debug'):
