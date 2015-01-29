@@ -15,7 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/template_util.h"
 #include "google_apis/drive/base_requests.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/task_util.h"
 
 class GURL;
@@ -284,7 +284,7 @@ class TestGetContentCallback {
   std::string GetConcatenatedData() const;
 
  private:
-  void OnGetContent(google_apis::GDataErrorCode error,
+  void OnGetContent(google_apis::DriveApiErrorCode error,
                     scoped_ptr<std::string> data);
 
   const GetContentCallback callback_;

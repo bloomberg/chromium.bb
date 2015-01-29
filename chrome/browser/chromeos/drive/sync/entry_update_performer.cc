@@ -358,7 +358,7 @@ void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     const FileOperationCallback& callback,
     const std::string& local_id,
     scoped_ptr<base::ScopedClosureRunner> loader_lock,
-    google_apis::GDataErrorCode status,
+    google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

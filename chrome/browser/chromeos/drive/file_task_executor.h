@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace drive {
 
@@ -54,7 +54,7 @@ class FileTaskExecutor {
 
   void OnFileEntryFetched(FileError error, scoped_ptr<ResourceEntry> entry);
   void OnAppAuthorized(const std::string& resource_id,
-                       google_apis::GDataErrorCode error,
+                       google_apis::DriveApiErrorCode error,
                        const GURL& open_link);
 
   // Calls |done_| with |success| status and deletes |this|.

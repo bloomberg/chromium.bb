@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
-#include "google_apis/drive/gdata_errorcode.h"
 
 class GURL;
 

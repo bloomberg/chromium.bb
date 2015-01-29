@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace drive {
 
@@ -43,7 +43,7 @@ std::string FileErrorToString(FileError error);
 base::File::Error FileErrorToBaseFileError(FileError error);
 
 // Converts GData error code into Drive file error code.
-FileError GDataToFileError(google_apis::GDataErrorCode status);
+FileError GDataToFileError(google_apis::DriveApiErrorCode status);
 
 }  // namespace drive
 

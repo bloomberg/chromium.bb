@@ -43,7 +43,7 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
   void ProcessURLFetchResults(const net::URLFetcher* source) override {
     callback_.Run(GetErrorCode());
   }
-  void RunCallbackOnPrematureFailure(GDataErrorCode code) override {
+  void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override {
     callback_.Run(code);
   }
 
@@ -178,7 +178,7 @@ TEST_F(BaseRequestsTest, UrlFetchRequestBaseResponseCodeOverride) {
       " }\n"
       "}\n";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   base::RunLoop run_loop;
   sender_->StartRequestWithRetry(
       new FakeUrlFetchRequest(
@@ -196,7 +196,7 @@ TEST_F(MultipartUploadRequestBaseTest, Basic) {
   response_code_ = net::HTTP_OK;
   response_body_ = "{\"kind\": \"drive#file\", \"id\": \"file_id\"}";
   scoped_ptr<google_apis::FileResource> file;
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   base::RunLoop run_loop;
   const base::FilePath source_path =
       google_apis::test_util::GetTestFilePath("chromeos/file_manager/text.txt");

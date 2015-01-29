@@ -386,7 +386,7 @@ class DriveTestVolume : public TestVolume {
   void CreateDirectory(const std::string& parent_id,
                        const std::string& target_name,
                        const base::Time& modification_time) {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewDirectory(
         parent_id,
@@ -415,7 +415,7 @@ class DriveTestVolume : public TestVolume {
                   const std::string& mime_type,
                   bool shared_with_me,
                   const base::Time& modification_time) {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
 
     std::string content_data;
     if (!source_file_name.empty()) {

@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace google_apis {
 
@@ -139,11 +139,11 @@ class FakeFileSystem : public FileSystemInterface {
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
-      google_apis::GDataErrorCode gdata_error,
+      google_apis::DriveApiErrorCode gdata_error,
       scoped_ptr<google_apis::FileResource> gdata_entry);
   void GetFileContentAfterDownloadFile(
       const FileOperationCallback& completion_callback,
-      google_apis::GDataErrorCode gdata_error,
+      google_apis::DriveApiErrorCode gdata_error,
       const base::FilePath& temp_file);
 
   // Helpers of GetResourceEntry.
@@ -159,7 +159,7 @@ class FakeFileSystem : public FileSystemInterface {
   // file cannot be taken with the suffixed name.
   void GetResourceEntryAfterGetAboutResource(
       const GetResourceEntryCallback& callback,
-      google_apis::GDataErrorCode gdata_error,
+      google_apis::DriveApiErrorCode gdata_error,
       scoped_ptr<google_apis::AboutResource> about_resource);
   void GetResourceEntryAfterGetParentEntryInfo(
       const base::FilePath& base_name,
@@ -169,7 +169,7 @@ class FakeFileSystem : public FileSystemInterface {
   void GetResourceEntryAfterGetFileList(
       const base::FilePath& base_name,
       const GetResourceEntryCallback& callback,
-      google_apis::GDataErrorCode gdata_error,
+      google_apis::DriveApiErrorCode gdata_error,
       scoped_ptr<google_apis::FileList> file_list);
 
   DriveServiceInterface* drive_service_;  // Not owned.

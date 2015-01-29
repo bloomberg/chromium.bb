@@ -25,60 +25,60 @@ class FakeDriveServiceHelper {
                          const std::string& sync_root_folder_title);
   virtual ~FakeDriveServiceHelper();
 
-  google_apis::GDataErrorCode AddOrphanedFolder(
+  google_apis::DriveApiErrorCode AddOrphanedFolder(
       const std::string& title,
       std::string* folder_id);
-  google_apis::GDataErrorCode AddFolder(
+  google_apis::DriveApiErrorCode AddFolder(
       const std::string& parent_folder_id,
       const std::string& title,
       std::string* folder_id);
-  google_apis::GDataErrorCode AddFile(
+  google_apis::DriveApiErrorCode AddFile(
       const std::string& parent_folder_id,
       const std::string& title,
       const std::string& content,
       std::string* file_id);
-  google_apis::GDataErrorCode UpdateFile(
+  google_apis::DriveApiErrorCode UpdateFile(
       const std::string& file_id,
       const std::string& content);
-  google_apis::GDataErrorCode DeleteResource(
+  google_apis::DriveApiErrorCode DeleteResource(
       const std::string& file_id);
-  google_apis::GDataErrorCode TrashResource(
+  google_apis::DriveApiErrorCode TrashResource(
       const std::string& file_id);
-  google_apis::GDataErrorCode UpdateModificationTime(
+  google_apis::DriveApiErrorCode UpdateModificationTime(
       const std::string& file_id,
       const base::Time& modification_time);
-  google_apis::GDataErrorCode RenameResource(
+  google_apis::DriveApiErrorCode RenameResource(
       const std::string& file_id,
       const std::string& new_title);
-  google_apis::GDataErrorCode AddResourceToDirectory(
+  google_apis::DriveApiErrorCode AddResourceToDirectory(
       const std::string& parent_folder_id,
       const std::string& file_id);
-  google_apis::GDataErrorCode RemoveResourceFromDirectory(
+  google_apis::DriveApiErrorCode RemoveResourceFromDirectory(
       const std::string& parent_folder_id,
       const std::string& file_id);
-  google_apis::GDataErrorCode GetSyncRootFolderID(
+  google_apis::DriveApiErrorCode GetSyncRootFolderID(
       std::string* sync_root_folder_id);
-  google_apis::GDataErrorCode ListFilesInFolder(
+  google_apis::DriveApiErrorCode ListFilesInFolder(
       const std::string& folder_id,
       ScopedVector<google_apis::FileResource>* entries);
-  google_apis::GDataErrorCode SearchByTitle(
+  google_apis::DriveApiErrorCode SearchByTitle(
       const std::string& folder_id,
       const std::string& title,
       ScopedVector<google_apis::FileResource>* entries);
 
-  google_apis::GDataErrorCode GetFileResource(
+  google_apis::DriveApiErrorCode GetFileResource(
       const std::string& file_id,
       scoped_ptr<google_apis::FileResource>* entry);
-  google_apis::GDataErrorCode ReadFile(
+  google_apis::DriveApiErrorCode ReadFile(
       const std::string& file_id,
       std::string* file_content);
-  google_apis::GDataErrorCode GetAboutResource(
+  google_apis::DriveApiErrorCode GetAboutResource(
       scoped_ptr<google_apis::AboutResource>* about_resource);
 
   base::FilePath base_dir_path() { return base_dir_.path(); }
 
  private:
-  google_apis::GDataErrorCode CompleteListing(
+  google_apis::DriveApiErrorCode CompleteListing(
       scoped_ptr<google_apis::FileList> list,
       ScopedVector<google_apis::FileResource>* entries);
 

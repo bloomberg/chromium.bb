@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -79,7 +79,7 @@ class RequestSender {
   // Called when the access token is fetched.
   void OnAccessTokenFetched(
       const base::WeakPtr<AuthenticatedRequestInterface>& request,
-      GDataErrorCode error,
+      DriveApiErrorCode error,
       const std::string& access_token);
 
   // Clears any authentication token and retries the request, which forces

@@ -54,7 +54,7 @@ class FakeDriveService : public DriveServiceInterface {
   // Returns true if the service knows the given drive app id.
   bool HasApp(const std::string& app_id) const;
 
-  // Changes the offline state. All functions fail with GDATA_NO_CONNECTION
+  // Changes the offline state. All functions fail with DRIVE_NO_CONNECTION
   // when offline. By default the offline state is false.
   void set_offline(bool offline) { offline_ = offline; }
 
@@ -310,7 +310,7 @@ class FakeDriveService : public DriveServiceInterface {
       const google_apis::FileResourceCallback& callback);
 
   // Sets the user's permission for an entry specified by |resource_id|.
-  google_apis::GDataErrorCode SetUserPermission(
+  google_apis::DriveApiErrorCode SetUserPermission(
       const std::string& resource_id,
       google_apis::drive::PermissionRole user_permission);
 

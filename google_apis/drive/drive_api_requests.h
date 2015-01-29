@@ -22,12 +22,12 @@ namespace google_apis {
 
 // Callback used for requests that the server returns FileList data
 // formatted into JSON value.
-typedef base::Callback<void(GDataErrorCode error,
+typedef base::Callback<void(DriveApiErrorCode error,
                             scoped_ptr<FileList> entry)> FileListCallback;
 
 // Callback used for requests that the server returns ChangeList data
 // formatted into JSON value.
-typedef base::Callback<void(GDataErrorCode error,
+typedef base::Callback<void(DriveApiErrorCode error,
                             scoped_ptr<ChangeList> entry)> ChangeListCallback;
 
 namespace drive {
@@ -68,7 +68,7 @@ class DriveApiPartialFieldRequest : public UrlFetchRequestBase {
 template<class DataType>
 class DriveApiDataRequest : public DriveApiPartialFieldRequest {
  public:
-  typedef base::Callback<void(GDataErrorCode error,
+  typedef base::Callback<void(DriveApiErrorCode error,
                               scoped_ptr<DataType> data)> Callback;
 
   // |callback| is called when the request finishes either by success or by
@@ -84,7 +84,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
  protected:
   // UrlFetchRequestBase overrides.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) override {
-    GDataErrorCode error = GetErrorCode();
+    DriveApiErrorCode error = GetErrorCode();
     switch (error) {
       case HTTP_SUCCESS:
       case HTTP_CREATED:
@@ -102,7 +102,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
     }
   }
 
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode error) override {
+  virtual void RunCallbackOnPrematureFailure(DriveApiErrorCode error) override {
     callback_.Run(error, scoped_ptr<DataType>());
   }
 
@@ -114,9 +114,9 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
   }
 
   // Receives the parsed result and invokes the callback.
-  void OnDataParsed(GDataErrorCode error, scoped_ptr<DataType> value) {
+  void OnDataParsed(DriveApiErrorCode error, scoped_ptr<DataType> value) {
     if (!value)
-      error = GDATA_PARSE_ERROR;
+      error = DRIVE_PARSE_ERROR;
     callback_.Run(error, value.Pass());
     OnProcessURLFetchResultsComplete();
   }

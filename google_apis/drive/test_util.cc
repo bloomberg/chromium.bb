@@ -172,7 +172,7 @@ std::string TestGetContentCallback::GetConcatenatedData() const {
   return result;
 }
 
-void TestGetContentCallback::OnGetContent(google_apis::GDataErrorCode error,
+void TestGetContentCallback::OnGetContent(google_apis::DriveApiErrorCode error,
                                           scoped_ptr<std::string> data) {
   data_.push_back(data.release());
 }

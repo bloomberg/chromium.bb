@@ -175,7 +175,7 @@ class FileManagerPrivateRequestAccessTokenFunction
   bool RunAsync() override;
 
   // Callback with a cached auth token (if available) or a fetched one.
-  void OnAccessTokenFetched(google_apis::GDataErrorCode code,
+  void OnAccessTokenFetched(google_apis::DriveApiErrorCode code,
                             const std::string& access_token);
 };
 
@@ -233,7 +233,7 @@ class FileManagerPrivateGetDownloadUrlFunction
 
   // Callback with an |access_token|, called by
   // drive::DriveReadonlyTokenFetcher.
-  void OnTokenFetched(google_apis::GDataErrorCode code,
+  void OnTokenFetched(google_apis::DriveApiErrorCode code,
                       const std::string& access_token);
 
  private:

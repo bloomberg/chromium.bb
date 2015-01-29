@@ -9,7 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace drive {
 class DriveServiceInterface;
@@ -36,7 +36,7 @@ class ListChangesTask : public SyncTask {
  private:
   void StartListing(scoped_ptr<SyncTaskToken> token);
   void DidListChanges(scoped_ptr<SyncTaskToken> token,
-                      google_apis::GDataErrorCode error,
+                      google_apis::DriveApiErrorCode error,
                       scoped_ptr<google_apis::ChangeList> change_list);
   void CheckInChangeList(int64 largest_change_id,
                          scoped_ptr<SyncTaskToken> token);

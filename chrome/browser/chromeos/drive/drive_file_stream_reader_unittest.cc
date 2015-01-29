@@ -493,7 +493,7 @@ TEST_F(DriveFileStreamReaderTest, OutOfRangeError) {
 TEST_F(DriveFileStreamReaderTest, ZeroByteFileRead) {
   // Prepare an empty file
   {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewFile(
         "text/plain",

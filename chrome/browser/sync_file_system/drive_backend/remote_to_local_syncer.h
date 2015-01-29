@@ -17,7 +17,7 @@
 #include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
 namespace drive {
@@ -116,7 +116,7 @@ class RemoteToLocalSyncer : public SyncTask {
   // Note: if the file is not found, it should be handled as if deleted.
   void HandleMissingRemoteMetadata(scoped_ptr<SyncTaskToken> token);
   void DidGetRemoteMetadata(scoped_ptr<SyncTaskToken> token,
-                            google_apis::GDataErrorCode error,
+                            google_apis::DriveApiErrorCode error,
                             scoped_ptr<google_apis::FileResource> entry);
 
   // This implements the body of the HandleNewFile and HandleContentUpdate.
@@ -165,7 +165,7 @@ class RemoteToLocalSyncer : public SyncTask {
   void DidListFolderContent(
       scoped_ptr<SyncTaskToken> token,
       scoped_ptr<FileIDList> children,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       scoped_ptr<google_apis::FileList> file_list);
 
   void SyncCompleted(scoped_ptr<SyncTaskToken> token, SyncStatusCode status);
@@ -181,7 +181,7 @@ class RemoteToLocalSyncer : public SyncTask {
   void DownloadFile(scoped_ptr<SyncTaskToken> token);
   void DidDownloadFile(scoped_ptr<SyncTaskToken> token,
                        storage::ScopedFile file,
-                       google_apis::GDataErrorCode error,
+                       google_apis::DriveApiErrorCode error,
                        const base::FilePath&);
   void DidApplyDownload(scoped_ptr<SyncTaskToken> token,
                         storage::ScopedFile,

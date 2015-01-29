@@ -102,7 +102,7 @@ void AuthRequest::OnGetTokenFailure(const OAuth2TokenService::Request* request,
   // so that the file manager works while off-line.
   if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
     RecordAuthResultHistogram(kSuccessRatioHistogramNoConnection);
-    callback_.Run(GDATA_NO_CONNECTION, std::string());
+    callback_.Run(DRIVE_NO_CONNECTION, std::string());
   } else if (error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
     RecordAuthResultHistogram(kSuccessRatioHistogramTemporaryFailure);
     callback_.Run(HTTP_FORBIDDEN, std::string());
@@ -156,7 +156,7 @@ void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
                     scopes_);
   } else {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, GDATA_NOT_READY, std::string()));
+        FROM_HERE, base::Bind(callback, DRIVE_NOT_READY, std::string()));
   }
 }
 
@@ -181,7 +181,7 @@ void AuthService::ClearRefreshToken() {
 }
 
 void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
-                                  GDataErrorCode error,
+                                  DriveApiErrorCode error,
                                   const std::string& access_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());

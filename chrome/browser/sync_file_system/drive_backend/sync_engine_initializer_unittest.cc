@@ -129,7 +129,7 @@ class SyncEngineInitializerTest : public testing::Test {
   scoped_ptr<google_apis::FileResource> CreateRemoteFolder(
       const std::string& parent_folder_id,
       const std::string& title) {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
     sync_context_->GetDriveService()->AddNewDirectory(
         parent_folder_id, title,
@@ -146,7 +146,7 @@ class SyncEngineInitializerTest : public testing::Test {
         CreateRemoteFolder(std::string(), kSyncRootFolderTitle));
 
     for (size_t i = 0; i < sync_root->parents().size(); ++i) {
-      google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+      google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
       sync_context_->GetDriveService()->RemoveResourceFromDirectory(
           sync_root->parents()[i].file_id(),
           sync_root->file_id(),
@@ -179,7 +179,7 @@ class SyncEngineInitializerTest : public testing::Test {
   }
 
   bool HasNoParent(const std::string& file_id) {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
     sync_context_->GetDriveService()->GetFileResource(
         file_id,
@@ -197,10 +197,10 @@ class SyncEngineInitializerTest : public testing::Test {
     return metadata_database_->CountFileTracker();
   }
 
-  google_apis::GDataErrorCode AddParentFolder(
+  google_apis::DriveApiErrorCode AddParentFolder(
       const std::string& new_parent_folder_id,
       const std::string& file_id) {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     sync_context_->GetDriveService()->AddResourceToDirectory(
         new_parent_folder_id, file_id,
         CreateResultReceiver(&error));

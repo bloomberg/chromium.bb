@@ -34,7 +34,7 @@ void ParseFileResourceWithUploadRangeAndRun(
     file_resource = FileResource::CreateFrom(*value);
     if (!file_resource) {
       callback.Run(
-          UploadRangeResponse(GDATA_PARSE_ERROR,
+          UploadRangeResponse(DRIVE_PARSE_ERROR,
                               response.start_position_received,
                               response.end_position_received),
           scoped_ptr<FileResource>());

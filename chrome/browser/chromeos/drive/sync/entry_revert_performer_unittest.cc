@@ -123,7 +123,7 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_TrashedOnServer) {
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(path, &entry));
 
   // Trash the entry on the server.
-  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
   fake_service()->TrashResource(
       entry.resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&gdata_error));

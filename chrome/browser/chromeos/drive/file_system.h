@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 class PrefService;
 
@@ -198,7 +198,7 @@ class FileSystem : public FileSystemInterface,
   // Callback for handling about resource fetch.
   void OnGetAboutResource(
       const GetAvailableSpaceCallback& callback,
-      google_apis::GDataErrorCode status,
+      google_apis::DriveApiErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Part of CheckForUpdates(). Called when
@@ -219,7 +219,7 @@ class FileSystem : public FileSystemInterface,
                                         ResourceEntry* entry,
                                         FileError error);
   void OnGetResourceEntryForGetShareUrl(const GetShareUrlCallback& callback,
-                                        google_apis::GDataErrorCode status,
+                                        google_apis::DriveApiErrorCode status,
                                         const GURL& share_url);
   // Part of AddPermission.
   void AddPermissionAfterGetResourceEntry(

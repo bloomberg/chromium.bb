@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 #include "net/base/completion_callback.h"
 
 namespace base {
@@ -201,7 +201,7 @@ class DriveFileStreamReader {
       int open_result);
 
   // Called when the data is received from the server.
-  void OnGetContent(google_apis::GDataErrorCode error_code,
+  void OnGetContent(google_apis::DriveApiErrorCode error_code,
                     scoped_ptr<std::string> data);
 
   // Called when GetFileContent is completed.

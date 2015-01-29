@@ -110,7 +110,7 @@ class ChangeListLoaderTest : public testing::Test {
 
   // Adds a new file to the root directory of the service.
   scoped_ptr<google_apis::FileResource> AddNewFile(const std::string& title) {
-    google_apis::GDataErrorCode error = google_apis::GDATA_FILE_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_FILE_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
     drive_service_->AddNewFile(
         "text/plain",
@@ -140,7 +140,7 @@ class ChangeListLoaderTest : public testing::Test {
 };
 
 TEST_F(ChangeListLoaderTest, AboutResourceLoader) {
-  google_apis::GDataErrorCode error[6] = {};
+  google_apis::DriveApiErrorCode error[6] = {};
   scoped_ptr<google_apis::AboutResource> about[6];
 
   // No resource is cached at the beginning.

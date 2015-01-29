@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace google_apis {
 
-std::string GDataErrorCodeToString(GDataErrorCode error) {
+std::string DriveApiErrorCodeToString(DriveApiErrorCode error) {
   switch (error) {
     case HTTP_SUCCESS:
       return"HTTP_SUCCESS";
@@ -65,26 +65,26 @@ std::string GDataErrorCodeToString(GDataErrorCode error) {
     case HTTP_SERVICE_UNAVAILABLE:
       return"HTTP_SERVICE_UNAVAILABLE";
 
-    case GDATA_PARSE_ERROR:
-      return"GDATA_PARSE_ERROR";
+    case DRIVE_PARSE_ERROR:
+      return"DRIVE_PARSE_ERROR";
 
-    case GDATA_FILE_ERROR:
-      return"GDATA_FILE_ERROR";
+    case DRIVE_FILE_ERROR:
+      return"DRIVE_FILE_ERROR";
 
-    case GDATA_CANCELLED:
-      return"GDATA_CANCELLED";
+    case DRIVE_CANCELLED:
+      return"DRIVE_CANCELLED";
 
-    case GDATA_OTHER_ERROR:
-      return"GDATA_OTHER_ERROR";
+    case DRIVE_OTHER_ERROR:
+      return"DRIVE_OTHER_ERROR";
 
-    case GDATA_NO_CONNECTION:
-      return"GDATA_NO_CONNECTION";
+    case DRIVE_NO_CONNECTION:
+      return"DRIVE_NO_CONNECTION";
 
-    case GDATA_NOT_READY:
-      return"GDATA_NOT_READY";
+    case DRIVE_NOT_READY:
+      return"DRIVE_NOT_READY";
 
-    case GDATA_NO_SPACE:
-      return"GDATA_NO_SPACE";
+    case DRIVE_NO_SPACE:
+      return"DRIVE_NO_SPACE";
   }
 
   return "UNKNOWN_ERROR_" + base::IntToString(error);

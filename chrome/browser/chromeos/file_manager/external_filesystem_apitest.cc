@@ -174,7 +174,7 @@ scoped_ptr<google_apis::FileResource> UpdateDriveEntryTime(
                                             &last_viewed_by_me_time))
     return scoped_ptr<google_apis::FileResource>();
 
-  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> entry;
   fake_drive_service->UpdateResource(
       resource_id,
@@ -198,7 +198,7 @@ scoped_ptr<google_apis::FileResource> AddFileToDriveService(
     const std::string& title,
     const std::string& last_modified,
     const std::string& last_viewed_by_me) {
-  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> entry;
   fake_drive_service->AddNewFile(
       mime_type,
@@ -221,7 +221,7 @@ scoped_ptr<google_apis::FileResource> AddDirectoryToDriveService(
     const std::string& title,
     const std::string& last_modified,
     const std::string& last_viewed_by_me) {
-  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> entry;
   fake_drive_service->AddNewDirectory(
       parent_resource_id,
@@ -610,7 +610,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
         static_cast<drive::FakeDriveService*>(
             drive::util::GetDriveServiceByProfile(second_profile));
 
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
 
     // Place a hosted document under root/test_dir of the sub profile.
@@ -625,7 +625,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
 
     // Place the hosted document with no parent in the main profile, for
     // simulating the situation that the document is shared to the main profile.
-    error = google_apis::GDATA_OTHER_ERROR;
+    error = google_apis::DRIVE_OTHER_ERROR;
     main_service->AddNewFileWithResourceId(
         kResourceId,
         "application/vnd.google-apps.document", "", "", "hosted_doc", true,

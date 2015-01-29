@@ -14,8 +14,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
-#include "google_apis/drive/gdata_errorcode.h"
 
 class GURL;
 
@@ -103,7 +103,7 @@ class AboutResourceLoader {
   // cached and the other is passed to callbacks associated with |task_id|.
   void UpdateAboutResourceAfterGetAbout(
       int task_id,
-      google_apis::GDataErrorCode status,
+      google_apis::DriveApiErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
   JobScheduler* scheduler_;
@@ -175,7 +175,7 @@ class ChangeListLoader {
                                       FileError error);
   void LoadAfterGetAboutResource(
       int64 local_changestamp,
-      google_apis::GDataErrorCode status,
+      google_apis::DriveApiErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Part of Load().
@@ -185,7 +185,7 @@ class ChangeListLoader {
 
   // Called when the loading about_resource_loader_->UpdateAboutResource is
   // completed.
-  void OnAboutResourceUpdated(google_apis::GDataErrorCode error,
+  void OnAboutResourceUpdated(google_apis::DriveApiErrorCode error,
                               scoped_ptr<google_apis::AboutResource> resource);
 
   // ================= Implementation for change list loading =================

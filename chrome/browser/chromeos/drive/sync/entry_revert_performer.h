@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -65,7 +65,7 @@ class EntryRevertPerformer {
   void RevertEntryAfterGetFileResource(
       const FileOperationCallback& callback,
       const std::string& local_id,
-      google_apis::GDataErrorCode status,
+      google_apis::DriveApiErrorCode status,
       scoped_ptr<google_apis::FileResource> entry);
 
   // Part of RevertEntry(). Called after local metadata is updated.

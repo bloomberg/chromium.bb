@@ -134,7 +134,7 @@ void FileTaskExecutor::OnFileEntryFetched(FileError error,
 }
 
 void FileTaskExecutor::OnAppAuthorized(const std::string& resource_id,
-                                       google_apis::GDataErrorCode error,
+                                       google_apis::DriveApiErrorCode error,
                                        const GURL& open_link) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 

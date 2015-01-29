@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
-#include "google_apis/drive/gdata_errorcode.h"
 
 namespace drive {
 class DriveServiceInterface;
@@ -79,23 +79,23 @@ class SyncEngineInitializer : public SyncTask {
   void GetAboutResource(scoped_ptr<SyncTaskToken> token);
   void DidGetAboutResource(
       scoped_ptr<SyncTaskToken> token,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       scoped_ptr<google_apis::AboutResource> about_resource);
   void FindSyncRoot(scoped_ptr<SyncTaskToken> token);
   void DidFindSyncRoot(scoped_ptr<SyncTaskToken> token,
-                       google_apis::GDataErrorCode error,
+                       google_apis::DriveApiErrorCode error,
                        scoped_ptr<google_apis::FileList> file_list);
   void CreateSyncRoot(scoped_ptr<SyncTaskToken> token);
   void DidCreateSyncRoot(scoped_ptr<SyncTaskToken> token,
-                         google_apis::GDataErrorCode error,
+                         google_apis::DriveApiErrorCode error,
                          scoped_ptr<google_apis::FileResource> entry);
   void DetachSyncRoot(scoped_ptr<SyncTaskToken> token);
   void DidDetachSyncRoot(scoped_ptr<SyncTaskToken> token,
-                         google_apis::GDataErrorCode error);
+                         google_apis::DriveApiErrorCode error);
   void ListAppRootFolders(scoped_ptr<SyncTaskToken> token);
   void DidListAppRootFolders(
       scoped_ptr<SyncTaskToken> token,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       scoped_ptr<google_apis::FileList> file_list);
   void PopulateDatabase(scoped_ptr<SyncTaskToken> token);
 

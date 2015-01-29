@@ -47,7 +47,7 @@ class TestDelegate : public FileTaskExecutorDelegate {
   // Sets up files on the fake Drive service.
   bool SetUpTestFiles() {
     {
-      google_apis::GDataErrorCode result = google_apis::GDATA_OTHER_ERROR;
+      google_apis::DriveApiErrorCode result = google_apis::DRIVE_OTHER_ERROR;
       scoped_ptr<google_apis::FileResource> file;
       fake_drive_service_->AddNewFileWithResourceId(
           "id1",
@@ -62,7 +62,7 @@ class TestDelegate : public FileTaskExecutorDelegate {
         return false;
     }
     {
-      google_apis::GDataErrorCode result = google_apis::GDATA_OTHER_ERROR;
+      google_apis::DriveApiErrorCode result = google_apis::DRIVE_OTHER_ERROR;
       scoped_ptr<google_apis::FileResource> file;
       fake_drive_service_->AddNewFileWithResourceId(
           "id2",

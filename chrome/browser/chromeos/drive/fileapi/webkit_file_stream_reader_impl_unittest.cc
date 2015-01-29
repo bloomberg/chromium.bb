@@ -181,7 +181,7 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
 
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_drive_service_->UpdateResource(
       entry->resource_id(),

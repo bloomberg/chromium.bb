@@ -90,7 +90,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
                    const std::string& data,
                    const std::string& parent_id) {
     scoped_ptr<google_apis::FileResource> entry;
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     fake_drive_service_->AddNewFile(
         "text/plain", data, parent_id, title, false,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -101,7 +101,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   std::string AddTestDirectory(const std::string& title,
                                const std::string& parent_id) {
     scoped_ptr<google_apis::FileResource> entry;
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     fake_drive_service_->AddNewDirectory(
         parent_id, title,
         drive::DriveServiceInterface::AddNewDirectoryOptions(),

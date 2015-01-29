@@ -57,9 +57,9 @@ void ListChangesTask::StartListing(scoped_ptr<SyncTaskToken> token) {
 
 void ListChangesTask::DidListChanges(
     scoped_ptr<SyncTaskToken> token,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::ChangeList> change_list) {
-  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
     token->RecordLog("Failed to fetch change list.");
     SyncTaskManager::NotifyTaskDone(

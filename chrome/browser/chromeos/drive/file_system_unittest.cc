@@ -391,7 +391,7 @@ TEST_F(FileSystemTest, Copy) {
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(dest_file_path);
   ASSERT_TRUE(entry);
 
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
@@ -424,7 +424,7 @@ TEST_F(FileSystemTest, Move) {
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(dest_file_path);
   ASSERT_TRUE(entry);
 
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
@@ -452,7 +452,7 @@ TEST_F(FileSystemTest, Remove) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Entry is removed on the server.
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
@@ -480,7 +480,7 @@ TEST_F(FileSystemTest, CreateDirectory) {
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(directory_path);
   ASSERT_TRUE(entry);
 
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
@@ -509,7 +509,7 @@ TEST_F(FileSystemTest, CreateFile) {
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(file_path);
   ASSERT_TRUE(entry);
 
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
@@ -543,7 +543,7 @@ TEST_F(FileSystemTest, TouchFile) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // File is touched on the server.
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
@@ -571,7 +571,7 @@ TEST_F(FileSystemTest, TruncateFile) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // File is touched on the server.
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
@@ -843,7 +843,7 @@ TEST_F(FileSystemTest, ReadDirectoryAfterUpdateWhileLoading) {
   // On the fake server, create the test directory.
   scoped_ptr<google_apis::FileResource> parent;
   {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     fake_drive_service_->AddNewDirectory(
         fake_drive_service_->GetRootResourceId(),
         "UpdateWhileLoadingTestDir",
@@ -862,7 +862,7 @@ TEST_F(FileSystemTest, ReadDirectoryAfterUpdateWhileLoading) {
   // Create a file in the test directory.
   scoped_ptr<google_apis::FileResource> entry;
   {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     fake_drive_service_->AddNewFile(
         "text/plain",
         "(dummy data)",

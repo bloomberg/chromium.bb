@@ -30,7 +30,7 @@ using extensions::ExtensionRegistry;
 
 namespace {
 
-void IgnoreUninstallResult(google_apis::GDataErrorCode) {
+void IgnoreUninstallResult(google_apis::DriveApiErrorCode) {
 }
 
 }  // namespace

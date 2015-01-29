@@ -8,14 +8,14 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace google_apis {
 
 class AuthServiceObserver;
 
 // Called when fetching of access token is complete.
-typedef base::Callback<void(GDataErrorCode error,
+typedef base::Callback<void(DriveApiErrorCode error,
                             const std::string& access_token)>
     AuthStatusCallback;
 

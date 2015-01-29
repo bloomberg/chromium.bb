@@ -84,8 +84,8 @@ std::string GetTrackerTitle(const FileTracker& tracker) {
   return std::string();
 }
 
-SyncStatusCode GDataErrorCodeToSyncStatusCode(
-    google_apis::GDataErrorCode error) {
+SyncStatusCode DriveApiErrorCodeToSyncStatusCode(
+    google_apis::DriveApiErrorCode error) {
   // NOTE: Please update DriveFileSyncService::UpdateServiceState when you add
   // more error code mapping.
   switch (error) {
@@ -105,21 +105,21 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
     case google_apis::HTTP_UNAUTHORIZED:
       return SYNC_STATUS_AUTHENTICATION_FAILED;
 
-    case google_apis::GDATA_NO_CONNECTION:
+    case google_apis::DRIVE_NO_CONNECTION:
       return SYNC_STATUS_NETWORK_ERROR;
 
     case google_apis::HTTP_INTERNAL_SERVER_ERROR:
     case google_apis::HTTP_BAD_GATEWAY:
     case google_apis::HTTP_SERVICE_UNAVAILABLE:
-    case google_apis::GDATA_CANCELLED:
-    case google_apis::GDATA_NOT_READY:
+    case google_apis::DRIVE_CANCELLED:
+    case google_apis::DRIVE_NOT_READY:
       return SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE;
 
     case google_apis::HTTP_NOT_FOUND:
     case google_apis::HTTP_GONE:
       return SYNC_FILE_ERROR_NOT_FOUND;
 
-    case google_apis::GDATA_FILE_ERROR:
+    case google_apis::DRIVE_FILE_ERROR:
       return SYNC_FILE_ERROR_FAILED;
 
     case google_apis::HTTP_FORBIDDEN:
@@ -129,15 +129,15 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
     case google_apis::HTTP_BAD_REQUEST:
     case google_apis::HTTP_LENGTH_REQUIRED:
     case google_apis::HTTP_NOT_IMPLEMENTED:
-    case google_apis::GDATA_PARSE_ERROR:
-    case google_apis::GDATA_OTHER_ERROR:
+    case google_apis::DRIVE_PARSE_ERROR:
+    case google_apis::DRIVE_OTHER_ERROR:
       return SYNC_STATUS_FAILED;
 
-    case google_apis::GDATA_NO_SPACE:
+    case google_apis::DRIVE_NO_SPACE:
       return SYNC_FILE_ERROR_NO_SPACE;
   }
 
-  // There's a case where DriveService layer returns GDataErrorCode==-1
+  // There's a case where DriveService layer returns DriveApiErrorCode==-1
   // when network is unavailable. (http://crbug.com/223042)
   // TODO(kinuko,nhiroki): We should identify from where this undefined error
   // code is coming.

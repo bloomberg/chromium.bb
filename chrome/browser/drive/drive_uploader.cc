@@ -17,9 +17,9 @@
 
 using google_apis::CancelCallback;
 using google_apis::FileResource;
-using google_apis::GDATA_CANCELLED;
-using google_apis::GDataErrorCode;
-using google_apis::GDATA_NO_SPACE;
+using google_apis::DRIVE_CANCELLED;
+using google_apis::DriveApiErrorCode;
+using google_apis::DRIVE_NO_SPACE;
 using google_apis::HTTP_CONFLICT;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_FORBIDDEN;
@@ -233,7 +233,7 @@ void DriveUploader::StartUploadFileAfterGetFileSize(
   DCHECK_GE(upload_file_info->content_length, 0);
 
   if (upload_file_info->cancelled) {
-    UploadFailed(upload_file_info.Pass(), GDATA_CANCELLED);
+    UploadFailed(upload_file_info.Pass(), DRIVE_CANCELLED);
     return;
   }
   start_initiate_upload_callback.Run(upload_file_info.Pass());
@@ -290,7 +290,7 @@ void DriveUploader::CallUploadServiceAPIExistingFile(
 
 void DriveUploader::OnUploadLocationReceived(
     scoped_ptr<UploadFileInfo> upload_file_info,
-    GDataErrorCode code,
+    DriveApiErrorCode code,
     const GURL& upload_location) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -332,7 +332,7 @@ void DriveUploader::UploadNextChunk(
             upload_file_info->content_length);
 
   if (upload_file_info->cancelled) {
-    UploadFailed(upload_file_info.Pass(), GDATA_CANCELLED);
+    UploadFailed(upload_file_info.Pass(), DRIVE_CANCELLED);
     return;
   }
 
@@ -401,7 +401,7 @@ void DriveUploader::OnUploadRangeResponseReceived(
         << ", end_position_received=" << response.end_position_received;
     UploadFailed(
         upload_file_info.Pass(),
-        response.code == HTTP_FORBIDDEN ? GDATA_NO_SPACE : response.code);
+        response.code == HTTP_FORBIDDEN ? DRIVE_NO_SPACE : response.code);
     return;
   }
 
@@ -423,7 +423,7 @@ void DriveUploader::OnUploadProgress(const ProgressCallback& callback,
 }
 
 void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
-                                 GDataErrorCode error) {
+                                 DriveApiErrorCode error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DVLOG(1) << "Upload failed " << upload_file_info->DebugString();
@@ -440,7 +440,7 @@ void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
 
 void DriveUploader::OnMultipartUploadComplete(
     scoped_ptr<UploadFileInfo> upload_file_info,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<FileResource> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

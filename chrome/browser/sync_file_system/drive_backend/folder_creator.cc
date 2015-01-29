@@ -43,9 +43,9 @@ void FolderCreator::Run(const FileIDCallback& callback) {
 
 void FolderCreator::DidCreateFolder(
     const FileIDCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::FileResource> entry) {
-  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
     callback.Run(std::string(), status);
     return;
@@ -61,9 +61,9 @@ void FolderCreator::DidCreateFolder(
 void FolderCreator::DidListFolders(
     const FileIDCallback& callback,
     ScopedVector<google_apis::FileResource> candidates,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::FileList> file_list) {
-  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
     callback.Run(std::string(), status);
     return;

@@ -557,7 +557,7 @@ void CopyOperation::CopyResourceOnServer(
 
 void CopyOperation::UpdateAfterServerSideOperation(
     const FileOperationCallback& callback,
-    google_apis::GDataErrorCode status,
+    google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

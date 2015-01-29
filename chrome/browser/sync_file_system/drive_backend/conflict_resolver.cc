@@ -144,9 +144,10 @@ void ConflictResolver::DetachFromNonPrimaryParents(
                  base::Passed(&token)));
 }
 
-void ConflictResolver::DidDetachFromParent(scoped_ptr<SyncTaskToken> token,
-                                           google_apis::GDataErrorCode error) {
-  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+void ConflictResolver::DidDetachFromParent(
+    scoped_ptr<SyncTaskToken> token,
+    google_apis::DriveApiErrorCode error) {
+  SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
     SyncTaskManager::NotifyTaskDone(token.Pass(), status);
     return;
@@ -248,14 +249,14 @@ void ConflictResolver::RemoveNonPrimaryFiles(scoped_ptr<SyncTaskToken> token) {
 
 void ConflictResolver::DidRemoveFile(scoped_ptr<SyncTaskToken> token,
                                      const std::string& file_id,
-                                     google_apis::GDataErrorCode error) {
+                                     google_apis::DriveApiErrorCode error) {
   if (error == google_apis::HTTP_PRECONDITION ||
       error == google_apis::HTTP_CONFLICT) {
     UpdateFileMetadata(file_id, token.Pass());
     return;
   }
 
-  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK && error != google_apis::HTTP_NOT_FOUND) {
     SyncTaskManager::NotifyTaskDone(token.Pass(), status);
     return;
@@ -290,9 +291,9 @@ void ConflictResolver::UpdateFileMetadata(
 void ConflictResolver::DidGetRemoteMetadata(
     const std::string& file_id,
     scoped_ptr<SyncTaskToken> token,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::FileResource> entry) {
-  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK && error != google_apis::HTTP_NOT_FOUND) {
     SyncTaskManager::NotifyTaskDone(token.Pass(), status);
     return;

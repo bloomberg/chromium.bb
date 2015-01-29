@@ -52,10 +52,10 @@ template<typename CallbackType> struct CreateErrorRunCallbackHelper;
 
 // CreateErrorRunCallback with two arguments.
 template<typename P1>
-struct CreateErrorRunCallbackHelper<void(google_apis::GDataErrorCode, P1)> {
+struct CreateErrorRunCallbackHelper<void(google_apis::DriveApiErrorCode, P1)> {
   static void Run(
-      const base::Callback<void(google_apis::GDataErrorCode, P1)>& callback,
-      google_apis::GDataErrorCode error) {
+      const base::Callback<void(google_apis::DriveApiErrorCode, P1)>& callback,
+      google_apis::DriveApiErrorCode error) {
     callback.Run(error, DefaultValueCreator<P1>::GetDefaultValue());
   }
 };
@@ -63,7 +63,7 @@ struct CreateErrorRunCallbackHelper<void(google_apis::GDataErrorCode, P1)> {
 // Returns a callback with the tail parameter bound to its default value.
 // In other words, returned_callback.Run(error) runs callback.Run(error, T()).
 template<typename CallbackType>
-base::Callback<void(google_apis::GDataErrorCode)>
+base::Callback<void(google_apis::DriveApiErrorCode)>
 CreateErrorRunCallback(const base::Callback<CallbackType>& callback) {
   return base::Bind(&CreateErrorRunCallbackHelper<CallbackType>::Run, callback);
 }
@@ -258,7 +258,7 @@ void JobScheduler::CancelJob(JobID job_id) {
       if (!job->cancel_callback.is_null())
         job->cancel_callback.Run();
     } else {
-      AbortNotRunningJob(job, google_apis::GDATA_CANCELLED);
+      AbortNotRunningJob(job, google_apis::DRIVE_CANCELLED);
     }
   }
 }
@@ -804,7 +804,7 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
     for (size_t i = 0; i < jobs.size(); ++i) {
       JobEntry* job = job_map_.Lookup(jobs[i]);
       DCHECK(job);
-      AbortNotRunningJob(job, google_apis::GDATA_NO_CONNECTION);
+      AbortNotRunningJob(job, google_apis::DRIVE_NO_CONNECTION);
     }
   }
 
@@ -883,7 +883,8 @@ void JobScheduler::UpdateWait() {
   wait_until_ = std::max(wait_until_, base::Time::Now() + delay);
 }
 
-bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
+bool JobScheduler::OnJobDone(JobID job_id,
+                             google_apis::DriveApiErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   JobEntry* job_entry = job_map_.Lookup(job_id);
@@ -897,7 +898,7 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
   logger_->Log(success ? logging::LOG_INFO : logging::LOG_WARNING,
                "Job done: %s => %s (elapsed time: %sms) - %s",
                job_info->ToString().c_str(),
-               GDataErrorCodeToString(error).c_str(),
+               DriveApiErrorCodeToString(error).c_str(),
                base::Int64ToString(elapsed.InMilliseconds()).c_str(),
                GetQueueInfo(queue_type).c_str());
 
@@ -943,7 +944,7 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
 void JobScheduler::OnGetFileListJobDone(
     JobID job_id,
     const google_apis::FileListCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::FileList> file_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -955,7 +956,7 @@ void JobScheduler::OnGetFileListJobDone(
 void JobScheduler::OnGetChangeListJobDone(
     JobID job_id,
     const google_apis::ChangeListCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::ChangeList> change_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -967,7 +968,7 @@ void JobScheduler::OnGetChangeListJobDone(
 void JobScheduler::OnGetFileResourceJobDone(
     JobID job_id,
     const google_apis::FileResourceCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -979,7 +980,7 @@ void JobScheduler::OnGetFileResourceJobDone(
 void JobScheduler::OnGetAboutResourceJobDone(
     JobID job_id,
     const google_apis::AboutResourceCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -991,7 +992,7 @@ void JobScheduler::OnGetAboutResourceJobDone(
 void JobScheduler::OnGetShareUrlJobDone(
     JobID job_id,
     const google_apis::GetShareUrlCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     const GURL& share_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -1003,7 +1004,7 @@ void JobScheduler::OnGetShareUrlJobDone(
 void JobScheduler::OnGetAppListJobDone(
     JobID job_id,
     const google_apis::AppListCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::AppList> app_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -1015,7 +1016,7 @@ void JobScheduler::OnGetAppListJobDone(
 void JobScheduler::OnEntryActionJobDone(
     JobID job_id,
     const google_apis::EntryActionCallback& callback,
-    google_apis::GDataErrorCode error) {
+    google_apis::DriveApiErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1026,7 +1027,7 @@ void JobScheduler::OnEntryActionJobDone(
 void JobScheduler::OnDownloadActionJobDone(
     JobID job_id,
     const google_apis::DownloadActionCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     const base::FilePath& temp_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -1039,7 +1040,7 @@ void JobScheduler::OnUploadCompletionJobDone(
     JobID job_id,
     const ResumeUploadParams& resume_params,
     const google_apis::FileResourceCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     const GURL& upload_location,
     scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1076,7 +1077,7 @@ void JobScheduler::OnResumeUploadFileDone(
     JobID job_id,
     const base::Callback<google_apis::CancelCallback()>& original_task,
     const google_apis::FileResourceCallback& callback,
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     const GURL& upload_location,
     scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1147,7 +1148,7 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
 }
 
 void JobScheduler::AbortNotRunningJob(JobEntry* job,
-                                      google_apis::GDataErrorCode error) {
+                                      google_apis::DriveApiErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const base::TimeDelta elapsed = base::Time::Now() - job->job_info.start_time;
@@ -1155,11 +1156,11 @@ void JobScheduler::AbortNotRunningJob(JobEntry* job,
   logger_->Log(logging::LOG_INFO,
                "Job aborted: %s => %s (elapsed time: %sms) - %s",
                job->job_info.ToString().c_str(),
-               GDataErrorCodeToString(error).c_str(),
+               DriveApiErrorCodeToString(error).c_str(),
                base::Int64ToString(elapsed.InMilliseconds()).c_str(),
                GetQueueInfo(queue_type).c_str());
 
-  base::Callback<void(google_apis::GDataErrorCode)> callback =
+  base::Callback<void(google_apis::DriveApiErrorCode)> callback =
       job->abort_callback;
   queue_[GetJobQueueType(job->job_info.job_type)]->Remove(job->job_info.job_id);
   NotifyJobDone(job->job_info, error);
@@ -1174,7 +1175,7 @@ void JobScheduler::NotifyJobAdded(const JobInfo& job_info) {
 }
 
 void JobScheduler::NotifyJobDone(const JobInfo& job_info,
-                                 google_apis::GDataErrorCode error) {
+                                 google_apis::DriveApiErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(JobListObserver, observer_list_,
                     OnJobDone(job_info, GDataToFileError(error)));

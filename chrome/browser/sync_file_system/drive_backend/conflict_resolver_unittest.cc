@@ -28,8 +28,8 @@
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_errorcode.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
@@ -157,10 +157,10 @@ class ConflictResolverTest : public testing::Test {
                         SYNC_FILE_TYPE_FILE));
   }
 
-  google_apis::GDataErrorCode AddFileToFolder(
+  google_apis::DriveApiErrorCode AddFileToFolder(
       const std::string& parent_folder_id,
       const std::string& file_id) {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     context_->GetDriveService()->AddResourceToDirectory(
         parent_folder_id, file_id,
         CreateResultReceiver(&error));

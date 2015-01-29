@@ -132,7 +132,7 @@ void DriveAppRegistry::Update() {
 }
 
 void DriveAppRegistry::UpdateAfterGetAppList(
-    google_apis::GDataErrorCode gdata_error,
+    google_apis::DriveApiErrorCode gdata_error,
     scoped_ptr<google_apis::AppList> app_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -211,7 +211,7 @@ void DriveAppRegistry::UninstallApp(const std::string& app_id,
 
 void DriveAppRegistry::OnAppUninstalled(const std::string& app_id,
                                         const UninstallCallback& callback,
-                                        google_apis::GDataErrorCode error) {
+                                        google_apis::DriveApiErrorCode error) {
   if (error == google_apis::HTTP_NO_CONTENT) {
     all_apps_.erase(app_id);
     RemoveAppFromSelector(app_id, &mimetype_map_);

@@ -344,7 +344,7 @@ bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
 }
 
 void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
-    google_apis::GDataErrorCode code,
+    google_apis::DriveApiErrorCode code,
     const std::string& access_token) {
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
 
@@ -358,8 +358,8 @@ void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
   } else {
     if (logger) {
       logger->Log(logging::LOG_ERROR,
-                  "CWS OAuth token fetch failed. (GDataErrorCode: %s)",
-                  google_apis::GDataErrorCodeToString(code).c_str());
+                  "CWS OAuth token fetch failed. (DriveApiErrorCode: %s)",
+                  google_apis::DriveApiErrorCodeToString(code).c_str());
     }
     SetResult(base::Value::CreateNullValue());
     SendResponse(false);

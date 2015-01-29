@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 class GURL;
 
@@ -34,7 +34,7 @@ class DriveServiceInterface;
 // terminated before the completion due to some errors. It can be used to
 // resume it.
 typedef base::Callback<void(
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     const GURL& upload_location,
     scoped_ptr<google_apis::FileResource> resource_entry)>
     UploadCompletionCallback;
@@ -173,7 +173,7 @@ class DriveUploader : public DriveUploaderInterface {
 
   // DriveService callback for InitiateUpload.
   void OnUploadLocationReceived(scoped_ptr<UploadFileInfo> upload_file_info,
-                                google_apis::GDataErrorCode code,
+                                google_apis::DriveApiErrorCode code,
                                 const GURL& upload_location);
 
   // Starts to get the current upload status for the file uploading.
@@ -196,11 +196,11 @@ class DriveUploader : public DriveUploaderInterface {
 
   // Handles failed uploads.
   void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
-                    google_apis::GDataErrorCode error);
+                    google_apis::DriveApiErrorCode error);
 
   // Handles completion/error of multipart uploading.
   void OnMultipartUploadComplete(scoped_ptr<UploadFileInfo> upload_file_info,
-                                 google_apis::GDataErrorCode error,
+                                 google_apis::DriveApiErrorCode error,
                                  scoped_ptr<google_apis::FileResource> entry);
 
   // The class is expected to run on UI thread.

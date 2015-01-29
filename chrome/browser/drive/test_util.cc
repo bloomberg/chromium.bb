@@ -11,15 +11,15 @@
 #include "google_apis/drive/test_util.h"
 
 using google_apis::FileResource;
-using google_apis::GDATA_OTHER_ERROR;
-using google_apis::GDataErrorCode;
+using google_apis::DRIVE_OTHER_ERROR;
+using google_apis::DriveApiErrorCode;
 using google_apis::HTTP_CREATED;
 
 namespace drive {
 namespace test_util {
 
 bool SetUpTestEntries(FakeDriveService* drive_service) {
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
 
   drive_service->AddNewFileWithResourceId(

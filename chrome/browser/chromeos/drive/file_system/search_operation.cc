@@ -118,7 +118,7 @@ void SearchOperation::Search(const std::string& search_query,
 
 void SearchOperation::SearchAfterGetFileList(
     const SearchCallback& callback,
-    google_apis::GDataErrorCode gdata_error,
+    google_apis::DriveApiErrorCode gdata_error,
     scoped_ptr<google_apis::FileList> file_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

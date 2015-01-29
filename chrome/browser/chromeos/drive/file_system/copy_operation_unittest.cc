@@ -186,7 +186,7 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_NewHostedDocument) {
       "drive/root/Directory 1/moved.gdoc"));
 
   // Create a hosted document on the server that is not synced to local yet.
-  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> new_gdoc_entry;
   fake_service()->AddNewFile(
       "application/vnd.google-apps.document", "", "", "title", true,
@@ -482,7 +482,7 @@ TEST_F(CopyOperationTest, WaitForSyncComplete) {
   ASSERT_FALSE(pending_callback.is_null());
 
   // Add a new directory to the server and store the resource ID locally.
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> file_resource;
   fake_service()->AddNewDirectory(
       directory_parent.resource_id(),

@@ -13,7 +13,7 @@
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/escape.h"
 

@@ -232,7 +232,7 @@ void FilterHostedDocuments(const ReadDirectoryEntriesCallback& callback,
 // Adapter for using FileOperationCallback as google_apis::EntryActionCallback.
 void RunFileOperationCallbackAsEntryActionCallback(
     const FileOperationCallback& callback,
-    google_apis::GDataErrorCode error) {
+    google_apis::DriveApiErrorCode error) {
   callback.Run(GDataToFileError(error));
 }
 
@@ -692,7 +692,7 @@ void FileSystem::GetAvailableSpace(
 
 void FileSystem::OnGetAboutResource(
     const GetAvailableSpaceCallback& callback,
-    google_apis::GDataErrorCode status,
+    google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -762,7 +762,7 @@ void FileSystem::GetShareUrlAfterGetResourceEntry(
 
 void FileSystem::OnGetResourceEntryForGetShareUrl(
     const GetShareUrlCallback& callback,
-    google_apis::GDataErrorCode status,
+    google_apis::DriveApiErrorCode status,
     const GURL& share_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

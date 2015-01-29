@@ -111,7 +111,7 @@ class TestRequest : public AuthenticatedRequestInterface {
     sender_->RequestFinished(this);
   }
 
-  void OnAuthFailed(GDataErrorCode code) override {
+  void OnAuthFailed(DriveApiErrorCode code) override {
     *finish_reason_ = AUTH_FAILURE;
     sender_->RequestFinished(this);
   }

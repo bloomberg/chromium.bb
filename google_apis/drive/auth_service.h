@@ -60,7 +60,7 @@ class AuthService : public AuthServiceInterface,
   // Called when authentication request from StartAuthentication() is
   // completed.
   void OnAuthCompleted(const AuthStatusCallback& callback,
-                       GDataErrorCode error,
+                       DriveApiErrorCode error,
                        const std::string& access_token);
 
   OAuth2TokenService* oauth2_token_service_;

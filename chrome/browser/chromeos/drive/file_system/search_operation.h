@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -56,7 +56,7 @@ class SearchOperation {
   // Part of Search(), called after the FileList is fetched from the server.
   void SearchAfterGetFileList(
       const SearchCallback& callback,
-      google_apis::GDataErrorCode gdata_error,
+      google_apis::DriveApiErrorCode gdata_error,
       scoped_ptr<google_apis::FileList> file_list);
 
   // Part of Search(), called after |result| is filled on the blocking pool.

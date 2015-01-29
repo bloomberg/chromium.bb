@@ -31,9 +31,9 @@ using google_apis::FileList;
 using google_apis::FileListCallback;
 using google_apis::FileResource;
 using google_apis::FileResourceCallback;
-using google_apis::GDATA_OTHER_ERROR;
-using google_apis::GDATA_PARSE_ERROR;
-using google_apis::GDataErrorCode;
+using google_apis::DRIVE_OTHER_ERROR;
+using google_apis::DRIVE_PARSE_ERROR;
+using google_apis::DriveApiErrorCode;
 using google_apis::GetContentCallback;
 using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_NOT_IMPLEMENTED;
@@ -118,7 +118,7 @@ const char kChangeListFields[] =
 
 void ExtractOpenUrlAndRun(const std::string& app_id,
                           const AuthorizeAppCallback& callback,
-                          GDataErrorCode error,
+                          DriveApiErrorCode error,
                           scoped_ptr<FileResource> value) {
   DCHECK(!callback.is_null());
 
@@ -137,11 +137,11 @@ void ExtractOpenUrlAndRun(const std::string& app_id,
   }
 
   // Not found.
-  callback.Run(GDATA_OTHER_ERROR, GURL());
+  callback.Run(DRIVE_OTHER_ERROR, GURL());
 }
 
 void ExtractShareUrlAndRun(const GetShareUrlCallback& callback,
-                           GDataErrorCode error,
+                           DriveApiErrorCode error,
                            scoped_ptr<FileResource> value) {
   callback.Run(error, value ? value->share_link() : GURL());
 }
@@ -149,7 +149,7 @@ void ExtractShareUrlAndRun(const GetShareUrlCallback& callback,
 // Ignores the |entry|, and runs the |callback|.
 void EntryActionCallbackAdapter(
     const EntryActionCallback& callback,
-    GDataErrorCode error, scoped_ptr<FileResource> entry) {
+    DriveApiErrorCode error, scoped_ptr<FileResource> entry) {
   callback.Run(error);
 }
 

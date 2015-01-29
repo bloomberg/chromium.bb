@@ -49,7 +49,7 @@ TEST_F(RemovePerformerTest, RemoveFile) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Verify the file is indeed removed in the server.
-  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> gdata_entry;
   fake_service()->GetFileResource(
       resource_id,
@@ -78,7 +78,7 @@ TEST_F(RemovePerformerTest, RemoveShared) {
       "drive/other/shared.txt"));
 
   // Prepare a shared file to the root folder.
-  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> gdata_entry;
   fake_service()->AddNewFile(
       "text/plain",
@@ -106,7 +106,7 @@ TEST_F(RemovePerformerTest, RemoveShared) {
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kPathInOther, &entry));
 
   // Remotely, the entry should have lost its parent.
-  gdata_error = google_apis::GDATA_OTHER_ERROR;
+  gdata_error = google_apis::DRIVE_OTHER_ERROR;
   const std::string resource_id = gdata_entry->file_id();
   fake_service()->GetFileResource(
       resource_id,

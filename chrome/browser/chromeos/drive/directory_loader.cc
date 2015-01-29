@@ -121,7 +121,7 @@ class DirectoryLoader::FeedFetcher {
 
  private:
   void OnFileListFetched(const FileOperationCallback& callback,
-                         google_apis::GDataErrorCode status,
+                         google_apis::DriveApiErrorCode status,
                          scoped_ptr<google_apis::FileList> file_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
@@ -335,7 +335,7 @@ void DirectoryLoader::ReadDirectoryAfterLoadParent(
 
 void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
     const std::string& local_id,
-    google_apis::GDataErrorCode status,
+    google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

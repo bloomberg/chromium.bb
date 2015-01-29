@@ -402,7 +402,7 @@ class DriveBackendSyncTest : public testing::Test,
   // file content if the corresponding local file conflicts to it.
   void VerifyConsistency() {
     std::string sync_root_folder_id;
-    google_apis::GDataErrorCode error =
+    google_apis::DriveApiErrorCode error =
         fake_drive_service_helper_->GetSyncRootFolderID(&sync_root_folder_id);
     if (sync_root_folder_id.empty()) {
       EXPECT_EQ(google_apis::HTTP_NOT_FOUND, error);

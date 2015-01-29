@@ -23,7 +23,7 @@ namespace {
 
 FileError FinishRevert(ResourceMetadata* metadata,
                        const std::string& local_id,
-                       google_apis::GDataErrorCode status,
+                       google_apis::DriveApiErrorCode status,
                        scoped_ptr<google_apis::FileResource> file_resource,
                        FileChange* changed_files) {
   ResourceEntry entry;
@@ -144,7 +144,7 @@ void EntryRevertPerformer::RevertEntryAfterPrepare(
 void EntryRevertPerformer::RevertEntryAfterGetFileResource(
     const FileOperationCallback& callback,
     const std::string& local_id,
-    google_apis::GDataErrorCode status,
+    google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

@@ -291,7 +291,7 @@ UrlFetchRequestBase::UrlFetchRequestBase(RequestSender* sender)
     : re_authenticate_count_(0),
       response_writer_(NULL),
       sender_(sender),
-      error_code_(GDATA_OTHER_ERROR),
+      error_code_(DRIVE_OTHER_ERROR),
       weak_ptr_factory_(this) {
 }
 
@@ -312,7 +312,7 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
     // Error is found on generating the url. Send the error message to the
     // callback, and then return immediately without trying to connect
     // to the server.
-    RunCallbackOnPrematureFailure(GDATA_OTHER_ERROR);
+    RunCallbackOnPrematureFailure(DRIVE_OTHER_ERROR);
     return;
   }
   DVLOG(1) << "URL: " << url.spec();
@@ -414,11 +414,11 @@ void UrlFetchRequestBase::GetOutputFilePath(
 void UrlFetchRequestBase::Cancel() {
   response_writer_ = NULL;
   url_fetcher_.reset(NULL);
-  RunCallbackOnPrematureFailure(GDATA_CANCELLED);
+  RunCallbackOnPrematureFailure(DRIVE_CANCELLED);
   sender_->RequestFinished(this);
 }
 
-GDataErrorCode UrlFetchRequestBase::GetErrorCode() {
+DriveApiErrorCode UrlFetchRequestBase::GetErrorCode() {
   return error_code_;
 }
 
@@ -438,14 +438,14 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
   DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
   // Determine error code.
-  error_code_ = static_cast<GDataErrorCode>(source->GetResponseCode());
+  error_code_ = static_cast<DriveApiErrorCode>(source->GetResponseCode());
   if (!source->GetStatus().is_success()) {
     switch (source->GetStatus().error()) {
       case net::ERR_NETWORK_CHANGED:
-        error_code_ = GDATA_NO_CONNECTION;
+        error_code_ = DRIVE_NO_CONNECTION;
         break;
       default:
-        error_code_ = GDATA_OTHER_ERROR;
+        error_code_ = DRIVE_OTHER_ERROR;
     }
   }
 
@@ -484,7 +484,7 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
             reason == kErrorReasonUserRateLimitExceeded)
           error_code_ = HTTP_SERVICE_UNAVAILABLE;
         if (reason == kErrorReasonQuotaExceeded)
-          error_code_ = GDATA_NO_SPACE;
+          error_code_ = DRIVE_NO_SPACE;
       }
     }
   }
@@ -507,7 +507,7 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
   ProcessURLFetchResults(source);
 }
 
-void UrlFetchRequestBase::OnAuthFailed(GDataErrorCode code) {
+void UrlFetchRequestBase::OnAuthFailed(DriveApiErrorCode code) {
   RunCallbackOnPrematureFailure(code);
   sender_->RequestFinished(this);
 }
@@ -533,7 +533,7 @@ void EntryActionRequest::ProcessURLFetchResults(const URLFetcher* source) {
   OnProcessURLFetchResultsComplete();
 }
 
-void EntryActionRequest::RunCallbackOnPrematureFailure(GDataErrorCode code) {
+void EntryActionRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
   callback_.Run(code);
 }
 
@@ -557,7 +557,7 @@ InitiateUploadRequestBase::~InitiateUploadRequestBase() {}
 
 void InitiateUploadRequestBase::ProcessURLFetchResults(
     const URLFetcher* source) {
-  GDataErrorCode code = GetErrorCode();
+  DriveApiErrorCode code = GetErrorCode();
 
   std::string upload_location;
   if (code == HTTP_SUCCESS) {
@@ -572,7 +572,7 @@ void InitiateUploadRequestBase::ProcessURLFetchResults(
 }
 
 void InitiateUploadRequestBase::RunCallbackOnPrematureFailure(
-    GDataErrorCode code) {
+    DriveApiErrorCode code) {
   callback_.Run(code, GURL());
 }
 
@@ -593,7 +593,7 @@ UploadRangeResponse::UploadRangeResponse()
       end_position_received(0) {
 }
 
-UploadRangeResponse::UploadRangeResponse(GDataErrorCode code,
+UploadRangeResponse::UploadRangeResponse(DriveApiErrorCode code,
                                          int64 start_position_received,
                                          int64 end_position_received)
     : code(code),
@@ -627,7 +627,7 @@ URLFetcher::RequestType UploadRangeRequestBase::GetRequestType() const {
 
 void UploadRangeRequestBase::ProcessURLFetchResults(
     const URLFetcher* source) {
-  GDataErrorCode code = GetErrorCode();
+  DriveApiErrorCode code = GetErrorCode();
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
 
   if (code == HTTP_RESUME_INCOMPLETE) {
@@ -678,7 +678,7 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
   }
 }
 
-void UploadRangeRequestBase::OnDataParsed(GDataErrorCode code,
+void UploadRangeRequestBase::OnDataParsed(DriveApiErrorCode code,
                                           scoped_ptr<base::Value> value) {
   DCHECK(CalledOnValidThread());
   DCHECK(code == HTTP_CREATED || code == HTTP_SUCCESS);
@@ -688,7 +688,7 @@ void UploadRangeRequestBase::OnDataParsed(GDataErrorCode code,
 }
 
 void UploadRangeRequestBase::RunCallbackOnPrematureFailure(
-    GDataErrorCode code) {
+    DriveApiErrorCode code) {
   OnRangeRequestComplete(
       UploadRangeResponse(code, 0, 0), scoped_ptr<base::Value>());
 }
@@ -842,7 +842,7 @@ void MultipartUploadRequestBase::OnPrepareUploadContent(
     std::string* upload_content_data,
     bool result) {
   if (!result) {
-    RunCallbackOnPrematureFailure(GDATA_FILE_ERROR);
+    RunCallbackOnPrematureFailure(DRIVE_FILE_ERROR);
     return;
   }
   upload_content_type_.swap(*upload_content_type);
@@ -868,7 +868,7 @@ void MultipartUploadRequestBase::ProcessURLFetchResults(
     const URLFetcher* source) {
   // The upload is successfully done. Parse the response which should be
   // the entry's metadata.
-  const GDataErrorCode code = GetErrorCode();
+  const DriveApiErrorCode code = GetErrorCode();
   if (code == HTTP_CREATED || code == HTTP_SUCCESS) {
     ParseJsonOnBlockingPool(
         blocking_task_runner(), response_writer()->data(),
@@ -880,7 +880,7 @@ void MultipartUploadRequestBase::ProcessURLFetchResults(
 }
 
 void MultipartUploadRequestBase::RunCallbackOnPrematureFailure(
-    GDataErrorCode code) {
+    DriveApiErrorCode code) {
   callback_.Run(code, scoped_ptr<FileResource>());
 }
 
@@ -892,13 +892,13 @@ void MultipartUploadRequestBase::OnURLFetchUploadProgress(
     progress_callback_.Run(current, total);
 }
 
-void MultipartUploadRequestBase::OnDataParsed(GDataErrorCode code,
+void MultipartUploadRequestBase::OnDataParsed(DriveApiErrorCode code,
                                               scoped_ptr<base::Value> value) {
   DCHECK(CalledOnValidThread());
   if (value)
     callback_.Run(code, google_apis::FileResource::CreateFrom(*value));
   else
-    callback_.Run(GDATA_PARSE_ERROR, scoped_ptr<FileResource>());
+    callback_.Run(DRIVE_PARSE_ERROR, scoped_ptr<FileResource>());
   OnProcessURLFetchResultsComplete();
 }
 
@@ -946,7 +946,7 @@ void DownloadFileRequestBase::OnURLFetchDownloadProgress(
 }
 
 void DownloadFileRequestBase::ProcessURLFetchResults(const URLFetcher* source) {
-  GDataErrorCode code = GetErrorCode();
+  DriveApiErrorCode code = GetErrorCode();
 
   // Take over the ownership of the the downloaded temp file.
   base::FilePath temp_file;
@@ -960,7 +960,7 @@ void DownloadFileRequestBase::ProcessURLFetchResults(const URLFetcher* source) {
 }
 
 void DownloadFileRequestBase::RunCallbackOnPrematureFailure(
-    GDataErrorCode code) {
+    DriveApiErrorCode code) {
   download_action_callback_.Run(code, base::FilePath());
 }
 

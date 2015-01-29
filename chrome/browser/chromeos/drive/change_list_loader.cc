@@ -62,7 +62,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
 
  private:
   void OnFileListFetched(const FeedFetcherCallback& callback,
-                         google_apis::GDataErrorCode status,
+                         google_apis::DriveApiErrorCode status,
                          scoped_ptr<google_apis::FileList> file_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
@@ -124,7 +124,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
 
  private:
   void OnChangeListFetched(const FeedFetcherCallback& callback,
-                           google_apis::GDataErrorCode status,
+                           google_apis::DriveApiErrorCode status,
                            scoped_ptr<google_apis::ChangeList> change_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
@@ -253,7 +253,7 @@ void AboutResourceLoader::UpdateAboutResource(
 
 void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
     int task_id,
-    google_apis::GDataErrorCode status,
+    google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FileError error = GDataToFileError(status);
@@ -415,7 +415,7 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(
 
 void ChangeListLoader::LoadAfterGetAboutResource(
     int64 local_changestamp,
-    google_apis::GDataErrorCode status,
+    google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -469,14 +469,14 @@ void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
 }
 
 void ChangeListLoader::OnAboutResourceUpdated(
-    google_apis::GDataErrorCode error,
+    google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::AboutResource> resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (drive::GDataToFileError(error) != drive::FILE_ERROR_OK) {
     logger_->Log(logging::LOG_ERROR,
                  "Failed to update the about resource: %s",
-                 google_apis::GDataErrorCodeToString(error).c_str());
+                 google_apis::DriveApiErrorCodeToString(error).c_str());
     return;
   }
   logger_->Log(logging::LOG_INFO,

@@ -236,7 +236,7 @@ class JobScheduler
 
     // The callback to notify an error to the client of JobScheduler.
     // This is used to notify cancel of a job that is not running yet.
-    base::Callback<void(google_apis::GDataErrorCode)> abort_callback;
+    base::Callback<void(google_apis::DriveApiErrorCode)> abort_callback;
   };
 
   // Parameters for DriveUploader::ResumeUploadFile.
@@ -263,60 +263,60 @@ class JobScheduler
   void UpdateWait();
 
   // Retries the job if needed and returns false. Otherwise returns true.
-  bool OnJobDone(JobID job_id, google_apis::GDataErrorCode error);
+  bool OnJobDone(JobID job_id, google_apis::DriveApiErrorCode error);
 
   // Callback for job finishing with a FileListCallback.
   void OnGetFileListJobDone(
       JobID job_id,
       const google_apis::FileListCallback& callback,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       scoped_ptr<google_apis::FileList> file_list);
 
   // Callback for job finishing with a ChangeListCallback.
   void OnGetChangeListJobDone(
       JobID job_id,
       const google_apis::ChangeListCallback& callback,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       scoped_ptr<google_apis::ChangeList> change_list);
 
   // Callback for job finishing with a FileResourceCallback.
   void OnGetFileResourceJobDone(
       JobID job_id,
       const google_apis::FileResourceCallback& callback,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       scoped_ptr<google_apis::FileResource> entry);
 
   // Callback for job finishing with a AboutResourceCallback.
   void OnGetAboutResourceJobDone(
       JobID job_id,
       const google_apis::AboutResourceCallback& callback,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Callback for job finishing with a GetShareUrlCallback.
   void OnGetShareUrlJobDone(
       JobID job_id,
       const google_apis::GetShareUrlCallback& callback,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       const GURL& share_url);
 
   // Callback for job finishing with a AppListCallback.
   void OnGetAppListJobDone(
       JobID job_id,
       const google_apis::AppListCallback& callback,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       scoped_ptr<google_apis::AppList> app_list);
 
   // Callback for job finishing with a EntryActionCallback.
   void OnEntryActionJobDone(JobID job_id,
                             const google_apis::EntryActionCallback& callback,
-                            google_apis::GDataErrorCode error);
+                            google_apis::DriveApiErrorCode error);
 
   // Callback for job finishing with a DownloadActionCallback.
   void OnDownloadActionJobDone(
       JobID job_id,
       const google_apis::DownloadActionCallback& callback,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       const base::FilePath& temp_file);
 
   // Callback for job finishing with a UploadCompletionCallback.
@@ -324,7 +324,7 @@ class JobScheduler
       JobID job_id,
       const ResumeUploadParams& resume_params,
       const google_apis::FileResourceCallback& callback,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       const GURL& upload_location,
       scoped_ptr<google_apis::FileResource> entry);
 
@@ -333,7 +333,7 @@ class JobScheduler
       JobID job_id,
       const base::Callback<google_apis::CancelCallback()>& original_task,
       const google_apis::FileResourceCallback& callback,
-      google_apis::GDataErrorCode error,
+      google_apis::DriveApiErrorCode error,
       const GURL& upload_location,
       scoped_ptr<google_apis::FileResource> entry);
 
@@ -351,12 +351,12 @@ class JobScheduler
   void SetDisableThrottling(bool disable) { disable_throttling_ = disable; }
 
   // Aborts a job which is not in STATE_RUNNING.
-  void AbortNotRunningJob(JobEntry* job, google_apis::GDataErrorCode error);
+  void AbortNotRunningJob(JobEntry* job, google_apis::DriveApiErrorCode error);
 
   // Notifies updates to observers.
   void NotifyJobAdded(const JobInfo& job_info);
   void NotifyJobDone(const JobInfo& job_info,
-                     google_apis::GDataErrorCode error);
+                     google_apis::DriveApiErrorCode error);
   void NotifyJobUpdated(const JobInfo& job_info);
 
   // Gets information of the queue of the given type as string.

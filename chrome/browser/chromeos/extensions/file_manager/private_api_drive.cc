@@ -855,7 +855,7 @@ bool FileManagerPrivateRequestAccessTokenFunction::RunAsync() {
 }
 
 void FileManagerPrivateRequestAccessTokenFunction::OnAccessTokenFetched(
-    google_apis::GDataErrorCode code,
+    google_apis::DriveApiErrorCode code,
     const std::string& access_token) {
   SetResult(new base::StringValue(access_token));
   SendResponse(true);
@@ -1027,7 +1027,7 @@ void FileManagerPrivateGetDownloadUrlFunction::OnGetResourceEntry(
 }
 
 void FileManagerPrivateGetDownloadUrlFunction::OnTokenFetched(
-    google_apis::GDataErrorCode code,
+    google_apis::DriveApiErrorCode code,
     const std::string& access_token) {
   if (code != google_apis::HTTP_SUCCESS) {
     SetError("Not able to fetch the token.");

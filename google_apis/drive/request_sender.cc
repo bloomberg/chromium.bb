@@ -62,7 +62,7 @@ base::Closure RequestSender::StartRequestWithRetry(
 
 void RequestSender::OnAccessTokenFetched(
     const base::WeakPtr<AuthenticatedRequestInterface>& request,
-    GDataErrorCode code,
+    DriveApiErrorCode code,
     const std::string& /* access_token */) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

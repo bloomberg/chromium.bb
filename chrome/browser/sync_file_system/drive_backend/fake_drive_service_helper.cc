@@ -20,16 +20,16 @@
 using google_apis::AboutResource;
 using google_apis::FileList;
 using google_apis::FileResource;
-using google_apis::GDataErrorCode;
+using google_apis::DriveApiErrorCode;
 
 namespace sync_file_system {
 namespace drive_backend {
 
 namespace {
 
-void UploadResultCallback(GDataErrorCode* error_out,
+void UploadResultCallback(DriveApiErrorCode* error_out,
                           scoped_ptr<FileResource>* entry_out,
-                          GDataErrorCode error,
+                          DriveApiErrorCode error,
                           const GURL& upload_location,
                           scoped_ptr<FileResource> entry) {
   ASSERT_TRUE(error_out);
@@ -38,8 +38,8 @@ void UploadResultCallback(GDataErrorCode* error_out,
   *entry_out = entry.Pass();
 }
 
-void DownloadResultCallback(GDataErrorCode* error_out,
-                            GDataErrorCode error,
+void DownloadResultCallback(DriveApiErrorCode* error_out,
+                            DriveApiErrorCode error,
                             const base::FilePath& local_file) {
   ASSERT_TRUE(error_out);
   *error_out = error;
@@ -60,15 +60,15 @@ FakeDriveServiceHelper::FakeDriveServiceHelper(
 FakeDriveServiceHelper::~FakeDriveServiceHelper() {
 }
 
-GDataErrorCode FakeDriveServiceHelper::AddOrphanedFolder(
+DriveApiErrorCode FakeDriveServiceHelper::AddOrphanedFolder(
     const std::string& title,
     std::string* folder_id) {
   std::string root_folder_id = fake_drive_service_->GetRootResourceId();
-  GDataErrorCode error = AddFolder(root_folder_id, title, folder_id);
+  DriveApiErrorCode error = AddFolder(root_folder_id, title, folder_id);
   if (error != google_apis::HTTP_CREATED)
     return error;
 
-  error = google_apis::GDATA_OTHER_ERROR;
+  error = google_apis::DRIVE_OTHER_ERROR;
   fake_drive_service_->RemoveResourceFromDirectory(
       root_folder_id, *folder_id,
       CreateResultReceiver(&error));
@@ -79,11 +79,11 @@ GDataErrorCode FakeDriveServiceHelper::AddOrphanedFolder(
   return google_apis::HTTP_CREATED;
 }
 
-GDataErrorCode FakeDriveServiceHelper::AddFolder(
+DriveApiErrorCode FakeDriveServiceHelper::AddFolder(
     const std::string& parent_folder_id,
     const std::string& title,
     std::string* folder_id) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> folder;
   fake_drive_service_->AddNewDirectory(
       parent_folder_id, title,
@@ -96,14 +96,14 @@ GDataErrorCode FakeDriveServiceHelper::AddFolder(
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::AddFile(
+DriveApiErrorCode FakeDriveServiceHelper::AddFile(
     const std::string& parent_folder_id,
     const std::string& title,
     const std::string& content,
     std::string* file_id) {
   base::FilePath temp_file = WriteToTempFile(content);
 
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> file;
   drive_uploader_->UploadNewFile(
       parent_folder_id, temp_file, title,
@@ -118,11 +118,11 @@ GDataErrorCode FakeDriveServiceHelper::AddFile(
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::UpdateFile(
+DriveApiErrorCode FakeDriveServiceHelper::UpdateFile(
     const std::string& file_id,
     const std::string& content) {
   base::FilePath temp_file = WriteToTempFile(content);
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> file;
   drive_uploader_->UploadExistingFile(
       file_id, temp_file,
@@ -134,9 +134,9 @@ GDataErrorCode FakeDriveServiceHelper::UpdateFile(
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::DeleteResource(
+DriveApiErrorCode FakeDriveServiceHelper::DeleteResource(
     const std::string& file_id) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   fake_drive_service_->DeleteResource(
       file_id,
       std::string(),  // etag
@@ -145,9 +145,9 @@ GDataErrorCode FakeDriveServiceHelper::DeleteResource(
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::TrashResource(
+DriveApiErrorCode FakeDriveServiceHelper::TrashResource(
     const std::string& file_id) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   fake_drive_service_->TrashResource(
       file_id,
       CreateResultReceiver(&error));
@@ -155,10 +155,10 @@ GDataErrorCode FakeDriveServiceHelper::TrashResource(
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::UpdateModificationTime(
+DriveApiErrorCode FakeDriveServiceHelper::UpdateModificationTime(
     const std::string& file_id,
     const base::Time& modification_time) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   error = GetFileResource(file_id, &entry);
   if (error != google_apis::HTTP_SUCCESS)
@@ -172,10 +172,10 @@ GDataErrorCode FakeDriveServiceHelper::UpdateModificationTime(
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::RenameResource(
+DriveApiErrorCode FakeDriveServiceHelper::RenameResource(
     const std::string& file_id,
     const std::string& new_title) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_drive_service_->UpdateResource(
       file_id, std::string(), new_title, base::Time(), base::Time(),
@@ -184,10 +184,10 @@ GDataErrorCode FakeDriveServiceHelper::RenameResource(
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::AddResourceToDirectory(
+DriveApiErrorCode FakeDriveServiceHelper::AddResourceToDirectory(
     const std::string& parent_folder_id,
     const std::string& file_id) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   fake_drive_service_->AddResourceToDirectory(
       parent_folder_id, file_id,
       CreateResultReceiver(&error));
@@ -195,10 +195,10 @@ GDataErrorCode FakeDriveServiceHelper::AddResourceToDirectory(
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::RemoveResourceFromDirectory(
+DriveApiErrorCode FakeDriveServiceHelper::RemoveResourceFromDirectory(
     const std::string& parent_folder_id,
     const std::string& file_id) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   fake_drive_service_->RemoveResourceFromDirectory(
       parent_folder_id, file_id,
       CreateResultReceiver(&error));
@@ -206,9 +206,9 @@ GDataErrorCode FakeDriveServiceHelper::RemoveResourceFromDirectory(
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
+DriveApiErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
     std::string* sync_root_folder_id) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> resource_list;
   fake_drive_service_->SearchByTitle(
       sync_root_folder_title_, std::string(),
@@ -229,10 +229,10 @@ GDataErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
   return google_apis::HTTP_NOT_FOUND;
 }
 
-GDataErrorCode FakeDriveServiceHelper::ListFilesInFolder(
+DriveApiErrorCode FakeDriveServiceHelper::ListFilesInFolder(
     const std::string& folder_id,
     ScopedVector<FileResource>* entries) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> list;
   fake_drive_service_->GetFileListInDirectory(
       folder_id,
@@ -244,11 +244,11 @@ GDataErrorCode FakeDriveServiceHelper::ListFilesInFolder(
   return CompleteListing(list.Pass(), entries);
 }
 
-GDataErrorCode FakeDriveServiceHelper::SearchByTitle(
+DriveApiErrorCode FakeDriveServiceHelper::SearchByTitle(
     const std::string& folder_id,
     const std::string& title,
     ScopedVector<FileResource>* entries) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> list;
   fake_drive_service_->SearchByTitle(
       title, folder_id,
@@ -260,10 +260,10 @@ GDataErrorCode FakeDriveServiceHelper::SearchByTitle(
   return CompleteListing(list.Pass(), entries);
 }
 
-GDataErrorCode FakeDriveServiceHelper::GetFileResource(
+DriveApiErrorCode FakeDriveServiceHelper::GetFileResource(
     const std::string& file_id,
     scoped_ptr<FileResource>* entry) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   fake_drive_service_->GetFileResource(
       file_id,
       CreateResultReceiver(&error, entry));
@@ -271,17 +271,17 @@ GDataErrorCode FakeDriveServiceHelper::GetFileResource(
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::ReadFile(
+DriveApiErrorCode FakeDriveServiceHelper::ReadFile(
     const std::string& file_id,
     std::string* file_content) {
   scoped_ptr<google_apis::FileResource> file;
-  GDataErrorCode error = GetFileResource(file_id, &file);
+  DriveApiErrorCode error = GetFileResource(file_id, &file);
   if (error != google_apis::HTTP_SUCCESS)
     return error;
   if (!file)
-    return google_apis::GDATA_PARSE_ERROR;
+    return google_apis::DRIVE_PARSE_ERROR;
 
-  error = google_apis::GDATA_OTHER_ERROR;
+  error = google_apis::DRIVE_OTHER_ERROR;
   base::FilePath temp_file;
   EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_, &temp_file));
   fake_drive_service_->DownloadFile(
@@ -294,19 +294,19 @@ GDataErrorCode FakeDriveServiceHelper::ReadFile(
     return error;
 
   return base::ReadFileToString(temp_file, file_content)
-      ? google_apis::HTTP_SUCCESS : google_apis::GDATA_FILE_ERROR;
+      ? google_apis::HTTP_SUCCESS : google_apis::DRIVE_FILE_ERROR;
 }
 
-GDataErrorCode FakeDriveServiceHelper::GetAboutResource(
+DriveApiErrorCode FakeDriveServiceHelper::GetAboutResource(
     scoped_ptr<AboutResource>* about_resource) {
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   fake_drive_service_->GetAboutResource(
       CreateResultReceiver(&error, about_resource));
   base::RunLoop().RunUntilIdle();
   return error;
 }
 
-GDataErrorCode FakeDriveServiceHelper::CompleteListing(
+DriveApiErrorCode FakeDriveServiceHelper::CompleteListing(
     scoped_ptr<FileList> list,
     ScopedVector<FileResource>* entries) {
   while (true) {
@@ -322,7 +322,7 @@ GDataErrorCode FakeDriveServiceHelper::CompleteListing(
     if (next_feed.is_empty())
       return google_apis::HTTP_SUCCESS;
 
-    GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     list.reset();
     fake_drive_service_->GetRemainingFileList(
         next_feed,

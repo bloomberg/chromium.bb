@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace base {
 class FilePath;
@@ -96,7 +96,7 @@ class DownloadOperation {
   void EnsureFileDownloadedAfterDownloadFile(
       const base::FilePath& drive_file_path,
       scoped_ptr<DownloadParams> params,
-      google_apis::GDataErrorCode gdata_error,
+      google_apis::DriveApiErrorCode gdata_error,
       const base::FilePath& downloaded_file_path);
 
   // Part of EnsureFileDownloaded(). Called after updating local state is

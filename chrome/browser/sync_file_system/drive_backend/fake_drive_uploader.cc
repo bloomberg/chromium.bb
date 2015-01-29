@@ -17,7 +17,7 @@ using drive::UploadCompletionCallback;
 using google_apis::CancelCallback;
 using google_apis::FileResource;
 using google_apis::FileResourceCallback;
-using google_apis::GDataErrorCode;
+using google_apis::DriveApiErrorCode;
 using google_apis::ProgressCallback;
 
 namespace sync_file_system {
@@ -25,7 +25,7 @@ namespace drive_backend {
 
 namespace {
 
-void DidAddFileOrDirectoryForMakingConflict(GDataErrorCode error,
+void DidAddFileOrDirectoryForMakingConflict(DriveApiErrorCode error,
                                             scoped_ptr<FileResource> entry) {
   ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
@@ -33,7 +33,7 @@ void DidAddFileOrDirectoryForMakingConflict(GDataErrorCode error,
 
 void DidAddFileForUploadNew(
     const UploadCompletionCallback& callback,
-    GDataErrorCode error,
+    DriveApiErrorCode error,
     scoped_ptr<FileResource> entry) {
   ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
@@ -47,7 +47,7 @@ void DidAddFileForUploadNew(
 
 void DidGetFileResourceForUploadExisting(
     const UploadCompletionCallback& callback,
-    GDataErrorCode error,
+    DriveApiErrorCode error,
     scoped_ptr<FileResource> entry) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

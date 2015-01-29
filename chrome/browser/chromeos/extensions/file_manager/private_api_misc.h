@@ -10,7 +10,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/common/extensions/webstore_install_result.h"
-#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace google_apis {
 class AuthServiceInterface;
@@ -132,7 +132,7 @@ class FileManagerPrivateRequestWebStoreAccessTokenFunction
  private:
   scoped_ptr<google_apis::AuthServiceInterface> auth_service_;
 
-  void OnAccessTokenFetched(google_apis::GDataErrorCode code,
+  void OnAccessTokenFetched(google_apis::DriveApiErrorCode code,
                             const std::string& access_token);
 
 };

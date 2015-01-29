@@ -26,9 +26,9 @@ using google_apis::ChangeList;
 using google_apis::ChangeResource;
 using google_apis::FileList;
 using google_apis::FileResource;
-using google_apis::GDATA_NO_CONNECTION;
-using google_apis::GDATA_OTHER_ERROR;
-using google_apis::GDataErrorCode;
+using google_apis::DRIVE_NO_CONNECTION;
+using google_apis::DRIVE_OTHER_ERROR;
+using google_apis::DriveApiErrorCode;
 using google_apis::GetContentCallback;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_FORBIDDEN;
@@ -58,7 +58,7 @@ class FakeDriveServiceTest : public testing::Test {
  protected:
   // Returns the resource entry that matches |resource_id|.
   scoped_ptr<FileResource> FindEntry(const std::string& resource_id) {
-    GDataErrorCode error = GDATA_OTHER_ERROR;
+    DriveApiErrorCode error = DRIVE_OTHER_ERROR;
     scoped_ptr<FileResource> entry;
     fake_service_.GetFileResource(
         resource_id, test_util::CreateCopyResultCallback(&error, &entry));
@@ -76,7 +76,7 @@ class FakeDriveServiceTest : public testing::Test {
   // Returns true on success.
   bool AddNewDirectory(const std::string& parent_resource_id,
                        const std::string& directory_title) {
-    GDataErrorCode error = GDATA_OTHER_ERROR;
+    DriveApiErrorCode error = DRIVE_OTHER_ERROR;
     scoped_ptr<FileResource> entry;
     fake_service_.AddNewDirectory(
         parent_resource_id,
@@ -101,7 +101,7 @@ class FakeDriveServiceTest : public testing::Test {
   }
 
   int64 GetLargestChangeByAboutResource() {
-    GDataErrorCode error;
+    DriveApiErrorCode error;
     scoped_ptr<AboutResource> about_resource;
     fake_service_.GetAboutResource(
         test_util::CreateCopyResultCallback(&error, &about_resource));
@@ -116,7 +116,7 @@ class FakeDriveServiceTest : public testing::Test {
 TEST_F(FakeDriveServiceTest, GetAllFileList) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.GetAllFileList(
       test_util::CreateCopyResultCallback(&error, &file_list));
@@ -133,20 +133,20 @@ TEST_F(FakeDriveServiceTest, GetAllFileList_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.GetAllFileList(
       test_util::CreateCopyResultCallback(&error, &file_list));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(file_list);
 }
 
 TEST_F(FakeDriveServiceTest, GetFileListInDirectory_InRootDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.GetFileListInDirectory(
       fake_service_.GetRootResourceId(),
@@ -163,7 +163,7 @@ TEST_F(FakeDriveServiceTest, GetFileListInDirectory_InRootDirectory) {
 TEST_F(FakeDriveServiceTest, GetFileListInDirectory_InNonRootDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.GetFileListInDirectory(
       "1_folder_resource_id",
@@ -182,21 +182,21 @@ TEST_F(FakeDriveServiceTest, GetFileListInDirectory_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.GetFileListInDirectory(
       fake_service_.GetRootResourceId(),
       test_util::CreateCopyResultCallback(&error, &file_list));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(file_list);
 }
 
 TEST_F(FakeDriveServiceTest, Search) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.Search(
       "File",  // search_query
@@ -213,7 +213,7 @@ TEST_F(FakeDriveServiceTest, Search) {
 TEST_F(FakeDriveServiceTest, Search_WithAttribute) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.Search(
       "title:1.txt",  // search_query
@@ -230,7 +230,7 @@ TEST_F(FakeDriveServiceTest, Search_WithAttribute) {
 TEST_F(FakeDriveServiceTest, Search_MultipleQueries) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.Search(
       "Directory 1",  // search_query
@@ -257,28 +257,28 @@ TEST_F(FakeDriveServiceTest, Search_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.Search(
       "Directory 1",  // search_query
       test_util::CreateCopyResultCallback(&error, &file_list));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(file_list);
 }
 
 TEST_F(FakeDriveServiceTest, Search_Deleted) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_NO_CONTENT, error);
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.Search(
       "File",  // search_query
@@ -295,13 +295,13 @@ TEST_F(FakeDriveServiceTest, Search_Deleted) {
 TEST_F(FakeDriveServiceTest, Search_Trashed) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.Search(
       "File",  // search_query
@@ -318,7 +318,7 @@ TEST_F(FakeDriveServiceTest, Search_Trashed) {
 TEST_F(FakeDriveServiceTest, SearchByTitle) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.SearchByTitle(
       "1.txt",  // title
@@ -336,7 +336,7 @@ TEST_F(FakeDriveServiceTest, SearchByTitle) {
 TEST_F(FakeDriveServiceTest, SearchByTitle_EmptyDirectoryResourceId) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.SearchByTitle(
       "1.txt",  // title
@@ -355,7 +355,7 @@ TEST_F(FakeDriveServiceTest, SearchByTitle_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.SearchByTitle(
       "Directory 1",  // title
@@ -363,14 +363,14 @@ TEST_F(FakeDriveServiceTest, SearchByTitle_Offline) {
       test_util::CreateCopyResultCallback(&error, &file_list));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(file_list);
 }
 
 TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       fake_service_.about_resource().largest_change_id() + 1,
@@ -398,7 +398,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
       fake_service_.GetRootResourceId(), "new directory"));
 
   // Get the resource list newer than old_largest_change_id.
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       old_largest_change_id + 1,
@@ -420,14 +420,14 @@ TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       654321,  // start_changestamp
       test_util::CreateCopyResultCallback(&error, &change_list));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(change_list);
 }
 
@@ -437,7 +437,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
   const int64 old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
@@ -446,7 +446,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
   ASSERT_FALSE(Exists("2_file_resource_id"));
 
   // Get the resource list newer than old_largest_change_id.
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       old_largest_change_id + 1,
@@ -472,7 +472,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
   const int64 old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -480,7 +480,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
   ASSERT_FALSE(Exists("2_file_resource_id"));
 
   // Get the resource list newer than old_largest_change_id.
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       old_largest_change_id + 1,
@@ -504,7 +504,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_GetAllFileList) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_default_max_results(6);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.GetAllFileList(
       test_util::CreateCopyResultCallback(&error, &file_list));
@@ -522,7 +522,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_GetAllFileList) {
   // Keep the next url before releasing the |file_list|.
   GURL next_url(file_list->next_link());
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   file_list.reset();
   fake_service_.GetRemainingFileList(
       next_url,
@@ -538,7 +538,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_GetAllFileList) {
   // Third page loading.
   next_url = file_list->next_link();
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   file_list.reset();
   fake_service_.GetRemainingFileList(
       next_url,
@@ -556,7 +556,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_GetFileListInDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_default_max_results(3);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.GetFileListInDirectory(
       fake_service_.GetRootResourceId(),
@@ -575,7 +575,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_GetFileListInDirectory) {
   // Keep the next url before releasing the |file_list|.
   GURL next_url = file_list->next_link();
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   file_list.reset();
   fake_service_.GetRemainingFileList(
       next_url,
@@ -591,7 +591,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_GetFileListInDirectory) {
   // Third page loading.
   next_url = file_list->next_link();
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   file_list.reset();
   fake_service_.GetRemainingFileList(
       next_url,
@@ -609,7 +609,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_Search) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_default_max_results(2);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.Search(
       "File",  // search_query
@@ -627,7 +627,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_Search) {
   // Keep the next url before releasing the |file_list|.
   GURL next_url = file_list->next_link();
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   file_list.reset();
   fake_service_.GetRemainingFileList(
       next_url,
@@ -653,7 +653,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
         base::StringPrintf("new directory %d", i)));
   }
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       old_largest_change_id + 1,  // start_changestamp
@@ -672,7 +672,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
   // Keep the next url before releasing the |change_list|.
   GURL next_url = change_list->next_link();
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   change_list.reset();
   fake_service_.GetRemainingChangeList(
       next_url,
@@ -688,7 +688,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
   // Third page loading.
   next_url = change_list->next_link();
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   change_list.reset();
   fake_service_.GetRemainingChangeList(
       next_url,
@@ -703,7 +703,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
 }
 
 TEST_F(FakeDriveServiceTest, GetAboutResource) {
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<AboutResource> about_resource;
   fake_service_.GetAboutResource(
       test_util::CreateCopyResultCallback(&error, &about_resource));
@@ -721,13 +721,13 @@ TEST_F(FakeDriveServiceTest, GetAboutResource) {
 TEST_F(FakeDriveServiceTest, GetAboutResource_Offline) {
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<AboutResource> about_resource;
   fake_service_.GetAboutResource(
       test_util::CreateCopyResultCallback(&error, &about_resource));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(about_resource);
 }
 
@@ -735,7 +735,7 @@ TEST_F(FakeDriveServiceTest, GetAppList) {
   ASSERT_TRUE(fake_service_.LoadAppListForDriveApi(
       "drive/applist.json"));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<AppList> app_list;
   fake_service_.GetAppList(
       test_util::CreateCopyResultCallback(&error, &app_list));
@@ -752,13 +752,13 @@ TEST_F(FakeDriveServiceTest, GetAppList_Offline) {
       "drive/applist.json"));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<AppList> app_list;
   fake_service_.GetAppList(
       test_util::CreateCopyResultCallback(&error, &app_list));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(app_list);
 }
 
@@ -766,7 +766,7 @@ TEST_F(FakeDriveServiceTest, GetFileResource_ExistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "2_file_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.GetFileResource(
       kResourceId, test_util::CreateCopyResultCallback(&error, &entry));
@@ -782,7 +782,7 @@ TEST_F(FakeDriveServiceTest, GetFileResource_NonexistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "nonexisting_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.GetFileResource(
       kResourceId, test_util::CreateCopyResultCallback(&error, &entry));
@@ -797,13 +797,13 @@ TEST_F(FakeDriveServiceTest, GetFileResource_Offline) {
   fake_service_.set_offline(true);
 
   const std::string kResourceId = "2_file_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.GetFileResource(
       kResourceId, test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(entry);
 }
 
@@ -811,7 +811,7 @@ TEST_F(FakeDriveServiceTest, GetShareUrl) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "2_file_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL share_url;
   fake_service_.GetShareUrl(
       kResourceId,
@@ -829,7 +829,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   // Resource "2_file_resource_id" should now exist.
   ASSERT_TRUE(Exists("2_file_resource_id"));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
@@ -839,7 +839,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   // Resource "2_file_resource_id" should be gone now.
   EXPECT_FALSE(Exists("2_file_resource_id"));
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
@@ -851,7 +851,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
 TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.DeleteResource("nonexisting_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
@@ -869,7 +869,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ETagMatch) {
   ASSERT_FALSE(entry->labels().is_trashed());
   ASSERT_FALSE(entry->etag().empty());
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.DeleteResource("2_file_resource_id",
                                entry->etag() + "_mismatch",
                                test_util::CreateCopyResultCallback(&error));
@@ -879,7 +879,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ETagMatch) {
   // Resource "2_file_resource_id" should still exist.
   EXPECT_TRUE(Exists("2_file_resource_id"));
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   fake_service_.DeleteResource("2_file_resource_id",
                                entry->etag(),
                                test_util::CreateCopyResultCallback(&error));
@@ -893,13 +893,13 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
 }
 
 TEST_F(FakeDriveServiceTest, DeleteResource_Forbidden) {
@@ -908,7 +908,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Forbidden) {
   EXPECT_EQ(HTTP_SUCCESS, fake_service_.SetUserPermission(
       "2_file_resource_id", google_apis::drive::PERMISSION_ROLE_READER));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
@@ -923,7 +923,7 @@ TEST_F(FakeDriveServiceTest, TrashResource_ExistingFile) {
   // Resource "2_file_resource_id" should now exist.
   ASSERT_TRUE(Exists("2_file_resource_id"));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -932,7 +932,7 @@ TEST_F(FakeDriveServiceTest, TrashResource_ExistingFile) {
   // Resource "2_file_resource_id" should be gone now.
   EXPECT_FALSE(Exists("2_file_resource_id"));
 
-  error = GDATA_OTHER_ERROR;
+  error = DRIVE_OTHER_ERROR;
   fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -943,7 +943,7 @@ TEST_F(FakeDriveServiceTest, TrashResource_ExistingFile) {
 TEST_F(FakeDriveServiceTest, TrashResource_NonexistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.TrashResource("nonexisting_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -955,12 +955,12 @@ TEST_F(FakeDriveServiceTest, TrashResource_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
 }
 
 TEST_F(FakeDriveServiceTest, TrashResource_Forbidden) {
@@ -969,7 +969,7 @@ TEST_F(FakeDriveServiceTest, TrashResource_Forbidden) {
   EXPECT_EQ(HTTP_SUCCESS, fake_service_.SetUserPermission(
       "2_file_resource_id", google_apis::drive::PERMISSION_ROLE_READER));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -987,7 +987,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
 
   const base::FilePath kOutputFilePath =
       temp_dir.path().AppendASCII("whatever.txt");
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   base::FilePath output_file_path;
   test_util::TestGetContentCallback get_content_callback;
   fake_service_.DownloadFile(
@@ -1019,7 +1019,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
 
   const base::FilePath kOutputFilePath =
       temp_dir.path().AppendASCII("whatever.txt");
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   base::FilePath output_file_path;
   fake_service_.DownloadFile(
       kOutputFilePath,
@@ -1041,7 +1041,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
 
   const base::FilePath kOutputFilePath =
       temp_dir.path().AppendASCII("whatever.txt");
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   base::FilePath output_file_path;
   fake_service_.DownloadFile(
       kOutputFilePath,
@@ -1051,7 +1051,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
       ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
 }
 
 TEST_F(FakeDriveServiceTest, CopyResource) {
@@ -1063,7 +1063,7 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
 
   const std::string kResourceId = "2_file_resource_id";
   const std::string kParentResourceId = "2_folder_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.CopyResource(
       kResourceId,
@@ -1090,7 +1090,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_NonExisting) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "nonexisting_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.CopyResource(
       kResourceId,
@@ -1109,7 +1109,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_EmptyParentResourceId) {
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "2_file_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.CopyResource(
       kResourceId,
@@ -1136,7 +1136,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_Offline) {
   fake_service_.set_offline(true);
 
   const std::string kResourceId = "2_file_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.CopyResource(
       kResourceId,
@@ -1146,7 +1146,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_Offline) {
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(entry);
 }
 
@@ -1160,7 +1160,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource) {
 
   const std::string kResourceId = "2_file_resource_id";
   const std::string kParentResourceId = "2_folder_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
       kResourceId,
@@ -1191,7 +1191,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_NonExisting) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "nonexisting_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
       kResourceId,
@@ -1215,7 +1215,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_EmptyParentResourceId) {
   // Just make sure that the resource is under root.
   ASSERT_TRUE(HasParent(kResourceId, "fake_root"));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
       kResourceId,
@@ -1243,7 +1243,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Offline) {
   fake_service_.set_offline(true);
 
   const std::string kResourceId = "2_file_resource_id";
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
       kResourceId,
@@ -1254,7 +1254,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Offline) {
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(entry);
 }
 
@@ -1265,7 +1265,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Forbidden) {
   EXPECT_EQ(HTTP_SUCCESS, fake_service_.SetUserPermission(
       kResourceId, google_apis::drive::PERMISSION_ROLE_READER));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
       kResourceId,
@@ -1293,7 +1293,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
   EXPECT_TRUE(HasParent(kResourceId, kOldParentResourceId));
   EXPECT_FALSE(HasParent(kResourceId, kNewParentResourceId));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.AddResourceToDirectory(
       kNewParentResourceId,
       kResourceId,
@@ -1324,7 +1324,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
   EXPECT_TRUE(HasParent(kResourceId, kOldParentResourceId));
   EXPECT_FALSE(HasParent(kResourceId, kNewParentResourceId));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.AddResourceToDirectory(
       kNewParentResourceId,
       kResourceId,
@@ -1348,7 +1348,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
   const std::string kResourceId = "nonexisting_file";
   const std::string kNewParentResourceId = "1_folder_resource_id";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.AddResourceToDirectory(
       kNewParentResourceId,
       kResourceId,
@@ -1370,7 +1370,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
   EXPECT_FALSE(HasParent(kResourceId, kNewParentResourceId));
   EXPECT_FALSE(HasParent(kResourceId, fake_service_.GetRootResourceId()));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.AddResourceToDirectory(
       kNewParentResourceId,
       kResourceId,
@@ -1395,14 +1395,14 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
   const std::string kResourceId = "2_file_resource_id";
   const std::string kNewParentResourceId = "1_folder_resource_id";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.AddResourceToDirectory(
       kNewParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
 }
 
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
@@ -1418,7 +1418,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
   // The entry should have a parent now.
   ASSERT_FALSE(entry->parents().empty());
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.RemoveResourceFromDirectory(
       kParentResourceId,
       kResourceId,
@@ -1443,7 +1443,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
   const std::string kResourceId = "nonexisting_file";
   const std::string kParentResourceId = "1_folder_resource_id";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.RemoveResourceFromDirectory(
       kParentResourceId,
       kResourceId,
@@ -1459,7 +1459,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_OrphanFile) {
   const std::string kResourceId = "1_orphanfile_resource_id";
   const std::string kParentResourceId = fake_service_.GetRootResourceId();
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.RemoveResourceFromDirectory(
       kParentResourceId,
       kResourceId,
@@ -1476,14 +1476,14 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
   const std::string kResourceId = "subdirectory_file_1_id";
   const std::string kParentResourceId = "1_folder_resource_id";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   fake_service_.RemoveResourceFromDirectory(
       kParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
@@ -1491,7 +1491,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
       std::string(),
@@ -1517,7 +1517,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
       fake_service_.GetRootResourceId(),
@@ -1541,7 +1541,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
       fake_service_.GetRootResourceId(),
@@ -1569,7 +1569,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
 
   const std::string kParentResourceId = "1_folder_resource_id";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
       kParentResourceId,
@@ -1595,7 +1595,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
 
   const std::string kParentResourceId = "nonexisting_resource_id";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
       kParentResourceId,
@@ -1612,7 +1612,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewDirectory(
       fake_service_.GetRootResourceId(),
@@ -1621,7 +1621,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(entry);
 }
 
@@ -1629,7 +1629,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", 13, "1_folder_resource_id", "new file.foo",
@@ -1637,14 +1637,14 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_TRUE(upload_location.is_empty());
 }
 
 TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", 13, "non_existent", "new file.foo",
@@ -1659,7 +1659,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
 TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", 13, "1_folder_resource_id", "new file.foo",
@@ -1677,7 +1677,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "test/foo", 13, "2_file_resource_id",
@@ -1685,7 +1685,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_TRUE(upload_location.is_empty());
 }
 
@@ -1695,7 +1695,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Forbidden) {
   EXPECT_EQ(HTTP_SUCCESS, fake_service_.SetUserPermission(
       "2_file_resource_id", google_apis::drive::PERMISSION_ROLE_READER));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "test/foo", 13, "2_file_resource_id",
@@ -1710,7 +1710,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Forbidden) {
 TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "test/foo", 13, "non_existent",
@@ -1728,7 +1728,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
   FakeDriveService::UploadExistingFileOptions options;
   options.etag = "invalid_etag";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "text/plain",
@@ -1751,7 +1751,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
   FakeDriveService::UploadExistingFileOptions options;
   options.etag = entry->etag();
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "text/plain",
@@ -1768,7 +1768,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
 TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", 15, "1_folder_resource_id", "new file.foo",
@@ -1793,14 +1793,14 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
       ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, response.code);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, response.code);
   EXPECT_FALSE(entry.get());
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", 15, "1_folder_resource_id", "new file.foo",
@@ -1840,7 +1840,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   FakeDriveService::UploadExistingFileOptions options;
   options.etag = entry->etag();
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "text/plain",
@@ -1904,7 +1904,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo", contents.size(), "1_folder_resource_id", "new file.foo",
@@ -1968,7 +1968,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
   const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewFile(
       kContentType,
@@ -2000,7 +2000,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
   const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewFile(
       kContentType,
@@ -2035,7 +2035,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
   const std::string kTitle = "new file";
   const std::string kParentResourceId = "1_folder_resource_id";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewFile(
       kContentType,
@@ -2068,7 +2068,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonexistingDirectory) {
   const std::string kTitle = "new file";
   const std::string kParentResourceId = "nonexisting_resource_id";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewFile(
       kContentType,
@@ -2091,7 +2091,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_Offline) {
   const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewFile(
       kContentType,
@@ -2102,7 +2102,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_Offline) {
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(entry);
 }
 
@@ -2115,7 +2115,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.AddNewFile(
       kContentType,
@@ -2148,7 +2148,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_ExistingFile) {
   base::Time time;
   ASSERT_TRUE(base::Time::FromString("1 April 2013 12:34:56", &time));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.SetLastModifiedTime(
       kResourceId,
@@ -2168,7 +2168,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_NonexistingFile) {
   base::Time time;
   ASSERT_TRUE(base::Time::FromString("1 April 2013 12:34:56", &time));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.SetLastModifiedTime(
       kResourceId,
@@ -2188,7 +2188,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_Offline) {
   base::Time time;
   ASSERT_TRUE(base::Time::FromString("1 April 2013 12:34:56", &time));
 
-  GDataErrorCode error = GDATA_OTHER_ERROR;
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.SetLastModifiedTime(
       kResourceId,
@@ -2196,7 +2196,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_Offline) {
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(entry);
 }
 

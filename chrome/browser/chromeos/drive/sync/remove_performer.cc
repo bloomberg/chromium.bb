@@ -146,7 +146,7 @@ void RemovePerformer::TrashResourceAfterUpdateRemoteState(
     const ClientContext& context,
     const FileOperationCallback& callback,
     const std::string& local_id,
-    google_apis::GDataErrorCode status) {
+    google_apis::DriveApiErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -188,7 +188,7 @@ void RemovePerformer::UnparentResourceAfterGetFileResource(
     const ClientContext& context,
     const FileOperationCallback& callback,
     const std::string& local_id,
-    google_apis::GDataErrorCode status,
+    google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::FileResource> file_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -238,7 +238,7 @@ void RemovePerformer::UnparentResourceAfterGetFileResource(
 void RemovePerformer::UnparentResourceAfterUpdateRemoteState(
     const FileOperationCallback& callback,
     const std::string& local_id,
-    google_apis::GDataErrorCode status) {
+    google_apis::DriveApiErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 

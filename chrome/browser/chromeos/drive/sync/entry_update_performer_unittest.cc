@@ -105,7 +105,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Verify the file is updated on the server.
-  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> gdata_entry;
   fake_service()->GetFileResource(
       src_entry.resource_id(),
@@ -171,7 +171,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_WithNonDirtyCache) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Verify the file is updated on the server.
-  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> gdata_entry;
   fake_service()->GetFileResource(
       src_entry->resource_id(),
@@ -220,7 +220,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdate) {
             fake_service()->about_resource().largest_change_id());
 
   // Check that the file size is updated to that of the updated content.
-  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_service()->GetFileResource(
       kResourceId,
@@ -264,7 +264,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
             fake_service()->about_resource().largest_change_id());
 
   // Check that the file size is updated to that of the updated content.
-  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_service()->GetFileResource(
       kResourceId,
@@ -414,7 +414,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_UploadNewFile) {
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 
   // Make sure that we really created a file.
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_service()->GetFileResource(
       entry.resource_id(),
@@ -540,7 +540,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_CreateDirectory) {
   EXPECT_EQ(ResourceEntry::CLEAN, entry.metadata_edit_state());
 
   // Make sure that we really created a directory.
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   fake_service()->GetFileResource(
       entry.resource_id(),

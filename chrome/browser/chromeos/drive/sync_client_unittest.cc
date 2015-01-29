@@ -42,7 +42,7 @@ const char kLocalContent[] = "Hello!";
 // The content of files stored in the service.
 const char kRemoteContent[] = "World!";
 
-// SyncClientTestDriveService will return GDATA_CANCELLED when a request is
+// SyncClientTestDriveService will return DRIVE_CANCELLED when a request is
 // made with the specified resource ID.
 class SyncClientTestDriveService : public ::drive::FakeDriveService {
  public:
@@ -60,13 +60,13 @@ class SyncClientTestDriveService : public ::drive::FakeDriveService {
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
           base::Bind(download_action_callback,
-                     google_apis::GDATA_CANCELLED,
+                     google_apis::DRIVE_CANCELLED,
                      base::FilePath()));
       return google_apis::CancelCallback();
     }
     if (resource_id == resource_id_to_be_paused_) {
       paused_action_ = base::Bind(download_action_callback,
-                                  google_apis::GDATA_OTHER_ERROR,
+                                  google_apis::DRIVE_OTHER_ERROR,
                                   base::FilePath());
       return google_apis::CancelCallback();
     }
@@ -158,7 +158,7 @@ class SyncClientTest : public testing::Test {
 
   // Adds a file to the service root and |resource_ids_|.
   void AddFileEntry(const std::string& title) {
-    google_apis::GDataErrorCode error = google_apis::GDATA_FILE_ERROR;
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_FILE_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
     drive_service_->AddNewFile(
         "text/plain",
@@ -291,7 +291,7 @@ TEST_F(SyncClientTest, StartProcessingBacklog) {
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 
   // Removed entry is not found.
-  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> server_entry;
   drive_service_->GetFileResource(
       resource_ids_["removed"],
@@ -302,7 +302,7 @@ TEST_F(SyncClientTest, StartProcessingBacklog) {
   EXPECT_TRUE(server_entry->labels().is_trashed());
 
   // Moved entry was moved.
-  status = google_apis::GDATA_OTHER_ERROR;
+  status = google_apis::DRIVE_OTHER_ERROR;
   drive_service_->GetFileResource(
       resource_ids_["moved"],
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
