@@ -967,7 +967,7 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostCopyRequestTestShutdownBeforeCopy);
 
-class LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest
+class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
     : public LayerTreeHostCopyRequestTest {
  protected:
   void SetupTree() override {
@@ -986,6 +986,7 @@ class LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest
   void BeginTest() override {
     num_draws_ = 0;
     copy_happened_ = false;
+    draw_happened_ = false;
     PostSetNeedsCommitToMainThread();
   }
 
@@ -994,7 +995,7 @@ class LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest
     if (layer_tree_host()->source_frame_number() == 1) {
       child_->RequestCopyOfOutput(
           CopyOutputRequest::CreateBitmapRequest(base::Bind(
-              &LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest::
+              &LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest::
                   CopyOutputCallback,
               base::Unretained(this))));
     }
@@ -1047,8 +1048,13 @@ class LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest
 
         // End the test! Don't race with copy request callbacks, so post the end
         // to the main thread.
-        EXPECT_TRUE(copy_happened_);
-        PostEndTestToMainThread();
+        draw_happened_ = true;
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::Bind(
+                &LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest::
+                    TryEndTest,
+                base::Unretained(this)));
         break;
     }
     return draw_result;
@@ -1057,6 +1063,12 @@ class LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest
   void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
     EXPECT_FALSE(TestEnded());
     copy_happened_ = true;
+    TryEndTest();
+  }
+
+  void TryEndTest() {
+    if (draw_happened_ && copy_happened_)
+      EndTest();
   }
 
   void AfterTest() override {}
@@ -1065,10 +1077,11 @@ class LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest
   FakeContentLayerClient client_;
   int num_draws_;
   bool copy_happened_;
+  bool draw_happened_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(
-    LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest);
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest);
 
 }  // namespace
 }  // namespace cc
