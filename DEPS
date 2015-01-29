@@ -32,7 +32,7 @@ vars = {
   "mingw_rev": "3cc8b140b883a9fe4986d12cfd46c16a093d3527", # from svn revision 7064
   "nsis_rev": "21b6ad22daa7bfc04b9f1c1805a34622e2607a93", # from svn revision 7071
   "ragel_rev": "da42bb33f1b67c2d70b38ec1d2edf5263271b635", # from svn revision 9010
-  "validator_snapshots_rev": "1d36eef611e64f2e1d8df433524352adb11565ef",
+  "validator_snapshots_rev": "810a4a3633788d3e4c5226fba4d19246a0ce26fd",
 
   "chromium_git": "https://chromium.googlesource.com",
 

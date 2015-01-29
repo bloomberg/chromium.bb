@@ -999,6 +999,32 @@ _XMM_AVX_INSTRUCTIONS.update([
   'vzeroupper',
 ])
 
+# Add AXV2 instructions.
+_XMM_AVX_INSTRUCTIONS.update([
+  'vpblendd',
+  'vpmaskmovd',
+  'vpmaskmovq',
+  'vpsllvd',
+  'vpsllvq',
+  'vpsrlvd',
+  'vpsrlvq',
+  'vpsravd',
+  'vpbroadcastb',
+  'vpbroadcastw',
+  'vpbroadcastd',
+  'vpbroadcastq',
+  'vbroadcasti128',
+  'vbroadastsd',
+  'vbroadastss',
+  'vextracti128',
+  'vinserti128',
+  'vpermd',
+  'vperm2i128',
+  'vpermps',
+  'vpermpd',
+  'vpermq',
+])
+
 # Add instructions like VFMADDPD/VFMADD132PD/VFMADD213PD/VFMADD231PD.
 for fma_name in [
     'vfmadd%spd',
