@@ -523,8 +523,8 @@ pp::VarDictionary TraverseBookmarks(FPDF_DOCUMENT doc, FPDF_BOOKMARK bookmark) {
   pp::VarDictionary dict;
   base::string16 title;
   unsigned long buffer_size = FPDFBookmark_GetTitle(bookmark, NULL, 0);
-  size_t title_length = buffer_size / sizeof(base::string16::value_type);
-
+  size_t title_length = base::checked_cast<size_t>(buffer_size) /
+      sizeof(base::string16::value_type);
   if (title_length > 0) {
     PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
         &title, title_length, true);
@@ -2394,7 +2394,8 @@ pp::VarDictionary PDFiumEngine::GetNamedDestinations() {
     base::string16 name;
     long buffer_bytes;
     FPDF_GetNamedDest(doc_, i, NULL, buffer_bytes);
-    size_t name_length = buffer_bytes / sizeof(base::string16::value_type);
+    size_t name_length = base::checked_cast<size_t>(buffer_bytes) /
+        sizeof(base::string16::value_type);
     if (name_length > 0) {
       PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
           &name, name_length, true);
