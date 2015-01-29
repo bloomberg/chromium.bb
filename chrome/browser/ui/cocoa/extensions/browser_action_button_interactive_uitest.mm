@@ -50,7 +50,7 @@ void MoveMouseToCenter(NSView* view) {
 
 // A simple helper menu delegate that will keep track of if a menu is opened,
 // and closes them immediately (which is useful because message loops with
-// menus open in cocoa don't play nicely with testing).
+// menus open in Cocoa don't play nicely with testing).
 @interface MenuHelper : NSObject<NSMenuDelegate> {
   // Whether or not a menu has been opened. This can be reset so the helper can
   // be used multiple times.
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
     EXPECT_FALSE([menuHelper menuOpened]);
     base::RunLoop runLoop;
     // Click on the wrench menu, and pass in a callback to continue the test
-    // in ClickOnOverflowedAction (Due to the blocking nature of cocoa menus,
+    // in ClickOnOverflowedAction (Due to the blocking nature of Cocoa menus,
     // passing in runLoop.QuitClosure() is not sufficient here.)
     ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
                    runLoop.QuitClosure()));
     runLoop.Run();
     // The menu should have opened. Note that the menu opened on the main bar's
-    // action button, not the overflow's. Since cocoa doesn't support running
+    // action button, not the overflow's. Since Cocoa doesn't support running
     // a menu-within-a-menu, this is what has to happen.
     EXPECT_TRUE([menuHelper menuOpened]);
   }

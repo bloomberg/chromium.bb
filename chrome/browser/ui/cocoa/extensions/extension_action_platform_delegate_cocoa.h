@@ -13,7 +13,7 @@
 @class ExtensionPopupController;
 class ToolbarActionViewDelegateCocoa;
 
-// The cocoa-specific implementation for ExtensionActionPlatformDelegate.
+// The Cocoa-specific implementation for ExtensionActionPlatformDelegate.
 class ExtensionActionPlatformDelegateCocoa
     : public ExtensionActionPlatformDelegate,
       public content::NotificationObserver {
@@ -43,7 +43,7 @@ class ExtensionActionPlatformDelegateCocoa
   // Returns the popup shown by this extension action, if one exists.
   ExtensionPopupController* GetPopup() const;
 
-  // Returns the delegate in its cocoa implementation.
+  // Returns the delegate in its Cocoa implementation.
   ToolbarActionViewDelegateCocoa* GetDelegateCocoa();
 
   // The main controller for this extension action.

@@ -63,7 +63,7 @@ bool ExtensionActionPlatformDelegateCocoa::IsMenuRunning() const {
 }
 
 void ExtensionActionPlatformDelegateCocoa::RegisterCommand() {
-  // Commands are handled elsewhere for cocoa.
+  // Commands are handled elsewhere for Cocoa.
 }
 
 void ExtensionActionPlatformDelegateCocoa::OnDelegateSet() {

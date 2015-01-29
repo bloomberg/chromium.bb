@@ -11,7 +11,7 @@
 
 namespace {
 
-// The cocoa implementation of the TestToolbarActionsBarHelper, which creates
+// The Cocoa implementation of the TestToolbarActionsBarHelper, which creates
 // (and owns) a BrowserActionsController and BrowserActionsContainerView for
 // testing purposes.
 class TestToolbarActionsBarHelperCocoa : public TestToolbarActionsBarHelper {
