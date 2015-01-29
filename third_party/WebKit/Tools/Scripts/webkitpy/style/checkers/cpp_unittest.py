@@ -1785,6 +1785,12 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('func(OwnPtr<Vector<Foo>>)', '')
         self.assert_lint('func(OwnPtr<Vector<Foo>> foo)', '')
         self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar>>>)', '')
+        self.assert_lint('func(OwnPtr<Vector<Foo> >)', 'Use >> for ending template instead of > >.  [readability/templatebrackets] [3]')
+        self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar>> >)', 'Use >> for ending template instead of > >.  [readability/templatebrackets] [3]')
+        self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar> >>)', 'Use >> for ending template instead of > >.  [readability/templatebrackets] [3]')
+        self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar> > >)', 'Use >> for ending template instead of > >.  [readability/templatebrackets] [3]')
+        self.assert_lint('Vector< ::Foo>)', 'Use <:: for template start instead of < ::.  [readability/templatebrackets] [3]')
+        self.assert_lint('Vector<Vector< ::Foo>>)', 'Use <:: for template start instead of < ::.  [readability/templatebrackets] [3]')
         # FIXME: The following test should not show any error.
         self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar\n    >>>)',
                          'Missing spaces around <  [whitespace/operators] [3]')
@@ -4921,7 +4927,7 @@ class WebKitStyleTest(CppStyleTestBase):
                          'func_name' + name_underscore_error_message)
         self.assert_lint('RefPtr<RenderObject*> under_score;',
                          'under_score' + name_underscore_error_message)
-        self.assert_lint('WTF::Vector<WTF::RefPtr<const RenderObject* const> > under_score;',
+        self.assert_lint('WTF::Vector<WTF::RefPtr<const RenderObject* const>> under_score;',
                          'under_score' + name_underscore_error_message)
         self.assert_lint('int under_score[];',
                          'under_score' + name_underscore_error_message)

@@ -1370,6 +1370,14 @@ def check_for_non_standard_constructs(clean_lines, line_number,
         error(line_number, 'build/deprecated', 3,
               '>? and <? (max and min) operators are non-standard and deprecated.')
 
+    if search(r'\w+<.*<.*>\s+>', line):
+        error(line_number, 'readability/templatebrackets', 3,
+              'Use >> for ending template instead of > >.')
+
+    if search(r'\w+<\s+::\w+>', line):
+        error(line_number, 'readability/templatebrackets', 3,
+              'Use <:: for template start instead of < ::.')
+
     # Track class entry and exit, and attempt to find cases within the
     # class declaration that don't meet the C++ style
     # guidelines. Tracking is very dependent on the code matching Google
@@ -3999,6 +4007,7 @@ class CppChecker(object):
         'readability/null',
         'readability/pass_ptr',
         'readability/streams',
+        'readability/templatebrackets',
         'readability/todo',
         'readability/utf8',
         'readability/webkit_export',
