@@ -476,9 +476,22 @@ TEST_F(GCMAccountTrackerTest, GetTimeToNextTokenReporting) {
   // At this point the last token fetch time is never.
   EXPECT_EQ(base::TimeDelta(), GetTimeToNextTokenReporting());
 
+  // Regular case. The tokens have been just reported.
   driver()->SetLastTokenFetchTime(base::Time::Now());
   EXPECT_TRUE(GetTimeToNextTokenReporting() <=
                   base::TimeDelta::FromSeconds(12 * 60 * 60));
+
+  // A case when gcm driver is not yet initialized.
+  driver()->SetLastTokenFetchTime(base::Time::Max());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(12 * 60 * 60),
+            GetTimeToNextTokenReporting());
+
+  // A case when token reporting calculation is expected to result in more than
+  // 12 hours, in which case we expect exactly 12 hours.
+  driver()->SetLastTokenFetchTime(base::Time::Now() +
+      base::TimeDelta::FromDays(2));
+  EXPECT_EQ(base::TimeDelta::FromSeconds(12 * 60 * 60),
+            GetTimeToNextTokenReporting());
 }
 
 // Tests conditions when token reporting is required.
