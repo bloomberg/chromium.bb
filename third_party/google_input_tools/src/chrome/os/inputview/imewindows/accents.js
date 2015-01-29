@@ -16,6 +16,7 @@ goog.provide('i18n.input.chrome.inputview.Accents');
 goog.require('goog.dom');
 goog.require('goog.math.Coordinate');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.inputview.util');
 
 
 goog.scope(function() {
@@ -38,7 +39,8 @@ Accents.highlightedItem_ = null;
  * @private
  */
 Accents.getHighlightedAccent_ = function() {
-  return Accents.highlightedItem_ ? Accents.highlightedItem_.textContent : '';
+  return Accents.highlightedItem_ ?
+      Accents.highlightedItem_.textContent.trim() : '';
 };
 
 
@@ -57,7 +59,8 @@ Accents.highlightItem_ = function(x, y, offset) {
       Accents.highlightedItem_.classList.remove('highlight');
     }
     Accents.highlightedItem_ = highlightedItem;
-    if (Accents.highlightedItem_) {
+    if (Accents.highlightedItem_ &&
+        Accents.highlightedItem_.textContent.trim()) {
       Accents.highlightedItem_.classList.add('highlight');
     }
   }
@@ -130,13 +133,16 @@ Accents.setAccents_ = function(accents, numOfColumns, numOfRows, width,
     // Even if this is an empty key, we still need to add textDiv. Otherwise,
     // the keys have layout issues.
     var textDiv = document.createElement('div');
-    textDiv.textContent = orderedAccents[i];
+    textDiv.textContent =
+        i18n.input.chrome.inputview.util.getVisibleCharacter(
+            orderedAccents[i]);
+    textDiv.style.lineHeight = height + 'px';
     keyElem.appendChild(textDiv);
     if (!orderedAccents[i]) {
       keyElem.classList.add('empty-key');
     }
-    keyElem.style.width = width;
-    keyElem.style.height = height;
+    keyElem.style.width = width + 'px';
+    keyElem.style.height = height + 'px';
     if (i % numOfColumns == 0) {
       if (row) {
         container.appendChild(row);

@@ -32,14 +32,17 @@ var MoreKeysShiftOperation = i18n.input.chrome.inputview.MoreKeysShiftOperation;
  * @param {string} textOnShift The text to display on shift.
  * @param {Object.<string, !Object>} textOnContext Map for changing the key
  *     based on the current input context.
- * @param {string=} textCssClass The css class for the text.
- * @param {string=} title Overrides the displayed text on the key.
+ * @param {string=} opt_textCssClass The css class for the text.
+ * @param {string=} opt_title Overrides the displayed text on the key.
+ * @param {number=} opt_fixedColumns The fixed number of olumns to display
+ *     accent keys.
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.content.FunctionalKey}
  */
 i18n.input.chrome.inputview.elements.content.CompactKeyModel =
     function(marginLeftPercent, marginRightPercent, isGrey, moreKeys,
-    moreKeysShiftOperation, textOnShift, textOnContext, textCssClass, title) {
+        moreKeysShiftOperation, textOnShift, textOnContext,
+        opt_textCssClass, opt_title, opt_fixedColumns) {
 
   /**
    * The left margin.
@@ -89,7 +92,7 @@ i18n.input.chrome.inputview.elements.content.CompactKeyModel =
    *
    * @type {string}
    */
-  this.textCssClass = textCssClass || '';
+  this.textCssClass = opt_textCssClass || '';
 
   /**
    * Map for changing the key based on the current input context.
@@ -99,10 +102,18 @@ i18n.input.chrome.inputview.elements.content.CompactKeyModel =
   this.textOnContext = textOnContext || {};
 
   /**
+   * The fixed number of columns when display accent keys in a multi-row popup
+   * window.
+   *
+   * @type {number}
+   */
+  this.fixedColumns = opt_fixedColumns || 0;
+
+  /**
    * Alternate title for the key. Title is displayed, whereas text is
    * what is actually committed.
    */
-  this.title = title || '';
+  this.title = opt_title || '';
 };
 });  // goog.scope
 

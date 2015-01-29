@@ -50,6 +50,17 @@ var DataSource = i18n.input.chrome.DataSource;
 goog.inherits(DataSource, EventTarget);
 
 
+/**
+ * The event type.
+ *
+ * @enum {string}
+ */
+DataSource.EventType = {
+  CANDIDATES_BACK: goog.events.getUniqueId('cb'),
+  READY: goog.events.getUniqueId('r')
+};
+
+
 /** @type {boolean} */
 DataSource.prototype.ready = false;
 
@@ -60,6 +71,14 @@ DataSource.prototype.ready = false;
  * @protected {number}
  */
 DataSource.prototype.correctionLevel = 0;
+
+
+/**
+ * Whether user dict is enabled.
+ *
+ * @protected {boolean}
+ */
+DataSource.prototype.enableUserDict = false;
 
 
 /**
@@ -116,6 +135,15 @@ DataSource.prototype.getInputToolCode = function() {
 
 
 /**
+ * Sends completion request for a word.
+ *
+ * @param {string} word The word.
+ * @param {string} context The context.
+ */
+DataSource.prototype.sendCompletionRequestForWord = goog.functions.NULL;
+
+
+/**
  * Sends completion request.
  *
  * @param {string} query The query .
@@ -130,8 +158,8 @@ DataSource.prototype.sendCompletionRequest = goog.functions.NULL;
  *
  * @param {boolean} enabled
  */
-DataSource.prototype.setUserDictEnabled = function(enabled) {
-  this.userDictEnabled = enabled;
+DataSource.prototype.setEnableUserDict = function(enabled) {
+  this.enableUserDict = enabled;
 };
 
 
@@ -154,20 +182,18 @@ DataSource.prototype.setCorrectionLevel = function(level) {
 
 
 /**
+ * Commits text to the data source.
+ *
+ * @param {string} text The text to commit.
+ */
+DataSource.prototype.commitText = goog.functions.NULL;
+
+
+/**
  * Clears the data source.
  */
 DataSource.prototype.clear = goog.functions.NULL;
 
-
-/**
- * The event type.
- *
- * @enum {string}
- */
-DataSource.EventType = {
-  CANDIDATES_BACK: goog.events.getUniqueId('cb'),
-  READY: goog.events.getUniqueId('r')
-};
 
 
 /**

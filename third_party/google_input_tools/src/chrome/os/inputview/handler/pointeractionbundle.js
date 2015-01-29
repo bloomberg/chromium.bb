@@ -397,6 +397,9 @@ PointerActionBundle.prototype.maybeHandleDBLClick_ = function(e) {
  */
 PointerActionBundle.prototype.triggerLongPress_ = function(e) {
   var nativeEvt = e.getBrowserEvent();
+  if (nativeEvt.touches.length > 1) {
+    return;
+  }
   this.dispatchEvent(new i18n.input.chrome.inputview.events.PointerEvent(
       this.view, i18n.input.chrome.inputview.events.EventType.LONG_PRESS,
       e.target, nativeEvt.pageX, nativeEvt.pageY));

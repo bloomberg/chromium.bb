@@ -236,6 +236,9 @@
   "ctrl": {
     "message": "Ctrl"
   },
+  "current_keyboard_prefix": {
+    "message": "jelenleg kiv\u00e1lasztott billenty\u0171zet "
+  },
   "current_lang": {
     "message": "A beviteli nyelv a k\u00ednai"
   },
@@ -252,40 +255,40 @@
     "message": "Cseh QWERTY-billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
   },
   "d83c_dc04": {
-    "message": "Mahjong tile"
+    "message": "Mahjong-kocka"
   },
   "d83c_dccf": {
-    "message": "Joker card"
+    "message": "Joker k\u00e1rtya"
   },
   "d83c_dd70": {
-    "message": "blood type A"
+    "message": "A v\u00e9rcsoport"
   },
   "d83c_dd71": {
-    "message": "blood type B"
+    "message": "B v\u00e9rcsoport"
   },
   "d83c_dd7e": {
-    "message": "blood type O"
+    "message": "0 v\u00e9rcsoport"
   },
   "d83c_dd7f": {
-    "message": "parking"
+    "message": "parkol\u00e1s"
   },
   "d83c_dd8e": {
-    "message": "blood type AB"
+    "message": "AB v\u00e9rcsoport"
   },
   "d83c_dd91": {
     "message": "CL"
   },
   "d83c_dd92": {
-    "message": "cool"
+    "message": "men\u0151"
   },
   "d83c_dd93": {
-    "message": "free"
+    "message": "ingyenes"
   },
   "d83c_dd94": {
-    "message": "ID"
+    "message": "azonos\u00edt\u00f3"
   },
   "d83c_dd95": {
-    "message": "New"
+    "message": "\u00daj"
   },
   "d83c_dd96": {
     "message": "NG"
@@ -297,1183 +300,1183 @@
     "message": "SOS"
   },
   "d83c_dd99": {
-    "message": "UP!"
+    "message": "FEL!"
   },
   "d83c_dd9a": {
-    "message": "versus"
+    "message": "kontra"
   },
   "d83c_de01": {
-    "message": "Japanese word \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+    "message": "\u201eitt\u201d sz\u00f3 jap\u00e1nul"
   },
   "d83c_de02": {
-    "message": "Japanese word \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+    "message": "\u201eszolg\u00e1ltat\u00e1s\u201d sz\u00f3 jap\u00e1nul"
   },
   "d83c_de1a": {
-    "message": "Japanese word 'free'"
+    "message": "\u201eingyenes\u201d sz\u00f3 jap\u00e1nul"
   },
   "d83c_de2f": {
-    "message": "Japanese word 'reserved'"
+    "message": "\u201efoglalt\u201d sz\u00f3 jap\u00e1nul"
   },
   "d83c_de32": {
-    "message": "Japanese word \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+    "message": "\u201etilos\u201d sz\u00f3 jap\u00e1nul"
   },
   "d83c_de33": {
-    "message": "Chinese word 'space available'"
+    "message": "\u201eszabad hely\u201d kifejez\u00e9s k\u00ednaiul"
   },
   "d83c_de34": {
-    "message": "Chinese word 'pass'"
+    "message": "\u201emegfelelt\u201d sz\u00f3 k\u00ednaiul"
   },
   "d83c_de35": {
-    "message": "Chinese word 'full'"
+    "message": "\u201emegtelt\u201d sz\u00f3 k\u00ednaiul"
   },
   "d83c_de36": {
-    "message": "Japanese word 'fees'"
+    "message": "\u201ed\u00edjak\u201d sz\u00f3 jap\u00e1nul"
   },
   "d83c_de37": {
-    "message": "Japanese word 'monthly'"
+    "message": "\u201ehavonta\u201d sz\u00f3 jap\u00e1nul"
   },
   "d83c_de38": {
-    "message": "Chinese word 'application'"
+    "message": "\u201ealkalmaz\u00e1s\u201d sz\u00f3 k\u00ednaiul"
   },
   "d83c_de39": {
-    "message": "Japanese word 'discount'"
+    "message": "\u201eengedm\u00e9ny\u201d sz\u00f3 jap\u00e1nul"
   },
   "d83c_de3a": {
-    "message": "Chinese word 'in business'"
+    "message": "\u201em\u0171k\u00f6dik\u201d sz\u00f3 k\u00ednaiul"
   },
   "d83c_de50": {
-    "message": "Japanese word 'advantage'"
+    "message": "\u201eel\u0151ny\u201d sz\u00f3 jap\u00e1nul"
   },
   "d83c_de51": {
-    "message": "Chinese word 'approved'"
+    "message": "\u201ej\u00f3v\u00e1hagyva\u201d sz\u00f3 k\u00ednaiul"
   },
   "d83c_df00": {
-    "message": "cyclone"
+    "message": "ciklon"
   },
   "d83c_df01": {
-    "message": "foggy"
+    "message": "k\u00f6d\u00f6s"
   },
   "d83c_df02": {
-    "message": "umbrella"
+    "message": "eserny\u0151"
   },
   "d83c_df03": {
-    "message": "night stars"
+    "message": "\u00e9jszakai csillagok"
   },
   "d83c_df04": {
-    "message": "sunrise over mountains"
+    "message": "napkelte hegyek f\u00f6l\u00f6tt"
   },
   "d83c_df05": {
-    "message": "sunrise"
+    "message": "napkelte"
   },
   "d83c_df06": {
-    "message": "city at dusk"
+    "message": "v\u00e1ros alkonyatkor"
   },
   "d83c_df07": {
-    "message": "sunset"
+    "message": "napnyugta"
   },
   "d83c_df08": {
-    "message": "rainbow"
+    "message": "sziv\u00e1rv\u00e1ny"
   },
   "d83c_df09": {
-    "message": "night bridge"
+    "message": "h\u00edd \u00e9jszaka"
   },
   "d83c_df0a": {
-    "message": "wave"
+    "message": "hull\u00e1m"
   },
   "d83c_df0b": {
-    "message": "volcano"
+    "message": "vulk\u00e1n"
   },
   "d83c_df0c": {
-    "message": "Milky Way"
+    "message": "Tej\u00fat"
   },
   "d83c_df0d": {
-    "message": "globe Europe-Africa"
+    "message": "f\u00f6ldgoly\u00f3 \u2013 Eur\u00f3pa-Afrika"
   },
   "d83c_df0e": {
-    "message": "globe Americas"
+    "message": "f\u00f6ldgoly\u00f3 \u2013 Amerika"
   },
   "d83c_df0f": {
-    "message": "globe Asia-Australia"
+    "message": "f\u00f6ldgoly\u00f3 \u2013 \u00c1zsia-Ausztr\u00e1lia"
   },
   "d83c_df10": {
-    "message": "globe with meridians"
+    "message": "f\u00f6ldg\u00f6mb d\u00e9lk\u00f6r\u00f6kkel"
   },
   "d83c_df11": {
-    "message": "new moon"
+    "message": "\u00fajhold"
   },
   "d83c_df12": {
-    "message": "waxing crescent moon"
+    "message": "n\u00f6vekv\u0151 f\u00e9lhold"
   },
   "d83c_df13": {
-    "message": "first quarter moon"
+    "message": "els\u0151 negyedben l\u00e9v\u0151 hold"
   },
   "d83c_df14": {
-    "message": "waxing moon"
+    "message": "n\u00f6vekv\u0151 hold"
   },
   "d83c_df15": {
-    "message": "full moon"
+    "message": "telihold"
   },
   "d83c_df16": {
-    "message": "waning moon"
+    "message": "fogy\u00f3 hold"
   },
   "d83c_df17": {
-    "message": "last quarter moon"
+    "message": "utols\u00f3 negyedben l\u00e9v\u0151 hold"
   },
   "d83c_df18": {
-    "message": "waning crescent moon"
+    "message": "fogy\u00f3 f\u00e9lhold"
   },
   "d83c_df19": {
-    "message": "crescent moon"
+    "message": "holdsarl\u00f3"
   },
   "d83c_df1a": {
-    "message": "new moon face"
+    "message": "\u00fajhold arca"
   },
   "d83c_df1b": {
-    "message": "first quarter moon face"
+    "message": "els\u0151 negyedben l\u00e9v\u0151 hold arca"
   },
   "d83c_df1c": {
-    "message": "last quarter moon face"
+    "message": "utols\u00f3 negyedben l\u00e9v\u0151 hold arca"
   },
   "d83c_df1d": {
-    "message": "full moon face"
+    "message": "telihold arca"
   },
   "d83c_df1e": {
-    "message": "sun face"
+    "message": "nap arca"
   },
   "d83c_df1f": {
-    "message": "glowing star"
+    "message": "ragyog\u00f3 csillag"
   },
   "d83c_df20": {
-    "message": "shooting star"
+    "message": "hull\u00f3csillag"
   },
   "d83c_df30": {
-    "message": "chestnut"
+    "message": "gesztenye"
   },
   "d83c_df31": {
-    "message": "young plant"
+    "message": "fiatal n\u00f6v\u00e9ny"
   },
   "d83c_df32": {
-    "message": "evergreen tree"
+    "message": "\u00f6r\u00f6kz\u00f6ld fa"
   },
   "d83c_df33": {
-    "message": "shedding tree"
+    "message": "lombhullat\u00f3 fa"
   },
   "d83c_df34": {
-    "message": "palm tree"
+    "message": "p\u00e1lmafa"
   },
   "d83c_df35": {
-    "message": "cactus"
+    "message": "kaktusz"
   },
   "d83c_df37": {
-    "message": "tulip"
+    "message": "tulip\u00e1n"
   },
   "d83c_df38": {
-    "message": "cherry blossom"
+    "message": "cseresznyevir\u00e1g"
   },
   "d83c_df39": {
-    "message": "rose"
+    "message": "r\u00f3zsa"
   },
   "d83c_df3a": {
-    "message": "hibiscus"
+    "message": "hibiszkusz"
   },
   "d83c_df3b": {
-    "message": "sunflower"
+    "message": "napraforg\u00f3"
   },
   "d83c_df3c": {
-    "message": "blossom"
+    "message": "virul\u00e1s"
   },
   "d83c_df3d": {
-    "message": "corn"
+    "message": "kukorica"
   },
   "d83c_df3e": {
-    "message": "rice plant"
+    "message": "rizsn\u00f6v\u00e9ny"
   },
   "d83c_df3f": {
-    "message": "herb"
+    "message": "f\u0171szern\u00f6v\u00e9ny"
   },
   "d83c_df40": {
-    "message": "four leaf clover"
+    "message": "n\u00e9gylevel\u0171 l\u00f3here"
   },
   "d83c_df41": {
-    "message": "maple leaf"
+    "message": "juharlev\u00e9l"
   },
   "d83c_df42": {
-    "message": "falling leaves"
+    "message": "hull\u00f3 levelek"
   },
   "d83c_df43": {
-    "message": "leaf in wind"
+    "message": "sz\u00e9lf\u00fatta lev\u00e9l"
   },
   "d83c_df44": {
-    "message": "mushroom"
+    "message": "gomba"
   },
   "d83c_df45": {
-    "message": "tomato"
+    "message": "paradicsom"
   },
   "d83c_df46": {
-    "message": "eggplant"
+    "message": "padlizs\u00e1n"
   },
   "d83c_df47": {
-    "message": "grapes"
+    "message": "sz\u0151l\u0151"
   },
   "d83c_df48": {
-    "message": "melon"
+    "message": "s\u00e1rgadinnye"
   },
   "d83c_df49": {
-    "message": "watermelon"
+    "message": "g\u00f6r\u00f6gdinnye"
   },
   "d83c_df4a": {
-    "message": "tangerine"
+    "message": "mandarin"
   },
   "d83c_df4b": {
-    "message": "lemon"
+    "message": "citrom"
   },
   "d83c_df4c": {
-    "message": "banana"
+    "message": "ban\u00e1n"
   },
   "d83c_df4d": {
-    "message": "pineapple"
+    "message": "anan\u00e1sz"
   },
   "d83c_df4e": {
-    "message": "red apple"
+    "message": "piros alma"
   },
   "d83c_df4f": {
-    "message": "green apple"
+    "message": "z\u00f6ld alma"
   },
   "d83c_df50": {
-    "message": "pear"
+    "message": "k\u00f6rte"
   },
   "d83c_df51": {
-    "message": "peach"
+    "message": "\u0151szibarack"
   },
   "d83c_df52": {
-    "message": "cherry"
+    "message": "cseresznye"
   },
   "d83c_df53": {
-    "message": "strawberry"
+    "message": "eper"
   },
   "d83c_df54": {
     "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "pizza slice"
+    "message": "pizzaszelet"
   },
   "d83c_df56": {
-    "message": "meat"
+    "message": "h\u00fas"
   },
   "d83c_df57": {
-    "message": "chicken leg"
+    "message": "csirkecomb"
   },
   "d83c_df58": {
-    "message": "rice cracker"
+    "message": "rizskeksz"
   },
   "d83c_df59": {
-    "message": "rice ball"
+    "message": "rizsgoly\u00f3"
   },
   "d83c_df5a": {
-    "message": "cooked rice"
+    "message": "f\u0151tt rizs"
   },
   "d83c_df5b": {
-    "message": "curry and rice"
+    "message": "rizses curry"
   },
   "d83c_df5c": {
     "message": "ramen"
   },
   "d83c_df5d": {
-    "message": "spaghetti"
+    "message": "spagetti"
   },
   "d83c_df5e": {
-    "message": "bread"
+    "message": "keny\u00e9r"
   },
   "d83c_df5f": {
-    "message": "fries"
+    "message": "s\u00fclt burgonya"
   },
   "d83c_df60": {
-    "message": "roasted potato"
+    "message": "s\u00fclt burgonya"
   },
   "d83c_df61": {
-    "message": "mochi"
+    "message": "mocsi"
   },
   "d83c_df62": {
     "message": "oden"
   },
   "d83c_df63": {
-    "message": "sushi"
+    "message": "szusi"
   },
   "d83c_df64": {
-    "message": "fried shrimp"
+    "message": "s\u00fclt garn\u00e9lar\u00e1k"
   },
   "d83c_df65": {
-    "message": "fish cake"
+    "message": "haltorta"
   },
   "d83c_df66": {
-    "message": "soft ice cream"
+    "message": "l\u00e1gy fagylalt"
   },
   "d83c_df67": {
-    "message": "shaved ice"
+    "message": "j\u00e9gk\u00e1sa"
   },
   "d83c_df68": {
-    "message": "ice cream"
+    "message": "fagylalt"
   },
   "d83c_df69": {
-    "message": "donut"
+    "message": "f\u00e1nk"
   },
   "d83c_df6a": {
-    "message": "cookie"
+    "message": "apr\u00f3s\u00fctem\u00e9ny"
   },
   "d83c_df6b": {
-    "message": "chocolate"
+    "message": "csokol\u00e1d\u00e9"
   },
   "d83c_df6c": {
-    "message": "candy"
+    "message": "cukorka"
   },
   "d83c_df6d": {
-    "message": "lollipop"
+    "message": "nyal\u00f3ka"
   },
   "d83c_df6e": {
-    "message": "custard"
+    "message": "tejsod\u00f3"
   },
   "d83c_df6f": {
-    "message": "honeypot"
+    "message": "m\u00e9zesb\u00f6d\u00f6n"
   },
   "d83c_df70": {
-    "message": "shortcake"
+    "message": "oml\u00f3s torta"
   },
   "d83c_df71": {
     "message": "bento"
   },
   "d83c_df72": {
-    "message": "stew"
+    "message": "p\u00f6rk\u00f6lt"
   },
   "d83c_df73": {
-    "message": "frying pan"
+    "message": "serpeny\u0151"
   },
   "d83c_df74": {
-    "message": "fork and knife"
+    "message": "villa \u00e9s k\u00e9s"
   },
   "d83c_df75": {
-    "message": "teacup"
+    "message": "te\u00e1scs\u00e9sze"
   },
   "d83c_df76": {
-    "message": "sake"
+    "message": "szak\u00e9"
   },
   "d83c_df77": {
-    "message": "wine"
+    "message": "bor"
   },
   "d83c_df78": {
-    "message": "cocktail"
+    "message": "kokt\u00e9l"
   },
   "d83c_df79": {
-    "message": "tropical drink"
+    "message": "tr\u00f3pusi ital"
   },
   "d83c_df7a": {
-    "message": "beer"
+    "message": "s\u00f6r"
   },
   "d83c_df7b": {
-    "message": "beer mugs"
+    "message": "s\u00f6r\u00f6skors\u00f3k"
   },
   "d83c_df7c": {
-    "message": "baby bottle"
+    "message": "cumis\u00fcveg"
   },
   "d83c_df80": {
-    "message": "ribbon"
+    "message": "szalag"
   },
   "d83c_df81": {
-    "message": "gift"
+    "message": "aj\u00e1nd\u00e9k"
   },
   "d83c_df82": {
-    "message": "birthday cake"
+    "message": "sz\u00fclet\u00e9snapi torta"
   },
   "d83c_df83": {
-    "message": "jack-o-lantern"
+    "message": "t\u00f6kl\u00e1mp\u00e1s"
   },
   "d83c_df84": {
-    "message": "christmas tree"
+    "message": "kar\u00e1csonyfa"
   },
   "d83c_df85": {
-    "message": "santa"
+    "message": "T\u00e9lap\u00f3"
   },
   "d83c_df86": {
-    "message": "firework"
+    "message": "t\u0171zij\u00e1t\u00e9k"
   },
   "d83c_df87": {
-    "message": "sparkler"
+    "message": "csillagsz\u00f3r\u00f3"
   },
   "d83c_df88": {
-    "message": "balloon"
+    "message": "l\u00e9gg\u00f6mb"
   },
   "d83c_df89": {
-    "message": "party popper"
+    "message": "belt\u00e9ri t\u0171zij\u00e1t\u00e9k"
   },
   "d83c_df8a": {
-    "message": "confetti"
+    "message": "konfetti"
   },
   "d83c_df8b": {
-    "message": "tree and paper strips"
+    "message": "fa \u00e9s pap\u00edrszalagok"
   },
   "d83c_df8c": {
-    "message": "crossed flags"
+    "message": "keresztbe tett z\u00e1szl\u00f3k"
   },
   "d83c_df8d": {
-    "message": "pine decoration"
+    "message": "feny\u0151dekor\u00e1ci\u00f3"
   },
   "d83c_df8e": {
-    "message": "dolls"
+    "message": "bab\u00e1k"
   },
   "d83c_df8f": {
-    "message": "carp streamer"
+    "message": "ponty form\u00e1j\u00fa sz\u00e9lzs\u00e1k"
   },
   "d83c_df90": {
-    "message": "wind chime"
+    "message": "sz\u00e9lcseng\u0151"
   },
   "d83c_df91": {
-    "message": "moon viewing"
+    "message": "holdn\u00e9z\u00e9s"
   },
   "d83c_df92": {
-    "message": "school bag"
+    "message": "iskolat\u00e1ska"
   },
   "d83c_df93": {
-    "message": "graduation cap"
+    "message": "diplomaoszt\u00e1si sapka"
   },
   "d83c_dfa0": {
-    "message": "carousel"
+    "message": "k\u00f6rhinta"
   },
   "d83c_dfa1": {
-    "message": "ferris wheel"
+    "message": "\u00f3ri\u00e1sker\u00e9k"
   },
   "d83c_dfa2": {
-    "message": "roller coaster"
+    "message": "hull\u00e1mvas\u00fat"
   },
   "d83c_dfa3": {
-    "message": "fishing"
+    "message": "hal\u00e1szat"
   },
   "d83c_dfa4": {
-    "message": "mic"
+    "message": "mikrofon"
   },
   "d83c_dfa5": {
-    "message": "movie camera"
+    "message": "filmfelvev\u0151g\u00e9p"
   },
   "d83c_dfa6": {
-    "message": "movie"
+    "message": "film"
   },
   "d83c_dfa7": {
-    "message": "headphone"
+    "message": "fejhallgat\u00f3"
   },
   "d83c_dfa8": {
-    "message": "paint palette"
+    "message": "paletta"
   },
   "d83c_dfa9": {
-    "message": "top hat"
+    "message": "cilinder"
   },
   "d83c_dfaa": {
-    "message": "circus"
+    "message": "cirkusz"
   },
   "d83c_dfab": {
-    "message": "ticket"
+    "message": "jegy"
   },
   "d83c_dfac": {
-    "message": "clapperboard"
+    "message": "csap\u00f3"
   },
   "d83c_dfad": {
-    "message": "face mask"
+    "message": "maszk"
   },
   "d83c_dfae": {
-    "message": "video game"
+    "message": "videoj\u00e1t\u00e9k"
   },
   "d83c_dfaf": {
-    "message": "bull's eye"
+    "message": "telital\u00e1lat"
   },
   "d83c_dfb0": {
-    "message": "slot machine"
+    "message": "j\u00e1t\u00e9kg\u00e9p"
   },
   "d83c_dfb1": {
-    "message": "billiard"
+    "message": "bili\u00e1rd"
   },
   "d83c_dfb2": {
-    "message": "game die"
+    "message": "dob\u00f3kocka"
   },
   "d83c_dfb3": {
     "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "playing card"
+    "message": "j\u00e1t\u00e9kk\u00e1rtya"
   },
   "d83c_dfb5": {
-    "message": "musical note"
+    "message": "hangjegy"
   },
   "d83c_dfb6": {
-    "message": "musical notes"
+    "message": "hangjegyek"
   },
   "d83c_dfb7": {
-    "message": "sax"
+    "message": "szaxofon"
   },
   "d83c_dfb8": {
-    "message": "guitar"
+    "message": "git\u00e1r"
   },
   "d83c_dfb9": {
-    "message": "piano"
+    "message": "zongora"
   },
   "d83c_dfba": {
-    "message": "trumpet"
+    "message": "trombita"
   },
   "d83c_dfbb": {
-    "message": "violin"
+    "message": "heged\u0171"
   },
   "d83c_dfbc": {
-    "message": "music score"
+    "message": "kotta"
   },
   "d83c_dfbd": {
-    "message": "running shirt"
+    "message": "fut\u00f3p\u00f3l\u00f3"
   },
   "d83c_dfbe": {
-    "message": "tennis"
+    "message": "tenisz"
   },
   "d83c_dfbf": {
-    "message": "ski"
+    "message": "s\u00ed"
   },
   "d83c_dfc0": {
-    "message": "basketball"
+    "message": "kos\u00e1rlabda"
   },
   "d83c_dfc1": {
-    "message": "checkered flag"
+    "message": "kock\u00e1s z\u00e1szl\u00f3"
   },
   "d83c_dfc2": {
-    "message": "snowboarder"
+    "message": "h\u00f3deszk\u00e1s"
   },
   "d83c_dfc3": {
-    "message": "runner"
+    "message": "fut\u00f3"
   },
   "d83c_dfc4": {
-    "message": "surfing"
+    "message": "sz\u00f6rf\u00f6z\u00e9s"
   },
   "d83c_dfc6": {
-    "message": "trophy"
+    "message": "d\u00edj"
   },
   "d83c_dfc7": {
-    "message": "horse racing"
+    "message": "l\u00f3verseny"
   },
   "d83c_dfc8": {
-    "message": "American football"
+    "message": "amerikai futball"
   },
   "d83c_dfc9": {
-    "message": "soccer"
+    "message": "futball"
   },
   "d83c_dfca": {
-    "message": "swimmer"
+    "message": "\u00fasz\u00f3"
   },
   "d83c_dfe0": {
-    "message": "house"
+    "message": "h\u00e1z"
   },
   "d83c_dfe1": {
-    "message": "home"
+    "message": "otthon"
   },
   "d83c_dfe2": {
-    "message": "office building"
+    "message": "irodah\u00e1z"
   },
   "d83c_dfe3": {
-    "message": "Japanese post office"
+    "message": "jap\u00e1n posta"
   },
   "d83c_dfe4": {
-    "message": "European post office"
+    "message": "eur\u00f3pai posta"
   },
   "d83c_dfe5": {
-    "message": "hospital"
+    "message": "k\u00f3rh\u00e1z"
   },
   "d83c_dfe6": {
     "message": "bank"
   },
   "d83c_dfe7": {
-    "message": "ATM"
+    "message": "bankautomata"
   },
   "d83c_dfe8": {
-    "message": "hotel"
+    "message": "sz\u00e1lloda"
   },
   "d83c_dfe9": {
-    "message": "love hotel"
+    "message": "garnisz\u00e1ll\u00f3"
   },
   "d83c_dfea": {
-    "message": "convenience store"
+    "message": "kisbolt"
   },
   "d83c_dfeb": {
-    "message": "school"
+    "message": "iskola"
   },
   "d83c_dfec": {
-    "message": "department store"
+    "message": "\u00e1ruh\u00e1z"
   },
   "d83c_dfed": {
-    "message": "factory"
+    "message": "gy\u00e1r"
   },
   "d83c_dfee": {
-    "message": "red lantern"
+    "message": "piros l\u00e1mp\u00e1s"
   },
   "d83c_dfef": {
-    "message": "Japanese castle"
+    "message": "jap\u00e1n kast\u00e9ly"
   },
   "d83c_dff0": {
-    "message": "European castle"
+    "message": "eur\u00f3pai kast\u00e9ly"
   },
   "d83d_dc00": {
-    "message": "Rat"
+    "message": "patk\u00e1ny"
   },
   "d83d_dc01": {
-    "message": "Mouse"
+    "message": "eg\u00e9r"
   },
   "d83d_dc02": {
-    "message": "Ox"
+    "message": "\u00d6k\u00f6r"
   },
   "d83d_dc03": {
-    "message": "water buffalo"
+    "message": "v\u00edzibivaly"
   },
   "d83d_dc04": {
-    "message": "cow"
+    "message": "teh\u00e9n"
   },
   "d83d_dc06": {
-    "message": "leopard"
+    "message": "leop\u00e1rd"
   },
   "d83d_dc07": {
-    "message": "rabbit"
+    "message": "ny\u00fal"
   },
   "d83d_dc08": {
-    "message": "cat"
+    "message": "macska"
   },
   "d83d_dc09": {
-    "message": "dragon"
+    "message": "s\u00e1rk\u00e1ny"
   },
   "d83d_dc0a": {
-    "message": "crocodile"
+    "message": "krokodil"
   },
   "d83d_dc0b": {
-    "message": "whale"
+    "message": "b\u00e1lna"
   },
   "d83d_dc0c": {
-    "message": "snail"
+    "message": "csiga"
   },
   "d83d_dc0d": {
-    "message": "snake"
+    "message": "k\u00edgy\u00f3"
   },
   "d83d_dc0e": {
-    "message": "horse"
+    "message": "l\u00f3"
   },
   "d83d_dc0f": {
-    "message": "ram"
+    "message": "kos"
   },
   "d83d_dc10": {
-    "message": "goat"
+    "message": "kecske"
   },
   "d83d_dc11": {
-    "message": "sheep"
+    "message": "juh"
   },
   "d83d_dc12": {
-    "message": "monkey"
+    "message": "majom"
   },
   "d83d_dc13": {
-    "message": "rooster"
+    "message": "kakas"
   },
   "d83d_dc14": {
-    "message": "chicken"
+    "message": "csirke"
   },
   "d83d_dc15": {
-    "message": "dog"
+    "message": "kutya"
   },
   "d83d_dc16": {
-    "message": "pig"
+    "message": "malac"
   },
   "d83d_dc17": {
-    "message": "boar"
+    "message": "vaddiszn\u00f3"
   },
   "d83d_dc18": {
-    "message": "elephant"
+    "message": "elef\u00e1nt"
   },
   "d83d_dc19": {
-    "message": "octopus"
+    "message": "polip"
   },
   "d83d_dc1a": {
-    "message": "shell"
+    "message": "kagyl\u00f3"
   },
   "d83d_dc1b": {
-    "message": "bug"
+    "message": "bog\u00e1r"
   },
   "d83d_dc1c": {
-    "message": "ant"
+    "message": "hangya"
   },
   "d83d_dc1d": {
-    "message": "honeybee"
+    "message": "m\u00e9h"
   },
   "d83d_dc1e": {
-    "message": "lady beetle"
+    "message": "katicabog\u00e1r"
   },
   "d83d_dc1f": {
-    "message": "fish"
+    "message": "hal"
   },
   "d83d_dc20": {
-    "message": "tropical fish"
+    "message": "tr\u00f3pusi hal"
   },
   "d83d_dc21": {
-    "message": "blowfish"
+    "message": "g\u00f6mbhal"
   },
   "d83d_dc22": {
-    "message": "turtle"
+    "message": "tekn\u0151s"
   },
   "d83d_dc23": {
-    "message": "hatching chick"
+    "message": "kikel\u0151 kiscsibe"
   },
   "d83d_dc24": {
-    "message": "baby chick face"
+    "message": "kiscsibefej"
   },
   "d83d_dc25": {
-    "message": "baby chick"
+    "message": "kiscsibe"
   },
   "d83d_dc26": {
-    "message": "bird"
+    "message": "mad\u00e1r"
   },
   "d83d_dc27": {
-    "message": "penguin"
+    "message": "pingvin"
   },
   "d83d_dc28": {
     "message": "koala"
   },
   "d83d_dc29": {
-    "message": "poodle"
+    "message": "uszk\u00e1r"
   },
   "d83d_dc2a": {
-    "message": "one hump camel"
+    "message": "egyp\u00fap\u00fa teve"
   },
   "d83d_dc2b": {
-    "message": "two hump camel"
+    "message": "k\u00e9tp\u00fap\u00fa teve"
   },
   "d83d_dc2c": {
-    "message": "dolphin"
+    "message": "delfin"
   },
   "d83d_dc2d": {
-    "message": "mouse face"
+    "message": "eg\u00e9rfej"
   },
   "d83d_dc2e": {
-    "message": "cow face"
+    "message": "teh\u00e9nfej"
   },
   "d83d_dc2f": {
-    "message": "tiger face"
+    "message": "tigrisfej"
   },
   "d83d_dc30": {
-    "message": "rabbit face"
+    "message": "ny\u00falfej"
   },
   "d83d_dc31": {
-    "message": "cat face"
+    "message": "macskafej"
   },
   "d83d_dc32": {
-    "message": "dragon face"
+    "message": "s\u00e1rk\u00e1nyfej"
   },
   "d83d_dc33": {
-    "message": "spouting whale"
+    "message": "v\u00edzet f\u00faj\u00f3 b\u00e1lna"
   },
   "d83d_dc34": {
-    "message": "horse face"
+    "message": "l\u00f3fej"
   },
   "d83d_dc35": {
-    "message": "monkey face"
+    "message": "majomfej"
   },
   "d83d_dc36": {
-    "message": "dog face"
+    "message": "kutyafej"
   },
   "d83d_dc37": {
-    "message": "pig face"
+    "message": "malacfej"
   },
   "d83d_dc38": {
-    "message": "frog face"
+    "message": "b\u00e9kafej"
   },
   "d83d_dc39": {
-    "message": "hamster face"
+    "message": "h\u00f6rcs\u00f6gfej"
   },
   "d83d_dc3a": {
-    "message": "wolf face"
+    "message": "farkasfej"
   },
   "d83d_dc3b": {
-    "message": "bear face"
+    "message": "medvefej"
   },
   "d83d_dc3c": {
-    "message": "panda face"
+    "message": "pandafej"
   },
   "d83d_dc3d": {
-    "message": "pig nose"
+    "message": "malacorr"
   },
   "d83d_dc3e": {
-    "message": "paw"
+    "message": "mancs"
   },
   "d83d_dc40": {
-    "message": "eyes"
+    "message": "szemek"
   },
   "d83d_dc42": {
-    "message": "ear"
+    "message": "f\u00fcl"
   },
   "d83d_dc43": {
-    "message": "nose"
+    "message": "orr"
   },
   "d83d_dc44": {
-    "message": "mouth"
+    "message": "sz\u00e1j"
   },
   "d83d_dc45": {
-    "message": "tongue"
+    "message": "nyelv"
   },
   "d83d_dc46": {
-    "message": "up finger"
+    "message": "felfel\u00e9 mutat\u00f3 ujj"
   },
   "d83d_dc47": {
-    "message": "down finger"
+    "message": "lefel\u00e9 mutat\u00f3 ujj"
   },
   "d83d_dc48": {
-    "message": "left finger"
+    "message": "balra mutat\u00f3 ujj"
   },
   "d83d_dc49": {
-    "message": "right finger"
+    "message": "jobbra mutat\u00f3 ujj"
   },
   "d83d_dc4a": {
-    "message": "clenched fist"
+    "message": "\u00f6sszeszor\u00edtott \u00f6k\u00f6l"
   },
   "d83d_dc4b": {
-    "message": "hand waving"
+    "message": "integet\u0151 k\u00e9z"
   },
   "d83d_dc4c": {
-    "message": "OK hand sign"
+    "message": "OK k\u00e9zjel"
   },
   "d83d_dc4d": {
-    "message": "thumbs up"
+    "message": "felfel\u00e9 mutat\u00f3 h\u00fcvelykujj"
   },
   "d83d_dc4e": {
-    "message": "thumbs down"
+    "message": "lefel\u00e9 mutat\u00f3 h\u00fcvelykujj"
   },
   "d83d_dc4f": {
-    "message": "hands clapping"
+    "message": "tapsol\u00f3 k\u00e9z"
   },
   "d83d_dc50": {
-    "message": "open hands"
+    "message": "nyitott kezek"
   },
   "d83d_dc51": {
-    "message": "crown"
+    "message": "korona"
   },
   "d83d_dc52": {
-    "message": "woman's hat"
+    "message": "n\u0151i kalap"
   },
   "d83d_dc53": {
-    "message": "eyeglasses"
+    "message": "szem\u00fcveg"
   },
   "d83d_dc54": {
-    "message": "necktie"
+    "message": "nyakkend\u0151"
   },
   "d83d_dc55": {
-    "message": "T-shirt"
+    "message": "p\u00f3l\u00f3"
   },
   "d83d_dc56": {
-    "message": "trousers"
+    "message": "nadr\u00e1g"
   },
   "d83d_dc57": {
-    "message": "dress"
+    "message": "ruha"
   },
   "d83d_dc58": {
-    "message": "kimono"
+    "message": "kimon\u00f3"
   },
   "d83d_dc59": {
     "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "woman's clothes"
+    "message": "n\u0151i ruh\u00e1zat"
   },
   "d83d_dc5b": {
-    "message": "purse"
+    "message": "p\u00e9nzt\u00e1rca"
   },
   "d83d_dc5c": {
-    "message": "handbag"
+    "message": "k\u00e9zit\u00e1ska"
   },
   "d83d_dc5d": {
-    "message": "pouch"
+    "message": "ersz\u00e9ny"
   },
   "d83d_dc5e": {
-    "message": "man's shoe"
+    "message": "f\u00e9rfi cip\u0151"
   },
   "d83d_dc5f": {
-    "message": "athletic shoe"
+    "message": "sportcip\u0151"
   },
   "d83d_dc60": {
-    "message": "high-heel"
+    "message": "magassark\u00fa"
   },
   "d83d_dc61": {
-    "message": "woman's sandal"
+    "message": "n\u0151i szand\u00e1l"
   },
   "d83d_dc62": {
-    "message": "woman's boot"
+    "message": "n\u0151i csizma"
   },
   "d83d_dc63": {
-    "message": "footprint"
+    "message": "l\u00e1bnyom"
   },
   "d83d_dc64": {
-    "message": "bust in silhouette"
+    "message": "mellszobor sziluettje"
   },
   "d83d_dc65": {
-    "message": "busts in silhouette"
+    "message": "mellszobrok sziluettje"
   },
   "d83d_dc66": {
-    "message": "boy"
+    "message": "fi\u00fa"
   },
   "d83d_dc67": {
-    "message": "girl"
+    "message": "l\u00e1ny"
   },
   "d83d_dc68": {
-    "message": "man"
+    "message": "f\u00e9rfi"
   },
   "d83d_dc69": {
-    "message": "woman"
+    "message": "n\u0151"
   },
   "d83d_dc6a": {
-    "message": "family"
+    "message": "csal\u00e1d"
   },
   "d83d_dc6b": {
-    "message": "man and woman"
+    "message": "f\u00e9rfi \u00e9s n\u0151"
   },
   "d83d_dc6c": {
-    "message": "two men"
+    "message": "k\u00e9t f\u00e9rfi"
   },
   "d83d_dc6d": {
-    "message": "two women"
+    "message": "k\u00e9t n\u0151"
   },
   "d83d_dc6e": {
-    "message": "police officer"
+    "message": "rend\u0151r"
   },
   "d83d_dc6f": {
-    "message": "bunny girl"
+    "message": "nyuszil\u00e1ny"
   },
   "d83d_dc70": {
-    "message": "bride"
+    "message": "menyasszony"
   },
   "d83d_dc71": {
-    "message": "blond person"
+    "message": "sz\u0151ke ember"
   },
   "d83d_dc72": {
-    "message": "man with gua pi mao"
+    "message": "ember gua pi mao sapk\u00e1ban"
   },
   "d83d_dc73": {
-    "message": "man with a turban"
+    "message": "turb\u00e1nos ember"
   },
   "d83d_dc74": {
-    "message": "older man"
+    "message": "id\u0151sebb f\u00e9rfi"
   },
   "d83d_dc75": {
-    "message": "older woman"
+    "message": "id\u0151sebb n\u0151"
   },
   "d83d_dc76": {
-    "message": "baby"
+    "message": "baba"
   },
   "d83d_dc77": {
-    "message": "construction worker"
+    "message": "\u00e9p\u00edt\u0151munk\u00e1s"
   },
   "d83d_dc78": {
-    "message": "princess"
+    "message": "hercegn\u0151"
   },
   "d83d_dc79": {
-    "message": "ogre"
+    "message": "emberev\u0151 \u00f3ri\u00e1s"
   },
   "d83d_dc7a": {
-    "message": "goblin"
+    "message": "kobold"
   },
   "d83d_dc7b": {
-    "message": "ghost"
+    "message": "szellem"
   },
   "d83d_dc7c": {
-    "message": "baby angel"
+    "message": "gyermek angyal"
   },
   "d83d_dc7d": {
-    "message": "alien"
+    "message": "idegen"
   },
   "d83d_dc7e": {
-    "message": "alien monster"
+    "message": "idegen sz\u00f6rny"
   },
   "d83d_dc7f": {
-    "message": "imp"
+    "message": "man\u00f3"
   },
   "d83d_dc80": {
-    "message": "skull"
+    "message": "koponya"
   },
   "d83d_dc81": {
-    "message": "information desk"
+    "message": "inform\u00e1ci\u00f3s pult"
   },
   "d83d_dc82": {
-    "message": "guardsman"
+    "message": "g\u00e1rdista"
   },
   "d83d_dc83": {
-    "message": "dancer"
+    "message": "t\u00e1ncos"
   },
   "d83d_dc84": {
-    "message": "lipstick"
+    "message": "r\u00fazs"
   },
   "d83d_dc85": {
-    "message": "nail care"
+    "message": "k\u00f6r\u00f6m\u00e1pol\u00e1s"
   },
   "d83d_dc86": {
-    "message": "face massage"
+    "message": "arcmassz\u00e1zs"
   },
   "d83d_dc87": {
-    "message": "haircut"
+    "message": "hajv\u00e1g\u00e1s"
   },
   "d83d_dc88": {
-    "message": "barber shop"
+    "message": "f\u00e9rfifodr\u00e1szat"
   },
   "d83d_dc89": {
-    "message": "shot"
+    "message": "l\u00f6v\u00e9s"
   },
   "d83d_dc8a": {
-    "message": "pill"
+    "message": "tabletta"
   },
   "d83d_dc8b": {
-    "message": "kiss mark"
+    "message": "r\u00fazslenyomat"
   },
   "d83d_dc8c": {
-    "message": "love letter"
+    "message": "szerelmeslev\u00e9l"
   },
   "d83d_dc8d": {
-    "message": "ring"
+    "message": "gy\u0171r\u0171"
   },
   "d83d_dc8e": {
-    "message": "gem"
+    "message": "dr\u00e1gak\u0151"
   },
   "d83d_dc8f": {
-    "message": "kiss"
+    "message": "cs\u00f3k"
   },
   "d83d_dc90": {
-    "message": "bouquet"
+    "message": "csokor"
   },
   "d83d_dc91": {
-    "message": "couple"
+    "message": "p\u00e1r"
   },
   "d83d_dc92": {
-    "message": "wedding chapel"
+    "message": "esk\u00fcv\u0151i k\u00e1polna"
   },
   "d83d_dc93": {
-    "message": "pulsating heart"
+    "message": "l\u00fcktet\u0151 sz\u00edv"
   },
   "d83d_dc94": {
-    "message": "heart break"
+    "message": "sz\u00edvet t\u00e9p\u0151 f\u00e1jdalom"
   },
   "d83d_dc95": {
-    "message": "two hearts"
+    "message": "k\u00e9t sz\u00edv"
   },
   "d83d_dc96": {
-    "message": "sparkling heart"
+    "message": "csillog\u00f3 sz\u00edv"
   },
   "d83d_dc97": {
-    "message": "growing heart"
+    "message": "n\u00f6vekv\u0151 sz\u00edv"
   },
   "d83d_dc98": {
-    "message": "heart and arrow"
+    "message": "sz\u00edv \u00e9s ny\u00edl"
   },
   "d83d_dc99": {
-    "message": "blue heart"
+    "message": "k\u00e9k sz\u00edv"
   },
   "d83d_dc9a": {
-    "message": "green heart"
+    "message": "z\u00f6ld sz\u00edv"
   },
   "d83d_dc9b": {
-    "message": "yellow heart"
+    "message": "s\u00e1rga sz\u00edv"
   },
   "d83d_dc9c": {
-    "message": "purple heart"
+    "message": "lila sz\u00edv"
   },
   "d83d_dc9d": {
-    "message": "heart with ribbon"
+    "message": "sz\u00edv szalaggal"
   },
   "d83d_dc9e": {
-    "message": "revolving hearts"
+    "message": "forg\u00f3 sz\u00edvek"
   },
   "d83d_dc9f": {
-    "message": "heart decoration"
+    "message": "sz\u00edv d\u00edsz\u00edt\u00e9s"
   },
   "d83d_dca0": {
-    "message": "flower petal"
+    "message": "vir\u00e1gszirom"
   },
   "d83d_dca1": {
-    "message": "light bulb"
+    "message": "villanyk\u00f6rte"
   },
   "d83d_dca2": {
-    "message": "anger"
+    "message": "harag"
   },
   "d83d_dca3": {
-    "message": "bomb"
+    "message": "bomba"
   },
   "d83d_dca4": {
-    "message": "sleepy symbol"
+    "message": "\u00e1lmos szimb\u00f3lum"
   },
   "d83d_dca5": {
-    "message": "collision"
+    "message": "\u00fctk\u00f6z\u00e9s"
   },
   "d83d_dca6": {
-    "message": "splashing sweat"
+    "message": "fr\u00f6ccsen\u0151 verejt\u00e9k"
   },
   "d83d_dca7": {
-    "message": "cold sweat"
+    "message": "hideg verejt\u00e9k"
   },
   "d83d_dca8": {
-    "message": "running dash"
+    "message": "fut\u00e1s"
   },
   "d83d_dca9": {
-    "message": "poop"
+    "message": "kaki"
   },
   "d83d_dcaa": {
-    "message": "biceps"
+    "message": "bicepsz"
   },
   "d83d_dcab": {
-    "message": "dizzy"
+    "message": "sz\u00e9d\u00fcl\u0151"
   },
   "d83d_dcac": {
-    "message": "speech balloon"
+    "message": "sz\u00f3bubor\u00e9k"
   },
   "d83d_dcad": {
-    "message": "thought balloon"
+    "message": "gondolatbubor\u00e9k"
   },
   "d83d_dcae": {
-    "message": "flower stamp"
+    "message": "vir\u00e1gb\u00e9lyegz\u0151"
   },
   "d83d_dcaf": {
-    "message": "full score"
+    "message": "teljes pontsz\u00e1m"
   },
   "d83d_dcb0": {
-    "message": "money bag"
+    "message": "p\u00e9nzeszacsk\u00f3"
   },
   "d83d_dcb1": {
-    "message": "currency exchange"
+    "message": "p\u00e9nzv\u00e1lt\u00e1s"
   },
   "d83d_dcb2": {
-    "message": "dollar sign"
+    "message": "doll\u00e1rjel"
   },
   "d83d_dcb3": {
-    "message": "credit card"
+    "message": "hitelk\u00e1rtya"
   },
   "d83d_dcb4": {
-    "message": "yen note"
+    "message": "jen bankjegy"
   },
   "d83d_dcb5": {
-    "message": "dollar note"
+    "message": "doll\u00e1r bankjegy"
   },
   "d83d_dcb6": {
-    "message": "Euro note"
+    "message": "eur\u00f3 bankjegy"
   },
   "d83d_dcb7": {
-    "message": "Pound note"
+    "message": "font bankjegy"
   },
   "d83d_dcb8": {
-    "message": "flying money"
+    "message": "rep\u00fcl\u0151 p\u00e9nz"
   },
   "d83d_dcb9": {
-    "message": "rising market"
+    "message": "n\u00f6vekv\u0151 piac"
   },
   "d83d_dcba": {
-    "message": "seat"
+    "message": "\u00fcl\u00e9s"
   },
   "d83d_dcbb": {
-    "message": "PC"
+    "message": "sz\u00e1m\u00edt\u00f3g\u00e9p"
   },
   "d83d_dcbc": {
-    "message": "briefcase"
+    "message": "aktat\u00e1ska"
   },
   "d83d_dcbd": {
-    "message": "mini disc"
+    "message": "minilemez"
   },
   "d83d_dcbe": {
-    "message": "floppy disc"
+    "message": "floppy lemez"
   },
   "d83d_dcbf": {
     "message": "blu-ray"
@@ -1482,889 +1485,889 @@
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "file folder"
+    "message": "irattart\u00f3 mappa"
   },
   "d83d_dcc2": {
-    "message": "open folder"
+    "message": "nyitott mappa"
   },
   "d83d_dcc3": {
-    "message": "document"
+    "message": "dokumentum"
   },
   "d83d_dcc4": {
-    "message": "document"
+    "message": "dokumentum"
   },
   "d83d_dcc5": {
-    "message": "calendar"
+    "message": "napt\u00e1r"
   },
   "d83d_dcc6": {
-    "message": "tear-off calendar"
+    "message": "leszak\u00edthat\u00f3 napt\u00e1r"
   },
   "d83d_dcc7": {
-    "message": "card index"
+    "message": "forg\u00f3 n\u00e9vjegytart\u00f3"
   },
   "d83d_dcc8": {
-    "message": "upward trend"
+    "message": "emelked\u0151 trend"
   },
   "d83d_dcc9": {
-    "message": "downward trend"
+    "message": "cs\u00f6kken\u0151 trend"
   },
   "d83d_dcca": {
-    "message": "bar graph"
+    "message": "oszlopdiagram"
   },
   "d83d_dccb": {
-    "message": "clipboard"
+    "message": "fel\u00edr\u00f3t\u00e1bla"
   },
   "d83d_dccc": {
-    "message": "pushpin"
+    "message": "rajzszeg"
   },
   "d83d_dccd": {
-    "message": "round pushpin"
+    "message": "kerek rajzszeg"
   },
   "d83d_dcce": {
-    "message": "paperclip"
+    "message": "gemkapocs"
   },
   "d83d_dccf": {
-    "message": "straight ruler"
+    "message": "egyenes vonalz\u00f3"
   },
   "d83d_dcd0": {
-    "message": "triangle ruler"
+    "message": "h\u00e1romsz\u00f6gvonalz\u00f3"
   },
   "d83d_dcd1": {
-    "message": "bookmark tabs"
+    "message": "k\u00f6nyvjelz\u0151 lapok"
   },
   "d83d_dcd2": {
-    "message": "ledger"
+    "message": "f\u0151k\u00f6nyv"
   },
   "d83d_dcd3": {
-    "message": "notebook"
+    "message": "jegyzetf\u00fczet"
   },
   "d83d_dcd4": {
-    "message": "decorated notebook"
+    "message": "d\u00edszes jegyzetf\u00fczet"
   },
   "d83d_dcd5": {
-    "message": "closed book"
+    "message": "becsukott k\u00f6nyv"
   },
   "d83d_dcd6": {
-    "message": "open book"
+    "message": "nyitott k\u00f6nyv"
   },
   "d83d_dcd7": {
-    "message": "green book"
+    "message": "z\u00f6ld k\u00f6nyv"
   },
   "d83d_dcd8": {
-    "message": "book"
+    "message": "k\u00f6nyv"
   },
   "d83d_dcd9": {
-    "message": "orange book"
+    "message": "narancss\u00e1rga k\u00f6nyv"
   },
   "d83d_dcda": {
-    "message": "books"
+    "message": "k\u00f6nyvek"
   },
   "d83d_dcdb": {
-    "message": "name badge"
+    "message": "n\u00e9vkit\u0171z\u0151"
   },
   "d83d_dcdc": {
-    "message": "scroll"
+    "message": "pap\u00edrtekercs"
   },
   "d83d_dcdd": {
-    "message": "memo"
+    "message": "feljegyz\u00e9s"
   },
   "d83d_dcde": {
-    "message": "phone"
+    "message": "telefon"
   },
   "d83d_dcdf": {
-    "message": "pager"
+    "message": "szem\u00e9lyh\u00edv\u00f3"
   },
   "d83d_dce0": {
     "message": "fax"
   },
   "d83d_dce1": {
-    "message": "satellite dish"
+    "message": "parabolaantenna"
   },
   "d83d_dce2": {
-    "message": "loudspeaker"
+    "message": "hangsz\u00f3r\u00f3"
   },
   "d83d_dce3": {
-    "message": "megaphone"
+    "message": "hangosbesz\u00e9l\u0151"
   },
   "d83d_dce4": {
-    "message": "sent mail"
+    "message": "elk\u00fcld\u00f6tt lev\u00e9l"
   },
   "d83d_dce5": {
-    "message": "Inbox"
+    "message": "Be\u00e9rkez\u0151 levelek"
   },
   "d83d_dce6": {
-    "message": "package"
+    "message": "csomag"
   },
   "d83d_dce7": {
-    "message": "email"
+    "message": "e-mail"
   },
   "d83d_dce8": {
-    "message": "incoming mail"
+    "message": "be\u00e9rkez\u0151 lev\u00e9l"
   },
   "d83d_dce9": {
-    "message": "outgoing mail"
+    "message": "kimen\u0151 lev\u00e9l"
   },
   "d83d_dcea": {
-    "message": "closed mailbox with flag down"
+    "message": "z\u00e1rt postal\u00e1da lefel\u00e9 mutat\u00f3 z\u00e1szl\u00f3val"
   },
   "d83d_dceb": {
-    "message": "closed mailbox with flag up"
+    "message": "z\u00e1rt postal\u00e1da felfel\u00e9 mutat\u00f3 z\u00e1szl\u00f3val"
   },
   "d83d_dcec": {
-    "message": "open mailbox with flag up"
+    "message": "nyitott postal\u00e1da felfel\u00e9 mutat\u00f3 z\u00e1szl\u00f3val"
   },
   "d83d_dced": {
-    "message": "open mailbox with flag down"
+    "message": "nyitott postal\u00e1da lefel\u00e9 mutat\u00f3 z\u00e1szl\u00f3val"
   },
   "d83d_dcee": {
-    "message": "postbox"
+    "message": "postal\u00e1da"
   },
   "d83d_dcef": {
-    "message": "postal horn"
+    "message": "postak\u00fcrt"
   },
   "d83d_dcf0": {
-    "message": "newspaper"
+    "message": "\u00fajs\u00e1g"
   },
   "d83d_dcf1": {
-    "message": "cell phone"
+    "message": "mobiltelefon"
   },
   "d83d_dcf2": {
-    "message": "cell phone with arrow"
+    "message": "mobiltelefon ny\u00edllal"
   },
   "d83d_dcf3": {
-    "message": "vibration mode"
+    "message": "rezg\u00e9s m\u00f3d"
   },
   "d83d_dcf4": {
-    "message": "phone off"
+    "message": "telefon kikapcsol\u00e1sa"
   },
   "d83d_dcf5": {
-    "message": "no cell phone"
+    "message": "\u00e1th\u00fazott mobiltelefon"
   },
   "d83d_dcf6": {
-    "message": "mobile signals"
+    "message": "mobil jelek"
   },
   "d83d_dcf7": {
-    "message": "camera"
+    "message": "f\u00e9nyk\u00e9pez\u0151g\u00e9p"
   },
   "d83d_dcf9": {
-    "message": "video cam"
+    "message": "videokamera"
   },
   "d83d_dcfa": {
-    "message": "TV"
+    "message": "t\u00e9v\u00e9"
   },
   "d83d_dcfb": {
-    "message": "radio"
+    "message": "r\u00e1di\u00f3"
   },
   "d83d_dcfc": {
-    "message": "video tape"
+    "message": "videokazetta"
   },
   "d83d_dd00": {
-    "message": "crossed arrows"
+    "message": "keresztezett nyilak"
   },
   "d83d_dd01": {
-    "message": "clockwise arrows"
+    "message": "\u00f3ramutat\u00f3 j\u00e1r\u00e1s\u00e1val megegyez\u0151 ir\u00e1nyba mutat\u00f3 nyilak"
   },
   "d83d_dd02": {
-    "message": "clockwise arrows"
+    "message": "\u00f3ramutat\u00f3 j\u00e1r\u00e1s\u00e1val megegyez\u0151 ir\u00e1nyba mutat\u00f3 nyilak"
   },
   "d83d_dd03": {
-    "message": "reload"
+    "message": "\u00fajrat\u00f6lt\u00e9s"
   },
   "d83d_dd04": {
-    "message": "anti-clockwise arrows"
+    "message": "\u00f3ramutat\u00f3 j\u00e1r\u00e1s\u00e1val ellent\u00e9tes ir\u00e1nyba mutat\u00f3 nyilak"
   },
   "d83d_dd05": {
-    "message": "low brightness"
+    "message": "kis f\u00e9nyer\u0151"
   },
   "d83d_dd06": {
-    "message": "high brightness"
+    "message": "nagy f\u00e9nyer\u0151"
   },
   "d83d_dd07": {
-    "message": "no speaking"
+    "message": "besz\u00e9lni tilos"
   },
   "d83d_dd08": {
-    "message": "speaker"
+    "message": "hangsz\u00f3r\u00f3"
   },
   "d83d_dd09": {
-    "message": "speaker with low volume"
+    "message": "hangsz\u00f3r\u00f3 kis hanger\u0151n"
   },
   "d83d_dd0a": {
-    "message": "speaker with high volume"
+    "message": "hangsz\u00f3r\u00f3 nagy hanger\u0151n"
   },
   "d83d_dd0b": {
-    "message": "battery"
+    "message": "elem"
   },
   "d83d_dd0c": {
-    "message": "electric plug"
+    "message": "elektromos csatlakoz\u00f3"
   },
   "d83d_dd0d": {
-    "message": "left-tilted magnifying glass"
+    "message": "balra d\u00f6nt\u00f6tt nagy\u00edt\u00f3"
   },
   "d83d_dd0e": {
-    "message": "right-tilted magnifying glass"
+    "message": "jobbra d\u00f6nt\u00f6tt nagy\u00edt\u00f3"
   },
   "d83d_dd0f": {
-    "message": "lock with an ink pen"
+    "message": "lakat t\u00f6lt\u0151tollal"
   },
   "d83d_dd10": {
-    "message": "closed lock with a key"
+    "message": "z\u00e1rt lakat kulccsal"
   },
   "d83d_dd11": {
-    "message": "key"
+    "message": "kulcs"
   },
   "d83d_dd12": {
-    "message": "closed lock"
+    "message": "z\u00e1rt lakat"
   },
   "d83d_dd13": {
-    "message": "open lock"
+    "message": "nyitott lakat"
   },
   "d83d_dd14": {
-    "message": "bell"
+    "message": "cseng\u0151"
   },
   "d83d_dd15": {
-    "message": "no bell"
+    "message": "cseng\u0151 \u00e1th\u00fazva"
   },
   "d83d_dd16": {
-    "message": "bookmark"
+    "message": "k\u00f6nyvjelz\u0151"
   },
   "d83d_dd17": {
-    "message": "link sign"
+    "message": "link jel"
   },
   "d83d_dd18": {
-    "message": "radio button"
+    "message": "v\u00e1laszt\u00f3gomb"
   },
   "d83d_dd19": {
-    "message": "back"
+    "message": "vissza"
   },
   "d83d_dd1a": {
-    "message": "end"
+    "message": "v\u00e9ge"
   },
   "d83d_dd1b": {
-    "message": "ON arrow"
+    "message": "BE ny\u00edl"
   },
   "d83d_dd1c": {
-    "message": "Soon sign"
+    "message": "Hamarosan jel"
   },
   "d83d_dd1d": {
-    "message": "Top sign"
+    "message": "fels\u0151 jel"
   },
   "d83d_dd1e": {
-    "message": "No one under 18"
+    "message": "18 \u00e9v alatt tilos"
   },
   "d83d_dd20": {
-    "message": "uppercase letters"
+    "message": "nagybet\u0171k"
   },
   "d83d_dd21": {
-    "message": "lowercase letters"
+    "message": "kisbet\u0171k"
   },
   "d83d_dd22": {
-    "message": "numbers"
+    "message": "sz\u00e1mok"
   },
   "d83d_dd23": {
-    "message": "symbols"
+    "message": "szimb\u00f3lumok"
   },
   "d83d_dd24": {
-    "message": "Latin Alphabet"
+    "message": "latin \u00e1b\u00e9c\u00e9"
   },
   "d83d_dd25": {
-    "message": "fire"
+    "message": "t\u0171z"
   },
   "d83d_dd26": {
-    "message": "flashlight"
+    "message": "zsebl\u00e1mpa"
   },
   "d83d_dd27": {
-    "message": "wrench"
+    "message": "csavarkulcs"
   },
   "d83d_dd28": {
-    "message": "hammer"
+    "message": "kalap\u00e1cs"
   },
   "d83d_dd29": {
-    "message": "nut and bolt"
+    "message": "anya \u00e9s csavar"
   },
   "d83d_dd2a": {
-    "message": "cooking knife"
+    "message": "konyhai k\u00e9s"
   },
   "d83d_dd2b": {
-    "message": "gun"
+    "message": "l\u0151fegyver"
   },
   "d83d_dd2c": {
-    "message": "microscope"
+    "message": "mikroszk\u00f3p"
   },
   "d83d_dd2d": {
-    "message": "telescope"
+    "message": "t\u00e1vcs\u0151"
   },
   "d83d_dd2e": {
-    "message": "crystal ball"
+    "message": "krist\u00e1lyg\u00f6mb"
   },
   "d83d_dd2f": {
-    "message": "six-pointed star"
+    "message": "hat\u00e1g\u00fa csillag"
   },
   "d83d_dd30": {
-    "message": "green and yellow leaf"
+    "message": "z\u00f6ld \u00e9s s\u00e1rga lev\u00e9l"
   },
   "d83d_dd31": {
-    "message": "trident sign"
+    "message": "szigony jel"
   },
   "d83d_dd32": {
-    "message": "solid frame square button"
+    "message": "fekete n\u00e9gyzet gomb"
   },
   "d83d_dd33": {
-    "message": "outlined frame square button"
+    "message": "feh\u00e9r n\u00e9gyzet gomb"
   },
   "d83d_dd34": {
-    "message": "large red circle"
+    "message": "nagy piros k\u00f6r"
   },
   "d83d_dd35": {
-    "message": "large blue circle"
+    "message": "nagy k\u00e9k k\u00f6r"
   },
   "d83d_dd36": {
-    "message": "large orange diamond"
+    "message": "nagy narancss\u00e1rga gy\u00e9m\u00e1nt"
   },
   "d83d_dd37": {
-    "message": "large blue diamond"
+    "message": "nagy k\u00e9k gy\u00e9m\u00e1nt"
   },
   "d83d_dd38": {
-    "message": "small orange diamond"
+    "message": "kis narancss\u00e1rga gy\u00e9m\u00e1nt"
   },
   "d83d_dd39": {
-    "message": "small blue diamond"
+    "message": "kis k\u00e9k gy\u00e9m\u00e1nt"
   },
   "d83d_dd3a": {
-    "message": "up triangle"
+    "message": "felfel\u00e9 mutat\u00f3 h\u00e1romsz\u00f6g"
   },
   "d83d_dd3b": {
-    "message": "down triangle"
+    "message": "lefel\u00e9 mutat\u00f3 h\u00e1romsz\u00f6g"
   },
   "d83d_dd3c": {
-    "message": "up triangle button"
+    "message": "felfel\u00e9 mutat\u00f3 h\u00e1romsz\u00f6g gomb"
   },
   "d83d_dd3d": {
-    "message": "down triangle button"
+    "message": "lefel\u00e9 mutat\u00f3 h\u00e1romsz\u00f6g gomb"
   },
   "d83d_dd50": {
-    "message": "1 o'clock"
+    "message": "1 \u00f3ra"
   },
   "d83d_dd51": {
-    "message": "2 o'clock"
+    "message": "2 \u00f3ra"
   },
   "d83d_dd52": {
-    "message": "3 o'clock"
+    "message": "3 \u00f3ra"
   },
   "d83d_dd53": {
-    "message": "4 o'clock"
+    "message": "4 \u00f3ra"
   },
   "d83d_dd54": {
-    "message": "5 o'clock"
+    "message": "5 \u00f3ra"
   },
   "d83d_dd55": {
-    "message": "6 o'clock"
+    "message": "6 \u00f3ra"
   },
   "d83d_dd56": {
-    "message": "7 o'clock"
+    "message": "7 \u00f3ra"
   },
   "d83d_dd57": {
-    "message": "8 o'clock"
+    "message": "8 \u00f3ra"
   },
   "d83d_dd58": {
-    "message": "9 o'clock"
+    "message": "9 \u00f3ra"
   },
   "d83d_dd59": {
-    "message": "10 o'clock"
+    "message": "10 \u00f3ra"
   },
   "d83d_dd5a": {
-    "message": "11 o'clock"
+    "message": "11 \u00f3ra"
   },
   "d83d_dd5b": {
-    "message": "12 o'clock"
+    "message": "12 \u00f3ra"
   },
   "d83d_dd5c": {
-    "message": "one-thirty"
+    "message": "f\u00e9l kett\u0151"
   },
   "d83d_dd5d": {
-    "message": "two-thirty"
+    "message": "f\u00e9l h\u00e1rom"
   },
   "d83d_dd5e": {
-    "message": "three-thirty"
+    "message": "f\u00e9l n\u00e9gy"
   },
   "d83d_dd5f": {
-    "message": "four-thirty"
+    "message": "f\u00e9l \u00f6t"
   },
   "d83d_dd60": {
-    "message": "five-thirty"
+    "message": "f\u00e9l hat"
   },
   "d83d_dd61": {
-    "message": "six-thirty"
+    "message": "f\u00e9l h\u00e9t"
   },
   "d83d_dd62": {
-    "message": "seven-thirty"
+    "message": "f\u00e9l nyolc"
   },
   "d83d_dd63": {
-    "message": "eight-thirty"
+    "message": "f\u00e9l kilenc"
   },
   "d83d_dd64": {
-    "message": "nine-thirty"
+    "message": "f\u00e9l t\u00edz"
   },
   "d83d_dd65": {
-    "message": "ten-thirty"
+    "message": "f\u00e9l tizenegy"
   },
   "d83d_dd66": {
-    "message": "eleven-thirty"
+    "message": "f\u00e9l tizenkett\u0151"
   },
   "d83d_dd67": {
-    "message": "twelve-thirty"
+    "message": "f\u00e9l egy"
   },
   "d83d_ddfb": {
-    "message": "Mt. Fuji"
+    "message": "Fuji hegy"
   },
   "d83d_ddfc": {
     "message": "Tokyo Tower"
   },
   "d83d_ddfd": {
-    "message": "Statue of Liberty"
+    "message": "Szabads\u00e1g-szobor"
   },
   "d83d_ddfe": {
-    "message": "Map of Japan"
+    "message": "Jap\u00e1n t\u00e9rk\u00e9pe"
   },
   "d83d_ddff": {
-    "message": "Moyai statue"
+    "message": "Moyai szobor"
   },
   "d83d_de00": {
-    "message": "grin"
+    "message": "vigyor"
   },
   "d83d_de01": {
-    "message": " grin with smiling eyes"
+    "message": " vigyorg\u00e1s mosolyg\u00f3 szemmel"
   },
   "d83d_de02": {
-    "message": "tears of joy"
+    "message": "\u00f6r\u00f6mk\u00f6nnyek"
   },
   "d83d_de03": {
-    "message": "open mouth smile"
+    "message": "mosoly nyitott sz\u00e1jjal"
   },
   "d83d_de04": {
-    "message": "open mouth smile with smiling eyes"
+    "message": "mosoly nyitott sz\u00e1jjal, mosolyg\u00f3s szemmel"
   },
   "d83d_de05": {
-    "message": "cold sweat smile"
+    "message": "hideg verejt\u00e9k mosoly"
   },
   "d83d_de06": {
-    "message": " open mouth smile with closed eyes"
+    "message": " mosoly nyitott sz\u00e1jjal \u00e9s csukott szemmel"
   },
   "d83d_de07": {
-    "message": "smile with a halo"
+    "message": "mosoly gl\u00f3ri\u00e1val"
   },
   "d83d_de08": {
-    "message": "smile with horns"
+    "message": "mosoly szarvakkal"
   },
   "d83d_de09": {
-    "message": "winking face"
+    "message": "kacsint\u00f3 arc"
   },
   "d83d_de0a": {
-    "message": "smile"
+    "message": "mosoly"
   },
   "d83d_de0b": {
-    "message": "yummy face"
+    "message": "\u00e9hes arc"
   },
   "d83d_de0c": {
-    "message": "relieved face"
+    "message": "megk\u00f6nnyebb\u00fclt arc"
   },
   "d83d_de0d": {
-    "message": "smiling face"
+    "message": "mosolyg\u00f3 arc"
   },
   "d83d_de0e": {
-    "message": "cool"
+    "message": "men\u0151"
   },
   "d83d_de0f": {
-    "message": "smirk"
+    "message": "\u00f6nel\u00e9g\u00fclt mosoly"
   },
   "d83d_de10": {
-    "message": "deadpan face"
+    "message": "pl\u00e9hpofa"
   },
   "d83d_de11": {
-    "message": "expressionless"
+    "message": "kifejez\u00e9stelen"
   },
   "d83d_de12": {
-    "message": "unamused"
+    "message": "unott"
   },
   "d83d_de13": {
-    "message": "cold sweat"
+    "message": "hideg verejt\u00e9k"
   },
   "d83d_de14": {
-    "message": "pensive face"
+    "message": "t\u00f6preng\u0151 arc"
   },
   "d83d_de15": {
-    "message": "confused face"
+    "message": "zavarban l\u00e9v\u0151 arc"
   },
   "d83d_de16": {
-    "message": "confounded face"
+    "message": "megh\u00f6kkent arc"
   },
   "d83d_de17": {
-    "message": "kissy face"
+    "message": "cs\u00f3kot dob\u00f3 arc"
   },
   "d83d_de18": {
-    "message": "throwing kisses"
+    "message": "puszidob\u00e1l\u00e1s"
   },
   "d83d_de19": {
-    "message": "kiss and smile"
+    "message": "puszi \u00e9s mosoly"
   },
   "d83d_de1a": {
-    "message": "kissing"
+    "message": "cs\u00f3kol"
   },
   "d83d_de1b": {
-    "message": "tongue out"
+    "message": "nyelv\u00f6lt\u00e9s"
   },
   "d83d_de1c": {
-    "message": "tongue out with a wink"
+    "message": "nyelv\u00f6lt\u00e9s kacsint\u00e1ssal"
   },
   "d83d_de1d": {
-    "message": "yuck"
+    "message": "f\u00faj"
   },
   "d83d_de1e": {
-    "message": "disappointed"
+    "message": "csal\u00f3dott"
   },
   "d83d_de1f": {
-    "message": "worried"
+    "message": "agg\u00f3d\u00f3"
   },
   "d83d_de20": {
-    "message": "angry"
+    "message": "d\u00fch\u00f6s"
   },
   "d83d_de21": {
-    "message": "pouting"
+    "message": "ajakbiggyeszt\u00e9s"
   },
   "d83d_de22": {
-    "message": "crying"
+    "message": "s\u00edr\u00e1s"
   },
   "d83d_de23": {
-    "message": "blew it"
+    "message": "elsz\u00fartam"
   },
   "d83d_de24": {
-    "message": "look of triumph"
+    "message": "diadalmas pillant\u00e1s"
   },
   "d83d_de25": {
-    "message": "whew!"
+    "message": "h\u0171ha!"
   },
   "d83d_de26": {
-    "message": "frowning face"
+    "message": "komor arc"
   },
   "d83d_de27": {
-    "message": "anguished"
+    "message": "elk\u00ednzott"
   },
   "d83d_de28": {
-    "message": "fearful"
+    "message": "retteg\u0151"
   },
   "d83d_de29": {
-    "message": "weary"
+    "message": "f\u00e1radt"
   },
   "d83d_de2a": {
-    "message": "sleepy"
+    "message": "\u00e1lmos"
   },
   "d83d_de2b": {
-    "message": "tired"
+    "message": "f\u00e1radt"
   },
   "d83d_de2c": {
-    "message": "grimace"
+    "message": "fintor"
   },
   "d83d_de2d": {
-    "message": "loudly crying"
+    "message": "hangos s\u00edr\u00e1s"
   },
   "d83d_de2e": {
-    "message": "open mouth face"
+    "message": "arc nyitott sz\u00e1jjal"
   },
   "d83d_de2f": {
-    "message": "hushed face"
+    "message": "lecsendes\u00edtett arc"
   },
   "d83d_de30": {
-    "message": "rushed face"
+    "message": "hajszolt arc"
   },
   "d83d_de31": {
-    "message": "fearful face"
+    "message": "f\u00e9l\u0151 arc"
   },
   "d83d_de32": {
-    "message": "astonished face"
+    "message": "d\u00f6bbent arc"
   },
   "d83d_de33": {
-    "message": "flushed"
+    "message": "elv\u00f6r\u00f6s\u00f6d\u00f6tt"
   },
   "d83d_de34": {
-    "message": "sleeping"
+    "message": "alv\u00e1s"
   },
   "d83d_de35": {
-    "message": "dizzy"
+    "message": "sz\u00e9d\u00fcl\u0151"
   },
   "d83d_de36": {
-    "message": "no mouth face"
+    "message": "sz\u00e1j n\u00e9lk\u00fcli arc"
   },
   "d83d_de37": {
-    "message": "face with mask"
+    "message": "arc maszkkal"
   },
   "d83d_de38": {
-    "message": "grinning cat face"
+    "message": "vigyorg\u00f3 macskafej"
   },
   "d83d_de39": {
-    "message": "tears of joy cat face"
+    "message": "\u00f6r\u00f6mk\u00f6nnyeket hullat\u00f3 macskafej"
   },
   "d83d_de3a": {
-    "message": "smiling cat face"
+    "message": "mosolyg\u00f3 macskafej"
   },
   "d83d_de3b": {
-    "message": "smiling cat face"
+    "message": "mosolyg\u00f3 macskafej"
   },
   "d83d_de3c": {
-    "message": "wry cat face"
+    "message": "ferde mosoly\u00fa macskafej"
   },
   "d83d_de3d": {
-    "message": "kissing cat"
+    "message": "puszit dob\u00f3 macska"
   },
   "d83d_de3e": {
-    "message": "pouting cat face"
+    "message": "ajk\u00e1t biggyeszt\u0151 macskafej"
   },
   "d83d_de3f": {
-    "message": "crying cat face"
+    "message": "s\u00edr\u00f3 macskafej"
   },
   "d83d_de40": {
-    "message": "weary cat face"
+    "message": "f\u00e1radt macskafej"
   },
   "d83d_de45": {
-    "message": "No good gesture"
+    "message": "\u201enem j\u00f3\u201d k\u00e9zmozdulat"
   },
   "d83d_de46": {
-    "message": "OK gesture"
+    "message": "OK k\u00e9zmozdulat"
   },
   "d83d_de47": {
-    "message": "i'm sorry"
+    "message": "sajn\u00e1lom"
   },
   "d83d_de48": {
-    "message": "see no evil"
+    "message": "letakart szem"
   },
   "d83d_de49": {
-    "message": "hear no evil"
+    "message": "eltakart f\u00fcl"
   },
   "d83d_de4a": {
-    "message": "speak no evil"
+    "message": "letakart sz\u00e1j"
   },
   "d83d_de4b": {
-    "message": "happy person"
+    "message": "boldog ember"
   },
   "d83d_de4c": {
-    "message": "hooray"
+    "message": "hurr\u00e1"
   },
   "d83d_de4d": {
-    "message": "frowning person"
+    "message": "komor szem\u00e9ly"
   },
   "d83d_de4e": {
-    "message": "pouting"
+    "message": "ajakbiggyeszt\u00e9s"
   },
   "d83d_de4f": {
-    "message": "folded hands"
+    "message": "\u00f6sszekulcsolt k\u00e9z"
   },
   "d83d_de80": {
-    "message": "rocket"
+    "message": "rak\u00e9ta"
   },
   "d83d_de81": {
-    "message": "helicopter"
+    "message": "helikopter"
   },
   "d83d_de82": {
-    "message": "steam locomotive"
+    "message": "g\u0151zmozdony"
   },
   "d83d_de83": {
-    "message": "train"
+    "message": "vonat"
   },
   "d83d_de84": {
-    "message": "high-speed train"
+    "message": "gyorsvas\u00fat"
   },
   "d83d_de85": {
-    "message": "high-speed train with bullet nose"
+    "message": "sinkanszen"
   },
   "d83d_de86": {
-    "message": "train"
+    "message": "vonat"
   },
   "d83d_de87": {
-    "message": "subway"
+    "message": "metr\u00f3"
   },
   "d83d_de88": {
-    "message": "light rail"
+    "message": "helyi vas\u00fat"
   },
   "d83d_de89": {
-    "message": "train station"
+    "message": "vas\u00fat\u00e1llom\u00e1s"
   },
   "d83d_de8a": {
-    "message": "tram"
+    "message": "villamos"
   },
   "d83d_de8b": {
-    "message": "tram car"
+    "message": "villamoskocsi"
   },
   "d83d_de8c": {
-    "message": "bus"
+    "message": "busz"
   },
   "d83d_de8d": {
-    "message": "oncoming bus"
+    "message": "szembej\u00f6v\u0151 busz"
   },
   "d83d_de8e": {
-    "message": "trolleybus"
+    "message": "trolibusz"
   },
   "d83d_de8f": {
-    "message": "bus stop"
+    "message": "buszmeg\u00e1ll\u00f3"
   },
   "d83d_de90": {
-    "message": "minibus"
+    "message": "minibusz"
   },
   "d83d_de91": {
-    "message": "ambulance"
+    "message": "ment\u0151aut\u00f3"
   },
   "d83d_de92": {
-    "message": "fire engine"
+    "message": "t\u0171zolt\u00f3aut\u00f3"
   },
   "d83d_de93": {
-    "message": "police car"
+    "message": "rend\u0151raut\u00f3"
   },
   "d83d_de94": {
-    "message": "oncoming police car"
+    "message": "szembej\u00f6v\u0151 rend\u0151raut\u00f3"
   },
   "d83d_de95": {
     "message": "taxi"
   },
   "d83d_de96": {
-    "message": "oncoming taxi"
+    "message": "szembej\u00f6v\u0151 taxi"
   },
   "d83d_de97": {
-    "message": "car"
+    "message": "aut\u00f3"
   },
   "d83d_de98": {
-    "message": "oncoming car"
+    "message": "szembej\u00f6v\u0151 aut\u00f3"
   },
   "d83d_de99": {
-    "message": "RV"
+    "message": "lak\u00f3kocsi"
   },
   "d83d_de9a": {
-    "message": "delivery truck"
+    "message": "sz\u00e1ll\u00edt\u00f3 teheraut\u00f3"
   },
   "d83d_de9b": {
-    "message": "lorry"
+    "message": "teherg\u00e9pkocsi"
   },
   "d83d_de9c": {
-    "message": "tractor"
+    "message": "traktor"
   },
   "d83d_de9d": {
-    "message": "monorail"
+    "message": "egys\u00edn\u0171 vas\u00fat"
   },
   "d83d_de9e": {
-    "message": "mountain railway"
+    "message": "hegyi vas\u00fat"
   },
   "d83d_de9f": {
-    "message": "suspension railway"
+    "message": "f\u00fcgg\u0151vas\u00fat"
   },
   "d83d_dea0": {
-    "message": "mountain cableway"
+    "message": "hegyi k\u00f6t\u00e9lp\u00e1lya"
   },
   "d83d_dea1": {
-    "message": "cable car"
+    "message": "sikl\u00f3"
   },
   "d83d_dea2": {
-    "message": "ship"
+    "message": "haj\u00f3"
   },
   "d83d_dea3": {
-    "message": "rowboat"
+    "message": "cs\u00f3nak"
   },
   "d83d_dea4": {
-    "message": "speedboat"
+    "message": "motorcs\u00f3nak"
   },
   "d83d_dea5": {
-    "message": "horizontal traffic lights"
+    "message": "v\u00edzszintes k\u00f6zleked\u00e9si l\u00e1mp\u00e1k"
   },
   "d83d_dea6": {
-    "message": "vertical traffic lights"
+    "message": "f\u00fcgg\u0151leges k\u00f6zleked\u00e9si l\u00e1mp\u00e1k"
   },
   "d83d_dea7": {
-    "message": "under construction"
+    "message": "\u00e9p\u00edt\u00e9s alatt"
   },
   "d83d_dea8": {
-    "message": "revolving light"
+    "message": "forg\u00f3 f\u00e9ny"
   },
   "d83d_dea9": {
-    "message": "location flag"
+    "message": "hely z\u00e1szl\u00f3"
   },
   "d83d_deaa": {
-    "message": "door"
+    "message": "ajt\u00f3"
   },
   "d83d_deab": {
-    "message": "No entry sign"
+    "message": "Bel\u00e9pni tilos jel"
   },
   "d83d_deac": {
-    "message": "smoking sign"
+    "message": "doh\u00e1nyz\u00e1s jel"
   },
   "d83d_dead": {
-    "message": "no smoking sign"
+    "message": "tilos a doh\u00e1nyz\u00e1s jel"
   },
   "d83d_deae": {
-    "message": "litterbox sign"
+    "message": "szemetes jel"
   },
   "d83d_deaf": {
-    "message": "don't litter sign"
+    "message": "szemetelni tilos jel"
   },
   "d83d_deb0": {
-    "message": "drinking water"
+    "message": "iv\u00f3v\u00edz"
   },
   "d83d_deb1": {
-    "message": "non-drinking water"
+    "message": "nem iv\u00f3v\u00edz"
   },
   "d83d_deb2": {
-    "message": "bike"
+    "message": "ker\u00e9kp\u00e1r"
   },
   "d83d_deb3": {
-    "message": "no bike"
+    "message": "\u00e1th\u00fazott ker\u00e9kp\u00e1r"
   },
   "d83d_deb4": {
-    "message": "bicyclist"
+    "message": "ker\u00e9kp\u00e1ros"
   },
   "d83d_deb5": {
-    "message": "mountain bicyclist"
+    "message": "hegyiker\u00e9kp\u00e1ros"
   },
   "d83d_deb6": {
-    "message": "pedestrian"
+    "message": "gyalogos"
   },
   "d83d_deb7": {
-    "message": "no pedestrians"
+    "message": "\u00e1th\u00fazott gyalogos"
   },
   "d83d_deb8": {
-    "message": "children crossing"
+    "message": "\u00e1thalad\u00f3 gyermekek"
   },
   "d83d_deb9": {
-    "message": "Men sign"
+    "message": "F\u00e9rfiak jel"
   },
   "d83d_deba": {
-    "message": "Women sign"
+    "message": "N\u0151k jel"
   },
   "d83d_debb": {
-    "message": "restroom sign"
+    "message": "mell\u00e9khelyis\u00e9g jel"
   },
   "d83d_debc": {
-    "message": "baby sign"
+    "message": "baba jel"
   },
   "d83d_debd": {
-    "message": "toilet"
+    "message": "v\u00e9c\u00e9cs\u00e9sze"
   },
   "d83d_debe": {
-    "message": "water closet"
+    "message": "WC"
   },
   "d83d_debf": {
-    "message": "shower"
+    "message": "zuhany"
   },
   "d83d_dec0": {
-    "message": "bath"
+    "message": "f\u00fcrd\u0151"
   },
   "d83d_dec1": {
-    "message": "bathtub"
+    "message": "f\u00fcrd\u0151k\u00e1d"
   },
   "d83d_dec2": {
-    "message": "passport control"
+    "message": "\u00fatlev\u00e9l-ellen\u0151rz\u00e9s"
   },
   "d83d_dec3": {
-    "message": "customs"
+    "message": "v\u00e1m"
   },
   "d83d_dec4": {
-    "message": "baggage claim"
+    "message": "poggy\u00e1szkiad\u00e1s"
   },
   "d83d_dec5": {
-    "message": "left luggage"
+    "message": "csomagmeg\u0151rz\u0151"
   },
   "de_ger_settings_page": {
     "message": "N\u00e9met billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
@@ -2505,7 +2508,7 @@
     "message": "Sz\u00f3"
   },
   "dismiss_menu": {
-    "message": "dismiss keyboard menu"
+    "message": "billenty\u0171zetmen\u00fc elvet\u00e9se"
   },
   "dk_dan_settings_page": {
     "message": "D\u00e1n billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
@@ -2520,28 +2523,28 @@
     "message": "\u00c9szt billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
   },
   "emoji_tab_emoticon": {
-    "message": "Emoji category emoticon"
+    "message": "Hangulatjel-kateg\u00f3ria \u2013 hangulatjel"
   },
   "emoji_tab_face": {
-    "message": "Emoji category face"
+    "message": "Hangulatjel-kateg\u00f3ria \u2013 arc"
   },
   "emoji_tab_hot": {
-    "message": "Emoji category hot"
+    "message": "Hangulatjel-kateg\u00f3ria \u2013 legjobbak"
   },
   "emoji_tab_nature": {
-    "message": "Emoji category nature"
+    "message": "Hangulatjel-kateg\u00f3ria \u2013 term\u00e9szet"
   },
   "emoji_tab_object": {
-    "message": "Emoji category object"
+    "message": "Hangulatjel-kateg\u00f3ria \u2013 t\u00e1rgy"
   },
   "emoji_tab_place": {
-    "message": "Emoji category place"
+    "message": "Hangulatjel-kateg\u00f3ria \u2013 hely"
   },
   "emoji_tab_recent": {
-    "message": "Emoji category recent"
+    "message": "Hangulatjel-kateg\u00f3ria \u2013 leg\u00fajabbak"
   },
   "emoji_tab_symbol": {
-    "message": "Emoji category symbol"
+    "message": "Hangulatjel-kateg\u00f3ria \u2013 szimb\u00f3lum"
   },
   "enable_capitalization": {
     "message": "Automatikus kezd\u0151 nagybet\u0171"
@@ -2644,6 +2647,9 @@
   },
   "inputmethod_dayi": {
     "message": "Dayi beviteli m\u00f3d"
+  },
+  "inputmethod_hangul": {
+    "message": "Koreai beviteli m\u00f3d"
   },
   "inputmethod_pinyin": {
     "message": "Pinjin beviteli m\u00f3d"
@@ -2813,6 +2819,9 @@
   "keyboard_nepali_phonetic": {
     "message": "Nep\u00e1li billenty\u0171zet (fonetikus)"
   },
+  "keyboard_netherlands": {
+    "message": "Holland billenty\u0171zet"
+  },
   "keyboard_none": {
     "message": "Billenty\u0171zet"
   },
@@ -2836,6 +2845,9 @@
   },
   "keyboard_romanian": {
     "message": "Rom\u00e1n billenty\u0171zet"
+  },
+  "keyboard_romanian_standard": {
+    "message": "Romanian standard keyboard"
   },
   "keyboard_russian": {
     "message": "Orosz billenty\u0171zet"
@@ -2976,7 +2988,7 @@
     "message": "Koreai be\u00e1ll\u00edt\u00e1sok oldala"
   },
   "korean_syllable_input": {
-    "message": "Hangulok megad\u00e1sa egyenk\u00e9nt t\u00f6rt\u00e9nik-e"
+    "message": "Hangulbevitel egyes\u00e9vel"
   },
   "latam_spa_settings_page": {
     "message": "Latin-amerikai (spanyol) billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
@@ -3015,13 +3027,13 @@
     "message": "Sz\u00fcnet"
   },
   "physical_auto_correction_level": {
-    "message": "Auto-correction"
+    "message": "Automatikus jav\u00edt\u00e1s"
   },
   "physical_enable_capitalization": {
-    "message": "Auto-capitalization"
+    "message": "Automatikus kezd\u0151 nagybet\u0171"
   },
   "physical_keyboard": {
-    "message": "Physical Keyboard"
+    "message": "Fizikai billenty\u0171zet"
   },
   "pinyin_settings_page": {
     "message": "Pinjin-be\u00e1ll\u00edt\u00e1sok oldala"
@@ -3075,13 +3087,16 @@
     "message": "A javaslatok leg\u00f6rd\u00fcl\u0151 men\u00fcje a Backspace billenty\u0171vel jelen\u00edthet\u0151 meg"
   },
   "show_hangul_candidate": {
-    "message": "Show Hangul suggestions"
+    "message": "Hanguljavaslatok megjelen\u00edt\u00e9se"
   },
   "si_slv_settings_page": {
     "message": "Szlov\u00e9n billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
   },
   "sk_slo_settings_page": {
     "message": "Szlov\u00e1k billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
+  },
+  "smiley": {
+    "message": "hangulatjel"
   },
   "sometimes_auto_correct": {
     "message": "Visszafogott"
@@ -3234,28 +3249,40 @@
     "message": "A szem\u00e9lyes sz\u00f3t\u00e1r enged\u00e9lyez\u00e9se"
   },
   "user_dict_add": {
-    "message": "Add"
+    "message": "Hozz\u00e1ad\u00e1s"
   },
   "user_dict_clear": {
-    "message": "Clear All"
-  },
-  "user_dict_done": {
-    "message": "Done"
+    "message": "\u00d6sszes t\u00f6rl\u00e9se"
   },
   "user_dict_manage": {
-    "message": "Manage personal dictionary..."
+    "message": "Szem\u00e9lyes sz\u00f3t\u00e1r kezel\u00e9se..."
   },
   "user_dict_new_word": {
-    "message": "New word"
+    "message": "\u00daj sz\u00f3"
   },
   "user_dict_remove": {
-    "message": "Remove Selected"
+    "message": "Kijel\u00f6lt(ek) elt\u00e1vol\u00edt\u00e1sa"
+  },
+  "user_dict_save": {
+    "message": "Ment\u00e9s"
   },
   "user_dict_sync": {
-    "message": "Sync personal dictionary"
+    "message": "Szem\u00e9lyes sz\u00f3t\u00e1r szinkroniz\u00e1l\u00e1sa"
   },
   "user_dict_title": {
-    "message": "Personal Dictionary"
+    "message": "Szem\u00e9lyes sz\u00f3t\u00e1r"
+  },
+  "voice": {
+    "message": "Hang"
+  },
+  "voice_privacy_info": {
+    "message": "Hangj\u00e1t tov\u00e1bb\u00edtani fogjuk egy Google-szerverre sz\u00f6vegfelismer\u00e9sre"
+  },
+  "voice_turn_off": {
+    "message": "hangbeviteli eszk\u00f6z kikapcsol\u00e1sa"
+  },
+  "voice_turn_on": {
+    "message": "hangbeviteli eszk\u00f6z bekapcsol\u00e1sa"
   },
   "wait": {
     "message": "V\u00e1rakoz\u00e1s"

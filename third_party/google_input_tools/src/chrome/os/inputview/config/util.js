@@ -497,12 +497,18 @@ i18n.input.chrome.inputview.content.util.createData = function(keyCharacters,
   var keyCodes = opt_keyCodes || [];
   var keyIds = is102 ? i18n.input.chrome.inputview.content.util.KEY_CODES_102 :
       i18n.input.chrome.inputview.content.util.KEY_CODES_101;
+  // The keys shows the shift character in Default state. In material design,
+  // Only the first 11 keys will show shift character.
+  var keysShowShift = 11;
   for (var i = 0; i < keyCharacters.length - 1; i++) {
     var spec = {};
     spec[SpecNodeName.ID] = keyIds[i];
     spec[SpecNodeName.TYPE] = ElementType.CHARACTER_KEY;
     spec[SpecNodeName.CHARACTERS] = keyCharacters[i];
     spec[SpecNodeName.KEY_CODE] = keyCodes[i];
+    if (i < keysShowShift) {
+      spec[SpecNodeName.ENABLE_SHIFT_RENDERING] = true;
+    }
     var key = i18n.input.chrome.inputview.content.util.createKey(spec);
     keyList.push(key);
   }

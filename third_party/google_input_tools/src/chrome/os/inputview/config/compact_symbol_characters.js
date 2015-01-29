@@ -28,59 +28,73 @@ i18n.input.chrome.inputview.content.compact.symbol.keyNASymbolCharacters =
     function() {
   return [
     /* 0 */ { 'text': '1',
-      'moreKeys': ['\u00B9', '\u00BD', '\u2153', '\u00BC', '\u215B']},
+      'moreKeys': {
+        'characters': ['\u00B9', '\u00BD', '\u2153', '\u00BC', '\u215B']}},
     /* 1 */ { 'text': '2',
-      'moreKeys': ['\u00B2', '\u2154']},
+      'moreKeys': {
+        'characters': ['\u00B2', '\u2154']}},
     /* 2 */ { 'text': '3',
-      'moreKeys': ['\u00B3', '\u00BE', '\u215C']},
+      'moreKeys': {
+        'characters': ['\u00B3', '\u00BE', '\u215C']}},
     /* 3 */ { 'text': '4',
-      'moreKeys': ['\u2074']},
+      'moreKeys': {
+        'characters': ['\u2074']}},
     /* 4 */ { 'text': '5',
-      'moreKeys': ['\u215D']},
+      'moreKeys': {
+        'characters': ['\u215D']}},
     /* 5 */ { 'text': '6' },
     /* 6 */ { 'text': '7',
-      'moreKeys': ['\u215E']},
+      'moreKeys': {
+        'characters': ['\u215E']}},
     /* 7 */ { 'text': '8' },
     /* 8 */ { 'text': '9' },
     /* 9 */ { 'text': '0',
-      'moreKeys': ['\u207F', '\u2205']},
+      'moreKeys': {
+        'characters': ['\u207F', '\u2205']}},
     /* 10 */ NonLetterKeys.BACKSPACE,
     /* 11 */ { 'text': '@', 'marginLeftPercent': 0.33 },
     /* 12 */ { 'text': '#' },
     /* 13 */ { 'text': '$',
-      'moreKeys': ['\u00A2', '\u00A3', '\u20AC', '\u00A5', '\u20B1']},
+      'moreKeys': {
+        'characters': ['\u00A2', '\u00A3', '\u20AC', '\u00A5', '\u20B1']}},
     /* 14 */ { 'text': '%',
-      'moreKeys': ['\u2030']},
+      'moreKeys': {
+        'characters': ['\u2030']}},
     /* 15 */ { 'text': '&' },
     // Keep in sync with rowkeys_symbols2.xml in android input tool.
     /* 16 */ { 'text': '-',
-      'moreKeys': ['_', '\u2013', '\u2014', '\u00B7']},
+      'moreKeys': {
+        'characters': ['_', '\u2013', '\u2014', '\u00B7']}},
     /* 17 */ { 'text': '+',
-      'moreKeys': ['\u00B1']},
+      'moreKeys': {
+        'characters': ['\u00B1']}},
     /* 18 */ { 'text': '(',
-      'moreKeys': ['\u007B', '\u003C', '\u005B']},
+      'moreKeys': {
+        'characters': ['<', '{', '[']}},
     /* 19 */ { 'text': ')',
-      'moreKeys': ['\u007D', '\u003E', '\u005D']},
+      'moreKeys': {
+        'characters': ['>', '}', ']']}},
     /* 20 */ NonLetterKeys.ENTER,
     /* 21 */ NonLetterKeys.SWITCHER,
     /* 22 */ { 'text': '\\' },
     /* 23 */ { 'text': '=' },
     /* 24 */ { 'text': '*',
-      'moreKeys': ['\u2020', '\u2021', '\u2605']},
-    // keep in sync with double_lqm_rqm and double_laqm_raqm in android input
-    // tool.
+      'moreKeys': {
+        'characters': ['\u2020', '\u2021', '\u2605']}},
     /* 25 */ { 'text': '"',
-      'moreKeys': ['\u201C', '\u201E', '\u201D', '\u00AB', '\u00BB']},
-    // keep in sync with single_lqm_rqm and single_laqm_raqm in android input
-    // tool
+      'moreKeys': {
+        'characters': ['\u201E', '\u201C', '\u201D', '\u00AB', '\u00BB']}},
     /* 26 */ { 'text': '\'',
-      'moreKeys': ['\u2018', '\u201A', '\u2019', '\u2039', '\u203A']},
+      'moreKeys': {
+        'characters': ['\u201A', '\u2018', '\u2019', '\u2039', '\u203A']}},
     /* 27 */ { 'text': ':' },
     /* 28 */ { 'text': ';' },
     /* 29 */ { 'text': '!',
-      'moreKeys': ['\u00A1']},
+      'moreKeys': {
+        'characters': ['\u00A1']}},
     /* 30 */ { 'text': '?',
-      'moreKeys': ['\u00BF']},
+      'moreKeys': {
+        'characters': ['\u00BF']}},
     /* 31 */ NonLetterKeys.SWITCHER,
     /* 32 */ NonLetterKeys.SWITCHER,
     /* 33 */ { 'text': '_', 'isGrey': true },
@@ -88,8 +102,10 @@ i18n.input.chrome.inputview.content.compact.symbol.keyNASymbolCharacters =
     /* 35 */ { 'text': '/', 'isGrey': true },
     /* 36 */ NonLetterKeys.SPACE,
     /* 37 */ { 'text': ',', 'isGrey': true },
+    // Keep in sync with row_symbols4.xml in android input tool.
     /* 38 */ { 'text': '.', 'isGrey': true,
-      'moreKeys': ['\u2026']},
+      'moreKeys': {
+        'characters': ['\u2026']}},
     /* 39 */ NonLetterKeys.HIDE
   ];
 };
@@ -107,7 +123,8 @@ i18n.input.chrome.inputview.content.compact.symbol.keyUKSymbolCharacters =
       keyNASymbolCharacters();
   // UK uses pound sign instead of dollar sign.
   data[13] = { 'text': '\u00A3',
-               'moreKeys': ['\u00A2', '$', '\u20AC', '\u00A5', '\u20B1']};
+               'moreKeys': {
+                 'characters': ['\u00A2', '$', '\u20AC', '\u00A5', '\u20B1']}};
   return data;
 };
 
@@ -124,7 +141,8 @@ i18n.input.chrome.inputview.content.compact.symbol.keyEUSymbolCharacters =
       keyUKSymbolCharacters();
   // European uses euro sign instead of pound sign.
   data[13] = { 'text': '\u20AC',
-               'moreKeys': ['\u00A2', '$', '\u00A3', '\u00A5', '\u20B1']};
+               'moreKeys': {
+                 'characters': ['\u00A2', '$', '\u00A3', '\u00A5', '\u20B1']}};
   return data;
 };
 
@@ -139,23 +157,30 @@ i18n.input.chrome.inputview.content.compact.symbol.keyPinyinSymbolCharacters =
   var data = i18n.input.chrome.inputview.content.compact.symbol.
       keyNASymbolCharacters();
   data[13]['text'] = '\u00A5';
-  data[13]['moreKeys'] = ['\u0024', '\u00A2', '\u00A3', '\u20AC', '\u20B1'];
+  data[13]['moreKeys'] = {
+        'characters': ['\u0024', '\u00A2', '\u00A3', '\u20AC', '\u20B1']};
   data[15]['text'] = '&';
   data[18]['text'] = '\uff08';
-  data[18]['moreKeys'] = ['\uff5b', '\u300a', '\uff3b', '\u3010'];
+  data[18]['moreKeys'] = {
+        'characters': ['\uff5b', '\u300a', '\uff3b', '\u3010']};
   data[19]['text'] = '\uff09';
-  data[19]['moreKeys'] = ['\uff5d', '\u300b', '\uff3d', '\u3001'];
+  data[19]['moreKeys'] = {
+        'characters': ['\uff5d', '\u300b', '\uff3d', '\u3001']};
   data[22]['text'] = '\u3001';
   data[25]['text'] = '\u201C';
-  data[25]['moreKeys'] = ['\u0022', '\u00AB'];
+  data[25]['moreKeys'] = {
+        'characters': ['\u0022', '\u00AB']};
   data[26]['text'] = '\u201D';
-  data[26]['moreKeys'] = ['\u0022', '\u00BB'];
+  data[26]['moreKeys'] = {
+        'characters': ['\u0022', '\u00BB']};
   data[27]['text'] = '\uff1a';
   data[28]['text'] = '\uff1b';
   data[29]['text'] = '\u2018';
-  data[29]['moreKeys'] = ['\u0027', '\u2039'];
+  data[29]['moreKeys'] = {
+        'characters': ['\u0027', '\u2039']};
   data[30]['text'] = '\u2019';
-  data[30]['moreKeys'] = ['\u0027', '\u203a'];
+  data[30]['moreKeys'] = {
+        'characters': ['\u0027', '\u203a']};
   data[33]['text'] = ' \u2014';
   data[33]['moreKeys'] = undefined;
   data[35]['text'] = '\u2026';

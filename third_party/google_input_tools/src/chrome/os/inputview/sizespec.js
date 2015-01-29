@@ -61,9 +61,9 @@ SizeSpec.A11Y_WIDTH_PERCENT = {
  * @enum {number}
  */
 SizeSpec.NON_A11Y_WIDTH_PERCENT = {
-  LANDSCAPE: 0.84,
-  LANDSCAPE_WIDE_SCREEN: 0.788,
-  PORTRAIT: 1.0
+  'LANDSCAPE': 0.84,
+  'LANDSCAPE_WIDE_SCREEN': 0.788,
+  'PORTRAIT': 1.0
 };
 
 });  // goog.scope

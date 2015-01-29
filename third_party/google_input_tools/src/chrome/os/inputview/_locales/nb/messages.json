@@ -236,6 +236,9 @@
   "ctrl": {
     "message": "ctrl"
   },
+  "current_keyboard_prefix": {
+    "message": "valgt tastatur "
+  },
   "current_lang": {
     "message": "Inndataspr\u00e5ket er kinesisk"
   },
@@ -252,43 +255,43 @@
     "message": "Innstillinger-side for tsjekkisk Dvorak-tastatur"
   },
   "d83c_dc04": {
-    "message": "Mahjong tile"
+    "message": "mahjongbrikke"
   },
   "d83c_dccf": {
-    "message": "Joker card"
+    "message": "joker"
   },
   "d83c_dd70": {
-    "message": "blood type A"
+    "message": "blodtype A"
   },
   "d83c_dd71": {
-    "message": "blood type B"
+    "message": "blodtype B"
   },
   "d83c_dd7e": {
-    "message": "blood type O"
+    "message": "blodtype O"
   },
   "d83c_dd7f": {
-    "message": "parking"
+    "message": "parkering"
   },
   "d83c_dd8e": {
-    "message": "blood type AB"
+    "message": "blodtype AB"
   },
   "d83c_dd91": {
     "message": "CL"
   },
   "d83c_dd92": {
-    "message": "cool"
+    "message": "kult"
   },
   "d83c_dd93": {
-    "message": "free"
+    "message": "gratis"
   },
   "d83c_dd94": {
     "message": "ID"
   },
   "d83c_dd95": {
-    "message": "New"
+    "message": "Ny"
   },
   "d83c_dd96": {
-    "message": "NG"
+    "message": "forbudt"
   },
   "d83c_dd97": {
     "message": "OK"
@@ -297,532 +300,532 @@
     "message": "SOS"
   },
   "d83c_dd99": {
-    "message": "UP!"
+    "message": "OPP!"
   },
   "d83c_dd9a": {
     "message": "versus"
   },
   "d83c_de01": {
-    "message": "Japanese word \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+    "message": "japansk ord, \u00abher\u00bb"
   },
   "d83c_de02": {
-    "message": "Japanese word \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+    "message": "japansk ord, tjeneste"
   },
   "d83c_de1a": {
-    "message": "Japanese word 'free'"
+    "message": "japansk ord, gratis"
   },
   "d83c_de2f": {
-    "message": "Japanese word 'reserved'"
+    "message": "japansk ord, reservert"
   },
   "d83c_de32": {
-    "message": "Japanese word \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+    "message": "japansk ord, forbudt"
   },
   "d83c_de33": {
-    "message": "Chinese word 'space available'"
+    "message": "kinesisk ord, ledig"
   },
   "d83c_de34": {
-    "message": "Chinese word 'pass'"
+    "message": "kinesisk ord, best\u00e5tt"
   },
   "d83c_de35": {
-    "message": "Chinese word 'full'"
+    "message": "kinesisk ord, fullt"
   },
   "d83c_de36": {
-    "message": "Japanese word 'fees'"
+    "message": "japansk ord, avgifter"
   },
   "d83c_de37": {
-    "message": "Japanese word 'monthly'"
+    "message": "japansk ord, m\u00e5nedlig"
   },
   "d83c_de38": {
-    "message": "Chinese word 'application'"
+    "message": "kinesisk ord, s\u00f8knad"
   },
   "d83c_de39": {
-    "message": "Japanese word 'discount'"
+    "message": "japansk ord, rabatt"
   },
   "d83c_de3a": {
-    "message": "Chinese word 'in business'"
+    "message": "kinesisk ord, i drift"
   },
   "d83c_de50": {
-    "message": "Japanese word 'advantage'"
+    "message": "japansk ord, fordel"
   },
   "d83c_de51": {
-    "message": "Chinese word 'approved'"
+    "message": "kinesisk ord, godkjent"
   },
   "d83c_df00": {
-    "message": "cyclone"
+    "message": "syklon"
   },
   "d83c_df01": {
-    "message": "foggy"
+    "message": "t\u00e5ke"
   },
   "d83c_df02": {
-    "message": "umbrella"
+    "message": "paraply"
   },
   "d83c_df03": {
-    "message": "night stars"
+    "message": "stjernenatt"
   },
   "d83c_df04": {
-    "message": "sunrise over mountains"
+    "message": "soloppgang over fjell"
   },
   "d83c_df05": {
-    "message": "sunrise"
+    "message": "soloppgang"
   },
   "d83c_df06": {
-    "message": "city at dusk"
+    "message": "by i skumring"
   },
   "d83c_df07": {
-    "message": "sunset"
+    "message": "solnedgang"
   },
   "d83c_df08": {
-    "message": "rainbow"
+    "message": "regnbue"
   },
   "d83c_df09": {
-    "message": "night bridge"
+    "message": "bro om natten"
   },
   "d83c_df0a": {
-    "message": "wave"
+    "message": "b\u00f8lge"
   },
   "d83c_df0b": {
-    "message": "volcano"
+    "message": "vulkan"
   },
   "d83c_df0c": {
-    "message": "Milky Way"
+    "message": "melkeveien"
   },
   "d83c_df0d": {
-    "message": "globe Europe-Africa"
+    "message": "jordklode med Europa og Afrika"
   },
   "d83c_df0e": {
-    "message": "globe Americas"
+    "message": "jordklode med Amerika"
   },
   "d83c_df0f": {
-    "message": "globe Asia-Australia"
+    "message": "jordklode med Asia og Australia"
   },
   "d83c_df10": {
-    "message": "globe with meridians"
+    "message": "jordklode med lengde- og breddegrader"
   },
   "d83c_df11": {
-    "message": "new moon"
+    "message": "nym\u00e5ne"
   },
   "d83c_df12": {
-    "message": "waxing crescent moon"
+    "message": "tiltakende halvm\u00e5ne"
   },
   "d83c_df13": {
-    "message": "first quarter moon"
+    "message": "tiltakende kvartm\u00e5ne"
   },
   "d83c_df14": {
-    "message": "waxing moon"
+    "message": "tiltakende m\u00e5ne"
   },
   "d83c_df15": {
-    "message": "full moon"
+    "message": "fullm\u00e5ne"
   },
   "d83c_df16": {
-    "message": "waning moon"
+    "message": "avtakende m\u00e5ne"
   },
   "d83c_df17": {
-    "message": "last quarter moon"
+    "message": "avtakende kvartm\u00e5ne"
   },
   "d83c_df18": {
-    "message": "waning crescent moon"
+    "message": "avtakende halvm\u00e5ne"
   },
   "d83c_df19": {
-    "message": "crescent moon"
+    "message": "halvm\u00e5ne"
   },
   "d83c_df1a": {
-    "message": "new moon face"
+    "message": "nym\u00e5nefjes"
   },
   "d83c_df1b": {
-    "message": "first quarter moon face"
+    "message": "tiltakende kvartm\u00e5ne med fjes"
   },
   "d83c_df1c": {
-    "message": "last quarter moon face"
+    "message": "avtakende kvartm\u00e5ne med fjes"
   },
   "d83c_df1d": {
-    "message": "full moon face"
+    "message": "fullm\u00e5nefjes"
   },
   "d83c_df1e": {
-    "message": "sun face"
+    "message": "sol med fjes"
   },
   "d83c_df1f": {
-    "message": "glowing star"
+    "message": "skinnende stjerne"
   },
   "d83c_df20": {
-    "message": "shooting star"
+    "message": "stjerneskudd"
   },
   "d83c_df30": {
-    "message": "chestnut"
+    "message": "kastanje"
   },
   "d83c_df31": {
-    "message": "young plant"
+    "message": "spire"
   },
   "d83c_df32": {
-    "message": "evergreen tree"
+    "message": "bartre"
   },
   "d83c_df33": {
-    "message": "shedding tree"
+    "message": "l\u00f8vtre"
   },
   "d83c_df34": {
-    "message": "palm tree"
+    "message": "palme"
   },
   "d83c_df35": {
-    "message": "cactus"
+    "message": "kaktus"
   },
   "d83c_df37": {
-    "message": "tulip"
+    "message": "tulipan"
   },
   "d83c_df38": {
-    "message": "cherry blossom"
+    "message": "kirseb\u00e6rblomst"
   },
   "d83c_df39": {
     "message": "rose"
   },
   "d83c_df3a": {
-    "message": "hibiscus"
+    "message": "hibiskus"
   },
   "d83c_df3b": {
-    "message": "sunflower"
+    "message": "solsikke"
   },
   "d83c_df3c": {
-    "message": "blossom"
+    "message": "blomst"
   },
   "d83c_df3d": {
-    "message": "corn"
+    "message": "mais"
   },
   "d83c_df3e": {
-    "message": "rice plant"
+    "message": "risplante"
   },
   "d83c_df3f": {
-    "message": "herb"
+    "message": "urteplante"
   },
   "d83c_df40": {
-    "message": "four leaf clover"
+    "message": "firkl\u00f8ver"
   },
   "d83c_df41": {
-    "message": "maple leaf"
+    "message": "l\u00f8nneblad"
   },
   "d83c_df42": {
-    "message": "falling leaves"
+    "message": "fallende blader"
   },
   "d83c_df43": {
-    "message": "leaf in wind"
+    "message": "blad i vinden"
   },
   "d83c_df44": {
-    "message": "mushroom"
+    "message": "sopp"
   },
   "d83c_df45": {
-    "message": "tomato"
+    "message": "tomat"
   },
   "d83c_df46": {
-    "message": "eggplant"
+    "message": "aubergine"
   },
   "d83c_df47": {
-    "message": "grapes"
+    "message": "druer"
   },
   "d83c_df48": {
     "message": "melon"
   },
   "d83c_df49": {
-    "message": "watermelon"
+    "message": "vannmelon"
   },
   "d83c_df4a": {
-    "message": "tangerine"
+    "message": "mandarin"
   },
   "d83c_df4b": {
-    "message": "lemon"
+    "message": "sitron"
   },
   "d83c_df4c": {
-    "message": "banana"
+    "message": "banan"
   },
   "d83c_df4d": {
-    "message": "pineapple"
+    "message": "ananas"
   },
   "d83c_df4e": {
-    "message": "red apple"
+    "message": "r\u00f8dt eple"
   },
   "d83c_df4f": {
-    "message": "green apple"
+    "message": "gr\u00f8nt eple"
   },
   "d83c_df50": {
-    "message": "pear"
+    "message": "p\u00e6re"
   },
   "d83c_df51": {
-    "message": "peach"
+    "message": "fersken"
   },
   "d83c_df52": {
-    "message": "cherry"
+    "message": "kirseb\u00e6r"
   },
   "d83c_df53": {
-    "message": "strawberry"
+    "message": "jordb\u00e6r"
   },
   "d83c_df54": {
     "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "pizza slice"
+    "message": "pizzastykke"
   },
   "d83c_df56": {
-    "message": "meat"
+    "message": "kj\u00f8tt"
   },
   "d83c_df57": {
-    "message": "chicken leg"
+    "message": "kyllingl\u00e5r"
   },
   "d83c_df58": {
-    "message": "rice cracker"
+    "message": "riskjeks"
   },
   "d83c_df59": {
-    "message": "rice ball"
+    "message": "risball"
   },
   "d83c_df5a": {
-    "message": "cooked rice"
+    "message": "kokt ris"
   },
   "d83c_df5b": {
-    "message": "curry and rice"
+    "message": "curry og ris"
   },
   "d83c_df5c": {
-    "message": "ramen"
+    "message": "nudler"
   },
   "d83c_df5d": {
-    "message": "spaghetti"
+    "message": "spagetti"
   },
   "d83c_df5e": {
-    "message": "bread"
+    "message": "br\u00f8d"
   },
   "d83c_df5f": {
-    "message": "fries"
+    "message": "pommes frites"
   },
   "d83c_df60": {
-    "message": "roasted potato"
+    "message": "stekt potet"
   },
   "d83c_df61": {
     "message": "mochi"
   },
   "d83c_df62": {
-    "message": "oden"
+    "message": "sj\u00f8mat"
   },
   "d83c_df63": {
     "message": "sushi"
   },
   "d83c_df64": {
-    "message": "fried shrimp"
+    "message": "stekt reke"
   },
   "d83c_df65": {
-    "message": "fish cake"
+    "message": "fiskekake"
   },
   "d83c_df66": {
-    "message": "soft ice cream"
+    "message": "softis"
   },
   "d83c_df67": {
-    "message": "shaved ice"
+    "message": "shave-is"
   },
   "d83c_df68": {
-    "message": "ice cream"
+    "message": "iskrem"
   },
   "d83c_df69": {
     "message": "donut"
   },
   "d83c_df6a": {
-    "message": "cookie"
+    "message": "kjeks"
   },
   "d83c_df6b": {
-    "message": "chocolate"
+    "message": "sjokolade"
   },
   "d83c_df6c": {
-    "message": "candy"
+    "message": "godteri"
   },
   "d83c_df6d": {
-    "message": "lollipop"
+    "message": "kj\u00e6rlighet p\u00e5 pinne"
   },
   "d83c_df6e": {
-    "message": "custard"
+    "message": "pudding"
   },
   "d83c_df6f": {
-    "message": "honeypot"
+    "message": "honningkrukke"
   },
   "d83c_df70": {
-    "message": "shortcake"
+    "message": "kake"
   },
   "d83c_df71": {
-    "message": "bento"
+    "message": "lunsjboks"
   },
   "d83c_df72": {
-    "message": "stew"
+    "message": "lapskaus"
   },
   "d83c_df73": {
-    "message": "frying pan"
+    "message": "stekepanne"
   },
   "d83c_df74": {
-    "message": "fork and knife"
+    "message": "gaffel og kniv"
   },
   "d83c_df75": {
-    "message": "teacup"
+    "message": "tekopp"
   },
   "d83c_df76": {
     "message": "sake"
   },
   "d83c_df77": {
-    "message": "wine"
+    "message": "vin"
   },
   "d83c_df78": {
     "message": "cocktail"
   },
   "d83c_df79": {
-    "message": "tropical drink"
+    "message": "tropisk drink"
   },
   "d83c_df7a": {
-    "message": "beer"
+    "message": "\u00f8l"
   },
   "d83c_df7b": {
-    "message": "beer mugs"
+    "message": "\u00f8lkrus"
   },
   "d83c_df7c": {
-    "message": "baby bottle"
+    "message": "t\u00e5teflaske"
   },
   "d83c_df80": {
-    "message": "ribbon"
+    "message": "b\u00e5nd"
   },
   "d83c_df81": {
-    "message": "gift"
+    "message": "gave"
   },
   "d83c_df82": {
-    "message": "birthday cake"
+    "message": "bursdagskake"
   },
   "d83c_df83": {
-    "message": "jack-o-lantern"
+    "message": "gresskarlykt"
   },
   "d83c_df84": {
-    "message": "christmas tree"
+    "message": "juletre"
   },
   "d83c_df85": {
-    "message": "santa"
+    "message": "nisse"
   },
   "d83c_df86": {
-    "message": "firework"
+    "message": "fyrverkeri"
   },
   "d83c_df87": {
-    "message": "sparkler"
+    "message": "stjerneskudd"
   },
   "d83c_df88": {
-    "message": "balloon"
+    "message": "ballong"
   },
   "d83c_df89": {
-    "message": "party popper"
+    "message": "smellbongbong"
   },
   "d83c_df8a": {
-    "message": "confetti"
+    "message": "konfetti"
   },
   "d83c_df8b": {
-    "message": "tree and paper strips"
+    "message": "gren med papirstrimler"
   },
   "d83c_df8c": {
-    "message": "crossed flags"
+    "message": "kryssede flagg"
   },
   "d83c_df8d": {
-    "message": "pine decoration"
+    "message": "furudekorasjon"
   },
   "d83c_df8e": {
-    "message": "dolls"
+    "message": "dukker"
   },
   "d83c_df8f": {
-    "message": "carp streamer"
+    "message": "fiskedekorasjon"
   },
   "d83c_df90": {
-    "message": "wind chime"
+    "message": "vindspill"
   },
   "d83c_df91": {
-    "message": "moon viewing"
+    "message": "m\u00e5neseremoni"
   },
   "d83c_df92": {
-    "message": "school bag"
+    "message": "skolesekk"
   },
   "d83c_df93": {
-    "message": "graduation cap"
+    "message": "studentlue"
   },
   "d83c_dfa0": {
-    "message": "carousel"
+    "message": "karusell"
   },
   "d83c_dfa1": {
-    "message": "ferris wheel"
+    "message": "pariserhjul"
   },
   "d83c_dfa2": {
-    "message": "roller coaster"
+    "message": "berg-og-dal-bane"
   },
   "d83c_dfa3": {
-    "message": "fishing"
+    "message": "fisking"
   },
   "d83c_dfa4": {
-    "message": "mic"
+    "message": "mikrofon"
   },
   "d83c_dfa5": {
-    "message": "movie camera"
+    "message": "filmkamera"
   },
   "d83c_dfa6": {
-    "message": "movie"
+    "message": "film"
   },
   "d83c_dfa7": {
-    "message": "headphone"
+    "message": "hodetelefon"
   },
   "d83c_dfa8": {
-    "message": "paint palette"
+    "message": "malepalett"
   },
   "d83c_dfa9": {
-    "message": "top hat"
+    "message": "flosshatt"
   },
   "d83c_dfaa": {
-    "message": "circus"
+    "message": "sirkus"
   },
   "d83c_dfab": {
-    "message": "ticket"
+    "message": "billett"
   },
   "d83c_dfac": {
-    "message": "clapperboard"
+    "message": "filmklapper"
   },
   "d83c_dfad": {
-    "message": "face mask"
+    "message": "teatermasker"
   },
   "d83c_dfae": {
-    "message": "video game"
+    "message": "videospill"
   },
   "d83c_dfaf": {
-    "message": "bull's eye"
+    "message": "blink"
   },
   "d83c_dfb0": {
-    "message": "slot machine"
+    "message": "spilleautomat"
   },
   "d83c_dfb1": {
     "message": "billiard"
   },
   "d83c_dfb2": {
-    "message": "game die"
+    "message": "terning"
   },
   "d83c_dfb3": {
     "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "playing card"
+    "message": "spillkort"
   },
   "d83c_dfb5": {
-    "message": "musical note"
+    "message": "musikknote"
   },
   "d83c_dfb6": {
-    "message": "musical notes"
+    "message": "musikknoter"
   },
   "d83c_dfb7": {
-    "message": "sax"
+    "message": "saksofon"
   },
   "d83c_dfb8": {
-    "message": "guitar"
+    "message": "gitar"
   },
   "d83c_dfb9": {
     "message": "piano"
   },
   "d83c_dfba": {
-    "message": "trumpet"
+    "message": "trompet"
   },
   "d83c_dfbb": {
-    "message": "violin"
+    "message": "fiolin"
   },
   "d83c_dfbc": {
-    "message": "music score"
+    "message": "G-n\u00f8kkel"
   },
   "d83c_dfbd": {
-    "message": "running shirt"
+    "message": "treningstopp"
   },
   "d83c_dfbe": {
     "message": "tennis"
@@ -834,337 +837,337 @@
     "message": "basketball"
   },
   "d83c_dfc1": {
-    "message": "checkered flag"
+    "message": "rutete flagg"
   },
   "d83c_dfc2": {
-    "message": "snowboarder"
+    "message": "snowboardkj\u00f8rer"
   },
   "d83c_dfc3": {
-    "message": "runner"
+    "message": "l\u00f8per"
   },
   "d83c_dfc4": {
     "message": "surfing"
   },
   "d83c_dfc6": {
-    "message": "trophy"
+    "message": "trof\u00e9"
   },
   "d83c_dfc7": {
-    "message": "horse racing"
+    "message": "hesteveddel\u00f8p"
   },
   "d83c_dfc8": {
-    "message": "American football"
+    "message": "amerikansk fotball"
   },
   "d83c_dfc9": {
-    "message": "soccer"
+    "message": "fotball"
   },
   "d83c_dfca": {
-    "message": "swimmer"
+    "message": "sv\u00f8mmer"
   },
   "d83c_dfe0": {
-    "message": "house"
+    "message": "hus"
   },
   "d83c_dfe1": {
-    "message": "home"
+    "message": "hus med hage"
   },
   "d83c_dfe2": {
-    "message": "office building"
+    "message": "kontorbygg"
   },
   "d83c_dfe3": {
-    "message": "Japanese post office"
+    "message": "japansk postkontor"
   },
   "d83c_dfe4": {
-    "message": "European post office"
+    "message": "europeisk postkontor"
   },
   "d83c_dfe5": {
-    "message": "hospital"
+    "message": "sykehus"
   },
   "d83c_dfe6": {
     "message": "bank"
   },
   "d83c_dfe7": {
-    "message": "ATM"
+    "message": "minibank"
   },
   "d83c_dfe8": {
-    "message": "hotel"
+    "message": "hotell"
   },
   "d83c_dfe9": {
-    "message": "love hotel"
+    "message": "kj\u00e6rlighetshotell"
   },
   "d83c_dfea": {
-    "message": "convenience store"
+    "message": "dagligvarebutikk"
   },
   "d83c_dfeb": {
-    "message": "school"
+    "message": "skole"
   },
   "d83c_dfec": {
-    "message": "department store"
+    "message": "storsenter"
   },
   "d83c_dfed": {
-    "message": "factory"
+    "message": "fabrikk"
   },
   "d83c_dfee": {
-    "message": "red lantern"
+    "message": "r\u00f8d lykt"
   },
   "d83c_dfef": {
-    "message": "Japanese castle"
+    "message": "japansk borg"
   },
   "d83c_dff0": {
-    "message": "European castle"
+    "message": "europeisk slott"
   },
   "d83d_dc00": {
-    "message": "Rat"
+    "message": "rotte"
   },
   "d83d_dc01": {
-    "message": "Mouse"
+    "message": "mus"
   },
   "d83d_dc02": {
-    "message": "Ox"
+    "message": "okse"
   },
   "d83d_dc03": {
-    "message": "water buffalo"
+    "message": "vannb\u00f8ffel"
   },
   "d83d_dc04": {
-    "message": "cow"
+    "message": "ku"
   },
   "d83d_dc06": {
     "message": "leopard"
   },
   "d83d_dc07": {
-    "message": "rabbit"
+    "message": "kanin"
   },
   "d83d_dc08": {
-    "message": "cat"
+    "message": "katt"
   },
   "d83d_dc09": {
-    "message": "dragon"
+    "message": "drage"
   },
   "d83d_dc0a": {
-    "message": "crocodile"
+    "message": "krokodille"
   },
   "d83d_dc0b": {
-    "message": "whale"
+    "message": "hval"
   },
   "d83d_dc0c": {
-    "message": "snail"
+    "message": "snegle"
   },
   "d83d_dc0d": {
-    "message": "snake"
+    "message": "slange"
   },
   "d83d_dc0e": {
-    "message": "horse"
+    "message": "hest"
   },
   "d83d_dc0f": {
-    "message": "ram"
+    "message": "bukk"
   },
   "d83d_dc10": {
-    "message": "goat"
+    "message": "geit"
   },
   "d83d_dc11": {
-    "message": "sheep"
+    "message": "sau"
   },
   "d83d_dc12": {
-    "message": "monkey"
+    "message": "ape"
   },
   "d83d_dc13": {
-    "message": "rooster"
+    "message": "hane"
   },
   "d83d_dc14": {
-    "message": "chicken"
+    "message": "kylling"
   },
   "d83d_dc15": {
-    "message": "dog"
+    "message": "hund"
   },
   "d83d_dc16": {
-    "message": "pig"
+    "message": "gris"
   },
   "d83d_dc17": {
-    "message": "boar"
+    "message": "villsvin"
   },
   "d83d_dc18": {
-    "message": "elephant"
+    "message": "elefant"
   },
   "d83d_dc19": {
-    "message": "octopus"
+    "message": "blekksprut"
   },
   "d83d_dc1a": {
-    "message": "shell"
+    "message": "skjell"
   },
   "d83d_dc1b": {
-    "message": "bug"
+    "message": "insekt"
   },
   "d83d_dc1c": {
-    "message": "ant"
+    "message": "maur"
   },
   "d83d_dc1d": {
-    "message": "honeybee"
+    "message": "honningbie"
   },
   "d83d_dc1e": {
-    "message": "lady beetle"
+    "message": "bille"
   },
   "d83d_dc1f": {
-    "message": "fish"
+    "message": "fisk"
   },
   "d83d_dc20": {
-    "message": "tropical fish"
+    "message": "tropisk fisk"
   },
   "d83d_dc21": {
-    "message": "blowfish"
+    "message": "kulefisk"
   },
   "d83d_dc22": {
-    "message": "turtle"
+    "message": "skilpadde"
   },
   "d83d_dc23": {
-    "message": "hatching chick"
+    "message": "nyklekket kylling"
   },
   "d83d_dc24": {
-    "message": "baby chick face"
+    "message": "kyllingfjes"
   },
   "d83d_dc25": {
-    "message": "baby chick"
+    "message": "kylling"
   },
   "d83d_dc26": {
-    "message": "bird"
+    "message": "fugl"
   },
   "d83d_dc27": {
-    "message": "penguin"
+    "message": "pingvin"
   },
   "d83d_dc28": {
-    "message": "koala"
+    "message": "koalabj\u00f8rn"
   },
   "d83d_dc29": {
-    "message": "poodle"
+    "message": "puddel"
   },
   "d83d_dc2a": {
-    "message": "one hump camel"
+    "message": "dromedar"
   },
   "d83d_dc2b": {
-    "message": "two hump camel"
+    "message": "kamel"
   },
   "d83d_dc2c": {
-    "message": "dolphin"
+    "message": "delfin"
   },
   "d83d_dc2d": {
-    "message": "mouse face"
+    "message": "musefjes"
   },
   "d83d_dc2e": {
-    "message": "cow face"
+    "message": "kufjes"
   },
   "d83d_dc2f": {
-    "message": "tiger face"
+    "message": "tigerfjes"
   },
   "d83d_dc30": {
-    "message": "rabbit face"
+    "message": "kaninfjes"
   },
   "d83d_dc31": {
-    "message": "cat face"
+    "message": "kattefjes"
   },
   "d83d_dc32": {
-    "message": "dragon face"
+    "message": "dragehode"
   },
   "d83d_dc33": {
-    "message": "spouting whale"
+    "message": "sprutende hval"
   },
   "d83d_dc34": {
-    "message": "horse face"
+    "message": "hestefjes"
   },
   "d83d_dc35": {
-    "message": "monkey face"
+    "message": "apefjes"
   },
   "d83d_dc36": {
-    "message": "dog face"
+    "message": "hundefjes"
   },
   "d83d_dc37": {
-    "message": "pig face"
+    "message": "grisetryne"
   },
   "d83d_dc38": {
-    "message": "frog face"
+    "message": "froskefjes"
   },
   "d83d_dc39": {
-    "message": "hamster face"
+    "message": "hamsterfjes"
   },
   "d83d_dc3a": {
-    "message": "wolf face"
+    "message": "ulvefjes"
   },
   "d83d_dc3b": {
-    "message": "bear face"
+    "message": "bj\u00f8rnefjes"
   },
   "d83d_dc3c": {
-    "message": "panda face"
+    "message": "pandafjes"
   },
   "d83d_dc3d": {
-    "message": "pig nose"
+    "message": "grisenese"
   },
   "d83d_dc3e": {
-    "message": "paw"
+    "message": "pote"
   },
   "d83d_dc40": {
-    "message": "eyes"
+    "message": "\u00f8yne"
   },
   "d83d_dc42": {
-    "message": "ear"
+    "message": "\u00f8re"
   },
   "d83d_dc43": {
-    "message": "nose"
+    "message": "nese"
   },
   "d83d_dc44": {
-    "message": "mouth"
+    "message": "munn"
   },
   "d83d_dc45": {
-    "message": "tongue"
+    "message": "tunge"
   },
   "d83d_dc46": {
-    "message": "up finger"
+    "message": "finger opp"
   },
   "d83d_dc47": {
-    "message": "down finger"
+    "message": "finger ned"
   },
   "d83d_dc48": {
-    "message": "left finger"
+    "message": "finger mot venstre"
   },
   "d83d_dc49": {
-    "message": "right finger"
+    "message": "finger mot h\u00f8yre"
   },
   "d83d_dc4a": {
-    "message": "clenched fist"
+    "message": "knyttet neve"
   },
   "d83d_dc4b": {
-    "message": "hand waving"
+    "message": "vinkende h\u00e5nd"
   },
   "d83d_dc4c": {
-    "message": "OK hand sign"
+    "message": "OK-tegn"
   },
   "d83d_dc4d": {
-    "message": "thumbs up"
+    "message": "tommel opp"
   },
   "d83d_dc4e": {
-    "message": "thumbs down"
+    "message": "tommel ned"
   },
   "d83d_dc4f": {
-    "message": "hands clapping"
+    "message": "klappende hender"
   },
   "d83d_dc50": {
-    "message": "open hands"
+    "message": "\u00e5pne hender"
   },
   "d83d_dc51": {
-    "message": "crown"
+    "message": "krone"
   },
   "d83d_dc52": {
-    "message": "woman's hat"
+    "message": "damehatt"
   },
   "d83d_dc53": {
-    "message": "eyeglasses"
+    "message": "briller"
   },
   "d83d_dc54": {
-    "message": "necktie"
+    "message": "slips"
   },
   "d83d_dc55": {
-    "message": "T-shirt"
+    "message": "t-skjorte"
   },
   "d83d_dc56": {
-    "message": "trousers"
+    "message": "bukser"
   },
   "d83d_dc57": {
-    "message": "dress"
+    "message": "kjole"
   },
   "d83d_dc58": {
     "message": "kimono"
@@ -1173,307 +1176,307 @@
     "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "woman's clothes"
+    "message": "damekl\u00e6r"
   },
   "d83d_dc5b": {
-    "message": "purse"
+    "message": "veske"
   },
   "d83d_dc5c": {
-    "message": "handbag"
+    "message": "h\u00e5ndveske"
   },
   "d83d_dc5d": {
-    "message": "pouch"
+    "message": "portemon\u00e9"
   },
   "d83d_dc5e": {
-    "message": "man's shoe"
+    "message": "herresko"
   },
   "d83d_dc5f": {
-    "message": "athletic shoe"
+    "message": "treningssko"
   },
   "d83d_dc60": {
-    "message": "high-heel"
+    "message": "h\u00f8ye h\u00e6ler"
   },
   "d83d_dc61": {
-    "message": "woman's sandal"
+    "message": "damesandal"
   },
   "d83d_dc62": {
-    "message": "woman's boot"
+    "message": "damest\u00f8vlett"
   },
   "d83d_dc63": {
-    "message": "footprint"
+    "message": "fotavtrykk"
   },
   "d83d_dc64": {
-    "message": "bust in silhouette"
+    "message": "silhuett av byste"
   },
   "d83d_dc65": {
-    "message": "busts in silhouette"
+    "message": "silhuett av byster"
   },
   "d83d_dc66": {
-    "message": "boy"
+    "message": "gutt"
   },
   "d83d_dc67": {
-    "message": "girl"
+    "message": "jente"
   },
   "d83d_dc68": {
-    "message": "man"
+    "message": "mann"
   },
   "d83d_dc69": {
-    "message": "woman"
+    "message": "kvinne"
   },
   "d83d_dc6a": {
-    "message": "family"
+    "message": "familie"
   },
   "d83d_dc6b": {
-    "message": "man and woman"
+    "message": "mann og kvinne"
   },
   "d83d_dc6c": {
-    "message": "two men"
+    "message": "to menn"
   },
   "d83d_dc6d": {
-    "message": "two women"
+    "message": "to kvinner"
   },
   "d83d_dc6e": {
-    "message": "police officer"
+    "message": "politimann"
   },
   "d83d_dc6f": {
-    "message": "bunny girl"
+    "message": "jente med kanin\u00f8rer"
   },
   "d83d_dc70": {
-    "message": "bride"
+    "message": "brud"
   },
   "d83d_dc71": {
-    "message": "blond person"
+    "message": "lysh\u00e5ret person"
   },
   "d83d_dc72": {
-    "message": "man with gua pi mao"
+    "message": "mann med lue"
   },
   "d83d_dc73": {
-    "message": "man with a turban"
+    "message": "mann med turban"
   },
   "d83d_dc74": {
-    "message": "older man"
+    "message": "eldre mann"
   },
   "d83d_dc75": {
-    "message": "older woman"
+    "message": "eldre kvinne"
   },
   "d83d_dc76": {
     "message": "baby"
   },
   "d83d_dc77": {
-    "message": "construction worker"
+    "message": "bygningsarbeider"
   },
   "d83d_dc78": {
-    "message": "princess"
+    "message": "prinsesse"
   },
   "d83d_dc79": {
-    "message": "ogre"
+    "message": "troll"
   },
   "d83d_dc7a": {
-    "message": "goblin"
+    "message": "tusse"
   },
   "d83d_dc7b": {
-    "message": "ghost"
+    "message": "sp\u00f8kelse"
   },
   "d83d_dc7c": {
-    "message": "baby angel"
+    "message": "babyengel"
   },
   "d83d_dc7d": {
-    "message": "alien"
+    "message": "romvesen"
   },
   "d83d_dc7e": {
-    "message": "alien monster"
+    "message": "utenomjordisk monster"
   },
   "d83d_dc7f": {
-    "message": "imp"
+    "message": "liten djevel"
   },
   "d83d_dc80": {
-    "message": "skull"
+    "message": "hodeskalle"
   },
   "d83d_dc81": {
-    "message": "information desk"
+    "message": "informasjonsskranke"
   },
   "d83d_dc82": {
-    "message": "guardsman"
+    "message": "vaktmann"
   },
   "d83d_dc83": {
-    "message": "dancer"
+    "message": "danser"
   },
   "d83d_dc84": {
-    "message": "lipstick"
+    "message": "leppestift"
   },
   "d83d_dc85": {
-    "message": "nail care"
+    "message": "neglepleie"
   },
   "d83d_dc86": {
-    "message": "face massage"
+    "message": "ansiktsmassasje"
   },
   "d83d_dc87": {
-    "message": "haircut"
+    "message": "h\u00e5rklipp"
   },
   "d83d_dc88": {
-    "message": "barber shop"
+    "message": "barberer"
   },
   "d83d_dc89": {
-    "message": "shot"
+    "message": "spr\u00f8yte"
   },
   "d83d_dc8a": {
-    "message": "pill"
+    "message": "pille"
   },
   "d83d_dc8b": {
-    "message": "kiss mark"
+    "message": "kyssemerke"
   },
   "d83d_dc8c": {
-    "message": "love letter"
+    "message": "kj\u00e6rlighetsbrev"
   },
   "d83d_dc8d": {
     "message": "ring"
   },
   "d83d_dc8e": {
-    "message": "gem"
+    "message": "edelsten"
   },
   "d83d_dc8f": {
-    "message": "kiss"
+    "message": "kyss"
   },
   "d83d_dc90": {
-    "message": "bouquet"
+    "message": "bukett"
   },
   "d83d_dc91": {
-    "message": "couple"
+    "message": "par"
   },
   "d83d_dc92": {
-    "message": "wedding chapel"
+    "message": "bryllupskapell"
   },
   "d83d_dc93": {
-    "message": "pulsating heart"
+    "message": "bankende hjerte"
   },
   "d83d_dc94": {
-    "message": "heart break"
+    "message": "knust hjerte"
   },
   "d83d_dc95": {
-    "message": "two hearts"
+    "message": "to hjerter"
   },
   "d83d_dc96": {
-    "message": "sparkling heart"
+    "message": "glitrende hjerte"
   },
   "d83d_dc97": {
-    "message": "growing heart"
+    "message": "voksende hjerte"
   },
   "d83d_dc98": {
-    "message": "heart and arrow"
+    "message": "hjerte med pil"
   },
   "d83d_dc99": {
-    "message": "blue heart"
+    "message": "bl\u00e5tt hjerte"
   },
   "d83d_dc9a": {
-    "message": "green heart"
+    "message": "gr\u00f8nt hjerte"
   },
   "d83d_dc9b": {
-    "message": "yellow heart"
+    "message": "gult hjerte"
   },
   "d83d_dc9c": {
-    "message": "purple heart"
+    "message": "lilla hjerte"
   },
   "d83d_dc9d": {
-    "message": "heart with ribbon"
+    "message": "hjerte med b\u00e5nd"
   },
   "d83d_dc9e": {
-    "message": "revolving hearts"
+    "message": "snurrende hjerter"
   },
   "d83d_dc9f": {
-    "message": "heart decoration"
+    "message": "hjertedekorasjon"
   },
   "d83d_dca0": {
-    "message": "flower petal"
+    "message": "kronblad"
   },
   "d83d_dca1": {
-    "message": "light bulb"
+    "message": "lysp\u00e6re"
   },
   "d83d_dca2": {
-    "message": "anger"
+    "message": "sinne"
   },
   "d83d_dca3": {
-    "message": "bomb"
+    "message": "bombe"
   },
   "d83d_dca4": {
-    "message": "sleepy symbol"
+    "message": "s\u00f8vnig-symbol"
   },
   "d83d_dca5": {
-    "message": "collision"
+    "message": "kollisjon"
   },
   "d83d_dca6": {
-    "message": "splashing sweat"
+    "message": "svettesprut"
   },
   "d83d_dca7": {
-    "message": "cold sweat"
+    "message": "dr\u00e5pe"
   },
   "d83d_dca8": {
-    "message": "running dash"
+    "message": "fartssymbol"
   },
   "d83d_dca9": {
-    "message": "poop"
+    "message": "b\u00e6sj"
   },
   "d83d_dcaa": {
     "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "dizzy"
+    "message": "svimmel"
   },
   "d83d_dcac": {
-    "message": "speech balloon"
+    "message": "snakkeboble"
   },
   "d83d_dcad": {
-    "message": "thought balloon"
+    "message": "tankeboble"
   },
   "d83d_dcae": {
-    "message": "flower stamp"
+    "message": "blomsterstempel"
   },
   "d83d_dcaf": {
-    "message": "full score"
+    "message": "full pott"
   },
   "d83d_dcb0": {
-    "message": "money bag"
+    "message": "pengesekk"
   },
   "d83d_dcb1": {
-    "message": "currency exchange"
+    "message": "valutakonvertering"
   },
   "d83d_dcb2": {
-    "message": "dollar sign"
+    "message": "dollartegn"
   },
   "d83d_dcb3": {
-    "message": "credit card"
+    "message": "kredittkort"
   },
   "d83d_dcb4": {
-    "message": "yen note"
+    "message": "yenseddel"
   },
   "d83d_dcb5": {
-    "message": "dollar note"
+    "message": "dollarseddel"
   },
   "d83d_dcb6": {
-    "message": "Euro note"
+    "message": "euroseddel"
   },
   "d83d_dcb7": {
-    "message": "Pound note"
+    "message": "pundseddel"
   },
   "d83d_dcb8": {
-    "message": "flying money"
+    "message": "flyvende penger"
   },
   "d83d_dcb9": {
-    "message": "rising market"
+    "message": "stigende marked"
   },
   "d83d_dcba": {
-    "message": "seat"
+    "message": "sitteplass"
   },
   "d83d_dcbb": {
-    "message": "PC"
+    "message": "datamaskin"
   },
   "d83d_dcbc": {
-    "message": "briefcase"
+    "message": "koffert"
   },
   "d83d_dcbd": {
-    "message": "mini disc"
+    "message": "minidisk"
   },
   "d83d_dcbe": {
-    "message": "floppy disc"
+    "message": "diskett"
   },
   "d83d_dcbf": {
     "message": "blu-ray"
@@ -1482,172 +1485,172 @@
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "file folder"
+    "message": "filmappe"
   },
   "d83d_dcc2": {
-    "message": "open folder"
+    "message": "\u00e5pen mappe"
   },
   "d83d_dcc3": {
-    "message": "document"
+    "message": "dokument"
   },
   "d83d_dcc4": {
-    "message": "document"
+    "message": "dokument"
   },
   "d83d_dcc5": {
-    "message": "calendar"
+    "message": "kalender"
   },
   "d83d_dcc6": {
-    "message": "tear-off calendar"
+    "message": "riv-av-kalender"
   },
   "d83d_dcc7": {
-    "message": "card index"
+    "message": "kortkartotek"
   },
   "d83d_dcc8": {
-    "message": "upward trend"
+    "message": "oppadg\u00e5ende trend"
   },
   "d83d_dcc9": {
-    "message": "downward trend"
+    "message": "nedadg\u00e5ende trend"
   },
   "d83d_dcca": {
-    "message": "bar graph"
+    "message": "s\u00f8ylediagram"
   },
   "d83d_dccb": {
-    "message": "clipboard"
+    "message": "utklippstavle"
   },
   "d83d_dccc": {
-    "message": "pushpin"
+    "message": "stift"
   },
   "d83d_dccd": {
-    "message": "round pushpin"
+    "message": "knappen\u00e5l"
   },
   "d83d_dcce": {
-    "message": "paperclip"
+    "message": "binders"
   },
   "d83d_dccf": {
-    "message": "straight ruler"
+    "message": "linjal"
   },
   "d83d_dcd0": {
-    "message": "triangle ruler"
+    "message": "trekantlinjal"
   },
   "d83d_dcd1": {
-    "message": "bookmark tabs"
+    "message": "bokmerker"
   },
   "d83d_dcd2": {
-    "message": "ledger"
+    "message": "spiralblokk"
   },
   "d83d_dcd3": {
-    "message": "notebook"
+    "message": "notatbok"
   },
   "d83d_dcd4": {
-    "message": "decorated notebook"
+    "message": "dekorert notatbok"
   },
   "d83d_dcd5": {
-    "message": "closed book"
+    "message": "lukket bok"
   },
   "d83d_dcd6": {
-    "message": "open book"
+    "message": "\u00e5pen bok"
   },
   "d83d_dcd7": {
-    "message": "green book"
+    "message": "gr\u00f8nn bok"
   },
   "d83d_dcd8": {
-    "message": "book"
+    "message": "bok"
   },
   "d83d_dcd9": {
-    "message": "orange book"
+    "message": "oransje bok"
   },
   "d83d_dcda": {
-    "message": "books"
+    "message": "b\u00f8ker"
   },
   "d83d_dcdb": {
-    "message": "name badge"
+    "message": "navneskilt"
   },
   "d83d_dcdc": {
-    "message": "scroll"
+    "message": "skriftrull"
   },
   "d83d_dcdd": {
-    "message": "memo"
+    "message": "notat"
   },
   "d83d_dcde": {
-    "message": "phone"
+    "message": "telefon"
   },
   "d83d_dcdf": {
-    "message": "pager"
+    "message": "persons\u00f8ker"
   },
   "d83d_dce0": {
-    "message": "fax"
+    "message": "faks"
   },
   "d83d_dce1": {
-    "message": "satellite dish"
+    "message": "parabolantenne"
   },
   "d83d_dce2": {
-    "message": "loudspeaker"
+    "message": "ropert"
   },
   "d83d_dce3": {
-    "message": "megaphone"
+    "message": "megafon"
   },
   "d83d_dce4": {
-    "message": "sent mail"
+    "message": "sendt post"
   },
   "d83d_dce5": {
-    "message": "Inbox"
+    "message": "Innboks"
   },
   "d83d_dce6": {
-    "message": "package"
+    "message": "pakke"
   },
   "d83d_dce7": {
-    "message": "email"
+    "message": "e-post"
   },
   "d83d_dce8": {
-    "message": "incoming mail"
+    "message": "innkommende post"
   },
   "d83d_dce9": {
-    "message": "outgoing mail"
+    "message": "utg\u00e5ende post"
   },
   "d83d_dcea": {
-    "message": "closed mailbox with flag down"
+    "message": "lukket postkasse med senket flagg"
   },
   "d83d_dceb": {
-    "message": "closed mailbox with flag up"
+    "message": "lukket postkasse med hevet flagg"
   },
   "d83d_dcec": {
-    "message": "open mailbox with flag up"
+    "message": "\u00e5pen postkasse med hevet flagg"
   },
   "d83d_dced": {
-    "message": "open mailbox with flag down"
+    "message": "\u00e5pen postkasse med senket flagg"
   },
   "d83d_dcee": {
-    "message": "postbox"
+    "message": "postkasse"
   },
   "d83d_dcef": {
-    "message": "postal horn"
+    "message": "posthorn"
   },
   "d83d_dcf0": {
-    "message": "newspaper"
+    "message": "avis"
   },
   "d83d_dcf1": {
-    "message": "cell phone"
+    "message": "mobiltelefon"
   },
   "d83d_dcf2": {
-    "message": "cell phone with arrow"
+    "message": "mobiltelefon med pil"
   },
   "d83d_dcf3": {
-    "message": "vibration mode"
+    "message": "vibrasjonsmodus"
   },
   "d83d_dcf4": {
-    "message": "phone off"
+    "message": "telefon av"
   },
   "d83d_dcf5": {
-    "message": "no cell phone"
+    "message": "mobiltelefon fobudt"
   },
   "d83d_dcf6": {
-    "message": "mobile signals"
+    "message": "mobilsignaler"
   },
   "d83d_dcf7": {
-    "message": "camera"
+    "message": "kamera"
   },
   "d83d_dcf9": {
-    "message": "video cam"
+    "message": "videokamera"
   },
   "d83d_dcfa": {
     "message": "TV"
@@ -1656,715 +1659,715 @@
     "message": "radio"
   },
   "d83d_dcfc": {
-    "message": "video tape"
+    "message": "videoopptak"
   },
   "d83d_dd00": {
-    "message": "crossed arrows"
+    "message": "kryssede piler"
   },
   "d83d_dd01": {
-    "message": "clockwise arrows"
+    "message": "piler med klokken"
   },
   "d83d_dd02": {
-    "message": "clockwise arrows"
+    "message": "piler med klokken"
   },
   "d83d_dd03": {
-    "message": "reload"
+    "message": "last inn p\u00e5 nytt"
   },
   "d83d_dd04": {
-    "message": "anti-clockwise arrows"
+    "message": "piler mot klokken"
   },
   "d83d_dd05": {
-    "message": "low brightness"
+    "message": "lav lysstyrke"
   },
   "d83d_dd06": {
-    "message": "high brightness"
+    "message": "h\u00f8y lysstyrke"
   },
   "d83d_dd07": {
-    "message": "no speaking"
+    "message": "stille"
   },
   "d83d_dd08": {
-    "message": "speaker"
+    "message": "h\u00f8yttaler"
   },
   "d83d_dd09": {
-    "message": "speaker with low volume"
+    "message": "h\u00f8yttaler med lavt volum"
   },
   "d83d_dd0a": {
-    "message": "speaker with high volume"
+    "message": "h\u00f8yttaler med h\u00f8yt volum"
   },
   "d83d_dd0b": {
-    "message": "battery"
+    "message": "batteri"
   },
   "d83d_dd0c": {
-    "message": "electric plug"
+    "message": "elektrisk st\u00f8psel"
   },
   "d83d_dd0d": {
-    "message": "left-tilted magnifying glass"
+    "message": "forst\u00f8rrelsesglass vippet mot venstre"
   },
   "d83d_dd0e": {
-    "message": "right-tilted magnifying glass"
+    "message": "forst\u00f8rrelsesglass vippet mot h\u00f8yre"
   },
   "d83d_dd0f": {
-    "message": "lock with an ink pen"
+    "message": "l\u00e5s med blekkpenn"
   },
   "d83d_dd10": {
-    "message": "closed lock with a key"
+    "message": "lukket l\u00e5s med n\u00f8kkel"
   },
   "d83d_dd11": {
-    "message": "key"
+    "message": "n\u00f8kkel"
   },
   "d83d_dd12": {
-    "message": "closed lock"
+    "message": "lukket l\u00e5s"
   },
   "d83d_dd13": {
-    "message": "open lock"
+    "message": "\u00e5pen l\u00e5s"
   },
   "d83d_dd14": {
-    "message": "bell"
+    "message": "bjelle"
   },
   "d83d_dd15": {
-    "message": "no bell"
+    "message": "ingen bjelle"
   },
   "d83d_dd16": {
-    "message": "bookmark"
+    "message": "bokmerke"
   },
   "d83d_dd17": {
-    "message": "link sign"
+    "message": "linksymbol"
   },
   "d83d_dd18": {
-    "message": "radio button"
+    "message": "alternativknapp"
   },
   "d83d_dd19": {
-    "message": "back"
+    "message": "tilbake"
   },
   "d83d_dd1a": {
-    "message": "end"
+    "message": "slutt"
   },
   "d83d_dd1b": {
-    "message": "ON arrow"
+    "message": "P\u00c5-pil"
   },
   "d83d_dd1c": {
-    "message": "Soon sign"
+    "message": "snart-tegn"
   },
   "d83d_dd1d": {
-    "message": "Top sign"
+    "message": "pil opp"
   },
   "d83d_dd1e": {
-    "message": "No one under 18"
+    "message": "Ingen under 18 \u00e5r"
   },
   "d83d_dd20": {
-    "message": "uppercase letters"
+    "message": "store bokstaver"
   },
   "d83d_dd21": {
-    "message": "lowercase letters"
+    "message": "sm\u00e5 bokstaver"
   },
   "d83d_dd22": {
-    "message": "numbers"
+    "message": "tall"
   },
   "d83d_dd23": {
-    "message": "symbols"
+    "message": "symboler"
   },
   "d83d_dd24": {
-    "message": "Latin Alphabet"
+    "message": "latinsk alfabet"
   },
   "d83d_dd25": {
-    "message": "fire"
+    "message": "brann"
   },
   "d83d_dd26": {
-    "message": "flashlight"
+    "message": "lommelykt"
   },
   "d83d_dd27": {
-    "message": "wrench"
+    "message": "skrun\u00f8kkel"
   },
   "d83d_dd28": {
     "message": "hammer"
   },
   "d83d_dd29": {
-    "message": "nut and bolt"
+    "message": "mutter og skrue"
   },
   "d83d_dd2a": {
-    "message": "cooking knife"
+    "message": "kokkekniv"
   },
   "d83d_dd2b": {
-    "message": "gun"
+    "message": "pistol"
   },
   "d83d_dd2c": {
-    "message": "microscope"
+    "message": "mikroskop"
   },
   "d83d_dd2d": {
-    "message": "telescope"
+    "message": "teleskop"
   },
   "d83d_dd2e": {
-    "message": "crystal ball"
+    "message": "krystallkule"
   },
   "d83d_dd2f": {
-    "message": "six-pointed star"
+    "message": "sekskantet stjerne"
   },
   "d83d_dd30": {
-    "message": "green and yellow leaf"
+    "message": "gr\u00f8nn og gul side"
   },
   "d83d_dd31": {
-    "message": "trident sign"
+    "message": "tridentsymbol"
   },
   "d83d_dd32": {
-    "message": "solid frame square button"
+    "message": "firkantknapp med fargefyll"
   },
   "d83d_dd33": {
-    "message": "outlined frame square button"
+    "message": "firkantknapp uten fargefyll"
   },
   "d83d_dd34": {
-    "message": "large red circle"
+    "message": "stor r\u00f8d sirkel"
   },
   "d83d_dd35": {
-    "message": "large blue circle"
+    "message": "stor bl\u00e5 sirkel"
   },
   "d83d_dd36": {
-    "message": "large orange diamond"
+    "message": "stor oransje diamant"
   },
   "d83d_dd37": {
-    "message": "large blue diamond"
+    "message": "stor bl\u00e5 diamant"
   },
   "d83d_dd38": {
-    "message": "small orange diamond"
+    "message": "liten oransje diamant"
   },
   "d83d_dd39": {
-    "message": "small blue diamond"
+    "message": "liten bl\u00e5 diamant"
   },
   "d83d_dd3a": {
-    "message": "up triangle"
+    "message": "trekant opp"
   },
   "d83d_dd3b": {
-    "message": "down triangle"
+    "message": "trekant ned"
   },
   "d83d_dd3c": {
-    "message": "up triangle button"
+    "message": "trekant opp-knapp"
   },
   "d83d_dd3d": {
-    "message": "down triangle button"
+    "message": "trekant ned-knapp"
   },
   "d83d_dd50": {
-    "message": "1 o'clock"
+    "message": "klokken ett"
   },
   "d83d_dd51": {
-    "message": "2 o'clock"
+    "message": "klokken to"
   },
   "d83d_dd52": {
-    "message": "3 o'clock"
+    "message": "klokken tre"
   },
   "d83d_dd53": {
-    "message": "4 o'clock"
+    "message": "klokken fire"
   },
   "d83d_dd54": {
-    "message": "5 o'clock"
+    "message": "klokken fem"
   },
   "d83d_dd55": {
-    "message": "6 o'clock"
+    "message": "klokken seks"
   },
   "d83d_dd56": {
-    "message": "7 o'clock"
+    "message": "klokken syv"
   },
   "d83d_dd57": {
-    "message": "8 o'clock"
+    "message": "klokken \u00e5tte"
   },
   "d83d_dd58": {
-    "message": "9 o'clock"
+    "message": "klokken ni"
   },
   "d83d_dd59": {
-    "message": "10 o'clock"
+    "message": "klokken ti"
   },
   "d83d_dd5a": {
-    "message": "11 o'clock"
+    "message": "klokken elleve"
   },
   "d83d_dd5b": {
-    "message": "12 o'clock"
+    "message": "klokken tolv"
   },
   "d83d_dd5c": {
-    "message": "one-thirty"
+    "message": "halv to"
   },
   "d83d_dd5d": {
-    "message": "two-thirty"
+    "message": "halv tre"
   },
   "d83d_dd5e": {
-    "message": "three-thirty"
+    "message": "halv fire"
   },
   "d83d_dd5f": {
-    "message": "four-thirty"
+    "message": "halv fem"
   },
   "d83d_dd60": {
-    "message": "five-thirty"
+    "message": "halv seks"
   },
   "d83d_dd61": {
-    "message": "six-thirty"
+    "message": "halv syv"
   },
   "d83d_dd62": {
-    "message": "seven-thirty"
+    "message": "halv \u00e5tte"
   },
   "d83d_dd63": {
-    "message": "eight-thirty"
+    "message": "halv ni"
   },
   "d83d_dd64": {
-    "message": "nine-thirty"
+    "message": "halv ti"
   },
   "d83d_dd65": {
-    "message": "ten-thirty"
+    "message": "halv elleve"
   },
   "d83d_dd66": {
-    "message": "eleven-thirty"
+    "message": "halv tolv"
   },
   "d83d_dd67": {
-    "message": "twelve-thirty"
+    "message": "halv ett"
   },
   "d83d_ddfb": {
-    "message": "Mt. Fuji"
+    "message": "Fuji-fjellet"
   },
   "d83d_ddfc": {
-    "message": "Tokyo Tower"
+    "message": "Tokyo-t\u00e5rnet"
   },
   "d83d_ddfd": {
-    "message": "Statue of Liberty"
+    "message": "Frihetsgudinnen"
   },
   "d83d_ddfe": {
-    "message": "Map of Japan"
+    "message": "Kart over Japan"
   },
   "d83d_ddff": {
-    "message": "Moyai statue"
+    "message": "Moyai-statue"
   },
   "d83d_de00": {
-    "message": "grin"
+    "message": "glis"
   },
   "d83d_de01": {
-    "message": " grin with smiling eyes"
+    "message": " stort smil med smilende \u00f8yne"
   },
   "d83d_de02": {
-    "message": "tears of joy"
+    "message": "gledest\u00e5rer"
   },
   "d83d_de03": {
-    "message": "open mouth smile"
+    "message": "stort smil"
   },
   "d83d_de04": {
-    "message": "open mouth smile with smiling eyes"
+    "message": "\u00e5pen munn med smilende \u00f8yne"
   },
   "d83d_de05": {
-    "message": "cold sweat smile"
+    "message": "Smil med kaldsvette"
   },
   "d83d_de06": {
-    "message": " open mouth smile with closed eyes"
+    "message": " stort smil med lukkede \u00f8yne"
   },
   "d83d_de07": {
-    "message": "smile with a halo"
+    "message": "smilefjes med glorie"
   },
   "d83d_de08": {
-    "message": "smile with horns"
+    "message": "smilefjes med horn"
   },
   "d83d_de09": {
-    "message": "winking face"
+    "message": "blunkefjes"
   },
   "d83d_de0a": {
-    "message": "smile"
+    "message": "smil"
   },
   "d83d_de0b": {
-    "message": "yummy face"
+    "message": "nam-nam-fjes"
   },
   "d83d_de0c": {
-    "message": "relieved face"
+    "message": "lettet fjes"
   },
   "d83d_de0d": {
-    "message": "smiling face"
+    "message": "smilefjes"
   },
   "d83d_de0e": {
-    "message": "cool"
+    "message": "kul"
   },
   "d83d_de0f": {
-    "message": "smirk"
+    "message": "lurt smil"
   },
   "d83d_de10": {
-    "message": "deadpan face"
+    "message": "uttrykksl\u00f8s"
   },
   "d83d_de11": {
-    "message": "expressionless"
+    "message": "uttrykksl\u00f8s"
   },
   "d83d_de12": {
-    "message": "unamused"
+    "message": "misforn\u00f8yd"
   },
   "d83d_de13": {
-    "message": "cold sweat"
+    "message": "kaldsvette"
   },
   "d83d_de14": {
-    "message": "pensive face"
+    "message": "tankefullt fjes"
   },
   "d83d_de15": {
-    "message": "confused face"
+    "message": "forvirret fjes"
   },
   "d83d_de16": {
-    "message": "confounded face"
+    "message": "forbannet"
   },
   "d83d_de17": {
-    "message": "kissy face"
+    "message": "kyssefjes"
   },
   "d83d_de18": {
-    "message": "throwing kisses"
+    "message": "slengkyss"
   },
   "d83d_de19": {
-    "message": "kiss and smile"
+    "message": "kyssende smilefjes"
   },
   "d83d_de1a": {
-    "message": "kissing"
+    "message": "kyss"
   },
   "d83d_de1b": {
-    "message": "tongue out"
+    "message": "rekker tunge"
   },
   "d83d_de1c": {
-    "message": "tongue out with a wink"
+    "message": "blunkefjes som rekker tunge"
   },
   "d83d_de1d": {
-    "message": "yuck"
+    "message": "\u00e6sj"
   },
   "d83d_de1e": {
-    "message": "disappointed"
+    "message": "skuffet"
   },
   "d83d_de1f": {
-    "message": "worried"
+    "message": "bekymret"
   },
   "d83d_de20": {
-    "message": "angry"
+    "message": "sint"
   },
   "d83d_de21": {
-    "message": "pouting"
+    "message": "sint fjes"
   },
   "d83d_de22": {
-    "message": "crying"
+    "message": "gr\u00e5ter"
   },
   "d83d_de23": {
-    "message": "blew it"
+    "message": "fortvilet"
   },
   "d83d_de24": {
-    "message": "look of triumph"
+    "message": "triumferende"
   },
   "d83d_de25": {
-    "message": "whew!"
+    "message": "puh!"
   },
   "d83d_de26": {
-    "message": "frowning face"
+    "message": "surt fjes"
   },
   "d83d_de27": {
-    "message": "anguished"
+    "message": "engstelig"
   },
   "d83d_de28": {
-    "message": "fearful"
+    "message": "redd"
   },
   "d83d_de29": {
-    "message": "weary"
+    "message": "sliten"
   },
   "d83d_de2a": {
-    "message": "sleepy"
+    "message": "s\u00f8ving"
   },
   "d83d_de2b": {
-    "message": "tired"
+    "message": "tr\u00f8tt"
   },
   "d83d_de2c": {
-    "message": "grimace"
+    "message": "grimase"
   },
   "d83d_de2d": {
-    "message": "loudly crying"
+    "message": "strigr\u00e5t"
   },
   "d83d_de2e": {
-    "message": "open mouth face"
+    "message": "sjokkert fjes"
   },
   "d83d_de2f": {
-    "message": "hushed face"
+    "message": "overrasket fjes"
   },
   "d83d_de30": {
-    "message": "rushed face"
+    "message": "stresset fjes"
   },
   "d83d_de31": {
-    "message": "fearful face"
+    "message": "livredd"
   },
   "d83d_de32": {
-    "message": "astonished face"
+    "message": "forbauset fjes"
   },
   "d83d_de33": {
-    "message": "flushed"
+    "message": "r\u00f8dmende"
   },
   "d83d_de34": {
-    "message": "sleeping"
+    "message": "sover"
   },
   "d83d_de35": {
-    "message": "dizzy"
+    "message": "svimmel"
   },
   "d83d_de36": {
-    "message": "no mouth face"
+    "message": "fjes uten munn"
   },
   "d83d_de37": {
-    "message": "face with mask"
+    "message": "fjes med munnbind"
   },
   "d83d_de38": {
-    "message": "grinning cat face"
+    "message": "leende katt"
   },
   "d83d_de39": {
-    "message": "tears of joy cat face"
+    "message": "katt med gledest\u00e5rer"
   },
   "d83d_de3a": {
-    "message": "smiling cat face"
+    "message": "smilende katt"
   },
   "d83d_de3b": {
-    "message": "smiling cat face"
+    "message": "smilende katt"
   },
   "d83d_de3c": {
-    "message": "wry cat face"
+    "message": "lur katt"
   },
   "d83d_de3d": {
-    "message": "kissing cat"
+    "message": "kyssende katt"
   },
   "d83d_de3e": {
-    "message": "pouting cat face"
+    "message": "sur katt"
   },
   "d83d_de3f": {
-    "message": "crying cat face"
+    "message": "gr\u00e5tende katt"
   },
   "d83d_de40": {
-    "message": "weary cat face"
+    "message": "sliten katt"
   },
   "d83d_de45": {
-    "message": "No good gesture"
+    "message": "Forbudt-tegn"
   },
   "d83d_de46": {
-    "message": "OK gesture"
+    "message": "OK-bevegelse"
   },
   "d83d_de47": {
-    "message": "i'm sorry"
+    "message": "unnskyld"
   },
   "d83d_de48": {
-    "message": "see no evil"
+    "message": "ser ingenting"
   },
   "d83d_de49": {
-    "message": "hear no evil"
+    "message": "h\u00f8rer ingenting"
   },
   "d83d_de4a": {
-    "message": "speak no evil"
+    "message": "sier ingenting"
   },
   "d83d_de4b": {
-    "message": "happy person"
+    "message": "rekker opp h\u00e5nden"
   },
   "d83d_de4c": {
-    "message": "hooray"
+    "message": "hurra"
   },
   "d83d_de4d": {
-    "message": "frowning person"
+    "message": "surmulende person"
   },
   "d83d_de4e": {
-    "message": "pouting"
+    "message": "trutmunn"
   },
   "d83d_de4f": {
-    "message": "folded hands"
+    "message": "foldede hender"
   },
   "d83d_de80": {
-    "message": "rocket"
+    "message": "rakett"
   },
   "d83d_de81": {
-    "message": "helicopter"
+    "message": "helikopter"
   },
   "d83d_de82": {
-    "message": "steam locomotive"
+    "message": "damplokomotiv"
   },
   "d83d_de83": {
-    "message": "train"
+    "message": "tog"
   },
   "d83d_de84": {
-    "message": "high-speed train"
+    "message": "lyntog"
   },
   "d83d_de85": {
-    "message": "high-speed train with bullet nose"
+    "message": "lyntog med flysnute"
   },
   "d83d_de86": {
-    "message": "train"
+    "message": "tog"
   },
   "d83d_de87": {
-    "message": "subway"
+    "message": "t-bane"
   },
   "d83d_de88": {
-    "message": "light rail"
+    "message": "bybane"
   },
   "d83d_de89": {
-    "message": "train station"
+    "message": "togstasjon"
   },
   "d83d_de8a": {
-    "message": "tram"
+    "message": "trikk"
   },
   "d83d_de8b": {
-    "message": "tram car"
+    "message": "trikkevogn"
   },
   "d83d_de8c": {
-    "message": "bus"
+    "message": "buss"
   },
   "d83d_de8d": {
-    "message": "oncoming bus"
+    "message": "m\u00f8tende buss"
   },
   "d83d_de8e": {
-    "message": "trolleybus"
+    "message": "buss"
   },
   "d83d_de8f": {
-    "message": "bus stop"
+    "message": "bussholdeplass"
   },
   "d83d_de90": {
-    "message": "minibus"
+    "message": "minibuss"
   },
   "d83d_de91": {
-    "message": "ambulance"
+    "message": "ambulanse"
   },
   "d83d_de92": {
-    "message": "fire engine"
+    "message": "brannbil"
   },
   "d83d_de93": {
-    "message": "police car"
+    "message": "politibil"
   },
   "d83d_de94": {
-    "message": "oncoming police car"
+    "message": "m\u00f8tende politibil"
   },
   "d83d_de95": {
     "message": "taxi"
   },
   "d83d_de96": {
-    "message": "oncoming taxi"
+    "message": "m\u00f8tende taxi"
   },
   "d83d_de97": {
-    "message": "car"
+    "message": "bil"
   },
   "d83d_de98": {
-    "message": "oncoming car"
+    "message": "m\u00f8tende bil"
   },
   "d83d_de99": {
-    "message": "RV"
+    "message": "fritidskj\u00f8ret\u00f8y"
   },
   "d83d_de9a": {
-    "message": "delivery truck"
+    "message": "varebil"
   },
   "d83d_de9b": {
-    "message": "lorry"
+    "message": "lastebil"
   },
   "d83d_de9c": {
-    "message": "tractor"
+    "message": "traktor"
   },
   "d83d_de9d": {
     "message": "monorail"
   },
   "d83d_de9e": {
-    "message": "mountain railway"
+    "message": "kabelbane"
   },
   "d83d_de9f": {
-    "message": "suspension railway"
+    "message": "svevebane"
   },
   "d83d_dea0": {
-    "message": "mountain cableway"
+    "message": "fjellkabelbane"
   },
   "d83d_dea1": {
-    "message": "cable car"
+    "message": "taubane"
   },
   "d83d_dea2": {
-    "message": "ship"
+    "message": "skip"
   },
   "d83d_dea3": {
-    "message": "rowboat"
+    "message": "rob\u00e5t"
   },
   "d83d_dea4": {
-    "message": "speedboat"
+    "message": "speedb\u00e5t"
   },
   "d83d_dea5": {
-    "message": "horizontal traffic lights"
+    "message": "horisontale trafikklys"
   },
   "d83d_dea6": {
-    "message": "vertical traffic lights"
+    "message": "vertikale trafikklys"
   },
   "d83d_dea7": {
-    "message": "under construction"
+    "message": "under konstruksjon"
   },
   "d83d_dea8": {
-    "message": "revolving light"
+    "message": "roterende lys"
   },
   "d83d_dea9": {
-    "message": "location flag"
+    "message": "posisjonsflagg"
   },
   "d83d_deaa": {
-    "message": "door"
+    "message": "d\u00f8r"
   },
   "d83d_deab": {
-    "message": "No entry sign"
+    "message": "Inngang forbudt"
   },
   "d83d_deac": {
-    "message": "smoking sign"
+    "message": "r\u00f8ykesymbol"
   },
   "d83d_dead": {
-    "message": "no smoking sign"
+    "message": "r\u00f8yking forbudt"
   },
   "d83d_deae": {
-    "message": "litterbox sign"
+    "message": "s\u00f8ppelkasseskilt"
   },
   "d83d_deaf": {
-    "message": "don't litter sign"
+    "message": "ikke kast s\u00f8ppel-skilt"
   },
   "d83d_deb0": {
-    "message": "drinking water"
+    "message": "drikkevann"
   },
   "d83d_deb1": {
-    "message": "non-drinking water"
+    "message": "ikke drikkevann"
   },
   "d83d_deb2": {
-    "message": "bike"
+    "message": "sykkel"
   },
   "d83d_deb3": {
-    "message": "no bike"
+    "message": "sykkel forbudt"
   },
   "d83d_deb4": {
-    "message": "bicyclist"
+    "message": "syklist"
   },
   "d83d_deb5": {
-    "message": "mountain bicyclist"
+    "message": "off-road-syklist"
   },
   "d83d_deb6": {
-    "message": "pedestrian"
+    "message": "fotgjenger"
   },
   "d83d_deb7": {
-    "message": "no pedestrians"
+    "message": "fotgjengere forbudt"
   },
   "d83d_deb8": {
-    "message": "children crossing"
+    "message": "barn krysser"
   },
   "d83d_deb9": {
-    "message": "Men sign"
+    "message": "symbol for menn"
   },
   "d83d_deba": {
-    "message": "Women sign"
+    "message": "symbol for kvinner"
   },
   "d83d_debb": {
-    "message": "restroom sign"
+    "message": "toalettskilt"
   },
   "d83d_debc": {
-    "message": "baby sign"
+    "message": "symbol for babyer"
   },
   "d83d_debd": {
-    "message": "toilet"
+    "message": "toalett"
   },
   "d83d_debe": {
-    "message": "water closet"
+    "message": "WC"
   },
   "d83d_debf": {
-    "message": "shower"
+    "message": "dusj"
   },
   "d83d_dec0": {
-    "message": "bath"
+    "message": "bad"
   },
   "d83d_dec1": {
-    "message": "bathtub"
+    "message": "badekar"
   },
   "d83d_dec2": {
-    "message": "passport control"
+    "message": "passkontroll"
   },
   "d83d_dec3": {
-    "message": "customs"
+    "message": "toll"
   },
   "d83d_dec4": {
-    "message": "baggage claim"
+    "message": "bagasjehenting"
   },
   "d83d_dec5": {
-    "message": "left luggage"
+    "message": "glemt bagasje"
   },
   "de_ger_settings_page": {
     "message": "Innstillinger-side for tysk tastatur"
@@ -2505,7 +2508,7 @@
     "message": "Ord"
   },
   "dismiss_menu": {
-    "message": "dismiss keyboard menu"
+    "message": "lukk tastaturmenyen"
   },
   "dk_dan_settings_page": {
     "message": "Innstillinger-side for dansk tastatur"
@@ -2520,28 +2523,28 @@
     "message": "Innstillinger-side for estisk tastatur"
   },
   "emoji_tab_emoticon": {
-    "message": "Emoji category emoticon"
+    "message": "Uttrykksikon-emojier"
   },
   "emoji_tab_face": {
-    "message": "Emoji category face"
+    "message": "Fjes-emojier"
   },
   "emoji_tab_hot": {
-    "message": "Emoji category hot"
+    "message": "Popul\u00e6re emojier"
   },
   "emoji_tab_nature": {
-    "message": "Emoji category nature"
+    "message": "Natur-emojier"
   },
   "emoji_tab_object": {
-    "message": "Emoji category object"
+    "message": "Objekt-emojier"
   },
   "emoji_tab_place": {
-    "message": "Emoji category place"
+    "message": "Steds-emojier"
   },
   "emoji_tab_recent": {
-    "message": "Emoji category recent"
+    "message": "Nylige emojier"
   },
   "emoji_tab_symbol": {
-    "message": "Emoji category symbol"
+    "message": "Symbol-emojier"
   },
   "enable_capitalization": {
     "message": "Stor bokstav automatisk"
@@ -2644,6 +2647,9 @@
   },
   "inputmethod_dayi": {
     "message": "Dayi-inndatametode"
+  },
+  "inputmethod_hangul": {
+    "message": "Koreansk inndatametode"
   },
   "inputmethod_pinyin": {
     "message": "Pinyin-inndatametode"
@@ -2813,6 +2819,9 @@
   "keyboard_nepali_phonetic": {
     "message": "Nepali-tastatur (fonetisk)"
   },
+  "keyboard_netherlands": {
+    "message": "Nederlandsk tastatur"
+  },
   "keyboard_none": {
     "message": "Tastatur"
   },
@@ -2836,6 +2845,9 @@
   },
   "keyboard_romanian": {
     "message": "Rumensk tastatur"
+  },
+  "keyboard_romanian_standard": {
+    "message": "Romanian standard keyboard"
   },
   "keyboard_russian": {
     "message": "Russisk tastatur"
@@ -2976,7 +2988,7 @@
     "message": "Innstillinger-side for koransk"
   },
   "korean_syllable_input": {
-    "message": "Om hangul-tegn skal skrives ett for ett"
+    "message": "Skriv inn ett og ett hangul-tegn"
   },
   "latam_spa_settings_page": {
     "message": "Innstillinger-side for latinamerikansk tastatur (spansk)"
@@ -3015,13 +3027,13 @@
     "message": "Stans midlertidig"
   },
   "physical_auto_correction_level": {
-    "message": "Auto-correction"
+    "message": "Auto-korrigering"
   },
   "physical_enable_capitalization": {
-    "message": "Auto-capitalization"
+    "message": "Stor bokstav automatisk"
   },
   "physical_keyboard": {
-    "message": "Physical Keyboard"
+    "message": "Fysisk tastatur"
   },
   "pinyin_settings_page": {
     "message": "Side for pinyin-innstillinger"
@@ -3075,13 +3087,16 @@
     "message": "Vis rullegardinliste med forslag ved \u00e5 trykke p\u00e5 tilbaketasten"
   },
   "show_hangul_candidate": {
-    "message": "Show Hangul suggestions"
+    "message": "Vis foresl\u00e5tte hangul-tegn"
   },
   "si_slv_settings_page": {
     "message": "Innstillinger-side for slovensk tastatur"
   },
   "sk_slo_settings_page": {
     "message": "Innstillinger-side for slovakisk tastatur"
+  },
+  "smiley": {
+    "message": "smilefjes"
   },
   "sometimes_auto_correct": {
     "message": "Beskjeden"
@@ -3234,28 +3249,40 @@
     "message": "Sl\u00e5 p\u00e5 personlig ordliste"
   },
   "user_dict_add": {
-    "message": "Add"
+    "message": "Legg til"
   },
   "user_dict_clear": {
-    "message": "Clear All"
-  },
-  "user_dict_done": {
-    "message": "Done"
+    "message": "Fjern alle"
   },
   "user_dict_manage": {
-    "message": "Manage personal dictionary..."
+    "message": "Administrer den personlige ordlisten"
   },
   "user_dict_new_word": {
-    "message": "New word"
+    "message": "Nytt ord"
   },
   "user_dict_remove": {
-    "message": "Remove Selected"
+    "message": "Fjern valgte"
+  },
+  "user_dict_save": {
+    "message": "Lagre"
   },
   "user_dict_sync": {
-    "message": "Sync personal dictionary"
+    "message": "Synkroniser den personlige ordlisten"
   },
   "user_dict_title": {
-    "message": "Personal Dictionary"
+    "message": "Personlig ordliste"
+  },
+  "voice": {
+    "message": "Tale"
+  },
+  "voice_privacy_info": {
+    "message": "Stemmeopptaket ditt blir sendt til en Google-tjener for \u00e5 gjenkjenne tekst"
+  },
+  "voice_turn_off": {
+    "message": "sl\u00e5 av verkt\u00f8yet for taleinndata"
+  },
+  "voice_turn_on": {
+    "message": "sl\u00e5 p\u00e5 verkt\u00f8yet for taleinndata"
   },
   "wait": {
     "message": "Vent"

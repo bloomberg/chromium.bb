@@ -107,7 +107,9 @@ function overrideSwitchToKeyset() {
           keysetChangeListener_.target == arguments[0]) {
         var callback = keysetChangeListener_.callback;
         keysetChangeListener_ = undefined;
-        callback();
+        // TODO (rsadam): Get rid of this hack. Currently this is needed to
+        // ensure the keyset was fully loaded before carrying on with the test.
+        setTimeout(callback, 0);
       }
     }
     return success;
@@ -222,6 +224,19 @@ function registerInputviewApi() {
   }
 
   /**
+   * Retrieve the current input method configuration.
+   * @param {function} callback The callback function for processing the
+   *     name of the active input mehtod.
+   * @private
+   */
+  function getInputMethodConfig_(callback) {
+    if (chrome.inputMethodPrivate)
+      chrome.inputMethodPrivate.getInputMethodConfig(callback);
+    else
+      callback('');
+  }
+
+  /**
    * Changes the active input method.
    * @param {string} inputMethodId The id of the input method to activate.
    * @private
@@ -303,6 +318,7 @@ function registerInputviewApi() {
     getKeyboardConfig: getKeyboardConfig_,
     getInputMethods: getInputMethods_,
     getCurrentInputMethod: getCurrentInputMethod_,
+    getInputMethodConfig: getInputMethodConfig_,
     switchToInputMethod: switchToInputMethod_,
     openSettings: openSettings_
   };

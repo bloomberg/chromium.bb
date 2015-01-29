@@ -32,15 +32,18 @@ i18n.input.chrome.inputview.content.compact.more.keyNAMoreCharacters =
     /* 2 */ { 'text': '|' },
     // Keep in sync with rowkeys_symbols_shift1.xml in android input tool.
     /* 3 */ { 'text': '\u2022',
-      'moreKeys': ['\u266A', '\u2665', '\u2660', '\u2666', '\u2663']},
+      'moreKeys': {
+        'characters': ['\u266A', '\u2665', '\u2660', '\u2666', '\u2663']}},
     /* 4 */ { 'text': '\u23B7' },
     // Keep in sync with rowkeys_symbols_shift1.xml in android input tool.
     /* 5 */ { 'text': '\u03C0',
-      'moreKeys': ['\u03A0']},
+      'moreKeys': {
+        'characters': ['\u03A0']}},
     /* 6 */ { 'text': '\u00F7' },
     /* 7 */ { 'text': '\u00D7' },
     /* 8 */ { 'text': '\u00B6',
-      'moreKeys': ['\u00A7']},
+      'moreKeys': {
+        'characters': ['\u00A7']}},
     /* 9 */ { 'text': '\u0394' },
     /* 10 */ NonLetterKeys.BACKSPACE,
     /* 11 */ { 'text': '\u00A3', 'marginLeftPercent': 0.33 },
@@ -49,11 +52,16 @@ i18n.input.chrome.inputview.content.compact.more.keyNAMoreCharacters =
     /* 14 */ { 'text': '\u00A5' },
     // Keep in sync with rowkeys_symbols_shift2.xml in android input tool.
     /* 15 */ { 'text': '^',
-      'moreKeys': ['\u2191', '\u2193', '\u2190', '\u2192']},
+      'moreKeys': {
+        'characters': ['\u2191', '\u2193', '\u2190', '\u2192']}},
+    // Keep in sync with rowkeys_symbols_shift2.xml in android input tool.
     /* 16 */ { 'text': '\u00B0',
-      'moreKeys': ['\u2032', '\u2033']},
+      'moreKeys': {
+        'characters': ['\u2032', '\u2033']}},
+    // Keep in sync with rowkeys_symbols_shift2.xml in android input tool.
     /* 17 */ { 'text': '=',
-      'moreKeys': ['\u2260', '\u2248', '\u221E']},
+      'moreKeys': {
+        'characters': ['\u2260', '\u2248', '\u221E']}},
     /* 18 */ { 'text': '{' },
     /* 19 */ { 'text': '}' },
     /* 20 */ NonLetterKeys.ENTER,
@@ -69,15 +77,21 @@ i18n.input.chrome.inputview.content.compact.more.keyNAMoreCharacters =
     /* 30 */ { 'text': '\u00BF' },
     /* 31 */ NonLetterKeys.SWITCHER,
     /* 32 */ NonLetterKeys.SWITCHER,
+    // Keep in sync with row_symbols_shift4.xml in android input tool.
     /* 33 */ { 'text': '<', 'isGrey': true,
-      'moreKeys': ['\u2039', '\u2264', '\u00AB']},
+      'moreKeys': {
+        'characters': ['\u2039', '\u2264', '\u00AB']}},
     /* 34 */ NonLetterKeys.MENU,
+    // Keep in sync with row_symbols_shift4.xml in android input tool.
     /* 35 */ { 'text': '>', 'isGrey': true,
-      'moreKeys': ['\u203A', '\u2265', '\u00BB']},
+      'moreKeys': {
+        'characters': ['\u203A', '\u2265', '\u00BB']}},
     /* 36 */ NonLetterKeys.SPACE,
     /* 37 */ { 'text': ',', 'isGrey': true },
+    // Keep in sync with row_symbols_shift4.xml in android input tool.
     /* 38 */ { 'text': '.', 'isGrey': true,
-      'moreKeys': ['\u2026']},
+      'moreKeys': {
+        'characters': ['\u2026']}},
     /* 39 */ NonLetterKeys.HIDE
   ];
 };
@@ -96,7 +110,8 @@ i18n.input.chrome.inputview.content.compact.more.keyUKMoreCharacters =
   data[11]['text'] = '\u20AC';  // pound -> euro
   data[12]['text'] = '\u00A5';  // cent -> yen
   data[13]['text'] = '$';  // euro -> dollar
-  data[13]['moreKeys'] = ['\u00A2'];
+  data[13]['moreKeys'] = {
+        'characters': ['\u00A2']};
   data[14]['text'] = '\u00A2';  // yen -> cent
   return data;
 };
@@ -128,7 +143,8 @@ i18n.input.chrome.inputview.content.compact.more.keyPinyinMoreCharacters =
       keyNAMoreCharacters();
   data[0]['text'] = '\uff5e';
   data[15]['text'] = '\u00B0';
-  data[15]['moreKeys'] = ['\u2032', '\u2033'];
+  data[15]['moreKeys'] = {
+        'characters': ['\u2032', '\u2033']};
   data[16]['text'] = '\u300e';
   data[16]['moreKeys'] = undefined;
   data[17]['text'] = '\u300f';
@@ -144,9 +160,11 @@ i18n.input.chrome.inputview.content.compact.more.keyPinyinMoreCharacters =
   data[30]['text'] = '\u3011';
   data[30]['moreKeys'] = undefined;
   data[33]['text'] = '\u300a';
-  data[33]['moreKeys'] = ['\u2039', '\u2264', '\u00AB'];
+  data[33]['moreKeys'] = {
+        'characters': ['\u2039', '\u2264', '\u00AB']};
   data[35]['text'] = '\u300b';
-  data[35]['moreKeys'] = ['\u203A', '\u2265', '\u00BB'];
+  data[35]['moreKeys'] = {
+        'characters': ['\u203A', '\u2265', '\u00BB']};
   data[37]['text'] = '\uff0c';
   data[38]['text'] = '\u3002';
   return data;

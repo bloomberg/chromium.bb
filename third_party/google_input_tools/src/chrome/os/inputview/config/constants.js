@@ -78,4 +78,13 @@ i18n.input.chrome.inputview.content.constants.NonLetterKeys = {
 };
 
 
+/**
+ * The place holder for hint text in accents(more keys).
+ *
+ * @const
+ * @type {string}
+ */
+i18n.input.chrome.inputview.content.constants.HintTextPlaceHolder =
+    '%hinttext%';
+
 });  // goog.scope

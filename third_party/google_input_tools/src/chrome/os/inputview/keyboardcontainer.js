@@ -15,6 +15,7 @@ goog.provide('i18n.input.chrome.inputview.KeyboardContainer');
 
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
+goog.require('goog.i18n.bidi');
 goog.require('goog.ui.Container');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.content.AltDataView');
@@ -24,6 +25,7 @@ goog.require('i18n.input.chrome.inputview.elements.content.ExpandedCandidateView
 goog.require('i18n.input.chrome.inputview.elements.content.HandwritingView');
 goog.require('i18n.input.chrome.inputview.elements.content.KeysetView');
 goog.require('i18n.input.chrome.inputview.elements.content.MenuView');
+goog.require('i18n.input.chrome.inputview.elements.content.VoiceView');
 
 
 
@@ -41,21 +43,25 @@ var content = i18n.input.chrome.inputview.elements.content;
 /**
  * The keyboard container.
  *
- * @param {i18n.input.chrome.inputview.Adapter=} opt_adapter .
+ * @param {!i18n.input.chrome.inputview.Adapter} adapter .
  * @constructor
  * @extends {goog.ui.Container}
  */
-i18n.input.chrome.inputview.KeyboardContainer = function(opt_adapter) {
+i18n.input.chrome.inputview.KeyboardContainer = function(adapter) {
   goog.base(this);
 
   /** @type {!content.CandidateView} */
-  this.candidateView = new content.CandidateView('candidateView', this);
+  this.candidateView = new content.CandidateView(
+      'candidateView', adapter, this);
 
   /** @type {!content.AltDataView} */
   this.altDataView = new content.AltDataView(this);
 
   /** @type {!content.MenuView} */
   this.menuView = new content.MenuView(this);
+
+  /** @type {!content.VoiceView} */
+  this.voiceView = new content.VoiceView(this, adapter);
 
   /** @type {!content.ExpandedCandidateView} */
   this.expandedCandidateView = new content.ExpandedCandidateView(this);
@@ -72,9 +78,9 @@ i18n.input.chrome.inputview.KeyboardContainer = function(opt_adapter) {
   /**
    * The bus channel to communicate with background.
    *
-   * @private {i18n.input.chrome.inputview.Adapter}
+   * @private {!i18n.input.chrome.inputview.Adapter}
    */
-  this.adapter_ = opt_adapter || null;
+  this.adapter_ = adapter;
 };
 goog.inherits(i18n.input.chrome.inputview.KeyboardContainer,
     goog.ui.Container);
@@ -121,6 +127,8 @@ KeyboardContainer.prototype.createDom = function() {
   this.getDomHelper().appendChild(elem, this.wrapperDiv_);
   this.altDataView.render();
   this.menuView.render();
+  this.voiceView.render();
+  this.voiceView.setVisible(false);
   this.expandedCandidateView.render(this.wrapperDiv_);
   this.expandedCandidateView.setVisible(false);
   goog.dom.classlist.add(elem, Css.CONTAINER);
@@ -260,8 +268,6 @@ KeyboardContainer.prototype.resize = function(width, height, widthPercent,
   elem.style.paddingBottom = KeyboardContainer.PADDING_BOTTOM_ + 'px';
 
   var padding = Math.round((width - width * widthPercent) / 2);
-  elem.style.paddingLeft = elem.style.paddingRight = padding + 'px';
-
   var w = width - 2 * padding;
 
   // Reduce height if candidate view is enabled
@@ -270,11 +276,28 @@ KeyboardContainer.prototype.resize = function(width, height, widthPercent,
 
   this.candidateView.setWidthInWeight(
       this.currentKeysetView.getWidthInWeight());
+  var candidateElem = this.candidateView.getElement();
+  candidateElem.style.paddingLeft = candidateElem.style.paddingRight =
+      padding + 'px';
   this.candidateView.resize(w, candidateViewHeight);
   this.currentKeysetView.resize(w, h);
+  var currentKeysetViewElem = this.currentKeysetView.getElement();
+  currentKeysetViewElem.style.paddingLeft = currentKeysetViewElem.style.
+      paddingRight = padding + 'px';
   this.expandedCandidateView.resize(w, h);
+  if (this.expandedCandidateView.isVisible()) {
+    // Closes the expanded candidate view if it's visible.
+    // This is to avoid mis-layout issue for the expanded candidate when screen
+    // is rotated.
+    this.expandedCandidateView.state = content.ExpandedCandidateView.State.NONE;
+    this.candidateView.switchToIcon(
+        content.CandidateView.IconType.EXPAND_CANDIDATES, true);
+    this.expandedCandidateView.setVisible(false);
+    this.currentKeysetView.setVisible(true);
+  }
   this.altDataView.resize(screen.width, height);
   this.menuView.resize(screen.width, height);
+  this.voiceView.resize(w + padding, height);
 };
 
 
@@ -283,6 +306,7 @@ KeyboardContainer.prototype.disposeInternal = function() {
   goog.dispose(this.candidateView);
   goog.dispose(this.altDataView);
   goog.dispose(this.menuView);
+  goog.dispose(this.voiceView);
   for (var key in this.keysetViewMap) {
     goog.dispose(this.keysetViewMap[key]);
   }

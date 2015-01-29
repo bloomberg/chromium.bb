@@ -95,7 +95,6 @@ util.KEYSETS_HAVE_EN_SWTICHER = [
  * @type {!Array.<string>}
  */
 util.KEYSETS_HAVE_COMPACT = [
-  'be',
   'ca',
   'ca-eng',
   'de',
@@ -105,6 +104,7 @@ util.KEYSETS_HAVE_COMPACT = [
   'gb-extd',
   'ie',
   'is',
+  'nl',
   'no',
   'pinyin-zh-CN',
   'se',
@@ -265,6 +265,11 @@ util.getVisibleCharacter = function(invisibleCharacter) {
   var map = util.DISPLAY_MAPPING;
   if (map[invisibleCharacter]) {
     return map[invisibleCharacter];
+  }
+  // For non-spacing marks (e.g. \u05b1), ChromeOS cannot display it correctly
+  // until there is a character before it to combine with.
+  if (/[\u0591-\u05cf]/.test(invisibleCharacter)) {
+    return '\u00a0' + invisibleCharacter;
   }
   return invisibleCharacter;
 };

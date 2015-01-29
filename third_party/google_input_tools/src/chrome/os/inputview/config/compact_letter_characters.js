@@ -19,6 +19,8 @@ goog.require('i18n.input.chrome.inputview.content.constants');
 
 goog.scope(function() {
 var NonLetterKeys = i18n.input.chrome.inputview.content.constants.NonLetterKeys;
+var HintTextPlaceHolder =
+    i18n.input.chrome.inputview.content.constants.HintTextPlaceHolder;
 var MoreKeysShiftOperation = i18n.input.chrome.inputview.MoreKeysShiftOperation;
 var Css = i18n.input.chrome.inputview.Css;
 
@@ -34,24 +36,29 @@ i18n.input.chrome.inputview.content.compact.letter.keyQwertyCharacters =
     /* 0 */ { 'text': 'q', 'hintText': '1' },
     /* 1 */ { 'text': 'w', 'hintText': '2' },
     /* 2 */ { 'text': 'e', 'hintText': '3',
-      'moreKeys': ['\u00E9', '\u00E8', '\u00EA', '\u00EB', '\u0113']},
+      'moreKeys': {
+        'characters': ['\u00E9', '\u00E8', '\u00EA', '\u00EB', '\u0113']}},
     /* 3 */ { 'text': 'r', 'hintText': '4' },
     /* 4 */ { 'text': 't', 'hintText': '5' },
     /* 5 */ { 'text': 'y', 'hintText': '6' },
     /* 6 */ { 'text': 'u', 'hintText': '7',
-      'moreKeys': ['\u00FA', '\u00FB', '\u00FC', '\u00F9', '\u016B']},
+      'moreKeys': {
+        'characters': ['\u00FA', '\u00FB', '\u00FC', '\u00F9', '\u016B']}},
     /* 7 */ { 'text': 'i', 'hintText': '8',
-      'moreKeys': ['\u00ED', '\u00EE', '\u00EF', '\u012B', '\u00EC']},
+      'moreKeys': {
+          'characters': ['\u00ED', '\u00EE', '\u00EF', '\u012B', '\u00EC']}},
     /* 8 */ { 'text': 'o', 'hintText': '9',
-      'moreKeys': ['\u00F3', '\u00F4', '\u00F6', '\u00F2', '\u0153', '\u00F8',
-        '\u014D', '\u00F5']},
+      'moreKeys': {
+        'characters': ['\u00F3', '\u00F4', '\u00F6', '\u00F2', '\u0153',
+            '\u00F8', '\u014D', '\u00F5']}},
     /* 9 */ { 'text': 'p', 'hintText': '0' },
     /* 10 */ NonLetterKeys.BACKSPACE,
     /* 11 */ { 'text': 'a', 'marginLeftPercent': 0.33,
-      'moreKeys': ['\u00E0', '\u00E1', '\u00E2', '\u00E4', '\u00E6', '\u00E3',
-        '\u00E5', '\u0101']},
+      'moreKeys': {
+        'characters': ['\u00E0', '\u00E1', '\u00E2', '\u00E4', '\u00E6',
+            '\u00E3', '\u00E5', '\u0101']}},
     /* 12 */ { 'text': 's',
-      'moreKeys': ['\u00DF']},
+      'moreKeys': {'characters': ['\u00DF']}},
     /* 13 */ { 'text': 'd' },
     /* 14 */ { 'text': 'f' },
     /* 15 */ { 'text': 'g' },
@@ -64,16 +71,16 @@ i18n.input.chrome.inputview.content.compact.letter.keyQwertyCharacters =
     /* 22 */ { 'text': 'z' },
     /* 23 */ { 'text': 'x' },
     /* 24 */ { 'text': 'c',
-      'moreKeys': ['\u00E7']},
+      'moreKeys': {'characters': ['\u00E7']}},
     /* 25 */ { 'text': 'v' },
     /* 26 */ { 'text': 'b' },
     /* 27 */ { 'text': 'n',
-      'moreKeys': ['\u00F1']},
+      'moreKeys': {'characters': ['\u00F1']}},
     /* 28 */ { 'text': 'm' },
     /* 29 */ { 'text': '!',
-      'moreKeys': ['\u00A1']},
+      'moreKeys': {'characters': ['\u00A1']}},
     /* 30 */ { 'text': '?',
-      'moreKeys': ['\u00BF']},
+      'moreKeys': {'characters': ['\u00BF']}},
     /* 31 */ NonLetterKeys.RIGHT_SHIFT,
     /* 32 */ NonLetterKeys.SWITCHER,
     /* 33 */ NonLetterKeys.GLOBE,
@@ -85,30 +92,38 @@ i18n.input.chrome.inputview.content.compact.letter.keyQwertyCharacters =
         { 'email' : {'text' : '.com', 'textCssClass' : Css.FONT_SMALL },
           'url' : {'text' : '.com', 'textCssClass' : Css.FONT_SMALL }}},
     /* 38 */ { 'text': '.', 'isGrey': true,
-      'moreKeys': ['\u0023', '\u0021', '\u005C', '\u003F', '\u002D', '\u003A',
-        '\u0027', '\u0040']},
+      'moreKeys': {
+        'characters': [',', '\'', '#', ')', '(', '/', ';', '@', ':',
+            '-', '"', '+', '%', '&'],
+        'fixedColumnNumber': 7}},
     /* 39 */ NonLetterKeys.HIDE
   ];
 };
 
 
 /**
- * Belgian Letter keyset characters.
+ * Nederland Letter keyset characters.
  *
  * @return {!Array.<!Object>}
  */
-i18n.input.chrome.inputview.content.compact.letter.keyBelgianCharacters =
+i18n.input.chrome.inputview.content.compact.letter.keyNederlandCharacters =
     function() {
   var data =
       i18n.input.chrome.inputview.content.compact.letter.keyQwertyCharacters();
-  data[2]['moreKeys'] =
-      ['\u0117', '\u00E8', '\u0119', '\u00E9', '\u00EA', '\u00EB', '\u0113'];
-  data[5]['moreKeys'] = ['\u0133'];
-  data[7]['moreKeys'] =
-      ['\u00EE', '\u00EF', '\u012F', '\u0133', '\u00ED', '\u012B', '\u00EC'];
-  data[12]['moreKeys'] = undefined;
-  data[24]['moreKeys'] = undefined;
-  data[27]['moreKeys'] = ['\u00F1', '\u0144'];
+  data[2]['moreKeys'] = {'characters': ['\u00E9', '\u00EB', '\u00EA', '\u00E8',
+      '\u0119', '\u0117', '\u0113']};  // e
+  data[5]['moreKeys'] = {'characters': ['\u0133']};  // y
+  data[6]['moreKeys'] = {'characters':
+      ['\u00FA', '\u00FC', '\u00FB', '\u00F9', '\u016B']};  // u
+  data[7]['moreKeys'] = {'characters': ['\u00ED', '\u00EF', '\u00EC', '\u00EE',
+      '\u012F', '\u012B', '\u0133']};  // i
+  data[8]['moreKeys'] = {'characters': ['\u00F3', '\u00F6', '\u00F4', '\u00F2',
+      '\u00F5', '\u0153', '\u00F8', '\u014D']};  // o
+  data[11]['moreKeys'] = {'characters': ['\u00E1', '\u00E4', '\u00E2', '\u00E0',
+      '\u00E6', '\u00E3', '\u00E5', '\u0101']}; // a
+  data[12]['moreKeys'] = undefined;  // s
+  data[24]['moreKeys'] = undefined;  // c
+  data[27]['moreKeys'] = {'characters': ['\u00F1', '\u0144']};  // n
   return data;
 };
 
@@ -122,15 +137,22 @@ i18n.input.chrome.inputview.content.compact.letter.keyIcelandicCharacters =
     function() {
   var data =
       i18n.input.chrome.inputview.content.compact.letter.keyQwertyCharacters();
-  data[2]['moreKeys'] = ['\u00E9', '\u00EB', '\u00E8', '\u00EA', '\u0119',
-                         '\u0117', '\u0113'];  // e
-  data[4]['moreKeys'] = ['\u00FE'];  // t
-  data[5]['moreKeys'] = ['\u00FD', '\u00FF']; // y
-  data[7]['moreKeys'] = ['\u00ED', '\u00EF', '\u00EE', '\u00EC', '\u012F',
-                         '\u012B'];  // i
-  data[12]['moreKeys'] = undefined;
-  data[13]['moreKeys'] = ['\u00F0'];
-  data[24]['moreKeys'] = undefined;
+  data[2]['moreKeys'] = {'characters': ['\u00E9', '\u00EB', '\u00E8', '\u00EA',
+      '\u0119', '\u0117', '\u0113']};  // e
+  data[4]['moreKeys'] = {'characters': ['\u00FE']};  // t
+  data[5]['moreKeys'] = {'characters': ['\u00FD', '\u00FF']}; // y
+  data[6]['moreKeys'] = {'characters':
+      ['\u00FA', '\u00FC', '\u00FB', '\u00F9', '\u016B']};  // u
+  data[7]['moreKeys'] = {'characters':
+      ['\u00ED', '\u00EF', '\u00EE', '\u00EC', '\u012F', '\u012B']};  // i
+  data[8]['moreKeys'] = {'characters': ['\u00F3', '\u00F6', '\u00F4', '\u00F2',
+      '\u00F5', '\u0153', '\u00F8', '\u014D']};  // o
+  data[11]['moreKeys'] = {'characters': ['\u00E1', '\u00E4', '\u00E6', '\u00E5',
+      '\u00E0', '\u00E2', '\u00E3', '\u0101']}; // a
+  data[12]['moreKeys'] = undefined;  // s
+  data[13]['moreKeys'] = {'characters': ['\u00F0']};  // d
+  data[24]['moreKeys'] = undefined;  // c
+  data[27]['moreKeys'] = undefined;  // n
   return data;
 };
 
@@ -144,11 +166,21 @@ i18n.input.chrome.inputview.content.compact.letter.keyQwertzCharacters =
     function() {
   var data =
       i18n.input.chrome.inputview.content.compact.letter.keyQwertyCharacters();
-  data[2]['moreKeys'] = ['\u00E9', '\u00E8', '\u00EA', '\u00EB', '\u0117'];
-  data[7]['moreKeys'] = undefined;
-  data[12]['moreKeys'] = ['\u00DF', '\u015B', '\u0161'];
-  data[24]['moreKeys'] = undefined;
-  data[27]['moreKeys'] = ['\u00F1', '\u0144'];
+  data[2]['moreKeys'] = {'characters':
+      ['\u00E9', '\u00E8', '\u00EA', '\u00EB', '\u0117']};  // e
+  data[6]['moreKeys'] = {
+    'characters': ['\u00FC', HintTextPlaceHolder, '\u00FB', '\u00F9', '\u00FA',
+        '\u016B']};  // u
+  data[7]['moreKeys'] = undefined;  // i
+  data[8]['moreKeys'] = {
+    'characters': ['\u00F6', HintTextPlaceHolder, '\u00F4', '\u00F2', '\u00F3',
+        '\u00F5', '\u0153', '\u00F8', '\u014D']};  // o
+  data[11]['moreKeys'] = {
+    'characters': ['\u00E4', HintTextPlaceHolder, '\u00E2', '\u00E0', '\u00E1',
+        '\u00E6', '\u00E3', '\u00E5', '\u0101']}; // a
+  data[12]['moreKeys'] = {'characters': ['\u00DF', '\u015B', '\u0161']};  // s
+  data[24]['moreKeys'] = undefined;  // c
+  data[27]['moreKeys'] = {'characters': ['\u00F1', '\u0144']};
 
   data[5].text = 'z';
   data[22].text = 'y';
@@ -165,24 +197,30 @@ i18n.input.chrome.inputview.content.compact.letter.keyAzertyCharacters =
     function() {
   return [
     /* 0 */ { 'text': 'a', 'hintText': '1',
-      'moreKeys': ['\u00E0', '\u00E2', '\u00E6', '\u00E1', '\u00E4',
-        '\u00E3', '\u00E5', '\u0101', '\u00AA']},
+      'moreKeys': {
+        'characters': ['\u00E0', '\u00E2', HintTextPlaceHolder, '\u00E6',
+            '\u00E1', '\u00E4', '\u00E3', '\u00E5', '\u0101', '\u00AA']}},
     /* 1 */ { 'text': 'z', 'hintText': '2' },
     /* 2 */ { 'text': 'e', 'hintText': '3',
-      'moreKeys': ['\u00E9', '\u00E8', '\u00EA', '\u00EB', '\u0119',
-        '\u0117', '\u0113']},
+      'moreKeys': {
+        'characters': ['\u00E9', '\u00E8', '\u00EA', '\u00EB',
+            HintTextPlaceHolder, '\u0119', '\u0117', '\u0113']}},
     /* 3 */ { 'text': 'r', 'hintText': '4' },
     /* 4 */ { 'text': 't', 'hintText': '5' },
     /* 5 */ { 'text': 'y', 'hintText': '6',
-      'moreKeys': ['\u00FF']},
+      'moreKeys': {'characters': ['\u00FF']}},
     /* 6 */ { 'text': 'u', 'hintText': '7',
-      'moreKeys': ['\u00F9', '\u00FB', '\u00FC', '\u00FA', '\u016B']},
+      'moreKeys': {
+        'characters': ['\u00F9', '\u00FB', HintTextPlaceHolder, '\u00FC',
+            '\u00FA', '\u016B']}},
     /* 7 */ { 'text': 'i', 'hintText': '8',
-      'moreKeys': ['\u00EE', '\u00EF', '\u00EC', '\u00ED', '\u012F',
-        '\u012B']},
+      'moreKeys': {
+        'characters': ['\u00EE', HintTextPlaceHolder, '\u00EF', '\u00EC',
+            '\u00ED', '\u012F', '\u012B']}},
     /* 8 */ { 'text': 'o', 'hintText': '9',
-      'moreKeys': ['\u00F4', '\u0153', '\u00F6', '\u00F2', '\u00F3', '\u00F5',
-        '\u00F8', '\u014D', '\u00BA']},
+      'moreKeys': {
+        'characters': ['\u00F4', '\u0153', HintTextPlaceHolder, '\u00F6',
+            '\u00F2', '\u00F3', '\u00F5', '\u00F8', '\u014D', '\u00BA']}},
     /* 9 */ { 'text': 'p', 'hintText': '0' },
     /* 10 */ NonLetterKeys.BACKSPACE,
     /* 11 */ { 'text': 'q' },
@@ -200,16 +238,20 @@ i18n.input.chrome.inputview.content.compact.letter.keyAzertyCharacters =
     /* 23 */ { 'text': 'w' },
     /* 24 */ { 'text': 'x' },
     /* 25 */ { 'text': 'c',
-      'moreKeys': ['\u00E7', '\u0107', '\u010D']},
+      'moreKeys': {
+        'characters': ['\u00E7', '\u0107', '\u010D']}},
     /* 26 */ { 'text': 'v' },
     /* 27 */ { 'text': 'b' },
     /* 28 */ { 'text': 'n' },
     /* 29 */ { 'text': '\'',
-      'moreKeys': ['\u2018', '\u201A', '\u2019', '\u2039', '\u203A']},
+      'moreKeys': {
+        'characters': ['\u201A', '\u2018', '\u2019', '\u2039', '\u203A']}},
     /* 30 */ { 'text': '!',
-      'moreKeys': ['\u00A1']},
+      'moreKeys': {
+        'characters': ['\u00A1']}},
     /* 31 */ { 'text': '?',
-      'moreKeys': ['\u00BF']},
+      'moreKeys': {
+        'characters': ['\u00BF']}},
     /* 32 */ NonLetterKeys.RIGHT_SHIFT,
     /* 33 */ NonLetterKeys.SWITCHER,
     /* 34 */ NonLetterKeys.GLOBE,
@@ -218,8 +260,10 @@ i18n.input.chrome.inputview.content.compact.letter.keyAzertyCharacters =
     /* 37 */ NonLetterKeys.SPACE,
     /* 38 */ { 'text': ',', 'isGrey': true },
     /* 39 */ { 'text': '.', 'isGrey': true,
-      'moreKeys': ['\u0023', '\u0021', '\u005C', '\u003F', '\u002D', '\u003A',
-        '\u0027', '\u0040']},
+      'moreKeys': {
+        'characters': [',', '\'', '#', ')', '(', '/', ';', '@', ':',
+            '-', '"', '+', '%', '&'],
+        'fixedColumnNumber': 7}},
     /* 40 */ NonLetterKeys.HIDE
   ];
 };
@@ -240,19 +284,23 @@ i18n.input.chrome.inputview.content.compact.letter.keyNordicCharacters =
     /* 4 */ { 'text': 't', 'hintText': '5' },
     /* 5 */ { 'text': 'y', 'hintText': '6' },
     /* 6 */ { 'text': 'u', 'hintText': '7',
-      'moreKeys': ['\u00FC']},
+      'moreKeys': {
+        'characters': ['\u00FC']}},
     /* 7 */ { 'text': 'i', 'hintText': '8' },
     /* 8 */ { 'text': 'o', 'hintText': '9',
-      'moreKeys': ['\u00F8', '\u00F4', '\u00F2', '\u00F3', '\u00F5', '\u0153',
-        '\u014D']},
+      'moreKeys': {
+        'characters': ['\u00F8', '\u00F4', '\u00F2', '\u00F3', '\u00F5',
+            '\u0153', '\u014D']}},
     /* 9 */ { 'text': 'p', 'hintText': '0' },
     /* 10 */ { 'text': '\u00e5' },
     /* 11 */ NonLetterKeys.BACKSPACE,
     /* 12 */ { 'text': 'a',
-      'moreKeys': ['\u00E6', '\u00E0', '\u00E1', '\u00E2', '\u00E3',
-        '\u0101']},
+      'moreKeys': {
+        'characters': ['\u00E6', '\u00E0', '\u00E1', '\u00E2', '\u00E3',
+            '\u0101']}},
     /* 13 */ { 'text': 's',
-      'moreKeys': ['\u0161', '\u00DF', '\u015B']},
+      'moreKeys': {
+        'characters': ['\u0161', '\u00DF', '\u015B']}},
     /* 14 */ { 'text': 'd' },
     /* 15 */ { 'text': 'f' },
     /* 16 */ { 'text': 'g' },
@@ -261,13 +309,16 @@ i18n.input.chrome.inputview.content.compact.letter.keyNordicCharacters =
     /* 19 */ { 'text': 'k' },
     /* 20 */ { 'text': 'l' },
     /* 21 */ { 'text': '\u00f6',
-      'moreKeys': ['\u00F8']},
+      'moreKeys': {
+        'characters': ['\u00F8']}},
     /* 22 */ { 'text': '\u00e4',
-      'moreKeys': ['\u00E6']},
+      'moreKeys': {
+        'characters': ['\u00E6']}},
     /* 23 */ NonLetterKeys.ENTER,
     /* 24 */ NonLetterKeys.LEFT_SHIFT,
     /* 25 */ { 'text': 'z', 'marginLeftPercent': 0.33,
-      'moreKeys': ['\u017E', '\u017A', '\u017C']},
+      'moreKeys': {
+        'characters': ['\u017E', '\u017A', '\u017C']}},
     /* 26 */ { 'text': 'x' },
     /* 27 */ { 'text': 'c' },
     /* 28 */ { 'text': 'v' },
@@ -275,9 +326,11 @@ i18n.input.chrome.inputview.content.compact.letter.keyNordicCharacters =
     /* 30 */ { 'text': 'n' },
     /* 31 */ { 'text': 'm' },
     /* 32 */ { 'text': '!',
-      'moreKeys': ['\u00A1']},
+      'moreKeys': {
+        'characters': ['\u00A1']}},
     /* 33 */ { 'text': '?', 'marginRightPercent': 0.33,
-      'moreKeys': ['\u00BF']},
+      'moreKeys': {
+        'characters': ['\u00BF']}},
     /* 34 */ NonLetterKeys.RIGHT_SHIFT,
     /* 35 */ NonLetterKeys.SWITCHER,
     /* 36 */ NonLetterKeys.GLOBE,
@@ -286,8 +339,10 @@ i18n.input.chrome.inputview.content.compact.letter.keyNordicCharacters =
     /* 39 */ NonLetterKeys.SPACE,
     /* 40 */ { 'text': ',', 'isGrey': true },
     /* 41 */ { 'text': '.', 'isGrey': true,
-      'moreKeys': ['\u0023', '\u0021', '\u005C', '\u003F', '\u002D', '\u003A',
-        '\u0027', '\u0040']},
+      'moreKeys': {
+        'characters': [',', '\'', '#', ')', '(', '/', ';', '@', ':',
+            '-', '"', '+', '%', '&'],
+        'fixedColumnNumber': 7}},
     /* 42 */ NonLetterKeys.HIDE
   ];
 };
@@ -302,26 +357,36 @@ i18n.input.chrome.inputview.content.compact.letter.keySwedenCharacters =
     function() {
   var data =
       i18n.input.chrome.inputview.content.compact.letter.keyNordicCharacters();
-  data[2]['moreKeys'] = ['\u00E9', '\u00E8', '\u00EA', '\u00EB',
-                         '\u0119'];  // e
-  data[3]['moreKeys'] = ['\u0159'];  // r
-  data[4]['moreKeys'] = ['\u0165', '\u00FE'];  // t
-  data[5]['moreKeys'] = ['\u00FD', '\u00FF'];  // y
-  data[6]['moreKeys'] = ['\u00FC', '\u00FA', '\u00F9', '\u00FB',
-                         '\u016B'];  // u
-  data[7]['moreKeys'] = ['\u00ED', '\u00EC', '\u00EE', '\u00EF'];  // i
-  data[8]['moreKeys'] = ['\u00F3', '\u00F2', '\u00F4', '\u00F5',
-                         '\u014D'];  // o
-  data[12]['moreKeys'] = ['\u00E1', '\u00E0', '\u00E2', '\u0105',
-                          '\u00E3'];  // a
-  data[13]['moreKeys'] = ['\u015B', '\u0161', '\u015F', '\u00DF'];  // s
-  data[14]['moreKeys'] = ['\u00F0', '\u010F'];  // d
-  data[20]['moreKeys'] = ['\u0142'];  // l
-  data[21]['moreKeys'] = ['\u00F8', '\u0153'];
-  data[22]['moreKeys'] = ['\u00E6'];
-  data[25]['moreKeys'] = ['\u017A', '\u017E', '\u017C'];  //z
-  data[27]['moreKeys'] = ['\u00E7', '\u0107', '\u010D'];  //c
-  data[30]['moreKeys'] = ['\u0144', '\u00F1', '\u0148'];  //n
+  data[2]['moreKeys'] = {
+    'characters': ['\u00E9', '\u00E8', '\u00EA', '\u00EB', '\u0119']};  // e
+  data[3]['moreKeys'] = {
+    'characters': ['\u0159']};  // r
+  data[4]['moreKeys'] = {
+    'characters': ['\u0165', '\u00FE']};  // t
+  data[5]['moreKeys'] = {
+    'characters': ['\u00FD', '\u00FF']};  // y
+  data[6]['moreKeys'] = {
+    'characters': ['\u00FC', '\u00FA', '\u00F9', '\u00FB', '\u016B']};  // u
+  data[7]['moreKeys'] = {
+    'characters': ['\u00ED', '\u00EC', '\u00EE', '\u00EF']};  // i
+  data[8]['moreKeys'] = {
+    'characters': ['\u00F3', '\u00F2', '\u00F4', '\u00F5', '\u014D']};  // o
+  data[12]['moreKeys'] = {
+    'characters': ['\u00E1', '\u00E0', '\u00E2', '\u0105', '\u00E3']};  // a
+  data[13]['moreKeys'] = {
+    'characters': ['\u015B', '\u0161', '\u015F', '\u00DF']};  // s
+  data[14]['moreKeys'] = {
+    'characters': ['\u00F0', '\u010F']};  // d
+  data[20]['moreKeys'] = {
+    'characters': ['\u0142']};  // l
+  data[21]['moreKeys'] = {
+    'characters': ['\u00F8', '\u0153']};
+  data[25]['moreKeys'] = {
+    'characters': ['\u017A', '\u017E', '\u017C']};  //z
+  data[27]['moreKeys'] = {
+    'characters': ['\u00E7', '\u0107', '\u010D']};  //c
+  data[30]['moreKeys'] = {
+    'characters': ['\u0144', '\u00F1', '\u0148']};  //n
 
   return data;
 };
@@ -336,17 +401,22 @@ i18n.input.chrome.inputview.content.compact.letter.keyNorwayCharacters =
     function() {
   var data =
       i18n.input.chrome.inputview.content.compact.letter.keyNordicCharacters();
-  data[2]['moreKeys'] = ['\u00E9', '\u00E8', '\u00EA', '\u00EB', '\u0119',
-                         '\u0117', '\u0113'];  // e
-  data[6]['moreKeys'] = ['\u00FC', '\u00FB', '\u00F9', '\u00FA',
-                         '\u016B'];  // u
-  data[8]['moreKeys'] = ['\u00F4', '\u00F2', '\u00F3', '\u00F6', '\u00F5',
-                         '\u0153', '\u014D'];  // o
-  data[12]['moreKeys'] = ['\u00E0', '\u00E4', '\u00E1', '\u00E2', '\u00E3',
-                          '\u0101'];  // a
+  data[2]['moreKeys'] = {
+    'characters': ['\u00E9', '\u00E8', '\u00EA', '\u00EB', '\u0119', '\u0117',
+        '\u0113']};  // e
+  data[6]['moreKeys'] = {
+    'characters': ['\u00FC', '\u00FB', '\u00F9', '\u00FA', '\u016B']};  // u
+  data[8]['moreKeys'] = {
+    'characters': ['\u00F4', '\u00F2', '\u00F3', '\u00F6', '\u00F5', '\u0153',
+        '\u014D']};  // o
+  data[12]['moreKeys'] = {
+    'characters': ['\u00E0', '\u00E4', '\u00E1', '\u00E2', '\u00E3',
+        '\u0101']};  // a
   data[13]['moreKeys'] = undefined;  //s
-  data[21]['moreKeys'] = ['\u00F6'];
-  data[22]['moreKeys'] = ['\u00E4'];
+  data[21]['moreKeys'] = {
+    'characters': ['\u00F6']};
+  data[22]['moreKeys'] = {
+    'characters': ['\u00E4']};
   data[25]['moreKeys'] = undefined;  //z
 
   data[21]['text'] = '\u00f8';
@@ -365,22 +435,33 @@ i18n.input.chrome.inputview.content.compact.letter.keyDenmarkCharacters =
     function() {
   var data =
       i18n.input.chrome.inputview.content.compact.letter.keyNordicCharacters();
-  data[2]['moreKeys'] = ['\u00E9', '\u00EB'];  // e
-  data[5]['moreKeys'] = ['\u00FD', '\u00FF'];  // y
-  data[6]['moreKeys'] = ['\u00FA', '\u00FC', '\u00FB', '\u00F9',
-                         '\u016B'];  // u
-  data[7]['moreKeys'] = ['\u00ED', '\u00EF'];  // i
-  data[8]['moreKeys'] = ['\u00F3', '\u00F4', '\u00F2', '\u00F5',
-                         '\u0153', '\u014D'];  // o
-  data[12]['moreKeys'] = ['\u00E1', '\u00E4', '\u00E0', '\u00E2', '\u00E3',
-                          '\u0101'];  // a
-  data[13]['moreKeys'] = ['\u00DF', '\u015B', '\u0161'];  // s
-  data[14]['moreKeys'] = ['\u00F0'];  // d
-  data[20]['moreKeys'] = ['\u0142'];  // l
-  data[21]['moreKeys'] = ['\u00E4'];
-  data[22]['moreKeys'] = ['\u00F6'];
+  data[2]['moreKeys'] = {
+    'characters': ['\u00E9', '\u00EB']};  // e
+  data[5]['moreKeys'] = {
+    'characters': ['\u00FD', '\u00FF']};  // y
+  data[6]['moreKeys'] = {
+    'characters': ['\u00FA', '\u00FC', '\u00FB', '\u00F9', '\u016B']};  // u
+  data[7]['moreKeys'] = {
+    'characters': ['\u00ED', '\u00EF']};  // i
+  data[8]['moreKeys'] = {
+    'characters': ['\u00F3', '\u00F4', '\u00F2', '\u00F5', '\u0153',
+        '\u014D']};  // o
+  data[12]['moreKeys'] = {
+    'characters': ['\u00E1', '\u00E4', '\u00E0', '\u00E2', '\u00E3',
+        '\u0101']};  // a
+  data[13]['moreKeys'] = {
+    'characters': ['\u00DF', '\u015B', '\u0161']};  // s
+  data[14]['moreKeys'] = {
+    'characters': ['\u00F0']};  // d
+  data[20]['moreKeys'] = {
+    'characters': ['\u0142']};  // l
+  data[21]['moreKeys'] = {
+    'characters': ['\u00E4']};
+  data[22]['moreKeys'] = {
+    'characters': ['\u00F6']};
   data[25]['moreKeys'] = undefined;  //z
-  data[30]['moreKeys'] = ['\u00F1', '\u0144'];  //n
+  data[30]['moreKeys'] = {
+    'characters': ['\u00F1', '\u0144']};  //n
 
   data[21]['text'] = '\u00e6';
   data[22]['text'] = '\u00f8';
@@ -398,64 +479,92 @@ i18n.input.chrome.inputview.content.compact.letter.keyPinyinCharacters =
     function() {
   var data = [
     /* 0 */ { 'text': 'q', 'hintText': '1',
-      'moreKeys': ['\u0051', '\u0071']},
+      'moreKeys': {
+        'characters': ['\u0051', '\u0071']}},
     /* 1 */ { 'text': 'w', 'hintText': '2',
-      'moreKeys': ['\u0057', '\u0077']},
+      'moreKeys': {
+        'characters': ['\u0057', '\u0077']}},
     /* 2 */ { 'text': 'e', 'hintText': '3',
-      'moreKeys': ['\u0045', '\u0065']},
+      'moreKeys': {
+        'characters': ['\u0045', '\u0065']}},
     /* 3 */ { 'text': 'r', 'hintText': '4',
-      'moreKeys': ['\u0052', '\u0072']},
+      'moreKeys': {
+        'characters': ['\u0052', '\u0072']}},
     /* 4 */ { 'text': 't', 'hintText': '5',
-      'moreKeys': ['\u0054', '\u0074']},
+      'moreKeys': {
+        'characters': ['\u0054', '\u0074']}},
     /* 5 */ { 'text': 'y', 'hintText': '6',
-      'moreKeys': ['\u0059', '\u0079']},
+      'moreKeys': {
+        'characters': ['\u0059', '\u0079']}},
     /* 6 */ { 'text': 'u', 'hintText': '7',
-      'moreKeys': ['\u0055', '\u0075']},
+      'moreKeys': {
+        'characters': ['\u0055', '\u0075']}},
     /* 7 */ { 'text': 'i', 'hintText': '8',
-      'moreKeys': ['\u0049', '\u0069'] },
+      'moreKeys': {
+        'characters': ['\u0049', '\u0069']}},
     /* 8 */ { 'text': 'o', 'hintText': '9',
-      'moreKeys': ['\u004F', '\u006F']},
+      'moreKeys': {
+        'characters': ['\u004F', '\u006F']}},
     /* 9 */ { 'text': 'p', 'hintText': '0',
-      'moreKeys': ['\u0050', '\u0070']},
+      'moreKeys': {
+        'characters': ['\u0050', '\u0070']}},
     /* 10 */ NonLetterKeys.BACKSPACE,
     /* 11 */ { 'text': 'a', 'hintText': '@', 'marginLeftPercent': 0.33,
-      'moreKeys': ['\u0041', '\u0061']},
+      'moreKeys': {
+        'characters': ['\u0041', '\u0061']}},
     /* 12 */ { 'text': 's', 'hintText': '*',
-      'moreKeys': ['\u0053', '\u0073']},
+      'moreKeys': {
+        'characters': ['\u0053', '\u0073']}},
     /* 13 */ { 'text': 'd', 'hintText': '+',
-      'moreKeys': ['\u0044', '\u0064']},
+      'moreKeys': {
+        'characters': ['\u0044', '\u0064']}},
     /* 14 */ { 'text': 'f', 'hintText': '-',
-      'moreKeys': ['\u0046', '\u0066']},
+      'moreKeys': {
+        'characters': ['\u0046', '\u0066']}},
     /* 15 */ { 'text': 'g', 'hintText': '=',
-      'moreKeys': ['\u0047', '\u0067']},
+      'moreKeys': {
+        'characters': ['\u0047', '\u0067']}},
     /* 16 */ { 'text': 'h', 'hintText': '/',
-      'moreKeys': ['\u0048', '\u0068']},
+      'moreKeys': {
+        'characters': ['\u0048', '\u0068']}},
     /* 17 */ { 'text': 'j', 'hintText': '#',
-      'moreKeys': ['\u004a', '\u006a']},
+      'moreKeys': {
+        'characters': ['\u004a', '\u006a']}},
     /* 18 */ { 'text': 'k', 'hintText': '\uff08',
-      'moreKeys': ['\u004b', '\u006b']},
+      'moreKeys': {
+        'characters': ['\u004b', '\u006b']}},
     /* 19 */ { 'text': 'l', 'hintText': '\uff09',
-      'moreKeys': ['\u004c', '\u006c']},
+      'moreKeys': {
+        'characters': ['\u004c', '\u006c']}},
     /* 20 */ NonLetterKeys.ENTER,
     /* 21 */ NonLetterKeys.LEFT_SHIFT,
     /* 22 */ { 'text': 'z', 'hintText': '\u3001',
-      'moreKeys': ['\u005a', '\u007a']},
+      'moreKeys': {
+        'characters': ['\u005a', '\u007a']}},
     /* 23 */ { 'text': 'x', 'hintText': '\uff1a',
-      'moreKeys': ['\u0058', '\u0078']},
+      'moreKeys': {
+        'characters': ['\u0058', '\u0078']}},
     /* 24 */ { 'text': 'c', 'hintText': '\"',
-      'moreKeys': ['\u0043', '\u0063']},
+      'moreKeys': {
+        'characters': ['\u0043', '\u0063']}},
     /* 25 */ { 'text': 'v', 'hintText': '\uff1f',
-      'moreKeys': ['\u0056', '\u0076']},
+      'moreKeys': {
+        'characters': ['\u0056', '\u0076']}},
     /* 26 */ { 'text': 'b', 'hintText': '\uff01',
-      'moreKeys': ['\u0042', '\u0062']},
+      'moreKeys': {
+        'characters': ['\u0042', '\u0062']}},
     /* 27 */ { 'text': 'n', 'hintText': '\uff5e',
-      'moreKeys': ['\u004e', '\u006e']},
+      'moreKeys': {
+        'characters': ['\u004e', '\u006e']}},
     /* 28 */ { 'text': 'm', 'hintText': '.',
-      'moreKeys': ['\u004d', '\u006d']},
+      'moreKeys': {
+        'characters': ['\u004d', '\u006d']}},
     /* 29 */ { 'text': '\uff01',
-      'moreKeys': ['\u00A1']},
+      'moreKeys': {
+        'characters': ['\u00A1']}},
     /* 30 */ { 'text': '\uff1f',
-      'moreKeys': ['\u00BF']},
+      'moreKeys': {
+        'characters': ['\u00BF']}},
     /* 31 */ NonLetterKeys.RIGHT_SHIFT,
     /* 32 */ NonLetterKeys.SWITCHER,
     /* 33 */ NonLetterKeys.GLOBE,
@@ -489,13 +598,13 @@ i18n.input.chrome.inputview.content.compact.letter.keyEnCharacters =
   var data =
       i18n.input.chrome.inputview.content.compact.letter.keyPinyinCharacters();
   for (var i = 0; i <= 9; i++) {
-    data[i]['moreKeys'].pop();
+    data[i]['moreKeys']['characters'].pop();
   }
   for (var i = 11; i <= 19; i++) {
-    data[i]['moreKeys'].pop();
+    data[i]['moreKeys']['characters'].pop();
   }
   for (var i = 22; i <= 28; i++) {
-    data[i]['moreKeys'].pop();
+    data[i]['moreKeys']['characters'].pop();
   }
   data[12]['hintText'] = '*';
   data[14]['hintText'] = '\u002d';
@@ -524,81 +633,115 @@ i18n.input.chrome.inputview.content.compact.letter.keyZhuyinCharacters =
     function() {
   var data = [
     /* 0 */ { 'text': '\u3105', 'hintText': '1',
-      'moreKeys': ['\uff01']},
+      'moreKeys': {
+        'characters': ['\uff01']}},
     /* 1 */ { 'text': '\u3109', 'hintText': '2',
-      'moreKeys': ['@']},
+      'moreKeys': {
+        'characters': ['@']}},
     /* 2 */ { 'text': '\u02c7', 'hintText': '3',
-      'moreKeys': ['#']},
+      'moreKeys': {
+        'characters': ['#']}},
     /* 3 */ { 'text': '\u02cb', 'hintText': '4',
-      'moreKeys': ['$']},
+      'moreKeys': {
+        'characters': ['$']}},
     /* 4 */ { 'text': '\u3113', 'hintText': '5',
-      'moreKeys': ['%']},
+      'moreKeys': {
+        'characters': ['%']}},
     /* 5 */ { 'text': '\u02ca', 'hintText': '6',
-      'moreKeys': ['^']},
+      'moreKeys': {
+        'characters': ['^']}},
     /* 6 */ { 'text': '\u02d9', 'hintText': '7',
-      'moreKeys': ['&']},
+      'moreKeys': {
+        'characters': ['&']}},
     /* 7 */ { 'text': '\u311a', 'hintText': '8',
-      'moreKeys': ['*'] },
+      'moreKeys': {
+        'characters': ['*']}},
     /* 8 */ { 'text': '\u311e', 'hintText': '9',
-      'moreKeys': ['\uff08']},
+      'moreKeys': {
+        'characters': ['\uff08']}},
     /* 9 */ { 'text': '\u3122', 'hintText': '0',
-      'moreKeys': ['\uff09']},
-
+      'moreKeys': {
+        'characters': ['\uff09']}},
     /* 10 */ { 'text': '\u3106', 'hintText': 'q',
-      'moreKeys': ['Q'], 'textCode': ['Q']},
+      'moreKeys': {
+        'characters': ['Q'], 'textCode': ['Q']}},
     /* 11 */ { 'text': '\u310a', 'hintText': 'w',
-      'moreKeys': ['W'], 'codeKeys': ['Q']},
+      'moreKeys': {
+        'characters': ['W'], 'codeKeys': ['Q']}},
     /* 12 */ { 'text': '\u310d', 'hintText': 'e',
-      'moreKeys': ['E'], 'textCode': ['Q']},
+      'moreKeys': {
+        'characters': ['E'], 'textCode': ['Q']}},
     /* 13 */ { 'text': '\u3110', 'hintText': 'r',
-      'moreKeys': ['R']},
+      'moreKeys': {
+        'characters': ['R']}},
     /* 14 */ { 'text': '\u3114', 'hintText': 't',
-      'moreKeys': ['T']},
+      'moreKeys': {
+        'characters': ['T']}},
     /* 15 */ { 'text': '\u3117', 'hintText': 'y',
-      'moreKeys': ['Y']},
+      'moreKeys': {
+        'characters': ['Y']}},
     /* 16 */ { 'text': '\u3127', 'hintText': 'u',
-      'moreKeys': ['U']},
+      'moreKeys': {
+        'characters': ['U']}},
     /* 17 */ { 'text': '\u311b', 'hintText': 'i',
-      'moreKeys': ['I']},
+      'moreKeys': {
+        'characters': ['I']}},
     /* 18 */ { 'text': '\u311f', 'hintText': 'o',
-      'moreKeys': ['O']},
+      'moreKeys': {
+        'characters': ['O']}},
     /* 19 */ { 'text': '\u3123', 'hintText': 'p',
-      'moreKeys': ['P']},
+      'moreKeys': {
+        'characters': ['P']}},
 
     /* 20 */ { 'text': '\u3107', 'hintText': 'a',
-      'moreKeys': ['A']},
+      'moreKeys': {
+        'characters': ['A']}},
     /* 21 */ { 'text': '\u310B', 'hintText': 's',
-      'moreKeys': ['S']},
+      'moreKeys': {
+        'characters': ['S']}},
     /* 22 */ { 'text': '\u310e', 'hintText': 'd',
-      'moreKeys': ['D']},
+      'moreKeys': {
+        'characters': ['D']}},
     /* 23 */ { 'text': '\u3111', 'hintText': 'f',
-      'moreKeys': ['F']},
+      'moreKeys': {
+        'characters': ['F']}},
     /* 24 */ { 'text': '\u3115', 'hintText': 'g',
-      'moreKeys': ['G']},
+      'moreKeys': {
+        'characters': ['G']}},
     /* 25 */ { 'text': '\u3118', 'hintText': 'h',
-      'moreKeys': ['H']},
+      'moreKeys': {
+        'characters': ['H']}},
     /* 26 */ { 'text': '\u3128', 'hintText': 'j',
-      'moreKeys': ['J']},
+      'moreKeys': {
+        'characters': ['J']}},
     /* 27 */ { 'text': '\u311c', 'hintText': 'k',
-      'moreKeys': ['K']},
+      'moreKeys': {
+        'characters': ['K']}},
     /* 28 */ { 'text': '\u3120', 'hintText': 'l',
-      'moreKeys': ['L']},
+      'moreKeys': {
+        'characters': ['L']}},
     /* 29 */ { 'text': '\u3124', 'hintText': '\uff1a'},
 
     /* 30 */ { 'text': '\u3108', 'hintText': 'z',
-      'moreKeys': ['Z']},
+      'moreKeys': {
+        'characters': ['Z']}},
     /* 31 */ { 'text': '\u310c', 'hintText': 'x',
-      'moreKeys': ['X']},
+      'moreKeys': {
+        'characters': ['X']}},
     /* 32 */ { 'text': '\u310f', 'hintText': 'c',
-      'moreKeys': ['C']},
+      'moreKeys': {
+        'characters': ['C']}},
     /* 33 */ { 'text': '\u3112', 'hintText': 'v',
-      'moreKeys': ['V']},
+      'moreKeys': {
+        'characters': ['V']}},
     /* 34 */ { 'text': '\u3116', 'hintText': 'b',
       'moreKeys': ['B'] },
     /* 35 */ { 'text': '\u3119', 'hintText': 'n',
-      'moreKeys': ['N']},
+      'moreKeys': {
+        'characters': ['N']}},
     /* 36 */ { 'text': '\u3129', 'hintText': 'm',
-      'moreKeys': ['M']},
+      'moreKeys': {
+        'characters': ['M']}},
     /* 37 */ { 'text': '\u311d', 'hintText': '\u2026'},
     /* 38 */ { 'text': '\u3121', 'hintText': '\uff01'},
     /* 39 */ { 'text': '\u3125', 'hintText': '\uff1f'},

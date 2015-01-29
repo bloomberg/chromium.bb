@@ -62,6 +62,9 @@ i18n.input.chrome.inputview.elements.ElementType = {
   TAB_BAR_KEY: 39,
   EXTENDED_LAYOUT: 40,
   PAGE_INDICATOR: 41,
-  EN_SWITCHER: 42
+  EN_SWITCHER: 42,
+  VOICE_BTN: 43,
+  VOICE_VIEW: 44,
+  VOICE_PRIVACY_GOT_IT: 45
 };
 

@@ -236,6 +236,9 @@
   "ctrl": {
     "message": "ctrl"
   },
+  "current_keyboard_prefix": {
+    "message": "b\u00e0n ph\u00edm hi\u1ec7n \u0111\u00e3 ch\u1ecdn "
+  },
   "current_lang": {
     "message": "Ng\u00f4n ng\u1eef nh\u1eadp l\u00e0 ti\u1ebfng Trung"
   },
@@ -300,7 +303,7 @@
     "message": "CAO H\u01a0N!"
   },
   "d83c_dd9a": {
-    "message": "so v\u1edbi"
+    "message": "\u0111\u1ea5u v\u1edbi"
   },
   "d83c_de01": {
     "message": "T\u1eeb ti\u1ebfng Nh\u1eadt \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
@@ -318,7 +321,7 @@
     "message": "T\u1eeb ti\u1ebfng Nh\u1eadt \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
   },
   "d83c_de33": {
-    "message": "T\u1eeb ti\u1ebfng Trung 'kh\u00f4ng gian c\u00f3 s\u1eb5n'"
+    "message": "T\u1eeb ti\u1ebfng Trung 'c\u00f2n ch\u1ed7'"
   },
   "d83c_de34": {
     "message": "T\u1eeb ti\u1ebfng Trung 'qua'"
@@ -726,7 +729,7 @@
     "message": "chu\u00f4ng gi\u00f3"
   },
   "d83c_df91": {
-    "message": "xem tr\u0103ng"
+    "message": "ng\u1eafm tr\u0103ng"
   },
   "d83c_df92": {
     "message": "c\u1eb7p s\u00e1ch"
@@ -816,7 +819,7 @@
     "message": "k\u00e8n trumpet"
   },
   "d83c_dfbb": {
-    "message": "vi\u00f4l\u00f4ng"
+    "message": "vi-\u00f4-l\u00f4ng"
   },
   "d83c_dfbc": {
     "message": "b\u1ea3ng t\u1ed5ng ph\u1ed5 nh\u1ea1c"
@@ -1398,7 +1401,7 @@
     "message": "bi\u1ec3u t\u01b0\u1ee3ng bu\u1ed3n ng\u1ee7"
   },
   "d83d_dca5": {
-    "message": "hai xe va ch\u1ea1m"
+    "message": "va ch\u1ea1m"
   },
   "d83d_dca6": {
     "message": "m\u1ed3 h\u00f4i t\u00faa ra"
@@ -1806,7 +1809,7 @@
     "message": "k\u00fd hi\u1ec7u \u0111inh ba"
   },
   "d83d_dd32": {
-    "message": "n\u00fat h\u00ecnh vu\u00f4ng c\u00f3 khung c\u1ee9ng"
+    "message": "n\u00fat h\u00ecnh vu\u00f4ng c\u00f3 khung li\u1ec1n"
   },
   "d83d_dd33": {
     "message": "n\u00fat h\u00ecnh vu\u00f4ng khung c\u00f3 vi\u1ec1n"
@@ -2645,6 +2648,9 @@
   "inputmethod_dayi": {
     "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp Dayi"
   },
+  "inputmethod_hangul": {
+    "message": "Ph\u01b0\u01a1ng ph\u00e1p nh\u1eadp ti\u1ebfng H\u00e0n"
+  },
   "inputmethod_pinyin": {
     "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp B\u00ednh \u00e2m"
   },
@@ -2813,6 +2819,9 @@
   "keyboard_nepali_phonetic": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Nepal (Ng\u1eef \u00e2m)"
   },
+  "keyboard_netherlands": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng H\u00e0 Lan"
+  },
   "keyboard_none": {
     "message": "B\u00e0n ph\u00edm"
   },
@@ -2836,6 +2845,9 @@
   },
   "keyboard_romanian": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Rumani"
+  },
+  "keyboard_romanian_standard": {
+    "message": "Romanian standard keyboard"
   },
   "keyboard_russian": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Nga"
@@ -2976,7 +2988,7 @@
     "message": "Trang c\u00e0i \u0111\u1eb7t ti\u1ebfng H\u00e0n"
   },
   "korean_syllable_input": {
-    "message": "C\u00f3 nh\u1eadp ch\u1eef Hangul l\u1ea7n l\u01b0\u1ee3t kh\u00f4ng"
+    "message": "Nh\u1eadp t\u1eebng ch\u1eef hangul m\u1ed9t"
   },
   "latam_spa_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng M\u1ef9 La-tinh (ti\u1ebfng T\u00e2y Ban Nha)"
@@ -3015,13 +3027,13 @@
     "message": "T\u1ea1m d\u1eebng"
   },
   "physical_auto_correction_level": {
-    "message": "Auto-correction"
+    "message": "T\u1ef1 \u0111\u1ed9ng s\u1eeda"
   },
   "physical_enable_capitalization": {
-    "message": "Auto-capitalization"
+    "message": "T\u1ef1 \u0111\u1ed9ng vi\u1ebft hoa"
   },
   "physical_keyboard": {
-    "message": "Physical Keyboard"
+    "message": "B\u00e0n ph\u00edm th\u1ef1c"
   },
   "pinyin_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t B\u00ednh \u00e2m"
@@ -3075,13 +3087,16 @@
     "message": "Ch\u1ec9 hi\u1ec3n th\u1ecb danh s\u00e1ch \u0111\u1ec1 xu\u1ea5t th\u1ea3 xu\u1ed1ng b\u1eb1ng ph\u00edm X\u00f3a l\u00f9i"
   },
   "show_hangul_candidate": {
-    "message": "Show Hangul suggestions"
+    "message": "Hi\u1ec3n th\u1ecb g\u1ee3i \u00fd b\u1eb1ng ti\u1ebfng Hangul"
   },
   "si_slv_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Slovenia"
   },
   "sk_slo_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Slovakia"
+  },
+  "smiley": {
+    "message": "m\u1eb7t c\u01b0\u1eddi"
   },
   "sometimes_auto_correct": {
     "message": "Khi\u00eam t\u1ed1n"
@@ -3239,9 +3254,6 @@
   "user_dict_clear": {
     "message": "X\u00f3a t\u1ea5t c\u1ea3"
   },
-  "user_dict_done": {
-    "message": "Xong"
-  },
   "user_dict_manage": {
     "message": "Qu\u1ea3n l\u00fd t\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n..."
   },
@@ -3249,13 +3261,28 @@
     "message": "T\u1eeb m\u1edbi"
   },
   "user_dict_remove": {
-    "message": "X\u00f3a m\u1ee5c nh\u1eadp \u0111\u00e3 ch\u1ecdn"
+    "message": "X\u00f3a m\u1ee5c \u0111\u00e3 ch\u1ecdn"
+  },
+  "user_dict_save": {
+    "message": "L\u01b0u"
   },
   "user_dict_sync": {
     "message": "\u0110\u1ed3ng b\u1ed9 h\u00f3a t\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n"
   },
   "user_dict_title": {
     "message": "T\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n"
+  },
+  "voice": {
+    "message": "Gi\u1ecdng n\u00f3i"
+  },
+  "voice_privacy_info": {
+    "message": "Gi\u1ecdng n\u00f3i c\u1ee7a b\u1ea1n s\u1ebd \u0111\u01b0\u1ee3c g\u1eedi t\u1edbi m\u00e1y ch\u1ee7 Google \u0111\u1ec3 nh\u1eadn d\u1ea1ng v\u0103n b\u1ea3n"
+  },
+  "voice_turn_off": {
+    "message": "t\u1eaft c\u00f4ng c\u1ee5 nh\u1eadp b\u1eb1ng gi\u1ecdng n\u00f3i"
+  },
+  "voice_turn_on": {
+    "message": "b\u1eadt c\u00f4ng c\u1ee5 nh\u1eadp b\u1eb1ng gi\u1ecdng n\u00f3i"
   },
   "wait": {
     "message": "Ch\u1edd"

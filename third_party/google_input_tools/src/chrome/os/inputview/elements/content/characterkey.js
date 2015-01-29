@@ -13,6 +13,8 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.CharacterKey');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.State');
 goog.require('goog.array');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
@@ -27,6 +29,8 @@ goog.scope(function() {
 var CharacterModel = i18n.input.chrome.inputview.elements.content.
     CharacterModel;
 var Character = i18n.input.chrome.inputview.elements.content.Character;
+
+
 
 /**
  * The class for a character key, it would be symbol or letter key which is
@@ -43,13 +47,17 @@ var Character = i18n.input.chrome.inputview.elements.content.Character;
  * @param {!i18n.input.chrome.inputview.StateManager} stateManager The state
  *     manager.
  * @param {boolean} isRTL Whether the key shows characters in a RTL layout.
+ * @param {boolean} enableShiftRendering Whether renders two letter vertically,
+ *     it means show shift letter when in letter state, shows default letter
+ *     when in shift state, same as the altgr state.
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.content.SoftKey}
  */
 i18n.input.chrome.inputview.elements.content.CharacterKey = function(id,
     keyCode, characters, isLetterKey, hasAltGrCharacterInTheKeyset,
-    alwaysRenderAltGrCharacter, stateManager, isRTL, opt_eventTarget) {
+    alwaysRenderAltGrCharacter, stateManager, isRTL,
+    enableShiftRendering, opt_eventTarget) {
   goog.base(this, id, i18n.input.chrome.inputview.elements.ElementType.
       CHARACTER_KEY, opt_eventTarget);
 
@@ -106,6 +114,9 @@ i18n.input.chrome.inputview.elements.content.CharacterKey = function(id,
    */
   this.alwaysRenderAltGrCharacter_ = alwaysRenderAltGrCharacter;
 
+  /** @private {boolean} */
+  this.enableShiftRendering_ = enableShiftRendering;
+
   this.pointerConfig.longPressWithPointerUp = true;
   this.pointerConfig.longPressDelay = 500;
 };
@@ -152,6 +163,7 @@ CharacterKey.prototype.createDom = function() {
           this.alwaysRenderAltGrCharacter_,
           CharacterKey.STATE_LIST_[i],
           this.stateManager_,
+          this.enableShiftRendering_,
           this.getCapslockCharacter_(i));
       var character = new Character(this.id + '-' + i, model, this.isRTL_);
       this.addChild(character, true);
@@ -230,7 +242,6 @@ CharacterKey.prototype.getActiveCharacter =
 };
 
 
-
 /**
  * Gets the character by gesture direction.
  *
@@ -282,6 +293,10 @@ CharacterKey.prototype.update = function() {
       i18n.input.chrome.inputview.StateType.SHIFT) ?
       i18n.input.chrome.inputview.SwipeDirection.DOWN :
       i18n.input.chrome.inputview.SwipeDirection.UP;
+
+  goog.a11y.aria.setState(/** @type {!Element} */ (this.getElement()),
+      goog.a11y.aria.State.LABEL,
+      this.getActiveCharacter());
 };
 
 });  // goog.scope

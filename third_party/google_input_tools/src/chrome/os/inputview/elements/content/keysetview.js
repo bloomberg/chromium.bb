@@ -37,6 +37,7 @@ goog.require('i18n.input.chrome.inputview.elements.content.PageIndicator');
 goog.require('i18n.input.chrome.inputview.elements.content.SpaceKey');
 goog.require('i18n.input.chrome.inputview.elements.content.SwitcherKey');
 goog.require('i18n.input.chrome.inputview.elements.content.TabBarKey');
+goog.require('i18n.input.chrome.inputview.elements.content.material.SpaceKey');
 goog.require('i18n.input.chrome.inputview.elements.layout.ExtendedLayout');
 goog.require('i18n.input.chrome.inputview.elements.layout.HandwritingLayout');
 goog.require('i18n.input.chrome.inputview.elements.layout.LinearLayout');
@@ -229,7 +230,7 @@ KeysetView.prototype.canvasView;
 /**
  * The space key.
  *
- * @type {!content.SpaceKey}
+ * @type {!content.SpaceKey | !content.material.SpaceKey}
  */
 KeysetView.prototype.spaceKey;
 
@@ -435,8 +436,6 @@ KeysetView.prototype.createElement_ = function(spec, opt_eventTarget) {
   var width = spec[SpecNodeName.WIDTH];
   var height = spec[SpecNodeName.HEIGHT];
   var padding = spec[SpecNodeName.PADDING];
-  var widthPercent = spec[SpecNodeName.WIDTH_PERCENT];
-  var heightPercent = spec[SpecNodeName.HEIGHT_PERCENT];
   var elem = null;
   switch (type) {
     case ElementType.SOFT_KEY_VIEW:
@@ -553,6 +552,9 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
   var name = spec[SpecNodeName.NAME];
   var characters = spec[SpecNodeName.CHARACTERS];
   var iconCssClass = spec[SpecNodeName.ICON_CSS_CLASS];
+  if (this.adapter && this.adapter.isQPInputView && iconCssClass) {
+    iconCssClass = iconCssClass.replace(/inputview/, 'm-inputview');
+  }
   var textCssClass = spec[SpecNodeName.TEXT_CSS_CLASS];
   var toKeyset = spec[SpecNodeName.TO_KEYSET];
   var toKeysetName = spec[SpecNodeName.TO_KEYSET_NAME];
@@ -565,8 +567,14 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
           this.dataModel_.stateManager, supportSticky);
       break;
     case ElementType.SPACE_KEY:
-      this.spaceKey = new content.SpaceKey(id, this.dataModel_.stateManager,
-          this.title_, characters, undefined, iconCssClass);
+      if (this.adapter && this.adapter.isQPInputView) {
+        this.spaceKey = new content.material.SpaceKey(id,
+            this.dataModel_.stateManager, this.title_, characters,
+            undefined, iconCssClass);
+      } else {
+        this.spaceKey = new content.SpaceKey(id, this.dataModel_.stateManager,
+            this.title_, characters, undefined, iconCssClass);
+      }
       elem = this.spaceKey;
       break;
     case ElementType.EN_SWITCHER:
@@ -616,13 +624,17 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
       var marginRightPercent = spec[SpecNodeName.MARGIN_RIGHT_PERCENT];
       var isGrey = spec[SpecNodeName.IS_GREY];
       var moreKeys = spec[SpecNodeName.MORE_KEYS];
+      var moreKeysCharacters =
+          moreKeys ? moreKeys[SpecNodeName.CHARACTERS] : undefined;
+      var fixedColumns =
+          moreKeys ? moreKeys[SpecNodeName.FIXED_COLUMN_NUMBER] : undefined;
       var contextMap = spec[SpecNodeName.ON_CONTEXT];
       var title = spec[SpecNodeName.TITLE];
       var onShift = spec[SpecNodeName.ON_SHIFT];
       var moreKeysShiftType = spec[SpecNodeName.MORE_KEYS_SHIFT_OPERATION];
       var compactKeyModel = new CompactKeyModel(marginLeftPercent,
-          marginRightPercent, isGrey, moreKeys, moreKeysShiftType, onShift,
-          contextMap, textCssClass, title);
+          marginRightPercent, isGrey, moreKeysCharacters, moreKeysShiftType,
+          onShift, contextMap, textCssClass, title, fixedColumns);
       elem = new content.CompactKey(
           id, text, hintText, this.dataModel_.stateManager, this.hasShift,
           compactKeyModel, undefined);
@@ -630,11 +642,16 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
     case ElementType.CHARACTER_KEY:
       var isLetterKey = i18n.input.chrome.inputview.util.isLetterKey(
           characters);
+      var enableShiftRendering = false;
+      if (this.adapter && this.adapter.isQPInputView) {
+        enableShiftRendering = !!spec[SpecNodeName.ENABLE_SHIFT_RENDERING];
+      }
       elem = new content.CharacterKey(id, keyCode || 0,
           characters, isLetterKey, hasAltGrCharacterInTheKeyset[isLetterKey],
           this.dataModel_.settings.alwaysRenderAltGrCharacter,
           this.dataModel_.stateManager,
-          goog.i18n.bidi.isRtlLanguage(this.languageCode));
+          goog.i18n.bidi.isRtlLanguage(this.languageCode),
+          enableShiftRendering);
       break;
 
     case ElementType.BACK_BUTTON:

@@ -236,6 +236,9 @@
   "ctrl": {
     "message": "ctrl"
   },
+  "current_keyboard_prefix": {
+    "message": "tastatur\u0103 selectat\u0103 actual\u0103 "
+  },
   "current_lang": {
     "message": "Limba de introducere a textului este chineza"
   },
@@ -252,40 +255,40 @@
     "message": "Pagina de set\u0103ri pentru tastatura ceh\u0103 qwerty"
   },
   "d83c_dc04": {
-    "message": "Mahjong tile"
+    "message": "pies\u0103 Mahjong"
   },
   "d83c_dccf": {
-    "message": "Joker card"
+    "message": "carte joker"
   },
   "d83c_dd70": {
-    "message": "blood type A"
+    "message": "grupa sanguin\u0103 A"
   },
   "d83c_dd71": {
-    "message": "blood type B"
+    "message": "grupa sanguin\u0103 B"
   },
   "d83c_dd7e": {
-    "message": "blood type O"
+    "message": "grupa sanguin\u0103 O"
   },
   "d83c_dd7f": {
-    "message": "parking"
+    "message": "parcare"
   },
   "d83c_dd8e": {
-    "message": "blood type AB"
+    "message": "grupa sanguin\u0103 AB"
   },
   "d83c_dd91": {
     "message": "CL"
   },
   "d83c_dd92": {
-    "message": "cool"
+    "message": "grozav"
   },
   "d83c_dd93": {
-    "message": "free"
+    "message": "gratuit"
   },
   "d83c_dd94": {
     "message": "ID"
   },
   "d83c_dd95": {
-    "message": "New"
+    "message": "Nou"
   },
   "d83c_dd96": {
     "message": "NG"
@@ -297,589 +300,589 @@
     "message": "SOS"
   },
   "d83c_dd99": {
-    "message": "UP!"
+    "message": "SUS!"
   },
   "d83c_dd9a": {
     "message": "versus"
   },
   "d83c_de01": {
-    "message": "Japanese word \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+    "message": "cuv\u00e2ntul japonez pentru \u201eaici\u201d"
   },
   "d83c_de02": {
-    "message": "Japanese word \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+    "message": "cuv\u00e2ntul japonez pentru \u201eserviciu\u201d"
   },
   "d83c_de1a": {
-    "message": "Japanese word 'free'"
+    "message": "cuv\u00e2ntul japonez pentru \u201egratuit\u201d"
   },
   "d83c_de2f": {
-    "message": "Japanese word 'reserved'"
+    "message": "cuv\u00e2ntul japonez pentru \u201erezervat\u201d"
   },
   "d83c_de32": {
-    "message": "Japanese word \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+    "message": "cuv\u00e2ntul japonez pentru \u201einterzis\u201d"
   },
   "d83c_de33": {
-    "message": "Chinese word 'space available'"
+    "message": "cuv\u00e2ntul chinezesc pentru \u201espa\u021biu disponibil\u201d"
   },
   "d83c_de34": {
-    "message": "Chinese word 'pass'"
+    "message": "cuv\u00e2ntul chinezesc pentru \u201epermis\u201d"
   },
   "d83c_de35": {
-    "message": "Chinese word 'full'"
+    "message": "cuv\u00e2ntul chinezesc pentru \u201ecomplet\u201d"
   },
   "d83c_de36": {
-    "message": "Japanese word 'fees'"
+    "message": "cuv\u00e2ntul japonez pentru \u201etaxe\u201d"
   },
   "d83c_de37": {
-    "message": "Japanese word 'monthly'"
+    "message": "cuv\u00e2ntul japonez pentru \u201elunar\u201d"
   },
   "d83c_de38": {
-    "message": "Chinese word 'application'"
+    "message": "cuv\u00e2ntul chinezesc pentru \u201eaplica\u021bie\u201d"
   },
   "d83c_de39": {
-    "message": "Japanese word 'discount'"
+    "message": "cuv\u00e2ntul japonez pentru \u201ereducere\u201d"
   },
   "d83c_de3a": {
-    "message": "Chinese word 'in business'"
+    "message": "cuv\u00e2ntul chinezesc pentru \u201e\u00een afaceri\u201d"
   },
   "d83c_de50": {
-    "message": "Japanese word 'advantage'"
+    "message": "cuv\u00e2ntul japonez pentru \u201eavantaj\u201d"
   },
   "d83c_de51": {
-    "message": "Chinese word 'approved'"
+    "message": "cuv\u00e2ntul chinezesc pentru \u201eaprobat\u201d"
   },
   "d83c_df00": {
-    "message": "cyclone"
+    "message": "ciclon"
   },
   "d83c_df01": {
-    "message": "foggy"
+    "message": "cea\u021b\u0103"
   },
   "d83c_df02": {
-    "message": "umbrella"
+    "message": "umbrel\u0103"
   },
   "d83c_df03": {
-    "message": "night stars"
+    "message": "stele noaptea"
   },
   "d83c_df04": {
-    "message": "sunrise over mountains"
+    "message": "r\u0103s\u0103rit peste mun\u021bi"
   },
   "d83c_df05": {
-    "message": "sunrise"
+    "message": "r\u0103s\u0103rit"
   },
   "d83c_df06": {
-    "message": "city at dusk"
+    "message": "ora\u0219 \u00een amurg"
   },
   "d83c_df07": {
-    "message": "sunset"
+    "message": "apus"
   },
   "d83c_df08": {
-    "message": "rainbow"
+    "message": "curcubeu"
   },
   "d83c_df09": {
-    "message": "night bridge"
+    "message": "pod noaptea"
   },
   "d83c_df0a": {
-    "message": "wave"
+    "message": "val"
   },
   "d83c_df0b": {
-    "message": "volcano"
+    "message": "vulcan"
   },
   "d83c_df0c": {
-    "message": "Milky Way"
+    "message": "Calea Lactee"
   },
   "d83c_df0d": {
-    "message": "globe Europe-Africa"
+    "message": "Europa \u0219i Africa pe glob"
   },
   "d83c_df0e": {
-    "message": "globe Americas"
+    "message": "Americile pe glob"
   },
   "d83c_df0f": {
-    "message": "globe Asia-Australia"
+    "message": "Asia \u0219i Australia pe glob"
   },
   "d83c_df10": {
-    "message": "globe with meridians"
+    "message": "glob cu meridianele"
   },
   "d83c_df11": {
-    "message": "new moon"
+    "message": "lun\u0103 nou\u0103"
   },
   "d83c_df12": {
-    "message": "waxing crescent moon"
+    "message": "semilun\u0103 \u00een cre\u0219tere"
   },
   "d83c_df13": {
-    "message": "first quarter moon"
+    "message": "lun\u0103 \u00een primul p\u0103trar"
   },
   "d83c_df14": {
-    "message": "waxing moon"
+    "message": "lun\u0103 \u00een cre\u0219tere"
   },
   "d83c_df15": {
-    "message": "full moon"
+    "message": "lun\u0103 plin\u0103"
   },
   "d83c_df16": {
-    "message": "waning moon"
+    "message": "lun\u0103 \u00een sc\u0103dere"
   },
   "d83c_df17": {
-    "message": "last quarter moon"
+    "message": "lun\u0103 \u00een ultimul p\u0103trar"
   },
   "d83c_df18": {
-    "message": "waning crescent moon"
+    "message": "semilun\u0103 \u00een sc\u0103dere"
   },
   "d83c_df19": {
-    "message": "crescent moon"
+    "message": "semilun\u0103"
   },
   "d83c_df1a": {
-    "message": "new moon face"
+    "message": "lun\u0103 nou\u0103 cu fa\u021b\u0103"
   },
   "d83c_df1b": {
-    "message": "first quarter moon face"
+    "message": "lun\u0103 \u00een primul p\u0103trar, cu fa\u021b\u0103"
   },
   "d83c_df1c": {
-    "message": "last quarter moon face"
+    "message": "lun\u0103 \u00een ultimul p\u0103trar, cu fa\u021b\u0103"
   },
   "d83c_df1d": {
-    "message": "full moon face"
+    "message": "lun\u0103 plin\u0103 cu fa\u021b\u0103"
   },
   "d83c_df1e": {
-    "message": "sun face"
+    "message": "soare cu fa\u021b\u0103"
   },
   "d83c_df1f": {
-    "message": "glowing star"
+    "message": "stea str\u0103lucitoare"
   },
   "d83c_df20": {
-    "message": "shooting star"
+    "message": "stea c\u0103z\u0103toare"
   },
   "d83c_df30": {
-    "message": "chestnut"
+    "message": "castan\u0103"
   },
   "d83c_df31": {
-    "message": "young plant"
+    "message": "pl\u0103ntu\u021b\u0103"
   },
   "d83c_df32": {
-    "message": "evergreen tree"
+    "message": "copac ve\u0219nic verde"
   },
   "d83c_df33": {
-    "message": "shedding tree"
+    "message": "copac foios"
   },
   "d83c_df34": {
-    "message": "palm tree"
+    "message": "palmier"
   },
   "d83c_df35": {
     "message": "cactus"
   },
   "d83c_df37": {
-    "message": "tulip"
+    "message": "lalea"
   },
   "d83c_df38": {
-    "message": "cherry blossom"
+    "message": "floare de cire\u0219"
   },
   "d83c_df39": {
-    "message": "rose"
+    "message": "trandafir"
   },
   "d83c_df3a": {
     "message": "hibiscus"
   },
   "d83c_df3b": {
-    "message": "sunflower"
+    "message": "floarea soarelui"
   },
   "d83c_df3c": {
-    "message": "blossom"
+    "message": "inflorescen\u021b\u0103"
   },
   "d83c_df3d": {
-    "message": "corn"
+    "message": "porumb"
   },
   "d83c_df3e": {
-    "message": "rice plant"
+    "message": "plant\u0103 de orez"
   },
   "d83c_df3f": {
-    "message": "herb"
+    "message": "plant\u0103"
   },
   "d83c_df40": {
-    "message": "four leaf clover"
+    "message": "trifoi cu patru foi"
   },
   "d83c_df41": {
-    "message": "maple leaf"
+    "message": "frunz\u0103 de ar\u021bar"
   },
   "d83c_df42": {
-    "message": "falling leaves"
+    "message": "frunze c\u0103z\u0103toare"
   },
   "d83c_df43": {
-    "message": "leaf in wind"
+    "message": "frunz\u0103 \u00een v\u00e2nt"
   },
   "d83c_df44": {
-    "message": "mushroom"
+    "message": "ciuperc\u0103"
   },
   "d83c_df45": {
-    "message": "tomato"
+    "message": "ro\u0219ie"
   },
   "d83c_df46": {
-    "message": "eggplant"
+    "message": "v\u00e2n\u0103t\u0103"
   },
   "d83c_df47": {
-    "message": "grapes"
+    "message": "struguri"
   },
   "d83c_df48": {
-    "message": "melon"
+    "message": "pepene galben"
   },
   "d83c_df49": {
-    "message": "watermelon"
+    "message": "pepene ro\u0219u"
   },
   "d83c_df4a": {
-    "message": "tangerine"
+    "message": "mandarin\u0103"
   },
   "d83c_df4b": {
-    "message": "lemon"
+    "message": "l\u0103m\u00e2ie"
   },
   "d83c_df4c": {
-    "message": "banana"
+    "message": "banan\u0103"
   },
   "d83c_df4d": {
-    "message": "pineapple"
+    "message": "ananas"
   },
   "d83c_df4e": {
-    "message": "red apple"
+    "message": "m\u0103r ro\u0219u"
   },
   "d83c_df4f": {
-    "message": "green apple"
+    "message": "m\u0103r verde"
   },
   "d83c_df50": {
-    "message": "pear"
+    "message": "par\u0103"
   },
   "d83c_df51": {
-    "message": "peach"
+    "message": "piersic\u0103"
   },
   "d83c_df52": {
-    "message": "cherry"
+    "message": "cirea\u0219\u0103"
   },
   "d83c_df53": {
-    "message": "strawberry"
+    "message": "c\u0103p\u0219un\u0103"
   },
   "d83c_df54": {
     "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "pizza slice"
+    "message": "felie de pizza"
   },
   "d83c_df56": {
-    "message": "meat"
+    "message": "carne"
   },
   "d83c_df57": {
-    "message": "chicken leg"
+    "message": "pulp\u0103 de pui"
   },
   "d83c_df58": {
-    "message": "rice cracker"
+    "message": "chips de orez"
   },
   "d83c_df59": {
-    "message": "rice ball"
+    "message": "bulet\u0103 de orez"
   },
   "d83c_df5a": {
-    "message": "cooked rice"
+    "message": "orez g\u0103tit"
   },
   "d83c_df5b": {
-    "message": "curry and rice"
+    "message": "curry \u0219i orez"
   },
   "d83c_df5c": {
-    "message": "ramen"
+    "message": "sup\u0103 ramen"
   },
   "d83c_df5d": {
-    "message": "spaghetti"
+    "message": "spaghete"
   },
   "d83c_df5e": {
-    "message": "bread"
+    "message": "p\u00e2ine"
   },
   "d83c_df5f": {
-    "message": "fries"
+    "message": "cartofi pr\u0103ji\u021bi"
   },
   "d83c_df60": {
-    "message": "roasted potato"
+    "message": "cartof copt"
   },
   "d83c_df61": {
-    "message": "mochi"
+    "message": "desert japonez mochi"
   },
   "d83c_df62": {
-    "message": "oden"
+    "message": "gustare japonez\u0103 oden"
   },
   "d83c_df63": {
     "message": "sushi"
   },
   "d83c_df64": {
-    "message": "fried shrimp"
+    "message": "crevete pr\u0103jit"
   },
   "d83c_df65": {
-    "message": "fish cake"
+    "message": "patiserie cu pe\u0219te"
   },
   "d83c_df66": {
-    "message": "soft ice cream"
+    "message": "\u00eenghe\u021bat\u0103 la cornet"
   },
   "d83c_df67": {
-    "message": "shaved ice"
+    "message": "ghea\u021b\u0103 pisat\u0103"
   },
   "d83c_df68": {
-    "message": "ice cream"
+    "message": "\u00eenghe\u021bat\u0103"
   },
   "d83c_df69": {
-    "message": "donut"
+    "message": "gogoa\u0219\u0103"
   },
   "d83c_df6a": {
-    "message": "cookie"
+    "message": "fursec"
   },
   "d83c_df6b": {
-    "message": "chocolate"
+    "message": "ciocolat\u0103"
   },
   "d83c_df6c": {
-    "message": "candy"
+    "message": "bomboan\u0103"
   },
   "d83c_df6d": {
-    "message": "lollipop"
+    "message": "acadea"
   },
   "d83c_df6e": {
-    "message": "custard"
+    "message": "crem\u0103 de ou"
   },
   "d83c_df6f": {
-    "message": "honeypot"
+    "message": "borcan de miere"
   },
   "d83c_df70": {
-    "message": "shortcake"
+    "message": "tart\u0103"
   },
   "d83c_df71": {
     "message": "bento"
   },
   "d83c_df72": {
-    "message": "stew"
+    "message": "tocan\u0103"
   },
   "d83c_df73": {
-    "message": "frying pan"
+    "message": "tigaie"
   },
   "d83c_df74": {
-    "message": "fork and knife"
+    "message": "furculi\u021b\u0103 \u0219i cu\u021bit"
   },
   "d83c_df75": {
-    "message": "teacup"
+    "message": "cea\u0219c\u0103 de ceai"
   },
   "d83c_df76": {
     "message": "sake"
   },
   "d83c_df77": {
-    "message": "wine"
+    "message": "vin"
   },
   "d83c_df78": {
     "message": "cocktail"
   },
   "d83c_df79": {
-    "message": "tropical drink"
+    "message": "b\u0103utur\u0103 tropical\u0103"
   },
   "d83c_df7a": {
-    "message": "beer"
+    "message": "bere"
   },
   "d83c_df7b": {
-    "message": "beer mugs"
+    "message": "halbe de bere"
   },
   "d83c_df7c": {
-    "message": "baby bottle"
+    "message": "biberon"
   },
   "d83c_df80": {
-    "message": "ribbon"
+    "message": "fund\u0103"
   },
   "d83c_df81": {
-    "message": "gift"
+    "message": "cadou"
   },
   "d83c_df82": {
-    "message": "birthday cake"
+    "message": "tort aniversar"
   },
   "d83c_df83": {
-    "message": "jack-o-lantern"
+    "message": "felinar din dovleac"
   },
   "d83c_df84": {
-    "message": "christmas tree"
+    "message": "brad de cr\u0103ciun"
   },
   "d83c_df85": {
-    "message": "santa"
+    "message": "mo\u0219 cr\u0103ciun"
   },
   "d83c_df86": {
-    "message": "firework"
+    "message": "artificii"
   },
   "d83c_df87": {
-    "message": "sparkler"
+    "message": "sclipire"
   },
   "d83c_df88": {
-    "message": "balloon"
+    "message": "balon"
   },
   "d83c_df89": {
-    "message": "party popper"
+    "message": "pocnitoare"
   },
   "d83c_df8a": {
-    "message": "confetti"
+    "message": "confeti"
   },
   "d83c_df8b": {
-    "message": "tree and paper strips"
+    "message": "bambus cu f\u00e2\u0219ii de h\u00e2rtie"
   },
   "d83c_df8c": {
-    "message": "crossed flags"
+    "message": "steaguri \u00eencruci\u0219ate"
   },
   "d83c_df8d": {
-    "message": "pine decoration"
+    "message": "decora\u021biune cu cetin\u0103"
   },
   "d83c_df8e": {
-    "message": "dolls"
+    "message": "p\u0103pu\u0219i"
   },
   "d83c_df8f": {
-    "message": "carp streamer"
+    "message": "crap decorativ \u00een v\u00e2nt"
   },
   "d83c_df90": {
-    "message": "wind chime"
+    "message": "clopo\u021bei de v\u00e2nt"
   },
   "d83c_df91": {
-    "message": "moon viewing"
+    "message": "ceremonie \u00een cinstea lunii"
   },
   "d83c_df92": {
-    "message": "school bag"
+    "message": "ghiozdan"
   },
   "d83c_df93": {
-    "message": "graduation cap"
+    "message": "toc\u0103 de absolvent"
   },
   "d83c_dfa0": {
-    "message": "carousel"
+    "message": "carusel"
   },
   "d83c_dfa1": {
-    "message": "ferris wheel"
+    "message": "scr\u00e2nciob"
   },
   "d83c_dfa2": {
-    "message": "roller coaster"
+    "message": "montagne russe"
   },
   "d83c_dfa3": {
-    "message": "fishing"
+    "message": "pescuit"
   },
   "d83c_dfa4": {
-    "message": "mic"
+    "message": "microfon"
   },
   "d83c_dfa5": {
-    "message": "movie camera"
+    "message": "camer\u0103 de filmat"
   },
   "d83c_dfa6": {
-    "message": "movie"
+    "message": "film"
   },
   "d83c_dfa7": {
-    "message": "headphone"
+    "message": "c\u0103\u0219ti"
   },
   "d83c_dfa8": {
-    "message": "paint palette"
+    "message": "palet\u0103 de pictur\u0103"
   },
   "d83c_dfa9": {
-    "message": "top hat"
+    "message": "joben"
   },
   "d83c_dfaa": {
-    "message": "circus"
+    "message": "circ"
   },
   "d83c_dfab": {
-    "message": "ticket"
+    "message": "bilet"
   },
   "d83c_dfac": {
-    "message": "clapperboard"
+    "message": "clachet\u0103"
   },
   "d83c_dfad": {
-    "message": "face mask"
+    "message": "masc\u0103"
   },
   "d83c_dfae": {
-    "message": "video game"
+    "message": "joc video"
   },
   "d83c_dfaf": {
-    "message": "bull's eye"
+    "message": "fix la \u021bint\u0103"
   },
   "d83c_dfb0": {
-    "message": "slot machine"
+    "message": "automat"
   },
   "d83c_dfb1": {
-    "message": "billiard"
+    "message": "biliard"
   },
   "d83c_dfb2": {
-    "message": "game die"
+    "message": "zar"
   },
   "d83c_dfb3": {
-    "message": "bowling"
+    "message": "popice"
   },
   "d83c_dfb4": {
-    "message": "playing card"
+    "message": "carte de joc"
   },
   "d83c_dfb5": {
-    "message": "musical note"
+    "message": "not\u0103 muzical\u0103"
   },
   "d83c_dfb6": {
-    "message": "musical notes"
+    "message": "note muzicale"
   },
   "d83c_dfb7": {
-    "message": "sax"
+    "message": "saxofon"
   },
   "d83c_dfb8": {
-    "message": "guitar"
+    "message": "chitar\u0103"
   },
   "d83c_dfb9": {
-    "message": "piano"
+    "message": "pian"
   },
   "d83c_dfba": {
-    "message": "trumpet"
+    "message": "trompet\u0103"
   },
   "d83c_dfbb": {
-    "message": "violin"
+    "message": "vioar\u0103"
   },
   "d83c_dfbc": {
-    "message": "music score"
+    "message": "portativ"
   },
   "d83c_dfbd": {
-    "message": "running shirt"
+    "message": "maieu de atletism"
   },
   "d83c_dfbe": {
-    "message": "tennis"
+    "message": "tenis"
   },
   "d83c_dfbf": {
-    "message": "ski"
+    "message": "schi"
   },
   "d83c_dfc0": {
-    "message": "basketball"
+    "message": "baschet"
   },
   "d83c_dfc1": {
-    "message": "checkered flag"
+    "message": "steag \u00een carouri"
   },
   "d83c_dfc2": {
-    "message": "snowboarder"
+    "message": "practicant de snow-board"
   },
   "d83c_dfc3": {
-    "message": "runner"
+    "message": "alerg\u0103tor"
   },
   "d83c_dfc4": {
     "message": "surfing"
   },
   "d83c_dfc6": {
-    "message": "trophy"
+    "message": "trofeu"
   },
   "d83c_dfc7": {
-    "message": "horse racing"
+    "message": "curse de cai"
   },
   "d83c_dfc8": {
-    "message": "American football"
+    "message": "fotbal american"
   },
   "d83c_dfc9": {
-    "message": "soccer"
+    "message": "fotbal"
   },
   "d83c_dfca": {
-    "message": "swimmer"
+    "message": "\u00eenot\u0103tor"
   },
   "d83c_dfe0": {
-    "message": "house"
+    "message": "cas\u0103"
   },
   "d83c_dfe1": {
-    "message": "home"
+    "message": "acas\u0103"
   },
   "d83c_dfe2": {
-    "message": "office building"
+    "message": "cl\u0103dire de birouri"
   },
   "d83c_dfe3": {
-    "message": "Japanese post office"
+    "message": "oficiu po\u0219tal japonez"
   },
   "d83c_dfe4": {
-    "message": "European post office"
+    "message": "oficiu po\u0219tal european"
   },
   "d83c_dfe5": {
-    "message": "hospital"
+    "message": "spital"
   },
   "d83c_dfe6": {
-    "message": "bank"
+    "message": "banc\u0103"
   },
   "d83c_dfe7": {
     "message": "ATM"
@@ -888,283 +891,283 @@
     "message": "hotel"
   },
   "d83c_dfe9": {
-    "message": "love hotel"
+    "message": "hotel de dragoste"
   },
   "d83c_dfea": {
-    "message": "convenience store"
+    "message": "supermarket"
   },
   "d83c_dfeb": {
-    "message": "school"
+    "message": "\u0219coal\u0103"
   },
   "d83c_dfec": {
-    "message": "department store"
+    "message": "magazin universal"
   },
   "d83c_dfed": {
-    "message": "factory"
+    "message": "fabric\u0103"
   },
   "d83c_dfee": {
-    "message": "red lantern"
+    "message": "felinar ro\u0219u"
   },
   "d83c_dfef": {
-    "message": "Japanese castle"
+    "message": "castel japonez"
   },
   "d83c_dff0": {
-    "message": "European castle"
+    "message": "castel european"
   },
   "d83d_dc00": {
-    "message": "Rat"
+    "message": "\u0219obolan"
   },
   "d83d_dc01": {
-    "message": "Mouse"
+    "message": "\u0219oarece"
   },
   "d83d_dc02": {
-    "message": "Ox"
+    "message": "bou"
   },
   "d83d_dc03": {
-    "message": "water buffalo"
+    "message": "bivol"
   },
   "d83d_dc04": {
-    "message": "cow"
+    "message": "vac\u0103"
   },
   "d83d_dc06": {
     "message": "leopard"
   },
   "d83d_dc07": {
-    "message": "rabbit"
+    "message": "iepure"
   },
   "d83d_dc08": {
-    "message": "cat"
+    "message": "pisic\u0103"
   },
   "d83d_dc09": {
     "message": "dragon"
   },
   "d83d_dc0a": {
-    "message": "crocodile"
+    "message": "crocodil"
   },
   "d83d_dc0b": {
-    "message": "whale"
+    "message": "balen\u0103"
   },
   "d83d_dc0c": {
-    "message": "snail"
+    "message": "melc"
   },
   "d83d_dc0d": {
-    "message": "snake"
+    "message": "\u0219arpe"
   },
   "d83d_dc0e": {
-    "message": "horse"
+    "message": "cal"
   },
   "d83d_dc0f": {
-    "message": "ram"
+    "message": "berbec"
   },
   "d83d_dc10": {
-    "message": "goat"
+    "message": "capr\u0103"
   },
   "d83d_dc11": {
-    "message": "sheep"
+    "message": "oaie"
   },
   "d83d_dc12": {
-    "message": "monkey"
+    "message": "maimu\u021b\u0103"
   },
   "d83d_dc13": {
-    "message": "rooster"
+    "message": "coco\u0219"
   },
   "d83d_dc14": {
-    "message": "chicken"
+    "message": "g\u0103in\u0103"
   },
   "d83d_dc15": {
-    "message": "dog"
+    "message": "c\u00e2ine"
   },
   "d83d_dc16": {
-    "message": "pig"
+    "message": "porc"
   },
   "d83d_dc17": {
-    "message": "boar"
+    "message": "mistre\u021b"
   },
   "d83d_dc18": {
-    "message": "elephant"
+    "message": "elefant"
   },
   "d83d_dc19": {
-    "message": "octopus"
+    "message": "caracati\u021b\u0103"
   },
   "d83d_dc1a": {
-    "message": "shell"
+    "message": "cochilie"
   },
   "d83d_dc1b": {
-    "message": "bug"
+    "message": "g\u00e2ndac"
   },
   "d83d_dc1c": {
-    "message": "ant"
+    "message": "furnic\u0103"
   },
   "d83d_dc1d": {
-    "message": "honeybee"
+    "message": "albin\u0103"
   },
   "d83d_dc1e": {
-    "message": "lady beetle"
+    "message": "buburuz\u0103"
   },
   "d83d_dc1f": {
-    "message": "fish"
+    "message": "pe\u0219te"
   },
   "d83d_dc20": {
-    "message": "tropical fish"
+    "message": "pe\u0219te tropical"
   },
   "d83d_dc21": {
-    "message": "blowfish"
+    "message": "pe\u0219te \u021bepos"
   },
   "d83d_dc22": {
-    "message": "turtle"
+    "message": "broasc\u0103 \u021bestoas\u0103"
   },
   "d83d_dc23": {
-    "message": "hatching chick"
+    "message": "pui ie\u0219ind din g\u0103oace"
   },
   "d83d_dc24": {
-    "message": "baby chick face"
+    "message": "fa\u021b\u0103 de pui de g\u0103in\u0103"
   },
   "d83d_dc25": {
-    "message": "baby chick"
+    "message": "pui de g\u0103in\u0103"
   },
   "d83d_dc26": {
-    "message": "bird"
+    "message": "pas\u0103re"
   },
   "d83d_dc27": {
-    "message": "penguin"
+    "message": "pinguin"
   },
   "d83d_dc28": {
     "message": "koala"
   },
   "d83d_dc29": {
-    "message": "poodle"
+    "message": "pudel"
   },
   "d83d_dc2a": {
-    "message": "one hump camel"
+    "message": "dromader"
   },
   "d83d_dc2b": {
-    "message": "two hump camel"
+    "message": "c\u0103mil\u0103"
   },
   "d83d_dc2c": {
-    "message": "dolphin"
+    "message": "delfin"
   },
   "d83d_dc2d": {
-    "message": "mouse face"
+    "message": "fa\u021b\u0103 de \u0219oarece"
   },
   "d83d_dc2e": {
-    "message": "cow face"
+    "message": "fa\u021b\u0103 de vac\u0103"
   },
   "d83d_dc2f": {
-    "message": "tiger face"
+    "message": "fa\u021b\u0103 de tigru"
   },
   "d83d_dc30": {
-    "message": "rabbit face"
+    "message": "fa\u021b\u0103 de iepure"
   },
   "d83d_dc31": {
-    "message": "cat face"
+    "message": "fa\u021b\u0103 de pisic\u0103"
   },
   "d83d_dc32": {
-    "message": "dragon face"
+    "message": "fa\u021b\u0103 de dragon"
   },
   "d83d_dc33": {
-    "message": "spouting whale"
+    "message": "balen\u0103 cu jet de ap\u0103"
   },
   "d83d_dc34": {
-    "message": "horse face"
+    "message": "fa\u021b\u0103 de cal"
   },
   "d83d_dc35": {
-    "message": "monkey face"
+    "message": "fa\u021b\u0103 de maimu\u021b\u0103"
   },
   "d83d_dc36": {
-    "message": "dog face"
+    "message": "fa\u021b\u0103 de c\u0103\u021bel"
   },
   "d83d_dc37": {
-    "message": "pig face"
+    "message": "fa\u021b\u0103 de porc"
   },
   "d83d_dc38": {
-    "message": "frog face"
+    "message": "fa\u021b\u0103 de broasc\u0103"
   },
   "d83d_dc39": {
-    "message": "hamster face"
+    "message": "fa\u021b\u0103 de hamster"
   },
   "d83d_dc3a": {
-    "message": "wolf face"
+    "message": "fa\u021b\u0103 l\u00e2noas\u0103"
   },
   "d83d_dc3b": {
-    "message": "bear face"
+    "message": "fa\u021b\u0103 de urs"
   },
   "d83d_dc3c": {
-    "message": "panda face"
+    "message": "fa\u021b\u0103 de panda"
   },
   "d83d_dc3d": {
-    "message": "pig nose"
+    "message": "nas de porc"
   },
   "d83d_dc3e": {
-    "message": "paw"
+    "message": "lab\u0103"
   },
   "d83d_dc40": {
-    "message": "eyes"
+    "message": "ochi"
   },
   "d83d_dc42": {
-    "message": "ear"
+    "message": "ureche"
   },
   "d83d_dc43": {
-    "message": "nose"
+    "message": "nas"
   },
   "d83d_dc44": {
-    "message": "mouth"
+    "message": "gur\u0103"
   },
   "d83d_dc45": {
-    "message": "tongue"
+    "message": "limb\u0103"
   },
   "d83d_dc46": {
-    "message": "up finger"
+    "message": "deget indicator \u00een sus"
   },
   "d83d_dc47": {
-    "message": "down finger"
+    "message": "deget indicator \u00een jos"
   },
   "d83d_dc48": {
-    "message": "left finger"
+    "message": "deget indicator spre st\u00e2nga"
   },
   "d83d_dc49": {
-    "message": "right finger"
+    "message": "deget indicator spre dreapta"
   },
   "d83d_dc4a": {
-    "message": "clenched fist"
+    "message": "pumn str\u00e2ns"
   },
   "d83d_dc4b": {
-    "message": "hand waving"
+    "message": "fluturare de m\u00e2n\u0103"
   },
   "d83d_dc4c": {
-    "message": "OK hand sign"
+    "message": "semn OK cu m\u00e2na"
   },
   "d83d_dc4d": {
-    "message": "thumbs up"
+    "message": "\u00eemi place"
   },
   "d83d_dc4e": {
-    "message": "thumbs down"
+    "message": "nu \u00eemi place"
   },
   "d83d_dc4f": {
-    "message": "hands clapping"
+    "message": "aplauze"
   },
   "d83d_dc50": {
-    "message": "open hands"
+    "message": "palme deschise"
   },
   "d83d_dc51": {
-    "message": "crown"
+    "message": "coroan\u0103"
   },
   "d83d_dc52": {
-    "message": "woman's hat"
+    "message": "p\u0103l\u0103rie de dam\u0103"
   },
   "d83d_dc53": {
-    "message": "eyeglasses"
+    "message": "ochelari"
   },
   "d83d_dc54": {
-    "message": "necktie"
+    "message": "cravat\u0103"
   },
   "d83d_dc55": {
-    "message": "T-shirt"
+    "message": "tricou"
   },
   "d83d_dc56": {
-    "message": "trousers"
+    "message": "pantaloni"
   },
   "d83d_dc57": {
-    "message": "dress"
+    "message": "rochie"
   },
   "d83d_dc58": {
     "message": "kimono"
@@ -1173,307 +1176,307 @@
     "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "woman's clothes"
+    "message": "haine de dam\u0103"
   },
   "d83d_dc5b": {
-    "message": "purse"
+    "message": "portmoneu"
   },
   "d83d_dc5c": {
-    "message": "handbag"
+    "message": "po\u0219et\u0103"
   },
   "d83d_dc5d": {
-    "message": "pouch"
+    "message": "gentu\u021b\u0103"
   },
   "d83d_dc5e": {
-    "message": "man's shoe"
+    "message": "pantof b\u0103rb\u0103tesc"
   },
   "d83d_dc5f": {
-    "message": "athletic shoe"
+    "message": "pantof sport"
   },
   "d83d_dc60": {
-    "message": "high-heel"
+    "message": "toc \u00eenalt"
   },
   "d83d_dc61": {
-    "message": "woman's sandal"
+    "message": "sanda de dam\u0103"
   },
   "d83d_dc62": {
-    "message": "woman's boot"
+    "message": "cizm\u0103 de dam\u0103"
   },
   "d83d_dc63": {
-    "message": "footprint"
+    "message": "urm\u0103 de picior"
   },
   "d83d_dc64": {
-    "message": "bust in silhouette"
+    "message": "siluet\u0103 p\u00e2n\u0103 la bust"
   },
   "d83d_dc65": {
-    "message": "busts in silhouette"
+    "message": "siluete p\u00e2n\u0103 la bust"
   },
   "d83d_dc66": {
-    "message": "boy"
+    "message": "b\u0103iat"
   },
   "d83d_dc67": {
-    "message": "girl"
+    "message": "fat\u0103"
   },
   "d83d_dc68": {
-    "message": "man"
+    "message": "b\u0103rbat"
   },
   "d83d_dc69": {
-    "message": "woman"
+    "message": "femeie"
   },
   "d83d_dc6a": {
-    "message": "family"
+    "message": "familie"
   },
   "d83d_dc6b": {
-    "message": "man and woman"
+    "message": "b\u0103rbat \u0219i femeie"
   },
   "d83d_dc6c": {
-    "message": "two men"
+    "message": "doi b\u0103rba\u021bi"
   },
   "d83d_dc6d": {
-    "message": "two women"
+    "message": "dou\u0103 femei"
   },
   "d83d_dc6e": {
-    "message": "police officer"
+    "message": "poli\u021bist"
   },
   "d83d_dc6f": {
-    "message": "bunny girl"
+    "message": "fat\u0103 cu urechi de iepura\u0219"
   },
   "d83d_dc70": {
-    "message": "bride"
+    "message": "mireas\u0103"
   },
   "d83d_dc71": {
-    "message": "blond person"
+    "message": "persoan\u0103 blond\u0103"
   },
   "d83d_dc72": {
-    "message": "man with gua pi mao"
+    "message": "b\u0103rbat cu gua pi mao"
   },
   "d83d_dc73": {
-    "message": "man with a turban"
+    "message": "b\u0103rbat cu turban"
   },
   "d83d_dc74": {
-    "message": "older man"
+    "message": "b\u0103rbat \u00een v\u00e2rst\u0103"
   },
   "d83d_dc75": {
-    "message": "older woman"
+    "message": "femeie \u00een v\u00e2rst\u0103"
   },
   "d83d_dc76": {
-    "message": "baby"
+    "message": "bebelu\u0219"
   },
   "d83d_dc77": {
-    "message": "construction worker"
+    "message": "muncitor \u00een construc\u021bii"
   },
   "d83d_dc78": {
-    "message": "princess"
+    "message": "prin\u021bes\u0103"
   },
   "d83d_dc79": {
-    "message": "ogre"
+    "message": "c\u0103pc\u0103un"
   },
   "d83d_dc7a": {
-    "message": "goblin"
+    "message": "spiridu\u0219"
   },
   "d83d_dc7b": {
-    "message": "ghost"
+    "message": "fantom\u0103"
   },
   "d83d_dc7c": {
-    "message": "baby angel"
+    "message": "copil \u00eengera\u0219"
   },
   "d83d_dc7d": {
-    "message": "alien"
+    "message": "extraterestru"
   },
   "d83d_dc7e": {
-    "message": "alien monster"
+    "message": "monstru extraterestru"
   },
   "d83d_dc7f": {
-    "message": "imp"
+    "message": "dr\u0103cu\u0219or"
   },
   "d83d_dc80": {
-    "message": "skull"
+    "message": "craniu"
   },
   "d83d_dc81": {
-    "message": "information desk"
+    "message": "la biroul de informa\u021bii"
   },
   "d83d_dc82": {
-    "message": "guardsman"
+    "message": "paznic"
   },
   "d83d_dc83": {
-    "message": "dancer"
+    "message": "dansator"
   },
   "d83d_dc84": {
-    "message": "lipstick"
+    "message": "ruj de buze"
   },
   "d83d_dc85": {
-    "message": "nail care"
+    "message": "manechiur\u0103"
   },
   "d83d_dc86": {
-    "message": "face massage"
+    "message": "masaj facial"
   },
   "d83d_dc87": {
-    "message": "haircut"
+    "message": "tunsoare"
   },
   "d83d_dc88": {
-    "message": "barber shop"
+    "message": "frizerie"
   },
   "d83d_dc89": {
-    "message": "shot"
+    "message": "injec\u021bie"
   },
   "d83d_dc8a": {
-    "message": "pill"
+    "message": "pastil\u0103"
   },
   "d83d_dc8b": {
-    "message": "kiss mark"
+    "message": "urm\u0103 de buze"
   },
   "d83d_dc8c": {
-    "message": "love letter"
+    "message": "scrisoare de dragoste"
   },
   "d83d_dc8d": {
-    "message": "ring"
+    "message": "inel"
   },
   "d83d_dc8e": {
-    "message": "gem"
+    "message": "nestemat\u0103"
   },
   "d83d_dc8f": {
-    "message": "kiss"
+    "message": "s\u0103rut"
   },
   "d83d_dc90": {
-    "message": "bouquet"
+    "message": "buchet"
   },
   "d83d_dc91": {
-    "message": "couple"
+    "message": "cuplu"
   },
   "d83d_dc92": {
-    "message": "wedding chapel"
+    "message": "capel\u0103 de nun\u021bi"
   },
   "d83d_dc93": {
-    "message": "pulsating heart"
+    "message": "inim\u0103 care pulseaz\u0103"
   },
   "d83d_dc94": {
-    "message": "heart break"
+    "message": "inim\u0103 fr\u00e2nt\u0103"
   },
   "d83d_dc95": {
-    "message": "two hearts"
+    "message": "dou\u0103 inimi"
   },
   "d83d_dc96": {
-    "message": "sparkling heart"
+    "message": "inim\u0103 sclipitoare"
   },
   "d83d_dc97": {
-    "message": "growing heart"
+    "message": "inim\u0103 din ce \u00een ce mai mare"
   },
   "d83d_dc98": {
-    "message": "heart and arrow"
+    "message": "inim\u0103 \u0219i s\u0103geat\u0103"
   },
   "d83d_dc99": {
-    "message": "blue heart"
+    "message": "inim\u0103 albastr\u0103"
   },
   "d83d_dc9a": {
-    "message": "green heart"
+    "message": "inim\u0103 verde"
   },
   "d83d_dc9b": {
-    "message": "yellow heart"
+    "message": "inim\u0103 galben\u0103"
   },
   "d83d_dc9c": {
-    "message": "purple heart"
+    "message": "inim\u0103 purpurie"
   },
   "d83d_dc9d": {
-    "message": "heart with ribbon"
+    "message": "inim\u0103 cu fund\u0103"
   },
   "d83d_dc9e": {
-    "message": "revolving hearts"
+    "message": "inimi care se \u00eenv\u00e2rt"
   },
   "d83d_dc9f": {
-    "message": "heart decoration"
+    "message": "decora\u021biune inimioar\u0103"
   },
   "d83d_dca0": {
-    "message": "flower petal"
+    "message": "petal\u0103 de floare"
   },
   "d83d_dca1": {
-    "message": "light bulb"
+    "message": "bec"
   },
   "d83d_dca2": {
-    "message": "anger"
+    "message": "furie"
   },
   "d83d_dca3": {
-    "message": "bomb"
+    "message": "bomb\u0103"
   },
   "d83d_dca4": {
-    "message": "sleepy symbol"
+    "message": "simbol pentru sfor\u0103it"
   },
   "d83d_dca5": {
-    "message": "collision"
+    "message": "coliziune"
   },
   "d83d_dca6": {
-    "message": "splashing sweat"
+    "message": "transpira\u021bie abundent\u0103"
   },
   "d83d_dca7": {
-    "message": "cold sweat"
+    "message": "sudoare rece"
   },
   "d83d_dca8": {
-    "message": "running dash"
+    "message": "urm\u0103 de nori de praf"
   },
   "d83d_dca9": {
-    "message": "poop"
+    "message": "caca"
   },
   "d83d_dcaa": {
     "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "dizzy"
+    "message": "ame\u021bit"
   },
   "d83d_dcac": {
-    "message": "speech balloon"
+    "message": "bul\u0103 de vorbire"
   },
   "d83d_dcad": {
-    "message": "thought balloon"
+    "message": "bul\u0103 de g\u00e2nduri"
   },
   "d83d_dcae": {
-    "message": "flower stamp"
+    "message": "\u0219tampil\u0103 floare"
   },
   "d83d_dcaf": {
-    "message": "full score"
+    "message": "scor maxim"
   },
   "d83d_dcb0": {
-    "message": "money bag"
+    "message": "sac de bani"
   },
   "d83d_dcb1": {
-    "message": "currency exchange"
+    "message": "schimb valutar"
   },
   "d83d_dcb2": {
-    "message": "dollar sign"
+    "message": "semnul dolarului"
   },
   "d83d_dcb3": {
-    "message": "credit card"
+    "message": "card de credit"
   },
   "d83d_dcb4": {
-    "message": "yen note"
+    "message": "bancnot\u0103 yen"
   },
   "d83d_dcb5": {
-    "message": "dollar note"
+    "message": "bancnot\u0103 dolar"
   },
   "d83d_dcb6": {
-    "message": "Euro note"
+    "message": "bancnot\u0103 euro"
   },
   "d83d_dcb7": {
-    "message": "Pound note"
+    "message": "bancnot\u0103 lir\u0103"
   },
   "d83d_dcb8": {
-    "message": "flying money"
+    "message": "bani cu aripi"
   },
   "d83d_dcb9": {
-    "message": "rising market"
+    "message": "pia\u021b\u0103 \u00een cre\u0219tere"
   },
   "d83d_dcba": {
-    "message": "seat"
+    "message": "loc \u00een mijloc de transport"
   },
   "d83d_dcbb": {
     "message": "PC"
   },
   "d83d_dcbc": {
-    "message": "briefcase"
+    "message": "serviet\u0103"
   },
   "d83d_dcbd": {
-    "message": "mini disc"
+    "message": "minidisc"
   },
   "d83d_dcbe": {
-    "message": "floppy disc"
+    "message": "dischet\u0103"
   },
   "d83d_dcbf": {
     "message": "blu-ray"
@@ -1482,10 +1485,10 @@
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "file folder"
+    "message": "dosar cu fi\u0219iere"
   },
   "d83d_dcc2": {
-    "message": "open folder"
+    "message": "dosar deschis"
   },
   "d83d_dcc3": {
     "message": "document"
@@ -1497,79 +1500,79 @@
     "message": "calendar"
   },
   "d83d_dcc6": {
-    "message": "tear-off calendar"
+    "message": "calendar cu file deta\u0219abile"
   },
   "d83d_dcc7": {
-    "message": "card index"
+    "message": "rolodex"
   },
   "d83d_dcc8": {
-    "message": "upward trend"
+    "message": "tendin\u021b\u0103 ascendent\u0103"
   },
   "d83d_dcc9": {
-    "message": "downward trend"
+    "message": "tendin\u021b\u0103 descendent\u0103"
   },
   "d83d_dcca": {
-    "message": "bar graph"
+    "message": "diagram\u0103"
   },
   "d83d_dccb": {
-    "message": "clipboard"
+    "message": "t\u0103bli\u021b\u0103 de scris"
   },
   "d83d_dccc": {
-    "message": "pushpin"
+    "message": "piunez\u0103"
   },
   "d83d_dccd": {
-    "message": "round pushpin"
+    "message": "ac cu g\u0103m\u0103lie"
   },
   "d83d_dcce": {
-    "message": "paperclip"
+    "message": "agraf\u0103 de h\u00e2rtie"
   },
   "d83d_dccf": {
-    "message": "straight ruler"
+    "message": "rigl\u0103"
   },
   "d83d_dcd0": {
-    "message": "triangle ruler"
+    "message": "rigl\u0103 echer"
   },
   "d83d_dcd1": {
-    "message": "bookmark tabs"
+    "message": "marcatoare de file"
   },
   "d83d_dcd2": {
-    "message": "ledger"
+    "message": "registru"
   },
   "d83d_dcd3": {
-    "message": "notebook"
+    "message": "blocnotes"
   },
   "d83d_dcd4": {
-    "message": "decorated notebook"
+    "message": "caiet decorat"
   },
   "d83d_dcd5": {
-    "message": "closed book"
+    "message": "carte \u00eenchis\u0103"
   },
   "d83d_dcd6": {
-    "message": "open book"
+    "message": "carte deschis\u0103"
   },
   "d83d_dcd7": {
-    "message": "green book"
+    "message": "carte verde"
   },
   "d83d_dcd8": {
-    "message": "book"
+    "message": "carte"
   },
   "d83d_dcd9": {
-    "message": "orange book"
+    "message": "carte portocalie"
   },
   "d83d_dcda": {
-    "message": "books"
+    "message": "c\u0103r\u021bi"
   },
   "d83d_dcdb": {
-    "message": "name badge"
+    "message": "ecuson"
   },
   "d83d_dcdc": {
-    "message": "scroll"
+    "message": "papirus"
   },
   "d83d_dcdd": {
-    "message": "memo"
+    "message": "memento"
   },
   "d83d_dcde": {
-    "message": "phone"
+    "message": "telefon"
   },
   "d83d_dcdf": {
     "message": "pager"
@@ -1578,76 +1581,76 @@
     "message": "fax"
   },
   "d83d_dce1": {
-    "message": "satellite dish"
+    "message": "anten\u0103 de satelit"
   },
   "d83d_dce2": {
-    "message": "loudspeaker"
+    "message": "portavoce"
   },
   "d83d_dce3": {
-    "message": "megaphone"
+    "message": "megafon"
   },
   "d83d_dce4": {
-    "message": "sent mail"
+    "message": "e-mail trimis"
   },
   "d83d_dce5": {
-    "message": "Inbox"
+    "message": "mesaje primite"
   },
   "d83d_dce6": {
-    "message": "package"
+    "message": "pachet"
   },
   "d83d_dce7": {
-    "message": "email"
+    "message": "e-mail"
   },
   "d83d_dce8": {
-    "message": "incoming mail"
+    "message": "mesaj primit"
   },
   "d83d_dce9": {
-    "message": "outgoing mail"
+    "message": "mesaj trimis"
   },
   "d83d_dcea": {
-    "message": "closed mailbox with flag down"
+    "message": "c\u0103su\u021b\u0103 po\u0219tal\u0103 \u00eenchis\u0103 cu stegule\u021b \u00een jos"
   },
   "d83d_dceb": {
-    "message": "closed mailbox with flag up"
+    "message": "c\u0103su\u021b\u0103 po\u0219tal\u0103 \u00eenchis\u0103 cu stegule\u021b \u00een sus"
   },
   "d83d_dcec": {
-    "message": "open mailbox with flag up"
+    "message": "c\u0103su\u021b\u0103 po\u0219tal\u0103 deschis\u0103 cu stegule\u021b \u00een sus"
   },
   "d83d_dced": {
-    "message": "open mailbox with flag down"
+    "message": "c\u0103su\u021b\u0103 po\u0219tal\u0103 deschis\u0103 cu stegule\u021b \u00een jos"
   },
   "d83d_dcee": {
-    "message": "postbox"
+    "message": "c\u0103su\u021b\u0103 po\u0219tal\u0103"
   },
   "d83d_dcef": {
-    "message": "postal horn"
+    "message": "corn po\u0219tal"
   },
   "d83d_dcf0": {
-    "message": "newspaper"
+    "message": "ziar"
   },
   "d83d_dcf1": {
-    "message": "cell phone"
+    "message": "telefon mobil"
   },
   "d83d_dcf2": {
-    "message": "cell phone with arrow"
+    "message": "telefon mobil cu s\u0103geat\u0103"
   },
   "d83d_dcf3": {
-    "message": "vibration mode"
+    "message": "modul vibrare"
   },
   "d83d_dcf4": {
-    "message": "phone off"
+    "message": "opri\u021bi telefoanele"
   },
   "d83d_dcf5": {
-    "message": "no cell phone"
+    "message": "telefoanele mobile sunt interzise"
   },
   "d83d_dcf6": {
-    "message": "mobile signals"
+    "message": "semnale mobile"
   },
   "d83d_dcf7": {
-    "message": "camera"
+    "message": "camer\u0103 foto"
   },
   "d83d_dcf9": {
-    "message": "video cam"
+    "message": "camer\u0103 video"
   },
   "d83d_dcfa": {
     "message": "TV"
@@ -1656,715 +1659,715 @@
     "message": "radio"
   },
   "d83d_dcfc": {
-    "message": "video tape"
+    "message": "caset\u0103 video"
   },
   "d83d_dd00": {
-    "message": "crossed arrows"
+    "message": "s\u0103ge\u021bi \u00eencruci\u0219ate"
   },
   "d83d_dd01": {
-    "message": "clockwise arrows"
+    "message": "s\u0103ge\u021bi \u00een sensul acelor de ceasornic"
   },
   "d83d_dd02": {
-    "message": "clockwise arrows"
+    "message": "s\u0103ge\u021bi \u00een sensul acelor de ceasornic"
   },
   "d83d_dd03": {
-    "message": "reload"
+    "message": "re\u00eenc\u0103rcare"
   },
   "d83d_dd04": {
-    "message": "anti-clockwise arrows"
+    "message": "s\u0103ge\u021bi \u00een sensul invers acelor de ceasornic"
   },
   "d83d_dd05": {
-    "message": "low brightness"
+    "message": "luminozitate redus\u0103"
   },
   "d83d_dd06": {
-    "message": "high brightness"
+    "message": "luminozitate ridicat\u0103"
   },
   "d83d_dd07": {
-    "message": "no speaking"
+    "message": "f\u0103r\u0103 sunet"
   },
   "d83d_dd08": {
-    "message": "speaker"
+    "message": "difuzor"
   },
   "d83d_dd09": {
-    "message": "speaker with low volume"
+    "message": "difuzor cu volum mic"
   },
   "d83d_dd0a": {
-    "message": "speaker with high volume"
+    "message": "difuzor cu volum mare"
   },
   "d83d_dd0b": {
-    "message": "battery"
+    "message": "baterie"
   },
   "d83d_dd0c": {
-    "message": "electric plug"
+    "message": "\u0219tec\u0103r"
   },
   "d83d_dd0d": {
-    "message": "left-tilted magnifying glass"
+    "message": "lup\u0103 \u00eenclinat\u0103 spre st\u00e2nga"
   },
   "d83d_dd0e": {
-    "message": "right-tilted magnifying glass"
+    "message": "lup\u0103 \u00eenclinat\u0103 spre dreapta"
   },
   "d83d_dd0f": {
-    "message": "lock with an ink pen"
+    "message": "lac\u0103t cu stilou"
   },
   "d83d_dd10": {
-    "message": "closed lock with a key"
+    "message": "lac\u0103t \u00eenchis cu o cheie"
   },
   "d83d_dd11": {
-    "message": "key"
+    "message": "cheie"
   },
   "d83d_dd12": {
-    "message": "closed lock"
+    "message": "lac\u0103t \u00eenchis"
   },
   "d83d_dd13": {
-    "message": "open lock"
+    "message": "lac\u0103t deschis"
   },
   "d83d_dd14": {
-    "message": "bell"
+    "message": "clopot"
   },
   "d83d_dd15": {
-    "message": "no bell"
+    "message": "clopot barat"
   },
   "d83d_dd16": {
-    "message": "bookmark"
+    "message": "semn de carte"
   },
   "d83d_dd17": {
-    "message": "link sign"
+    "message": "semn de link"
   },
   "d83d_dd18": {
-    "message": "radio button"
+    "message": "buton radio"
   },
   "d83d_dd19": {
-    "message": "back"
+    "message": "\u00eenapoi"
   },
   "d83d_dd1a": {
-    "message": "end"
+    "message": "cap\u0103t"
   },
   "d83d_dd1b": {
-    "message": "ON arrow"
+    "message": "PORNIT cu s\u0103geat\u0103"
   },
   "d83d_dd1c": {
-    "message": "Soon sign"
+    "message": "semn \u00cen cur\u00e2nd"
   },
   "d83d_dd1d": {
-    "message": "Top sign"
+    "message": "Semn Sus"
   },
   "d83d_dd1e": {
-    "message": "No one under 18"
+    "message": "Interzis persoanelor sub 18 ani"
   },
   "d83d_dd20": {
-    "message": "uppercase letters"
+    "message": "litere mari"
   },
   "d83d_dd21": {
-    "message": "lowercase letters"
+    "message": "litere mici"
   },
   "d83d_dd22": {
-    "message": "numbers"
+    "message": "numere"
   },
   "d83d_dd23": {
-    "message": "symbols"
+    "message": "simboluri"
   },
   "d83d_dd24": {
-    "message": "Latin Alphabet"
+    "message": "alfabet latin"
   },
   "d83d_dd25": {
-    "message": "fire"
+    "message": "foc"
   },
   "d83d_dd26": {
-    "message": "flashlight"
+    "message": "lantern\u0103"
   },
   "d83d_dd27": {
-    "message": "wrench"
+    "message": "cheie fix\u0103"
   },
   "d83d_dd28": {
-    "message": "hammer"
+    "message": "ciocan"
   },
   "d83d_dd29": {
-    "message": "nut and bolt"
+    "message": "\u0219urub \u0219i piuli\u021b\u0103"
   },
   "d83d_dd2a": {
-    "message": "cooking knife"
+    "message": "cu\u021bit de buc\u0103t\u0103rie"
   },
   "d83d_dd2b": {
-    "message": "gun"
+    "message": "pistol"
   },
   "d83d_dd2c": {
-    "message": "microscope"
+    "message": "microscop"
   },
   "d83d_dd2d": {
-    "message": "telescope"
+    "message": "telescop"
   },
   "d83d_dd2e": {
-    "message": "crystal ball"
+    "message": "glob de cristal"
   },
   "d83d_dd2f": {
-    "message": "six-pointed star"
+    "message": "stea \u00een \u0219ase col\u021buri"
   },
   "d83d_dd30": {
-    "message": "green and yellow leaf"
+    "message": "frunz\u0103 cu verde \u0219i galben"
   },
   "d83d_dd31": {
-    "message": "trident sign"
+    "message": "semn trident"
   },
   "d83d_dd32": {
-    "message": "solid frame square button"
+    "message": "buton p\u0103trat cu cadru compact"
   },
   "d83d_dd33": {
-    "message": "outlined frame square button"
+    "message": "buton p\u0103trat cu cadru conturat"
   },
   "d83d_dd34": {
-    "message": "large red circle"
+    "message": "cerc mare ro\u0219u"
   },
   "d83d_dd35": {
-    "message": "large blue circle"
+    "message": "cerc mare albastru"
   },
   "d83d_dd36": {
-    "message": "large orange diamond"
+    "message": "diamant mare portocaliu"
   },
   "d83d_dd37": {
-    "message": "large blue diamond"
+    "message": "diamant mare albastru"
   },
   "d83d_dd38": {
-    "message": "small orange diamond"
+    "message": "diamant mic portocaliu"
   },
   "d83d_dd39": {
-    "message": "small blue diamond"
+    "message": "diamant mic albastru"
   },
   "d83d_dd3a": {
-    "message": "up triangle"
+    "message": "triunghi cu v\u00e2rful \u00een sus"
   },
   "d83d_dd3b": {
-    "message": "down triangle"
+    "message": "triunghi cu v\u00e2rful \u00een jos"
   },
   "d83d_dd3c": {
-    "message": "up triangle button"
+    "message": "buton cu triunghi cu v\u00e2rful orientat \u00een sus"
   },
   "d83d_dd3d": {
-    "message": "down triangle button"
+    "message": "buton cu triunghi cu v\u00e2rful orientat \u00een jos"
   },
   "d83d_dd50": {
-    "message": "1 o'clock"
+    "message": "ora unu"
   },
   "d83d_dd51": {
-    "message": "2 o'clock"
+    "message": "ora dou\u0103"
   },
   "d83d_dd52": {
-    "message": "3 o'clock"
+    "message": "ora trei"
   },
   "d83d_dd53": {
-    "message": "4 o'clock"
+    "message": "ora patru"
   },
   "d83d_dd54": {
-    "message": "5 o'clock"
+    "message": "ora cinci"
   },
   "d83d_dd55": {
-    "message": "6 o'clock"
+    "message": "ora \u0219ase"
   },
   "d83d_dd56": {
-    "message": "7 o'clock"
+    "message": "ora \u0219apte"
   },
   "d83d_dd57": {
-    "message": "8 o'clock"
+    "message": "ora opt"
   },
   "d83d_dd58": {
-    "message": "9 o'clock"
+    "message": "ora nou\u0103"
   },
   "d83d_dd59": {
-    "message": "10 o'clock"
+    "message": "ora zece"
   },
   "d83d_dd5a": {
-    "message": "11 o'clock"
+    "message": "ora unsprezece"
   },
   "d83d_dd5b": {
-    "message": "12 o'clock"
+    "message": "ora dou\u0103sprezece"
   },
   "d83d_dd5c": {
-    "message": "one-thirty"
+    "message": "ora unu \u0219i jum\u0103tate"
   },
   "d83d_dd5d": {
-    "message": "two-thirty"
+    "message": "ora dou\u0103 \u0219i jum\u0103tate"
   },
   "d83d_dd5e": {
-    "message": "three-thirty"
+    "message": "ora trei \u0219i jum\u0103tate"
   },
   "d83d_dd5f": {
-    "message": "four-thirty"
+    "message": "ora patru \u0219i jum\u0103tate"
   },
   "d83d_dd60": {
-    "message": "five-thirty"
+    "message": "ora cinci \u0219i jum\u0103tate"
   },
   "d83d_dd61": {
-    "message": "six-thirty"
+    "message": "ora \u0219ase \u0219i jum\u0103tate"
   },
   "d83d_dd62": {
-    "message": "seven-thirty"
+    "message": "ora \u0219apte \u0219i jum\u0103tate"
   },
   "d83d_dd63": {
-    "message": "eight-thirty"
+    "message": "ora opt \u0219i jum\u0103tate"
   },
   "d83d_dd64": {
-    "message": "nine-thirty"
+    "message": "ora nou\u0103 \u0219i jum\u0103tate"
   },
   "d83d_dd65": {
-    "message": "ten-thirty"
+    "message": "ora zece \u0219i jum\u0103tate"
   },
   "d83d_dd66": {
-    "message": "eleven-thirty"
+    "message": "ora unsprezece \u0219i jum\u0103tate"
   },
   "d83d_dd67": {
-    "message": "twelve-thirty"
+    "message": "ora dou\u0103sprezece \u0219i jum\u0103tate"
   },
   "d83d_ddfb": {
-    "message": "Mt. Fuji"
+    "message": "Muntele Fuji"
   },
   "d83d_ddfc": {
-    "message": "Tokyo Tower"
+    "message": "Turnul Tokyo"
   },
   "d83d_ddfd": {
-    "message": "Statue of Liberty"
+    "message": "Statuia Libert\u0103\u021bii"
   },
   "d83d_ddfe": {
-    "message": "Map of Japan"
+    "message": "Harta Japoniei"
   },
   "d83d_ddff": {
-    "message": "Moyai statue"
+    "message": "statuia Moyai"
   },
   "d83d_de00": {
-    "message": "grin"
+    "message": "r\u00e2njet"
   },
   "d83d_de01": {
-    "message": " grin with smiling eyes"
+    "message": " r\u00e2njet cu ochi z\u00e2mbitori"
   },
   "d83d_de02": {
-    "message": "tears of joy"
+    "message": "lacrimi de bucurie"
   },
   "d83d_de03": {
-    "message": "open mouth smile"
+    "message": "z\u00e2mbet cu gura deschis\u0103"
   },
   "d83d_de04": {
-    "message": "open mouth smile with smiling eyes"
+    "message": "z\u00e2mbet cu gura deschis\u0103 \u0219i ochi z\u00e2mbitori"
   },
   "d83d_de05": {
-    "message": "cold sweat smile"
+    "message": "z\u00e2mbet \u0219i sudoare rece"
   },
   "d83d_de06": {
-    "message": " open mouth smile with closed eyes"
+    "message": " z\u00e2mbet cu gura deschis\u0103 \u0219i ochi \u00eenchi\u0219i"
   },
   "d83d_de07": {
-    "message": "smile with a halo"
+    "message": "z\u00e2mbet cu aureol\u0103"
   },
   "d83d_de08": {
-    "message": "smile with horns"
+    "message": "z\u00e2mbet cu coarne"
   },
   "d83d_de09": {
-    "message": "winking face"
+    "message": "f\u0103cut cu ochiul"
   },
   "d83d_de0a": {
-    "message": "smile"
+    "message": "z\u00e2mbet"
   },
   "d83d_de0b": {
-    "message": "yummy face"
+    "message": "delicios"
   },
   "d83d_de0c": {
-    "message": "relieved face"
+    "message": "fa\u021b\u0103 u\u0219urat\u0103"
   },
   "d83d_de0d": {
-    "message": "smiling face"
+    "message": "fa\u021b\u0103 z\u00e2mbitoare"
   },
   "d83d_de0e": {
-    "message": "cool"
+    "message": "grozav"
   },
   "d83d_de0f": {
-    "message": "smirk"
+    "message": "z\u00e2mbet ironic"
   },
   "d83d_de10": {
-    "message": "deadpan face"
+    "message": "neutru"
   },
   "d83d_de11": {
-    "message": "expressionless"
+    "message": "nicio expresie"
   },
   "d83d_de12": {
-    "message": "unamused"
+    "message": "nu este nostim"
   },
   "d83d_de13": {
-    "message": "cold sweat"
+    "message": "sudoare rece"
   },
   "d83d_de14": {
-    "message": "pensive face"
+    "message": "fa\u021b\u0103 g\u00e2nditoare"
   },
   "d83d_de15": {
-    "message": "confused face"
+    "message": "fa\u021b\u0103 confuz\u0103"
   },
   "d83d_de16": {
-    "message": "confounded face"
+    "message": "fa\u021b\u0103 contrariat\u0103"
   },
   "d83d_de17": {
-    "message": "kissy face"
+    "message": "te pup"
   },
   "d83d_de18": {
-    "message": "throwing kisses"
+    "message": "s\u0103rut\u0103ri \u00een v\u00e2nt"
   },
   "d83d_de19": {
-    "message": "kiss and smile"
+    "message": "pupic \u0219i z\u00e2mbet"
   },
   "d83d_de1a": {
-    "message": "kissing"
+    "message": "s\u0103rut\u0103ri"
   },
   "d83d_de1b": {
-    "message": "tongue out"
+    "message": "limba scoas\u0103"
   },
   "d83d_de1c": {
-    "message": "tongue out with a wink"
+    "message": "scos limba \u0219i semn cu ochiul"
   },
   "d83d_de1d": {
-    "message": "yuck"
+    "message": "bleah"
   },
   "d83d_de1e": {
-    "message": "disappointed"
+    "message": "dezam\u0103git"
   },
   "d83d_de1f": {
-    "message": "worried"
+    "message": "\u00eengrijorat"
   },
   "d83d_de20": {
-    "message": "angry"
+    "message": "m\u00e2nios"
   },
   "d83d_de21": {
-    "message": "pouting"
+    "message": "bosumflat"
   },
   "d83d_de22": {
-    "message": "crying"
+    "message": "pl\u00e2nsete"
   },
   "d83d_de23": {
-    "message": "blew it"
+    "message": "am dat-o \u00een bar\u0103"
   },
   "d83d_de24": {
-    "message": "look of triumph"
+    "message": "privire triumf\u0103toare"
   },
   "d83d_de25": {
-    "message": "whew!"
+    "message": "am sc\u0103pat!"
   },
   "d83d_de26": {
-    "message": "frowning face"
+    "message": "fa\u021b\u0103 \u00eencruntat\u0103"
   },
   "d83d_de27": {
-    "message": "anguished"
+    "message": "nelini\u0219tit"
   },
   "d83d_de28": {
-    "message": "fearful"
+    "message": "tem\u0103tor"
   },
   "d83d_de29": {
-    "message": "weary"
+    "message": "epuizat"
   },
   "d83d_de2a": {
-    "message": "sleepy"
+    "message": "somnoros"
   },
   "d83d_de2b": {
-    "message": "tired"
+    "message": "obosit"
   },
   "d83d_de2c": {
-    "message": "grimace"
+    "message": "grimas\u0103"
   },
   "d83d_de2d": {
-    "message": "loudly crying"
+    "message": "pl\u00e2ns zgomotos"
   },
   "d83d_de2e": {
-    "message": "open mouth face"
+    "message": "fa\u021b\u0103 cu gura deschis\u0103"
   },
   "d83d_de2f": {
-    "message": "hushed face"
+    "message": "a\u0219tept cu emo\u021bie"
   },
   "d83d_de30": {
-    "message": "rushed face"
+    "message": "fa\u021b\u0103 gr\u0103bit\u0103"
   },
   "d83d_de31": {
-    "message": "fearful face"
+    "message": "fa\u021b\u0103 tem\u0103toare"
   },
   "d83d_de32": {
-    "message": "astonished face"
+    "message": "fa\u021b\u0103 uluit\u0103"
   },
   "d83d_de33": {
-    "message": "flushed"
+    "message": "fa\u021b\u0103 \u00eenro\u0219it\u0103"
   },
   "d83d_de34": {
-    "message": "sleeping"
+    "message": "adormit"
   },
   "d83d_de35": {
-    "message": "dizzy"
+    "message": "ame\u021bit"
   },
   "d83d_de36": {
-    "message": "no mouth face"
+    "message": "fa\u021b\u0103 f\u0103r\u0103 gur\u0103"
   },
   "d83d_de37": {
-    "message": "face with mask"
+    "message": "fa\u021b\u0103 cu masc\u0103"
   },
   "d83d_de38": {
-    "message": "grinning cat face"
+    "message": "fa\u021b\u0103 de pisic\u0103 r\u00e2njind"
   },
   "d83d_de39": {
-    "message": "tears of joy cat face"
+    "message": "fa\u021b\u0103 de pisic\u0103 cu lacrimi de bucurie"
   },
   "d83d_de3a": {
-    "message": "smiling cat face"
+    "message": "fa\u021b\u0103 de pisic\u0103 z\u00e2mbitoare"
   },
   "d83d_de3b": {
-    "message": "smiling cat face"
+    "message": "fa\u021b\u0103 de pisic\u0103 z\u00e2mbitoare"
   },
   "d83d_de3c": {
-    "message": "wry cat face"
+    "message": "fa\u021b\u0103 de pisic\u0103 ironic\u0103"
   },
   "d83d_de3d": {
-    "message": "kissing cat"
+    "message": "pisic\u0103 pup\u0103cioas\u0103"
   },
   "d83d_de3e": {
-    "message": "pouting cat face"
+    "message": "fa\u021b\u0103 de pisic\u0103 bosumflat\u0103"
   },
   "d83d_de3f": {
-    "message": "crying cat face"
+    "message": "fa\u021b\u0103 de pisic\u0103 pl\u00e2ng\u0103rea\u021b\u0103"
   },
   "d83d_de40": {
-    "message": "weary cat face"
+    "message": "fa\u021b\u0103 de pisic\u0103 ostenit\u0103"
   },
   "d83d_de45": {
-    "message": "No good gesture"
+    "message": "asta nu este ok"
   },
   "d83d_de46": {
-    "message": "OK gesture"
+    "message": "gestul OK"
   },
   "d83d_de47": {
-    "message": "i'm sorry"
+    "message": "\u00eemi pare r\u0103u"
   },
   "d83d_de48": {
-    "message": "see no evil"
+    "message": "n-am v\u0103zut nimic"
   },
   "d83d_de49": {
-    "message": "hear no evil"
+    "message": "n-am auzit nimic"
   },
   "d83d_de4a": {
-    "message": "speak no evil"
+    "message": "n-am zis nimic"
   },
   "d83d_de4b": {
-    "message": "happy person"
+    "message": "om fericit"
   },
   "d83d_de4c": {
-    "message": "hooray"
+    "message": "uraaa"
   },
   "d83d_de4d": {
-    "message": "frowning person"
+    "message": "persoan\u0103 \u00eencruntat\u0103"
   },
   "d83d_de4e": {
-    "message": "pouting"
+    "message": "bosumflat"
   },
   "d83d_de4f": {
-    "message": "folded hands"
+    "message": "m\u00e2ini \u00eempreunate"
   },
   "d83d_de80": {
-    "message": "rocket"
+    "message": "rachet\u0103"
   },
   "d83d_de81": {
-    "message": "helicopter"
+    "message": "elicopter"
   },
   "d83d_de82": {
-    "message": "steam locomotive"
+    "message": "locomotiv\u0103 cu aburi"
   },
   "d83d_de83": {
-    "message": "train"
+    "message": "tren"
   },
   "d83d_de84": {
-    "message": "high-speed train"
+    "message": "tren de mare vitez\u0103"
   },
   "d83d_de85": {
-    "message": "high-speed train with bullet nose"
+    "message": "tren de mare vitez\u0103 cu bot aerodinamic"
   },
   "d83d_de86": {
-    "message": "train"
+    "message": "tren"
   },
   "d83d_de87": {
-    "message": "subway"
+    "message": "metrou"
   },
   "d83d_de88": {
-    "message": "light rail"
+    "message": "transport feroviar u\u0219or"
   },
   "d83d_de89": {
-    "message": "train station"
+    "message": "gar\u0103"
   },
   "d83d_de8a": {
-    "message": "tram"
+    "message": "tramvai"
   },
   "d83d_de8b": {
-    "message": "tram car"
+    "message": "vagon de tramvai"
   },
   "d83d_de8c": {
-    "message": "bus"
+    "message": "autobuz"
   },
   "d83d_de8d": {
-    "message": "oncoming bus"
+    "message": "autobuz vedere frontal\u0103"
   },
   "d83d_de8e": {
-    "message": "trolleybus"
+    "message": "troleibuz"
   },
   "d83d_de8f": {
-    "message": "bus stop"
+    "message": "sta\u021bie de autobuz"
   },
   "d83d_de90": {
-    "message": "minibus"
+    "message": "microbuz"
   },
   "d83d_de91": {
-    "message": "ambulance"
+    "message": "ambulan\u021b\u0103"
   },
   "d83d_de92": {
-    "message": "fire engine"
+    "message": "ma\u0219in\u0103 de pompieri"
   },
   "d83d_de93": {
-    "message": "police car"
+    "message": "ma\u0219in\u0103 de poli\u021bie"
   },
   "d83d_de94": {
-    "message": "oncoming police car"
+    "message": "ma\u0219in\u0103 de poli\u021bie vedere frontal\u0103"
   },
   "d83d_de95": {
     "message": "taxi"
   },
   "d83d_de96": {
-    "message": "oncoming taxi"
+    "message": "taxi vedere frontal\u0103"
   },
   "d83d_de97": {
-    "message": "car"
+    "message": "ma\u0219in\u0103"
   },
   "d83d_de98": {
-    "message": "oncoming car"
+    "message": "ma\u0219in\u0103 vedere frontal\u0103"
   },
   "d83d_de99": {
-    "message": "RV"
+    "message": "ma\u0219in\u0103 rulot\u0103"
   },
   "d83d_de9a": {
-    "message": "delivery truck"
+    "message": "camion de livrare"
   },
   "d83d_de9b": {
-    "message": "lorry"
+    "message": "camion"
   },
   "d83d_de9c": {
     "message": "tractor"
   },
   "d83d_de9d": {
-    "message": "monorail"
+    "message": "mono\u0219in\u0103"
   },
   "d83d_de9e": {
-    "message": "mountain railway"
+    "message": "cale ferat\u0103 montan\u0103"
   },
   "d83d_de9f": {
-    "message": "suspension railway"
+    "message": "cale ferat\u0103 suspendat\u0103"
   },
   "d83d_dea0": {
-    "message": "mountain cableway"
+    "message": "telecabin\u0103"
   },
   "d83d_dea1": {
-    "message": "cable car"
+    "message": "telegondol\u0103"
   },
   "d83d_dea2": {
-    "message": "ship"
+    "message": "vas"
   },
   "d83d_dea3": {
-    "message": "rowboat"
+    "message": "barc\u0103 cu v\u00e2sle"
   },
   "d83d_dea4": {
-    "message": "speedboat"
+    "message": "barc\u0103 cu motor"
   },
   "d83d_dea5": {
-    "message": "horizontal traffic lights"
+    "message": "semafor orizontal"
   },
   "d83d_dea6": {
-    "message": "vertical traffic lights"
+    "message": "semafor vertical"
   },
   "d83d_dea7": {
-    "message": "under construction"
+    "message": "\u00een construc\u021bie"
   },
   "d83d_dea8": {
-    "message": "revolving light"
+    "message": "girofar"
   },
   "d83d_dea9": {
-    "message": "location flag"
+    "message": "steag de localizare"
   },
   "d83d_deaa": {
-    "message": "door"
+    "message": "u\u0219\u0103"
   },
   "d83d_deab": {
-    "message": "No entry sign"
+    "message": "semn de acces interzis"
   },
   "d83d_deac": {
-    "message": "smoking sign"
+    "message": "semn pentru fumat"
   },
   "d83d_dead": {
-    "message": "no smoking sign"
+    "message": "semn pentru fumatul interzis"
   },
   "d83d_deae": {
-    "message": "litterbox sign"
+    "message": "semn co\u0219 de gunoi"
   },
   "d83d_deaf": {
-    "message": "don't litter sign"
+    "message": "semn Nu arunca\u021bi gunoi"
   },
   "d83d_deb0": {
-    "message": "drinking water"
+    "message": "ap\u0103 potabil\u0103"
   },
   "d83d_deb1": {
-    "message": "non-drinking water"
+    "message": "ap\u0103 nepotabil\u0103"
   },
   "d83d_deb2": {
-    "message": "bike"
+    "message": "biciclet\u0103"
   },
   "d83d_deb3": {
-    "message": "no bike"
+    "message": "interzis cu bicicleta"
   },
   "d83d_deb4": {
-    "message": "bicyclist"
+    "message": "ciclist"
   },
   "d83d_deb5": {
-    "message": "mountain bicyclist"
+    "message": "ciclist montan"
   },
   "d83d_deb6": {
-    "message": "pedestrian"
+    "message": "pieton"
   },
   "d83d_deb7": {
-    "message": "no pedestrians"
+    "message": "interzis pentru pietoni"
   },
   "d83d_deb8": {
-    "message": "children crossing"
+    "message": "trecere copii"
   },
   "d83d_deb9": {
-    "message": "Men sign"
+    "message": "semn B\u0103rba\u021bi"
   },
   "d83d_deba": {
-    "message": "Women sign"
+    "message": "semn Femei"
   },
   "d83d_debb": {
-    "message": "restroom sign"
+    "message": "semn toalet\u0103"
   },
   "d83d_debc": {
-    "message": "baby sign"
+    "message": "semn Bebelu\u0219"
   },
   "d83d_debd": {
-    "message": "toilet"
+    "message": "toalet\u0103"
   },
   "d83d_debe": {
-    "message": "water closet"
+    "message": "WC"
   },
   "d83d_debf": {
-    "message": "shower"
+    "message": "du\u0219"
   },
   "d83d_dec0": {
-    "message": "bath"
+    "message": "baie"
   },
   "d83d_dec1": {
-    "message": "bathtub"
+    "message": "cad\u0103"
   },
   "d83d_dec2": {
-    "message": "passport control"
+    "message": "controlul pa\u0219apoartelor"
   },
   "d83d_dec3": {
-    "message": "customs"
+    "message": "vam\u0103"
   },
   "d83d_dec4": {
-    "message": "baggage claim"
+    "message": "ridicare bagaje"
   },
   "d83d_dec5": {
-    "message": "left luggage"
+    "message": "depozitare bagaje"
   },
   "de_ger_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura german\u0103"
@@ -2505,7 +2508,7 @@
     "message": "Cuv\u00e2nt"
   },
   "dismiss_menu": {
-    "message": "dismiss keyboard menu"
+    "message": "\u00eenchide meniul tastaturii"
   },
   "dk_dan_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura danez\u0103"
@@ -2520,28 +2523,28 @@
     "message": "Pagina de set\u0103ri pentru tastatura eston\u0103"
   },
   "emoji_tab_emoticon": {
-    "message": "Emoji category emoticon"
+    "message": "Categoria de emoji cu emoticonuri"
   },
   "emoji_tab_face": {
-    "message": "Emoji category face"
+    "message": "Categoria de emoji cu chipuri"
   },
   "emoji_tab_hot": {
-    "message": "Emoji category hot"
+    "message": "Categoria de emoji populare"
   },
   "emoji_tab_nature": {
-    "message": "Emoji category nature"
+    "message": "Categoria de emoji cu natur\u0103"
   },
   "emoji_tab_object": {
-    "message": "Emoji category object"
+    "message": "Categoria de emoji cu obiecte"
   },
   "emoji_tab_place": {
-    "message": "Emoji category place"
+    "message": "Categoria de emoji cu locuri"
   },
   "emoji_tab_recent": {
-    "message": "Emoji category recent"
+    "message": "Categoria de emoji recente"
   },
   "emoji_tab_symbol": {
-    "message": "Emoji category symbol"
+    "message": "Categoria de emoji cu simboluri"
   },
   "enable_capitalization": {
     "message": "Scriere automat\u0103 cu majuscule"
@@ -2644,6 +2647,9 @@
   },
   "inputmethod_dayi": {
     "message": "Metoda de introducere a textului Dayi"
+  },
+  "inputmethod_hangul": {
+    "message": "Metoda de introducere a textului \u00een coreean\u0103"
   },
   "inputmethod_pinyin": {
     "message": "Metoda de introducere a textului Pinyin"
@@ -2813,6 +2819,9 @@
   "keyboard_nepali_phonetic": {
     "message": "Tastatur\u0103 nepalez\u0103 (fonetic\u0103)"
   },
+  "keyboard_netherlands": {
+    "message": "Tastatur\u0103 neerlandez\u0103"
+  },
   "keyboard_none": {
     "message": "Tastatur\u0103"
   },
@@ -2836,6 +2845,9 @@
   },
   "keyboard_romanian": {
     "message": "Tastatur\u0103 rom\u00e2n\u0103"
+  },
+  "keyboard_romanian_standard": {
+    "message": "Romanian standard keyboard"
   },
   "keyboard_russian": {
     "message": "Tastatur\u0103 rus\u0103"
@@ -2976,7 +2988,7 @@
     "message": "Pagina de set\u0103ri pentru coreean\u0103"
   },
   "korean_syllable_input": {
-    "message": "Dac\u0103 se introduc simbolurile hangul unul c\u00e2te unul"
+    "message": "Introduci caractere hangul unul c\u00e2te unul"
   },
   "latam_spa_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatur\u0103 America Latin\u0103 (spaniol\u0103)"
@@ -3015,13 +3027,13 @@
     "message": "\u00centrerupe"
   },
   "physical_auto_correction_level": {
-    "message": "Auto-correction"
+    "message": "Corectare automat\u0103"
   },
   "physical_enable_capitalization": {
-    "message": "Auto-capitalization"
+    "message": "Scriere automat\u0103 cu majuscule"
   },
   "physical_keyboard": {
-    "message": "Physical Keyboard"
+    "message": "Tastatur\u0103 fizic\u0103"
   },
   "pinyin_settings_page": {
     "message": "Pagina de set\u0103ri pentru Pinyin"
@@ -3075,13 +3087,16 @@
     "message": "Arat\u0103 lista drop-down cu sugestii la ap\u0103sarea pe tasta Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Show Hangul suggestions"
+    "message": "Afi\u0219eaz\u0103 sugestii \u00een Hangul"
   },
   "si_slv_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura sloven\u0103"
   },
   "sk_slo_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura slovac\u0103"
+  },
+  "smiley": {
+    "message": "emoticon"
   },
   "sometimes_auto_correct": {
     "message": "Moderat"
@@ -3234,28 +3249,40 @@
     "message": "Activeaz\u0103 dic\u021bionarul personal"
   },
   "user_dict_add": {
-    "message": "Add"
+    "message": "Adaug\u0103"
   },
   "user_dict_clear": {
-    "message": "Clear All"
-  },
-  "user_dict_done": {
-    "message": "Done"
+    "message": "\u0218terge-le pe toate"
   },
   "user_dict_manage": {
-    "message": "Manage personal dictionary..."
+    "message": "Gestioneaz\u0103 dic\u021bionarul personal..."
   },
   "user_dict_new_word": {
-    "message": "New word"
+    "message": "Cuv\u00e2nt nou"
   },
   "user_dict_remove": {
-    "message": "Remove Selected"
+    "message": "Elimin\u0103-le pe cele selectate"
+  },
+  "user_dict_save": {
+    "message": "Salveaz\u0103"
   },
   "user_dict_sync": {
-    "message": "Sync personal dictionary"
+    "message": "Sincronizeaz\u0103 dic\u021bionarul personal"
   },
   "user_dict_title": {
-    "message": "Personal Dictionary"
+    "message": "Dic\u021bionar personal"
+  },
+  "voice": {
+    "message": "Intrare vocal\u0103"
+  },
+  "voice_privacy_info": {
+    "message": "Pentru recunoa\u0219terea textului, \u00eenregistrarea vocii va fi trimis\u0103 la un server Google"
+  },
+  "voice_turn_off": {
+    "message": "dezactiveaz\u0103 instrumentul de intrare vocal\u0103"
+  },
+  "voice_turn_on": {
+    "message": "activeaz\u0103 instrumentul de intrare vocal\u0103"
   },
   "wait": {
     "message": "A\u0219teapt\u0103"

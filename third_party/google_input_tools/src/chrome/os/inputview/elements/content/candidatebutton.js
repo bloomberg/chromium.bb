@@ -35,11 +35,12 @@ var Css = i18n.input.chrome.inputview.Css;
  * @param {string} iconCss .
  * @param {string} text .
  * @param {!goog.events.EventTarget=} opt_eventTarget .
+ * @param {boolean=} opt_noSeparator .
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.Element}
  */
 i18n.input.chrome.inputview.elements.content.CandidateButton = function(
-    id, type, iconCss, text, opt_eventTarget) {
+    id, type, iconCss, text, opt_eventTarget, opt_noSeparator) {
   goog.base(this, id, type, opt_eventTarget);
 
   /** @type {string} */
@@ -47,6 +48,9 @@ i18n.input.chrome.inputview.elements.content.CandidateButton = function(
 
   /** @type {string} */
   this.iconCss = iconCss;
+
+  /** @private {boolean} */
+  this.hasSeperator_ = !opt_noSeparator;
 };
 var CandidateButton = i18n.input.chrome.inputview.elements.content.
     CandidateButton;
@@ -70,7 +74,9 @@ CandidateButton.prototype.createDom = function() {
   goog.dom.classlist.addAll(elem, [Css.CANDIDATE_INTER_CONTAINER,
     Css.CANDIDATE_BUTTON]);
 
-  this.separatorCell = this.createSeparator_();
+  if (this.hasSeperator_) {
+    this.separatorCell = this.createSeparator_();
+  }
 
   this.iconCell = dom.createDom(goog.dom.TagName.DIV, Css.TABLE_CELL);
   dom.appendChild(elem, this.iconCell);
@@ -106,7 +112,9 @@ CandidateButton.prototype.createSeparator_ = function() {
 
 /** @override */
 CandidateButton.prototype.resize = function(width, height) {
-  goog.style.setSize(this.separatorCell, 1, height);
+  if (this.hasSeperator_) {
+    goog.style.setSize(this.separatorCell, 1, height);
+  }
   goog.style.setSize(this.iconCell, width - 1, height);
 
   goog.base(this, 'resize', width, height);

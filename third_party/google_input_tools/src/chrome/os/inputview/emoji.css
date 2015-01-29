@@ -87,8 +87,11 @@
   font-size: 30px;
   text-align: center;
 }
-.inputview-emoticon.inputview-emoji-key .inputview-modifier {
+.inputview-landscape .inputview-emoticon.inputview-emoji-key .inputview-modifier {
   font-size: 20px;
+}
+.inputview-portrait .inputview-emoticon.inputview-emoji-key .inputview-modifier {
+  font-size: 15px;
 }
 .inputview-emoji-back {
   margin: 1px;

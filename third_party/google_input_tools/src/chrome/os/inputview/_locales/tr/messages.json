@@ -236,6 +236,9 @@
   "ctrl": {
     "message": "ctrl"
   },
+  "current_keyboard_prefix": {
+    "message": "ge\u00e7erli olarak se\u00e7ili klavye "
+  },
   "current_lang": {
     "message": "Giri\u015f dili \u00c7ince"
   },
@@ -252,919 +255,919 @@
     "message": "\u00c7ek\u00e7e Qwerty Klavye Ayarlar\u0131 Sayfas\u0131"
   },
   "d83c_dc04": {
-    "message": "Mahjong tile"
+    "message": "Mahjong ta\u015f\u0131"
   },
   "d83c_dccf": {
-    "message": "Joker card"
+    "message": "Joker kart\u0131"
   },
   "d83c_dd70": {
-    "message": "blood type A"
+    "message": "A grubu kan"
   },
   "d83c_dd71": {
-    "message": "blood type B"
+    "message": "B grubu kan"
   },
   "d83c_dd7e": {
-    "message": "blood type O"
+    "message": "O grubu kan"
   },
   "d83c_dd7f": {
-    "message": "parking"
+    "message": "park yeri"
   },
   "d83c_dd8e": {
-    "message": "blood type AB"
+    "message": "AB grubu kan"
   },
   "d83c_dd91": {
-    "message": "CL"
+    "message": "Temiz"
   },
   "d83c_dd92": {
-    "message": "cool"
+    "message": "haval\u0131"
   },
   "d83c_dd93": {
-    "message": "free"
+    "message": "\u00fccretsiz"
   },
   "d83c_dd94": {
-    "message": "ID"
+    "message": "Kimlik"
   },
   "d83c_dd95": {
-    "message": "New"
+    "message": "Yeni"
   },
   "d83c_dd96": {
-    "message": "NG"
+    "message": "Uzak dur"
   },
   "d83c_dd97": {
-    "message": "OK"
+    "message": "Tamam"
   },
   "d83c_dd98": {
-    "message": "SOS"
+    "message": "Yard\u0131m"
   },
   "d83c_dd99": {
-    "message": "UP!"
+    "message": "YUKARI!"
   },
   "d83c_dd9a": {
-    "message": "versus"
+    "message": "kar\u015f\u0131"
   },
   "d83c_de01": {
-    "message": "Japanese word \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+    "message": "Japonca \u00e2\u20ac\u02dcburada\u00e2\u20ac\u2122 kelimesi"
   },
   "d83c_de02": {
-    "message": "Japanese word \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+    "message": "Japonca \u00e2\u20ac\u02dcservis\u00e2\u20ac\u2122 kelimesi"
   },
   "d83c_de1a": {
-    "message": "Japanese word 'free'"
+    "message": "Japonca \"\u00fccretsiz\" kelimesi"
   },
   "d83c_de2f": {
-    "message": "Japanese word 'reserved'"
+    "message": "Japonca \"ay\u0131rt\u0131ld\u0131\" kelimesi"
   },
   "d83c_de32": {
-    "message": "Japanese word \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+    "message": "Japonca \u00e2\u20ac\u02dcyasak\u00e2\u20ac\u2122 kelimesi"
   },
   "d83c_de33": {
-    "message": "Chinese word 'space available'"
+    "message": "\u00c7ince \"yer var\" ifadesi"
   },
   "d83c_de34": {
-    "message": "Chinese word 'pass'"
+    "message": "\u00c7ince \"ge\u00e7\" kelimesi"
   },
   "d83c_de35": {
-    "message": "Chinese word 'full'"
+    "message": "\u00c7ince \"dolu\" kelimesi"
   },
   "d83c_de36": {
-    "message": "Japanese word 'fees'"
+    "message": "Japonca \"\u00fccretler\" kelimesi"
   },
   "d83c_de37": {
-    "message": "Japanese word 'monthly'"
+    "message": "Japonca \"ayl\u0131k\" kelimesi"
   },
   "d83c_de38": {
-    "message": "Chinese word 'application'"
+    "message": "\u00c7ince \"ba\u015fvuru\" kelimesi"
   },
   "d83c_de39": {
-    "message": "Japanese word 'discount'"
+    "message": "Japonca \"indirim\" kelimesi"
   },
   "d83c_de3a": {
-    "message": "Chinese word 'in business'"
+    "message": "\u00c7ince \"faaliyette\" kelimesi"
   },
   "d83c_de50": {
-    "message": "Japanese word 'advantage'"
+    "message": "Japonca \"avantaj\" kelimesi"
   },
   "d83c_de51": {
-    "message": "Chinese word 'approved'"
+    "message": "\u00c7ince \"onayland\u0131\" kelimesi"
   },
   "d83c_df00": {
-    "message": "cyclone"
+    "message": "kas\u0131rga"
   },
   "d83c_df01": {
-    "message": "foggy"
+    "message": "sisli"
   },
   "d83c_df02": {
-    "message": "umbrella"
+    "message": "\u015femsiye"
   },
   "d83c_df03": {
-    "message": "night stars"
+    "message": "gece y\u0131ld\u0131zlar"
   },
   "d83c_df04": {
-    "message": "sunrise over mountains"
+    "message": "da\u011flar\u0131n aras\u0131ndan g\u00fcn do\u011fu\u015fu"
   },
   "d83c_df05": {
-    "message": "sunrise"
+    "message": "g\u00fcn do\u011fu\u015fu"
   },
   "d83c_df06": {
-    "message": "city at dusk"
+    "message": "ak\u015fam karanl\u0131\u011f\u0131 \u00e7\u00f6kerken \u015fehir"
   },
   "d83c_df07": {
-    "message": "sunset"
+    "message": "g\u00fcn bat\u0131m\u0131"
   },
   "d83c_df08": {
-    "message": "rainbow"
+    "message": "g\u00f6kku\u015fa\u011f\u0131"
   },
   "d83c_df09": {
-    "message": "night bridge"
+    "message": "gece k\u00f6pr\u00fc"
   },
   "d83c_df0a": {
-    "message": "wave"
+    "message": "dalga"
   },
   "d83c_df0b": {
-    "message": "volcano"
+    "message": "yanarda\u011f"
   },
   "d83c_df0c": {
-    "message": "Milky Way"
+    "message": "Samanyolu"
   },
   "d83c_df0d": {
-    "message": "globe Europe-Africa"
+    "message": "Avrupa-Afrika k\u0131tas\u0131 g\u00f6r\u00fcnen d\u00fcnya"
   },
   "d83c_df0e": {
-    "message": "globe Americas"
+    "message": "Amerika k\u0131tas\u0131 g\u00f6r\u00fcnen d\u00fcnya"
   },
   "d83c_df0f": {
-    "message": "globe Asia-Australia"
+    "message": "Asya-Avustralya k\u0131tas\u0131 g\u00f6r\u00fcnen d\u00fcnya"
   },
   "d83c_df10": {
-    "message": "globe with meridians"
+    "message": "meridyenli d\u00fcnya"
   },
   "d83c_df11": {
-    "message": "new moon"
+    "message": "yeni ay"
   },
   "d83c_df12": {
-    "message": "waxing crescent moon"
+    "message": "b\u00fcy\u00fcyen hilal ay"
   },
   "d83c_df13": {
-    "message": "first quarter moon"
+    "message": "ay\u0131n ilk d\u00f6rd\u00fcn\u00fc"
   },
   "d83c_df14": {
-    "message": "waxing moon"
+    "message": "b\u00fcy\u00fcyen ay"
   },
   "d83c_df15": {
-    "message": "full moon"
+    "message": "dolunay"
   },
   "d83c_df16": {
-    "message": "waning moon"
+    "message": "k\u00fc\u00e7\u00fclen ay"
   },
   "d83c_df17": {
-    "message": "last quarter moon"
+    "message": "ay\u0131n son d\u00f6rd\u00fcn\u00fc"
   },
   "d83c_df18": {
-    "message": "waning crescent moon"
+    "message": "k\u00fc\u00e7\u00fclen hilal ay"
   },
   "d83c_df19": {
-    "message": "crescent moon"
+    "message": "hilal"
   },
   "d83c_df1a": {
-    "message": "new moon face"
+    "message": "yeni ay y\u00fcz"
   },
   "d83c_df1b": {
-    "message": "first quarter moon face"
+    "message": "ay\u0131n ilk d\u00f6rd\u00fcn\u00fc y\u00fcz"
   },
   "d83c_df1c": {
-    "message": "last quarter moon face"
+    "message": "ay\u0131n son d\u00f6rd\u00fcn\u00fc y\u00fcz"
   },
   "d83c_df1d": {
-    "message": "full moon face"
+    "message": "dolunay y\u00fcz"
   },
   "d83c_df1e": {
-    "message": "sun face"
+    "message": "g\u00fcne\u015f y\u00fcz"
   },
   "d83c_df1f": {
-    "message": "glowing star"
+    "message": "parlayan y\u0131ld\u0131z"
   },
   "d83c_df20": {
-    "message": "shooting star"
+    "message": "kayan y\u0131ld\u0131z"
   },
   "d83c_df30": {
-    "message": "chestnut"
+    "message": "kestane"
   },
   "d83c_df31": {
-    "message": "young plant"
+    "message": "fidan"
   },
   "d83c_df32": {
-    "message": "evergreen tree"
+    "message": "yaprak d\u00f6kmeyen a\u011fa\u00e7"
   },
   "d83c_df33": {
-    "message": "shedding tree"
+    "message": "yaprak d\u00f6ken a\u011fa\u00e7"
   },
   "d83c_df34": {
-    "message": "palm tree"
+    "message": "palmiye a\u011fac\u0131"
   },
   "d83c_df35": {
-    "message": "cactus"
+    "message": "kakt\u00fcs"
   },
   "d83c_df37": {
-    "message": "tulip"
+    "message": "lale"
   },
   "d83c_df38": {
-    "message": "cherry blossom"
+    "message": "kiraz \u00e7i\u00e7e\u011fi"
   },
   "d83c_df39": {
-    "message": "rose"
+    "message": "g\u00fcl"
   },
   "d83c_df3a": {
-    "message": "hibiscus"
+    "message": "hatmi"
   },
   "d83c_df3b": {
-    "message": "sunflower"
+    "message": "ay \u00e7i\u00e7e\u011fi"
   },
   "d83c_df3c": {
-    "message": "blossom"
+    "message": "\u00e7i\u00e7ek"
   },
   "d83c_df3d": {
-    "message": "corn"
+    "message": "m\u0131s\u0131r"
   },
   "d83c_df3e": {
-    "message": "rice plant"
+    "message": "\u00e7eltik"
   },
   "d83c_df3f": {
-    "message": "herb"
+    "message": "ot"
   },
   "d83c_df40": {
-    "message": "four leaf clover"
+    "message": "d\u00f6rt yaprakl\u0131 yonca"
   },
   "d83c_df41": {
-    "message": "maple leaf"
+    "message": "ak\u00e7aa\u011fa\u00e7 yapra\u011f\u0131"
   },
   "d83c_df42": {
-    "message": "falling leaves"
+    "message": "d\u00fc\u015fen yapraklar"
   },
   "d83c_df43": {
-    "message": "leaf in wind"
+    "message": "r\u00fczgarda u\u00e7an yaprak"
   },
   "d83c_df44": {
-    "message": "mushroom"
+    "message": "mantar"
   },
   "d83c_df45": {
-    "message": "tomato"
+    "message": "domates"
   },
   "d83c_df46": {
-    "message": "eggplant"
+    "message": "patl\u0131can"
   },
   "d83c_df47": {
-    "message": "grapes"
+    "message": "\u00fcz\u00fcm"
   },
   "d83c_df48": {
-    "message": "melon"
+    "message": "kavun"
   },
   "d83c_df49": {
-    "message": "watermelon"
+    "message": "karpuz"
   },
   "d83c_df4a": {
-    "message": "tangerine"
+    "message": "mandalina"
   },
   "d83c_df4b": {
-    "message": "lemon"
+    "message": "limon"
   },
   "d83c_df4c": {
-    "message": "banana"
+    "message": "muz"
   },
   "d83c_df4d": {
-    "message": "pineapple"
+    "message": "ananas"
   },
   "d83c_df4e": {
-    "message": "red apple"
+    "message": "k\u0131rm\u0131z\u0131 elma"
   },
   "d83c_df4f": {
-    "message": "green apple"
+    "message": "ye\u015fil elma"
   },
   "d83c_df50": {
-    "message": "pear"
+    "message": "armut"
   },
   "d83c_df51": {
-    "message": "peach"
+    "message": "\u015feftali"
   },
   "d83c_df52": {
-    "message": "cherry"
+    "message": "kiraz"
   },
   "d83c_df53": {
-    "message": "strawberry"
+    "message": "\u00e7ilek"
   },
   "d83c_df54": {
     "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "pizza slice"
+    "message": "pizza dilimi"
   },
   "d83c_df56": {
-    "message": "meat"
+    "message": "et"
   },
   "d83c_df57": {
-    "message": "chicken leg"
+    "message": "tavuk budu"
   },
   "d83c_df58": {
-    "message": "rice cracker"
+    "message": "pirin\u00e7 krakeri"
   },
   "d83c_df59": {
-    "message": "rice ball"
+    "message": "pirin\u00e7 k\u00f6ftesi"
   },
   "d83c_df5a": {
-    "message": "cooked rice"
+    "message": "pilav"
   },
   "d83c_df5b": {
-    "message": "curry and rice"
+    "message": "k\u00f6ri ve pilav"
   },
   "d83c_df5c": {
-    "message": "ramen"
+    "message": "Japon eri\u015ftesi"
   },
   "d83c_df5d": {
-    "message": "spaghetti"
+    "message": "\u00e7ubuk makarna"
   },
   "d83c_df5e": {
-    "message": "bread"
+    "message": "ekmek"
   },
   "d83c_df5f": {
-    "message": "fries"
+    "message": "patates k\u0131zartmas\u0131"
   },
   "d83c_df60": {
-    "message": "roasted potato"
+    "message": "f\u0131r\u0131nda patates"
   },
   "d83c_df61": {
-    "message": "mochi"
+    "message": "pirin\u00e7 pastas\u0131"
   },
   "d83c_df62": {
     "message": "oden"
   },
   "d83c_df63": {
-    "message": "sushi"
+    "message": "su\u015fi"
   },
   "d83c_df64": {
-    "message": "fried shrimp"
+    "message": "k\u0131zarm\u0131\u015f karides"
   },
   "d83c_df65": {
-    "message": "fish cake"
+    "message": "bal\u0131k k\u00f6ftesi"
   },
   "d83c_df66": {
-    "message": "soft ice cream"
+    "message": "yumu\u015fak dondurma"
   },
   "d83c_df67": {
-    "message": "shaved ice"
+    "message": "buz dondurma"
   },
   "d83c_df68": {
-    "message": "ice cream"
+    "message": "dondurma"
   },
   "d83c_df69": {
     "message": "donut"
   },
   "d83c_df6a": {
-    "message": "cookie"
+    "message": "kurabiye"
   },
   "d83c_df6b": {
-    "message": "chocolate"
+    "message": "\u00e7ikolata"
   },
   "d83c_df6c": {
-    "message": "candy"
+    "message": "\u015feker"
   },
   "d83c_df6d": {
-    "message": "lollipop"
+    "message": "lolipop"
   },
   "d83c_df6e": {
-    "message": "custard"
+    "message": "muhallebi"
   },
   "d83c_df6f": {
-    "message": "honeypot"
+    "message": "bal kavanozu"
   },
   "d83c_df70": {
-    "message": "shortcake"
+    "message": "meyveli pasta"
   },
   "d83c_df71": {
-    "message": "bento"
+    "message": "Japon yeme\u011fi"
   },
   "d83c_df72": {
-    "message": "stew"
+    "message": "yahni"
   },
   "d83c_df73": {
-    "message": "frying pan"
+    "message": "tava"
   },
   "d83c_df74": {
-    "message": "fork and knife"
+    "message": "\u00e7atal ve b\u0131\u00e7ak"
   },
   "d83c_df75": {
-    "message": "teacup"
+    "message": "\u00e7ay fincan\u0131"
   },
   "d83c_df76": {
     "message": "sake"
   },
   "d83c_df77": {
-    "message": "wine"
+    "message": "\u015farap"
   },
   "d83c_df78": {
-    "message": "cocktail"
+    "message": "kokteyl"
   },
   "d83c_df79": {
-    "message": "tropical drink"
+    "message": "tropikal i\u00e7ecek"
   },
   "d83c_df7a": {
-    "message": "beer"
+    "message": "bira"
   },
   "d83c_df7b": {
-    "message": "beer mugs"
+    "message": "bira bardaklar\u0131"
   },
   "d83c_df7c": {
-    "message": "baby bottle"
+    "message": "biberon"
   },
   "d83c_df80": {
-    "message": "ribbon"
+    "message": "kurdele"
   },
   "d83c_df81": {
-    "message": "gift"
+    "message": "hediye"
   },
   "d83c_df82": {
-    "message": "birthday cake"
+    "message": "do\u011fum g\u00fcn\u00fc pastas\u0131"
   },
   "d83c_df83": {
-    "message": "jack-o-lantern"
+    "message": "kabak fener"
   },
   "d83c_df84": {
-    "message": "christmas tree"
+    "message": "y\u0131lba\u015f\u0131 a\u011fac\u0131"
   },
   "d83c_df85": {
-    "message": "santa"
+    "message": "aziz"
   },
   "d83c_df86": {
-    "message": "firework"
+    "message": "havai fi\u015fek"
   },
   "d83c_df87": {
-    "message": "sparkler"
+    "message": "maytap"
   },
   "d83c_df88": {
-    "message": "balloon"
+    "message": "balon"
   },
   "d83c_df89": {
-    "message": "party popper"
+    "message": "konfeti paketi"
   },
   "d83c_df8a": {
-    "message": "confetti"
+    "message": "konfeti"
   },
   "d83c_df8b": {
-    "message": "tree and paper strips"
+    "message": "a\u011fa\u00e7 ve ka\u011f\u0131t \u015feritler"
   },
   "d83c_df8c": {
-    "message": "crossed flags"
+    "message": "\u00e7apraz bayraklar"
   },
   "d83c_df8d": {
-    "message": "pine decoration"
+    "message": "\u00e7am s\u00fcsleri"
   },
   "d83c_df8e": {
-    "message": "dolls"
+    "message": "bebekler"
   },
   "d83c_df8f": {
-    "message": "carp streamer"
+    "message": "sazan flamas\u0131"
   },
   "d83c_df90": {
-    "message": "wind chime"
+    "message": "r\u00fczgar \u00e7anlar\u0131"
   },
   "d83c_df91": {
-    "message": "moon viewing"
+    "message": "ay manzaras\u0131"
   },
   "d83c_df92": {
-    "message": "school bag"
+    "message": "okul \u00e7antas\u0131"
   },
   "d83c_df93": {
-    "message": "graduation cap"
+    "message": "mezuniyet kepi"
   },
   "d83c_dfa0": {
-    "message": "carousel"
+    "message": "atl\u0131kar\u0131nca"
   },
   "d83c_dfa1": {
-    "message": "ferris wheel"
+    "message": "d\u00f6nme dolap"
   },
   "d83c_dfa2": {
-    "message": "roller coaster"
+    "message": "lunapark h\u0131z treni"
   },
   "d83c_dfa3": {
-    "message": "fishing"
+    "message": "bal\u0131k av\u0131"
   },
   "d83c_dfa4": {
-    "message": "mic"
+    "message": "mikrofon"
   },
   "d83c_dfa5": {
-    "message": "movie camera"
+    "message": "film kameras\u0131"
   },
   "d83c_dfa6": {
-    "message": "movie"
+    "message": "film"
   },
   "d83c_dfa7": {
-    "message": "headphone"
+    "message": "kulakl\u0131k"
   },
   "d83c_dfa8": {
-    "message": "paint palette"
+    "message": "ressam paleti"
   },
   "d83c_dfa9": {
-    "message": "top hat"
+    "message": "silindir \u015fapka"
   },
   "d83c_dfaa": {
-    "message": "circus"
+    "message": "sirk"
   },
   "d83c_dfab": {
-    "message": "ticket"
+    "message": "bilet"
   },
   "d83c_dfac": {
-    "message": "clapperboard"
+    "message": "film \u00e7ekim tahtas\u0131"
   },
   "d83c_dfad": {
-    "message": "face mask"
+    "message": "y\u00fcz maskesi"
   },
   "d83c_dfae": {
-    "message": "video game"
+    "message": "video oyunu"
   },
   "d83c_dfaf": {
-    "message": "bull's eye"
+    "message": "tam isabet"
   },
   "d83c_dfb0": {
-    "message": "slot machine"
+    "message": "kumar makinesi"
   },
   "d83c_dfb1": {
-    "message": "billiard"
+    "message": "bilardo"
   },
   "d83c_dfb2": {
-    "message": "game die"
+    "message": "oyun zar\u0131"
   },
   "d83c_dfb3": {
     "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "playing card"
+    "message": "iskambil ka\u011f\u0131d\u0131"
   },
   "d83c_dfb5": {
-    "message": "musical note"
+    "message": "m\u00fczik notas\u0131"
   },
   "d83c_dfb6": {
-    "message": "musical notes"
+    "message": "m\u00fczik notalar\u0131"
   },
   "d83c_dfb7": {
-    "message": "sax"
+    "message": "saksafon"
   },
   "d83c_dfb8": {
-    "message": "guitar"
+    "message": "gitar"
   },
   "d83c_dfb9": {
-    "message": "piano"
+    "message": "piyano"
   },
   "d83c_dfba": {
-    "message": "trumpet"
+    "message": "trompet"
   },
   "d83c_dfbb": {
-    "message": "violin"
+    "message": "keman"
   },
   "d83c_dfbc": {
-    "message": "music score"
+    "message": "porte"
   },
   "d83c_dfbd": {
-    "message": "running shirt"
+    "message": "ko\u015fu atleti"
   },
   "d83c_dfbe": {
-    "message": "tennis"
+    "message": "tenis"
   },
   "d83c_dfbf": {
-    "message": "ski"
+    "message": "kayak"
   },
   "d83c_dfc0": {
-    "message": "basketball"
+    "message": "basketbol"
   },
   "d83c_dfc1": {
-    "message": "checkered flag"
+    "message": "damal\u0131 bayrak"
   },
   "d83c_dfc2": {
-    "message": "snowboarder"
+    "message": "snowboard yapan"
   },
   "d83c_dfc3": {
-    "message": "runner"
+    "message": "ko\u015fucu"
   },
   "d83c_dfc4": {
-    "message": "surfing"
+    "message": "s\u00f6rf"
   },
   "d83c_dfc6": {
-    "message": "trophy"
+    "message": "kupa"
   },
   "d83c_dfc7": {
-    "message": "horse racing"
+    "message": "at yar\u0131\u015f\u0131"
   },
   "d83c_dfc8": {
-    "message": "American football"
+    "message": "Amerikan futbolu"
   },
   "d83c_dfc9": {
-    "message": "soccer"
+    "message": "futbol"
   },
   "d83c_dfca": {
-    "message": "swimmer"
+    "message": "y\u00fcz\u00fcc\u00fc"
   },
   "d83c_dfe0": {
-    "message": "house"
+    "message": "bina"
   },
   "d83c_dfe1": {
-    "message": "home"
+    "message": "ev"
   },
   "d83c_dfe2": {
-    "message": "office building"
+    "message": "ofis binas\u0131"
   },
   "d83c_dfe3": {
-    "message": "Japanese post office"
+    "message": "Japon postanesi"
   },
   "d83c_dfe4": {
-    "message": "European post office"
+    "message": "Avrupa postanesi"
   },
   "d83c_dfe5": {
-    "message": "hospital"
+    "message": "hastane"
   },
   "d83c_dfe6": {
-    "message": "bank"
+    "message": "banka"
   },
   "d83c_dfe7": {
     "message": "ATM"
   },
   "d83c_dfe8": {
-    "message": "hotel"
+    "message": "otel"
   },
   "d83c_dfe9": {
-    "message": "love hotel"
+    "message": "a\u015fk oteli"
   },
   "d83c_dfea": {
-    "message": "convenience store"
+    "message": "bakkal"
   },
   "d83c_dfeb": {
-    "message": "school"
+    "message": "okul"
   },
   "d83c_dfec": {
-    "message": "department store"
+    "message": "ma\u011faza"
   },
   "d83c_dfed": {
-    "message": "factory"
+    "message": "fabrika"
   },
   "d83c_dfee": {
-    "message": "red lantern"
+    "message": "k\u0131rm\u0131z\u0131 fener"
   },
   "d83c_dfef": {
-    "message": "Japanese castle"
+    "message": "Japon \u015fatosu"
   },
   "d83c_dff0": {
-    "message": "European castle"
+    "message": "Avrupa \u015fatosu"
   },
   "d83d_dc00": {
-    "message": "Rat"
+    "message": "S\u0131\u00e7an"
   },
   "d83d_dc01": {
-    "message": "Mouse"
+    "message": "Fare"
   },
   "d83d_dc02": {
-    "message": "Ox"
+    "message": "\u00d6k\u00fcz"
   },
   "d83d_dc03": {
-    "message": "water buffalo"
+    "message": "manda"
   },
   "d83d_dc04": {
-    "message": "cow"
+    "message": "inek"
   },
   "d83d_dc06": {
-    "message": "leopard"
+    "message": "leopar"
   },
   "d83d_dc07": {
-    "message": "rabbit"
+    "message": "tav\u015fan"
   },
   "d83d_dc08": {
-    "message": "cat"
+    "message": "kedi"
   },
   "d83d_dc09": {
-    "message": "dragon"
+    "message": "ejderha"
   },
   "d83d_dc0a": {
-    "message": "crocodile"
+    "message": "timsah"
   },
   "d83d_dc0b": {
-    "message": "whale"
+    "message": "balina"
   },
   "d83d_dc0c": {
-    "message": "snail"
+    "message": "salyangoz"
   },
   "d83d_dc0d": {
-    "message": "snake"
+    "message": "y\u0131lan"
   },
   "d83d_dc0e": {
-    "message": "horse"
+    "message": "at"
   },
   "d83d_dc0f": {
-    "message": "ram"
+    "message": "ko\u00e7"
   },
   "d83d_dc10": {
-    "message": "goat"
+    "message": "ke\u00e7i"
   },
   "d83d_dc11": {
-    "message": "sheep"
+    "message": "koyun"
   },
   "d83d_dc12": {
-    "message": "monkey"
+    "message": "maymun"
   },
   "d83d_dc13": {
-    "message": "rooster"
+    "message": "horoz"
   },
   "d83d_dc14": {
-    "message": "chicken"
+    "message": "tavuk"
   },
   "d83d_dc15": {
-    "message": "dog"
+    "message": "k\u00f6pek"
   },
   "d83d_dc16": {
-    "message": "pig"
+    "message": "domuz"
   },
   "d83d_dc17": {
-    "message": "boar"
+    "message": "yaban domuzu"
   },
   "d83d_dc18": {
-    "message": "elephant"
+    "message": "fil"
   },
   "d83d_dc19": {
-    "message": "octopus"
+    "message": "ahtapot"
   },
   "d83d_dc1a": {
-    "message": "shell"
+    "message": "kabuk"
   },
   "d83d_dc1b": {
-    "message": "bug"
+    "message": "b\u00f6cek"
   },
   "d83d_dc1c": {
-    "message": "ant"
+    "message": "kar\u0131nca"
   },
   "d83d_dc1d": {
-    "message": "honeybee"
+    "message": "bal ar\u0131s\u0131"
   },
   "d83d_dc1e": {
-    "message": "lady beetle"
+    "message": "u\u011furb\u00f6ce\u011fi"
   },
   "d83d_dc1f": {
-    "message": "fish"
+    "message": "bal\u0131k"
   },
   "d83d_dc20": {
-    "message": "tropical fish"
+    "message": "tropikal bal\u0131k"
   },
   "d83d_dc21": {
-    "message": "blowfish"
+    "message": "balon bal\u0131\u011f\u0131"
   },
   "d83d_dc22": {
-    "message": "turtle"
+    "message": "kaplumba\u011fa"
   },
   "d83d_dc23": {
-    "message": "hatching chick"
+    "message": "yumurtadan \u00e7\u0131kan civciv"
   },
   "d83d_dc24": {
-    "message": "baby chick face"
+    "message": "civciv y\u00fcz\u00fc"
   },
   "d83d_dc25": {
-    "message": "baby chick"
+    "message": "civciv"
   },
   "d83d_dc26": {
-    "message": "bird"
+    "message": "ku\u015f"
   },
   "d83d_dc27": {
-    "message": "penguin"
+    "message": "penguen"
   },
   "d83d_dc28": {
     "message": "koala"
   },
   "d83d_dc29": {
-    "message": "poodle"
+    "message": "fino"
   },
   "d83d_dc2a": {
-    "message": "one hump camel"
+    "message": "tek h\u00f6rg\u00fc\u00e7l\u00fc deve"
   },
   "d83d_dc2b": {
-    "message": "two hump camel"
+    "message": "iki h\u00f6rg\u00fc\u00e7l\u00fc deve"
   },
   "d83d_dc2c": {
-    "message": "dolphin"
+    "message": "yunus"
   },
   "d83d_dc2d": {
-    "message": "mouse face"
+    "message": "fare y\u00fcz\u00fc"
   },
   "d83d_dc2e": {
-    "message": "cow face"
+    "message": "inek y\u00fcz\u00fc"
   },
   "d83d_dc2f": {
-    "message": "tiger face"
+    "message": "kaplan y\u00fcz\u00fc"
   },
   "d83d_dc30": {
-    "message": "rabbit face"
+    "message": "tav\u015fan y\u00fcz\u00fc"
   },
   "d83d_dc31": {
-    "message": "cat face"
+    "message": "kedi y\u00fcz\u00fc"
   },
   "d83d_dc32": {
-    "message": "dragon face"
+    "message": "ejderha y\u00fcz\u00fc"
   },
   "d83d_dc33": {
-    "message": "spouting whale"
+    "message": "su p\u00fcsk\u00fcrten balina"
   },
   "d83d_dc34": {
-    "message": "horse face"
+    "message": "at y\u00fcz\u00fc"
   },
   "d83d_dc35": {
-    "message": "monkey face"
+    "message": "maymun y\u00fcz\u00fc"
   },
   "d83d_dc36": {
-    "message": "dog face"
+    "message": "k\u00f6pek y\u00fcz\u00fc"
   },
   "d83d_dc37": {
-    "message": "pig face"
+    "message": "domuz y\u00fcz\u00fc"
   },
   "d83d_dc38": {
-    "message": "frog face"
+    "message": "kurba\u011fa y\u00fcz\u00fc"
   },
   "d83d_dc39": {
-    "message": "hamster face"
+    "message": "hamster y\u00fcz\u00fc"
   },
   "d83d_dc3a": {
-    "message": "wolf face"
+    "message": "kurt y\u00fcz\u00fc"
   },
   "d83d_dc3b": {
-    "message": "bear face"
+    "message": "ay\u0131 y\u00fcz\u00fc"
   },
   "d83d_dc3c": {
-    "message": "panda face"
+    "message": "panda y\u00fcz\u00fc"
   },
   "d83d_dc3d": {
-    "message": "pig nose"
+    "message": "domuz burnu"
   },
   "d83d_dc3e": {
-    "message": "paw"
+    "message": "pati"
   },
   "d83d_dc40": {
-    "message": "eyes"
+    "message": "g\u00f6zler"
   },
   "d83d_dc42": {
-    "message": "ear"
+    "message": "kulak"
   },
   "d83d_dc43": {
-    "message": "nose"
+    "message": "burun"
   },
   "d83d_dc44": {
-    "message": "mouth"
+    "message": "a\u011f\u0131z"
   },
   "d83d_dc45": {
-    "message": "tongue"
+    "message": "dil"
   },
   "d83d_dc46": {
-    "message": "up finger"
+    "message": "yukar\u0131 i\u015faret eden parmak"
   },
   "d83d_dc47": {
-    "message": "down finger"
+    "message": "a\u015fa\u011f\u0131 i\u015faret eden parmak"
   },
   "d83d_dc48": {
-    "message": "left finger"
+    "message": "sola i\u015faret eden parmak"
   },
   "d83d_dc49": {
-    "message": "right finger"
+    "message": "sa\u011fa i\u015faret eden parmak"
   },
   "d83d_dc4a": {
-    "message": "clenched fist"
+    "message": "s\u0131k\u0131lm\u0131\u015f yumruk"
   },
   "d83d_dc4b": {
-    "message": "hand waving"
+    "message": "el sallama"
   },
   "d83d_dc4c": {
-    "message": "OK hand sign"
+    "message": "Elle tamam i\u015fareti"
   },
   "d83d_dc4d": {
-    "message": "thumbs up"
+    "message": "be\u011fenme"
   },
   "d83d_dc4e": {
-    "message": "thumbs down"
+    "message": "be\u011fenmeme"
   },
   "d83d_dc4f": {
-    "message": "hands clapping"
+    "message": "el \u00e7\u0131rpma"
   },
   "d83d_dc50": {
-    "message": "open hands"
+    "message": "a\u00e7\u0131k eller"
   },
   "d83d_dc51": {
-    "message": "crown"
+    "message": "ta\u00e7"
   },
   "d83d_dc52": {
-    "message": "woman's hat"
+    "message": "kad\u0131n \u015fapkas\u0131"
   },
   "d83d_dc53": {
-    "message": "eyeglasses"
+    "message": "g\u00f6zl\u00fck"
   },
   "d83d_dc54": {
-    "message": "necktie"
+    "message": "kravat"
   },
   "d83d_dc55": {
-    "message": "T-shirt"
+    "message": "Ti\u015f\u00f6rt"
   },
   "d83d_dc56": {
-    "message": "trousers"
+    "message": "pantolon"
   },
   "d83d_dc57": {
-    "message": "dress"
+    "message": "elbise"
   },
   "d83d_dc58": {
     "message": "kimono"
@@ -1173,307 +1176,307 @@
     "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "woman's clothes"
+    "message": "kad\u0131n elbisesi"
   },
   "d83d_dc5b": {
-    "message": "purse"
+    "message": "c\u00fczdan"
   },
   "d83d_dc5c": {
-    "message": "handbag"
+    "message": "el \u00e7antas\u0131"
   },
   "d83d_dc5d": {
-    "message": "pouch"
+    "message": "\u00e7anta"
   },
   "d83d_dc5e": {
-    "message": "man's shoe"
+    "message": "erkek ayakkab\u0131s\u0131"
   },
   "d83d_dc5f": {
-    "message": "athletic shoe"
+    "message": "spor ayakkab\u0131s\u0131"
   },
   "d83d_dc60": {
-    "message": "high-heel"
+    "message": "y\u00fcksek topuklu"
   },
   "d83d_dc61": {
-    "message": "woman's sandal"
+    "message": "kad\u0131n terli\u011fi"
   },
   "d83d_dc62": {
-    "message": "woman's boot"
+    "message": "kad\u0131n \u00e7izmesi"
   },
   "d83d_dc63": {
-    "message": "footprint"
+    "message": "ayak izi"
   },
   "d83d_dc64": {
-    "message": "bust in silhouette"
+    "message": "b\u00fcst sil\u00fceti"
   },
   "d83d_dc65": {
-    "message": "busts in silhouette"
+    "message": "b\u00fcst sil\u00fcetleri"
   },
   "d83d_dc66": {
-    "message": "boy"
+    "message": "erkek \u00e7ocuk"
   },
   "d83d_dc67": {
-    "message": "girl"
+    "message": "k\u0131z \u00e7ocuk"
   },
   "d83d_dc68": {
-    "message": "man"
+    "message": "erkek"
   },
   "d83d_dc69": {
-    "message": "woman"
+    "message": "kad\u0131n"
   },
   "d83d_dc6a": {
-    "message": "family"
+    "message": "aile"
   },
   "d83d_dc6b": {
-    "message": "man and woman"
+    "message": "erkek ve kad\u0131n"
   },
   "d83d_dc6c": {
-    "message": "two men"
+    "message": "iki erkek"
   },
   "d83d_dc6d": {
-    "message": "two women"
+    "message": "iki kad\u0131n"
   },
   "d83d_dc6e": {
-    "message": "police officer"
+    "message": "polis memuru"
   },
   "d83d_dc6f": {
-    "message": "bunny girl"
+    "message": "tav\u015fan k\u0131z"
   },
   "d83d_dc70": {
-    "message": "bride"
+    "message": "gelin"
   },
   "d83d_dc71": {
-    "message": "blond person"
+    "message": "sar\u0131\u015f\u0131n"
   },
   "d83d_dc72": {
-    "message": "man with gua pi mao"
+    "message": "gua pi mao'lu adam"
   },
   "d83d_dc73": {
-    "message": "man with a turban"
+    "message": "sar\u0131kl\u0131 adam"
   },
   "d83d_dc74": {
-    "message": "older man"
+    "message": "ya\u015fl\u0131 adam"
   },
   "d83d_dc75": {
-    "message": "older woman"
+    "message": "ya\u015fl\u0131 kad\u0131n"
   },
   "d83d_dc76": {
-    "message": "baby"
+    "message": "bebek"
   },
   "d83d_dc77": {
-    "message": "construction worker"
+    "message": "in\u015faat i\u015f\u00e7isi"
   },
   "d83d_dc78": {
-    "message": "princess"
+    "message": "prenses"
   },
   "d83d_dc79": {
-    "message": "ogre"
+    "message": "\u00f6c\u00fc"
   },
   "d83d_dc7a": {
-    "message": "goblin"
+    "message": "cin"
   },
   "d83d_dc7b": {
-    "message": "ghost"
+    "message": "hayalet"
   },
   "d83d_dc7c": {
-    "message": "baby angel"
+    "message": "bebek melek"
   },
   "d83d_dc7d": {
-    "message": "alien"
+    "message": "uzayl\u0131"
   },
   "d83d_dc7e": {
-    "message": "alien monster"
+    "message": "uzayl\u0131 canavar"
   },
   "d83d_dc7f": {
-    "message": "imp"
+    "message": "k\u00fc\u00e7\u00fck \u015feytan"
   },
   "d83d_dc80": {
-    "message": "skull"
+    "message": "kafatas\u0131"
   },
   "d83d_dc81": {
-    "message": "information desk"
+    "message": "dan\u0131\u015fma masas\u0131"
   },
   "d83d_dc82": {
-    "message": "guardsman"
+    "message": "muhaf\u0131z"
   },
   "d83d_dc83": {
-    "message": "dancer"
+    "message": "dans\u00e7\u0131"
   },
   "d83d_dc84": {
-    "message": "lipstick"
+    "message": "ruj"
   },
   "d83d_dc85": {
-    "message": "nail care"
+    "message": "t\u0131rnak bak\u0131m\u0131"
   },
   "d83d_dc86": {
-    "message": "face massage"
+    "message": "y\u00fcz masaj\u0131"
   },
   "d83d_dc87": {
-    "message": "haircut"
+    "message": "sa\u00e7 kesme"
   },
   "d83d_dc88": {
-    "message": "barber shop"
+    "message": "berber d\u00fckkan\u0131"
   },
   "d83d_dc89": {
-    "message": "shot"
+    "message": "i\u011fne"
   },
   "d83d_dc8a": {
-    "message": "pill"
+    "message": "hap"
   },
   "d83d_dc8b": {
-    "message": "kiss mark"
+    "message": "\u00f6p\u00fcc\u00fck i\u015fareti"
   },
   "d83d_dc8c": {
-    "message": "love letter"
+    "message": "a\u015fk mektubu"
   },
   "d83d_dc8d": {
-    "message": "ring"
+    "message": "y\u00fcz\u00fck"
   },
   "d83d_dc8e": {
-    "message": "gem"
+    "message": "m\u00fccevher"
   },
   "d83d_dc8f": {
-    "message": "kiss"
+    "message": "\u00f6p\u00fcc\u00fck"
   },
   "d83d_dc90": {
-    "message": "bouquet"
+    "message": "buket"
   },
   "d83d_dc91": {
-    "message": "couple"
+    "message": "\u00e7ift"
   },
   "d83d_dc92": {
-    "message": "wedding chapel"
+    "message": "kilisede nikah t\u00f6reni"
   },
   "d83d_dc93": {
-    "message": "pulsating heart"
+    "message": "atan kalp"
   },
   "d83d_dc94": {
-    "message": "heart break"
+    "message": "k\u0131r\u0131k kalp"
   },
   "d83d_dc95": {
-    "message": "two hearts"
+    "message": "iki kalp"
   },
   "d83d_dc96": {
-    "message": "sparkling heart"
+    "message": "par\u0131ldayan kalp"
   },
   "d83d_dc97": {
-    "message": "growing heart"
+    "message": "b\u00fcy\u00fcyen kalp"
   },
   "d83d_dc98": {
-    "message": "heart and arrow"
+    "message": "kalp ve ok"
   },
   "d83d_dc99": {
-    "message": "blue heart"
+    "message": "mavi kalp"
   },
   "d83d_dc9a": {
-    "message": "green heart"
+    "message": "ye\u015fil kalp"
   },
   "d83d_dc9b": {
-    "message": "yellow heart"
+    "message": "sar\u0131 kalp"
   },
   "d83d_dc9c": {
-    "message": "purple heart"
+    "message": "mor kalp"
   },
   "d83d_dc9d": {
-    "message": "heart with ribbon"
+    "message": "kurdeleli kalp"
   },
   "d83d_dc9e": {
-    "message": "revolving hearts"
+    "message": "d\u00f6nen kalpler"
   },
   "d83d_dc9f": {
-    "message": "heart decoration"
+    "message": "kalpli s\u00fcs"
   },
   "d83d_dca0": {
-    "message": "flower petal"
+    "message": "ta\u00e7 yaprak"
   },
   "d83d_dca1": {
-    "message": "light bulb"
+    "message": "elektrik ampul\u00fc"
   },
   "d83d_dca2": {
-    "message": "anger"
+    "message": "\u00f6fke"
   },
   "d83d_dca3": {
-    "message": "bomb"
+    "message": "bomba"
   },
   "d83d_dca4": {
-    "message": "sleepy symbol"
+    "message": "uykulu sembol\u00fc"
   },
   "d83d_dca5": {
-    "message": "collision"
+    "message": "\u00e7arp\u0131\u015fma"
   },
   "d83d_dca6": {
-    "message": "splashing sweat"
+    "message": "ter i\u00e7inde"
   },
   "d83d_dca7": {
-    "message": "cold sweat"
+    "message": "so\u011fuk ter"
   },
   "d83d_dca8": {
-    "message": "running dash"
+    "message": "d\u00fcz \u00e7izgi"
   },
   "d83d_dca9": {
-    "message": "poop"
+    "message": "kaka"
   },
   "d83d_dcaa": {
-    "message": "biceps"
+    "message": "pazu"
   },
   "d83d_dcab": {
-    "message": "dizzy"
+    "message": "sersemlemi\u015f"
   },
   "d83d_dcac": {
-    "message": "speech balloon"
+    "message": "konu\u015fma balonu"
   },
   "d83d_dcad": {
-    "message": "thought balloon"
+    "message": "d\u00fc\u015f\u00fcnce balonu"
   },
   "d83d_dcae": {
-    "message": "flower stamp"
+    "message": "\u00e7i\u00e7ek bask\u0131s\u0131"
   },
   "d83d_dcaf": {
-    "message": "full score"
+    "message": "tam puan"
   },
   "d83d_dcb0": {
-    "message": "money bag"
+    "message": "para torbas\u0131"
   },
   "d83d_dcb1": {
-    "message": "currency exchange"
+    "message": "d\u00f6viz bozma"
   },
   "d83d_dcb2": {
-    "message": "dollar sign"
+    "message": "dolar i\u015fareti"
   },
   "d83d_dcb3": {
-    "message": "credit card"
+    "message": "kredi kart\u0131"
   },
   "d83d_dcb4": {
-    "message": "yen note"
+    "message": "ka\u011f\u0131t yen"
   },
   "d83d_dcb5": {
-    "message": "dollar note"
+    "message": "ka\u011f\u0131t dolar"
   },
   "d83d_dcb6": {
-    "message": "Euro note"
+    "message": "Ka\u011f\u0131t avro"
   },
   "d83d_dcb7": {
-    "message": "Pound note"
+    "message": "Ka\u011f\u0131t sterlin"
   },
   "d83d_dcb8": {
-    "message": "flying money"
+    "message": "u\u00e7an para"
   },
   "d83d_dcb9": {
-    "message": "rising market"
+    "message": "y\u00fckselen piyasa"
   },
   "d83d_dcba": {
-    "message": "seat"
+    "message": "koltuk"
   },
   "d83d_dcbb": {
     "message": "PC"
   },
   "d83d_dcbc": {
-    "message": "briefcase"
+    "message": "evrak \u00e7antas\u0131"
   },
   "d83d_dcbd": {
-    "message": "mini disc"
+    "message": "mini disk"
   },
   "d83d_dcbe": {
-    "message": "floppy disc"
+    "message": "disket"
   },
   "d83d_dcbf": {
     "message": "blu-ray"
@@ -1482,889 +1485,889 @@
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "file folder"
+    "message": "klas\u00f6r"
   },
   "d83d_dcc2": {
-    "message": "open folder"
+    "message": "a\u00e7\u0131k klas\u00f6r"
   },
   "d83d_dcc3": {
-    "message": "document"
+    "message": "dok\u00fcman"
   },
   "d83d_dcc4": {
-    "message": "document"
+    "message": "dok\u00fcman"
   },
   "d83d_dcc5": {
-    "message": "calendar"
+    "message": "takvim"
   },
   "d83d_dcc6": {
-    "message": "tear-off calendar"
+    "message": "yaprakl\u0131 takvim"
   },
   "d83d_dcc7": {
-    "message": "card index"
+    "message": "kartoteks"
   },
   "d83d_dcc8": {
-    "message": "upward trend"
+    "message": "yukar\u0131 trend"
   },
   "d83d_dcc9": {
-    "message": "downward trend"
+    "message": "a\u015fa\u011f\u0131 trend"
   },
   "d83d_dcca": {
-    "message": "bar graph"
+    "message": "\u00e7ubuk grafik"
   },
   "d83d_dccb": {
-    "message": "clipboard"
+    "message": "pano"
   },
   "d83d_dccc": {
-    "message": "pushpin"
+    "message": "raptiye"
   },
   "d83d_dccd": {
-    "message": "round pushpin"
+    "message": "yuvarlak raptiye"
   },
   "d83d_dcce": {
-    "message": "paperclip"
+    "message": "ata\u015f"
   },
   "d83d_dccf": {
-    "message": "straight ruler"
+    "message": "d\u00fcz cetvel"
   },
   "d83d_dcd0": {
-    "message": "triangle ruler"
+    "message": "\u00fc\u00e7gen cetvel"
   },
   "d83d_dcd1": {
-    "message": "bookmark tabs"
+    "message": "ayra\u00e7lar"
   },
   "d83d_dcd2": {
-    "message": "ledger"
+    "message": "defter"
   },
   "d83d_dcd3": {
-    "message": "notebook"
+    "message": "not defteri"
   },
   "d83d_dcd4": {
-    "message": "decorated notebook"
+    "message": "s\u00fcsl\u00fc defter"
   },
   "d83d_dcd5": {
-    "message": "closed book"
+    "message": "kapal\u0131 kitap"
   },
   "d83d_dcd6": {
-    "message": "open book"
+    "message": "a\u00e7\u0131k kitap"
   },
   "d83d_dcd7": {
-    "message": "green book"
+    "message": "ye\u015fil kitap"
   },
   "d83d_dcd8": {
-    "message": "book"
+    "message": "kitap"
   },
   "d83d_dcd9": {
-    "message": "orange book"
+    "message": "turuncu kitap"
   },
   "d83d_dcda": {
-    "message": "books"
+    "message": "kitaplar"
   },
   "d83d_dcdb": {
-    "message": "name badge"
+    "message": "isim rozeti"
   },
   "d83d_dcdc": {
-    "message": "scroll"
+    "message": "k\u0131vr\u0131lm\u0131\u015f"
   },
   "d83d_dcdd": {
-    "message": "memo"
+    "message": "not"
   },
   "d83d_dcde": {
-    "message": "phone"
+    "message": "telefon"
   },
   "d83d_dcdf": {
-    "message": "pager"
+    "message": "\u00e7a\u011fr\u0131 cihaz\u0131"
   },
   "d83d_dce0": {
-    "message": "fax"
+    "message": "faks"
   },
   "d83d_dce1": {
-    "message": "satellite dish"
+    "message": "uydu anteni"
   },
   "d83d_dce2": {
-    "message": "loudspeaker"
+    "message": "hoparl\u00f6r"
   },
   "d83d_dce3": {
-    "message": "megaphone"
+    "message": "megafon"
   },
   "d83d_dce4": {
-    "message": "sent mail"
+    "message": "g\u00f6nderilen posta"
   },
   "d83d_dce5": {
-    "message": "Inbox"
+    "message": "Gelen kutusu"
   },
   "d83d_dce6": {
-    "message": "package"
+    "message": "paket"
   },
   "d83d_dce7": {
-    "message": "email"
+    "message": "e-posta"
   },
   "d83d_dce8": {
-    "message": "incoming mail"
+    "message": "gelen posta"
   },
   "d83d_dce9": {
-    "message": "outgoing mail"
+    "message": "giden posta"
   },
   "d83d_dcea": {
-    "message": "closed mailbox with flag down"
+    "message": "a\u015fa\u011f\u0131 bayrakl\u0131 kapal\u0131 posta kutusu"
   },
   "d83d_dceb": {
-    "message": "closed mailbox with flag up"
+    "message": "yukar\u0131 bayrakl\u0131 kapal\u0131 posta kutusu"
   },
   "d83d_dcec": {
-    "message": "open mailbox with flag up"
+    "message": "yukar\u0131 bayrakl\u0131 a\u00e7\u0131k posta kutusu"
   },
   "d83d_dced": {
-    "message": "open mailbox with flag down"
+    "message": "a\u015fa\u011f\u0131 bayrakl\u0131 a\u00e7\u0131k posta kutusu"
   },
   "d83d_dcee": {
-    "message": "postbox"
+    "message": "posta kutusu"
   },
   "d83d_dcef": {
-    "message": "postal horn"
+    "message": "posta kornas\u0131"
   },
   "d83d_dcf0": {
-    "message": "newspaper"
+    "message": "gazete"
   },
   "d83d_dcf1": {
-    "message": "cell phone"
+    "message": "cep telefonu"
   },
   "d83d_dcf2": {
-    "message": "cell phone with arrow"
+    "message": "oklu cep telefonu"
   },
   "d83d_dcf3": {
-    "message": "vibration mode"
+    "message": "titre\u015fim modu"
   },
   "d83d_dcf4": {
-    "message": "phone off"
+    "message": "telefon kapal\u0131"
   },
   "d83d_dcf5": {
-    "message": "no cell phone"
+    "message": "cep telefonu kullan\u0131lmaz"
   },
   "d83d_dcf6": {
-    "message": "mobile signals"
+    "message": "mobil sinyalleri"
   },
   "d83d_dcf7": {
-    "message": "camera"
+    "message": "kamera"
   },
   "d83d_dcf9": {
-    "message": "video cam"
+    "message": "video kamera"
   },
   "d83d_dcfa": {
     "message": "TV"
   },
   "d83d_dcfb": {
-    "message": "radio"
+    "message": "radyo"
   },
   "d83d_dcfc": {
-    "message": "video tape"
+    "message": "video kaset"
   },
   "d83d_dd00": {
-    "message": "crossed arrows"
+    "message": "\u00e7apraz oklar"
   },
   "d83d_dd01": {
-    "message": "clockwise arrows"
+    "message": "saat y\u00f6n\u00fcn\u00fc g\u00f6steren oklar"
   },
   "d83d_dd02": {
-    "message": "clockwise arrows"
+    "message": "saat y\u00f6n\u00fcn\u00fcn aksini g\u00f6steren oklar"
   },
   "d83d_dd03": {
-    "message": "reload"
+    "message": "tekrar y\u00fckle"
   },
   "d83d_dd04": {
-    "message": "anti-clockwise arrows"
+    "message": "saat y\u00f6n\u00fcn\u00fcn aksini g\u00f6steren oklar"
   },
   "d83d_dd05": {
-    "message": "low brightness"
+    "message": "d\u00fc\u015f\u00fck parlakl\u0131k"
   },
   "d83d_dd06": {
-    "message": "high brightness"
+    "message": "y\u00fcksek parlakl\u0131k"
   },
   "d83d_dd07": {
-    "message": "no speaking"
+    "message": "konu\u015fmak yasak"
   },
   "d83d_dd08": {
-    "message": "speaker"
+    "message": "hoparl\u00f6r"
   },
   "d83d_dd09": {
-    "message": "speaker with low volume"
+    "message": "sesi k\u0131s\u0131k hoparl\u00f6r"
   },
   "d83d_dd0a": {
-    "message": "speaker with high volume"
+    "message": "sesi y\u00fcksek hoparl\u00f6r"
   },
   "d83d_dd0b": {
-    "message": "battery"
+    "message": "pil"
   },
   "d83d_dd0c": {
-    "message": "electric plug"
+    "message": "elektrik fi\u015fi"
   },
   "d83d_dd0d": {
-    "message": "left-tilted magnifying glass"
+    "message": "sola e\u011fik b\u00fcy\u00fcte\u00e7"
   },
   "d83d_dd0e": {
-    "message": "right-tilted magnifying glass"
+    "message": "sa\u011fa e\u011fik b\u00fcy\u00fcte\u00e7"
   },
   "d83d_dd0f": {
-    "message": "lock with an ink pen"
+    "message": "dolma kalemli kilit"
   },
   "d83d_dd10": {
-    "message": "closed lock with a key"
+    "message": "anahtarl\u0131 kapal\u0131 kilit"
   },
   "d83d_dd11": {
-    "message": "key"
+    "message": "anahtar"
   },
   "d83d_dd12": {
-    "message": "closed lock"
+    "message": "kapal\u0131 kilit"
   },
   "d83d_dd13": {
-    "message": "open lock"
+    "message": "a\u00e7\u0131k kilit"
   },
   "d83d_dd14": {
-    "message": "bell"
+    "message": "zil"
   },
   "d83d_dd15": {
-    "message": "no bell"
+    "message": "zil yasak"
   },
   "d83d_dd16": {
-    "message": "bookmark"
+    "message": "yer i\u015fareti"
   },
   "d83d_dd17": {
-    "message": "link sign"
+    "message": "ba\u011flant\u0131 i\u015fareti"
   },
   "d83d_dd18": {
-    "message": "radio button"
+    "message": "radyo d\u00fc\u011fmesi"
   },
   "d83d_dd19": {
-    "message": "back"
+    "message": "geri"
   },
   "d83d_dd1a": {
-    "message": "end"
+    "message": "son"
   },
   "d83d_dd1b": {
-    "message": "ON arrow"
+    "message": "A\u00c7IK oku"
   },
   "d83d_dd1c": {
-    "message": "Soon sign"
+    "message": "Az kald\u0131 i\u015fareti"
   },
   "d83d_dd1d": {
-    "message": "Top sign"
+    "message": "\u00dcst i\u015fareti"
   },
   "d83d_dd1e": {
-    "message": "No one under 18"
+    "message": "18 ya\u015f\u0131ndan k\u00fc\u00e7\u00fckler giremez"
   },
   "d83d_dd20": {
-    "message": "uppercase letters"
+    "message": "b\u00fcy\u00fck harf"
   },
   "d83d_dd21": {
-    "message": "lowercase letters"
+    "message": "k\u00fc\u00e7\u00fck harf"
   },
   "d83d_dd22": {
-    "message": "numbers"
+    "message": "say\u0131lar"
   },
   "d83d_dd23": {
-    "message": "symbols"
+    "message": "semboller"
   },
   "d83d_dd24": {
-    "message": "Latin Alphabet"
+    "message": "Latin Alfabesi"
   },
   "d83d_dd25": {
-    "message": "fire"
+    "message": "ate\u015f"
   },
   "d83d_dd26": {
-    "message": "flashlight"
+    "message": "fener"
   },
   "d83d_dd27": {
-    "message": "wrench"
+    "message": "\u0130ngiliz anahtar\u0131"
   },
   "d83d_dd28": {
-    "message": "hammer"
+    "message": "\u00e7eki\u00e7"
   },
   "d83d_dd29": {
-    "message": "nut and bolt"
+    "message": "somun ve c\u0131vata"
   },
   "d83d_dd2a": {
-    "message": "cooking knife"
+    "message": "yemek b\u0131\u00e7a\u011f\u0131"
   },
   "d83d_dd2b": {
-    "message": "gun"
+    "message": "silah"
   },
   "d83d_dd2c": {
-    "message": "microscope"
+    "message": "mikroskop"
   },
   "d83d_dd2d": {
-    "message": "telescope"
+    "message": "teleskop"
   },
   "d83d_dd2e": {
-    "message": "crystal ball"
+    "message": "kristal k\u00fcre"
   },
   "d83d_dd2f": {
-    "message": "six-pointed star"
+    "message": "alt\u0131 k\u00f6\u015feli y\u0131ld\u0131z"
   },
   "d83d_dd30": {
-    "message": "green and yellow leaf"
+    "message": "ye\u015fil ve sar\u0131 yaprak"
   },
   "d83d_dd31": {
-    "message": "trident sign"
+    "message": "\u00dc\u00e7 u\u00e7lu m\u0131zrak i\u015fareti"
   },
   "d83d_dd32": {
-    "message": "solid frame square button"
+    "message": "dolu \u00e7er\u00e7eveli kare d\u00fc\u011fme"
   },
   "d83d_dd33": {
-    "message": "outlined frame square button"
+    "message": "d\u0131\u015f \u00e7izgi \u00e7er\u00e7eveli kare d\u00fc\u011fme"
   },
   "d83d_dd34": {
-    "message": "large red circle"
+    "message": "b\u00fcy\u00fck k\u0131rm\u0131z\u0131 daire"
   },
   "d83d_dd35": {
-    "message": "large blue circle"
+    "message": "b\u00fcy\u00fck mavi daire"
   },
   "d83d_dd36": {
-    "message": "large orange diamond"
+    "message": "b\u00fcy\u00fck turuncu baklava \u015fekli"
   },
   "d83d_dd37": {
-    "message": "large blue diamond"
+    "message": "b\u00fcy\u00fck mavi baklava \u015fekli"
   },
   "d83d_dd38": {
-    "message": "small orange diamond"
+    "message": "k\u00fc\u00e7\u00fck turuncu baklava \u015fekli"
   },
   "d83d_dd39": {
-    "message": "small blue diamond"
+    "message": "k\u00fc\u00e7\u00fck mavi baklava \u015fekli"
   },
   "d83d_dd3a": {
-    "message": "up triangle"
+    "message": "yukar\u0131 bakan \u00fc\u00e7gen"
   },
   "d83d_dd3b": {
-    "message": "down triangle"
+    "message": "a\u015fa\u011f\u0131 bakan \u00fc\u00e7gen"
   },
   "d83d_dd3c": {
-    "message": "up triangle button"
+    "message": "yukar\u0131 bakan \u00fc\u00e7gen d\u00fc\u011fmesi"
   },
   "d83d_dd3d": {
-    "message": "down triangle button"
+    "message": "a\u015fa\u011f\u0131 bakan \u00fc\u00e7gen d\u00fc\u011fmesi"
   },
   "d83d_dd50": {
-    "message": "1 o'clock"
+    "message": "saat 1"
   },
   "d83d_dd51": {
-    "message": "2 o'clock"
+    "message": "saat 2"
   },
   "d83d_dd52": {
-    "message": "3 o'clock"
+    "message": "saat 3"
   },
   "d83d_dd53": {
-    "message": "4 o'clock"
+    "message": "saat 4"
   },
   "d83d_dd54": {
-    "message": "5 o'clock"
+    "message": "saat 5"
   },
   "d83d_dd55": {
-    "message": "6 o'clock"
+    "message": "saat 6"
   },
   "d83d_dd56": {
-    "message": "7 o'clock"
+    "message": "saat 7"
   },
   "d83d_dd57": {
-    "message": "8 o'clock"
+    "message": "saat 8"
   },
   "d83d_dd58": {
-    "message": "9 o'clock"
+    "message": "saat 9"
   },
   "d83d_dd59": {
-    "message": "10 o'clock"
+    "message": "saat 10"
   },
   "d83d_dd5a": {
-    "message": "11 o'clock"
+    "message": "saat 11"
   },
   "d83d_dd5b": {
-    "message": "12 o'clock"
+    "message": "saat 12"
   },
   "d83d_dd5c": {
-    "message": "one-thirty"
+    "message": "bir bu\u00e7uk"
   },
   "d83d_dd5d": {
-    "message": "two-thirty"
+    "message": "iki bu\u00e7uk"
   },
   "d83d_dd5e": {
-    "message": "three-thirty"
+    "message": "\u00fc\u00e7 bu\u00e7uk"
   },
   "d83d_dd5f": {
-    "message": "four-thirty"
+    "message": "d\u00f6rt bu\u00e7uk"
   },
   "d83d_dd60": {
-    "message": "five-thirty"
+    "message": "be\u015f bu\u00e7uk"
   },
   "d83d_dd61": {
-    "message": "six-thirty"
+    "message": "alt\u0131 bu\u00e7uk"
   },
   "d83d_dd62": {
-    "message": "seven-thirty"
+    "message": "yedi bu\u00e7uk"
   },
   "d83d_dd63": {
-    "message": "eight-thirty"
+    "message": "sekiz bu\u00e7uk"
   },
   "d83d_dd64": {
-    "message": "nine-thirty"
+    "message": "dokuz bu\u00e7uk"
   },
   "d83d_dd65": {
-    "message": "ten-thirty"
+    "message": "on bu\u00e7uk"
   },
   "d83d_dd66": {
-    "message": "eleven-thirty"
+    "message": "on bir bu\u00e7uk"
   },
   "d83d_dd67": {
-    "message": "twelve-thirty"
+    "message": "yar\u0131m"
   },
   "d83d_ddfb": {
-    "message": "Mt. Fuji"
+    "message": "Fuji da\u011f\u0131"
   },
   "d83d_ddfc": {
-    "message": "Tokyo Tower"
+    "message": "Tokyo Kulesi"
   },
   "d83d_ddfd": {
-    "message": "Statue of Liberty"
+    "message": "\u00d6zg\u00fcrl\u00fck Heykeli"
   },
   "d83d_ddfe": {
-    "message": "Map of Japan"
+    "message": "Japonya haritas\u0131"
   },
   "d83d_ddff": {
-    "message": "Moyai statue"
+    "message": "Moyai heykeli"
   },
   "d83d_de00": {
-    "message": "grin"
+    "message": "s\u0131r\u0131tma"
   },
   "d83d_de01": {
-    "message": " grin with smiling eyes"
+    "message": " g\u00fclen g\u00f6zlerle s\u0131r\u0131tma"
   },
   "d83d_de02": {
-    "message": "tears of joy"
+    "message": "mutluluk g\u00f6zya\u015flar\u0131"
   },
   "d83d_de03": {
-    "message": "open mouth smile"
+    "message": "a\u011fz\u0131 a\u00e7\u0131k g\u00fcl\u00fcmseme"
   },
   "d83d_de04": {
-    "message": "open mouth smile with smiling eyes"
+    "message": "g\u00fclen g\u00f6zlerle a\u011fz\u0131 a\u00e7\u0131k g\u00fcl\u00fcmseme"
   },
   "d83d_de05": {
-    "message": "cold sweat smile"
+    "message": "so\u011fuk so\u011fuk terleyen y\u00fcz"
   },
   "d83d_de06": {
-    "message": " open mouth smile with closed eyes"
+    "message": " kapal\u0131 g\u00f6zle a\u011fz\u0131 a\u00e7\u0131k g\u00fcl\u00fcmseme"
   },
   "d83d_de07": {
-    "message": "smile with a halo"
+    "message": "ba\u015f\u0131nda hale ile g\u00fcl\u00fcmseme"
   },
   "d83d_de08": {
-    "message": "smile with horns"
+    "message": "boynuzlu g\u00fcl\u00fcmseyen y\u00fcz"
   },
   "d83d_de09": {
-    "message": "winking face"
+    "message": "g\u00f6z k\u0131rpan y\u00fcz"
   },
   "d83d_de0a": {
-    "message": "smile"
+    "message": "g\u00fcl\u00fcmseme"
   },
   "d83d_de0b": {
-    "message": "yummy face"
+    "message": "lezzet belirten y\u00fcz"
   },
   "d83d_de0c": {
-    "message": "relieved face"
+    "message": "rahatlam\u0131\u015f y\u00fcz"
   },
   "d83d_de0d": {
-    "message": "smiling face"
+    "message": "g\u00fclen y\u00fcz"
   },
   "d83d_de0e": {
-    "message": "cool"
+    "message": "haval\u0131"
   },
   "d83d_de0f": {
-    "message": "smirk"
+    "message": "kurnaz g\u00fcl\u00fc\u015f"
   },
   "d83d_de10": {
-    "message": "deadpan face"
+    "message": "ruhsuz y\u00fcz"
   },
   "d83d_de11": {
-    "message": "expressionless"
+    "message": "ifadesiz"
   },
   "d83d_de12": {
-    "message": "unamused"
+    "message": "keyifsiz"
   },
   "d83d_de13": {
-    "message": "cold sweat"
+    "message": "so\u011fuk ter"
   },
   "d83d_de14": {
-    "message": "pensive face"
+    "message": "d\u00fc\u015f\u00fcnceli y\u00fcz"
   },
   "d83d_de15": {
-    "message": "confused face"
+    "message": "kafas\u0131 kar\u0131\u015fm\u0131\u015f"
   },
   "d83d_de16": {
-    "message": "confounded face"
+    "message": "\u015fa\u015fk\u0131na d\u00f6nm\u00fc\u015f y\u00fcz"
   },
   "d83d_de17": {
-    "message": "kissy face"
+    "message": "\u00f6pen y\u00fcz"
   },
   "d83d_de18": {
-    "message": "throwing kisses"
+    "message": "\u00f6p\u00fcc\u00fck g\u00f6nderme"
   },
   "d83d_de19": {
-    "message": "kiss and smile"
+    "message": "\u00f6p\u00fcc\u00fck ve g\u00fcl\u00fcmseme"
   },
   "d83d_de1a": {
-    "message": "kissing"
+    "message": "\u00f6p\u00fcyor"
   },
   "d83d_de1b": {
-    "message": "tongue out"
+    "message": "dili d\u0131\u015far\u0131da"
   },
   "d83d_de1c": {
-    "message": "tongue out with a wink"
+    "message": "dil \u00e7\u0131karm\u0131\u015f g\u00f6z k\u0131rpma"
   },
   "d83d_de1d": {
-    "message": "yuck"
+    "message": "i\u011frenme"
   },
   "d83d_de1e": {
-    "message": "disappointed"
+    "message": "hayal k\u0131r\u0131kl\u0131\u011f\u0131"
   },
   "d83d_de1f": {
-    "message": "worried"
+    "message": "endi\u015feli"
   },
   "d83d_de20": {
-    "message": "angry"
+    "message": "k\u0131zg\u0131n"
   },
   "d83d_de21": {
-    "message": "pouting"
+    "message": "k\u0131zg\u0131n"
   },
   "d83d_de22": {
-    "message": "crying"
+    "message": "a\u011fl\u0131yor"
   },
   "d83d_de23": {
-    "message": "blew it"
+    "message": "patlama"
   },
   "d83d_de24": {
-    "message": "look of triumph"
+    "message": "zafer ifadesi"
   },
   "d83d_de25": {
-    "message": "whew!"
+    "message": "vay can\u0131na!"
   },
   "d83d_de26": {
-    "message": "frowning face"
+    "message": "somurtan y\u00fcz"
   },
   "d83d_de27": {
-    "message": "anguished"
+    "message": "kederli"
   },
   "d83d_de28": {
-    "message": "fearful"
+    "message": "korkmu\u015f"
   },
   "d83d_de29": {
-    "message": "weary"
+    "message": "yorgun"
   },
   "d83d_de2a": {
-    "message": "sleepy"
+    "message": "uykulu"
   },
   "d83d_de2b": {
-    "message": "tired"
+    "message": "yorgun"
   },
   "d83d_de2c": {
-    "message": "grimace"
+    "message": "ek\u015fi surat"
   },
   "d83d_de2d": {
-    "message": "loudly crying"
+    "message": "y\u00fcksek sesle a\u011flama"
   },
   "d83d_de2e": {
-    "message": "open mouth face"
+    "message": "a\u011fz\u0131 a\u00e7\u0131k y\u00fcz"
   },
   "d83d_de2f": {
-    "message": "hushed face"
+    "message": "susturulmu\u015f y\u00fcz"
   },
   "d83d_de30": {
-    "message": "rushed face"
+    "message": "acele i\u00e7inde y\u00fcz"
   },
   "d83d_de31": {
-    "message": "fearful face"
+    "message": "korkmu\u015f y\u00fcz"
   },
   "d83d_de32": {
-    "message": "astonished face"
+    "message": "\u015fa\u015f\u0131rm\u0131\u015f y\u00fcz"
   },
   "d83d_de33": {
-    "message": "flushed"
+    "message": "\u015fa\u015fk\u0131n"
   },
   "d83d_de34": {
-    "message": "sleeping"
+    "message": "uyuyor"
   },
   "d83d_de35": {
-    "message": "dizzy"
+    "message": "sersemlemi\u015f"
   },
   "d83d_de36": {
-    "message": "no mouth face"
+    "message": "a\u011fz\u0131 olmayan y\u00fcz"
   },
   "d83d_de37": {
-    "message": "face with mask"
+    "message": "maskeli y\u00fcz"
   },
   "d83d_de38": {
-    "message": "grinning cat face"
+    "message": "s\u0131r\u0131tan kedi y\u00fcz\u00fc"
   },
   "d83d_de39": {
-    "message": "tears of joy cat face"
+    "message": "kedi y\u00fcz\u00fcnde mutluluk g\u00f6zya\u015flar\u0131"
   },
   "d83d_de3a": {
-    "message": "smiling cat face"
+    "message": "g\u00fcl\u00fcmseyen kedi y\u00fcz\u00fc"
   },
   "d83d_de3b": {
-    "message": "smiling cat face"
+    "message": "g\u00fcl\u00fcmseyen kedi y\u00fcz\u00fc"
   },
   "d83d_de3c": {
-    "message": "wry cat face"
+    "message": "alayc\u0131 kedi y\u00fcz\u00fc"
   },
   "d83d_de3d": {
-    "message": "kissing cat"
+    "message": "\u00f6pen kedi"
   },
   "d83d_de3e": {
-    "message": "pouting cat face"
+    "message": "as\u0131k kedi y\u00fcz\u00fc"
   },
   "d83d_de3f": {
-    "message": "crying cat face"
+    "message": "a\u011flayan kedi y\u00fcz\u00fc"
   },
   "d83d_de40": {
-    "message": "weary cat face"
+    "message": "yorgun kedi y\u00fcz\u00fc"
   },
   "d83d_de45": {
-    "message": "No good gesture"
+    "message": "\u0130yi hareket yok"
   },
   "d83d_de46": {
-    "message": "OK gesture"
+    "message": "Tamam i\u015fareti"
   },
   "d83d_de47": {
-    "message": "i'm sorry"
+    "message": "\u00dczg\u00fcn\u00fcm"
   },
   "d83d_de48": {
-    "message": "see no evil"
+    "message": "g\u00f6rmedim"
   },
   "d83d_de49": {
-    "message": "hear no evil"
+    "message": "duymad\u0131m"
   },
   "d83d_de4a": {
-    "message": "speak no evil"
+    "message": "s\u00f6ylemedim"
   },
   "d83d_de4b": {
-    "message": "happy person"
+    "message": "mutlu ki\u015fi"
   },
   "d83d_de4c": {
-    "message": "hooray"
+    "message": "ya\u015fas\u0131n"
   },
   "d83d_de4d": {
-    "message": "frowning person"
+    "message": "somurtan ki\u015fi"
   },
   "d83d_de4e": {
-    "message": "pouting"
+    "message": "as\u0131k surat"
   },
   "d83d_de4f": {
-    "message": "folded hands"
+    "message": "birle\u015fik eller"
   },
   "d83d_de80": {
-    "message": "rocket"
+    "message": "roket"
   },
   "d83d_de81": {
-    "message": "helicopter"
+    "message": "helikopter"
   },
   "d83d_de82": {
-    "message": "steam locomotive"
+    "message": "buharl\u0131 lokomotif"
   },
   "d83d_de83": {
-    "message": "train"
+    "message": "tren"
   },
   "d83d_de84": {
-    "message": "high-speed train"
+    "message": "y\u00fcksek h\u0131zl\u0131 tren"
   },
   "d83d_de85": {
-    "message": "high-speed train with bullet nose"
+    "message": "mermi burunlu y\u00fcksek h\u0131zl\u0131 tren"
   },
   "d83d_de86": {
-    "message": "train"
+    "message": "tren"
   },
   "d83d_de87": {
-    "message": "subway"
+    "message": "metro"
   },
   "d83d_de88": {
-    "message": "light rail"
+    "message": "hafif rayl\u0131 ula\u015f\u0131m"
   },
   "d83d_de89": {
-    "message": "train station"
+    "message": "tren istasyonu"
   },
   "d83d_de8a": {
-    "message": "tram"
+    "message": "tramvay"
   },
   "d83d_de8b": {
-    "message": "tram car"
+    "message": "tramvay vagonu"
   },
   "d83d_de8c": {
-    "message": "bus"
+    "message": "otob\u00fcs"
   },
   "d83d_de8d": {
-    "message": "oncoming bus"
+    "message": "gelen otob\u00fcs"
   },
   "d83d_de8e": {
-    "message": "trolleybus"
+    "message": "troleyb\u00fcs"
   },
   "d83d_de8f": {
-    "message": "bus stop"
+    "message": "otob\u00fcs dura\u011f\u0131"
   },
   "d83d_de90": {
-    "message": "minibus"
+    "message": "minib\u00fcs"
   },
   "d83d_de91": {
-    "message": "ambulance"
+    "message": "cankurtaran"
   },
   "d83d_de92": {
-    "message": "fire engine"
+    "message": "itfaiye"
   },
   "d83d_de93": {
-    "message": "police car"
+    "message": "polis arabas\u0131"
   },
   "d83d_de94": {
-    "message": "oncoming police car"
+    "message": "gelen polis arabas\u0131"
   },
   "d83d_de95": {
-    "message": "taxi"
+    "message": "taksi"
   },
   "d83d_de96": {
-    "message": "oncoming taxi"
+    "message": "gelen taksi"
   },
   "d83d_de97": {
-    "message": "car"
+    "message": "araba"
   },
   "d83d_de98": {
-    "message": "oncoming car"
+    "message": "gelen araba"
   },
   "d83d_de99": {
-    "message": "RV"
+    "message": "karavan"
   },
   "d83d_de9a": {
-    "message": "delivery truck"
+    "message": "nakliye kamyonu"
   },
   "d83d_de9b": {
-    "message": "lorry"
+    "message": "kamyon"
   },
   "d83d_de9c": {
-    "message": "tractor"
+    "message": "trakt\u00f6r"
   },
   "d83d_de9d": {
-    "message": "monorail"
+    "message": "tek rayl\u0131 hat"
   },
   "d83d_de9e": {
-    "message": "mountain railway"
+    "message": "tek rayl\u0131 da\u011f hatt\u0131"
   },
   "d83d_de9f": {
-    "message": "suspension railway"
+    "message": "asma demiryolu"
   },
   "d83d_dea0": {
-    "message": "mountain cableway"
+    "message": "teleferik"
   },
   "d83d_dea1": {
-    "message": "cable car"
+    "message": "teleferik"
   },
   "d83d_dea2": {
-    "message": "ship"
+    "message": "gemi"
   },
   "d83d_dea3": {
-    "message": "rowboat"
+    "message": "kay\u0131k"
   },
   "d83d_dea4": {
-    "message": "speedboat"
+    "message": "s\u00fcrat teknesi"
   },
   "d83d_dea5": {
-    "message": "horizontal traffic lights"
+    "message": "yatay trafik \u0131\u015f\u0131klar\u0131"
   },
   "d83d_dea6": {
-    "message": "vertical traffic lights"
+    "message": "dikey trafik \u0131\u015f\u0131klar\u0131"
   },
   "d83d_dea7": {
-    "message": "under construction"
+    "message": "in\u015faat"
   },
   "d83d_dea8": {
-    "message": "revolving light"
+    "message": "d\u00f6ner fener"
   },
   "d83d_dea9": {
-    "message": "location flag"
+    "message": "konum bayra\u011f\u0131"
   },
   "d83d_deaa": {
-    "message": "door"
+    "message": "kap\u0131"
   },
   "d83d_deab": {
-    "message": "No entry sign"
+    "message": "Girilmez i\u015fareti"
   },
   "d83d_deac": {
-    "message": "smoking sign"
+    "message": "sigara i\u015fareti"
   },
   "d83d_dead": {
-    "message": "no smoking sign"
+    "message": "sigara i\u00e7ilmez i\u015fareti"
   },
   "d83d_deae": {
-    "message": "litterbox sign"
+    "message": "\u00e7\u00f6p kutusu i\u015fareti"
   },
   "d83d_deaf": {
-    "message": "don't litter sign"
+    "message": "yere \u00e7\u00f6p atma i\u015fareti"
   },
   "d83d_deb0": {
-    "message": "drinking water"
+    "message": "i\u00e7me suyu"
   },
   "d83d_deb1": {
-    "message": "non-drinking water"
+    "message": "i\u00e7ilmez su"
   },
   "d83d_deb2": {
-    "message": "bike"
+    "message": "bisiklet"
   },
   "d83d_deb3": {
-    "message": "no bike"
+    "message": "bisiklet giremez"
   },
   "d83d_deb4": {
-    "message": "bicyclist"
+    "message": "bisiklet\u00e7i"
   },
   "d83d_deb5": {
-    "message": "mountain bicyclist"
+    "message": "da\u011f bisiklet\u00e7isi"
   },
   "d83d_deb6": {
-    "message": "pedestrian"
+    "message": "yaya"
   },
   "d83d_deb7": {
-    "message": "no pedestrians"
+    "message": "yaya giremez"
   },
   "d83d_deb8": {
-    "message": "children crossing"
+    "message": "okul ge\u00e7idi"
   },
   "d83d_deb9": {
-    "message": "Men sign"
+    "message": "Erkekler i\u00e7in i\u015fareti"
   },
   "d83d_deba": {
-    "message": "Women sign"
+    "message": "Kad\u0131nlar i\u00e7in i\u015fareti"
   },
   "d83d_debb": {
-    "message": "restroom sign"
+    "message": "tuvalet i\u015fareti"
   },
   "d83d_debc": {
-    "message": "baby sign"
+    "message": "bebek i\u015fareti"
   },
   "d83d_debd": {
-    "message": "toilet"
+    "message": "tuvalet"
   },
   "d83d_debe": {
-    "message": "water closet"
+    "message": "tuvalet"
   },
   "d83d_debf": {
-    "message": "shower"
+    "message": "du\u015f"
   },
   "d83d_dec0": {
-    "message": "bath"
+    "message": "banyo"
   },
   "d83d_dec1": {
-    "message": "bathtub"
+    "message": "k\u00fcvet"
   },
   "d83d_dec2": {
-    "message": "passport control"
+    "message": "pasaport kontrol\u00fc"
   },
   "d83d_dec3": {
-    "message": "customs"
+    "message": "g\u00fcmr\u00fck"
   },
   "d83d_dec4": {
-    "message": "baggage claim"
+    "message": "bagaj teslimi"
   },
   "d83d_dec5": {
-    "message": "left luggage"
+    "message": "emanetteki bavul"
   },
   "de_ger_settings_page": {
     "message": "Almanca Klavye Ayarlar\u0131 Sayfas\u0131"
@@ -2505,7 +2508,7 @@
     "message": "Kelime"
   },
   "dismiss_menu": {
-    "message": "dismiss keyboard menu"
+    "message": "klavye men\u00fcs\u00fcn\u00fc kapat"
   },
   "dk_dan_settings_page": {
     "message": "Danca Klavye Ayarlar\u0131 Sayfas\u0131"
@@ -2520,28 +2523,28 @@
     "message": "Estonca Klavye Ayarlar\u0131 Sayfas\u0131"
   },
   "emoji_tab_emoticon": {
-    "message": "Emoji category emoticon"
+    "message": "Emoji ifade kategorisi"
   },
   "emoji_tab_face": {
-    "message": "Emoji category face"
+    "message": "Emoji y\u00fcz kategorisi"
   },
   "emoji_tab_hot": {
-    "message": "Emoji category hot"
+    "message": "Emoji s\u0131cak kategorisi"
   },
   "emoji_tab_nature": {
-    "message": "Emoji category nature"
+    "message": "Emoji do\u011fa kategorisi"
   },
   "emoji_tab_object": {
-    "message": "Emoji category object"
+    "message": "Emoji nesne kategorisi"
   },
   "emoji_tab_place": {
-    "message": "Emoji category place"
+    "message": "Emoji yer kategorisi"
   },
   "emoji_tab_recent": {
-    "message": "Emoji category recent"
+    "message": "Emoji son kullan\u0131lanlar kategorisi"
   },
   "emoji_tab_symbol": {
-    "message": "Emoji category symbol"
+    "message": "Emoji sembol kategorisi"
   },
   "enable_capitalization": {
     "message": "Otomatik olarak b\u00fcy\u00fck harf yap"
@@ -2644,6 +2647,9 @@
   },
   "inputmethod_dayi": {
     "message": "Dayi giri\u015f y\u00f6ntemi"
+  },
+  "inputmethod_hangul": {
+    "message": "Korece giri\u015f y\u00f6ntemi"
   },
   "inputmethod_pinyin": {
     "message": "Pinyin giri\u015f y\u00f6ntemi"
@@ -2813,6 +2819,9 @@
   "keyboard_nepali_phonetic": {
     "message": "Nepalce klavye (Fonetik)"
   },
+  "keyboard_netherlands": {
+    "message": "Hollanda klavyesi"
+  },
   "keyboard_none": {
     "message": "Klavye"
   },
@@ -2836,6 +2845,9 @@
   },
   "keyboard_romanian": {
     "message": "Romence klavye"
+  },
+  "keyboard_romanian_standard": {
+    "message": "Romanian standard keyboard"
   },
   "keyboard_russian": {
     "message": "Rus\u00e7a klavye"
@@ -2976,7 +2988,7 @@
     "message": "Korece Ayarlar Sayfas\u0131"
   },
   "korean_syllable_input": {
-    "message": "Hangul'un teker teker girilip girilmeyece\u011fi"
+    "message": "Hangul'u birer birer girin"
   },
   "latam_spa_settings_page": {
     "message": "Latin Amerika Klavye (\u0130spanyolca) Ayarlar\u0131 Sayfas\u0131"
@@ -3015,13 +3027,13 @@
     "message": "Duraklat"
   },
   "physical_auto_correction_level": {
-    "message": "Auto-correction"
+    "message": "Otomatik d\u00fczeltme"
   },
   "physical_enable_capitalization": {
-    "message": "Auto-capitalization"
+    "message": "Otomatik olarak b\u00fcy\u00fck harf yap"
   },
   "physical_keyboard": {
-    "message": "Physical Keyboard"
+    "message": "Fiziksel Klavye"
   },
   "pinyin_settings_page": {
     "message": "Pinyin Ayarlar Sayfas\u0131"
@@ -3075,13 +3087,16 @@
     "message": "\u00d6neri a\u00e7\u0131l\u0131r listesini Geri tu\u015funa bas\u0131ld\u0131\u011f\u0131nda g\u00f6ster"
   },
   "show_hangul_candidate": {
-    "message": "Show Hangul suggestions"
+    "message": "Hangul \u00f6nerilerini g\u00f6ster"
   },
   "si_slv_settings_page": {
     "message": "Slovence Klavye Ayarlar\u0131 Sayfas\u0131"
   },
   "sk_slo_settings_page": {
     "message": "Slovak\u00e7a Klavye Ayarlar\u0131 Sayfas\u0131"
+  },
+  "smiley": {
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "Az"
@@ -3234,28 +3249,40 @@
     "message": "Ki\u015fisel s\u00f6zl\u00fc\u011f\u00fc etkinle\u015ftir"
   },
   "user_dict_add": {
-    "message": "Add"
+    "message": "Ekle"
   },
   "user_dict_clear": {
-    "message": "Clear All"
-  },
-  "user_dict_done": {
-    "message": "Done"
+    "message": "T\u00fcm\u00fcn\u00fc Temizle"
   },
   "user_dict_manage": {
-    "message": "Manage personal dictionary..."
+    "message": "Ki\u015fisel dizini y\u00f6net..."
   },
   "user_dict_new_word": {
-    "message": "New word"
+    "message": "Yeni kelime"
   },
   "user_dict_remove": {
-    "message": "Remove Selected"
+    "message": "Se\u00e7ileni Kald\u0131r"
+  },
+  "user_dict_save": {
+    "message": "Kaydet"
   },
   "user_dict_sync": {
-    "message": "Sync personal dictionary"
+    "message": "Ki\u015fisel dizini senkronize et"
   },
   "user_dict_title": {
-    "message": "Personal Dictionary"
+    "message": "Ki\u015fisel Dizin"
+  },
+  "voice": {
+    "message": "Ses"
+  },
+  "voice_privacy_info": {
+    "message": "Metni tan\u0131mak i\u00e7in sesiniz bir Google sunucusuna g\u00f6nderilecektir"
+  },
+  "voice_turn_off": {
+    "message": "ses giri\u015fi arac\u0131n\u0131 kapat"
+  },
+  "voice_turn_on": {
+    "message": "ses giri\u015fi arac\u0131n\u0131 a\u00e7"
   },
   "wait": {
     "message": "Bekle"

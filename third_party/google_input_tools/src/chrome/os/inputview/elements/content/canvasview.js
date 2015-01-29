@@ -24,6 +24,7 @@ goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.Weightable');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
+goog.require('i18n.input.chrome.message.Name');
 goog.require('i18n.input.chrome.message.Type');
 goog.require('i18n.input.hwt.Canvas');
 goog.require('i18n.input.hwt.StrokeHandler');
@@ -154,7 +155,6 @@ CanvasView.prototype.createDom = function() {
   this.coverElement_ = dom.createDom(goog.dom.TagName.DIV,
       Css. HANDWRITING_PRIVACY_COVER);
   dom.appendChild(container, this.coverElement_);
-  goog.style.setElementShown(this.coverElement_, false);
 
 
   this.canvas_.render(container);
@@ -168,14 +168,23 @@ CanvasView.prototype.createDom = function() {
   dom.appendChild(container, this.networkErrorDiv_);
 
   this.privacyDiv_ = dom.createDom(goog.dom.TagName.DIV,
-      [Css.HANDWRITING_PRIVACY_INFO, Css.HANDWRITING_PRIVACY_INFO_HIDDEN]);
-  var textDiv = dom.createDom(goog.dom.TagName.DIV);
+      Css.HANDWRITING_PRIVACY_INFO);
+
+  var textDiv = dom.createDom(goog.dom.TagName.DIV,
+      Css.HANDWRITING_PRIVACY_TEXT);
   dom.setTextContent(textDiv,
       chrome.i18n.getMessage('HANDWRITING_PRIVACY_INFO'));
   dom.appendChild(this.privacyDiv_, textDiv);
   this.confirmBtn_ = new FunctionalKey(
       '', ElementType.HWT_PRIVACY_GOT_IT, chrome.i18n.getMessage('GOT_IT'), '');
   this.confirmBtn_.render(this.privacyDiv_);
+
+  // Shows or hide the privacy information.
+  if (localStorage.getItem(Name.HWT_PRIVACY_INFO)) {
+    goog.style.setElementShown(this.coverElement_, false);
+    goog.dom.classlist.add(this.privacyDiv_,
+        Css.HANDWRITING_PRIVACY_INFO_HIDDEN);
+  }
 
   dom.appendChild(container, this.privacyDiv_);
 };
@@ -192,7 +201,6 @@ CanvasView.prototype.enterDocument = function() {
           [i18n.input.chrome.DataSource.EventType.CANDIDATES_BACK,
            Type.HWT_NETWORK_ERROR],
           this.onNetworkState_).
-      listen(this.adapter_, Type.HWT_PRIVACY_INFO, this.onShowPrivacyInfo_).
       listen(this.adapter_, Type.HWT_PRIVACY_GOT_IT,
           this.onConfirmPrivacyInfo_);
 };
@@ -222,10 +230,17 @@ CanvasView.prototype.resize = function(width, height) {
   elem.style.width = this.coverElement_.style.width = width + 'px';
   elem.style.height = this.coverElement_.style.height = height + 'px';
 
-  this.networkErrorDiv_.style.top = this.privacyDiv_.style.top =
-      Math.round(height / 2 - 50) + 'px';
-  this.networkErrorDiv_.style.left = this.privacyDiv_.style.left =
-      Math.round(width / 2 - 220) + 'px';
+  var size = goog.style.getSize(this.networkErrorDiv_);
+  this.networkErrorDiv_.style.top =
+      Math.round((height - size.height) / 2) + 'px';
+  this.networkErrorDiv_.style.left =
+      Math.round((width - size.width) / 2) + 'px';
+
+  size = goog.style.getSize(this.privacyDiv_);
+  this.privacyDiv_.style.top =
+      Math.round((height - size.height) / 2) + 'px';
+  this.privacyDiv_.style.left =
+      Math.round((width - size.width) / 2) + 'px';
   this.confirmBtn_.resize(100, 60);
 
   this.canvas_.setSize(height, width);
@@ -288,24 +303,13 @@ CanvasView.prototype.onNetworkState_ = function(e) {
 
 
 /**
- * Shows the privacy information. Show on first time seeing the handwriting UI
- * for 6 seconds, then fade out over 2 seconds.
- *
- * @private
- */
-CanvasView.prototype.onShowPrivacyInfo_ = function() {
-  goog.style.setElementShown(this.coverElement_, true);
-  goog.dom.classlist.remove(this.privacyDiv_,
-      Css.HANDWRITING_PRIVACY_INFO_HIDDEN);
-};
-
-
-/**
  * Handler on user confirming the privacy information.
  *
  * @private
  */
 CanvasView.prototype.onConfirmPrivacyInfo_ = function() {
+  // Stores the handwriting privacy permission value.
+  localStorage.setItem(Name.HWT_PRIVACY_INFO, 'true');
   goog.style.setElementShown(this.coverElement_, false);
   goog.dom.classlist.add(this.privacyDiv_, Css.HANDWRITING_PRIVACY_INFO_HIDDEN);
 };

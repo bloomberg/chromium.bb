@@ -16,6 +16,9 @@ goog.provide('i18n.input.chrome.inputview.ReadyState');
 
 
 goog.scope(function() {
+
+
+
 /**
  * The system ready state which mainains a state bit map.
  * Inputview controller uses this to determine whether the system is ready to
@@ -34,11 +37,12 @@ var ReadyState = i18n.input.chrome.inputview.ReadyState;
  * @enum {number}
  */
 ReadyState.StateType = {
-  IME_LIST_READY: 1,
-  KEYBOARD_CONFIG_READY: 2,
-  LAYOUT_READY: 4,
-  LAYOUT_CONFIG_READY: 8,
-  M17N_LAYOUT_READY: 16
+  IME_LIST_READY: 0x1,
+  KEYBOARD_CONFIG_READY: 0x10,
+  LAYOUT_READY: 0x100,
+  LAYOUT_CONFIG_READY: 0x1000,
+  M17N_LAYOUT_READY: 0x10000,
+  INPUT_METHOD_CONFIG_READY: 0x100000
 };
 
 

@@ -34,6 +34,7 @@ var CandidatesBackEvent = i18n.input.chrome.DataSource.CandidatesBackEvent;
 var ContextType = i18n.input.chrome.message.ContextType;
 var Type = i18n.input.chrome.message.Type;
 var Name = i18n.input.chrome.message.Name;
+var SizeSpec = i18n.input.chrome.inputview.SizeSpec;
 
 
 
@@ -73,8 +74,13 @@ i18n.input.chrome.inputview.Adapter = function(readyState) {
 
   /** @private {!goog.events.EventHandler} */
   this.handler_ = new goog.events.EventHandler(this);
-  this.handler_.listen(document, 'webkitvisibilitychange',
-      this.onVisibilityChange_);
+  this.handler_.
+      listen(document, 'webkitvisibilitychange', this.onVisibilityChange_).
+      // When screen rotate, will trigger resize event.
+      listen(window, goog.events.EventType.RESIZE, this.onVisibilityChange_);
+
+  // Notifies the initial visibility change message to background.
+  this.onVisibilityChange_();
 };
 goog.inherits(i18n.input.chrome.inputview.Adapter,
     goog.events.EventTarget);
@@ -107,6 +113,10 @@ Adapter.prototype.isChromeVoxOn = false;
 
 /** @type {string} */
 Adapter.prototype.textBeforeCursor = '';
+
+
+/** @type {boolean} */
+Adapter.prototype.isQPInputView = false;
 
 
 /**
@@ -326,21 +336,15 @@ Adapter.prototype.onContextFocus_ = function(message) {
 
 
 /**
- * Intializes the communication to background page.
+ * Initializes the communication to background page.
  *
- * @param {string} languageCode The language code.
  * @private
  */
-Adapter.prototype.initBackground_ = function(languageCode) {
+Adapter.prototype.initBackground_ = function() {
   chrome.runtime.getBackgroundPage((function() {
     this.isBgControllerSwitching_ = true;
     chrome.runtime.sendMessage(
         goog.object.create(Name.TYPE, Type.CONNECT));
-    chrome.runtime.sendMessage(goog.object.create(Name.TYPE,
-        Type.VISIBILITY_CHANGE, Name.VISIBILITY, !document.webkitHidden));
-    if (languageCode) {
-      this.setLanguage(languageCode);
-    }
   }).bind(this));
 };
 
@@ -362,44 +366,54 @@ Adapter.prototype.initialize = function(languageCode) {
         }).bind(this));
   }
 
-  this.initBackground_(languageCode);
+  this.initBackground_();
 
   var StateType = i18n.input.chrome.inputview.ReadyState.StateType;
   if (window.inputview) {
-    if (inputview.getKeyboardConfig) {
-      inputview.getKeyboardConfig((function(config) {
-        this.isA11yMode = !!config['a11ymode'];
-        this.isExperimental = !!config['experimental'];
-        this.readyState_.markStateReady(StateType.KEYBOARD_CONFIG_READY);
-        if (this.readyState_.isReady(StateType.IME_LIST_READY)) {
-          this.dispatchEvent(new goog.events.Event(
-              i18n.input.chrome.inputview.events.EventType.SETTINGS_READY));
-        }
-      }).bind(this));
-    } else {
+    inputview.getKeyboardConfig((function(config) {
+      this.isA11yMode = !!config['a11ymode'];
+      this.isExperimental = !!config['experimental'];
       this.readyState_.markStateReady(StateType.KEYBOARD_CONFIG_READY);
-    }
-    if (inputview.getInputMethods) {
-      inputview.getInputMethods((function(inputMethods) {
-        // Only show globe key to switching between IMEs when there are more
-        // than one IME.
-        this.showGlobeKey = inputMethods.length > 1;
-        this.readyState_.markStateReady(StateType.IME_LIST_READY);
-        if (this.readyState_.isReady(StateType.KEYBOARD_CONFIG_READY)) {
-          this.dispatchEvent(new goog.events.Event(
-              i18n.input.chrome.inputview.events.EventType.SETTINGS_READY));
-        }
-      }).bind(this));
-    } else {
+      this.maybeDispatchSettingsReadyEvent_();
+    }).bind(this));
+    inputview.getInputMethods((function(inputMethods) {
+      // Only show globe key to switching between IMEs when there are more
+      // than one IME.
+      this.showGlobeKey = inputMethods.length > 1;
       this.readyState_.markStateReady(StateType.IME_LIST_READY);
-    }
+      this.maybeDispatchSettingsReadyEvent_();
+    }).bind(this));
+    inputview.getInputMethodConfig((function(config) {
+      this.isQPInputView = !!config['isNewQPInputViewEnabled'];
+      this.readyState_.markStateReady(StateType.INPUT_METHOD_CONFIG_READY);
+      this.maybeDispatchSettingsReadyEvent_();
+    }).bind(this));
   } else {
     this.readyState_.markStateReady(StateType.IME_LIST_READY);
     this.readyState_.markStateReady(StateType.KEYBOARD_CONFIG_READY);
+    this.readyState_.markStateReady(StateType.INPUT_METHOD_CONFIG_READY);
   }
 
-  if (this.readyState_.isReady(StateType.KEYBOARD_CONFIG_READY) &&
-      this.readyState_.isReady(StateType.IME_LIST_READY)) {
+  this.maybeDispatchSettingsReadyEvent_();
+};
+
+
+/**
+ * Dispatch event SETTINGS_READY if all required bits are flipped.
+ *
+ * @private
+ */
+Adapter.prototype.maybeDispatchSettingsReadyEvent_ = function() {
+  var StateType = i18n.input.chrome.inputview.ReadyState.StateType;
+  var states = [
+    StateType.KEYBOARD_CONFIG_READY,
+    StateType.IME_LIST_READY,
+    StateType.INPUT_METHOD_CONFIG_READY];
+  var ready = true;
+  for (var i = 0; i < states.length; i++) {
+    ready = ready && this.readyState_.isReady(states[i]);
+  }
+  if (ready) {
     window.setTimeout((function() {
       this.dispatchEvent(new goog.events.Event(
           i18n.input.chrome.inputview.events.EventType.SETTINGS_READY));
@@ -459,8 +473,11 @@ Adapter.prototype.onVisibilityChange_ = function() {
   this.isVisible = !document.webkitHidden;
   this.dispatchEvent(new goog.events.Event(i18n.input.chrome.inputview.
       events.EventType.VISIBILITY_CHANGE));
-  chrome.runtime.sendMessage(goog.object.create(Name.TYPE,
-      Type.VISIBILITY_CHANGE, Name.VISIBILITY, !document.webkitHidden));
+  chrome.runtime.sendMessage(goog.object.create(
+      Name.TYPE, Type.VISIBILITY_CHANGE,
+      Name.VISIBILITY, !document.webkitHidden,
+      Name.IS_EXPERIMENTAL, this.isExperimental,
+      Name.WORKSPACE_HEIGHT, screen.height - window.innerHeight));
 };
 
 
@@ -594,8 +611,8 @@ Adapter.prototype.onMessage_ = function(request, sender, sendResponse) {
     case Type.UPDATE_SETTINGS:
       this.onUpdateSettings_(msg);
       break;
+    case Type.VOICE_STATE_CHANGE:
     case Type.HWT_NETWORK_ERROR:
-    case Type.HWT_PRIVACY_INFO:
     case Type.FRONT_TOGGLE_LANGUAGE_STATE:
       this.dispatchEvent(new i18n.input.chrome.message.Event(type, msg));
       break;
@@ -604,13 +621,13 @@ Adapter.prototype.onMessage_ = function(request, sender, sendResponse) {
 
 
 /**
- * Sends the privacy confirmed message to background and broadcasts it.
+ * Sends the voice state to background.
+ *
+ * @param {boolean} state .
  */
-Adapter.prototype.sendHwtPrivacyConfirmMessage = function() {
-  chrome.runtime.sendMessage(
-      goog.object.create(Name.TYPE, Type.HWT_PRIVACY_GOT_IT));
-  this.dispatchEvent(
-      new goog.events.Event(Type.HWT_PRIVACY_GOT_IT));
+Adapter.prototype.sendVoiceViewStateChange = function(state) {
+  chrome.runtime.sendMessage(goog.object.create(
+      Name.TYPE, Type.VOICE_VIEW_STATE_CHANGE, Name.MSG, state));
 };
 
 

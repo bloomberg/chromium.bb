@@ -13,6 +13,8 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.CompactKey');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.State');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
@@ -123,6 +125,9 @@ CompactKey.prototype.createDom = function() {
     dom.appendChild(this.inlineWrap, this.hintTextElem);
     dom.appendChild(this.inlineWrap, this.textElem);
   }
+
+  goog.a11y.aria.setState(/** @type {!Element} */ (this.textElem),
+      goog.a11y.aria.State.LABEL, this.text);
 };
 
 
@@ -216,6 +221,9 @@ CompactKey.prototype.update = function() {
   text = this.compactKeyModel_.title ?
     chrome.i18n.getMessage(this.compactKeyModel_.title) : text;
   goog.dom.setTextContent(this.textElem, text);
+
+  goog.a11y.aria.setState(/** @type {!Element} */ (this.textElem),
+      goog.a11y.aria.State.LABEL, text);
 };
 
 
@@ -250,5 +258,16 @@ CompactKey.prototype.getMoreCharacters = function() {
   }
   return moreCharacters;
 };
+
+
+/**
+ * Gets the fixed number of columns to display accent characters for this key.
+ *
+ * @return {number} The fixed number of columns.
+ */
+CompactKey.prototype.getFixedColumns = function() {
+  return this.compactKeyModel_.fixedColumns;
+};
+
 });  // goog.scope
 

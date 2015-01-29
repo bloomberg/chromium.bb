@@ -28,9 +28,9 @@ i18n.input.chrome.message.Type = {
   CONTEXT_FOCUS: 'context_focus',
   FRONT_TOGGLE_LANGUAGE_STATE: 'front_toggle_language_state',
   HWT_NETWORK_ERROR: 'hwt_network_error',
-  HWT_PRIVACY_INFO: 'hwt_privacy_info',
   SURROUNDING_TEXT_CHANGED: 'surrounding_text_changed',
   UPDATE_SETTINGS: 'update_settings',
+  VOICE_STATE_CHANGE: 'voice_state_change',
 
   // Inputview -> Background
   COMMIT_TEXT: 'commit_text',
@@ -40,7 +40,6 @@ i18n.input.chrome.message.Type = {
   DISCONNECT: 'disconnect',
   DOUBLE_CLICK_ON_SPACE_KEY: 'double_click_on_space_key',
   EXEC_ALL: 'exec_all',
-  HWT_PRIVACY_GOT_IT: 'hwt_privacy_got_it',
   HWT_REQUEST: 'hwt_request',
   KEY_CLICK: 'key_click',
   KEY_EVENT: 'key_event',
@@ -55,6 +54,12 @@ i18n.input.chrome.message.Type = {
   VISIBILITY_CHANGE: 'visibility_change',
   SET_CONTROLLER: 'set_controller',
   UNSET_CONTROLLER: 'unset_controller',
+  VOICE_VIEW_STATE_CHANGE: 'voice_view_state_change',
+
+
+  // Inputview -> Elements
+  HWT_PRIVACY_GOT_IT: 'hwt_privacy_got_it',
+  VOICE_PRIVACY_GOT_IT: 'voice_privacy_got_it',
 
   // Options -> Background
   USER_DICT_ADD_ENTRY: 'user_dict_add_entry',
@@ -87,10 +92,10 @@ i18n.input.chrome.message.isFromBackground = function(type) {
     case Type.CONTEXT_FOCUS:
     case Type.FRONT_TOGGLE_LANGUAGE_STATE:
     case Type.HWT_NETWORK_ERROR:
-    case Type.HWT_PRIVACY_INFO:
     case Type.SURROUNDING_TEXT_CHANGED:
     case Type.UPDATE_SETTINGS:
     case Type.USER_DICT_ENTRIES:
+    case Type.VOICE_STATE_CHANGE:
       return true;
     default:
       return false;

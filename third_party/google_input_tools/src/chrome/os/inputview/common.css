@@ -31,7 +31,7 @@
   display: inline-block;
 }
 .inputview-a11y .inputview-character {
-  font-size: 11px;
+  font-size: 13px;
 }
 .inputview-ch {
   color: #111111;
@@ -43,10 +43,10 @@
 .inputview-font-small.inputview-special-key-name,
 .inputview-font-small.inputview-compact-key,
 .inputview-a11y .inputview-digit-character.inputview-ch {
-  font-size: 16px;
+  font-size: 17px;
 }
 .inputview-a11y .inputview-ch {
-  font-size: 18px;
+  font-size: 21px;
 }
 .inputview-vertical {
   display: inline-block;
@@ -484,7 +484,7 @@
   text-align: center;
   vertical-align: middle;
 }
-.inputview-candiate-ic {
+.inputview-candidate-ic {
   display: inline-block;
 }
 
@@ -589,6 +589,13 @@
   width: 600px;
   height: 100px;
   z-index: 2;
+  display: table-row;
+}
+
+.inputview-handwriting-privacy-text {
+  display: table-cell;
+  padding: 0 10px;
+  vertical-align: middle;
 }
 
 .inputview-handwriting-privacy-info-hidden {
@@ -598,7 +605,7 @@
 }
 
 .inputview-handwriting-privacy-info .inputview-sk {
-  margin-top: 10px;
+  display: table-cell;
 }
 
 .inputview-jp-ime-switch {
@@ -640,5 +647,7 @@
   overflow-x: hidden;
   white-space: nowrap;
   display: inline-block;
+}
+.inputview-three-candidates .inputview-candidate {
   padding: 6px;
 }

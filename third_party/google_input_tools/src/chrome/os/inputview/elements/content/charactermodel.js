@@ -18,6 +18,7 @@ goog.require('i18n.input.chrome.inputview.StateType');
 
 
 goog.scope(function() {
+var StateType = i18n.input.chrome.inputview.StateType;
 
 
 
@@ -34,12 +35,13 @@ goog.scope(function() {
  * @param {number} stateType The state type for this character.
  * @param {!i18n.input.chrome.inputview.StateManager} stateManager The state
  *     manager.
+ * @param {boolean} enableShiftRendering .
  * @param {string=} opt_capslockCharacter .
  * @constructor
  */
 i18n.input.chrome.inputview.elements.content.CharacterModel = function(
     character, belongToLetterKey, hasAltGrCharacterInTheKeyset,
-    alwaysRenderAltGrCharacter, stateType, stateManager,
+    alwaysRenderAltGrCharacter, stateType, stateManager, enableShiftRendering,
     opt_capslockCharacter) {
 
   /**
@@ -96,6 +98,9 @@ i18n.input.chrome.inputview.elements.content.CharacterModel = function(
    * @private
    */
   this.hasAltGrCharacterInTheKeyset_ = hasAltGrCharacterInTheKeyset;
+
+  /** @private {boolean} */
+  this.enableShiftRendering_ = enableShiftRendering;
 };
 var CharacterModel = i18n.input.chrome.inputview.elements.content.
     CharacterModel;
@@ -133,8 +138,7 @@ CharacterModel.CORNERS_ = [
  */
 CharacterModel.prototype.isHighlighted = function() {
   var state = this.stateManager_.getState();
-  state = state & (i18n.input.chrome.inputview.StateType.SHIFT |
-      i18n.input.chrome.inputview.StateType.ALTGR);
+  state = state & (StateType.SHIFT | StateType.ALTGR);
   return this.stateType_ == state;
 };
 
@@ -145,22 +149,23 @@ CharacterModel.prototype.isHighlighted = function() {
  * @return {boolean} True if the character is visible.
  */
 CharacterModel.prototype.isVisible = function() {
-  if (this.stateType_ == i18n.input.chrome.inputview.StateType.DEFAULT) {
-    return !this.stateManager_.hasState(
-        i18n.input.chrome.inputview.StateType.ALTGR) && (
-        !this.belongToLetterKey_ || !this.stateManager_.hasState(
-        i18n.input.chrome.inputview.StateType.SHIFT));
+  var enableShiftLetter = this.enableShiftRendering_ ||
+      this.stateManager_.hasState(StateType.SHIFT);
+  var enableDefaultLetter = this.enableShiftRendering_ || !this.stateManager_.
+      hasState(StateType.SHIFT);
+  if (this.stateType_ == StateType.DEFAULT) {
+    return !this.stateManager_.hasState(StateType.ALTGR) && enableDefaultLetter;
   }
-  if (this.stateType_ == i18n.input.chrome.inputview.StateType.SHIFT) {
-    return !this.stateManager_.hasState(
-        i18n.input.chrome.inputview.StateType.ALTGR) && (
-        !this.belongToLetterKey_ || this.stateManager_.hasState(
-        i18n.input.chrome.inputview.StateType.SHIFT));
+  if (this.stateType_ == StateType.SHIFT) {
+    return !this.stateManager_.hasState(StateType.ALTGR) && enableShiftLetter;
   }
-  if ((this.stateType_ & i18n.input.chrome.inputview.StateType.ALTGR) != 0) {
-    // AltGr or AltGr+Shift character.
-    return this.alwaysRenderAltGrCharacter_ || this.stateManager_.
-        hasState(i18n.input.chrome.inputview.StateType.ALTGR);
+  if (this.stateType_ == StateType.ALTGR) {
+    // AltGr character.
+    return this.stateManager_.hasState(StateType.ALTGR) && enableDefaultLetter;
+  }
+  if (this.stateType_ == (StateType.ALTGR | StateType.SHIFT)) {
+    // Shift + AltGr character.
+    return this.stateManager_.hasState(StateType.ALTGR) && enableShiftLetter;
   }
   return false;
 };
@@ -189,8 +194,7 @@ CharacterModel.prototype.toReversedCase_ = function() {
  * @return {string} The content.
  */
 CharacterModel.prototype.getContent = function() {
-  if (this.stateManager_.hasState(
-      i18n.input.chrome.inputview.StateType.CAPSLOCK)) {
+  if (this.stateManager_.hasState(StateType.CAPSLOCK)) {
     return this.capslockCharacter_ ? this.capslockCharacter_ :
         this.toReversedCase_();
   }
@@ -205,8 +209,8 @@ CharacterModel.prototype.getContent = function() {
  * @return {boolean} True to align in the center.
  */
 CharacterModel.prototype.isHorizontalAlignCenter = function() {
-  if (this.stateType_ == i18n.input.chrome.inputview.StateType.DEFAULT ||
-      this.stateType_ == i18n.input.chrome.inputview.StateType.SHIFT) {
+  if (this.stateType_ == StateType.DEFAULT ||
+      this.stateType_ == StateType.SHIFT) {
     return !this.alwaysRenderAltGrCharacter_ ||
         !this.hasAltGrCharacterInTheKeyset_;
   }
@@ -221,8 +225,8 @@ CharacterModel.prototype.isHorizontalAlignCenter = function() {
  * @return {boolean} True to be in the center.
  */
 CharacterModel.prototype.isVerticalAlignCenter = function() {
-  if (this.stateType_ == i18n.input.chrome.inputview.StateType.DEFAULT ||
-      this.stateType_ == i18n.input.chrome.inputview.StateType.SHIFT) {
+  if (this.stateType_ == StateType.DEFAULT ||
+      this.stateType_ == StateType.SHIFT) {
     return this.belongToLetterKey_;
   }
 
@@ -238,11 +242,11 @@ CharacterModel.prototype.isVerticalAlignCenter = function() {
 CharacterModel.prototype.getPositionAttribute = function() {
   var index;
   switch (this.stateType_) {
-    case i18n.input.chrome.inputview.StateType.DEFAULT:
+    case StateType.DEFAULT:
       return CharacterModel.CORNERS_[0];
-    case i18n.input.chrome.inputview.StateType.SHIFT:
+    case StateType.SHIFT:
       return CharacterModel.CORNERS_[1];
-    case i18n.input.chrome.inputview.StateType.ALTGR:
+    case StateType.ALTGR:
       return CharacterModel.CORNERS_[2];
     default:
       return CharacterModel.CORNERS_[3];

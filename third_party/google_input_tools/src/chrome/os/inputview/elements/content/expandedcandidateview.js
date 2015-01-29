@@ -257,48 +257,57 @@ ExpandedCandidateView.prototype.showCandidates = function(candidates,
   this.candidates_ = candidates;
   var lineIndex = 0;
   var line = this.lines_[lineIndex];
-  var cellsInLine = ExpandedCandidateView.CELLS_PER_LINE_;
+  var cellsLeftInLine = ExpandedCandidateView.CELLS_PER_LINE_;
   var previousCandidate = null;
   var previousCandidateWidth = 0;
   var i;
   for (i = start; i < candidates.length; i++) {
     var candidate = candidates[i];
     var candidateElem = new Candidate(String(i), candidate, Type.CANDIDATE,
-        this.heightPerCell_, false, false, undefined, this);
+        this.heightPerCell_, false, undefined, this);
     candidateElem.render(line);
     var size = goog.style.getSize(candidateElem.getElement());
-    var cells = Math.ceil(size.width / this.widthPerCell_);
-    if (cellsInLine < cells) {
+    var cellsOfCandidate = Math.ceil(size.width / this.widthPerCell_);
+    if (cellsLeftInLine < cellsOfCandidate && previousCandidate) {
       // If there is not enough cells, just put this candidate to a new line
       // and give the rest cells to the last candidate.
       line.removeChild(candidateElem.getElement());
-      goog.style.setSize(previousCandidate.getElement(), cellsInLine *
-          this.widthPerCell_ + previousCandidateWidth, this.heightPerCell_);
-      lineIndex++;
-      if (lineIndex == ExpandedCandidateView.LINES_) {
-        break;
-      }
-      cellsInLine = ExpandedCandidateView.CELLS_PER_LINE_ - cells;
-      line = this.lines_[lineIndex];
-      dom.appendChild(line, candidateElem.getElement());
+      // Will start new lines and set previous element as null,
+      // then won't hit this code in next loop.
+      i--;
+      previousCandidate.setSize(
+          cellsLeftInLine * this.widthPerCell_ + previousCandidateWidth,
+          this.heightPerCell_);
+      cellsLeftInLine = 0;
+    } else if ((cellsLeftInLine < cellsOfCandidate && !previousCandidate) ||
+        cellsLeftInLine == cellsOfCandidate) {
+      // If there is not enough space and not any candidate is inserted in this
+      // line, or after inert this candidate, there is 0 space left, then just
+      // set the size of the current candidate.
+      candidateElem.setSize(cellsLeftInLine * this.widthPerCell_,
+          this.heightPerCell_);
+      cellsLeftInLine = 0;
     } else {
-      cellsInLine -= cells;
+      cellsLeftInLine -= cellsOfCandidate;
+      candidateElem.setSize(cellsOfCandidate * this.widthPerCell_,
+          this.heightPerCell_);
     }
-    var width = cells * this.widthPerCell_;
-    goog.style.setSize(candidateElem.getElement(), width, this.heightPerCell_);
 
-    if (cellsInLine == 0) {
+
+    if (cellsLeftInLine == 0) {
+      // Changes to new line if there is no space left.
       lineIndex++;
       if (lineIndex == ExpandedCandidateView.LINES_) {
         break;
       }
-      cellsInLine = ExpandedCandidateView.CELLS_PER_LINE_;
+      cellsLeftInLine = ExpandedCandidateView.CELLS_PER_LINE_;
       line = this.lines_[lineIndex];
+      previousCandidateWidth = 0;
+      previousCandidate = null;
+    } else {
+      previousCandidateWidth = size.width;
+      previousCandidate = candidateElem;
     }
-
-    candidateElem.setVisible(true);
-    previousCandidateWidth = width;
-    previousCandidate = candidateElem;
   }
   this.candidateStartIndex_ = i;
 };

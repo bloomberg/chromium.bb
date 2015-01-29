@@ -189,10 +189,12 @@ function testHandwritingLayoutAsync(testDoneCallback) {
         var backButton = candidateView.querySelector(
             '.inputview-candidate-button');
         assertEquals('HANDWRITING_BACK', backButton.textContent);
+        onSwitchToKeyset('us.compact.qwerty', function() {
+          assertEquals('us-compact-qwerty', getActiveView().id,
+             'compact layout is not active.');
+          testDoneCallback();
+        });
         mockTap(backButton);
-        assertEquals('us-compact-qwerty', getActiveView().id,
-                     'compact layout is not active.');
-        testDoneCallback();
       });
       mockTap(hwtSelect);
     });

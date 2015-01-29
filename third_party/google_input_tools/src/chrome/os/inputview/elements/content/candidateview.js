@@ -13,6 +13,8 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.CandidateView');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.State');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.object');
@@ -32,7 +34,6 @@ var TagName = goog.dom.TagName;
 var Candidate = i18n.input.chrome.inputview.elements.content.Candidate;
 var Type = i18n.input.chrome.inputview.elements.content.Candidate.Type;
 var ElementType = i18n.input.chrome.inputview.elements.ElementType;
-var Element = i18n.input.chrome.inputview.elements.Element;
 var content = i18n.input.chrome.inputview.elements.content;
 var Name = i18n.input.chrome.message.Name;
 
@@ -42,13 +43,21 @@ var Name = i18n.input.chrome.message.Name;
  * The candidate view.
  *
  * @param {string} id The id.
+ * @param {!i18n.input.chrome.inputview.Adapter} adapter .
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.Element}
  */
 i18n.input.chrome.inputview.elements.content.CandidateView = function(id,
-    opt_eventTarget) {
+    adapter, opt_eventTarget) {
   goog.base(this, id, ElementType.CANDIDATE_VIEW, opt_eventTarget);
+
+  /**
+   * The bus channel to communicate with background.
+   *
+   * @private {!i18n.input.chrome.inputview.Adapter}
+   */
+  this.adapter_ = adapter;
 
   /**
    * The icons.
@@ -66,6 +75,9 @@ i18n.input.chrome.inputview.elements.content.CandidateView = function(id,
   this.iconButtons_[CandidateView.IconType.EXPAND_CANDIDATES] = new content.
       CandidateButton('', ElementType.EXPAND_CANDIDATES,
           Css.EXPAND_CANDIDATES_ICON, '', this);
+  this.iconButtons_[CandidateView.IconType.VOICE] = new content.
+      CandidateButton('', ElementType.VOICE_BTN, Css.VOICE_MIC_BAR, '', this,
+          true);
 };
 goog.inherits(i18n.input.chrome.inputview.elements.content.CandidateView,
     i18n.input.chrome.inputview.elements.Element);
@@ -80,7 +92,8 @@ var CandidateView = i18n.input.chrome.inputview.elements.content.CandidateView;
 CandidateView.IconType = {
   BACK: 0,
   SHRINK_CANDIDATES: 1,
-  EXPAND_CANDIDATES: 2
+  EXPAND_CANDIDATES: 2,
+  VOICE: 3
 };
 
 
@@ -153,6 +166,14 @@ CandidateView.HANDWRITING_VIEW_CODE_ = 'hwt';
 
 
 /**
+ * The emoji keyset code.
+ *
+ * @private {string}
+ */
+CandidateView.EMOJI_VIEW_CODE_ = 'emoji';
+
+
+/**
  * The width of the inter container.
  *
  * @private {number}
@@ -175,6 +196,10 @@ CandidateView.prototype.createDom = function() {
     button.render(elem);
     button.setVisible(false);
   }
+  goog.a11y.aria.setState(/** @type {!Element} */
+      (this.iconButtons_[CandidateView.IconType.VOICE].getElement()),
+      goog.a11y.aria.State.LABEL,
+      chrome.i18n.getMessage('VOICE_TURN_ON'));
 };
 
 
@@ -196,12 +221,12 @@ CandidateView.prototype.showNumberRow = function() {
   goog.dom.classlist.remove(this.getElement(),
       i18n.input.chrome.inputview.Css.THREE_CANDIDATES);
   var dom = this.getDomHelper();
-  var numberWidth = this.width / this.widthInWeight_ - 1;
+  var numberWidth = Math.floor((this.width - CandidateView.ICON_WIDTH_) / 10);
   dom.removeChildren(this.interContainer_);
   for (var i = 0; i < 10; i++) {
     var candidateElem = new Candidate(String(i), goog.object.create(
         Name.CANDIDATE, String((i + 1) % 10)),
-        Type.NUMBER, this.height, false, false, numberWidth, this);
+        Type.NUMBER, this.height, false, numberWidth, this);
     candidateElem.render(this.interContainer_);
   }
   this.showingNumberRow = true;
@@ -223,12 +248,12 @@ CandidateView.prototype.showCandidates = function(candidates,
   if (candidates.length > 0) {
     if (showThreeCandidates) {
       this.addThreeCandidates_(candidates);
+      // Hide the voice icons.
+      this.switchToIcon(CandidateView.IconType.VOICE, false);
     } else {
       this.addFullCandidates_(candidates);
-      if (opt_expandable) {
-        this.switchToIcon(CandidateView.IconType.EXPAND_CANDIDATES,
-            this.candidateCount < candidates.length);
-      }
+      this.switchToIcon(CandidateView.IconType.EXPAND_CANDIDATES,
+          !!opt_expandable && this.candidateCount < candidates.length);
     }
     this.showingCandidates = true;
     this.showingNumberRow = false;
@@ -249,7 +274,7 @@ CandidateView.prototype.addThreeCandidates_ = function(candidates) {
   var dom = this.getDomHelper();
   for (var i = 0; i < num; i++) {
     var candidateElem = new Candidate(String(i), candidates[i], Type.CANDIDATE,
-        this.height, i == 1 || num == 1, true, CandidateView.
+        this.height, i == 1 || num == 1, CandidateView.
         WIDTH_FOR_THREE_CANDIDATES_, this);
     candidateElem.render(this.interContainer_);
   }
@@ -284,7 +309,7 @@ CandidateView.prototype.addFullCandidates_ = function(candidates) {
   var i;
   for (i = 0; i < candidates.length; i++) {
     var candidateElem = new Candidate(String(i), candidates[i], Type.CANDIDATE,
-        this.height, false, false, undefined, this);
+        this.height, false, undefined, this);
     candidateElem.render(this.interContainer_);
     var size = goog.style.getSize(candidateElem.getElement());
     var candidateWidth = size.width + CandidateView.PADDING_ * 2;
@@ -292,10 +317,16 @@ CandidateView.prototype.addFullCandidates_ = function(candidates) {
     w += candidateWidth + 1;
 
     if (w >= totalWidth) {
-      this.interContainer_.removeChild(candidateElem.getElement());
+      if (i == 0) {
+        // Make sure have one at least.
+        candidateElem.setSize(totalWidth);
+        ++i;
+      } else {
+        this.interContainer_.removeChild(candidateElem.getElement());
+      }
       break;
     }
-    goog.style.setWidth(candidateElem.getElement(), candidateWidth);
+    candidateElem.setSize(candidateWidth);
   }
   this.candidateCount = i;
 };
@@ -321,6 +352,20 @@ CandidateView.prototype.resize = function(width, height) {
     button.resize(CandidateView.ICON_WIDTH_, height);
   }
 
+
+  // Resets the candidates elements visibility.
+  if (this.candidateCount > 0) {
+    var totalWidth = Math.floor(width - CandidateView.ICON_WIDTH_);
+    var w = 0;
+    for (i = 0; i < this.candidateCount; i++) {
+      if (w <= totalWidth) {
+        w += goog.style.getSize(this.interContainer_.children[i]).width;
+      }
+      goog.style.setElementShown(this.interContainer_.children[i],
+          w <= totalWidth);
+    }
+  }
+
   goog.base(this, 'resize', width, height);
 
   if (this.showingNumberRow) {
@@ -337,10 +382,18 @@ CandidateView.prototype.resize = function(width, height) {
  */
 CandidateView.prototype.switchToIcon = function(type, visible) {
   for (var i = 0; i < this.iconButtons_.length; i++) {
-    this.iconButtons_[i].setVisible(false);
+    // Don't enable voice when focus in password box.
+    this.iconButtons_[i].setVisible(visible && type == i &&
+        (type != CandidateView.IconType.VOICE || !this.candidateCount &&
+        this.adapter_.contextType != 'password'));
   }
 
-  this.iconButtons_[type].setVisible(visible);
+  // We need make default voice icon showed if the position doesn't show other
+  // icon.
+  if (!visible && this.adapter_.isExperimental &&
+      this.adapter_.contextType != 'password') {
+    this.iconButtons_[CandidateView.IconType.VOICE].setVisible(true);
+  }
 };
 
 
@@ -353,8 +406,14 @@ CandidateView.prototype.switchToIcon = function(type, visible) {
  */
 CandidateView.prototype.updateByKeyset = function(
     keyset, isPasswordBox, isRTL) {
-  this.switchToIcon(CandidateView.IconType.BACK,
-      keyset == CandidateView.HANDWRITING_VIEW_CODE_);
+  if (keyset == CandidateView.HANDWRITING_VIEW_CODE_) {
+    this.switchToIcon(CandidateView.IconType.BACK, true);
+  } else if (keyset != CandidateView.EMOJI_VIEW_CODE_ && !this.candidateCount &&
+      this.adapter_.isExperimental) {
+    // If candidates count is greater than 0, don't show voice icon.
+    this.switchToIcon(CandidateView.IconType.VOICE, true);
+  }
+
   if (isPasswordBox && keyset.indexOf('compact') != -1) {
     this.showNumberRow();
   } else {

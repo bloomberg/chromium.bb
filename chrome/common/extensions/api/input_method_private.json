@@ -25,7 +25,8 @@
                 "description": "The input method config object.",
                 "properties": {
                   "isPhysicalKeyboardAutocorrectEnabled": {"type": "boolean"},
-                  "isNewQPInputViewEnabled": {"type": "boolean"}
+                  "isNewQPInputViewEnabled": {"type": "boolean"},
+                  "isVoiceInputEnabled": {"type": "boolean"}
                 }
               }
             ]

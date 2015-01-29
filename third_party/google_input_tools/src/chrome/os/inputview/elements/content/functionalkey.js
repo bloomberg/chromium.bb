@@ -129,8 +129,7 @@ FunctionalKey.prototype.createDom = function() {
 
 
 /** @override */
-FunctionalKey.prototype.resize = function(width,
-    height) {
+FunctionalKey.prototype.resize = function(width, height) {
   goog.base(this, 'resize', width, height);
 
   this.tableCell.style.width = this.availableWidth + 'px';
@@ -139,8 +138,7 @@ FunctionalKey.prototype.resize = function(width,
 
 
 /** @override */
-FunctionalKey.prototype.setHighlighted = function(
-    highlight) {
+FunctionalKey.prototype.setHighlighted = function(highlight) {
   if (highlight) {
     goog.dom.classlist.add(this.bgElem,
         i18n.input.chrome.inputview.Css.SPECIAL_KEY_HIGHLIGHT);

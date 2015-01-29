@@ -276,6 +276,10 @@ EmojiView.prototype.resize = function(outerWidth, outerHeight, opt_force) {
  */
 EmojiView.prototype.onPointerDown_ = function(e) {
   var view = e.view;
+  if (!view) {
+    return;
+  }
+
   if (view.type == ElementType.EMOJI_KEY) {
     this.pointerDownTimeStamp_ = e.timestamp;
     this.dragDistance_ = 0;

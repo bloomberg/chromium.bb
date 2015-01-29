@@ -236,6 +236,9 @@
   "ctrl": {
     "message": "ctrl"
   },
+  "current_keyboard_prefix": {
+    "message": "current selected keyboard "
+  },
   "current_lang": {
     "message": "Input language is Chinese"
   },
@@ -2645,6 +2648,9 @@
   "inputmethod_dayi": {
     "message": "Dayi input method"
   },
+  "inputmethod_hangul": {
+    "message": "Korean input method"
+  },
   "inputmethod_pinyin": {
     "message": "Pinyin input method"
   },
@@ -2813,6 +2819,9 @@
   "keyboard_nepali_phonetic": {
     "message": "Nepali keyboard (Phonetic)"
   },
+  "keyboard_netherlands": {
+    "message": "Netherlands keyboard"
+  },
   "keyboard_none": {
     "message": "Keyboard"
   },
@@ -2836,6 +2845,9 @@
   },
   "keyboard_romanian": {
     "message": "Romanian keyboard"
+  },
+  "keyboard_romanian_standard": {
+    "message": "Romanian standard keyboard"
   },
   "keyboard_russian": {
     "message": "Russian keyboard"
@@ -2976,7 +2988,7 @@
     "message": "Korean Settings Page"
   },
   "korean_syllable_input": {
-    "message": "Whether input hangul one by one"
+    "message": "Input hangul one by one"
   },
   "latam_spa_settings_page": {
     "message": "Latin American Keyboard (Spanish) Settings Page"
@@ -3018,7 +3030,7 @@
     "message": "Auto-correction"
   },
   "physical_enable_capitalization": {
-    "message": "Auto-capitalization"
+    "message": "Auto-capitalisation"
   },
   "physical_keyboard": {
     "message": "Physical Keyboard"
@@ -3082,6 +3094,9 @@
   },
   "sk_slo_settings_page": {
     "message": "Slovakian Keyboard Settings Page"
+  },
+  "smiley": {
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "Modest"
@@ -3239,9 +3254,6 @@
   "user_dict_clear": {
     "message": "Clear All"
   },
-  "user_dict_done": {
-    "message": "Finished"
-  },
   "user_dict_manage": {
     "message": "Manage personal dictionary..."
   },
@@ -3251,11 +3263,26 @@
   "user_dict_remove": {
     "message": "Remove Selected"
   },
+  "user_dict_save": {
+    "message": "Save"
+  },
   "user_dict_sync": {
     "message": "Sync personal dictionary"
   },
   "user_dict_title": {
     "message": "Personal Dictionary"
+  },
+  "voice": {
+    "message": "Voice"
+  },
+  "voice_privacy_info": {
+    "message": "Your voice will be sent to a Google server to recognise text"
+  },
+  "voice_turn_off": {
+    "message": "turn off voice input tool"
+  },
+  "voice_turn_on": {
+    "message": "turn on voice input tool"
   },
   "wait": {
     "message": "Wait"

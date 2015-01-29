@@ -233,3 +233,11 @@ i18n.input.common.GlobalSettings.alternativeImageUrl = '';
  */
 i18n.input.common.GlobalSettings.enableVoice = false;
 
+
+/**
+ * Whether to enable global event delegate.
+ *
+ * @type {boolean}
+ */
+i18n.input.common.GlobalSettings.enableGlobalEventDelegate = true;
+

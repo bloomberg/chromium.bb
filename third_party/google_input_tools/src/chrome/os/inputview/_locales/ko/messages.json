@@ -236,6 +236,9 @@
   "ctrl": {
     "message": "Ctrl"
   },
+  "current_keyboard_prefix": {
+    "message": "\ud604\uc7ac \uc120\ud0dd\ub41c \ud0a4\ubcf4\ub4dc "
+  },
   "current_lang": {
     "message": "\uc911\uad6d\uc5b4\ub97c \uc785\ub825 \uc5b8\uc5b4\ub85c \uc124\uc815"
   },
@@ -252,46 +255,46 @@
     "message": "\uccb4\ucf54\uc5b4 QWERTY \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "d83c_dc04": {
-    "message": "Mahjong tile"
+    "message": "\ub9c8\uc791"
   },
   "d83c_dccf": {
-    "message": "Joker card"
+    "message": "\uc870\ucee4"
   },
   "d83c_dd70": {
-    "message": "blood type A"
+    "message": "A\ud615 \ud608\uc561\ud615"
   },
   "d83c_dd71": {
-    "message": "blood type B"
+    "message": "B\ud615 \ud608\uc561\ud615"
   },
   "d83c_dd7e": {
-    "message": "blood type O"
+    "message": "O\ud615 \ud608\uc561\ud615"
   },
   "d83c_dd7f": {
-    "message": "parking"
+    "message": "\uc8fc\ucc28"
   },
   "d83c_dd8e": {
-    "message": "blood type AB"
+    "message": "AB\ud615 \ud608\uc561\ud615"
   },
   "d83c_dd91": {
-    "message": "CL"
+    "message": "CL \ud45c\uc2dc"
   },
   "d83c_dd92": {
-    "message": "cool"
+    "message": "\uc790\uc2e0 \uc788\uc74c"
   },
   "d83c_dd93": {
-    "message": "free"
+    "message": "FREE"
   },
   "d83c_dd94": {
     "message": "ID"
   },
   "d83c_dd95": {
-    "message": "New"
+    "message": "NEW"
   },
   "d83c_dd96": {
     "message": "NG"
   },
   "d83c_dd97": {
-    "message": "OK"
+    "message": "\uc624\ucf00\uc774"
   },
   "d83c_dd98": {
     "message": "SOS"
@@ -300,2071 +303,2071 @@
     "message": "UP!"
   },
   "d83c_dd9a": {
-    "message": "versus"
+    "message": "VS"
   },
   "d83c_de01": {
-    "message": "Japanese word \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uc5ec\uae30'"
   },
   "d83c_de02": {
-    "message": "Japanese word \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uc11c\ube44\uc2a4'"
   },
   "d83c_de1a": {
-    "message": "Japanese word 'free'"
+    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\ubb34\ub8cc'"
   },
   "d83c_de2f": {
-    "message": "Japanese word 'reserved'"
+    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uc608\uc57d'"
   },
   "d83c_de32": {
-    "message": "Japanese word \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uae08\uc9c0'"
   },
   "d83c_de33": {
-    "message": "Chinese word 'space available'"
+    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\ube44\uc5c8\uc74c'"
   },
   "d83c_de34": {
-    "message": "Chinese word 'pass'"
+    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\ud569\uaca9'"
   },
   "d83c_de35": {
-    "message": "Chinese word 'full'"
+    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\uac00\ub4dd \ucc38'"
   },
   "d83c_de36": {
-    "message": "Japanese word 'fees'"
+    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uc218\uc218\ub8cc'"
   },
   "d83c_de37": {
-    "message": "Japanese word 'monthly'"
+    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\ub9e4\uc6d4'"
   },
   "d83c_de38": {
-    "message": "Chinese word 'application'"
+    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\uc560\ud50c\ub9ac\ucf00\uc774\uc158'"
   },
   "d83c_de39": {
-    "message": "Japanese word 'discount'"
+    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\ud560\uc778'"
   },
   "d83c_de3a": {
-    "message": "Chinese word 'in business'"
+    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\uc0ac\uc5c5'"
   },
   "d83c_de50": {
-    "message": "Japanese word 'advantage'"
+    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uc7a5\uc810'"
   },
   "d83c_de51": {
-    "message": "Chinese word 'approved'"
+    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\uc2b9\uc778'"
   },
   "d83c_df00": {
-    "message": "cyclone"
+    "message": "\uc0ac\uc774\ud074\ub860"
   },
   "d83c_df01": {
-    "message": "foggy"
+    "message": "\uc548\uac1c\uac00 \ub080"
   },
   "d83c_df02": {
-    "message": "umbrella"
+    "message": "\uc6b0\uc0b0"
   },
   "d83c_df03": {
-    "message": "night stars"
+    "message": "\ubc24\ud558\ub298\uc758 \ubcc4"
   },
   "d83c_df04": {
-    "message": "sunrise over mountains"
+    "message": "\uc0b0 \uc18d \uc77c\ucd9c"
   },
   "d83c_df05": {
-    "message": "sunrise"
+    "message": "\uc77c\ucd9c"
   },
   "d83c_df06": {
-    "message": "city at dusk"
+    "message": "\ub3c4\uc2dc\uc758 \uc800\ub141"
   },
   "d83c_df07": {
-    "message": "sunset"
+    "message": "\uc77c\ubab0"
   },
   "d83c_df08": {
-    "message": "rainbow"
+    "message": "\ubb34\uc9c0\uac1c"
   },
   "d83c_df09": {
-    "message": "night bridge"
+    "message": "\uc57c\uac04\uc758 \ub2e4\ub9ac"
   },
   "d83c_df0a": {
-    "message": "wave"
+    "message": "\ud30c\ub3c4"
   },
   "d83c_df0b": {
-    "message": "volcano"
+    "message": "\ud654\uc0b0"
   },
   "d83c_df0c": {
-    "message": "Milky Way"
+    "message": "\uc740\ud558\uc218"
   },
   "d83c_df0d": {
-    "message": "globe Europe-Africa"
+    "message": "\uc9c0\uad6c\ubcf8 \uc720\ub7fd-\uc544\ud504\ub9ac\uce74"
   },
   "d83c_df0e": {
-    "message": "globe Americas"
+    "message": "\uc9c0\uad6c\ubcf8 \uc544\uba54\ub9ac\uce74"
   },
   "d83c_df0f": {
-    "message": "globe Asia-Australia"
+    "message": "\uc9c0\uad6c\ubcf8 \uc544\uc2dc\uc544-\uc624\uc2a4\ud2b8\ub808\uc77c\ub9ac\uc544"
   },
   "d83c_df10": {
-    "message": "globe with meridians"
+    "message": "\uc9c0\uad6c\ubcf8 \uc790\uc624\uc120"
   },
   "d83c_df11": {
-    "message": "new moon"
+    "message": "\ucd08\uc2b9\ub2ec"
   },
   "d83c_df12": {
-    "message": "waxing crescent moon"
+    "message": "\uc0c1\ud604 \ucd08\uc2b9\ub2ec"
   },
   "d83c_df13": {
-    "message": "first quarter moon"
+    "message": "\uc0c1\ud604\ub2ec"
   },
   "d83c_df14": {
-    "message": "waxing moon"
+    "message": "\ucc28\uc624\ub974\ub294 \ub2ec"
   },
   "d83c_df15": {
-    "message": "full moon"
+    "message": "\ubcf4\ub984\ub2ec"
   },
   "d83c_df16": {
-    "message": "waning moon"
+    "message": "\uae30\uc6b8\uc5b4\uac00\ub294 \ub2ec"
   },
   "d83c_df17": {
-    "message": "last quarter moon"
+    "message": "\ud558\ud604\ub2ec"
   },
   "d83c_df18": {
-    "message": "waning crescent moon"
+    "message": "\uae30\uc6b0\ub294 \ud558\ud604\ub2ec"
   },
   "d83c_df19": {
-    "message": "crescent moon"
+    "message": "\uadf8\ubbd0\ub2ec"
   },
   "d83c_df1a": {
-    "message": "new moon face"
+    "message": "\ucd08\uc2b9\ub2ec \uc5bc\uad74"
   },
   "d83c_df1b": {
-    "message": "first quarter moon face"
+    "message": "\uc0c1\ud604\ub2ec \uc5bc\uad74"
   },
   "d83c_df1c": {
-    "message": "last quarter moon face"
+    "message": "\ud558\ud604\ub2ec \uc5bc\uad74"
   },
   "d83c_df1d": {
-    "message": "full moon face"
+    "message": "\ubcf4\ub984\ub2ec \uc5bc\uad74"
   },
   "d83c_df1e": {
-    "message": "sun face"
+    "message": "\ud0dc\uc591 \uc5bc\uad74"
   },
   "d83c_df1f": {
-    "message": "glowing star"
+    "message": "\ube5b\ub098\ub294 \ubcc4"
   },
   "d83c_df20": {
-    "message": "shooting star"
+    "message": "\uc720\uc131"
   },
   "d83c_df30": {
-    "message": "chestnut"
+    "message": "\ubc24"
   },
   "d83c_df31": {
-    "message": "young plant"
+    "message": "\uc0c8\uc2f9"
   },
   "d83c_df32": {
-    "message": "evergreen tree"
+    "message": "\uc0c1\ub85d\uc218"
   },
   "d83c_df33": {
-    "message": "shedding tree"
+    "message": "\ud65c\uc5fd\uc218"
   },
   "d83c_df34": {
-    "message": "palm tree"
+    "message": "\uc57c\uc790\uc218"
   },
   "d83c_df35": {
-    "message": "cactus"
+    "message": "\uc120\uc778\uc7a5"
   },
   "d83c_df37": {
-    "message": "tulip"
+    "message": "\ud2a4\ub9bd"
   },
   "d83c_df38": {
-    "message": "cherry blossom"
+    "message": "\ubc9a\uaf43"
   },
   "d83c_df39": {
-    "message": "rose"
+    "message": "\uc7a5\ubbf8"
   },
   "d83c_df3a": {
-    "message": "hibiscus"
+    "message": "\ud788\ube44\uc2a4\ucee4\uc2a4"
   },
   "d83c_df3b": {
-    "message": "sunflower"
+    "message": "\ud574\ubc14\ub77c\uae30"
   },
   "d83c_df3c": {
-    "message": "blossom"
+    "message": "\uaf43"
   },
   "d83c_df3d": {
-    "message": "corn"
+    "message": "\uc625\uc218\uc218"
   },
   "d83c_df3e": {
-    "message": "rice plant"
+    "message": "\ubcbc"
   },
   "d83c_df3f": {
-    "message": "herb"
+    "message": "\ud480"
   },
   "d83c_df40": {
-    "message": "four leaf clover"
+    "message": "\ub124 \uc78e \ud074\ub85c\ubc84"
   },
   "d83c_df41": {
-    "message": "maple leaf"
+    "message": "\ub2e8\ud48d\uc78e"
   },
   "d83c_df42": {
-    "message": "falling leaves"
+    "message": "\ub099\uc5fd"
   },
   "d83c_df43": {
-    "message": "leaf in wind"
+    "message": "\ubc14\ub78c\uc5d0 \ub0a0\ub9ac\ub294 \uc78e"
   },
   "d83c_df44": {
-    "message": "mushroom"
+    "message": "\ubc84\uc12f"
   },
   "d83c_df45": {
-    "message": "tomato"
+    "message": "\ud1a0\ub9c8\ud1a0"
   },
   "d83c_df46": {
-    "message": "eggplant"
+    "message": "\uac00\uc9c0"
   },
   "d83c_df47": {
-    "message": "grapes"
+    "message": "\ud3ec\ub3c4"
   },
   "d83c_df48": {
-    "message": "melon"
+    "message": "\uba5c\ub860"
   },
   "d83c_df49": {
-    "message": "watermelon"
+    "message": "\uc218\ubc15"
   },
   "d83c_df4a": {
-    "message": "tangerine"
+    "message": "\uade4"
   },
   "d83c_df4b": {
-    "message": "lemon"
+    "message": "\ub808\ubaac"
   },
   "d83c_df4c": {
-    "message": "banana"
+    "message": "\ubc14\ub098\ub098"
   },
   "d83c_df4d": {
-    "message": "pineapple"
+    "message": "\ud30c\uc778\uc560\ud50c"
   },
   "d83c_df4e": {
-    "message": "red apple"
+    "message": "\ube68\uac04 \uc0ac\uacfc"
   },
   "d83c_df4f": {
-    "message": "green apple"
+    "message": "\uccad\uc0ac\uacfc"
   },
   "d83c_df50": {
-    "message": "pear"
+    "message": "\ubc30"
   },
   "d83c_df51": {
-    "message": "peach"
+    "message": "\ubcf5\uc22d\uc544"
   },
   "d83c_df52": {
-    "message": "cherry"
+    "message": "\uccb4\ub9ac"
   },
   "d83c_df53": {
-    "message": "strawberry"
+    "message": "\ub538\uae30"
   },
   "d83c_df54": {
-    "message": "hamburger"
+    "message": "\ud584\ubc84\uac70"
   },
   "d83c_df55": {
-    "message": "pizza slice"
+    "message": "\ud53c\uc790 \uc870\uac01"
   },
   "d83c_df56": {
-    "message": "meat"
+    "message": "\uace0\uae30"
   },
   "d83c_df57": {
-    "message": "chicken leg"
+    "message": "\ub2ed\ub2e4\ub9ac"
   },
   "d83c_df58": {
-    "message": "rice cracker"
+    "message": "\uc300\uacfc\uc790"
   },
   "d83c_df59": {
-    "message": "rice ball"
+    "message": "\uc8fc\uba39\ubc25"
   },
   "d83c_df5a": {
-    "message": "cooked rice"
+    "message": "\uc300\ubc25"
   },
   "d83c_df5b": {
-    "message": "curry and rice"
+    "message": "\uce74\ub808\ub77c\uc774\uc2a4"
   },
   "d83c_df5c": {
-    "message": "ramen"
+    "message": "\ub77c\uba74"
   },
   "d83c_df5d": {
-    "message": "spaghetti"
+    "message": "\uc2a4\ud30c\uac8c\ud2f0"
   },
   "d83c_df5e": {
-    "message": "bread"
+    "message": "\ube75"
   },
   "d83c_df5f": {
-    "message": "fries"
+    "message": "\uac10\uc790\ud280\uae40"
   },
   "d83c_df60": {
-    "message": "roasted potato"
+    "message": "\uad6c\uc6b4 \uac10\uc790"
   },
   "d83c_df61": {
-    "message": "mochi"
+    "message": "\uacbd\ub2e8"
   },
   "d83c_df62": {
-    "message": "oden"
+    "message": "\uc624\ub385"
   },
   "d83c_df63": {
-    "message": "sushi"
+    "message": "\ucd08\ubc25"
   },
   "d83c_df64": {
-    "message": "fried shrimp"
+    "message": "\uc0c8\uc6b0\ud280\uae40"
   },
   "d83c_df65": {
-    "message": "fish cake"
+    "message": "\uc5b4\ubb35"
   },
   "d83c_df66": {
-    "message": "soft ice cream"
+    "message": "\uc18c\ud504\ud2b8\uc544\uc774\uc2a4\ud06c\ub9bc"
   },
   "d83c_df67": {
-    "message": "shaved ice"
+    "message": "\ube59\uc218"
   },
   "d83c_df68": {
-    "message": "ice cream"
+    "message": "\uc544\uc774\uc2a4\ud06c\ub9bc"
   },
   "d83c_df69": {
-    "message": "donut"
+    "message": "\ub3c4\ub11b"
   },
   "d83c_df6a": {
-    "message": "cookie"
+    "message": "\ucfe0\ud0a4"
   },
   "d83c_df6b": {
-    "message": "chocolate"
+    "message": "\ucd08\ucf5c\ub9bf"
   },
   "d83c_df6c": {
-    "message": "candy"
+    "message": "\uc0ac\ud0d5"
   },
   "d83c_df6d": {
-    "message": "lollipop"
+    "message": "\ub9c9\ub300\uc0ac\ud0d5"
   },
   "d83c_df6e": {
-    "message": "custard"
+    "message": "\ud478\ub529"
   },
   "d83c_df6f": {
-    "message": "honeypot"
+    "message": "\uafc0\ub2e8\uc9c0"
   },
   "d83c_df70": {
-    "message": "shortcake"
+    "message": "\uc1fc\ud2b8\ucf00\uc774\ud06c"
   },
   "d83c_df71": {
-    "message": "bento"
+    "message": "\ub3c4\uc2dc\ub77d"
   },
   "d83c_df72": {
-    "message": "stew"
+    "message": "\uc2a4\ud29c"
   },
   "d83c_df73": {
-    "message": "frying pan"
+    "message": "\ud504\ub77c\uc774\ud32c"
   },
   "d83c_df74": {
-    "message": "fork and knife"
+    "message": "\ud3ec\ud06c\uc640 \ub098\uc774\ud504"
   },
   "d83c_df75": {
-    "message": "teacup"
+    "message": "\ucc3b\uc794"
   },
   "d83c_df76": {
-    "message": "sake"
+    "message": "\uc815\uc885"
   },
   "d83c_df77": {
-    "message": "wine"
+    "message": "\uc640\uc778"
   },
   "d83c_df78": {
-    "message": "cocktail"
+    "message": "\uce75\ud14c\uc77c"
   },
   "d83c_df79": {
-    "message": "tropical drink"
+    "message": "\uc5f4\ub300\uc74c\ub8cc"
   },
   "d83c_df7a": {
-    "message": "beer"
+    "message": "\ub9e5\uc8fc"
   },
   "d83c_df7b": {
-    "message": "beer mugs"
+    "message": "\ub9e5\uc8fc\uc794"
   },
   "d83c_df7c": {
-    "message": "baby bottle"
+    "message": "\uc544\uae30 \uc816\ubcd1"
   },
   "d83c_df80": {
-    "message": "ribbon"
+    "message": "\ub9ac\ubcf8"
   },
   "d83c_df81": {
-    "message": "gift"
+    "message": "\uc120\ubb3c"
   },
   "d83c_df82": {
-    "message": "birthday cake"
+    "message": "\uc0dd\uc77c \ucf00\uc774\ud06c"
   },
   "d83c_df83": {
-    "message": "jack-o-lantern"
+    "message": "\ud638\ubc15\ub4f1"
   },
   "d83c_df84": {
-    "message": "christmas tree"
+    "message": "\ud06c\ub9ac\uc2a4\ub9c8\uc2a4\ud2b8\ub9ac"
   },
   "d83c_df85": {
-    "message": "santa"
+    "message": "\uc0b0\ud0c0"
   },
   "d83c_df86": {
-    "message": "firework"
+    "message": "\ubd88\uaf43\ub180\uc774"
   },
   "d83c_df87": {
-    "message": "sparkler"
+    "message": "\ubd88\uaf43"
   },
   "d83c_df88": {
-    "message": "balloon"
+    "message": "\ud48d\uc120"
   },
   "d83c_df89": {
-    "message": "party popper"
+    "message": "\ud3ed\uc8fd"
   },
   "d83c_df8a": {
-    "message": "confetti"
+    "message": "\uc0c9\uc885\uc774 \uc870\uac01"
   },
   "d83c_df8b": {
-    "message": "tree and paper strips"
+    "message": "\ub300\ub098\ubb34 \uc7a5\uc2dd"
   },
   "d83c_df8c": {
-    "message": "crossed flags"
+    "message": "\uad50\ucc28\ub41c \uae43\ubc1c"
   },
   "d83c_df8d": {
-    "message": "pine decoration"
+    "message": "\uc18c\ub098\ubb34 \uc7a5\uc2dd"
   },
   "d83c_df8e": {
-    "message": "dolls"
+    "message": "\uc778\ud615"
   },
   "d83c_df8f": {
-    "message": "carp streamer"
+    "message": "\uc789\uc5b4 \uc5f0"
   },
   "d83c_df90": {
-    "message": "wind chime"
+    "message": "\ud48d\uacbd"
   },
   "d83c_df91": {
-    "message": "moon viewing"
+    "message": "\ub2ec \uad6c\uacbd"
   },
   "d83c_df92": {
-    "message": "school bag"
+    "message": "\ucc45\uac00\ubc29"
   },
   "d83c_df93": {
-    "message": "graduation cap"
+    "message": "\ud559\uc0ac\ubaa8"
   },
   "d83c_dfa0": {
-    "message": "carousel"
+    "message": "\ud68c\uc804\ubaa9\ub9c8"
   },
   "d83c_dfa1": {
-    "message": "ferris wheel"
+    "message": "\ub300\uad00\ub78c\ucc28"
   },
   "d83c_dfa2": {
-    "message": "roller coaster"
+    "message": "\ub864\ub7ec\ucf54\uc2a4\ud130"
   },
   "d83c_dfa3": {
-    "message": "fishing"
+    "message": "\ub09a\uc2dc"
   },
   "d83c_dfa4": {
-    "message": "mic"
+    "message": "\ub9c8\uc774\ud06c"
   },
   "d83c_dfa5": {
-    "message": "movie camera"
+    "message": "\uc601\ud654 \uce74\uba54\ub77c"
   },
   "d83c_dfa6": {
-    "message": "movie"
+    "message": "\uc601\ud654"
   },
   "d83c_dfa7": {
-    "message": "headphone"
+    "message": "\ud5e4\ub4dc\ud3f0"
   },
   "d83c_dfa8": {
-    "message": "paint palette"
+    "message": "\ubb3c\uac10 \ud314\ub808\ud2b8"
   },
   "d83c_dfa9": {
-    "message": "top hat"
+    "message": "\uc2e0\uc0ac \ubaa8\uc790"
   },
   "d83c_dfaa": {
-    "message": "circus"
+    "message": "\uc11c\ucee4\uc2a4"
   },
   "d83c_dfab": {
-    "message": "ticket"
+    "message": "\ud2f0\ucf13"
   },
   "d83c_dfac": {
-    "message": "clapperboard"
+    "message": "\ud074\ub798\ud37c\ubcf4\ub4dc"
   },
   "d83c_dfad": {
-    "message": "face mask"
+    "message": "\uac00\uba74"
   },
   "d83c_dfae": {
-    "message": "video game"
+    "message": "\ube44\ub514\uc624 \uac8c\uc784"
   },
   "d83c_dfaf": {
-    "message": "bull's eye"
+    "message": "\uba85\uc911\ub41c \ub2e4\ud2b8"
   },
   "d83c_dfb0": {
-    "message": "slot machine"
+    "message": "\uc2ac\ub86f\uba38\uc2e0"
   },
   "d83c_dfb1": {
-    "message": "billiard"
+    "message": "\ub2f9\uad6c"
   },
   "d83c_dfb2": {
-    "message": "game die"
+    "message": "\uc8fc\uc0ac\uc704"
   },
   "d83c_dfb3": {
-    "message": "bowling"
+    "message": "\ubcfc\ub9c1"
   },
   "d83c_dfb4": {
-    "message": "playing card"
+    "message": "\ud2b8\ub7fc\ud504"
   },
   "d83c_dfb5": {
-    "message": "musical note"
+    "message": "\uc74c\ud45c"
   },
   "d83c_dfb6": {
-    "message": "musical notes"
+    "message": "\uc5ec\ub7ec \uc74c\ud45c"
   },
   "d83c_dfb7": {
-    "message": "sax"
+    "message": "\uc0c9\uc18c\ud3f0"
   },
   "d83c_dfb8": {
-    "message": "guitar"
+    "message": "\uae30\ud0c0"
   },
   "d83c_dfb9": {
-    "message": "piano"
+    "message": "\ud53c\uc544\ub178"
   },
   "d83c_dfba": {
-    "message": "trumpet"
+    "message": "\ud2b8\ub7fc\ud3ab"
   },
   "d83c_dfbb": {
-    "message": "violin"
+    "message": "\ubc14\uc774\uc62c\ub9b0"
   },
   "d83c_dfbc": {
-    "message": "music score"
+    "message": "\uc545\ubcf4"
   },
   "d83c_dfbd": {
-    "message": "running shirt"
+    "message": "\uc6b4\ub3d9\ubcf5"
   },
   "d83c_dfbe": {
-    "message": "tennis"
+    "message": "\ud14c\ub2c8\uc2a4"
   },
   "d83c_dfbf": {
-    "message": "ski"
+    "message": "\uc2a4\ud0a4"
   },
   "d83c_dfc0": {
-    "message": "basketball"
+    "message": "\ub18d\uad6c"
   },
   "d83c_dfc1": {
-    "message": "checkered flag"
+    "message": "\uce74\ub808\uc774\uc2f1 \uae43\ubc1c"
   },
   "d83c_dfc2": {
-    "message": "snowboarder"
+    "message": "\uc2a4\ub178\ubcf4\ub354"
   },
   "d83c_dfc3": {
-    "message": "runner"
+    "message": "\ub2ec\ub9ac\ub294 \uc0ac\ub78c"
   },
   "d83c_dfc4": {
-    "message": "surfing"
+    "message": "\uc11c\ud551"
   },
   "d83c_dfc6": {
-    "message": "trophy"
+    "message": "\ud2b8\ub85c\ud53c"
   },
   "d83c_dfc7": {
-    "message": "horse racing"
+    "message": "\uc2b9\ub9c8"
   },
   "d83c_dfc8": {
-    "message": "American football"
+    "message": "\ubbf8\uc2dd\ucd95\uad6c"
   },
   "d83c_dfc9": {
-    "message": "soccer"
+    "message": "\ucd95\uad6c"
   },
   "d83c_dfca": {
-    "message": "swimmer"
+    "message": "\uc218\uc601 \uc120\uc218"
   },
   "d83c_dfe0": {
-    "message": "house"
+    "message": "\uc9d1"
   },
   "d83c_dfe1": {
-    "message": "home"
+    "message": "\uc790\ud0dd"
   },
   "d83c_dfe2": {
-    "message": "office building"
+    "message": "\uc0ac\ubb34\uc2e4"
   },
   "d83c_dfe3": {
-    "message": "Japanese post office"
+    "message": "\uc77c\ubcf8 \uc6b0\uccb4\uad6d"
   },
   "d83c_dfe4": {
-    "message": "European post office"
+    "message": "\uc720\ub7fd \uc6b0\uccb4\uad6d"
   },
   "d83c_dfe5": {
-    "message": "hospital"
+    "message": "\ubcd1\uc6d0"
   },
   "d83c_dfe6": {
-    "message": "bank"
+    "message": "\uc740\ud589"
   },
   "d83c_dfe7": {
     "message": "ATM"
   },
   "d83c_dfe8": {
-    "message": "hotel"
+    "message": "\ud638\ud154"
   },
   "d83c_dfe9": {
-    "message": "love hotel"
+    "message": "\ub7ec\ube0c\ud638\ud154"
   },
   "d83c_dfea": {
-    "message": "convenience store"
+    "message": "\ud3b8\uc758\uc810"
   },
   "d83c_dfeb": {
-    "message": "school"
+    "message": "\ud559\uad50"
   },
   "d83c_dfec": {
-    "message": "department store"
+    "message": "\ubc31\ud654\uc810"
   },
   "d83c_dfed": {
-    "message": "factory"
+    "message": "\uacf5\uc7a5"
   },
   "d83c_dfee": {
-    "message": "red lantern"
+    "message": "\uc774\uc790\uce74\uc57c \ub4f1"
   },
   "d83c_dfef": {
-    "message": "Japanese castle"
+    "message": "\uc77c\ubcf8\uc758 \uc131"
   },
   "d83c_dff0": {
-    "message": "European castle"
+    "message": "\uc720\ub7fd\uc758 \uc131"
   },
   "d83d_dc00": {
-    "message": "Rat"
+    "message": "\uc950"
   },
   "d83d_dc01": {
-    "message": "Mouse"
+    "message": "\uc0dd\uc950"
   },
   "d83d_dc02": {
-    "message": "Ox"
+    "message": "\uc218\uc18c"
   },
   "d83d_dc03": {
-    "message": "water buffalo"
+    "message": "\ubb3c\uc18c"
   },
   "d83d_dc04": {
-    "message": "cow"
+    "message": "\uc554\uc18c"
   },
   "d83d_dc06": {
-    "message": "leopard"
+    "message": "\ud45c\ubc94"
   },
   "d83d_dc07": {
-    "message": "rabbit"
+    "message": "\ud1a0\ub07c"
   },
   "d83d_dc08": {
-    "message": "cat"
+    "message": "\uace0\uc591\uc774"
   },
   "d83d_dc09": {
-    "message": "dragon"
+    "message": "\uc6a9"
   },
   "d83d_dc0a": {
-    "message": "crocodile"
+    "message": "\uc545\uc5b4"
   },
   "d83d_dc0b": {
-    "message": "whale"
+    "message": "\uace0\ub798"
   },
   "d83d_dc0c": {
-    "message": "snail"
+    "message": "\ub2ec\ud33d\uc774"
   },
   "d83d_dc0d": {
-    "message": "snake"
+    "message": "\ubc40"
   },
   "d83d_dc0e": {
-    "message": "horse"
+    "message": "\ub9d0"
   },
   "d83d_dc0f": {
-    "message": "ram"
+    "message": "\uc22b\uc591"
   },
   "d83d_dc10": {
-    "message": "goat"
+    "message": "\uc5fc\uc18c"
   },
   "d83d_dc11": {
-    "message": "sheep"
+    "message": "\uc591"
   },
   "d83d_dc12": {
-    "message": "monkey"
+    "message": "\uc6d0\uc22d\uc774"
   },
   "d83d_dc13": {
-    "message": "rooster"
+    "message": "\uc218\ud0c9"
   },
   "d83d_dc14": {
-    "message": "chicken"
+    "message": "\ub2ed"
   },
   "d83d_dc15": {
-    "message": "dog"
+    "message": "\uac1c"
   },
   "d83d_dc16": {
-    "message": "pig"
+    "message": "\ub3fc\uc9c0"
   },
   "d83d_dc17": {
-    "message": "boar"
+    "message": "\uc218\ud1d8\uc9c0"
   },
   "d83d_dc18": {
-    "message": "elephant"
+    "message": "\ucf54\ub07c\ub9ac"
   },
   "d83d_dc19": {
-    "message": "octopus"
+    "message": "\ubb38\uc5b4"
   },
   "d83d_dc1a": {
-    "message": "shell"
+    "message": "\uc870\uac1c"
   },
   "d83d_dc1b": {
-    "message": "bug"
+    "message": "\uace4\ucda9"
   },
   "d83d_dc1c": {
-    "message": "ant"
+    "message": "\uac1c\ubbf8"
   },
   "d83d_dc1d": {
-    "message": "honeybee"
+    "message": "\uafc0\ubc8c"
   },
   "d83d_dc1e": {
-    "message": "lady beetle"
+    "message": "\ub531\uc815\ubc8c\ub808"
   },
   "d83d_dc1f": {
-    "message": "fish"
+    "message": "\ubb3c\uace0\uae30"
   },
   "d83d_dc20": {
-    "message": "tropical fish"
+    "message": "\uc5f4\ub300\uc5b4"
   },
   "d83d_dc21": {
-    "message": "blowfish"
+    "message": "\ubcf5\uc5b4"
   },
   "d83d_dc22": {
-    "message": "turtle"
+    "message": "\uac70\ubd81\uc774"
   },
   "d83d_dc23": {
-    "message": "hatching chick"
+    "message": "\ubd80\ud654\ud55c \ubcd1\uc544\ub9ac"
   },
   "d83d_dc24": {
-    "message": "baby chick face"
+    "message": "\ubcd1\uc544\ub9ac \uc5bc\uad74"
   },
   "d83d_dc25": {
-    "message": "baby chick"
+    "message": "\ubcd1\uc544\ub9ac"
   },
   "d83d_dc26": {
-    "message": "bird"
+    "message": "\uc0c8"
   },
   "d83d_dc27": {
-    "message": "penguin"
+    "message": "\ud3ad\uadc4"
   },
   "d83d_dc28": {
-    "message": "koala"
+    "message": "\ucf54\uc54c\ub77c"
   },
   "d83d_dc29": {
-    "message": "poodle"
+    "message": "\ud478\ub4e4"
   },
   "d83d_dc2a": {
-    "message": "one hump camel"
+    "message": "\ub2e8\ubd09\ub099\ud0c0"
   },
   "d83d_dc2b": {
-    "message": "two hump camel"
+    "message": "\uc30d\ubd09\ub099\ud0c0"
   },
   "d83d_dc2c": {
-    "message": "dolphin"
+    "message": "\ub3cc\uace0\ub798"
   },
   "d83d_dc2d": {
-    "message": "mouse face"
+    "message": "\uc0dd\uc950 \uc5bc\uad74"
   },
   "d83d_dc2e": {
-    "message": "cow face"
+    "message": "\uc18c \uc5bc\uad74"
   },
   "d83d_dc2f": {
-    "message": "tiger face"
+    "message": "\ud638\ub791\uc774 \uc5bc\uad74"
   },
   "d83d_dc30": {
-    "message": "rabbit face"
+    "message": "\ud1a0\ub07c \uc5bc\uad74"
   },
   "d83d_dc31": {
-    "message": "cat face"
+    "message": "\uace0\uc591\uc774 \uc5bc\uad74"
   },
   "d83d_dc32": {
-    "message": "dragon face"
+    "message": "\uc6a9 \uc5bc\uad74"
   },
   "d83d_dc33": {
-    "message": "spouting whale"
+    "message": "\ubb3c \ubfdc\ub294 \uace0\ub798"
   },
   "d83d_dc34": {
-    "message": "horse face"
+    "message": "\ub9d0 \uc5bc\uad74"
   },
   "d83d_dc35": {
-    "message": "monkey face"
+    "message": "\uc6d0\uc22d\uc774 \uc5bc\uad74"
   },
   "d83d_dc36": {
-    "message": "dog face"
+    "message": "\uac1c \uc5bc\uad74"
   },
   "d83d_dc37": {
-    "message": "pig face"
+    "message": "\ub3fc\uc9c0 \uc5bc\uad74"
   },
   "d83d_dc38": {
-    "message": "frog face"
+    "message": "\uac1c\uad6c\ub9ac \uc5bc\uad74"
   },
   "d83d_dc39": {
-    "message": "hamster face"
+    "message": "\ud584\uc2a4\ud130 \uc5bc\uad74"
   },
   "d83d_dc3a": {
-    "message": "wolf face"
+    "message": "\ub291\ub300 \uc5bc\uad74"
   },
   "d83d_dc3b": {
-    "message": "bear face"
+    "message": "\uacf0 \uc5bc\uad74"
   },
   "d83d_dc3c": {
-    "message": "panda face"
+    "message": "\ud310\ub2e4 \uc5bc\uad74"
   },
   "d83d_dc3d": {
-    "message": "pig nose"
+    "message": "\ub3fc\uc9c0\ucf54"
   },
   "d83d_dc3e": {
-    "message": "paw"
+    "message": "\ub3d9\ubb3c \ubc1c\ubc14\ub2e5"
   },
   "d83d_dc40": {
-    "message": "eyes"
+    "message": "\ub208"
   },
   "d83d_dc42": {
-    "message": "ear"
+    "message": "\uadc0"
   },
   "d83d_dc43": {
-    "message": "nose"
+    "message": "\ucf54"
   },
   "d83d_dc44": {
-    "message": "mouth"
+    "message": "\uc785"
   },
   "d83d_dc45": {
-    "message": "tongue"
+    "message": "\ud600"
   },
   "d83d_dc46": {
-    "message": "up finger"
+    "message": "\uc704\ub97c \uac00\ub9ac\ud0a4\ub294 \uc190\uac00\ub77d"
   },
   "d83d_dc47": {
-    "message": "down finger"
+    "message": "\uc544\ub798\ub97c \uac00\ub9ac\ud0a4\ub294 \uc190\uac00\ub77d"
   },
   "d83d_dc48": {
-    "message": "left finger"
+    "message": "\uc67c\ucabd\uc744 \uac00\ub9ac\ud0a4\ub294 \uc190\uac00\ub77d"
   },
   "d83d_dc49": {
-    "message": "right finger"
+    "message": "\uc624\ub978\ucabd\uc744 \uac00\ub9ac\ud0a4\ub294 \uc190\uac00\ub77d"
   },
   "d83d_dc4a": {
-    "message": "clenched fist"
+    "message": "\uc8fc\uba39"
   },
   "d83d_dc4b": {
-    "message": "hand waving"
+    "message": "\uc190 \ud754\ub4e4\uae30"
   },
   "d83d_dc4c": {
-    "message": "OK hand sign"
+    "message": "OK \uc190\ub3d9\uc791"
   },
   "d83d_dc4d": {
-    "message": "thumbs up"
+    "message": "\ucd5c\uace0"
   },
   "d83d_dc4e": {
-    "message": "thumbs down"
+    "message": "\ub098\uc068"
   },
   "d83d_dc4f": {
-    "message": "hands clapping"
+    "message": "\ubc15\uc218"
   },
   "d83d_dc50": {
-    "message": "open hands"
+    "message": "\ud3bc\uce5c \uc190"
   },
   "d83d_dc51": {
-    "message": "crown"
+    "message": "\uc655\uad00"
   },
   "d83d_dc52": {
-    "message": "woman's hat"
+    "message": "\uc5ec\uc790 \ubaa8\uc790"
   },
   "d83d_dc53": {
-    "message": "eyeglasses"
+    "message": "\uc548\uacbd"
   },
   "d83d_dc54": {
-    "message": "necktie"
+    "message": "\ub125\ud0c0\uc774"
   },
   "d83d_dc55": {
-    "message": "T-shirt"
+    "message": "\ud2f0\uc154\uce20"
   },
   "d83d_dc56": {
-    "message": "trousers"
+    "message": "\ubc14\uc9c0"
   },
   "d83d_dc57": {
-    "message": "dress"
+    "message": "\ub4dc\ub808\uc2a4"
   },
   "d83d_dc58": {
-    "message": "kimono"
+    "message": "\uae30\ubaa8\ub178"
   },
   "d83d_dc59": {
-    "message": "bikini"
+    "message": "\ube44\ud0a4\ub2c8"
   },
   "d83d_dc5a": {
-    "message": "woman's clothes"
+    "message": "\uc5ec\uc790 \uc637"
   },
   "d83d_dc5b": {
-    "message": "purse"
+    "message": "\uc9c0\uac11"
   },
   "d83d_dc5c": {
-    "message": "handbag"
+    "message": "\ud578\ub4dc\ubc31"
   },
   "d83d_dc5d": {
-    "message": "pouch"
+    "message": "\ud30c\uc6b0\uce58"
   },
   "d83d_dc5e": {
-    "message": "man's shoe"
+    "message": "\ub0a8\uc790 \uc2e0\ubc1c"
   },
   "d83d_dc5f": {
-    "message": "athletic shoe"
+    "message": "\uc6b4\ub3d9\ud654"
   },
   "d83d_dc60": {
-    "message": "high-heel"
+    "message": "\ud558\uc774\ud790"
   },
   "d83d_dc61": {
-    "message": "woman's sandal"
+    "message": "\uc5ec\uc790 \uc0cc\ub4e4"
   },
   "d83d_dc62": {
-    "message": "woman's boot"
+    "message": "\uc5ec\uc790 \ubd80\uce20"
   },
   "d83d_dc63": {
-    "message": "footprint"
+    "message": "\ubc1c\uc790\uad6d"
   },
   "d83d_dc64": {
-    "message": "bust in silhouette"
+    "message": "\uc0ac\ub78c \uc2e4\ub8e8\uc5e3"
   },
   "d83d_dc65": {
-    "message": "busts in silhouette"
+    "message": "\ub450 \uc0ac\ub78c \uc2e4\ub8e8\uc5e3"
   },
   "d83d_dc66": {
-    "message": "boy"
+    "message": "\uc18c\ub144"
   },
   "d83d_dc67": {
-    "message": "girl"
+    "message": "\uc18c\ub140"
   },
   "d83d_dc68": {
-    "message": "man"
+    "message": "\ub0a8\uc790"
   },
   "d83d_dc69": {
-    "message": "woman"
+    "message": "\uc5ec\uc790"
   },
   "d83d_dc6a": {
-    "message": "family"
+    "message": "\uac00\uc871"
   },
   "d83d_dc6b": {
-    "message": "man and woman"
+    "message": "\ub0a8\ub140"
   },
   "d83d_dc6c": {
-    "message": "two men"
+    "message": "\ub450 \ub0a8\uc790"
   },
   "d83d_dc6d": {
-    "message": "two women"
+    "message": "\ub450 \uc5ec\uc790"
   },
   "d83d_dc6e": {
-    "message": "police officer"
+    "message": "\uacbd\ucc30"
   },
   "d83d_dc6f": {
-    "message": "bunny girl"
+    "message": "\ubc84\ub2c8\uac78"
   },
   "d83d_dc70": {
-    "message": "bride"
+    "message": "\uc2e0\ubd80"
   },
   "d83d_dc71": {
-    "message": "blond person"
+    "message": "\uae08\ubc1c \uba38\ub9ac"
   },
   "d83d_dc72": {
-    "message": "man with gua pi mao"
+    "message": "\uc911\uad6d \ubaa8\uc790\ub97c \uc4f4 \ub0a8\uc790"
   },
   "d83d_dc73": {
-    "message": "man with a turban"
+    "message": "\ud130\ubc88\uc744 \uc4f4 \ub0a8\uc790"
   },
   "d83d_dc74": {
-    "message": "older man"
+    "message": "\ud560\uc544\ubc84\uc9c0"
   },
   "d83d_dc75": {
-    "message": "older woman"
+    "message": "\ud560\uba38\ub2c8"
   },
   "d83d_dc76": {
-    "message": "baby"
+    "message": "\uc544\uae30"
   },
   "d83d_dc77": {
-    "message": "construction worker"
+    "message": "\uc778\ubd80"
   },
   "d83d_dc78": {
-    "message": "princess"
+    "message": "\uacf5\uc8fc"
   },
   "d83d_dc79": {
-    "message": "ogre"
+    "message": "\ub3c4\uae68\ube44"
   },
   "d83d_dc7a": {
-    "message": "goblin"
+    "message": "\uace0\ube14\ub9b0"
   },
   "d83d_dc7b": {
-    "message": "ghost"
+    "message": "\uc720\ub839"
   },
   "d83d_dc7c": {
-    "message": "baby angel"
+    "message": "\uc544\uae30 \ucc9c\uc0ac"
   },
   "d83d_dc7d": {
-    "message": "alien"
+    "message": "\uc678\uacc4\uc778"
   },
   "d83d_dc7e": {
-    "message": "alien monster"
+    "message": "\uc678\uacc4 \uad34\ubb3c"
   },
   "d83d_dc7f": {
-    "message": "imp"
+    "message": "\uaf2c\ub9c8 \ub3c4\uae68\ube44"
   },
   "d83d_dc80": {
-    "message": "skull"
+    "message": "\ud574\uace8"
   },
   "d83d_dc81": {
-    "message": "information desk"
+    "message": "\uc548\ub0b4 \ub370\uc2a4\ud06c"
   },
   "d83d_dc82": {
-    "message": "guardsman"
+    "message": "\uadfc\uc704\ubcd1"
   },
   "d83d_dc83": {
-    "message": "dancer"
+    "message": "\ucda4\ucd94\ub294 \uc0ac\ub78c"
   },
   "d83d_dc84": {
-    "message": "lipstick"
+    "message": "\ub9bd\uc2a4\ud2f1"
   },
   "d83d_dc85": {
-    "message": "nail care"
+    "message": "\ub124\uc77c \ucf00\uc5b4"
   },
   "d83d_dc86": {
-    "message": "face massage"
+    "message": "\uc5bc\uad74 \ub9c8\uc0ac\uc9c0"
   },
   "d83d_dc87": {
-    "message": "haircut"
+    "message": "\uba38\ub9ac \uc790\ub974\uae30"
   },
   "d83d_dc88": {
-    "message": "barber shop"
+    "message": "\uc774\ubc1c\uc18c"
   },
   "d83d_dc89": {
-    "message": "shot"
+    "message": "\ubc1c\uc0ac"
   },
   "d83d_dc8a": {
-    "message": "pill"
+    "message": "\uc54c\uc57d"
   },
   "d83d_dc8b": {
-    "message": "kiss mark"
+    "message": "\ud0a4\uc2a4 \ub9c8\ud06c"
   },
   "d83d_dc8c": {
-    "message": "love letter"
+    "message": "\uc5f0\uc560\ud3b8\uc9c0"
   },
   "d83d_dc8d": {
-    "message": "ring"
+    "message": "\ubc18\uc9c0"
   },
   "d83d_dc8e": {
-    "message": "gem"
+    "message": "\ubcf4\uc11d"
   },
   "d83d_dc8f": {
-    "message": "kiss"
+    "message": "\ud0a4\uc2a4\ud558\ub294 \ub0a8\ub140"
   },
   "d83d_dc90": {
-    "message": "bouquet"
+    "message": "\ubd80\ucf00"
   },
   "d83d_dc91": {
-    "message": "couple"
+    "message": "\ucee4\ud50c"
   },
   "d83d_dc92": {
-    "message": "wedding chapel"
+    "message": "\uc608\uc2dd\uc7a5"
   },
   "d83d_dc93": {
-    "message": "pulsating heart"
+    "message": "\ub5a8\ub9ac\ub294 \ud558\ud2b8"
   },
   "d83d_dc94": {
-    "message": "heart break"
+    "message": "\uae68\uc9c4 \ud558\ud2b8"
   },
   "d83d_dc95": {
-    "message": "two hearts"
+    "message": "\ud558\ud2b8 2\uac1c"
   },
   "d83d_dc96": {
-    "message": "sparkling heart"
+    "message": "\ubc18\uc9dd\uc774\ub294 \ud558\ud2b8"
   },
   "d83d_dc97": {
-    "message": "growing heart"
+    "message": "\ucee4\uc9c0\ub294 \ud558\ud2b8"
   },
   "d83d_dc98": {
-    "message": "heart and arrow"
+    "message": "\ud654\uc0b4 \uaf42\ud78c \ud558\ud2b8"
   },
   "d83d_dc99": {
-    "message": "blue heart"
+    "message": "\ud30c\ub780 \ud558\ud2b8"
   },
   "d83d_dc9a": {
-    "message": "green heart"
+    "message": "\ucd08\ub85d \ud558\ud2b8"
   },
   "d83d_dc9b": {
-    "message": "yellow heart"
+    "message": "\ub178\ub780 \ud558\ud2b8"
   },
   "d83d_dc9c": {
-    "message": "purple heart"
+    "message": "\ubcf4\ub77c\uc0c9 \ud558\ud2b8"
   },
   "d83d_dc9d": {
-    "message": "heart with ribbon"
+    "message": "\ub9ac\ubcf8 \ub2ec\ub9b0 \ud558\ud2b8"
   },
   "d83d_dc9e": {
-    "message": "revolving hearts"
+    "message": "\ud68c\uc804\ud558\ub294 \ud558\ud2b8"
   },
   "d83d_dc9f": {
-    "message": "heart decoration"
+    "message": "\ud558\ud2b8 \uc7a5\uc2dd"
   },
   "d83d_dca0": {
-    "message": "flower petal"
+    "message": "\uaf43\uc78e"
   },
   "d83d_dca1": {
-    "message": "light bulb"
+    "message": "\uc804\uad6c"
   },
   "d83d_dca2": {
-    "message": "anger"
+    "message": "\ubd84\ub178"
   },
   "d83d_dca3": {
-    "message": "bomb"
+    "message": "\ud3ed\ud0c4"
   },
   "d83d_dca4": {
-    "message": "sleepy symbol"
+    "message": "\uc218\uba74 \uae30\ud638"
   },
   "d83d_dca5": {
-    "message": "collision"
+    "message": "\ucda9\ub3cc"
   },
   "d83d_dca6": {
-    "message": "splashing sweat"
+    "message": "\ub540\ubc29\uc6b8"
   },
   "d83d_dca7": {
-    "message": "cold sweat"
+    "message": "\uc2dd\uc740\ub540"
   },
   "d83d_dca8": {
-    "message": "running dash"
+    "message": "\uc11c\ub450\ub984"
   },
   "d83d_dca9": {
-    "message": "poop"
+    "message": "\ub625"
   },
   "d83d_dcaa": {
-    "message": "biceps"
+    "message": "\uc774\ub450\ubc15\uadfc"
   },
   "d83d_dcab": {
-    "message": "dizzy"
+    "message": "\ud604\uae30\uc99d"
   },
   "d83d_dcac": {
-    "message": "speech balloon"
+    "message": "\ub9d0\ud48d\uc120"
   },
   "d83d_dcad": {
-    "message": "thought balloon"
+    "message": "\uc0dd\uac01 \ud48d\uc120"
   },
   "d83d_dcae": {
-    "message": "flower stamp"
+    "message": "\uaf43 \ub3c4\uc7a5"
   },
   "d83d_dcaf": {
-    "message": "full score"
+    "message": "\ub9cc\uc810"
   },
   "d83d_dcb0": {
-    "message": "money bag"
+    "message": "\ub3c8 \uc8fc\uba38\ub2c8"
   },
   "d83d_dcb1": {
-    "message": "currency exchange"
+    "message": "\ud658\uc804"
   },
   "d83d_dcb2": {
-    "message": "dollar sign"
+    "message": "\ub2ec\ub7ec \uae30\ud638"
   },
   "d83d_dcb3": {
-    "message": "credit card"
+    "message": "\uc2e0\uc6a9\uce74\ub4dc"
   },
   "d83d_dcb4": {
-    "message": "yen note"
+    "message": "\uc5d4\ud654 \uc9c0\ud3d0"
   },
   "d83d_dcb5": {
-    "message": "dollar note"
+    "message": "\ub2ec\ub7ec\ud654 \uc9c0\ud3d0"
   },
   "d83d_dcb6": {
-    "message": "Euro note"
+    "message": "\uc720\ub85c\ud654 \uc9c0\ud3d0"
   },
   "d83d_dcb7": {
-    "message": "Pound note"
+    "message": "\ud30c\uc6b4\ub4dc\ud654 \uc9c0\ud3d0"
   },
   "d83d_dcb8": {
-    "message": "flying money"
+    "message": "\ub0a0\uac1c \ub2ec\ub9b0 \uc9c0\ud3d0"
   },
   "d83d_dcb9": {
-    "message": "rising market"
+    "message": "\uc8fc\uac00 \uc0c1\uc2b9"
   },
   "d83d_dcba": {
-    "message": "seat"
+    "message": "\uc88c\uc11d"
   },
   "d83d_dcbb": {
     "message": "PC"
   },
   "d83d_dcbc": {
-    "message": "briefcase"
+    "message": "\uc11c\ub958\uac00\ubc29"
   },
   "d83d_dcbd": {
-    "message": "mini disc"
+    "message": "\ubbf8\ub2c8 \ub514\uc2a4\ud06c"
   },
   "d83d_dcbe": {
-    "message": "floppy disc"
+    "message": "\ud50c\ub85c\ud53c \ub514\uc2a4\ud06c"
   },
   "d83d_dcbf": {
-    "message": "blu-ray"
+    "message": "\ube14\ub8e8\ub808\uc774"
   },
   "d83d_dcc0": {
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "file folder"
+    "message": "\uc11c\ub958\ucca0"
   },
   "d83d_dcc2": {
-    "message": "open folder"
+    "message": "\uc5f4\ub9b0 \ud3f4\ub354"
   },
   "d83d_dcc3": {
-    "message": "document"
+    "message": "\ubb38\uc11c"
   },
   "d83d_dcc4": {
-    "message": "document"
+    "message": "\ubb38\uc11c"
   },
   "d83d_dcc5": {
-    "message": "calendar"
+    "message": "\ub2ec\ub825"
   },
   "d83d_dcc6": {
-    "message": "tear-off calendar"
+    "message": "\uc77c\ub825"
   },
   "d83d_dcc7": {
-    "message": "card index"
+    "message": "\uce74\ub4dc \uc0c9\uc778"
   },
   "d83d_dcc8": {
-    "message": "upward trend"
+    "message": "\uc0c1\uc2b9 \ucd94\uc138"
   },
   "d83d_dcc9": {
-    "message": "downward trend"
+    "message": "\ud558\ud5a5 \ucd94\uc138"
   },
   "d83d_dcca": {
-    "message": "bar graph"
+    "message": "\ub9c9\ub300\uadf8\ub798\ud504"
   },
   "d83d_dccb": {
-    "message": "clipboard"
+    "message": "\ud074\ub9bd\ubcf4\ub4dc"
   },
   "d83d_dccc": {
-    "message": "pushpin"
+    "message": "\uc190\uc7a1\uc774 \uc555\uc815"
   },
   "d83d_dccd": {
-    "message": "round pushpin"
+    "message": "\uc555\uc815"
   },
   "d83d_dcce": {
-    "message": "paperclip"
+    "message": "\ud074\ub9bd"
   },
   "d83d_dccf": {
-    "message": "straight ruler"
+    "message": "\uace7\uc740\uc790"
   },
   "d83d_dcd0": {
-    "message": "triangle ruler"
+    "message": "\uc0bc\uac01\uc790"
   },
   "d83d_dcd1": {
-    "message": "bookmark tabs"
+    "message": "\ubd81\ub9c8\ud06c \ud0ed"
   },
   "d83d_dcd2": {
-    "message": "ledger"
+    "message": "\ud68c\uacc4\uc7a5\ubd80"
   },
   "d83d_dcd3": {
-    "message": "notebook"
+    "message": "\uacf5\ucc45"
   },
   "d83d_dcd4": {
-    "message": "decorated notebook"
+    "message": "\uc7a5\uc2dd\ud55c \uacf5\ucc45"
   },
   "d83d_dcd5": {
-    "message": "closed book"
+    "message": "\ub36e\uc740 \ucc45"
   },
   "d83d_dcd6": {
-    "message": "open book"
+    "message": "\ud3bc\uccd0\uc9c4 \ucc45"
   },
   "d83d_dcd7": {
-    "message": "green book"
+    "message": "\ub179\uc0c9 \ucc45"
   },
   "d83d_dcd8": {
-    "message": "book"
+    "message": "\ucc45"
   },
   "d83d_dcd9": {
-    "message": "orange book"
+    "message": "\uc8fc\ud669\uc0c9 \ucc45"
   },
   "d83d_dcda": {
-    "message": "books"
+    "message": "\uc5ec\ub7ec \uad8c\uc758 \ucc45"
   },
   "d83d_dcdb": {
-    "message": "name badge"
+    "message": "\uc774\ub984\ud45c"
   },
   "d83d_dcdc": {
-    "message": "scroll"
+    "message": "\ub450\ub8e8\ub9c8\ub9ac"
   },
   "d83d_dcdd": {
-    "message": "memo"
+    "message": "\uba54\ubaa8"
   },
   "d83d_dcde": {
-    "message": "phone"
+    "message": "\uc804\ud654"
   },
   "d83d_dcdf": {
-    "message": "pager"
+    "message": "\ud638\ucd9c\uae30"
   },
   "d83d_dce0": {
-    "message": "fax"
+    "message": "\ud329\uc2a4"
   },
   "d83d_dce1": {
-    "message": "satellite dish"
+    "message": "\uc704\uc131 \uc548\ud14c\ub098"
   },
   "d83d_dce2": {
-    "message": "loudspeaker"
+    "message": "\uc2a4\ud53c\ucee4"
   },
   "d83d_dce3": {
-    "message": "megaphone"
+    "message": "\ud655\uc131\uae30"
   },
   "d83d_dce4": {
-    "message": "sent mail"
+    "message": "\ubcf4\ub0b8 \uba54\uc77c"
   },
   "d83d_dce5": {
-    "message": "Inbox"
+    "message": "\ubc1b\uc740\ud3b8\uc9c0\ud568"
   },
   "d83d_dce6": {
-    "message": "package"
+    "message": "\ud328\ud0a4\uc9c0"
   },
   "d83d_dce7": {
-    "message": "email"
+    "message": "\uc774\uba54\uc77c"
   },
   "d83d_dce8": {
-    "message": "incoming mail"
+    "message": "\uba54\uc77c \uc218\uc2e0"
   },
   "d83d_dce9": {
-    "message": "outgoing mail"
+    "message": "\uba54\uc77c \ubc1c\uc2e0"
   },
   "d83d_dcea": {
-    "message": "closed mailbox with flag down"
+    "message": "\uae43\ubc1c\uc774 \ub0b4\ub824\uc9c4 \ub2eb\ud78c \uc6b0\ud3b8\ud568"
   },
   "d83d_dceb": {
-    "message": "closed mailbox with flag up"
+    "message": "\uae43\ubc1c\uc774 \uc62c\ub824\uc9c4 \ub2eb\ud78c \uc6b0\ud3b8\ud568"
   },
   "d83d_dcec": {
-    "message": "open mailbox with flag up"
+    "message": "\uae43\ubc1c\uc774 \uc62c\ub77c\uac04 \uc5f4\ub9b0 \uc6b0\ud3b8\ud568"
   },
   "d83d_dced": {
-    "message": "open mailbox with flag down"
+    "message": "\uae43\ubc1c\uc774 \ub0b4\ub824\uc9c4 \uc5f4\ub9b0 \uc6b0\ud3b8\ud568"
   },
   "d83d_dcee": {
-    "message": "postbox"
+    "message": "\uc6b0\uccb4\ud1b5"
   },
   "d83d_dcef": {
-    "message": "postal horn"
+    "message": "\ub098\ud314"
   },
   "d83d_dcf0": {
-    "message": "newspaper"
+    "message": "\uc2e0\ubb38"
   },
   "d83d_dcf1": {
-    "message": "cell phone"
+    "message": "\ud734\ub300\uc804\ud654"
   },
   "d83d_dcf2": {
-    "message": "cell phone with arrow"
+    "message": "\ud734\ub300\uc804\ud654\uc640 \ud654\uc0b4\ud45c"
   },
   "d83d_dcf3": {
-    "message": "vibration mode"
+    "message": "\uc9c4\ub3d9 \ubaa8\ub4dc"
   },
   "d83d_dcf4": {
-    "message": "phone off"
+    "message": "\ud734\ub300\uc804\ud654 \uc804\uc6d0 \ub044\uae30"
   },
   "d83d_dcf5": {
-    "message": "no cell phone"
+    "message": "\ud734\ub300\uc804\ud654 \uc0ac\uc6a9\uae08\uc9c0"
   },
   "d83d_dcf6": {
-    "message": "mobile signals"
+    "message": "\ud734\ub300\uae30\uae30 \uc2e0\ud638"
   },
   "d83d_dcf7": {
-    "message": "camera"
+    "message": "\uce74\uba54\ub77c"
   },
   "d83d_dcf9": {
-    "message": "video cam"
+    "message": "\ube44\ub514\uc624\uce74\uba54\ub77c"
   },
   "d83d_dcfa": {
     "message": "TV"
   },
   "d83d_dcfb": {
-    "message": "radio"
+    "message": "\ub77c\ub514\uc624"
   },
   "d83d_dcfc": {
-    "message": "video tape"
+    "message": "\ube44\ub514\uc624\ud14c\uc774\ud504"
   },
   "d83d_dd00": {
-    "message": "crossed arrows"
+    "message": "\uad50\ucc28\ub41c \ud654\uc0b4\ud45c"
   },
   "d83d_dd01": {
-    "message": "clockwise arrows"
+    "message": "\uc2dc\uacc4 \ubc29\ud5a5 \ud654\uc0b4\ud45c"
   },
   "d83d_dd02": {
-    "message": "clockwise arrows"
+    "message": "\uc2dc\uacc4 \ubc29\ud5a5 \ud654\uc0b4\ud45c"
   },
   "d83d_dd03": {
-    "message": "reload"
+    "message": "\uc0c8\ub85c\uace0\uce68"
   },
   "d83d_dd04": {
-    "message": "anti-clockwise arrows"
+    "message": "\ubc18\uc2dc\uacc4 \ubc29\ud5a5 \ud654\uc0b4\ud45c"
   },
   "d83d_dd05": {
-    "message": "low brightness"
+    "message": "\ub0ae\uc740 \ubc1d\uae30"
   },
   "d83d_dd06": {
-    "message": "high brightness"
+    "message": "\ub192\uc740 \ubc1d\uae30"
   },
   "d83d_dd07": {
-    "message": "no speaking"
+    "message": "\uc2a4\ud53c\ucee4 \ubb34\uc74c"
   },
   "d83d_dd08": {
-    "message": "speaker"
+    "message": "\uc2a4\ud53c\ucee4"
   },
   "d83d_dd09": {
-    "message": "speaker with low volume"
+    "message": "\ub0ae\uc740 \ubcfc\ub968 \uc2a4\ud53c\ucee4"
   },
   "d83d_dd0a": {
-    "message": "speaker with high volume"
+    "message": "\ub192\uc740 \ubcfc\ub968 \uc2a4\ud53c\ucee4"
   },
   "d83d_dd0b": {
-    "message": "battery"
+    "message": "\ubc30\ud130\ub9ac"
   },
   "d83d_dd0c": {
-    "message": "electric plug"
+    "message": "\uc804\uc6d0 \ud50c\ub7ec\uadf8"
   },
   "d83d_dd0d": {
-    "message": "left-tilted magnifying glass"
+    "message": "\uc67c\ucabd\uc73c\ub85c \uae30\uc6b8\uc5b4\uc9c4 \ub3cb\ubcf4\uae30"
   },
   "d83d_dd0e": {
-    "message": "right-tilted magnifying glass"
+    "message": "\uc624\ub978\ucabd\uc73c\ub85c \uae30\uc6b8\uc5b4\uc9c4 \ub3cb\ubcf4\uae30"
   },
   "d83d_dd0f": {
-    "message": "lock with an ink pen"
+    "message": "\uc790\ubb3c\uc1e0\uc640 \uc789\ud06c \ud39c"
   },
   "d83d_dd10": {
-    "message": "closed lock with a key"
+    "message": "\uc7a0\uae34 \uc790\ubb3c\uc1e0\uc640 \uc5f4\uc1e0"
   },
   "d83d_dd11": {
-    "message": "key"
+    "message": "\uc5f4\uc1e0"
   },
   "d83d_dd12": {
-    "message": "closed lock"
+    "message": "\uc7a0\uae34 \uc790\ubb3c\uc1e0"
   },
   "d83d_dd13": {
-    "message": "open lock"
+    "message": "\uc5f4\ub9b0 \uc790\ubb3c\uc1e0"
   },
   "d83d_dd14": {
-    "message": "bell"
+    "message": "\uc885"
   },
   "d83d_dd15": {
-    "message": "no bell"
+    "message": "\ubb34\uc74c"
   },
   "d83d_dd16": {
-    "message": "bookmark"
+    "message": "\ubd81\ub9c8\ud06c"
   },
   "d83d_dd17": {
-    "message": "link sign"
+    "message": "\uc5f0\uacb0 \ud45c\uc9c0"
   },
   "d83d_dd18": {
-    "message": "radio button"
+    "message": "\ub77c\ub514\uc624 \ubc84\ud2bc"
   },
   "d83d_dd19": {
-    "message": "back"
+    "message": "\ub4a4\ub85c"
   },
   "d83d_dd1a": {
-    "message": "end"
+    "message": "\ub05d"
   },
   "d83d_dd1b": {
-    "message": "ON arrow"
+    "message": "ON \ud654\uc0b4\ud45c"
   },
   "d83d_dd1c": {
-    "message": "Soon sign"
+    "message": "Soon \ud45c\uc9c0"
   },
   "d83d_dd1d": {
-    "message": "Top sign"
+    "message": "Top \ud45c\uc9c0"
   },
   "d83d_dd1e": {
-    "message": "No one under 18"
+    "message": "18\uc138 \ubbf8\ub9cc \uae08\uc9c0"
   },
   "d83d_dd20": {
-    "message": "uppercase letters"
+    "message": "\ub300\ubb38\uc790"
   },
   "d83d_dd21": {
-    "message": "lowercase letters"
+    "message": "\uc18c\ubb38\uc790"
   },
   "d83d_dd22": {
-    "message": "numbers"
+    "message": "\uc22b\uc790"
   },
   "d83d_dd23": {
-    "message": "symbols"
+    "message": "\uae30\ud638"
   },
   "d83d_dd24": {
-    "message": "Latin Alphabet"
+    "message": "\ub77c\ud2f4 \ubb38\uc790"
   },
   "d83d_dd25": {
-    "message": "fire"
+    "message": "\ubd88"
   },
   "d83d_dd26": {
-    "message": "flashlight"
+    "message": "\uc190\uc804\ub4f1"
   },
   "d83d_dd27": {
-    "message": "wrench"
+    "message": "\ub80c\uce58"
   },
   "d83d_dd28": {
-    "message": "hammer"
+    "message": "\ub9dd\uce58"
   },
   "d83d_dd29": {
-    "message": "nut and bolt"
+    "message": "\ub108\ud2b8\uc640 \ubcfc\ud2b8"
   },
   "d83d_dd2a": {
-    "message": "cooking knife"
+    "message": "\uc2dd\uce7c"
   },
   "d83d_dd2b": {
-    "message": "gun"
+    "message": "\uad8c\ucd1d"
   },
   "d83d_dd2c": {
-    "message": "microscope"
+    "message": "\ud604\ubbf8\uacbd"
   },
   "d83d_dd2d": {
-    "message": "telescope"
+    "message": "\ub9dd\uc6d0\uacbd"
   },
   "d83d_dd2e": {
-    "message": "crystal ball"
+    "message": "\uc218\uc815 \uad6c\uc2ac"
   },
   "d83d_dd2f": {
-    "message": "six-pointed star"
+    "message": "\uc721\uac01\ud615 \ubcc4"
   },
   "d83d_dd30": {
-    "message": "green and yellow leaf"
+    "message": "\ucd08\ub85d \ub178\ub791 \uc78e\uc0ac\uadc0"
   },
   "d83d_dd31": {
-    "message": "trident sign"
+    "message": "\uc0bc\uc9c0\ucc3d \ud45c\uc9c0"
   },
   "d83d_dd32": {
-    "message": "solid frame square button"
+    "message": "\uc0c9\uc774 \ub4e4\uc5b4\uac04 \uc0ac\uac01\ud615 \ubc84\ud2bc"
   },
   "d83d_dd33": {
-    "message": "outlined frame square button"
+    "message": "\ud14c\ub450\ub9ac\uac00 \uc788\ub294 \uc0ac\uac01\ud615 \ubc84\ud2bc"
   },
   "d83d_dd34": {
-    "message": "large red circle"
+    "message": "\ucee4\ub2e4\ub780 \ube68\uac04\uc0c9 \uc6d0"
   },
   "d83d_dd35": {
-    "message": "large blue circle"
+    "message": "\ucee4\ub2e4\ub780 \ud30c\ub780\uc0c9 \uc6d0"
   },
   "d83d_dd36": {
-    "message": "large orange diamond"
+    "message": "\ucee4\ub2e4\ub780 \uc8fc\ud669\uc0c9 \ub2e4\uc774\uc544\ubaac\ub4dc"
   },
   "d83d_dd37": {
-    "message": "large blue diamond"
+    "message": "\ucee4\ub2e4\ub780 \ud30c\ub780\uc0c9 \ub2e4\uc774\uc544\ubaac\ub4dc"
   },
   "d83d_dd38": {
-    "message": "small orange diamond"
+    "message": "\uc791\uc740 \uc8fc\ud669\uc0c9 \ub2e4\uc774\uc544\ubaac\ub4dc"
   },
   "d83d_dd39": {
-    "message": "small blue diamond"
+    "message": "\uc791\uc740 \ud30c\ub780\uc0c9 \ub2e4\uc774\uc544\ubaac\ub4dc"
   },
   "d83d_dd3a": {
-    "message": "up triangle"
+    "message": "\uc704\ucabd\uc744 \uac00\ub9ac\ud0a4\ub294 \uc0bc\uac01\ud615"
   },
   "d83d_dd3b": {
-    "message": "down triangle"
+    "message": "\uc544\ub798\ucabd\uc744 \uac00\ub9ac\ud0a4\ub294 \uc0bc\uac01\ud615"
   },
   "d83d_dd3c": {
-    "message": "up triangle button"
+    "message": "\uc704\ub97c \ud5a5\ud55c \uc0bc\uac01\ud615 \ubc84\ud2bc"
   },
   "d83d_dd3d": {
-    "message": "down triangle button"
+    "message": "\uc544\ub798\ub97c \ud5a5\ud55c \uc0bc\uac01\ud615 \ubc84\ud2bc"
   },
   "d83d_dd50": {
-    "message": "1 o'clock"
+    "message": "1\uc2dc \uc815\uac01"
   },
   "d83d_dd51": {
-    "message": "2 o'clock"
+    "message": "2\uc2dc \uc815\uac01"
   },
   "d83d_dd52": {
-    "message": "3 o'clock"
+    "message": "3\uc2dc \uc815\uac01"
   },
   "d83d_dd53": {
-    "message": "4 o'clock"
+    "message": "4\uc2dc \uc815\uac01"
   },
   "d83d_dd54": {
-    "message": "5 o'clock"
+    "message": "5\uc2dc \uc815\uac01"
   },
   "d83d_dd55": {
-    "message": "6 o'clock"
+    "message": "6\uc2dc \uc815\uac01"
   },
   "d83d_dd56": {
-    "message": "7 o'clock"
+    "message": "7\uc2dc \uc815\uac01"
   },
   "d83d_dd57": {
-    "message": "8 o'clock"
+    "message": "8\uc2dc \uc815\uac01"
   },
   "d83d_dd58": {
-    "message": "9 o'clock"
+    "message": "9\uc2dc \uc815\uac01"
   },
   "d83d_dd59": {
-    "message": "10 o'clock"
+    "message": "10\uc2dc \uc815\uac01"
   },
   "d83d_dd5a": {
-    "message": "11 o'clock"
+    "message": "11\uc2dc \uc815\uac01"
   },
   "d83d_dd5b": {
-    "message": "12 o'clock"
+    "message": "12\uc2dc \uc815\uac01"
   },
   "d83d_dd5c": {
-    "message": "one-thirty"
+    "message": "1\uc2dc 30\ubd84"
   },
   "d83d_dd5d": {
-    "message": "two-thirty"
+    "message": "2\uc2dc 30\ubd84"
   },
   "d83d_dd5e": {
-    "message": "three-thirty"
+    "message": "3\uc2dc 30\ubd84"
   },
   "d83d_dd5f": {
-    "message": "four-thirty"
+    "message": "4\uc2dc 30\ubd84"
   },
   "d83d_dd60": {
-    "message": "five-thirty"
+    "message": "5\uc2dc 30\ubd84"
   },
   "d83d_dd61": {
-    "message": "six-thirty"
+    "message": "6\uc2dc 30\ubd84"
   },
   "d83d_dd62": {
-    "message": "seven-thirty"
+    "message": "7\uc2dc 30\ubd84"
   },
   "d83d_dd63": {
-    "message": "eight-thirty"
+    "message": "8\uc2dc 30\ubd84"
   },
   "d83d_dd64": {
-    "message": "nine-thirty"
+    "message": "9\uc2dc 30\ubd84"
   },
   "d83d_dd65": {
-    "message": "ten-thirty"
+    "message": "10\uc2dc 30\ubd84"
   },
   "d83d_dd66": {
-    "message": "eleven-thirty"
+    "message": "11\uc2dc 30\ubd84"
   },
   "d83d_dd67": {
-    "message": "twelve-thirty"
+    "message": "12\uc2dc 30\ubd84"
   },
   "d83d_ddfb": {
-    "message": "Mt. Fuji"
+    "message": "\ud6c4\uc9c0\uc0b0"
   },
   "d83d_ddfc": {
-    "message": "Tokyo Tower"
+    "message": "\ub3c4\ucfc4 \ud0c0\uc6cc"
   },
   "d83d_ddfd": {
-    "message": "Statue of Liberty"
+    "message": "\uc790\uc720\uc758 \uc5ec\uc2e0\uc0c1"
   },
   "d83d_ddfe": {
-    "message": "Map of Japan"
+    "message": "\uc77c\ubcf8\uc9c0\ub3c4"
   },
   "d83d_ddff": {
-    "message": "Moyai statue"
+    "message": "\ubaa8\uc544\uc774 \uc11d\uc0c1"
   },
   "d83d_de00": {
-    "message": "grin"
+    "message": "\uc774\ub97c \ub4dc\ub7ec\ub0b4\uace0 \uc6c3\uae30"
   },
   "d83d_de01": {
-    "message": " grin with smiling eyes"
+    "message": " \uc6c3\ub294 \ub208\uc73c\ub85c \ud65c\uc9dd \uc6c3\uc74c"
   },
   "d83d_de02": {
-    "message": "tears of joy"
+    "message": "\uae30\uc068\uc758 \ub208\ubb3c"
   },
   "d83d_de03": {
-    "message": "open mouth smile"
+    "message": "\ud65c\uc9dd \uc6c3\uc74c"
   },
   "d83d_de04": {
-    "message": "open mouth smile with smiling eyes"
+    "message": "\ud568\ubc15\uc6c3\uc74c"
   },
   "d83d_de05": {
-    "message": "cold sweat smile"
+    "message": "\uc2dd\uc740\ub540\uacfc \ubbf8\uc18c"
   },
   "d83d_de06": {
-    "message": " open mouth smile with closed eyes"
+    "message": " \ub208 \uac10\uace0 \ud65c\uc9dd \uc6c3\uc74c"
   },
   "d83d_de07": {
-    "message": "smile with a halo"
+    "message": "\ud6c4\uad11 \uace0\ub9ac\uac00 \ub2ec\ub9b0 \uc6c3\ub294 \uc5bc\uad74"
   },
   "d83d_de08": {
-    "message": "smile with horns"
+    "message": "\uc0ac\uc545\ud55c \uc6c3\uc74c"
   },
   "d83d_de09": {
-    "message": "winking face"
+    "message": "\uc719\ud06c"
   },
   "d83d_de0a": {
-    "message": "smile"
+    "message": "\ubbf8\uc18c"
   },
   "d83d_de0b": {
-    "message": "yummy face"
+    "message": "\ub0e0\ub0e0"
   },
   "d83d_de0c": {
-    "message": "relieved face"
+    "message": "\uc548\ub3c4\ud55c \ud45c\uc815"
   },
   "d83d_de0d": {
-    "message": "smiling face"
+    "message": "\uc6c3\ub294 \uc5bc\uad74"
   },
   "d83d_de0e": {
-    "message": "cool"
+    "message": "\uc790\uc2e0 \uc788\uc74c"
   },
   "d83d_de0f": {
-    "message": "smirk"
+    "message": "\ube44\uc6c3\uc74c"
   },
   "d83d_de10": {
-    "message": "deadpan face"
+    "message": "\ubb34\ud45c\uc815"
   },
   "d83d_de11": {
-    "message": "expressionless"
+    "message": "\uc544\ubb34 \uac10\uc815 \uc5c6\uc74c"
   },
   "d83d_de12": {
-    "message": "unamused"
+    "message": "\ub530\ubd84\ud568"
   },
   "d83d_de13": {
-    "message": "cold sweat"
+    "message": "\uc2dd\uc740\ub540"
   },
   "d83d_de14": {
-    "message": "pensive face"
+    "message": "\uadfc\uc2ec \uc5b4\ub9b0 \ud45c\uc815"
   },
   "d83d_de15": {
-    "message": "confused face"
+    "message": "\ud63c\ub780\uc2a4\ub7ec\uc6c0"
   },
   "d83d_de16": {
-    "message": "confounded face"
+    "message": "\ub2f9\ud669"
   },
   "d83d_de17": {
-    "message": "kissy face"
+    "message": "\ubf40\ubf40"
   },
   "d83d_de18": {
-    "message": "throwing kisses"
+    "message": "\ud0a4\uc2a4 \ub0a0\ub9ac\uae30"
   },
   "d83d_de19": {
-    "message": "kiss and smile"
+    "message": "\uc6c3\uc73c\uba70 \ud0a4\uc2a4"
   },
   "d83d_de1a": {
-    "message": "kissing"
+    "message": "\ud0a4\uc2a4"
   },
   "d83d_de1b": {
-    "message": "tongue out"
+    "message": "\uba54\ub871"
   },
   "d83d_de1c": {
-    "message": "tongue out with a wink"
+    "message": "\uc719\ud06c\ud558\uba70 \uba54\ub871"
   },
   "d83d_de1d": {
-    "message": "yuck"
+    "message": "\ucc21\uadf8\ub9ac\uba70 \uba54\ub871"
   },
   "d83d_de1e": {
-    "message": "disappointed"
+    "message": "\uc2e4\ub9dd"
   },
   "d83d_de1f": {
-    "message": "worried"
+    "message": "\uac71\uc815"
   },
   "d83d_de20": {
-    "message": "angry"
+    "message": "\ud654\ub0a8"
   },
   "d83d_de21": {
-    "message": "pouting"
+    "message": "\ubfcc\ub8e8\ud241\ud568"
   },
   "d83d_de22": {
-    "message": "crying"
+    "message": "\ub208\ubb3c"
   },
   "d83d_de23": {
-    "message": "blew it"
+    "message": "\uccc7"
   },
   "d83d_de24": {
-    "message": "look of triumph"
+    "message": "\uc758\uae30\uc591\uc591"
   },
   "d83d_de25": {
-    "message": "whew!"
+    "message": "\ud734!"
   },
   "d83d_de26": {
-    "message": "frowning face"
+    "message": "\ucc0c\ud478\ub9b0 \uc5bc\uad74"
   },
   "d83d_de27": {
-    "message": "anguished"
+    "message": "\uace0\ub1cc"
   },
   "d83d_de28": {
-    "message": "fearful"
+    "message": "\uacf5\ud3ec"
   },
   "d83d_de29": {
-    "message": "weary"
+    "message": "\uc9c0\ucce4\uc74c"
   },
   "d83d_de2a": {
-    "message": "sleepy"
+    "message": "\uc878\ub9bc"
   },
   "d83d_de2b": {
-    "message": "tired"
+    "message": "\ud53c\uace4"
   },
   "d83d_de2c": {
-    "message": "grimace"
+    "message": "\ucc21\uadf8\ub9bc"
   },
   "d83d_de2d": {
-    "message": "loudly crying"
+    "message": "\uc5c9\uc5c9 \uc6b8\uae30"
   },
   "d83d_de2e": {
-    "message": "open mouth face"
+    "message": "\uc785 \ubc8c\ub9b0 \uc5bc\uad74"
   },
   "d83d_de2f": {
-    "message": "hushed face"
+    "message": "\uc870\uc6a9\ud55c \uc5bc\uad74"
   },
   "d83d_de30": {
-    "message": "rushed face"
+    "message": "\ub2e4\uae09\ud55c \uc5bc\uad74"
   },
   "d83d_de31": {
-    "message": "fearful face"
+    "message": "\ubb34\uc11c\uc6c0"
   },
   "d83d_de32": {
-    "message": "astonished face"
+    "message": "\uae5c\uc9dd \ub180\ub780 \uc5bc\uad74"
   },
   "d83d_de33": {
-    "message": "flushed"
+    "message": "\uc5bc\uad74 \ube68\uac1c\uc9d0"
   },
   "d83d_de34": {
-    "message": "sleeping"
+    "message": "\uc7a0"
   },
   "d83d_de35": {
-    "message": "dizzy"
+    "message": "\ud604\uae30\uc99d"
   },
   "d83d_de36": {
-    "message": "no mouth face"
+    "message": "\uc785 \uc5c6\ub294 \uc5bc\uad74"
   },
   "d83d_de37": {
-    "message": "face with mask"
+    "message": "\ub9c8\uc2a4\ud06c \uc4f4 \uc5bc\uad74"
   },
   "d83d_de38": {
-    "message": "grinning cat face"
+    "message": "\ud65c\uc9dd \uc6c3\ub294 \uace0\uc591\uc774 \uc5bc\uad74"
   },
   "d83d_de39": {
-    "message": "tears of joy cat face"
+    "message": "\uae30\uc068\uc758 \ub208\ubb3c \uace0\uc591\uc774 \uc5bc\uad74"
   },
   "d83d_de3a": {
-    "message": "smiling cat face"
+    "message": "\ubbf8\uc18c \uc9d3\ub294 \uace0\uc591\uc774 \uc5bc\uad74"
   },
   "d83d_de3b": {
-    "message": "smiling cat face"
+    "message": "\ubbf8\uc18c \uc9d3\ub294 \uace0\uc591\uc774 \uc5bc\uad74"
   },
   "d83d_de3c": {
-    "message": "wry cat face"
+    "message": "\uc2ec\uc220\uad82\uc740 \uace0\uc591\uc774 \uc5bc\uad74"
   },
   "d83d_de3d": {
-    "message": "kissing cat"
+    "message": "\ud0a4\uc2a4\ub97c \ub0a0\ub9ac\ub294 \uace0\uc591\uc774"
   },
   "d83d_de3e": {
-    "message": "pouting cat face"
+    "message": "\ubfcc\ub8e8\ud241\ud55c \uace0\uc591\uc774 \uc5bc\uad74"
   },
   "d83d_de3f": {
-    "message": "crying cat face"
+    "message": "\uc6b0\ub294 \uace0\uc591\uc774 \uc5bc\uad74"
   },
   "d83d_de40": {
-    "message": "weary cat face"
+    "message": "\uc9c0\uce5c \uace0\uc591\uc774 \uc5bc\uad74"
   },
   "d83d_de45": {
-    "message": "No good gesture"
+    "message": "\uc548 \ub3fc\uc694 \ubab8\uc9d3"
   },
   "d83d_de46": {
-    "message": "OK gesture"
+    "message": "OK \ub3d9\uc791"
   },
   "d83d_de47": {
-    "message": "i'm sorry"
+    "message": "\ubbf8\uc548"
   },
   "d83d_de48": {
-    "message": "see no evil"
+    "message": "\ub208 \uac00\ub9ac\uae30"
   },
   "d83d_de49": {
-    "message": "hear no evil"
+    "message": "\uadc0 \ub9c9\uae30"
   },
   "d83d_de4a": {
-    "message": "speak no evil"
+    "message": "\uc785 \ub9c9\uae30"
   },
   "d83d_de4b": {
-    "message": "happy person"
+    "message": "\ud589\ubcf5\ud55c \uc0ac\ub78c"
   },
   "d83d_de4c": {
-    "message": "hooray"
+    "message": "\ub9cc\uc138"
   },
   "d83d_de4d": {
-    "message": "frowning person"
+    "message": "\ucc0c\ud478\ub9b0 \uc0ac\ub78c"
   },
   "d83d_de4e": {
-    "message": "pouting"
+    "message": "\ubfcc\ub8e8\ud241\ud568"
   },
   "d83d_de4f": {
-    "message": "folded hands"
+    "message": "\uc190\ubc14\ub2e5 \ub9de\ub300\uae30"
   },
   "d83d_de80": {
-    "message": "rocket"
+    "message": "\ub85c\ucf13"
   },
   "d83d_de81": {
-    "message": "helicopter"
+    "message": "\ud5ec\ub9ac\ucf65\ud130"
   },
   "d83d_de82": {
-    "message": "steam locomotive"
+    "message": "\uc99d\uae30\uae30\uad00\ucc28"
   },
   "d83d_de83": {
-    "message": "train"
+    "message": "\uc5f4\ucc28"
   },
   "d83d_de84": {
-    "message": "high-speed train"
+    "message": "\uace0\uc18d \uc5f4\ucc28"
   },
   "d83d_de85": {
-    "message": "high-speed train with bullet nose"
+    "message": "\ucf54\uac00 \ubfb0\uc871\ud55c \uace0\uc18d \uc5f4\ucc28"
   },
   "d83d_de86": {
-    "message": "train"
+    "message": "\uc5f4\ucc28"
   },
   "d83d_de87": {
-    "message": "subway"
+    "message": "\uc9c0\ud558\ucca0"
   },
   "d83d_de88": {
-    "message": "light rail"
+    "message": "\uacbd\uc804\ucca0"
   },
   "d83d_de89": {
-    "message": "train station"
+    "message": "\uae30\ucc28\uc5ed"
   },
   "d83d_de8a": {
-    "message": "tram"
+    "message": "\uc804\ucc28"
   },
   "d83d_de8b": {
-    "message": "tram car"
+    "message": "\uc804\ucc28"
   },
   "d83d_de8c": {
-    "message": "bus"
+    "message": "\ubc84\uc2a4"
   },
   "d83d_de8d": {
-    "message": "oncoming bus"
+    "message": "\ub2e4\uac00\uc624\ub294 \ubc84\uc2a4"
   },
   "d83d_de8e": {
-    "message": "trolleybus"
+    "message": "\ud2b8\ub864\ub9ac \ubc84\uc2a4"
   },
   "d83d_de8f": {
-    "message": "bus stop"
+    "message": "\ubc84\uc2a4 \uc815\ub958\uc7a5"
   },
   "d83d_de90": {
-    "message": "minibus"
+    "message": "\ubbf8\ub2c8 \ubc84\uc2a4"
   },
   "d83d_de91": {
-    "message": "ambulance"
+    "message": "\uad6c\uae09\ucc28"
   },
   "d83d_de92": {
-    "message": "fire engine"
+    "message": "\uc18c\ubc29\ucc28"
   },
   "d83d_de93": {
-    "message": "police car"
+    "message": "\uacbd\ucc30\ucc28"
   },
   "d83d_de94": {
-    "message": "oncoming police car"
+    "message": "\ub2e4\uac00\uc624\ub294 \uacbd\ucc30\ucc28"
   },
   "d83d_de95": {
-    "message": "taxi"
+    "message": "\ud0dd\uc2dc"
   },
   "d83d_de96": {
-    "message": "oncoming taxi"
+    "message": "\ub2e4\uac00\uc624\ub294 \ud0dd\uc2dc"
   },
   "d83d_de97": {
-    "message": "car"
+    "message": "\uc790\ub3d9\ucc28"
   },
   "d83d_de98": {
-    "message": "oncoming car"
+    "message": "\ub2e4\uac00\uc624\ub294 \uc790\ub3d9\ucc28"
   },
   "d83d_de99": {
     "message": "RV"
   },
   "d83d_de9a": {
-    "message": "delivery truck"
+    "message": "\ubc30\ub2ec \ud2b8\ub7ed"
   },
   "d83d_de9b": {
-    "message": "lorry"
+    "message": "\ud654\ubb3c\ucc28"
   },
   "d83d_de9c": {
-    "message": "tractor"
+    "message": "\ud2b8\ub799\ud130"
   },
   "d83d_de9d": {
-    "message": "monorail"
+    "message": "\ubaa8\ub178\ub808\uc77c"
   },
   "d83d_de9e": {
-    "message": "mountain railway"
+    "message": "\uc0b0\uc545 \ucca0\ub3c4"
   },
   "d83d_de9f": {
-    "message": "suspension railway"
+    "message": "\uc11c\uc2a4\ud39c\uc158 \ucca0\ub3c4"
   },
   "d83d_dea0": {
-    "message": "mountain cableway"
+    "message": "\uc0b0\uc545 \ucf00\uc774\ube14\uce74"
   },
   "d83d_dea1": {
-    "message": "cable car"
+    "message": "\ucf00\uc774\ube14\uce74"
   },
   "d83d_dea2": {
-    "message": "ship"
+    "message": "\uc120\ubc15"
   },
   "d83d_dea3": {
-    "message": "rowboat"
+    "message": "\ub178 \uc813\ub294 \ubc30"
   },
   "d83d_dea4": {
-    "message": "speedboat"
+    "message": "\ucf8c\uc18d\uc815"
   },
   "d83d_dea5": {
-    "message": "horizontal traffic lights"
+    "message": "\uc218\ud3c9 \uad50\ud1b5 \uc2e0\ud638\ub4f1"
   },
   "d83d_dea6": {
-    "message": "vertical traffic lights"
+    "message": "\uc218\uc9c1 \uad50\ud1b5 \uc2e0\ud638\ub4f1"
   },
   "d83d_dea7": {
-    "message": "under construction"
+    "message": "\uacf5\uc0ac \uc911"
   },
   "d83d_dea8": {
-    "message": "revolving light"
+    "message": "\uacbd\uad11\ub4f1"
   },
   "d83d_dea9": {
-    "message": "location flag"
+    "message": "\uc704\uce58 \ud45c\uc2dc \uae43\ubc1c"
   },
   "d83d_deaa": {
-    "message": "door"
+    "message": "\ubb38"
   },
   "d83d_deab": {
-    "message": "No entry sign"
+    "message": "\ucd9c\uc785\uae08\uc9c0 \ud45c\uc9c0"
   },
   "d83d_deac": {
-    "message": "smoking sign"
+    "message": "\ud761\uc5f0 \ud45c\uc9c0"
   },
   "d83d_dead": {
-    "message": "no smoking sign"
+    "message": "\uae08\uc5f0 \ud45c\uc9c0"
   },
   "d83d_deae": {
-    "message": "litterbox sign"
+    "message": "\uc4f0\ub808\uae30\ud1b5 \ud45c\uc9c0"
   },
   "d83d_deaf": {
-    "message": "don't litter sign"
+    "message": "\uc4f0\ub808\uae30 \ud22c\uae30 \uae08\uc9c0 \ud45c\uc9c0"
   },
   "d83d_deb0": {
-    "message": "drinking water"
+    "message": "\uc2dd\uc218"
   },
   "d83d_deb1": {
-    "message": "non-drinking water"
+    "message": "\ub9c8\uc2e4 \uc218 \uc5c6\ub294 \ubb3c"
   },
   "d83d_deb2": {
-    "message": "bike"
+    "message": "\uc790\uc804\uac70"
   },
   "d83d_deb3": {
-    "message": "no bike"
+    "message": "\uc790\uc804\uac70 \uae08\uc9c0"
   },
   "d83d_deb4": {
-    "message": "bicyclist"
+    "message": "\uc790\uc804\uac70 \ud0c0\ub294 \uc0ac\ub78c"
   },
   "d83d_deb5": {
-    "message": "mountain bicyclist"
+    "message": "\uc0b0\uc545\uc790\uc804\uac70"
   },
   "d83d_deb6": {
-    "message": "pedestrian"
+    "message": "\ubcf4\ud589\uc790"
   },
   "d83d_deb7": {
-    "message": "no pedestrians"
+    "message": "\ubcf4\ud589 \uae08\uc9c0"
   },
   "d83d_deb8": {
-    "message": "children crossing"
+    "message": "\uc5b4\ub9b0\uc774 \ud6a1\ub2e8"
   },
   "d83d_deb9": {
-    "message": "Men sign"
+    "message": "\ub0a8\uc131 \ud45c\uc9c0"
   },
   "d83d_deba": {
-    "message": "Women sign"
+    "message": "\uc5ec\uc131 \ud45c\uc9c0"
   },
   "d83d_debb": {
-    "message": "restroom sign"
+    "message": "\ud654\uc7a5\uc2e4 \ud45c\uc9c0"
   },
   "d83d_debc": {
-    "message": "baby sign"
+    "message": "\uc544\uae30 \ud45c\uc9c0"
   },
   "d83d_debd": {
-    "message": "toilet"
+    "message": "\ubcc0\uae30"
   },
   "d83d_debe": {
-    "message": "water closet"
+    "message": "\ud654\uc7a5\uc2e4"
   },
   "d83d_debf": {
-    "message": "shower"
+    "message": "\uc0e4\uc6cc"
   },
   "d83d_dec0": {
-    "message": "bath"
+    "message": "\ubaa9\uc695"
   },
   "d83d_dec1": {
-    "message": "bathtub"
+    "message": "\uc695\uc870"
   },
   "d83d_dec2": {
-    "message": "passport control"
+    "message": "\uc5ec\uad8c \uc2ec\uc0ac"
   },
   "d83d_dec3": {
-    "message": "customs"
+    "message": "\uc138\uad00"
   },
   "d83d_dec4": {
-    "message": "baggage claim"
+    "message": "\uc218\ud558\ubb3c \ucc3e\uae30"
   },
   "d83d_dec5": {
-    "message": "left luggage"
+    "message": "\ubd84\uc2e4 \uc218\ud558\ubb3c"
   },
   "de_ger_settings_page": {
     "message": "\ub3c5\uc77c\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
@@ -2505,7 +2508,7 @@
     "message": "\ub2e8\uc5b4"
   },
   "dismiss_menu": {
-    "message": "dismiss keyboard menu"
+    "message": "\ud0a4\ubcf4\ub4dc \uba54\ub274 \ub2eb\uae30"
   },
   "dk_dan_settings_page": {
     "message": "\ub374\ub9c8\ud06c\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
@@ -2520,28 +2523,28 @@
     "message": "\uc5d0\uc2a4\ud1a0\ub2c8\uc544\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "emoji_tab_emoticon": {
-    "message": "Emoji category emoticon"
+    "message": "\uac10\uc815 \uadf8\ub9bc \uc774\ubaa8\ud2f0\ucf58 \uce74\ud14c\uace0\ub9ac"
   },
   "emoji_tab_face": {
-    "message": "Emoji category face"
+    "message": "\uc5bc\uad74 \uadf8\ub9bc \uc774\ubaa8\ud2f0\ucf58 \uce74\ud14c\uace0\ub9ac"
   },
   "emoji_tab_hot": {
-    "message": "Emoji category hot"
+    "message": "\uc778\uae30 \uadf8\ub9bc \uc774\ubaa8\ud2f0\ucf58 \uce74\ud14c\uace0\ub9ac"
   },
   "emoji_tab_nature": {
-    "message": "Emoji category nature"
+    "message": "\uc790\uc5f0 \uadf8\ub9bc \uc774\ubaa8\ud2f0\ucf58 \uce74\ud14c\uace0\ub9ac"
   },
   "emoji_tab_object": {
-    "message": "Emoji category object"
+    "message": "\uc0ac\ubb3c \uadf8\ub9bc \uc774\ubaa8\ud2f0\ucf58 \uce74\ud14c\uace0\ub9ac"
   },
   "emoji_tab_place": {
-    "message": "Emoji category place"
+    "message": "\uc7a5\uc18c \uadf8\ub9bc \uc774\ubaa8\ud2f0\ucf58 \uce74\ud14c\uace0\ub9ac"
   },
   "emoji_tab_recent": {
-    "message": "Emoji category recent"
+    "message": "\ucd5c\uc2e0 \uadf8\ub9bc \uc774\ubaa8\ud2f0\ucf58 \uce74\ud14c\uace0\ub9ac"
   },
   "emoji_tab_symbol": {
-    "message": "Emoji category symbol"
+    "message": "\uae30\ud638 \uadf8\ub9bc \uc774\ubaa8\ud2f0\ucf58 \uce74\ud14c\uace0\ub9ac"
   },
   "enable_capitalization": {
     "message": "\uc790\ub3d9 \ub300\ubb38\uc790\ud654"
@@ -2644,6 +2647,9 @@
   },
   "inputmethod_dayi": {
     "message": "Dayi \uc785\ub825 \ubc29\ubc95"
+  },
+  "inputmethod_hangul": {
+    "message": "\ud55c\uad6d\uc5b4 \uc785\ub825 \ubc29\ubc95"
   },
   "inputmethod_pinyin": {
     "message": "\ubcd1\uc74c \uc785\ub825 \ubc29\ubc95"
@@ -2813,6 +2819,9 @@
   "keyboard_nepali_phonetic": {
     "message": "\ub124\ud314\uc5b4 \ud0a4\ubcf4\ub4dc(\uc74c\uc5ed)"
   },
+  "keyboard_netherlands": {
+    "message": "\ub124\ub35c\ub780\ub4dc \ud0a4\ubcf4\ub4dc"
+  },
   "keyboard_none": {
     "message": "\ud0a4\ubcf4\ub4dc"
   },
@@ -2836,6 +2845,9 @@
   },
   "keyboard_romanian": {
     "message": "\ub8e8\ub9c8\ub2c8\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
+  },
+  "keyboard_romanian_standard": {
+    "message": "Romanian standard keyboard"
   },
   "keyboard_russian": {
     "message": "\ub7ec\uc2dc\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
@@ -2976,7 +2988,7 @@
     "message": "\ud55c\uad6d\uc5b4 \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "korean_syllable_input": {
-    "message": "\ud55c\uae00 \uc790\ubaa8 \uc785\ub825 \uc5ec\ubd80"
+    "message": "\ud55c\uae00 \uc790\ubaa8 \uc785\ub825"
   },
   "latam_spa_settings_page": {
     "message": "\ub77c\ud2f4 \uc544\uba54\ub9ac\uce74 \ud0a4\ubcf4\ub4dc(\uc2a4\ud398\uc778\uc5b4) \uc124\uc815 \ud398\uc774\uc9c0"
@@ -3015,13 +3027,13 @@
     "message": "\uc77c\uc2dc\uc911\uc9c0"
   },
   "physical_auto_correction_level": {
-    "message": "Auto-correction"
+    "message": "\uc790\ub3d9 \uc218\uc815"
   },
   "physical_enable_capitalization": {
-    "message": "Auto-capitalization"
+    "message": "\uc790\ub3d9 \ub300\ubb38\uc790\ud654"
   },
   "physical_keyboard": {
-    "message": "Physical Keyboard"
+    "message": "\ubb3c\ub9ac\uc801 \ud0a4\ubcf4\ub4dc"
   },
   "pinyin_settings_page": {
     "message": "\ubcd1\uc74c \uc124\uc815 \ud398\uc774\uc9c0"
@@ -3075,13 +3087,16 @@
     "message": "\ubc31\uc2a4\ud398\uc774\uc2a4\ub97c \uc0ac\uc6a9\ud574 \ucd94\ucc9c \ub4dc\ub86d\ub2e4\uc6b4 \ud45c\uc2dc"
   },
   "show_hangul_candidate": {
-    "message": "Show Hangul suggestions"
+    "message": "\ud55c\uae00 \ucd94\ucc9c \ud56d\ubaa9 \ud45c\uc2dc"
   },
   "si_slv_settings_page": {
     "message": "\uc2ac\ub85c\ubca0\ub2c8\uc544\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "sk_slo_settings_page": {
     "message": "\uc2ac\ub85c\ubc14\ud0a4\uc544\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
+  },
+  "smiley": {
+    "message": "\uc774\ubaa8\ud2f0\ucf58"
   },
   "sometimes_auto_correct": {
     "message": "\uac00\ub054"
@@ -3234,28 +3249,40 @@
     "message": "\uac1c\uc778 \uc0ac\uc804 \uc0ac\uc6a9"
   },
   "user_dict_add": {
-    "message": "Add"
+    "message": "\ucd94\uac00"
   },
   "user_dict_clear": {
-    "message": "Clear All"
-  },
-  "user_dict_done": {
-    "message": "Done"
+    "message": "\ubaa8\ub450 \uc9c0\uc6b0\uae30"
   },
   "user_dict_manage": {
-    "message": "Manage personal dictionary..."
+    "message": "\uac1c\uc778 \uc0ac\uc804 \uad00\ub9ac..."
   },
   "user_dict_new_word": {
-    "message": "New word"
+    "message": "\uc0c8 \ub2e8\uc5b4"
   },
   "user_dict_remove": {
-    "message": "Remove Selected"
+    "message": "\uc120\ud0dd \ud56d\ubaa9 \uc0ad\uc81c"
+  },
+  "user_dict_save": {
+    "message": "\uc800\uc7a5"
   },
   "user_dict_sync": {
-    "message": "Sync personal dictionary"
+    "message": "\uac1c\uc778 \uc0ac\uc804 \ub3d9\uae30\ud654"
   },
   "user_dict_title": {
-    "message": "Personal Dictionary"
+    "message": "\uac1c\uc778 \uc0ac\uc804"
+  },
+  "voice": {
+    "message": "\uc74c\uc131"
+  },
+  "voice_privacy_info": {
+    "message": "\uc74c\uc131\uc740 \ud14d\uc2a4\ud2b8 \uc778\uc2dd\uc744 \uc704\ud574 Google \uc11c\ubc84\ub85c \uc804\uc1a1\ub429\ub2c8\ub2e4."
+  },
+  "voice_turn_off": {
+    "message": "\uc74c\uc131 \uc785\ub825 \ub3c4\uad6c \uc0ac\uc6a9 \uc548\ud568"
+  },
+  "voice_turn_on": {
+    "message": "\uc74c\uc131 \uc785\ub825 \ub3c4\uad6c \uc0ac\uc6a9"
   },
   "wait": {
     "message": "\ub300\uae30"

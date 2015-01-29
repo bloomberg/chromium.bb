@@ -220,6 +220,10 @@ MenuView.prototype.addInputMethodItems_ = function(currentInputMethod,
         [MenuView.Command.SWITCH_IME, inputMethod['id']];
     var ariaLabel = chrome.i18n.getMessage('SWITCH_TO_KEYBOARD_PREFIX') +
         inputMethod['name'];
+    if (currentInputMethod == inputMethod['id']) {
+      ariaLabel = chrome.i18n.getMessage('CURRENT_KEYBOARD_PREFIX') +
+        inputMethod['name'];
+    }
     var imeItem = new MenuItem(String(i), listItem, MenuItem.Type.LIST_ITEM,
         ariaLabel);
     imeItem.render(container);

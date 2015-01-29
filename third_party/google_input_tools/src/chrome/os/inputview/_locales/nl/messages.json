@@ -236,6 +236,9 @@
   "ctrl": {
     "message": "Ctrl"
   },
+  "current_keyboard_prefix": {
+    "message": "huidig geselecteerd toetsenbord "
+  },
   "current_lang": {
     "message": "Invoertaal is Chinees"
   },
@@ -252,343 +255,343 @@
     "message": "Pagina met instellingen voor Tsjechisch QWERTY-toetsenbord"
   },
   "d83c_dc04": {
-    "message": "Mahjong tile"
+    "message": "Mahjongtegel"
   },
   "d83c_dccf": {
-    "message": "Joker card"
+    "message": "jokerkaart"
   },
   "d83c_dd70": {
-    "message": "blood type A"
+    "message": "bloedgroep A"
   },
   "d83c_dd71": {
-    "message": "blood type B"
+    "message": "bloedgroep B"
   },
   "d83c_dd7e": {
-    "message": "blood type O"
+    "message": "bloedgroep O"
   },
   "d83c_dd7f": {
-    "message": "parking"
+    "message": "parkeerplaats"
   },
   "d83c_dd8e": {
-    "message": "blood type AB"
+    "message": "bloedgroep AB"
   },
   "d83c_dd91": {
-    "message": "CL"
+    "message": "CL-teken"
   },
   "d83c_dd92": {
-    "message": "cool"
+    "message": "cool-teken"
   },
   "d83c_dd93": {
-    "message": "free"
+    "message": "free-teken"
   },
   "d83c_dd94": {
-    "message": "ID"
+    "message": "ID-teken"
   },
   "d83c_dd95": {
-    "message": "New"
+    "message": "Nieuw-teken"
   },
   "d83c_dd96": {
-    "message": "NG"
+    "message": "NG-teken"
   },
   "d83c_dd97": {
-    "message": "OK"
+    "message": "OK-teken"
   },
   "d83c_dd98": {
-    "message": "SOS"
+    "message": "SOS-teken"
   },
   "d83c_dd99": {
-    "message": "UP!"
+    "message": "UP!-teken"
   },
   "d83c_dd9a": {
-    "message": "versus"
+    "message": "VS-teken"
   },
   "d83c_de01": {
-    "message": "Japanese word \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+    "message": "Japans katakana koko"
   },
   "d83c_de02": {
-    "message": "Japanese word \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+    "message": "Japans 'service'"
   },
   "d83c_de1a": {
-    "message": "Japanese word 'free'"
+    "message": "Japans 'gratis'"
   },
   "d83c_de2f": {
-    "message": "Japanese word 'reserved'"
+    "message": "Japans 'gereserveerd'"
   },
   "d83c_de32": {
-    "message": "Japanese word \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+    "message": "Japans 'verboden'"
   },
   "d83c_de33": {
-    "message": "Chinese word 'space available'"
+    "message": "Chinees 'ruimte beschikbaar'"
   },
   "d83c_de34": {
-    "message": "Chinese word 'pass'"
+    "message": "Chinees 'pas'"
   },
   "d83c_de35": {
-    "message": "Chinese word 'full'"
+    "message": "Chinees 'vol'"
   },
   "d83c_de36": {
-    "message": "Japanese word 'fees'"
+    "message": "Japans 'kosten'"
   },
   "d83c_de37": {
-    "message": "Japanese word 'monthly'"
+    "message": "Japans 'maandelijks'"
   },
   "d83c_de38": {
-    "message": "Chinese word 'application'"
+    "message": "Chinees 'toepassing'"
   },
   "d83c_de39": {
-    "message": "Japanese word 'discount'"
+    "message": "Japans 'korting'"
   },
   "d83c_de3a": {
-    "message": "Chinese word 'in business'"
+    "message": "Chinees 'in bedirjf'"
   },
   "d83c_de50": {
-    "message": "Japanese word 'advantage'"
+    "message": "Japans 'voordeel'"
   },
   "d83c_de51": {
-    "message": "Chinese word 'approved'"
+    "message": "Chinees 'goedgekeurd'"
   },
   "d83c_df00": {
-    "message": "cyclone"
+    "message": "cycloon"
   },
   "d83c_df01": {
-    "message": "foggy"
+    "message": "mistig"
   },
   "d83c_df02": {
-    "message": "umbrella"
+    "message": "paraplu"
   },
   "d83c_df03": {
-    "message": "night stars"
+    "message": "sterren in de nacht"
   },
   "d83c_df04": {
-    "message": "sunrise over mountains"
+    "message": "zonsopgang in de bergen"
   },
   "d83c_df05": {
-    "message": "sunrise"
+    "message": "zonsopgang"
   },
   "d83c_df06": {
-    "message": "city at dusk"
+    "message": "schemerstad"
   },
   "d83c_df07": {
-    "message": "sunset"
+    "message": "zonsondergang"
   },
   "d83c_df08": {
-    "message": "rainbow"
+    "message": "regenboog"
   },
   "d83c_df09": {
-    "message": "night bridge"
+    "message": "brug bij nacht"
   },
   "d83c_df0a": {
-    "message": "wave"
+    "message": "golf"
   },
   "d83c_df0b": {
-    "message": "volcano"
+    "message": "vulkaan"
   },
   "d83c_df0c": {
-    "message": "Milky Way"
+    "message": "melkweg"
   },
   "d83c_df0d": {
-    "message": "globe Europe-Africa"
+    "message": "weerldbol met Europa en Afrika"
   },
   "d83c_df0e": {
-    "message": "globe Americas"
+    "message": "wereldbol met Noord- en Zuid-Amerika"
   },
   "d83c_df0f": {
-    "message": "globe Asia-Australia"
+    "message": "wereldbol met Australi\u00eb en Azi\u00eb"
   },
   "d83c_df10": {
-    "message": "globe with meridians"
+    "message": "wereldbol met meridianen"
   },
   "d83c_df11": {
-    "message": "new moon"
+    "message": "nieuwe maan"
   },
   "d83c_df12": {
-    "message": "waxing crescent moon"
+    "message": "wassende maansikkel"
   },
   "d83c_df13": {
-    "message": "first quarter moon"
+    "message": "maan eerste kwartier"
   },
   "d83c_df14": {
-    "message": "waxing moon"
+    "message": "wassende maan"
   },
   "d83c_df15": {
-    "message": "full moon"
+    "message": "volle maan"
   },
   "d83c_df16": {
-    "message": "waning moon"
+    "message": "afnemende maan"
   },
   "d83c_df17": {
-    "message": "last quarter moon"
+    "message": "maan laatste kwartier"
   },
   "d83c_df18": {
-    "message": "waning crescent moon"
+    "message": "afnemende maansikkel"
   },
   "d83c_df19": {
-    "message": "crescent moon"
+    "message": "maansikkel"
   },
   "d83c_df1a": {
-    "message": "new moon face"
+    "message": "nieuwe maan met gezicht"
   },
   "d83c_df1b": {
-    "message": "first quarter moon face"
+    "message": "eerste kwartier met gezicht"
   },
   "d83c_df1c": {
-    "message": "last quarter moon face"
+    "message": "laatste kwartier met gezicht"
   },
   "d83c_df1d": {
-    "message": "full moon face"
+    "message": "volle maan met gezicht"
   },
   "d83c_df1e": {
-    "message": "sun face"
+    "message": "zon met gezicht"
   },
   "d83c_df1f": {
-    "message": "glowing star"
+    "message": "schitterende ster"
   },
   "d83c_df20": {
-    "message": "shooting star"
+    "message": "vallende ster"
   },
   "d83c_df30": {
-    "message": "chestnut"
+    "message": "kastanje"
   },
   "d83c_df31": {
-    "message": "young plant"
+    "message": "zaailing"
   },
   "d83c_df32": {
-    "message": "evergreen tree"
+    "message": "naaldboom"
   },
   "d83c_df33": {
-    "message": "shedding tree"
+    "message": "loofboom"
   },
   "d83c_df34": {
-    "message": "palm tree"
+    "message": "palmboom"
   },
   "d83c_df35": {
     "message": "cactus"
   },
   "d83c_df37": {
-    "message": "tulip"
+    "message": "tulp"
   },
   "d83c_df38": {
-    "message": "cherry blossom"
+    "message": "kersenbloesem"
   },
   "d83c_df39": {
-    "message": "rose"
+    "message": "roos"
   },
   "d83c_df3a": {
     "message": "hibiscus"
   },
   "d83c_df3b": {
-    "message": "sunflower"
+    "message": "zonnebloem"
   },
   "d83c_df3c": {
-    "message": "blossom"
+    "message": "bloesem"
   },
   "d83c_df3d": {
-    "message": "corn"
+    "message": "ma\u00efs"
   },
   "d83c_df3e": {
-    "message": "rice plant"
+    "message": "rijstplant"
   },
   "d83c_df3f": {
-    "message": "herb"
+    "message": "kruid"
   },
   "d83c_df40": {
-    "message": "four leaf clover"
+    "message": "klavertje vier"
   },
   "d83c_df41": {
-    "message": "maple leaf"
+    "message": "esdoornblad"
   },
   "d83c_df42": {
-    "message": "falling leaves"
+    "message": "vallende bladeren"
   },
   "d83c_df43": {
-    "message": "leaf in wind"
+    "message": "blad in de wind"
   },
   "d83c_df44": {
-    "message": "mushroom"
+    "message": "paddenstoel"
   },
   "d83c_df45": {
-    "message": "tomato"
+    "message": "tomaat"
   },
   "d83c_df46": {
-    "message": "eggplant"
+    "message": "aubergine"
   },
   "d83c_df47": {
-    "message": "grapes"
+    "message": "druiven"
   },
   "d83c_df48": {
-    "message": "melon"
+    "message": "meloen"
   },
   "d83c_df49": {
-    "message": "watermelon"
+    "message": "watermeloen"
   },
   "d83c_df4a": {
-    "message": "tangerine"
+    "message": "mandarijn"
   },
   "d83c_df4b": {
-    "message": "lemon"
+    "message": "citroen"
   },
   "d83c_df4c": {
-    "message": "banana"
+    "message": "banaan"
   },
   "d83c_df4d": {
-    "message": "pineapple"
+    "message": "ananas"
   },
   "d83c_df4e": {
-    "message": "red apple"
+    "message": "rode appel"
   },
   "d83c_df4f": {
-    "message": "green apple"
+    "message": "groene appel"
   },
   "d83c_df50": {
-    "message": "pear"
+    "message": "peer"
   },
   "d83c_df51": {
-    "message": "peach"
+    "message": "perzik"
   },
   "d83c_df52": {
-    "message": "cherry"
+    "message": "kers"
   },
   "d83c_df53": {
-    "message": "strawberry"
+    "message": "aardbei"
   },
   "d83c_df54": {
     "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "pizza slice"
+    "message": "pizzapunt"
   },
   "d83c_df56": {
-    "message": "meat"
+    "message": "vlees"
   },
   "d83c_df57": {
-    "message": "chicken leg"
+    "message": "kippenpoot"
   },
   "d83c_df58": {
-    "message": "rice cracker"
+    "message": "rijstwafel"
   },
   "d83c_df59": {
-    "message": "rice ball"
+    "message": "rijstbal"
   },
   "d83c_df5a": {
-    "message": "cooked rice"
+    "message": "gekookte rijst"
   },
   "d83c_df5b": {
-    "message": "curry and rice"
+    "message": "curry met rijst"
   },
   "d83c_df5c": {
-    "message": "ramen"
+    "message": "noedelsoep"
   },
   "d83c_df5d": {
     "message": "spaghetti"
   },
   "d83c_df5e": {
-    "message": "bread"
+    "message": "brood"
   },
   "d83c_df5f": {
-    "message": "fries"
+    "message": "frietjes"
   },
   "d83c_df60": {
-    "message": "roasted potato"
+    "message": "geroosterde zoete aardappel"
   },
   "d83c_df61": {
     "message": "mochi"
@@ -600,571 +603,571 @@
     "message": "sushi"
   },
   "d83c_df64": {
-    "message": "fried shrimp"
+    "message": "gefrituurde garnaal"
   },
   "d83c_df65": {
-    "message": "fish cake"
+    "message": "viskoekje"
   },
   "d83c_df66": {
-    "message": "soft ice cream"
+    "message": "softijs"
   },
   "d83c_df67": {
-    "message": "shaved ice"
+    "message": "ijscoupe"
   },
   "d83c_df68": {
-    "message": "ice cream"
+    "message": "ijsje"
   },
   "d83c_df69": {
     "message": "donut"
   },
   "d83c_df6a": {
-    "message": "cookie"
+    "message": "koekje"
   },
   "d83c_df6b": {
-    "message": "chocolate"
+    "message": "chocola"
   },
   "d83c_df6c": {
-    "message": "candy"
+    "message": "snoep"
   },
   "d83c_df6d": {
-    "message": "lollipop"
+    "message": "lolly"
   },
   "d83c_df6e": {
-    "message": "custard"
+    "message": "vla"
   },
   "d83c_df6f": {
-    "message": "honeypot"
+    "message": "pot honing"
   },
   "d83c_df70": {
-    "message": "shortcake"
+    "message": "gebak"
   },
   "d83c_df71": {
     "message": "bento"
   },
   "d83c_df72": {
-    "message": "stew"
+    "message": "stoofschotel"
   },
   "d83c_df73": {
-    "message": "frying pan"
+    "message": "koekenpan"
   },
   "d83c_df74": {
-    "message": "fork and knife"
+    "message": "mes en vork"
   },
   "d83c_df75": {
-    "message": "teacup"
+    "message": "theekopje"
   },
   "d83c_df76": {
     "message": "sake"
   },
   "d83c_df77": {
-    "message": "wine"
+    "message": "wijn"
   },
   "d83c_df78": {
     "message": "cocktail"
   },
   "d83c_df79": {
-    "message": "tropical drink"
+    "message": "tropisch drankje"
   },
   "d83c_df7a": {
-    "message": "beer"
+    "message": "bier"
   },
   "d83c_df7b": {
-    "message": "beer mugs"
+    "message": "bierglazen"
   },
   "d83c_df7c": {
-    "message": "baby bottle"
+    "message": "fles voor baby"
   },
   "d83c_df80": {
-    "message": "ribbon"
+    "message": "strik"
   },
   "d83c_df81": {
-    "message": "gift"
+    "message": "cadeau"
   },
   "d83c_df82": {
-    "message": "birthday cake"
+    "message": "verjaardagstaart"
   },
   "d83c_df83": {
-    "message": "jack-o-lantern"
+    "message": "uitgesneden pompoen"
   },
   "d83c_df84": {
-    "message": "christmas tree"
+    "message": "kerstboom"
   },
   "d83c_df85": {
-    "message": "santa"
+    "message": "Kerstman"
   },
   "d83c_df86": {
-    "message": "firework"
+    "message": "vuurwerk"
   },
   "d83c_df87": {
-    "message": "sparkler"
+    "message": "siervuurwerk"
   },
   "d83c_df88": {
-    "message": "balloon"
+    "message": "ballon"
   },
   "d83c_df89": {
-    "message": "party popper"
+    "message": "confettikanon"
   },
   "d83c_df8a": {
     "message": "confetti"
   },
   "d83c_df8b": {
-    "message": "tree and paper strips"
+    "message": "boom met papierreepjes"
   },
   "d83c_df8c": {
-    "message": "crossed flags"
+    "message": "kruislingse vlaggen"
   },
   "d83c_df8d": {
-    "message": "pine decoration"
+    "message": "dennendecoratie"
   },
   "d83c_df8e": {
-    "message": "dolls"
+    "message": "poppen"
   },
   "d83c_df8f": {
-    "message": "carp streamer"
+    "message": "vissenvlag"
   },
   "d83c_df90": {
-    "message": "wind chime"
+    "message": "windklok"
   },
   "d83c_df91": {
-    "message": "moon viewing"
+    "message": "naar de maan kijken"
   },
   "d83c_df92": {
-    "message": "school bag"
+    "message": "schooltas"
   },
   "d83c_df93": {
-    "message": "graduation cap"
+    "message": "afstudeerhoed"
   },
   "d83c_dfa0": {
-    "message": "carousel"
+    "message": "draaimolen"
   },
   "d83c_dfa1": {
-    "message": "ferris wheel"
+    "message": "reuzenrad"
   },
   "d83c_dfa2": {
-    "message": "roller coaster"
+    "message": "achtbaan"
   },
   "d83c_dfa3": {
-    "message": "fishing"
+    "message": "vissen"
   },
   "d83c_dfa4": {
-    "message": "mic"
+    "message": "microfoon"
   },
   "d83c_dfa5": {
-    "message": "movie camera"
+    "message": "filmcamera"
   },
   "d83c_dfa6": {
-    "message": "movie"
+    "message": "film"
   },
   "d83c_dfa7": {
-    "message": "headphone"
+    "message": "hoofdtelefoon"
   },
   "d83c_dfa8": {
-    "message": "paint palette"
+    "message": "schilderspalet"
   },
   "d83c_dfa9": {
-    "message": "top hat"
+    "message": "hoge hoed"
   },
   "d83c_dfaa": {
-    "message": "circus"
+    "message": "circustent"
   },
   "d83c_dfab": {
-    "message": "ticket"
+    "message": "kaartje"
   },
   "d83c_dfac": {
-    "message": "clapperboard"
+    "message": "klapper"
   },
   "d83c_dfad": {
-    "message": "face mask"
+    "message": "theatermaskers"
   },
   "d83c_dfae": {
-    "message": "video game"
+    "message": "videogame"
   },
   "d83c_dfaf": {
-    "message": "bull's eye"
+    "message": "roos"
   },
   "d83c_dfb0": {
-    "message": "slot machine"
+    "message": "gokautomaat"
   },
   "d83c_dfb1": {
-    "message": "billiard"
+    "message": "biljart"
   },
   "d83c_dfb2": {
-    "message": "game die"
+    "message": "dobbelsteen"
   },
   "d83c_dfb3": {
-    "message": "bowling"
+    "message": "bowlen"
   },
   "d83c_dfb4": {
-    "message": "playing card"
+    "message": "speelkaart"
   },
   "d83c_dfb5": {
-    "message": "musical note"
+    "message": "muzieknoot"
   },
   "d83c_dfb6": {
-    "message": "musical notes"
+    "message": "muzieknoten"
   },
   "d83c_dfb7": {
-    "message": "sax"
+    "message": "saxofoon"
   },
   "d83c_dfb8": {
-    "message": "guitar"
+    "message": "gitaar"
   },
   "d83c_dfb9": {
     "message": "piano"
   },
   "d83c_dfba": {
-    "message": "trumpet"
+    "message": "trompet"
   },
   "d83c_dfbb": {
-    "message": "violin"
+    "message": "viool"
   },
   "d83c_dfbc": {
-    "message": "music score"
+    "message": "muziekbalk"
   },
   "d83c_dfbd": {
-    "message": "running shirt"
+    "message": "hardloopshirt"
   },
   "d83c_dfbe": {
     "message": "tennis"
   },
   "d83c_dfbf": {
-    "message": "ski"
+    "message": "ski's en stokken"
   },
   "d83c_dfc0": {
-    "message": "basketball"
+    "message": "basketbal"
   },
   "d83c_dfc1": {
-    "message": "checkered flag"
+    "message": "geblokte vlag"
   },
   "d83c_dfc2": {
     "message": "snowboarder"
   },
   "d83c_dfc3": {
-    "message": "runner"
+    "message": "hardloper"
   },
   "d83c_dfc4": {
-    "message": "surfing"
+    "message": "surfen"
   },
   "d83c_dfc6": {
-    "message": "trophy"
+    "message": "trofee"
   },
   "d83c_dfc7": {
-    "message": "horse racing"
+    "message": "paardenrennen"
   },
   "d83c_dfc8": {
     "message": "American football"
   },
   "d83c_dfc9": {
-    "message": "soccer"
+    "message": "voetbal"
   },
   "d83c_dfca": {
-    "message": "swimmer"
+    "message": "zwemmer"
   },
   "d83c_dfe0": {
-    "message": "house"
+    "message": "huis"
   },
   "d83c_dfe1": {
-    "message": "home"
+    "message": "thuis"
   },
   "d83c_dfe2": {
-    "message": "office building"
+    "message": "kantoorgebouw"
   },
   "d83c_dfe3": {
-    "message": "Japanese post office"
+    "message": "Japans postkantoor"
   },
   "d83c_dfe4": {
-    "message": "European post office"
+    "message": "Europees postkantoor"
   },
   "d83c_dfe5": {
-    "message": "hospital"
+    "message": "ziekenhuis"
   },
   "d83c_dfe6": {
     "message": "bank"
   },
   "d83c_dfe7": {
-    "message": "ATM"
+    "message": "pinautomaat"
   },
   "d83c_dfe8": {
     "message": "hotel"
   },
   "d83c_dfe9": {
-    "message": "love hotel"
+    "message": "romantisch hotel"
   },
   "d83c_dfea": {
-    "message": "convenience store"
+    "message": "supermarkt"
   },
   "d83c_dfeb": {
     "message": "school"
   },
   "d83c_dfec": {
-    "message": "department store"
+    "message": "warenhuis"
   },
   "d83c_dfed": {
-    "message": "factory"
+    "message": "fabriek"
   },
   "d83c_dfee": {
-    "message": "red lantern"
+    "message": "rode lantaarn"
   },
   "d83c_dfef": {
-    "message": "Japanese castle"
+    "message": "Japans kasteel"
   },
   "d83c_dff0": {
-    "message": "European castle"
+    "message": "Europees kasteel"
   },
   "d83d_dc00": {
-    "message": "Rat"
+    "message": "rat"
   },
   "d83d_dc01": {
-    "message": "Mouse"
+    "message": "muis"
   },
   "d83d_dc02": {
-    "message": "Ox"
+    "message": "os"
   },
   "d83d_dc03": {
-    "message": "water buffalo"
+    "message": "waterbuffel"
   },
   "d83d_dc04": {
-    "message": "cow"
+    "message": "koe"
   },
   "d83d_dc06": {
-    "message": "leopard"
+    "message": "luipaard"
   },
   "d83d_dc07": {
-    "message": "rabbit"
+    "message": "konijn"
   },
   "d83d_dc08": {
-    "message": "cat"
+    "message": "kat"
   },
   "d83d_dc09": {
-    "message": "dragon"
+    "message": "draak"
   },
   "d83d_dc0a": {
-    "message": "crocodile"
+    "message": "krokodil"
   },
   "d83d_dc0b": {
-    "message": "whale"
+    "message": "walvis"
   },
   "d83d_dc0c": {
-    "message": "snail"
+    "message": "slak"
   },
   "d83d_dc0d": {
-    "message": "snake"
+    "message": "slang"
   },
   "d83d_dc0e": {
-    "message": "horse"
+    "message": "paard"
   },
   "d83d_dc0f": {
     "message": "ram"
   },
   "d83d_dc10": {
-    "message": "goat"
+    "message": "geit"
   },
   "d83d_dc11": {
-    "message": "sheep"
+    "message": "schaap"
   },
   "d83d_dc12": {
-    "message": "monkey"
+    "message": "aapje"
   },
   "d83d_dc13": {
-    "message": "rooster"
+    "message": "haan"
   },
   "d83d_dc14": {
-    "message": "chicken"
+    "message": "kip"
   },
   "d83d_dc15": {
-    "message": "dog"
+    "message": "hond"
   },
   "d83d_dc16": {
-    "message": "pig"
+    "message": "varken"
   },
   "d83d_dc17": {
-    "message": "boar"
+    "message": "zwijn"
   },
   "d83d_dc18": {
-    "message": "elephant"
+    "message": "olifant"
   },
   "d83d_dc19": {
     "message": "octopus"
   },
   "d83d_dc1a": {
-    "message": "shell"
+    "message": "schelp"
   },
   "d83d_dc1b": {
-    "message": "bug"
+    "message": "rups"
   },
   "d83d_dc1c": {
-    "message": "ant"
+    "message": "mier"
   },
   "d83d_dc1d": {
-    "message": "honeybee"
+    "message": "honingbij"
   },
   "d83d_dc1e": {
-    "message": "lady beetle"
+    "message": "lieveheersbeestje"
   },
   "d83d_dc1f": {
-    "message": "fish"
+    "message": "vis"
   },
   "d83d_dc20": {
-    "message": "tropical fish"
+    "message": "tropische vis"
   },
   "d83d_dc21": {
-    "message": "blowfish"
+    "message": "kogelvis"
   },
   "d83d_dc22": {
-    "message": "turtle"
+    "message": "schildpad"
   },
   "d83d_dc23": {
-    "message": "hatching chick"
+    "message": "kuiken uit het ei"
   },
   "d83d_dc24": {
-    "message": "baby chick face"
+    "message": "babykuikentje"
   },
   "d83d_dc25": {
-    "message": "baby chick"
+    "message": "kuiken"
   },
   "d83d_dc26": {
-    "message": "bird"
+    "message": "vogel"
   },
   "d83d_dc27": {
-    "message": "penguin"
+    "message": "pingu\u00efn"
   },
   "d83d_dc28": {
     "message": "koala"
   },
   "d83d_dc29": {
-    "message": "poodle"
+    "message": "poedel"
   },
   "d83d_dc2a": {
-    "message": "one hump camel"
+    "message": "dromedaris"
   },
   "d83d_dc2b": {
-    "message": "two hump camel"
+    "message": "kameel"
   },
   "d83d_dc2c": {
-    "message": "dolphin"
+    "message": "dolfijn"
   },
   "d83d_dc2d": {
-    "message": "mouse face"
+    "message": "muizengezicht"
   },
   "d83d_dc2e": {
-    "message": "cow face"
+    "message": "koeiengezicht"
   },
   "d83d_dc2f": {
-    "message": "tiger face"
+    "message": "tijgergezicht"
   },
   "d83d_dc30": {
-    "message": "rabbit face"
+    "message": "konijnengezicht"
   },
   "d83d_dc31": {
-    "message": "cat face"
+    "message": "kattengezicht"
   },
   "d83d_dc32": {
-    "message": "dragon face"
+    "message": "drakenkop"
   },
   "d83d_dc33": {
-    "message": "spouting whale"
+    "message": "walvis die water spuit"
   },
   "d83d_dc34": {
-    "message": "horse face"
+    "message": "paardengezicht"
   },
   "d83d_dc35": {
-    "message": "monkey face"
+    "message": "apengezicht"
   },
   "d83d_dc36": {
-    "message": "dog face"
+    "message": "hondengezicht"
   },
   "d83d_dc37": {
-    "message": "pig face"
+    "message": "varkensgezicht"
   },
   "d83d_dc38": {
-    "message": "frog face"
+    "message": "kikkergezicht"
   },
   "d83d_dc39": {
-    "message": "hamster face"
+    "message": "hamstergezicht"
   },
   "d83d_dc3a": {
-    "message": "wolf face"
+    "message": "wolvengezicht"
   },
   "d83d_dc3b": {
-    "message": "bear face"
+    "message": "berengezicht"
   },
   "d83d_dc3c": {
-    "message": "panda face"
+    "message": "pandagezicht"
   },
   "d83d_dc3d": {
-    "message": "pig nose"
+    "message": "varkenssnuit"
   },
   "d83d_dc3e": {
-    "message": "paw"
+    "message": "pootje"
   },
   "d83d_dc40": {
-    "message": "eyes"
+    "message": "ogen"
   },
   "d83d_dc42": {
-    "message": "ear"
+    "message": "oor"
   },
   "d83d_dc43": {
-    "message": "nose"
+    "message": "neus"
   },
   "d83d_dc44": {
-    "message": "mouth"
+    "message": "mond"
   },
   "d83d_dc45": {
-    "message": "tongue"
+    "message": "tong"
   },
   "d83d_dc46": {
-    "message": "up finger"
+    "message": "vinger omhoog"
   },
   "d83d_dc47": {
-    "message": "down finger"
+    "message": "vinger omlaag"
   },
   "d83d_dc48": {
-    "message": "left finger"
+    "message": "naar links wijzen"
   },
   "d83d_dc49": {
-    "message": "right finger"
+    "message": "naar rechts wijzen"
   },
   "d83d_dc4a": {
-    "message": "clenched fist"
+    "message": "samengebalde vuist"
   },
   "d83d_dc4b": {
-    "message": "hand waving"
+    "message": "zwaaien"
   },
   "d83d_dc4c": {
-    "message": "OK hand sign"
+    "message": "OK-handteken"
   },
   "d83d_dc4d": {
-    "message": "thumbs up"
+    "message": "duim omhoog"
   },
   "d83d_dc4e": {
-    "message": "thumbs down"
+    "message": "duim naar beneden"
   },
   "d83d_dc4f": {
-    "message": "hands clapping"
+    "message": "handen klappen"
   },
   "d83d_dc50": {
-    "message": "open hands"
+    "message": "open handen"
   },
   "d83d_dc51": {
-    "message": "crown"
+    "message": "kroon"
   },
   "d83d_dc52": {
-    "message": "woman's hat"
+    "message": "dameshoed"
   },
   "d83d_dc53": {
-    "message": "eyeglasses"
+    "message": "bril"
   },
   "d83d_dc54": {
-    "message": "necktie"
+    "message": "stropdas"
   },
   "d83d_dc55": {
     "message": "T-shirt"
   },
   "d83d_dc56": {
-    "message": "trousers"
+    "message": "broek"
   },
   "d83d_dc57": {
-    "message": "dress"
+    "message": "jurk"
   },
   "d83d_dc58": {
     "message": "kimono"
@@ -1173,319 +1176,319 @@
     "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "woman's clothes"
+    "message": "dameskleding"
   },
   "d83d_dc5b": {
-    "message": "purse"
+    "message": "knip"
   },
   "d83d_dc5c": {
-    "message": "handbag"
+    "message": "handtas"
   },
   "d83d_dc5d": {
-    "message": "pouch"
+    "message": "portemonnee"
   },
   "d83d_dc5e": {
-    "message": "man's shoe"
+    "message": "herenschoen"
   },
   "d83d_dc5f": {
-    "message": "athletic shoe"
+    "message": "sportschoen"
   },
   "d83d_dc60": {
-    "message": "high-heel"
+    "message": "hoge hak"
   },
   "d83d_dc61": {
-    "message": "woman's sandal"
+    "message": "damessandaal"
   },
   "d83d_dc62": {
-    "message": "woman's boot"
+    "message": "dameslaars"
   },
   "d83d_dc63": {
-    "message": "footprint"
+    "message": "voetafdrukken"
   },
   "d83d_dc64": {
-    "message": "bust in silhouette"
+    "message": "silhouet"
   },
   "d83d_dc65": {
-    "message": "busts in silhouette"
+    "message": "silhouetten"
   },
   "d83d_dc66": {
-    "message": "boy"
+    "message": "jongetje"
   },
   "d83d_dc67": {
-    "message": "girl"
+    "message": "meisje"
   },
   "d83d_dc68": {
     "message": "man"
   },
   "d83d_dc69": {
-    "message": "woman"
+    "message": "vrouw"
   },
   "d83d_dc6a": {
-    "message": "family"
+    "message": "gezin"
   },
   "d83d_dc6b": {
-    "message": "man and woman"
+    "message": "man en vrouw"
   },
   "d83d_dc6c": {
-    "message": "two men"
+    "message": "twee mannen"
   },
   "d83d_dc6d": {
-    "message": "two women"
+    "message": "twee vrouwen"
   },
   "d83d_dc6e": {
-    "message": "police officer"
+    "message": "politieagent"
   },
   "d83d_dc6f": {
-    "message": "bunny girl"
+    "message": "konijnenmeisje"
   },
   "d83d_dc70": {
-    "message": "bride"
+    "message": "bruid"
   },
   "d83d_dc71": {
-    "message": "blond person"
+    "message": "blond persoon"
   },
   "d83d_dc72": {
-    "message": "man with gua pi mao"
+    "message": "man met gua pi mao"
   },
   "d83d_dc73": {
-    "message": "man with a turban"
+    "message": "man met tulband"
   },
   "d83d_dc74": {
-    "message": "older man"
+    "message": "oude man"
   },
   "d83d_dc75": {
-    "message": "older woman"
+    "message": "oude vrouw"
   },
   "d83d_dc76": {
     "message": "baby"
   },
   "d83d_dc77": {
-    "message": "construction worker"
+    "message": "bouwvakker"
   },
   "d83d_dc78": {
-    "message": "princess"
+    "message": "prinses"
   },
   "d83d_dc79": {
-    "message": "ogre"
+    "message": "monster"
   },
   "d83d_dc7a": {
-    "message": "goblin"
+    "message": "aardmannetje"
   },
   "d83d_dc7b": {
-    "message": "ghost"
+    "message": "spook"
   },
   "d83d_dc7c": {
-    "message": "baby angel"
+    "message": "babyengeltje"
   },
   "d83d_dc7d": {
     "message": "alien"
   },
   "d83d_dc7e": {
-    "message": "alien monster"
+    "message": "monsterlijke alien"
   },
   "d83d_dc7f": {
-    "message": "imp"
+    "message": "duiveltje"
   },
   "d83d_dc80": {
-    "message": "skull"
+    "message": "doodshoofd"
   },
   "d83d_dc81": {
-    "message": "information desk"
+    "message": "informatiebalie"
   },
   "d83d_dc82": {
-    "message": "guardsman"
+    "message": "wachter"
   },
   "d83d_dc83": {
-    "message": "dancer"
+    "message": "danser"
   },
   "d83d_dc84": {
-    "message": "lipstick"
+    "message": "lippenstift"
   },
   "d83d_dc85": {
-    "message": "nail care"
+    "message": "nagelverzorging"
   },
   "d83d_dc86": {
-    "message": "face massage"
+    "message": "gezichtsmassage"
   },
   "d83d_dc87": {
-    "message": "haircut"
+    "message": "kapper"
   },
   "d83d_dc88": {
-    "message": "barber shop"
+    "message": "kapperszaak"
   },
   "d83d_dc89": {
-    "message": "shot"
+    "message": "schot"
   },
   "d83d_dc8a": {
-    "message": "pill"
+    "message": "pil"
   },
   "d83d_dc8b": {
-    "message": "kiss mark"
+    "message": "lipafdruk"
   },
   "d83d_dc8c": {
-    "message": "love letter"
+    "message": "liefdesbrief"
   },
   "d83d_dc8d": {
     "message": "ring"
   },
   "d83d_dc8e": {
-    "message": "gem"
+    "message": "juweel"
   },
   "d83d_dc8f": {
-    "message": "kiss"
+    "message": "kusje"
   },
   "d83d_dc90": {
-    "message": "bouquet"
+    "message": "boeket"
   },
   "d83d_dc91": {
-    "message": "couple"
+    "message": "stel"
   },
   "d83d_dc92": {
-    "message": "wedding chapel"
+    "message": "trouwkapel"
   },
   "d83d_dc93": {
-    "message": "pulsating heart"
+    "message": "kloppend hart"
   },
   "d83d_dc94": {
-    "message": "heart break"
+    "message": "gebroken hart"
   },
   "d83d_dc95": {
-    "message": "two hearts"
+    "message": "twee hartjes"
   },
   "d83d_dc96": {
-    "message": "sparkling heart"
+    "message": "glinsterend hart"
   },
   "d83d_dc97": {
-    "message": "growing heart"
+    "message": "groeiend hart"
   },
   "d83d_dc98": {
-    "message": "heart and arrow"
+    "message": "pijl door hart"
   },
   "d83d_dc99": {
-    "message": "blue heart"
+    "message": "blauw hart"
   },
   "d83d_dc9a": {
-    "message": "green heart"
+    "message": "groen hart"
   },
   "d83d_dc9b": {
-    "message": "yellow heart"
+    "message": "geel hart"
   },
   "d83d_dc9c": {
-    "message": "purple heart"
+    "message": "paars hart"
   },
   "d83d_dc9d": {
-    "message": "heart with ribbon"
+    "message": "hart met lint"
   },
   "d83d_dc9e": {
-    "message": "revolving hearts"
+    "message": "draaiende hartjes"
   },
   "d83d_dc9f": {
-    "message": "heart decoration"
+    "message": "hart in kader"
   },
   "d83d_dca0": {
-    "message": "flower petal"
+    "message": "bloemblaadje"
   },
   "d83d_dca1": {
-    "message": "light bulb"
+    "message": "gloeilamp"
   },
   "d83d_dca2": {
-    "message": "anger"
+    "message": "woede"
   },
   "d83d_dca3": {
-    "message": "bomb"
+    "message": "bom"
   },
   "d83d_dca4": {
-    "message": "sleepy symbol"
+    "message": "slapen"
   },
   "d83d_dca5": {
-    "message": "collision"
+    "message": "explosie"
   },
   "d83d_dca6": {
-    "message": "splashing sweat"
+    "message": "veel zweten"
   },
   "d83d_dca7": {
-    "message": "cold sweat"
+    "message": "druppel"
   },
   "d83d_dca8": {
-    "message": "running dash"
+    "message": "snel rennen"
   },
   "d83d_dca9": {
-    "message": "poop"
+    "message": "drol"
   },
   "d83d_dcaa": {
-    "message": "biceps"
+    "message": "spierbal"
   },
   "d83d_dcab": {
-    "message": "dizzy"
+    "message": "duizelig"
   },
   "d83d_dcac": {
-    "message": "speech balloon"
+    "message": "tekstballonnetje"
   },
   "d83d_dcad": {
-    "message": "thought balloon"
+    "message": "gedachtenballonnetje"
   },
   "d83d_dcae": {
-    "message": "flower stamp"
+    "message": "witte bloem"
   },
   "d83d_dcaf": {
-    "message": "full score"
+    "message": "100 punten"
   },
   "d83d_dcb0": {
-    "message": "money bag"
+    "message": "zak met geld"
   },
   "d83d_dcb1": {
-    "message": "currency exchange"
+    "message": "valutahandel"
   },
   "d83d_dcb2": {
-    "message": "dollar sign"
+    "message": "dollarteken"
   },
   "d83d_dcb3": {
-    "message": "credit card"
+    "message": "creditcard"
   },
   "d83d_dcb4": {
-    "message": "yen note"
+    "message": "yenbiljet"
   },
   "d83d_dcb5": {
-    "message": "dollar note"
+    "message": "dollarbiljet"
   },
   "d83d_dcb6": {
-    "message": "Euro note"
+    "message": "eurobiljet"
   },
   "d83d_dcb7": {
-    "message": "Pound note"
+    "message": "pondbljet"
   },
   "d83d_dcb8": {
-    "message": "flying money"
+    "message": "fladderend geld"
   },
   "d83d_dcb9": {
-    "message": "rising market"
+    "message": "stijgende koers"
   },
   "d83d_dcba": {
-    "message": "seat"
+    "message": "stoel"
   },
   "d83d_dcbb": {
-    "message": "PC"
+    "message": "Pc"
   },
   "d83d_dcbc": {
-    "message": "briefcase"
+    "message": "aktetas"
   },
   "d83d_dcbd": {
-    "message": "mini disc"
+    "message": "minidisk"
   },
   "d83d_dcbe": {
-    "message": "floppy disc"
+    "message": "floppydisk"
   },
   "d83d_dcbf": {
     "message": "blu-ray"
   },
   "d83d_dcc0": {
-    "message": "DVD"
+    "message": "dvd"
   },
   "d83d_dcc1": {
-    "message": "file folder"
+    "message": "bestandsmap"
   },
   "d83d_dcc2": {
-    "message": "open folder"
+    "message": "open bestandsmap"
   },
   "d83d_dcc3": {
     "message": "document"
@@ -1494,877 +1497,877 @@
     "message": "document"
   },
   "d83d_dcc5": {
-    "message": "calendar"
+    "message": "kalender"
   },
   "d83d_dcc6": {
-    "message": "tear-off calendar"
+    "message": "scheurkalender"
   },
   "d83d_dcc7": {
-    "message": "card index"
+    "message": "kaartenbak"
   },
   "d83d_dcc8": {
-    "message": "upward trend"
+    "message": "stijgende trend"
   },
   "d83d_dcc9": {
-    "message": "downward trend"
+    "message": "dalende trend"
   },
   "d83d_dcca": {
-    "message": "bar graph"
+    "message": "staafdiagram"
   },
   "d83d_dccb": {
-    "message": "clipboard"
+    "message": "klembord"
   },
   "d83d_dccc": {
-    "message": "pushpin"
+    "message": "punaise"
   },
   "d83d_dccd": {
-    "message": "round pushpin"
+    "message": "punaise met bolletje"
   },
   "d83d_dcce": {
     "message": "paperclip"
   },
   "d83d_dccf": {
-    "message": "straight ruler"
+    "message": "liniaal"
   },
   "d83d_dcd0": {
-    "message": "triangle ruler"
+    "message": "driehoekige liniaal"
   },
   "d83d_dcd1": {
-    "message": "bookmark tabs"
+    "message": "bladwijzers"
   },
   "d83d_dcd2": {
-    "message": "ledger"
+    "message": "map"
   },
   "d83d_dcd3": {
-    "message": "notebook"
+    "message": "notitieblok"
   },
   "d83d_dcd4": {
-    "message": "decorated notebook"
+    "message": "notitieboekje met naamplaat"
   },
   "d83d_dcd5": {
-    "message": "closed book"
+    "message": "gesloten boek"
   },
   "d83d_dcd6": {
-    "message": "open book"
+    "message": "open boek"
   },
   "d83d_dcd7": {
-    "message": "green book"
+    "message": "groen boek"
   },
   "d83d_dcd8": {
-    "message": "book"
+    "message": "boek"
   },
   "d83d_dcd9": {
-    "message": "orange book"
+    "message": "oranje boek"
   },
   "d83d_dcda": {
-    "message": "books"
+    "message": "boeken"
   },
   "d83d_dcdb": {
-    "message": "name badge"
+    "message": "naambordje"
   },
   "d83d_dcdc": {
-    "message": "scroll"
+    "message": "rol perkament"
   },
   "d83d_dcdd": {
     "message": "memo"
   },
   "d83d_dcde": {
-    "message": "phone"
+    "message": "telefoon"
   },
   "d83d_dcdf": {
-    "message": "pager"
+    "message": "pieper"
   },
   "d83d_dce0": {
     "message": "fax"
   },
   "d83d_dce1": {
-    "message": "satellite dish"
+    "message": "schotelantenne"
   },
   "d83d_dce2": {
-    "message": "loudspeaker"
+    "message": "luidspreker"
   },
   "d83d_dce3": {
-    "message": "megaphone"
+    "message": "megafoon"
   },
   "d83d_dce4": {
-    "message": "sent mail"
+    "message": "verzonden e-mails"
   },
   "d83d_dce5": {
-    "message": "Inbox"
+    "message": "ontvangen e-mails"
   },
   "d83d_dce6": {
-    "message": "package"
+    "message": "cadeautje"
   },
   "d83d_dce7": {
-    "message": "email"
+    "message": "e-mail"
   },
   "d83d_dce8": {
-    "message": "incoming mail"
+    "message": "inkomende e-mail"
   },
   "d83d_dce9": {
-    "message": "outgoing mail"
+    "message": "uitgaande e-mail"
   },
   "d83d_dcea": {
-    "message": "closed mailbox with flag down"
+    "message": "geen post"
   },
   "d83d_dceb": {
-    "message": "closed mailbox with flag up"
+    "message": "post"
   },
   "d83d_dcec": {
-    "message": "open mailbox with flag up"
+    "message": "open postbus met post"
   },
   "d83d_dced": {
-    "message": "open mailbox with flag down"
+    "message": "open lege postbus"
   },
   "d83d_dcee": {
-    "message": "postbox"
+    "message": "brievenbus"
   },
   "d83d_dcef": {
-    "message": "postal horn"
+    "message": "posthoorn"
   },
   "d83d_dcf0": {
-    "message": "newspaper"
+    "message": "krant"
   },
   "d83d_dcf1": {
-    "message": "cell phone"
+    "message": "mobiele telefoon"
   },
   "d83d_dcf2": {
-    "message": "cell phone with arrow"
+    "message": "mobiele telefoon met pijl"
   },
   "d83d_dcf3": {
-    "message": "vibration mode"
+    "message": "trilstand"
   },
   "d83d_dcf4": {
-    "message": "phone off"
+    "message": "telefoon uit"
   },
   "d83d_dcf5": {
-    "message": "no cell phone"
+    "message": "geen mobiele telefoon"
   },
   "d83d_dcf6": {
-    "message": "mobile signals"
+    "message": "mobiele ontvangst"
   },
   "d83d_dcf7": {
     "message": "camera"
   },
   "d83d_dcf9": {
-    "message": "video cam"
+    "message": "videocamera"
   },
   "d83d_dcfa": {
-    "message": "TV"
+    "message": "tv"
   },
   "d83d_dcfb": {
     "message": "radio"
   },
   "d83d_dcfc": {
-    "message": "video tape"
+    "message": "videoband"
   },
   "d83d_dd00": {
-    "message": "crossed arrows"
+    "message": "gekruiste pijlen"
   },
   "d83d_dd01": {
-    "message": "clockwise arrows"
+    "message": "pijlen met de klok mee"
   },
   "d83d_dd02": {
-    "message": "clockwise arrows"
+    "message": "pijlen met de klok mee"
   },
   "d83d_dd03": {
-    "message": "reload"
+    "message": "herladen"
   },
   "d83d_dd04": {
-    "message": "anti-clockwise arrows"
+    "message": "pijlen tegen de klok in"
   },
   "d83d_dd05": {
-    "message": "low brightness"
+    "message": "lage helderheid"
   },
   "d83d_dd06": {
-    "message": "high brightness"
+    "message": "hoge helderheid"
   },
   "d83d_dd07": {
-    "message": "no speaking"
+    "message": "stilte gewenst"
   },
   "d83d_dd08": {
-    "message": "speaker"
+    "message": "luidsprekers"
   },
   "d83d_dd09": {
-    "message": "speaker with low volume"
+    "message": "luidspreker met laag volume"
   },
   "d83d_dd0a": {
-    "message": "speaker with high volume"
+    "message": "luidspreker met hoog volume"
   },
   "d83d_dd0b": {
-    "message": "battery"
+    "message": "batterij"
   },
   "d83d_dd0c": {
-    "message": "electric plug"
+    "message": "stekker"
   },
   "d83d_dd0d": {
-    "message": "left-tilted magnifying glass"
+    "message": "loep links"
   },
   "d83d_dd0e": {
-    "message": "right-tilted magnifying glass"
+    "message": "loep rechts"
   },
   "d83d_dd0f": {
-    "message": "lock with an ink pen"
+    "message": "hangslot met vulpen"
   },
   "d83d_dd10": {
-    "message": "closed lock with a key"
+    "message": "hangslot met sleutel"
   },
   "d83d_dd11": {
-    "message": "key"
+    "message": "sleutel"
   },
   "d83d_dd12": {
-    "message": "closed lock"
+    "message": "hangslot"
   },
   "d83d_dd13": {
-    "message": "open lock"
+    "message": "open hangslot"
   },
   "d83d_dd14": {
-    "message": "bell"
+    "message": "bel"
   },
   "d83d_dd15": {
-    "message": "no bell"
+    "message": "geen bel"
   },
   "d83d_dd16": {
-    "message": "bookmark"
+    "message": "bladwijzer"
   },
   "d83d_dd17": {
-    "message": "link sign"
+    "message": "verbinding"
   },
   "d83d_dd18": {
-    "message": "radio button"
+    "message": "radioknop"
   },
   "d83d_dd19": {
-    "message": "back"
+    "message": "terug"
   },
   "d83d_dd1a": {
-    "message": "end"
+    "message": "end-teken"
   },
   "d83d_dd1b": {
-    "message": "ON arrow"
+    "message": "ON-teken"
   },
   "d83d_dd1c": {
-    "message": "Soon sign"
+    "message": "Soon-teken"
   },
   "d83d_dd1d": {
-    "message": "Top sign"
+    "message": "Top-teken"
   },
   "d83d_dd1e": {
-    "message": "No one under 18"
+    "message": "Niemand onder de 18"
   },
   "d83d_dd20": {
-    "message": "uppercase letters"
+    "message": "hoofdletters"
   },
   "d83d_dd21": {
-    "message": "lowercase letters"
+    "message": "kleine letters"
   },
   "d83d_dd22": {
-    "message": "numbers"
+    "message": "getallen"
   },
   "d83d_dd23": {
-    "message": "symbols"
+    "message": "symbolen"
   },
   "d83d_dd24": {
-    "message": "Latin Alphabet"
+    "message": "Latijnse alfabet"
   },
   "d83d_dd25": {
-    "message": "fire"
+    "message": "vuur"
   },
   "d83d_dd26": {
-    "message": "flashlight"
+    "message": "zaklamp"
   },
   "d83d_dd27": {
-    "message": "wrench"
+    "message": "moersleutel"
   },
   "d83d_dd28": {
-    "message": "hammer"
+    "message": "hamer"
   },
   "d83d_dd29": {
-    "message": "nut and bolt"
+    "message": "moer en bout"
   },
   "d83d_dd2a": {
-    "message": "cooking knife"
+    "message": "keukenmes"
   },
   "d83d_dd2b": {
-    "message": "gun"
+    "message": "revolver"
   },
   "d83d_dd2c": {
-    "message": "microscope"
+    "message": "microscoop"
   },
   "d83d_dd2d": {
-    "message": "telescope"
+    "message": "telescoop"
   },
   "d83d_dd2e": {
-    "message": "crystal ball"
+    "message": "glazen bol"
   },
   "d83d_dd2f": {
-    "message": "six-pointed star"
+    "message": "zespuntige ster"
   },
   "d83d_dd30": {
-    "message": "green and yellow leaf"
+    "message": "groen en geel schild"
   },
   "d83d_dd31": {
-    "message": "trident sign"
+    "message": "drietand"
   },
   "d83d_dd32": {
-    "message": "solid frame square button"
+    "message": "zwart vierkant met rand"
   },
   "d83d_dd33": {
-    "message": "outlined frame square button"
+    "message": "wit vierkant met rand"
   },
   "d83d_dd34": {
-    "message": "large red circle"
+    "message": "grote rode cirkel"
   },
   "d83d_dd35": {
-    "message": "large blue circle"
+    "message": "grote blauwe cirkel"
   },
   "d83d_dd36": {
-    "message": "large orange diamond"
+    "message": "grote oranje ruit"
   },
   "d83d_dd37": {
-    "message": "large blue diamond"
+    "message": "grote blauwe ruit"
   },
   "d83d_dd38": {
-    "message": "small orange diamond"
+    "message": "kleine oranje ruit"
   },
   "d83d_dd39": {
-    "message": "small blue diamond"
+    "message": "kleine blauwe ruit"
   },
   "d83d_dd3a": {
-    "message": "up triangle"
+    "message": "rode driehoek omhoog"
   },
   "d83d_dd3b": {
-    "message": "down triangle"
+    "message": "rode driehoek omlaag"
   },
   "d83d_dd3c": {
-    "message": "up triangle button"
+    "message": "driehoek omhoog"
   },
   "d83d_dd3d": {
-    "message": "down triangle button"
+    "message": "driehoek omlaag"
   },
   "d83d_dd50": {
-    "message": "1 o'clock"
+    "message": "1 uur"
   },
   "d83d_dd51": {
-    "message": "2 o'clock"
+    "message": "2 uur"
   },
   "d83d_dd52": {
-    "message": "3 o'clock"
+    "message": "3 uur"
   },
   "d83d_dd53": {
-    "message": "4 o'clock"
+    "message": "4 uur"
   },
   "d83d_dd54": {
-    "message": "5 o'clock"
+    "message": "5 uur"
   },
   "d83d_dd55": {
-    "message": "6 o'clock"
+    "message": "6 uur"
   },
   "d83d_dd56": {
-    "message": "7 o'clock"
+    "message": "7 uur"
   },
   "d83d_dd57": {
-    "message": "8 o'clock"
+    "message": "8 uur"
   },
   "d83d_dd58": {
-    "message": "9 o'clock"
+    "message": "9 uur"
   },
   "d83d_dd59": {
-    "message": "10 o'clock"
+    "message": "10 uur"
   },
   "d83d_dd5a": {
-    "message": "11 o'clock"
+    "message": "11 uur"
   },
   "d83d_dd5b": {
-    "message": "12 o'clock"
+    "message": "12 uur"
   },
   "d83d_dd5c": {
-    "message": "one-thirty"
+    "message": "half 2"
   },
   "d83d_dd5d": {
-    "message": "two-thirty"
+    "message": "half 3"
   },
   "d83d_dd5e": {
-    "message": "three-thirty"
+    "message": "half 4"
   },
   "d83d_dd5f": {
-    "message": "four-thirty"
+    "message": "half 5"
   },
   "d83d_dd60": {
-    "message": "five-thirty"
+    "message": "half 6"
   },
   "d83d_dd61": {
-    "message": "six-thirty"
+    "message": "half 7"
   },
   "d83d_dd62": {
-    "message": "seven-thirty"
+    "message": "half 8"
   },
   "d83d_dd63": {
-    "message": "eight-thirty"
+    "message": "half 9"
   },
   "d83d_dd64": {
-    "message": "nine-thirty"
+    "message": "half 10"
   },
   "d83d_dd65": {
-    "message": "ten-thirty"
+    "message": "half 11"
   },
   "d83d_dd66": {
-    "message": "eleven-thirty"
+    "message": "half 12"
   },
   "d83d_dd67": {
-    "message": "twelve-thirty"
+    "message": "half 1"
   },
   "d83d_ddfb": {
-    "message": "Mt. Fuji"
+    "message": "Fuji-berg"
   },
   "d83d_ddfc": {
-    "message": "Tokyo Tower"
+    "message": "Tokio Tower"
   },
   "d83d_ddfd": {
-    "message": "Statue of Liberty"
+    "message": "Vrijheidsbeeld"
   },
   "d83d_ddfe": {
-    "message": "Map of Japan"
+    "message": "kaart van Japan"
   },
   "d83d_ddff": {
-    "message": "Moyai statue"
+    "message": "Moyai-beeld"
   },
   "d83d_de00": {
-    "message": "grin"
+    "message": "grijns"
   },
   "d83d_de01": {
-    "message": " grin with smiling eyes"
+    "message": " breed glimlachen"
   },
   "d83d_de02": {
-    "message": "tears of joy"
+    "message": "tranen van geluk"
   },
   "d83d_de03": {
-    "message": "open mouth smile"
+    "message": "blij met open mond"
   },
   "d83d_de04": {
-    "message": "open mouth smile with smiling eyes"
+    "message": "brede glimlach met vrolijke ogen"
   },
   "d83d_de05": {
-    "message": "cold sweat smile"
+    "message": "opgelucht glimlachen"
   },
   "d83d_de06": {
-    "message": " open mouth smile with closed eyes"
+    "message": " hilarisch"
   },
   "d83d_de07": {
-    "message": "smile with a halo"
+    "message": "glimlachend engeltje"
   },
   "d83d_de08": {
-    "message": "smile with horns"
+    "message": "duivels glimlachje"
   },
   "d83d_de09": {
-    "message": "winking face"
+    "message": "knipoog"
   },
   "d83d_de0a": {
-    "message": "smile"
+    "message": "glimlachen"
   },
   "d83d_de0b": {
-    "message": "yummy face"
+    "message": "heerlijk"
   },
   "d83d_de0c": {
-    "message": "relieved face"
+    "message": "opgelucht"
   },
   "d83d_de0d": {
-    "message": "smiling face"
+    "message": "hoteldebotel"
   },
   "d83d_de0e": {
-    "message": "cool"
+    "message": "stoer"
   },
   "d83d_de0f": {
-    "message": "smirk"
+    "message": "grijns"
   },
   "d83d_de10": {
-    "message": "deadpan face"
+    "message": "totaal neutraal"
   },
   "d83d_de11": {
-    "message": "expressionless"
+    "message": "emotieloos"
   },
   "d83d_de12": {
-    "message": "unamused"
+    "message": "ontevreden"
   },
   "d83d_de13": {
-    "message": "cold sweat"
+    "message": "domper"
   },
   "d83d_de14": {
-    "message": "pensive face"
+    "message": "somber"
   },
   "d83d_de15": {
-    "message": "confused face"
+    "message": "verward"
   },
   "d83d_de16": {
-    "message": "confounded face"
+    "message": "verward"
   },
   "d83d_de17": {
-    "message": "kissy face"
+    "message": "kus"
   },
   "d83d_de18": {
-    "message": "throwing kisses"
+    "message": "kusje"
   },
   "d83d_de19": {
-    "message": "kiss and smile"
+    "message": "kus en glimlach"
   },
   "d83d_de1a": {
-    "message": "kissing"
+    "message": "zoen"
   },
   "d83d_de1b": {
-    "message": "tongue out"
+    "message": "tong naar buiten"
   },
   "d83d_de1c": {
-    "message": "tongue out with a wink"
+    "message": "tong en knipoog"
   },
   "d83d_de1d": {
-    "message": "yuck"
+    "message": "bah"
   },
   "d83d_de1e": {
-    "message": "disappointed"
+    "message": "teleurgesteld"
   },
   "d83d_de1f": {
-    "message": "worried"
+    "message": "bezorgd"
   },
   "d83d_de20": {
-    "message": "angry"
+    "message": "boos"
   },
   "d83d_de21": {
-    "message": "pouting"
+    "message": "boos"
   },
   "d83d_de22": {
-    "message": "crying"
+    "message": "huilen"
   },
   "d83d_de23": {
-    "message": "blew it"
+    "message": "verpest"
   },
   "d83d_de24": {
-    "message": "look of triumph"
+    "message": "briesen"
   },
   "d83d_de25": {
-    "message": "whew!"
+    "message": "oef!"
   },
   "d83d_de26": {
-    "message": "frowning face"
+    "message": "frons"
   },
   "d83d_de27": {
-    "message": "anguished"
+    "message": "gekweld"
   },
   "d83d_de28": {
-    "message": "fearful"
+    "message": "bang"
   },
   "d83d_de29": {
-    "message": "weary"
+    "message": "moe"
   },
   "d83d_de2a": {
-    "message": "sleepy"
+    "message": "slaperig"
   },
   "d83d_de2b": {
-    "message": "tired"
+    "message": "moe"
   },
   "d83d_de2c": {
-    "message": "grimace"
+    "message": "grimas"
   },
   "d83d_de2d": {
-    "message": "loudly crying"
+    "message": "tranen met tuiten"
   },
   "d83d_de2e": {
-    "message": "open mouth face"
+    "message": "verbaasd"
   },
   "d83d_de2f": {
-    "message": "hushed face"
+    "message": "geschrokken"
   },
   "d83d_de30": {
-    "message": "rushed face"
+    "message": "bijna te laat"
   },
   "d83d_de31": {
-    "message": "fearful face"
+    "message": "bang"
   },
   "d83d_de32": {
-    "message": "astonished face"
+    "message": "verbaasd"
   },
   "d83d_de33": {
-    "message": "flushed"
+    "message": "schaamrood"
   },
   "d83d_de34": {
-    "message": "sleeping"
+    "message": "slapen"
   },
   "d83d_de35": {
-    "message": "dizzy"
+    "message": "duizelig"
   },
   "d83d_de36": {
-    "message": "no mouth face"
+    "message": "mondloos gezicht"
   },
   "d83d_de37": {
-    "message": "face with mask"
+    "message": "gezicht met masker"
   },
   "d83d_de38": {
-    "message": "grinning cat face"
+    "message": "grijnzende kat"
   },
   "d83d_de39": {
-    "message": "tears of joy cat face"
+    "message": "kat met tranen van geluk"
   },
   "d83d_de3a": {
-    "message": "smiling cat face"
+    "message": "lachende kat"
   },
   "d83d_de3b": {
-    "message": "smiling cat face"
+    "message": "glimlachende kat"
   },
   "d83d_de3c": {
-    "message": "wry cat face"
+    "message": "duivelse kat"
   },
   "d83d_de3d": {
-    "message": "kissing cat"
+    "message": "kat die kus geeft"
   },
   "d83d_de3e": {
-    "message": "pouting cat face"
+    "message": "ontevreden kat"
   },
   "d83d_de3f": {
-    "message": "crying cat face"
+    "message": "huilende kat"
   },
   "d83d_de40": {
-    "message": "weary cat face"
+    "message": "gesloopte kat"
   },
   "d83d_de45": {
-    "message": "No good gesture"
+    "message": "slecht idee"
   },
   "d83d_de46": {
-    "message": "OK gesture"
+    "message": "OK-teken"
   },
   "d83d_de47": {
-    "message": "i'm sorry"
+    "message": "het spijt me"
   },
   "d83d_de48": {
-    "message": "see no evil"
+    "message": "ik zie niets"
   },
   "d83d_de49": {
-    "message": "hear no evil"
+    "message": "ik hoor niets"
   },
   "d83d_de4a": {
-    "message": "speak no evil"
+    "message": "ik zeg niets"
   },
   "d83d_de4b": {
-    "message": "happy person"
+    "message": "blij persoon"
   },
   "d83d_de4c": {
-    "message": "hooray"
+    "message": "hoera"
   },
   "d83d_de4d": {
-    "message": "frowning person"
+    "message": "fronsend persoon"
   },
   "d83d_de4e": {
-    "message": "pouting"
+    "message": "pruilmond"
   },
   "d83d_de4f": {
-    "message": "folded hands"
+    "message": "bidden"
   },
   "d83d_de80": {
-    "message": "rocket"
+    "message": "raket"
   },
   "d83d_de81": {
-    "message": "helicopter"
+    "message": "helikopter"
   },
   "d83d_de82": {
-    "message": "steam locomotive"
+    "message": "stoomlocomotief"
   },
   "d83d_de83": {
-    "message": "train"
+    "message": "trein"
   },
   "d83d_de84": {
-    "message": "high-speed train"
+    "message": "hogesnelheidstrein"
   },
   "d83d_de85": {
-    "message": "high-speed train with bullet nose"
+    "message": "hogesnelheidssprinter"
   },
   "d83d_de86": {
-    "message": "train"
+    "message": "trein"
   },
   "d83d_de87": {
-    "message": "subway"
+    "message": "metro"
   },
   "d83d_de88": {
-    "message": "light rail"
+    "message": "lightrail"
   },
   "d83d_de89": {
-    "message": "train station"
+    "message": "treinstation"
   },
   "d83d_de8a": {
     "message": "tram"
   },
   "d83d_de8b": {
-    "message": "tram car"
+    "message": "tramwagon"
   },
   "d83d_de8c": {
     "message": "bus"
   },
   "d83d_de8d": {
-    "message": "oncoming bus"
+    "message": "bus van voren"
   },
   "d83d_de8e": {
     "message": "trolleybus"
   },
   "d83d_de8f": {
-    "message": "bus stop"
+    "message": "bushalte"
   },
   "d83d_de90": {
-    "message": "minibus"
+    "message": "busje"
   },
   "d83d_de91": {
     "message": "ambulance"
   },
   "d83d_de92": {
-    "message": "fire engine"
+    "message": "brandweerwagen"
   },
   "d83d_de93": {
-    "message": "police car"
+    "message": "politie-auto"
   },
   "d83d_de94": {
-    "message": "oncoming police car"
+    "message": "politie-auto van voren"
   },
   "d83d_de95": {
-    "message": "taxi"
+    "message": "Taxi"
   },
   "d83d_de96": {
-    "message": "oncoming taxi"
+    "message": "taxi van voren"
   },
   "d83d_de97": {
-    "message": "car"
+    "message": "personenauto"
   },
   "d83d_de98": {
-    "message": "oncoming car"
+    "message": "auto van voren"
   },
   "d83d_de99": {
-    "message": "RV"
+    "message": "auto"
   },
   "d83d_de9a": {
-    "message": "delivery truck"
+    "message": "bestelwagen"
   },
   "d83d_de9b": {
-    "message": "lorry"
+    "message": "vrachtwagen"
   },
   "d83d_de9c": {
-    "message": "tractor"
+    "message": "trekker"
   },
   "d83d_de9d": {
     "message": "monorail"
   },
   "d83d_de9e": {
-    "message": "mountain railway"
+    "message": "trein in de bergen"
   },
   "d83d_de9f": {
-    "message": "suspension railway"
+    "message": "hangende trein"
   },
   "d83d_dea0": {
-    "message": "mountain cableway"
+    "message": "kabelbaan in de bergen"
   },
   "d83d_dea1": {
-    "message": "cable car"
+    "message": "kabelbaan"
   },
   "d83d_dea2": {
-    "message": "ship"
+    "message": "schip"
   },
   "d83d_dea3": {
-    "message": "rowboat"
+    "message": "roeiboot"
   },
   "d83d_dea4": {
-    "message": "speedboat"
+    "message": "speedboot"
   },
   "d83d_dea5": {
-    "message": "horizontal traffic lights"
+    "message": "horizontaal verkeerslicht"
   },
   "d83d_dea6": {
-    "message": "vertical traffic lights"
+    "message": "verticaal verkeerslicht"
   },
   "d83d_dea7": {
-    "message": "under construction"
+    "message": "in aanbouw"
   },
   "d83d_dea8": {
-    "message": "revolving light"
+    "message": "zwaailicht"
   },
   "d83d_dea9": {
-    "message": "location flag"
+    "message": "rode driehoekvlag"
   },
   "d83d_deaa": {
-    "message": "door"
+    "message": "deur"
   },
   "d83d_deab": {
-    "message": "No entry sign"
+    "message": "Geen toegang"
   },
   "d83d_deac": {
-    "message": "smoking sign"
+    "message": "rookteken"
   },
   "d83d_dead": {
-    "message": "no smoking sign"
+    "message": "niet roken"
   },
   "d83d_deae": {
-    "message": "litterbox sign"
+    "message": "afvalbakbordje"
   },
   "d83d_deaf": {
-    "message": "don't litter sign"
+    "message": "geen afval laten liggen"
   },
   "d83d_deb0": {
-    "message": "drinking water"
+    "message": "drinkwaterteken"
   },
   "d83d_deb1": {
-    "message": "non-drinking water"
+    "message": "niet-drinkbaar water"
   },
   "d83d_deb2": {
-    "message": "bike"
+    "message": "fiets"
   },
   "d83d_deb3": {
-    "message": "no bike"
+    "message": "geen fiets"
   },
   "d83d_deb4": {
-    "message": "bicyclist"
+    "message": "fietser"
   },
   "d83d_deb5": {
-    "message": "mountain bicyclist"
+    "message": "fietser in de bergen"
   },
   "d83d_deb6": {
-    "message": "pedestrian"
+    "message": "voetganger"
   },
   "d83d_deb7": {
-    "message": "no pedestrians"
+    "message": "geen voetgangers"
   },
   "d83d_deb8": {
-    "message": "children crossing"
+    "message": "overstekende kinderen"
   },
   "d83d_deb9": {
-    "message": "Men sign"
+    "message": "man-teken"
   },
   "d83d_deba": {
-    "message": "Women sign"
+    "message": "vrouw-teken"
   },
   "d83d_debb": {
-    "message": "restroom sign"
+    "message": "toilettenbordje"
   },
   "d83d_debc": {
-    "message": "baby sign"
+    "message": "baby-teken"
   },
   "d83d_debd": {
     "message": "toilet"
   },
   "d83d_debe": {
-    "message": "water closet"
+    "message": "wc"
   },
   "d83d_debf": {
-    "message": "shower"
+    "message": "douche"
   },
   "d83d_dec0": {
-    "message": "bath"
+    "message": "bad"
   },
   "d83d_dec1": {
-    "message": "bathtub"
+    "message": "badkuip"
   },
   "d83d_dec2": {
-    "message": "passport control"
+    "message": "paspoortcontrole"
   },
   "d83d_dec3": {
-    "message": "customs"
+    "message": "douane"
   },
   "d83d_dec4": {
-    "message": "baggage claim"
+    "message": "bagageband"
   },
   "d83d_dec5": {
-    "message": "left luggage"
+    "message": "bagagedepot"
   },
   "de_ger_settings_page": {
     "message": "Pagina met instellingen voor Duits toetsenbord"
@@ -2505,7 +2508,7 @@
     "message": "Woord"
   },
   "dismiss_menu": {
-    "message": "dismiss keyboard menu"
+    "message": "Toetsenbordmenu verwijderen"
   },
   "dk_dan_settings_page": {
     "message": "Pagina met instellingen voor Deens toetsenbord"
@@ -2520,28 +2523,28 @@
     "message": "Pagina met instellingen voor Estlands toetsenbord"
   },
   "emoji_tab_emoticon": {
-    "message": "Emoji category emoticon"
+    "message": "Emojicategorie: emoticon"
   },
   "emoji_tab_face": {
-    "message": "Emoji category face"
+    "message": "Emojicategorie: gezicht"
   },
   "emoji_tab_hot": {
-    "message": "Emoji category hot"
+    "message": "Emojicategorie: populair"
   },
   "emoji_tab_nature": {
-    "message": "Emoji category nature"
+    "message": "Emojicategorie: natuur"
   },
   "emoji_tab_object": {
-    "message": "Emoji category object"
+    "message": "Emojicategorie: object"
   },
   "emoji_tab_place": {
-    "message": "Emoji category place"
+    "message": "Emojicategorie: plaats"
   },
   "emoji_tab_recent": {
-    "message": "Emoji category recent"
+    "message": "Emojicategorie: recent"
   },
   "emoji_tab_symbol": {
-    "message": "Emoji category symbol"
+    "message": "Emojicategorie: symbool"
   },
   "enable_capitalization": {
     "message": "Automatisch hoofdlettergebruik"
@@ -2644,6 +2647,9 @@
   },
   "inputmethod_dayi": {
     "message": "Dayi-invoermethode"
+  },
+  "inputmethod_hangul": {
+    "message": "Koreaanse invoermethode"
   },
   "inputmethod_pinyin": {
     "message": "Pinyin-invoermethode"
@@ -2813,6 +2819,9 @@
   "keyboard_nepali_phonetic": {
     "message": "Nepalees toetsenbord (fonetisch)"
   },
+  "keyboard_netherlands": {
+    "message": "Nederlands toetsenbord"
+  },
   "keyboard_none": {
     "message": "Toetsenbord"
   },
@@ -2836,6 +2845,9 @@
   },
   "keyboard_romanian": {
     "message": "Roemeens toetsenbord"
+  },
+  "keyboard_romanian_standard": {
+    "message": "Romanian standard keyboard"
   },
   "keyboard_russian": {
     "message": "Russisch toetsenbord"
@@ -2976,7 +2988,7 @@
     "message": "Pagina met instellingen voor Koreaans"
   },
   "korean_syllable_input": {
-    "message": "Of hangul \u00e9\u00e9n voor \u00e9\u00e9n wordt ingevoerd"
+    "message": "Hangul \u00e9\u00e9n voor \u00e9\u00e9n invoeren"
   },
   "latam_spa_settings_page": {
     "message": "Pagina met instellingen voor Latijns-Amerikaans toetsenbord (Spaans)"
@@ -3015,13 +3027,13 @@
     "message": "Onderbreken"
   },
   "physical_auto_correction_level": {
-    "message": "Auto-correction"
+    "message": "Automatische correctie"
   },
   "physical_enable_capitalization": {
-    "message": "Auto-capitalization"
+    "message": "Automatisch hoofdlettergebruik"
   },
   "physical_keyboard": {
-    "message": "Physical Keyboard"
+    "message": "Fysiek toetsenbord"
   },
   "pinyin_settings_page": {
     "message": "Pagina met instellingen voor Pinyin"
@@ -3075,13 +3087,16 @@
     "message": "Dropdown-menu met suggesties weergeven met Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Show Hangul suggestions"
+    "message": "Hangul-suggesties weergeven"
   },
   "si_slv_settings_page": {
     "message": "Pagina met instellingen voor Sloveens toetsenbord"
   },
   "sk_slo_settings_page": {
     "message": "Pagina met instellingen voor Slowaaks toetsenbord"
+  },
+  "smiley": {
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "Bescheiden"
@@ -3234,28 +3249,40 @@
     "message": "Persoonlijk woordenboek inschakelen"
   },
   "user_dict_add": {
-    "message": "Add"
+    "message": "Toevoegen"
   },
   "user_dict_clear": {
-    "message": "Clear All"
-  },
-  "user_dict_done": {
-    "message": "Done"
+    "message": "Alles wissen"
   },
   "user_dict_manage": {
-    "message": "Manage personal dictionary..."
+    "message": "Persoonlijk woordenboek beheren\u2026"
   },
   "user_dict_new_word": {
-    "message": "New word"
+    "message": "Nieuw woord"
   },
   "user_dict_remove": {
-    "message": "Remove Selected"
+    "message": "Selectie verwijderen"
+  },
+  "user_dict_save": {
+    "message": "Opslaan"
   },
   "user_dict_sync": {
-    "message": "Sync personal dictionary"
+    "message": "Persoonlijk woordenboek synchroniseren"
   },
   "user_dict_title": {
-    "message": "Personal Dictionary"
+    "message": "Persoonlijk woordenboek"
+  },
+  "voice": {
+    "message": "Spraak"
+  },
+  "voice_privacy_info": {
+    "message": "Je stem wordt naar een Google-server verzonden om de tekst te herkennen"
+  },
+  "voice_turn_off": {
+    "message": "tool voor spraakinvoer uitschakelen"
+  },
+  "voice_turn_on": {
+    "message": "tool voor spraakinvoer inschakelen"
   },
   "wait": {
     "message": "Wachten"

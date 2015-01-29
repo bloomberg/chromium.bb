@@ -36,15 +36,13 @@ var Name = i18n.input.chrome.message.Name;
  *     candidateType .
  * @param {number} height .
  * @param {boolean} isDefault .
- * @param {boolean} autoFit True if this candidate will adapt to the width
- *     automatically.
  * @param {number=} opt_width .
  * @param {goog.events.EventTarget=} opt_eventTarget .
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.Element}
  */
 i18n.input.chrome.inputview.elements.content.Candidate = function(id,
-    candidate, candidateType, height, isDefault, autoFit, opt_width,
+    candidate, candidateType, height, isDefault, opt_width,
     opt_eventTarget) {
   goog.base(this, id, ElementType.CANDIDATE, opt_eventTarget);
 
@@ -62,9 +60,6 @@ i18n.input.chrome.inputview.elements.content.Candidate = function(id,
 
   /** @type {boolean} */
   this.isDefault = isDefault;
-
-  /** @type {boolean} */
-  this.autoFit = autoFit;
 };
 var Candidate = i18n.input.chrome.inputview.elements.content.Candidate;
 goog.inherits(Candidate, i18n.input.chrome.inputview.elements.Element);
@@ -81,6 +76,10 @@ Candidate.Type = {
 };
 
 
+/** @private {Element} */
+Candidate.prototype.wrapper_ = null;
+
+
 /** @override */
 Candidate.prototype.createDom = function() {
   goog.base(this, 'createDom');
@@ -91,24 +90,39 @@ Candidate.prototype.createDom = function() {
   if (this.candidate['isEmoji']) {
     goog.dom.classlist.add(elem, Css.EMOJI_FONT);
   }
-  if (this.autoFit) {
-    var wrapper = dom.createDom('div', {
-      'class': Css.CANDIDATE_INTERNAL_WRAPPER
-    }, this.candidate[Name.CANDIDATE]);
-    wrapper.style.width = this.width + 'px';
-    dom.appendChild(elem, wrapper);
-  } else {
-    dom.setTextContent(elem, this.candidate[Name.CANDIDATE]);
-  }
-  elem.style.height = this.height + 'px';
-  if (this.width > 0) {
-    elem.style.width = this.width + 'px';
-  }
+  this.wrapper_ = dom.createDom('div', {
+    'class': Css.CANDIDATE_INTERNAL_WRAPPER
+  }, this.candidate[Name.CANDIDATE]);
+
+  dom.appendChild(elem, this.wrapper_);
+
+  this.setSize(this.width, this.height);
+
   if (this.isDefault) {
     goog.dom.classlist.add(elem, Css.CANDIDATE_DEFAULT);
   }
   if (!!this.candidate[Name.IS_AUTOCORRECT]) {
     goog.dom.classlist.add(elem, Css.CANDIDATE_AUTOCORRECT);
+  }
+};
+
+
+/**
+ * Sets the candidate size.
+ *
+ * @param {number=} opt_width .
+ * @param {number=} opt_height .
+ */
+Candidate.prototype.setSize = function(opt_width, opt_height) {
+  var elem = this.getElement();
+  if (opt_width && opt_width > 0) {
+    this.width = opt_width;
+    this.wrapper_.style.width = opt_width + 'px';
+    elem.style.width = opt_width + 'px';
+  }
+  if (opt_height && opt_height > 0) {
+    this.height = opt_height;
+    elem.style.height = opt_height + 'px';
   }
 };
 
@@ -121,7 +135,4 @@ Candidate.prototype.setHighlighted = function(highlight) {
     goog.dom.classlist.remove(this.getElement(), Css.CANDIDATE_HIGHLIGHT);
   }
 };
-
-
 });  // goog.scope
-

@@ -90,6 +90,9 @@ EmojiKey.prototype.createDom = function() {
  * @return {string} .
  */
 EmojiKey.prototype.getLocalizedName = function() {
+  if (this.isEmoticon) {
+    return chrome.i18n.getMessage('smiley');
+  }
   var lead = this.text.charCodeAt(0);
   if (!lead) {
     return '';

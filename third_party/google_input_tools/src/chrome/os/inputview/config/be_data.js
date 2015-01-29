@@ -129,50 +129,8 @@ goog.require('i18n.input.chrome.message.ContextType');
   ];
 
   var data = i18n.input.chrome.inputview.content.util.createData(
-      keyCharacters, viewIdPrefix_, true, true, keyCodes, 'be.compact.qwerty');
+      keyCharacters, viewIdPrefix_, true, true, keyCodes);
   data['id'] = 'be';
   google.ime.chrome.inputview.onConfigLoaded(data);
 
-  var keysetSpecNode =
-      i18n.input.chrome.inputview.content.compact.util.CompactKeysetSpec;
-  var letterKeysetSpec = {};
-  letterKeysetSpec[keysetSpecNode.ID] = 'be.compact.qwerty';
-  letterKeysetSpec[keysetSpecNode.LAYOUT] = 'compactkbd-qwerty';
-  letterKeysetSpec[keysetSpecNode.DATA] =
-      i18n.input.chrome.inputview.content.compact.letter.keyBelgianCharacters();
-
-  var symbolKeysetSpec = {};
-  symbolKeysetSpec[keysetSpecNode.ID] = 'be.compact.symbol';
-  symbolKeysetSpec[keysetSpecNode.LAYOUT] = 'compactkbd-qwerty';
-  symbolKeysetSpec[keysetSpecNode.DATA] = i18n.input.chrome.inputview.content.
-      compact.symbol.keyEUSymbolCharacters();
-
-  var moreKeysetSpec = {};
-  moreKeysetSpec[keysetSpecNode.ID] = 'be.compact.more';
-  moreKeysetSpec[keysetSpecNode.LAYOUT] = 'compactkbd-qwerty';
-  moreKeysetSpec[keysetSpecNode.DATA] =
-      i18n.input.chrome.inputview.content.compact.more.keyEUMoreCharacters();
-
-  i18n.input.chrome.inputview.content.compact.util.generateCompactKeyboard(
-      letterKeysetSpec, symbolKeysetSpec, moreKeysetSpec,
-      google.ime.chrome.inputview.onConfigLoaded);
-
-  var inputTypeToKeysetSpecMap = {};
-
-  var numberKeysetSpec = {};
-  numberKeysetSpec[keysetSpecNode.ID] = 'be.compact.numberpad';
-  numberKeysetSpec[keysetSpecNode.LAYOUT] = 'compactkbd-numberpad';
-  numberKeysetSpec[keysetSpecNode.DATA] = i18n.input.chrome.inputview.content.
-      compact.numberpad.keyNumberpadCharacters();
-  inputTypeToKeysetSpecMap[ContextType.NUMBER] = numberKeysetSpec;
-
-  var phoneKeysetSpec = {};
-  phoneKeysetSpec[keysetSpecNode.ID] = 'be.compact.phonepad';
-  phoneKeysetSpec[keysetSpecNode.LAYOUT] = 'compactkbd-numberpad';
-  phoneKeysetSpec[keysetSpecNode.DATA] = i18n.input.chrome.inputview.content.
-      compact.numberpad.keyPhonepadCharacters();
-  inputTypeToKeysetSpecMap[ContextType.PHONE] = phoneKeysetSpec;
-
-  i18n.input.chrome.inputview.content.ContextlayoutUtil.generateContextLayouts(
-      inputTypeToKeysetSpecMap, google.ime.chrome.inputview.onConfigLoaded);
 }) ();
