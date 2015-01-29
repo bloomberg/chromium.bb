@@ -48,6 +48,10 @@ struct MockSecretItem {
     delete value;
     g_hash_table_destroy(attributes);
   }
+
+  void RemoveAttribute(const char* keyname) {
+    g_hash_table_remove(attributes, keyname);
+  }
 };
 
 bool Matches(MockSecretItem* item, GHashTable* query) {
@@ -816,6 +820,26 @@ TEST_F(NativeBackendLibsecretTest, RemoveLoginsCreatedBetween) {
 
 TEST_F(NativeBackendLibsecretTest, RemoveLoginsSyncedBetween) {
   CheckRemoveLoginsBetween(SYNCED);
+}
+
+TEST_F(NativeBackendLibsecretTest, SomeKeyringAttributesAreMissing) {
+  // Absent attributes should be filled with default values.
+  NativeBackendLibsecret backend(42);
+
+  backend.AddLogin(form_google_);
+
+  EXPECT_EQ(1u, global_mock_libsecret_items.size());
+  // Remove a string attribute.
+  global_mock_libsecret_items[0]->RemoveAttribute("avatar_url");
+  // Remove an integer attribute.
+  global_mock_libsecret_items[0]->RemoveAttribute("ssl_valid");
+
+  ScopedVector<autofill::PasswordForm> form_list;
+  backend.GetAutofillableLogins(&form_list);
+
+  EXPECT_EQ(1u, form_list.size());
+  EXPECT_EQ(GURL(""), form_list[0]->avatar_url);
+  EXPECT_FALSE(form_list[0]->ssl_valid);
 }
 
 // TODO(mdm): add more basic tests here at some point.

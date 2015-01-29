@@ -19,6 +19,10 @@ using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 
+namespace {
+const char kEmptyString[] = "";
+}
+
 typeof(&::secret_password_store_sync)
     LibsecretLoader::secret_password_store_sync;
 typeof(&::secret_service_search_sync)
@@ -119,14 +123,17 @@ const SecretSchema kLibsecretSchema = {
      {"application", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING}}};
 
-char* GetStringFromAttributes(GHashTable* attrs, const char* keyname) {
-  return static_cast<char*>(g_hash_table_lookup(attrs, keyname));
+const char* GetStringFromAttributes(GHashTable* attrs, const char* keyname) {
+  gpointer value = g_hash_table_lookup(attrs, keyname);
+  return value ? static_cast<char*>(value) : kEmptyString;
 }
 
 uint32_t GetUintFromAttributes(GHashTable* attrs, const char* keyname) {
-  char* value = static_cast<char*>(g_hash_table_lookup(attrs, keyname));
+  gpointer value = g_hash_table_lookup(attrs, keyname);
+  if (!value)
+    return uint32_t();
   uint32_t result;
-  bool value_ok = base::StringToUint(value, &result);
+  bool value_ok = base::StringToUint(static_cast<char*>(value), &result);
   DCHECK(value_ok);
   return result;
 }
