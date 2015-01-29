@@ -126,6 +126,36 @@ def CreateExtraRJavaFiles(r_dir, extra_packages):
     # affect how the code in this .apk target could refer to the resources.
 
 
+def CrunchDirectory(aapt, input_dir, output_dir):
+  """Crunches the images in input_dir and its subdirectories into output_dir.
+
+  If an image is already optimized, crunching often increases image size. In
+  this case, the crunched image is overwritten with the original image.
+  """
+  aapt_cmd = [aapt,
+              'crunch',
+              '-C', output_dir,
+              '-S', input_dir,
+              '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN]
+  build_utils.CheckOutput(aapt_cmd, stderr_filter=FilterCrunchStderr,
+                          fail_func=DidCrunchFail)
+
+  # Check for images whose size increased during crunching and replace them
+  # with their originals (except for 9-patches, which must be crunched).
+  for dir_, _, files in os.walk(output_dir):
+    for crunched in files:
+      if crunched.endswith('.9.png'):
+        continue
+      if not crunched.endswith('.png'):
+        raise Exception('Unexpected file in crunched dir: ' + crunched)
+      crunched = os.path.join(dir_, crunched)
+      original = os.path.join(input_dir, os.path.relpath(crunched, output_dir))
+      original_size = os.path.getsize(original)
+      crunched_size = os.path.getsize(crunched)
+      if original_size < crunched_size:
+        shutil.copyfile(original, crunched)
+
+
 def FilterCrunchStderr(stderr):
   """Filters out lines from aapt crunch's stderr that can safely be ignored."""
   filtered_lines = []
@@ -260,17 +290,11 @@ def main():
     # Crunch image resources. This shrinks png files and is necessary for
     # 9-patch images to display correctly. 'aapt crunch' accepts only a single
     # directory at a time and deletes everything in the output directory.
-    for idx, d in enumerate(input_resource_dirs):
+    for idx, input_dir in enumerate(input_resource_dirs):
       crunch_dir = os.path.join(base_crunch_dir, str(idx))
       build_utils.MakeDirectory(crunch_dir)
       zip_resource_dirs.append(crunch_dir)
-      aapt_cmd = [aapt,
-                  'crunch',
-                  '-C', crunch_dir,
-                  '-S', d,
-                  '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN]
-      build_utils.CheckOutput(aapt_cmd, stderr_filter=FilterCrunchStderr,
-                              fail_func=DidCrunchFail)
+      CrunchDirectory(aapt, input_dir, crunch_dir)
 
     ZipResources(zip_resource_dirs, options.resource_zip_out)
 
