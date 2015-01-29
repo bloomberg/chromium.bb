@@ -28,8 +28,6 @@ crbug.com/24182 fast/frames/cached-frame-counter.html [ Slow ]
 crbug.com/24182 fast/frames/frame-limit.html [ Slow ]
 crbug.com/24182 fast/images/png-suite/test.html [ Slow ]
 crbug.com/24182 fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ] # Particularly slow in Debug: >12x slower!
-crbug.com/24182 html5lib/generated/run-tests16-data.html [ Slow ]
-crbug.com/24182 html5lib/webkit-resumer.html [ Slow ]
 crbug.com/24182 http/tests/accessibility/slow-document-load.html [ Slow ]
 crbug.com/24182 http/tests/cache/subresource-expiration-1.html [ Slow ]
 crbug.com/24182 http/tests/cache/subresource-expiration-2.html [ Slow ]
@@ -141,6 +139,24 @@ crbug.com/258896 animations/animation-direction-reverse-fill-mode.html [ Slow ]
 
 # This test has to generate >250MB of data which takes ~6s in both release and debug.
 crbug.com/420240 http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Slow ]
+
+# These html5lib tests are generated tests that test a huge amount of permutations so they need a bit more time.
+crbug.com/453312 html5lib/generated/run-doctype01-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-domjs-unsafe-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-entities01-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-entities02-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-template-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests1-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests2-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests6-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests7-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests9-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests10-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests16-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests19-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests20-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-webkit01-data.html [ Slow ]
+crbug.com/453312 html5lib/webkit-resumer.html [ Slow ]
 
 # FIXME: These tests might still be buggy and time out. They were marked as Slow on 9/20/2013.
 # Double-check the data after they've been running another week or so.
