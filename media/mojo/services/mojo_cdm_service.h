@@ -68,8 +68,8 @@ class MojoCdmService
 
   scoped_ptr<MediaKeys> cdm_;
 
-  base::WeakPtrFactory<MojoCdmService> weak_factory_;
   base::WeakPtr<MojoCdmService> weak_this_;
+  base::WeakPtrFactory<MojoCdmService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmService);
 };
