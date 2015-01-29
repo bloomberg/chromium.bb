@@ -47,9 +47,8 @@ void RenderVTTCue::trace(Visitor* visitor)
 class SnapToLinesLayouter {
     STACK_ALLOCATED();
 public:
-    SnapToLinesLayouter(RenderVTTCue& cueBox, VTTCue::WritingDirection writingDirection, float linePosition)
+    SnapToLinesLayouter(RenderVTTCue& cueBox, float linePosition)
         : m_cueBox(cueBox)
-        , m_cueWritingDirection(writingDirection)
         , m_linePosition(linePosition)
     {
     }
@@ -64,17 +63,13 @@ private:
 
     void moveBoxesBy(LayoutUnit distance)
     {
-        if (m_cueWritingDirection == VTTCue::Horizontal)
-            m_cueBox.setY(m_cueBox.location().y() + distance);
-        else
-            m_cueBox.setX(m_cueBox.location().x() + distance);
+        m_cueBox.setLogicalTop(m_cueBox.logicalTop() + distance);
     }
 
     InlineFlowBox* findFirstLineBox() const;
 
     LayoutPoint m_specifiedPosition;
     RenderVTTCue& m_cueBox;
-    VTTCue::WritingDirection m_cueWritingDirection;
     float m_linePosition;
 };
 
@@ -91,8 +86,9 @@ LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& ste
     // 7. Round line position to an integer by adding 0.5 and then flooring it.
     LayoutUnit linePosition = floorf(m_linePosition + 0.5f);
 
+    WritingMode writingMode = m_cueBox.style()->writingMode();
     // 8. Vertical Growing Left: Add one to line position then negate it.
-    if (m_cueWritingDirection == VTTCue::VerticalGrowingLeft)
+    if (writingMode == RightToLeftWritingMode)
         linePosition = -(linePosition + 1);
 
     // 9. Let position be the result of multiplying step and line position.
@@ -100,7 +96,7 @@ LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& ste
 
     // 10. Vertical Growing Left: Decrease position by the width of the
     // bounding box of the boxes in boxes, then increase position by step.
-    if (m_cueWritingDirection == VTTCue::VerticalGrowingLeft) {
+    if (writingMode == RightToLeftWritingMode) {
         position -= m_cueBox.size().width();
         position += step;
     }
@@ -111,7 +107,7 @@ LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& ste
 
         // Horizontal / Vertical: ... then increase position by the
         // height / width of the video's rendering area ...
-        position += m_cueWritingDirection == VTTCue::Horizontal ? parentBlock->size().height() : parentBlock->size().width();
+        position += blink::isHorizontalWritingMode(writingMode) ? parentBlock->size().height() : parentBlock->size().width();
 
         // ... and negate step.
         step = -step;
@@ -138,28 +134,20 @@ bool SnapToLinesLayouter::isOverlapping() const
 
 bool SnapToLinesLayouter::shouldSwitchDirection(InlineFlowBox* firstLineBox, LayoutUnit step) const
 {
-    LayoutUnit top = m_cueBox.location().y();
-    LayoutUnit left = m_cueBox.location().x();
-    LayoutUnit bottom = top + firstLineBox->size().height();
-    LayoutUnit right = left + firstLineBox->size().width();
-
     // 21. Horizontal: If step is negative and the top of the first line box in
     // boxes is now above the top of the title area, or if step is positive and
     // the bottom of the first line box in boxes is now below the bottom of the
     // title area, jump to the step labeled switch direction.
-    LayoutUnit parentHeight = m_cueBox.containingBlock()->size().height();
-    if (m_cueWritingDirection == VTTCue::Horizontal && ((step < 0 && top < 0) || (step > 0 && bottom > parentHeight)))
-        return true;
-
-    // 21. Vertical: If step is negative and the left edge of the first line
+    // Vertical: If step is negative and the left edge of the first line
     // box in boxes is now to the left of the left edge of the title area, or
     // if step is positive and the right edge of the first line box in boxes is
     // now to the right of the right edge of the title area, jump to the step
     // labeled switch direction.
-    LayoutUnit parentWidth = m_cueBox.containingBlock()->size().width();
-    if (m_cueWritingDirection != VTTCue::Horizontal && ((step < 0 && left < 0) || (step > 0 && right > parentWidth)))
+    LayoutUnit logicalTop = m_cueBox.logicalTop();
+    if (step < 0 && logicalTop < 0)
         return true;
-
+    if (step > 0 && logicalTop + firstLineBox->logicalHeight() > m_cueBox.containingBlock()->logicalHeight())
+        return true;
     return false;
 }
 
@@ -175,7 +163,7 @@ void SnapToLinesLayouter::layout()
     // Steps 1-3 skipped.
     // 4. Horizontal: Let step be the height of the first line box in boxes.
     //    Vertical: Let step be the width of the first line box in boxes.
-    LayoutUnit step = m_cueWritingDirection == VTTCue::Horizontal ? firstLineBox->size().height() : firstLineBox->size().width();
+    LayoutUnit step = firstLineBox->logicalHeight();
 
     // 5. If step is zero, then jump to the step labeled done positioning below.
     if (!step)
@@ -337,7 +325,7 @@ void RenderVTTCue::layout()
 
     // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings - step 13.
     if (m_cue->snapToLines()) {
-        SnapToLinesLayouter(*this, m_cue->getWritingDirection(), m_cue->calculateComputedLinePosition()).layout();
+        SnapToLinesLayouter(*this, m_cue->calculateComputedLinePosition()).layout();
 
         adjustForTopAndBottomMarginBorderAndPadding();
     } else {
