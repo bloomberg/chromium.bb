@@ -278,9 +278,22 @@ function getRequestInit(params) {
 
 function headersToArray(headers) {
   var ret = [];
-  for (var header of headers) {
-    ret.push(header);
-  }
+
+  // Workaround for Firefox. iterable is not implemented yet.
+  // This is used only by checkFetchResponseHeader, and
+  // checkFetchResponseHeader is used only for the header names listed below.
+  // FIXME: Replace it with the original code below when Firefox supports
+  // iterable.
+  ['content-length', 'x-serviceworker-serverheader'].forEach(function(name) {
+      for (var value of headers.getAll(name))
+        ret.push([name, value]);
+    });
+
+  // Original code:
+  // for (var header of headers) {
+  //   ret.push(header);
+  // }
+
   return ret;
 }
 

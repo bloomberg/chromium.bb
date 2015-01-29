@@ -205,7 +205,7 @@ function test_login(test, origin, username, password, cookie) {
               });
             frame.contentWindow.postMessage(
               {username: username, password: password, cookie: cookie},
-              [channel.port2], origin);
+              origin, [channel.port2]);
           }));
     });
 }
