@@ -388,7 +388,8 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsMethodCustom(const v8::Fu
 
     ASSERT(isolate->InContext());
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(expression, info.GetIsolate());
+    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(expression, String(), TextPosition(), 0, 0, isolate);
+    v8::Handle<v8::Value> result = V8ScriptRunner::runCompiledScript(isolate, script, currentExecutionContext(isolate));
 
     v8::Local<v8::Object> wrappedResult = v8::Object::New(isolate);
     if (tryCatch.HasCaught()) {
