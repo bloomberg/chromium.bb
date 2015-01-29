@@ -13,6 +13,7 @@
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -35,6 +36,10 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
             }
         }
     }
+
+    // FIXME: Remove this state saver when SVGRenderSupport::updateGraphicsContext
+    // no longer affects the global alpha state. See crbug.com/453225
+    GraphicsContextStateSaver stateSaver(*paintInfoBeforeFiltering.context);
 
     SVGRenderingContext renderingContext(m_svgRootInlineBox.renderer(), paintInfoBeforeFiltering);
     if (renderingContext.applyClipMaskAndFilterIfNecessary()) {

@@ -55,6 +55,10 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     FloatRect boundingBox = m_renderSVGShape.paintInvalidationRectInLocalCoordinates();
 
+    // FIXME: Remove this state saver when SVGRenderSupport::updateGraphicsContext
+    // no longer affects the global alpha state. See crbug.com/453225
+    GraphicsContextStateSaver stateSaver(*paintInfoBeforeFiltering.context);
+
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGShape.displayItemClient(), m_renderSVGShape.localTransform());
     {
         SVGRenderingContext renderingContext(m_renderSVGShape, paintInfoBeforeFiltering);
