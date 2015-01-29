@@ -1926,6 +1926,8 @@ interface ScreenOrientation
     method unlock
 interface ScriptProcessorNode
     method constructor
+interface SecurityPolicyViolationEvent
+    method constructor
 interface Selection
     method addRange
     method collapse

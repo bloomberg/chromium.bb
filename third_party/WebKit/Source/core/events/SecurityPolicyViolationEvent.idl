@@ -26,7 +26,6 @@
 
 [
     Constructor(DOMString type, optional SecurityPolicyViolationEventInit eventInitDict),
-    RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures,
 ] interface SecurityPolicyViolationEvent : Event {
     readonly attribute DOMString documentURI;
     readonly attribute DOMString referrer;
