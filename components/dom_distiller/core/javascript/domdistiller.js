@@ -21,7 +21,7 @@
 
     // The OPTIONS placeholder will be replaced with the DomDistillerOptions at
     // runtime.
-    var distiller = context.com.dom_distiller.client.DomDistiller;
+    var distiller = context.org.chromium.distiller.DomDistiller;
     var res = distiller.applyWithOptions($$OPTIONS);
     return res;
   } catch (e) {
