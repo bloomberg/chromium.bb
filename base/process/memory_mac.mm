@@ -4,12 +4,6 @@
 
 #include "base/process/memory.h"
 
-// AddressSanitizer handles heap corruption, and on 64 bit Macs, the malloc
-// system automatically abort()s on heap corruption.
-#if !defined(ADDRESS_SANITIZER) && ARCH_CPU_32_BITS
-#define HANDLE_MEMORY_CORRUPTION_MANUALLY
-#endif
-
 #include <CoreFoundation/CoreFoundation.h>
 #include <errno.h>
 #include <mach/mach.h>
@@ -27,170 +21,12 @@
 #include "third_party/apple_apsl/CFBase.h"
 #include "third_party/apple_apsl/malloc.h"
 
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-#include <dlfcn.h>
-#include <mach-o/nlist.h>
-
-#include "base/threading/thread_local.h"
-#include "third_party/mach_override/mach_override.h"
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-
 namespace base {
 
-// These are helpers for EnableTerminationOnHeapCorruption, which is a no-op
-// on 64 bit Macs.
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-namespace {
-
-// Finds the library path for malloc() and thus the libC part of libSystem,
-// which in Lion is in a separate image.
-const char* LookUpLibCPath() {
-  const void* addr = reinterpret_cast<void*>(&malloc);
-
-  Dl_info info;
-  if (dladdr(addr, &info))
-    return info.dli_fname;
-
-  DLOG(WARNING) << "Could not find image path for malloc()";
-  return NULL;
-}
-
-typedef void(*malloc_error_break_t)(void);
-malloc_error_break_t g_original_malloc_error_break = NULL;
-
-// Returns the function pointer for malloc_error_break. This symbol is declared
-// as __private_extern__ and cannot be dlsym()ed. Instead, use nlist() to
-// get it.
-malloc_error_break_t LookUpMallocErrorBreak() {
-  const char* lib_c_path = LookUpLibCPath();
-  if (!lib_c_path)
-    return NULL;
-
-  // Only need to look up two symbols, but nlist() requires a NULL-terminated
-  // array and takes no count.
-  struct nlist nl[3];
-  bzero(&nl, sizeof(nl));
-
-  // The symbol to find.
-  nl[0].n_un.n_name = const_cast<char*>("_malloc_error_break");
-
-  // A reference symbol by which the address of the desired symbol will be
-  // calculated.
-  nl[1].n_un.n_name = const_cast<char*>("_malloc");
-
-  int rv = nlist(lib_c_path, nl);
-  if (rv != 0 || nl[0].n_type == N_UNDF || nl[1].n_type == N_UNDF) {
-    return NULL;
-  }
-
-  // nlist() returns addresses as offsets in the image, not the instruction
-  // pointer in memory. Use the known in-memory address of malloc()
-  // to compute the offset for malloc_error_break().
-  uintptr_t reference_addr = reinterpret_cast<uintptr_t>(&malloc);
-  reference_addr -= nl[1].n_value;
-  reference_addr += nl[0].n_value;
-
-  return reinterpret_cast<malloc_error_break_t>(reference_addr);
-}
-
-// Combines ThreadLocalBoolean with AutoReset.  It would be convenient
-// to compose ThreadLocalPointer<bool> with base::AutoReset<bool>, but that
-// would require allocating some storage for the bool.
-class ThreadLocalBooleanAutoReset {
- public:
-  ThreadLocalBooleanAutoReset(ThreadLocalBoolean* tlb, bool new_value)
-      : scoped_tlb_(tlb),
-        original_value_(tlb->Get()) {
-    scoped_tlb_->Set(new_value);
-  }
-  ~ThreadLocalBooleanAutoReset() {
-    scoped_tlb_->Set(original_value_);
-  }
-
- private:
-  ThreadLocalBoolean* scoped_tlb_;
-  bool original_value_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadLocalBooleanAutoReset);
-};
-
-base::LazyInstance<ThreadLocalBoolean>::Leaky
-    g_unchecked_alloc = LAZY_INSTANCE_INITIALIZER;
-
-// NOTE(shess): This is called when the malloc library noticed that the heap
-// is fubar.  Avoid calls which will re-enter the malloc library.
-void CrMallocErrorBreak() {
-  g_original_malloc_error_break();
-
-  // Out of memory is certainly not heap corruption, and not necessarily
-  // something for which the process should be terminated. Leave that decision
-  // to the OOM killer.
-  if (errno == ENOMEM)
-    return;
-
-  // The malloc library attempts to log to ASL (syslog) before calling this
-  // code, which fails accessing a Unix-domain socket when sandboxed.  The
-  // failed socket results in writing to a -1 fd, leaving EBADF in errno.  If
-  // UncheckedMalloc() is on the stack, for large allocations (15k and up) only
-  // an OOM failure leads here.  Smaller allocations could also arrive here due
-  // to freelist corruption, but there is no way to distinguish that from OOM at
-  // this point.
-  //
-  // NOTE(shess): I hypothesize that EPERM case in 10.9 is the same root cause
-  // as EBADF.  Unfortunately, 10.9's opensource releases don't include malloc
-  // source code at this time.
-  // <http://crbug.com/312234>
-  if ((errno == EBADF || errno == EPERM) && g_unchecked_alloc.Get().Get())
-    return;
-
-  // A unit test checks this error message, so it needs to be in release builds.
-  char buf[1024] =
-      "Terminating process due to a potential for future heap corruption: "
-      "errno=";
-  char errnobuf[] = {
-    '0' + ((errno / 100) % 10),
-    '0' + ((errno / 10) % 10),
-    '0' + (errno % 10),
-    '\000'
-  };
-  COMPILE_ASSERT(ELAST <= 999, errno_too_large_to_encode);
-  strlcat(buf, errnobuf, sizeof(buf));
-  RAW_LOG(ERROR, buf);
-
-  // Crash by writing to NULL+errno to allow analyzing errno from
-  // crash dump info (setting a breakpad key would re-enter the malloc
-  // library).  Max documented errno in intro(2) is actually 102, but
-  // it really just needs to be "small" to stay on the right vm page.
-  const int kMaxErrno = 256;
-  char* volatile death_ptr = NULL;
-  death_ptr += std::min(errno, kMaxErrno);
-  *death_ptr = '!';
-}
-
-}  // namespace
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-
 void EnableTerminationOnHeapCorruption() {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  // Only override once, otherwise CrMallocErrorBreak() will recurse
-  // to itself.
-  if (g_original_malloc_error_break)
-    return;
-
-  malloc_error_break_t malloc_error_break = LookUpMallocErrorBreak();
-  if (!malloc_error_break) {
-    DLOG(WARNING) << "Could not find malloc_error_break";
-    return;
-  }
-
-  mach_error_t err = mach_override_ptr(
-     (void*)malloc_error_break,
-     (void*)&CrMallocErrorBreak,
-     (void**)&g_original_malloc_error_break);
-
-  if (err != err_none)
-    DLOG(WARNING) << "Could not override malloc_error_break; error = " << err;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
+#if !ARCH_CPU_64_BITS
+  DLOG(WARNING) << "EnableTerminationOnHeapCorruption only works on 64-bit";
+#endif
 }
 
 // ------------------------------------------------------------------------
@@ -293,9 +129,6 @@ memalign_type g_old_memalign_purgeable;
 
 void* oom_killer_malloc(struct _malloc_zone_t* zone,
                         size_t size) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_malloc(zone, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -305,9 +138,6 @@ void* oom_killer_malloc(struct _malloc_zone_t* zone,
 void* oom_killer_calloc(struct _malloc_zone_t* zone,
                         size_t num_items,
                         size_t size) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_calloc(zone, num_items, size);
   if (!result && num_items && size)
     debug::BreakDebugger();
@@ -316,9 +146,6 @@ void* oom_killer_calloc(struct _malloc_zone_t* zone,
 
 void* oom_killer_valloc(struct _malloc_zone_t* zone,
                         size_t size) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_valloc(zone, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -327,18 +154,12 @@ void* oom_killer_valloc(struct _malloc_zone_t* zone,
 
 void oom_killer_free(struct _malloc_zone_t* zone,
                      void* ptr) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   g_old_free(zone, ptr);
 }
 
 void* oom_killer_realloc(struct _malloc_zone_t* zone,
                          void* ptr,
                          size_t size) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_realloc(zone, ptr, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -348,15 +169,12 @@ void* oom_killer_realloc(struct _malloc_zone_t* zone,
 void* oom_killer_memalign(struct _malloc_zone_t* zone,
                           size_t alignment,
                           size_t size) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_memalign(zone, alignment, size);
   // Only die if posix_memalign would have returned ENOMEM, since there are
   // other reasons why NULL might be returned (see
   // http://opensource.apple.com/source/Libc/Libc-583/gen/malloc.c ).
-  if (!result && size && alignment >= sizeof(void*)
-      && (alignment & (alignment - 1)) == 0) {
+  if (!result && size && alignment >= sizeof(void*) &&
+      (alignment & (alignment - 1)) == 0) {
     debug::BreakDebugger();
   }
   return result;
@@ -364,9 +182,6 @@ void* oom_killer_memalign(struct _malloc_zone_t* zone,
 
 void* oom_killer_malloc_purgeable(struct _malloc_zone_t* zone,
                                   size_t size) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_malloc_purgeable(zone, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -376,9 +191,6 @@ void* oom_killer_malloc_purgeable(struct _malloc_zone_t* zone,
 void* oom_killer_calloc_purgeable(struct _malloc_zone_t* zone,
                                   size_t num_items,
                                   size_t size) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_calloc_purgeable(zone, num_items, size);
   if (!result && num_items && size)
     debug::BreakDebugger();
@@ -387,9 +199,6 @@ void* oom_killer_calloc_purgeable(struct _malloc_zone_t* zone,
 
 void* oom_killer_valloc_purgeable(struct _malloc_zone_t* zone,
                                   size_t size) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_valloc_purgeable(zone, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -398,18 +207,12 @@ void* oom_killer_valloc_purgeable(struct _malloc_zone_t* zone,
 
 void oom_killer_free_purgeable(struct _malloc_zone_t* zone,
                                void* ptr) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   g_old_free_purgeable(zone, ptr);
 }
 
 void* oom_killer_realloc_purgeable(struct _malloc_zone_t* zone,
                                    void* ptr,
                                    size_t size) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_realloc_purgeable(zone, ptr, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -419,9 +222,6 @@ void* oom_killer_realloc_purgeable(struct _malloc_zone_t* zone,
 void* oom_killer_memalign_purgeable(struct _malloc_zone_t* zone,
                                     size_t alignment,
                                     size_t size) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-  ScopedClearErrno clear_errno;
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_memalign_purgeable(zone, alignment, size);
   // Only die if posix_memalign would have returned ENOMEM, since there are
   // other reasons why NULL might be returned (see
@@ -521,10 +321,6 @@ bool UncheckedMalloc(size_t size, void** result) {
   *result = malloc(size);
 #else
   if (g_old_malloc) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-    ScopedClearErrno clear_errno;
-    ThreadLocalBooleanAutoReset flag(g_unchecked_alloc.Pointer(), true);
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
     *result = g_old_malloc(malloc_default_zone(), size);
   } else {
     *result = malloc(size);
@@ -539,10 +335,6 @@ bool UncheckedCalloc(size_t num_items, size_t size, void** result) {
   *result = calloc(num_items, size);
 #else
   if (g_old_calloc) {
-#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
-    ScopedClearErrno clear_errno;
-    ThreadLocalBooleanAutoReset flag(g_unchecked_alloc.Pointer(), true);
-#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
     *result = g_old_calloc(malloc_default_zone(), num_items, size);
   } else {
     *result = calloc(num_items, size);

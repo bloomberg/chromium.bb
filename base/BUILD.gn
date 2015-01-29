@@ -903,7 +903,6 @@ component("base") {
       "native_library_posix.cc",
       "strings/sys_string_conversions_posix.cc",
     ]
-    deps += [ "//third_party/mach_override" ]
   } else {
     # Non-Mac.
     sources -= [

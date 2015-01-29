@@ -150,10 +150,8 @@ TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
   ASSERT_DEATH(free(buf), "attempting free on address which "
       "was not malloc\\(\\)-ed");
 #else
-  ASSERT_DEATH(free(buf), "being freed.*\\n?\\.*"
-      "\\*\\*\\* set a breakpoint in malloc_error_break to debug.*\\n?.*"
-      "Terminating process due to a potential for future heap corruption");
-#endif  // ARCH_CPU_64_BITS || defined(ADDRESS_SANITIZER)
+  ADD_FAILURE() << "This test is not supported in this build configuration.";
+#endif
 }
 
 #endif  // defined(OS_MACOSX)

@@ -201,9 +201,6 @@
               '$(SDKROOT)/System/Library/Frameworks/Security.framework',
             ],
           },
-          'dependencies': [
-            '../third_party/mach_override/mach_override.gyp:mach_override',
-          ],
         }],
         ['OS == "ios" and _toolset != "host"', {
           'link_settings': {
