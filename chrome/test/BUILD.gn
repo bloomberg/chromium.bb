@@ -372,15 +372,14 @@ if (!is_android) {
         # direct_dependent_settings in their various targets
         # (net.gyp:net_resources, etc.), but that causes errors in other
         # targets when resulting .res files get referenced multiple times.
-        #"$root_gen_dir/chrome_version/other_version.rc",  TODO(GYP) what generates this?
+        "$root_gen_dir/chrome/other_version.rc",
         "$root_gen_dir/ui/resources/ui_unscaled_resources.rc",
       ]
       deps += [
+        "//chrome:chrome_version_resources",
         "//third_party/isimpledom",
         "//third_party/wtl",
         "//ui/resources",
-
-        # 'chrome.gyp:chrome_version_resources'  TODO(GYP)
       ]
     }
 
@@ -840,11 +839,11 @@ if (!is_android) {
     }
     if (is_win) {
       sources += [
-        #'<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',  TODO(GYP)
+        "$root_gen_dir/chrome/other_version.rc",
         "$root_gen_dir/ui/resources/ui_unscaled_resources.rc",
       ]
       deps += [
-        #'chrome_version_resources',  TODO(GYP)
+        "//chrome:chrome_version_resources",
         "//third_party/wtl",
         "//ui/resources",
       ]
@@ -1072,14 +1071,13 @@ if (!is_android) {
     }
     if (is_win) {
       sources += [
-        #'<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',  TODO(GYP)
+        "$root_gen_dir/chrome/other_version.rc",
         "$root_gen_dir/ui/resources/ui_unscaled_resources.rc",
       ]
       deps += [
+        "//chrome:chrome_version_resources",
         "//third_party/wtl",
         "//ui/resources",
-
-        #'chrome_version_resources',  TODO(GYP)
       ]
     } else {
       sources -= [ "../app/chrome_version.rc.version" ]
@@ -1139,14 +1137,13 @@ if (!is_android) {
     }
     if (is_win) {
       sources += [
-        #'<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',  TODO(GYP)
+        "$root_gen_dir/chrome/other_version.rc",
         "$root_gen_dir/ui/resources/ui_unscaled_resources.rc",
       ]
       deps += [
+        "//chrome:chrome_version_resources",
         "//third_party/wtl",
         "//ui/resources",
-
-        #'chrome_version_resources',  TODO(GYP)
       ]
     } else {
       sources -= [ "../app/chrome_version.rc.version" ]

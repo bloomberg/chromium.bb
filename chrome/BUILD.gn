@@ -31,6 +31,7 @@ if (!is_android) {
 
     if (is_win) {
       sources += [
+        "$target_gen_dir/chrome_exe_version.rc",
         "app/chrome_exe_main_win.cc",
         "app/client_util.cc",
         "app/client_util.h",
@@ -39,6 +40,7 @@ if (!is_android) {
         "//content/app/startup_helper_win.cc",
       ]
       deps += [
+        ":chrome_version_resources",
         ":image_pre_reader",
         "//chrome/browser:chrome_process_finder",
         "//chrome/chrome_watcher",
@@ -146,7 +148,7 @@ shared_library("main_dll") {
     deps += [
       # On Windows, link the dependencies (libraries) that make up actual
       # Chromium functionality into this .dll.
-      #'chrome_version_resources',  TODO(GYP)
+      ":chrome_version_resources",
       "//chrome/app/theme:chrome_unscaled_resources",
       "//chrome_elf",
       "//content/app/resources",
@@ -258,6 +260,51 @@ if (is_win) {
     # TODO(brettw) this should move to $target_gen_dir/version.h and
     # source files including it should reference it via "chrome/version.h"
     output = "$root_gen_dir/version.h"
+  }
+
+  process_version("chrome_exe_version") {
+    source = "//chrome/app/chrome_version.rc.version"
+    output = "$target_gen_dir/chrome_exe_version.rc"
+    extra_args = [
+      "-f",
+      rebase_path("app/chrome_exe.ver", root_build_dir),
+    ]
+  }
+
+  process_version("chrome_dll_version") {
+    source = "//chrome/app/chrome_version.rc.version"
+    output = "$target_gen_dir/chrome_dll_version.rc"
+    extra_args = [
+      "-f",
+      rebase_path("app/chrome_dll.ver", root_build_dir),
+    ]
+  }
+
+  process_version("nacl64_exe_version") {
+    source = "//chrome/app/chrome_version.rc.version"
+    output = "$target_gen_dir/nacl64_exe_version.rc"
+    extra_args = [
+      "-f",
+      rebase_path("app/nacl64_exe.ver", root_build_dir),
+    ]
+  }
+
+  process_version("other_version") {
+    source = "//chrome/app/chrome_version.rc.version"
+    output = "$target_gen_dir/other_version.rc"
+    extra_args = [
+      "-f",
+      rebase_path("app/other.ver", root_build_dir),
+    ]
+  }
+
+  group("chrome_version_resources") {
+    deps = [
+      ":chrome_exe_version",
+      ":chrome_dll_version",
+      ":nacl64_exe_version",
+      ":other_version",
+    ]
   }
 
   source_set("image_pre_reader") {

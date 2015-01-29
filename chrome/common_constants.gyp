@@ -41,20 +41,25 @@
       {
         'action_name': 'Make chrome_version.cc',
         'variables': {
-          'make_version_cc_path': 'tools/build/make_version_cc.py',
+          'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
+          'template_input_path': 'common/chrome_version.cc.version',
         },
         'inputs': [
-          '<(make_version_cc_path)',
-          'VERSION',
+          '<(version_py_path)',
+          '<(version_path)',
+          '<(lastchange_path)',
+          '<(template_input_path)',
         ],
         'outputs': [
           '<(INTERMEDIATE_DIR)/chrome_version.cc',
         ],
         'action': [
           'python',
-          '<(make_version_cc_path)',
+          '<(version_py_path)',
+          '-f', '<(version_path)',
+          '-f', '<(lastchange_path)',
+          '<(template_input_path)',
           '<@(_outputs)',
-          '<(version_full)',
         ],
         'process_outputs_as_sources': 1,
       },

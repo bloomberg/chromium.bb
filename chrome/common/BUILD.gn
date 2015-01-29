@@ -237,6 +237,11 @@ process_version("version") {
   output = "$target_gen_dir/chrome_version_info_values.h"
 }
 
+process_version("make_chrome_version") {
+  source = "chrome_version.cc.version"
+  output = "$target_gen_dir/chrome_version.cc"
+}
+
 # GN version: chrome/common_constants.gyp:common_constants
 static_library("constants") {
   sources = [
@@ -264,8 +269,10 @@ static_library("constants") {
     "widevine_cdm_constants.cc",
     "widevine_cdm_constants.h",
   ]
+  sources += get_target_outputs(":make_chrome_version")
 
   deps = [
+    ":make_chrome_version",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//components/bookmarks/common",
