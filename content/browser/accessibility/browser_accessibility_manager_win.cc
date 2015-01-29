@@ -76,15 +76,22 @@ IAccessible* BrowserAccessibilityManagerWin::GetParentIAccessible() {
 void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
     DWORD event, BrowserAccessibility* node) {
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
-  if (!delegate)
+  if (!delegate) {
+    // This line and other LOG(WARNING) lines are temporary, to debug
+    // flaky failures in DumpAccessibilityEvent* tests.
+    // http://crbug.com/440579
+    LOG(WARNING) << "Not firing AX event because of no delegate";
     return;
+  }
 
   if (!node->IsNative())
     return;
 
   HWND hwnd = delegate->AccessibilityGetAcceleratedWidget();
-  if (!hwnd)
+  if (!hwnd) {
+    LOG(WARNING) << "Not firing AX event because of no hwnd";
     return;
+  }
 
   // Inline text boxes are an internal implementation detail, we don't
   // expose them to Windows.
@@ -176,8 +183,10 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
   BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
-  if (!root_delegate || !root_delegate->AccessibilityGetAcceleratedWidget())
+  if (!root_delegate || !root_delegate->AccessibilityGetAcceleratedWidget()) {
+    LOG(WARNING) << "Not firing AX event because of no root_delegate or hwnd";
     return;
+  }
 
   // Inline text boxes are an internal implementation detail, we don't
   // expose them to Windows.
