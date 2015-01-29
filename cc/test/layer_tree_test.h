@@ -144,6 +144,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostSetVisibleToMainThread(bool visible);
   void PostSetNextCommitForcesRedrawToMainThread();
   void PostCompositeImmediatelyToMainThread();
+  void PostEndTestToMainThread();
 
   void DoBeginTest();
   void Timeout();

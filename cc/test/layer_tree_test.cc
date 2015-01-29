@@ -573,6 +573,11 @@ void LayerTreeTest::PostCompositeImmediatelyToMainThread() {
                  main_thread_weak_ptr_));
 }
 
+void LayerTreeTest::PostEndTestToMainThread() {
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&LayerTreeTest::EndTest, main_thread_weak_ptr_));
+}
+
 void LayerTreeTest::WillBeginTest() {
   layer_tree_host_->SetLayerTreeHostClientReady();
 }

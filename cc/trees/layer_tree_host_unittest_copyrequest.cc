@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/layers/layer_iterator.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/test/fake_content_layer.h"
@@ -965,6 +966,109 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
 
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostCopyRequestTestShutdownBeforeCopy);
+
+class LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest
+    : public LayerTreeHostCopyRequestTest {
+ protected:
+  void SetupTree() override {
+    scoped_refptr<FakeContentLayer> root = FakeContentLayer::Create(&client_);
+    root->SetBounds(gfx::Size(20, 20));
+
+    child_ = FakeContentLayer::Create(&client_);
+    child_->SetBounds(gfx::Size(10, 10));
+    root->AddChild(child_);
+    child_->SetHideLayerAndSubtree(true);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostCopyRequestTest::SetupTree();
+  }
+
+  void BeginTest() override {
+    num_draws_ = 0;
+    copy_happened_ = false;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DidCommitAndDrawFrame() override {
+    // Send a copy request after the first commit.
+    if (layer_tree_host()->source_frame_number() == 1) {
+      child_->RequestCopyOfOutput(
+          CopyOutputRequest::CreateBitmapRequest(base::Bind(
+              &LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest::
+                  CopyOutputCallback,
+              base::Unretained(this))));
+    }
+  }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    LayerImpl* root = host_impl->active_tree()->root_layer();
+    LayerImpl* child = root->children()[0];
+
+    bool saw_root = false;
+    bool saw_child = false;
+    for (LayerIterator<LayerImpl> it = LayerIterator<LayerImpl>::Begin(
+             frame_data->render_surface_layer_list);
+         it != LayerIterator<LayerImpl>::End(
+                   frame_data->render_surface_layer_list);
+         ++it) {
+      if (it.represents_itself()) {
+        if (*it == root)
+          saw_root = true;
+        else if (*it == child)
+          saw_child = true;
+        else
+          NOTREACHED();
+      }
+    }
+
+    ++num_draws_;
+    // The first draw has no copy request. The 2nd draw has a copy request, the
+    // 3rd should not again.
+    switch (num_draws_) {
+      case 1:
+        // Only the root layer draws, the child is hidden.
+        EXPECT_TRUE(saw_root);
+        EXPECT_FALSE(saw_child);
+        break;
+      case 2:
+        // Copy happening here, the child will draw.
+        EXPECT_TRUE(saw_root);
+        EXPECT_TRUE(saw_child);
+        // Make another draw happen after doing the copy request.
+        host_impl->SetNeedsRedrawRect(gfx::Rect(1, 1));
+        break;
+      case 3:
+        // If LayerTreeHostImpl does the wrong thing, it will try to draw the
+        // layer which had a copy request. But only the root should draw.
+        EXPECT_TRUE(saw_root);
+        EXPECT_FALSE(saw_child);
+
+        // End the test! Don't race with copy request callbacks, so post the end
+        // to the main thread.
+        EXPECT_TRUE(copy_happened_);
+        PostEndTestToMainThread();
+        break;
+    }
+    return draw_result;
+  }
+
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+    EXPECT_FALSE(TestEnded());
+    copy_happened_ = true;
+  }
+
+  void AfterTest() override {}
+
+  scoped_refptr<FakeContentLayer> child_;
+  FakeContentLayerClient client_;
+  int num_draws_;
+  bool copy_happened_;
+};
+
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(
+    LayerTreeHostCopyRequestTestMultipleDrawsWithHiddenCopyRequest);
 
 }  // namespace
 }  // namespace cc

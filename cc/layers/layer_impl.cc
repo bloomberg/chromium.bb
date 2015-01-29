@@ -237,6 +237,7 @@ void LayerImpl::TakeCopyRequestsAndTransformToTarget(
   }
 
   layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
+  layer_tree_impl()->set_needs_update_draw_properties();
 }
 
 void LayerImpl::ClearRenderSurfaceLayerList() {
