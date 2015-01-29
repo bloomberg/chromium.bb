@@ -23260,6 +23260,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.LinuxBackendStatistics">
+  <owner>dvadym@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    Information about usage of password storage backends on Linux. It also
+    includes whether a command line flag for a specific backend is given.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.NumPasswordsDeletedByBulkDelete">
   <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
@@ -50446,6 +50455,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Cras"/>
 </enum>
 
+<enum name="LinuxBackendUsage" type="int">
+  <int value="0" label="KDE_NOFLAG_PLAINTEXT"/>
+  <int value="1" label="KDE_NOFLAG_KWALLET"/>
+  <int value="2" label="KDE_KWALLETFLAG_PLAINTEXT"/>
+  <int value="3" label="KDE_KWALLETFLAG_KWALLET"/>
+  <int value="4" label="KDE_GNOMEFLAG_PLAINTEXT"/>
+  <int value="5" label="KDE_GNOMEFLAG_KEYRING"/>
+  <int value="6" label="KDE_GNOMEFLAG_LIBSECRET"/>
+  <int value="7" label="KDE_BASICFLAG_PLAINTEXT"/>
+  <int value="8" label="GNOME_NOFLAG_PLAINTEXT"/>
+  <int value="9" label="GNOME_NOFLAG_KEYRING"/>
+  <int value="10" label="GNOME_NOFLAG_LIBSECRET"/>
+  <int value="11" label="GNOME_GNOMEFLAG_PLAINTEXT"/>
+  <int value="12" label="GNOME_GNOMEFLAG_KEYRING"/>
+  <int value="13" label="GNOME_GNOMEFLAG_LIBSECRET"/>
+  <int value="14" label="GNOME_KWALLETFLAG_PLAINTEXT"/>
+  <int value="15" label="GNOME_KWALLETFLAG_KWALLET"/>
+  <int value="16" label="GNOME_BASICFLAG_PLAINTEXT"/>
+  <int value="17" label="OTHER_PLAINTEXT"/>
+  <int value="18" label="OTHER_KWALLET"/>
+  <int value="19" label="OTHER_KEYRING"/>
+  <int value="20" label="OTHER_LIBSECRET"/>
+</enum>
+
 <enum name="LinuxGlibcVersion" type="int">
   <int value="0" label="Not Parseable"/>
   <int value="1" label="Unknown"/>
@@ -62022,6 +62055,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="group_19" label="group 19"/>
   <suffix name="group_20" label="group 20"/>
   <suffix name="" label=""/>
+  <affected-histogram name="PasswordManager.LinuxBackendStatistics"/>
   <affected-histogram name="PasswordManager.ProvisionalSaveFailure"/>
   <affected-histogram
       name="PasswordManager.SavePasswordPromptDisappearedQuickly"/>
