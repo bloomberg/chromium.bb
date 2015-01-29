@@ -350,8 +350,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
       /**
        * @type {(undefined|
        *         {currentDirectoryURL: (string|undefined),
-       *          selectionURL: (string|undefined),
-       *          displayedId: (string|undefined)})}
+       *          selectionURL: (string|undefined)})}
        */
       (opt_appState);
 
@@ -382,9 +381,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
                   contentWindow.appState.selectionURL) {
             continue;
           }
-
-          AppWindowWrapper.focusOnDesktop(
-              window.background.appWindows[key], opt_appState.displayedId);
+          window.background.appWindows[key].focus();
           if (opt_callback)
             opt_callback(key);
           onTaskCompleted();
@@ -419,9 +416,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
           continue;
 
         if (!window.background.appWindows[key].isMinimized()) {
-          AppWindowWrapper.focusOnDesktop(
-              window.background.appWindows[key],
-              (opt_appState || {}).displayedId);
+          window.background.appWindows[key].focus();
           if (opt_callback)
             opt_callback(key);
           onTaskCompleted();
@@ -433,9 +428,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         if (!key.match(FILES_ID_PATTERN))
           continue;
 
-        AppWindowWrapper.focusOnDesktop(
-            window.background.appWindows[key],
-            (opt_appState || {}).displayedId);
+        window.background.appWindows[key].focus();
         if (opt_callback)
           opt_callback(key);
         onTaskCompleted();
@@ -455,8 +448,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         appId,
         FILE_MANAGER_WINDOW_CREATE_OPTIONS);
     appWindow.launch(opt_appState || {}, false, function() {
-      AppWindowWrapper.focusOnDesktop(
-          appWindow.rawAppWindow, (opt_appState || {}).displayedId);
+      appWindow.rawAppWindow.focus();
       if (opt_callback)
         opt_callback(appId);
       onTaskCompleted();

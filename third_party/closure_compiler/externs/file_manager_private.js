@@ -6,14 +6,6 @@
 
 /**
  * @typedef {{
- *   scale1xUrl: string,
- *   scale2xUrl: string
- * }}
- */
-var ImageSet;
-
-/**
- * @typedef {{
  *   taskId: string,
  *   title: string,
  *   iconUrl: string,
@@ -544,13 +536,6 @@ chrome.fileManagerPrivate.installWebstoreItem = function(itemId, silentInstallat
  * |showingProfile| ID of the profile that shows the application window.
  */
 chrome.fileManagerPrivate.getProfiles = function(callback) {};
-
-/**
- * Moves the window to other user's desktop.
- * @param {string} profileId
- * @param {Function=} callback Callback that does not take arguments.
- */
-chrome.fileManagerPrivate.visitDesktop = function(profileId, callback) {};
 
 /**
  * Opens inspector window. |type| InspectionType which specifies how to open

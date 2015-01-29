@@ -56,31 +56,6 @@ AppWindowWrapper.makeGeometryKey = function(url) {
 };
 
 /**
- * Focuses the window on the specified desktop.
- * @param {chrome.app.window.AppWindow} appWindow Application window.
- * @param {string=} opt_profileId The profiled ID of the target window. If it is
- *     dropped, the window is focused on the current window.
- */
-AppWindowWrapper.focusOnDesktop = function(appWindow, opt_profileId) {
-  new Promise(function(onFulfilled, onRejected) {
-    if (opt_profileId) {
-      onFulfilled(opt_profileId);
-    } else {
-      chrome.fileManagerPrivate.getProfiles(
-          function(profiles, currentId, displayedId) {
-            onFulfilled(currentId);
-          });
-    }
-  }).then(function(profileId) {
-    appWindow.contentWindow.chrome.fileManagerPrivate.visitDesktop(
-        profileId,
-        function() {
-          appWindow.focus();
-        });
-  });
-};
-
-/**
  * Shift distance to avoid overlapping windows.
  * @type {number}
  * @const

@@ -46822,7 +46822,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="666" label="LOGPRIVATE_STARTNETINTERNALSWATCH"/>
   <int value="667" label="LOGPRIVATE_STOPNETINTERNALSWATCH"/>
   <int value="668" label="FILEMANAGERPRIVATE_GETPROFILES"/>
-  <int value="669" label="FILEMANAGERPRIVATE_VISITDESKTOP"/>
+  <int value="669" label="DELETED_FILEMANAGERPRIVATE_VISITDESKTOP"/>
   <int value="670" label="VIRTUALKEYBOARDPRIVATE_GETKEYBOARDCONFIG"/>
   <int value="671" label="HID_GETDEVICES"/>
   <int value="672" label="HID_CONNECT"/>

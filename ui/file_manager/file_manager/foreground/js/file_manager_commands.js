@@ -518,14 +518,10 @@ CommandHandler.COMMANDS_['new-window'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    chrome.fileManagerPrivate.getProfiles(
-        function(profiles, currentId, displayedId) {
-          fileManager.backgroundPage.launchFileManager({
-            currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
-                fileManager.getCurrentDirectoryEntry().toURL(),
-            displayedId: currentId !== displayedId ? displayedId : undefined
-          });
-        });
+    fileManager.backgroundPage.launchFileManager({
+      currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
+          fileManager.getCurrentDirectoryEntry().toURL()
+    });
   },
   /**
    * @param {!Event} event Command event.

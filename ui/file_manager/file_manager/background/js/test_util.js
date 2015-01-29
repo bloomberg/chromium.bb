@@ -280,19 +280,6 @@ test.util.sync.getExecutedTasks = function(contentWindow) {
 };
 
 /**
- * Invoke chrome.fileManagerPrivate.visitDesktop(profileId) to cause window
- * teleportation.
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {string} profileId Destination profile's ID.
- * @return {boolean} Always return true.
- */
-test.util.sync.visitDesktop = function(contentWindow, profileId) {
-  contentWindow.chrome.fileManagerPrivate.visitDesktop(profileId);
-  return true;
-};
-
-/**
  * Runs the 'Move to profileId' menu.
  *
  * @param {Window} contentWindow Window to be tested.

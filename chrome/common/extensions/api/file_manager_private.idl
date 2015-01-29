@@ -143,14 +143,6 @@ enum DriveShareType {
   can_view
 };
 
-// ImageSet that represents multi-scale images.
-dictionary ImageSet {
-  // 1x scale URL.
-  DOMString scale1xUrl;
-  // 2x scale URL.
-  DOMString scale2xUrl;
-};
-
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -824,10 +816,6 @@ interface Functions {
 
   // Obtains a list of profiles that are logged-in.
   static void getProfiles(GetProfilesCallback callback);
-
-  // Moves the window to other user's desktop.
-  static void visitDesktop(DOMString profileId,
-                           optional SimpleCallback callback);
 
   // Opens inspector window.
   // |type| InspectionType which specifies how to open inspector.

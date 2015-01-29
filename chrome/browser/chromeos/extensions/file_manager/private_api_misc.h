@@ -150,19 +150,6 @@ class FileManagerPrivateGetProfilesFunction
   bool RunSync() override;
 };
 
-class FileManagerPrivateVisitDesktopFunction
-    : public ChromeSyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.visitDesktop",
-                             FILEMANAGERPRIVATE_VISITDESKTOP);
-
- protected:
-  ~FileManagerPrivateVisitDesktopFunction() override {}
-
-  // AsyncExtensionFunction overrides.
-  bool RunSync() override;
-};
-
 // Implements the chrome.fileManagerPrivate.openInspector method.
 class FileManagerPrivateOpenInspectorFunction
     : public ChromeSyncExtensionFunction {

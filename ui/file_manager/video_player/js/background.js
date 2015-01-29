@@ -132,7 +132,7 @@ function openVideoPlayerWindow(playlist, reopen) {
       appWindow.contentWindow.loadMockCastExtensionForTest = true;
 
     videoPlayer.setIcon(ICON_IMAGE);
-    AppWindowWrapper.focusOnDesktop(appWindow);
+    appWindow.focus();
 
     return windowId;
   }.wrap()).catch(function(error) {

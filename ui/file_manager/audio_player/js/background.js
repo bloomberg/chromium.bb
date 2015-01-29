@@ -156,7 +156,7 @@ function open(playlist, reopen) {
     });
   }).then(function() {
     audioPlayer.setIcon('icons/audio-player-64.png');
-    AppWindowWrapper.focusOnDesktop(audioPlayer.rawAppWindow);
+    audioPlayer.rawAppWindow.focus();
   }).catch(function(error) {
     console.error('Launch failed' + error.stack || error);
     return Promise.reject(error);

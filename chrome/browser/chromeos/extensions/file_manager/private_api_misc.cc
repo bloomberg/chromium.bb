@@ -388,50 +388,6 @@ bool FileManagerPrivateGetProfilesFunction::RunSync() {
   return true;
 }
 
-bool FileManagerPrivateVisitDesktopFunction::RunSync() {
-  using api::file_manager_private::VisitDesktop::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
-  const std::vector<linked_ptr<api::file_manager_private::ProfileInfo> >&
-      profiles = GetLoggedInProfileInfoList();
-
-  chrome::MultiUserWindowManager* const window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
-  DCHECK(window_manager);
-
-  // Check if the target user is logged-in or not.
-  bool logged_in = false;
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    if (profiles[i]->profile_id == params->profile_id) {
-      logged_in = true;
-      break;
-    }
-  }
-  if (!logged_in) {
-    SetError("The user is not logged-in now.");
-    return false;
-  }
-
-  // Look for the current app window.
-  AppWindow* const app_window = GetCurrentAppWindow(this);
-  if (!app_window) {
-    SetError("Target window is not found.");
-    return false;
-  }
-
-  // Move the window to the user's desktop.
-  window_manager->ShowWindowForUser(app_window->GetNativeWindow(),
-                                    params->profile_id);
-
-  // Check the result.
-  if (!window_manager->IsWindowOnDesktopOfUser(app_window->GetNativeWindow(),
-                                               params->profile_id)) {
-    SetError("The window cannot visit the desktop.");
-    return false;
-  }
-
-  return true;
-}
-
 bool FileManagerPrivateOpenInspectorFunction::RunSync() {
   using extensions::api::file_manager_private::OpenInspector::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
