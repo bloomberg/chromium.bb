@@ -32,14 +32,15 @@ bool AwMessagePortClient::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AwMessagePortClient, message)
-    IPC_MESSAGE_HANDLER(AwMessagePortMsg_Message, OnPostMessage)
+    IPC_MESSAGE_HANDLER(AwMessagePortMsg_WebToAppMessage, OnWebToAppMessage)
+    IPC_MESSAGE_HANDLER(AwMessagePortMsg_AppToWebMessage, OnAppToWebMessage)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
 }
 
-void AwMessagePortClient::OnPostMessage(
+void AwMessagePortClient::OnWebToAppMessage(
     int message_port_id,
     const base::string16& message,
     const vector<int>& sent_message_port_ids) {
@@ -61,10 +62,37 @@ void AwMessagePortClient::OnPostMessage(
   converter->SetRegExpAllowed(true);
   base::ListValue result;
   result.Append(converter->FromV8Value(v8value, context));
-  Send(new AwMessagePortHostMsg_ConvertedMessage(render_frame()->GetRoutingID(),
-                                                 message_port_id,
-                                                 result,
-                                                 sent_message_port_ids));
+  Send(new AwMessagePortHostMsg_ConvertedWebToAppMessage(
+      render_frame()->GetRoutingID(), message_port_id,
+      result, sent_message_port_ids));
+}
+
+void AwMessagePortClient::OnAppToWebMessage(
+    int message_port_id,
+    const base::string16& message,
+    const vector<int>& sent_message_port_ids) {
+  v8::HandleScope handle_scope(blink::mainThreadIsolate());
+  blink::WebFrame* main_frame =
+      render_frame()->GetRenderView()->GetWebView()->mainFrame();
+  if (main_frame == nullptr) {
+    return;
+  }
+  v8::Local<v8::Context> context = main_frame->mainWorldScriptContext();
+  v8::Context::Scope context_scope(context);
+  DCHECK(!context.IsEmpty());
+  scoped_ptr<V8ValueConverter> converter;
+  converter.reset(V8ValueConverter::create());
+  converter->SetDateAllowed(true);
+  converter->SetRegExpAllowed(true);
+  scoped_ptr<base::Value> value(new base::StringValue(message));
+  v8::Handle<v8::Value> result_value = converter->ToV8Value(value.get(),
+                                                           context);
+  WebSerializedScriptValue serialized_script_value =
+      WebSerializedScriptValue::serialize(result_value);
+  base::string16 result = serialized_script_value.toString();
+  Send(new AwMessagePortHostMsg_ConvertedAppToWebMessage(
+      render_frame()->GetRoutingID(), message_port_id,
+      result, sent_message_port_ids));
 }
 
 }

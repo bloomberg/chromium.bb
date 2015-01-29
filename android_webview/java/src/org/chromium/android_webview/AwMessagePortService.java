@@ -106,11 +106,36 @@ public class AwMessagePortService {
         mMessageHandlerThread.start();
     }
 
+    public void postMessage(int senderId, String message, int[] sentPorts) {
+        // verify that webview still owns the port (not transferred)
+        if (mPortStorage.get(senderId) == null) {
+            throw new IllegalStateException("Cannot post to unknown port " + senderId);
+        }
+        removeSentPorts(sentPorts);
+        if (mNativeMessagePortService == 0) return;
+        nativePostAppToWebMessage(mNativeMessagePortService, senderId, message, sentPorts);
+    }
+
+    public void removeSentPorts(int[] sentPorts) {
+        // verify that webview owns all the ports that are transferred
+        if (sentPorts != null) {
+            for (int port : sentPorts) {
+                MessagePort p = mPortStorage.get(port);
+                if (p == null) {
+                    throw new IllegalStateException("Cannot transfer unknown port " + port);
+                }
+                p.close();
+                // close the port so users can get feedback if they use in future.
+                mPortStorage.put(port, null);
+            }
+        }
+    }
+
     private MessagePort addPort(int portId) {
         if (mPortStorage.get(portId) != null) {
             throw new IllegalStateException("Port already exists");
         }
-        MessagePort m = new MessagePort(portId);
+        MessagePort m = new MessagePort(portId, this);
         mPortStorage.put(portId, m);
         return m;
     }
@@ -136,4 +161,6 @@ public class AwMessagePortService {
     }
 
     private native long nativeInitAwMessagePortService();
+    private native void nativePostAppToWebMessage(long nativeAwMessagePortServiceImpl,
+            int senderId, String message, int[] portIds);
 }

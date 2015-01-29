@@ -24,9 +24,13 @@ class AwMessagePortClient : public content::RenderFrameObserver {
   // RenderFrameObserver
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void OnPostMessage(int message_port_id,
-                     const base::string16& message,
-                     const std::vector<int>& sent_message_port_ids);
+  void OnWebToAppMessage(int message_port_id,
+                         const base::string16& message,
+                         const std::vector<int>& sent_message_port_ids);
+  void OnAppToWebMessage(int message_port_id,
+                         const base::string16& message,
+                         const std::vector<int>& sent_message_port_ids);
+
   DISALLOW_COPY_AND_ASSIGN(AwMessagePortClient);
 };
 

@@ -15,9 +15,12 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.MessageChannel;
 import org.chromium.android_webview.MessagePort;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.net.test.util.TestWebServer;
+
+import java.util.concurrent.CountDownLatch;
 
 /**
  * The tests for content postMessage API.
@@ -141,6 +144,38 @@ public class PostMessageTest extends AwTestBase {
         assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testTransferringSamePortTwiceNotAllowed() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ValueCallback<MessageChannel> callback = new ValueCallback<MessageChannel>() {
+                    @Override
+                    public void onReceiveValue(MessageChannel channel) {
+                        mAwContents.postMessageToFrame(null, "1", SOURCE_ORIGIN,
+                                mWebServer.getBaseUrl(),
+                                new MessagePort[]{channel.port2()});
+                        // retransfer the port. This should fail with an exception
+                        try {
+                            mAwContents.postMessageToFrame(null, "2", SOURCE_ORIGIN,
+                                    mWebServer.getBaseUrl(),
+                                    new MessagePort[]{channel.port2()});
+                        } catch (IllegalStateException ex) {
+                            latch.countDown();
+                            return;
+                        }
+                        fail();
+                    }
+                };
+                mAwContents.createMessageChannel(callback);
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
     private static class ChannelContainer {
         private boolean mReady;
         private MessageChannel mChannel;
@@ -173,11 +208,18 @@ public class PostMessageTest extends AwTestBase {
         }
     }
 
-    // Verify that a channel can be created and basic full duplex communication
-    // can happen on it.
+    // Verify that messages from JS can be waited on a UI thread.
     @SmallTest
+    // TODO this test turned out to be flaky. When it fails, it always fails in IPC.
+    // When a postmessage is received, an IPC message is sent from browser to renderer
+    // to convert the postmessage from WebSerializedScriptValue to a string. The IPC is sent
+    // and seems to be received by IPC in renderer, but then nothing else seems to happen.
+    // The issue seems like blocking the UI thread causes a racing SYNC ipc from renderer
+    // to browser to block waiting for UI thread, and this would in turn block renderer
+    // doing the conversion.
+    @DisabledTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
-    public void testCreateChannel() throws Throwable {
+    public void testReceiveMessageInBackgroundThread() throws Throwable {
         loadPage(TEST_PAGE);
         final ChannelContainer channelContainer = new ChannelContainer();
         runTestOnUiThread(new Runnable() {
@@ -218,7 +260,51 @@ public class PostMessageTest extends AwTestBase {
             }
         });
         assertEquals(JS_MESSAGE, channelContainer.getMessage());
-        // TODO(sgurun) verify communication from Java to JS on the created channel
+    }
+
+    private static final String ECHO_PAGE =
+            "<!DOCTYPE html><html><body>"
+            + "    <script type=\"text/javascript\">"
+            + "        onmessage = function (e) {"
+            + "            var myPort = e.ports[0];"
+            + "            myPort.onmessage = function(e) {"
+            + "                myPort.postMessage(e.data + \"" + JS_MESSAGE + "\"); }"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+
+    // Verify that a channel can be created and basic full duplex communication
+    // can happen on it. Do this by sending a message to JS and let it echo'ing
+    // the message with some text prepended to it.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testMessageChannel() throws Throwable {
+        final String hello = "HELLO";
+        final ChannelContainer channelContainer = new ChannelContainer();
+        loadPage(ECHO_PAGE);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ValueCallback<MessageChannel> callback = new ValueCallback<MessageChannel>() {
+                    @Override
+                    public void onReceiveValue(MessageChannel channel) {
+                        channel.port1().setMessageHandler(new MessagePort.MessageHandler() {
+                            @Override
+                            public void onMessage(String message) {
+                                channelContainer.setMessage(message);
+                            }
+                        });
+                        mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
+                                mWebServer.getBaseUrl(), new MessagePort[]{channel.port2()});
+                        channel.port1().postMessage(hello, null);
+                    }
+                };
+                mAwContents.createMessageChannel(callback);
+            }
+        });
+        // wait for the asynchronous response from JS
+        channelContainer.waitForMessage();
+        assertEquals(hello + JS_MESSAGE, channelContainer.getMessage());
     }
 
     private static final String WORKER_MESSAGE = "from_worker";

@@ -33,14 +33,24 @@ class AwMessagePortServiceImpl : public AwMessagePortService {
       scoped_refptr<AwMessagePortMessageFilter> filter);
 
   // AwMessagePortService implementation
-  void OnConvertedMessage(
+  void OnConvertedWebToAppMessage(
       int message_port_id,
       const base::ListValue& message,
       const std::vector<int>& sent_message_port_ids) override;
   void OnMessagePortMessageFilterClosing(
       AwMessagePortMessageFilter* filter) override;
 
+  // Methods called from Java.
+  void PostAppToWebMessage(JNIEnv* env, jobject object, int sender_id,
+      jstring message, jintArray sent_ports);
+
+  void RemoveSentPorts(const std::vector<int>& sent_ports);
+
 private:
+  void PostAppToWebMessageOnIOThread(
+      int sender_id,
+      base::string16* message,
+      std::vector<int>* sent_ports);
   void CreateMessageChannelOnIOThread(
       scoped_refptr<AwMessagePortMessageFilter> filter,
       int* port1,

@@ -1070,14 +1070,22 @@ void AwContents::TrimMemory(JNIEnv* env,
 //               main frame is supported at this time, see crbug.com/389721)
 void AwContents::PostMessageToFrame(JNIEnv* env, jobject obj,
     jstring frame_name, jstring message, jstring source_origin,
-    jstring target_origin, jintArray msgPorts) {
+    jstring target_origin, jintArray sent_ports) {
 
   base::string16 j_source_origin(ConvertJavaStringToUTF16(env, source_origin));
   base::string16 j_target_origin(ConvertJavaStringToUTF16(env, target_origin));
   base::string16 j_message(ConvertJavaStringToUTF16(env, message));
   std::vector<int> j_ports;
-  if (msgPorts != nullptr)
-    base::android::JavaIntArrayToIntVector(env, msgPorts, &j_ports);
+
+  if (sent_ports != nullptr) {
+    base::android::JavaIntArrayToIntVector(env, sent_ports, &j_ports);
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&AwMessagePortServiceImpl::RemoveSentPorts,
+                   base::Unretained(AwMessagePortServiceImpl::GetInstance()),
+                   j_ports));
+  }
 
   content::MessagePortProvider::PostMessageToFrame(web_contents_.get(),
                                                    j_source_origin,

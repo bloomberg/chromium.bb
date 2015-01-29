@@ -23,6 +23,10 @@ class AwMessagePortMessageFilter : public content::BrowserMessageFilter,
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
 
+  void SendAppToWebMessage(int msg_port_route_id,
+                           const base::string16& message,
+                           const std::vector<int>& sent_message_port_ids);
+
   // MessagePortDelegate implementation.
   void SendMessage(int msg_port_route_id,
                    const base::string16& message,
@@ -32,6 +36,11 @@ class AwMessagePortMessageFilter : public content::BrowserMessageFilter,
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<AwMessagePortMessageFilter>;
+
+  void OnConvertedAppToWebMessage(
+      int msg_port_id,
+      const base::string16& message,
+      const std::vector<int>& sent_message_port_ids);
 
   ~AwMessagePortMessageFilter() override;
 

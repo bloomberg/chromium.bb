@@ -17,6 +17,7 @@
 namespace android_webview {
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -72,7 +73,7 @@ void AwMessagePortServiceImpl::CreateMessageChannel(
                  base::Owned(portId2)));
 }
 
-void AwMessagePortServiceImpl::OnConvertedMessage(
+void AwMessagePortServiceImpl::OnConvertedWebToAppMessage(
     int message_port_id,
     const base::ListValue& message,
     const std::vector<int>& sent_message_port_ids) {
@@ -114,12 +115,47 @@ void AwMessagePortServiceImpl::OnMessagePortMessageFilterClosing(
   }
 }
 
+void AwMessagePortServiceImpl::PostAppToWebMessage(JNIEnv* env, jobject obj,
+    int sender_id, jstring message, jintArray sent_ports) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::string16* j_message = new base::string16;
+  ConvertJavaStringToUTF16(env, message, j_message);
+  std::vector<int>* j_sent_ports = new std::vector<int>;
+  if (sent_ports != nullptr)
+    base::android::JavaIntArrayToIntVector(env, sent_ports, j_sent_ports);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&AwMessagePortServiceImpl::PostAppToWebMessageOnIOThread,
+                 base::Unretained(this),
+                 sender_id,
+                 base::Owned(j_message),
+                 base::Owned(j_sent_ports)));
+}
+
+void AwMessagePortServiceImpl::RemoveSentPorts(
+    const std::vector<int>& sent_ports) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Remove the filters that are associated with the transferred ports
+  for (const auto& iter : sent_ports)
+    ports_.erase(iter);
+}
+
+void AwMessagePortServiceImpl::PostAppToWebMessageOnIOThread(
+    int sender_id,
+    base::string16* message,
+    std::vector<int>* sent_ports) {
+  RemoveSentPorts(*sent_ports);
+  ports_[sender_id]->SendAppToWebMessage(sender_id, *message, *sent_ports);
+}
+
+
 void AwMessagePortServiceImpl::CreateMessageChannelOnIOThread(
     scoped_refptr<AwMessagePortMessageFilter> filter,
     int* portId1,
     int* portId2) {
-  content::MessagePortProvider::CreateMessageChannel(filter.get(), portId1,
-      portId2);
+  MessagePortProvider::CreateMessageChannel(filter.get(), portId1, portId2);
   AddPort(*portId1, filter.get());
   AddPort(*portId2, filter.get());
 }

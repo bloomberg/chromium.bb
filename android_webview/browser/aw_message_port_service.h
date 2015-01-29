@@ -18,7 +18,7 @@ class AwMessagePortService  {
  public:
   virtual ~AwMessagePortService() { }
 
-  virtual void OnConvertedMessage(
+  virtual void OnConvertedWebToAppMessage(
       int message_port_id,
       const base::ListValue& message,
       const std::vector<int>& sent_message_port_ids) = 0;

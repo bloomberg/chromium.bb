@@ -42,6 +42,11 @@ class CONTENT_EXPORT MessagePortProvider {
                                    int* port1,
                                    int* port2);
 
+  // Posts a MessageEvent to a message port associated with a message channel.
+  static void PostMessageToPort(int sender_port_id,
+                                const base::string16& data,
+                                const std::vector<int>& sent_ports);
+
   // Cleanup the message ports that belong to the closing delegate.
   static void OnMessagePortDelegateClosing(MessagePortDelegate * delegate);
 

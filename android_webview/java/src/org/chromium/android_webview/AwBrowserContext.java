@@ -69,11 +69,14 @@ public class AwBrowserContext {
         return mLocalKeyStore;
     }
 
-    public AwMessagePortService createMessagePortService() {
+    public AwMessagePortService getMessagePortService() {
+        return mMessagePortService;
+    }
+
+    public void createMessagePortServiceIfNecessary() {
         if (mMessagePortService == null) {
             mMessagePortService = new AwMessagePortService();
         }
-        return mMessagePortService;
     }
 
     /**
