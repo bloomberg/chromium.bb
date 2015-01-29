@@ -23,8 +23,8 @@ bool RunExchange(P224EncryptedKeyExchange* client,
                  bool is_password_same) {
   for (;;) {
     std::string client_message, server_message;
-    client_message = client->GetMessage();
-    server_message = server->GetMessage();
+    client_message = client->GetNextMessage();
+    server_message = server->GetNextMessage();
 
     P224EncryptedKeyExchange::Result client_result, server_result;
     client_result = client->ProcessMessage(server_message);
@@ -85,13 +85,13 @@ TEST(MutualAuth, ExpectedValues) {
                                   kPassword);
   server.SetXForTesting("Server x");
 
-  std::string client_message = client.GetMessage();
+  std::string client_message = client.GetNextMessage();
   EXPECT_EQ(
       "3508EF7DECC8AB9F9C439FBB0154288BBECC0A82E8448F4CF29554EB"
       "BE9D486686226255EAD1D077C635B1A41F46AC91D7F7F32CED9EC3E0",
       HexEncodeString(client_message));
 
-  std::string server_message = server.GetMessage();
+  std::string server_message = server.GetNextMessage();
   EXPECT_EQ(
       "A3088C18B75D2C2B107105661AEC85424777475EB29F1DDFB8C14AFB"
       "F1603D0DF38413A00F420ACF2059E7997C935F5A957A193D09A2B584",
@@ -129,8 +129,8 @@ TEST(MutualAuth, Fuzz) {
 
     for (unsigned round = 0;; round++) {
       std::string client_message, server_message;
-      client_message = client.GetMessage();
-      server_message = server.GetMessage();
+      client_message = client.GetNextMessage();
+      server_message = server.GetNextMessage();
 
       if ((rand & 1) == round) {
         const bool server_or_client = rand & 2;

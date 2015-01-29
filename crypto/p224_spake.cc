@@ -131,7 +131,7 @@ void P224EncryptedKeyExchange::Init() {
   next_message_ = Xstar.ToString();
 }
 
-const std::string& P224EncryptedKeyExchange::GetMessage() {
+const std::string& P224EncryptedKeyExchange::GetNextMessage() {
   if (state_ == kStateInitial) {
     state_ = kStateRecvDH;
     return next_message_;
@@ -140,7 +140,7 @@ const std::string& P224EncryptedKeyExchange::GetMessage() {
     return next_message_;
   }
 
-  LOG(FATAL) << "P224EncryptedKeyExchange::GetMessage called in"
+  LOG(FATAL) << "P224EncryptedKeyExchange::GetNextMessage called in"
                 " bad state " << state_;
   next_message_ = "";
   return next_message_;

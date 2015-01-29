@@ -64,7 +64,7 @@ V2Authenticator::V2Authenticator(
       state_(initial_state),
       started_(false),
       rejection_reason_(INVALID_CREDENTIALS) {
-  pending_messages_.push(key_exchange_impl_.GetMessage());
+  pending_messages_.push(key_exchange_impl_.GetNextMessage());
 }
 
 V2Authenticator::~V2Authenticator() {
@@ -135,7 +135,7 @@ void V2Authenticator::ProcessMessageInternal(const buzz::XmlElement* message) {
     started_ = true;
     switch (result) {
       case P224EncryptedKeyExchange::kResultPending:
-        pending_messages_.push(key_exchange_impl_.GetMessage());
+        pending_messages_.push(key_exchange_impl_.GetNextMessage());
         break;
 
       case P224EncryptedKeyExchange::kResultFailed:
