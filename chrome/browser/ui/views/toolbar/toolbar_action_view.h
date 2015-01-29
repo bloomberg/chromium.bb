@@ -53,9 +53,6 @@ class ToolbarActionView : public views::MenuButton,
     // Sets the delegate's active popup owner to be |popup_owner|.
     virtual void SetPopupOwner(ToolbarActionView* popup_owner) = 0;
 
-    // Hides the active popup of the delegate, if one exists.
-    virtual void HideActivePopup() = 0;
-
     // Returns the primary ToolbarActionView associated with the given
     // |extension|.
     virtual ToolbarActionView* GetMainViewForAction(
@@ -131,9 +128,8 @@ class ToolbarActionView : public views::MenuButton,
   ToolbarActionViewController* GetPreferredPopupViewController() override;
   views::View* GetReferenceViewForPopup() override;
   views::MenuButton* GetContextMenuButton() override;
-  void HideActivePopup() override;
-  void OnPopupShown(bool grant_tab_permissions) override;
-  void CleanupPopup() override;
+  void OnPopupShown(bool by_user) override;
+  void OnPopupClosed() override;
 
   // A lock to keep the MenuButton pressed when a menu or popup is visible.
   scoped_ptr<views::MenuButton::PressedLock> pressed_lock_;

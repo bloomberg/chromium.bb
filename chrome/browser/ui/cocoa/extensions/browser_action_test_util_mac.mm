@@ -140,6 +140,10 @@ bool BrowserActionTestUtil::OverflowedActionButtonWantsToRun() {
   return [cell overflowedToolbarActionWantsToRun];
 }
 
+ToolbarActionsBar* BrowserActionTestUtil::GetToolbarActionsBar() {
+  return [GetController(browser_, bar_delegate_) toolbarActionsBar];
+}
+
 // static
 gfx::Size BrowserActionTestUtil::GetMinPopupSize() {
   return gfx::Size(NSSizeToCGSize([ExtensionPopupController minPopupSize]));

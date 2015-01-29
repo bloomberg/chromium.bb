@@ -115,6 +115,10 @@ bool BrowserActionTestUtil::OverflowedActionButtonWantsToRun() {
       app_menu()->overflowed_toolbar_action_wants_to_run_for_testing();
 }
 
+ToolbarActionsBar* BrowserActionTestUtil::GetToolbarActionsBar() {
+  return GetContainer(browser_, bar_delegate_)->toolbar_actions_bar();
+}
+
 // static
 gfx::Size BrowserActionTestUtil::GetMinPopupSize() {
   return gfx::Size(ExtensionPopup::kMinWidth, ExtensionPopup::kMinHeight);

@@ -77,10 +77,6 @@ void ExtensionActionPlatformDelegateCocoa::OnDelegateSet() {
       content::Source<Profile>(controller_->browser()->profile()));
 }
 
-bool ExtensionActionPlatformDelegateCocoa::IsShowingPopup() const {
-  return GetPopup() != nil;
-}
-
 void ExtensionActionPlatformDelegateCocoa::CloseActivePopup() {
   ExtensionPopupController* popup = [ExtensionPopupController popup];
   if (popup && ![popup isClosing])
@@ -89,12 +85,12 @@ void ExtensionActionPlatformDelegateCocoa::CloseActivePopup() {
 
 void ExtensionActionPlatformDelegateCocoa::CloseOwnPopup() {
   ExtensionPopupController* popup = GetPopup();
-  DCHECK(popup);
   if (popup && ![popup isClosing])
     [popup close];
 }
 
-bool ExtensionActionPlatformDelegateCocoa::ShowPopupWithUrl(
+extensions::ExtensionViewHost*
+ExtensionActionPlatformDelegateCocoa::ShowPopupWithUrl(
     ExtensionActionViewController::PopupShowAction show_action,
     const GURL& popup_url,
     bool grant_tab_permissions) {
@@ -112,12 +108,13 @@ bool ExtensionActionPlatformDelegateCocoa::ShowPopupWithUrl(
 
   BOOL devMode =
       show_action == ExtensionActionViewController::SHOW_POPUP_AND_INSPECT;
-  [ExtensionPopupController showURL:popup_url
-                          inBrowser:controller_->browser()
-                         anchoredAt:arrowPoint
-                      arrowLocation:info_bubble::kTopRight
-                            devMode:devMode];
-  return true;
+  ExtensionPopupController* popupController =
+      [ExtensionPopupController showURL:popup_url
+                              inBrowser:controller_->browser()
+                             anchoredAt:arrowPoint
+                          arrowLocation:info_bubble::kTopRight
+                                devMode:devMode];
+  return [popupController extensionViewHost];
 }
 
 ToolbarActionViewDelegateCocoa*

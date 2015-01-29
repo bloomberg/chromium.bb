@@ -13,6 +13,8 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
@@ -64,10 +66,9 @@ ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
 }
 
 ExtensionActionPlatformDelegateViews::~ExtensionActionPlatformDelegateViews() {
+  DCHECK(!popup_);  // We should never have a visible popup at shutdown.
   if (context_menu_owner == this)
-    context_menu_owner = NULL;
-  if (IsShowingPopup())
-    CloseOwnPopup();
+    context_menu_owner = nullptr;
   UnregisterCommand(false);
 }
 
@@ -102,21 +103,27 @@ void ExtensionActionPlatformDelegateViews::OnDelegateSet() {
   GetDelegateViews()->GetAsView()->set_context_menu_controller(this);
 }
 
-bool ExtensionActionPlatformDelegateViews::IsShowingPopup() const {
-  return popup_ != nullptr;
-}
-
 void ExtensionActionPlatformDelegateViews::CloseActivePopup() {
-  GetDelegateViews()->HideActivePopup();
+  if (controller_->extension_action()->action_type() ==
+          ActionInfo::TYPE_BROWSER) {
+    BrowserView::GetBrowserViewForBrowser(controller_->browser())->toolbar()->
+        browser_actions()->HideActivePopup();
+  } else {
+    DCHECK_EQ(ActionInfo::TYPE_PAGE,
+              controller_->extension_action()->action_type());
+    // Page actions only know how to close their own popups.
+    controller_->HidePopup();
+  }
 }
 
 void ExtensionActionPlatformDelegateViews::CloseOwnPopup() {
-  // We should only be asked to close the popup if we're showing one.
-  DCHECK(popup_);
-  CleanupPopup(true);
+  // It's possible that the popup is already in the process of destroying.
+  if (popup_)
+    CleanupPopup(true);
 }
 
-bool ExtensionActionPlatformDelegateViews::ShowPopupWithUrl(
+extensions::ExtensionViewHost*
+ExtensionActionPlatformDelegateViews::ShowPopupWithUrl(
     ExtensionActionViewController::PopupShowAction show_action,
     const GURL& popup_url,
     bool grant_tab_permissions) {
@@ -136,9 +143,7 @@ bool ExtensionActionPlatformDelegateViews::ShowPopupWithUrl(
                                      popup_show_action);
   popup_->GetWidget()->AddObserver(this);
 
-  GetDelegateViews()->OnPopupShown(grant_tab_permissions);
-
-  return true;
+  return popup_->host();
 }
 
 void ExtensionActionPlatformDelegateViews::Observe(
@@ -233,7 +238,7 @@ void ExtensionActionPlatformDelegateViews::DoShowContextMenu(
   context_menu_owner = this;
 
   // We shouldn't have both a popup and a context menu showing.
-  GetDelegateViews()->HideActivePopup();
+  CloseActivePopup();
 
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(GetDelegateViews()->GetAsView(),
@@ -310,11 +315,10 @@ bool ExtensionActionPlatformDelegateViews::CloseActiveMenuIfNeeded() {
 
 void ExtensionActionPlatformDelegateViews::CleanupPopup(bool close_widget) {
   DCHECK(popup_);
-  GetDelegateViews()->CleanupPopup();
   popup_->GetWidget()->RemoveObserver(this);
   if (close_widget)
     popup_->GetWidget()->Close();
-  popup_ = NULL;
+  popup_ = nullptr;
 }
 
 ToolbarActionViewDelegateViews*

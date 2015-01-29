@@ -37,16 +37,6 @@ class ToolbarActionViewDelegateViews : public ToolbarActionViewDelegate {
   // allows views code to update the pressed state of the button).
   virtual views::MenuButton* GetContextMenuButton() = 0;
 
-  // Hides whatever popup is active (even if it's not this one).
-  virtual void HideActivePopup() = 0;
-
-  // Called when a popup is shown. See ExecuteAction() for the definition of
-  // |grant_tab_permissions|.
-  virtual void OnPopupShown(bool grant_tab_permissions) {}
-
-  // Does any additional cleanup after the popup is closed.
-  virtual void CleanupPopup() {}
-
  protected:
   ~ToolbarActionViewDelegateViews() override {}
 };

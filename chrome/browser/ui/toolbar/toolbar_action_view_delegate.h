@@ -26,6 +26,13 @@ class ToolbarActionViewDelegate {
   // Updates the view to reflect current state.
   virtual void UpdateState() = 0;
 
+  // Called when a popup is shown. If |by_user| is true, then this was through
+  // a direct user action (as oppposed to, e.g., an API call).
+  virtual void OnPopupShown(bool by_user) {}
+
+  // Called when a popup is closed.
+  virtual void OnPopupClosed() {}
+
  protected:
   virtual ~ToolbarActionViewDelegate() {}
 };

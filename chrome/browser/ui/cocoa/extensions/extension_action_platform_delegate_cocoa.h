@@ -28,10 +28,9 @@ class ExtensionActionPlatformDelegateCocoa
   bool IsMenuRunning() const override;
   void RegisterCommand() override;
   void OnDelegateSet() override;
-  bool IsShowingPopup() const override;
   void CloseActivePopup() override;
   void CloseOwnPopup() override;
-  bool ShowPopupWithUrl(
+  extensions::ExtensionViewHost* ShowPopupWithUrl(
       ExtensionActionViewController::PopupShowAction show_action,
       const GURL& popup_url,
       bool grant_tab_permissions) override;

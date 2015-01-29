@@ -153,8 +153,3 @@ views::MenuButton* PageActionImageView::GetContextMenuButton() {
 content::WebContents* PageActionImageView::GetCurrentWebContents() const {
   return owner_->GetWebContents();
 }
-
-void PageActionImageView::HideActivePopup() {
-  // The only popup that will be active is this popup.
-  view_controller_->HidePopup();
-}

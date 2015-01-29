@@ -281,14 +281,10 @@ content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
   return delegate_->GetCurrentWebContents();
 }
 
-void ToolbarActionView::HideActivePopup() {
-  delegate_->HideActivePopup();
-}
-
-void ToolbarActionView::OnPopupShown(bool grant_tab_permissions) {
+void ToolbarActionView::OnPopupShown(bool by_user) {
   delegate_->SetPopupOwner(this);
   // If this was through direct user action, we press the menu button.
-  if (grant_tab_permissions) {
+  if (by_user) {
     // We set the state of the menu button we're using as a reference view,
     // which is either this or the overflow reference view.
     // This cast is safe because GetReferenceViewForPopup returns either |this|
@@ -299,11 +295,7 @@ void ToolbarActionView::OnPopupShown(bool grant_tab_permissions) {
   }
 }
 
-void ToolbarActionView::CleanupPopup() {
-  // We need to do these actions synchronously (instead of closing and then
-  // performing the rest of the cleanup in OnWidgetDestroyed()) because
-  // OnWidgetDestroyed() can be called asynchronously from Close(), and we need
-  // to keep the delegate's popup owner up-to-date.
-  delegate_->SetPopupOwner(NULL);
+void ToolbarActionView::OnPopupClosed() {
+  delegate_->SetPopupOwner(nullptr);
   pressed_lock_.reset();  // Unpress the menu button if it was pressed.
 }

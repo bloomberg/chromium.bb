@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -20,7 +19,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
-#include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -40,6 +38,11 @@ static const CGFloat kBrowserActionBadgeOriginYOffset = 5;
 static const CGFloat kAnimationDuration = 0.2;
 static const CGFloat kMinimumDragDistance = 5;
 
+@interface BrowserActionButton ()
+- (void)endDrag;
+- (void)updateHighlightedState;
+@end
+
 // A class to bridge the ToolbarActionViewController and the
 // BrowserActionButton.
 class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
@@ -52,11 +55,15 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
   // Shows the context menu for the owning action.
   void ShowContextMenu();
 
+  bool user_shown_popup_visible() const { return user_shown_popup_visible_; }
+
  private:
   // ToolbarActionViewDelegateCocoa:
   ToolbarActionViewController* GetPreferredPopupViewController() override;
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
+  void OnPopupShown(bool by_user) override;
+  void OnPopupClosed() override;
   NSPoint GetPopupPoint() override;
 
   // A helper method to implement showing the context menu.
@@ -71,6 +78,9 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
   // The ToolbarActionViewController for which this is the delegate. Weak.
   ToolbarActionViewController* viewController_;
 
+  // Whether or not a popup is visible from a user action.
+  bool user_shown_popup_visible_;
+
   base::WeakPtrFactory<ToolbarActionViewDelegateBridge> weakFactory_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewDelegateBridge);
@@ -83,6 +93,7 @@ ToolbarActionViewDelegateBridge::ToolbarActionViewDelegateBridge(
     : owner_(owner),
       controller_(controller),
       viewController_(viewController),
+      user_shown_popup_visible_(false),
       weakFactory_(this) {
   viewController_->SetDelegate(this);
 }
@@ -128,6 +139,17 @@ void ToolbarActionViewDelegateBridge::UpdateState() {
   [owner_ updateState];
 }
 
+void ToolbarActionViewDelegateBridge::OnPopupShown(bool by_user) {
+  if (by_user)
+    user_shown_popup_visible_ = true;
+  [owner_ updateHighlightedState];
+}
+
+void ToolbarActionViewDelegateBridge::OnPopupClosed() {
+  user_shown_popup_visible_ = false;
+  [owner_ updateHighlightedState];
+}
+
 NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
   return [controller_ popupPointForId:[owner_ viewController]->GetId()];
 }
@@ -156,10 +178,6 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
 @interface BrowserActionCell (Internals)
 - (void)drawBadgeWithinFrame:(NSRect)frame
               forWebContents:(content::WebContents*)webContents;
-@end
-
-@interface BrowserActionButton (Private)
-- (void)endDrag;
 @end
 
 @implementation BrowserActionButton
@@ -253,10 +271,10 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   // for now, and revisit it at a later date.
   if (NSPointInRect(location, [self bounds]) &&
       ![browserActionsController_ isOverflow]) {
-    [[self cell] setHighlighted:YES];
     dragCouldStart_ = YES;
     dragStartPoint_ = [self convertPoint:[theEvent locationInWindow]
                                 fromView:nil];
+    [self updateHighlightedState];
   }
 }
 
@@ -328,13 +346,24 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
       [super mouseUp:theEvent];
     }
   }
+  [self updateHighlightedState];
 }
 
 - (void)endDrag {
   isBeingDragged_ = NO;
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionButtonDragEndNotification object:self];
-  [[self cell] setHighlighted:NO];
+}
+
+- (void)updateHighlightedState {
+  // The button's cell is highlighted if either the popup is showing by a user
+  // action, or the user is about to drag the button, unless the button is
+  // overflowed (in which case it is never highlighted).
+  if ([self superview] && ![browserActionsController_ isOverflow]) {
+    BOOL highlighted = viewControllerDelegate_->user_shown_popup_visible() ||
+        dragCouldStart_;
+    [[self cell] setHighlighted:highlighted];
+  }
 }
 
 - (void)setFrame:(NSRect)frameRect animate:(BOOL)animate {

@@ -70,7 +70,6 @@ class PageActionImageView : public ToolbarActionViewDelegateViews,
   views::View* GetReferenceViewForPopup() override;
   views::MenuButton* GetContextMenuButton() override;
   content::WebContents* GetCurrentWebContents() const override;
-  void HideActivePopup() override;
 
   // The controller for this ExtensionAction view.
   scoped_ptr<ExtensionActionViewController> view_controller_;

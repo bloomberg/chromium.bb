@@ -187,6 +187,9 @@ class BrowserActionsContainer
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command);
 
+  // Hides the currently-active popup, if there is one.
+  void HideActivePopup();
+
   // Add or remove an observer.
   void AddObserver(BrowserActionsContainerObserver* observer);
   void RemoveObserver(BrowserActionsContainerObserver* observer);
@@ -229,7 +232,6 @@ class BrowserActionsContainer
   void OnToolbarActionViewDragDone() override;
   views::MenuButton* GetOverflowReferenceView() override;
   void SetPopupOwner(ToolbarActionView* popup_owner) override;
-  void HideActivePopup() override;
   ToolbarActionView* GetMainViewForAction(ToolbarActionView* view) override;
 
   // ToolbarActionsBarDelegate:

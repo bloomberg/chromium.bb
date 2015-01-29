@@ -10,6 +10,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
+class ToolbarActionsBar;
 class ToolbarActionsBarDelegate;
 
 namespace gfx {
@@ -80,6 +81,9 @@ class BrowserActionTestUtil {
   // Tests that the overflow button is displaying an overflowed action wants
   // to run.
   bool OverflowedActionButtonWantsToRun();
+
+  // Returns the ToolbarActionsBar.
+  ToolbarActionsBar* GetToolbarActionsBar();
 
   // Returns the minimum allowed size of an extension popup.
   static gfx::Size GetMinPopupSize();
