@@ -991,8 +991,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       base::Bind(base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
                  base::Unretained(this)));
 
-  // TODO(alexclarke): Add a dedicated loading task queue
-  SetResourceDispatchTaskQueue(renderer_scheduler_->DefaultTaskRunner());
+  SetResourceDispatchTaskQueue(renderer_scheduler_->LoadingTaskRunner());
 
   bool enable = !command_line.HasSwitch(switches::kDisableThreadedCompositing);
   if (enable) {
