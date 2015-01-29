@@ -13,14 +13,6 @@
 
 REGISTER_TEST_CASE(View);
 
-// When waiting for view changed events, wait no longer than this.
-#if !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER)
-static int kViewChangeTimeoutSec = 5;
-#else
-// ThreadSanitizer may slow the interaction down significantly.
-static int kViewChangeTimeoutSec = 30;
-#endif
-
 TestView::TestView(TestingInstance* instance)
     : TestCase(instance),
       post_quit_on_view_changed_(false) {
@@ -50,14 +42,6 @@ void TestView::RunTests(const std::string& filter) {
 }
 
 bool TestView::WaitUntilViewChanged() {
-  // Schedule a callback so this step times out if we don't get a ViewChanged
-  // in a reasonable amount of time.
-  pp::CompletionCallbackFactory<TestView> factory(this);
-  pp::CompletionCallback timeout =
-      factory.NewCallback(&TestView::QuitMessageLoop);
-  pp::Module::Get()->core()->CallOnMainThread(
-      kViewChangeTimeoutSec * 1000, timeout);
-
   size_t old_page_visibility_change_count = page_visibility_log_.size();
 
   // Run a nested message loop. It will exit either on ViewChanged or if the
@@ -104,11 +88,8 @@ std::string TestView::TestPageHideShow() {
 
   // Wait until we get a hide event, being careful to handle spurious
   // notifications of ViewChanged.
-  PP_Time begin_time = pp::Module::Get()->core()->GetTime();
   while (WaitUntilViewChanged() &&
-         page_visibility_log_[page_visibility_log_.size() - 1] &&
-         pp::Module::Get()->core()->GetTime() - begin_time <
-             kViewChangeTimeoutSec) {
+         page_visibility_log_[page_visibility_log_.size() - 1]) {
   }
   if (page_visibility_log_[page_visibility_log_.size() - 1]) {
     // Didn't get a view changed event that changed visibility (though there
@@ -125,11 +106,8 @@ std::string TestView::TestPageHideShow() {
   instance_->ReportProgress("TestPageHideShow:Hidden");
 
   // Wait until we get a show event.
-  begin_time = pp::Module::Get()->core()->GetTime();
   while (WaitUntilViewChanged() &&
-         !page_visibility_log_[page_visibility_log_.size() - 1] &&
-         pp::Module::Get()->core()->GetTime() - begin_time <
-             kViewChangeTimeoutSec) {
+         !page_visibility_log_[page_visibility_log_.size() - 1]) {
   }
   ASSERT_TRUE(page_visibility_log_[page_visibility_log_.size() - 1]);
 
@@ -152,10 +130,7 @@ std::string TestView::TestSizeChange() {
 
   instance_->EvalScript(script_stream.str());
 
-  PP_Time begin_time = pp::Module::Get()->core()->GetTime();
-  while (WaitUntilViewChanged() && last_view_.GetRect() != desired_rect &&
-         pp::Module::Get()->core()->GetTime() - begin_time <
-             kViewChangeTimeoutSec) {
+  while (WaitUntilViewChanged() && last_view_.GetRect() != desired_rect) {
   }
   ASSERT_TRUE(last_view_.GetRect() == desired_rect);
 
@@ -192,10 +167,7 @@ std::string TestView::TestClipChange() {
   desired_clip.set_y(clip_amount);
   desired_clip.set_height(desired_clip.height() - desired_clip.y());
 
-  PP_Time begin_time = pp::Module::Get()->core()->GetTime();
-  while (WaitUntilViewChanged() && last_view_.GetClipRect() != desired_clip &&
-         pp::Module::Get()->core()->GetTime() - begin_time <
-             kViewChangeTimeoutSec) {
+  while (WaitUntilViewChanged() && last_view_.GetClipRect() != desired_clip) {
   }
   ASSERT_TRUE(last_view_.GetClipRect() == desired_clip);
   PASS();
@@ -206,21 +178,15 @@ std::string TestView::TestScrollOffsetChange() {
                         "document.body.style.height = '5000px';");
   instance_->EvalScript("window.scrollTo(5, 1);");
 
-  PP_Time begin_time = pp::Module::Get()->core()->GetTime();
   while (WaitUntilViewChanged() &&
-         last_view_.GetScrollOffset() != pp::Point(5, 1) &&
-         pp::Module::Get()->core()->GetTime() - begin_time <
-             kViewChangeTimeoutSec) {
+         last_view_.GetScrollOffset() != pp::Point(5, 1)) {
   }
   ASSERT_EQ(pp::Point(5, 1), last_view_.GetScrollOffset());
 
   instance_->EvalScript("window.scrollTo(0, 0);");
 
-  begin_time = pp::Module::Get()->core()->GetTime();
   while (WaitUntilViewChanged() &&
-         last_view_.GetScrollOffset() != pp::Point(0, 0) &&
-         pp::Module::Get()->core()->GetTime() - begin_time <
-             kViewChangeTimeoutSec) {
+         last_view_.GetScrollOffset() != pp::Point(0, 0)) {
   }
   ASSERT_EQ(pp::Point(0, 0), last_view_.GetScrollOffset());
 
