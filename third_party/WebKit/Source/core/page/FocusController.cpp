@@ -189,30 +189,29 @@ static inline bool hasCustomFocusLogic(const Element& element)
     return element.isHTMLElement() && toHTMLElement(element).hasCustomFocusLogic();
 }
 
-#if ENABLE(ASSERT)
-static inline bool isNonFocusableShadowHost(const Node& node)
+static inline bool isShadowHostWithoutCustomFocusLogic(const Node& node)
 {
     if (!node.isElementNode())
         return false;
     const Element& element = toElement(node);
-    return !element.isFocusable() && isShadowHost(element) && !hasCustomFocusLogic(element);
+    return isShadowHost(element) && !hasCustomFocusLogic(element);
+}
+
+#if ENABLE(ASSERT)
+static inline bool isNonFocusableShadowHost(const Node& node)
+{
+    return isShadowHostWithoutCustomFocusLogic(node) && !toElement(node).isFocusable();
 }
 #endif
 
 static inline bool isNonKeyboardFocusableShadowHost(const Node& node)
 {
-    if (!node.isElementNode())
-        return false;
-    const Element& element = toElement(node);
-    return !element.isKeyboardFocusable() && isShadowHost(element) && !hasCustomFocusLogic(element);
+    return isShadowHostWithoutCustomFocusLogic(node) && !toElement(node).isKeyboardFocusable();
 }
 
 static inline bool isKeyboardFocusableShadowHost(const Node& node)
 {
-    if (!node.isElementNode())
-        return false;
-    const Element& element = toElement(node);
-    return element.isKeyboardFocusable() && isShadowHost(element) && !hasCustomFocusLogic(element);
+    return isShadowHostWithoutCustomFocusLogic(node) && toElement(node).isKeyboardFocusable();
 }
 
 static inline bool isNonFocusableFocusScopeOwner(Node& node)
@@ -488,7 +487,7 @@ Node* FocusController::findFocusableNodeAcrossFocusScope(WebFocusType type, cons
 {
     ASSERT(!currentNode || !isNonFocusableShadowHost(*currentNode));
     Node* found;
-    if (currentNode && type == WebFocusTypeForward && isKeyboardFocusableShadowHost(*currentNode)) {
+    if (currentNode && type == WebFocusTypeForward && isShadowHostWithoutCustomFocusLogic(*currentNode)) {
         Node* foundInInnerFocusScope = findFocusableNodeRecursively(type, FocusNavigationScope::ownedByShadowHost(*currentNode), nullptr);
         found = foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursively(type, scope, currentNode);
     } else {
