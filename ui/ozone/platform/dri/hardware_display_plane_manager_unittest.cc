@@ -6,11 +6,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/ozone/platform/dri/crtc_controller.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/hardware_display_plane.h"
 #include "ui/ozone/platform/dri/hardware_display_plane_manager.h"
+#include "ui/ozone/platform/dri/hardware_display_plane_manager_legacy.h"
 #include "ui/ozone/platform/dri/overlay_plane.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
+#include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
 
 namespace {
 
@@ -28,7 +31,7 @@ class FakeScanoutBuffer : public ui::ScanoutBuffer {
   FakeScanoutBuffer() {}
 
   // ui::ScanoutBuffer:
-  uint32_t GetFramebufferId() const override { return 0; }
+  uint32_t GetFramebufferId() const override { return 1; }
   uint32_t GetHandle() const override { return 0; }
   gfx::Size GetSize() const override { return gfx::Size(1, 1); }
 
@@ -184,6 +187,7 @@ TEST_F(HardwareDisplayPlaneManagerTest, MultipleFrames) {
                                                   default_crtcs_[0], nullptr));
   EXPECT_EQ(1, plane_manager_->plane_count());
   // Pretend we committed the frame.
+  state_.committed = true;
   state_.plane_list.swap(state_.old_plane_list);
   ui::HardwareDisplayPlane* old_plane = state_.old_plane_list[0];
   // The same plane should be used.
@@ -223,6 +227,28 @@ TEST_F(HardwareDisplayPlaneManagerTest, SharedPlanes) {
   // The shared plane is now unavailable for use by the other CRTC.
   EXPECT_FALSE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
                                                    default_crtcs_[0], nullptr));
+}
+
+TEST(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
+  std::vector<uint32_t> crtcs;
+  crtcs.push_back(100);
+  ui::MockDriWrapper drm(3, false, crtcs, 2);
+  ui::OverlayPlaneList assigns;
+  scoped_refptr<FakeScanoutBuffer> fake_buffer = new FakeScanoutBuffer();
+  assigns.push_back(ui::OverlayPlane(fake_buffer));
+  assigns.push_back(ui::OverlayPlane(fake_buffer));
+  ui::HardwareDisplayPlaneList hdpl;
+  ui::CrtcController crtc(&drm, crtcs[0], 0);
+  EXPECT_TRUE(drm.plane_manager()->AssignOverlayPlanes(&hdpl, assigns, crtcs[0],
+                                                       &crtc));
+  EXPECT_TRUE(drm.plane_manager()->Commit(&hdpl));
+  assigns.clear();
+  assigns.push_back(ui::OverlayPlane(fake_buffer));
+  EXPECT_TRUE(drm.plane_manager()->AssignOverlayPlanes(&hdpl, assigns, crtcs[0],
+                                                       &crtc));
+  EXPECT_EQ(0, drm.get_overlay_clear_call_count());
+  EXPECT_TRUE(drm.plane_manager()->Commit(&hdpl));
+  EXPECT_EQ(1, drm.get_overlay_clear_call_count());
 }
 
 }  // namespace

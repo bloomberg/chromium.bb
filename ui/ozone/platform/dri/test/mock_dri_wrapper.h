@@ -37,6 +37,7 @@ class MockDriWrapper : public ui::DriWrapper {
   }
   int get_page_flip_call_count() const { return page_flip_call_count_; }
   int get_overlay_flip_call_count() const { return overlay_flip_call_count_; }
+  int get_overlay_clear_call_count() const { return overlay_clear_call_count_; }
   void fail_init() { fd_ = -1; }
   void set_set_crtc_expectation(bool state) { set_crtc_expectation_ = state; }
   void set_page_flip_expectation(bool state) { page_flip_expectation_ = state; }
@@ -110,6 +111,7 @@ class MockDriWrapper : public ui::DriWrapper {
   int remove_framebuffer_call_count_;
   int page_flip_call_count_;
   int overlay_flip_call_count_;
+  int overlay_clear_call_count_;
 
   bool set_crtc_expectation_;
   bool add_framebuffer_expectation_;

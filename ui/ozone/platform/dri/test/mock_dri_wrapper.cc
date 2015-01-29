@@ -69,6 +69,7 @@ MockDriWrapper::MockDriWrapper(int fd,
       remove_framebuffer_call_count_(0),
       page_flip_call_count_(0),
       overlay_flip_call_count_(0),
+      overlay_clear_call_count_(0),
       set_crtc_expectation_(true),
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true),
@@ -154,6 +155,8 @@ bool MockDriWrapper::PageFlipOverlay(uint32_t crtc_id,
                                      const gfx::Rect& location,
                                      const gfx::Rect& source,
                                      int overlay_plane) {
+  if (!framebuffer)
+    overlay_clear_call_count_++;
   overlay_flip_call_count_++;
   return true;
 }

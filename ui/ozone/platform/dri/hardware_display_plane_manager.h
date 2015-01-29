@@ -64,6 +64,9 @@ struct HardwareDisplayPlaneList {
   // In the case of non-atomic operation, this info will be used for
   // pageflipping.
   std::vector<PageFlipInfo> legacy_page_flips;
+
+  // Set if the last operation on this list was a Commit().
+  bool committed;
 };
 
 class HardwareDisplayPlaneManager {

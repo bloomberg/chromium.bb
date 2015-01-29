@@ -22,10 +22,27 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
   if (plane_list->plane_list.empty())  // No assigned planes, nothing to do.
     return true;
   bool ret = true;
-  plane_list->plane_list.swap(plane_list->old_plane_list);
-  plane_list->plane_list.clear();
+  // The order of operations here (set new planes, pageflip, clear old planes)
+  // is designed to minimze the chance of a significant artifact occurring.
+  // The planes must be updated first because the main plane no longer contains
+  // their content. The old planes are removed last because the previous primary
+  // plane used them as overlays and thus didn't contain their content, so we
+  // must first flip to the new primary plane, which does. The error here will
+  // be the delta of (new contents, old contents), but it should be barely
+  // noticeable.
   for (const auto& flip : plane_list->legacy_page_flips) {
     // Permission Denied is a legitimate error
+    for (const auto& plane : flip.planes) {
+      if (!drm_->PageFlipOverlay(flip.crtc_id, plane.framebuffer, plane.bounds,
+                                 plane.src_rect, plane.plane)) {
+        LOG(ERROR) << "Cannot display plane on overlay: error="
+                   << strerror(errno) << "crtc=" << flip.crtc
+                   << " plane=" << plane.plane;
+        ret = false;
+        flip.crtc->PageFlipFailed();
+        break;
+      }
+    }
     if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer,
                         base::Bind(&CrtcController::OnPageFlipEvent,
                                    flip.crtc->AsWeakPtr()))) {
@@ -37,20 +54,27 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
         ret = false;
       }
       flip.crtc->PageFlipFailed();
-    } else {
-      for (const auto& plane : flip.planes) {
-        if (!drm_->PageFlipOverlay(flip.crtc_id, plane.framebuffer,
-                                   plane.bounds, plane.src_rect, plane.plane)) {
-          LOG(ERROR) << "Cannot display plane on overlay: error="
-                     << strerror(errno);
-          ret = false;
-          flip.crtc->PageFlipFailed();
-          break;
-        }
+    }
+  }
+  // For each element in |old_plane_list|, if it hasn't been reclaimed (by
+  // this or any other HDPL), clear the overlay contents.
+  for (HardwareDisplayPlane* plane : plane_list->old_plane_list) {
+    if (!plane->in_use()) {
+      // This plane is being released, so we need to zero it.
+      if (!drm_->PageFlipOverlay(plane->owning_crtc(), 0, gfx::Rect(),
+                                 gfx::Rect(), plane->plane_id())) {
+        LOG(ERROR) << "Cannot free overlay: error=" << strerror(errno)
+                   << "crtc=" << plane->owning_crtc()
+                   << " plane=" << plane->plane_id();
+        ret = false;
+        break;
       }
     }
   }
+  plane_list->plane_list.swap(plane_list->old_plane_list);
+  plane_list->plane_list.clear();
   plane_list->legacy_page_flips.clear();
+  plane_list->committed = true;
   return ret;
 }
 

@@ -23,7 +23,7 @@ const float kFixedPointScaleValue = 65536.0f;
 
 }  // namespace
 
-HardwareDisplayPlaneList::HardwareDisplayPlaneList() {
+HardwareDisplayPlaneList::HardwareDisplayPlaneList() : committed(false) {
 }
 HardwareDisplayPlaneList::~HardwareDisplayPlaneList() {
   for (auto* plane : plane_list) {
@@ -151,10 +151,13 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     const OverlayPlaneList& overlay_list,
     uint32_t crtc_id,
     CrtcController* crtc) {
-  for (auto* plane : plane_list->old_plane_list) {
-    plane->set_in_use(false);
+  // If we had previously committed this set, mark all owned planes as free.
+  if (plane_list->committed) {
+    plane_list->committed = false;
+    for (auto* plane : plane_list->old_plane_list) {
+      plane->set_in_use(false);
+    }
   }
-  plane_list->old_plane_list.clear();
 
   int crtc_index = LookupCrtcIndex(crtc_id);
   if (crtc_index < 0) {
