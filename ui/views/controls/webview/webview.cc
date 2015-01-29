@@ -271,6 +271,7 @@ void WebView::RenderProcessExited(content::RenderProcessHost* host,
 
 void WebView::RenderProcessHostDestroyed(content::RenderProcessHost* host) {
   DCHECK_EQ(host, observing_render_process_host_);
+  observing_render_process_host_->RemoveObserver(this);
   observing_render_process_host_ = nullptr;
 }
 
