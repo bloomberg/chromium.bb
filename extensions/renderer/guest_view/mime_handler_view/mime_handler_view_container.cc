@@ -212,6 +212,8 @@ void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
   if (!guest_proxy_frame)
     return;
 
+  v8::Context::Scope context_scope(
+      render_frame()->GetWebFrame()->mainWorldScriptContext());
   v8::Local<v8::Object> guest_proxy_window =
       guest_proxy_frame->mainWorldScriptContext()->Global();
   gin::Dictionary window_object(isolate, guest_proxy_window);
