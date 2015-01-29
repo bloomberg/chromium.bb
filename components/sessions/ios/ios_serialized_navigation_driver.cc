@@ -10,6 +10,13 @@
 
 namespace sessions {
 
+namespace {
+const int kObsoleteReferrerPolicyAlways = 0;
+const int kObsoleteReferrerPolicyDefault = 1;
+const int kObsoleteReferrerPolicyNever = 2;
+const int kObsoleteReferrerPolicyOrigin = 3;
+}  // namespace
+
 // static
 SerializedNavigationDriver* SerializedNavigationDriver::Get() {
   return IOSSerializedNavigationDriver::GetInstance();
@@ -32,6 +39,45 @@ int IOSSerializedNavigationDriver::GetDefaultReferrerPolicy() const {
   return web::ReferrerPolicyDefault;
 }
 
+bool IOSSerializedNavigationDriver::MapReferrerPolicyToOldValues(
+    int referrer_policy,
+    int* mapped_referrer_policy) const {
+  switch (referrer_policy) {
+    case web::ReferrerPolicyAlways:
+    case web::ReferrerPolicyDefault:
+      // "always" and "default" are the same value in all versions.
+      *mapped_referrer_policy = referrer_policy;
+      return true;
+
+    case web::ReferrerPolicyOrigin:
+      // "origin" exists in the old encoding.
+      *mapped_referrer_policy = kObsoleteReferrerPolicyOrigin;
+      return true;
+
+    default:
+      // Everything else is mapped to never.
+      *mapped_referrer_policy = kObsoleteReferrerPolicyNever;
+      return false;
+  }
+}
+
+bool IOSSerializedNavigationDriver::MapReferrerPolicyToNewValues(
+    int referrer_policy,
+    int* mapped_referrer_policy) const {
+  switch (referrer_policy) {
+    case kObsoleteReferrerPolicyAlways:
+    case kObsoleteReferrerPolicyDefault:
+      // "always" and "default" are the same value in all versions.
+      *mapped_referrer_policy = referrer_policy;
+      return true;
+
+    default:
+      // Since we don't know what encoding was used, we map the rest to "never".
+      *mapped_referrer_policy = web::ReferrerPolicyNever;
+      return false;
+  }
+}
+
 std::string
 IOSSerializedNavigationDriver::GetSanitizedPageStateForPickle(
     const SerializedNavigationEntry* navigation) const {
@@ -48,13 +94,20 @@ void IOSSerializedNavigationDriver::Sanitize(
       !referrer.url.SchemeIsHTTPOrHTTPS()) {
     referrer.url = GURL();
   } else {
+    if (referrer.policy < 0 || referrer.policy > web::ReferrerPolicyLast) {
+      NOTREACHED();
+      referrer.policy = web::ReferrerPolicyNever;
+    }
+    bool is_downgrade = referrer.url.SchemeIsSecure() &&
+                        !navigation->virtual_url_.SchemeIsSecure();
     switch (referrer.policy) {
       case web::ReferrerPolicyDefault:
-        if (referrer.url.SchemeIsSecure() &&
-            !navigation->virtual_url_.SchemeIsSecure()) {
+        if (is_downgrade)
           referrer.url = GURL();
-        }
         break;
+      case web::ReferrerPolicyNoReferrerWhenDowngrade:
+        if (is_downgrade)
+          referrer.url = GURL();
       case web::ReferrerPolicyAlways:
         break;
       case web::ReferrerPolicyNever:
@@ -63,8 +116,9 @@ void IOSSerializedNavigationDriver::Sanitize(
       case web::ReferrerPolicyOrigin:
         referrer.url = referrer.url.GetOrigin();
         break;
-      default:
-        NOTREACHED();
+      case web::ReferrerPolicyOriginWhenCrossOrigin:
+        if (navigation->virtual_url_.GetOrigin() != referrer.url.GetOrigin())
+          referrer.url = referrer.url.GetOrigin();
         break;
     }
   }

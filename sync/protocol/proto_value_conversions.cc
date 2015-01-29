@@ -211,10 +211,11 @@ base::DictionaryValue* TabNavigationToValue(
   SET_ENUM(blocked_state, GetBlockedStateString);
   SET_STR_REP(content_pack_categories);
   SET_INT32(http_status_code);
-  SET_INT32(referrer_policy);
+  SET_INT32(obsolete_referrer_policy);
   SET_BOOL(is_restored);
   SET_REP(navigation_redirect, NavigationRedirectToValue);
   SET_STR(last_navigation_redirect_url);
+  SET_INT32(correct_referrer_policy);
   return value;
 }
 

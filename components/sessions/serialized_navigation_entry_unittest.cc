@@ -30,7 +30,8 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_pb::TabNavigation sync_data;
   sync_data.set_virtual_url(test_data::kVirtualURL.spec());
   sync_data.set_referrer(test_data::kReferrerURL.spec());
-  sync_data.set_referrer_policy(test_data::kReferrerPolicy);
+  sync_data.set_obsolete_referrer_policy(test_data::kReferrerPolicy);
+  sync_data.set_correct_referrer_policy(test_data::kReferrerPolicy);
   sync_data.set_title(base::UTF16ToUTF8(test_data::kTitle));
   sync_data.set_state(test_data::kEncodedPageState);
   sync_data.set_page_transition(

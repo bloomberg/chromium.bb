@@ -137,9 +137,8 @@ message TabNavigation {
   // The status code from the last navigation.
   optional int32 http_status_code = 20;
 
-  // Referrer policy. Valid enums are defined in
-  // third_party/WebKit/public/platform/WebReferrerPolicy.h.
-  optional int32 referrer_policy = 21 [default = 1];
+  // Referrer policy. Old, broken value.
+  optional int32 obsolete_referrer_policy = 21 [default = 1];
   // True if created from restored navigation entry that hasn't been loaded.
   optional bool is_restored = 22;
   // The chain of redirections for this navigation, from the original URL
@@ -148,6 +147,9 @@ message TabNavigation {
   // Normally not present.
   // The last URL traversed when different from the virtual_url.
   optional string last_navigation_redirect_url = 24;
+  // Correct referrer policy. Valid enums are defined in
+  // third_party/WebKit/public/platform/WebReferrerPolicy.h.
+  optional int32 correct_referrer_policy = 25 [default = 1];
 }
 
 // Navigation information for a single redirection within a single navigation.
