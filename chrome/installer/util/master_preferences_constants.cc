@@ -9,9 +9,6 @@ namespace master_preferences {
   const char kAltShortcutText[] = "alternate_shortcut_text";
   const char kAutoLaunchChrome[] = "auto_launch_chrome";
   const char kChrome[] = "chrome";
-  // TODO(huangs): Remove by M27.
-  const char kChromeAppHostDeprecated[] = "app_host";
-  const char kChromeAppLauncher[] = "app_launcher";
   const char kChromeShortcutIconIndex[] = "chrome_shortcut_icon_index";
   const char kCreateAllShortcuts[] = "create_all_shortcuts";
   const char kDisableLogging[] = "disable_logging";

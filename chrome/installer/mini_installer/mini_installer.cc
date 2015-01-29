@@ -257,14 +257,9 @@ bool GetSetupExePathFromRegistry(const Configuration& configuration,
     return true;
   }
 
-  // Make a last-ditch effort to look in the Chrome and App Host client state
-  // keys.
+  // Make a last-ditch effort to look in the Chrome client state key.
   if (GetSetupExePathForGuidFromRegistry(
           system_level, configuration.chrome_app_guid(), path, size)) {
-    return true;
-  }
-  if (configuration.has_app_host() && GetSetupExePathForGuidFromRegistry(
-          system_level, google_update::kChromeAppHostAppGuid, path, size)) {
     return true;
   }
 

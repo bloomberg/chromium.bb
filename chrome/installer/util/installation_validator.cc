@@ -87,38 +87,6 @@ bool InstallationValidator::ChromeFrameRules::UsageStatsAllowed(
 }
 
 BrowserDistribution::Type
-    InstallationValidator::ChromeAppHostRules::distribution_type() const {
-  return BrowserDistribution::CHROME_APP_HOST;
-}
-
-void InstallationValidator::ChromeAppHostRules::AddUninstallSwitchExpectations(
-    const ProductContext& ctx,
-    SwitchExpectations* expectations) const {
-  // --app-launcher must be present.
-  expectations->push_back(
-      std::make_pair(std::string(switches::kChromeAppLauncher), true));
-
-  // --chrome must not be present.
-  expectations->push_back(std::make_pair(std::string(switches::kChrome),
-                                         false));
-  // --chrome-frame must not be present.
-  expectations->push_back(std::make_pair(std::string(switches::kChromeFrame),
-                                         false));
-}
-
-void InstallationValidator::ChromeAppHostRules::AddRenameSwitchExpectations(
-    const ProductContext& ctx,
-    SwitchExpectations* expectations) const {
-  // TODO(erikwright): I guess there will be none?
-}
-
-bool InstallationValidator::ChromeAppHostRules::UsageStatsAllowed(
-    const ProductContext& ctx) const {
-  // App Host doesn't manage usage stats. The Chrome Binaries will.
-  return false;
-}
-
-BrowserDistribution::Type
     InstallationValidator::ChromeBinariesRules::distribution_type() const {
   return BrowserDistribution::CHROME_BINARIES;
 }
@@ -152,12 +120,6 @@ const InstallationValidator::InstallationType
   CHROME_FRAME_SINGLE_CHROME_MULTI,
   CHROME_FRAME_MULTI,
   CHROME_FRAME_MULTI_CHROME_MULTI,
-  CHROME_APP_HOST,
-  CHROME_APP_HOST_CHROME_FRAME_SINGLE,
-  CHROME_APP_HOST_CHROME_FRAME_SINGLE_CHROME_MULTI,
-  CHROME_APP_HOST_CHROME_FRAME_MULTI,
-  CHROME_APP_HOST_CHROME_FRAME_MULTI_CHROME_MULTI,
-  CHROME_APP_HOST_CHROME_MULTI,
 };
 
 void InstallationValidator::ValidateAppCommandFlags(
@@ -225,66 +187,6 @@ void InstallationValidator::ValidateOnOsUpgradeCommand(
   ValidateAppCommandFlags(ctx, app_cmd, flags_exp, name, is_valid);
 }
 
-// Validates the "query-eula-acceptance" Google Update product command.
-void InstallationValidator::ValidateQueryEULAAcceptanceCommand(
-    const ProductContext& ctx,
-    const AppCommand& app_cmd,
-    bool* is_valid) {
-  DCHECK(is_valid);
-
-  base::CommandLine cmd_line(
-      base::CommandLine::FromString(app_cmd.command_line()));
-  base::string16 name(kCmdQueryEULAAcceptance);
-
-  ValidateSetupPath(ctx, cmd_line.GetProgram(), name, is_valid);
-
-  SwitchExpectations expected;
-  expected.push_back(std::make_pair(std::string(switches::kQueryEULAAcceptance),
-                                    true));
-  expected.push_back(std::make_pair(std::string(switches::kSystemLevel),
-                                    ctx.system_install));
-
-  ValidateCommandExpectations(ctx, cmd_line, expected, name, is_valid);
-
-  std::set<base::string16> flags_exp;
-  flags_exp.insert(google_update::kRegWebAccessibleField);
-  flags_exp.insert(google_update::kRegRunAsUserField);
-  ValidateAppCommandFlags(ctx, app_cmd, flags_exp, name, is_valid);
-}
-
-// Validates the "quick-enable-application-host" Google Update product command.
-void InstallationValidator::ValidateQuickEnableApplicationHostCommand(
-    const ProductContext& ctx,
-    const AppCommand& app_cmd,
-    bool* is_valid) {
-  DCHECK(is_valid);
-
-  base::CommandLine cmd_line(
-      base::CommandLine::FromString(app_cmd.command_line()));
-  base::string16 name(kCmdQuickEnableApplicationHost);
-
-  ValidateSetupPath(ctx, cmd_line.GetProgram(), name, is_valid);
-
-  SwitchExpectations expected;
-
-  expected.push_back(std::make_pair(
-      std::string(switches::kChromeAppLauncher), true));
-  expected.push_back(std::make_pair(
-      std::string(switches::kSystemLevel), false));
-  expected.push_back(std::make_pair(
-      std::string(switches::kMultiInstall), true));
-  expected.push_back(std::make_pair(
-      std::string(switches::kEnsureGoogleUpdatePresent), true));
-
-  ValidateCommandExpectations(ctx, cmd_line, expected, name, is_valid);
-
-  std::set<base::string16> flags_exp;
-  flags_exp.insert(google_update::kRegSendsPingsField);
-  flags_exp.insert(google_update::kRegWebAccessibleField);
-  flags_exp.insert(google_update::kRegRunAsUserField);
-  ValidateAppCommandFlags(ctx, app_cmd, flags_exp, name, is_valid);
-}
-
 // Validates a product's set of Google Update product commands against a
 // collection of expectations.
 void InstallationValidator::ValidateAppCommandExpectations(
@@ -323,27 +225,6 @@ void InstallationValidator::ValidateAppCommandExpectations(
                << " is missing the Google Update product command named \""
                << scan->first << "\".";
   }
-}
-
-// Validates the multi-install binaries' Google Update commands.
-void InstallationValidator::ValidateBinariesCommands(
-    const ProductContext& ctx,
-    bool* is_valid) {
-  DCHECK(is_valid);
-
-  const ProductState* binaries_state = ctx.machine_state.GetProductState(
-      ctx.system_install, BrowserDistribution::CHROME_BINARIES);
-
-  CommandExpectations expectations;
-
-  if (binaries_state != NULL) {
-    expectations[kCmdQuickEnableApplicationHost] =
-        &ValidateQuickEnableApplicationHostCommand;
-
-    expectations[kCmdQueryEULAAcceptance] = &ValidateQueryEULAAcceptanceCommand;
-  }
-
-  ValidateAppCommandExpectations(ctx, expectations, is_valid);
 }
 
 // Validates the multi-install binaries at level |system_level|.
@@ -392,31 +273,12 @@ void InstallationValidator::ValidateBinaries(
                << "\"";
   }
 
-  // ap must have -applauncher iff Chrome App Launcher is installed multi
-  const ProductState* app_host_state = machine_state.GetProductState(
-      system_install, BrowserDistribution::CHROME_APP_HOST);
-  if (app_host_state != NULL) {
-    if (!app_host_state->is_multi_install()) {
-      *is_valid = false;
-      LOG(ERROR) << "Chrome App Launcher is installed in non-multi mode.";
-    }
-    if (!channel.IsAppLauncher()) {
-      *is_valid = false;
-      LOG(ERROR) << "Chrome Binaries are missing \"-applauncher\" in channel"
-                    " name: \"" << channel.value() << "\"";
-    }
-  } else if (channel.IsAppLauncher()) {
-    *is_valid = false;
-    LOG(ERROR) << "Chrome Binaries have \"-applauncher\" in channel name, yet "
-                  "Chrome App Launcher is not installed: \"" << channel.value()
-               << "\"";
-  }
-
-  // Chrome, Chrome Frame, or App Host must be present
-  if (chrome_state == NULL && cf_state == NULL && app_host_state == NULL) {
+  // Chrome or Chrome Frame must be present
+  if (chrome_state == NULL && cf_state == NULL) {
     *is_valid = false;
     LOG(ERROR) << "Chrome Binaries are present with no other products.";
   }
+
 
   // Chrome must be multi-install if present.
   if (chrome_state != NULL && !chrome_state->is_multi_install()) {
@@ -425,19 +287,17 @@ void InstallationValidator::ValidateBinaries(
         << "Chrome Binaries are present yet Chrome is not multi-install.";
   }
 
-  // Chrome Frame must be multi-install if Chrome & App Host are not present.
-  if (cf_state != NULL && app_host_state == NULL && chrome_state == NULL &&
+  // Chrome Frame must be multi-install if Chrome is not present.
+  if (cf_state != NULL && chrome_state == NULL &&
       !cf_state->is_multi_install()) {
     *is_valid = false;
-    LOG(ERROR) << "Chrome Binaries are present without Chrome nor App Launcher "
-               << "yet Chrome Frame is not multi-install.";
+    LOG(ERROR) << "Chrome Binaries are present without Chrome, yet Chrome Frame"
+               << " is not multi-install.";
   }
 
   ChromeBinariesRules binaries_rules;
   ProductContext ctx(machine_state, system_install, binaries_state,
                      binaries_rules);
-
-  ValidateBinariesCommands(ctx, is_valid);
 
   ValidateUsageStats(ctx, is_valid);
 }
@@ -578,25 +438,10 @@ void InstallationValidator::ValidateMultiInstallProduct(
       ctx.machine_state.GetProductState(ctx.system_install,
                                         BrowserDistribution::CHROME_BINARIES);
   if (!binaries) {
-    if (ctx.dist->GetType() == BrowserDistribution::CHROME_APP_HOST) {
-      if (!ctx.machine_state.GetProductState(
-              true,  // system-level
-              BrowserDistribution::CHROME_BINARIES) &&
-          !ctx.machine_state.GetProductState(
-              true,  // system-level
-              BrowserDistribution::CHROME_BROWSER)) {
-        *is_valid = false;
-        LOG(ERROR) << ctx.dist->GetDisplayName()
-                   << " (" << ctx.state.version().GetString() << ") is "
-                   << "installed without Chrome Binaries or a system-level "
-                   << "Chrome.";
-      }
-    } else {
-      *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetDisplayName()
-                 << " (" << ctx.state.version().GetString() << ") is installed "
-                 << "without Chrome Binaries.";
-    }
+    *is_valid = false;
+    LOG(ERROR) << ctx.dist->GetDisplayName()
+               << " (" << ctx.state.version().GetString() << ") is installed "
+               << "without Chrome Binaries.";
   } else {
     // Version must match that of binaries.
     if (ctx.state.version().CompareTo(binaries->version()) != 0) {
@@ -719,21 +564,6 @@ bool InstallationValidator::ValidateInstallationTypeForState(
         ProductBits::CHROME_FRAME_SINGLE :
         ProductBits::CHROME_FRAME_MULTI;
     *type = static_cast<InstallationType>(*type | cf_bit);
-  }
-
-  // Is Chrome App Host installed?
-  product_state =
-      machine_state.GetProductState(system_level,
-                                    BrowserDistribution::CHROME_APP_HOST);
-  if (product_state != NULL) {
-    ChromeAppHostRules chrome_app_host_rules;
-    ValidateProduct(machine_state, system_level, *product_state,
-                    chrome_app_host_rules, &rock_on);
-    *type = static_cast<InstallationType>(*type | ProductBits::CHROME_APP_HOST);
-    if (!product_state->is_multi_install()) {
-      LOG(ERROR) << "Chrome App Launcher must always be multi-install.";
-      rock_on = false;
-    }
   }
 
   DCHECK_NE(std::find(&kInstallationTypes[0],

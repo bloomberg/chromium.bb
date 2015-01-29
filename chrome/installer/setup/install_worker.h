@@ -179,16 +179,6 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
                            const Product& product,
                            WorkItemList* install_list);
 
-// Adds work items to add or remove the "query-eula-acceptance" command to
-// |product|'s version key on the basis of the current operation (represented
-// in |installer_state|).  |new_version| is the version of the product(s)
-// currently being installed -- can be empty on uninstall.
-void AddQueryEULAAcceptanceWorkItems(const InstallerState& installer_state,
-                                     const base::FilePath& setup_path,
-                                     const base::Version& new_version,
-                                     const Product& product,
-                                     WorkItemList* work_item_list);
-
 // Adds work items to remove "quick-enable-cf" from the multi-installer
 // binaries' version key.
 void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,

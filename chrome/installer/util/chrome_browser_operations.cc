@@ -88,7 +88,11 @@ bool ChromeBrowserOperations::SetChannelFlags(
     ChannelInfo* channel_info) const {
 #if defined(GOOGLE_CHROME_BUILD)
   DCHECK(channel_info);
-  return channel_info->SetChrome(set);
+  bool chrome_changed = channel_info->SetChrome(set);
+  // Remove App Launcher's channel flags, since App Launcher does not exist as
+  // an independent product, and is a part of Chrome.
+  bool app_launcher_changed = channel_info->SetAppLauncher(false);
+  return chrome_changed || app_launcher_changed;
 #else
   return false;
 #endif

@@ -82,14 +82,6 @@ class FakeProductState : public ProductState {
                            Level install_level,
                            const char* version,
                            int channel_modifiers);
-  void AddQueryEULAAcceptanceCommand(BrowserDistribution::Type dist_type,
-                                     Level install_level,
-                                     const char* version,
-                                     int channel_modifiers);
-  void AddQuickEnableApplicationHostCommand(BrowserDistribution::Type dist_type,
-                                            Level install_level,
-                                            const char* version,
-                                            int channel_modifiers);
   void set_multi_install(bool is_multi_install) {
     multi_install_ = is_multi_install;
   }
@@ -227,47 +219,6 @@ void FakeProductState::AddOsUpgradeCommand(BrowserDistribution::Type dist_type,
   AppCommand app_cmd(cmd_line.GetCommandLineString());
   app_cmd.set_is_auto_run_on_os_upgrade(true);
   commands_.Set(installer::kCmdOnOsUpgrade, app_cmd);
-}
-
-// Adds the "query-eula-acceptance" Google Update product command.
-void FakeProductState::AddQueryEULAAcceptanceCommand(
-    BrowserDistribution::Type dist_type,
-    Level install_level,
-    const char* version,
-    int channel_modifiers) {
-  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
-
-  base::CommandLine cmd_line(
-      GetSetupExePath(dist_type, install_level, version, channel_modifiers));
-  cmd_line.AppendSwitch(installer::switches::kQueryEULAAcceptance);
-  if (install_level == SYSTEM_LEVEL)
-    cmd_line.AppendSwitch(installer::switches::kSystemLevel);
-  cmd_line.AppendSwitch(installer::switches::kVerboseLogging);
-  AppCommand app_cmd(cmd_line.GetCommandLineString());
-  app_cmd.set_is_web_accessible(true);
-  app_cmd.set_is_run_as_user(true);
-  commands_.Set(installer::kCmdQueryEULAAcceptance, app_cmd);
-}
-
-// Adds the "quick-enable-application-host" Google Update product command.
-void FakeProductState::AddQuickEnableApplicationHostCommand(
-    BrowserDistribution::Type dist_type,
-    Level install_level,
-    const char* version,
-    int channel_modifiers) {
-  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
-  DCHECK_NE(channel_modifiers & CM_MULTI, 0);
-
-  base::CommandLine cmd_line(
-      GetSetupExePath(dist_type, install_level, version, channel_modifiers));
-  cmd_line.AppendSwitch(installer::switches::kMultiInstall);
-  cmd_line.AppendSwitch(installer::switches::kChromeAppLauncher);
-  cmd_line.AppendSwitch(installer::switches::kEnsureGoogleUpdatePresent);
-  AppCommand app_cmd(cmd_line.GetCommandLineString());
-  app_cmd.set_sends_pings(true);
-  app_cmd.set_is_web_accessible(true);
-  app_cmd.set_is_run_as_user(true);
-  commands_.Set(installer::kCmdQuickEnableApplicationHost, app_cmd);
 }
 
 }  // namespace
@@ -451,18 +402,6 @@ void InstallationValidatorTest::MakeProductState(
   state->SetUninstallCommand(prod_type, install_level, chrome::kChromeVersion,
                              channel_modifiers, vehicle);
   state->set_multi_install(is_multi_install);
-  if (prod_type == BrowserDistribution::CHROME_BINARIES) {
-    state->AddQueryEULAAcceptanceCommand(prod_type,
-                                         install_level,
-                                         chrome::kChromeVersion,
-                                         channel_modifiers);
-  }
-  if (prod_type == BrowserDistribution::CHROME_BINARIES) {
-    state->AddQuickEnableApplicationHostCommand(prod_type,
-                                                install_level,
-                                                chrome::kChromeVersion,
-                                                channel_modifiers);
-  }
   if (prod_type == BrowserDistribution::CHROME_BROWSER) {
     state->AddOsUpgradeCommand(prod_type,
                                install_level,

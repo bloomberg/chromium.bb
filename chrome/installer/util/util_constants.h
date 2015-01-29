@@ -148,8 +148,6 @@ namespace switches {
 
 extern const char kAutoLaunchChrome[];
 extern const char kChrome[];
-extern const char kChromeAppHostDeprecated[];  // TODO(huangs): Remove by M27.
-extern const char kChromeAppLauncher[];
 extern const char kChromeFrame[];
 extern const char kChromeSxS[];
 extern const char kConfigureUserSettings[];
@@ -160,7 +158,6 @@ extern const char kDoNotLaunchChrome[];
 extern const char kDoNotRegisterForUpdateLaunch[];
 extern const char kDoNotRemoveSharedItems[];
 extern const char kEnableLogging[];
-extern const char kEnsureGoogleUpdatePresent[];
 extern const char kForceConfigureUserSettings[];
 extern const char kForceUninstall[];
 extern const char kInstallArchive[];
@@ -171,7 +168,6 @@ extern const char kMsi[];
 extern const char kMultiInstall[];
 extern const char kNewSetupExe[];
 extern const char kOnOsUpgrade[];
-extern const char kQueryEULAAcceptance[];
 extern const char kReenableAutoupdates[];
 extern const char kRegisterChromeBrowser[];
 extern const char kRegisterChromeBrowserSuffix[];
@@ -202,7 +198,6 @@ extern const char kOutputFile[];
 
 extern const wchar_t kActiveSetupExe[];
 extern const wchar_t kAppLauncherGuid[];
-extern const wchar_t kChromeAppHostExe[];
 extern const wchar_t kChromeDll[];
 extern const wchar_t kChromeChildDll[];
 extern const wchar_t kChromeExe[];
@@ -215,8 +210,6 @@ extern const wchar_t kChromeMetroDll[];
 extern const wchar_t kChromeNewExe[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kCmdOnOsUpgrade[];
-extern const wchar_t kCmdQueryEULAAcceptance[];
-extern const wchar_t kCmdQuickEnableApplicationHost[];
 extern const wchar_t kCmdQuickEnableCf[];
 extern const wchar_t kDelegateExecuteExe[];
 extern const wchar_t kEULASentinelFile[];

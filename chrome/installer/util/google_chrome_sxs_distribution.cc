@@ -110,10 +110,6 @@ bool GoogleChromeSxSDistribution::GetCommandExecuteImplClsid(
   return true;
 }
 
-bool GoogleChromeSxSDistribution::AppHostIsSupported() {
-  return false;
-}
-
 bool GoogleChromeSxSDistribution::ShouldSetExperimentLabels() {
   return true;
 }

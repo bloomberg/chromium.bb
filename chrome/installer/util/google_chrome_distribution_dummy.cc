@@ -106,10 +106,6 @@ bool GoogleChromeDistribution::GetCommandExecuteImplClsid(
   return false;
 }
 
-bool GoogleChromeDistribution::AppHostIsSupported() {
-  return false;
-}
-
 void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {

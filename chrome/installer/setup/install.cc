@@ -258,23 +258,6 @@ void CleanupLegacyShortcuts(const installer::InstallerState& installer_state,
   base::DeleteFile(uninstall_shortcut_path, false);
 }
 
-// Returns the appropriate shortcut operations for App Launcher,
-// based on state of installation and master_preferences.
-installer::InstallShortcutOperation GetAppLauncherShortcutOperation(
-    const installer::InstallationState& original_state,
-    const installer::InstallerState& installer_state) {
-  const installer::ProductState* original_app_host_state =
-      original_state.GetProductState(installer_state.system_install(),
-                                     BrowserDistribution::CHROME_APP_HOST);
-  bool app_launcher_exists = original_app_host_state &&
-      original_app_host_state->uninstall_command()
-          .HasSwitch(installer::switches::kChromeAppLauncher);
-  if (!app_launcher_exists)
-    return installer::INSTALL_SHORTCUT_CREATE_ALL;
-
-  return installer::INSTALL_SHORTCUT_REPLACE_EXISTING;
-}
-
 }  // end namespace
 
 namespace installer {
@@ -528,22 +511,6 @@ InstallStatus InstallOrUpdateProduct(
       CopyPreferenceFileForFirstRun(installer_state, prefs_path);
 
     installer_state.UpdateStage(installer::CREATING_SHORTCUTS);
-
-    const installer::Product* app_launcher_product =
-        installer_state.FindProduct(BrowserDistribution::CHROME_APP_HOST);
-    // Creates shortcuts for App Launcher.
-    if (app_launcher_product) {
-      // TODO(huangs): Remove this check once we have system-level App Host.
-      DCHECK(!installer_state.system_install());
-      const base::FilePath app_host_exe(
-          installer_state.target_path().Append(kChromeAppHostExe));
-      InstallShortcutOperation app_launcher_shortcut_operation =
-          GetAppLauncherShortcutOperation(original_state, installer_state);
-
-      // Always install per-user shortcuts for App Launcher.
-      CreateOrUpdateShortcuts(app_host_exe, *app_launcher_product, prefs,
-                              CURRENT_USER, app_launcher_shortcut_operation);
-    }
 
     const installer::Product* chrome_product =
         installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);

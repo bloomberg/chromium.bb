@@ -47,7 +47,6 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
-#include "chrome/installer/util/eula_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/google_update_util.h"
@@ -381,8 +380,6 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
   if (installer_state->is_multi_install()) {
     const Product* chrome =
         installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
-    const Product* app_host =
-        installer_state->FindProduct(BrowserDistribution::CHROME_APP_HOST);
     const Product* binaries =
         installer_state->FindProduct(BrowserDistribution::CHROME_BINARIES);
     const ProductState* chrome_state =
@@ -402,39 +399,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
         return false;
       }
     } else {
-      // This will only be hit if --multi-install is given with no products, or
-      // if the app host is being installed and doesn't need the binaries at
-      // user-level.
-      // The former case might be due to a request by an orphaned Application
-      // Host to re-install the binaries. Thus we add them to the installation.
-      // The latter case is fine and we let it be.
-      // If this is not an app host install and the binaries are not already
-      // present, the installation will fail later due to a lack of products to
-      // install.
-      if (app_host && !chrome && !chrome_state) {
-        DCHECK(!system_level);
-        // App Host may use Chrome/Chrome binaries at system-level.
-        if (original_state.GetProductState(
-                true,  // system
-                BrowserDistribution::CHROME_BROWSER) ||
-            original_state.GetProductState(
-                true,  // system
-                BrowserDistribution::CHROME_BINARIES)) {
-          VLOG(1) << "Installing/updating App Launcher without binaries.";
-        } else {
-          // Somehow the binaries were present when the quick-enable app host
-          // command was run, but now they appear to be missing.
-          // Force binaries to be installed/updated.
-          scoped_ptr<Product> binaries_to_add(new Product(
-              BrowserDistribution::GetSpecificDistribution(
-                  BrowserDistribution::CHROME_BINARIES)));
-          binaries_to_add->SetOption(installer::kOptionMultiInstall, true);
-          binaries = installer_state->AddProduct(&binaries_to_add);
-          VLOG(1) <<
-              "Adding binaries for pre-existing App Launcher installation.";
-        }
-      }
-
+      // This will only be hit if --multi-install is given with no products.
       return true;
     }
 
@@ -472,34 +437,6 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
   return true;
 }
 
-// Checks app host pre-install conditions, specifically that this is a
-// user-level multi-install.  When the pre-install conditions are not
-// satisfied, the result is written to the registry (via WriteInstallerResult),
-// |status| is set appropriately, and false is returned.
-bool CheckAppHostPreconditions(const InstallationState& original_state,
-                               InstallerState* installer_state,
-                               installer::InstallStatus* status) {
-  if (installer_state->FindProduct(BrowserDistribution::CHROME_APP_HOST)) {
-    if (!installer_state->is_multi_install()) {
-      LOG(DFATAL) << "App Launcher requires multi install";
-      *status = installer::APP_HOST_REQUIRES_MULTI_INSTALL;
-      // No message string since there is nothing a user can do.
-      installer_state->WriteInstallerResult(*status, 0, NULL);
-      return false;
-    }
-
-    if (installer_state->system_install()) {
-      LOG(DFATAL) << "App Launcher may only be installed at user-level.";
-      *status = installer::APP_HOST_REQUIRES_USER_LEVEL;
-      // No message string since there is nothing a user can do.
-      installer_state->WriteInstallerResult(*status, 0, NULL);
-      return false;
-    }
-  }
-
-  return true;
-}
-
 // Checks for compatibility between the current state of the system and the
 // desired operation.  Also applies policy that mutates the desired operation;
 // specifically, the |installer_state| object.
@@ -512,11 +449,6 @@ bool CheckAppHostPreconditions(const InstallationState& original_state,
 bool CheckPreInstallConditions(const InstallationState& original_state,
                                InstallerState* installer_state,
                                installer::InstallStatus* status) {
-  if (!CheckAppHostPreconditions(original_state, installer_state, status)) {
-    DCHECK_NE(*status, installer::UNKNOWN_STATUS);
-    return false;
-  }
-
   // See what products are already installed in multi mode.  When we do multi
   // installs, we must upgrade all installations since they share the binaries.
   AddExistingMultiInstalls(original_state, installer_state);
@@ -596,18 +528,6 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
         }
         return false;
       }
-    }
-
-  } else {  // System-level install.
-    // --ensure-google-update-present is supported for user-level only.
-    // The flag is generic, but its primary use case involves App Host.
-    if (installer_state->ensure_google_update_present()) {
-      LOG(DFATAL) << "--" << installer::switches::kEnsureGoogleUpdatePresent
-                  << " is supported for user-level only.";
-      *status = installer::APP_HOST_REQUIRES_USER_LEVEL;
-      // No message string since there is nothing a user can do.
-      installer_state->WriteInstallerResult(*status, 0, NULL);
-      return false;
     }
   }
 
@@ -1141,8 +1061,6 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       LOG(DFATAL) << "Chrome product not found.";
     }
     *exit_code = InstallUtil::GetInstallReturnCode(status);
-  } else if (cmd_line.HasSwitch(installer::switches::kQueryEULAAcceptance)) {
-    *exit_code = installer::IsEULAAccepted(installer_state->system_install());
   } else if (cmd_line.HasSwitch(installer::switches::kInactiveUserToast)) {
     // Launch the inactive user toast experiment.
     int flavor = -1;
@@ -1520,22 +1438,11 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     }
 
     if (higher_products != 0) {
-      COMPILE_ASSERT(BrowserDistribution::NUM_TYPES == 4,
+      COMPILE_ASSERT(BrowserDistribution::NUM_TYPES == 3,
                      add_support_for_new_products_here_);
-      const uint32 kBrowserBit = 1 << BrowserDistribution::CHROME_BROWSER;
-      int message_id = 0;
-
+      int message_id = IDS_INSTALL_HIGHER_VERSION_BASE;
       proceed_with_installation = false;
       install_status = HIGHER_VERSION_EXISTS;
-      switch (higher_products) {
-        case kBrowserBit:
-          message_id = IDS_INSTALL_HIGHER_VERSION_BASE;
-          break;
-        default:
-          message_id = IDS_INSTALL_HIGHER_VERSION_APP_LAUNCHER_BASE;
-          break;
-      }
-
       installer_state.WriteInstallerResult(install_status, message_id, NULL);
     }
 
@@ -1543,22 +1450,6 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
         proceed_with_installation &&
         CheckGroupPolicySettings(original_state, installer_state,
                                  *installer_version, &install_status);
-
-    if (proceed_with_installation) {
-      // If Google Update is absent at user-level, install it using the
-      // Google Update installer from an existing system-level installation.
-      // This is for quick-enable App Host install from a system-level
-      // Chrome Binaries installation.
-      if (!system_install && installer_state.ensure_google_update_present()) {
-        if (!google_update::EnsureUserLevelGoogleUpdatePresent()) {
-          LOG(ERROR) << "Failed to install Google Update";
-          proceed_with_installation = false;
-          install_status = INSTALL_OF_GOOGLE_UPDATE_FAILED;
-          installer_state.WriteInstallerResult(install_status, 0, NULL);
-        }
-      }
-
-    }
 
     if (proceed_with_installation) {
       base::FilePath prefs_source_path(cmd_line.GetSwitchValueNative(

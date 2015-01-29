@@ -15,15 +15,6 @@ const char kAutoLaunchChrome[] = "auto-launch-chrome";
 // Currently this is only required when used in combination with kMultiInstall.
 const char kChrome[] = "chrome";
 
-// Install Chrome App Host. This is now interpreted as kChromeAppLauncher.
-// TODO(huangs): Remove by M27.
-const char kChromeAppHostDeprecated[] = "app-host";
-
-// Install Chrome App Launcher, which subsumes Chrome App Host, i.e.,
-// App Launcher install converts App Host to App Launcher, and all subsequent
-// App Host updates/uninstalls become App Launcher updates/uninstalls.
-const char kChromeAppLauncher[] = "app-launcher";
-
 // Install Chrome Frame.
 const char kChromeFrame[] = "chrome-frame";
 
@@ -62,9 +53,6 @@ const char kDoNotRemoveSharedItems[] = "do-not-remove-shared-items";
 
 // Enable logging at the error level. This is the default behavior.
 const char kEnableLogging[] = "enable-logging";
-
-// Ensures that Google Update is present at the current level of installation.
-const char kEnsureGoogleUpdatePresent[] = "ensure-google-update-present";
 
 // Same as kConfigureUserSettings above; except the checks to know whether
 // first run already occured are bypassed and shortcuts are created either way
@@ -107,10 +95,6 @@ const char kNewSetupExe[] = "new-setup-exe";
 
 // Notify the installer that the OS has been upgraded.
 const char kOnOsUpgrade[] = "on-os-upgrade";
-
-// Determines whether or not EULA has been accepted at some point. Returns via
-// exit code: 0 if EULA not accepted, 1 if EULA accepted, and E_FAIL on error.
-const char kQueryEULAAcceptance[] = "query-eula-acceptance";
 
 // Requests that setup attempt to reenable autoupdates for Chrome.
 const char kReenableAutoupdates[] = "reenable-autoupdates";
@@ -213,7 +197,6 @@ const char kOutputFile[] = "output-file";
 // Active Setup.
 const wchar_t kActiveSetupExe[] = L"chrmstp.exe";
 const wchar_t kAppLauncherGuid[] = L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
-const wchar_t kChromeAppHostExe[] = L"app_host.exe";
 const wchar_t kChromeDll[] = L"chrome.dll";
 const wchar_t kChromeChildDll[] = L"chrome_child.dll";
 const wchar_t kChromeExe[] = L"chrome.exe";
@@ -226,9 +209,6 @@ const wchar_t kChromeMetroDll[] = L"metro_driver.dll";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
 const wchar_t kCmdOnOsUpgrade[] = L"on-os-upgrade";
-const wchar_t kCmdQueryEULAAcceptance[] = L"query-eula-acceptance";
-const wchar_t kCmdQuickEnableApplicationHost[] =
-    L"quick-enable-application-host";
 const wchar_t kCmdQuickEnableCf[] = L"quick-enable-cf";
 const wchar_t kDelegateExecuteExe[] = L"delegate_execute.exe";
 const wchar_t kEULASentinelFile[] = L"EULA Accepted";

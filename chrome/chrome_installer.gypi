@@ -237,6 +237,8 @@
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
             'installer/mini_installer/chrome.release',
+            'installer/setup/app_launcher_installer.cc',
+            'installer/setup/app_launcher_installer.h',
             'installer/setup/archive_patch_helper.cc',
             'installer/setup/archive_patch_helper.h',
             'installer/setup/install.cc',

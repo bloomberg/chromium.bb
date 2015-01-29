@@ -15,9 +15,8 @@ namespace {
 
 const wchar_t kModChrome[] = L"-chrome";
 const wchar_t kModChromeFrame[] = L"-chromeframe";
-// TODO(huangs): Remove by M27.
 const wchar_t kModAppHostDeprecated[] = L"-apphost";
-const wchar_t kModAppLauncher[] = L"-applauncher";
+const wchar_t kModAppLauncherDeprecated[] = L"-applauncher";
 const wchar_t kModMultiInstall[] = L"-multi";
 const wchar_t kModReadyMode[] = L"-readymode";
 const wchar_t kModStage[] = L"-stage:";
@@ -36,8 +35,8 @@ const wchar_t* const kModifiers[] = {
   kModMultiInstall,
   kModChrome,
   kModChromeFrame,
-  kModAppHostDeprecated,  // TODO(huangs): Remove by M27.
-  kModAppLauncher,
+  kModAppHostDeprecated,
+  kModAppLauncherDeprecated,
   kModReadyMode,
   kSfxMultiFail,
   kSfxMigrating,
@@ -49,8 +48,8 @@ enum ModifierIndex {
   MOD_MULTI_INSTALL,
   MOD_CHROME,
   MOD_CHROME_FRAME,
-  MOD_APP_HOST_DEPRECATED,  // TODO(huangs): Remove by M27.
-  MOD_APP_LAUNCHER,
+  MOD_APP_HOST_DEPRECATED,
+  MOD_APP_LAUNCHER_DEPRECATED,
   MOD_READY_MODE,
   SFX_MULTI_FAIL,
   SFX_MIGRATING,
@@ -65,47 +64,47 @@ COMPILE_ASSERT(NUM_MODIFIERS == arraysize(kModifiers),
 // location at which the modifier was found.  The number of characters in the
 // modifier is returned in |length|, if non-NULL.
 bool FindModifier(ModifierIndex index,
-                  const std::wstring& ap_value,
-                  std::wstring::size_type* position,
-                  std::wstring::size_type* length) {
+                  const base::string16& ap_value,
+                  base::string16::size_type* position,
+                  base::string16::size_type* length) {
   DCHECK(position != NULL);
-  std::wstring::size_type mod_position = std::wstring::npos;
-  std::wstring::size_type mod_length =
-      std::wstring::traits_type::length(kModifiers[index]);
+  base::string16::size_type mod_position = base::string16::npos;
+  base::string16::size_type mod_length =
+      base::string16::traits_type::length(kModifiers[index]);
   const bool mod_takes_arg = (kModifiers[index][mod_length - 1] == L':');
-  std::wstring::size_type pos = 0;
+  base::string16::size_type pos = 0;
   do {
     mod_position = ap_value.find(kModifiers[index], pos, mod_length);
-    if (mod_position == std::wstring::npos)
+    if (mod_position == base::string16::npos)
       return false;  // Modifier not found.
     pos = mod_position + mod_length;
     // Modifiers that take an argument gobble up to the next separator or to the
     // end.
     if (mod_takes_arg) {
       pos = ap_value.find(L'-', pos);
-      if (pos == std::wstring::npos)
+      if (pos == base::string16::npos)
         pos = ap_value.size();
       break;
     }
     // Regular modifiers must be followed by '-' or the end of the string.
   } while (pos != ap_value.size() && ap_value[pos] != L'-');
-  DCHECK_NE(mod_position, std::wstring::npos);
+  DCHECK_NE(mod_position, base::string16::npos);
   *position = mod_position;
   if (length != NULL)
     *length = pos - mod_position;
   return true;
 }
 
-bool HasModifier(ModifierIndex index, const std::wstring& ap_value) {
+bool HasModifier(ModifierIndex index, const base::string16& ap_value) {
   DCHECK(index >= 0 && index < NUM_MODIFIERS);
-  std::wstring::size_type position;
+  base::string16::size_type position;
   return FindModifier(index, ap_value, &position, NULL);
 }
 
-std::wstring::size_type FindInsertionPoint(ModifierIndex index,
-                                           const std::wstring& ap_value) {
+base::string16::size_type FindInsertionPoint(ModifierIndex index,
+                                             const base::string16& ap_value) {
   // Return the location of the next modifier.
-  std::wstring::size_type result;
+  base::string16::size_type result;
 
   for (int scan = index + 1; scan < NUM_MODIFIERS; ++scan) {
     if (FindModifier(static_cast<ModifierIndex>(scan), ap_value, &result, NULL))
@@ -116,11 +115,11 @@ std::wstring::size_type FindInsertionPoint(ModifierIndex index,
 }
 
 // Returns true if |ap_value| is modified.
-bool SetModifier(ModifierIndex index, bool set, std::wstring* ap_value) {
+bool SetModifier(ModifierIndex index, bool set, base::string16* ap_value) {
   DCHECK(index >= 0 && index < NUM_MODIFIERS);
   DCHECK(ap_value);
-  std::wstring::size_type position;
-  std::wstring::size_type length;
+  base::string16::size_type position;
+  base::string16::size_type length;
   bool have_modifier = FindModifier(index, *ap_value, &position, &length);
   if (set) {
     if (!have_modifier) {
@@ -143,7 +142,7 @@ namespace installer {
 bool ChannelInfo::Initialize(const RegKey& key) {
   LONG result = key.ReadValue(google_update::kRegApField, &value_);
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND ||
-         result == ERROR_INVALID_HANDLE;
+      result == ERROR_INVALID_HANDLE;
 }
 
 bool ChannelInfo::Write(RegKey* key) const {
@@ -159,7 +158,7 @@ bool ChannelInfo::Write(RegKey* key) const {
   return true;
 }
 
-bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {
+bool ChannelInfo::GetChannelName(base::string16* channel_name) const {
   DCHECK(channel_name);
   if (value_.empty()) {
     channel_name->erase();
@@ -168,7 +167,7 @@ bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {
     for (const wchar_t* const* scan = &kChannels[0],
              *const* end = &kChannels[arraysize(kChannels)]; scan != end;
          ++scan) {
-      if (value_.find(*scan) != std::wstring::npos) {
+      if (value_.find(*scan) != base::string16::npos) {
         // Report channels with "stable" in them as stable (empty string).
         if (*scan == installer::kChromeChannelStableExplicit)
           channel_name->erase();
@@ -179,7 +178,7 @@ bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {
     }
     // There may be modifiers present.  Strip them off and see if we're left
     // with the empty string (stable channel).
-    std::wstring tmp_value = value_;
+    base::string16 tmp_value = value_;
     for (int i = 0; i != NUM_MODIFIERS; ++i) {
       SetModifier(static_cast<ModifierIndex>(i), false, &tmp_value);
     }
@@ -209,13 +208,15 @@ bool ChannelInfo::SetChromeFrame(bool value) {
 }
 
 bool ChannelInfo::IsAppLauncher() const {
-  return HasModifier(MOD_APP_LAUNCHER, value_);
+  return HasModifier(MOD_APP_LAUNCHER_DEPRECATED, value_);
 }
 
 bool ChannelInfo::SetAppLauncher(bool value) {
-  // Unconditionally remove -apphost since it has been deprecated.
+  // Unconditionally remove -apphost since it has been long deprecated.
   bool changed_app_host = SetModifier(MOD_APP_HOST_DEPRECATED, false, &value_);
-  bool changed_app_launcher = SetModifier(MOD_APP_LAUNCHER, value, &value_);
+  // Set value for -applauncher, relying on caller for policy.
+  bool changed_app_launcher =
+      SetModifier(MOD_APP_LAUNCHER_DEPRECATED, value, &value_);
   return changed_app_host || changed_app_launcher;
 }
 
@@ -236,11 +237,11 @@ bool ChannelInfo::SetReadyMode(bool value) {
 }
 
 bool ChannelInfo::SetStage(const wchar_t* stage) {
-  std::wstring::size_type position;
-  std::wstring::size_type length;
+  base::string16::size_type position;
+  base::string16::size_type length;
   bool have_modifier = FindModifier(MOD_STAGE, value_, &position, &length);
   if (stage != NULL && *stage != L'\0') {
-    std::wstring stage_str(kModStage);
+    base::string16 stage_str(kModStage);
     stage_str.append(stage);
     if (!have_modifier) {
       value_.insert(FindInsertionPoint(MOD_STAGE, value_), stage_str);
@@ -259,18 +260,18 @@ bool ChannelInfo::SetStage(const wchar_t* stage) {
   return false;
 }
 
-std::wstring ChannelInfo::GetStage() const {
-  std::wstring::size_type position;
-  std::wstring::size_type length;
+base::string16 ChannelInfo::GetStage() const {
+  base::string16::size_type position;
+  base::string16::size_type length;
 
   if (FindModifier(MOD_STAGE, value_, &position, &length)) {
     // Return the portion after the prefix.
-    std::wstring::size_type pfx_length =
-        std::wstring::traits_type::length(kModStage);
+    base::string16::size_type pfx_length =
+        base::string16::traits_type::length(kModStage);
     DCHECK_LE(pfx_length, length);
     return value_.substr(position + pfx_length, length - pfx_length);
   }
-  return std::wstring();
+  return base::string16();
 }
 
 bool ChannelInfo::HasFullSuffix() const {

@@ -444,6 +444,9 @@ bool ContainsUnsupportedSwitch(const base::CommandLine& cmd_line) {
     // Installation of Chrome Frame.
     "chrome-frame",
     "migrate-chrome-frame",
+    // Stand-alone App Launcher.
+    "app-host",
+    "app-launcher",
   };
   for (size_t i = 0; i < arraysize(kLegacySwitches); ++i) {
     if (cmd_line.HasSwitch(kLegacySwitches[i]))

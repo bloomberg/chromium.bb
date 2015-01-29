@@ -227,9 +227,6 @@ be available for now. -->
         <message name="IDS_PRODUCT_DESCRIPTION" desc="Browser description">
           Chromium is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Chromium.
         </message>
-        <message name="IDS_APP_LAUNCHER_PRODUCT_DESCRIPTION" desc="App Launcher description">
-          Chromium App Launcher is a standalone platform for Chromium apps.
-        </message>
       </if>
       <if expr="chromeos">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
@@ -360,9 +357,6 @@ be available for now. -->
         </message>
         <message name="IDS_UNINSTALL_CHROME" desc="The text of the shortcut in the Start Menu for uninstalling chrome.">
           Uninstall Chromium
-        </message>
-        <message name="IDS_UNINSTALL_APP_LAUNCHER" desc="The text of the shortcut in the Start Menu for uninstalling App Launcher.">
-          Uninstall Chromium App Launcher
         </message>
       </if>
       <message name="IDS_FR_CUSTOMIZE_DEFAULT_BROWSER" desc="Default browser checkbox label">
@@ -497,9 +491,6 @@ Chromium is unable to recover your settings.
         <message name="IDS_INSTALL_HIGHER_VERSION" desc="Error displayed when higher version already exists.">
           This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.
         </message>
-        <message name="IDS_INSTALL_HIGHER_VERSION_APP_LAUNCHER" desc="Error displayed when higher version of the Chromium App Launcher already exists.">
-          This computer already has a more recent version of the Chromium components. Please use a more recent installer.
-        </message>
         <message name="IDS_INSTALL_FAILED" desc="Error displayed if installation fails due to some unknown error.">
           Installation failed due to unspecified error. If Chromium is currently running, please close it and try again.
         </message>
@@ -546,9 +537,6 @@ Chromium is unable to recover your settings.
         </message>
         <message name="IDS_SHORTCUT_TOOLTIP" desc="Text for the hover-on tooltip for the Chromium shortcuts.">
           Access the Internet
-        </message>
-        <message name="IDS_APP_LAUNCHER_SHORTCUT_TOOLTIP" desc="Text for the hover-on tooltip for the App Launcher shortcut.">
-          Launch Chromium apps
         </message>
         <message name="IDS_UNINSTALL_DELETE_PROFILE" desc="Text to show user to ask whether to delete all the profile data also during uninstallation.">
           Also delete your browsing data?

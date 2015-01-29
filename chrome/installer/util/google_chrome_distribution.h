@@ -72,8 +72,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
   virtual bool GetCommandExecuteImplClsid(
       base::string16* handler_class_uuid) override;
 
-  virtual bool AppHostIsSupported() override;
-
   virtual void UpdateInstallStatus(
       bool system_install,
       installer::ArchiveType archive_type,

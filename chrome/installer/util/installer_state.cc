@@ -70,8 +70,7 @@ InstallerState::InstallerState()
       package_type_(UNKNOWN_PACKAGE_TYPE),
       root_key_(NULL),
       msi_(false),
-      verbose_logging_(false),
-      ensure_google_update_present_(false) {
+      verbose_logging_(false) {
 }
 
 InstallerState::InstallerState(Level level)
@@ -82,8 +81,7 @@ InstallerState::InstallerState(Level level)
       package_type_(UNKNOWN_PACKAGE_TYPE),
       root_key_(NULL),
       msi_(false),
-      verbose_logging_(false),
-      ensure_google_update_present_(false) {
+      verbose_logging_(false) {
   // Use set_level() so that root_key_ is updated properly.
   set_level(level);
 }
@@ -108,9 +106,6 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
   if (!prefs.GetBool(master_preferences::kMsi, &msi_))
     msi_ = false;
 
-  ensure_google_update_present_ =
-      command_line.HasSwitch(installer::switches::kEnsureGoogleUpdatePresent);
-
   const bool is_uninstall = command_line.HasSwitch(switches::kUninstall);
 
   if (prefs.install_chrome()) {
@@ -120,139 +115,13 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
             << " distribution: " << p->distribution()->GetDisplayName();
   }
 
-  if (prefs.install_chrome_app_launcher()) {
+  // Binaries are only used by Chrome.
+  if (is_multi_install() &&
+      FindProduct(BrowserDistribution::CHROME_BROWSER)) {
     Product* p = AddProductFromPreferences(
-        BrowserDistribution::CHROME_APP_HOST, prefs, machine_state);
+        BrowserDistribution::CHROME_BINARIES, prefs, machine_state);
     VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
             << " distribution: " << p->distribution()->GetDisplayName();
-  }
-
-  if (!is_uninstall && is_multi_install()) {
-    bool need_binaries = false;
-    if (FindProduct(BrowserDistribution::CHROME_APP_HOST)) {
-      // App Host will happily use Chrome at system level, or binaries at system
-      // level, even if app host is user level.
-      const ProductState* chrome_state = machine_state.GetProductState(
-          true,  // system level
-          BrowserDistribution::CHROME_BROWSER);
-      // If Chrome is at system-level, multi- or otherwise. We'll use it.
-      if (!chrome_state) {
-        const ProductState* binaries_state = machine_state.GetProductState(
-            true,  // system level
-            BrowserDistribution::CHROME_BINARIES);
-        if (!binaries_state)
-          need_binaries = true;
-      }
-    }
-
-    // Chrome multi needs Binaries at its own level.
-    if (FindProduct(BrowserDistribution::CHROME_BROWSER))
-      need_binaries = true;
-
-    if (need_binaries && !FindProduct(BrowserDistribution::CHROME_BINARIES)) {
-      // Force binaries to be installed/updated.
-      Product* p = AddProductFromPreferences(
-          BrowserDistribution::CHROME_BINARIES, prefs, machine_state);
-      VLOG(1) << "Install distribution: "
-              << p->distribution()->GetDisplayName();
-    }
-  }
-
-  if (is_uninstall && prefs.is_multi_install()) {
-    if (FindProduct(BrowserDistribution::CHROME_BROWSER)) {
-      // Uninstall each product of type |type| listed below based on the
-      // presence or absence of |switch_name| in that product's uninstall
-      // command.
-      const struct {
-        BrowserDistribution::Type type;
-        const char* switch_name;
-        bool switch_expected;
-      } conditional_additions[] = {
-        // If the App Host is installed, but not the App Launcher, remove it
-        // with Chrome. Note however that for system-level Chrome uninstalls,
-        // any installed user-level App Host will remain even if there is no
-        // App Launcher present (the orphaned app_host.exe will prompt the user
-        // for further action when executed).
-        { BrowserDistribution::CHROME_APP_HOST,
-          switches::kChromeAppLauncher,
-          false },
-      };
-
-      for (size_t i = 0; i < arraysize(conditional_additions); ++i) {
-        const ProductState* product_state = machine_state.GetProductState(
-            system_install(), conditional_additions[i].type);
-        if (product_state != NULL &&
-            product_state->uninstall_command().HasSwitch(
-                conditional_additions[i].switch_name) ==
-                    conditional_additions[i].switch_expected &&
-            !FindProduct(conditional_additions[i].type)) {
-          Product* p = AddProductFromPreferences(
-              conditional_additions[i].type, prefs, machine_state);
-          VLOG(1) << "Uninstall distribution: "
-                  << p->distribution()->GetDisplayName();
-        }
-      }
-    }
-
-    bool keep_binaries = false;
-    // Look for a multi-install product that is not the binaries and that is not
-    // being uninstalled. If not found, binaries are uninstalled too.
-    for (size_t i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
-      BrowserDistribution::Type type =
-          static_cast<BrowserDistribution::Type>(i);
-
-      if (type == BrowserDistribution::CHROME_BINARIES)
-        continue;
-
-      const ProductState* product_state =
-          machine_state.GetProductState(system_install(), type);
-      if (product_state == NULL) {
-        // The product is not installed.
-        continue;
-      }
-
-      if (!product_state->is_multi_install() &&
-          type != BrowserDistribution::CHROME_BROWSER) {
-        // The product is not sharing the binaries. It is ordinarily impossible
-        // for single-install Chrome to be installed along with any
-        // multi-install product. Treat single-install Chrome the same as any
-        // multi-install product just in case the impossible happens.
-        continue;
-      }
-
-      // The product is installed.
-
-      if (!FindProduct(type)) {
-        // The product is not being uninstalled.
-        if (type != BrowserDistribution::CHROME_APP_HOST) {
-          keep_binaries = true;
-          break;
-        } else {
-          // If binaries/chrome are at system-level, we can discard them at
-          // user-level...
-          if (!machine_state.GetProductState(
-                  true,  // system-level
-                  BrowserDistribution::CHROME_BROWSER) &&
-              !machine_state.GetProductState(
-                  true,  // system-level
-                  BrowserDistribution::CHROME_BINARIES)) {
-            // ... otherwise keep them.
-            keep_binaries = true;
-            break;
-          }
-        }
-      }
-
-      // The product is being uninstalled.
-    }
-    if (!keep_binaries &&
-        machine_state.GetProductState(system_install(),
-                                      BrowserDistribution::CHROME_BINARIES)) {
-      Product* p = AddProductFromPreferences(
-          BrowserDistribution::CHROME_BINARIES, prefs, machine_state);
-      VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-              << " distribution: " << p->distribution()->GetDisplayName();
-    }
   }
 
   BrowserDistribution* operand = NULL;
@@ -272,18 +141,13 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
     operation_ = MULTI_INSTALL;
   }
 
-  // Initial, over, and un-installs will take place under one of the product app
-  // guids (Chrome, App Host, or Binaries, in order of preference).
+  // Initial, over, and un-installs will take place under Chrome or Binaries
+  // app guid.
   if (operand == NULL) {
-    BrowserDistribution::Type operand_distribution_type =
-        BrowserDistribution::CHROME_BINARIES;
-    if (prefs.install_chrome())
-      operand_distribution_type = BrowserDistribution::CHROME_BROWSER;
-    else if (prefs.install_chrome_app_launcher())
-      operand_distribution_type = BrowserDistribution::CHROME_APP_HOST;
-
     operand = BrowserDistribution::GetSpecificDistribution(
-        operand_distribution_type);
+        prefs.install_chrome() ?
+            BrowserDistribution::CHROME_BROWSER :
+            BrowserDistribution::CHROME_BINARIES);
   }
 
   state_key_ = operand->GetStateKey();
@@ -606,7 +470,6 @@ void InstallerState::Clear() {
   root_key_ = NULL;
   msi_ = false;
   verbose_logging_ = false;
-  ensure_google_update_present_ = false;
 }
 
 bool InstallerState::AnyExistsAndIsInUse(

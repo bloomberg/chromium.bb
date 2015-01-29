@@ -28,7 +28,6 @@ class BrowserDistribution {
     CHROME_BROWSER,
     CHROME_FRAME,
     CHROME_BINARIES,
-    CHROME_APP_HOST,
     NUM_TYPES
   };
 
@@ -149,9 +148,6 @@ class BrowserDistribution {
   // and provides the CommandExecuteImpl class UUID if |handler_class_uuid| is
   // non-NULL.
   virtual bool GetCommandExecuteImplClsid(base::string16* handler_class_uuid);
-
-  // Returns true if this distribution uses app_host.exe to run platform apps.
-  virtual bool AppHostIsSupported();
 
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,

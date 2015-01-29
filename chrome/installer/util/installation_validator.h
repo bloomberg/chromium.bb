@@ -38,7 +38,6 @@ class InstallationValidator {
       CHROME_MULTI            = 0x02,
       CHROME_FRAME_SINGLE     = 0x04,
       CHROME_FRAME_MULTI      = 0x08,
-      CHROME_APP_HOST         = 0x10,
     };
   };  // class ProductBits
 
@@ -59,20 +58,6 @@ class InstallationValidator {
         ProductBits::CHROME_FRAME_MULTI,
     CHROME_FRAME_MULTI_CHROME_MULTI =
         ProductBits::CHROME_FRAME_MULTI | ProductBits::CHROME_MULTI,
-    CHROME_APP_HOST =
-        ProductBits::CHROME_APP_HOST,
-    CHROME_APP_HOST_CHROME_FRAME_SINGLE =
-        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_FRAME_SINGLE,
-    CHROME_APP_HOST_CHROME_FRAME_SINGLE_CHROME_MULTI =
-        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_FRAME_SINGLE |
-        ProductBits::CHROME_MULTI,
-    CHROME_APP_HOST_CHROME_FRAME_MULTI =
-        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_FRAME_MULTI,
-    CHROME_APP_HOST_CHROME_FRAME_MULTI_CHROME_MULTI =
-        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_FRAME_MULTI |
-        ProductBits::CHROME_MULTI,
-    CHROME_APP_HOST_CHROME_MULTI =
-        ProductBits::CHROME_APP_HOST | ProductBits::CHROME_MULTI,
   };
 
   // Validates |machine_state| at user or system level, returning true if valid.
@@ -137,19 +122,6 @@ class InstallationValidator {
     virtual bool UsageStatsAllowed(const ProductContext& ctx) const override;
   };
 
-  // Validation rules for Chrome App Host.
-  class ChromeAppHostRules : public ProductRules {
-   public:
-    virtual BrowserDistribution::Type distribution_type() const override;
-    virtual void AddUninstallSwitchExpectations(
-        const ProductContext& ctx,
-        SwitchExpectations* expectations) const override;
-    virtual void AddRenameSwitchExpectations(
-        const ProductContext& ctx,
-        SwitchExpectations* expectations) const override;
-    virtual bool UsageStatsAllowed(const ProductContext& ctx) const override;
-  };
-
   // Validation rules for the multi-install Chrome binaries.
   class ChromeBinariesRules : public ProductRules {
    public:
@@ -195,20 +167,10 @@ class InstallationValidator {
   static void ValidateOnOsUpgradeCommand(const ProductContext& ctx,
                                          const AppCommand& app_cmd,
                                          bool* is_valid);
-  static void ValidateQueryEULAAcceptanceCommand(const ProductContext& ctx,
-                                                 const AppCommand& app_cmd,
-                                                 bool* is_valid);
-  static void ValidateQuickEnableApplicationHostCommand(
-    const ProductContext& ctx,
-    const AppCommand& app_cmd,
-    bool* is_valid);
-
   static void ValidateAppCommandExpectations(
       const ProductContext& ctx,
       const CommandExpectations& expectations,
       bool* is_valid);
-  static void ValidateBinariesCommands(const ProductContext& ctx,
-                                       bool* is_valid);
   static void ValidateBinaries(const InstallationState& machine_state,
                                bool system_install,
                                const ProductState& binaries_state,

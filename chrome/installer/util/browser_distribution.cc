@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/app_registration_data.h"
-#include "chrome/installer/util/chrome_app_host_distribution.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/chromium_binaries_distribution.h"
 #include "chrome/installer/util/google_chrome_binaries_distribution.h"
@@ -45,15 +44,12 @@ const wchar_t kCommandExecuteImplUuid[] =
 BrowserDistribution* g_browser_distribution = NULL;
 BrowserDistribution* g_chrome_frame_distribution = NULL;
 BrowserDistribution* g_binaries_distribution = NULL;
-BrowserDistribution* g_chrome_app_host_distribution = NULL;
 
 BrowserDistribution::Type GetCurrentDistributionType() {
-  // TODO(erikwright): If the app host is installed, but not Chrome, perhaps
-  // this should return CHROME_APP_HOST.
   return BrowserDistribution::CHROME_BROWSER;
 }
 
-}  // end namespace
+}  // namespace
 
 BrowserDistribution::BrowserDistribution()
     : type_(CHROME_BROWSER),
@@ -110,11 +106,6 @@ BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
     case CHROME_FRAME:
       dist = GetOrCreateBrowserDistribution<ChromeFrameDistribution>(
           &g_chrome_frame_distribution);
-      break;
-
-    case CHROME_APP_HOST:
-      dist = GetOrCreateBrowserDistribution<ChromeAppHostDistribution>(
-          &g_chrome_app_host_distribution);
       break;
 
     default:
@@ -280,10 +271,6 @@ bool BrowserDistribution::GetCommandExecuteImplClsid(
   if (handler_class_uuid)
     *handler_class_uuid = kCommandExecuteImplUuid;
   return true;
-}
-
-bool BrowserDistribution::AppHostIsSupported() {
-  return false;
 }
 
 void BrowserDistribution::UpdateInstallStatus(bool system_install,

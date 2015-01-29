@@ -16,8 +16,6 @@ static_library("util") {
     # name ("installer_util_minimal"?) since it's not strictly the 64-bit build
     # of that target.
     sources = [
-      "chrome_app_host_operations.cc",
-      "chrome_app_host_operations.h",
       "chrome_binaries_operations.cc",
       "chrome_binaries_operations.h",
       "chrome_browser_operations.cc",
@@ -30,8 +28,6 @@ static_library("util") {
       "compat_checks.h",
       "delete_after_reboot_helper.cc",
       "delete_after_reboot_helper.h",
-      "eula_util.cc",
-      "eula_util.h",
       "google_chrome_distribution.cc",
       "google_chrome_distribution.h",
       "html_dialog.h",
@@ -89,8 +85,6 @@ static_library("util") {
       "callback_work_item.h",
       "channel_info.cc",
       "channel_info.h",
-      "chrome_app_host_distribution.cc",
-      "chrome_app_host_distribution.h",
       "chrome_frame_distribution.cc",
       "chrome_frame_distribution.h",
       "chromium_binaries_distribution.cc",

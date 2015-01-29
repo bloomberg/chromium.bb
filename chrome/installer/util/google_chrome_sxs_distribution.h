@@ -33,7 +33,6 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   virtual bool GetChromeChannel(base::string16* channel) override;
   virtual bool GetCommandExecuteImplClsid(
       base::string16* handler_class_uuid) override;
-  virtual bool AppHostIsSupported() override;
   virtual bool ShouldSetExperimentLabels() override;
   virtual bool HasUserExperiments() override;
   // returns the channel name for GoogleChromeSxSDistribution

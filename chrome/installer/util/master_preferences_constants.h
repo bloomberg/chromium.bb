@@ -22,10 +22,6 @@ extern const char kAltShortcutText[];
 extern const char kAutoLaunchChrome[];
 // Boolean. This is to be a Chrome install. (When using MultiInstall)
 extern const char kChrome[];
-// Boolean. This is to be a Chrome App Host install.
-extern const char kChromeAppHostDeprecated[];  // TODO(huangs): Remove by M27.
-// Boolean. This is to be a Chrome App Launcher install.
-extern const char kChromeAppLauncher[];
 // Integer. Icon index from chrome.exe to use for shortcuts.
 extern const char kChromeShortcutIconIndex[];
 // Boolean. This is a legacy preference and should no longer be used; it is

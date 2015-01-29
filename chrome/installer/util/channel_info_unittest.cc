@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/channel_info.h"
+
 #include <utility>
 
 #include "base/basictypes.h"
-#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,15 +14,15 @@ using installer::ChannelInfo;
 
 namespace {
 
-const std::wstring kChannelStable(installer::kChromeChannelStable);
-const std::wstring kChannelBeta(installer::kChromeChannelBeta);
-const std::wstring kChannelDev(installer::kChromeChannelDev);
+const base::string16 kChannelStable(installer::kChromeChannelStable);
+const base::string16 kChannelBeta(installer::kChromeChannelBeta);
+const base::string16 kChannelDev(installer::kChromeChannelDev);
 
 }  // namespace
 
 TEST(ChannelInfoTest, Channels) {
   ChannelInfo ci;
-  std::wstring channel;
+  base::string16 channel;
 
   ci.set_value(L"");
   EXPECT_TRUE(ci.GetChannelName(&channel));
