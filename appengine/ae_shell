@@ -1,0 +1,164 @@
+#!/bin/bash
+# Copyright 2015 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+APP_YAML="app.yaml"
+DEFAULT_SDK_MIRROR="https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.17.zip"
+# Apps can further modify the appengine sdk by providing this shell script in
+# their top level directory. This is needed because the turnaround time to
+# submitting patches upstream to the SDK is rather large.
+# WARNING: Remember that this only changes the local installation of the SDK.
+# So, this is only useful to fix bugs that make local development hard. AE
+# will use a non-patched version of the SDK.
+# The script will be run as:
+#   sdk_mod <absolute/path/to/sdk>
+APPENGINE_SDK_MOD_FILE="appengine_sdk_mod"
+
+PYTHONPATH_PREFIX=""
+PATH_PREFIX=""
+PS1_PREFIX=""
+
+usage() {
+  cat << EOF
+Usage: ${BASH_SOURCE} <app_dir>
+
+Use this script to enter an environment to develop an appengine app in.
+This script will:
+  - Download the requested version of SDK if it's not already available.
+  - Set up the environment in the new shell so that relevant SDK and project
+    tools are available, and PYTHONPATH is setup to use these tools.
+
+You can create some files under your toplevel directory to modify the
+behaviour of this script for your project:
+  - appengine_sdk_mod: A bash script that will be executed by this script as:
+        ./fancy_project/appengine_sdk_mod <absolute/path/to/AE/SDK>
+        This script can be used to modify the *local installation only* of the
+        SDK. This can, for example, fixup the SDK to ease local development.
+        For an example, see cq_stats/appengine_sdk_mod.
+EOF
+}
+
+enter_ae_shell() {
+  local rcfile="$(mktemp)"
+
+  cat >"${rcfile}" << EOF
+[[ -e ~/.bashrc ]] && source ~/.bashrc
+
+export PYTHONPATH="${PYTHONPATH_PREFIX}:\${PYTHONPATH}"
+export PATH="${PATH_PREFIX}:\${PATH}"
+export PS1="${PS1_PREFIX} \${PS1}"
+rm -f "${rcfile}"
+EOF
+
+  info "Entering ae_shell for ${appname}..."
+
+  # Enter a shell that will survive successful completion of this script, and
+  # will have the new environment setup for the user.
+  exec bash --rcfile "${rcfile}" -i
+}
+
+prepare_sdk() {
+  local -r toplvl="$1"
+  local -r appengine_dir="$2"
+  local -r appname="$3"
+
+  if [[ ! -d "${appengine_dir}" ]]; then
+    local temp_appengine_dir="temp_appengine_dir"
+
+    info "Using appegine SDK mirror ${DEFAULT_SDK_MIRROR}"
+
+    rm -rf "${temp_appengine_dir}"
+    mkdir -p "${temp_appengine_dir}"
+    info "Downloading appengine SDK"
+    local sdk_zip="${temp_appengine_dir}/sdk.zip"
+    wget -c "${DEFAULT_SDK_MIRROR}" -O "${sdk_zip}"
+    if [[ $? -ne 0 ]]; then
+      error "Failed to download SDK from ${DEFAULT_SDK_MIRROR}"
+      rm -rf "${temp_appengine_dir}"
+      return ${E_GENERAL}
+    fi
+
+    info "Unpacking..."
+    unzip -q "${sdk_zip}" -d "${temp_appengine_dir}"
+    if [[ $? -ne 0 ]]; then
+      error "Failed to unzip ${sdk_zip}."
+      rm -rf "${temp_appengine_dir}"
+      return ${E_GENERAL}
+    fi
+
+    mv "${temp_appengine_dir}/google_appengine" "${appengine_dir}"
+    rm -rf "${temp_appengine_dir}"
+
+    if [[ -f "${appname}/${APPENGINE_SDK_MOD_FILE}" ]]; then
+      info "Running appengine sdk mod script from " \
+               "${appname}/${APPENGINE_SDK_MOD_FILE}"
+      if ! "./${appname}/${APPENGINE_SDK_MOD_FILE}" \
+             "${toplvl}/${appengine_dir}"; then
+        return ${E_GENERAL}
+      fi
+    fi
+  fi
+
+  info "Using appengine SDK at ${appengine_dir}"
+  return 0
+}
+
+setup_django_path() {
+  local -r toplvl="$1"
+  local -r appengine_dir="$2"
+  local -r appname="$3"
+
+  if [[ ! -f "${appname}/${APP_YAML}" ]]; then
+    return ${E_GENERAL}
+  fi
+
+  local django_version
+  django_version="$(awk '$0 == "- name: django" { getline; print $NF }' \
+                    "${appname}/${APP_YAML}")"
+  if [[ -z "${django_version}" ]]; then
+    return ${E_GENERAL}
+  fi
+
+  info "Setting django version to ${django_version}"
+  django_dir="${appengine_dir}/lib/django-${django_version}"
+  PYTHONPATH_PREFIX="${toplvl}/${django_dir}:${PYTHONPATH_PREFIX}"
+  PATH_PREFIX="${toplvl}/${django_dir}/django/bin:${PATH_PREFIX}"
+}
+
+main() {
+  local -r toplvl="$(readlink -e "$(dirname "${BASH_SOURCE}")")"
+  local -r appdir="$1"
+  local -r appname="$(basename "${appdir}")"
+  local -r appengine_dir="google_appengine_${appname}"
+
+  local appname_shell="$(echo "${appname}" | tr '[:lower:]' '[:upper:]')"
+
+  source "${toplvl}/common.sh"
+
+  if [[ ! -d "${appdir}" ]]; then
+    error "'${appdir}' is not an appengine app source directory!"
+    usage
+    exit ${E_GENERAL}
+  fi
+
+  info "Found appengine directory ${toplvl}"
+  info "Found appengine app ${appname} at ${appdir}"
+
+  pushd "${toplvl}" >/dev/null
+
+  if ! prepare_sdk "${toplvl}" "${appengine_dir}" "${appname}"; then
+    exit ${E_GENERAL}
+  fi
+
+  setup_django_path "${toplvl}" "${appengine_dir}" "${appname}"
+  PYTHONPATH_PREFIX="${toplvl}/${appengine_dir}:${PYTHONPATH_PREFIX}"
+  PYTHONPATH="${toplvl}/${appname}:${PYTHONPATH}"
+  PATH_PREFIX="${toplvl}/${appengine_dir}:${PATH_PREFIX}"
+  PS1_PREFIX="AE:${appname_shell}${PS1_PREFIX}"
+
+  popd >/dev/null
+  enter_ae_shell
+}
+
+main "$@"
