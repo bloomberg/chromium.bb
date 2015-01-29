@@ -35,7 +35,7 @@
 #include "content/browser/android/edge_effect_l.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/overscroll_controller_android.h"
-#include "content/browser/devtools/render_view_devtools_agent_host.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -1201,9 +1201,10 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
     // Unblock the compositor.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&RenderViewDevToolsAgentHost::SynchronousSwapCompositorFrame,
-                   static_cast<RenderViewDevToolsAgentHost*>(dtah.get()),
-                   frame_metadata));
+        base::Bind(
+            &RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame,
+            static_cast<RenderFrameDevToolsAgentHost*>(dtah.get()),
+            frame_metadata));
   }
 }
 

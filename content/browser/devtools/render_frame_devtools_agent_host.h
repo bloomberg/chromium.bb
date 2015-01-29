@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEVTOOLS_RENDER_VIEW_DEVTOOLS_AGENT_HOST_H_
-#define CONTENT_BROWSER_DEVTOOLS_RENDER_VIEW_DEVTOOLS_AGENT_HOST_H_
+#ifndef CONTENT_BROWSER_DEVTOOLS_RENDER_FRAME_DEVTOOLS_AGENT_HOST_H_
+#define CONTENT_BROWSER_DEVTOOLS_RENDER_FRAME_DEVTOOLS_AGENT_HOST_H_
 
 #include <map>
 
@@ -41,7 +41,7 @@ namespace power { class PowerHandler; }
 namespace tracing { class TracingHandler; }
 }
 
-class CONTENT_EXPORT RenderViewDevToolsAgentHost
+class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public IPCDevToolsAgentHost,
       private WebContentsObserver,
       public NotificationObserver {
@@ -67,8 +67,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
  private:
   friend class DevToolsAgentHost;
-  explicit RenderViewDevToolsAgentHost(RenderFrameHost*);
-  ~RenderViewDevToolsAgentHost() override;
+  explicit RenderFrameDevToolsAgentHost(RenderFrameHost*);
+  ~RenderFrameDevToolsAgentHost() override;
 
   // IPCDevToolsAgentHost overrides.
   void DispatchProtocolMessage(const std::string& message) override;
@@ -131,9 +131,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   NotificationRegistrar registrar_;
   bool reattaching_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderViewDevToolsAgentHost);
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVTOOLS_RENDER_VIEW_DEVTOOLS_AGENT_HOST_H_
+#endif  // CONTENT_BROWSER_DEVTOOLS_RENDER_FRAME_DEVTOOLS_AGENT_HOST_H_
