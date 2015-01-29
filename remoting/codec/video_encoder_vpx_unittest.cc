@@ -20,7 +20,8 @@ const uint32 kBlueColor = 0x0000ff;
 const uint32 kGreenColor = 0x00ff00;
 
 // Creates a frame stippled between blue and red pixels, which is useful for
-// lossy/lossless encode and color tests.
+// lossy/lossless encode and color tests. By default all pixels in the frame
+// are included in the updated_region().
 static scoped_ptr<webrtc::DesktopFrame> CreateTestFrame(
     const webrtc::DesktopSize& frame_size) {
   scoped_ptr<webrtc::DesktopFrame> frame(
@@ -33,6 +34,8 @@ static scoped_ptr<webrtc::DesktopFrame> CreateTestFrame(
           ((x + y) & 1) ? kGreenColor : kBlueColor;
     }
   }
+  frame->mutable_updated_region()->SetRect(
+      webrtc::DesktopRect::MakeSize(frame_size));
   return frame.Pass();
 }
 
@@ -53,8 +56,6 @@ TEST(VideoEncoderVpxTest, TestVp9VideoEncoderLossyEncode) {
 
   webrtc::DesktopSize frame_size(1024, 768);
   scoped_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
-  frame->mutable_updated_region()->SetRect(
-      webrtc::DesktopRect::MakeSize(frame_size));
 
   // Lossy encode the first frame.
   encoder->SetLosslessEncode(false);
@@ -81,8 +82,6 @@ TEST(VideoEncoderVpxTest, TestVp9VideoEncoderLossyColor) {
 
   webrtc::DesktopSize frame_size(1024, 768);
   scoped_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
-  frame->mutable_updated_region()->SetRect(
-      webrtc::DesktopRect::MakeSize(frame_size));
 
   // Lossy encode the first frame.
   encoder->SetLosslessColor(false);
@@ -103,8 +102,6 @@ TEST(VideoEncoderVpxTest, TestVp8VideoEncoderIgnoreLossy) {
 
   webrtc::DesktopSize frame_size(1024, 768);
   scoped_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
-  frame->mutable_updated_region()->SetRect(
-      webrtc::DesktopRect::MakeSize(frame_size));
 
   // Encode a frame, to give the encoder a chance to crash if misconfigured.
   encoder->SetLosslessEncode(true);
@@ -113,25 +110,40 @@ TEST(VideoEncoderVpxTest, TestVp8VideoEncoderIgnoreLossy) {
   EXPECT_TRUE(packet);
 }
 
-// Test that calling Encode with a differently-sized media::ScreenCaptureData
-// does not leak memory.
-TEST(VideoEncoderVpxTest, TestSizeChangeNoLeak) {
+// Test that calling Encode with a larger frame size than the initial one
+// does not cause VP8 to crash.
+TEST(VideoEncoderVpxTest, TestVp8SizeChangeNoCrash) {
   webrtc::DesktopSize frame_size(1000, 1000);
 
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP8());
 
   // Create first frame & encode it.
   scoped_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
-  frame->mutable_updated_region()->SetRect(
-      webrtc::DesktopRect::MakeSize(frame_size));
   scoped_ptr<VideoPacket> packet = encoder->Encode(*frame);
   EXPECT_TRUE(packet);
 
-  // Halve the size of the frame, and updated region, and encode again.
-  frame_size.set(frame_size.width(), frame_size.height() / 2);
+  // Double the size of the frame, and updated region, and encode again.
+  frame_size.set(frame_size.width() * 2, frame_size.height() * 2);
   frame = CreateTestFrame(frame_size);
-  frame->mutable_updated_region()->SetRect(
-      webrtc::DesktopRect::MakeSize(frame_size));
+  packet = encoder->Encode(*frame);
+  EXPECT_TRUE(packet);
+}
+
+// Test that calling Encode with a larger frame size than the initial one
+// does not cause VP9 to crash.
+TEST(VideoEncoderVpxTest, TestVp9SizeChangeNoCrash) {
+  webrtc::DesktopSize frame_size(1000, 1000);
+
+  scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP9());
+
+  // Create first frame & encode it.
+  scoped_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
+  scoped_ptr<VideoPacket> packet = encoder->Encode(*frame);
+  EXPECT_TRUE(packet);
+
+  // Double the size of the frame, and updated region, and encode again.
+  frame_size.set(frame_size.width() * 2, frame_size.height() * 2);
+  frame = CreateTestFrame(frame_size);
   packet = encoder->Encode(*frame);
   EXPECT_TRUE(packet);
 }
