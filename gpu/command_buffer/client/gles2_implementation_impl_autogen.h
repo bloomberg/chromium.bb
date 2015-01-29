@@ -1968,6 +1968,100 @@ void GLES2Implementation::TexStorage3D(GLenum target,
   CheckGLError();
 }
 
+void GLES2Implementation::TransformFeedbackVaryings(GLuint program,
+                                                    GLsizei count,
+                                                    const char* const* varyings,
+                                                    GLenum buffermode) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTransformFeedbackVaryings("
+                     << program << ", " << count << ", "
+                     << static_cast<const void*>(varyings) << ", "
+                     << GLES2Util::GetStringBufferMode(buffermode) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei ii = 0; ii < count; ++ii) {
+      if (varyings[ii]) {
+        GPU_CLIENT_LOG("  " << ii << ": ---\n" << varyings[ii] << "\n---");
+      } else {
+        GPU_CLIENT_LOG("  " << ii << ": NULL");
+      }
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTransformFeedbackVaryings", "count < 0");
+    return;
+  }
+  // Compute the total size.
+  base::CheckedNumeric<size_t> total_size = count;
+  total_size += 1;
+  total_size *= sizeof(GLint);
+  if (!total_size.IsValid()) {
+    SetGLError(GL_INVALID_VALUE, "glTransformFeedbackVaryings", "overflow");
+    return;
+  }
+  size_t header_size = total_size.ValueOrDefault(0);
+  std::vector<GLint> header(count + 1);
+  header[0] = static_cast<GLint>(count);
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    GLint len = 0;
+    if (varyings[ii]) {
+      len = static_cast<GLint>(strlen(varyings[ii]));
+    }
+    total_size += len;
+    total_size += 1;  // NULL at the end of each char array.
+    if (!total_size.IsValid()) {
+      SetGLError(GL_INVALID_VALUE, "glTransformFeedbackVaryings", "overflow");
+      return;
+    }
+    header[ii + 1] = len;
+  }
+  // Pack data into a bucket on the service.
+  helper_->SetBucketSize(kResultBucketId, total_size.ValueOrDefault(0));
+  size_t offset = 0;
+  for (GLsizei ii = 0; ii <= count; ++ii) {
+    const char* src = (ii == 0) ? reinterpret_cast<const char*>(&header[0])
+                                : varyings[ii - 1];
+    base::CheckedNumeric<size_t> checked_size =
+        (ii == 0) ? header_size : static_cast<size_t>(header[ii]);
+    if (ii > 0) {
+      checked_size += 1;  // NULL in the end.
+    }
+    if (!checked_size.IsValid()) {
+      SetGLError(GL_INVALID_VALUE, "glTransformFeedbackVaryings", "overflow");
+      return;
+    }
+    size_t size = checked_size.ValueOrDefault(0);
+    while (size) {
+      ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
+      if (!buffer.valid() || buffer.size() == 0) {
+        SetGLError(GL_OUT_OF_MEMORY, "glTransformFeedbackVaryings",
+                   "too large");
+        return;
+      }
+      size_t copy_size = buffer.size();
+      if (ii > 0 && buffer.size() == size)
+        --copy_size;
+      if (copy_size)
+        memcpy(buffer.address(), src, copy_size);
+      if (copy_size < buffer.size()) {
+        // Append NULL in the end.
+        DCHECK(copy_size + 1 == buffer.size());
+        char* str = reinterpret_cast<char*>(buffer.address());
+        str[copy_size] = 0;
+      }
+      helper_->SetBucketData(kResultBucketId, offset, buffer.size(),
+                             buffer.shm_id(), buffer.offset());
+      offset += buffer.size();
+      src += buffer.size();
+      size -= buffer.size();
+    }
+  }
+  DCHECK_EQ(total_size.ValueOrDefault(0), offset);
+  helper_->TransformFeedbackVaryingsBucket(program, kResultBucketId,
+                                           buffermode);
+  helper_->SetBucketSize(kResultBucketId, 0);
+  CheckGLError();
+}
+
 void GLES2Implementation::Uniform1f(GLint location, GLfloat x) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform1f(" << location << ", "

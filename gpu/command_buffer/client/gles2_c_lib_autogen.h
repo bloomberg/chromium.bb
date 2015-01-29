@@ -676,6 +676,13 @@ void GLES2TexSubImage3D(GLenum target,
                                        width, height, depth, format, type,
                                        pixels);
 }
+void GLES2TransformFeedbackVaryings(GLuint program,
+                                    GLsizei count,
+                                    const char* const* varyings,
+                                    GLenum buffermode) {
+  gles2::GetGLContext()->TransformFeedbackVaryings(program, count, varyings,
+                                                   buffermode);
+}
 void GLES2Uniform1f(GLint location, GLfloat x) {
   gles2::GetGLContext()->Uniform1f(location, x);
 }
@@ -1835,6 +1842,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glTexSubImage3D",
      reinterpret_cast<GLES2FunctionPointer>(glTexSubImage3D),
+    },
+    {
+     "glTransformFeedbackVaryings",
+     reinterpret_cast<GLES2FunctionPointer>(glTransformFeedbackVaryings),
     },
     {
      "glUniform1f",

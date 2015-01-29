@@ -1438,7 +1438,7 @@ TEST_F(GLES2ImplementationTest, ShaderSource) {
     cmd::SetToken set_token2;
     cmd::SetBucketData set_bucket_data2;
     cmd::SetToken set_token3;
-    cmds::ShaderSourceBucket shader_source_bucket;
+    cmds::ShaderSourceBucket cmd_bucket;
     cmd::SetBucketSize clear_bucket_size;
   };
 
@@ -1457,7 +1457,7 @@ TEST_F(GLES2ImplementationTest, ShaderSource) {
   expected.set_bucket_data2.Init(kBucketId, kHeaderSize + kString1Size,
                                  kString2Size, mem2.id, mem2.offset);
   expected.set_token3.Init(GetNextToken());
-  expected.shader_source_bucket.Init(1, kBucketId);
+  expected.cmd_bucket.Init(1, kBucketId);
   expected.clear_bucket_size.Init(kBucketId, 0);
   const char* kStrings[] = {kString1, kString2};
   gl_->ShaderSource(1, 2, kStrings, NULL);
@@ -1631,6 +1631,54 @@ TEST_F(GLES2ImplementationTest, TexStorage3D) {
   expected.cmd.Init(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6);
 
   gl_->TexStorage3D(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, TransformFeedbackVaryings) {
+  const uint32 kBucketId = GLES2Implementation::kResultBucketId;
+  const char* kString1 = "happy";
+  const char* kString2 = "ending";
+  const size_t kString1Size = ::strlen(kString1) + 1;
+  const size_t kString2Size = ::strlen(kString2) + 1;
+  const size_t kHeaderSize = sizeof(GLint) * 3;
+  const size_t kSourceSize = kHeaderSize + kString1Size + kString2Size;
+  const size_t kPaddedHeaderSize =
+      transfer_buffer_->RoundToAlignment(kHeaderSize);
+  const size_t kPaddedString1Size =
+      transfer_buffer_->RoundToAlignment(kString1Size);
+  const size_t kPaddedString2Size =
+      transfer_buffer_->RoundToAlignment(kString2Size);
+  struct Cmds {
+    cmd::SetBucketSize set_bucket_size;
+    cmd::SetBucketData set_bucket_header;
+    cmd::SetToken set_token1;
+    cmd::SetBucketData set_bucket_data1;
+    cmd::SetToken set_token2;
+    cmd::SetBucketData set_bucket_data2;
+    cmd::SetToken set_token3;
+    cmds::TransformFeedbackVaryingsBucket cmd_bucket;
+    cmd::SetBucketSize clear_bucket_size;
+  };
+
+  ExpectedMemoryInfo mem0 = GetExpectedMemory(kPaddedHeaderSize);
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(kPaddedString1Size);
+  ExpectedMemoryInfo mem2 = GetExpectedMemory(kPaddedString2Size);
+
+  Cmds expected;
+  expected.set_bucket_size.Init(kBucketId, kSourceSize);
+  expected.set_bucket_header.Init(kBucketId, 0, kHeaderSize, mem0.id,
+                                  mem0.offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.set_bucket_data1.Init(kBucketId, kHeaderSize, kString1Size, mem1.id,
+                                 mem1.offset);
+  expected.set_token2.Init(GetNextToken());
+  expected.set_bucket_data2.Init(kBucketId, kHeaderSize + kString1Size,
+                                 kString2Size, mem2.id, mem2.offset);
+  expected.set_token3.Init(GetNextToken());
+  expected.cmd_bucket.Init(1, kBucketId, GL_INTERLEAVED_ATTRIBS);
+  expected.clear_bucket_size.Init(kBucketId, 0);
+  const char* kStrings[] = {kString1, kString2};
+  gl_->TransformFeedbackVaryings(1, 2, kStrings, GL_INTERLEAVED_ATTRIBS);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

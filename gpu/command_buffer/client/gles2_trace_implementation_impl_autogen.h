@@ -1036,6 +1036,15 @@ void GLES2TraceImplementation::TexSubImage3D(GLenum target,
                      depth, format, type, pixels);
 }
 
+void GLES2TraceImplementation::TransformFeedbackVaryings(
+    GLuint program,
+    GLsizei count,
+    const char* const* varyings,
+    GLenum buffermode) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::TransformFeedbackVaryings");
+  gl_->TransformFeedbackVaryings(program, count, varyings, buffermode);
+}
+
 void GLES2TraceImplementation::Uniform1f(GLint location, GLfloat x) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::Uniform1f");
   gl_->Uniform1f(location, x);

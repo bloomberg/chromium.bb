@@ -605,6 +605,12 @@ void GLES2InterfaceStub::TexSubImage3D(GLenum /* target */,
                                        GLenum /* type */,
                                        const void* /* pixels */) {
 }
+void GLES2InterfaceStub::TransformFeedbackVaryings(
+    GLuint /* program */,
+    GLsizei /* count */,
+    const char* const* /* varyings */,
+    GLenum /* buffermode */) {
+}
 void GLES2InterfaceStub::Uniform1f(GLint /* location */, GLfloat /* x */) {
 }
 void GLES2InterfaceStub::Uniform1fv(GLint /* location */,

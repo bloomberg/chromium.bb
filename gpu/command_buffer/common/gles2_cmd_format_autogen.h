@@ -7095,6 +7095,53 @@ static_assert(offsetof(TexSubImage3D, pixels_shm_offset) == 48,
 static_assert(offsetof(TexSubImage3D, internal) == 52,
               "offset of TexSubImage3D internal should be 52");
 
+struct TransformFeedbackVaryingsBucket {
+  typedef TransformFeedbackVaryingsBucket ValueType;
+  static const CommandId kCmdId = kTransformFeedbackVaryingsBucket;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program, uint32_t _varyings_bucket_id, GLenum _buffermode) {
+    SetHeader();
+    program = _program;
+    varyings_bucket_id = _varyings_bucket_id;
+    buffermode = _buffermode;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            uint32_t _varyings_bucket_id,
+            GLenum _buffermode) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _varyings_bucket_id, _buffermode);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t varyings_bucket_id;
+  uint32_t buffermode;
+};
+
+static_assert(sizeof(TransformFeedbackVaryingsBucket) == 16,
+              "size of TransformFeedbackVaryingsBucket should be 16");
+static_assert(offsetof(TransformFeedbackVaryingsBucket, header) == 0,
+              "offset of TransformFeedbackVaryingsBucket header should be 0");
+static_assert(offsetof(TransformFeedbackVaryingsBucket, program) == 4,
+              "offset of TransformFeedbackVaryingsBucket program should be 4");
+static_assert(
+    offsetof(TransformFeedbackVaryingsBucket, varyings_bucket_id) == 8,
+    "offset of TransformFeedbackVaryingsBucket varyings_bucket_id should be 8");
+static_assert(
+    offsetof(TransformFeedbackVaryingsBucket, buffermode) == 12,
+    "offset of TransformFeedbackVaryingsBucket buffermode should be 12");
+
 struct Uniform1f {
   typedef Uniform1f ValueType;
   static const CommandId kCmdId = kUniform1f;

@@ -1178,6 +1178,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoShaderSource(
       GLuint client_id, GLsizei count, const char** data, const GLint* length);
 
+  // Wrapper for glTransformFeedbackVaryings.
+  void DoTransformFeedbackVaryings(
+      GLuint client_program_id, GLsizei count, const char* const* varyings,
+      GLenum buffer_mode);
+
   // Clear any textures used by the current program.
   bool ClearUnclearedTextures();
 
@@ -7055,6 +7060,18 @@ void GLES2DecoderImpl::DoShaderSource(
   // Note: We don't actually call glShaderSource here. We wait until
   // the call to glCompileShader.
   shader->set_source(str);
+}
+
+void GLES2DecoderImpl::DoTransformFeedbackVaryings(
+    GLuint client_program_id, GLsizei count, const char* const* varyings,
+    GLenum buffer_mode) {
+  Program* program = GetProgramInfoNotShader(
+      client_program_id, "glTransformFeedbackVaryings");
+  if (!program) {
+    return;
+  }
+  glTransformFeedbackVaryings(
+      program->service_id(), count, varyings, buffer_mode);
 }
 
 void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {

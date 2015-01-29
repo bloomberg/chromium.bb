@@ -28,6 +28,11 @@ static const GLenum valid_blit_filter_table[] = {
     GL_LINEAR,
 };
 
+static const GLenum valid_buffer_mode_table[] = {
+    GL_INTERLEAVED_ATTRIBS,
+    GL_SEPARATE_ATTRIBS,
+};
+
 static const GLenum valid_buffer_parameter_table[] = {
     GL_BUFFER_SIZE,
     GL_BUFFER_USAGE,
@@ -585,6 +590,7 @@ Validators::Validators()
       backbuffer_attachment(valid_backbuffer_attachment_table,
                             arraysize(valid_backbuffer_attachment_table)),
       blit_filter(valid_blit_filter_table, arraysize(valid_blit_filter_table)),
+      buffer_mode(valid_buffer_mode_table, arraysize(valid_buffer_mode_table)),
       buffer_parameter(valid_buffer_parameter_table,
                        arraysize(valid_buffer_parameter_table)),
       buffer_target(valid_buffer_target_table,

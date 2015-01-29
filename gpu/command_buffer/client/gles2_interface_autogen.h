@@ -374,6 +374,10 @@ virtual void TexSubImage3D(GLenum target,
                            GLenum format,
                            GLenum type,
                            const void* pixels) = 0;
+virtual void TransformFeedbackVaryings(GLuint program,
+                                       GLsizei count,
+                                       const char* const* varyings,
+                                       GLenum buffermode) = 0;
 virtual void Uniform1f(GLint location, GLfloat x) = 0;
 virtual void Uniform1fv(GLint location, GLsizei count, const GLfloat* v) = 0;
 virtual void Uniform1i(GLint location, GLint x) = 0;

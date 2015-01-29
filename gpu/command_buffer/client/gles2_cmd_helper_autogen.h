@@ -1435,6 +1435,16 @@ void TexSubImage3D(GLenum target,
   }
 }
 
+void TransformFeedbackVaryingsBucket(GLuint program,
+                                     uint32_t varyings_bucket_id,
+                                     GLenum buffermode) {
+  gles2::cmds::TransformFeedbackVaryingsBucket* c =
+      GetCmdSpace<gles2::cmds::TransformFeedbackVaryingsBucket>();
+  if (c) {
+    c->Init(program, varyings_bucket_id, buffermode);
+  }
+}
+
 void Uniform1f(GLint location, GLfloat x) {
   gles2::cmds::Uniform1f* c = GetCmdSpace<gles2::cmds::Uniform1f>();
   if (c) {

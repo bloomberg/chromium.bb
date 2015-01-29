@@ -4475,6 +4475,15 @@ std::string GLES2Util::GetStringBlitFilter(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringBufferMode(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_INTERLEAVED_ATTRIBS, "GL_INTERLEAVED_ATTRIBS"},
+      {GL_SEPARATE_ATTRIBS, "GL_SEPARATE_ATTRIBS"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringBufferParameter(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_BUFFER_SIZE, "GL_BUFFER_SIZE"}, {GL_BUFFER_USAGE, "GL_BUFFER_USAGE"},

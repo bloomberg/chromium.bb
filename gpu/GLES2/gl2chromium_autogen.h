@@ -163,6 +163,7 @@
 #define glTexStorage3D GLES2_GET_FUN(TexStorage3D)
 #define glTexSubImage2D GLES2_GET_FUN(TexSubImage2D)
 #define glTexSubImage3D GLES2_GET_FUN(TexSubImage3D)
+#define glTransformFeedbackVaryings GLES2_GET_FUN(TransformFeedbackVaryings)
 #define glUniform1f GLES2_GET_FUN(Uniform1f)
 #define glUniform1fv GLES2_GET_FUN(Uniform1fv)
 #define glUniform1i GLES2_GET_FUN(Uniform1i)

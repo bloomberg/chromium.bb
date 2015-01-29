@@ -580,20 +580,15 @@ TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidHeader) {
   const char kValidStrEnd = 0;
   const GLsizei kCount = static_cast<GLsizei>(arraysize(kSource));
   const GLsizei kTests[] = {
-      kCount, 0, std::numeric_limits<GLsizei>::max(), -1, kCount,
+      kCount + 1, 0, std::numeric_limits<GLsizei>::max(), -1,
   };
   decoder_->set_unsafe_es3_apis_enabled(true);
   for (size_t ii = 0; ii < arraysize(kTests); ++ii) {
     SetBucketAsCStrings(kBucketId, 1, kSource, kTests[ii], kValidStrEnd);
     cmds::ShaderSourceBucket cmd;
     cmd.Init(client_shader_id_, kBucketId);
-    if (kTests[ii] == kCount) {
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    } else {
-      EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
-    }
+    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
   }
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidStringEnding) {
@@ -606,7 +601,6 @@ TEST_P(GLES2DecoderTest2, ShaderSourceBucketInvalidStringEnding) {
   cmd.Init(client_shader_id_, kBucketId);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_P(GLES2DecoderTest2, StencilFuncValidArgs) {
@@ -873,6 +867,69 @@ TEST_P(GLES2DecoderTest2, TexStorage3DValidArgs) {
 // TODO(gman): TexSubImage2D
 
 // TODO(gman): TexSubImage3D
+
+TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketValidArgs) {
+  EXPECT_CALL(*gl_, TransformFeedbackVaryings(kServiceProgramId, 1, _,
+                                              GL_INTERLEAVED_ATTRIBS));
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = {kSource0};
+  const char kValidStrEnd = 0;
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
+  cmds::TransformFeedbackVaryingsBucket cmd;
+  cmd.Init(client_program_id_, kBucketId, GL_INTERLEAVED_ATTRIBS);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidArgs) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = {kSource0};
+  const char kValidStrEnd = 0;
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  cmds::TransformFeedbackVaryingsBucket cmd;
+  // Test no bucket.
+  cmd.Init(client_program_id_, kBucketId, GL_INTERLEAVED_ATTRIBS);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  // Test invalid client.
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
+  cmd.Init(kInvalidClientId, kBucketId, GL_INTERLEAVED_ATTRIBS);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidHeader) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = {kSource0};
+  const char kValidStrEnd = 0;
+  const GLsizei kCount = static_cast<GLsizei>(arraysize(kSource));
+  const GLsizei kTests[] = {
+      kCount + 1, 0, std::numeric_limits<GLsizei>::max(), -1,
+  };
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  for (size_t ii = 0; ii < arraysize(kTests); ++ii) {
+    SetBucketAsCStrings(kBucketId, 1, kSource, kTests[ii], kValidStrEnd);
+    cmds::TransformFeedbackVaryingsBucket cmd;
+    cmd.Init(client_program_id_, kBucketId, GL_INTERLEAVED_ATTRIBS);
+    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+  }
+}
+
+TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketInvalidStringEnding) {
+  const uint32 kBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = {kSource0};
+  const char kInvalidStrEnd = '*';
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kInvalidStrEnd);
+  cmds::TransformFeedbackVaryingsBucket cmd;
+  cmd.Init(client_program_id_, kBucketId, GL_INTERLEAVED_ATTRIBS);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+}
 
 TEST_P(GLES2DecoderTest2, Uniform1fValidArgs) {
   EXPECT_CALL(*gl_, Uniform1fv(1, 1, _));
@@ -1468,22 +1525,5 @@ TEST_P(GLES2DecoderTest2, VertexAttribI4uiValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   decoder_->set_unsafe_es3_apis_enabled(false);
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
-TEST_P(GLES2DecoderTest2, VertexAttribI4uivImmediateValidArgs) {
-  cmds::VertexAttribI4uivImmediate& cmd =
-      *GetImmediateAs<cmds::VertexAttribI4uivImmediate>();
-  SpecializedSetup<cmds::VertexAttribI4uivImmediate, 0>(true);
-  GLuint temp[4] = {
-      0,
-  };
-  cmd.Init(1, &temp[0]);
-  EXPECT_CALL(*gl_, VertexAttribI4uiv(1, reinterpret_cast<GLuint*>(
-                                             ImmediateDataAddress(&cmd))));
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

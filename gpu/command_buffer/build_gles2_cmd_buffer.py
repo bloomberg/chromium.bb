@@ -939,6 +939,16 @@ _NAMED_TYPE_INFO = {
       'GL_PIXEL_PACK_BUFFER',
     ],
   },
+  'BufferMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_INTERLEAVED_ATTRIBS',
+      'GL_SEPARATE_ATTRIBS',
+    ],
+    'invalid': [
+      'GL_PIXEL_PACK_BUFFER',
+    ],
+  },
   'FrameBufferParameter': {
     'type': 'GLenum',
     'valid': [
@@ -2452,6 +2462,7 @@ _FUNCTION_INFO = {
   'ShaderSource': {
     'type': 'PUTSTR',
     'decoder_func': 'DoShaderSource',
+    'expectation': False,
     'data_transfer_methods': ['bucket'],
     'cmd_args':
         'GLuint shader, const char** str',
@@ -2547,6 +2558,14 @@ _FUNCTION_INFO = {
                 'GLsizei width, GLsizei height, GLsizei depth, '
                 'GLenumTextureFormat format, GLenumPixelType type, '
                 'const void* pixels, GLboolean internal',
+    'unsafe': True,
+  },
+  'TransformFeedbackVaryings': {
+    'type': 'PUTSTR',
+    'data_transfer_methods': ['bucket'],
+    'decoder_func': 'DoTransformFeedbackVaryings',
+    'cmd_args':
+        'GLuint program, const char** varyings, GLenum buffermode',
     'unsafe': True,
   },
   'Uniform1f': {'type': 'PUTXn', 'count': 1},
@@ -6426,7 +6445,7 @@ class PUTSTRHandler(ArrayArgTypeHandler):
   total_size += 1;
   total_size *= sizeof(GLint);
   if (!total_size.IsValid()) {
-    SetGLError(GL_INVALID_VALUE, "glShaderSource", "overflow");
+    SetGLError(GL_INVALID_VALUE, "gl%(func_name)s", "overflow");
     return;
   }
   size_t header_size = total_size.ValueOrDefault(0);
@@ -6437,7 +6456,7 @@ class PUTSTRHandler(ArrayArgTypeHandler):
     if (%(data)s[ii]) {"""
     if length_arg == None:
       size_code_block += """
-      len = base::static_cast<GLint>(strlen(%(data)s[ii]));"""
+      len = static_cast<GLint>(strlen(%(data)s[ii]));"""
     else:
       size_code_block += """
       len = (%(length)s && %(length)s[ii] >= 0) ?
@@ -6447,15 +6466,16 @@ class PUTSTRHandler(ArrayArgTypeHandler):
     total_size += len;
     total_size += 1;  // NULL at the end of each char array.
     if (!total_size.IsValid()) {
-      SetGLError(GL_INVALID_VALUE, "glShaderSource", "overflow");
+      SetGLError(GL_INVALID_VALUE, "gl%(func_name)s", "overflow");
       return;
     }
     header[ii + 1] = len;
 }
 """
     file.Write(size_code_block % {
-          'data': data_arg.name,
-          'length': length_arg.name if not length_arg == None else ''
+        'data': data_arg.name,
+        'length': length_arg.name if not length_arg == None else '',
+        'func_name': func.name,
       })
     data_code_block = """  // Pack data into a bucket on the service.
   helper_->SetBucketSize(kResultBucketId, total_size.ValueOrDefault(0));
@@ -6469,14 +6489,14 @@ class PUTSTRHandler(ArrayArgTypeHandler):
       checked_size += 1;  // NULL in the end.
     }
     if (!checked_size.IsValid()) {
-      SetGLError(GL_INVALID_VALUE, "glShaderSource", "overflow");
+      SetGLError(GL_INVALID_VALUE, "gl%(func_name)s", "overflow");
       return;
     }
     size_t size = checked_size.ValueOrDefault(0);
     while (size) {
       ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
       if (!buffer.valid() || buffer.size() == 0) {
-        SetGLError(GL_OUT_OF_MEMORY, "glShaderSource", "too large");
+        SetGLError(GL_OUT_OF_MEMORY, "gl%(func_name)s", "too large");
         return;
       }
       size_t copy_size = buffer.size();
@@ -6500,19 +6520,20 @@ class PUTSTRHandler(ArrayArgTypeHandler):
   DCHECK_EQ(total_size.ValueOrDefault(0), offset);
 """
     file.Write(data_code_block % {
-          'data': data_arg.name,
-          'length': length_arg.name if not length_arg == None else ''
+        'data': data_arg.name,
+        'length': length_arg.name if not length_arg == None else '',
+        'func_name': func.name,
       })
-    bucket_cmd_arg_string = ""
-    for arg in func.GetCmdArgs()[0:-2]:
-      if bucket_cmd_arg_string:
-        bucket_cmd_arg_string += ", "
-      bucket_cmd_arg_string += arg.name
-    if bucket_cmd_arg_string:
-      bucket_cmd_arg_string += ", "
-    bucket_cmd_arg_string += 'kResultBucketId'
+    bucket_args = []
+    for arg in func.GetOriginalArgs():
+      if arg.name == 'count' or arg == self.__GetLengthArg(func):
+        continue
+      if arg == self.__GetDataArg(func):
+        bucket_args.append('kResultBucketId')
+      else:
+        bucket_args.append(arg.name)
     file.Write("  helper_->%sBucket(%s);\n" %
-               (func.name, bucket_cmd_arg_string))
+               (func.name, ", ".join(bucket_args)))
     file.Write("  helper_->SetBucketSize(kResultBucketId, 0);");
     file.Write("  CheckGLError();\n")
     file.Write("}\n")
@@ -6543,7 +6564,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     cmd::SetToken set_token2;
     cmd::SetBucketData set_bucket_data2;
     cmd::SetToken set_token3;
-    cmds::ShaderSourceBucket shader_source_bucket;
+    cmds::%(name)sBucket cmd_bucket;
     cmd::SetBucketSize clear_bucket_size;
   };
 
@@ -6563,7 +6584,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       kBucketId, kHeaderSize + kString1Size, kString2Size, mem2.id,
       mem2.offset);
   expected.set_token3.Init(GetNextToken());
-  expected.shader_source_bucket.Init(%(cmd_args)s, kBucketId);
+  expected.cmd_bucket.Init(%(bucket_args)s);
   expected.clear_bucket_size.Init(kBucketId, 0);
   const char* kStrings[] = { kString1, kString2 };
   gl_->%(name)s(%(gl_args)s);
@@ -6571,21 +6592,22 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 }
 """
     gl_args = []
-    cmd_args = []
+    bucket_args = []
     for arg in func.GetOriginalArgs():
       if arg == self.__GetDataArg(func):
         gl_args.append('kStrings')
+        bucket_args.append('kBucketId')
       elif arg == self.__GetLengthArg(func):
         gl_args.append('NULL')
       elif arg.name == 'count':
         gl_args.append('2')
       else:
         gl_args.append(arg.GetValidClientSideArg(func))
-        cmd_args.append(arg.GetValidClientSideArg(func))
+        bucket_args.append(arg.GetValidClientSideArg(func))
     file.Write(code % {
         'name': func.name,
         'gl_args': ", ".join(gl_args),
-        'cmd_args': ", ".join(cmd_args),
+        'bucket_args': ", ".join(bucket_args),
       })
 
     if self.__GetLengthArg(func) == None:
@@ -6622,7 +6644,7 @@ TEST_F(GLES2ImplementationTest, %(name)sWithLength) {
   expected.set_bucket_data.Init(
       kBucketId, kHeaderSize, kStringSize + 1, mem1.id, mem1.offset);
   expected.set_token2.Init(GetNextToken());
-  expected.shader_source_bucket.Init(%(cmd_args)s, kBucketId);
+  expected.shader_source_bucket.Init(%(bucket_args)s);
   expected.clear_bucket_size.Init(kBucketId, 0);
   const char* kStrings[] = { kString };
   const GLint kLength[] = { kStringSize };
@@ -6643,33 +6665,42 @@ TEST_F(GLES2ImplementationTest, %(name)sWithLength) {
     file.Write(code % {
         'name': func.name,
         'gl_args': ", ".join(gl_args),
-        'cmd_args': ", ".join(cmd_args),
+        'bucket_args': ", ".join(bucket_args),
       })
 
   def WriteBucketServiceUnitTest(self, func, file, *extras):
     """Overrriden from TypeHandler."""
     cmd_args = []
     cmd_args_with_invalid_id = []
+    gl_args = []
     for index, arg in enumerate(func.GetOriginalArgs()):
-      if (arg == self.__GetLengthArg(func) or
-          arg == self.__GetDataArg(func) or arg.name == 'count'):
-        continue
-      if index == 0:  # Resource ID arg
+      if arg == self.__GetLengthArg(func):
+        gl_args.append('_')
+      elif arg.name == 'count':
+        gl_args.append('1')
+      elif arg == self.__GetDataArg(func):
+        cmd_args.append('kBucketId')
+        cmd_args_with_invalid_id.append('kBucketId')
+        gl_args.append('_')
+      elif index == 0:  # Resource ID arg
         cmd_args.append(arg.GetValidArg(func))
         cmd_args_with_invalid_id.append('kInvalidClientId')
+        gl_args.append(arg.GetValidGLArg(func))
       else:
         cmd_args.append(arg.GetValidArg(func))
         cmd_args_with_invalid_id.append(arg.GetValidArg(func))
+        gl_args.append(arg.GetValidGLArg(func))
 
     test = """
 TEST_P(%(test_name)s, %(name)sValidArgs) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
   const uint32 kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = { kSource0 };
   const char kValidStrEnd = 0;
   SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
   cmds::%(name)s cmd;
-  cmd.Init(%(cmd_args)s, kBucketId);
+  cmd.Init(%(cmd_args)s);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));"""
     if func.IsUnsafe():
@@ -6682,6 +6713,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 """
     self.WriteValidUnitTest(func, file, test, {
         'cmd_args': ", ".join(cmd_args),
+        'gl_args': ", ".join(gl_args),
       }, *extras)
 
     test = """
@@ -6693,11 +6725,11 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
   decoder_->set_unsafe_es3_apis_enabled(true);
   cmds::%(name)s cmd;
   // Test no bucket.
-  cmd.Init(%(cmd_args)s, kBucketId);
+  cmd.Init(%(cmd_args)s);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   // Test invalid client.
   SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
-  cmd.Init(%(cmd_args_with_invalid_id)s, kBucketId);
+  cmd.Init(%(cmd_args_with_invalid_id)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
@@ -6715,24 +6747,18 @@ TEST_P(%(test_name)s, %(name)sInvalidHeader) {
   const char kValidStrEnd = 0;
   const GLsizei kCount = static_cast<GLsizei>(arraysize(kSource));
   const GLsizei kTests[] = {
-      kCount,
+      kCount + 1,
       0,
       std::numeric_limits<GLsizei>::max(),
       -1,
-      kCount,
   };
   decoder_->set_unsafe_es3_apis_enabled(true);
   for (size_t ii = 0; ii < arraysize(kTests); ++ii) {
     SetBucketAsCStrings(kBucketId, 1, kSource, kTests[ii], kValidStrEnd);
     cmds::%(name)s cmd;
-    cmd.Init(%(cmd_args)s, kBucketId);
-    if (kTests[ii] == kCount) {
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    } else {
-      EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
-    }
+    cmd.Init(%(cmd_args)s);
+    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
   }
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 """
     self.WriteValidUnitTest(func, file, test, {
@@ -6747,10 +6773,9 @@ TEST_P(%(test_name)s, %(name)sInvalidStringEnding) {
   const char kInvalidStrEnd = '*';
   SetBucketAsCStrings(kBucketId, 1, kSource, 1, kInvalidStrEnd);
   cmds::%(name)s cmd;
-  cmd.Init(%(cmd_args)s, kBucketId);
+  cmd.Init(%(cmd_args)s);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 """
     self.WriteValidUnitTest(func, file, test, {

@@ -2209,6 +2209,21 @@ TEST_F(GLES2FormatTest, TexSubImage3D) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, TransformFeedbackVaryingsBucket) {
+  cmds::TransformFeedbackVaryingsBucket& cmd =
+      *GetBufferAs<cmds::TransformFeedbackVaryingsBucket>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<uint32_t>(12), static_cast<GLenum>(13));
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::TransformFeedbackVaryingsBucket::kCmdId),
+      cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.varyings_bucket_id);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.buffermode);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, Uniform1f) {
   cmds::Uniform1f& cmd = *GetBufferAs<cmds::Uniform1f>();
   void* next_cmd =

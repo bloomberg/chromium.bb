@@ -14,6 +14,7 @@
 static std::string GetStringAttachment(uint32_t value);
 static std::string GetStringBackbufferAttachment(uint32_t value);
 static std::string GetStringBlitFilter(uint32_t value);
+static std::string GetStringBufferMode(uint32_t value);
 static std::string GetStringBufferParameter(uint32_t value);
 static std::string GetStringBufferTarget(uint32_t value);
 static std::string GetStringBufferUsage(uint32_t value);

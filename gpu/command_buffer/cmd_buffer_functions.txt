@@ -153,6 +153,7 @@ GL_APICALL void         GL_APIENTRY glTexParameteriv (GLenumTextureBindTarget ta
 GL_APICALL void         GL_APIENTRY glTexStorage3D (GLenumTexture3DTarget target, GLsizei levels, GLenumTextureInternalFormatStorage internalFormat, GLsizei width, GLsizei height, GLsizei depth);
 GL_APICALL void         GL_APIENTRY glTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
 GL_APICALL void         GL_APIENTRY glTexSubImage3D (GLenumTexture3DTarget target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
+GL_APICALL void         GL_APIENTRY glTransformFeedbackVaryings (GLidProgram program, GLsizeiNotNegative count, const char* const* varyings, GLenumBufferMode buffermode);
 GL_APICALL void         GL_APIENTRY glUniform1f (GLintUniformLocation location, GLfloat x);
 GL_APICALL void         GL_APIENTRY glUniform1fv (GLintUniformLocation location, GLsizeiNotNegative count, const GLfloat* v);
 GL_APICALL void         GL_APIENTRY glUniform1i (GLintUniformLocation location, GLint x);
