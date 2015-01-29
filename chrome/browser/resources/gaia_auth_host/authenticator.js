@@ -22,6 +22,7 @@ cr.define('cr.login', function() {
   var SIGN_IN_HEADER = 'google-accounts-signin';
   var EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
   var SAML_HEADER = 'google-accounts-saml';
+  var LOCATION_HEADER = 'location';
   var SERVICE_ID = 'chromeoslogin';
 
   /**
@@ -264,6 +265,11 @@ cr.define('cr.login', function() {
         this.sessionIndex_ = signinDetails['sessionindex'];
       } else if (headerName == SAML_HEADER) {
         this.authFlow_ = AuthFlow.SAML;
+      } else if (headerName == LOCATION_HEADER) {
+        // If the "choose what to sync" checkbox was clicked, then the continue
+        // URL will contain a source=3 field.
+        var location = decodeURIComponent(header.value);
+        this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
       }
     }
   };
