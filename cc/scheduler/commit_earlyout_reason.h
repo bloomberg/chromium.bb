@@ -12,6 +12,7 @@ namespace cc {
 enum class CommitEarlyOutReason {
   ABORTED_OUTPUT_SURFACE_LOST,
   ABORTED_NOT_VISIBLE,
+  ABORTED_DEFERRED_COMMIT,
   FINISHED_NO_UPDATES,
 };
 
@@ -21,6 +22,8 @@ inline const char* CommitEarlyOutReasonToString(CommitEarlyOutReason reason) {
       return "CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST";
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
       return "CommitEarlyOutReason::ABORTED_NOT_VISIBLE";
+    case CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT:
+      return "CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT";
     case CommitEarlyOutReason::FINISHED_NO_UPDATES:
       return "CommitEarlyOutReason::FINISHED_NO_UPDATES";
   }

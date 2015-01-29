@@ -480,8 +480,6 @@ void LayerTreeHost::SetDeferCommits(bool defer_commits) {
   proxy_->SetDeferCommits(defer_commits);
 }
 
-void LayerTreeHost::DidDeferCommit() {}
-
 void LayerTreeHost::SetNeedsDisplayOnAllLayers() {
   std::stack<Layer*> layer_stack;
   layer_stack.push(root_layer());

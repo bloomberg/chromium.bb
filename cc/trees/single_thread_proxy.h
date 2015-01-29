@@ -114,13 +114,14 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   // Called by the legacy path where RenderWidget does the scheduling.
   void CompositeImmediately(base::TimeTicks frame_begin_time);
 
- private:
+ protected:
   SingleThreadProxy(
       LayerTreeHost* layer_tree_host,
       LayerTreeHostSingleThreadClient* client,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
+ private:
   void BeginMainFrame();
   void BeginMainFrameAbortedOnImplThread(CommitEarlyOutReason reason);
   void DoAnimate();
@@ -154,7 +155,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   bool inside_draw_;
   bool defer_commits_;
-  bool commit_was_deferred_;
   bool commit_requested_;
   bool inside_synchronous_composite_;
 

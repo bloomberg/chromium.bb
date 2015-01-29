@@ -259,6 +259,8 @@ class CC_EXPORT SchedulerStateMachine {
         impl_latency_takes_priority_on_battery;
   }
 
+  void SetDeferCommits(bool defer_commits);
+
   // TODO(zmo): This is temporary for debugging crbug.com/393331.
   // We should remove it afterwards.
   std::string GetStatesForDebugging() const;
@@ -341,6 +343,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool continuous_painting_;
   bool impl_latency_takes_priority_on_battery_;
   bool children_need_begin_frames_;
+  bool defer_commits_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

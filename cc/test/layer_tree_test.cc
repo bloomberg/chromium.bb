@@ -79,12 +79,13 @@ class ThreadProxyForTest : public ThreadProxy {
 
   ~ThreadProxyForTest() override {}
 
-  void test() {
-    test_hooks_->Layout();
-  }
-
  private:
   TestHooks* test_hooks_;
+
+  void WillBeginImplFrame(const BeginFrameArgs& args) override {
+    ThreadProxy::WillBeginImplFrame(args);
+    test_hooks_->WillBeginImplFrame(args);
+  }
 
   void ScheduledActionSendBeginMainFrame() override {
     test_hooks_->ScheduledActionWillSendBeginMainFrame();
@@ -127,6 +128,74 @@ class ThreadProxyForTest : public ThreadProxy {
       : ThreadProxy(host, main_task_runner,
                     impl_task_runner,
                     external_begin_frame_source.Pass()),
+        test_hooks_(test_hooks) {}
+};
+
+// Adapts ThreadProxy for test. Injects test hooks for testing.
+class SingleThreadProxyForTest : public SingleThreadProxy {
+ public:
+  static scoped_ptr<Proxy> Create(
+      TestHooks* test_hooks,
+      LayerTreeHost* host,
+      LayerTreeHostSingleThreadClient* client,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    return make_scoped_ptr(new SingleThreadProxyForTest(
+        test_hooks, host, client, main_task_runner,
+        external_begin_frame_source.Pass()));
+  }
+
+  ~SingleThreadProxyForTest() override {}
+
+ private:
+  TestHooks* test_hooks_;
+
+  void WillBeginImplFrame(const BeginFrameArgs& args) override {
+    SingleThreadProxy::WillBeginImplFrame(args);
+    test_hooks_->WillBeginImplFrame(args);
+  }
+
+  void ScheduledActionSendBeginMainFrame() override {
+    test_hooks_->ScheduledActionWillSendBeginMainFrame();
+    SingleThreadProxy::ScheduledActionSendBeginMainFrame();
+    test_hooks_->ScheduledActionSendBeginMainFrame();
+  }
+
+  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
+    DrawResult result =
+        SingleThreadProxy::ScheduledActionDrawAndSwapIfPossible();
+    test_hooks_->ScheduledActionDrawAndSwapIfPossible();
+    return result;
+  }
+
+  void ScheduledActionAnimate() override {
+    SingleThreadProxy::ScheduledActionAnimate();
+    test_hooks_->ScheduledActionAnimate();
+  }
+
+  void ScheduledActionCommit() override {
+    SingleThreadProxy::ScheduledActionCommit();
+    test_hooks_->ScheduledActionCommit();
+  }
+
+  void ScheduledActionBeginOutputSurfaceCreation() override {
+    SingleThreadProxy::ScheduledActionBeginOutputSurfaceCreation();
+    test_hooks_->ScheduledActionBeginOutputSurfaceCreation();
+  }
+
+  void ScheduledActionPrepareTiles() override {
+    SingleThreadProxy::ScheduledActionPrepareTiles();
+    test_hooks_->ScheduledActionPrepareTiles();
+  }
+
+  SingleThreadProxyForTest(
+      TestHooks* test_hooks,
+      LayerTreeHost* host,
+      LayerTreeHostSingleThreadClient* client,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source)
+      : SingleThreadProxy(host, client, main_task_runner,
+                          external_begin_frame_source.Pass()),
         test_hooks_(test_hooks) {}
 };
 
@@ -402,11 +471,13 @@ class LayerTreeHostForTesting : public LayerTreeHost {
                                      impl_task_runner,
                                      external_begin_frame_source.Pass()));
     } else {
-      layer_tree_host->InitializeForTesting(SingleThreadProxy::Create(
-          layer_tree_host.get(),
-          client,
-          main_task_runner,
-          external_begin_frame_source.Pass()));
+      layer_tree_host->InitializeForTesting(
+          SingleThreadProxyForTest::Create(
+              test_hooks,
+              layer_tree_host.get(),
+              client,
+              main_task_runner,
+              external_begin_frame_source.Pass()));
     }
     return layer_tree_host.Pass();
   }
@@ -430,8 +501,6 @@ class LayerTreeHostForTesting : public LayerTreeHost {
   }
 
   void set_test_started(bool started) { test_started_ = started; }
-
-  void DidDeferCommit() override { test_hooks_->DidDeferCommit(); }
 
  private:
   LayerTreeHostForTesting(TestHooks* test_hooks,
@@ -522,6 +591,13 @@ void LayerTreeTest::PostAddLongAnimationToMainThread(
                  main_thread_weak_ptr_,
                  base::Unretained(layer_to_receive_animation),
                  1.0));
+}
+
+void LayerTreeTest::PostSetDeferCommitsToMainThread(bool defer_commits) {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchSetDeferCommits,
+                 main_thread_weak_ptr_, defer_commits));
 }
 
 void LayerTreeTest::PostSetNeedsCommitToMainThread() {
@@ -653,6 +729,13 @@ void LayerTreeTest::DispatchAddAnimation(Layer* layer_to_receive_animation,
     AddOpacityTransitionToLayer(
         layer_to_receive_animation, animation_duration, 0, 0.5, true);
   }
+}
+
+void LayerTreeTest::DispatchSetDeferCommits(bool defer_commits) {
+  DCHECK(!proxy() || proxy()->IsMainThread());
+
+  if (layer_tree_host_)
+    layer_tree_host_->SetDeferCommits(defer_commits);
 }
 
 void LayerTreeTest::DispatchSetNeedsCommit() {
