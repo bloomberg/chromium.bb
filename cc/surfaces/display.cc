@@ -198,9 +198,11 @@ SurfaceId Display::CurrentSurfaceId() {
 }
 
 int Display::GetMaxFramesPending() {
-  if (!output_surface_)
-    return OutputSurface::DEFAULT_MAX_FRAMES_PENDING;
-  return output_surface_->capabilities().max_frames_pending;
+  int max_frames_pending =
+      output_surface_ ? output_surface_->capabilities().max_frames_pending : 0;
+  if (max_frames_pending <= 0)
+    max_frames_pending = OutputSurface::DEFAULT_MAX_FRAMES_PENDING;
+  return max_frames_pending;
 }
 
 }  // namespace cc
