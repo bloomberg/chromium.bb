@@ -26,7 +26,9 @@ publican_sources = \
 	$(srcdir)/sources/Protocol.xml \
 	$(srcdir)/sources/Compositors.xml \
 	$(srcdir)/sources/images/icon.svg  \
-	$(srcdir)/sources/images/wayland.png
+	$(srcdir)/sources/images/wayland.png \
+	$(srcdir)/sources/Client.xml \
+	$(srcdir)/sources/Server.xml
 
 processed_sources := \
 	$(srcdir)/sources/Architecture.xml \

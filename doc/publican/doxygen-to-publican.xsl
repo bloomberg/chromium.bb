@@ -4,49 +4,16 @@
 <xsl:param name="which" />
 
 <xsl:template match="/">
-  <!-- insert docbook's DOCTYPE blurb -->
-    <xsl:text disable-output-escaping = "yes"><![CDATA[
-<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-  <!ENTITY % BOOK_ENTITIES SYSTEM "Wayland.ent">
-%BOOK_ENTITIES;
-]>
-]]></xsl:text>
+  <xsl:apply-templates select="/doxygen/compounddef[@kind!='file' and @kind!='dir']" />
 
-  <appendix id="sect-Library-$which">
-    <xsl:attribute name="id">sect-Library-<xsl:value-of select="$which"/></xsl:attribute>
-    <title><xsl:value-of select="$which"/> API</title>
+  <section id="{$which}-Functions">
+    <title>Functions</title>
+    <para />
+    <variablelist>
+      <xsl:apply-templates select="/doxygen/compounddef[@kind='file']/sectiondef/memberdef" />
+    </variablelist>
+  </section>
 
-    <para>
-      The open-source reference implementation of Wayland protocol is
-      split in two C libraries, <link
-      linkend="sect-Library-Client">libwayland-client</link> and <link
-      linkend="sect-Library-Server">libwayland-server</link>. Their
-      main responsibility is to handle the Inter-process communication
-      (<emphasis>IPC</emphasis>) with each other, therefore
-      guaranteeing the protocol objects marshaling and messages
-      synchronization.
-    </para>
-
-    <para>
-      Following is the Wayland library classes for the
-      <emphasis>libwayland-<xsl:value-of select="translate($which,
-      'SC', 'sc')"/></emphasis>.  This appendix describes in detail
-      the library's methods and their helpers, aiming implementors who
-      are building a Wayland <xsl:value-of select="translate($which,
-      'SC', 'sc')"/>.
-    </para>
-
-    <xsl:apply-templates select="/doxygen/compounddef[@kind!='file' and @kind!='dir']" />
-
-    <section id="{$which}-Functions">
-      <title>Functions</title>
-      <para />
-      <variablelist>
-        <xsl:apply-templates select="/doxygen/compounddef[@kind='file']/sectiondef/memberdef" />
-      </variablelist>
-    </section>
-
-  </appendix>
 </xsl:template>
 
 <xsl:template match="parameteritem">
