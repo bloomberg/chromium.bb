@@ -223,6 +223,7 @@ public:
     void configureTextTrackGroupForLanguage(const TrackGroup&) const;
     void configureTextTracks();
     void configureTextTrackGroup(const TrackGroup&);
+    void configureMetadataTextTrackGroup(const TrackGroup&);
 
     bool textTracksAreReady() const;
     enum VisibilityChangeAssumption {

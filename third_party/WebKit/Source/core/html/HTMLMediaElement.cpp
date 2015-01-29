@@ -2921,6 +2921,25 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
         trackToEnable->setMode(TextTrack::showingKeyword());
 }
 
+void HTMLMediaElement::configureMetadataTextTrackGroup(const TrackGroup& group)
+{
+    ASSERT(group.tracks.size());
+
+    // https://html.spec.whatwg.org/multipage/embedded-content.html#honor-user-preferences-for-automatic-text-track-selection
+
+    // 4. If there are any text tracks in the media element's list of text
+    // tracks whose text track kind is metadata that correspond to track
+    // elements with a default attribute set whose text track mode is set to
+    // disabled, then set the text track mode of all such tracks to hidden
+    for (auto& textTrack : group.tracks) {
+        if (textTrack->mode() != TextTrack::disabledKeyword())
+            continue;
+        if (!textTrack->isDefault())
+            continue;
+        textTrack->setMode(TextTrack::hiddenKeyword());
+    }
+}
+
 void HTMLMediaElement::configureTextTracks()
 {
     TrackGroup captionAndSubtitleTracks(TrackGroup::CaptionsAndSubtitles);
@@ -2976,7 +2995,7 @@ void HTMLMediaElement::configureTextTracks()
     if (chapterTracks.tracks.size())
         configureTextTrackGroup(chapterTracks);
     if (metadataTracks.tracks.size())
-        configureTextTrackGroup(metadataTracks);
+        configureMetadataTextTrackGroup(metadataTracks);
     if (otherTracks.tracks.size())
         configureTextTrackGroup(otherTracks);
 
