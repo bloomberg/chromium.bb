@@ -47,10 +47,14 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
 #endif
 }
 
-#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
+#if defined(GOOGLE_CHROME_BUILD) && \
+    (defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS)))
 #define MAYBE_Scroll Scroll
 #else
-// TODO(thestig): http://crbug.com/79837, http://crbug.com/332778
+// TODO(thestig): http://crbug.com/79837, http://crbug.com/332778,
+// http://crbug.com/446221 Possibly a race between mouse event processing and
+// JavaScript execution in the renderer. The failure goes away if you Sleep()
+// after SwapBuffers.
 #define MAYBE_Scroll DISABLED_Scroll
 #endif
 // Tests that scrolling works.
