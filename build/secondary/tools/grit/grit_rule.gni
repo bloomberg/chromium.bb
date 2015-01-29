@@ -54,6 +54,8 @@
 #       If set, output_dir is not added to include_dirs.
 #
 #   deps  (optional)
+#   inputs  (optional)
+#       List of additional files, required for grit to process source file.
 #   visibility  (optional)
 #       Normal meaning.
 #
@@ -412,6 +414,9 @@ template("grit") {
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
+    }
+    if (defined(invoker.inputs)) {
+      inputs += invoker.inputs
     }
   }
 
