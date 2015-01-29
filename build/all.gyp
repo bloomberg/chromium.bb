@@ -5,7 +5,9 @@
 {
   'variables': {
     # A hook that can be overridden in other repositories to add additional
-    # compilation targets to 'All'. Only used on Android.
+    # compilation targets to 'All'.
+    'app_targets%': [],
+    # For Android-specific targets.
     'android_app_targets%': [],
   },
   'targets': [
@@ -14,6 +16,7 @@
       'type': 'none',
       'xcode_create_dependents_test_runner': 1,
       'dependencies': [
+        '<@(app_targets)',
         'some.gyp:*',
         '../base/base.gyp:*',
         '../components/components.gyp:*',
