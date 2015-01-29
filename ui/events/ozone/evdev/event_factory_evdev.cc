@@ -157,8 +157,8 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
                                                           &radius_y);
 
   scoped_ptr<TouchEvent> touch_event(new TouchEvent(
-      params.type, gfx::PointF(x, y),
-      /* flags */ 0, params.touch_id, params.timestamp, radius_x, radius_y,
+      params.type, gfx::PointF(x, y), modifiers_.GetModifierFlags(),
+      params.touch_id, params.timestamp, radius_x, radius_y,
       /* angle */ 0., params.pressure));
   touch_event->set_source_device_id(params.device_id);
   PostUiEvent(touch_event.Pass());
