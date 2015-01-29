@@ -400,7 +400,7 @@ struct GenerateTraits<Tuple<A, B, C, D, E>> {
 template <class A>
 struct GenerateTraits<std::vector<A> > {
   static bool Generate(std::vector<A>* p, Generator* generator) {
-    size_t count = ++g_depth > 3 ? 0 : RandInRange(20);
+    size_t count = ++g_depth > 3 ? 0 : RandElementCount();
     p->resize(count);
     for (size_t i = 0; i < count; ++i) {
       if (!GenerateParam(&p->at(i), generator)) {
@@ -417,7 +417,7 @@ template <class A>
 struct GenerateTraits<std::set<A> > {
   static bool Generate(std::set<A>* p, Generator* generator) {
     static int g_depth = 0;
-    size_t count = ++g_depth > 3 ? 0 : RandInRange(20);
+    size_t count = ++g_depth > 3 ? 0 : RandElementCount();
     A a;
     for (size_t i = 0; i < count; ++i) {
       if (!GenerateParam(&a, generator)) {
@@ -436,7 +436,7 @@ template <class A, class B>
 struct GenerateTraits<std::map<A, B> > {
   static bool Generate(std::map<A, B>* p, Generator* generator) {
     static int g_depth = 0;
-    size_t count = ++g_depth > 3 ? 0 : RandInRange(10);
+    size_t count = ++g_depth > 3 ? 0 : RandElementCount();
     std::pair<A, B> place_holder;
     for (size_t i = 0; i < count; ++i) {
       if (!GenerateParam(&place_holder, generator)) {
@@ -709,16 +709,125 @@ struct GenerateTraits<blink::WebGamepadButton> {
 
 template <>
 struct GenerateTraits<cc::CompositorFrame> {
-  // FIXME: this should actually generate something
   static bool Generate(cc::CompositorFrame* p, Generator* generator) {
-    return true;
+    if (!GenerateParam(&p->metadata, generator))
+      return false;
+    switch (RandInRange(4)) {
+      case 0: {
+        p->delegated_frame_data.reset(new cc::DelegatedFrameData());
+        if (!GenerateParam(p->delegated_frame_data.get(), generator))
+          return false;
+        return true;
+      }
+      case 1: {
+        p->gl_frame_data.reset(new cc::GLFrameData());
+        if (!GenerateParam(p->gl_frame_data.get(), generator))
+          return false;
+        return true;
+      }
+      case 2: {
+        p->software_frame_data.reset(new cc::SoftwareFrameData());
+        if (!GenerateParam(p->software_frame_data.get(), generator))
+          return false;
+        return true;
+      }
+      default:
+        // Generate nothing to handle the no frame case.
+        return true;
+    }
   }
 };
 
 template <>
 struct GenerateTraits<cc::CompositorFrameAck> {
-  // FIXME: this should actually generate something
   static bool Generate(cc::CompositorFrameAck* p, Generator* generator) {
+    if (!GenerateParam(&p->resources, generator))
+      return false;
+    if (!GenerateParam(&p->last_software_frame_id, generator))
+      return false;
+    p->gl_frame_data.reset(new cc::GLFrameData);
+    if (!GenerateParam(p->gl_frame_data.get(), generator))
+      return false;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<cc::DelegatedFrameData> {
+  static bool Generate(cc::DelegatedFrameData* p, Generator* generator) {
+    if (!GenerateParam(&p->device_scale_factor, generator))
+      return false;
+    if (!GenerateParam(&p->resource_list, generator))
+      return false;
+    if (!GenerateParam(&p->render_pass_list, generator))
+      return false;
+    return true;
+  }
+};
+
+template <class A>
+struct GenerateTraits<cc::ListContainer<A>> {
+  static bool Generate(cc::ListContainer<A>* p, Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<cc::QuadList> {
+  static bool Generate(cc::QuadList* p, Generator* generator) {
+    // TODO(mbarbella): This should actually generate something.
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<cc::RenderPass> {
+  static bool Generate(cc::RenderPass* p, Generator* generator) {
+    if (!GenerateParam(&p->id, generator))
+      return false;
+    if (!GenerateParam(&p->output_rect, generator))
+      return false;
+    if (!GenerateParam(&p->damage_rect, generator))
+      return false;
+    if (!GenerateParam(&p->transform_to_root_target, generator))
+      return false;
+    if (!GenerateParam(&p->has_transparent_background, generator))
+      return false;
+    if (!GenerateParam(&p->quad_list, generator))
+      return false;
+    if (!GenerateParam(&p->shared_quad_state_list, generator))
+      return false;
+    // Omitting |copy_requests| as it is not sent over IPC.
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<cc::RenderPassList> {
+  static bool Generate(cc::RenderPassList* p, Generator* generator) {
+    size_t count = RandElementCount();
+    for (size_t i = 0; i < count; ++i) {
+      scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+      if (!GenerateParam(render_pass.get(), generator))
+        return false;
+      p->push_back(render_pass.Pass());
+    }
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<cc::SoftwareFrameData> {
+  static bool Generate(cc::SoftwareFrameData* p, Generator* generator) {
+    if (!GenerateParam(&p->id, generator))
+      return false;
+    if (!GenerateParam(&p->size, generator))
+      return false;
+    if (!GenerateParam(&p->damage_rect, generator))
+      return false;
+    if (!GenerateParam(&p->bitmap_id, generator))
+      return false;
     return true;
   }
 };
@@ -1063,34 +1172,6 @@ struct GenerateTraits<gfx::PointF> {
 };
 
 template <>
-struct GenerateTraits<gfx::Size> {
-  static bool Generate(gfx::Size *p, Generator* generator) {
-    int w;
-    int h;
-    if (!GenerateParam(&w, generator))
-      return false;
-    if (!GenerateParam(&h, generator))
-      return false;
-    p->SetSize(w, h);
-    return true;
-  }
-};
-
-template <>
-struct GenerateTraits<gfx::SizeF> {
-  static bool Generate(gfx::SizeF *p, Generator* generator) {
-    float w;
-    float h;
-    if (!GenerateParam(&w, generator))
-      return false;
-    if (!GenerateParam(&h, generator))
-      return false;
-    p->SetSize(w, h);
-    return true;
-  }
-};
-
-template <>
 struct GenerateTraits<gfx::Rect> {
   static bool Generate(gfx::Rect *p, Generator* generator) {
     gfx::Point origin;
@@ -1130,6 +1211,48 @@ struct GenerateTraits<gfx::Range> {
     if (!GenerateParam(&end, generator))
       return false;
     *p = gfx::Range(start, end);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<gfx::Size> {
+  static bool Generate(gfx::Size* p, Generator* generator) {
+    int w;
+    int h;
+    if (!GenerateParam(&w, generator))
+      return false;
+    if (!GenerateParam(&h, generator))
+      return false;
+    p->SetSize(w, h);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<gfx::SizeF> {
+  static bool Generate(gfx::SizeF* p, Generator* generator) {
+    float w;
+    float h;
+    if (!GenerateParam(&w, generator))
+      return false;
+    if (!GenerateParam(&h, generator))
+      return false;
+    p->SetSize(w, h);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<gfx::Transform> {
+  static bool Generate(gfx::Transform* p, Generator* generator) {
+    SkMScalar matrix[16];
+    if (!GenerateParamArray(&matrix[0], arraysize(matrix), generator))
+      return false;
+    *p = gfx::Transform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4],
+                        matrix[5], matrix[6], matrix[7], matrix[8], matrix[9],
+                        matrix[10], matrix[11], matrix[12], matrix[13],
+                        matrix[14], matrix[15]);
     return true;
   }
 };

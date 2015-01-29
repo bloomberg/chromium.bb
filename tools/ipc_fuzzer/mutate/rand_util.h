@@ -35,6 +35,10 @@ inline bool RandEvent(uint32 frequency) {
   return RandInRange(frequency) == 0;
 }
 
+inline size_t RandElementCount() {
+  return RandU32() % 10;
+}
+
 }  // namespace ipc_fuzzer
 
 #endif  // TOOLS_IPC_FUZZER_MUTATE_RAND_UTIL_H_
