@@ -7,7 +7,7 @@
 #include "base/time/time.h"
 #include "skia/ext/benchmarking_canvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/utils/SkProxyCanvas.h"
+#include "third_party/skia/include/utils/SkNWayCanvas.h"
 
 namespace skia {
 
@@ -21,13 +21,14 @@ private:
   base::TimeTicks start_ticks_;
 };
 
-class TimingCanvas : public SkProxyCanvas {
+class TimingCanvas : public SkNWayCanvas {
 public:
   TimingCanvas(int width, int height, const BenchmarkingCanvas* track_canvas)
-      : tracking_canvas_(track_canvas) {
+      : SkNWayCanvas(width, height)
+      , tracking_canvas_(track_canvas) {
     surface_ = skia::AdoptRef(SkSurface::NewRasterN32Premul(width, height));
 
-    setProxy(surface_->getCanvas());
+    addCanvas(surface_->getCanvas());
   }
 
   ~TimingCanvas() override {}
@@ -42,24 +43,24 @@ public:
   // SkCanvas overrides.
   void willSave() override {
     AutoStamper stamper(this);
-    SkProxyCanvas::willSave();
+    SkNWayCanvas::willSave();
   }
 
   SaveLayerStrategy willSaveLayer(const SkRect* bounds,
                                   const SkPaint* paint,
                                   SaveFlags flags) override {
     AutoStamper stamper(this);
-    return SkProxyCanvas::willSaveLayer(bounds, paint, flags);
+    return SkNWayCanvas::willSaveLayer(bounds, paint, flags);
   }
 
   void willRestore() override {
     AutoStamper stamper(this);
-    SkProxyCanvas::willRestore();
+    SkNWayCanvas::willRestore();
   }
 
   void onDrawPaint(const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawPaint(paint);
+    SkNWayCanvas::onDrawPaint(paint);
   }
 
   void onDrawPoints(PointMode mode,
@@ -67,27 +68,27 @@ public:
                     const SkPoint pts[],
                     const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawPoints(mode, count, pts, paint);
+    SkNWayCanvas::onDrawPoints(mode, count, pts, paint);
   }
 
   void onDrawOval(const SkRect& rect, const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawOval(rect, paint);
+    SkNWayCanvas::onDrawOval(rect, paint);
   }
 
   void onDrawRect(const SkRect& rect, const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawRect(rect, paint);
+    SkNWayCanvas::onDrawRect(rect, paint);
   }
 
   void onDrawRRect(const SkRRect& rrect, const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawRRect(rrect, paint);
+    SkNWayCanvas::onDrawRRect(rrect, paint);
   }
 
   void onDrawPath(const SkPath& path, const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawPath(path, paint);
+    SkNWayCanvas::onDrawPath(path, paint);
   }
 
   void onDrawBitmap(const SkBitmap& bitmap,
@@ -95,7 +96,7 @@ public:
                     SkScalar top,
                     const SkPaint* paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawBitmap(bitmap, left, top, paint);
+    SkNWayCanvas::onDrawBitmap(bitmap, left, top, paint);
   }
 
   void onDrawBitmapRect(const SkBitmap& bitmap,
@@ -104,7 +105,7 @@ public:
                         const SkPaint* paint,
                         DrawBitmapRectFlags flags) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawBitmapRect(bitmap, src, dst, paint, flags);
+    SkNWayCanvas::onDrawBitmapRect(bitmap, src, dst, paint, flags);
   }
 
   void onDrawSprite(const SkBitmap& bitmap,
@@ -112,7 +113,7 @@ public:
                     int top,
                     const SkPaint* paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawSprite(bitmap, left, top, paint);
+    SkNWayCanvas::onDrawSprite(bitmap, left, top, paint);
   }
 
   void onDrawVertices(VertexMode vmode,
@@ -125,7 +126,7 @@ public:
                       int indexCount,
                       const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors,
+    SkNWayCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors,
                                   xmode, indices, indexCount, paint);
   }
 
@@ -136,7 +137,7 @@ protected:
                  SkScalar y,
                  const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawText(text, byteLength, x, y, paint);
+    SkNWayCanvas::onDrawText(text, byteLength, x, y, paint);
   }
 
   void onDrawPosText(const void* text,
@@ -144,7 +145,7 @@ protected:
                      const SkPoint pos[],
                      const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawPosText(text, byteLength, pos, paint);
+    SkNWayCanvas::onDrawPosText(text, byteLength, pos, paint);
   }
 
   void onDrawPosTextH(const void* text,
@@ -153,7 +154,7 @@ protected:
                       SkScalar constY,
                       const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawPosTextH(text, byteLength, xpos, constY, paint);
+    SkNWayCanvas::onDrawPosTextH(text, byteLength, xpos, constY, paint);
   }
 
   void onDrawTextOnPath(const void* text,
@@ -162,40 +163,40 @@ protected:
                         const SkMatrix* matrix,
                         const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawTextOnPath(text, byteLength, path, matrix, paint);
+    SkNWayCanvas::onDrawTextOnPath(text, byteLength, path, matrix, paint);
   }
 
   void onClipRect(const SkRect& rect,
                   SkRegion::Op op,
                   ClipEdgeStyle edge_style) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onClipRect(rect, op, edge_style);
+    SkNWayCanvas::onClipRect(rect, op, edge_style);
   }
 
   void onClipRRect(const SkRRect& rrect,
                    SkRegion::Op op,
                    ClipEdgeStyle edge_style) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onClipRRect(rrect, op, edge_style);
+    SkNWayCanvas::onClipRRect(rrect, op, edge_style);
   }
 
   void onClipPath(const SkPath& path,
                   SkRegion::Op op,
                   ClipEdgeStyle edge_style) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onClipPath(path, op, edge_style);
+    SkNWayCanvas::onClipPath(path, op, edge_style);
   }
 
   void onClipRegion(const SkRegion& region, SkRegion::Op op) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onClipRegion(region, op);
+    SkNWayCanvas::onClipRegion(region, op);
   }
 
   void onDrawPicture(const SkPicture* picture,
                      const SkMatrix* matrix,
                      const SkPaint* paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawPicture(picture, matrix, paint);
+    SkNWayCanvas::onDrawPicture(picture, matrix, paint);
   }
 
 private:
