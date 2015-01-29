@@ -280,11 +280,10 @@ public class ImeAdapter {
 
     private void showKeyboard() {
         mIsShowWithoutHideOutstanding = true;
+        mInputMethodManagerWrapper.showSoftInput(
+                mViewEmbedder.getAttachedView(), 0, mViewEmbedder.getNewShowKeyboardReceiver());
         if (mViewEmbedder.getAttachedView().getResources().getConfiguration().keyboard
-                == Configuration.KEYBOARD_NOKEYS) {
-            mInputMethodManagerWrapper.showSoftInput(mViewEmbedder.getAttachedView(), 0,
-                    mViewEmbedder.getNewShowKeyboardReceiver());
-        } else {
+                != Configuration.KEYBOARD_NOKEYS) {
             mViewEmbedder.onKeyboardBoundsUnchanged();
         }
     }
