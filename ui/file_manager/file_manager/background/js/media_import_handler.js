@@ -513,7 +513,7 @@ importer.MediaImportHandler.defaultDestination.getOrCreateImportDestination_ =
     var date = new Date();
     var year = date.getFullYear().toString();
     // Months are 0-based, but days aren't.
-    var month = padAndConvert(date.getMonth()) + 1;
+    var month = padAndConvert(date.getMonth() + 1);
     var day = padAndConvert(date.getDate());
 
     return year + '-' + month + '-' + day;
