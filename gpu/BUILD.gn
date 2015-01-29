@@ -246,6 +246,22 @@ test("gpu_unittests") {
   ]
 }
 
+test("gpu_perftests") {
+  sources = [
+    "perftests/run_all_tests.cc",
+    "perftests/texture_upload_perftest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//testing/perf",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+}
+
 test("angle_unittests") {
   sources = [
     "angle_unittest_main.cc",

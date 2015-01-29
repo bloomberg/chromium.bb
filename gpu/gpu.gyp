@@ -281,6 +281,23 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //gpu/gpu_perftests
+      'target_name': 'gpu_perftests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        '../testing/perf/perf_test.gyp:perf_test',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gl/gl.gyp:gl',
+      ],
+      'sources': [
+        'perftests/run_all_tests.cc',
+        'perftests/texture_upload_perftest.cc',
+      ],
+    },
+    {
       # GN version: //gpu:gl_tests
       'target_name': 'gl_tests',
       'type': '<(gtest_target_type)',
