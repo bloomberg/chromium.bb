@@ -22,6 +22,12 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
   bool is_downgrade =
       sanitized_referrer.url.SchemeIsSecure() && !request.SchemeIsSecure();
 
+  if (sanitized_referrer.policy < 0 ||
+      sanitized_referrer.policy > blink::WebReferrerPolicyLast) {
+    NOTREACHED();
+    sanitized_referrer.policy = blink::WebReferrerPolicyNever;
+  }
+
   switch (sanitized_referrer.policy) {
     case blink::WebReferrerPolicyDefault:
       if (is_downgrade) {
@@ -44,8 +50,9 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
     case blink::WebReferrerPolicyOrigin:
       sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
       break;
-    default:
-      NOTREACHED();
+    case blink::WebReferrerPolicyOriginWhenCrossOrigin:
+      if (request.GetOrigin() != sanitized_referrer.url.GetOrigin())
+        sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
       break;
   }
   return sanitized_referrer;
