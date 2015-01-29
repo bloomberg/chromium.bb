@@ -844,22 +844,26 @@ if [ "$SU_PREFIX" ]; then
   adb_shell $SU_PREFIX \"echo "foo"\" > $SU_PREFIX_TEST_LOG 2>&1
   if [ $? != 0 -o "$(cat $SU_PREFIX_TEST_LOG)" != "foo" ]; then
     echo "ERROR: Cannot use '$SU_PREFIX' as a valid su prefix:"
-    echo "$ adb shell $SU_PREFIX echo foo"
+    echo "$ adb shell $SU_PREFIX \"echo foo\""
     cat $SU_PREFIX_TEST_LOG
     exit 1
   fi
-  COMMAND_PREFIX="$SU_PREFIX"
+  COMMAND_PREFIX="$SU_PREFIX \""
+  COMMAND_SUFFIX="\""
 else
   SHELL_UID=$(adb shell cat /proc/self/status | \
               awk '$1 == "Uid:" { print $2; }')
   log "Shell UID: $SHELL_UID"
   if [ "$SHELL_UID" != 0 -o -n "$NO_ROOT" ]; then
     COMMAND_PREFIX="run-as $PACKAGE_NAME"
+    COMMAND_SUFFIX=
   else
     COMMAND_PREFIX=
+    COMMAND_SUFFIX=
   fi
 fi
 log "Command prefix: '$COMMAND_PREFIX'"
+log "Command suffix: '$COMMAND_SUFFIX'"
 
 # Pull device's system libraries that are mapped by our process.
 # Pulling all system libraries is too long, so determine which ones
@@ -867,7 +871,7 @@ log "Command prefix: '$COMMAND_PREFIX'"
 if [ "$PULL_LIBS" -a -z "$NO_PULL_LIBS" ]; then
   echo "Extracting system libraries into: $PULL_LIBS_DIR"
   rm -f $PULL_LIBS_DIR/build.prop
-  MAPPINGS=$(adb_shell $COMMAND_PREFIX \"cat /proc/$PID/maps\")
+  MAPPINGS=$(adb_shell $COMMAND_PREFIX cat /proc/$PID/maps $COMMAND_SUFFIX)
   if [ $? != 0 ]; then
     echo "ERROR: Could not list process's memory mappings."
     if [ "$SU_PREFIX" ]; then
@@ -944,10 +948,10 @@ host:localhost:$HOST_PORT to device:localhost:$TARGET_PORT!"
 #
 log "Starting gdbserver in the background:"
 GDBSERVER_LOG=$TMPDIR/gdbserver-$TMP_ID.log
-log "adb shell $COMMAND_PREFIX \"$TARGET_GDBSERVER :$TARGET_PORT \
---attach $PID"\"
-("$ADB" shell $COMMAND_PREFIX \"$TARGET_GDBSERVER :$TARGET_PORT \
- --attach $PID\" > $GDBSERVER_LOG 2>&1) &
+log "adb shell $COMMAND_PREFIX $TARGET_GDBSERVER :$TARGET_PORT \
+--attach $PID $COMMAND_SUFFIX"
+("$ADB" shell $COMMAND_PREFIX $TARGET_GDBSERVER :$TARGET_PORT \
+ --attach $PID $COMMAND_SUFFIX > $GDBSERVER_LOG 2>&1) &
 GDBSERVER_PID=$!
 echo "$GDBSERVER_PID" > $GDBSERVER_PIDFILE
 log "background job pid: $GDBSERVER_PID"
