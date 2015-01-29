@@ -18,6 +18,7 @@
 #include "base/environment.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
@@ -468,6 +469,7 @@ int SSLClientSocketOpenSSL::Connect(const CompletionCallback& callback) {
   int rv = Init();
   if (rv != OK) {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SSL_CONNECT, rv);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_Connection_Error", std::abs(rv));
     return rv;
   }
 
@@ -480,6 +482,7 @@ int SSLClientSocketOpenSSL::Connect(const CompletionCallback& callback) {
     user_connect_callback_ = callback;
   } else {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SSL_CONNECT, rv);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_Connection_Error", std::abs(rv));
     if (rv < OK)
       OnHandshakeCompletion();
   }
@@ -1359,6 +1362,7 @@ void SSLClientSocketOpenSSL::OnHandshakeIOComplete(int result) {
   int rv = DoHandshakeLoop(result);
   if (rv != ERR_IO_PENDING) {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SSL_CONNECT, rv);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_Connection_Error", std::abs(rv));
     DoConnectCallback(rv);
   }
 }

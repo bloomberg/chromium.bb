@@ -19145,6 +19145,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The SSL/TLS cipher suite that was negotiated.</summary>
 </histogram>
 
+<histogram name="Net.SSL_Connection_Error" enum="NetErrorCodes">
+  <owner>agl@chromium.org</owner>
+  <summary>
+    Counts of specific error codes returned when opening an SSL connection.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSL_Connection_Latency" units="milliseconds">
   <obsolete>
     Replaced by Net.SSL_Connection_Latency_2 on 2014-10-21.
