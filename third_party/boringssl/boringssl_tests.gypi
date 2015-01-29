@@ -202,6 +202,19 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      'target_name': 'boringssl_pbkdf_test',
+      'type': 'executable',
+      'dependencies': [
+        'boringssl.gyp:boringssl',
+      ],
+      'sources': [
+        'src/crypto/evp/pbkdf_test.c',
+      ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
       'target_name': 'boringssl_hkdf_test',
       'type': 'executable',
       'dependencies': [
@@ -340,6 +353,7 @@
       'boringssl_hkdf_test',
       'boringssl_hmac_test',
       'boringssl_lhash_test',
+      'boringssl_pbkdf_test',
       'boringssl_pkcs12_test',
       'boringssl_pkcs7_test',
       'boringssl_pqueue_test',

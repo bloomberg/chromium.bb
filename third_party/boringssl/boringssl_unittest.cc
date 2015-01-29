@@ -232,6 +232,10 @@ TEST(BoringSSL, PQueue) {
   TestSimple("pqueue_test");
 }
 
-TEST(BoringSSL, HKDF) {                                                        
+TEST(BoringSSL, HKDF) {
   TestSimple("hkdf_test");                                                     
+}
+
+TEST(BoringSSL, PBKDF) {
+  TestSimple("pbkdf_test");                                                     
 }
