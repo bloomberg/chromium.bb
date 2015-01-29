@@ -85,7 +85,7 @@
 													<object class="NSButtonCell" key="NSCell" id="39119561">
 														<int key="NSCellFlags">67108864</int>
 														<int key="NSCellFlags2">134217728</int>
-														<string key="NSContents">^IDS_FULLSCREEN_EXIT_FULLSCREEN</string>
+														<string key="NSContents"></string>
 														<object class="NSFont" key="NSSupport" id="199487396">
 															<string key="NSName">LucidaGrande</string>
 															<double key="NSSize">13</double>

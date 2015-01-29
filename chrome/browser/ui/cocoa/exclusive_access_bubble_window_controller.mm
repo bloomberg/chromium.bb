@@ -44,8 +44,9 @@ const float kHideDuration = 0.7;
 
 @interface ExclusiveAccessBubbleWindowController (PrivateMethods)
 // Sets |exitLabel_| based on |exitLabelPlaceholder_|,
-// sets |exitLabelPlaceholder_| to nil.
-- (void)initializeLabel;
+// sets |exitLabelPlaceholder_| to nil,
+// sets |denyButton_| text based on |bubbleType_|.
+- (void)initializeLabelAndButton;
 
 - (NSString*)getLabelText;
 
@@ -121,7 +122,6 @@ const float kHideDuration = 0.7;
   InfoBubbleWindow* info_bubble = static_cast<InfoBubbleWindow*>([self window]);
   [info_bubble setCanBecomeKeyWindow:NO];
   if (!exclusive_access_bubble::ShowButtonsForType(bubbleType_)) {
-    [self showButtons:NO];
     [self hideSoon];
   }
   [tweaker_ tweakUI:info_bubble];
@@ -134,7 +134,7 @@ const float kHideDuration = 0.7;
 - (void)awakeFromNib {
   DCHECK([[self window] isKindOfClass:[InfoBubbleWindow class]]);
   [messageLabel_ setStringValue:[self getLabelText]];
-  [self initializeLabel];
+  [self initializeLabelAndButton];
 }
 
 - (void)positionInWindowAtTop:(CGFloat)maxY width:(CGFloat)maxWidth {
@@ -198,7 +198,7 @@ const float kHideDuration = 0.7;
 
 @implementation ExclusiveAccessBubbleWindowController (PrivateMethods)
 
-- (void)initializeLabel {
+- (void)initializeLabelAndButton {
   // Replace the label placeholder NSTextField with the real label NSTextView.
   // The former doesn't show links in a nice way, but the latter can't be added
   // in IB without a containing scroll view, so create the NSTextView
@@ -259,6 +259,17 @@ const float kHideDuration = 0.7;
   labelFrame.origin.x += NSWidth(labelFrame) - NSWidth(textFrame);
   labelFrame.size = textFrame.size;
   [exitLabel_ setFrame:labelFrame];
+
+  // Update the title of denyButton_ according to the current bubbleType_,
+  // or show no button at all.
+  if (exclusive_access_bubble::ShowButtonsForType(bubbleType_)) {
+    NSString* denyButtonText =
+      SysUTF16ToNSString(
+        exclusive_access_bubble::GetDenyButtonTextForType(bubbleType_));
+    [denyButton_ setTitle:denyButtonText];
+  } else {
+    [self showButtons:NO];
+  }
 }
 
 - (NSString*)getLabelText {
