@@ -36,9 +36,6 @@ struct WorkerTaskRunner::ThreadLocalState {
 };
 
 WorkerTaskRunner::WorkerTaskRunner() {
-  // Start worker ids at 1, 0 is reserved for the main thread.
-  int id = id_sequence_.GetNext();
-  DCHECK(!id);
 }
 
 bool WorkerTaskRunner::PostTask(
@@ -86,7 +83,8 @@ WorkerTaskRunner::~WorkerTaskRunner() {
 
 void WorkerTaskRunner::OnWorkerRunLoopStarted(const WebWorkerRunLoop& loop) {
   DCHECK(!current_tls_.Get());
-  int id = id_sequence_.GetNext();
+  DCHECK(!base::PlatformThread::CurrentRef().is_null());
+  int id = base::PlatformThread::CurrentId();
   current_tls_.Set(new ThreadLocalState(id));
 
   base::AutoLock locker_(loop_map_lock_);

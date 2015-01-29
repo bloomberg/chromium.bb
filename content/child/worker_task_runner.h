@@ -7,9 +7,9 @@
 
 #include <map>
 
-#include "base/atomic_sequence_num.h"
 #include "base/callback_forward.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebWorkerRunLoop.h"
@@ -42,14 +42,13 @@ class CONTENT_EXPORT WorkerTaskRunner {
  private:
   friend class WorkerTaskRunnerTest;
 
-  typedef std::map<int, blink::WebWorkerRunLoop> IDToLoopMap;
+  typedef std::map<base::PlatformThreadId, blink::WebWorkerRunLoop> IDToLoopMap;
 
   ~WorkerTaskRunner();
 
   struct ThreadLocalState;
   base::ThreadLocalPointer<ThreadLocalState> current_tls_;
 
-  base::AtomicSequenceNumber id_sequence_;
   IDToLoopMap loop_map_;
   base::Lock loop_map_lock_;
 };
