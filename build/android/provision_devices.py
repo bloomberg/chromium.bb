@@ -30,6 +30,15 @@ sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
                              'third_party', 'android_testrunner'))
 import errors
 
+
+class _DEFAULT_TIMEOUTS(object):
+  # L can take a while to reboot after a wipe.
+  LOLLIPOP = 600
+  PRE_LOLLIPOP = 180
+
+  HELP_TEXT = '{}s on L, {}s on pre-L'.format(LOLLIPOP, PRE_LOLLIPOP)
+
+
 def KillHostHeartbeat():
   ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE)
   stdout, _ = ps.communicate()
@@ -141,9 +150,17 @@ def WipeDeviceIfPossible(device, timeout):
 
 
 def ProvisionDevice(device, options):
+  if options.reboot_timeout:
+    reboot_timeout = options.reboot_timeout
+  elif (device.build_version_sdk >=
+        constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP):
+    reboot_timeout = _DEFAULT_TIMEOUTS.LOLLIPOP
+  else:
+    reboot_timeout = _DEFAULT_TIMEOUTS.PRE_LOLLIPOP
+
   try:
     if not options.skip_wipe:
-      WipeDeviceIfPossible(device, options.reboot_timeout)
+      WipeDeviceIfPossible(device, reboot_timeout)
     try:
       device.EnableRoot()
     except device_errors.CommandFailedError as e:
@@ -181,7 +198,7 @@ def ProvisionDevice(device, options):
         time.sleep(60)
         battery_info = device.old_interface.GetBatteryInfo()
     if not options.skip_wipe:
-      device.Reboot(True, timeout=options.reboot_timeout, retries=0)
+      device.Reboot(True, timeout=reboot_timeout, retries=0)
     device.RunShellCommand('date -s %s' % time.strftime('%Y%m%d.%H%M%S',
                                                         time.gmtime()),
                            as_root=True)
@@ -253,10 +270,10 @@ def main():
                       ' (the default is to provision all devices attached)')
   parser.add_argument('--skip-wipe', action='store_true', default=False,
                       help="don't wipe device data during provisioning")
-  parser.add_argument('--reboot-timeout', default=600, type=int,
-                      metavar='SECS',
+  parser.add_argument('--reboot-timeout', metavar='SECS', type=int,
                       help='when wiping the device, max number of seconds to'
-                      ' wait after each reboot (default: %(default)s)')
+                      ' wait after each reboot '
+                      '(default: %s)' % _DEFAULT_TIMEOUTS.HELP_TEXT)
   parser.add_argument('--wait-for-battery', action='store_true',
                       default=is_perf,
                       help='wait for the battery on the devices to charge')
