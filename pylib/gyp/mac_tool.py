@@ -234,14 +234,13 @@ class MacTool(object):
     for line in err.splitlines():
       if not libtool_re.match(line) and not libtool_re5.match(line):
         print >>sys.stderr, line
-    # Unconditionally touch any file .a file on the command line if present if
-    # succeeded. A bit hacky.
+    # Unconditionally touch the output .a file on the command line if present
+    # and the command succeeded. A bit hacky.
     if not libtoolout.returncode:
-      archives = [
-        cmd for cmd in cmd_list if cmd.endswith('.a') and os.path.isfile(cmd)
-      ]
-      if len(archives) == 1:
-        os.utime(archives[0], None)
+      for i in range(len(cmd_list) - 1):
+        if cmd_list[i] == "-o" and cmd_list[i+1].endswith('.a'):
+          os.utime(cmd_list[i+1], None)
+          break
     return libtoolout.returncode
 
   def ExecPackageFramework(self, framework, version):
