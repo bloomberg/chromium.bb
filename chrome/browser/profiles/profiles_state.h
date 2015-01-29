@@ -73,9 +73,10 @@ void UpdateGaiaProfileInfoIfNeeded(Profile* profile);
 SigninErrorController* GetSigninErrorController(Profile* profile);
 
 // If the current active profile (given by prefs::kProfileLastUsed) is locked,
-// changes the active profile to the Guest profile and returns it, otherwise
-// returns NULL. This assumes that the Guest profile has been loaded.
-Profile* SetActiveProfileToGuestIfLocked();
+// changes the active profile to the Guest profile. Returns true if the active
+// profile had been Guest before calling or became Guest as a result of this
+// method.
+bool SetActiveProfileToGuestIfLocked();
 
 }  // namespace profiles
 

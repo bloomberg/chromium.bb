@@ -171,29 +171,26 @@ SigninErrorController* GetSigninErrorController(Profile* profile) {
   return SigninErrorControllerFactory::GetForProfile(profile);
 }
 
-Profile* SetActiveProfileToGuestIfLocked() {
-  Profile* active_profile = ProfileManager::GetLastUsedProfile();
-  DCHECK(active_profile);
-
-  if (active_profile->IsGuestSession())
-    return active_profile;
-
+bool SetActiveProfileToGuestIfLocked() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  const ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(active_profile->GetPath());
-  if (!cache.ProfileIsSigninRequiredAtIndex(index))
-    return NULL;
 
-  // Profile loads synchronously if it was not previously created.
-  Profile* guest_profile = profile_manager->GetProfile(
-      ProfileManager::GetGuestProfilePath());
-  DCHECK(guest_profile);
+  const base::FilePath& active_profile_path =
+      profile_manager->GetLastUsedProfileDir(profile_manager->user_data_dir());
+  const base::FilePath& guest_path = ProfileManager::GetGuestProfilePath();
+  if (active_profile_path == guest_path)
+    return true;
+
+  const ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(active_profile_path);
+  if (!cache.ProfileIsSigninRequiredAtIndex(index))
+    return false;
 
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
-  local_state->SetString(prefs::kProfileLastUsed,
-                         guest_profile->GetPath().BaseName().MaybeAsASCII());
-  return guest_profile;
+  local_state->SetString(
+      prefs::kProfileLastUsed,
+      guest_path.BaseName().MaybeAsASCII());
+  return true;
 }
 
 }  // namespace profiles
