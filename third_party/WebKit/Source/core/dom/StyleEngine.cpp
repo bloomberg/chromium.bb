@@ -323,7 +323,7 @@ void StyleEngine::modifiedStyleSheet(StyleSheet* sheet)
 
 void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
 {
-    if (!node->inDocument() || document().isDetached())
+    if (!node->inDocument())
         return;
 
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
