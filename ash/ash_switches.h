@@ -22,7 +22,6 @@ ASH_EXPORT extern const char kAshConstrainPointerToRoot[];
 ASH_EXPORT extern const char kAshCopyHostBackgroundAtBoot[];
 ASH_EXPORT extern const char kAshDebugShortcuts[];
 ASH_EXPORT extern const char kAshDisableLockLayoutManager[];
-ASH_EXPORT extern const char kAshDisableTextFilteringInOverviewMode[];
 ASH_EXPORT extern const char kAshDisableTouchExplorationMode[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshEnableFullscreenAppList[];

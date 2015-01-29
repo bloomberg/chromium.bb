@@ -162,16 +162,9 @@ void WindowGrid::PositionWindows(bool animate) {
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(
           Shell::GetContainer(root_window_, kShellWindowId_DefaultContainer)));
 
-  // If the text filtering feature is enabled, reserve space at the top for the
-  // text filtering textbox to appear.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisableTextFilteringInOverviewMode)) {
-    total_bounds.Inset(
-        0,
-        WindowSelector::kTextFilterBottomEdge + kTextFilterBottomMargin,
-        0,
-        0);
-  }
+  // Reserve space at the top for the text filtering textbox to appear.
+  total_bounds.Inset(
+      0, WindowSelector::kTextFilterBottomEdge + kTextFilterBottomMargin, 0, 0);
 
   // Find the minimum number of windows per row that will fit all of the
   // windows on screen.

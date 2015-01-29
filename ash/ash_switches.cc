@@ -29,10 +29,6 @@ const char kAshCopyHostBackgroundAtBoot[] = "ash-copy-host-background-at-boot";
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
-// Enables text filtering with the keyboard in Overview Mode.
-const char kAshDisableTextFilteringInOverviewMode[] =
-    "ash-disable-text-filtering-in-overview-mode";
-
 // Disables LockLayoutManager used for LockScreenContainer, return back to
 // WorkspaceLayoutManager.
 const char kAshDisableLockLayoutManager[] = "ash-disable-lock-layout-manager";
