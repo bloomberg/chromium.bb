@@ -9,21 +9,21 @@
 
 namespace {
 
-bool GetValue(const base::ListValue& list, int pos, std::string& value) {
-  return list.GetString(pos, &value);
+bool GetValue(const base::Value* value, std::string* result) {
+  return value->GetAsString(result);
 }
 
-bool GetValue(const base::ListValue& list, int pos, int& value) {
-  return list.GetInteger(pos, &value);
+bool GetValue(const base::Value* value, int* result) {
+  return value->GetAsInteger(result);
 }
 
-bool GetValue(const base::ListValue& list, int pos, bool& value) {
-  return list.GetBoolean(pos, &value);
+bool GetValue(const base::Value* value, bool* result) {
+  return value->GetAsBoolean(result);
 }
 
-bool GetValue(const base::ListValue& list, int pos, gfx::Rect& rect) {
+bool GetValue(const base::Value* value, gfx::Rect* rect) {
   const base::DictionaryValue* dict;
-  if (!list.GetDictionary(pos, &dict))
+  if (!value->GetAsDictionary(&dict))
     return false;
   int x = 0;
   int y = 0;
@@ -34,108 +34,60 @@ bool GetValue(const base::ListValue& list, int pos, gfx::Rect& rect) {
       !dict->GetInteger("width", &width) ||
       !dict->GetInteger("height", &height))
     return false;
-  rect.SetRect(x, y, width, height);
+  rect->SetRect(x, y, width, height);
   return true;
 }
 
 template <typename T>
 struct StorageTraits {
-  typedef T StorageType;
+  using StorageType = T;
 };
 
 template <typename T>
 struct StorageTraits<const T&> {
-  typedef T StorageType;
+  using StorageType = T;
 };
 
-template <class A>
-class Argument {
- public:
-  typedef typename StorageTraits<A>::StorageType ValueType;
-
-  Argument(const base::ListValue& list, int pos) {
-    valid_ = GetValue(list, pos, value_);
+template <typename... Ts>
+struct ParamTuple {
+  bool Parse(const base::ListValue& list,
+             const base::ListValue::const_iterator& it) {
+    return it == list.end();
   }
 
-  ValueType value() const { return value_; }
-  bool valid() const { return valid_; }
-
- private:
-  ValueType value_;
-  bool valid_;
+  template <typename H, typename... As>
+  void Apply(const H& handler, As... args) {
+    handler.Run(args...);
+  }
 };
 
-bool ParseAndHandle0(const base::Callback<void(void)>& handler,
-                     const base::ListValue& list) {
-  if (list.GetSize() != 0)
+template <typename T, typename... Ts>
+struct ParamTuple<T, Ts...> {
+  bool Parse(const base::ListValue& list,
+             const base::ListValue::const_iterator& it) {
+    if (it == list.end())
       return false;
-  handler.Run();
-  return true;
-}
+    if (!GetValue(*it, &head))
+      return false;
+    return tail.Parse(list, it + 1);
+  }
 
-template <class A1>
-bool ParseAndHandle1(const base::Callback<void(A1)>& handler,
-                     const base::ListValue& list) {
-  if (list.GetSize() != 1)
-    return false;
-  Argument<A1> arg1(list, 0);
-  if (!arg1.valid())
-    return false;
-  handler.Run(arg1.value());
-  return true;
-}
+  template <typename H, typename... As>
+  void Apply(const H& handler, As... args) {
+    tail.template Apply<H, As..., T>(handler, args..., head);
+  }
 
-template <class A1, class A2>
-bool ParseAndHandle2(const base::Callback<void(A1, A2)>& handler,
-                     const base::ListValue& list) {
-  if (list.GetSize() != 2)
-    return false;
-  Argument<A1> arg1(list, 0);
-  if (!arg1.valid())
-    return false;
-  Argument<A2> arg2(list, 1);
-  if (!arg2.valid())
-    return false;
-  handler.Run(arg1.value(), arg2.value());
-  return true;
-}
+  typename StorageTraits<T>::StorageType head;
+  ParamTuple<Ts...> tail;
+};
 
-template <class A1, class A2, class A3>
-bool ParseAndHandle3(const base::Callback<void(A1, A2, A3)>& handler,
-                     const base::ListValue& list) {
-  if (list.GetSize() != 3)
+template<typename... As>
+bool ParseAndHandle(const base::Callback<void(As...)>& handler,
+                    const base::ListValue& list) {
+  ParamTuple<As...> tuple;
+  if (!tuple.Parse(list, list.begin()))
     return false;
-  Argument<A1> arg1(list, 0);
-  if (!arg1.valid())
-    return false;
-  Argument<A2> arg2(list, 1);
-  if (!arg2.valid())
-    return false;
-  Argument<A3> arg3(list, 2);
-  if (!arg3.valid())
-    return false;
-  handler.Run(arg1.value(), arg2.value(), arg3.value());
-  return true;
-}
-
-template <class A1, class A2, class A3, class A4>
-bool ParseAndHandle4(const base::Callback<void(A1, A2, A3, A4)>& handler,
-                     const base::ListValue& list) {
-  if (list.GetSize() != 4)
-    return false;
-  Argument<A1> arg1(list, 0);
-  if (!arg1.valid())
-    return false;
-  Argument<A2> arg2(list, 1);
-  if (!arg2.valid())
-    return false;
-  Argument<A3> arg3(list, 2);
-  if (!arg3.valid())
-    return false;
-  Argument<A4> arg4(list, 3);
-  if (!arg4.valid())
-    return false;
-  handler.Run(arg1.value(), arg2.value(), arg3.value(), arg4.value());
+  tuple.Apply(handler);
   return true;
 }
 
@@ -173,42 +125,10 @@ class DispatcherImpl : public DevToolsEmbedderMessageDispatcher {
     handlers_[method] = handler;
   }
 
-  template<class T>
+  template<typename T, typename... As>
   void RegisterHandler(const std::string& method,
-                       void (T::*handler)(), T* delegate) {
-    handlers_[method] = base::Bind(&ParseAndHandle0,
-                                   base::Bind(handler,
-                                              base::Unretained(delegate)));
-  }
-
-  template<class T, class A1>
-  void RegisterHandler(const std::string& method,
-                       void (T::*handler)(A1), T* delegate) {
-    handlers_[method] = base::Bind(ParseAndHandle1<A1>,
-                                   base::Bind(handler,
-                                              base::Unretained(delegate)));
-  }
-
-  template<class T, class A1, class A2>
-  void RegisterHandler(const std::string& method,
-                       void (T::*handler)(A1, A2), T* delegate) {
-    handlers_[method] = base::Bind(ParseAndHandle2<A1, A2>,
-                                   base::Bind(handler,
-                                              base::Unretained(delegate)));
-  }
-
-  template<class T, class A1, class A2, class A3>
-  void RegisterHandler(const std::string& method,
-                       void (T::*handler)(A1, A2, A3), T* delegate) {
-    handlers_[method] = base::Bind(ParseAndHandle3<A1, A2, A3>,
-                                   base::Bind(handler,
-                                              base::Unretained(delegate)));
-  }
-
-  template<class T, class A1, class A2, class A3, class A4>
-  void RegisterHandler(const std::string& method,
-                       void (T::*handler)(A1, A2, A3, A4), T* delegate) {
-    handlers_[method] = base::Bind(ParseAndHandle4<A1, A2, A3, A4>,
+                       void (T::*handler)(As...), T* delegate) {
+    handlers_[method] = base::Bind(&ParseAndHandle<As...>,
                                    base::Bind(handler,
                                               base::Unretained(delegate)));
   }
