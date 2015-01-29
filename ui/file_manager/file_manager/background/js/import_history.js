@@ -1052,9 +1052,6 @@ importer.DriveSyncWatcher.prototype.getSyncStatus_ =
       }.bind(this));
 };
 
-/** @const {string} */
-importer.HISTORY_FILE_NAME = 'import-history.r1.log';
-
 /**
  * History loader that provides an ImportHistorty appropriate
  * to user settings (if import history is enabled/disabled).
@@ -1086,13 +1083,16 @@ importer.RuntimeHistoryLoader.prototype.getHistory = function() {
              * @this {importer.RuntimeHistoryLoader}
              */
             function(enabled) {
-              var loader = enabled ?
-                  new importer.SynchronizedHistoryLoader(
-                      new importer.ChromeSyncFileEntryProvider(
-                          importer.HISTORY_FILE_NAME)) :
-                  new importer.DummyImportHistory(false);
+              importer.getHistoryFilename().then(
+                  function(filename) {
+                    var loader = enabled ?
+                        new importer.SynchronizedHistoryLoader(
+                            new importer.ChromeSyncFileEntryProvider(
+                                filename)) :
+                        new importer.DummyImportHistory(false);
 
-              this.historyResolver_.resolve(loader.getHistory());
+                    this.historyResolver_.resolve(loader.getHistory());
+                  }.bind(this));
             }.bind(this));
   }
 

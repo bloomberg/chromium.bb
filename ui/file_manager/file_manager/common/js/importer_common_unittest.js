@@ -23,13 +23,14 @@ var sdFileEntry;
 /** @type {!MockFileEntry} */
 var driveFileEntry;
 
+// Sadly, boilerplate setup necessary to include test support classes.
+loadTimeData.data = {
+  DRIVE_DIRECTORY_LABEL: 'My Drive',
+  DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
+};
+
 // Set up the test components.
 function setUp() {
-  // Sadly, boilerplate setup necessary to include test support classes.
-  loadTimeData.data = {
-    DRIVE_DIRECTORY_LABEL: 'My Drive',
-    DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
-  };
   var cameraFileSystem = new MockFileSystem(
       'camera-fs', 'filesystem:camera-123');
   var sdFileSystem = new MockFileSystem(
@@ -101,6 +102,35 @@ function testResolver_Reject(callback) {
             assertEquals('ouch', error);
             callback(false);
           });
+}
+
+function testGetMachineId(callback) {
+  var storage = new MockChromeStorageAPI();
+
+  var promise = importer.getMachineId().then(
+      function(firstMachineId) {
+        assertTrue(100000 <= firstMachineId <= 9999999);
+        importer.getMachineId().then(
+            function(secondMachineId) {
+              assertEquals(firstMachineId, secondMachineId);
+            });
+      });
+  reportPromise(promise, callback);
+}
+
+function testHistoryFilename(callback) {
+  var storage = new MockChromeStorageAPI();
+
+  var promise = importer.getHistoryFilename().then(
+      function(firstName) {
+        assertTrue(!!firstName && firstName.length > 10);
+        importer.getHistoryFilename().then(
+            function(secondName) {
+              assertEquals(firstName, secondName);
+            });
+      });
+
+  reportPromise(promise, callback);
 }
 
 /** @param {string} path */

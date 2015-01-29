@@ -200,12 +200,13 @@ function MockChromeStorageAPI() {
  * @private
  */
 MockChromeStorageAPI.prototype.get_ = function(keys, callback) {
-  var keyArray = keys instanceof Array ? keys : [keys];
+  var keys = keys instanceof Array ? keys : [keys];
   var result = {};
-  for (var key in keys) {
-    if (key in this.state)
-      result[key] = this.state[key];
-  }
+  keys.forEach(
+      function(key) {
+        if (key in this.state)
+          result[key] = this.state[key];
+      }.bind(this));
   callback(result);
 };
 

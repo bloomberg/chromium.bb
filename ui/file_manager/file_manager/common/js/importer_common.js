@@ -134,6 +134,80 @@ importer.importEnabled = function() {
 };
 
 /**
+ * Local storage key for machine id.
+ * @const {string}
+ */
+importer.MACHINE_ID_STORAGE_KEY_ = 'importer-machine-id';
+
+/**
+ * @return {!Promise.<number>} Resolves with an integer that is probably
+ *     relatively unique to this machine (among a users machines).
+ */
+importer.getMachineId = function() {
+  return new Promise(
+      function(resolve, reject) {
+        chrome.storage.local.get(
+            importer.MACHINE_ID_STORAGE_KEY_,
+            /** @param {Object.<string, ?>} values */
+            function(values) {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+                return;
+              }
+
+              var machineId = values[importer.MACHINE_ID_STORAGE_KEY_];
+              if (!!machineId) {
+                resolve(machineId);
+              } else {
+                var machineId = importer.generateMachineId_();
+                var newValues = {};
+                newValues[importer.MACHINE_ID_STORAGE_KEY_] = machineId;
+                chrome.storage.local.set(
+                    newValues,
+                    function() {
+                      if (chrome.runtime.lastError) {
+                        reject(chrome.runtime.lastError);
+                      } else {
+                        resolve(machineId);
+                      }
+                    });
+              }
+            });
+      });
+};
+
+/**
+ * @return {!Promise.<string>} Resolves with the filename of this
+ *     machines history file.
+ */
+importer.getHistoryFilename = function() {
+  return importer.getMachineId().then(
+      function(machineId) {
+        return 'import-history.' + machineId + '.log';
+      });
+};
+
+/**
+ * @return {!Promise.<string>} Resolves with the filename of this
+ *     machines debug log file.
+ */
+importer.getDebugLogFilename = function() {
+  return importer.getMachineId().then(
+      function(machineId) {
+        return 'import-debug.' + machineId + '.log';
+      });
+};
+
+/**
+ * @return {number} A relatively unique six digit integer that is most likely
+ *     unique to this machine among a user's machines. Used only to segregate
+ *     log files on sync storage.
+ */
+importer.generateMachineId_ = function() {
+  return Math.floor(Math.random() * 899999) + 100000;
+};
+
+/**
  * A Promise wrapper that provides public access to resolve and reject methods.
  *
  * @constructor
@@ -310,12 +384,16 @@ importer.ChromeSyncFileEntryProvider = function(fileName) {
 /**
  * Returns a sync FileEntry. Convenience method for class that just want
  * a file, but don't need to monitor changes.
- * @param {string} fileName
+ * @param {!Promise.<string>} fileNamePromise
  * @return {!Promise.<!FileEntry>}
  */
-importer.ChromeSyncFileEntryProvider.getFileEntry = function(fileName) {
-  return new importer.ChromeSyncFileEntryProvider(fileName)
-      .getSyncFileEntry();
+importer.ChromeSyncFileEntryProvider.getFileEntry =
+    function(fileNamePromise) {
+  return fileNamePromise.then(
+      function(fileName) {
+        return new importer.ChromeSyncFileEntryProvider(fileName)
+          .getSyncFileEntry();
+      });
 };
 
 /**
@@ -590,7 +668,7 @@ importer.getLogger = function() {
   if (!importer.logger_) {
     importer.logger_ = new importer.RuntimeLogger(
         importer.ChromeSyncFileEntryProvider.getFileEntry(
-            'importer_debug.log'));
+            importer.getDebugLogFilename()));
   }
   return importer.logger_;
 };
