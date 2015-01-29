@@ -17,6 +17,7 @@
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "grit/browser_resources.h"
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/ui/webui/chromeos/login/inline_login_handler_chromeos.h"
 #else
 #include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
@@ -95,7 +96,11 @@ content::RenderFrameHost* InlineLoginUI::GetAuthIframe(
     const GURL& parent_origin,
     const std::string& parent_frame_name) {
   std::set<content::RenderFrameHost*> frame_set;
-  if (switches::IsEnableWebviewBasedSignin()) {
+  bool is_webview = switches::IsEnableWebviewBasedSignin();
+#if defined(OS_CHROMEOS)
+  is_webview = is_webview || chromeos::StartupUtils::IsWebviewSigninEnabled();
+#endif
+  if (is_webview) {
     extensions::GuestViewManager* manager =
         extensions::GuestViewManager::FromBrowserContext(
             web_contents->GetBrowserContext());
