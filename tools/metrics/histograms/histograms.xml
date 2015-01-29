@@ -31647,6 +31647,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SBOffDomainInclusion.Abort" enum="ContentResourceType">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which the off-domain
+    inclusion analysis was aborted. This histogram is suffixed with the abort
+    reason.
+  </summary>
+</histogram>
+
 <histogram name="SBOffDomainInclusion.Detected" enum="ContentResourceType">
   <obsolete>
     Deprecated 01/2015.
@@ -31660,6 +31669,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SBOffDomainInclusion.EmptyMainFrameURL"
     enum="ContentResourceType">
+  <obsolete>
+    Deprecated 01/2015. Moved to SBOffDomainInclusion.Abort.EmptyMainFrameURL.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which the main frame URL
@@ -31667,8 +31679,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SBOffDomainInclusion.InHistory" enum="ContentResourceType">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which the off-domain
+    inclusion analysis concluded in no inclusion whitelist hit but a browsing
+    history hit.
+  </summary>
+</histogram>
+
 <histogram name="SBOffDomainInclusion.InvalidMainFrameURL"
     enum="ContentResourceType">
+  <obsolete>
+    Deprecated 01/2015 (was never reported, confirming experiment that handling
+    it is irrelevant).
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which the main frame URL
@@ -31697,9 +31722,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="SBOffDomainInclusion.Whitelisted" enum="ContentResourceType">
   <owner>gab@chromium.org</owner>
   <summary>
-    Logs the resource type of each resource request for which an off-domain
-    inclusion was detected by the OffDomainInclusionDetector and ignored because
-    it was present on the inclusion whitelist.
+    Logs the resource type of each resource request for which the off-domain
+    inclusion analysis concluded in an inclusion whitelist hit.
   </summary>
 </histogram>
 
@@ -61919,6 +61943,25 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="server11" label="Suggestions coming from server source 11."/>
   <affected-histogram name="NewTabPage.MostVisited"/>
   <affected-histogram name="NewTabPage.SuggestionsImpression"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="OffDomainInclusionAbortReason" separator=".">
+  <suffix name="EmptyMainFrameURL" label="The main frame URL was empty."/>
+  <suffix name="HistoryLookupFailed"
+      label="The lookup to the HistoryService failed."/>
+  <suffix name="Incognito"
+      label="The profile associated with the frame under analysis is an
+             incognito profile."/>
+  <suffix name="NoHistoryService"
+      label="There was no HistoryService associated with the profile of the
+             frame under analysis (this can happen seldomly on startup for
+             early net requests, or on shutdown by the asynchronous nature of
+             the analysis, but shouldn't be common)."/>
+  <suffix name="NoProfile"
+      label="The profile associated with the frame under analysis couldn't be
+             resolved (expected to happen at a low frequency by the
+             asynchronous nature of the analysis)."/>
+  <affected-histogram name="SBOffDomainInclusion.Abort"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OmniboxProviderTime" separator=".">

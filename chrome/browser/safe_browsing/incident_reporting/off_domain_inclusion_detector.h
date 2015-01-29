@@ -9,8 +9,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
+#include "base/time/time.h"
 #include "content/public/common/resource_type.h"
 
+class Profile;
 class SafeBrowsingDatabaseManager;
 
 namespace base {
@@ -28,9 +31,14 @@ class OffDomainInclusionDetector {
  public:
   enum class AnalysisEvent {
     NO_EVENT,
-    EMPTY_MAIN_FRAME_URL,
-    INVALID_MAIN_FRAME_URL,
+    ABORT_EMPTY_MAIN_FRAME_URL,
+    ABORT_INVALID_MAIN_FRAME_URL,
+    ABORT_NO_PROFILE,
+    ABORT_INCOGNITO,
+    ABORT_NO_HISTORY_SERVICE,
+    ABORT_HISTORY_LOOKUP_FAILED,
     OFF_DOMAIN_INCLUSION_WHITELISTED,
+    OFF_DOMAIN_INCLUSION_IN_HISTORY,
     OFF_DOMAIN_INCLUSION_SUSPICIOUS,
   };
 
@@ -52,11 +60,18 @@ class OffDomainInclusionDetector {
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       const ReportAnalysisEventCallback& report_analysis_event_callback);
 
-  ~OffDomainInclusionDetector();
+  virtual ~OffDomainInclusionDetector();
 
   // Begins the asynchronous analysis of |request| for off-domain inclusions.
   // Thread safe.
   void OnResourceRequest(const net::URLRequest* request);
+
+ protected:
+  // Returns a pointer to the Profile hosting the frame identified by
+  // |render_process_id| or null if the resolution can't be completed (e.g., the
+  // tab/renderer is gone by now). Must only be called on the UI thread. Virtual
+  // so tests can override it.
+  virtual Profile* ProfileFromRenderProcessId(int render_process_id);
 
  private:
   struct OffDomainInclusionInfo;
@@ -70,12 +85,21 @@ class OffDomainInclusionDetector {
   // chain of checks on the main thread as described below:
   //   1) Check if it is indeed an off-domain inclusion and, if so: check the
   //      inclusion against the safe browsing inclusion whitelist.
-  //   2) Obtain the whitelist result and report accordingly.
+  //   2) Upon receiving the whitelist result, either: stop if it's positive or
+  //      query the HistoryService if it's not.
+  //   3) Upon receiving the HistoryService's result: report accordingly.
   void BeginAnalysis(
       scoped_ptr<OffDomainInclusionInfo> off_domain_inclusion_info);
   void ContinueAnalysisOnWhitelistResult(
       scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info,
       bool request_url_is_on_inclusion_whitelist);
+  void ContinueAnalysisWithHistoryCheck(
+      scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info);
+  void ContinueAnalysisOnHistoryResult(
+      scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info,
+      bool success,
+      int num_visits,
+      base::Time first_visit_time);
 
   // Reports the result of an off-domain inclusion analysis via UMA (as well
   // as via |report_analysis_event_callback_| if it is set). May be called from
@@ -87,6 +111,10 @@ class OffDomainInclusionDetector {
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
   const ReportAnalysisEventCallback report_analysis_event_callback_;
+
+  // Tracks pending tasks posted to the HistoryService and cancels them if this
+  // class is destroyed before they complete.
+  base::CancelableTaskTracker history_task_tracker_;
 
   // This class may post tasks to its main thread (construction thread) via
   // |main_thread_task_runner_|, such tasks should be weakly bound via WeakPtrs

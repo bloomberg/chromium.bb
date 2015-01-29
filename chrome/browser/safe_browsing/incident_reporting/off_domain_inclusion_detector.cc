@@ -12,8 +12,12 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
@@ -27,9 +31,15 @@ namespace safe_browsing {
 // inclusions across threads, this data will be readable even after the
 // underlying request has been deleted.
 struct OffDomainInclusionDetector::OffDomainInclusionInfo {
-  OffDomainInclusionInfo() {}
+  OffDomainInclusionInfo()
+      : resource_type(content::RESOURCE_TYPE_LAST_TYPE), render_process_id(0) {}
 
   content::ResourceType resource_type;
+
+  // ID of the render process from which this inclusion originates, used to
+  // figure out which profile this request belongs to (from the UI thread) if
+  // later required during this analysis.
+  int render_process_id;
 
   // The URL of the off-domain inclusion.
   GURL request_url;
@@ -72,8 +82,14 @@ void OffDomainInclusionDetector::OnResourceRequest(
   scoped_ptr<OffDomainInclusionInfo> off_domain_inclusion_info(
       new OffDomainInclusionInfo);
 
+  const content::ResourceRequestInfo* resource_request_info =
+      content::ResourceRequestInfo::ForRequest(request);
+
   off_domain_inclusion_info->resource_type =
-      content::ResourceRequestInfo::ForRequest(request)->GetResourceType();
+      resource_request_info->GetResourceType();
+
+  off_domain_inclusion_info->render_process_id =
+      resource_request_info->GetChildID();
 
   off_domain_inclusion_info->request_url = request->url();
 
@@ -85,6 +101,18 @@ void OffDomainInclusionDetector::OnResourceRequest(
       FROM_HERE, base::Bind(&OffDomainInclusionDetector::BeginAnalysis,
                             weak_ptr_factory_.GetWeakPtr(),
                             base::Passed(&off_domain_inclusion_info)));
+}
+
+Profile* OffDomainInclusionDetector::ProfileFromRenderProcessId(
+    int render_process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  content::RenderProcessHost* render_process_host =
+      content::RenderProcessHost::FromID(render_process_id);
+  if (!render_process_host)
+    return nullptr;
+
+  return Profile::FromBrowserContext(render_process_host->GetBrowserContext());
 }
 
 // static
@@ -146,14 +174,14 @@ void OffDomainInclusionDetector::BeginAnalysis(
       // HTTPS => HTTP requests). Consider adding the original referrer to
       // ResourceRequestInfo if that's an issue.
       ReportAnalysisResult(off_domain_inclusion_info.Pass(),
-                           AnalysisEvent::EMPTY_MAIN_FRAME_URL);
+                           AnalysisEvent::ABORT_EMPTY_MAIN_FRAME_URL);
     } else {
       // There is no reason for the main frame to start loading resources if its
       // own URL is invalid but measure this in the wild to make sure.
       // TODO(gab): UMA has proven that this never happens, remove this in a
       // follow-up CL.
       ReportAnalysisResult(off_domain_inclusion_info.Pass(),
-                           AnalysisEvent::INVALID_MAIN_FRAME_URL);
+                           AnalysisEvent::ABORT_INVALID_MAIN_FRAME_URL);
     }
     return;
   }
@@ -191,6 +219,68 @@ void OffDomainInclusionDetector::ContinueAnalysisOnWhitelistResult(
     ReportAnalysisResult(off_domain_inclusion_info.Pass(),
                          AnalysisEvent::OFF_DOMAIN_INCLUSION_WHITELISTED);
   } else {
+    ContinueAnalysisWithHistoryCheck(off_domain_inclusion_info.Pass());
+  }
+}
+
+void OffDomainInclusionDetector::ContinueAnalysisWithHistoryCheck(
+    scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  // The |main_thread_task_runner_| is the UI thread in practice currently so
+  // this call can be made synchronously, but this would need to be made
+  // asynchronous should this ever change.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Profile* profile =
+      ProfileFromRenderProcessId(off_domain_inclusion_info->render_process_id);
+  if (!profile) {
+    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+                         AnalysisEvent::ABORT_NO_PROFILE);
+    return;
+  } else if (profile->IsOffTheRecord()) {
+    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+                         AnalysisEvent::ABORT_INCOGNITO);
+    return;
+  }
+
+  HistoryService* history_service =
+      HistoryServiceFactory::GetForProfileWithoutCreating(profile);
+
+  if (!history_service) {
+    // Should only happen very early during startup, receiving many such reports
+    // relative to other report types would indicate that something is wrong.
+    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+                         AnalysisEvent::ABORT_NO_HISTORY_SERVICE);
+    return;
+  }
+
+  // Need to explicitly copy |request_url| here or this code would depend on
+  // parameter evaluation order as |off_domain_inclusion_info| is being handed
+  // off.
+  const GURL copied_request_url(off_domain_inclusion_info->request_url);
+  history_service->GetVisibleVisitCountToHost(
+      copied_request_url,
+      base::Bind(&OffDomainInclusionDetector::ContinueAnalysisOnHistoryResult,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&off_domain_inclusion_info)),
+      &history_task_tracker_);
+}
+
+void OffDomainInclusionDetector::ContinueAnalysisOnHistoryResult(
+    scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info,
+    bool success,
+    int num_visits,
+    base::Time /* first_visit_time */) {
+  if (!success) {
+    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+                         AnalysisEvent::ABORT_HISTORY_LOOKUP_FAILED);
+    return;
+  }
+
+  if (num_visits > 0) {
+    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+                         AnalysisEvent::OFF_DOMAIN_INCLUSION_IN_HISTORY);
+  } else {
     ReportAnalysisResult(off_domain_inclusion_info.Pass(),
                          AnalysisEvent::OFF_DOMAIN_INCLUSION_SUSPICIOUS);
   }
@@ -207,29 +297,49 @@ void OffDomainInclusionDetector::ReportAnalysisResult(
                             off_domain_inclusion_info->resource_type,
                             content::RESOURCE_TYPE_LAST_TYPE);
 
+  // Log a histogram for the analysis result along with the associated
+  // ResourceType.
+  std::string histogram_name;
   switch (analysis_event) {
     case AnalysisEvent::NO_EVENT:
       break;
-    case AnalysisEvent::EMPTY_MAIN_FRAME_URL:
-      UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion.EmptyMainFrameURL",
-                                off_domain_inclusion_info->resource_type,
-                                content::RESOURCE_TYPE_LAST_TYPE);
+    case AnalysisEvent::ABORT_EMPTY_MAIN_FRAME_URL:
+      histogram_name = "SBOffDomainInclusion.Abort.EmptyMainFrameURL";
       break;
-    case AnalysisEvent::INVALID_MAIN_FRAME_URL:
-      UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion.InvalidMainFrameURL",
-                                off_domain_inclusion_info->resource_type,
-                                content::RESOURCE_TYPE_LAST_TYPE);
+    case AnalysisEvent::ABORT_INVALID_MAIN_FRAME_URL:
+      // TODO(gab): This never occurs in practice, remove the code handling it.
+      break;
+    case AnalysisEvent::ABORT_NO_PROFILE:
+      histogram_name = "SBOffDomainInclusion.Abort.NoProfile";
+      break;
+    case AnalysisEvent::ABORT_INCOGNITO:
+      histogram_name = "SBOffDomainInclusion.Abort.Incognito";
+      break;
+    case AnalysisEvent::ABORT_NO_HISTORY_SERVICE:
+      histogram_name = "SBOffDomainInclusion.Abort.NoHistoryService";
+      break;
+    case AnalysisEvent::ABORT_HISTORY_LOOKUP_FAILED:
+      histogram_name = "SBOffDomainInclusion.Abort.HistoryLookupFailed";
       break;
     case AnalysisEvent::OFF_DOMAIN_INCLUSION_WHITELISTED:
-      UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion.Whitelisted",
-                                off_domain_inclusion_info->resource_type,
-                                content::RESOURCE_TYPE_LAST_TYPE);
+      histogram_name = "SBOffDomainInclusion.Whitelisted";
+      break;
+    case AnalysisEvent::OFF_DOMAIN_INCLUSION_IN_HISTORY:
+      histogram_name = "SBOffDomainInclusion.InHistory";
       break;
     case AnalysisEvent::OFF_DOMAIN_INCLUSION_SUSPICIOUS:
-      UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion.Suspicious",
-                                off_domain_inclusion_info->resource_type,
-                                content::RESOURCE_TYPE_LAST_TYPE);
+      histogram_name = "SBOffDomainInclusion.Suspicious";
       break;
+  }
+  if (!histogram_name.empty()) {
+    // Expanded from the UMA_HISTOGRAM_ENUMERATION macro.
+    base::LinearHistogram::FactoryGet(
+        histogram_name,
+        1,                                     // minimum,
+        content::RESOURCE_TYPE_LAST_TYPE,      // maximum
+        content::RESOURCE_TYPE_LAST_TYPE + 1,  // bucket_count
+        base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(off_domain_inclusion_info->resource_type);
   }
 
   if (!report_analysis_event_callback_.is_null() &&
