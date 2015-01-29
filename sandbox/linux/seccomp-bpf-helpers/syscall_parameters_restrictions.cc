@@ -304,4 +304,9 @@ ResultExpr RestrictPrlimit64(pid_t target_pid) {
   return If(pid == 0 || pid == target_pid, Allow()).Else(CrashSIGSYS());
 }
 
+ResultExpr RestrictGetrusage() {
+  const Arg<int> who(0);
+  return If(who == RUSAGE_SELF, Allow()).Else(CrashSIGSYS());
+}
+
 }  // namespace sandbox.

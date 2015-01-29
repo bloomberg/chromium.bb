@@ -240,6 +240,34 @@ BPF_DEATH_TEST_C(ParameterRestrictions,
   sys_prlimit64(kInitPID, RLIMIT_AS, NULL, NULL);
 }
 
+class RestrictGetrusagePolicy : public bpf_dsl::Policy {
+ public:
+  RestrictGetrusagePolicy() {}
+  ~RestrictGetrusagePolicy() override {}
+
+  ResultExpr EvaluateSyscall(int sysno) const override {
+    switch (sysno) {
+      case __NR_getrusage:
+        return RestrictGetrusage();
+      default:
+        return Allow();
+    }
+  }
+};
+
+BPF_TEST_C(ParameterRestrictions, getrusage_allowed, RestrictGetrusagePolicy) {
+  struct rusage usage;
+  BPF_ASSERT_EQ(0, getrusage(RUSAGE_SELF, &usage));
+}
+
+BPF_DEATH_TEST_C(ParameterRestrictions,
+                 getrusage_crash_not_self,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 RestrictGetrusagePolicy) {
+  struct rusage usage;
+  getrusage(RUSAGE_CHILDREN, &usage);
+}
+
 }  // namespace
 
 }  // namespace sandbox

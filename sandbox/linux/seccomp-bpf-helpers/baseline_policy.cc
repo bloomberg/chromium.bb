@@ -109,6 +109,11 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return Allow();
   }
 
+  // Used when RSS limiting is enabled in sanitizers.
+  if (sysno == __NR_getrusage) {
+    return RestrictGetrusage();
+  }
+
   if (sysno == __NR_sigaltstack) {
     // Required for better stack overflow detection in ASan. Disallowed in
     // non-ASan builds.

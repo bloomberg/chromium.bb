@@ -91,6 +91,10 @@ SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictSchedTarget(pid_t target_pid,
 // or target_pid.
 SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictPrlimit64(pid_t target_pid);
 
+// Restricts the |who| argument of getrusage to RUSAGE_SELF (meaning the calling
+// process).
+SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictGetrusage();
+
 }  // namespace sandbox.
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_PARAMETERS_RESTRICTIONS_H_
