@@ -39,6 +39,10 @@ namespace chromeos {
 // initializes the DBusThreadManager instance.
 class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
  public:
+  // Constant that will be passed to AsyncMethodCallback to indicate that
+  // cryptohome is not ready yet.
+  static const int kNotReadyAsyncId;
+
   // A callback to handle AsyncCallStatus signals.
   typedef base::Callback<void(int async_id,
                               bool return_status,

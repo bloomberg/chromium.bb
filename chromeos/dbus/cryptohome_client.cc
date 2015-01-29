@@ -20,6 +20,8 @@
 
 namespace chromeos {
 
+const int CryptohomeClient::kNotReadyAsyncId = -1;
+
 namespace {
 
 // This suffix is appended to user_id to get hash in stub implementation:
@@ -882,8 +884,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // Handles the result of AsyncXXX methods.
   void OnAsyncMethodCall(const AsyncMethodCallback& callback,
                          dbus::Response* response) {
-    if (!response)
+    if (!response) {
+      callback.Run(kNotReadyAsyncId);
       return;
+    }
     dbus::MessageReader reader(response);
     int async_id = 0;
     if (!reader.PopInt32(&async_id)) {

@@ -624,6 +624,10 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     ShowTPMError();
   } else if (!online_succeeded_for_.empty()) {
     ShowGaiaPasswordChanged(online_succeeded_for_);
+  } else if (last_login_attempt_username_ == chromeos::login::kGuestUserName) {
+    // Show no errors, just re-enable input.
+    login_display_->ClearAndEnablePassword();
+    StartPublicSessionAutoLoginTimer();
   } else {
     // Check networking after trying to login in case user is
     // cached locally or the local admin account.
