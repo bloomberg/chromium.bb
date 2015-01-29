@@ -175,6 +175,7 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
   PermissionsBubbleDelegateView(
       views::View* anchor,
       PermissionBubbleViewViews* owner,
+      const std::string& languages,
       const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state,
       bool customization_mode);
@@ -214,6 +215,7 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
 PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     views::View* anchor,
     PermissionBubbleViewViews* owner,
+    const std::string& languages,
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& accept_state,
     bool customization_mode)
@@ -232,9 +234,8 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, kBubbleOuterMargin, 0, kItemMajorSpacing));
 
-  // TODO(gbillock): support other languages than English.
   hostname_ = net::FormatUrl(requests[0]->GetRequestingHostname(),
-                             "en",
+                             languages,
                              net::kFormatUrlOmitUsernamePassword |
                              net::kFormatUrlOmitTrailingSlashOnBareHostname,
                              net::UnescapeRule::SPACES, NULL, NULL, NULL);
@@ -417,10 +418,13 @@ void PermissionsBubbleDelegateView::OnPerformAction(
 //////////////////////////////////////////////////////////////////////////////
 // PermissionBubbleViewViews
 
-PermissionBubbleViewViews::PermissionBubbleViewViews(views::View* anchor_view)
+PermissionBubbleViewViews::PermissionBubbleViewViews(
+    views::View* anchor_view,
+    const std::string& languages)
     : anchor_view_(anchor_view),
       delegate_(NULL),
-      bubble_delegate_(NULL) {}
+      bubble_delegate_(NULL),
+      languages_(languages) {}
 
 PermissionBubbleViewViews::~PermissionBubbleViewViews() {
   if (delegate_)
@@ -439,7 +443,7 @@ void PermissionBubbleViewViews::Show(
     bubble_delegate_->Close();
 
   bubble_delegate_ =
-      new PermissionsBubbleDelegateView(anchor_view_, this,
+      new PermissionsBubbleDelegateView(anchor_view_, this, languages_,
                                         requests, values, customization_mode);
   views::BubbleDelegateView::CreateBubble(bubble_delegate_)->Show();
   bubble_delegate_->SizeToContents();

@@ -540,8 +540,10 @@ void BrowserView::InitStatusBubble() {
 }
 
 void BrowserView::InitPermissionBubbleView() {
+  std::string languages =
+      browser_->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   permission_bubble_view_.reset(new PermissionBubbleViewViews(
-      GetLocationBarView()->location_icon_view()));
+      GetLocationBarView()->location_icon_view(), languages));
 }
 
 gfx::Rect BrowserView::GetToolbarBounds() const {

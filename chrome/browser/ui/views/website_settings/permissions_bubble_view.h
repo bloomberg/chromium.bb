@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSIONS_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSIONS_BUBBLE_VIEW_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
@@ -17,7 +19,8 @@ class PermissionsBubbleDelegateView;
 
 class PermissionBubbleViewViews : public PermissionBubbleView {
  public:
-  explicit PermissionBubbleViewViews(views::View* anchor_view);
+  PermissionBubbleViewViews(views::View* anchor_view,
+                            const std::string& languages);
   ~PermissionBubbleViewViews() override;
 
   // PermissionBubbleView:
@@ -39,6 +42,7 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
   views::View* anchor_view_;
   Delegate* delegate_;
   PermissionsBubbleDelegateView* bubble_delegate_;
+  const std::string languages_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleViewViews);
 };
