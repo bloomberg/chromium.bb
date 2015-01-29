@@ -121,15 +121,13 @@ ifeq ($(PLATFORM), win)
   # I'm explicitly coding the path.
   BUILDPATH = $(DESTDIR)$(PREFIX)/bin:/usr/local/bin:/usr/bin:/bin
   SCONS ?= scons.bat
-  SVN ?= svn.bat
-  SVNVERSION ?= ./get_revision.sh | tr -d $$"\r"
+  REVISION ?= git rev-parse HEAD | tr -d $$"\r"
   PREFIX_NATIVE = $(shell cygpath -m $(PREFIX))
   CREATE_REDIRECTORS = ./create_redirectors_cygwin.sh
 else
   BUILDPATH = $(DESTDIR)$(PREFIX)/bin:$(PATH)
   SCONS ?= scons
-  SVN ?= svn
-  SVNVERSION ?= ./get_revision.sh
+  REVISION ?= git rev-parse HEAD
   PREFIX_NATIVE = $(DESTDIR)$(PREFIX)
   CREATE_REDIRECTORS = ./create_redirectors.sh
 endif
@@ -936,10 +934,11 @@ buildbot-build-with-newlib: | \
 
 # Don't generate patch files for things like gmp or linux-headers-for-nacl
 # because these are not changed from upstream.
-BINUTILS_PATCHNAME := naclbinutils-$(BINUTILS_VERSION)-r$(shell $(SVNVERSION) | tr : _)
-GCC_PATCHNAME := naclgcc-$(GCC_VERSION)-r$(shell $(SVNVERSION) | tr : _)
-GLIBC_PATCHNAME := naclglibc-$(GLIBC_VERSION)-r$(shell $(SVNVERSION) | tr : _)
-NEWLIB_PATCHNAME := naclnewlib-$(NEWLIB_VERSION)-r$(shell $(SVNVERSION) | tr : _)
+REVISION_NAME := $(shell $(REVISION) | tr : _)
+BINUTILS_PATCHNAME := naclbinutils-$(BINUTILS_VERSION)-$(REVISION_NAME)
+GCC_PATCHNAME := naclgcc-$(GCC_VERSION)-$(REVISION_NAME)
+GLIBC_PATCHNAME := naclglibc-$(GLIBC_VERSION)-$(REVISION_NAME)
+NEWLIB_PATCHNAME := naclnewlib-$(NEWLIB_VERSION)-$(REVISION_NAME)
 
 patch-names = $(BINUTILS_PATCHNAME) $(GCC_PATCHNAME) \
 	      $(GLIBC_PATCHNAME) $(NEWLIB_PATCHNAME)
@@ -949,12 +948,12 @@ $(patch-list): SRC/%.patch:
 	package=$@ && \
 	package=$${package#SRC/nacl} && \
 	package=$${package/.patch/} && \
-	basename=$${package/-*-r*} && \
+	basename=$${package/-*-*} && \
 	cd SRC/$${basename} && \
 	  git diff --patience --patch-with-stat --no-renames \
 	    --src-prefix=$$basename/ \
 	    --dst-prefix=$$basename/ \
-	    $(NACL_$(shell n=$@ ; n=$${n#SRC/nacl} ; echo $${n/-*-r*/} | \
+	    $(NACL_$(shell n=$@ ; n=$${n#SRC/nacl} ; echo $${n/-*-*/} | \
 	             tr '[:lower:]-' '[:upper:]_')_GIT_BASE) \
 	    > ../../$@
 
@@ -981,10 +980,10 @@ buildbot-mark-version: | \
 	+++ SRC/binutils/bfd/version.h\n\
 	@@ -3 +3 @@\n\
 	-#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@\n\
-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \" `LC_ALL=C $(SVN) info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`LC_ALL=C $(SVNVERSION)`, Git Commit `cd SRC/binutils ; LC_ALL=C git rev-parse HEAD`)\"\n" |\
+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \" `LC_ALL=C git show --no-patch --format=%cd --date=short HEAD | sed -e s'+\(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client `LC_ALL=C $(REVISION)`, Git Commit `cd SRC/binutils ; LC_ALL=C git rev-parse HEAD`)\"\n" |\
 	patch -p0
-	LC_ALL=C $(SVN) info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+' > SRC/gcc/gcc/DATESTAMP
-	echo "Native Client r`LC_ALL=C $(SVNVERSION)`, Git Commit `cd SRC/gcc ; LC_ALL=C git rev-parse HEAD`" > SRC/gcc/gcc/DEV-PHASE
+	LC_ALL=C git show --no-patch --format=%cd --date=short HEAD | sed -e s'+\(....\)-\(..\)-\(..\).*+\1\2\3+' > SRC/gcc/gcc/DATESTAMP
+	echo "Native Client `LC_ALL=C $(REVISION)`, Git Commit `cd SRC/gcc ; LC_ALL=C git rev-parse HEAD`" > SRC/gcc/gcc/DEV-PHASE
 endif
 
 ##################################################################
