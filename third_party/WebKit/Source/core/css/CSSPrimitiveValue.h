@@ -165,6 +165,8 @@ public:
     };
     static UnitCategory unitCategory(UnitType);
 
+    static void initUnitTable();
+
     static UnitType fromName(const String& unit);
 
     bool isAngle() const

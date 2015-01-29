@@ -36,12 +36,16 @@
 #include "platform/LayoutUnit.h"
 #include "platform/fonts/FontMetrics.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/Threading.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 
 using namespace WTF;
 
 namespace blink {
+
+namespace {
 
 // Max/min values for CSS, needs to slightly smaller/larger than the true max/min values to allow for rounding without overflowing.
 // Subtract two (rather than one) to allow for values to be converted to float and back without exceeding the LayoutUnit::max.
@@ -139,10 +143,24 @@ StringToUnitTable createStringToUnitTable()
     return table;
 }
 
-CSSPrimitiveValue::UnitType CSSPrimitiveValue::fromName(const String& unit)
+StringToUnitTable& unitTable()
 {
     DEFINE_STATIC_LOCAL(StringToUnitTable, unitTable, (createStringToUnitTable()));
-    return unitTable.get(unit.lower());
+    return unitTable;
+}
+
+} // namespace
+
+void CSSPrimitiveValue::initUnitTable()
+{
+    // Make sure we initialize this during blink initialization
+    // to avoid racy static local initialization.
+    unitTable();
+}
+
+CSSPrimitiveValue::UnitType CSSPrimitiveValue::fromName(const String& unit)
+{
+    return unitTable().get(unit.lower());
 }
 
 CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::unitCategory(UnitType type)
@@ -198,8 +216,8 @@ bool CSSPrimitiveValue::colorIsDerivedFromElement() const
 typedef HashMap<const CSSPrimitiveValue*, String> CSSTextCache;
 static CSSTextCache& cssTextCache()
 {
-    DEFINE_STATIC_LOCAL(CSSTextCache, cache, ());
-    return cache;
+    AtomicallyInitializedStaticReference(ThreadSpecific<CSSTextCache>, cache, new ThreadSpecific<CSSTextCache>());
+    return *cache;
 }
 
 CSSPrimitiveValue::UnitType CSSPrimitiveValue::primitiveType() const

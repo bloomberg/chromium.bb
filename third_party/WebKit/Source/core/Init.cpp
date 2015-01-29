@@ -93,6 +93,7 @@ void CoreInitializer::init()
     MediaFeatureNames::init();
     MediaTypeNames::init();
 
+    CSSPrimitiveValue::initUnitTable();
     CSSParserTokenRange::initStaticEOFToken();
 
     // It would make logical sense to do this in WTF::initialize() but there are
