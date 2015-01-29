@@ -76,7 +76,9 @@ void GetFontsInFamily_SlowBlocking(const std::string& family,
   memset(&logfont, 0, sizeof(logfont));
   logfont.lfCharSet = DEFAULT_CHARSET;
   base::string16 family16 = base::UTF8ToUTF16(family);
-  memcpy(&logfont.lfFaceName, &family16[0], sizeof(logfont.lfFaceName));
+  // Copy the family name, leaving room for a terminating null (already set
+  // since we zeroed the whole struct above.)
+  family16.copy(logfont.lfFaceName, LF_FACESIZE - 1);
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
   ::EnumFontFamiliesExW(hdc.Get(),
                         &logfont,
