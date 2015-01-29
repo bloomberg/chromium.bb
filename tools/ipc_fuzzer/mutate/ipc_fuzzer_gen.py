@@ -8,73 +8,52 @@ GenerateTraits. Support of GenerateTraits for different types will be gradually
 added.
 """
 
-import argparse
 import os
 import random
-import string
 import subprocess
 import sys
-import tempfile
-import time
+import utils
 
-# Number of IPC messages per ipcdump
-NUM_IPC_MESSAGES = 1500
+IPC_GENERATE_APPLICATION = 'ipc_fuzzer_generate'
+IPC_REPLAY_APPLICATION = 'ipc_fuzzer_replay'
+MAX_IPC_MESSAGES_PER_TESTCASE = 1500
 
-def platform():
-  if sys.platform.startswith('win'):
-    return 'WINDOWS'
-  if sys.platform.startswith('linux'):
-    return 'LINUX'
-  if sys.platform == 'darwin':
-    return 'MAC'
-
-  assert False, 'Unknown platform'
-
-def random_id(size=16, chars=string.ascii_lowercase):
-  return ''.join(random.choice(chars) for x in range(size))
-
-def random_ipcdump_path(ipcdump_dir):
-  return os.path.join(ipcdump_dir, 'fuzz-' + random_id() + '.ipcdump')
 
 class GenerationalFuzzer:
-  def parse_cf_args(self):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--input_dir')
-    parser.add_argument('--output_dir')
-    parser.add_argument('--no_of_files', type=int)
-    self.args = args = parser.parse_args();
-    if not args.input_dir or not args.output_dir or not args.no_of_files:
-      parser.print_help()
-      sys.exit(1)
+  def parse_arguments(self):
+    self.args = utils.parse_arguments()
 
-  def get_paths(self):
-    app_path_key = 'APP_PATH'
-    self.generate_binary = 'ipc_fuzzer_generate'
-    self.util_binary = 'ipc_message_util'
-    if platform() == 'WINDOWS':
-      self.generate_binary += '.exe'
-      self.util_binary += '.exe'
+  def set_application_paths(self):
+    chrome_application_path = utils.get_application_path()
+    chrome_application_directory = os.path.dirname(chrome_application_path)
+    self.ipc_generate_binary = utils.application_name_for_platform(
+        IPC_GENERATE_APPLICATION)
+    self.ipc_replay_binary = utils.application_name_for_platform(
+        IPC_REPLAY_APPLICATION)
+    self.ipc_generate_binary_path = os.path.join(
+        chrome_application_directory, self.ipc_generate_binary)
+    self.ipc_replay_binary_path = os.path.join(
+        chrome_application_directory, self.ipc_replay_binary)
 
-    if app_path_key not in os.environ:
-      sys.exit('Env var %s should be set to chrome path' % app_path_key)
-    chrome_path = os.environ[app_path_key]
-    out_dir = os.path.dirname(chrome_path)
-    self.util_path = os.path.join(out_dir, self.util_binary)
-    self.generate_path = os.path.join(out_dir, self.generate_binary)
+  def generate_ipcdump_testcase(self):
+    ipcdump_testcase_path = (
+        utils.random_ipcdump_testcase_path(self.args.output_dir))
+    num_ipc_messages = random.randint(1, MAX_IPC_MESSAGES_PER_TESTCASE)
+    count_option = '--count=%d' % num_ipc_messages
 
-  def generate_ipcdump(self):
-    generated_ipcdump = random_ipcdump_path(self.args.output_dir)
-    cmd = [self.generate_path,
-           '--count=' + str(NUM_IPC_MESSAGES),
-           generated_ipcdump]
+    cmd = [self.ipc_generate_binary_path, count_option, ipcdump_testcase_path]
+
     if subprocess.call(cmd):
-      sys.exit('%s failed' % self.generate_binary)
+      sys.exit('%s failed.' % self.ipc_generate_binary)
+
+    utils.create_flags_file(ipcdump_testcase_path, self.ipc_replay_binary_path)
 
   def main(self):
-    self.parse_cf_args()
-    self.get_paths()
-    for i in xrange(self.args.no_of_files):
-      self.generate_ipcdump()
+    self.parse_arguments()
+    self.set_application_paths()
+    for _ in xrange(self.args.no_of_files):
+      self.generate_ipcdump_testcase()
+
     return 0
 
 if __name__ == "__main__":

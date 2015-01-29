@@ -11,93 +11,79 @@ This fuzzer will pick some ipcdumps from the corpus, concatenate them with
 ipc_message_util and mutate the result with ipc_fuzzer_mutate.
 """
 
-import argparse
 import os
 import random
-import string
 import subprocess
 import sys
-import tempfile
-import time
+import utils
 
-# Number of ipcdumps to concatenate
-NUM_IPCDUMPS = 50
-
-def platform():
-  if sys.platform.startswith('win'):
-    return 'WINDOWS'
-  if sys.platform.startswith('linux'):
-    return 'LINUX'
-  if sys.platform == 'darwin':
-    return 'MAC'
-
-  assert False, 'Unknown platform'
-
-def create_temp_file():
-  temp_file = tempfile.NamedTemporaryFile(delete=False)
-  temp_file.close()
-  return temp_file.name
-
-def random_id(size=16, chars=string.ascii_lowercase):
-  return ''.join(random.choice(chars) for x in range(size))
-
-def random_ipcdump_path(ipcdump_dir):
-  return os.path.join(ipcdump_dir, 'fuzz-' + random_id() + '.ipcdump')
+IPC_MESSAGE_UTIL_APPLICATION = 'ipc_message_util'
+IPC_MUTATE_APPLICATION = 'ipc_fuzzer_mutate'
+IPC_REPLAY_APPLICATION = 'ipc_fuzzer_replay'
+IPCDUMP_MERGE_LIMIT = 50
 
 class MutationalFuzzer:
-  def parse_cf_args(self):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--input_dir')
-    parser.add_argument('--output_dir')
-    parser.add_argument('--no_of_files', type=int)
-    self.args = args = parser.parse_args();
-    if not args.input_dir or not args.output_dir or not args.no_of_files:
-      parser.print_help()
-      sys.exit(1)
+  def parse_arguments(self):
+    self.args = utils.parse_arguments()
 
-  def get_paths(self):
-    app_path_key = 'APP_PATH'
-    self.mutate_binary = 'ipc_fuzzer_mutate'
-    self.util_binary = 'ipc_message_util'
-    if platform() == 'WINDOWS':
-      self.mutate_binary += '.exe'
-      self.util_binary += '.exe'
+  def set_application_paths(self):
+    chrome_application_path = utils.get_application_path()
+    chrome_application_directory = os.path.dirname(chrome_application_path)
 
-    if app_path_key not in os.environ:
-      sys.exit('Env var %s should be set to chrome path' % app_path_key)
-    chrome_path = os.environ[app_path_key]
-    out_dir = os.path.dirname(chrome_path)
-    self.util_path = os.path.join(out_dir, self.util_binary)
-    self.mutate_path = os.path.join(out_dir, self.mutate_binary)
+    self.ipc_message_util_binary = utils.application_name_for_platform(
+        IPC_MESSAGE_UTIL_APPLICATION)
+    self.ipc_mutate_binary = utils.application_name_for_platform(
+        IPC_MUTATE_APPLICATION)
+    self.ipc_replay_binary = utils.application_name_for_platform(
+        IPC_REPLAY_APPLICATION)
+    self.ipc_message_util_binary_path = os.path.join(
+        chrome_application_directory, self.ipc_message_util_binary)
+    self.ipc_mutate_binary_path = os.path.join(
+        chrome_application_directory, self.ipc_mutate_binary)
+    self.ipc_replay_binary_path = os.path.join(
+        chrome_application_directory, self.ipc_replay_binary)
 
-  def list_corpus(self):
-    input_dir = self.args.input_dir
-    entries = os.listdir(input_dir)
-    entries = [i for i in entries if i.endswith('.ipcdump')]
-    self.corpus = [os.path.join(input_dir, entry) for entry in entries]
+  def set_corpus(self):
+    input_directory = self.args.input_dir
+    entries = os.listdir(input_directory)
+    entries = [i for i in entries if i.endswith(utils.IPCDUMP_EXTENSION)]
+    self.corpus = [os.path.join(input_directory, entry) for entry in entries]
 
-  def create_mutated_ipcdump(self):
-    ipcdumps = ','.join(random.sample(self.corpus, NUM_IPCDUMPS))
-    tmp_ipcdump = create_temp_file()
-    mutated_ipcdump = random_ipcdump_path(self.args.output_dir)
+  def create_mutated_ipcdump_testcase(self):
+    ipcdumps = ','.join(random.sample(self.corpus, IPCDUMP_MERGE_LIMIT))
+    tmp_ipcdump_testcase = utils.create_temp_file()
+    mutated_ipcdump_testcase = (
+        utils.random_ipcdump_testcase_path(self.args.output_dir))
 
-    # concatenate ipcdumps -> tmp_ipcdump
-    cmd = [self.util_path, ipcdumps, tmp_ipcdump]
+    # Concatenate ipcdumps -> tmp_ipcdump.
+    cmd = [
+      self.ipc_message_util_binary_path,
+      ipcdumps,
+      tmp_ipcdump_testcase,
+    ]
     if subprocess.call(cmd):
-      sys.exit('%s failed' % self.util_binary)
+      sys.exit('%s failed.' % self.ipc_message_util_binary)
 
-    # mutate tmp_ipcdump -> mutated_ipcdump
-    cmd = [self.mutate_path, tmp_ipcdump, mutated_ipcdump]
+    # Mutate tmp_ipcdump -> mutated_ipcdump.
+    cmd = [
+      self.ipc_mutate_binary_path,
+      tmp_ipcdump_testcase,
+      mutated_ipcdump_testcase,
+    ]
     if subprocess.call(cmd):
-      sys.exit('%s failed' % self.mutate_binary)
-    os.remove(tmp_ipcdump)
+      sys.exit('%s failed.' % self.ipc_mutate_binary)
+
+    utils.create_flags_file(
+        mutated_ipcdump_testcase, self.ipc_replay_binary_path)
+    os.remove(tmp_ipcdump_testcase)
 
   def main(self):
-    self.parse_cf_args()
-    self.get_paths()
-    self.list_corpus()
-    for i in xrange(self.args.no_of_files):
-      self.create_mutated_ipcdump()
+    self.parse_arguments()
+    self.set_application_paths()
+    self.set_corpus()
+    for _ in xrange(self.args.no_of_files):
+      self.create_mutated_ipcdump_testcase()
+
     return 0
 
 if __name__ == "__main__":
