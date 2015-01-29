@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN('#include "chrome/browser/ui/browser.h"');
+GEN('#include "chrome/browser/ui/browser_commands.h"');
+GEN('#include "chrome/browser/ui/exclusive_access/' +
+    'fullscreen_controller_test.h"');
+
 /**
  * Fixture for ChromeOs WebUI OOBE testing.
  *
@@ -25,6 +30,14 @@ OobeWebUITest.prototype = {
 
   /** @override */
   accessibilityIssuesAreErrors: true,
+
+  /** @override */
+  testGenPreamble: function() {
+    // OobeWebUI should run in fullscreen.
+    GEN('  FullscreenNotificationObserver fullscreen_observer;');
+    GEN('  chrome::ToggleFullscreenMode(browser());');
+    GEN('  fullscreen_observer.Wait();');
+  },
 
   /** @override */
   setUp: function() {
