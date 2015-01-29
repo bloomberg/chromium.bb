@@ -698,6 +698,10 @@ function createTile(page, position) {
   // link element (which also has a tabindex).
   titleElem.tabIndex = '0';
 
+  // Make the iframe presentational for accessibility so screen readers perceive
+  // the iframe content as just part of the same page.
+  titleElem.setAttribute('role', 'presentation');
+
   // Why iframes have IDs:
   //
   // On navigating back to the NTP we see several onmostvisitedchange() events
