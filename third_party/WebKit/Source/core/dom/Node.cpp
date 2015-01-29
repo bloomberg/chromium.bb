@@ -1652,8 +1652,7 @@ static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, 
         indent.append(baseIndent);
         for (const Node* tmpNode = &node; tmpNode && tmpNode != rootNode; tmpNode = tmpNode->parentOrShadowHostNode())
             indent.append('\t');
-        WTFLogAlways("%s", indent.toString().utf8().data());
-        node.showNode();
+        node.showNode(indent.toString().utf8().data());
         indent.append('\t');
 
         if (node.isElementNode()) {
