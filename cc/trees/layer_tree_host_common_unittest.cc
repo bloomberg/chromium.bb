@@ -34,6 +34,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -7761,6 +7762,89 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
     scroll_layer->SetTransform(identity_transform);
   }
+}
+
+TEST_F(LayerTreeHostCommonTest,
+       ScrollCompensationMainScrollOffsetFractionalPart) {
+  // This test verifies that a scrolling layer that has fractional scroll offset
+  // from main doesn't move a fixed position child.
+  //
+  // + root
+  //   + container
+  //     + scroller
+  //       + fixed
+  //
+  FakeImplProxy proxy;
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  host_impl.CreatePendingTree();
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
+  scoped_ptr<LayerImpl> container =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  LayerImpl* container_layer = container.get();
+  scoped_ptr<LayerImpl> scroller =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+  LayerImpl* scroll_layer = scroller.get();
+  scoped_ptr<LayerImpl> fixed = LayerImpl::Create(host_impl.active_tree(), 4);
+  LayerImpl* fixed_layer = fixed.get();
+
+  container->SetIsContainerForFixedPositionLayers(true);
+
+  LayerPositionConstraint constraint;
+  constraint.set_is_fixed_position(true);
+  fixed->SetPositionConstraint(constraint);
+
+  scroller->SetScrollClipLayer(container->id());
+
+  gfx::Transform identity_transform;
+  gfx::Transform container_transform;
+  container_transform.Translate3d(10.0, 20.0, 0.0);
+  gfx::Vector2dF container_offset = container_transform.To2dTranslation();
+
+  SetLayerPropertiesForTesting(root.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  SetLayerPropertiesForTesting(container.get(), container_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(40, 40),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroller.get(), identity_transform,
+                               gfx::Point3F(), gfx::PointF(0.0, 0.0),
+                               gfx::Size(30, 30), true, false, false);
+
+  gfx::ScrollOffset scroll_offset(3.3, 4.2);
+  gfx::Vector2dF main_scroll_fractional_part(0.3f, 0.2f);
+  gfx::Vector2dF scroll_delta(0.1f, 0.4f);
+  // Blink only uses the integer part of the scroll_offset for fixed
+  // position layer.
+  SetLayerPropertiesForTesting(fixed.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(3.0f, 4.0f), gfx::Size(50, 50), true,
+                               false, false);
+  scroll_layer->SetScrollOffsetAndDelta(scroll_offset, scroll_delta);
+  scroll_layer->SetMainScrollOffsetFractionalPart(main_scroll_fractional_part);
+
+  scroller->AddChild(fixed.Pass());
+  container->AddChild(scroller.Pass());
+  root->AddChild(container.Pass());
+
+  LayerImplList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root.get(), root->bounds(), &render_surface_layer_list);
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      container_layer->draw_properties().screen_space_transform,
+      fixed_layer->draw_properties().screen_space_transform);
+  EXPECT_VECTOR_EQ(
+      fixed_layer->draw_properties().screen_space_transform.To2dTranslation(),
+      container_offset);
+
+  gfx::ScrollOffset effective_scroll_offset =
+      ScrollOffsetWithDelta(scroll_offset, scroll_delta);
+  gfx::Vector2d rounded_effective_scroll_offset =
+      ToRoundedVector2d(ScrollOffsetToVector2dF(effective_scroll_offset));
+  EXPECT_VECTOR_EQ(
+      scroll_layer->draw_properties().screen_space_transform.To2dTranslation(),
+      container_offset - rounded_effective_scroll_offset);
 }
 
 class AnimationScaleFactorTrackingLayerImpl : public LayerImpl {

@@ -552,6 +552,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer->SetSentScrollDelta(gfx::Vector2dF());
   layer->SetScrollOffsetAndDelta(scroll_offset_, remaining_delta);
+  layer->SetMainScrollOffsetFractionalPart(main_scroll_offset_fractional_part_);
 
   layer->Set3dSortingContextId(sorting_context_id_);
   layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);

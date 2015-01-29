@@ -672,6 +672,18 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   SetNeedsCommit();
 }
 
+void Layer::SetScrollOffsetFractionalPart(
+    const gfx::Vector2dF& scroll_offset_fractional_part) {
+  if (scroll_offset_fractional_part_ == scroll_offset_fractional_part)
+    return;
+  scroll_offset_fractional_part_ = scroll_offset_fractional_part;
+  SetNeedsCommit();
+}
+
+gfx::Vector2dF Layer::MainScrollOffsetFractionalPart() const {
+  return scroll_offset_fractional_part_;
+}
+
 void Layer::SetScrollOffsetFromImplSide(
     const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
@@ -981,6 +993,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     }
     layer->SetSentScrollDelta(gfx::Vector2dF());
   }
+  layer->SetMainScrollOffsetFractionalPart(MainScrollOffsetFractionalPart());
 
   // Wrap the copy_requests_ in a PostTask to the main thread.
   ScopedPtrVector<CopyOutputRequest> main_thread_copy_requests;

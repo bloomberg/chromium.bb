@@ -401,6 +401,13 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetScrollDelta(const gfx::Vector2dF& scroll_delta);
   gfx::Vector2dF ScrollDelta() const;
 
+  void SetMainScrollOffsetFractionalPart(const gfx::Vector2dF& scroll_offset) {
+    main_scroll_offset_fractional_part_ = scroll_offset;
+  }
+  gfx::Vector2dF MainScrollOffsetFractionalPart() const {
+    return main_scroll_offset_fractional_part_;
+  }
+
   gfx::ScrollOffset TotalScrollOffset() const;
 
   void SetSentScrollDelta(const gfx::Vector2dF& sent_scroll_delta);
@@ -674,6 +681,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Vector2dF scroll_delta_;
   gfx::Vector2dF sent_scroll_delta_;
   gfx::ScrollOffset last_scroll_offset_;
+
+  gfx::Vector2dF main_scroll_offset_fractional_part_;
 
   int num_descendants_that_draw_content_;
 

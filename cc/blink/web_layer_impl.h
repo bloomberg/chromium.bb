@@ -105,6 +105,7 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual void setForceRenderSurface(bool force);
   virtual void setScrollPositionDouble(blink::WebDoublePoint position);
   virtual blink::WebDoublePoint scrollPositionDouble() const;
+  virtual void setScrollPositionFractionalPart(blink::WebDoublePoint position);
   virtual void setScrollClipLayer(blink::WebLayer* clip_layer);
   virtual bool scrollable() const;
   virtual void setUserScrollable(bool horizontal, bool vertical);
