@@ -373,11 +373,10 @@ class Environment:
         self.ClearCache(True)
         websitetest.SuccessfulLoginTest()
         self.ClearCache(True)
-      except Exception:
+      except Exception as e:
         successful = False
-        error = traceback.format_exc()
       self.tests_results.append(TestResult(websitetest.name, "normal",
-          successful, escape(error)))
+          successful, e.message))
 
 
   def PromptTestList(self, websitetests):
@@ -397,11 +396,10 @@ class Environment:
       try:
         websitetest.was_run = True
         websitetest.PromptTest()
-      except Exception:
+      except Exception as e:
         successful = False
-        error = traceback.format_exc()
       self.tests_results.append(TestResult(websitetest.name, "prompt",
-          successful, escape(error)))
+          successful, e.message))
 
   def Quit(self):
     """Closes the tests."""
