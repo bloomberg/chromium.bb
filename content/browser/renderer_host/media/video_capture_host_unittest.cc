@@ -431,6 +431,7 @@ class VideoCaptureHostTest : public testing::Test {
     host_->OnStartCapture(kDeviceId, opened_session_id_, params);
     host_->OnStopCapture(kDeviceId);
     run_loop.RunUntilIdle();
+    WaitForVideoDeviceThread();
   }
 
 #ifdef DUMP_VIDEO
@@ -491,6 +492,16 @@ class VideoCaptureHostTest : public testing::Test {
     host_->OnError(id);
     // Wait for the error callback.
     base::RunLoop().RunUntilIdle();
+  }
+
+  void WaitForVideoDeviceThread() {
+    base::RunLoop run_loop;
+    media_stream_manager_->video_capture_manager()->device_task_runner()
+        ->PostTaskAndReply(
+            FROM_HERE,
+            base::Bind(&base::DoNothing),
+            run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   scoped_refptr<MockVideoCaptureHost> host_;

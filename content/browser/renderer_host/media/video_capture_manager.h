@@ -12,14 +12,17 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_
 
+#include <list>
 #include <map>
 #include <set>
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
+#include "base/threading/thread_checker.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
@@ -138,9 +141,14 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   }
 #endif
 
+  // Returns the SingleThreadTaskRunner where devices are enumerated on and
+  // started.
+  scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner() {
+    return device_task_runner_;
+  }
  private:
   ~VideoCaptureManager() override;
-  struct DeviceEntry;
+  class DeviceEntry;
 
   // Checks to see if |entry| has no clients left on its controller. If so,
   // remove it from the list of devices, and delete it asynchronously. |entry|
@@ -182,25 +190,42 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       const media::VideoCaptureDeviceInfos& old_device_info_cache,
       scoped_ptr<media::VideoCaptureDevice::Names> names_snapshot);
 
-  // Creates and Starts a new VideoCaptureDevice, storing the result in
-  // |entry->video_capture_device|. Ownership of |client| passes to
+  // Starting a capture device can take 1-2 seconds.
+  // To avoid multiple unnecessary start/stop commands to the OS, each start
+  // request is queued in |device_start_queue_|.
+  // QueueStartDevice creates a new entry in |device_start_queue_| and posts a
+  // request to start the device on the device thread unless there is
+  // another request pending start.
+  void QueueStartDevice(media::VideoCaptureSessionId session_id,
+                        DeviceEntry* entry,
+                        const media::VideoCaptureParams& params);
+  void OnDeviceStarted(int serial_id,
+                       scoped_ptr<media::VideoCaptureDevice> device);
+  void DoStopDevice(DeviceEntry* entry);
+  void HandleQueuedStartRequest();
+
+  // Creates and Starts a new VideoCaptureDevice. The resulting
+  // VideoCaptureDevice is returned to the IO-thread and stored in
+  // a DeviceEntry in |devices_|. Ownership of |client| passes to
   // the device.
-  void DoStartDeviceOnDeviceThread(
+  scoped_ptr<media::VideoCaptureDevice> DoStartDeviceOnDeviceThread(
       media::VideoCaptureSessionId session_id,
-      DeviceEntry* entry,
+      const std::string& device_id,
+      MediaStreamType stream_type,
       const media::VideoCaptureParams& params,
       scoped_ptr<media::VideoCaptureDevice::Client> client);
 
   // Stops and destroys the VideoCaptureDevice held in
-  // |entry->video_capture_device|.
-  void DoStopDeviceOnDeviceThread(DeviceEntry* entry);
+  // |device|.
+  void DoStopDeviceOnDeviceThread(scoped_ptr<media::VideoCaptureDevice> device);
 
   media::VideoCaptureDeviceInfo* FindDeviceInfoById(
       const std::string& id,
       media::VideoCaptureDeviceInfos& device_vector);
 
-  void SetDesktopCaptureWindowIdOnDeviceThread(DeviceEntry* entry,
-                                               gfx::NativeViewId window_id);
+  void SetDesktopCaptureWindowIdOnDeviceThread(
+      media::VideoCaptureDevice* device,
+      gfx::NativeViewId window_id);
 
   void SaveDesktopCaptureWindowIdOnDeviceThread(
       media::VideoCaptureSessionId session_id,
@@ -226,26 +251,65 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // when they are not used any longer.
   //
   // The set of currently started VideoCaptureDevice and VideoCaptureController
-  // objects is only accessed from IO thread, though the DeviceEntry instances
-  // themselves may visit to the device thread for device creation and
-  // destruction.
-  struct DeviceEntry {
+  // objects is only accessed from IO thread.
+  class DeviceEntry {
+   public:
     DeviceEntry(MediaStreamType stream_type,
                 const std::string& id,
                 scoped_ptr<VideoCaptureController> controller);
     ~DeviceEntry();
 
+    const int serial_id;
     const MediaStreamType stream_type;
     const std::string id;
 
-    // The controller. Only used from the IO thread.
-    scoped_ptr<VideoCaptureController> video_capture_controller;
+    VideoCaptureController* video_capture_controller();
+    media::VideoCaptureDevice* video_capture_device();
 
-    // The capture device. Only used from the device thread.
-    scoped_ptr<media::VideoCaptureDevice> video_capture_device;
+    void SetVideoCaptureDevice(scoped_ptr<media::VideoCaptureDevice> device);
+    scoped_ptr<media::VideoCaptureDevice> ReleaseVideoCaptureDevice();
+
+   private:
+    // The controller.
+    scoped_ptr<VideoCaptureController> video_capture_controller_;
+
+    // The capture device.
+    scoped_ptr<media::VideoCaptureDevice> video_capture_device_;
+
+    base::ThreadChecker thread_checker_;
   };
-  typedef std::set<DeviceEntry*> DeviceEntries;
+
+  typedef ScopedVector<DeviceEntry> DeviceEntries;
+  // Currently opened devices. The device may or may not be started.
   DeviceEntries devices_;
+
+  // Class used for queuing request for starting a device.
+  class CaptureDeviceStartRequest {
+   public:
+    CaptureDeviceStartRequest(
+        int serial_id,
+        media::VideoCaptureSessionId session_id,
+        const media::VideoCaptureParams& params);
+    int serial_id() const { return serial_id_;}
+    media::VideoCaptureSessionId session_id() const { return session_id_; }
+    media::VideoCaptureParams params() const { return params_; }
+
+    // Set to true if the device should be stopped before it has successfully
+    // been started.
+    bool abort_start() const { return abort_start_; }
+    void set_abort_start() { abort_start_ = true; }
+
+   private:
+    const int serial_id_;
+    const media::VideoCaptureSessionId session_id_;
+    const media::VideoCaptureParams params_;
+    // Set to true if the device should be stopped before it has successfully
+    // been started.
+    bool abort_start_;
+  };
+
+  typedef std::list<CaptureDeviceStartRequest> DeviceStartQueue;
+  DeviceStartQueue device_start_queue_;
 
   // Device creation factory injected on construction from MediaStreamManager or
   // from the test harness.

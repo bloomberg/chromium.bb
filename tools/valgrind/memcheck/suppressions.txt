@@ -3582,17 +3582,6 @@
    fun:_ZN8app_list4test17SearchHistoryTest5SetUpEv
 }
 {
-   bug_450226
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7content19VideoCaptureManager16QueueStartDeviceEiPNS0_11DeviceEntryERKN5media18VideoCaptureParamsE
-   fun:_ZN7content19VideoCaptureManager21StartCaptureForClientEiRKN5media18VideoCaptureParamsEiNS_24VideoCaptureControllerIDEPNS_34VideoCaptureControllerEventHandlerERKN4base8CallbackIFvRKNS8_7WeakPtrINS_22VideoCaptureControllerEEEEEE
-   fun:_ZN7content16VideoCaptureHost14OnStartCaptureEiiRKN5media18VideoCaptureParamsE
-   fun:_ZN7content20VideoCaptureHostTest16StartStopCaptureEv
-   fun:_ZN7content47VideoCaptureHostTest_StopWhileStartPending_Test8TestBodyEv
-}
-{
    bug_450228
    Memcheck:Leak
    fun:_Znw*
