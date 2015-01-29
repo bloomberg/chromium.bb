@@ -5,17 +5,16 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace {
 
@@ -86,7 +85,14 @@ class MockComponentToolbarActionsFactory
   ScopedVector<ToolbarActionViewController> GetComponentToolbarActions()
       override;
 
+  const std::vector<MockComponentAction*>& weak_actions() const {
+    return weak_actions_;
+  }
+
  private:
+  // A (weak) set of all created actions.
+  std::vector<MockComponentAction*> weak_actions_;
+
   DISALLOW_COPY_AND_ASSIGN(MockComponentToolbarActionsFactory);
 };
 
@@ -101,7 +107,9 @@ MockComponentToolbarActionsFactory::~MockComponentToolbarActionsFactory() {
 ScopedVector<ToolbarActionViewController>
 MockComponentToolbarActionsFactory::GetComponentToolbarActions() {
   ScopedVector<ToolbarActionViewController> component_actions;
-  component_actions.push_back(new MockComponentAction());
+  MockComponentAction* action = new MockComponentAction();
+  component_actions.push_back(action);
+  weak_actions_.push_back(action);
   return component_actions.Pass();
 }
 
@@ -119,6 +127,10 @@ class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
     mock_actions_factory_.reset(new MockComponentToolbarActionsFactory());
   }
 
+  MockComponentToolbarActionsFactory* mock_factory() {
+    return mock_actions_factory_.get();
+  }
+
  private:
   scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
   scoped_ptr<MockComponentToolbarActionsFactory> mock_actions_factory_;
@@ -130,21 +142,24 @@ class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
 // and can receive click events properly.
 IN_PROC_BROWSER_TEST_F(ComponentToolbarActionsBrowserTest,
                        ComponentToolbarActionsShowUpAndRespondToClicks) {
-  BrowserActionsContainer* browser_actions_container =
-      BrowserView::GetBrowserViewForBrowser(browser())
-          ->toolbar()->browser_actions();
+  BrowserActionTestUtil browser_actions_bar(browser());
 
   // There should be only one component action view.
-  ASSERT_EQ(1u, browser_actions_container->num_toolbar_actions());
+  ASSERT_EQ(1, browser_actions_bar.NumberOfBrowserActions());
 
-  ToolbarActionView* view =
-      browser_actions_container->GetToolbarActionViewAt(0u);
-  ASSERT_EQ(kMockId, view->view_controller()->GetId());
-  MockComponentAction* mock_component_action =
-      static_cast<MockComponentAction*>(view->view_controller());
+  // Even though the method says "ExtensionId", this actually refers to any id
+  // for the action.
+  EXPECT_EQ(kMockId, browser_actions_bar.GetExtensionId(0));
+
+  // There should only have been one created component action.
+  const std::vector<MockComponentAction*> weak_actions =
+      mock_factory()->weak_actions();
+  ASSERT_EQ(1u, weak_actions.size());
+  MockComponentAction* mock_component_action = weak_actions[0];
+  ASSERT_TRUE(mock_component_action);
 
   // Test that clicking on the component action works.
   EXPECT_EQ(0u, mock_component_action->click_count());
-  view->Activate();
+  browser_actions_bar.Press(0);
   EXPECT_EQ(1u, mock_component_action->click_count());
 }
