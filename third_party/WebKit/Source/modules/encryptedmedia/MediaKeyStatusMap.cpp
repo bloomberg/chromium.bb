@@ -117,7 +117,7 @@ size_t MediaKeyStatusMap::indexOf(const DOMArrayPiece& key) const
 {
     for (size_t index = 0; index < m_entries.size(); ++index) {
         const auto& current = m_entries.at(index)->keyId();
-        if (key.byteLength() == current->byteLength() && memcmp(key.bytes(), current->data(), key.byteLength()) == 0)
+        if (key == *current)
             return index;
     }
 

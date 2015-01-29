@@ -20,6 +20,16 @@ public:
         : ArrayPiece(view->view()) { }
     template <class T>
     DOMArrayPiece(const T&);
+
+    bool operator==(const DOMArrayBuffer& other) const
+    {
+        return byteLength() == other.byteLength() && memcmp(data(), other.data(), byteLength()) == 0;
+    }
+
+    bool operator==(const DOMArrayBufferView& other) const
+    {
+        return byteLength() == other.byteLength() && memcmp(data(), other.baseAddress(), byteLength()) == 0;
+    }
 };
 
 } // namespace blink
