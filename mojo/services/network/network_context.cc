@@ -36,15 +36,20 @@ scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
   builder.set_transport_security_persister_path(base_path);
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
+#if defined(OS_ANDROID)
+  // On Android, we store the cache on disk becase we can run only a single
+  // instance of the shell at a time.
+  cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::DISK;
   cache_params.path = base_path.Append(FILE_PATH_LITERAL("Cache"));
-  // TODO(esprehn): For now store the cache in memory so we can run many shells
+#else
+  // On desktop, we store the cache in memory so we can run many shells
   // in parallel when running tests, otherwise the network services in each
   // shell will corrupt the disk cache.
   cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
+#endif
+
   builder.EnableHttpCache(cache_params);
-
   builder.set_file_enabled(true);
-
   return make_scoped_ptr(builder.Build());
 }
 
