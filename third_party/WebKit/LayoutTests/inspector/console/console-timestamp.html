@@ -25,8 +25,7 @@ function test()
             undefined, // requestId
             undefined, // parameters
             undefined, // stackTrace
-            timestamp || baseTimestamp + 123, // timestamp: 2014-05-13T16:53:20.123Z
-            false); // isOutdated
+            timestamp || baseTimestamp + 123); // timestamp: 2014-05-13T16:53:20.123Z
         InspectorTest.consoleModel.addMessage(message, true); // allowGrouping
     }
 
