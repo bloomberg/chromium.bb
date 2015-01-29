@@ -39824,6 +39824,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time spent in V8 compiler (full codegen).</summary>
 </histogram>
 
+<histogram name="V8.CompileCacheableMicroseconds" units="microseconds">
+  <owner>yangguo@chromium.org</owner>
+  <summary>
+    Time spent compiling a script that may be subject to caching.
+  </summary>
+</histogram>
+
 <histogram name="V8.CompileDeserialize" units="milliseconds">
   <obsolete>
     This histogram has been replaced by V8.CompileDeserializeMicroSeconds.
@@ -39871,7 +39878,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="V8.CompileMicroSeconds" units="microseconds">
   <owner>jochen@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
-  <summary>Time spent in V8 compiler (full codegen).</summary>
+  <summary>Time spent in V8 compiler (full codegen) excluding parser.</summary>
+</histogram>
+
+<histogram name="V8.CompileNoncacheableMicroSeconds" units="microseconds">
+  <owner>yangguo@chromium.org</owner>
+  <summary>
+    Time spent compiling a script that cannot be subject to caching.
+  </summary>
 </histogram>
 
 <histogram name="V8.CompileScript" units="milliseconds">
