@@ -103,7 +103,7 @@ if test x$enable_xwayland = xyes; then
               [XSERVER_PATH="$bindir/Xwayland"])
   AC_SUBST([XSERVER_PATH])
   if test x$enable_xwayland_test = xyes; then
-    PKG_CHECK_MODULES([XWAYLAND_TEST], xcb xcb-dri2 libdrm)
+    PKG_CHECK_MODULES([XWAYLAND_TEST], x11)
   fi
 fi
 
