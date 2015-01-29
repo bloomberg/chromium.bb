@@ -13,18 +13,23 @@
 
 namespace blink {
 
-BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const FilterOperations* filterOperations, const LayoutRect& bounds)
+BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
     : DisplayItem(client, type)
     , m_imageFilter(imageFilter)
     , m_bounds(bounds)
 {
-    if (filterOperations) {
-        SkiaImageFilterBuilder builder;
-        m_webFilterOperations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
-        FilterOutsets outsets = filterOperations->outsets();
-        builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
-        builder.buildFilterOperations(*filterOperations, m_webFilterOperations.get());
-    }
+}
+
+BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds, const FilterOperations& filterOperations)
+    : DisplayItem(client, type)
+    , m_imageFilter(imageFilter)
+    , m_bounds(bounds)
+{
+    SkiaImageFilterBuilder builder;
+    m_webFilterOperations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
+    FilterOutsets outsets = filterOperations.outsets();
+    builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
+    builder.buildFilterOperations(filterOperations, m_webFilterOperations.get());
 }
 
 void BeginFilterDisplayItem::replay(GraphicsContext* context)
