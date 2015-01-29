@@ -1,0 +1,17 @@
+Tests that slow-path flings convert to the scaled coordinate space correctly. To test manually, pinch zoom into the page and perform a touchpad fling. If the mouse passes over the div it should cause it to scroll. If it doesn't pass over the div it shouldn't scroll.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Mouse was over container, it should have scrolled back to 0
+PASS container.scrollTop is 0
+Mouse wasn't over container, it shouldn't have scrolled from 0
+PASS container.scrollTop is 0
+Mouse was over container, it should have scrolled back to 0
+PASS container.scrollLeft is 0
+Mouse wasn't over container, it shouldn't have scrolled from 0
+PASS container.scrollLeft is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

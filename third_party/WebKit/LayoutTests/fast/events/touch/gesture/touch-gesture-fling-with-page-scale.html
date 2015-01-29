@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<script src="../../../../resources/js-test.js"></script>
+<script>
+  if (window.testRunner && window.eventSender) {
+    window.jsTestIsAsync = true;
+    testRunner.waitUntilDone();
+  }
+
+  var direction;
+  var shouldScrollContainer;
+  var scale = 2;
+  var pinchViewportContentX = 300;
+  var pinchViewportContentY = 200;
+  var container;
+  var containerMidX;
+  var containerMidY;
+  var containerPinchCoordsX;
+  var containerPinchCoordsY;
+
+  window.onload = function() {
+    container = document.getElementById('container');
+    containerMidX = container.offsetLeft + container.offsetWidth/2;
+    containerMidY = container.offsetTop + container.offsetHeight/2;
+    containerPinchCoordsX = (containerMidX - pinchViewportContentX)*scale;
+    containerPinchCoordsY = (containerMidY - pinchViewportContentY)*scale;
+
+    container.scrollTop = container.scrollHeight;
+    container.scrollLeft = container.scrollWidth;
+
+    if (window.testRunner && window.eventSender) {
+      eventSender.setPageScaleFactorLimits(1, 4.0);
+      runTest();
+    }
+
+    description('Tests that slow-path flings convert to the scaled coordinate '
+              + 'space correctly. To test manually, pinch zoom into the page '
+              + 'and perform a touchpad fling. If the mouse passes over the '
+              + 'div it should cause it to scroll. If it doesn\'t pass over '
+              + 'the div it shouldn\'t scroll.');
+  }
+
+  var resetViewport = function() {
+    eventSender.setPageScaleFactor(scale, 0, 0);
+
+    // Position the pinch viewport.
+    eventSender.gestureScrollBegin(0, 0);
+
+    // Start from pinch viewport offset (0, 0).
+    eventSender.gestureScrollUpdate(10000, 10000);
+    eventSender.gestureScrollUpdate(-pinchViewportContentX*scale,
+                                    -pinchViewportContentY*scale);
+    eventSender.gestureScrollEnd(0, 0);
+  }
+
+  var verticalFlingOverContainer = function() {
+    direction = 'VERTICAL';
+    shouldScrollContainer = true;
+    eventSender.gestureFlingCancel();
+    resetViewport();
+    eventSender.gestureFlingStart(
+      containerPinchCoordsX,
+      containerPinchCoordsY + container.offsetHeight*scale,
+      0,
+      10000);
+  }
+
+  var horizontalFlingOverContainer = function() {
+    direction = 'HORIZONTAL';
+    shouldScrollContainer = true;
+    eventSender.gestureFlingCancel();
+    resetViewport();
+    eventSender.gestureFlingStart(
+      containerPinchCoordsX + container.offsetWidth*scale,
+      containerPinchCoordsY,
+      10000,
+      0);
+  }
+
+  var verticalFlingNotOverContainer = function() {
+    direction = 'VERTICAL';
+    shouldScrollContainer = false;
+    eventSender.gestureFlingCancel();
+    resetViewport();
+    eventSender.gestureFlingStart(
+      containerPinchCoordsX + container.offsetWidth*scale,
+      0,
+      0,
+      -10000);
+  }
+
+  var horizontalFlingNotOverContainer = function() {
+    direction = 'HORIZONTAL';
+    shouldScrollContainer = false;
+    eventSender.gestureFlingCancel();
+    resetViewport();
+    eventSender.gestureFlingStart(
+      0,
+      containerPinchCoordsY + container.offsetHeight*scale,
+      -10000,
+      0);
+  }
+
+  var scrollHandler = function() {
+    if (direction === 'VERTICAL') {
+      if (shouldScrollContainer) {
+        if (window.scrollY == 0) {
+          debug("Mouse was over container, it should have scrolled back to 0");
+          shouldBe('container.scrollTop', '0');
+          requestAnimationFrame(verticalFlingNotOverContainer);
+        }
+      } else {
+        if (window.scrollY == document.body.scrollHeight - window.innerHeight) {
+          debug("Mouse wasn't over container, it shouldn't have scrolled from 0");
+          shouldBe('container.scrollTop', '0');
+          requestAnimationFrame(horizontalFlingOverContainer);
+        }
+      }
+    } else if (direction === 'HORIZONTAL') {
+      if (shouldScrollContainer) {
+        if (window.scrollX == 0) {
+          debug("Mouse was over container, it should have scrolled back to 0");
+          shouldBe('container.scrollLeft', '0');
+          requestAnimationFrame(horizontalFlingNotOverContainer);
+        }
+      } else {
+        if (window.scrollX == document.body.scrollWidth - window.innerWidth) {
+          debug("Mouse wasn't over container, it shouldn't have scrolled from 0");
+          shouldBe('container.scrollLeft', '0');
+          finishJSTest();
+        }
+      }
+    } else {
+      debug('ERROR: Bad Direction');
+      finishJSTest();
+    }
+  }
+
+  var runTest = function() {
+    window.addEventListener("scroll", scrollHandler);
+    verticalFlingOverContainer();
+  }
+</script>
+
+<style>
+  .container {
+    position: absolute;
+    left: 350px;
+    top: 250px;
+    width: 100px;
+    height: 100px;
+    overflow: scroll;
+  }
+  .redbox {
+    width: 50px;
+    height: 50px;
+    background-color: red;
+  }
+  .greenbox {
+    width: 50px;
+    height: 50px;
+    background-color: green;
+  }
+</style>
+
+<div class="container" id="container">
+  <div style="overflow: hidden; width: 500px; height:50px;">
+    <div style="float: left" class="redbox"></div>
+    <div style="float: left" class="greenbox"></div>
+    <div style="float: left" class="redbox"></div>
+    <div style="float: left" class="greenbox"></div>
+    <div style="float: left" class="redbox"></div>
+    <div style="float: left" class="greenbox"></div>
+    <div style="float: left" class="redbox"></div>
+    <div style="float: left" class="greenbox"></div>
+    <div style="float: left" class="redbox"></div>
+    <div style="float: left" class="greenbox"></div>
+  </div>
+  <div class="greenbox"></div>
+  <div class="redbox"></div>
+  <div class="greenbox"></div>
+  <div class="redbox"></div>
+  <div class="greenbox"></div>
+  <div class="redbox"></div>
+  <div class="greenbox"></div>
+  <div class="redbox"></div>
+  <div class="greenbox"></div>
+  <div class="redbox"></div>
+  <div class="greenbox"></div>
+  <div class="redbox"></div>
+  <div class="greenbox"></div>
+</div>
