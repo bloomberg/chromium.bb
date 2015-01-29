@@ -631,10 +631,10 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
 
     CGFloat intersectionWidth =
         NSWidth(NSIntersectionRect([containerView_ bounds], buttonFrame));
-    // Pad the threshold by 5 pixels in order to have the buttons hide more
-    // easily.
+    // Hide the button if it's not "mostly" visible. "Mostly" here equates to
+    // having three or fewer pixels hidden.
     if (([containerView_ grippyPinned] && intersectionWidth > 0) ||
-        (intersectionWidth <= (NSWidth(buttonFrame) / 2) + 5.0)) {
+        (intersectionWidth <= NSWidth(buttonFrame) - 3.0)) {
       [button setAlphaValue:0.0];
       [button removeFromSuperview];
     }
