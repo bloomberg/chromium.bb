@@ -239,7 +239,22 @@ public:
     InspectorBackendDispatcherImpl(InspectorFrontendChannel* inspectorFrontendChannel)
         : m_inspectorFrontendChannel(inspectorFrontendChannel)
 $constructorInit
-    { }
+    {
+        // Initialize dispatch map.
+        const CallHandler handlers[] = {
+  $messageHandlers
+        };
+        for (size_t i = 0; i < kMethodNamesEnumSize; ++i)
+            m_dispatchMap.add(commandName(static_cast<MethodNames>(i)), handlers[i]);
+
+        // Initialize common errors.
+        m_commonErrors.insert(ParseError, -32700);
+        m_commonErrors.insert(InvalidRequest, -32600);
+        m_commonErrors.insert(MethodNotFound, -32601);
+        m_commonErrors.insert(InvalidParams, -32602);
+        m_commonErrors.insert(InternalError, -32603);
+        m_commonErrors.insert(ServerError, -32000);
+    }
 
     virtual void clearFrontend() { m_inspectorFrontendChannel = 0; }
     virtual void dispatch(const String& message);
@@ -251,6 +266,9 @@ $constructorInit
 
 $setters
 private:
+    using CallHandler = void (InspectorBackendDispatcherImpl::*)(int callId, JSONObject* messageObject, JSONArray* protocolErrors);
+    using DispatchMap = HashMap<String, CallHandler>;
+
 $methodDeclarations
 
     InspectorFrontendChannel* m_inspectorFrontendChannel;
@@ -275,6 +293,9 @@ $fieldDeclarations
         sendResponse(callId, invocationError, RefPtr<JSONValue>(), JSONObject::create());
     }
     static const char InvalidParamsFormatString[];
+
+    DispatchMap m_dispatchMap;
+    Vector<int> m_commonErrors;
 };
 
 const char InspectorBackendDispatcherImpl::InvalidParamsFormatString[] = "Some arguments of method '%s' can't be processed";
@@ -290,19 +311,7 @@ PassRefPtrWillBeRawPtr<InspectorBackendDispatcher> InspectorBackendDispatcher::c
 void InspectorBackendDispatcherImpl::dispatch(const String& message)
 {
     RefPtrWillBeRawPtr<InspectorBackendDispatcher> protect(this);
-    typedef void (InspectorBackendDispatcherImpl::*CallHandler)(int callId, JSONObject* messageObject, JSONArray* protocolErrors);
-    typedef HashMap<String, CallHandler> DispatchMap;
-    DEFINE_STATIC_LOCAL(DispatchMap, dispatchMap, );
     int callId = 0;
-
-    if (dispatchMap.isEmpty()) {
-        static const CallHandler handlers[] = {
-$messageHandlers
-        };
-        for (size_t i = 0; i < kMethodNamesEnumSize; ++i)
-            dispatchMap.add(commandName(static_cast<MethodNames>(i)), handlers[i]);
-    }
-
     RefPtr<JSONValue> parsedMessage = parseJSON(message);
     ASSERT(parsedMessage);
     RefPtr<JSONObject> messageObject = parsedMessage->asObject();
@@ -317,8 +326,8 @@ $messageHandlers
     success = methodValue && methodValue->asString(&method);
     ASSERT_UNUSED(success, success);
 
-    HashMap<String, CallHandler>::iterator it = dispatchMap.find(method);
-    if (it == dispatchMap.end()) {
+    HashMap<String, CallHandler>::iterator it = m_dispatchMap.find(method);
+    if (it == m_dispatchMap.end()) {
         reportProtocolError(callId, MethodNotFound, "'" + method + "' wasn't found");
         return;
     }
@@ -348,20 +357,11 @@ void InspectorBackendDispatcher::reportProtocolError(int callId, CommonErrorCode
 
 void InspectorBackendDispatcherImpl::reportProtocolError(int callId, CommonErrorCode code, const String& errorMessage, PassRefPtr<JSONValue> data) const
 {
-    DEFINE_STATIC_LOCAL(Vector<int>,s_commonErrors,);
-    if (!s_commonErrors.size()) {
-        s_commonErrors.insert(ParseError, -32700);
-        s_commonErrors.insert(InvalidRequest, -32600);
-        s_commonErrors.insert(MethodNotFound, -32601);
-        s_commonErrors.insert(InvalidParams, -32602);
-        s_commonErrors.insert(InternalError, -32603);
-        s_commonErrors.insert(ServerError, -32000);
-    }
     ASSERT(code >=0);
-    ASSERT((unsigned)code < s_commonErrors.size());
-    ASSERT(s_commonErrors[code]);
+    ASSERT((unsigned)code < m_commonErrors.size());
+    ASSERT(m_commonErrors[code]);
     RefPtr<JSONObject> error = JSONObject::create();
-    error->setNumber("code", s_commonErrors[code]);
+    error->setNumber("code", m_commonErrors[code]);
     error->setString("message", errorMessage);
     ASSERT(error);
     if (data)
