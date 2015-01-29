@@ -374,11 +374,28 @@ function executeTest(test_target) {
       });
 }
 
-function executeTests(test_targets) {
+function executePromiseTest(test_target, name) {
   var promise = Promise.resolve();
-  for (var i = 0; i < test_targets.length; ++i) {
-    promise = promise.then(executeTest.bind(undefined, test_targets[i]));
-  }
-  promise_test(function(test){return promise;},
-               'fetch-access-control-util:executeTests');
+  // Report the result.
+  promise_test(function(t) {
+      promise = executeTest(test_target);
+      return promise;
+    }, name);
+  return promise;
+}
+
+function executeTests(test_targets) {
+  async_test(function(t) {
+      var promise = Promise.resolve();
+      for (var i = 0; i < test_targets.length; ++i) {
+        promise = promise.then(function(counter) {
+            return executePromiseTest(test_targets[counter],
+                                      "executeTest-" + counter);
+          }.bind(this, i)).catch(function(e) {
+            // The error was already reported. Continue to the next test.
+          });
+      }
+      promise.then(function() {t.done();});
+    },
+    'executeTests');
 }
