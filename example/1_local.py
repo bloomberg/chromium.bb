@@ -60,7 +60,7 @@ def main():
           'run_isolated.py',
           '--cache', cachedir,
           '--indir', hashtabledir,
-          '--hash', isolated_sha1,
+          '--isolated', isolated_sha1,
           # TODO(maruel): Should not require this.
           '--namespace', 'default',
           '--no-log',

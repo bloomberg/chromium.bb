@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.6'
+__version__ = '0.6.1'
 
 import collections
 import json
@@ -105,7 +105,7 @@ def isolated_get_run_commands(
   """
   run_cmd = [
     'python', 'run_isolated.zip',
-    '--hash', isolated_hash,
+    '--isolated', isolated_hash,
     '--isolate-server', isolate_server,
     '--namespace', namespace,
   ]
@@ -158,31 +158,44 @@ def isolated_to_hash(isolate_server, namespace, arg, algo, verbose):
 
 
 def isolated_handle_options(options, args):
-  """Handles isolated arguments.
+  """Handles '--isolated <isolated>', '<isolated>' and '-- <args...>' arguments.
 
   Returns:
     tuple(command, data).
   """
   isolated_cmd_args = []
-  if '--' in args:
-    index = args.index('--')
-    isolated_cmd_args = args[index+1:]
-    args = args[:index]
-  else:
-    # optparse eats '--' sometimes.
-    isolated_cmd_args = args[1:]
-    args = args[:1]
-  if len(args) != 1:
-    raise ValueError('Must pass one .isolated file or its hash (sha1).')
-
-  isolated_hash, is_file = isolated_to_hash(
-      options.isolate_server, options.namespace, args[0],
-      isolated_format.get_hash_algo(options.namespace), options.verbose)
-  if not isolated_hash:
-    raise ValueError('Invalid argument %s' % args[0])
+  if not options.isolated:
+    if '--' in args:
+      index = args.index('--')
+      isolated_cmd_args = args[index+1:]
+      args = args[:index]
+    else:
+      # optparse eats '--' sometimes.
+      isolated_cmd_args = args[1:]
+      args = args[:1]
+    if len(args) != 1:
+      raise ValueError(
+          'Use --isolated, --raw-cmd or \'--\' to pass arguments to the called '
+          'process.')
+    # Old code. To be removed eventually.
+    options.isolated, is_file = isolated_to_hash(
+        options.isolate_server, options.namespace, args[0],
+        isolated_format.get_hash_algo(options.namespace), options.verbose)
+    if not options.isolated:
+      raise ValueError('Invalid argument %s' % args[0])
+  elif args:
+    is_file = False
+    if '--' in args:
+      index = args.index('--')
+      isolated_cmd_args = args[index+1:]
+      if index != 0:
+        raise ValueError('Unexpected arguments.')
+    else:
+      # optparse eats '--' sometimes.
+      isolated_cmd_args = args
 
   command = isolated_get_run_commands(
-      options.isolate_server, options.namespace, isolated_hash,
+      options.isolate_server, options.namespace, options.isolated,
       isolated_cmd_args, options.verbose)
 
   # If a file name was passed, use its base name of the isolated hash.
@@ -192,12 +205,12 @@ def isolated_handle_options(options, args):
       key = os.path.splitext(os.path.basename(args[0]))[0]
     else:
       key = options.user
-    options.task_name = '%s/%s/%s' % (
+    options.task_name = u'%s/%s/%s' % (
         key,
         '_'.join(
             '%s=%s' % (k, v)
             for k, v in sorted(options.dimensions.iteritems())),
-        isolated_hash)
+        options.isolated)
 
   try:
     data = isolated_get_data(options.isolate_server)
@@ -807,6 +820,9 @@ def add_trigger_options(parser):
 
   parser.task_group = tools.optparse.OptionGroup(parser, 'Task properties')
   parser.task_group.add_option(
+      '-s', '--isolated',
+      help='Hash of the .isolated to grab from the isolate server')
+  parser.task_group.add_option(
       '-e', '--env', default=[], action='append', nargs=2, metavar='FOO bar',
       help='Environment variables to set')
   parser.task_group.add_option(
@@ -868,7 +884,7 @@ def process_trigger_options(parser, options, args):
 
     command = args
     if not options.task_name:
-      options.task_name = '%s/%s' % (
+      options.task_name = u'%s/%s' % (
           options.user,
           '_'.join(
             '%s=%s' % (k, v)

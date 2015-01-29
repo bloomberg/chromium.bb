@@ -90,12 +90,9 @@ def gen_request_data(isolated_hash=FILE_HASH, properties=None, **kwargs):
         [
           'python',
           'run_isolated.zip',
-          '--hash',
-          isolated_hash,
-          '--isolate-server',
-          'https://localhost:2',
-          '--namespace',
-          'default-gzip',
+          '--isolated', isolated_hash,
+          '--isolate-server', 'https://localhost:2',
+          '--namespace', 'default-gzip',
           '--',
           '--some-arg',
           '123',
@@ -255,12 +252,9 @@ class TestIsolated(auto_stub.TestCase):
     expected = [
       'python',
       'run_isolated.zip',
-      '--hash',
-      '1111111111111111111111111111111111111111',
-      '--isolate-server',
-      'http://foo.invalid',
-      '--namespace',
-      'default',
+      '--isolated', '1111111111111111111111111111111111111111',
+      '--isolate-server', 'http://foo.invalid',
+      '--namespace', 'default',
       '--verbose',
       '--',
       'fo',
@@ -864,7 +858,6 @@ class TestMain(NetTestCase):
         '  https://localhost:1/user/task/12300\n',
         '')
 
-
   def test_run_isolated_hash(self):
     # pylint: disable=unused-argument
     def isolated_upload_zip_bundle(isolate_server, bundle):
@@ -903,7 +896,7 @@ class TestMain(NetTestCase):
         '--hard-timeout', '60',
         '--io-timeout', '60',
         '--task-name', 'unit_tests',
-        FILE_HASH,
+        '--isolated', FILE_HASH,
         '--',
         '--some-arg',
         '123',
@@ -1024,10 +1017,10 @@ class TestMain(NetTestCase):
     self._check_output(
         '',
         'Usage: swarming.py trigger [options] (hash|isolated) '
-          '[-- extra_args|raw command]'
-        '\n\n'
-        'swarming.py: error: Must pass one .isolated file or its hash (sha1).'
-        '\n')
+          '[-- extra_args|raw command]\n'
+        '\n'
+        'swarming.py: error: Use --isolated, --raw-cmd or \'--\' to pass '
+          'arguments to the called process.\n')
 
   def test_trigger_no_env_vars(self):
     with self.assertRaises(SystemExit):

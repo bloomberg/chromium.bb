@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.4'
+__version__ = '0.4.1'
 
 import logging
 import optparse
@@ -251,8 +251,8 @@ def main(args):
 
   data_group = optparse.OptionGroup(parser, 'Data source')
   data_group.add_option(
-      '-H', '--hash',
-      help='Hash of the .isolated to grab from the hash table')
+      '-s', '--isolated',
+      help='Hash of the .isolated to grab from the isolate server')
   isolateserver.add_isolate_server_options(data_group)
   parser.add_option_group(data_group)
 
@@ -269,8 +269,8 @@ def main(args):
 
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
-  if not options.hash:
-    parser.error('--hash is required.')
+  if not options.isolated:
+    parser.error('--isolated is required.')
   auth.process_auth_options(parser, options)
   isolateserver.process_isolate_server_options(parser, options, True)
 
@@ -280,7 +280,7 @@ def main(args):
     # Hashing schemes used by |storage| and |cache| MUST match.
     assert storage.hash_algo == cache.hash_algo
     return run_tha_test(
-        options.hash, storage, cache, options.leak_temp_dir, args)
+        options.isolated, storage, cache, options.leak_temp_dir, args)
 
 
 if __name__ == '__main__':

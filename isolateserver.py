@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 import functools
 import logging
@@ -2023,7 +2023,7 @@ def CMDdownload(parser, args):
   """
   add_isolate_server_options(parser)
   parser.add_option(
-      '-i', '--isolated', metavar='HASH',
+      '-s', '--isolated', metavar='HASH',
       help='hash of an isolated file, .isolated file content is discarded, use '
            '--file if you need it')
   parser.add_option(

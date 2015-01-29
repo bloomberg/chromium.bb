@@ -59,7 +59,7 @@ def main():
           'run_isolated.py',
           '--cache', cachedir,
           '--isolate-server', options.isolate_server,
-          '--hash', isolated_sha1,
+          '--isolated', isolated_sha1,
           '--no-log',
         ], options.verbose)
     return 0

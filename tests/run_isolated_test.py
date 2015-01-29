@@ -128,7 +128,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     cmd = [
         '--no-log',
-        '--hash', isolated_hash,
+        '--isolated', isolated_hash,
         '--cache', self.tempdir,
         '--isolate-server', 'https://localhost',
     ]
@@ -148,7 +148,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     cmd = [
         '--no-log',
-        '--hash', isolated_hash,
+        '--isolated', isolated_hash,
         '--cache', self.tempdir,
         '--isolate-server', 'https://localhost',
         '--',
@@ -265,7 +265,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     cmd = [
         '--no-log',
-        '--hash', isolated_hash,
+        '--isolated', isolated_hash,
         '--cache', self.tempdir,
         '--isolate-server', 'https://localhost',
     ]

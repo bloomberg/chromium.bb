@@ -56,7 +56,7 @@ def main():
         '--dimension', 'os', options.swarming_os,
         '--task-name', options.task_name,
         '--dump-json', json_file,
-        hashval,
+        '--isolated', hashval,
       ]
       if options.idempotent:
         cmd.append('--idempotent')

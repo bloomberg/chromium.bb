@@ -207,7 +207,7 @@ class RunIsolatedTest(unittest.TestCase):
     Returns a list of the required arguments.
     """
     return [
-      '--hash', hash_value,
+      '--isolated', hash_value,
       '--cache', self.cache,
       '--isolate-server', self.server.url,
       '--namespace', 'default',
