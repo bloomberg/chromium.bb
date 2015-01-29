@@ -93,7 +93,7 @@ TEST_F(BookmarkNodeDataTest, JustURL) {
   BookmarkNodeData drag_data;
   EXPECT_TRUE(drag_data.Read(ui::OSExchangeData(CloneProvider(data))));
   EXPECT_TRUE(drag_data.is_valid());
-  ASSERT_EQ(1u, drag_data.elements.size());
+  ASSERT_EQ(1u, drag_data.size());
   EXPECT_TRUE(drag_data.elements[0].is_url);
   EXPECT_EQ(url, drag_data.elements[0].url);
   EXPECT_EQ(title, drag_data.elements[0].title);
@@ -110,7 +110,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   const BookmarkNode* node = model()->AddURL(root, 0, title, url);
   BookmarkNodeData drag_data(node);
   EXPECT_TRUE(drag_data.is_valid());
-  ASSERT_EQ(1u, drag_data.elements.size());
+  ASSERT_EQ(1u, drag_data.size());
   EXPECT_TRUE(drag_data.elements[0].is_url);
   EXPECT_EQ(url, drag_data.elements[0].url);
   EXPECT_EQ(title, drag_data.elements[0].title);
@@ -125,7 +125,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
-  ASSERT_EQ(1u, read_data.elements.size());
+  ASSERT_EQ(1u, read_data.size());
   EXPECT_TRUE(read_data.elements[0].is_url);
   EXPECT_EQ(url, read_data.elements[0].url);
   EXPECT_EQ(title, read_data.elements[0].title);
@@ -157,7 +157,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
 
   BookmarkNodeData drag_data(g12);
   EXPECT_TRUE(drag_data.is_valid());
-  ASSERT_EQ(1u, drag_data.elements.size());
+  ASSERT_EQ(1u, drag_data.size());
   EXPECT_EQ(g12->GetTitle(), drag_data.elements[0].title);
   EXPECT_FALSE(drag_data.elements[0].is_url);
   EXPECT_EQ(g12->date_added(), drag_data.elements[0].date_added);
@@ -172,7 +172,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
-  ASSERT_EQ(1u, read_data.elements.size());
+  ASSERT_EQ(1u, read_data.size());
   EXPECT_EQ(g12->GetTitle(), read_data.elements[0].title);
   EXPECT_FALSE(read_data.elements[0].is_url);
   EXPECT_TRUE(read_data.elements[0].date_added.is_null());
@@ -208,7 +208,7 @@ TEST_F(BookmarkNodeDataTest, FolderWithChild) {
   ui::OSExchangeData data2(CloneProvider(data));
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
-  ASSERT_EQ(1u, read_data.elements.size());
+  ASSERT_EQ(1u, read_data.size());
   ASSERT_EQ(1u, read_data.elements[0].children.size());
   const BookmarkNodeData::Element& read_child =
       read_data.elements[0].children[0];
@@ -249,7 +249,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
-  ASSERT_EQ(2u, read_data.elements.size());
+  ASSERT_EQ(2u, read_data.size());
   ASSERT_EQ(1u, read_data.elements[0].children.size());
   EXPECT_TRUE(read_data.elements[0].date_added.is_null());
   EXPECT_TRUE(read_data.elements[0].date_folder_modified.is_null());
@@ -394,7 +394,7 @@ TEST_F(BookmarkNodeDataTest, MetaInfo) {
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
-  ASSERT_EQ(1u, read_data.elements.size());
+  ASSERT_EQ(1u, read_data.size());
 
   // Verify that the read data contains the same meta info.
   BookmarkNode::MetaInfoMap meta_info_map = read_data.elements[0].meta_info_map;

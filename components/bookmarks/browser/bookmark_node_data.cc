@@ -160,7 +160,7 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
 
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
-  if (elements.size() == 1 && elements[0].is_url) {
+  if (has_single_url()) {
     const base::string16& title = elements[0].title;
     const std::string url = elements[0].url.spec();
 
@@ -180,7 +180,7 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
     // We have either more than one URL, a folder, or a combination of URLs
     // and folders.
     base::string16 text;
-    for (size_t i = 0; i < elements.size(); i++) {
+    for (size_t i = 0; i < size(); i++) {
       text += i == 0 ? base::ASCIIToUTF16("") : base::ASCIIToUTF16("\n");
       if (!elements[i].is_url) {
         // Then it's a folder. Only copy the name of the folder.
@@ -234,9 +234,9 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
 void BookmarkNodeData::WriteToPickle(const base::FilePath& profile_path,
                                      Pickle* pickle) const {
   profile_path.WriteToPickle(pickle);
-  pickle->WriteSizeT(elements.size());
+  pickle->WriteSizeT(size());
 
-  for (size_t i = 0; i < elements.size(); ++i)
+  for (size_t i = 0; i < size(); ++i)
     elements[i].WriteToPickle(pickle);
 }
 
@@ -266,7 +266,7 @@ std::vector<const BookmarkNode*> BookmarkNodeData::GetNodes(
   if (!IsFromProfilePath(profile_path))
     return nodes;
 
-  for (size_t i = 0; i < elements.size(); ++i) {
+  for (size_t i = 0; i < size(); ++i) {
     const BookmarkNode* node = GetBookmarkNodeByID(model, elements[i].id_);
     if (!node) {
       nodes.clear();

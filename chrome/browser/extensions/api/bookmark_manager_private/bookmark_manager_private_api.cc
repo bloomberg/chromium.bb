@@ -163,9 +163,8 @@ CreateApiBookmarkNodeData(Profile* profile, const BookmarkNodeData& data) {
     }
   } else {
     // We do not have a node IDs when the data comes from a different profile.
-    std::vector<BookmarkNodeData::Element> elements = data.elements;
-    for (size_t i = 0; i < elements.size(); ++i)
-      node_data->elements.push_back(CreateApiNodeDataElement(elements[i]));
+    for (size_t i = 0; i < data.size(); ++i)
+      node_data->elements.push_back(CreateApiNodeDataElement(data.elements[i]));
   }
   return node_data.Pass();
 }
@@ -310,7 +309,7 @@ void BookmarkManagerPrivateDragEventRouter::DispatchEvent(
 
 void BookmarkManagerPrivateDragEventRouter::OnDragEnter(
     const BookmarkNodeData& data) {
-  if (data.size() == 0)
+  if (!data.is_valid())
     return;
   DispatchEvent(bookmark_manager_private::OnDragEnter::kEventName,
                 bookmark_manager_private::OnDragEnter::Create(
@@ -325,7 +324,7 @@ void BookmarkManagerPrivateDragEventRouter::OnDragOver(
 
 void BookmarkManagerPrivateDragEventRouter::OnDragLeave(
     const BookmarkNodeData& data) {
-  if (data.size() == 0)
+  if (!data.is_valid())
     return;
   DispatchEvent(bookmark_manager_private::OnDragLeave::kEventName,
                 bookmark_manager_private::OnDragLeave::Create(
@@ -334,7 +333,7 @@ void BookmarkManagerPrivateDragEventRouter::OnDragLeave(
 
 void BookmarkManagerPrivateDragEventRouter::OnDrop(
     const BookmarkNodeData& data) {
-  if (data.size() == 0)
+  if (!data.is_valid())
     return;
   DispatchEvent(bookmark_manager_private::OnDrop::kEventName,
                 bookmark_manager_private::OnDrop::Create(

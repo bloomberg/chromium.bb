@@ -258,7 +258,7 @@ void PasteFromClipboard(BookmarkModel* model,
     index = parent->child_count();
   ScopedGroupBookmarkActions group_paste(model);
 
-  if (bookmark_data.elements.size() == 1 &&
+  if (bookmark_data.size() == 1 &&
       model->IsBookmarked(bookmark_data.elements[0].url)) {
     MakeTitleUnique(model,
                     parent,

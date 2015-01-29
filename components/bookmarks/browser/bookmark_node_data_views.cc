@@ -34,7 +34,7 @@ void BookmarkNodeData::Write(const base::FilePath& profile_path,
 
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
-  if (elements.size() == 1 && elements[0].is_url) {
+  if (has_single_url()) {
     if (elements[0].url.SchemeIs(kJavaScriptScheme)) {
       data->SetString(base::UTF8ToUTF16(elements[0].url.spec()));
     } else {

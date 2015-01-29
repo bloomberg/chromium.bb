@@ -150,7 +150,7 @@ struct BookmarkNodeData {
   bool is_valid() const { return !elements.empty(); }
 
   // Returns true if there is a single url.
-  bool has_single_url() const { return is_valid() && elements[0].is_url; }
+  bool has_single_url() const { return size() == 1 && elements[0].is_url; }
 
   // Number of elements.
   size_t size() const { return elements.size(); }

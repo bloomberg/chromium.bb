@@ -182,7 +182,7 @@ bool BookmarkMenuDelegate::CanDrop(MenuItemView* menu,
   // Only accept drops of 1 node, which is the case for all data dragged from
   // bookmark bar and menus.
 
-  if (!drop_data_.Read(data) || drop_data_.elements.size() != 1 ||
+  if (!drop_data_.Read(data) || drop_data_.size() != 1 ||
       !profile_->GetPrefs()->GetBoolean(
           bookmarks::prefs::kEditBookmarksEnabled))
     return false;
