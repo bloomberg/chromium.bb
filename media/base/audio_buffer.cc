@@ -51,7 +51,8 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
     return;
 
   if (sample_format == kSampleFormatPlanarF32 ||
-      sample_format == kSampleFormatPlanarS16) {
+      sample_format == kSampleFormatPlanarS16 ||
+      sample_format == kSampleFormatPlanarS32) {
     // Planar data, so need to allocate buffer for each channel.
     // Determine per channel data size, taking into account alignment.
     int block_size_per_channel =
@@ -254,6 +255,12 @@ static inline int32 ConvertF32ToS32(float value) {
                                 : value * std::numeric_limits<int32>::max());
 }
 
+// No need for conversion. Return value as is. Keeping function to align with
+// code structure.
+static inline int32 ConvertS32ToS32(int32 value) {
+  return value;
+}
+
 template <class Target, typename Converter>
 void InterleaveToS32(const std::vector<uint8*>& channel_data,
                      size_t frames_to_copy,
@@ -322,6 +329,14 @@ void AudioBuffer::ReadFramesInterleavedS32(int frames_to_copy,
                              dest_data,
                              ConvertF32ToS32);
       break;
+    case kSampleFormatPlanarS32:
+      // Format is planar signed 32 bit. Convert each value into int32 and
+      // insert into output channel data.
+      InterleaveToS32<int32>(channel_data_,
+                             frames_to_copy,
+                             trim_start_,
+                             dest_data,
+                             ConvertS32ToS32);
     case kUnknownSampleFormat:
       NOTREACHED();
       break;
@@ -365,6 +380,7 @@ void AudioBuffer::TrimRange(int start, int end) {
     switch (sample_format_) {
       case kSampleFormatPlanarS16:
       case kSampleFormatPlanarF32:
+      case kSampleFormatPlanarS32:
         // Planar data must be shifted per channel.
         for (int ch = 0; ch < channel_count_; ++ch) {
           memmove(channel_data_[ch] + (trim_start_ + start) * bytes_per_channel,

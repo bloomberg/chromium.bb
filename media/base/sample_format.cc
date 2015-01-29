@@ -20,6 +20,7 @@ int SampleFormatToBytesPerChannel(SampleFormat sample_format) {
     case kSampleFormatS32:
     case kSampleFormatF32:
     case kSampleFormatPlanarF32:
+    case kSampleFormatPlanarS32:
       return 4;
   }
 
@@ -43,6 +44,8 @@ const char* SampleFormatToString(SampleFormat sample_format) {
       return "Signed 16-bit planar";
     case kSampleFormatPlanarF32:
       return "Float 32-bit planar";
+    case kSampleFormatPlanarS32:
+      return "Signed 32-bit planar";
   }
   NOTREACHED() << "Invalid sample format provided: " << sample_format;
   return "";

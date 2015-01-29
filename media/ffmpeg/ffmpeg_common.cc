@@ -92,6 +92,8 @@ static AudioCodec CodecIDToAudioCodec(AVCodecID codec_id) {
       return kCodecPCM_MULAW;
     case AV_CODEC_ID_OPUS:
       return kCodecOpus;
+    case AV_CODEC_ID_ALAC:
+      return kCodecALAC;
     default:
       DVLOG(1) << "Unknown audio CodecID: " << codec_id;
   }
@@ -103,6 +105,8 @@ static AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
   switch (audio_codec) {
     case kCodecAAC:
       return AV_CODEC_ID_AAC;
+    case kCodecALAC:
+      return AV_CODEC_ID_ALAC;
     case kCodecMP3:
       return AV_CODEC_ID_MP3;
     case kCodecPCM:
@@ -242,6 +246,8 @@ SampleFormat AVSampleFormatToSampleFormat(AVSampleFormat sample_format) {
       return kSampleFormatF32;
     case AV_SAMPLE_FMT_S16P:
       return kSampleFormatPlanarS16;
+    case  AV_SAMPLE_FMT_S32P:
+      return kSampleFormatPlanarS32;
     case AV_SAMPLE_FMT_FLTP:
       return kSampleFormatPlanarF32;
     default:

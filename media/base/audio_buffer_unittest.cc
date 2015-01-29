@@ -488,6 +488,16 @@ static scoped_refptr<AudioBuffer> MakeReadFramesInterleavedTestBuffer(
           65536.0f / std::numeric_limits<int32>::max(),
           frames,
           base::TimeDelta::FromSeconds(0));
+    case kSampleFormatPlanarS32:
+      return MakeAudioBuffer<int32>(
+          sample_format,
+          channel_layout,
+          channel_count,
+          sample_rate,
+          0.0f,
+          65536.0f / std::numeric_limits<int32>::max(),
+          frames,
+          base::TimeDelta::FromSeconds(0));
     case kSampleFormatU8:
     case kUnknownSampleFormat:
       EXPECT_FALSE(true);

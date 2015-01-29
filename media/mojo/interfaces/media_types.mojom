@@ -31,7 +31,8 @@ enum AudioCodec {
   Opus = 12,
   // EAC3 = 13,
   PCM_ALAW = 14,
-  MAX = PCM_ALAW,
+  ALAC = 15,
+  MAX = ALAC,
 };
 
 // See media/base/channel_layout.h for descriptions.
@@ -84,7 +85,8 @@ enum SampleFormat {
   F32,
   PlanarS16,
   PlanarF32,
-  Max = PlanarF32,
+  PlanarS32,
+  Max = PlanarS32,
 };
 
 // See media/base/video_frame.h for descriptions.

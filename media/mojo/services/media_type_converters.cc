@@ -47,6 +47,7 @@ ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, PCM_S16BE);
 ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, PCM_S24BE);
 ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, Opus);
 ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, PCM_ALAW);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, ALAC);
 ASSERT_ENUM_EQ_RAW(AudioCodec, kAudioCodecMax, AUDIO_CODEC_MAX);
 
 // ChannelLayout.

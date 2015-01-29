@@ -150,6 +150,8 @@ std::string AudioDecoderConfig::GetHumanReadableCodecName() const {
       return "pcm_mulaw";
     case kCodecOpus:
       return "opus";
+    case kCodecALAC:
+      return "alac";
   }
   NOTREACHED();
   return "";
