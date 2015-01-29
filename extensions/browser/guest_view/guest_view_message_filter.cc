@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/extension_message_filter.h"
+#include "extensions/browser/guest_view/guest_view_message_filter.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/browser/guest_view/guest_view_message_filter.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/extension_messages.h"
