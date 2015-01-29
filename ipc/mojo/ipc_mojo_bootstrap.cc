@@ -100,14 +100,9 @@ void MojoServerBootstrap::OnChannelConnected(int32 peer_pid) {
 }
 
 bool MojoServerBootstrap::OnMessageReceived(const Message&) {
-  if (state() != STATE_WAITING_ACK) {
-    set_state(STATE_ERROR);
-    LOG(ERROR) << "Got inconsistent message from client.";
-    return false;
-  }
-
+  DCHECK_EQ(state(), STATE_WAITING_ACK);
   set_state(STATE_READY);
-  CHECK(server_pipe_.is_valid());
+
   delegate()->OnPipeAvailable(
       mojo::embedder::ScopedPlatformHandle(server_pipe_.release()));
 
@@ -134,12 +129,6 @@ MojoClientBootstrap::MojoClientBootstrap() {
 }
 
 bool MojoClientBootstrap::OnMessageReceived(const Message& message) {
-  if (state() != STATE_INITIALIZED) {
-    set_state(STATE_ERROR);
-    LOG(ERROR) << "Got inconsistent message from server.";
-    return false;
-  }
-
   PlatformFileForTransit pipe;
   PickleIterator iter(message);
   if (!ParamTraits<PlatformFileForTransit>::Read(&message, &iter, &pipe)) {
