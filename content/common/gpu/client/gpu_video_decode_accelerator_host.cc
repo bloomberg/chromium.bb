@@ -233,11 +233,13 @@ void GpuVideoDecodeAcceleratorHost::OnDismissPictureBuffer(
 void GpuVideoDecodeAcceleratorHost::OnPictureReady(
     int32 picture_buffer_id,
     int32 bitstream_buffer_id,
-    const gfx::Rect& visible_rect) {
+    const gfx::Rect& visible_rect,
+    bool allow_overlay) {
   DCHECK(CalledOnValidThread());
   if (!client_)
     return;
-  media::Picture picture(picture_buffer_id, bitstream_buffer_id, visible_rect);
+  media::Picture picture(picture_buffer_id, bitstream_buffer_id, visible_rect,
+                         allow_overlay);
   client_->PictureReady(picture);
 }
 

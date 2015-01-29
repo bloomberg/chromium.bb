@@ -188,7 +188,7 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   // (crbug.com/402760).
   if (client_)
     client_->PictureReady(
-        media::Picture(output_id, input_id, gfx::Rect(picture->size())));
+        media::Picture(output_id, input_id, gfx::Rect(picture->size()), false));
 }
 
 void VaapiVideoDecodeAccelerator::TryOutputSurface() {
