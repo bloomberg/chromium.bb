@@ -1505,8 +1505,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   chrome_variations::VariationsService* variations_service =
       browser_process_->variations_service();
   if (variations_service) {
+    // Just initialize the policy prefs service here. Variations seed fetching
+    // will be initialized when the app enters foreground mode.
     variations_service->set_policy_pref_service(profile_->GetPrefs());
-    variations_service->StartRepeatedVariationsSeedFetch();
   }
   translate::TranslateDownloadManager::RequestLanguageList(
       profile_->GetPrefs());

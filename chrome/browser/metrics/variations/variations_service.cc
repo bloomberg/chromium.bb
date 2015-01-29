@@ -351,12 +351,11 @@ void VariationsService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-// TODO(rkaplow): Handle this and the similar event in metrics_service by
-// observing an 'OnAppEnterForeground' event in RequestScheduler instead of
-// requiring the frontend code to notify each service individually. Since the
-// scheduler will handle it directly the VariationService shouldn't need to
-// know details of this anymore.
 void VariationsService::OnAppEnterForeground() {
+  // On mobile platforms, initialize the fetch scheduler when we receive the
+  // first app foreground notification.
+  if (!request_scheduler_)
+    StartRepeatedVariationsSeedFetch();
   request_scheduler_->OnAppEnterForeground();
 }
 
