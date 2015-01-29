@@ -229,6 +229,10 @@ public class Website implements Serializable {
         mTitle = address.getTitle();
     }
 
+    public WebsiteAddress getAddress() {
+        return mAddress;
+    }
+
     public String getTitle() {
         return mTitle;
     }
