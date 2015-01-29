@@ -3000,6 +3000,51 @@ shell_interface_set_fullscreen(struct shell_surface *shsurf,
 	set_fullscreen(shsurf, method, framerate, output);
 }
 
+static struct weston_output *
+get_focused_output(struct weston_compositor *compositor)
+{
+	struct weston_seat *seat;
+	struct weston_output *output = NULL;
+
+	wl_list_for_each(seat, &compositor->seat_list, link) {
+		/* Priority has touch focus, then pointer and
+		 * then keyboard focus. We should probably have
+		 * three for loops and check frist for touch,
+		 * then for pointer, etc. but unless somebody has some
+		 * objections, I think this is sufficient. */
+		if (seat->touch && seat->touch->focus)
+			output = seat->touch->focus->output;
+		else if (seat->pointer && seat->pointer->focus)
+			output = seat->pointer->focus->output;
+		else if (seat->keyboard && seat->keyboard->focus)
+			output = seat->keyboard->focus->output;
+
+		if (output)
+			break;
+	}
+
+	return output;
+}
+
+static void
+shell_interface_set_maximized(struct shell_surface *shsurf)
+{
+	struct weston_output *output;
+
+	surface_clear_next_states(shsurf);
+	shsurf->next_state.maximized = true;
+	shsurf->state_changed = true;
+	shsurf->type = SHELL_SURFACE_TOPLEVEL;
+
+	if (!weston_surface_is_mapped(shsurf->surface))
+		output = get_focused_output(shsurf->surface->compositor);
+	else
+		output = shsurf->surface->output;
+
+	shell_surface_set_output(shsurf, output);
+	send_configure_for_surface(shsurf);
+}
+
 static int
 shell_interface_move(struct shell_surface *shsurf, struct weston_seat *ws)
 {
@@ -3603,32 +3648,6 @@ static struct weston_view *
 get_primary_view(void *shell, struct shell_surface *shsurf)
 {
 	return shsurf->view;
-}
-
-static struct weston_output *
-get_focused_output(struct weston_compositor *compositor)
-{
-	struct weston_seat *seat;
-	struct weston_output *output = NULL;
-
-	wl_list_for_each(seat, &compositor->seat_list, link) {
-		/* Priority has touch focus, then pointer and
-		 * then keyboard focus. We should probably have
-		 * three for loops and check frist for touch,
-		 * then for pointer, etc. but unless somebody has some
-		 * objections, I think this is sufficient. */
-		if (seat->touch && seat->touch->focus)
-			output = seat->touch->focus->output;
-		else if (seat->pointer && seat->pointer->focus)
-			output = seat->pointer->focus->output;
-		else if (seat->keyboard && seat->keyboard->focus)
-			output = seat->keyboard->focus->output;
-
-		if (output)
-			break;
-	}
-
-	return output;
 }
 
 static void
@@ -6633,6 +6652,7 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.resize = surface_resize;
 	ec->shell_interface.set_title = set_title;
 	ec->shell_interface.set_window_geometry = set_window_geometry;
+	ec->shell_interface.set_maximized = shell_interface_set_maximized;
 
 	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
 	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);

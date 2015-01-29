@@ -102,6 +102,8 @@ struct weston_wm {
 		xcb_atom_t		 net_wm_pid;
 		xcb_atom_t		 net_wm_icon;
 		xcb_atom_t		 net_wm_state;
+		xcb_atom_t		 net_wm_state_maximized_vert;
+		xcb_atom_t		 net_wm_state_maximized_horz;
 		xcb_atom_t		 net_wm_state_fullscreen;
 		xcb_atom_t		 net_wm_user_time;
 		xcb_atom_t		 net_wm_icon_name;
