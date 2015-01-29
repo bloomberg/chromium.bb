@@ -231,6 +231,9 @@ class ValgrindError:
     ''' Pretty print the type and backtrace(s) of this specific error,
         including suppression (which is just a mangled backtrace).'''
     output = ""
+    output += "\n" # Make sure the ### is at the beginning of line.
+    output += "### BEGIN MEMORY TOOL REPORT (error hash=#%016X#)\n" % \
+        self.ErrorHash()
     if (self._commandline):
       output += self._commandline + "\n"
 
@@ -327,6 +330,8 @@ class ValgrindError:
         supplines[frame] = "*".join(m.groups())
 
     output += "\n".join(supplines) + "\n"
+    output += "### END MEMORY TOOL REPORT (error hash=#%016X#)\n" % \
+        self.ErrorHash()
 
     return output
 

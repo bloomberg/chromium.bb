@@ -40,13 +40,18 @@ class DrMemoryError:
     self._suppression = "\n".join(supp_lines)
 
   def __str__(self):
-    output = self._report + "\n"
+    output = ""
+    output += "### BEGIN MEMORY TOOL REPORT (error hash=#%016X#)\n" % \
+        self.ErrorHash()
+    output += self._report + "\n"
     if self._testcase:
       output += "The report came from the `%s` test.\n" % self._testcase
     output += "Suppression (error hash=#%016X#):\n" % self.ErrorHash()
     output += ("  For more info on using suppressions see "
         "http://dev.chromium.org/developers/how-tos/using-drmemory#TOC-Suppressing-error-reports-from-the-\n")
     output += "{\n%s\n}\n" % self._suppression
+    output += "### END MEMORY TOOL REPORT (error hash=#%016X#)\n" % \
+        self.ErrorHash()
     return output
 
   # This is a device-independent hash identifying the suppression.
